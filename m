@@ -1,66 +1,103 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH V5 0/7] Add loadable kernel module and power management
- support
-Date: Wed, 10 Jan 2018 17:15:21 +0000
-Message-ID: <20180110171521.GA26960@e107981-ln.cambridge.arm.com>
-References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH 1/2] ACPI / PM: Use Low Power S0 Idle on more systems
+Date: Wed, 10 Jan 2018 17:38:46 +0000
+Message-ID: <8b088fbf3e8d47dc94cefdae6fe515d9@ausx13mpc120.AMER.DELL.COM>
+References: <4046497.JI7UjL75gC@aspire.rjw.lan>
+ <12541194.33112yYDjW@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46232 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S965932AbeAJRP3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Jan 2018 12:15:29 -0500
-Content-Disposition: inline
-In-Reply-To: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <12541194.33112yYDjW@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, linux-acpi@vger.kernel.org
+Cc: andriy.shevchenko@linux.intel.com, dvhart@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, valy@mrs.ro
 List-Id: linux-pm@vger.kernel.org
-To: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Cc: thierry.reding@gmail.com, bhelgaas@google.com, cyndis@kapsi.fi, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Jan 09, 2018 at 02:49:30PM +0530, Manikanta Maddireddy wrote:
-> This series of patches adds loadable kernel module and power management
-> support to Tegra PCIe host controller driver. irq_set_msi_desc() and
-> tegra_cpuidle_pcie_irqs_in_use() symbols will be taken care in next
-> set of patches.
-> 
-> These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
-> are the verification details.
-> 	- Multiple module insert & remove
-> 	- PCIe device functionality after module insert
-> 	- Free clock, resets, regulators, powergate, iomem and interrupt
-> 	resources after module remove
-> 	- PCIe device functionality after resume from RAM
-> 
-> V2: PM QoS fix is dropped in V2 from this series because the fix is
-> incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
-> latency framework")'. Update commit message of few patches in V2.
-> 
-> V3: Patches to export irq_set_msi_desc() and tegra_cpuidle_pcie_irqs_in_use()
-> are dropped based on review comments. These symbols will be addressed in next
-> series. Took care of few other review comments.
-> 
-> V4: Dropped pci_find_host_bridge() export patch and added new patch to use
-> bus->sysdata for private data.
-> 
-> V5: Decouple from https://patchwork.ozlabs.org/patch/832053/ and rebase
-> on top of linux-next
-> 
-> Manikanta Maddireddy (7):
->   of: Export of_pci_range_to_resource()
->   PCI: tegra: Use bus->sysdata to store and get host private data
->   PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
->   PCI: tegra: Free resources on probe failure
->   PCI: tegra: Add loadable kernel module support
->   PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
->   PCI: tegra: Add power management support
-> 
->  drivers/of/address.c         |   1 +
->  drivers/pci/host/Kconfig     |   2 +-
->  drivers/pci/host/pci-tegra.c | 333 ++++++++++++++++++++++++++++++++-----------
->  3 files changed, 253 insertions(+), 83 deletions(-)
 
-Can I ask you please to rebase this series against my pci/tegra branch ?
 
-Thanks,
-Lorenzo
+> -----Original Message-----
+> From: platform-driver-x86-owner@vger.kernel.org [mailto:platform-driver-x=
+86-
+> owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> Sent: Wednesday, January 10, 2018 6:26 AM
+> To: Linux ACPI <linux-acpi@vger.kernel.org>
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>; Darren Hart
+> <dvhart@infradead.org>; LKML <linux-kernel@vger.kernel.org>; Linux PM <li=
+nux-
+> pm@vger.kernel.org>; Platform Driver <platform-driver-x86@vger.kernel.org=
+>;
+> Valentin Manea <valy@mrs.ro>
+> Subject: [PATCH 1/2] ACPI / PM: Use Low Power S0 Idle on more systems
+>=20
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>=20
+> Some systems don't support the ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT
+> functions in their Low Power S0 Idle _DSM, but still expect EC
+> events to be processed in the suspend-to-idle state for power button
+> wakeup (among other things) to work.  Surface Pro3 turns out to be
+> one of them.
+>=20
+> Fortunately, it still provides Low Power S0 Idle _DSM with the screen
+> on/off functions supported, so modify the ACPI suspend-to-idle to use
+> the Low Power S0 Idle code path for all systems supporting the
+> ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT or the ACPI_LPS0_SCREEN_OFF and
+> ACPI_LPS0_SCREEN_ON functions in their Low Power S0 Idle _DSM.
+>=20
+> Potentially, that will cause more systems to use suspend-to-idle by
+> default, so some future corrections may be necessary if it leads
+> to issues, but let it remain more straightforward for now.
+>=20
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D198389
+> Reported-by: Valentin Manea <valy@mrs.ro>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/acpi/sleep.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>=20
+> Index: linux-pm/drivers/acpi/sleep.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/acpi/sleep.c
+> +++ linux-pm/drivers/acpi/sleep.c
+> @@ -707,7 +707,8 @@ static const struct acpi_device_id lps0_
+>  #define ACPI_LPS0_ENTRY		5
+>  #define ACPI_LPS0_EXIT		6
+>=20
+> -#define ACPI_S2IDLE_FUNC_MASK	((1 << ACPI_LPS0_ENTRY) | (1 <<
+> ACPI_LPS0_EXIT))
+> +#define ACPI_LPS0_SCREEN_MASK	((1 << ACPI_LPS0_SCREEN_OFF) | (1 <<
+> ACPI_LPS0_SCREEN_ON))
+> +#define ACPI_LPS0_S2I_MASK	((1 << ACPI_LPS0_ENTRY) | (1 << ACPI_LPS0_EXI=
+T))
+>=20
+>  static acpi_handle lps0_device_handle;
+>  static guid_t lps0_dsm_guid;
+> @@ -910,7 +911,8 @@ static int lps0_device_attach(struct acp
+>  	if (out_obj && out_obj->type =3D=3D ACPI_TYPE_BUFFER) {
+>  		char bitmask =3D *(char *)out_obj->buffer.pointer;
+>=20
+> -		if ((bitmask & ACPI_S2IDLE_FUNC_MASK) =3D=3D
+> ACPI_S2IDLE_FUNC_MASK) {
+> +		if ((bitmask & ACPI_LPS0_S2I_MASK) =3D=3D ACPI_LPS0_S2I_MASK ||
+> +		    (bitmask & ACPI_LPS0_SCREEN_MASK) =3D=3D
+> ACPI_LPS0_SCREEN_MASK) {
+>  			lps0_dsm_func_mask =3D bitmask;
+>  			lps0_device_handle =3D adev->handle;
+>  			/*
+
+In making this change I believe you'll need to cache the values that you fo=
+und from the
+function mask to test them later too.
+Here:
+https://github.com/torvalds/linux/blob/master/drivers/acpi/sleep.c#L943
+
+This is because later on both ACPI_LPS0_SCREEN_OFF and ACPI_LPS0_ENTRY are =
+called
+whether or not they both exist.  Fortunately looking at the DSDT in the att=
+ached bug nothing
+happens if calling the undefined Arg2 =3D=3D 0x05/Arg2 =3D=3D 0x06 but that=
+ might not always
+be the case.
