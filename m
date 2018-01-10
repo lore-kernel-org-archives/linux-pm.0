@@ -1,43 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: scpi: remove arm_big_little dependency
-Date: Wed, 10 Jan 2018 20:16:31 +0530
-Message-ID: <20180110144631.GE3626@vireshk-i7>
-References: <1515516568-31359-1-git-send-email-sudeep.holla@arm.com>
- <1515516568-31359-3-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1515516568-31359-3-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v2 0/2] drivers: remove incorrect usage/dependency on topology_physical_package_id
+Date: Wed, 10 Jan 2018 16:44:13 +0000
+Message-ID: <1515602655-12740-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:45360 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S965974AbeAJQoi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 11:44:38 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Jeremy Linton <jeremy.linton@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On 09-01-18, 16:49, Sudeep Holla wrote:
-> The dependency on physical_package_id from the topology to get the
-> cluster identifier is wrong. The concept of cluster used in ARM topology
-> is unfortunately not well defined in the architecture, we should avoid
-> using it. Further the frequency domain need not be mapped to so called
-> "clusters" one to one.
-> 
-> SCPI already provides means to obtain the frequency domain id from the
-> device tree. In order to support some new topologies(e.g. DSU which
-> contains 2 frequency domains within the physical cluster), pseudo
-> clusters are created to make this driver work which is wrong again.
-> 
-> In order to solve those issues and also remove dependency of topological
-> physical id for frequency domain, this patch removes the arm_big_little
-> dependency from scpi driver.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/cpufreq/scpi-cpufreq.c | 193 +++++++++++++++++++++++++++++++++++++----
->  1 file changed, 178 insertions(+), 15 deletions(-)
+Hi all,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+There has been ongoing attempt to add ACPI topology support on ARM/ARM64
+platform using PPTT. However it was discovered that the physical package
+id is mapped to the so called clusters on ARM platforms and they don't
+map to the physical socket as in other architectures.
 
--- 
-viresh
+In order to add the correct support for the well defined physical sockets,
+we need to find remove the incorrect usage or any dependency on
+topology_physical_package_id which currently maps to the clusters.
+
+There's still one pending user of topology_physical_package_id, which is
+arm_big_little driver which is used by bL switcher and by TC2 platform.
+For now, we can leave that as is until we change the definition even for
+ARM32 platforms as it's just used by only 32-bit platforms.
+
+v1->v2:
+	- Update change log in patch 1/2 as suggested by Lorenzo
+	- Added acks from Viresh and Lorenzo
+
+Sudeep Holla (2):
+  drivers: psci: remove cluster terminology and dependency on
+    physical_package_id
+  cpufreq: scpi: remove arm_big_little dependency
+
+ drivers/cpufreq/scpi-cpufreq.c  | 193 ++++++++++++++++++++++++++++++++++++----
+ drivers/firmware/psci_checker.c |  46 +++++-----
+ 2 files changed, 200 insertions(+), 39 deletions(-)
+
+--
+2.7.4
