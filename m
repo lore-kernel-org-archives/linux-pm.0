@@ -1,51 +1,66 @@
-From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V6 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
-Date: Thu, 11 Jan 2018 11:38:04 +0530
-Message-ID: <1515650888-9459-4-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Subject: [PATCH V6 2/7] PCI: tegra: Use bus->sysdata to store and get host private data
+Date: Thu, 11 Jan 2018 11:38:03 +0530
+Message-ID: <1515650888-9459-3-git-send-email-mmaddireddy@nvidia.com>
 References: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1515650888-9459-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, cyndis-/1wQRMveznE@public.gmane.org
-Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: thierry.reding@gmail.com, bhelgaas@google.com, lorenzo.pieralisi@arm.com, cyndis@kapsi.fi
+Cc: jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Primary, secondary and subordinate default bus numbers are 0 in Tegra and
-it is expecting SW to program these numbers in configration space.
+Tegra host driver is using pci_find_host_bridge() to get private data,
+however pci_find_host_bridge() is causing module build failure because
+it is not exported. pci_find_host_bridge() can be avoided by using
+bus->sysdata to store and get private data.
 
-pci_scan_bridge_extend() function programs these numbers in configuration
-space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
-flag is set. Since secondary & subordinate default bus numbers are 0,
-PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
-
-Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Acked-by: Thierry Reding <treding@nvidia.com>
 ---
-V3:
-* new patch in V3
 V4:
-* no change in this patch
+* new patch in V4
 V5:
-* no change in this patch
+* Rebase on top of linux-next
 V6:
-* Rebased on lpieralisi/pci/tegra branch
+* no change in this patch
 
- drivers/pci/host/pci-tegra.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/pci/host/pci-tegra.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index 059aa73d5f76..e4b47ebc91fe 100644
+index 4c105fbda777..059aa73d5f76 100644
 --- a/drivers/pci/host/pci-tegra.c
 +++ b/drivers/pci/host/pci-tegra.c
-@@ -2293,7 +2293,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+@@ -379,8 +379,7 @@ static void __iomem *tegra_pcie_map_bus(struct pci_bus *bus,
+ 					unsigned int devfn,
+ 					int where)
+ {
+-	struct pci_host_bridge *host = pci_find_host_bridge(bus);
+-	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
++	struct tegra_pcie *pcie = bus->sysdata;
+ 	void __iomem *addr = NULL;
  
- 	tegra_pcie_enable_ports(pcie);
+ 	if (bus->number == 0) {
+@@ -573,8 +572,7 @@ static int tegra_pcie_request_resources(struct tegra_pcie *pcie)
  
--	pci_add_flags(PCI_REASSIGN_ALL_RSRC | PCI_REASSIGN_ALL_BUS);
- 	host->busnr = pcie->busn.start;
- 	host->dev.parent = &pdev->dev;
- 	host->ops = &tegra_pcie_ops;
+ static int tegra_pcie_map_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
+ {
+-	struct pci_host_bridge *host = pci_find_host_bridge(pdev->bus);
+-	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
++	struct tegra_pcie *pcie = pdev->bus->sysdata;
+ 	int irq;
+ 
+ 	tegra_cpuidle_pcie_irqs_in_use();
+@@ -2258,6 +2256,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	pcie = pci_host_bridge_priv(host);
++	host->sysdata = pcie;
+ 
+ 	pcie->soc = of_device_get_match_data(dev);
+ 	INIT_LIST_HEAD(&pcie->ports);
 -- 
 2.1.4
