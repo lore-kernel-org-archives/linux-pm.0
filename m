@@ -1,92 +1,77 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v2 1/2] ACPI / PM: Use Low Power S0 Idle on more systems
-Date: Thu, 11 Jan 2018 14:55:34 +0200
-Message-ID: <1515675334.7000.919.camel@linux.intel.com>
-References: <4046497.JI7UjL75gC@aspire.rjw.lan>
-         <12541194.33112yYDjW@aspire.rjw.lan>
-         <1515590661.7000.855.camel@linux.intel.com>
-         <2293881.tBporBhK0J@aspire.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH V5 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for
+ Tegra PCIe
+Date: Thu, 11 Jan 2018 13:49:25 +0000
+Message-ID: <20180111134925.GA10168@red-moon>
+References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
+ <1515489577-2197-4-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:61280 "EHLO mga11.intel.com"
+Received: from foss.arm.com ([217.140.101.70]:60324 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751995AbeAKNLs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 11 Jan 2018 08:11:48 -0500
-In-Reply-To: <2293881.tBporBhK0J@aspire.rjw.lan>
+        id S1753031AbeAKNs1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 11 Jan 2018 08:48:27 -0500
+Content-Disposition: inline
+In-Reply-To: <1515489577-2197-4-git-send-email-mmaddireddy@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Valentin Manea <valy@mrs.ro>
+To: Manikanta Maddireddy <mmaddireddy@nvidia.com>, bhelgaas@google.com
+Cc: thierry.reding@gmail.com, cyndis@kapsi.fi, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, 2018-01-11 at 02:13 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Some systems don't support the ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT
-> functions in their Low Power S0 Idle _DSM, but still expect EC
-> events to be processed in the suspend-to-idle state for power button
-> wakeup (among other things) to work.  Surface Pro3 turns out to be
-> one of them.
-> 
-> Fortunately, it still provides Low Power S0 Idle _DSM with the screen
-> on/off functions supported, so modify the ACPI suspend-to-idle to use
-> the Low Power S0 Idle code path for all systems supporting the
-> ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT or the ACPI_LPS0_SCREEN_OFF and
-> ACPI_LPS0_SCREEN_ON functions in their Low Power S0 Idle _DSM.
-> 
-> Potentially, that will cause more systems to use suspend-to-idle by
-> default, so some future corrections may be necessary if it leads
-> to issues, but let it remain more straightforward for now.
-> 
+Hi Bjorn,
 
-FWIW, 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+On Tue, Jan 09, 2018 at 02:49:33PM +0530, Manikanta Maddireddy wrote:
+> Primary, secondary and subordinate default bus numbers are 0 in Tegra and
+> it is expecting SW to program these numbers in configration space.
+> 
+> pci_scan_bridge_extend() function programs these numbers in configuration
+> space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
+> flag is set. Since secondary & subordinate default bus numbers are 0,
+> PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
+> 
+> Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+> Acked-by: Thierry Reding <treding@nvidia.com>
 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198389#add_comment
-> Reported-by: Valentin Manea <valy@mrs.ro>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+
+Would you mind applying this patch (NB: it is the patch in the v5
+version - this patch - not the one in v6 that is a rebased version):
+
+https://patchwork.ozlabs.org/patch/857318/
+
+to your pci/resource branch please (there is a dependency) ?
+
+This would allow me to apply the rest of the patches in the series
+that I consider mergeable independently of your tree branches, to
+simplify the dependency.
+
+Thanks !
+Lorenzo
 
 > ---
+> V3:
+> * new patch in V3
+> V4:
+> * no change in this patch
+> V5:
+> * no change in this patch
 > 
-> -> v2: Rename ACPI_LPS0_S2I_MASK to ACPI_LPS0_PLATFORM_MASK.
+>  drivers/pci/host/pci-tegra.c | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> ---
->  drivers/acpi/sleep.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/acpi/sleep.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/sleep.c
-> +++ linux-pm/drivers/acpi/sleep.c
-> @@ -707,7 +707,8 @@ static const struct acpi_device_id lps0_
->  #define ACPI_LPS0_ENTRY		5
->  #define ACPI_LPS0_EXIT		6
+> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> index d790a26ad87e..e4b47ebc91fe 100644
+> --- a/drivers/pci/host/pci-tegra.c
+> +++ b/drivers/pci/host/pci-tegra.c
+> @@ -2293,7 +2293,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
 >  
-> -#define ACPI_S2IDLE_FUNC_MASK	((1 << ACPI_LPS0_ENTRY) | (1 <<
-> ACPI_LPS0_EXIT))
-> +#define ACPI_LPS0_SCREEN_MASK	((1 << ACPI_LPS0_SCREEN_OFF) |
-> (1 << ACPI_LPS0_SCREEN_ON))
-> +#define ACPI_LPS0_PLATFORM_MASK	((1 << ACPI_LPS0_ENTRY) | (1
-> << ACPI_LPS0_EXIT))
+>  	tegra_pcie_enable_ports(pcie);
 >  
->  static acpi_handle lps0_device_handle;
->  static guid_t lps0_dsm_guid;
-> @@ -910,7 +911,8 @@ static int lps0_device_attach(struct acp
->  	if (out_obj && out_obj->type == ACPI_TYPE_BUFFER) {
->  		char bitmask = *(char *)out_obj->buffer.pointer;
->  
-> -		if ((bitmask & ACPI_S2IDLE_FUNC_MASK) ==
-> ACPI_S2IDLE_FUNC_MASK) {
-> +		if ((bitmask & ACPI_LPS0_PLATFORM_MASK) ==
-> ACPI_LPS0_PLATFORM_MASK ||
-> +		    (bitmask & ACPI_LPS0_SCREEN_MASK) ==
-> ACPI_LPS0_SCREEN_MASK) {
->  			lps0_dsm_func_mask = bitmask;
->  			lps0_device_handle = adev->handle;
->  			/*
+> -	pci_add_flags(PCI_REASSIGN_ALL_BUS);
+>  	host->busnr = pcie->busn.start;
+>  	host->dev.parent = &pdev->dev;
+>  	host->ops = &tegra_pcie_ops;
+> -- 
+> 2.1.4
 > 
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
