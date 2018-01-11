@@ -1,125 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / Domains: Don't skip driver's ->suspend|resume_noirq()
- callbacks
-Date: Thu, 11 Jan 2018 01:54:56 +0100
-Message-ID: <CAJZ5v0gHV=qtGUGvkZ_KvMZZZSszrtXyxYUO-J61uzwZG5EKPQ@mail.gmail.com>
-References: <1515616316-5118-1-git-send-email-ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2 1/2] ACPI / PM: Use Low Power S0 Idle on more systems
+Date: Thu, 11 Jan 2018 02:13:58 +0100
+Message-ID: <2293881.tBporBhK0J@aspire.rjw.lan>
+References: <4046497.JI7UjL75gC@aspire.rjw.lan> <12541194.33112yYDjW@aspire.rjw.lan> <1515590661.7000.855.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f194.google.com ([74.125.82.194]:40536 "EHLO
-        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752959AbeAKAy5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 19:54:57 -0500
-Received: by mail-ot0-f194.google.com with SMTP id d10so772100oti.7
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 16:54:56 -0800 (PST)
-In-Reply-To: <1515616316-5118-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <1515590661.7000.855.camel@linux.intel.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Valentin Manea <valy@mrs.ro>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Mikko Perttunen <mperttunen@nvidia.com>
 
-On Wed, Jan 10, 2018 at 9:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The commit 10da65423fdb ("PM / Domains: Call driver's noirq callbacks")
-> started to respect driver's noirq callbacks, but while doing that it also
-> introduced a few potential problems.
->
-> More precisely, in genpd_finish_suspend() and genpd_resume_noirq() the
-> noirq callbacks at the driver level should be invoked, no matter of whether
-> dev->power.wakeup_path is set or not.
->
-> Additionally, the commit in question also made genpd_resume_noirq() to
-> ignore the return value from pm_runtime_force_resume().
->
-> Let's fix both these issues!
->
-> Fixes: 10da65423fdb ("PM / Domains: Call driver's noirq callbacks")
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/domain.c | 30 +++++++++++++++++-------------
->  1 file changed, 17 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index f9dcc98..48255ce 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1032,15 +1032,12 @@ static int genpd_prepare(struct device *dev)
->  static int genpd_finish_suspend(struct device *dev, bool poweroff)
->  {
->         struct generic_pm_domain *genpd;
-> -       int ret;
-> +       int ret = 0;
->
->         genpd = dev_to_genpd(dev);
->         if (IS_ERR(genpd))
->                 return -EINVAL;
->
-> -       if (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))
-> -               return 0;
-> -
->         if (poweroff)
->                 ret = pm_generic_poweroff_noirq(dev);
->         else
-> @@ -1048,10 +1045,18 @@ static int genpd_finish_suspend(struct device *dev, bool poweroff)
->         if (ret)
->                 return ret;
->
-> +       if (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))
-> +               return 0;
-> +
->         if (genpd->dev_ops.stop && genpd->dev_ops.start) {
->                 ret = pm_runtime_force_suspend(dev);
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Good catch!
+Some systems don't support the ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT
+functions in their Low Power S0 Idle _DSM, but still expect EC
+events to be processed in the suspend-to-idle state for power button
+wakeup (among other things) to work.  Surface Pro3 turns out to be
+one of them.
 
-> -               if (ret)
-> +               if (ret) {
-> +                       if (poweroff)
-> +                               pm_generic_restore_noirq(dev);
-> +                       else
-> +                               pm_generic_resume_noirq(dev);
->                         return ret;
-> +               }
->         }
->
->         genpd_lock(genpd);
-> @@ -1085,7 +1090,7 @@ static int genpd_suspend_noirq(struct device *dev)
->  static int genpd_resume_noirq(struct device *dev)
->  {
->         struct generic_pm_domain *genpd;
-> -       int ret = 0;
-> +       int ret;
->
->         dev_dbg(dev, "%s()\n", __func__);
->
-> @@ -1094,21 +1099,20 @@ static int genpd_resume_noirq(struct device *dev)
->                 return -EINVAL;
->
->         if (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))
-> -               return 0;
-> +               return pm_generic_resume_noirq(dev);
->
->         genpd_lock(genpd);
->         genpd_sync_power_on(genpd, true, 0);
->         genpd->suspended_count--;
->         genpd_unlock(genpd);
->
-> -       if (genpd->dev_ops.stop && genpd->dev_ops.start)
-> +       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
->                 ret = pm_runtime_force_resume(dev);
-> +               if (ret)
-> +                       return ret;
-> +       }
->
-> -       ret = pm_generic_resume_noirq(dev);
-> -       if (ret)
-> -               return ret;
-> -
-> -       return ret;
-> +       return pm_generic_resume_noirq(dev);
->  }
->
->  /**
-> --
+Fortunately, it still provides Low Power S0 Idle _DSM with the screen
+on/off functions supported, so modify the ACPI suspend-to-idle to use
+the Low Power S0 Idle code path for all systems supporting the
+ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT or the ACPI_LPS0_SCREEN_OFF and
+ACPI_LPS0_SCREEN_ON functions in their Low Power S0 Idle _DSM.
 
-Looks OK to me overall.
+Potentially, that will cause more systems to use suspend-to-idle by
+default, so some future corrections may be necessary if it leads
+to issues, but let it remain more straightforward for now.
+
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=198389#add_comment
+Reported-by: Valentin Manea <valy@mrs.ro>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+-> v2: Rename ACPI_LPS0_S2I_MASK to ACPI_LPS0_PLATFORM_MASK.
+
+---
+ drivers/acpi/sleep.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -707,7 +707,8 @@ static const struct acpi_device_id lps0_
+ #define ACPI_LPS0_ENTRY		5
+ #define ACPI_LPS0_EXIT		6
+ 
+-#define ACPI_S2IDLE_FUNC_MASK	((1 << ACPI_LPS0_ENTRY) | (1 << ACPI_LPS0_EXIT))
++#define ACPI_LPS0_SCREEN_MASK	((1 << ACPI_LPS0_SCREEN_OFF) | (1 << ACPI_LPS0_SCREEN_ON))
++#define ACPI_LPS0_PLATFORM_MASK	((1 << ACPI_LPS0_ENTRY) | (1 << ACPI_LPS0_EXIT))
+ 
+ static acpi_handle lps0_device_handle;
+ static guid_t lps0_dsm_guid;
+@@ -910,7 +911,8 @@ static int lps0_device_attach(struct acp
+ 	if (out_obj && out_obj->type == ACPI_TYPE_BUFFER) {
+ 		char bitmask = *(char *)out_obj->buffer.pointer;
+ 
+-		if ((bitmask & ACPI_S2IDLE_FUNC_MASK) == ACPI_S2IDLE_FUNC_MASK) {
++		if ((bitmask & ACPI_LPS0_PLATFORM_MASK) == ACPI_LPS0_PLATFORM_MASK ||
++		    (bitmask & ACPI_LPS0_SCREEN_MASK) == ACPI_LPS0_SCREEN_MASK) {
+ 			lps0_dsm_func_mask = bitmask;
+ 			lps0_device_handle = adev->handle;
+ 			/*
