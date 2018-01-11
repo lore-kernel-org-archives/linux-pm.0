@@ -1,82 +1,112 @@
-From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Subject: Re: [PATCH V5 0/7] Add loadable kernel module and power management
- support
-Date: Thu, 11 Jan 2018 11:45:46 +0530
-Message-ID: <a33a045c-0384-64fc-5ae5-1a150081d262@nvidia.com>
-References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
- <20180110171521.GA26960@e107981-ln.cambridge.arm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFD] Devices that need full power for wakeup
+Date: Thu, 11 Jan 2018 08:48:44 +0100
+Message-ID: <CAMuHMdUUmBOnkvVo91+5ON=_jQ9D8ViFpcoq5ideY=_fhRGXSA@mail.gmail.com>
+References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com>
+ <CAPDyKFqZ+ja5bu+G7ynTowq1CFQ2_k2zdA7qGbj3VagdB0yT4Q@mail.gmail.com>
+ <CAJZ5v0hw_z5qGiGFGtJHLMfduEsH5c9y8q7ZFNCZdjwppP=GbA@mail.gmail.com>
+ <CAPDyKFpwVevhg7F==GdxDwDhbuTy5hPn6zMbq4WpqkBiDKbM+g@mail.gmail.com> <CAJZ5v0hpOe6cQbuLEaYx8=JVrD79276J8VO0YNveWoNc5TU0tg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:5506 "EHLO
-        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750892AbeAKGQG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 01:16:06 -0500
-In-Reply-To: <20180110171521.GA26960@e107981-ln.cambridge.arm.com>
-Content-Language: en-US
+Received: from mail-qt0-f178.google.com ([209.85.216.178]:38289 "EHLO
+        mail-qt0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754052AbeAKHsp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 02:48:45 -0500
+Received: by mail-qt0-f178.google.com with SMTP id d4so756848qtj.5
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 23:48:45 -0800 (PST)
+In-Reply-To: <CAJZ5v0hpOe6cQbuLEaYx8=JVrD79276J8VO0YNveWoNc5TU0tg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: thierry.reding@gmail.com, bhelgaas@google.com, cyndis@kapsi.fi, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
 
+Hi Rafael,
 
+On Thu, Jan 11, 2018 at 1:08 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Jan 10, 2018 at 11:21 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 10 January 2018 at 02:22, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> On Mon, Jan 8, 2018 at 5:33 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> On 8 January 2018 at 12:51, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> [cut]
+>
+>>>
+>>>> This is also what Geert convinced to be the best, from earlier discussions.
+>>>
+>>> I'm not sure about that.  Geert seems to need power to stay on,
+>>> nothing more, and that regardless of genpd_is_active_wakeup() AFAICS.
+>>
+>> That was the initial problem, which is taken care of by using the
+>> ->dev.power.wakeup_path flag and the new helper,
+>> device_set_wakeup_path().
+>>
+>> This in combination of enabling genpd to deal with wakeups, as that is
+>> currently not the default setting, which is done via setting the
+>> GENPD_FLAG_ACTIVE_WAKEUP configuration flag.
+>
+> But that really isn't about wakeup, but rather about whether or not
+> power can be cut off things, right?
 
-On 10-Jan-18 10:45 PM, Lorenzo Pieralisi wrote:
-> On Tue, Jan 09, 2018 at 02:49:30PM +0530, Manikanta Maddireddy wrote:
->> This series of patches adds loadable kernel module and power management
->> support to Tegra PCIe host controller driver. irq_set_msi_desc() and
->> tegra_cpuidle_pcie_irqs_in_use() symbols will be taken care in next
->> set of patches.
->>
->> These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
->> are the verification details.
->> 	- Multiple module insert & remove
->> 	- PCIe device functionality after module insert
->> 	- Free clock, resets, regulators, powergate, iomem and interrupt
->> 	resources after module remove
->> 	- PCIe device functionality after resume from RAM
->>
->> V2: PM QoS fix is dropped in V2 from this series because the fix is
->> incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
->> latency framework")'. Update commit message of few patches in V2.
->>
->> V3: Patches to export irq_set_msi_desc() and tegra_cpuidle_pcie_irqs_in_use()
->> are dropped based on review comments. These symbols will be addressed in next
->> series. Took care of few other review comments.
->>
->> V4: Dropped pci_find_host_bridge() export patch and added new patch to use
->> bus->sysdata for private data.
->>
->> V5: Decouple from https://patchwork.ozlabs.org/patch/832053/ and rebase
->> on top of linux-next
->>
->> Manikanta Maddireddy (7):
->>   of: Export of_pci_range_to_resource()
->>   PCI: tegra: Use bus->sysdata to store and get host private data
->>   PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
->>   PCI: tegra: Free resources on probe failure
->>   PCI: tegra: Add loadable kernel module support
->>   PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
->>   PCI: tegra: Add power management support
->>
->>  drivers/of/address.c         |   1 +
->>  drivers/pci/host/Kconfig     |   2 +-
->>  drivers/pci/host/pci-tegra.c | 333 ++++++++++++++++++++++++++++++++-----------
->>  3 files changed, 253 insertions(+), 83 deletions(-)
-> 
-> Can I ask you please to rebase this series against my pci/tegra branch ?
-> 
-> Thanks,
-> Lorenzo
-> 
-Hi Lorenzo,
+The flag indicates that power cannot be cut if the device is used for wake-up.
 
-I rebased this series on lpieralisi/pci/tegra and published V6.
-V5 patch https://patchwork.ozlabs.org/patch/857318/ cherry-pick is failing,
-because of missing change "7153884c088a ("PCI: Remove PCI_REASSIGN_ALL_RSRC use on arm and arm64")"
-in lpieralisi/pci/tegra branch. This information might come in
-handy when doing remote branch merge of 'lorenzo/pci/tegra' into next
+>> The next part of the problems Geert pointed out was exactly those I am
+>> describing here. Please have a look at his reply at:
+>> https://www.mail-archive.com/linux-renesas-soc@vger.kernel.org/msg21157.html
+>
+> OK
+>
+>>>
+>>>> However, there are a few related issues around system wakeups in
+>>>> genpd, during system suspend.
+>>>>
+>>>> 1)
+>>>> If the driver for the device, configures system wakeup as an
+>>>> "out-band-wakeup", the device and its PM domain, don't need to stay
+>>>> powered on during system suspend from the driver perspective.
+>>>
+>>> That depends.
+>>>
+>>> The wakeup signal has to be generated or asserted by something,
+>>> presumably the device itself.
+>>
+>> The cases I looking at don't require the device to be powered - at
+>> least from the driver's perspective.
+>>
+>> A classic example is a SD card detect pin, which is being routed to a
+>> GPIO pin. In these case, that GPIO pin has no logic whatsoever,
+>> coupled with the device for SD controller. Still, it needs to be
+>> manged by the same device driver.
+>
+> So technically it is a different device, but since it is functionally
+> related to the one originally handled by the driver in question, the
+> driver is expected to handle this wakeup thing too.
+>
+> Fair enough, but certainly that is not a common setup for other subsystems.
+>
+> [BTW, since the wakeup thing is a separate device technically, I would
+> try to model it as a separate device object in the kernel with its own
+> wakeup settings.  That would save you some complications you're trying
+> to deal with IMO.]
 
-Thanks,
-Manikanta
+Makes sense to me.
+
+> Also I'm sort of wondering why the problem is specific to system-wide
+> suspend.  It looks like if the card slot was empty, it would make
+> perfect sense to put the "master" device into runtime suspend with no
+> remote wakeup and then only resume it if the GPIO thing signaled card
+> insertion.  And this looks like the same problem in disguise.
+
+For SD card slots, it's indeed not just about system suspend, but also
+about runtime suspend when no card is present.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
