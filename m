@@ -1,54 +1,76 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH v3 RESEND] cpufreq: pxa: convert to clock API
-Date: Thu, 11 Jan 2018 18:26:18 +0100
-Message-ID: <87inc8b939.fsf@belgarion.home>
-References: <20171014215102.10424-1-robert.jarzmik@free.fr>
-        <87mv1kbyth.fsf@belgarion.home> <20180111083519.GG3626@vireshk-i7>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V5 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for
+ Tegra PCIe
+Date: Thu, 11 Jan 2018 12:27:03 -0600
+Message-ID: <20180111182703.GL241460@bhelgaas-glaptop.roam.corp.google.com>
+References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
+ <1515489577-2197-4-git-send-email-mmaddireddy@nvidia.com>
+ <20180111134925.GA10168@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp02.smtpout.orange.fr ([80.12.242.124]:20184 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S935307AbeAKR0W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 12:26:22 -0500
-In-Reply-To: <20180111083519.GG3626@vireshk-i7> (Viresh Kumar's message of
-        "Thu, 11 Jan 2018 14:05:19 +0530")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180111134925.GA10168@red-moon>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Cc: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, cyndis-/1wQRMveznE@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael J Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+On Thu, Jan 11, 2018 at 01:49:25PM +0000, Lorenzo Pieralisi wrote:
+> Hi Bjorn,
+> 
+> On Tue, Jan 09, 2018 at 02:49:33PM +0530, Manikanta Maddireddy wrote:
+> > Primary, secondary and subordinate default bus numbers are 0 in Tegra and
+> > it is expecting SW to program these numbers in configration space.
+> > 
+> > pci_scan_bridge_extend() function programs these numbers in configuration
+> > space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
+> > flag is set. Since secondary & subordinate default bus numbers are 0,
+> > PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
+> > 
+> > Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> > Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> 
+> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+> 
+> Would you mind applying this patch (NB: it is the patch in the v5
+> version - this patch - not the one in v6 that is a rebased version):
+> 
+> https://patchwork.ozlabs.org/patch/857318/
+> 
+> to your pci/resource branch please (there is a dependency) ?
+> 
+> This would allow me to apply the rest of the patches in the series
+> that I consider mergeable independently of your tree branches, to
+> simplify the dependency.
 
-> On 11-01-18, 09:10, Robert Jarzmik wrote:
->> Robert Jarzmik <robert.jarzmik@free.fr> writes:
->> 
->> > As the clock settings have been introduced into the clock pxa drivers,
->> > which are now available to change the CPU clock by themselves, remove
->> > the clock handling from this driver, and rely on pxa clock drivers.
->> >
->> > Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
->> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > ---
->> > This is a resend of a formerly acked patch as all dependencies have
->> > hit upstream, see :
->> > 	https://www.spinics.net/lists/arm-kernel/msg540181.html
->> > ---
->> >  drivers/cpufreq/pxa2xx-cpufreq.c | 191 ++++++++-------------------------------
->> >  1 file changed, 39 insertions(+), 152 deletions(-)
->> 
->> Hi Rafael,
->> 
->> Would you consider taking this patch in ? It was submitted and acked a long ago,
->> and as the above mail says, the dependencies have hit mainline for quite some
->> time now.
->
-> Check linux-next.
->
-> d9278077385f cpufreq: pxa: convert to clock API
-Thanks and sorry for the noise.
+Applied to pci/resource for v4.16, thanks!
 
-Cheers.
+I'd love to remove more of these.  Every one helps.
 
--- 
-Robert
+> > ---
+> > V3:
+> > * new patch in V3
+> > V4:
+> > * no change in this patch
+> > V5:
+> > * no change in this patch
+> > 
+> >  drivers/pci/host/pci-tegra.c | 1 -
+> >  1 file changed, 1 deletion(-)
+> > 
+> > diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> > index d790a26ad87e..e4b47ebc91fe 100644
+> > --- a/drivers/pci/host/pci-tegra.c
+> > +++ b/drivers/pci/host/pci-tegra.c
+> > @@ -2293,7 +2293,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+> >  
+> >  	tegra_pcie_enable_ports(pcie);
+> >  
+> > -	pci_add_flags(PCI_REASSIGN_ALL_BUS);
+> >  	host->busnr = pcie->busn.start;
+> >  	host->dev.parent = &pdev->dev;
+> >  	host->ops = &tegra_pcie_ops;
+> > -- 
+> > 2.1.4
+> > 
