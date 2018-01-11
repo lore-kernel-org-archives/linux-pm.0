@@ -1,61 +1,54 @@
-From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Subject: [PATCH V6 0/7] Add loadable kernel module and power management support
-Date: Thu, 11 Jan 2018 11:38:01 +0530
-Message-ID: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V6 1/7] of: Export of_pci_range_to_resource()
+Date: Thu, 11 Jan 2018 11:38:02 +0530
+Message-ID: <1515650888-9459-2-git-send-email-mmaddireddy@nvidia.com>
+References: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:13322 "EHLO
-        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750892AbeAKGIT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 01:08:19 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1515650888-9459-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, cyndis-/1wQRMveznE@public.gmane.org
+Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: thierry.reding@gmail.com, bhelgaas@google.com, lorenzo.pieralisi@arm.com, cyndis@kapsi.fi
-Cc: jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 
-This series of patches adds loadable kernel module and power management
-support to Tegra PCIe host controller driver. irq_set_msi_desc() and
-tegra_cpuidle_pcie_irqs_in_use() symbols will be taken care in next
-set of patches.
+Tegra PCIe host driver parses of_pci_range from device tree and converts
+to resource. Export of_pci_range_to_resource() to allow Tegra PCIe host
+driver to be compiled as loadable kernel module.
 
-These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
-are the verification details.
-	- Multiple module insert & remove
-	- PCIe device functionality after module insert
-	- Free clock, resets, regulators, powergate, iomem and interrupt
-	resources after module remove
-	- PCIe device functionality after resume from RAM
+Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+---
+V2:
+* commit message update
+V3:
+* no change in this patch
+V4:
+* no change in this patch
+V5:
+* no change in this patch
+V6:
+* no change in this patch
 
-V2: PM QoS fix is dropped in V2 from this series because the fix is
-incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
-latency framework")'. Update commit message of few patches in V2.
+ drivers/of/address.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-V3: Patches to export irq_set_msi_desc() and tegra_cpuidle_pcie_irqs_in_use()
-are dropped based on review comments. These symbols will be addressed in next
-series. Took care of few other review comments.
-
-V4: Dropped pci_find_host_bridge() export patch and added new patch to use
-bus->sysdata for private data.
-
-V5: Decouple from https://patchwork.ozlabs.org/patch/832053/ and rebase
-on top of linux-next
-
-V6: Rebased on lpieralisi/pci/tegra branch
-
-Manikanta Maddireddy (7):
-  of: Export of_pci_range_to_resource()
-  PCI: tegra: Use bus->sysdata to store and get host private data
-  PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
-  PCI: tegra: Free resources on probe failure
-  PCI: tegra: Add loadable kernel module support
-  PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
-  PCI: tegra: Add power management support
-
- drivers/of/address.c         |   1 +
- drivers/pci/host/Kconfig     |   2 +-
- drivers/pci/host/pci-tegra.c | 333 ++++++++++++++++++++++++++++++++-----------
- 3 files changed, 253 insertions(+), 83 deletions(-)
-
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index fa6cabfc3cb9..8d9b93f8701a 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -361,6 +361,7 @@ int of_pci_range_to_resource(struct of_pci_range *range,
+ 	res->end = (resource_size_t)OF_BAD_ADDR;
+ 	return err;
+ }
++EXPORT_SYMBOL(of_pci_range_to_resource);
+ #endif /* CONFIG_PCI */
+ 
+ /*
 -- 
 2.1.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
