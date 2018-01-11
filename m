@@ -1,18 +1,12 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] thermal: Add cooling device's statistics in sysfs
-Date: Thu, 11 Jan 2018 14:46:06 +0530
-Message-ID: <88a57e29b2d35f65aa94cfb18c61e2280fd47ea0.1515662107.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:40328 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752978AbeAKJQL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 04:16:11 -0500
-Received: by mail-pf0-f194.google.com with SMTP id i66so1212923pfd.7
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2018 01:16:10 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V3] thermal: Add cooling device's statistics in sysfs
+Date: Thu, 11 Jan 2018 15:06:09 +0530
+Message-ID: <087186fecdfd85bead58e110cf8bf7ccdfab517b.1515663078.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 This extends the sysfs interface for thermal cooling devices and exposes
 some pretty useful statistics. These statistics have proven to be quite
@@ -50,15 +44,20 @@ ARM 64-bit Hisilicon hikey960 board running Android.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
+V2->V3:
+- Total number of states is max_level + 1. The earlier version didn't
+  take that into account and so the stats for the highest state were
+  missing.
+
 V1->V2:
 - Move to sysfs from debugfs
 
  drivers/thermal/thermal_core.c    |   3 +-
  drivers/thermal/thermal_core.h    |   3 +
  drivers/thermal/thermal_helpers.c |   5 +-
- drivers/thermal/thermal_sysfs.c   | 145 ++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/thermal_sysfs.c   | 146 ++++++++++++++++++++++++++++++++++++++
  include/linux/thermal.h           |   1 +
- 5 files changed, 155 insertions(+), 2 deletions(-)
+ 5 files changed, 156 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
 index 2b1b0ba393a4..2cc4ae57484e 100644
@@ -113,7 +112,7 @@ index 8cdf75adcce1..eb03d7e099bb 100644
  	mutex_unlock(&cdev->lock);
  	trace_cdev_update(cdev, target);
 diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index ba81c9080f6e..4bb3bc999d3c 100644
+index ba81c9080f6e..88bb26d5d375 100644
 --- a/drivers/thermal/thermal_sysfs.c
 +++ b/drivers/thermal/thermal_sysfs.c
 @@ -666,6 +666,121 @@ void thermal_zone_destroy_device_groups(struct thermal_zone_device *tz)
@@ -246,7 +245,7 @@ index ba81c9080f6e..4bb3bc999d3c 100644
  	return count;
  }
  
-@@ -745,14 +861,43 @@ static const struct attribute_group cooling_device_attr_group = {
+@@ -745,14 +861,44 @@ static const struct attribute_group cooling_device_attr_group = {
  
  static const struct attribute_group *cooling_device_attr_groups[] = {
  	&cooling_device_attr_group,
@@ -264,6 +263,7 @@ index ba81c9080f6e..4bb3bc999d3c 100644
 +	if (ret)
 +		return;
 +
++	states++; /* Total number of states is highest state + 1 */
 +	size = sizeof(*stats);
 +	size += sizeof(*stats->time_in_state) * states;
 +
