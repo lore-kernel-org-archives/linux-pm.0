@@ -1,87 +1,30 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 02/16] dt-bindings: iio: adc: add binding for X-Powers
- AXP PMICs ADC
-Date: Thu, 11 Jan 2018 16:07:36 -0600
-Message-ID: <20180111220736.xkcen5cr5cexihle@rob-hp-laptop>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 07/16] dt-bindings: iio: adc: axp20x_adc: add AXP813
+ variant
+Date: Thu, 11 Jan 2018 16:09:53 -0600
+Message-ID: <20180111220953.fk34fwpkahyd2ndk@rob-hp-laptop>
 References: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz@free-electrons.com>
- <bef3ba5e4a2c47f13fa9ba8e6fb0267b7bb15026.1515486346.git-series.quentin.schulz@free-electrons.com>
+ <64b538aadf075ba07e567d9a9db865b64c97fbfc.1515486346.git-series.quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:41050 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933147AbeAKWHi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 17:07:38 -0500
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <bef3ba5e4a2c47f13fa9ba8e6fb0267b7bb15026.1515486346.git-series.quentin.schulz@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <64b538aadf075ba07e567d9a9db865b64c97fbfc.1515486346.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, mark.rutland@arm.com, wens@csie.org, sre@kernel.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, linux-sunxi@googlegroups.com
 
-On Tue, Jan 09, 2018 at 10:33:33AM +0100, Quentin Schulz wrote:
-> X-Powers PMICs have several ADC channels that can be used for different
-> purposes, e.g. PMIC internal temperature, battery voltage or AC current.
+On Tue, Jan 09, 2018 at 10:33:38AM +0100, Quentin Schulz wrote:
+> AXP813 is now supported so add documentation for this compatible.
 > 
-> This is the documentation for AXP209, AXP221/223 ADC bindings.
-> 
-> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 > ---
->  Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt | 39 +++++++++-
->  1 file changed, 39 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
-> new file mode 100644
-> index 0000000..ed6d04e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
-> @@ -0,0 +1,39 @@
-> +* X-Powers AXP ADC bindings
-> +
-> +Required properties:
-> +  - compatible: should be one of:
-> +    - "x-powers,axp20x-adc",
-> +    - "x-powers,axp22x-adc",
-> +  - #io-channel-cells: should be 1,
-> +
-> +Example:
-> +
-> +&axp22x {
-> +	axp_adc: axp-adc {
+>  Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt |  9 +++++++++-
+>  1 file changed, 9 insertions(+)
 
-adc {
+You can just squash this into the patch #2.
 
-With that,
+Either way,
 
-Reviewed-by: Rob Herring <robh@kernel.org>
-
-> +		compatible = "x-powers,axp22x-adc";
-> +		#io-channel-cells = <1>;
-> +	};
-> +};
-> +
-> +ADC channels and their indexes per variant:
-> +
-> +AXP209
-> +------
-> + 0 | acin_v
-> + 1 | acin_i
-> + 2 | vbus_v
-> + 3 | vbus_i
-> + 4 | pmic_temp
-> + 5 | gpio0_v
-> + 6 | gpio1_v
-> + 7 | ipsout_v
-> + 8 | batt_v
-> + 9 | batt_chrg_i
-> +10 | batt_dischrg_i
-> +
-> +AXP22x
-> +------
-> + 0 | pmic_temp
-> + 1 | batt_v
-> + 2 | batt_chrg_i
-> + 3 | batt_dischrg_i
-> -- 
-> git-series 0.9.1
+Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
