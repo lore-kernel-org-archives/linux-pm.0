@@ -1,36 +1,87 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 12/16] dt-bindings: power: supply:
- axp20x: add AXP813 battery DT binding
-Date: Thu, 11 Jan 2018 13:46:33 -0600
-Message-ID: <20180111194633.5gbvtok2w6q3ievu@rob-hp-laptop>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 02/16] dt-bindings: iio: adc: add binding for X-Powers
+ AXP PMICs ADC
+Date: Thu, 11 Jan 2018 16:07:36 -0600
+Message-ID: <20180111220736.xkcen5cr5cexihle@rob-hp-laptop>
 References: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz@free-electrons.com>
- <538e93d723d7755928ad118564a571371cb337b6.1515486346.git-series.quentin.schulz@free-electrons.com>
-Reply-To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+ <bef3ba5e4a2c47f13fa9ba8e6fb0267b7bb15026.1515486346.git-series.quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBDJIP47K7MERBG7633JAKGQEMMRBEWY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:41050 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933147AbeAKWHi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 17:07:38 -0500
 Content-Disposition: inline
-In-Reply-To: <538e93d723d7755928ad118564a571371cb337b6.1515486346.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <bef3ba5e4a2c47f13fa9ba8e6fb0267b7bb15026.1515486346.git-series.quentin.schulz@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, mark.rutland@arm.com, wens@csie.org, sre@kernel.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, linux-sunxi@googlegroups.com
 
-On Tue, Jan 09, 2018 at 10:33:43AM +0100, Quentin Schulz wrote:
-> The AXP813 can have a battery as power supply, so let's add it to the
-> list of compatibles.
+On Tue, Jan 09, 2018 at 10:33:33AM +0100, Quentin Schulz wrote:
+> X-Powers PMICs have several ADC channels that can be used for different
+> purposes, e.g. PMIC internal temperature, battery voltage or AC current.
 > 
-> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> This is the documentation for AXP209, AXP221/223 ADC bindings.
+> 
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 > ---
->  Documentation/devicetree/bindings/power/supply/axp20x_battery.txt | 8 +++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt | 39 +++++++++-
+>  1 file changed, 39 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
+> new file mode 100644
+> index 0000000..ed6d04e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
+> @@ -0,0 +1,39 @@
+> +* X-Powers AXP ADC bindings
+> +
+> +Required properties:
+> +  - compatible: should be one of:
+> +    - "x-powers,axp20x-adc",
+> +    - "x-powers,axp22x-adc",
+> +  - #io-channel-cells: should be 1,
+> +
+> +Example:
+> +
+> +&axp22x {
+> +	axp_adc: axp-adc {
 
-You didn't add my R-by nor address Jonathan's comments on v1.
+adc {
 
-Rob
+With that,
+
+Reviewed-by: Rob Herring <robh@kernel.org>
+
+> +		compatible = "x-powers,axp22x-adc";
+> +		#io-channel-cells = <1>;
+> +	};
+> +};
+> +
+> +ADC channels and their indexes per variant:
+> +
+> +AXP209
+> +------
+> + 0 | acin_v
+> + 1 | acin_i
+> + 2 | vbus_v
+> + 3 | vbus_i
+> + 4 | pmic_temp
+> + 5 | gpio0_v
+> + 6 | gpio1_v
+> + 7 | ipsout_v
+> + 8 | batt_v
+> + 9 | batt_chrg_i
+> +10 | batt_dischrg_i
+> +
+> +AXP22x
+> +------
+> + 0 | pmic_temp
+> + 1 | batt_v
+> + 2 | batt_chrg_i
+> + 3 | batt_dischrg_i
+> -- 
+> git-series 0.9.1
