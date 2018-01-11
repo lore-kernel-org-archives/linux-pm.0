@@ -1,103 +1,54 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [PATCH 1/2] ACPI / PM: Use Low Power S0 Idle on more systems
-Date: Thu, 11 Jan 2018 15:51:23 +0000
-Message-ID: <9bac0915588d42159f94387f83115fcc@ausx13mpc120.AMER.DELL.COM>
-References: <4046497.JI7UjL75gC@aspire.rjw.lan>
- <12541194.33112yYDjW@aspire.rjw.lan>
- <8b088fbf3e8d47dc94cefdae6fe515d9@ausx13mpc120.AMER.DELL.COM>
- <CAJZ5v0jy3zAcmZBzr4SwMxzacy9F4F6aDWL-mZSTAmSjosDf_g@mail.gmail.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v3 RESEND] cpufreq: pxa: convert to clock API
+Date: Thu, 11 Jan 2018 18:26:18 +0100
+Message-ID: <87inc8b939.fsf@belgarion.home>
+References: <20171014215102.10424-1-robert.jarzmik@free.fr>
+        <87mv1kbyth.fsf@belgarion.home> <20180111083519.GG3626@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jy3zAcmZBzr4SwMxzacy9F4F6aDWL-mZSTAmSjosDf_g@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: rafael@kernel.org
-Cc: rjw@rjwysocki.net, linux-acpi@vger.kernel.org, andriy.shevchenko@linux.intel.com, dvhart@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, valy@mrs.ro
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp02.smtpout.orange.fr ([80.12.242.124]:20184 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S935307AbeAKR0W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 12:26:22 -0500
+In-Reply-To: <20180111083519.GG3626@vireshk-i7> (Viresh Kumar's message of
+        "Thu, 11 Jan 2018 14:05:19 +0530")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael J Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiByand5c29ja2lAZ21haWwuY29t
-IFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mIFJhZmFlbCBKLg0KPiBX
-eXNvY2tpDQo+IFNlbnQ6IFdlZG5lc2RheSwgSmFudWFyeSAxMCwgMjAxOCA0OjIzIFBNDQo+IFRv
-OiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29tPg0KPiBDYzog
-UmFmYWVsIEouIFd5c29ja2kgPHJqd0Byand5c29ja2kubmV0PjsgQUNQSSBEZXZlbCBNYWxpbmcg
-TGlzdCA8bGludXgtDQo+IGFjcGlAdmdlci5rZXJuZWwub3JnPjsgQW5keSBTaGV2Y2hlbmtvIDxh
-bmRyaXkuc2hldmNoZW5rb0BsaW51eC5pbnRlbC5jb20+Ow0KPiBEYXJyZW4gSGFydCA8ZHZoYXJ0
-QGluZnJhZGVhZC5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0IDxsaW51eC0NCj4ga2Vy
-bmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBNIDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+
-OyBQbGF0Zm9ybSBEcml2ZXINCj4gPHBsYXRmb3JtLWRyaXZlci14ODZAdmdlci5rZXJuZWwub3Jn
-PjsgdmFseUBtcnMucm8NCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIEFDUEkgLyBQTTogVXNl
-IExvdyBQb3dlciBTMCBJZGxlIG9uIG1vcmUgc3lzdGVtcw0KPiANCj4gT24gV2VkLCBKYW4gMTAs
-IDIwMTggYXQgNjozOCBQTSwgIDxNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbT4gd3JvdGU6DQo+
-ID4NCj4gPg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBwbGF0
-Zm9ybS1kcml2ZXIteDg2LW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOnBsYXRmb3JtLWRy
-aXZlci14ODYtDQo+ID4+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFJhZmFl
-bCBKLiBXeXNvY2tpDQo+ID4+IFNlbnQ6IFdlZG5lc2RheSwgSmFudWFyeSAxMCwgMjAxOCA2OjI2
-IEFNDQo+ID4+IFRvOiBMaW51eCBBQ1BJIDxsaW51eC1hY3BpQHZnZXIua2VybmVsLm9yZz4NCj4g
-Pj4gQ2M6IEFuZHkgU2hldmNoZW5rbyA8YW5kcml5LnNoZXZjaGVua29AbGludXguaW50ZWwuY29t
-PjsgRGFycmVuIEhhcnQNCj4gPj4gPGR2aGFydEBpbmZyYWRlYWQub3JnPjsgTEtNTCA8bGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBNDQo+IDxsaW51eC0NCj4gPj4gcG1Admdl
-ci5rZXJuZWwub3JnPjsgUGxhdGZvcm0gRHJpdmVyIDxwbGF0Zm9ybS1kcml2ZXIteDg2QHZnZXIu
-a2VybmVsLm9yZz47DQo+ID4+IFZhbGVudGluIE1hbmVhIDx2YWx5QG1ycy5ybz4NCj4gPj4gU3Vi
-amVjdDogW1BBVENIIDEvMl0gQUNQSSAvIFBNOiBVc2UgTG93IFBvd2VyIFMwIElkbGUgb24gbW9y
-ZSBzeXN0ZW1zDQo+ID4+DQo+ID4+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53
-eXNvY2tpQGludGVsLmNvbT4NCj4gPj4NCj4gPj4gU29tZSBzeXN0ZW1zIGRvbid0IHN1cHBvcnQg
-dGhlIEFDUElfTFBTMF9FTlRSWSBhbmQgQUNQSV9MUFMwX0VYSVQNCj4gPj4gZnVuY3Rpb25zIGlu
-IHRoZWlyIExvdyBQb3dlciBTMCBJZGxlIF9EU00sIGJ1dCBzdGlsbCBleHBlY3QgRUMNCj4gPj4g
-ZXZlbnRzIHRvIGJlIHByb2Nlc3NlZCBpbiB0aGUgc3VzcGVuZC10by1pZGxlIHN0YXRlIGZvciBw
-b3dlciBidXR0b24NCj4gPj4gd2FrZXVwIChhbW9uZyBvdGhlciB0aGluZ3MpIHRvIHdvcmsuICBT
-dXJmYWNlIFBybzMgdHVybnMgb3V0IHRvIGJlDQo+ID4+IG9uZSBvZiB0aGVtLg0KPiA+Pg0KPiA+
-PiBGb3J0dW5hdGVseSwgaXQgc3RpbGwgcHJvdmlkZXMgTG93IFBvd2VyIFMwIElkbGUgX0RTTSB3
-aXRoIHRoZSBzY3JlZW4NCj4gPj4gb24vb2ZmIGZ1bmN0aW9ucyBzdXBwb3J0ZWQsIHNvIG1vZGlm
-eSB0aGUgQUNQSSBzdXNwZW5kLXRvLWlkbGUgdG8gdXNlDQo+ID4+IHRoZSBMb3cgUG93ZXIgUzAg
-SWRsZSBjb2RlIHBhdGggZm9yIGFsbCBzeXN0ZW1zIHN1cHBvcnRpbmcgdGhlDQo+ID4+IEFDUElf
-TFBTMF9FTlRSWSBhbmQgQUNQSV9MUFMwX0VYSVQgb3IgdGhlIEFDUElfTFBTMF9TQ1JFRU5fT0ZG
-IGFuZA0KPiA+PiBBQ1BJX0xQUzBfU0NSRUVOX09OIGZ1bmN0aW9ucyBpbiB0aGVpciBMb3cgUG93
-ZXIgUzAgSWRsZSBfRFNNLg0KPiA+Pg0KPiA+PiBQb3RlbnRpYWxseSwgdGhhdCB3aWxsIGNhdXNl
-IG1vcmUgc3lzdGVtcyB0byB1c2Ugc3VzcGVuZC10by1pZGxlIGJ5DQo+ID4+IGRlZmF1bHQsIHNv
-IHNvbWUgZnV0dXJlIGNvcnJlY3Rpb25zIG1heSBiZSBuZWNlc3NhcnkgaWYgaXQgbGVhZHMNCj4g
-Pj4gdG8gaXNzdWVzLCBidXQgbGV0IGl0IHJlbWFpbiBtb3JlIHN0cmFpZ2h0Zm9yd2FyZCBmb3Ig
-bm93Lg0KPiA+Pg0KPiA+PiBMaW5rOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTE5ODM4OQ0KPiA+PiBSZXBvcnRlZC1ieTogVmFsZW50aW4gTWFuZWEgPHZhbHlA
-bXJzLnJvPg0KPiA+PiBTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmou
-d3lzb2NraUBpbnRlbC5jb20+DQo+ID4+IC0tLQ0KPiA+PiAgZHJpdmVycy9hY3BpL3NsZWVwLmMg
-fCAgICA2ICsrKystLQ0KPiA+PiAgMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMiBk
-ZWxldGlvbnMoLSkNCj4gPj4NCj4gPj4gSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvYWNwaS9zbGVl
-cC5jDQo+ID4+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT0NCj4gPj4gLS0tIGxpbnV4LXBtLm9yaWcvZHJpdmVycy9hY3Bp
-L3NsZWVwLmMNCj4gPj4gKysrIGxpbnV4LXBtL2RyaXZlcnMvYWNwaS9zbGVlcC5jDQo+ID4+IEBA
-IC03MDcsNyArNzA3LDggQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBhY3BpX2RldmljZV9pZCBscHMw
-Xw0KPiA+PiAgI2RlZmluZSBBQ1BJX0xQUzBfRU5UUlkgICAgICAgICAgICAgIDUNCj4gPj4gICNk
-ZWZpbmUgQUNQSV9MUFMwX0VYSVQgICAgICAgICAgICAgICA2DQo+ID4+DQo+ID4+IC0jZGVmaW5l
-IEFDUElfUzJJRExFX0ZVTkNfTUFTSyAgICAgICAgKCgxIDw8IEFDUElfTFBTMF9FTlRSWSkgfCAo
-MSA8PA0KPiA+PiBBQ1BJX0xQUzBfRVhJVCkpDQo+ID4+ICsjZGVmaW5lIEFDUElfTFBTMF9TQ1JF
-RU5fTUFTSyAgICAgICAgKCgxIDw8IEFDUElfTFBTMF9TQ1JFRU5fT0ZGKSB8ICgxIDw8DQo+ID4+
-IEFDUElfTFBTMF9TQ1JFRU5fT04pKQ0KPiA+PiArI2RlZmluZSBBQ1BJX0xQUzBfUzJJX01BU0sg
-ICAoKDEgPDwgQUNQSV9MUFMwX0VOVFJZKSB8ICgxIDw8DQo+IEFDUElfTFBTMF9FWElUKSkNCj4g
-Pj4NCj4gPj4gIHN0YXRpYyBhY3BpX2hhbmRsZSBscHMwX2RldmljZV9oYW5kbGU7DQo+ID4+ICBz
-dGF0aWMgZ3VpZF90IGxwczBfZHNtX2d1aWQ7DQo+ID4+IEBAIC05MTAsNyArOTExLDggQEAgc3Rh
-dGljIGludCBscHMwX2RldmljZV9hdHRhY2goc3RydWN0IGFjcA0KPiA+PiAgICAgICBpZiAob3V0
-X29iaiAmJiBvdXRfb2JqLT50eXBlID09IEFDUElfVFlQRV9CVUZGRVIpIHsNCj4gPj4gICAgICAg
-ICAgICAgICBjaGFyIGJpdG1hc2sgPSAqKGNoYXIgKilvdXRfb2JqLT5idWZmZXIucG9pbnRlcjsN
-Cj4gPj4NCj4gPj4gLSAgICAgICAgICAgICBpZiAoKGJpdG1hc2sgJiBBQ1BJX1MySURMRV9GVU5D
-X01BU0spID09DQo+ID4+IEFDUElfUzJJRExFX0ZVTkNfTUFTSykgew0KPiA+PiArICAgICAgICAg
-ICAgIGlmICgoYml0bWFzayAmIEFDUElfTFBTMF9TMklfTUFTSykgPT0gQUNQSV9MUFMwX1MySV9N
-QVNLIHx8DQo+ID4+ICsgICAgICAgICAgICAgICAgIChiaXRtYXNrICYgQUNQSV9MUFMwX1NDUkVF
-Tl9NQVNLKSA9PQ0KPiA+PiBBQ1BJX0xQUzBfU0NSRUVOX01BU0spIHsNCj4gPj4gICAgICAgICAg
-ICAgICAgICAgICAgIGxwczBfZHNtX2Z1bmNfbWFzayA9IGJpdG1hc2s7DQo+ID4+ICAgICAgICAg
-ICAgICAgICAgICAgICBscHMwX2RldmljZV9oYW5kbGUgPSBhZGV2LT5oYW5kbGU7DQo+ID4+ICAg
-ICAgICAgICAgICAgICAgICAgICAvKg0KPiA+DQo+ID4gSW4gbWFraW5nIHRoaXMgY2hhbmdlIEkg
-YmVsaWV2ZSB5b3UnbGwgbmVlZCB0byBjYWNoZSB0aGUgdmFsdWVzIHRoYXQgeW91IGZvdW5kDQo+
-IGZyb20gdGhlDQo+ID4gZnVuY3Rpb24gbWFzayB0byB0ZXN0IHRoZW0gbGF0ZXIgdG9vLg0KPiAN
-Cj4gQnV0IHRoYXQncyB3aGF0IGxwczBfZHNtX2Z1bmNfbWFzayBpcyBmb3IgaWYgSSB1bmRlcnN0
-YW5kIHlvdSBjb3JyZWN0bHkuDQo+IA0KPiA+IEhlcmU6DQo+ID4gaHR0cHM6Ly9naXRodWIuY29t
-L3RvcnZhbGRzL2xpbnV4L2Jsb2IvbWFzdGVyL2RyaXZlcnMvYWNwaS9zbGVlcC5jI0w5NDMNCj4g
-Pg0KPiA+IFRoaXMgaXMgYmVjYXVzZSBsYXRlciBvbiBib3RoIEFDUElfTFBTMF9TQ1JFRU5fT0ZG
-IGFuZCBBQ1BJX0xQUzBfRU5UUlkgYXJlDQo+IGNhbGxlZA0KPiA+IHdoZXRoZXIgb3Igbm90IHRo
-ZXkgYm90aCBleGlzdC4NCj4gDQo+IE5vLCB0aGF0J3Mgbm90IHRoZSBjYXNlLg0KPiANCj4gYWNw
-aV9zbGVlcF9ydW5fbHBzMF9kc20oKSBjaGVja3MgaWYgdGhlIGdpdmVuIGZ1bmN0aW9uIGlzIHRo
-ZXJlIGluIHRoZQ0KPiBtYXNrIHJldHVybmVkIGJ5IGZ1bmN0aW9uIDAgYW5kIGl0IGRvZXNuJ3Qg
-ZXZhbHVhdGUgdGhlIF9EU00NCj4gb3RoZXJ3aXNlLg0KPiANCj4gVGhhbmtzLA0KPiBSYWZhZWwN
-Cg0KVGhhbmtzIHllcywgSSBzZWUgdGhpcyBtb3JlIGNsb3NlbHkgbm93IHlvdSdyZSByaWdodC4N
-Cg==
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+
+> On 11-01-18, 09:10, Robert Jarzmik wrote:
+>> Robert Jarzmik <robert.jarzmik@free.fr> writes:
+>> 
+>> > As the clock settings have been introduced into the clock pxa drivers,
+>> > which are now available to change the CPU clock by themselves, remove
+>> > the clock handling from this driver, and rely on pxa clock drivers.
+>> >
+>> > Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+>> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> > ---
+>> > This is a resend of a formerly acked patch as all dependencies have
+>> > hit upstream, see :
+>> > 	https://www.spinics.net/lists/arm-kernel/msg540181.html
+>> > ---
+>> >  drivers/cpufreq/pxa2xx-cpufreq.c | 191 ++++++++-------------------------------
+>> >  1 file changed, 39 insertions(+), 152 deletions(-)
+>> 
+>> Hi Rafael,
+>> 
+>> Would you consider taking this patch in ? It was submitted and acked a long ago,
+>> and as the above mail says, the dependencies have hit mainline for quite some
+>> time now.
+>
+> Check linux-next.
+>
+> d9278077385f cpufreq: pxa: convert to clock API
+Thanks and sorry for the noise.
+
+Cheers.
+
+-- 
+Robert
