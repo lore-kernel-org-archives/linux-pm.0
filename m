@@ -1,57 +1,58 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [pm:bleeding-edge 148/162] drivers/base/power/wakeup.c:271:
- undefined reference to `pm_suspend_target_state'
-Date: Thu, 11 Jan 2018 01:13:21 +0100
-Message-ID: <CAJZ5v0i6AL7e9+=nXOV99OiWrsM4=g9=9RpMq9n58frnmLmfAw@mail.gmail.com>
-References: <201801101147.W1FX9kS5%fengguang.wu@intel.com> <CAPDyKFpcwXjW6qs9OpGc8J3byFrtO1OcJzO-fVpocmSu6RraWw@mail.gmail.com>
+From: Todd Brandt <todd.e.brandt@linux.intel.com>
+Subject: Re: [BUG] function_graph trace causes  hang when using sleepgraph
+ (4.15.0-rc1 and newer)
+Date: Wed, 10 Jan 2018 16:21:08 -0800
+Message-ID: <1515630068.17761.16.camel@linux.intel.com>
+References: <1515455714.17761.7.camel@linux.intel.com>
+         <1515459749.17761.10.camel@linux.intel.com>
+         <20180108200756.08712bb4@vmware.local.home>
+         <1515461115.17761.12.camel@linux.intel.com>
+         <20180109111334.2628dcc5@vmware.local.home>
+Reply-To: todd.e.brandt@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:40188 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752896AbeAKANW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 19:13:22 -0500
-Received: by mail-oi0-f68.google.com with SMTP id u83so549943oie.7
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 16:13:21 -0800 (PST)
-In-Reply-To: <CAPDyKFpcwXjW6qs9OpGc8J3byFrtO1OcJzO-fVpocmSu6RraWw@mail.gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:20956 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752473AbeAKAVK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 19:21:10 -0500
+In-Reply-To: <20180109111334.2628dcc5@vmware.local.home>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, len.brown@intel.com, todd.e.brandt@intel.com
 
-On Wed, Jan 10, 2018 at 3:08 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> Rafael,
->
-> On 10 January 2018 at 04:26, kbuild test robot <fengguang.wu@intel.com> wrote:
->> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
->> head:   b6c524b2e93b23a396a90031faa29350beeb95fc
->> commit: edd0afcd2eb853ee46a1509a1983b042a6b857f4 [148/162] PM / wakeup: Print warn if device gets enabled as wakeup source during sleep
->> config: i386-randconfig-s0-201801 (attached as .config)
->> compiler: gcc-6 (Debian 6.4.0-9) 6.4.0 20171026
->> reproduce:
->>         git checkout edd0afcd2eb853ee46a1509a1983b042a6b857f4
->>         # save the attached .config to linux build tree
->>         make ARCH=i386
->>
->> All errors (new ones prefixed by >>):
->>
->>    drivers/base/power/wakeup.o: In function `device_wakeup_enable':
->>>> drivers/base/power/wakeup.c:271: undefined reference to `pm_suspend_target_state'
->
-> This error is because the .config has CONFIG_SUSPEND unset while
-> CONFIG_PM_SLEEP is set.
->
-> Adding below to drivers/base/power/wakeup.c fixes it, but perhaps
-> there is a better option?
+On Tue, 2018-01-09 at 11:13 -0500, Steven Rostedt wrote:
+> On Mon, 08 Jan 2018 17:25:15 -0800
+> Todd Brandt <todd.e.brandt@linux.intel.com> wrote:
+> 
+> > Can you reproduce the issue there? I just want to be sure it's not
+> > something local to our machines here, as long as you have CONFIG_PM
+> > enabled it should work the same hopefully. 
+> 
+> Just to let you know, I'm currently traveling, so my testing ability
+> is
+> limited at the time being.
 
-I would try
+ok, it's not an emergency, we're using a patched version of the kernel
+with those two commits removed in the interim. I tried running kgdb
+over serial console, but unfortunately it doesn't work over a USB-to-
+Serial dongle (even Greg K-H says it won't work, :P). This is the best
+output I could get, considering:
 
-> #ifndef CONFIG_SUSPEND
-> suspend_state_t pm_suspend_target_state;
+# run the test script here
+[  545.733458] PM: suspend entry (deep)
+[  545.734535] PM: Syncing filesystems ... done.
+[  546.580551] Freezing user space processes ... (elapsed 0.013
+seconds) done.
+[  546.594846] OOM killer disabled.
+[  546.595002] Freezing remaining freezable tasks ... (elapsed 0.005
+seconds) done.
+[  557.808719] NMI watchdog: Watchdog detected hard LOCKUP on cpu 0
 
-#define pm_suspend_target_state    (PM_SUSPEND_ON)
+So it's definitely a hard lockup, I just can't get the stack trace
+without a system with a built in serial console.
 
-> #endif
-
-Thanks,
-Rafael
+> 
+> -- Steve
