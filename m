@@ -1,83 +1,148 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH 0/2] thermal, OPP: move the CPU power estimation to the
- OPP library
-Date: Thu, 11 Jan 2018 09:42:57 +0000
-Message-ID: <20180111094257.GA6603@e108498-lin.cambridge.arm.com>
-References: <20180109110252.13557-1-quentin.perret@arm.com>
- <20180110193431.GE3837@localhost.localdomain>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / runtime: Rework pm_runtime_force_suspend/resume()
+Date: Thu, 11 Jan 2018 13:32:15 +0100
+Message-ID: <CAPDyKFqzON3PFgYbkBiAy0Bexzjj0YwwPZbgs6O3k3dXO_v4eA@mail.gmail.com>
+References: <4069324.Q7yJt6I4hJ@aspire.rjw.lan> <CAMuHMdUQQ_iH=HczLNoCsrbmEAG=7BKFEQbspg=SUYczt_4-WA@mail.gmail.com>
+ <CAJZ5v0gzAPkHjWEt0Vog+HcbObXSy6nqmsL1_-LT6+F3u7TPSQ@mail.gmail.com>
+ <2074722.H5Hd6orL2D@aspire.rjw.lan> <CAPDyKFoEHFpvvDgkuMSyyTMyCsmXv_Psg9uO+BjXcP0QSeE4EA@mail.gmail.com>
+ <CAJZ5v0hZZ88yjX2TThKJShhX7f1T2C9O-dOho1SsMUtQykzrZg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:55554 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753568AbeAKJnF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 11 Jan 2018 04:43:05 -0500
-Content-Disposition: inline
-In-Reply-To: <20180110193431.GE3837@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hZZ88yjX2TThKJShhX7f1T2C9O-dOho1SsMUtQykzrZg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
 
-Hi Eduardo,
+[...]
 
-On Wednesday 10 Jan 2018 at 11:34:33 (-0800), Eduardo Valentin wrote:
-> On Tue, Jan 09, 2018 at 11:02:50AM +0000, Quentin Perret wrote:
-> > Currently, IPA estimates the power dissipated by a CPU at each available OPP
-> > using its capacitance (the dynamic-power-coefficient DT binding). This series
-> > relocates this feature into the OPP library as a preparation for future
-> > changes. More specifically:
-> > 
-> >    1. The current DT-based approach for power estimation will need deep
-> >       changes to support SCMI-provided power values. While the thermal
-> >       subsystem is not necessarily the best place to hide multiple power
-> >       estimation methods, the OPP library appears to be a good candidate to
-> >       implement the required platform abstraction.
-> >    2. The energy models of CPUs will be needed by other clients in the future
-> >       (such as the task scheduler or CPUFreq governors for example) in order
-> >       to make energy-aware decisions. The relocation to the OPP library will
-> >       enable code re-use and all clients will benefit form the platform
-> >       abstraction mentioned previously.
-> 
-> To be quite frank, I am happy to see this leaving thermal subsystem.
-> However, a few concerns with the patch set as it is. First, I am not
-> convinced PM OPP is the right place to put this, nor I see a good
-> explanation put in the patch set why it must be part of PM OPP.
+>>> Index: linux-pm/drivers/base/power/domain.c
+>>> ===================================================================
+>>> --- linux-pm.orig/drivers/base/power/domain.c
+>>> +++ linux-pm/drivers/base/power/domain.c
+>>> @@ -1048,8 +1048,9 @@ static int genpd_finish_suspend(struct d
+>>>         if (ret)
+>>>                 return ret;
+>>>
+>>> -       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+>>> -               ret = pm_runtime_force_suspend(dev);
+>>> +       if (genpd->dev_ops.stop && genpd->dev_ops.start &&
+>>> +           !pm_runtime_status_suspended(dev)) {
+>>> +               ret = genpd_stop_dev(genpd, dev);
+>>
+>> Something like this existed there before, but because of other
+>> internal genpd reasons. It's an option but there are issues with it.
+>
+> OK
+>
+>> I think it's fragile because invoking the ->stop() callback may
+>> trigger calls to "disable" resources (like clocks, pinctrls, etc) for
+>> the device. Doing this at ->suspend_noirq() may be too late, as that
+>> subsystem/driver for the resource(s) may already be system suspended.
+>> This is the classic problem of suspending (and later resuming) devices
+>> in in-correct order.
+>
+> Well, this is what happens with the current code too.
 
-IPA already uses the OPP library to build its power model (to retrieve
-the voltage and frequency). The power model itself is a per-OPP
-data-structure. As such, moving it to the OPP library felt like a
-natural extension of the framework. That said, if you have any
-suggestions of better places to put it, please do let me know -- I'm just
-hopping to make the power model available to other clients, but it
-doesn't necessarily have to be through the OPP library. In the meantime,
-I'll rework the cover letter to better explain the choice of PM OPP.
+Correct.
 
-> Second, looks like we are following ARM "good" practice of fixing
-> problems of the future. I would only really sign off for this series
-> when we see real "other future users"
+>
+> I mean if unmodified genpd_finish_suspend() runs, it will call
+> pm_runtime_force_suspend() and that will check the device's runtime PM
+> status in the first place.  If that is "suspended", it will return
+> right away without doing anything (after disabling runtime PM, but
+> that is irrelevant here as runtime PM is already disabled).  In turn,
+> if the runtime PM status is "active", it will run
+> genpd_runtime_suspend() (as the callback) and that will run the
+> driver's runtime PM callback and the genpd_stop_dev() right after it.
+> Thus, if calling genpd_stop_dev() at that point is problematic, it is
+> problematic already today.
+>
+> What the patch does is essentially to drop the driver's runtime PM
+> callback (should not be necessary) and the domain power off (certainly
+> not necessary) from that path, but to keep the genpd_stop_dev()
+> invocation that may be necessary in principle (the device is "active",
+> so genpd_runtime_suspend() has not run for it, so genpd_stop_dev() has
+> not been called for it yet, but it may be good to stop the clocks
+> before powering off the domain).
 
-The first reason behind this posting is that I actually have scheduler
-patches depending on this infrastructure that I intend to send on the
-list in the coming weeks. I would appreciate to keep the two postings
-separated because:
-   1. I'd like to avoid sending a patch-bomb to the task scheduler
-      maintainers that also touches a number of different sub-systems.
-      The purpose of those scheduler patches is to introduce some form
-      of energy awareness inside the scheduler, and I'm trying to make
-      sure this message won't be lost in the middle of too many
-      infrastructure patches.
-   2. This infrastructure is not tied only to the aforementioned
-      scheduler patches as it can also help another user, namely the
-      transition to SCMI (which is currently being discussed on the list).
+I understand your suggested approach and it may work.
 
-> otherwise we end up with the
-> infamous static power scenario in 2-3 years down the row. If we
-> currently do not have users of this IN MAINLINE KERNEL, then the series
-> is not for upstream.
+>
+> The resume part is basically running genpd_start_dev() for the devices
+> for which genpd_stop_dev() was run by genpd_finish_suspend(), which is
+> because the subsequent driver callbacks may expect the clocks to be
+> enabled.
+>
+>> Today we deal with this, by drivers/subsystem assigning the right
+>> level of callback, as well as making sure the "dpm_list" is sorted
+>> correctly (yeah, we have device links as well).
+>>
+>> The point is, we can go for this solution, but is it good enough?
+>
+> I would like to treat it as a step away from what is there today,
+> retaining some of the existing functionality.
+>
+> From a quick look at the existing users of genpd that use the device
+> start/stop functionality, running genpd_stop_dev()/genpd_start_dev()
+> in the "noirq" phases should not be problematic for them at least.
 
-Again, this patchset is the first step of an upstreaming work, and as such,
-and I hope it can make its way to getting merged.
+I guess so.
 
-Thank you very much,
-Quentin
+Still, the error report by Geert worries me, but I don't think it
+worth to speculate, but rather test and see.
+
+>
+>> Another option, is to simply to remove (and not replace with something
+>> else) the calls to pm_runtime_force_ suspend|resume() from genpd.
+>
+> Right.
+>
+>> This moves the entire responsibility to the driver, to put its device into
+>> low power state during system suspend, but with the benefit of that it
+>> can decide to use the correct level of suspend/resume callbacks.
+>
+> Drivers of the devices in the "stop/start" domains will have to use
+> pm_runtime_force_ suspend|resume() internally then to benefit from the
+> domain's management of clocks, but that just may be the only way to
+> avoid more problems.
+
+Agree.
+
+>
+>> No matter how we do it, changing this may introduce some potential
+>> regressions from a power consumption point of view, however although
+>> only for those SoCs that uses the ->start|stop() callbacks. To
+>> mitigate these power regressions, some drivers needs to be fixed, but
+>> that seems inevitable anyway, doesn't it?
+>
+> Yes, it does.
+>
+> I would say let's try to go with this patch of mine as submitted and
+> see how far we can get with that.
+>
+> That essentially doesn't prevent us from dropping the
+> genpd_stop_dev()/genpd_start_dev() from the "noirq" stages if need be
+> after all, but dropping them right away may cause the fallout to be
+> more dramatic, at least in theory.
+>
+
+Well, my guesses is that would be a step to make the behavior a bit
+more deterministic and perhaps less fragile than today.
+
+On the other hand, I am also concerned about the future users of the
+->stop|start() callbacks, including related drivers dealing with the
+affected devices. That in a sense, that converting the code in genpd
+to what you suggest, would still not encourage related drivers to
+behave correctly during system suspend/resume. Then down the road,
+when additional new users of the ->stop|start() callbacks may have
+been added, it may be even harder to drop calling them in from the
+noirq phases.
+
+So to conclude, I would prefer to drop calling
+pm_runtime_force_suspend|resume() from genpd, without a replacement,
+but I am willing to accept also your suggested alternative.
+
+Kind regards
+Uffe
