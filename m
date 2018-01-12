@@ -1,57 +1,174 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: PM regression in next
-Date: Fri, 12 Jan 2018 14:01:14 +0100
-Message-ID: <e7a673e1-b28d-f84e-c6c1-c5b896e92aeb@metafoo.de>
-References: <20180112000037.GA3875@atomide.com>
- <20180112013257.GB4059@atomide.com> <4913146.sVL6sFxzC8@aspire.rjw.lan>
- <4745593.FguGN2uIkX@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 2/2] PM / runtime: Rework pm_runtime_force_suspend/resume()
+Date: Fri, 12 Jan 2018 14:12:05 +0100
+Message-ID: <1952050.gHGtV5tzZn@aspire.rjw.lan>
+References: <4928977.5hd79RbQlp@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4745593.FguGN2uIkX@aspire.rjw.lan>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.pl ([79.96.170.134]:44418 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932797AbeALNNi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 08:13:38 -0500
+In-Reply-To: <4928977.5hd79RbQlp@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
 
-On 01/12/2018 01:30 PM, Rafael J. Wysocki wrote:
-> On Friday, January 12, 2018 1:23:54 PM CET Rafael J. Wysocki wrote:
->> On Friday, January 12, 2018 2:32:57 AM CET Tony Lindgren wrote:
->>> * Tony Lindgren <tony@atomide.com> [180111 17:20]:
->>>> Well I tried to measure suspend power consumption and noticed
->>>> that system suspend fails too hand hangs the network device:
->>>>
->>>> # echo mem > /sys/power/state
->>>> [   32.577850] PM: suspend entry (deep)
->>>> [   32.582031] PM: Syncing filesystems ... done.
->>>> [   32.598083] Freezing user space processes ... (elapsed 0.002 seconds) done.
->>>> [   32.608398] OOM killer disabled.
->>>> [   32.611846] Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
->>>> [   32.622192] Suspending console(s) (use no_console_suspend to debug)
->>>> [   32.651123] dpm_run_callback(): mdio_bus_suspend+0x0/0x24 returns 4352
->>>> [   32.651428] PM: Device 2c000000.ethernet-ffffffff:01 failed to suspend: error 4352
->>
->> This looks totally bogus.
->>
->> First, "error" should be a negative number and we print it as int.
->>
->> Second, error codes are not in this range anyway.
->>
->>>> [   32.653289] PM: Some devices failed to suspend, or early wake event detected
->>>> [   32.685455] OOM killer enabled.
->>>> [   32.688629] Restarting tasks ... done.
->>>> [   32.695983] PM: suspend exit
->>>> ash: write error: Bad address
->>>>
->>>> That too works just fine at commit 70286688e5ad.
->>>
->>> Suspend fails at commit e2d7fe89e8ae though, so looks like we
->>> have two separate issues. I'll try to bisect that separately.
-> 
-> I guess what may happen is that something started to return positive numbers
-> which confuse things all over when passed along by its callers as error codes.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+One of the limitations of pm_runtime_force_suspend/resume() is that
+if a parent driver wants to use these functions, all of its child
+drivers generally have to do that too because of the parent usage
+counter manipulations necessary to get the correct state of the parent
+during system-wide transitions to the working state (system resume).
+However, that limitation turns out to be artificial, so remove it.
 
-I guess it this: https://patchwork.kernel.org/patch/10151763/
+Namely, pm_runtime_force_suspend() only needs to update the children
+counter of its parent (if there's is a parent) when the device can
+stay in suspend after the subsequent system resume transition, as
+that counter is correct already otherwise.  Now, if the parent's
+children counter is not updated, it is not necessary to increment
+the parent's usage counter in that case any more, as long as the
+children counters of devices are checked along with their usage
+counters in order to decide whether or not the devices may be left
+in suspend after the subsequent system resume transition.
+
+Accordingly, modify pm_runtime_force_suspend() to only call
+pm_runtime_set_suspended() for devices whose usage and children
+counters are at the "no references" level (the runtime PM status
+of the device needs to be updated to "suspended" anyway in case
+this function is called once again for the same device during the
+transition under way), drop the parent usage counter incrementation
+from it and update pm_runtime_force_resume() to compensate for these
+changes.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/runtime.c |   74 +++++++++++++++++++------------------------
+ 1 file changed, 34 insertions(+), 40 deletions(-)
+
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -1613,17 +1613,28 @@ void pm_runtime_drop_link(struct device
+ 	spin_unlock_irq(&dev->power.lock);
+ }
+ 
++static bool pm_runtime_need_not_resume(struct device *dev)
++{
++	return atomic_read(&dev->power.usage_count) <= 1 &&
++		atomic_read(&dev->power.child_count) == 0;
++}
++
+ /**
+  * pm_runtime_force_suspend - Force a device into suspend state if needed.
+  * @dev: Device to suspend.
+  *
+  * Disable runtime PM so we safely can check the device's runtime PM status and
+- * if it is active, invoke it's .runtime_suspend callback to bring it into
+- * suspend state. Keep runtime PM disabled to preserve the state unless we
+- * encounter errors.
++ * if it is active, invoke its ->runtime_suspend callback to suspend it and
++ * change its runtime PM status field to RPM_SUSPENDED.  Also, if the device's
++ * usage and children counters don't indicate that the device was in use before
++ * the system-wide transition under way, decrement its parent's children counter
++ * (if there is a parent).  Keep runtime PM disabled to preserve the state
++ * unless we encounter errors.
+  *
+  * Typically this function may be invoked from a system suspend callback to make
+- * sure the device is put into low power state.
++ * sure the device is put into low power state and it should only be used during
++ * system-wide PM transitions to sleep states.  It assumes that the analogous
++ * pm_runtime_force_resume() will be used to resume the device.
+  */
+ int pm_runtime_force_suspend(struct device *dev)
+ {
+@@ -1646,17 +1657,18 @@ int pm_runtime_force_suspend(struct devi
+ 		goto err;
+ 
+ 	/*
+-	 * Increase the runtime PM usage count for the device's parent, in case
+-	 * when we find the device being used when system suspend was invoked.
+-	 * This informs pm_runtime_force_resume() to resume the parent
+-	 * immediately, which is needed to be able to resume its children,
+-	 * when not deferring the resume to be managed via runtime PM.
++	 * If the device can stay in suspend after the system-wide transition
++	 * to the working state that will follow, drop the children counter of
++	 * its parent, but set its status to RPM_SUSPENDED anyway in case this
++	 * function will be called again for it in the meantime.
+ 	 */
+-	if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
+-		pm_runtime_get_noresume(dev->parent);
++	if (pm_runtime_need_not_resume(dev))
++		pm_runtime_set_suspended(dev);
++	else
++		__update_runtime_status(dev, RPM_SUSPENDED);
+ 
+-	pm_runtime_set_suspended(dev);
+ 	return 0;
++
+ err:
+ 	pm_runtime_enable(dev);
+ 	return ret;
+@@ -1669,13 +1681,9 @@ EXPORT_SYMBOL_GPL(pm_runtime_force_suspe
+  *
+  * Prior invoking this function we expect the user to have brought the device
+  * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
+- * those actions and brings the device into full power, if it is expected to be
+- * used on system resume. To distinguish that, we check whether the runtime PM
+- * usage count is greater than 1 (the PM core increases the usage count in the
+- * system PM prepare phase), as that indicates a real user (such as a subsystem,
+- * driver, userspace, etc.) is using it. If that is the case, the device is
+- * expected to be used on system resume as well, so then we resume it. In the
+- * other case, we defer the resume to be managed via runtime PM.
++ * those actions and bring the device into full power, if it is expected to be
++ * used on system resume.  In the other case, we defer the resume to be managed
++ * via runtime PM.
+  *
+  * Typically this function may be invoked from a system resume callback.
+  */
+@@ -1684,32 +1692,18 @@ int pm_runtime_force_resume(struct devic
+ 	int (*callback)(struct device *);
+ 	int ret = 0;
+ 
+-	callback = RPM_GET_CALLBACK(dev, runtime_resume);
+-
+-	if (!callback) {
+-		ret = -ENOSYS;
+-		goto out;
+-	}
+-
+-	if (!pm_runtime_status_suspended(dev))
++	if (!pm_runtime_status_suspended(dev) || pm_runtime_need_not_resume(dev))
+ 		goto out;
+ 
+ 	/*
+-	 * Decrease the parent's runtime PM usage count, if we increased it
+-	 * during system suspend in pm_runtime_force_suspend().
+-	*/
+-	if (atomic_read(&dev->power.usage_count) > 1) {
+-		if (dev->parent)
+-			pm_runtime_put_noidle(dev->parent);
+-	} else {
+-		goto out;
+-	}
++	 * The value of the parent's children counter is correct already, so
++	 * just update the status of the device.
++	 */
++	__update_runtime_status(dev, RPM_ACTIVE);
+ 
+-	ret = pm_runtime_set_active(dev);
+-	if (ret)
+-		goto out;
++	callback = RPM_GET_CALLBACK(dev, runtime_resume);
+ 
+-	ret = callback(dev);
++	ret = callback ? callback(dev) : -ENOSYS;
+ 	if (ret) {
+ 		pm_runtime_set_suspended(dev);
+ 		goto out;
