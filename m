@@ -1,102 +1,51 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Fri, 12 Jan 2018 02:55:22 +0100
-Message-ID: <CAJZ5v0h+CojMA-MyGdDx69EZt-TOUqRsHG_PFap073vwgybpfQ@mail.gmail.com>
-References: <4069324.Q7yJt6I4hJ@aspire.rjw.lan> <303007688.lvsDLFNCpe@aspire.rjw.lan>
- <CAPDyKFqePzeiSjR=yvCAtHfOv6vJLm3wdPifsseK1p4cyyB8qQ@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v5 5/6] iommu/arm-smmu: Add support for qcom,
+ smmu-v2 variant
+Date: Fri, 12 Jan 2018 10:59:17 +0530
+Message-ID: <e1ef7c93-aba4-e5e7-bb49-552316274439@codeaurora.org>
+References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
+ <1515492109-753-6-git-send-email-vivek.gautam@codeaurora.org>
+ <20180111222304.js3c3vrx3u5j3hvj@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:43941 "EHLO
-        mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932297AbeALBzY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 20:55:24 -0500
-In-Reply-To: <CAPDyKFqePzeiSjR=yvCAtHfOv6vJLm3wdPifsseK1p4cyyB8qQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180111222304.js3c3vrx3u5j3hvj@rob-hp-laptop>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Wunner <lukas@wunner.de>
 
-On Tue, Jan 9, 2018 at 7:08 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 3 January 2018 at 12:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> One of the limitations of pm_runtime_force_suspend/resume() is that
->> if a parent driver wants to use these functions, all of its child
->> drivers have to do that too because of the parent usage counter
->> manipulations necessary to get the correct state of the parent during
->> system-wide transitions to the working state (system resume).
->
-> I understand your point, however this isn't describing the full story,
-> because there are a some more alternatives when
-> pm_runtime_force_suspend|resume() works well, when used for parent
-> devices. Let me clarify, just to make sure we get this correct.
->
-> 1) If the child device isn't managed by runtime PM at all (it always
-> has runtime PM disabled), pm_runtime_force_suspend|resume() can be
-> used for the parent device. This works because the runtime PM status
-> if the child remains in the default status, RPM_SUSPENDED.
-
-Say the child is resumed every time during system-wide resume (which
-is the only possibility for drivers that don't support runtime PM) and
-it needs the parent to be accessible for that.
-
-If the parent uses pm_runtime_force_suspend|resume(), the child needs
-to bump up the usage counter of the parent during system-wide suspend
-to prevent pm_runtime_force_resume() from leaving the parent in
-suspend during the subsequent system-wide resume and that obviously is
-not going to happen if the child driver doesn't support runtime PM.
-
-Note that the $subject patch doesn't really change anything in that
-respect, because the children counter of the parent will be zero (or
-at least will not cover the child in question) then.
-
-Of course, this means that it is only safe to use
-pm_runtime_force_suspend|resume() in parent drivers if all of their
-child drivers support runtime PM.
-
-> 2) If, somehow, during system suspend/resume, the driver for the child
-> make sure to synchronize the runtime PM status of the child device,
-> according to the state of the HW, this should work too.
-
-Not really.
-
-Again, problematic is the case when the child is resumed during
-system-wide resume and needs the parent to be accessible for that.
-
-Note that the runtime PM status of the child doesn't matter for
-pm_runtime_force_resume() running for the parent.  What matters in
-there is the parent's usage counter alone.  If that usage counter is
-not greater than 1, pm_runtime_force_resume() will leave the parent in
-suspend and note that it must run before the child's system-wide
-resume callbacks for the ordering between the parent resume and the
-child resume to be correct.  This means that the parent will still be
-suspended when the child's system-wide resume callbacks run and that
-is a problem if the parent has to be accessible for them to succeed.
-
-Thus the runtime PM status of the child has no bearing on whether or
-not this is going to work.  The child has to bump up the parent's
-usage counter during system-wide suspend to ensure that it will not be
-left in suspend by the subsequent pm_runtime_force_resume() and that
-practically requires the child driver to also use
-pm_runtime_force_suspend|resume().
-
-Now, the $subject patch changes the situation here for child drivers
-that only resume their devices during system-wide resume if they were
-"active" before the preceding system-wide suspend, because in that
-case the children counter of the parent will be nonzero.  If the child
-resumes during system-wide resume even though it was suspended before
-the preceding system-wide suspend, pm_runtime_force_resume() running
-for its parent won't realize that the parent needs to resume too even
-after this patch.
-
-I generally think that leaving devices in suspend during system-wide
-resume is a very aggressive optimization and it should be done with
-extra care.  It generally is not sufficient to rely on information
-coming from the runtime PM framework to do that safely in all cases.
-IMO it should only be done for drivers that explicitly expect it to be
-done and only if all of the drivers depending on them also expect it
-to be done.  Otherwise it always will be potentially unsafe.
-
-Thanks,
-Rafael
+SGkgUm9iLAoKCk9uIDAxLzEyLzIwMTggMDM6NTMgQU0sIFJvYiBIZXJyaW5nIHdyb3RlOgo+IE9u
+IFR1ZSwgSmFuIDA5LCAyMDE4IGF0IDAzOjMxOjQ4UE0gKzA1MzAsIFZpdmVrIEdhdXRhbSB3cm90
+ZToKPj4gcWNvbSxzbW11LXYyIGlzIGFuIGFybSxzbW11LXYyIGltcGxlbWVudGF0aW9uIHdpdGgg
+c3BlY2lmaWMKPj4gY2xvY2sgYW5kIHBvd2VyIHJlcXVpcmVtZW50cy4gVGhpcyBzbW11IGNvcmUg
+aXMgdXNlZCB3aXRoCj4+IG11bHRpcGxlIG1hc3RlcnMgb24gbXNtODk5Niwgdml6LiBtZHNzLCB2
+aWRlbywgZXRjLgo+PiBBZGQgYmluZGluZ3MgZm9yIHRoZSBzYW1lLgo+Pgo+PiBTaWduZWQtb2Zm
+LWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4gLS0tCj4+
+Cj4+ICAgKiBNYWpvciBjaGFuZ2UgaW4gdGhpcyBwYXRjaCAtCj4+ICAgICBDaGFuZ2VkIGNvbXBh
+dGlibGUgc3RyaW5nIGZyb20gJ3Fjb20sbXNtODk5Ni1zbW11LXYyJyB0bwo+PiAgICAgJ3Fjb20s
+c21tdS12MicgdG8gcmVmbGVjdCB0aGUgSVAgdmVyc2lvbiByYXRoZXIgdGhhbiB0aGUKPj4gICAg
+IHBsYXRmb3JtIG9uIHdoaWNoIGl0IGlzIHVzZWQuCj4gVGhlIGJ1Z3MgYW5kIGhvdyB0aGluZ3Mg
+YXJlIGNvbm5lY3RlZCBhcmUgYWxsIHRoZSBzYW1lPyBJJ2Qgc3VnZ2VzdCB5b3UKPiBrZWVwIGJv
+dGggc3RyaW5ncy4KClN1cmUsCiAgICAgY29tcGF0aWJsZSA9ICJxY29tLG1zbTg5OTYtc21tdS12
+MiIsICJxY29tLHNtbXUtdjIiOwoKPgo+PiAgICAgVGhlIHNhbWUgSVAgaXMgdXNlZCBhY3Jvc3Mg
+bXVsdGlwbGUgcGxhdGZvcm1zIGluY2x1ZGluZyBtc204OTk2LAo+PiAgICAgYW5kIHNkbTg0NSBl
+dGMuCj4gQnV0IGZvciBvbmx5IDIgb3Igc28gcGxhdGZvcm1zIGEgZmFsbGJhY2sgaXMgbm90IHJl
+YWxseSB3b3J0aCBpdC4gWW91J2xsCj4gcHJvYmFibHkgYmUgb24gU01NVXYzIGJlZm9yZSB0b28g
+bG9uZy4uLgpSaWdodC4gVGhlcmUncyBtc204OTk4IGFzIHdlbGwsIGJ1dCBhcyB5b3Ugc2FpZCBr
+ZWVwaW5nIGJvdGggc3RyaW5ncwp3aWxsIG1ha2UgbW9yZSBzZW5zZS4KVGhhbmtzLgoKQmVzdCBy
+ZWdhcmRzClZpdmVrCgpbc25pcF0KCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIs
+IEluYy4gaXMgYSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlv
+biBDb2xsYWJvcmF0aXZlIFByb2plY3QKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZy
+ZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2ZyZWVkcmVubwo=
