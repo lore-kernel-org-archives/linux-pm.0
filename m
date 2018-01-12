@@ -1,104 +1,55 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v5 1/6] base: power: runtime: Export
-	pm_runtime_get/put_suppliers
-Date: Fri, 12 Jan 2018 11:17:33 +0530
-Message-ID: <65d04510-bd88-7afe-27b5-d5e9cb416949@codeaurora.org>
-References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
-	<1515492109-753-2-git-send-email-vivek.gautam@codeaurora.org>
-	<CAJZ5v0h-+r3_xxjkgavza8SLAKSnUsXCRqn7PHxSVpeVnCkwHA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <CAJZ5v0h-+r3_xxjkgavza8SLAKSnUsXCRqn7PHxSVpeVnCkwHA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:AMD IOMMU (AMD-VI)" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Dont assume distinct pstate values for nominal and pmin
+Date: Fri, 12 Jan 2018 12:43:53 +0530
+Message-ID: <1515741233-1442-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:44504 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1754530AbeALHOY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 02:14:24 -0500
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id w0C7EJNR024598
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jan 2018 02:14:23 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2femg99y9f-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jan 2018 02:14:21 -0500
+Received: from localhost
+        by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+        Fri, 12 Jan 2018 07:14:11 -0000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, huntbag@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
+Some OpenPOWER boxes can have same pstate values for nominal and
+pmin pstates. In these boxes the current code will not initialize
+'powernv_pstate_info.min' variable and result in erroneous CPU
+frequency reporting. This patch fixes this problem.
 
+Fixes: 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
+Reported-by: Alvin Wang <wangat@tw.ibm.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On 01/12/2018 04:23 AM, Rafael J. Wysocki wrote:
-> On Tue, Jan 9, 2018 at 11:01 AM, Vivek Gautam
-> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
->> The device link allows the pm framework to tie the supplier and
->> consumer. So, whenever the consumer is powered-on the supplier
->> is powered-on first.
->>
->> There are however cases in which the consumer wants to power-on
->> the supplier, but not itself.
->> E.g., A Graphics or multimedia driver wants to power-on the SMMU
->> to unmap a buffer and finish the TLB operations without powering
->> on itself. Some of these unmap requests are coming from the
->> user space when the controller itself is not powered-up, and it
->> can be huge penalty in terms of power and latency to power-up
->> the graphics/mm controllers.
->> There can be an argument that the supplier should handle this case
->> on its own and there should not be a need for the consumer to
->> power-on the supplier. But as discussed on the thread [1] about
->> ARM-SMMU runtime pm, we don't want to introduce runtime pm calls
->> in atomic path in arm_smmu_unmap.
->>
->> [1] https://patchwork.kernel.org/patch/9827825/
->>
->> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
->
-> Please feel free to route this along with the rest of the series.
-
-Thanks Rafael.
-
-regards
-Vivek
-
->
-> Thanks!
->
->> ---
->>
->>   * This is v2 of the patch [1]. Adding it to this patch series.
->>     [1] https://patchwork.kernel.org/patch/10102447/
->>
->>   drivers/base/power/runtime.c | 2 ++
->>   1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> index 6e89b51ea3d9..06a2a88fe866 100644
->> --- a/drivers/base/power/runtime.c
->> +++ b/drivers/base/power/runtime.c
->> @@ -1579,6 +1579,7 @@ void pm_runtime_get_suppliers(struct device *dev)
->>
->>          device_links_read_unlock(idx);
->>   }
->> +EXPORT_SYMBOL_GPL(pm_runtime_get_suppliers);
->>
->>   /**
->>    * pm_runtime_put_suppliers - Drop references to supplier devices.
->> @@ -1597,6 +1598,7 @@ void pm_runtime_put_suppliers(struct device *dev)
->>
->>          device_links_read_unlock(idx);
->>   }
->> +EXPORT_SYMBOL_GPL(pm_runtime_put_suppliers);
->>
->>   void pm_runtime_new_link(struct device *dev)
->>   {
->> --
->> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
->> of Code Aurora Forum, hosted by The Linux Foundation
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b6d7c4c..da7fdb4 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -288,9 +288,9 @@ static int init_powernv_pstates(void)
+ 
+ 		if (id == pstate_max)
+ 			powernv_pstate_info.max = i;
+-		else if (id == pstate_nominal)
++		if (id == pstate_nominal)
+ 			powernv_pstate_info.nominal = i;
+-		else if (id == pstate_min)
++		if (id == pstate_min)
+ 			powernv_pstate_info.min = i;
+ 
+ 		if (powernv_pstate_info.wof_enabled && id == pstate_turbo) {
 -- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+1.8.3.1
