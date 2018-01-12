@@ -1,87 +1,185 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v5 1/6] base: power: runtime: Export
-	pm_runtime_get/put_suppliers
-Date: Thu, 11 Jan 2018 23:53:11 +0100
-Message-ID: <CAJZ5v0h-+r3_xxjkgavza8SLAKSnUsXCRqn7PHxSVpeVnCkwHA@mail.gmail.com>
-References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
-	<1515492109-753-2-git-send-email-vivek.gautam@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFD] Devices that need full power for wakeup
+Date: Fri, 12 Jan 2018 01:21:50 +0100
+Message-ID: <CAJZ5v0iFGQ5uSvjk8mKUnVNL2=sT97qmHRaY9c5w4q8KHZfe_Q@mail.gmail.com>
+References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com>
+ <CAPDyKFqZ+ja5bu+G7ynTowq1CFQ2_k2zdA7qGbj3VagdB0yT4Q@mail.gmail.com>
+ <CAJZ5v0hw_z5qGiGFGtJHLMfduEsH5c9y8q7ZFNCZdjwppP=GbA@mail.gmail.com>
+ <CAPDyKFpwVevhg7F==GdxDwDhbuTy5hPn6zMbq4WpqkBiDKbM+g@mail.gmail.com>
+ <CAJZ5v0hpOe6cQbuLEaYx8=JVrD79276J8VO0YNveWoNc5TU0tg@mail.gmail.com> <CAPDyKFo_MpVGy7jNh-mgwxCQq5+zTj4qt1t8LMY7LfdF419xdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <1515492109-753-2-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:AMD IOMMU (AMD-VI)" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f174.google.com ([74.125.82.174]:43629 "EHLO
+        mail-ot0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754168AbeALAVw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jan 2018 19:21:52 -0500
+Received: by mail-ot0-f174.google.com with SMTP id t28so3723388oti.10
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jan 2018 16:21:51 -0800 (PST)
+In-Reply-To: <CAPDyKFo_MpVGy7jNh-mgwxCQq5+zTj4qt1t8LMY7LfdF419xdw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Tue, Jan 9, 2018 at 11:01 AM, Vivek Gautam
-<vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
-> The device link allows the pm framework to tie the supplier and
-> consumer. So, whenever the consumer is powered-on the supplier
-> is powered-on first.
+On Thu, Jan 11, 2018 at 3:45 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> [...]
 >
-> There are however cases in which the consumer wants to power-on
-> the supplier, but not itself.
-> E.g., A Graphics or multimedia driver wants to power-on the SMMU
-> to unmap a buffer and finish the TLB operations without powering
-> on itself. Some of these unmap requests are coming from the
-> user space when the controller itself is not powered-up, and it
-> can be huge penalty in terms of power and latency to power-up
-> the graphics/mm controllers.
-> There can be an argument that the supplier should handle this case
-> on its own and there should not be a need for the consumer to
-> power-on the supplier. But as discussed on the thread [1] about
-> ARM-SMMU runtime pm, we don't want to introduce runtime pm calls
-> in atomic path in arm_smmu_unmap.
+>>>>
+>>>>> However, there are a few related issues around system wakeups in
+>>>>> genpd, during system suspend.
+>>>>>
+>>>>> 1)
+>>>>> If the driver for the device, configures system wakeup as an
+>>>>> "out-band-wakeup", the device and its PM domain, don't need to stay
+>>>>> powered on during system suspend from the driver perspective.
+>>>>
+>>>> That depends.
+>>>>
+>>>> The wakeup signal has to be generated or asserted by something,
+>>>> presumably the device itself.
+>>>
+>>> The cases I looking at don't require the device to be powered - at
+>>> least from the driver's perspective.
+>>>
+>>> A classic example is a SD card detect pin, which is being routed to a
+>>> GPIO pin. In these case, that GPIO pin has no logic whatsoever,
+>>> coupled with the device for SD controller. Still, it needs to be
+>>> manged by the same device driver.
+>>
+>> So technically it is a different device, but since it is functionally
+>> related to the one originally handled by the driver in question, the
+>> driver is expected to handle this wakeup thing too.
+>>
+>> Fair enough, but certainly that is not a common setup for other subsystems.
+>>
+>> [BTW, since the wakeup thing is a separate device technically, I would
+>> try to model it as a separate device object in the kernel with its own
+>> wakeup settings.  That would save you some complications you're trying
+>> to deal with IMO.]
+>>
+>> Also I'm sort of wondering why the problem is specific to system-wide
+>> suspend.  It looks like if the card slot was empty, it would make
+>> perfect sense to put the "master" device into runtime suspend with no
+>> remote wakeup and then only resume it if the GPIO thing signaled card
+>> insertion.  And this looks like the same problem in disguise.
+>>
+>> Moreover, that is quite a departure from the direction of my original
+>> message in this thread.
+>>
+>>> Therefore, device_may_wakeup() may returns true, if userspace wants to
+>>> wakeup the system from sleep when there is an SD card inserted.
+>>> Although, that doesn't mean we have to keep the logic for the SD
+>>> controller device being powered during system suspend, since it would
+>>> waste power.
+>>
+>> The SD controller need not be provided with power, but of course the
+>> GPIO card detect pin won't work without power I suppose.  It
+>> essentially is like a button attached to the device with its own power
+>> and signal wiring.
 >
-> [1] https://patchwork.kernel.org/patch/9827825/
+> Correct.
 >
-> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>
+>> Well, for devices like Ethernet or WiFi or even input (say mice and
+>> keyboards, touch panels and so on) power has to be provided to the
+>> device itself for detection of activity while suspended.
+>
+> Actually no.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Why "no"?
 
-Please feel free to route this along with the rest of the series.
+The example below doesn't contradict what I said at all.
 
-Thanks!
+> I realize that SD card detect GPIO was not the best example to
+> describe the real problem, even if it's related though.
+>
+> Let me take another example from an embedded battery driven platform:
+>
+> Assume user space has enabled the wakeup setting for the serial
+> console device. In a similar system as described earlier, the serial
+> console driver may be able to re-route the serial RX pin to a GPIO
+> wake IRQ at system suspend.
 
-> ---
+OK
+
+That's equivalent to switching over to an out-of-band wakeup power
+source AFAICS.  There is no substantial practical difference between
+that and being able to use a special separate power source for wakeup
+for the whole device.
+
+> This means that serial console device may
+> be completely powered off during system suspend. However, whether
+> powering off the serial device (and its attached PM domain) can be
+> done, is currently only known by the driver, as upper-layers (PM
+> domain) don't know if the RX pin is re-routed to a GPIO wake IRQ or
+> not.
+
+Well, then what does prevent you from defaulting to "turn off in-band
+power on suspend" (which is the current state of affairs) and then
+using PM_QOS_FLAG_NO_POWER_OFF for indicating the "no power off"
+condition in case you've not rerouted the pin?
+
+And I still don't see why this isn't relevant to runtime PM too, at
+least in principle.
+
+>>
+>> You seem to be considering a very special case which may have been
+>> arranged entirely differently, so the usefulness of it as a general
+>> example is quite limited in my view.
+>>
+>> Yes, this case should be taken into account too somehow, but how to do
+>> that is a good question and I'm not sure how relevant it is to the
+>> general handling of wakeup to be honest.
 >
->  * This is v2 of the patch [1]. Adding it to this patch series.
->    [1] https://patchwork.kernel.org/patch/10102447/
+> Again, the SD card detect GPIO was just one case.
 >
->  drivers/base/power/runtime.c | 2 ++
->  1 file changed, 2 insertions(+)
+> There are several more, which are similar to the above described,
+> serial console wakeup case.
+
+So far I still don't see a need for new infrastructure beyond the
+"passive wakeup devices" case.
+
+[cut]
+
+>>
+>>>>
+>>>> A wakeup signal usually means that something interesting happened
+>>>> outside and that thing needs to be detected in the first place, most
+>>>> likely by the device.
+>>>>
+>>>>> A very common scenario when this is the case, is when a wakeup signal is
+>>>>> routed via GPIO IRQ.
+>>
+>> Routing via a GPIO IRQ doesn't mean that it always works like the card
+>> detect pin given in the example.  Usually, some input from the device
+>> is necessary to activate the IRQ pin.
 >
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 6e89b51ea3d9..06a2a88fe866 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -1579,6 +1579,7 @@ void pm_runtime_get_suppliers(struct device *dev)
+> Well, not in those cases I am referring to.
 >
->         device_links_read_unlock(idx);
->  }
-> +EXPORT_SYMBOL_GPL(pm_runtime_get_suppliers);
->
->  /**
->   * pm_runtime_put_suppliers - Drop references to supplier devices.
-> @@ -1597,6 +1598,7 @@ void pm_runtime_put_suppliers(struct device *dev)
->
->         device_links_read_unlock(idx);
->  }
-> +EXPORT_SYMBOL_GPL(pm_runtime_put_suppliers);
->
->  void pm_runtime_new_link(struct device *dev)
->  {
-> --
-> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-> of Code Aurora Forum, hosted by The Linux Foundation
->
+> The input and wakeup is completely driven via the (re-)routed GPIO pin.
+
+So I should have said "often" instead of "usually" maybe (and that
+depends a good deal on what is usual for whom).
+
+The pin rerouting example is just a special case of switching over to
+an out-of-band wakeup power source (as I said above), which in some
+cases (eg. PCI/ACPI) can be done automatically and transparently with
+respect to the driver and in some cases is done by the driver itself.
+In the latter case it only is a matter of letting the other layers of
+code know whether or not they can turn off the in-band power source
+for the device and they really don't need to know that this is related
+to wakeup in any way.
+
+Again, genpd (for example) has a very "specific" understanding of
+"wakeup".  From its perspective "wakeup" means "do not turn in-band
+power off", but that is completely arbitrary and arguably it would be
+sufficient to tell it directly "do not turn in-band power off" without
+even saying that this is related to wakeup at all.
+
+And in the genpd case in particular it doesn't even need to be
+propagated do parents, because the hierarchy of domains should reflect
+the power dependencies already anyway.
+
+Thanks,
+Rafael
