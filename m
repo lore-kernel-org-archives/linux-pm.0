@@ -1,85 +1,198 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/2] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Fri, 12 Jan 2018 14:59:38 +0100
-Message-ID: <CAPDyKFrg8FWCU7DSEEDk5-a9WQVtMdr6qoRijK5-T+oKjG0A0g@mail.gmail.com>
-References: <4928977.5hd79RbQlp@aspire.rjw.lan> <1952050.gHGtV5tzZn@aspire.rjw.lan>
+Subject: Re: [PATCH 1/2] PM / genpd: Stop/start devices without pm_runtime_force_suspend/resume()
+Date: Fri, 12 Jan 2018 15:07:35 +0100
+Message-ID: <CAPDyKFpmDRTW8Zax5hBrSrUra2ActrZuXK3OrVmJ-teX=bXPRg@mail.gmail.com>
+References: <4928977.5hd79RbQlp@aspire.rjw.lan> <1709653.TNnOthRhLp@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:40903 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933784AbeALN7j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 08:59:39 -0500
-Received: by mail-it0-f66.google.com with SMTP id f190so9336553ita.5
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jan 2018 05:59:39 -0800 (PST)
-In-Reply-To: <1952050.gHGtV5tzZn@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1709653.TNnOthRhLp@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LKML <linux-kernel@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LKML <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 12 January 2018 at 14:12, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On 12 January 2018 at 14:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> One of the limitations of pm_runtime_force_suspend/resume() is that
-> if a parent driver wants to use these functions, all of its child
-> drivers generally have to do that too because of the parent usage
-> counter manipulations necessary to get the correct state of the parent
-> during system-wide transitions to the working state (system resume).
-> However, that limitation turns out to be artificial, so remove it.
-
-According to my comment on the other thread, this stands true in case
-the child is managed by runtime PM as well.
-
-Otherwise this looks good to me.
-
+> There are problems with calling pm_runtime_force_suspend/resume()
+> to "stop" and "start" devices in genpd_finish_suspend() and
+> genpd_resume_noirq() (and in analogous hibernation-specific genpd
+> callbacks) after commit 122a22377a3d (PM / Domains: Stop/start
+> devices during system PM suspend/resume in genpd) as those routines
+> do much more than just "stopping" and "starting" devices (which was
+> the stated purpose of that commit) unnecessarily and may not play
+> well with system-wide PM driver callbacks.
 >
-> Namely, pm_runtime_force_suspend() only needs to update the children
-> counter of its parent (if there's is a parent) when the device can
-> stay in suspend after the subsequent system resume transition, as
-> that counter is correct already otherwise.  Now, if the parent's
-> children counter is not updated, it is not necessary to increment
-> the parent's usage counter in that case any more, as long as the
-> children counters of devices are checked along with their usage
-> counters in order to decide whether or not the devices may be left
-> in suspend after the subsequent system resume transition.
+> First, consider the pm_runtime_force_suspend() in
+> genpd_finish_suspend().  If the current runtime PM status of the
+> device is "suspended", that function most likely does the right thing
+> by ignoring the device, because it should have been "stopped" already
+> and whatever needed to be done to deactivate it shoud have been done.
+> In turn, if the runtime PM status of the device is "active",
+> genpd_runtime_suspend() is called for it (indirectly) and (1) runs
+> the ->runtime_suspend callback provided by the device's driver
+> (assuming no bus type with ->runtime_suspend of its own), (2) "stops"
+> the device and (3) checks if the domain can be powered down, and then
+> (4) the device's runtime PM status is changed to "suspended".  Out of
+> the four actions above (1) is not necessary and it may be outright
+> harmful, (3) is pointless and (4) is questionable.  The only
+> operation that needs to be carried out here is (2).
 >
-> Accordingly, modify pm_runtime_force_suspend() to only call
-> pm_runtime_set_suspended() for devices whose usage and children
-> counters are at the "no references" level (the runtime PM status
-> of the device needs to be updated to "suspended" anyway in case
-> this function is called once again for the same device during the
-> transition under way), drop the parent usage counter incrementation
-> from it and update pm_runtime_force_resume() to compensate for these
-> changes.
+> The reason why (1) is not necessary is because the system-wide
+> PM callbacks provided by the device driver for the transition in
+> question have been run and they should have taken care of the
+> driver's part of device suspend already.  Moreover, it may be
+> harmful, because the ->runtime_suspend callback may want to
+> access the device which is partially suspended at that point
+> and may not be responsive.  Also, system-wide PM callbacks may
+> have been run already (in the previous phases of the system
+> transition under way) for the device's parent or for its supplier
+> devices (if any) and the device may not be accessible because of
+> that.
 >
+> There also is no reason to do (3), because genpd_finish_suspend()
+> will repeat it anyway, and (4) potentially causes confusion to ensue
+> during the subsequent system transition to the working state.
+>
+> Consider pm_runtime_force_resume() in genpd_resume_noirq() now.
+> It runs genpd_runtime_resume() for all devices with runtime PM
+> status set to "suspended", which includes all of the devices
+> whose runtime PM status was changed by pm_runtime_force_suspend()
+> before and may include some devices already suspended when the
+> pm_runtime_force_suspend() was running, which may be confusing.  The
+> genpd_runtime_resume() first tries to power up the domain, which
+> (again) is pointless, because genpd_resume_noirq() has done that
+> already.  Then, it "starts" the device and runs the ->runtime_resume
+> callback (from the driver, say) for it.  If all is well, the device
+> is left with the runtime PM status set to "active".
+>
+> Unfortunately, running the driver's ->runtime_resume callback
+> before its system-wide PM callbacks and possibly before some
+> system-wide PM callbacks of the parent device's driver (let
+> alone supplier drivers) is asking for trouble, especially if
+> the device had been suspended before pm_runtime_force_suspend()
+> ran previously or if the callbacks in question expect to be run
+> back-to-back with their suspend-side counterparts.  It also should
+> not be necessary, because the system-wide PM driver callbacks that
+> will be invoked for the device subsequently should take care of
+> resuming it just fine.
+>
+> [Running the driver's ->runtime_resume callback in the "noirq"
+> phase of the transition to the working state may be problematic
+> even for devices whose drivers do use pm_runtime_force_resume()
+> in (or as) their system-wide PM callbacks if they have suppliers
+> other than their parents, because it may cause the supplier to
+> be resumed after the consumer in some cases.]
+>
+> Because of the above, modify genpd as follows:
+>
+>  1. Change genpd_finish_suspend() to only "stop" devices with
+>     runtime PM status set to "active" (without invoking runtime PM
+>     callbacks for them, changing their runtime PM status and so on).
+>
+>     That doesn't change the handling of devices whose drivers use
+>     pm_runtime_force_suspend/resume() in (or as) their system-wide
+>     PM callbacks and addresses the issues described above for the
+>     other devices.
+>
+>  2. Change genpd_resume_noirq() to only "start" devices with
+>     runtime PM status set to "active" (without invoking runtime PM
+>     callbacks for them, changing their runtime PM status and so on).
+>
+>     Again, that doesn't change the handling of devices whose drivers
+>     use pm_runtime_force_suspend/resume() in (or as) their system-wide
+>     PM callbacks and addresses the described issues for the other
+>     devices.  Devices with runtime PM status set to "suspended"
+>     are not started with the assumption that they will be resumed
+>     later, either by pm_runtime_force_resume() or via runtime PM.
+>
+>  3. Change genpd_restore_noirq() to follow genpd_resume_noirq().
+>
+>     That causes devices already suspended before hibernation to be
+>     left alone (which also is the case without the change) and
+>     avoids running the ->runtime_resume driver callback too early
+>     for the other devices.
+>
+>  4. Change genpd_freeze_noirq() and genpd_thaw_noirq() in accordance
+>     with the above modifications.
+>
+> Fixes: 122a22377a3d (PM / Domains: Stop/start devices during system PM suspend/resume in genpd)
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/runtime.c |   74 +++++++++++++++++++------------------------
->  1 file changed, 34 insertions(+), 40 deletions(-)
->
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -1613,17 +1613,28 @@ void pm_runtime_drop_link(struct device
->         spin_unlock_irq(&dev->power.lock);
->  }
->
-> +static bool pm_runtime_need_not_resume(struct device *dev)
-> +{
-> +       return atomic_read(&dev->power.usage_count) <= 1 &&
-> +               atomic_read(&dev->power.child_count) == 0;
 
-How about adding an additional patch on top taking into account the
-ignore_children flag and folding that into the series, kind of as you
-also suggested?
+That was an extensive changlog, thanks for the details and for working on this!
 
-My point is, we might as well take the opportunity to fix this right
-away, don't you think?
-
-[...]
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
+
+> ---
+>  drivers/base/power/domain.c |   25 +++++++++++++++----------
+>  1 file changed, 15 insertions(+), 10 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/domain.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/domain.c
+> +++ linux-pm/drivers/base/power/domain.c
+> @@ -1048,8 +1048,9 @@ static int genpd_finish_suspend(struct d
+>         if (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))
+>                 return 0;
+>
+> -       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+> -               ret = pm_runtime_force_suspend(dev);
+> +       if (genpd->dev_ops.stop && genpd->dev_ops.start &&
+> +           !pm_runtime_status_suspended(dev)) {
+> +               ret = genpd_stop_dev(genpd, dev);
+>                 if (ret) {
+>                         if (poweroff)
+>                                 pm_generic_restore_noirq(dev);
+> @@ -1106,8 +1107,9 @@ static int genpd_resume_noirq(struct dev
+>         genpd->suspended_count--;
+>         genpd_unlock(genpd);
+>
+> -       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+> -               ret = pm_runtime_force_resume(dev);
+> +       if (genpd->dev_ops.stop && genpd->dev_ops.start &&
+> +           !pm_runtime_status_suspended(dev)) {
+> +               ret = genpd_start_dev(genpd, dev);
+>                 if (ret)
+>                         return ret;
+>         }
+> @@ -1139,8 +1141,9 @@ static int genpd_freeze_noirq(struct dev
+>         if (ret)
+>                 return ret;
+>
+> -       if (genpd->dev_ops.stop && genpd->dev_ops.start)
+> -               ret = pm_runtime_force_suspend(dev);
+> +       if (genpd->dev_ops.stop && genpd->dev_ops.start &&
+> +           !pm_runtime_status_suspended(dev))
+> +               ret = genpd_stop_dev(genpd, dev);
+>
+>         return ret;
+>  }
+> @@ -1163,8 +1166,9 @@ static int genpd_thaw_noirq(struct devic
+>         if (IS_ERR(genpd))
+>                 return -EINVAL;
+>
+> -       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+> -               ret = pm_runtime_force_resume(dev);
+> +       if (genpd->dev_ops.stop && genpd->dev_ops.start &&
+> +           !pm_runtime_status_suspended(dev)) {
+> +               ret = genpd_start_dev(genpd, dev);
+>                 if (ret)
+>                         return ret;
+>         }
+> @@ -1221,8 +1225,9 @@ static int genpd_restore_noirq(struct de
+>         genpd_sync_power_on(genpd, true, 0);
+>         genpd_unlock(genpd);
+>
+> -       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+> -               ret = pm_runtime_force_resume(dev);
+> +       if (genpd->dev_ops.stop && genpd->dev_ops.start &&
+> +           !pm_runtime_status_suspended(dev)) {
+> +               ret = genpd_start_dev(genpd, dev);
+>                 if (ret)
+>                         return ret;
+>         }
+>
