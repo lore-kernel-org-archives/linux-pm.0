@@ -1,7 +1,7 @@
 From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH 6/8] irqchip/gic-v3-its: add ability to resend MAPC on resume
-Date: Fri, 12 Jan 2018 13:24:20 -0800
-Message-ID: <20180112212422.148625-7-dbasehore@chromium.org>
+Subject: [PATCH 8/8] irqchip/gic-v3: add power down/up sequence
+Date: Fri, 12 Jan 2018 13:24:22 -0800
+Message-ID: <20180112212422.148625-9-dbasehore@chromium.org>
 References: <20180112212422.148625-1-dbasehore@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180112212422.148625-1-dbasehore@chromium.org>
@@ -10,149 +10,136 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org, marc.zyngier@arm.com, Derek Basehore <dbasehore@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-This adds a DT-binding to resend the MAPC command to an ITS node on
-resume. If the ITS is powered down during suspend and the collections
-are not backed by memory, the ITS will lose that state. This just sets
-up the known state for the collections after the ITS is restored.
+This adds the implementation specific power down/up sequence for the
+GIC-500 and the GIC-600 (which are implementations of the GIC-v3
+specification). This allows the LPI pending information to be properly
+flushed on suspend if the GIC is disabled.
 
-Change-Id: I4fe7f3f16500e1d3b14368262f03a43509c0049b
+Change-Id: Iad2135b5f5a57f7dc0c15d05e4b9a06e1b4c24d1
 Signed-off-by: Derek Basehore <dbasehore@chromium.org>
 ---
- drivers/irqchip/irq-gic-v3-its.c | 85 ++++++++++++++++++++++------------------
- 1 file changed, 47 insertions(+), 38 deletions(-)
+ drivers/irqchip/irq-gic-v3.c       | 58 ++++++++++++++++++++++++++++++++++++++
+ include/linux/irqchip/arm-gic-v3.h |  9 ++++++
+ 2 files changed, 67 insertions(+)
 
-diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-index 5cb808e3d0bf..6d2688a2ee67 100644
---- a/drivers/irqchip/irq-gic-v3-its.c
-+++ b/drivers/irqchip/irq-gic-v3-its.c
-@@ -46,6 +46,7 @@
- #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING		(1ULL << 0)
- #define ITS_FLAGS_WORKAROUND_CAVIUM_22375	(1ULL << 1)
- #define ITS_FLAGS_WORKAROUND_CAVIUM_23144	(1ULL << 2)
-+#define ITS_FLAGS_RESEND_MAPC_ON_RESUME		(1ULL << 3)
- 
- #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING	(1 << 0)
- 
-@@ -1949,52 +1950,53 @@ static void its_cpu_init_lpis(void)
- 	dsb(sy);
+diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
+index 95d37fb6f458..5286757dd413 100644
+--- a/drivers/irqchip/irq-gic-v3.c
++++ b/drivers/irqchip/irq-gic-v3.c
+@@ -816,6 +816,35 @@ static void gic_redist_save(int cpu)
+ 	ctx->nsacr = readl_relaxed(base + GICR_NSACR);
  }
  
--static void its_cpu_init_collection(void)
-+static void its_cpu_init_collection(struct its_node *its)
- {
--	struct its_node *its;
--	int cpu;
--
--	spin_lock(&its_lock);
--	cpu = smp_processor_id();
--
--	list_for_each_entry(its, &its_nodes, entry) {
--		u64 target;
-+	int cpu = smp_processor_id();
-+	u64 target;
- 
--		/* avoid cross node collections and its mapping */
--		if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
--			struct device_node *cpu_node;
-+	/* avoid cross node collections and its mapping */
-+	if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
-+		struct device_node *cpu_node;
- 
--			cpu_node = of_get_cpu_node(cpu, NULL);
--			if (its->numa_node != NUMA_NO_NODE &&
--				its->numa_node != of_node_to_nid(cpu_node))
--				continue;
--		}
-+		cpu_node = of_get_cpu_node(cpu, NULL);
-+		if (its->numa_node != NUMA_NO_NODE &&
-+			its->numa_node != of_node_to_nid(cpu_node))
-+			return;
-+	}
- 
++static void gic_power_down(void)
++{
++	void __iomem *base = gic_data.dist_base;
++	u32 product_id = readl_relaxed(base + GICD_IIDR) >>
++			 GICD_IIDR_PRODUCTID_SHIFT;
++
 +	/*
-+	 * We now have to bind each collection to its target
-+	 * redistributor.
++	 * This power down sequence is implementation defined. It's the same for
++	 * the GIC-500 and GIC-600.
 +	 */
-+	if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
- 		/*
--		 * We now have to bind each collection to its target
-+		 * This ITS wants the physical address of the
- 		 * redistributor.
- 		 */
--		if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
--			/*
--			 * This ITS wants the physical address of the
--			 * redistributor.
--			 */
--			target = gic_data_rdist()->phys_base;
--		} else {
--			/*
--			 * This ITS wants a linear CPU number.
--			 */
--			target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
--			target = GICR_TYPER_CPU_NUMBER(target) << 16;
--		}
-+		target = gic_data_rdist()->phys_base;
-+	} else {
-+		/* This ITS wants a linear CPU number. */
-+		target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
-+		target = GICR_TYPER_CPU_NUMBER(target) << 16;
++	if ((product_id & GIC500_IIDR_PRODUCTID) ||
++	    (product_id & GIC600_IIDR_PRODUCTID)) {
++		u32 val;
++
++		/*
++		 * There's only one instance of the GICR_WAKER register which
++		 * each redistributor maps to. So this just needs to be set for
++		 * the current CPU.
++		 */
++		base = gic_data_rdist_rd_base();
++		val = readl_relaxed(base + GICR_WAKER);
++		writel_relaxed(val | GICR_WAKER_Sleep, base + GICR_WAKER);
++		while (!(readl_relaxed(base + GICR_WAKER) &
++			 GICR_WAKER_Quiescent))
++			;
++
 +	}
- 
--		/* Perform collection mapping */
--		its->collections[cpu].target_address = target;
--		its->collections[cpu].col_id = cpu;
-+	/* Perform collection mapping */
-+	its->collections[cpu].target_address = target;
-+	its->collections[cpu].col_id = cpu;
- 
--		its_send_mapc(its, &its->collections[cpu], 1);
--		its_send_invall(its, &its->collections[cpu]);
--	}
-+	its_send_mapc(its, &its->collections[cpu], 1);
-+	its_send_invall(its, &its->collections[cpu]);
 +}
 +
-+static void its_cpu_init_collections(void)
+ static void gic_dist_save(void)
+ {
+ 	struct gic_dist_ctx *ctx = gic_data.gicd_ctx;
+@@ -871,6 +900,7 @@ static int gic_suspend(void)
+ 	for_each_possible_cpu(cpu)
+ 		gic_redist_save(cpu);
+ 
++	gic_power_down();
+ 	its_save_disable();
+ 	gic_dist_save();
+ 
+@@ -901,6 +931,33 @@ static void gic_rdist_restore(int cpu)
+ 	gic_do_wait_for_rwp(base);
+ }
+ 
++static void gic_power_up(void)
 +{
-+	struct its_node *its;
++	void __iomem *base = gic_data.dist_base;
++	u32 product_id = readl_relaxed(base + GICD_IIDR) >>
++			 GICD_IIDR_PRODUCTID_SHIFT;
 +
-+	spin_lock(&its_lock);
++	/*
++	 * Same as the power down sequence, this part of the power up sequence
++	 * is implementation defined.
++	 */
++	if ((product_id & GIC500_IIDR_PRODUCTID) ||
++	    (product_id & GIC600_IIDR_PRODUCTID)) {
++		u32 val;
 +
-+	list_for_each_entry(its, &its_nodes, entry)
-+		its_cpu_init_collection(its);
++		/*
++		 * Need to turn the GIC back on in-case suspend is cancelled.
++		 * The GIC hardware reset state or the platform layer should
++		 * handle this otherwise.
++		 */
++		base = gic_data_rdist_rd_base();
++		val = readl_relaxed(base + GICR_WAKER);
++		writel_relaxed(val & ~GICR_WAKER_Sleep, base + GICR_WAKER);
++		while (readl_relaxed(base + GICR_WAKER) & GICR_WAKER_Quiescent)
++			;
++	}
++}
++
+ static void gic_dist_restore(void)
+ {
+ 	struct gic_dist_ctx *ctx = gic_data.gicd_ctx;
+@@ -937,6 +994,7 @@ static void gic_resume(void)
  
- 	spin_unlock(&its_lock);
- }
-@@ -3089,6 +3091,9 @@ void its_restore_enable(void)
- 			its_write_baser(its, &its->tables[i],
- 					its->tables[i].val);
- 		writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-+
-+		if (its->flags & ITS_FLAGS_RESEND_MAPC_ON_RESUME)
-+			its_cpu_init_collection(its);
- 	}
- 	spin_unlock(&its_lock);
- }
-@@ -3312,6 +3317,10 @@ static int __init its_probe_one(struct resource *res,
- 		ctlr |= GITS_CTLR_ImDe;
- 	writel_relaxed(ctlr, its->base + GITS_CTLR);
+ 	gic_dist_restore();
+ 	its_restore_enable();
++	gic_power_up();
+ 	for_each_possible_cpu(cpu)
+ 		gic_rdist_restore(cpu);
  
-+	if (fwnode_property_present(its->fwnode_handle,
-+				    "resend-mapc-on-resume"))
-+		its->flags |= ITS_FLAGS_RESEND_MAPC_ON_RESUME;
-+
- 	err = its_init_domain(handle, its);
- 	if (err)
- 		goto out_free_tables;
-@@ -3347,7 +3356,7 @@ int its_cpu_init(void)
- 			return -ENXIO;
- 		}
- 		its_cpu_init_lpis();
--		its_cpu_init_collection();
-+		its_cpu_init_collections();
- 	}
+diff --git a/include/linux/irqchip/arm-gic-v3.h b/include/linux/irqchip/arm-gic-v3.h
+index f086987e3cb4..22ced72be1c5 100644
+--- a/include/linux/irqchip/arm-gic-v3.h
++++ b/include/linux/irqchip/arm-gic-v3.h
+@@ -59,6 +59,10 @@
+ #define GICD_NSACR_SHIFT		4
+ #define GICD_IROUTER_SHIFT		0
  
- 	return 0;
++#define GICD_IIDR_PRODUCTID_SHIFT	24
++#define GIC500_IIDR_PRODUCTID		0x00
++#define GIC600_IIDR_PRODUCTID		0x02
++
+ /*
+  * Those registers are actually from GICv2, but the spec demands that they
+  * are implemented as RES0 if ARE is 1 (which we do in KVM's emulated GICv3).
+@@ -122,8 +126,13 @@
+ 
+ #define GICR_TYPER_CPU_NUMBER(r)	(((r) >> 8) & 0xffff)
+ 
++/*
++ * Sleep and Quiescent are implementation specific for the GIC-500 and GIC-600.
++ */
++#define GICR_WAKER_Sleep		(1U << 0)
+ #define GICR_WAKER_ProcessorSleep	(1U << 1)
+ #define GICR_WAKER_ChildrenAsleep	(1U << 2)
++#define GICR_WAKER_Quiescent		(1U << 31)
+ 
+ #define GIC_BASER_CACHE_nCnB		0ULL
+ #define GIC_BASER_CACHE_SameAsInner	0ULL
 -- 
 2.16.0.rc1.238.g530d649a79-goog
