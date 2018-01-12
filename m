@@ -1,66 +1,78 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH V3 0/7] Add loadable kernel module and power management
- support
-Date: Fri, 12 Jan 2018 18:10:14 +0000
-Message-ID: <20180112181014.GE26438@red-moon>
-References: <1512120007-28088-1-git-send-email-mmaddireddy@nvidia.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression in next
+Date: Fri, 12 Jan 2018 11:00:46 -0800
+Message-ID: <20180112190046.GD4821@atomide.com>
+References: <20180112000037.GA3875@atomide.com>
+ <20180111161837.f1c1d891a1b80d97e30a9b1b@linux-foundation.org>
+ <20180112002322.GB3875@atomide.com>
+ <20180111164537.79165ac8918e6d38e1837062@linux-foundation.org>
+ <20180112012019.GA4059@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1512120007-28088-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <20180112012019.GA4059@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 01, 2017 at 02:50:00PM +0530, Manikanta Maddireddy wrote:
-> This series of patches add loadable kernel module and power management
-> support to Tegra PCIe host controller driver.
-> 
-> These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
-> are the verification details.
-> 	- Multiple module insert & remove
-> 	- PCIe device functionality after module insert
-> 	- Free clock, resets, regulators, powergate, iomem and interrupt
-> 	resources after module remove
-> 	- PCIe device functionality after resume from RAM
-> 
-> Tegra PCIe host controller driver is using ioremap_page_range() which is
-> not exported. This is switched with devm_ioremap() in the series
-> 'https://patchwork.ozlabs.org/project/linux-tegra/list/?series=9907'.
-> 
-> V2: PM QoS fix is dropped in V2 from this series because the fix is
-> incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
-> latency framework")'. Update commit message of few patches in V2.
-> 
-> V3: Patches to export irq_set_msi_desc() and tegra_cpuidle_pcie_irqs_in_use()
-> are dropped based on review comments. These symbols will be addressed in
-> next series. Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe and took care
-> of few other review comments.
-> 
-> Manikanta Maddireddy (7):
->   of: Export of_pci_range_to_resource()
->   PCI: Export pci_find_host_bridge()
->   PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
->   PCI: tegra: Free resources on probe failure
->   PCI: tegra: Add loadable kernel module support
->   PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
->   PCI: tegra: Add power management support
-> 
->  drivers/of/address.c         |   1 +
->  drivers/pci/host-bridge.c    |   1 +
->  drivers/pci/host/Kconfig     |   2 +-
->  drivers/pci/host/pci-tegra.c | 331 +++++++++++++++++++++++++++++++++----------
+* Tony Lindgren <tony@atomide.com> [180112 01:20]:
+> * Andrew Morton <akpm@linux-foundation.org> [180112 00:45]:
+> > On Thu, 11 Jan 2018 16:23:22 -0800 Tony Lindgren <tony@atomide.com> wrote:
+> > 
+> > > * Andrew Morton <akpm@linux-foundation.org> [180112 00:18]:
+> > > > On Thu, 11 Jan 2018 16:01:13 -0800 Tony Lindgren <tony@atomide.com> wrote:
+> > > > 
+> > > > > Hi all,
+> > > > > 
+> > > > > I'm seeing a considerable idle power consumption regression in
+> > > > > Linux next, with power consumption for my idle test system going
+> > > > > to 17.5mW compared to the usual 8mW on my test device.
+> > > > > 
+> > > > > Git bisect points to merge commit e130bc1d00a4 ("Merge branch
+> > > > > 'akpm-current/current'") being the first bad commit.
+> > > > > 
+> > > > > I have also verified that commit 70286688e5ad ("ipc/mqueue.c:
+> > > > > have RT tasks queue in by priority in wq_add()") is good, and
+> > > > > commit e2d7fe89e8ae ("Merge remote-tracking branch
+> > > > > 'init_task/init_task'") is good.
+> > > > 
+> > > > Do you mean that everything up to and including 70286688e5ad
+> > > > ("ipc/mqueue.c: have RT tasks queue in by priority in wq_add()") is
+> > > > good?
+> > > 
+> > > Yes I'm not seeing the regression in your branch at commit
+> > > 70286688e5ad. I'm seeing it only with the merge commit
+> > > e130bc1d00a4.
+> > > 
+> > 
+> > That's weird.  All I'm seeing between 70286688e5ad and end-of-mm is:
+...
 
-Applied patches 1 and 2 to pci/tegra for v4.16.
+> Well there are some changes in merge commit e130bc1d00a4..
 
-Bjorn picked up patch 3, the rest of the series needs
-Thierry's ACK.
+So it seems that the Makefile changes in Linux next merge commit
+e130bc1d00a4 cause changes with CONFIG_CC_STACKPROTECTOR_AUTO=y.
+With next-20180112 out now, that's now commit  3823b7cc7a5e
+("Merge branch 'akpm-current/current'"). Not sure if that's a
+bug or not..
 
-Thanks !
-Lorenzo
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Anyways, I reran my "bisect boot wait-idle measure" test with
+CONFIG_CC_STACKPROTECTOR_STRONG=y selected to rule out the AUTO
+option, and bisect now points to a different commit that makes
+more sense for my test case.
+
+It's commit 3bb0f7c31b1a ("ASoC: don't use snd_soc_write/read
+on twl4030"). And that is for the PMIC on my test system, so
+adding Kuninori and Mark to the thread :)
+
+Kuninori, it seems that commit 3bb0f7c31b1a causes higher
+power consumption on an idle system on omap3 using twl4030.
+Reverting 3bb0f7c31b1a makes things behave again. My guess
+is that twl4030_read does not do the same as snd_soc_read
+in the driver?
+
+Regards,
+
+Tony
