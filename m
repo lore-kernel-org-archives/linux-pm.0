@@ -1,579 +1,65 @@
-From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH 4/8] irqchip/gic-v3: add ability to save/restore GIC/ITS state
-Date: Fri, 12 Jan 2018 13:24:18 -0800
-Message-ID: <20180112212422.148625-5-dbasehore@chromium.org>
-References: <20180112212422.148625-1-dbasehore@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180112212422.148625-1-dbasehore@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org, marc.zyngier@arm.com, Derek Basehore <dbasehore@chromium.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: PM regression in next
+Date: Fri, 12 Jan 2018 21:38:45 +0000
+Message-ID: <20180112213845.GJ21458@sirena.org.uk>
+References: <20180112000037.GA3875@atomide.com>
+ <20180111161837.f1c1d891a1b80d97e30a9b1b@linux-foundation.org>
+ <20180112002322.GB3875@atomide.com>
+ <20180111164537.79165ac8918e6d38e1837062@linux-foundation.org>
+ <20180112012019.GA4059@atomide.com>
+ <20180112190046.GD4821@atomide.com>
+ <20180112191251.GE21458@sirena.org.uk>
+ <20180112210706.GE4821@atomide.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="W/+CTqSGWdiRg+8j"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from heliosphere.sirena.org.uk ([172.104.155.198]:53966 "EHLO
+        heliosphere.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S964844AbeALVjF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 16:39:05 -0500
+Content-Disposition: inline
+In-Reply-To: <20180112210706.GE4821@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-Some platforms power off GIC logic in S3, so we need to save/restore
-state. This adds a DT-binding to save/restore the GICD/GICR/GITS
-states using the new CPU_PM_SYSTEM_ENTER/EXIT CPU PM states.
 
-Change-Id: I1fb2117296373fa67397fdd4a8960077b241462e
-Signed-off-by: Derek Basehore <dbasehore@chromium.org>
-Signed-off-by: Brian Norris <briannorris@chromium.org>
----
- drivers/irqchip/irq-gic-v3-its.c   |  51 ++++++
- drivers/irqchip/irq-gic-v3.c       | 333 +++++++++++++++++++++++++++++++++++--
- include/linux/irqchip/arm-gic-v3.h |  17 ++
- 3 files changed, 391 insertions(+), 10 deletions(-)
+--W/+CTqSGWdiRg+8j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-index 06f025fd5726..5cb808e3d0bf 100644
---- a/drivers/irqchip/irq-gic-v3-its.c
-+++ b/drivers/irqchip/irq-gic-v3-its.c
-@@ -85,6 +85,16 @@ struct its_baser {
- 
- struct its_device;
- 
-+/*
-+ * Saved ITS state - this is where saved state for the ITS is stored
-+ * when it's disabled during system suspend.
-+ */
-+struct its_ctx {
-+	u64			cbaser;
-+	u64			cwriter;
-+	u32			ctlr;
-+};
-+
- /*
-  * The ITS structure - contains most of the infrastructure, with the
-  * top-level MSI domain, the command queue, the collections, and the
-@@ -101,6 +111,7 @@ struct its_node {
- 	struct its_collection	*collections;
- 	struct fwnode_handle	*fwnode_handle;
- 	u64			(*get_msi_base)(struct its_device *its_dev);
-+	struct its_ctx		its_ctx;
- 	struct list_head	its_device_list;
- 	u64			flags;
- 	unsigned long		list_nr;
-@@ -3042,6 +3053,46 @@ static void its_enable_quirks(struct its_node *its)
- 	gic_enable_quirks(iidr, its_quirks, its);
- }
- 
-+void its_save_disable(void)
-+{
-+	struct its_node *its;
-+
-+	spin_lock(&its_lock);
-+	list_for_each_entry(its, &its_nodes, entry) {
-+		struct its_ctx *ctx = &its->its_ctx;
-+		void __iomem *base = its->base;
-+		int i;
-+
-+		ctx->ctlr = readl_relaxed(base + GITS_CTLR);
-+		its_force_quiescent(base);
-+		ctx->cbaser = gits_read_cbaser(base + GITS_CBASER);
-+		ctx->cwriter = readq_relaxed(base + GITS_CWRITER);
-+		for (i = 0; i < ARRAY_SIZE(its->tables); i++)
-+			its->tables[i].val = its_read_baser(its, &its->tables[i]);
-+	}
-+	spin_unlock(&its_lock);
-+}
-+
-+void its_restore_enable(void)
-+{
-+	struct its_node *its;
-+
-+	spin_lock(&its_lock);
-+	list_for_each_entry(its, &its_nodes, entry) {
-+		struct its_ctx *ctx = &its->its_ctx;
-+		void __iomem *base = its->base;
-+		int i;
-+
-+		gits_write_cbaser(ctx->cbaser, base + GITS_CBASER);
-+		gits_write_cwriter(ctx->cwriter, base + GITS_CWRITER);
-+		for (i = 0; i < ARRAY_SIZE(its->tables); i++)
-+			its_write_baser(its, &its->tables[i],
-+					its->tables[i].val);
-+		writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-+	}
-+	spin_unlock(&its_lock);
-+}
-+
- static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
- {
- 	struct irq_domain *inner_domain;
-diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
-index 9a7a15049903..95d37fb6f458 100644
---- a/drivers/irqchip/irq-gic-v3.c
-+++ b/drivers/irqchip/irq-gic-v3.c
-@@ -47,6 +47,36 @@ struct redist_region {
- 	bool			single_redist;
- };
- 
-+struct gic_dist_ctx {
-+	u64			*irouter;
-+	u32			*igroupr;
-+	u32			*isenabler;
-+	u32			*ispendr;
-+	u32			*isactiver;
-+	u32			*ipriorityr;
-+	u32			*icfgr;
-+	u32			*igrpmodr;
-+	u32			*nsacr;
-+	u32			ctlr;
-+};
-+
-+struct gic_redist_ctx {
-+	u64			propbaser;
-+	u64			pendbaser;
-+	u32			ipriorityr[8];
-+	u32			ctlr;
-+	u32			igroupr0;
-+	u32			isenabler0;
-+	u32			ispendr0;
-+	u32			isactiver0;
-+	u32			icfgr0;
-+	u32			icfgr1;
-+	u32			igrpmodr0;
-+	u32			nsacr;
-+};
-+
-+#define GICD_NR_REGS(reg, nr_irq)	((nr_irq) >> GICD_## reg ##_SHIFT)
-+
- struct gic_chip_data {
- 	struct fwnode_handle	*fwnode;
- 	void __iomem		*dist_base;
-@@ -58,6 +88,8 @@ struct gic_chip_data {
- 	bool			has_rss;
- 	unsigned int		irq_nr;
- 	struct partition_desc	*ppi_descs[16];
-+	struct gic_dist_ctx	*gicd_ctx;
-+	struct gic_redist_ctx	*gicr_ctx;
- };
- 
- static struct gic_chip_data gic_data __read_mostly;
-@@ -133,13 +165,13 @@ static u64 __maybe_unused gic_read_iar(void)
- }
- #endif
- 
--static void gic_enable_redist(bool enable)
-+static void gic_enable_redist_base(int cpu, bool enable)
- {
- 	void __iomem *rbase;
- 	u32 count = 1000000;	/* 1s! */
- 	u32 val;
- 
--	rbase = gic_data_rdist_rd_base();
-+	rbase = per_cpu_ptr(gic_data.rdists.rdist, cpu)->rd_base;
- 
- 	val = readl_relaxed(rbase + GICR_WAKER);
- 	if (enable)
-@@ -167,6 +199,11 @@ static void gic_enable_redist(bool enable)
- 				   enable ? "wakeup" : "sleep");
- }
- 
-+static void gic_enable_redist(bool enable)
-+{
-+	gic_enable_redist_base(smp_processor_id(), enable);
-+}
-+
- /*
-  * Routines to disable, enable, EOI and route interrupts
-  */
-@@ -757,6 +794,155 @@ static int gic_set_affinity(struct irq_data *d, const struct cpumask *mask_val,
- #define gic_smp_init()		do { } while(0)
- #endif
- 
-+static void gic_redist_save(int cpu)
-+{
-+	struct gic_redist_ctx *ctx = &gic_data.gicr_ctx[cpu];
-+	void __iomem *base = per_cpu_ptr(gic_data.rdists.rdist, cpu)->rd_base;
-+
-+	gic_do_wait_for_rwp(base);
-+	ctx->ctlr = readl_relaxed(base + GICR_CTLR);
-+	ctx->propbaser = readq_relaxed(base + GICR_PROPBASER);
-+	ctx->pendbaser = readq_relaxed(base + GICR_PENDBASER);
-+
-+	base += GICR_SGI_BASE_OFFSET;
-+	ctx->igroupr0 = readl_relaxed(base + GICR_IGROUPR0);
-+	ctx->isenabler0 = readl_relaxed(base + GICR_ISENABLER0);
-+	ctx->ispendr0 = readl_relaxed(base + GICR_ISPENDR0);
-+	ctx->isactiver0 = readl_relaxed(base + GICR_ISACTIVER0);
-+	__ioread32_copy(ctx->ipriorityr, base + GICR_IPRIORITYR0, 8);
-+	ctx->icfgr0 = readl_relaxed(base + GICR_ICFGR0);
-+	ctx->icfgr1 = readl_relaxed(base + GICR_ICFGR0 + sizeof(u32));
-+	ctx->igrpmodr0 = readl_relaxed(base + GICR_IGRPMODR0);
-+	ctx->nsacr = readl_relaxed(base + GICR_NSACR);
-+}
-+
-+static void gic_dist_save(void)
-+{
-+	struct gic_dist_ctx *ctx = gic_data.gicd_ctx;
-+	void __iomem *base = gic_data.dist_base;
-+	int irq_nr = gic_data.irq_nr;
-+
-+	__ioread64_copy(ctx->irouter, base + GICD_IROUTER,
-+			GICD_NR_REGS(IROUTER, irq_nr));
-+	__ioread32_copy(ctx->igroupr, base + GICD_IGROUPR,
-+			GICD_NR_REGS(IGROUPR, irq_nr));
-+	__ioread32_copy(ctx->isenabler, base + GICD_ISENABLER,
-+			GICD_NR_REGS(ISENABLER, irq_nr));
-+	__ioread32_copy(ctx->ispendr, base + GICD_ISPENDR,
-+			GICD_NR_REGS(ISPENDR, irq_nr));
-+	__ioread32_copy(ctx->isactiver, base + GICD_ISACTIVER,
-+			GICD_NR_REGS(ISACTIVER, irq_nr));
-+	__ioread32_copy(ctx->icfgr, base + GICD_ICFGR,
-+			GICD_NR_REGS(ICFGR, irq_nr));
-+	__ioread32_copy(ctx->igrpmodr, base + GICD_IGRPMODR,
-+			GICD_NR_REGS(IGRPMODR, irq_nr));
-+	__ioread32_copy(ctx->nsacr, base + GICD_NSACR,
-+			GICD_NR_REGS(NSACR, irq_nr));
-+	ctx->ctlr = readl_relaxed(base + GICD_CTLR);
-+}
-+
-+static int gic_suspend(void)
-+{
-+	void __iomem *rbase;
-+	int cpu;
-+
-+	if (!gic_data.gicd_ctx || !gic_data.gicr_ctx)
-+		return 0;
-+
-+	for_each_possible_cpu(cpu) {
-+		/*
-+		 * The current processor will have the redistributor disabled in
-+		 * the next step.
-+		 */
-+		if (cpu == smp_processor_id())
-+			continue;
-+
-+		/* Each redistributor must be disabled to save state. */
-+		rbase = per_cpu_ptr(gic_data.rdists.rdist, cpu)->rd_base;
-+		if (!(readl_relaxed(rbase + GICR_WAKER) &
-+		     GICR_WAKER_ProcessorSleep)) {
-+			pr_err("Redistributor for CPU: %d enabled \n", cpu);
-+			return -EPERM;
-+		}
-+	}
-+
-+	/* Disable the redist in case it wasn't in CPU_PM_ENTER. */
-+	gic_enable_redist(false);
-+	for_each_possible_cpu(cpu)
-+		gic_redist_save(cpu);
-+
-+	its_save_disable();
-+	gic_dist_save();
-+
-+	return 0;
-+}
-+
-+static void gic_rdist_restore(int cpu)
-+{
-+	struct gic_redist_ctx *ctx = &gic_data.gicr_ctx[cpu];
-+	void __iomem *base = per_cpu_ptr(gic_data.rdists.rdist, cpu)->rd_base;
-+	void __iomem *sgi_base = base + GICR_SGI_BASE_OFFSET;
-+
-+	writel_relaxed(ctx->ctlr & ~(GICR_CTLR_ENABLE_LPIS), base + GICR_CTLR);
-+	gic_do_wait_for_rwp(base);
-+	writeq_relaxed(ctx->propbaser, base + GICR_PROPBASER);
-+	writeq_relaxed(ctx->pendbaser, base + GICR_PENDBASER);
-+
-+	writel_relaxed(ctx->igroupr0, sgi_base + GICR_IGROUPR0);
-+	writel_relaxed(ctx->isenabler0, sgi_base + GICR_ISENABLER0);
-+	writel_relaxed(ctx->ispendr0, sgi_base + GICR_ISPENDR0);
-+	writel_relaxed(ctx->isactiver0, sgi_base + GICR_ISACTIVER0);
-+	__iowrite32_copy(sgi_base + GICR_IPRIORITYR0, ctx->ipriorityr, 8);
-+	writel_relaxed(ctx->icfgr0, sgi_base + GICR_ICFGR0);
-+	writel_relaxed(ctx->icfgr1, sgi_base + GICR_ICFGR0 + sizeof(u32));
-+	writel_relaxed(ctx->igrpmodr0, sgi_base + GICR_IGRPMODR0);
-+	writel_relaxed(ctx->nsacr, sgi_base + GICR_NSACR);
-+	writel_relaxed(ctx->ctlr, sgi_base + GICR_CTLR);
-+	gic_do_wait_for_rwp(base);
-+}
-+
-+static void gic_dist_restore(void)
-+{
-+	struct gic_dist_ctx *ctx = gic_data.gicd_ctx;
-+	void __iomem *base = gic_data.dist_base;
-+	int irq_nr = gic_data.irq_nr;
-+
-+	gic_dist_wait_for_rwp();
-+	__iowrite64_copy(base + GICD_IROUTER, ctx->irouter,
-+			 GICD_NR_REGS(IROUTER, irq_nr));
-+	__iowrite32_copy(base + GICD_IGROUPR, ctx->igroupr,
-+			 GICD_NR_REGS(IGROUPR, irq_nr));
-+	__iowrite32_copy(base + GICD_ISENABLER, ctx->isenabler,
-+			 GICD_NR_REGS(ISENABLER, irq_nr));
-+	__iowrite32_copy(base + GICD_ISPENDR, ctx->ispendr,
-+			 GICD_NR_REGS(ISPENDR, irq_nr));
-+	__iowrite32_copy(base + GICD_ISACTIVER, ctx->isactiver,
-+			 GICD_NR_REGS(ISACTIVER, irq_nr));
-+	__iowrite32_copy(base + GICD_ICFGR, ctx->icfgr,
-+			 GICD_NR_REGS(ICFGR, irq_nr));
-+	__iowrite32_copy(base + GICD_IGRPMODR, ctx->igrpmodr,
-+			 GICD_NR_REGS(IGRPMODR, irq_nr));
-+	__iowrite32_copy(base + GICD_NSACR, ctx->nsacr,
-+			 GICD_NR_REGS(NSACR, irq_nr));
-+	writel_relaxed(ctx->ctlr, base + GICD_CTLR);
-+	gic_dist_wait_for_rwp();
-+}
-+
-+static void gic_resume(void)
-+{
-+	int cpu;
-+
-+	if (!gic_data.gicd_ctx || !gic_data.gicr_ctx)
-+		return;
-+
-+	gic_dist_restore();
-+	its_restore_enable();
-+	for_each_possible_cpu(cpu)
-+		gic_rdist_restore(cpu);
-+
-+	gic_enable_redist(true);
-+}
-+
- #ifdef CONFIG_CPU_PM
- /* Check whether it's single security state view */
- static bool gic_dist_security_disabled(void)
-@@ -767,13 +953,24 @@ static bool gic_dist_security_disabled(void)
- static int gic_cpu_pm_notifier(struct notifier_block *self,
- 			       unsigned long cmd, void *v)
- {
--	if (cmd == CPU_PM_EXIT) {
-+	switch (cmd) {
-+	case CPU_PM_EXIT:
- 		if (gic_dist_security_disabled())
- 			gic_enable_redist(true);
- 		gic_cpu_sys_reg_init();
--	} else if (cmd == CPU_PM_ENTER && gic_dist_security_disabled()) {
--		gic_write_grpen1(0);
--		gic_enable_redist(false);
-+		break;
-+	case CPU_PM_ENTER:
-+		if (gic_dist_security_disabled()) {
-+			gic_write_grpen1(0);
-+			gic_enable_redist(false);
-+		}
-+		break;
-+	case CPU_SYSTEM_PM_EXIT:
-+		gic_resume();
-+		break;
-+	case CPU_SYSTEM_PM_ENTER:
-+		gic_suspend();
-+		break;
- 	}
- 	return NOTIFY_OK;
- }
-@@ -991,11 +1188,99 @@ static const struct irq_domain_ops partition_domain_ops = {
- 	.select = gic_irq_domain_select,
- };
- 
-+static int gic_populate_ctx(struct gic_dist_ctx *ctx, int irqs)
-+{
-+	int err;
-+
-+	ctx->irouter = kcalloc(GICD_NR_REGS(IROUTER, irqs),
-+			       sizeof(*ctx->irouter), GFP_KERNEL);
-+	if (IS_ERR(ctx->irouter))
-+		return PTR_ERR(ctx->irouter);
-+
-+	ctx->igroupr = kcalloc(GICD_NR_REGS(IGROUPR, irqs),
-+			       sizeof(*ctx->igroupr), GFP_KERNEL);
-+	if (IS_ERR(ctx->igroupr)) {
-+		err = PTR_ERR(ctx->igroupr);
-+		goto out_irouter;
-+	}
-+
-+	ctx->isenabler = kcalloc(GICD_NR_REGS(ISENABLER, irqs),
-+				 sizeof(*ctx->isenabler), GFP_KERNEL);
-+	if (IS_ERR(ctx->isenabler)) {
-+		err = PTR_ERR(ctx->isenabler);
-+		goto out_igroupr;
-+	}
-+
-+	ctx->ispendr = kcalloc(GICD_NR_REGS(ISPENDR, irqs),
-+			       sizeof(*ctx->ispendr), GFP_KERNEL);
-+	if (IS_ERR(ctx->ispendr)) {
-+		err = PTR_ERR(ctx->ispendr);
-+		goto out_isenabler;
-+	}
-+
-+	ctx->isactiver = kcalloc(GICD_NR_REGS(ISACTIVER, irqs),
-+				 sizeof(*ctx->isactiver), GFP_KERNEL);
-+	if (IS_ERR(ctx->isactiver)) {
-+		err = PTR_ERR(ctx->isactiver);
-+		goto out_ispendr;
-+	}
-+
-+	ctx->ipriorityr = kcalloc(GICD_NR_REGS(IPRIORITYR, irqs),
-+				  sizeof(*ctx->ipriorityr), GFP_KERNEL);
-+	if (IS_ERR(ctx->ipriorityr)) {
-+		err = PTR_ERR(ctx->ipriorityr);
-+		goto out_isactiver;
-+	}
-+
-+	ctx->icfgr = kcalloc(GICD_NR_REGS(ICFGR, irqs), sizeof(*ctx->icfgr),
-+			     GFP_KERNEL);
-+	if (IS_ERR(ctx->icfgr)) {
-+		err = PTR_ERR(ctx->icfgr);
-+		goto out_ipriorityr;
-+	}
-+
-+	ctx->igrpmodr = kcalloc(GICD_NR_REGS(IGRPMODR, irqs),
-+				sizeof(*ctx->igrpmodr), GFP_KERNEL);
-+	if (IS_ERR(ctx->igrpmodr)) {
-+		err = PTR_ERR(ctx->igrpmodr);
-+		goto out_icfgr;
-+	}
-+
-+	ctx->nsacr = kcalloc(GICD_NR_REGS(NSACR, irqs), sizeof(*ctx->nsacr),
-+			     GFP_KERNEL);
-+	if (IS_ERR(ctx->nsacr)) {
-+		err = PTR_ERR(ctx->nsacr);
-+		goto out_igrpmodr;
-+	}
-+
-+	return 0;
-+
-+out_irouter:
-+	kfree(ctx->irouter);
-+out_igroupr:
-+	kfree(ctx->igroupr);
-+out_isenabler:
-+	kfree(ctx->isenabler);
-+out_ispendr:
-+	kfree(ctx->ispendr);
-+out_isactiver:
-+	kfree(ctx->isactiver);
-+out_ipriorityr:
-+	kfree(ctx->ipriorityr);
-+out_icfgr:
-+	kfree(ctx->icfgr);
-+out_igrpmodr:
-+	kfree(ctx->igrpmodr);
-+	return err;
-+}
-+
- static int __init gic_init_bases(void __iomem *dist_base,
- 				 struct redist_region *rdist_regs,
- 				 u32 nr_redist_regions,
- 				 u64 redist_stride,
--				 struct fwnode_handle *handle)
-+				 struct fwnode_handle *handle,
-+				 struct gic_dist_ctx *gicd_ctx,
-+				 struct gic_redist_ctx *gicr_ctx)
- {
- 	u32 typer;
- 	int gic_irqs;
-@@ -1012,6 +1297,8 @@ static int __init gic_init_bases(void __iomem *dist_base,
- 	gic_data.redist_regions = rdist_regs;
- 	gic_data.nr_redist_regions = nr_redist_regions;
- 	gic_data.redist_stride = redist_stride;
-+	gic_data.gicd_ctx = gicd_ctx;
-+	gic_data.gicr_ctx = gicr_ctx;
- 
- 	/*
- 	 * Find out how many interrupts are supported.
-@@ -1035,6 +1322,12 @@ static int __init gic_init_bases(void __iomem *dist_base,
- 		goto out_free;
- 	}
- 
-+	if (gicd_ctx) {
-+		err = gic_populate_ctx(gicd_ctx, gic_irqs);
-+		if (err)
-+			goto out_free;
-+	}
-+
- 	gic_data.has_rss = !!(typer & GICD_TYPER_RSS);
- 	pr_info("Distributor has %sRange Selector support\n",
- 		gic_data.has_rss ? "" : "no ");
-@@ -1190,6 +1483,8 @@ static int __init gic_of_init(struct device_node *node, struct device_node *pare
- {
- 	void __iomem *dist_base;
- 	struct redist_region *rdist_regs;
-+	struct gic_dist_ctx *gicd_ctx = NULL;
-+	struct gic_redist_ctx *gicr_ctx = NULL;
- 	u64 redist_stride;
- 	u32 nr_redist_regions;
- 	int err, i;
-@@ -1232,17 +1527,35 @@ static int __init gic_of_init(struct device_node *node, struct device_node *pare
- 	if (of_property_read_u64(node, "redistributor-stride", &redist_stride))
- 		redist_stride = 0;
- 
-+	if (of_property_read_bool(node, "save-suspend-state")) {
-+		gicd_ctx = kzalloc(sizeof(*gicd_ctx), GFP_KERNEL);
-+		if (IS_ERR(gicd_ctx)) {
-+			err = PTR_ERR(gicd_ctx);
-+			goto out_unmap_rdist;
-+		}
-+
-+		gicr_ctx = kcalloc(num_possible_cpus(), sizeof(*gicr_ctx),
-+				   GFP_KERNEL);
-+		if (IS_ERR(gicr_ctx)) {
-+			err = PTR_ERR(gicr_ctx);
-+			goto out_free_gicd_ctx;
-+		}
-+	}
-+
- 	err = gic_init_bases(dist_base, rdist_regs, nr_redist_regions,
--			     redist_stride, &node->fwnode);
-+			     redist_stride, &node->fwnode, gicd_ctx, gicr_ctx);
- 	if (err)
--		goto out_unmap_rdist;
-+		goto out_free_gicr_ctx;
- 
- 	gic_populate_ppi_partitions(node);
- 
- 	if (static_key_true(&supports_deactivate))
- 		gic_of_setup_kvm_info(node);
- 	return 0;
--
-+out_free_gicr_ctx:
-+	kfree(gicr_ctx);
-+out_free_gicd_ctx:
-+	kfree(gicd_ctx);
- out_unmap_rdist:
- 	for (i = 0; i < nr_redist_regions; i++)
- 		if (rdist_regs[i].redist_base)
-diff --git a/include/linux/irqchip/arm-gic-v3.h b/include/linux/irqchip/arm-gic-v3.h
-index c00c4c33e432..f086987e3cb4 100644
---- a/include/linux/irqchip/arm-gic-v3.h
-+++ b/include/linux/irqchip/arm-gic-v3.h
-@@ -46,6 +46,19 @@
- #define GICD_IDREGS			0xFFD0
- #define GICD_PIDR2			0xFFE8
- 
-+#define GICD_IGROUPR_SHIFT		5
-+#define GICD_ISENABLER_SHIFT		5
-+#define GICD_ICENABLER_SHIFT		GICD_ISENABLER_SHIFT
-+#define GICD_ISPENDR_SHIFT		5
-+#define GICD_ICPENDR_SHIFT		GICD_ISPENDR_SHIFT
-+#define GICD_ISACTIVER_SHIFT		5
-+#define GICD_ICACTIVER_SHIFT		GICD_ISACTIVER_SHIFT
-+#define GICD_IPRIORITYR_SHIFT		2
-+#define GICD_ICFGR_SHIFT		4
-+#define GICD_IGRPMODR_SHIFT		5
-+#define GICD_NSACR_SHIFT		4
-+#define GICD_IROUTER_SHIFT		0
-+
- /*
-  * Those registers are actually from GICv2, but the spec demands that they
-  * are implemented as RES0 if ARE is 1 (which we do in KVM's emulated GICv3).
-@@ -188,6 +201,8 @@
- 
- #define GICR_PENDBASER_PTZ				BIT_ULL(62)
- 
-+#define GICR_SGI_BASE_OFFSET		(1U << 16)
-+
- /*
-  * Re-Distributor registers, offsets from SGI_base
-  */
-@@ -581,6 +596,8 @@ struct rdists {
- 
- struct irq_domain;
- struct fwnode_handle;
-+void its_save_disable(void);
-+void its_restore_enable(void);
- int its_cpu_init(void);
- int its_init(struct fwnode_handle *handle, struct rdists *rdists,
- 	     struct irq_domain *domain);
--- 
-2.16.0.rc1.238.g530d649a79-goog
+On Fri, Jan 12, 2018 at 01:07:06PM -0800, Tony Lindgren wrote:
+
+> Tturns out just adding back .read = twl4030_read fixes it..
+> I added a dummy function for read and am now seeing a bunch
+> of reads that now don't happen:
+
+What's supposed to happen here is that you end up with a
+component->regmap set and snd_soc_component_read() uses that to do the
+read.  That normally gets retrieved via dev_get_regmap() but it looks
+like this is broken here by the rather novel chip design confusing the
+assumptions that code makes.  I *think* that setting the regmap to
+twl_get_regmap(TWL4030_MODULE_AUDIO_VOICE) using
+snd_soc_codec_init_regmap() in twl4030_soc_probe ought to do the trick
+(assuming my guesses about what's going on are right) but can't test.
+
+I'd check twl6040 too, I bet it's got the same issue.
+
+--W/+CTqSGWdiRg+8j
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlpZKuQACgkQJNaLcl1U
+h9D4lAf/cYMwmOYd4r9YlB1Q6+2IX5bDKu8oiy4GcFafUU2Qti7H/bnKiz5HxNBU
+rIGaQlpN91h2t1XM+hchOx9PthoPQwv5S9OUWtOW9xxwWwlQcBxbZC/b8XB2sbch
+JQwMXIe8nuK2U2gqu/GdB0bEhtIdGKamxJM0+PCzKYYCLcrEnjl3jpM/XZx4Bico
+zBklJ9pR9/8CncQZEKU5aenmlaTMxwkcehoyOMEtAriBLdSL5ztElEcN//x9Vh+y
+bTqjc4RSQI4/+wrvJrbi6uajimSrx6tLQvpxQsMiCWfFgkRUiWLflqEwlPio+Md3
+JfLBxbwicV/xEO3eBnUGqqiCluUodw==
+=YEIJ
+-----END PGP SIGNATURE-----
+
+--W/+CTqSGWdiRg+8j--
