@@ -1,39 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/2] PM / core: genpd fix and pm_runtime_force_suspend|resume() rework
-Date: Fri, 12 Jan 2018 14:00:00 +0100
-Message-ID: <4928977.5hd79RbQlp@aspire.rjw.lan>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: PM regression in next
+Date: Fri, 12 Jan 2018 14:16:23 +0100
+Message-ID: <20180112131623.GA29734@lunn.ch>
+References: <20180112000037.GA3875@atomide.com>
+ <20180112013257.GB4059@atomide.com>
+ <4913146.sVL6sFxzC8@aspire.rjw.lan>
+ <4745593.FguGN2uIkX@aspire.rjw.lan>
+ <e7a673e1-b28d-f84e-c6c1-c5b896e92aeb@metafoo.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:63086 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933493AbeALNNj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 08:13:39 -0500
+Received: from vps0.lunn.ch ([185.16.172.187]:41125 "EHLO vps0.lunn.ch"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933462AbeALNQk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 12 Jan 2018 08:16:40 -0500
+Content-Disposition: inline
+In-Reply-To: <e7a673e1-b28d-f84e-c6c1-c5b896e92aeb@metafoo.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, LKML <linux-kernel@vger.kernel.org>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Linux PM <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi,
+On Fri, Jan 12, 2018 at 02:01:14PM +0100, Lars-Peter Clausen wrote:
+> On 01/12/2018 01:30 PM, Rafael J. Wysocki wrote:
+> > On Friday, January 12, 2018 1:23:54 PM CET Rafael J. Wysocki wrote:
+> >> On Friday, January 12, 2018 2:32:57 AM CET Tony Lindgren wrote:
+> >>> * Tony Lindgren <tony@atomide.com> [180111 17:20]:
+> >>>> Well I tried to measure suspend power consumption and noticed
+> >>>> that system suspend fails too hand hangs the network device:
+> >>>>
+> >>>> # echo mem > /sys/power/state
+> >>>> [   32.577850] PM: suspend entry (deep)
+> >>>> [   32.582031] PM: Syncing filesystems ... done.
+> >>>> [   32.598083] Freezing user space processes ... (elapsed 0.002 seconds) done.
+> >>>> [   32.608398] OOM killer disabled.
+> >>>> [   32.611846] Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+> >>>> [   32.622192] Suspending console(s) (use no_console_suspend to debug)
+> >>>> [   32.651123] dpm_run_callback(): mdio_bus_suspend+0x0/0x24 returns 4352
+> >>>> [   32.651428] PM: Device 2c000000.ethernet-ffffffff:01 failed to suspend: error 4352
+> >>
+> >> This looks totally bogus.
+> >>
+> >> First, "error" should be a negative number and we print it as int.
+> >>
+> >> Second, error codes are not in this range anyway.
+> >>
+> >>>> [   32.653289] PM: Some devices failed to suspend, or early wake event detected
+> >>>> [   32.685455] OOM killer enabled.
+> >>>> [   32.688629] Restarting tasks ... done.
+> >>>> [   32.695983] PM: suspend exit
+> >>>> ash: write error: Bad address
+> >>>>
+> >>>> That too works just fine at commit 70286688e5ad.
+> >>>
+> >>> Suspend fails at commit e2d7fe89e8ae though, so looks like we
+> >>> have two separate issues. I'll try to bisect that separately.
+> > 
+> > I guess what may happen is that something started to return positive numbers
+> > which confuse things all over when passed along by its callers as error codes.
+> 
+> 
+> I guess it this: https://patchwork.kernel.org/patch/10151763/
 
-This comes from the recent discussion/testing effort that ensued after my
-pm_runtime_force_suspend|resume() changes proposal:
+Hi Tony, 
 
-https://marc.info/?t=151497772000004&r=1&w=2
+Please try:
 
-Patch [1/2] basically is https://patchwork.kernel.org/patch/10152873/ rebased
-on top of the current linux-next branch of the linux-pm.git tree (the relevant
-part should be there in the linux-next tree proper ATM).  It applies on top
-of https://patchwork.kernel.org/patch/10156077/ which should apply to the Linus'
-tree cleanly.
+https://patchwork.ozlabs.org/patch/859297/
 
-Patch [2/2] is a resend of https://patchwork.kernel.org/patch/10142047/ with
-a very minor changelog modification and the R-b tag from Ulf.
+Hopefully we will get this into net-next soon.
 
-Geert, if possible, please test this on the Renesas systems that had the
-problem with https://patchwork.kernel.org/patch/10142047/ previously and let
-me know if you still see issues.
-
-Thanks,
-Rafael
+Thanks
+	Andrew
