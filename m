@@ -1,46 +1,65 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression in next
-Date: Fri, 12 Jan 2018 06:14:56 -0800
-Message-ID: <20180112141456.GB4821@atomide.com>
-References: <20180112000037.GA3875@atomide.com>
- <20180112013257.GB4059@atomide.com>
- <4913146.sVL6sFxzC8@aspire.rjw.lan>
- <4745593.FguGN2uIkX@aspire.rjw.lan>
- <e7a673e1-b28d-f84e-c6c1-c5b896e92aeb@metafoo.de>
- <20180112131623.GA29734@lunn.ch>
- <20180112135203.GA4821@atomide.com>
- <20180112135526.GC29734@lunn.ch>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/2] PM / core: genpd fix and pm_runtime_force_suspend|resume()
+ rework
+Date: Fri, 12 Jan 2018 15:31:09 +0100
+Message-ID: <CAMuHMdX6dJzOcxkWyDR6anpcwZU5fy03sTeChEp35KY0d40iFg@mail.gmail.com>
+References: <4928977.5hd79RbQlp@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:48730 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933687AbeALOPA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 12 Jan 2018 09:15:00 -0500
-Content-Disposition: inline
-In-Reply-To: <20180112135526.GC29734@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <4928977.5hd79RbQlp@aspire.rjw.lan>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Rothwell <sfr@canb.auug.org.au>, Linux PM <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-* Andrew Lunn <andrew@lunn.ch> [180112 13:55]:
-> > Thanks that fixes the suspend error. And I was able to confirm
-> > that the suspend power consumption is OK.
-> > 
-> > That still leaves the mystery of the runtime idle power consumption
-> > being much higher with commit e130bc1d00a4.
-> 
-> Did you re-measure the runtime power? Do you have an unused PHY? It
-> could be it is not getting shut down. 1G PHYs can be quite power
-> hungry.
+Hi Rafael,
 
-Yes this is a different issue, the increase in runtime PM
-consumption measurement I'm measuring is for a SoM board.
-It contains the SoC + memory + PMIC and few devices. The
-Ethernet controller is on a separate optional base board
-and not related to the runtime PM issue.
+On Fri, Jan 12, 2018 at 2:00 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> This comes from the recent discussion/testing effort that ensued after my
+> pm_runtime_force_suspend|resume() changes proposal:
+>
+> https://marc.info/?t=151497772000004&r=1&w=2
+>
+> Patch [1/2] basically is https://patchwork.kernel.org/patch/10152873/ rebased
+> on top of the current linux-next branch of the linux-pm.git tree (the relevant
+> part should be there in the linux-next tree proper ATM).  It applies on top
+> of https://patchwork.kernel.org/patch/10156077/ which should apply to the Linus'
+> tree cleanly.
+>
+> Patch [2/2] is a resend of https://patchwork.kernel.org/patch/10142047/ with
+> a very minor changelog modification and the R-b tag from Ulf.
+>
+> Geert, if possible, please test this on the Renesas systems that had the
+> problem with https://patchwork.kernel.org/patch/10142047/ previously and let
+> me know if you still see issues.
 
-Regards,
+I've tested this on two very similar systems: Salvator-XS with R-Car H3 ES2.0,
+and Salvator-X with R-Car M3-W ES1.0.
 
-Tony
+On the M3-based system, everything seems to work fine.
+On the H3-based system, the serial console (the /dev/ttySC0 device, not kernel
+serial output) is dead after resume from s2ram, with and without
+no_console_suspend.
+
+With no_console_suspend, I see:
+
+    ttySC ttySC0: 1 input overrun(s)
+
+after typing on the serial console, so it looks like an interrupt problem.
+
+This issue seems to be caused by patch [1/2]. But I have no idea what's
+really happening, and why the two systems behave differently.
+
+Oh well, have a nice weekend!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
