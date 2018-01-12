@@ -1,354 +1,50 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V3] thermal: Add cooling device's statistics in sysfs
-Date: Fri, 12 Jan 2018 09:46:08 -0800
-Message-ID: <20180112174606.GA11076@localhost.localdomain>
-References: <087186fecdfd85bead58e110cf8bf7ccdfab517b.1515663078.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/2] thermal, OPP: move the CPU power estimation to the
+ OPP library
+Date: Fri, 12 Jan 2018 09:47:21 -0800
+Message-ID: <20180112174720.GB11076@localhost.localdomain>
+References: <20180109110252.13557-1-quentin.perret@arm.com>
+ <20180110193431.GE3837@localhost.localdomain>
+ <20180111094257.GA6603@e108498-lin.cambridge.arm.com>
+ <20180112172410.GA10243@localhost.localdomain>
+ <20180112174410.GA28012@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:35901 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S964844AbeALRrW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 12:47:22 -0500
+Received: by mail-pg0-f67.google.com with SMTP id j2so5021985pgv.3
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jan 2018 09:47:22 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <087186fecdfd85bead58e110cf8bf7ccdfab517b.1515663078.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20180112174410.GA28012@e108498-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
 
-Hello,
-
-On Thu, Jan 11, 2018 at 03:06:09PM +0530, Viresh Kumar wrote:
-> This extends the sysfs interface for thermal cooling devices and exposes
-> some pretty useful statistics. These statistics have proven to be quite
-> useful specially while doing benchmarks related to the task scheduler,
-> where we want to make sure that nothing has disrupted the test,
-> specially the cooling device which may have put constraints on the CPUs.
-> The information exposed here tells us to what extent the CPUs were
-> constrained by the thermal framework.
+On Fri, Jan 12, 2018 at 05:44:10PM +0000, Quentin Perret wrote:
+> On Friday 12 Jan 2018 at 09:24:12 (-0800), Eduardo Valentin wrote:
+> > I would rather see a single series showing all users of the new API
+> > instead. If you want to split the series and add a link to the users
+> > of the new API into the series that takes it out of thermal subsystem,
+> > I am also fine, as long as I see the other users. Otherwise, this is a
+> > light nack, reason: no real new users of the new API, even though I
+> > can surely see how the scheduler could use it. But if you do not really
+> > present the code of the new users, this is just speculation.
+> > 
+> > Presenting the entire code of the new API + all its users can help us to
+> > judge if: (1) a new API is really needed, (2) where it should be place.
+> > 
 > 
-> The read-only "total_trans" file shows the total number of cooling state
-> transitions the device has gone through since the time the cooling
-> device is registered or the time when statistics were reset last.
+> Understood. I will still send a v2 next week with the changes requested
+> by Viresh and I'll mark my upcoming scheduler patches as depending on this
+> series.
 
-It would be good to properly describe what total_trans means. Also, to
-have this documented in the thermal sysfs file. Does it mean how many
-times the cooling device has been set to a specific state? Or how many
-times the state has been changed to that specific value?
-
-> 
-> The read-only "time_in_state_ms" file shows the time spent by the device
-> in the respective cooling states.
-
-What about this file use the same unit as the cpufreq equivalent? IIRC,
-the cpufreq node used clock_t.
+Please note on this series the patches that will be depending on this
+too, so this present review can also benefit.
 
 > 
-> The write-only "reset" file is used to reset the statistics.
-> 
-
-cool.
-
-> This is how the directory structure looks like for a single cooling
-> device:
-> 
-> $ ls -R /sys/class/thermal/cooling_device0/
-> /sys/class/thermal/cooling_device0/:
-> cur_state  max_state  power  stats  subsystem  type  uevent
-> 
-> /sys/class/thermal/cooling_device0/power:
-> autosuspend_delay_ms  runtime_active_time  runtime_suspended_time
-> control               runtime_status
-> 
-> /sys/class/thermal/cooling_device0/stats:
-> reset  time_in_state_ms  total_trans
-> 
-
-I guess the only missing node from the cpufreq design copy was the
-transition table.
-
-Also, I think the stats per thermal zone is also useful, sometimes
-more than per cooling device, as I have been using in
-the past, but that is just a comment, not really to block your patch.
-
-> This is tested on ARM 32-bit Hisilicon hikey620 board running Ubuntu and
-> ARM 64-bit Hisilicon hikey960 board running Android.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> V2->V3:
-> - Total number of states is max_level + 1. The earlier version didn't
->   take that into account and so the stats for the highest state were
->   missing.
-> 
-> V1->V2:
-> - Move to sysfs from debugfs
-> 
->  drivers/thermal/thermal_core.c    |   3 +-
->  drivers/thermal/thermal_core.h    |   3 +
->  drivers/thermal/thermal_helpers.c |   5 +-
->  drivers/thermal/thermal_sysfs.c   | 146 ++++++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h           |   1 +
->  5 files changed, 156 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 2b1b0ba393a4..2cc4ae57484e 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -972,8 +972,8 @@ __thermal_cooling_device_register(struct device_node *np,
->  	cdev->ops = ops;
->  	cdev->updated = false;
->  	cdev->device.class = &thermal_class;
-> -	thermal_cooling_device_setup_sysfs(cdev);
->  	cdev->devdata = devdata;
-> +	thermal_cooling_device_setup_sysfs(cdev);
->  	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
->  	result = device_register(&cdev->device);
->  	if (result) {
-> @@ -1106,6 +1106,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
->  
->  	ida_simple_remove(&thermal_cdev_ida, cdev->id);
->  	device_unregister(&cdev->device);
-> +	thermal_cooling_device_remove_sysfs(cdev);
->  }
->  EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
->  
-> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-> index 27e3b1df7360..f6eb01e99816 100644
-> --- a/drivers/thermal/thermal_core.h
-> +++ b/drivers/thermal/thermal_core.h
-> @@ -73,6 +73,9 @@ int thermal_build_list_of_policies(char *buf);
->  int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
->  void thermal_zone_destroy_device_groups(struct thermal_zone_device *);
->  void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *);
-> +void thermal_cooling_device_remove_sysfs(struct thermal_cooling_device *cdev);
-> +void thermal_cooling_device_stats_update(struct thermal_cooling_device *cdev,
-> +					 unsigned long new_state);
->  /* used only at binding time */
->  ssize_t
->  thermal_cooling_device_trip_point_show(struct device *,
-> diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-> index 8cdf75adcce1..eb03d7e099bb 100644
-> --- a/drivers/thermal/thermal_helpers.c
-> +++ b/drivers/thermal/thermal_helpers.c
-> @@ -187,7 +187,10 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
->  		if (instance->target > target)
->  			target = instance->target;
->  	}
-> -	cdev->ops->set_cur_state(cdev, target);
-> +
-> +	if (!cdev->ops->set_cur_state(cdev, target))
-> +		thermal_cooling_device_stats_update(cdev, target);
-> +
-
-I might be wrong but, this will maybe double account for cases the same
-cooling state is selected.
-
->  	cdev->updated = true;
->  	mutex_unlock(&cdev->lock);
->  	trace_cdev_update(cdev, target);
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-> index ba81c9080f6e..88bb26d5d375 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -666,6 +666,121 @@ void thermal_zone_destroy_device_groups(struct thermal_zone_device *tz)
->  }
->  
->  /* sys I/F for cooling device */
-> +struct cooling_dev_stats {
-> +	spinlock_t lock;
-> +	unsigned int total_trans;
-> +	unsigned long state;
-> +	unsigned long max_states;
-> +	ktime_t last_time;
-> +	ktime_t *time_in_state;
-> +};
-> +
-> +static void update_time_in_state(struct cooling_dev_stats *stats)
-> +{
-> +	ktime_t now = ktime_get(), delta;
-> +
-> +	delta = ktime_sub(now, stats->last_time);
-> +	stats->time_in_state[stats->state] =
-> +		ktime_add(stats->time_in_state[stats->state], delta);
-> +	stats->last_time = now;
-> +}
-> +
-> +void thermal_cooling_device_stats_update(struct thermal_cooling_device *cdev,
-> +					 unsigned long new_state)
-> +{
-> +	struct cooling_dev_stats *stats = cdev->stats;
-> +
-> +	spin_lock(&stats->lock);
-> +
-> +	if (stats->state == new_state)
-> +		goto unlock;
-> +
-> +	update_time_in_state(stats);
-> +	stats->state = new_state;
-> +	stats->total_trans++;
-> +
-> +unlock:
-> +	spin_unlock(&stats->lock);
-> +}
-> +
-> +static ssize_t
-> +thermal_cooling_device_total_trans_show(struct device *dev,
-> +					struct device_attribute *attr,
-> +					char *buf)
-> +{
-> +	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-> +	struct cooling_dev_stats *stats = cdev->stats;
-> +	int ret;
-> +
-> +	spin_lock(&stats->lock);
-> +	ret = sprintf(buf, "%u\n", stats->total_trans);
-> +	spin_unlock(&stats->lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static ssize_t
-> +thermal_cooling_device_time_in_state_show(struct device *dev,
-> +					  struct device_attribute *attr,
-> +					  char *buf)
-> +{
-> +	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-> +	struct cooling_dev_stats *stats = cdev->stats;
-> +	ssize_t len = 0;
-> +	int i;
-> +
-> +	spin_lock(&stats->lock);
-> +	update_time_in_state(stats);
-> +
-> +	for (i = 0; i < stats->max_states; i++) {
-> +		len += sprintf(buf + len, "state%u\t%llu\n", i,
-> +			       ktime_to_ms(stats->time_in_state[i]));
-> +	}
-> +	spin_unlock(&stats->lock);
-> +
-> +	return len;
-> +}
-> +
-> +static ssize_t
-> +thermal_cooling_device_reset_store(struct device *dev,
-> +				   struct device_attribute *attr,
-> +				   const char *buf, size_t count)
-> +{
-> +	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-> +	struct cooling_dev_stats *stats = cdev->stats;
-> +	int i;
-> +
-> +	spin_lock(&stats->lock);
-> +
-> +	stats->total_trans = 0;
-> +	stats->last_time = ktime_get();
-
-So, this is ktime. Then again, might make sense to follow cpufreq unit.
-
-Once again, this needs to go into the documentation, regardless of the
-unit we end up with.
-
-> +
-> +	for (i = 0; i < stats->max_states; i++)
-> +		stats->time_in_state[i] = ktime_set(0, 0);
-> +
-> +	spin_unlock(&stats->lock);
-> +
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR(total_trans, 0444, thermal_cooling_device_total_trans_show,
-> +		   NULL);
-> +static DEVICE_ATTR(time_in_state_ms, 0444,
-> +		   thermal_cooling_device_time_in_state_show, NULL);
-> +static DEVICE_ATTR(reset, 0200, NULL, thermal_cooling_device_reset_store);
-> +
-> +static struct attribute *cooling_device_stats_attrs[] = {
-> +	&dev_attr_total_trans.attr,
-> +	&dev_attr_time_in_state_ms.attr,
-> +	&dev_attr_reset.attr,
-> +	NULL
-> +};
-> +
-> +static const struct attribute_group cooling_device_stats_attr_group = {
-> +	.attrs = cooling_device_stats_attrs,
-> +	.name = "stats"
-> +};
-> +
->  static ssize_t
->  thermal_cooling_device_type_show(struct device *dev,
->  				 struct device_attribute *attr, char *buf)
-> @@ -721,6 +836,7 @@ thermal_cooling_device_cur_state_store(struct device *dev,
->  	result = cdev->ops->set_cur_state(cdev, state);
->  	if (result)
->  		return result;
-> +	thermal_cooling_device_stats_update(cdev, state);
->  	return count;
->  }
->  
-> @@ -745,14 +861,44 @@ static const struct attribute_group cooling_device_attr_group = {
->  
->  static const struct attribute_group *cooling_device_attr_groups[] = {
->  	&cooling_device_attr_group,
-> +	&cooling_device_stats_attr_group,
->  	NULL,
->  };
->  
->  void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *cdev)
->  {
-> +	struct cooling_dev_stats *stats;
-> +	unsigned long states;
-> +	int ret, size;
-> +
-> +	ret = cdev->ops->get_max_state(cdev, &states);
-> +	if (ret)
-> +		return;
-> +
-> +	states++; /* Total number of states is highest state + 1 */
-> +	size = sizeof(*stats);
-> +	size += sizeof(*stats->time_in_state) * states;
-> +
-> +	stats = kzalloc(size, GFP_KERNEL);
-> +	if (!stats)
-> +		return;
-> +
-> +	stats->time_in_state = (ktime_t *)(stats + 1);
-> +	cdev->stats = stats;
-> +	stats->last_time = ktime_get();
-> +	stats->max_states = states;
-> +	cdev->stats = stats;
-> +
-> +	spin_lock_init(&stats->lock);
-
-I would say, the cooling device stat initialization deserves its own
-initialization function, don't you think?
-
-
-Also, I see nothing about sysfs on the lines added to
-thermal_cooling_device_setup_sysfs().
-
->  	cdev->device.groups = cooling_device_attr_groups;
->  }
->  
-> +void thermal_cooling_device_remove_sysfs(struct thermal_cooling_device *cdev)
-> +{
-> +	kfree(cdev->stats);
-> +	cdev->stats = NULL;
-> +}
-> +
->  /* these helper will be used only at the time of bindig */
->  ssize_t
->  thermal_cooling_device_trip_point_show(struct device *dev,
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 8c5302374eaa..7834be668d80 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -148,6 +148,7 @@ struct thermal_cooling_device {
->  	struct device device;
->  	struct device_node *np;
->  	void *devdata;
-> +	void *stats;
->  	const struct thermal_cooling_device_ops *ops;
->  	bool updated; /* true if the cooling device does not need update */
->  	struct mutex lock; /* protect thermal_instances list */
-> -- 
-> 2.15.0.194.g9af6a3dea062
-> 
+> Cheers,
+> Quentin
