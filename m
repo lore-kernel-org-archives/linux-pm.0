@@ -1,186 +1,148 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFD] Devices that need full power for wakeup
-Date: Sat, 13 Jan 2018 03:42:14 +0100
-Message-ID: <1871558.5ybir6VhFs@aspire.rjw.lan>
-References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com> <CAJZ5v0iFGQ5uSvjk8mKUnVNL2=sT97qmHRaY9c5w4q8KHZfe_Q@mail.gmail.com> <CAPDyKFo+c_Hd9w-VhTx2KPVKF2k=iJdbomT4Hi_mMLgpWkdetw@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: thermal_hwmon: Convert to
+ hwmon_device_register_with_info()
+Date: Sat, 13 Jan 2018 21:47:57 +0800
+Message-ID: <1515851277.4764.2.camel@intel.com>
+References: <1514976294-31880-1-git-send-email-festevam@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:41770 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965368AbeAMCna (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 21:43:30 -0500
-In-Reply-To: <CAPDyKFo+c_Hd9w-VhTx2KPVKF2k=iJdbomT4Hi_mMLgpWkdetw@mail.gmail.com>
+Received: from mga17.intel.com ([192.55.52.151]:37174 "EHLO mga17.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754888AbeAMNsH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 13 Jan 2018 08:48:07 -0500
+In-Reply-To: <1514976294-31880-1-git-send-email-festevam@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
+To: Fabio Estevam <festevam@gmail.com>
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, arthurborsboom@gmail.com, Fabio Estevam <fabio.estevam@nxp.com>, Pavel Machek <pavel@ucw.cz>, Guenter Roeck <linux@roeck-us.net>
 
-On Friday, January 12, 2018 12:59:04 PM CET Ulf Hansson wrote:
-> [...]
+On Wed, 2018-01-03 at 08:44 -0200, Fabio Estevam wrote:
+> From: Fabio Estevam <fabio.estevam@nxp.com>
 > 
-> >>>> Therefore, device_may_wakeup() may returns true, if userspace wants to
-> >>>> wakeup the system from sleep when there is an SD card inserted.
-> >>>> Although, that doesn't mean we have to keep the logic for the SD
-> >>>> controller device being powered during system suspend, since it would
-> >>>> waste power.
-> >>>
-> >>> The SD controller need not be provided with power, but of course the
-> >>> GPIO card detect pin won't work without power I suppose.  It
-> >>> essentially is like a button attached to the device with its own power
-> >>> and signal wiring.
-> >>
-> >> Correct.
-> >>
-> >>>
-> >>> Well, for devices like Ethernet or WiFi or even input (say mice and
-> >>> keyboards, touch panels and so on) power has to be provided to the
-> >>> device itself for detection of activity while suspended.
-> >>
-> >> Actually no.
-> >
-> > Why "no"?
-> >
-> > The example below doesn't contradict what I said at all.
+> Booting Linux on a mx6q based board leads to the following warning:
+>     
+> (NULL device *): hwmon_device_register() is deprecated. Please
+> convert the
+> driver to use hwmon_device_register_with_info().
+>     
+> , so do the conversion as suggested.
 > 
-> The "no" meant, that the above statement isn't applicable as generic
-> statement. I meant there are cases when it isn't true, apologize if
-> that was unclear.
+> Also, this results in the core taking care of creating the 'name'
+> attribute, so drop the code doing that from the thermal driver.
 > 
-> >
-> >> I realize that SD card detect GPIO was not the best example to
-> >> describe the real problem, even if it's related though.
-> >>
-> >> Let me take another example from an embedded battery driven platform:
-> >>
-> >> Assume user space has enabled the wakeup setting for the serial
-> >> console device. In a similar system as described earlier, the serial
-> >> console driver may be able to re-route the serial RX pin to a GPIO
-> >> wake IRQ at system suspend.
-> >
-> > OK
-> >
-> > That's equivalent to switching over to an out-of-band wakeup power
-> > source AFAICS.  There is no substantial practical difference between
-> > that and being able to use a special separate power source for wakeup
-> > for the whole device.
+> The initial attempt to convert this driver to
+> hwmon_device_register_with_info() caused issues on the N900 platform
+> in commit 611fb68062f ("thermal: thermal_hwmon: Convert to
+> hwmon_device_register_with_info()"):
+
+the commit id is 7611fb68062f.
+
 > 
-> From a wakup point of view, yes.
+> bq27xxx-battery 2-0055: failed to register battery
+> bq27xxx-battery: probe of 2-0055 failed with error -22
+> ...
+> rx51-battery: probe of n900-battery failed with error -22
 > 
-> However, in case of the power source you refer to, this isn't
-> something the driver controls by itself, but rather the upper layers,
-> right!?
-
-That may or may not be the case.
-
-I guess your point is that the middle layer may control both the in-band and
-out-of-band power sources and it needs to be told which one to use.
-
-I'm not sure that this really is a problem, because the out-of-band wakeup
-power source has to be represented somehow for the driver to be able to use it.
-In your example, the driver can only reroute the pin to the GPIO if it knows
-that the GPIO is there and then configure it for wakeup.  Then, the IRQ
-chip driver responsible for it needs to figure out how to ensure sufficient
-power for it to work while suspended (that's the Geert's use case or at least
-part of it).
-
-> So, in principle for the cases you refer to, upper layers only need to
-> know that the device has wakeup enabled, in principle, as to be able
-> to take the correct decision during system suspend. Right?
-
-That depends on what the upper layer itself can do.
-
-If there are facilities for dealing with wakeup in the upper layer, it should
-be sufficient for it to know that the device can and is allowed to wake up the
-system.  Then, it will just apply those facilities to the device.
-
-OTOH, if the upper layer has no such facilities, the driver needs to give it
-hints regarding what needs to be done in terms of what the upper layer *can*
-do.
-
-> While in those case I refer to, the driver explicitly needs to be
-> involved, dealing with the re-routing of the GPIO - *if* it can, as to
-> enable system wakeups. In these circumstances, upper layers have no
-> clue of what goes on. This is the big difference in my opinion.
-
-There is a difference if the driver needs to be involved in setting up the
-device for wakeup (both system-wide and in runtime PM), but in that case the
-driver knows (a) what wakeup IRQ it is going to use and (b) whether or not
-in-band power may be turned off for it.  There are ways to indicate both of
-these things to the other code layers today.
-
-What else is needed, specifically?
-
-> >
-> >> This means that serial console device may
-> >> be completely powered off during system suspend. However, whether
-> >> powering off the serial device (and its attached PM domain) can be
-> >> done, is currently only known by the driver, as upper-layers (PM
-> >> domain) don't know if the RX pin is re-routed to a GPIO wake IRQ or
-> >> not.
-> >
-> > Well, then what does prevent you from defaulting to "turn off in-band
-> > power on suspend" (which is the current state of affairs) and then
-> > using PM_QOS_FLAG_NO_POWER_OFF for indicating the "no power off"
-> > condition in case you've not rerouted the pin?
-> >
+> , leading to a revert in commit 3feb479cea37 ("Revert "thermal:
+> thermal_hwmon: Convert to hwmon_device_register_with_info()"").
 > 
-> Using the PM_QOS_FLAG_NO_POWER_OFF doesn't work, because of the
-> following reasons.
+don't know why but checkpatch.pl always complains
+
+ERROR: Please use git commit description style 'commit <12+ chars of
+sha1> ("<title line>")' - ie: 'commit 3feb479cea37 ("Revert "thermal:
+thermal_hwmon: Convert to hwmon_device_register_with_info()"")'
+#37: 
+, leading to a revert in commit 3feb479cea37 ("Revert "thermal:
+
+total: 1 errors, 0 warnings, 49 lines checked
+
+thanks,
+rui
+> The probe errors happened due to the '-' character being present in
+> the name of the power supply devices: bq27200-0 and rx51-battery.
 > 
-> If genpd would default to power off the "in-band-power" at system
-> suspend, devices not supporting remote wakeups (keeping devices
-> runtime resumed), needs to start announcing that genpd needs to keep
-> the in-band-power on at system suspend. In other words, they need to
-> set the PM_QOS_FLAG_NO_POWER_OFF flag.
+> Since commit 74d3b6419772 ("hwmon: Relax name attribute validation
+> for new APIs") hwmon will no longer treat these names as errors,
+> allowing the transition for hwmon_device_register_with_info() to
+> happen in a safely manner. 
 > 
-> However, that wouldn't be sufficient, as the PM_QOS_FLAG_NO_POWER_OFF
-> flag isn't propagated to parents devices and other wakeup path
-> resources.
-
-It only needs to be propagated to parents if the parents actively
-route wakeup signals from the children or provide them with power.
-In the genpd case the latter is not relevant at least.
-
-> > And I still don't see why this isn't relevant to runtime PM too, at
-> > least in principle.
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+> ---
+> Pavel,
 > 
-> Regarding runtime PM; I don't see any issues,
-
-I wonder why.
-
-How exactly do you tell the middle layer to avoid turning the in-band power
-off for devices that are suspended if they need in-band power to signal
-remote wakeup?
-
-Your example with the pin rerouting is perfectly relevant for runtime PM too,
-in particular, as the driver may very well want to reroute the pin for remote
-wakeup and turn the in-band power off for the device then during runtime
-suspend just like it does for system-wide suspend.
-
-> but perhaps you have some cases for the ACPI PM domain in mind?
+> Could you please test this patch on your N900 platform?
 > 
-> Anyway, for genpd and drivers that manages devices attached to it: If
-> the driver and the device can't be configured for remote wakeup (at
-> runtime suspend), runtime suspend must be prevented by the driver.
-
-Why?  I don't see any technical reason for that whatever.
-
-The "must" part seems to be totally artificial here.
-
-> That's the generic behavior drivers must support, no matter if their
-> devices are attached to genpd or not, right!?
-
-Nope.
-
-> The point is, for remote wakeups, genpd and its users don't need the
-> PM_QOS_FLAG_NO_POWER_OFF flag, or anything else.
-
-Yes, they do or at least they may, which is why it is already supported in
-there.
-
-I'll respond to the rest of this later, sorry for being time-constrained.
-
-Thanks,
-Rafael
+> Thanks
+> 
+>  drivers/thermal/thermal_hwmon.c | 20 +++-----------------
+>  1 file changed, 3 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_hwmon.c
+> b/drivers/thermal/thermal_hwmon.c
+> index 541af59..c4a508a 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
+>  static DEFINE_MUTEX(thermal_hwmon_list_lock);
+>  
+>  static ssize_t
+> -name_show(struct device *dev, struct device_attribute *attr, char
+> *buf)
+> -{
+> -	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
+> -	return sprintf(buf, "%s\n", hwmon->type);
+> -}
+> -static DEVICE_ATTR_RO(name);
+> -
+> -static ssize_t
+>  temp_input_show(struct device *dev, struct device_attribute *attr,
+> char *buf)
+>  {
+>  	int temperature;
+> @@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct
+> thermal_zone_device *tz)
+>  
+>  	INIT_LIST_HEAD(&hwmon->tz_list);
+>  	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+> -	hwmon->device = hwmon_device_register(NULL);
+> +	hwmon->device = hwmon_device_register_with_info(NULL, hwmon-
+> >type,
+> +							hwmon, NULL,
+> NULL);
+>  	if (IS_ERR(hwmon->device)) {
+>  		result = PTR_ERR(hwmon->device);
+>  		goto free_mem;
+>  	}
+> -	dev_set_drvdata(hwmon->device, hwmon);
+> -	result = device_create_file(hwmon->device, &dev_attr_name);
+> -	if (result)
+> -		goto free_mem;
+>  
+>   register_sys_interface:
+>  	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
+> @@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct
+> thermal_zone_device *tz)
+>   free_temp_mem:
+>  	kfree(temp);
+>   unregister_name:
+> -	if (new_hwmon_device) {
+> -		device_remove_file(hwmon->device, &dev_attr_name);
+> +	if (new_hwmon_device)
+>  		hwmon_device_unregister(hwmon->device);
+> -	}
+>   free_mem:
+>  	if (new_hwmon_device)
+>  		kfree(hwmon);
+> @@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct
+> thermal_zone_device *tz)
+>  	list_del(&hwmon->node);
+>  	mutex_unlock(&thermal_hwmon_list_lock);
+>  
+> -	device_remove_file(hwmon->device, &dev_attr_name);
+>  	hwmon_device_unregister(hwmon->device);
+>  	kfree(hwmon);
+>  }
