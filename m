@@ -1,169 +1,240 @@
 From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH v6 09/12] ACPI/PPTT: Add topology parsing code
-Date: Fri, 12 Jan 2018 18:59:17 -0600
-Message-ID: <20180113005920.28658-10-jeremy.linton@arm.com>
+Subject: [PATCH v6 02/12] drivers: base: cacheinfo: setup DT cache properties
+ early
+Date: Fri, 12 Jan 2018 18:59:10 -0600
+Message-ID: <20180113005920.28658-3-jeremy.linton@arm.com>
 References: <20180113005920.28658-1-jeremy.linton@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20180113005920.28658-1-jeremy.linton@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Jeremy Linton <jeremy.linton@arm.com>
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, austinwc@codeaurora.org, catalin.marinas@arm.com, Palmer Dabbelt <palmer@sifive.com>, will.deacon@arm.com, morten.rasmussen@arm.com, vkilari@codeaurora.org, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, viresh.kumar@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, ahs3@redhat.com, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, hanjun.guo@linaro.org, Albert Ou <albert@sifive.com>, sudeep.holla@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-The PPTT can be used to determine the groupings of CPU's at
-given levels in the system. Lets add a few routines to the PPTT
-parsing code to return a unique id for each unique level in the
-processor hierarchy. This can then be matched to build
-thread/core/cluster/die/package/etc mappings for each processing
-element in the system.
+The original intent in cacheinfo was that an architecture
+specific populate_cache_leaves() would probe the hardware
+and then cache_shared_cpu_map_setup() and
+cache_override_properties() would provide firmware help to
+extend/expand upon what was probed. Arm64 was really
+the only architecture that was working this way, and
+with the removal of most of the hardware probing logic it
+became clear that it was possible to simplify the logic a bit.
 
+This patch combines the walk of the DT nodes with the
+code updating the cache size/line_size and nr_sets.
+cache_override_properties() (which was DT specific) is
+then removed. The result is that cacheinfo.of_node is
+no longer used as a temporary place to hold DT references
+for future calls that update cache properties. That change
+helps to clarify its one remaining use (matching
+cacheinfo nodes that represent shared caches) which
+will be used by the ACPI/PPTT code in the following patches.
+
+Cc: Palmer Dabbelt <palmer@sifive.com>
+Cc: Albert Ou <albert@sifive.com>
 Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
 ---
- drivers/acpi/pptt.c  | 115 +++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/acpi.h |   3 ++
- 2 files changed, 118 insertions(+)
+ arch/riscv/kernel/cacheinfo.c |  1 +
+ drivers/base/cacheinfo.c      | 65 +++++++++++++++++++------------------------
+ include/linux/cacheinfo.h     |  1 +
+ 3 files changed, 31 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/acpi/pptt.c b/drivers/acpi/pptt.c
-index 4f5ab19c3a08..83d89d683f16 100644
---- a/drivers/acpi/pptt.c
-+++ b/drivers/acpi/pptt.c
-@@ -412,6 +412,79 @@ static void cache_setup_acpi_cpu(struct acpi_table_header *table,
+diff --git a/arch/riscv/kernel/cacheinfo.c b/arch/riscv/kernel/cacheinfo.c
+index 10ed2749e246..6f4500233cf8 100644
+--- a/arch/riscv/kernel/cacheinfo.c
++++ b/arch/riscv/kernel/cacheinfo.c
+@@ -30,6 +30,7 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
+ 		CACHE_WRITE_BACK
+ 		| CACHE_READ_ALLOCATE
+ 		| CACHE_WRITE_ALLOCATE;
++	cache_of_set_props(this_leaf, node);
+ }
+ 
+ static int __init_cache_level(unsigned int cpu)
+diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
+index a883a213fcd5..fc0d42bbd9eb 100644
+--- a/drivers/base/cacheinfo.c
++++ b/drivers/base/cacheinfo.c
+@@ -43,6 +43,7 @@ struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu)
+ }
+ 
+ #ifdef CONFIG_OF
++
+ static inline bool cache_leaves_are_shared(struct cacheinfo *this_leaf,
+ 					   struct cacheinfo *sib_leaf)
+ {
+@@ -82,7 +83,7 @@ static inline int get_cacheinfo_idx(enum cache_type type)
+ 	return type;
+ }
+ 
+-static void cache_size(struct cacheinfo *this_leaf)
++static void cache_size(struct cacheinfo *this_leaf, struct device_node *np)
+ {
+ 	const char *propname;
+ 	const __be32 *cache_size;
+@@ -91,13 +92,14 @@ static void cache_size(struct cacheinfo *this_leaf)
+ 	ct_idx = get_cacheinfo_idx(this_leaf->type);
+ 	propname = cache_type_info[ct_idx].size_prop;
+ 
+-	cache_size = of_get_property(this_leaf->of_node, propname, NULL);
++	cache_size = of_get_property(np, propname, NULL);
+ 	if (cache_size)
+ 		this_leaf->size = of_read_number(cache_size, 1);
+ }
+ 
+ /* not cache_line_size() because that's a macro in include/linux/cache.h */
+-static void cache_get_line_size(struct cacheinfo *this_leaf)
++static void cache_get_line_size(struct cacheinfo *this_leaf,
++				struct device_node *np)
+ {
+ 	const __be32 *line_size;
+ 	int i, lim, ct_idx;
+@@ -109,7 +111,7 @@ static void cache_get_line_size(struct cacheinfo *this_leaf)
+ 		const char *propname;
+ 
+ 		propname = cache_type_info[ct_idx].line_size_props[i];
+-		line_size = of_get_property(this_leaf->of_node, propname, NULL);
++		line_size = of_get_property(np, propname, NULL);
+ 		if (line_size)
+ 			break;
+ 	}
+@@ -118,7 +120,7 @@ static void cache_get_line_size(struct cacheinfo *this_leaf)
+ 		this_leaf->coherency_line_size = of_read_number(line_size, 1);
+ }
+ 
+-static void cache_nr_sets(struct cacheinfo *this_leaf)
++static void cache_nr_sets(struct cacheinfo *this_leaf, struct device_node *np)
+ {
+ 	const char *propname;
+ 	const __be32 *nr_sets;
+@@ -127,7 +129,7 @@ static void cache_nr_sets(struct cacheinfo *this_leaf)
+ 	ct_idx = get_cacheinfo_idx(this_leaf->type);
+ 	propname = cache_type_info[ct_idx].nr_sets_prop;
+ 
+-	nr_sets = of_get_property(this_leaf->of_node, propname, NULL);
++	nr_sets = of_get_property(np, propname, NULL);
+ 	if (nr_sets)
+ 		this_leaf->number_of_sets = of_read_number(nr_sets, 1);
+ }
+@@ -146,32 +148,26 @@ static void cache_associativity(struct cacheinfo *this_leaf)
+ 		this_leaf->ways_of_associativity = (size / nr_sets) / line_size;
+ }
+ 
+-static bool cache_node_is_unified(struct cacheinfo *this_leaf)
++static bool cache_node_is_unified(struct cacheinfo *this_leaf,
++				  struct device_node *np)
+ {
+-	return of_property_read_bool(this_leaf->of_node, "cache-unified");
++	return of_property_read_bool(np, "cache-unified");
+ }
+ 
+-static void cache_of_override_properties(unsigned int cpu)
++void cache_of_set_props(struct cacheinfo *this_leaf, struct device_node *np)
+ {
+-	int index;
+-	struct cacheinfo *this_leaf;
+-	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
+-
+-	for (index = 0; index < cache_leaves(cpu); index++) {
+-		this_leaf = this_cpu_ci->info_list + index;
+-		/*
+-		 * init_cache_level must setup the cache level correctly
+-		 * overriding the architecturally specified levels, so
+-		 * if type is NONE at this stage, it should be unified
+-		 */
+-		if (this_leaf->type == CACHE_TYPE_NOCACHE &&
+-		    cache_node_is_unified(this_leaf))
+-			this_leaf->type = CACHE_TYPE_UNIFIED;
+-		cache_size(this_leaf);
+-		cache_get_line_size(this_leaf);
+-		cache_nr_sets(this_leaf);
+-		cache_associativity(this_leaf);
+-	}
++	/*
++	 * init_cache_level must setup the cache level correctly
++	 * overriding the architecturally specified levels, so
++	 * if type is NONE at this stage, it should be unified
++	 */
++	if (this_leaf->type == CACHE_TYPE_NOCACHE &&
++	    cache_node_is_unified(this_leaf, np))
++		this_leaf->type = CACHE_TYPE_UNIFIED;
++	cache_size(this_leaf, np);
++	cache_get_line_size(this_leaf, np);
++	cache_nr_sets(this_leaf, np);
++	cache_associativity(this_leaf);
+ }
+ 
+ static int cache_setup_of_node(unsigned int cpu)
+@@ -204,6 +200,7 @@ static int cache_setup_of_node(unsigned int cpu)
+ 			np = of_node_get(np);/* cpu node itself */
+ 		if (!np)
+ 			break;
++		cache_of_set_props(this_leaf, np);
+ 		this_leaf->of_node = np;
+ 		index++;
+ 	}
+@@ -214,7 +211,6 @@ static int cache_setup_of_node(unsigned int cpu)
+ 	return 0;
+ }
+ #else
+-static void cache_of_override_properties(unsigned int cpu) { }
+ static inline int cache_setup_of_node(unsigned int cpu) { return 0; }
+ static inline bool cache_leaves_are_shared(struct cacheinfo *this_leaf,
+ 					   struct cacheinfo *sib_leaf)
+@@ -297,12 +293,6 @@ static void cache_shared_cpu_map_remove(unsigned int cpu)
  	}
  }
  
-+/* Passing level values greater than this will result in search termination */
-+#define PPTT_ABORT_PACKAGE 0xFF
-+
-+/*
-+ * Given an acpi_pptt_processor node, walk up until we identify the
-+ * package that the node is associated with, or we run out of levels
-+ * to request or the search is terminated with a flag match
-+ * The level parameter also serves to limit possible loops within the tree.
-+ */
-+static struct acpi_pptt_processor *acpi_find_processor_package_id(
-+	struct acpi_table_header *table_hdr,
-+	struct acpi_pptt_processor *cpu,
-+	int level, int flag)
-+{
-+	struct acpi_pptt_processor *prev_node;
-+
-+	while (cpu && level) {
-+		if (cpu->flags & flag)
-+			break;
-+		pr_debug("level %d\n", level);
-+		prev_node = fetch_pptt_node(table_hdr, cpu->parent);
-+		if (prev_node == NULL)
-+			break;
-+		cpu = prev_node;
-+		level--;
-+	}
-+	return cpu;
-+}
-+
-+/*
-+ * Get a unique value given a cpu, and a topology level, that can be
-+ * matched to determine which cpus share common topological features
-+ * at that level.
-+ */
-+static int topology_get_acpi_cpu_tag(struct acpi_table_header *table,
-+				     unsigned int cpu, int level, int flag)
-+{
-+	struct acpi_pptt_processor *cpu_node;
-+	u32 acpi_cpu_id = get_acpi_id_for_cpu(cpu);
-+
-+	cpu_node = acpi_find_processor_node(table, acpi_cpu_id);
-+	if (cpu_node) {
-+		cpu_node = acpi_find_processor_package_id(table, cpu_node,
-+							  level, flag);
-+		/* Only the first level has a guaranteed id */
-+		if (level == 0)
-+			return cpu_node->acpi_processor_id;
-+		return (int)((u8 *)cpu_node - (u8 *)table);
-+	}
-+	pr_err_once("PPTT table found, but unable to locate core for %d\n",
-+		    cpu);
-+	return -ENOENT;
-+}
-+
-+static int find_acpi_cpu_topology_tag(unsigned int cpu, int level, int flag)
-+{
-+	struct acpi_table_header *table;
-+	acpi_status status;
-+	int retval;
-+
-+	status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
-+	if (ACPI_FAILURE(status)) {
-+		pr_err_once("No PPTT table found, cpu topology may be inaccurate\n");
-+		return -ENOENT;
-+	}
-+	retval = topology_get_acpi_cpu_tag(table, cpu, level, flag);
-+	pr_debug("Topology Setup ACPI cpu %d, level %d ret = %d\n",
-+		 cpu, level, retval);
-+	acpi_put_table(table);
-+
-+	return retval;
-+}
-+
- /**
-  * acpi_find_last_cache_level() - Determines the number of cache levels for a PE
-  * @cpu: Kernel logical cpu number
-@@ -475,3 +548,45 @@ int cache_setup_acpi(unsigned int cpu)
+-static void cache_override_properties(unsigned int cpu)
+-{
+-	if (of_have_populated_dt())
+-		return cache_of_override_properties(cpu);
+-}
+-
+ static void free_cache_attributes(unsigned int cpu)
+ {
+ 	if (!per_cpu_cacheinfo(cpu))
+@@ -336,6 +326,10 @@ static int detect_cache_attributes(unsigned int cpu)
+ 	if (per_cpu_cacheinfo(cpu) == NULL)
+ 		return -ENOMEM;
  
- 	return status;
- }
-+
-+/**
-+ * find_acpi_cpu_topology() - Determine a unique topology value for a given cpu
-+ * @cpu: Kernel logical cpu number
-+ * @level: The topological level for which we would like a unique ID
-+ *
-+ * Determine a topology unique ID for each thread/core/cluster/mc_grouping
-+ * /socket/etc. This ID can then be used to group peers, which will have
-+ * matching ids.
-+ *
-+ * The search terminates when either the requested level is found or
-+ * we reach a root node. Levels beyond the termination point will return the
-+ * same unique ID. The unique id for level 0 is the acpi processor id. All
-+ * other levels beyond this use a generated value to uniquely identify
-+ * a topological feature.
-+ *
-+ * Return: -ENOENT if the PPTT doesn't exist, or the cpu cannot be found.
-+ * Otherwise returns a value which represents a unique topological feature.
-+ */
-+int find_acpi_cpu_topology(unsigned int cpu, int level)
-+{
-+	return find_acpi_cpu_topology_tag(cpu, level, 0);
-+}
-+
-+/**
-+ * find_acpi_cpu_topology_package() - Determine a unique cpu package value
-+ * @cpu: Kernel logical cpu number
-+ *
-+ * Determine a topology unique package ID for the given cpu.
-+ * This ID can then be used to group peers, which will have matching ids.
-+ *
-+ * The search terminates when either a level is found with the PHYSICAL_PACKAGE
-+ * flag set or we reach a root node.
-+ *
-+ * Return: -ENOENT if the PPTT doesn't exist, or the cpu cannot be found.
-+ * Otherwise returns a value which represents the package for this cpu.
-+ */
-+int find_acpi_cpu_topology_package(unsigned int cpu)
-+{
-+	return find_acpi_cpu_topology_tag(cpu, PPTT_ABORT_PACKAGE,
-+					  ACPI_PPTT_PHYSICAL_PACKAGE);
-+}
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index dc1ebfeeb5ec..117d13934487 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -1266,4 +1266,7 @@ static inline int lpit_read_residency_count_address(u64 *address)
- }
- #endif
++	/*
++	 * populate_cache_leaves() may completely setup the cache leaves and
++	 * shared_cpu_map or it may leave it partially setup.
++	 */
+ 	ret = populate_cache_leaves(cpu);
+ 	if (ret)
+ 		goto free_ci;
+@@ -349,7 +343,6 @@ static int detect_cache_attributes(unsigned int cpu)
+ 		goto free_ci;
+ 	}
  
-+int find_acpi_cpu_topology(unsigned int cpu, int level);
-+int find_acpi_cpu_topology_package(unsigned int cpu);
-+
- #endif	/*_LINUX_ACPI_H*/
+-	cache_override_properties(cpu);
+ 	return 0;
+ 
+ free_ci:
+diff --git a/include/linux/cacheinfo.h b/include/linux/cacheinfo.h
+index 3d9805297cda..d35299a590a4 100644
+--- a/include/linux/cacheinfo.h
++++ b/include/linux/cacheinfo.h
+@@ -99,6 +99,7 @@ int func(unsigned int cpu)					\
+ struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu);
+ int init_cache_level(unsigned int cpu);
+ int populate_cache_leaves(unsigned int cpu);
++void cache_of_set_props(struct cacheinfo *this_leaf, struct device_node *np);
+ 
+ const struct attribute_group *cache_get_priv_group(struct cacheinfo *this_leaf);
+ 
 -- 
 2.13.5
