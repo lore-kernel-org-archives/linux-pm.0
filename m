@@ -1,71 +1,89 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] PM / core: genpd fix and pm_runtime_force_suspend|resume() rework
-Date: Sat, 13 Jan 2018 01:38:19 +0100
-Message-ID: <12351114.Ym7QOfxZhK@aspire.rjw.lan>
-References: <4928977.5hd79RbQlp@aspire.rjw.lan> <CAMuHMdX6dJzOcxkWyDR6anpcwZU5fy03sTeChEp35KY0d40iFg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] PM / runtime: Rework pm_runtime_force_suspend/resume()
+Date: Sat, 13 Jan 2018 01:41:33 +0100
+Message-ID: <13807543.DoUSWU9Hf5@aspire.rjw.lan>
+References: <4928977.5hd79RbQlp@aspire.rjw.lan> <1952050.gHGtV5tzZn@aspire.rjw.lan> <CAPDyKFrg8FWCU7DSEEDk5-a9WQVtMdr6qoRijK5-T+oKjG0A0g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:59886 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:62915 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965265AbeAMAjg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 19:39:36 -0500
-In-Reply-To: <CAMuHMdX6dJzOcxkWyDR6anpcwZU5fy03sTeChEp35KY0d40iFg@mail.gmail.com>
+        with ESMTP id S965313AbeAMAmt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 19:42:49 -0500
+In-Reply-To: <CAPDyKFrg8FWCU7DSEEDk5-a9WQVtMdr6qoRijK5-T+oKjG0A0g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LKML <linux-kernel@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
 
-On Friday, January 12, 2018 3:31:09 PM CET Geert Uytterhoeven wrote:
-> Hi Rafael,
-> 
-> On Fri, Jan 12, 2018 at 2:00 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > This comes from the recent discussion/testing effort that ensued after my
-> > pm_runtime_force_suspend|resume() changes proposal:
+On Friday, January 12, 2018 2:59:38 PM CET Ulf Hansson wrote:
+> On 12 January 2018 at 14:12, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > >
-> > https://marc.info/?t=151497772000004&r=1&w=2
+> > One of the limitations of pm_runtime_force_suspend/resume() is that
+> > if a parent driver wants to use these functions, all of its child
+> > drivers generally have to do that too because of the parent usage
+> > counter manipulations necessary to get the correct state of the parent
+> > during system-wide transitions to the working state (system resume).
+> > However, that limitation turns out to be artificial, so remove it.
+> 
+> According to my comment on the other thread, this stands true in case
+> the child is managed by runtime PM as well.
+
+What do you mean by "managed by runtime PM"?
+
+> Otherwise this looks good to me.
+> 
 > >
-> > Patch [1/2] basically is https://patchwork.kernel.org/patch/10152873/ rebased
-> > on top of the current linux-next branch of the linux-pm.git tree (the relevant
-> > part should be there in the linux-next tree proper ATM).  It applies on top
-> > of https://patchwork.kernel.org/patch/10156077/ which should apply to the Linus'
-> > tree cleanly.
+> > Namely, pm_runtime_force_suspend() only needs to update the children
+> > counter of its parent (if there's is a parent) when the device can
+> > stay in suspend after the subsequent system resume transition, as
+> > that counter is correct already otherwise.  Now, if the parent's
+> > children counter is not updated, it is not necessary to increment
+> > the parent's usage counter in that case any more, as long as the
+> > children counters of devices are checked along with their usage
+> > counters in order to decide whether or not the devices may be left
+> > in suspend after the subsequent system resume transition.
 > >
-> > Patch [2/2] is a resend of https://patchwork.kernel.org/patch/10142047/ with
-> > a very minor changelog modification and the R-b tag from Ulf.
+> > Accordingly, modify pm_runtime_force_suspend() to only call
+> > pm_runtime_set_suspended() for devices whose usage and children
+> > counters are at the "no references" level (the runtime PM status
+> > of the device needs to be updated to "suspended" anyway in case
+> > this function is called once again for the same device during the
+> > transition under way), drop the parent usage counter incrementation
+> > from it and update pm_runtime_force_resume() to compensate for these
+> > changes.
 > >
-> > Geert, if possible, please test this on the Renesas systems that had the
-> > problem with https://patchwork.kernel.org/patch/10142047/ previously and let
-> > me know if you still see issues.
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >  drivers/base/power/runtime.c |   74 +++++++++++++++++++------------------------
+> >  1 file changed, 34 insertions(+), 40 deletions(-)
+> >
+> > Index: linux-pm/drivers/base/power/runtime.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/base/power/runtime.c
+> > +++ linux-pm/drivers/base/power/runtime.c
+> > @@ -1613,17 +1613,28 @@ void pm_runtime_drop_link(struct device
+> >         spin_unlock_irq(&dev->power.lock);
+> >  }
+> >
+> > +static bool pm_runtime_need_not_resume(struct device *dev)
+> > +{
+> > +       return atomic_read(&dev->power.usage_count) <= 1 &&
+> > +               atomic_read(&dev->power.child_count) == 0;
 > 
-> I've tested this on two very similar systems: Salvator-XS with R-Car H3 ES2.0,
-> and Salvator-X with R-Car M3-W ES1.0.
-> 
-> On the M3-based system, everything seems to work fine.
+> How about adding an additional patch on top taking into account the
+> ignore_children flag and folding that into the series, kind of as you
+> also suggested?
 
-Good.
+I will do that, no worries.
 
-> On the H3-based system, the serial console (the /dev/ttySC0 device, not kernel
-> serial output) is dead after resume from s2ram, with and without
-> no_console_suspend.
-> 
-> With no_console_suspend, I see:
-> 
->     ttySC ttySC0: 1 input overrun(s)
-> 
-> after typing on the serial console, so it looks like an interrupt problem.
-> 
-> This issue seems to be caused by patch [1/2]. But I have no idea what's
-> really happening, and why the two systems behave differently.
+> My point is, we might as well take the opportunity to fix this right
+> away, don't you think?
 
-Well, that's not dramatic.
+OK, I'll send a patch on top of this series.
 
-Let's make a deal that we'll fix this on top of [1/2].
-
-Which driver is this BTW?  sh-sci?  That one doesn't even support runtime
-PM, confusingly enough.
-
-> Oh well, have a nice weekend!
-
-Thanks, you too!
+Thanks,
+Rafael
