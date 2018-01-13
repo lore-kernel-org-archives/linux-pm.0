@@ -1,172 +1,186 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Sat, 13 Jan 2018 02:23:52 +0100
-Message-ID: <2048581.xZGJDA3Zt0@aspire.rjw.lan>
-References: <4069324.Q7yJt6I4hJ@aspire.rjw.lan> <CAJZ5v0h+CojMA-MyGdDx69EZt-TOUqRsHG_PFap073vwgybpfQ@mail.gmail.com> <CAPDyKFoJm7HL5kG6Jv7m3w0djaKG7W7g6tsL64dSSh_pRnAffQ@mail.gmail.com>
+Subject: Re: [RFD] Devices that need full power for wakeup
+Date: Sat, 13 Jan 2018 03:42:14 +0100
+Message-ID: <1871558.5ybir6VhFs@aspire.rjw.lan>
+References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com> <CAJZ5v0iFGQ5uSvjk8mKUnVNL2=sT97qmHRaY9c5w4q8KHZfe_Q@mail.gmail.com> <CAPDyKFo+c_Hd9w-VhTx2KPVKF2k=iJdbomT4Hi_mMLgpWkdetw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:42375 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:41770 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965260AbeAMBZI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 20:25:08 -0500
-In-Reply-To: <CAPDyKFoJm7HL5kG6Jv7m3w0djaKG7W7g6tsL64dSSh_pRnAffQ@mail.gmail.com>
+        with ESMTP id S965368AbeAMCna (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jan 2018 21:43:30 -0500
+In-Reply-To: <CAPDyKFo+c_Hd9w-VhTx2KPVKF2k=iJdbomT4Hi_mMLgpWkdetw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Wunner <lukas@wunner.de>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Friday, January 12, 2018 2:46:12 PM CET Ulf Hansson wrote:
-> On 12 January 2018 at 02:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Tue, Jan 9, 2018 at 7:08 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >> On 3 January 2018 at 12:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, January 12, 2018 12:59:04 PM CET Ulf Hansson wrote:
+> [...]
+> 
+> >>>> Therefore, device_may_wakeup() may returns true, if userspace wants to
+> >>>> wakeup the system from sleep when there is an SD card inserted.
+> >>>> Although, that doesn't mean we have to keep the logic for the SD
+> >>>> controller device being powered during system suspend, since it would
+> >>>> waste power.
 > >>>
-> >>> One of the limitations of pm_runtime_force_suspend/resume() is that
-> >>> if a parent driver wants to use these functions, all of its child
-> >>> drivers have to do that too because of the parent usage counter
-> >>> manipulations necessary to get the correct state of the parent during
-> >>> system-wide transitions to the working state (system resume).
+> >>> The SD controller need not be provided with power, but of course the
+> >>> GPIO card detect pin won't work without power I suppose.  It
+> >>> essentially is like a button attached to the device with its own power
+> >>> and signal wiring.
 > >>
-> >> I understand your point, however this isn't describing the full story,
-> >> because there are a some more alternatives when
-> >> pm_runtime_force_suspend|resume() works well, when used for parent
-> >> devices. Let me clarify, just to make sure we get this correct.
+> >> Correct.
 > >>
-> >> 1) If the child device isn't managed by runtime PM at all (it always
-> >> has runtime PM disabled), pm_runtime_force_suspend|resume() can be
-> >> used for the parent device. This works because the runtime PM status
-> >> if the child remains in the default status, RPM_SUSPENDED.
+> >>>
+> >>> Well, for devices like Ethernet or WiFi or even input (say mice and
+> >>> keyboards, touch panels and so on) power has to be provided to the
+> >>> device itself for detection of activity while suspended.
+> >>
+> >> Actually no.
 > >
-> > Say the child is resumed every time during system-wide resume (which
-> > is the only possibility for drivers that don't support runtime PM) and
-> > it needs the parent to be accessible for that.
+> > Why "no"?
 > >
-> > If the parent uses pm_runtime_force_suspend|resume(), the child needs
-> > to bump up the usage counter of the parent during system-wide suspend
-> > to prevent pm_runtime_force_resume() from leaving the parent in
-> > suspend during the subsequent system-wide resume and that obviously is
-> > not going to happen if the child driver doesn't support runtime PM.
+> > The example below doesn't contradict what I said at all.
 > 
-> My take on this, is that this isn't a system suspend/resume specific
-> issue, thus also not something that pm_runtime_force_suspend|resume()
-> should need need to care about.
+> The "no" meant, that the above statement isn't applicable as generic
+> statement. I meant there are cases when it isn't true, apologize if
+> that was unclear.
 > 
-> The reason is why I think so is because, normally during runtime, the
-> runtime PM core don't prevent parents from being runtime suspended, in
-> case their children isn't managed by runtime PM. In other words, the
-> problem exists already and isn't specific to system suspend.
-
-Well, you said above that "If the child device isn't managed by runtime PM at
-all (it always has runtime PM disabled), pm_runtime_force_suspend|resume() can
-be used for the parent device", but that's not the case according to my
-analysis and I was responding specifically to that statement.
-
-For pm_runtime_force_suspend|resume() to be used safely in a parent driver,
-all of its child drivers must in fact support runtime PM as stated below
-(and, of course, that's related to the fact that runtime PM can only be safely
-supported by the parent driver, in general, if all of its child drivers support
-it).
-
 > >
-> > Note that the $subject patch doesn't really change anything in that
-> > respect, because the children counter of the parent will be zero (or
-> > at least will not cover the child in question) then.
+> >> I realize that SD card detect GPIO was not the best example to
+> >> describe the real problem, even if it's related though.
+> >>
+> >> Let me take another example from an embedded battery driven platform:
+> >>
+> >> Assume user space has enabled the wakeup setting for the serial
+> >> console device. In a similar system as described earlier, the serial
+> >> console driver may be able to re-route the serial RX pin to a GPIO
+> >> wake IRQ at system suspend.
 > >
-> > Of course, this means that it is only safe to use
-> > pm_runtime_force_suspend|resume() in parent drivers if all of their
-> > child drivers support runtime PM.
+> > OK
+> >
+> > That's equivalent to switching over to an out-of-band wakeup power
+> > source AFAICS.  There is no substantial practical difference between
+> > that and being able to use a special separate power source for wakeup
+> > for the whole device.
 > 
-> I understand your concern, however, hopefully the about comment can address it!?
+> From a wakup point of view, yes.
+> 
+> However, in case of the power source you refer to, this isn't
+> something the driver controls by itself, but rather the upper layers,
+> right!?
 
-This is an observation, not a concern.
+That may or may not be the case.
 
-It is sort of obvious that the driver using pm_runtime_force_suspend|resume()
-must support runtime PM and for that to really work all of its child drivers
-must support runtime PM too (in general).
+I guess your point is that the middle layer may control both the in-band and
+out-of-band power sources and it needs to be told which one to use.
 
-I just don't know why you were arguing otherwise to start with. :-)
+I'm not sure that this really is a problem, because the out-of-band wakeup
+power source has to be represented somehow for the driver to be able to use it.
+In your example, the driver can only reroute the pin to the GPIO if it knows
+that the GPIO is there and then configure it for wakeup.  Then, the IRQ
+chip driver responsible for it needs to figure out how to ensure sufficient
+power for it to work while suspended (that's the Geert's use case or at least
+part of it).
+
+> So, in principle for the cases you refer to, upper layers only need to
+> know that the device has wakeup enabled, in principle, as to be able
+> to take the correct decision during system suspend. Right?
+
+That depends on what the upper layer itself can do.
+
+If there are facilities for dealing with wakeup in the upper layer, it should
+be sufficient for it to know that the device can and is allowed to wake up the
+system.  Then, it will just apply those facilities to the device.
+
+OTOH, if the upper layer has no such facilities, the driver needs to give it
+hints regarding what needs to be done in terms of what the upper layer *can*
+do.
+
+> While in those case I refer to, the driver explicitly needs to be
+> involved, dealing with the re-routing of the GPIO - *if* it can, as to
+> enable system wakeups. In these circumstances, upper layers have no
+> clue of what goes on. This is the big difference in my opinion.
+
+There is a difference if the driver needs to be involved in setting up the
+device for wakeup (both system-wide and in runtime PM), but in that case the
+driver knows (a) what wakeup IRQ it is going to use and (b) whether or not
+in-band power may be turned off for it.  There are ways to indicate both of
+these things to the other code layers today.
+
+What else is needed, specifically?
 
 > >
-> >> 2) If, somehow, during system suspend/resume, the driver for the child
-> >> make sure to synchronize the runtime PM status of the child device,
-> >> according to the state of the HW, this should work too.
+> >> This means that serial console device may
+> >> be completely powered off during system suspend. However, whether
+> >> powering off the serial device (and its attached PM domain) can be
+> >> done, is currently only known by the driver, as upper-layers (PM
+> >> domain) don't know if the RX pin is re-routed to a GPIO wake IRQ or
+> >> not.
 > >
-> > Not really.
-> >
-> > Again, problematic is the case when the child is resumed during
-> > system-wide resume and needs the parent to be accessible for that.
-> >
-> > Note that the runtime PM status of the child doesn't matter for
-> > pm_runtime_force_resume() running for the parent.  What matters in
-> > there is the parent's usage counter alone.  If that usage counter is
-> > not greater than 1, pm_runtime_force_resume() will leave the parent in
-> > suspend and note that it must run before the child's system-wide
-> > resume callbacks for the ordering between the parent resume and the
-> > child resume to be correct.  This means that the parent will still be
-> > suspended when the child's system-wide resume callbacks run and that
-> > is a problem if the parent has to be accessible for them to succeed.
-> >
-> > Thus the runtime PM status of the child has no bearing on whether or
-> > not this is going to work.  The child has to bump up the parent's
-> > usage counter during system-wide suspend to ensure that it will not be
-> > left in suspend by the subsequent pm_runtime_force_resume() and that
-> > practically requires the child driver to also use
-> > pm_runtime_force_suspend|resume().
+> > Well, then what does prevent you from defaulting to "turn off in-band
+> > power on suspend" (which is the current state of affairs) and then
+> > using PM_QOS_FLAG_NO_POWER_OFF for indicating the "no power off"
+> > condition in case you've not rerouted the pin?
 > >
 > 
-> Yeah, you are right!
+> Using the PM_QOS_FLAG_NO_POWER_OFF doesn't work, because of the
+> following reasons.
 > 
-> I was thinking about the special case when the child driver has called
-> pm_runtime_get_sync() during ->probe(), then during system suspend it
-> puts the child device into low power state and updates the runtime PM
-> status of the child device, by using pm_runtime_set_suspended(). In
-> system resume the child driver then reverse those actions.
+> If genpd would default to power off the "in-band-power" at system
+> suspend, devices not supporting remote wakeups (keeping devices
+> runtime resumed), needs to start announcing that genpd needs to keep
+> the in-band-power on at system suspend. In other words, they need to
+> set the PM_QOS_FLAG_NO_POWER_OFF flag.
 > 
-> Anyway, let's forget about these cases, as they are rather specific.
-> Instead I think it's fair to say that currently:
+> However, that wouldn't be sufficient, as the PM_QOS_FLAG_NO_POWER_OFF
+> flag isn't propagated to parents devices and other wakeup path
+> resources.
+
+It only needs to be propagated to parents if the parents actively
+route wakeup signals from the children or provide them with power.
+In the genpd case the latter is not relevant at least.
+
+> > And I still don't see why this isn't relevant to runtime PM too, at
+> > least in principle.
 > 
-> "If the child device is managed by runtime PM, and the parent driver
-> wants to use pm_runtime_force_suspend|resume() for the parent device,
-> so must the child driver for the child device" - and subject patch
-> removes that artificial limitation.
+> Regarding runtime PM; I don't see any issues,
 
-This isn't entirely accurate, because all of that implicitly assumes
-runtime PM support in all of the involved drivers anyway.
+I wonder why.
 
-> > Now, the $subject patch changes the situation here for child drivers
-> > that only resume their devices during system-wide resume if they were
-> > "active" before the preceding system-wide suspend, because in that
-> > case the children counter of the parent will be nonzero.  If the child
-> > resumes during system-wide resume even though it was suspended before
-> > the preceding system-wide suspend, pm_runtime_force_resume() running
-> > for its parent won't realize that the parent needs to resume too even
-> > after this patch.
-> >
-> > I generally think that leaving devices in suspend during system-wide
-> > resume is a very aggressive optimization and it should be done with
-> > extra care.  It generally is not sufficient to rely on information
-> > coming from the runtime PM framework to do that safely in all cases.
-> > IMO it should only be done for drivers that explicitly expect it to be
-> > done and only if all of the drivers depending on them also expect it
-> > to be done.  Otherwise it always will be potentially unsafe.
+How exactly do you tell the middle layer to avoid turning the in-band power
+off for devices that are suspended if they need in-band power to signal
+remote wakeup?
+
+Your example with the pin rerouting is perfectly relevant for runtime PM too,
+in particular, as the driver may very well want to reroute the pin for remote
+wakeup and turn the in-band power off for the device then during runtime
+suspend just like it does for system-wide suspend.
+
+> but perhaps you have some cases for the ACPI PM domain in mind?
 > 
-> That's true, but I think your concern is related to the case when the
-> child isn't managed by runtime PM, while the parent is?
+> Anyway, for genpd and drivers that manages devices attached to it: If
+> the driver and the device can't be configured for remote wakeup (at
+> runtime suspend), runtime suspend must be prevented by the driver.
 
-No, that case is not interesting at all (again, runtime PM must be supported
-by all of the involved drivers for this to work at all).
+Why?  I don't see any technical reason for that whatever.
 
-Anyway, my point is that optimizations like this one only work under specific
-assumptions, but here there's nothing to ensure that these assumptions hold.
-It is sort of like a loaded gun with no safety.
+The "must" part seems to be totally artificial here.
 
-> In regards to $subject patch, I really think it replaces the crappy
-> magic I invented to try to deal with child devices, with something
-> correct and clever. I would really appreciate it getting applied.
+> That's the generic behavior drivers must support, no matter if their
+> devices are attached to genpd or not, right!?
 
-Sure, but that requires genpd to be fixed too.
+Nope.
+
+> The point is, for remote wakeups, genpd and its users don't need the
+> PM_QOS_FLAG_NO_POWER_OFF flag, or anything else.
+
+Yes, they do or at least they may, which is why it is already supported in
+there.
+
+I'll respond to the rest of this later, sorry for being time-constrained.
 
 Thanks,
 Rafael
