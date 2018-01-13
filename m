@@ -1,172 +1,72 @@
 From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH v6 10/12] arm64: topology: rename cluster_id
-Date: Fri, 12 Jan 2018 18:59:18 -0600
-Message-ID: <20180113005920.28658-11-jeremy.linton@arm.com>
+Subject: [PATCH v6 08/12] arm64: Add support for ACPI based firmware tables
+Date: Fri, 12 Jan 2018 18:59:16 -0600
+Message-ID: <20180113005920.28658-9-jeremy.linton@arm.com>
 References: <20180113005920.28658-1-jeremy.linton@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180113005920.28658-1-jeremy.linton@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Jeremy Linton <jeremy.linton@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Jeremy Linton <jeremy.linton@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Lets match the name of the arm64 topology field
-to the kernel macro that uses it.
+The /sys cache entries should support ACPI/PPTT generated cache
+topology information. Lets detect ACPI systems and call
+an arch specific cache_setup_acpi() routine to update the hardware
+probed cache topology.
 
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Juri Lelli <juri.lelli@arm.com>
+For arm64, if ACPI is enabled, determine the max number of cache
+levels and populate them using the PPTT table if one is available.
+
 Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
 ---
- arch/arm64/include/asm/topology.h |  4 ++--
- arch/arm64/kernel/topology.c      | 27 ++++++++++++++-------------
- 2 files changed, 16 insertions(+), 15 deletions(-)
+ arch/arm64/kernel/cacheinfo.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-index c4f2d50491eb..6b10459e6905 100644
---- a/arch/arm64/include/asm/topology.h
-+++ b/arch/arm64/include/asm/topology.h
-@@ -7,14 +7,14 @@
- struct cpu_topology {
- 	int thread_id;
- 	int core_id;
--	int cluster_id;
-+	int package_id;
- 	cpumask_t thread_sibling;
- 	cpumask_t core_sibling;
- };
+diff --git a/arch/arm64/kernel/cacheinfo.c b/arch/arm64/kernel/cacheinfo.c
+index 380f2e2fbed5..0bf0a835122f 100644
+--- a/arch/arm64/kernel/cacheinfo.c
++++ b/arch/arm64/kernel/cacheinfo.c
+@@ -17,6 +17,7 @@
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
  
- extern struct cpu_topology cpu_topology[NR_CPUS];
++#include <linux/acpi.h>
+ #include <linux/cacheinfo.h>
+ #include <linux/of.h>
  
--#define topology_physical_package_id(cpu)	(cpu_topology[cpu].cluster_id)
-+#define topology_physical_package_id(cpu)	(cpu_topology[cpu].package_id)
- #define topology_core_id(cpu)		(cpu_topology[cpu].core_id)
- #define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
- #define topology_sibling_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 8d48b233e6ce..7b06e263fdd1 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -51,7 +51,7 @@ static int __init get_cpu_for_node(struct device_node *node)
- 	return -1;
- }
+@@ -46,7 +47,7 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
  
--static int __init parse_core(struct device_node *core, int cluster_id,
-+static int __init parse_core(struct device_node *core, int package_id,
- 			     int core_id)
+ static int __init_cache_level(unsigned int cpu)
  {
- 	char name[10];
-@@ -67,7 +67,7 @@ static int __init parse_core(struct device_node *core, int cluster_id,
- 			leaf = false;
- 			cpu = get_cpu_for_node(t);
- 			if (cpu >= 0) {
--				cpu_topology[cpu].cluster_id = cluster_id;
-+				cpu_topology[cpu].package_id = package_id;
- 				cpu_topology[cpu].core_id = core_id;
- 				cpu_topology[cpu].thread_id = i;
- 			} else {
-@@ -89,7 +89,7 @@ static int __init parse_core(struct device_node *core, int cluster_id,
- 			return -EINVAL;
- 		}
+-	unsigned int ctype, level, leaves, of_level;
++	unsigned int ctype, level, leaves, fw_level;
+ 	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
  
--		cpu_topology[cpu].cluster_id = cluster_id;
-+		cpu_topology[cpu].package_id = package_id;
- 		cpu_topology[cpu].core_id = core_id;
- 	} else if (leaf) {
- 		pr_err("%pOF: Can't get CPU for leaf core\n", core);
-@@ -105,7 +105,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
- 	bool leaf = true;
- 	bool has_cores = false;
- 	struct device_node *c;
--	static int cluster_id __initdata;
-+	static int package_id __initdata;
- 	int core_id = 0;
- 	int i, ret;
- 
-@@ -144,7 +144,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
- 			}
- 
- 			if (leaf) {
--				ret = parse_core(c, cluster_id, core_id++);
-+				ret = parse_core(c, package_id, core_id++);
- 			} else {
- 				pr_err("%pOF: Non-leaf cluster with core %s\n",
- 				       cluster, name);
-@@ -162,7 +162,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
- 		pr_warn("%pOF: empty cluster\n", cluster);
- 
- 	if (leaf)
--		cluster_id++;
-+		package_id++;
- 
- 	return 0;
- }
-@@ -198,7 +198,7 @@ static int __init parse_dt_topology(void)
- 	 * only mark cores described in the DT as possible.
- 	 */
- 	for_each_possible_cpu(cpu)
--		if (cpu_topology[cpu].cluster_id == -1)
-+		if (cpu_topology[cpu].package_id == -1)
- 			ret = -EINVAL;
- 
- out_map:
-@@ -228,7 +228,7 @@ static void update_siblings_masks(unsigned int cpuid)
- 	for_each_possible_cpu(cpu) {
- 		cpu_topo = &cpu_topology[cpu];
- 
--		if (cpuid_topo->cluster_id != cpu_topo->cluster_id)
-+		if (cpuid_topo->package_id != cpu_topo->package_id)
- 			continue;
- 
- 		cpumask_set_cpu(cpuid, &cpu_topo->core_sibling);
-@@ -249,7 +249,7 @@ void store_cpu_topology(unsigned int cpuid)
- 	struct cpu_topology *cpuid_topo = &cpu_topology[cpuid];
- 	u64 mpidr;
- 
--	if (cpuid_topo->cluster_id != -1)
-+	if (cpuid_topo->package_id != -1)
- 		goto topology_populated;
- 
- 	mpidr = read_cpuid_mpidr();
-@@ -263,19 +263,19 @@ void store_cpu_topology(unsigned int cpuid)
- 		/* Multiprocessor system : Multi-threads per core */
- 		cpuid_topo->thread_id  = MPIDR_AFFINITY_LEVEL(mpidr, 0);
- 		cpuid_topo->core_id    = MPIDR_AFFINITY_LEVEL(mpidr, 1);
--		cpuid_topo->cluster_id = MPIDR_AFFINITY_LEVEL(mpidr, 2) |
-+		cpuid_topo->package_id = MPIDR_AFFINITY_LEVEL(mpidr, 2) |
- 					 MPIDR_AFFINITY_LEVEL(mpidr, 3) << 8;
- 	} else {
- 		/* Multiprocessor system : Single-thread per core */
- 		cpuid_topo->thread_id  = -1;
- 		cpuid_topo->core_id    = MPIDR_AFFINITY_LEVEL(mpidr, 0);
--		cpuid_topo->cluster_id = MPIDR_AFFINITY_LEVEL(mpidr, 1) |
-+		cpuid_topo->package_id = MPIDR_AFFINITY_LEVEL(mpidr, 1) |
- 					 MPIDR_AFFINITY_LEVEL(mpidr, 2) << 8 |
- 					 MPIDR_AFFINITY_LEVEL(mpidr, 3) << 16;
+ 	for (level = 1, leaves = 0; level <= MAX_CACHE_LEVEL; level++) {
+@@ -59,15 +60,19 @@ static int __init_cache_level(unsigned int cpu)
+ 		leaves += (ctype == CACHE_TYPE_SEPARATE) ? 2 : 1;
  	}
  
- 	pr_debug("CPU%u: cluster %d core %d thread %d mpidr %#016llx\n",
--		 cpuid, cpuid_topo->cluster_id, cpuid_topo->core_id,
-+		 cpuid, cpuid_topo->package_id, cpuid_topo->core_id,
- 		 cpuid_topo->thread_id, mpidr);
- 
- topology_populated:
-@@ -291,7 +291,7 @@ static void __init reset_cpu_topology(void)
- 
- 		cpu_topo->thread_id = -1;
- 		cpu_topo->core_id = 0;
--		cpu_topo->cluster_id = -1;
-+		cpu_topo->package_id = -1;
- 
- 		cpumask_clear(&cpu_topo->core_sibling);
- 		cpumask_set_cpu(cpu, &cpu_topo->core_sibling);
-@@ -300,6 +300,7 @@ static void __init reset_cpu_topology(void)
- 	}
- }
- 
+-	of_level = of_find_last_cache_level(cpu);
+-	if (level < of_level) {
++	if (acpi_disabled)
++		fw_level = of_find_last_cache_level(cpu);
++	else
++		fw_level = acpi_find_last_cache_level(cpu);
 +
- void __init init_cpu_topology(void)
- {
- 	reset_cpu_topology();
++	if (level < fw_level) {
+ 		/*
+ 		 * some external caches not specified in CLIDR_EL1
+ 		 * the information may be available in the device tree
+ 		 * only unified external caches are considered here
+ 		 */
+-		leaves += (of_level - level);
+-		level = of_level;
++		leaves += (fw_level - level);
++		level = fw_level;
+ 	}
+ 
+ 	this_cpu_ci->num_levels = level;
 -- 
 2.13.5
