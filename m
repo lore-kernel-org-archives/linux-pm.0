@@ -1,158 +1,91 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] thermal: thermal_hwmon: Convert to
- hwmon_device_register_with_info()
-Date: Sat, 13 Jan 2018 13:17:41 -0800
-Message-ID: <ba61b31f-74c0-7213-7d6c-7f4c80ee07e0@roeck-us.net>
-References: <1514976294-31880-1-git-send-email-festevam@gmail.com>
- <1515851277.4764.2.camel@intel.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/2] PM / core: genpd fix and pm_runtime_force_suspend|resume()
+ rework
+Date: Sun, 14 Jan 2018 10:48:18 +0100
+Message-ID: <CAMuHMdVaiuscrvat=BqtmXxQnA35=wocb85FHEFvQWjQaY615g@mail.gmail.com>
+References: <4928977.5hd79RbQlp@aspire.rjw.lan> <CAMuHMdX6dJzOcxkWyDR6anpcwZU5fy03sTeChEp35KY0d40iFg@mail.gmail.com>
+ <12351114.Ym7QOfxZhK@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pl0-f67.google.com ([209.85.160.67]:38206 "EHLO
-        mail-pl0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751767AbeAMVRo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 Jan 2018 16:17:44 -0500
-Received: by mail-pl0-f67.google.com with SMTP id 13so1128850plb.5
-        for <linux-pm@vger.kernel.org>; Sat, 13 Jan 2018 13:17:44 -0800 (PST)
-In-Reply-To: <1515851277.4764.2.camel@intel.com>
-Content-Language: en-US
+Received: from mail-qk0-f196.google.com ([209.85.220.196]:39023 "EHLO
+        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751439AbeANJsU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Jan 2018 04:48:20 -0500
+In-Reply-To: <12351114.Ym7QOfxZhK@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Fabio Estevam <festevam@gmail.com>
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, arthurborsboom@gmail.com, Fabio Estevam <fabio.estevam@nxp.com>, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On 01/13/2018 05:47 AM, Zhang Rui wrote:
-> On Wed, 2018-01-03 at 08:44 -0200, Fabio Estevam wrote:
->> From: Fabio Estevam <fabio.estevam@nxp.com>
->>
->> Booting Linux on a mx6q based board leads to the following warning:
->>      
->> (NULL device *): hwmon_device_register() is deprecated. Please
->> convert the
->> driver to use hwmon_device_register_with_info().
->>      
->> , so do the conversion as suggested.
->>
->> Also, this results in the core taking care of creating the 'name'
->> attribute, so drop the code doing that from the thermal driver.
->>
->> The initial attempt to convert this driver to
->> hwmon_device_register_with_info() caused issues on the N900 platform
->> in commit 611fb68062f ("thermal: thermal_hwmon: Convert to
->> hwmon_device_register_with_info()"):
-> 
-> the commit id is 7611fb68062f.
-> 
->>
->> bq27xxx-battery 2-0055: failed to register battery
->> bq27xxx-battery: probe of 2-0055 failed with error -22
->> ...
->> rx51-battery: probe of n900-battery failed with error -22
->>
->> , leading to a revert in commit 3feb479cea37 ("Revert "thermal:
->> thermal_hwmon: Convert to hwmon_device_register_with_info()"").
->>
-> don't know why but checkpatch.pl always complains
-> 
-> ERROR: Please use git commit description style 'commit <12+ chars of
-> sha1> ("<title line>")' - ie: 'commit 3feb479cea37 ("Revert "thermal:
-> thermal_hwmon: Convert to hwmon_device_register_with_info()"")'
-> #37:
-> , leading to a revert in commit 3feb479cea37 ("Revert "thermal:
-> 
-> total: 1 errors, 0 warnings, 49 lines checked
-> 
-I bet it gets confused by the quotes.
+Hi Rafael,
 
-Guenter
+On Sat, Jan 13, 2018 at 1:38 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, January 12, 2018 3:31:09 PM CET Geert Uytterhoeven wrote:
+>> On Fri, Jan 12, 2018 at 2:00 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > This comes from the recent discussion/testing effort that ensued after my
+>> > pm_runtime_force_suspend|resume() changes proposal:
+>> >
+>> > https://marc.info/?t=151497772000004&r=1&w=2
+>> >
+>> > Patch [1/2] basically is https://patchwork.kernel.org/patch/10152873/ rebased
+>> > on top of the current linux-next branch of the linux-pm.git tree (the relevant
+>> > part should be there in the linux-next tree proper ATM).  It applies on top
+>> > of https://patchwork.kernel.org/patch/10156077/ which should apply to the Linus'
+>> > tree cleanly.
+>> >
+>> > Patch [2/2] is a resend of https://patchwork.kernel.org/patch/10142047/ with
+>> > a very minor changelog modification and the R-b tag from Ulf.
+>> >
+>> > Geert, if possible, please test this on the Renesas systems that had the
+>> > problem with https://patchwork.kernel.org/patch/10142047/ previously and let
+>> > me know if you still see issues.
+>>
+>> I've tested this on two very similar systems: Salvator-XS with R-Car H3 ES2.0,
+>> and Salvator-X with R-Car M3-W ES1.0.
+>>
+>> On the M3-based system, everything seems to work fine.
+>
+> Good.
+>
+>> On the H3-based system, the serial console (the /dev/ttySC0 device, not kernel
+>> serial output) is dead after resume from s2ram, with and without
+>> no_console_suspend.
+>>
+>> With no_console_suspend, I see:
+>>
+>>     ttySC ttySC0: 1 input overrun(s)
+>>
+>> after typing on the serial console, so it looks like an interrupt problem.
+>>
+>> This issue seems to be caused by patch [1/2]. But I have no idea what's
+>> really happening, and why the two systems behave differently.
 
-> thanks,
-> rui
->> The probe errors happened due to the '-' character being present in
->> the name of the power supply devices: bq27200-0 and rx51-battery.
->>
->> Since commit 74d3b6419772 ("hwmon: Relax name attribute validation
->> for new APIs") hwmon will no longer treat these names as errors,
->> allowing the transition for hwmon_device_register_with_info() to
->> happen in a safely manner.
->>
->> Cc: Pavel Machek <pavel@ucw.cz>
->> Cc: Guenter Roeck <linux@roeck-us.net>
->> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
->> ---
->> Pavel,
->>
->> Could you please test this patch on your N900 platform?
->>
->> Thanks
->>
->>   drivers/thermal/thermal_hwmon.c | 20 +++-----------------
->>   1 file changed, 3 insertions(+), 17 deletions(-)
->>
->> diff --git a/drivers/thermal/thermal_hwmon.c
->> b/drivers/thermal/thermal_hwmon.c
->> index 541af59..c4a508a 100644
->> --- a/drivers/thermal/thermal_hwmon.c
->> +++ b/drivers/thermal/thermal_hwmon.c
->> @@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
->>   static DEFINE_MUTEX(thermal_hwmon_list_lock);
->>   
->>   static ssize_t
->> -name_show(struct device *dev, struct device_attribute *attr, char
->> *buf)
->> -{
->> -	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
->> -	return sprintf(buf, "%s\n", hwmon->type);
->> -}
->> -static DEVICE_ATTR_RO(name);
->> -
->> -static ssize_t
->>   temp_input_show(struct device *dev, struct device_attribute *attr,
->> char *buf)
->>   {
->>   	int temperature;
->> @@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct
->> thermal_zone_device *tz)
->>   
->>   	INIT_LIST_HEAD(&hwmon->tz_list);
->>   	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
->> -	hwmon->device = hwmon_device_register(NULL);
->> +	hwmon->device = hwmon_device_register_with_info(NULL, hwmon-
->>> type,
->> +							hwmon, NULL,
->> NULL);
->>   	if (IS_ERR(hwmon->device)) {
->>   		result = PTR_ERR(hwmon->device);
->>   		goto free_mem;
->>   	}
->> -	dev_set_drvdata(hwmon->device, hwmon);
->> -	result = device_create_file(hwmon->device, &dev_attr_name);
->> -	if (result)
->> -		goto free_mem;
->>   
->>    register_sys_interface:
->>   	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
->> @@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct
->> thermal_zone_device *tz)
->>    free_temp_mem:
->>   	kfree(temp);
->>    unregister_name:
->> -	if (new_hwmon_device) {
->> -		device_remove_file(hwmon->device, &dev_attr_name);
->> +	if (new_hwmon_device)
->>   		hwmon_device_unregister(hwmon->device);
->> -	}
->>    free_mem:
->>   	if (new_hwmon_device)
->>   		kfree(hwmon);
->> @@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct
->> thermal_zone_device *tz)
->>   	list_del(&hwmon->node);
->>   	mutex_unlock(&thermal_hwmon_list_lock);
->>   
->> -	device_remove_file(hwmon->device, &dev_attr_name);
->>   	hwmon_device_unregister(hwmon->device);
->>   	kfree(hwmon);
->>   }
-> 
+Could be a firmware issue, too.
+While the kernel images are identical, the ARM trusted firmware configs aren't
+(same version, though).
+
+I'll do some more investigation...
+
+> Well, that's not dramatic.
+>
+> Let's make a deal that we'll fix this on top of [1/2].
+
+;-)
+
+> Which driver is this BTW?  sh-sci?  That one doesn't even support runtime
+> PM, confusingly enough.
+
+Yes, sh-sci. It does make pm_runtime_*() calls.
+And of course there's uart_ops.pm, which is driven from serial_core...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
