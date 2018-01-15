@@ -1,43 +1,98 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v6 03/12] cacheinfo: rename of_node to fw_unique
-Date: Mon, 15 Jan 2018 12:36:58 +0000
-Message-ID: <20180115123658.GC5473@e107155-lin>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-4-jeremy.linton@arm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 3.18 26/46] x86/acpi: Reduce code duplication in mp_override_legacy_irq()
+Date: Mon, 15 Jan 2018 13:33:34 +0100
+Message-ID: <20180115123330.417334549@linuxfoundation.org>
+References: <20180115123327.303455538@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20180113005920.28658-4-jeremy.linton@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, austinwc@codeaurora.org, viresh.kumar@linaro.org, Palmer Dabbelt <palmer@sifive.com>, will.deacon@arm.com, morten.rasmussen@arm.com, vkilari@codeaurora.org, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, linux-acpi@vger.kernel.org, catalin.marinas@arm.com, lenb@kernel.org, linux-pm@vger.kernel.org, ahs3@redhat.com, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, hanjun.guo@linaro.org, Albert Ou <albert@sifive.com>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20180115123327.303455538@linuxfoundation.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, kkamagui@gmail.com, linux-acpi@vger.kernel.org, Jean Delvare <jdelvare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 12, 2018 at 06:59:11PM -0600, Jeremy Linton wrote:
-> Rename and change the type of of_node to indicate
-> it is a generic pointer which is generally only used
-> for comparison purposes. In a later patch we will apply
-> an ACPI/PPTT "token" pointer in fw_unique so that
-> the code which builds the shared cpu masks can be reused.
-> 
+3.18-stable review patch.  If anyone has any objections, please let me know.
 
-[Nit] as used in the commit log, I prefer fw_token over fw_unique.
-But I am fine if you/others prefer fw_unique.
+------------------
 
-Otherwise,
+From: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
 
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+commit 4ee2ec1b122599f7b10c849fa7915cebb37b7edb upstream.
 
---
-Regards,
-Sudeep
+The new function mp_register_ioapic_irq() is a subset of the code in
+mp_override_legacy_irq().
+
+Replace the code duplication by invoking mp_register_ioapic_irq() from
+mp_override_legacy_irq().
+
+Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: kkamagui@gmail.com
+Cc: linux-acpi@vger.kernel.org
+Link: https://lkml.kernel.org/r/1510848825-21965-3-git-send-email-vikas.cha.sajjan@hpe.com
+Cc: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ arch/x86/kernel/acpi/boot.c |   27 +++++----------------------
+ 1 file changed, 5 insertions(+), 22 deletions(-)
+
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -308,13 +308,12 @@ acpi_parse_lapic_nmi(struct acpi_subtabl
+ #ifdef CONFIG_X86_IO_APIC
+ #define MP_ISA_BUS		0
+ 
++static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
++						u8 trigger, u32 gsi);
++
+ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+ 					  u32 gsi)
+ {
+-	int ioapic;
+-	int pin;
+-	struct mpc_intsrc mp_irq;
+-
+ 	/*
+ 	 * Check bus_irq boundary.
+ 	 */
+@@ -324,14 +323,6 @@ static void __init mp_override_legacy_ir
+ 	}
+ 
+ 	/*
+-	 * Convert 'gsi' to 'ioapic.pin'.
+-	 */
+-	ioapic = mp_find_ioapic(gsi);
+-	if (ioapic < 0)
+-		return;
+-	pin = mp_find_ioapic_pin(ioapic, gsi);
+-
+-	/*
+ 	 * TBD: This check is for faulty timer entries, where the override
+ 	 *      erroneously sets the trigger to level, resulting in a HUGE
+ 	 *      increase of timer interrupts!
+@@ -339,16 +330,8 @@ static void __init mp_override_legacy_ir
+ 	if ((bus_irq == 0) && (trigger == 3))
+ 		trigger = 1;
+ 
+-	mp_irq.type = MP_INTSRC;
+-	mp_irq.irqtype = mp_INT;
+-	mp_irq.irqflag = (trigger << 2) | polarity;
+-	mp_irq.srcbus = MP_ISA_BUS;
+-	mp_irq.srcbusirq = bus_irq;	/* IRQ */
+-	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
+-	mp_irq.dstirq = pin;	/* INTIN# */
+-
+-	mp_save_irq(&mp_irq);
+-
++	if (mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi) < 0)
++		return;
+ 	/*
+ 	 * Reset default identity mapping if gsi is also an legacy IRQ,
+ 	 * otherwise there will be more than one entry with the same GSI
+
+
