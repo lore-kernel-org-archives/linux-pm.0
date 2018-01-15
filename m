@@ -1,123 +1,93 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH] power: reset: Add Spreadtrum SC27xx PMIC power off support
-Date: Mon, 15 Jan 2018 15:58:57 +0800
-Message-ID: <5822b56a4e65e27183f8bf712d5889b11f90111e.1515118527.git.baolin.wang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: arnd@arndb.de, broonie@kernel.org, baolin.wang@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] PM / OPP: list_del_rcu should be used in function
+ _remove_list_dev
+Date: Mon, 15 Jan 2018 09:03:28 +0100
+Message-ID: <20180115080328.GA23414@kroah.com>
+References: <20171218093738.27960-1-chunyan.zhang@spreadtrum.com>
+ <20171218095717.GA12565@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171218095717.GA12565@kroah.com>
+Sender: stable-owner@vger.kernel.org
+To: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, stable <stable@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Wang <vincent.wang@spreadtrum.com>, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Spreadtrum platform, we need power off system through external SC27xx
-series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 chips.
-Thus this patch adds SC27xx series PMICs power-off support.
+On Mon, Dec 18, 2017 at 10:57:17AM +0100, Greg Kroah-Hartman wrote:
+> On Mon, Dec 18, 2017 at 05:37:38PM +0800, Chunyan Zhang wrote:
+> > From: Vincent Wang <vincent.wang@spreadtrum.com>
+> > 
+> > list_del_rcu() should be used to replace list_del() in the function
+> > _remove_list_dev(), since the opp is a rcu protected pointer.
+> > 
+> > For example, on an ARM big.Little platform of spreadtrum, there are
+> > little cluster, big cluster and gpu using pm_opp. And the opp_table
+> > of big cluster will be removed when big cluster is removed, which
+> > is implemented in the cpufreq driver. Sometimes an issue maybe occur:
+> > 
+> > 
+> > [  237.647758] c0 Unable to handle kernel paging request at virtual address dead000000000110
+> > [  237.647776] c0 pgd = ffffffc073e78000
+> > [  237.647786] c0 [dead000000000110] *pgd=0000000000000000, *pud=0000000000000000
+> > [  237.647808] c0 Internal error: Oops: 96000004 [#1] PREEMPT SMP
+> > [  237.653535] c0 Modules linked in: sprdwl_ng(O) mtty marlin2_fm mali_kbase(O)
+> > [  237.653569] c0 CPU: 0 PID: 38 Comm: kworker/u12:1 Tainted: G S      W  O    4.4.83+ #1
+> > [  237.653578] c0 Hardware name: Spreadtrum SP9850KHsmt 1h10 Board (DT)
+> > [  237.653594] c0 Workqueue: devfreq_wq devfreq_monitor
+> > [  237.653605] c0 task: ffffffc0babd0d80 task.stack: ffffffc0badbc000
+> > [  237.653619] c0 PC is at _find_device_opp+0x58/0xac
+> > [  237.653629] c0 LR is at dev_pm_opp_find_freq_ceil+0x2c/0xb8
+> > 
+> > [  237.921294] c0 Call trace:
+> > [  237.921425] c0 [<ffffff80085362b0>] _find_device_opp+0x58/0xac
+> > [  237.921437] c0 [<ffffff8008536560>] dev_pm_opp_find_freq_ceil+0x2c/0xb8
+> > [  237.921452] c0 [<ffffff80088760f4>] devfreq_recommended_opp+0x54/0x7c
+> > [  237.921494] c0 [<ffffff8000b6a96c>] kbase_wait_write_flush+0x164/0x358 [mali_kbase]
+> > [  237.921504] c0 [<ffffff800887485c>] update_devfreq+0x8c/0xf8
+> > [  237.921514] c0 [<ffffff80088749e4>] devfreq_monitor+0x34/0x94
+> > [  237.921529] c0 [<ffffff80080bd75c>] process_one_work+0x154/0x458
+> > [  237.921539] c0 [<ffffff80080be428>] worker_thread+0x134/0x4a4
+> > [  237.921551] c0 [<ffffff80080c4bec>] kthread+0xdc/0xf0
+> > [  237.921564] c0 [<ffffff8008085f20>] ret_from_fork+0x10/0x30
+> > 
+> > Cc: stable <stable@vger.kernel.org>     # 4.4
+> > Signed-off-by: Vincent Wang <vincent.wang@spreadtrum.com>
+> > Signed-off-by: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> > This patch is for 4.4 stable branch only.
+> > Once this patch accepted, I can cook a similar patch for 4.9 stable branch.
+> 
+> I need that one first, as you don't want to regress from a working 4.4
+> release when moving to a 4.9 release, right?
+> 
+> > This fix can't be done to upstream kernel as the OPP code doesn't
+> > use RCUs anymore.
+> 
+> What was the upstream fix that changed this?  Why is this not a problem
+> in 4.14?  In Linus's tree?
+> 
+> I _REALLY_ do not like taking patches that are not in Linus's tree, as
+> when we do that, we almost always get it wrong.  Seriously, our track
+> record here is horrid.
+> 
+> So I need a lot of assurance that this is the correct fix, that it has
+> been tested properly, and that there really is no way to take the
+> upstream patches instead of your one-off patch.
+> 
+> Also, what commit does this fix?  When did the bug show up?  When did it
+> go away?  Why not include a Fixes: line?
+> 
+> See, a lot more work needs to be done here, as I said previously :)
+> 
+> Taking patches that are not in Linus's tree is a very expensive, and
+> difficult thing, for good reason.
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- drivers/power/reset/Kconfig           |    9 +++++
- drivers/power/reset/Makefile          |    1 +
- drivers/power/reset/sc27xx-poweroff.c |   65 +++++++++++++++++++++++++++++++++
- 3 files changed, 75 insertions(+)
- create mode 100644 drivers/power/reset/sc27xx-poweroff.c
+Now dropped from my queue due to lack of response, if you want this
+applied, please address the questions I have above and resend.
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index ca0de1a..611ae56 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -227,5 +227,14 @@ config SYSCON_REBOOT_MODE
- 	  register, then the bootloader can read it to take different
- 	  action according to the mode.
- 
-+config POWER_RESET_SC27XX
-+	tristate "Spreadtrum SC27xx PMIC power-off driver"
-+	depends on MFD_SC27XX_PMIC || COMPILE_TEST
-+	help
-+	  This driver supports powering off a system through
-+	  Spreadtrum SC27xx series PMICs. The SC27xx series
-+	  PMICs includes the SC2720, SC2721, SC2723, SC2730
-+	  and SC2731 chips.
-+
- endif
- 
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index aeb65ed..225d645 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -27,3 +27,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
- obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
- obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
- obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
-+obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
-diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
-new file mode 100644
-index 0000000..8e4b6a0
---- /dev/null
-+++ b/drivers/power/reset/sc27xx-poweroff.c
-@@ -0,0 +1,65 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2017 Spreadtrum Communications Inc.
-+ * Copyright (c) 2017 Linaro Ltd.
-+ */
-+
-+#include <linux/cpu.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm.h>
-+#include <linux/regmap.h>
-+#include <linux/syscore_ops.h>
-+
-+#define SC27XX_PWR_PD_HW	0xc2c
-+#define SC27XX_PWR_OFF_EN	BIT(0)
-+
-+static struct regmap *regmap;
-+
-+/*
-+ * On Spreadtrum platform, we need power off system through external SC27xx
-+ * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
-+ * which is not fast io access.
-+ *
-+ * So before stopping other cores, we need release other cores' resource by
-+ * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
-+ * system through PMIC.
-+ */
-+void sc27xx_poweroff_shutdown(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	freeze_secondary_cpus(cpu);
-+}
-+
-+static struct syscore_ops poweroff_syscore_ops = {
-+	.shutdown = sc27xx_poweroff_shutdown,
-+};
-+
-+static void sc27xx_poweroff_do_poweroff(void)
-+{
-+	regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
-+}
-+
-+static int sc27xx_poweroff_probe(struct platform_device *pdev)
-+{
-+	regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!regmap)
-+		return -ENODEV;
-+
-+	pm_power_off = sc27xx_poweroff_do_poweroff;
-+	register_syscore_ops(&poweroff_syscore_ops);
-+	return 0;
-+}
-+
-+static struct platform_driver sc27xx_poweroff_driver = {
-+	.probe = sc27xx_poweroff_probe,
-+	.driver = {
-+		.name = "sc27xx-poweroff",
-+	},
-+};
-+module_platform_driver(sc27xx_poweroff_driver);
-+
-+MODULE_DESCRIPTION("Spreadtrum SC27xx PMIC Poweroff Driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.7.9.5
+thanks,
+
+greg k-h
