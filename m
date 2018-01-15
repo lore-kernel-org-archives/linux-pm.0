@@ -1,102 +1,101 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/2] PM / core: genpd fix and pm_runtime_force_suspend|resume()
- rework
-Date: Mon, 15 Jan 2018 15:26:12 +0100
-Message-ID: <CAPDyKFq6a=sj_E5Nz9bSB=6rqWq+ar2MuwcrxJAcu36N+C+m2Q@mail.gmail.com>
-References: <4928977.5hd79RbQlp@aspire.rjw.lan> <CAMuHMdX6dJzOcxkWyDR6anpcwZU5fy03sTeChEp35KY0d40iFg@mail.gmail.com>
- <12351114.Ym7QOfxZhK@aspire.rjw.lan> <CAMuHMdVaiuscrvat=BqtmXxQnA35=wocb85FHEFvQWjQaY615g@mail.gmail.com>
- <CAJZ5v0i5FhKCtvcvS_PfpFQKo-zjExT4YypYaaTC7JD5kX-kew@mail.gmail.com>
- <CAMuHMdVEwHhjfCppYXKYX6viFrunCmH00wH6zUFNo4p5CdJCww@mail.gmail.com> <CAMuHMdWLkji-GwtFW=RTW12bg_k01DgFocALt6fFF3bGAy6HAg@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 3.18 18/46] x86/acpi: Handle SCI interrupts above legacy space gracefully
+Date: Mon, 15 Jan 2018 13:33:26 +0100
+Message-ID: <20180115123329.460468634@linuxfoundation.org>
+References: <20180115123327.303455538@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdWLkji-GwtFW=RTW12bg_k01DgFocALt6fFF3bGAy6HAg@mail.gmail.com>
+In-Reply-To: <20180115123327.303455538@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>, Sunil V L <sunil.vl@hpe.com>, Thomas Gleixner <tglx@linutronix.de>, Abdul Lateef Attar <abdul-lateef.attar@hpe.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, kkamagui@gmail.com, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15 January 2018 at 14:22, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Rafael,
->
-> On Mon, Jan 15, 2018 at 9:16 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Mon, Jan 15, 2018 at 1:04 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Sun, Jan 14, 2018 at 10:48 AM, Geert Uytterhoeven
->>> <geert@linux-m68k.org> wrote:
->>>> On Sat, Jan 13, 2018 at 1:38 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>>> On Friday, January 12, 2018 3:31:09 PM CET Geert Uytterhoeven wrote:
->>>>>> On Fri, Jan 12, 2018 at 2:00 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>>>> > This comes from the recent discussion/testing effort that ensued after my
->>>>>> > pm_runtime_force_suspend|resume() changes proposal:
->>>>>> >
->>>>>> > https://marc.info/?t=151497772000004&r=1&w=2
->>>>>> >
->>>>>> > Patch [1/2] basically is https://patchwork.kernel.org/patch/10152873/ rebased
->>>>>> > on top of the current linux-next branch of the linux-pm.git tree (the relevant
->>>>>> > part should be there in the linux-next tree proper ATM).  It applies on top
->>>>>> > of https://patchwork.kernel.org/patch/10156077/ which should apply to the Linus'
->>>>>> > tree cleanly.
->>>>>> >
->>>>>> > Patch [2/2] is a resend of https://patchwork.kernel.org/patch/10142047/ with
->>>>>> > a very minor changelog modification and the R-b tag from Ulf.
->>>>>> >
->>>>>> > Geert, if possible, please test this on the Renesas systems that had the
->>>>>> > problem with https://patchwork.kernel.org/patch/10142047/ previously and let
->>>>>> > me know if you still see issues.
->>>>>>
->>>>>> I've tested this on two very similar systems: Salvator-XS with R-Car H3 ES2.0,
->>>>>> and Salvator-X with R-Car M3-W ES1.0.
->>>>>>
->>>>>> On the M3-based system, everything seems to work fine.
->>>>>
->>>>> Good.
->>>>>
->>>>>> On the H3-based system, the serial console (the /dev/ttySC0 device, not kernel
->>>>>> serial output) is dead after resume from s2ram, with and without
->>>>>> no_console_suspend.
->>>>>>
->>>>>> With no_console_suspend, I see:
->>>>>>
->>>>>>     ttySC ttySC0: 1 input overrun(s)
->>>>>>
->>>>>> after typing on the serial console, so it looks like an interrupt problem.
->>>>>>
->>>>>> This issue seems to be caused by patch [1/2]. But I have no idea what's
->>>>>> really happening, and why the two systems behave differently.
->>>>
->>>> Could be a firmware issue, too.
->>>> While the kernel images are identical, the ARM trusted firmware configs aren't
->>>> (same version, though).
->>>>
->>>> I'll do some more investigation...
->>>
->>> OK, thanks!
->>>
->>> It also would be good to know the topology of the device hierarchy and
->>> how that maps to the domains on the failing system (and which UART
->>> clocks are operated by genpd).
->>
->> The topology is the same on both systems.
->
-> I did miss a small difference in topology: in pm/linux-next, H3 has DMA
-> enabled for SCIF2, while M3 hasn't (yet).
-> With DMA enabled on M3, it fails in the same way.
->
-> As genpd_resume_noirq() no longer calls pm_runtime_force_resume(),
-> rcar_dmac_runtime_resume() is no longer called, and the DMAC's registers
-> are no longer reinitialized after system resume, breaking the serial port.
+3.18-stable review patch.  If anyone has any objections, please let me know.
 
-In drivers/dma/sh/rcar-dmac.c, I would try to replace the below line:
-SET_SYSTEM_SLEEP_PM_OPS(rcar_dmac_sleep_suspend, rcar_dmac_sleep_resume)
+------------------
 
-with:
-SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend, pm_runtime_force_resume)
+From: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
 
-in case that may be too early to suspend the dma device (which is
-rather common for dma devices) then try;
+commit 252714155f04c5d16989cb3aadb85fd1b5772f99 upstream.
 
-SET_LATE_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend, pm_runtime_force_resume)
+Platforms which support only IOAPIC mode, pass the SCI information above
+the legacy space (0-15) via the FADT mechanism and not via MADT.
 
-Kind regards
-Uffe
+In such cases mp_override_legacy_irq() which is invoked from
+acpi_sci_ioapic_setup() to register SCI interrupts fails for interrupts
+greater equal 16, since it is meant to handle only the legacy space and
+emits error "Invalid bus_irq %u for legacy override".
+
+Add a new function to handle SCI interrupts >= 16 and invoke it
+conditionally in acpi_sci_ioapic_setup().
+
+The code duplication due to this new function will be cleaned up in a
+separate patch.
+
+Co-developed-by: Sunil V L <sunil.vl@hpe.com>
+Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+Signed-off-by: Sunil V L <sunil.vl@hpe.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: kkamagui@gmail.com
+Cc: linux-acpi@vger.kernel.org
+Link: https://lkml.kernel.org/r/1510848825-21965-2-git-send-email-vikas.cha.sajjan@hpe.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ arch/x86/kernel/acpi/boot.c |   33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
+
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -445,6 +445,34 @@ static struct irq_domain_ops acpi_irqdom
+ 	.unmap = mp_irqdomain_unmap,
+ };
+ 
++static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
++						u8 trigger, u32 gsi)
++{
++	struct mpc_intsrc mp_irq;
++	int ioapic, pin;
++
++	/* Convert 'gsi' to 'ioapic.pin'(INTIN#) */
++	ioapic = mp_find_ioapic(gsi);
++	if (ioapic < 0) {
++		pr_warn("Failed to find ioapic for gsi : %u\n", gsi);
++		return ioapic;
++	}
++
++	pin = mp_find_ioapic_pin(ioapic, gsi);
++
++	mp_irq.type = MP_INTSRC;
++	mp_irq.irqtype = mp_INT;
++	mp_irq.irqflag = (trigger << 2) | polarity;
++	mp_irq.srcbus = MP_ISA_BUS;
++	mp_irq.srcbusirq = bus_irq;
++	mp_irq.dstapic = mpc_ioapic_id(ioapic);
++	mp_irq.dstirq = pin;
++
++	mp_save_irq(&mp_irq);
++
++	return 0;
++}
++
+ static int __init
+ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+ {
+@@ -489,7 +517,10 @@ static void __init acpi_sci_ioapic_setup
+ 	if (acpi_sci_flags & ACPI_MADT_POLARITY_MASK)
+ 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+ 
+-	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	if (bus_irq < NR_IRQS_LEGACY)
++		mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	else
++		mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi);
+ 
+ 	/*
+ 	 * stash over-ride to indicate we've been here
