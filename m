@@ -1,34 +1,96 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v6 08/12] arm64: Add support for ACPI based firmware
- tables
-Date: Mon, 15 Jan 2018 13:54:42 +0000
-Message-ID: <20180115135442.GF5473@e107155-lin>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-9-jeremy.linton@arm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.4 24/87] x86/acpi: Reduce code duplication in mp_override_legacy_irq()
+Date: Mon, 15 Jan 2018 13:34:23 +0100
+Message-ID: <20180115123351.755610398@linuxfoundation.org>
+References: <20180115123349.252309699@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180113005920.28658-9-jeremy.linton@arm.com>
+In-Reply-To: <20180115123349.252309699@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Sudeep Holla <sudeep.holla@arm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, kkamagui@gmail.com, linux-acpi@vger.kernel.org, Jean Delvare <jdelvare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 12, 2018 at 06:59:16PM -0600, Jeremy Linton wrote:
-> The /sys cache entries should support ACPI/PPTT generated cache
-> topology information. Lets detect ACPI systems and call
-> an arch specific cache_setup_acpi() routine to update the hardware
-> probed cache topology.
-> 
-> For arm64, if ACPI is enabled, determine the max number of cache
-> levels and populate them using the PPTT table if one is available.
-> 
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-Looks good,
+------------------
 
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+From: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
 
---
-Regards,
-Sudeep
+commit 4ee2ec1b122599f7b10c849fa7915cebb37b7edb upstream.
+
+The new function mp_register_ioapic_irq() is a subset of the code in
+mp_override_legacy_irq().
+
+Replace the code duplication by invoking mp_register_ioapic_irq() from
+mp_override_legacy_irq().
+
+Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: kkamagui@gmail.com
+Cc: linux-acpi@vger.kernel.org
+Link: https://lkml.kernel.org/r/1510848825-21965-3-git-send-email-vikas.cha.sajjan@hpe.com
+Cc: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ arch/x86/kernel/acpi/boot.c |   27 +++++----------------------
+ 1 file changed, 5 insertions(+), 22 deletions(-)
+
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -321,13 +321,12 @@ acpi_parse_lapic_nmi(struct acpi_subtabl
+ #ifdef CONFIG_X86_IO_APIC
+ #define MP_ISA_BUS		0
+ 
++static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
++						u8 trigger, u32 gsi);
++
+ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+ 					  u32 gsi)
+ {
+-	int ioapic;
+-	int pin;
+-	struct mpc_intsrc mp_irq;
+-
+ 	/*
+ 	 * Check bus_irq boundary.
+ 	 */
+@@ -337,14 +336,6 @@ static void __init mp_override_legacy_ir
+ 	}
+ 
+ 	/*
+-	 * Convert 'gsi' to 'ioapic.pin'.
+-	 */
+-	ioapic = mp_find_ioapic(gsi);
+-	if (ioapic < 0)
+-		return;
+-	pin = mp_find_ioapic_pin(ioapic, gsi);
+-
+-	/*
+ 	 * TBD: This check is for faulty timer entries, where the override
+ 	 *      erroneously sets the trigger to level, resulting in a HUGE
+ 	 *      increase of timer interrupts!
+@@ -352,16 +343,8 @@ static void __init mp_override_legacy_ir
+ 	if ((bus_irq == 0) && (trigger == 3))
+ 		trigger = 1;
+ 
+-	mp_irq.type = MP_INTSRC;
+-	mp_irq.irqtype = mp_INT;
+-	mp_irq.irqflag = (trigger << 2) | polarity;
+-	mp_irq.srcbus = MP_ISA_BUS;
+-	mp_irq.srcbusirq = bus_irq;	/* IRQ */
+-	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
+-	mp_irq.dstirq = pin;	/* INTIN# */
+-
+-	mp_save_irq(&mp_irq);
+-
++	if (mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi) < 0)
++		return;
+ 	/*
+ 	 * Reset default identity mapping if gsi is also an legacy IRQ,
+ 	 * otherwise there will be more than one entry with the same GSI
