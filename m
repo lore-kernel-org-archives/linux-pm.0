@@ -1,113 +1,123 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3] thermal: Add cooling device's statistics in sysfs
-Date: Mon, 15 Jan 2018 10:16:16 +0530
-Message-ID: <20180115044616.GC22978@vireshk-i7>
-References: <087186fecdfd85bead58e110cf8bf7ccdfab517b.1515663078.git.viresh.kumar@linaro.org>
- <20180112174606.GA11076@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:37679 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752150AbeAOEqT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Jan 2018 23:46:19 -0500
-Received: by mail-pg0-f66.google.com with SMTP id z17so7422867pgc.4
-        for <linux-pm@vger.kernel.org>; Sun, 14 Jan 2018 20:46:19 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20180112174606.GA11076@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH] power: reset: Add Spreadtrum SC27xx PMIC power off support
+Date: Mon, 15 Jan 2018 15:58:57 +0800
+Message-ID: <5822b56a4e65e27183f8bf712d5889b11f90111e.1515118527.git.baolin.wang@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org
+Cc: arnd@arndb.de, broonie@kernel.org, baolin.wang@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12-01-18, 09:46, Eduardo Valentin wrote:
-> On Thu, Jan 11, 2018 at 03:06:09PM +0530, Viresh Kumar wrote:
-> > $ ls -R /sys/class/thermal/cooling_device0/
-> > /sys/class/thermal/cooling_device0/:
-> > cur_state  max_state  power  stats  subsystem  type  uevent
-> > 
-> > /sys/class/thermal/cooling_device0/power:
-> > autosuspend_delay_ms  runtime_active_time  runtime_suspended_time
-> > control               runtime_status
-> > 
-> > /sys/class/thermal/cooling_device0/stats:
-> > reset  time_in_state_ms  total_trans
-> > 
-> 
-> I guess the only missing node from the cpufreq design copy was the
-> transition table.
+On Spreadtrum platform, we need power off system through external SC27xx
+series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 chips.
+Thus this patch adds SC27xx series PMICs power-off support.
 
-I don't think it would be very useful here and so didn't add it.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+ drivers/power/reset/Kconfig           |    9 +++++
+ drivers/power/reset/Makefile          |    1 +
+ drivers/power/reset/sc27xx-poweroff.c |   65 +++++++++++++++++++++++++++++++++
+ 3 files changed, 75 insertions(+)
+ create mode 100644 drivers/power/reset/sc27xx-poweroff.c
 
-> Also, I think the stats per thermal zone is also useful, sometimes
-> more than per cooling device, as I have been using in
-> the past, but that is just a comment, not really to block your patch.
-
-Sure, that can be added in a separate patch. What kind of stats are you
-expecting there ?
-
-> > diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-> > index 8cdf75adcce1..eb03d7e099bb 100644
-> > --- a/drivers/thermal/thermal_helpers.c
-> > +++ b/drivers/thermal/thermal_helpers.c
-> > @@ -187,7 +187,10 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
-> >  		if (instance->target > target)
-> >  			target = instance->target;
-> >  	}
-> > -	cdev->ops->set_cur_state(cdev, target);
-> > +
-> > +	if (!cdev->ops->set_cur_state(cdev, target))
-> > +		thermal_cooling_device_stats_update(cdev, target);
-> > +
-> 
-> I might be wrong but, this will maybe double account for cases the same
-> cooling state is selected.
-
-No because I am exiting early for same sates in that routine.
-
-> >  void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *cdev)
-> >  {
-> > +	struct cooling_dev_stats *stats;
-> > +	unsigned long states;
-> > +	int ret, size;
-> > +
-> > +	ret = cdev->ops->get_max_state(cdev, &states);
-> > +	if (ret)
-> > +		return;
-> > +
-> > +	states++; /* Total number of states is highest state + 1 */
-> > +	size = sizeof(*stats);
-> > +	size += sizeof(*stats->time_in_state) * states;
-> > +
-> > +	stats = kzalloc(size, GFP_KERNEL);
-> > +	if (!stats)
-> > +		return;
-> > +
-> > +	stats->time_in_state = (ktime_t *)(stats + 1);
-> > +	cdev->stats = stats;
-> > +	stats->last_time = ktime_get();
-> > +	stats->max_states = states;
-> > +	cdev->stats = stats;
-> > +
-> > +	spin_lock_init(&stats->lock);
-> 
-> I would say, the cooling device stat initialization deserves its own
-> initialization function, don't you think?
-
-Hmm, I am not sure if we need it right away. This function is only for cooling
-device's sysfs setup and initializing the "stats" structure kind of falls in the
-setup category. Of course if we want this function to handle sysfs setup for
-thermal zones as well, then yes we better split it up.
-
-The other thing was with thermal_cooling_device_remove_sysfs() as that would
-also need to call a separate routine to do the cleanup and that would be the
-only thing it will end up doing. So it would more be like a dummy caller.
-
-> Also, I see nothing about sysfs on the lines added to
-> thermal_cooling_device_setup_sysfs().
-
-Well, it is allocating structure to keep the values showed while reading sysfs
-files, so it is kind of sysfs related to me :)
-
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index ca0de1a..611ae56 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -227,5 +227,14 @@ config SYSCON_REBOOT_MODE
+ 	  register, then the bootloader can read it to take different
+ 	  action according to the mode.
+ 
++config POWER_RESET_SC27XX
++	tristate "Spreadtrum SC27xx PMIC power-off driver"
++	depends on MFD_SC27XX_PMIC || COMPILE_TEST
++	help
++	  This driver supports powering off a system through
++	  Spreadtrum SC27xx series PMICs. The SC27xx series
++	  PMICs includes the SC2720, SC2721, SC2723, SC2730
++	  and SC2731 chips.
++
+ endif
+ 
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index aeb65ed..225d645 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -27,3 +27,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
+ obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
+ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
+ obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
++obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
+diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
+new file mode 100644
+index 0000000..8e4b6a0
+--- /dev/null
++++ b/drivers/power/reset/sc27xx-poweroff.c
+@@ -0,0 +1,65 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2017 Spreadtrum Communications Inc.
++ * Copyright (c) 2017 Linaro Ltd.
++ */
++
++#include <linux/cpu.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/pm.h>
++#include <linux/regmap.h>
++#include <linux/syscore_ops.h>
++
++#define SC27XX_PWR_PD_HW	0xc2c
++#define SC27XX_PWR_OFF_EN	BIT(0)
++
++static struct regmap *regmap;
++
++/*
++ * On Spreadtrum platform, we need power off system through external SC27xx
++ * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
++ * which is not fast io access.
++ *
++ * So before stopping other cores, we need release other cores' resource by
++ * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
++ * system through PMIC.
++ */
++void sc27xx_poweroff_shutdown(void)
++{
++	int cpu = smp_processor_id();
++
++	freeze_secondary_cpus(cpu);
++}
++
++static struct syscore_ops poweroff_syscore_ops = {
++	.shutdown = sc27xx_poweroff_shutdown,
++};
++
++static void sc27xx_poweroff_do_poweroff(void)
++{
++	regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
++}
++
++static int sc27xx_poweroff_probe(struct platform_device *pdev)
++{
++	regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!regmap)
++		return -ENODEV;
++
++	pm_power_off = sc27xx_poweroff_do_poweroff;
++	register_syscore_ops(&poweroff_syscore_ops);
++	return 0;
++}
++
++static struct platform_driver sc27xx_poweroff_driver = {
++	.probe = sc27xx_poweroff_probe,
++	.driver = {
++		.name = "sc27xx-poweroff",
++	},
++};
++module_platform_driver(sc27xx_poweroff_driver);
++
++MODULE_DESCRIPTION("Spreadtrum SC27xx PMIC Poweroff Driver");
++MODULE_LICENSE("GPL v2");
 -- 
-viresh
+1.7.9.5
