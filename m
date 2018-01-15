@@ -1,172 +1,91 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v6 05/12] ACPI/PPTT: Add Processor Properties Topology
- Table parsing
-Date: Mon, 15 Jan 2018 15:48:13 +0000
-Message-ID: <20180115154813.GB17664@e107155-lin>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-6-jeremy.linton@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180113005920.28658-6-jeremy.linton@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Sudeep Holla <sudeep.holla@arm.com>
+From: Palmer Dabbelt <palmer@sifive.com>
+Subject: Re: [PATCH v6 02/12] drivers: base: cacheinfo: setup DT cache properties early
+Date: Mon, 15 Jan 2018 08:07:43 -0800 (PST)
+Message-ID: <mhng-72d1934a-43df-4a5b-851d-0dd6d8a1b30b@palmer-si-x1c4>
+References: <20180115123338.GB5473@e107155-lin>
+Mime-Version: 1.0 (MHng)
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:37984 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755887AbeAOQHo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jan 2018 11:07:44 -0500
+Received: by mail-pf0-f194.google.com with SMTP id k19so8295231pfj.5
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jan 2018 08:07:44 -0800 (PST)
+In-Reply-To: <20180115123338.GB5473@e107155-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+Cc: jeremy.linton@arm.com, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, Will Deacon <will.deacon@arm.com>, catalin.marinas@arm.com, Greg KH <gregkh@linuxfoundation.org>, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, albert@sifive.com, sudeep.holla@arm.com
 
-On Fri, Jan 12, 2018 at 06:59:13PM -0600, Jeremy Linton wrote:
-> ACPI 6.2 adds a new table, which describes how processing units
-> are related to each other in tree like fashion. Caches are
-> also sprinkled throughout the tree and describe the properties
-> of the caches in relation to other caches and processing units.
-> 
-> Add the code to parse the cache hierarchy and report the total
-> number of levels of cache for a given core using
-> acpi_find_last_cache_level() as well as fill out the individual
-> cores cache information with cache_setup_acpi() once the
-> cpu_cacheinfo structure has been populated by the arch specific
-> code.
-> 
-> An additional patch later in the set adds the ability to report
-> peers in the topology using find_acpi_cpu_topology()
-> to report a unique ID for each processing unit at a given level
-> in the tree. These unique id's can then be used to match related
-> processing units which exist as threads, COD (clusters
-> on die), within a given package, etc.
-> 
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> ---
->  drivers/acpi/pptt.c | 476 ++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 476 insertions(+)
->  create mode 100644 drivers/acpi/pptt.c
-> 
-> diff --git a/drivers/acpi/pptt.c b/drivers/acpi/pptt.c
-> new file mode 100644
-> index 000000000000..2c4b3ed862a8
-> --- /dev/null
-> +++ b/drivers/acpi/pptt.c
-> @@ -0,0 +1,476 @@
-> +/*
-> + * Copyright (C) 2018, ARM
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * This file implements parsing of Processor Properties Topology Table (PPTT)
-> + * which is optionally used to describe the processor and cache topology.
-> + * Due to the relative pointers used throughout the table, this doesn't
-> + * leverage the existing subtable parsing in the kernel.
-> + *
-> + * The PPTT structure is an inverted tree, with each node potentially
-> + * holding one or two inverted tree data structures describing
-> + * the caches available at that level. Each cache structure optionally
-> + * contains properties describing the cache at a given level which can be
-> + * used to override hardware probed values.
-> + */
-> +#define pr_fmt(fmt) "ACPI PPTT: " fmt
-> +
-> +#include <linux/acpi.h>
-> +#include <linux/cacheinfo.h>
-> +#include <acpi/processor.h>
-> +
-> +/* total number of attributes checked by the properties code */
-> +#define PPTT_CHECKED_ATTRIBUTES 6
-> +
-> +/*
-> + * Given the PPTT table, find and verify that the subtable entry
-> + * is located within the table
-> + */
-> +static struct acpi_subtable_header *fetch_pptt_subtable(
-> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
-> +{
-> +	struct acpi_subtable_header *entry;
-> +
-> +	/* there isn't a subtable at reference 0 */
-> +	if (pptt_ref < sizeof(struct acpi_subtable_header))
-> +		return NULL;
-> +
-> +	if (pptt_ref + sizeof(struct acpi_subtable_header) > table_hdr->length)
-> +		return NULL;
-> +
-> +	entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr, pptt_ref);
-> +
-> +	if (pptt_ref + entry->length > table_hdr->length)
-> +		return NULL;
-> +
-> +	return entry;
-> +}
-> +
-> +static struct acpi_pptt_processor *fetch_pptt_node(
-> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
-> +{
-> +	return (struct acpi_pptt_processor *)fetch_pptt_subtable(table_hdr,
-> +								 pptt_ref);
-> +}
-> +
-> +static struct acpi_pptt_cache *fetch_pptt_cache(
-> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
-> +{
-> +	return (struct acpi_pptt_cache *)fetch_pptt_subtable(table_hdr,
-> +							     pptt_ref);
-> +}
-> +
-> +static struct acpi_subtable_header *acpi_get_pptt_resource(
-> +	struct acpi_table_header *table_hdr,
-> +	struct acpi_pptt_processor *node, int resource)
-> +{
-> +	u32 *ref;
-> +
-> +	if (resource >= node->number_of_priv_resources)
-> +		return NULL;
-> +
-> +	ref = ACPI_ADD_PTR(u32, node, sizeof(struct acpi_pptt_processor));
-> +	ref += resource;
-> +
-> +	return fetch_pptt_subtable(table_hdr, *ref);
-> +}
-> +
-> +/*
-> + * Attempt to find a given cache level, while counting the max number
-> + * of cache levels for the cache node.
-> + *
-> + * Given a pptt resource, verify that it is a cache node, then walk
-> + * down each level of caches, counting how many levels are found
-> + * as well as checking the cache type (icache, dcache, unified). If a
-> + * level & type match, then we set found, and continue the search.
-> + * Once the entire cache branch has been walked return its max
-> + * depth.
-> + */
-> +static int acpi_pptt_walk_cache(struct acpi_table_header *table_hdr,
-> +				int local_level,
-> +				struct acpi_subtable_header *res,
-> +				struct acpi_pptt_cache **found,
-> +				int level, int type)
-> +{
-> +	struct acpi_pptt_cache *cache;
-> +
-> +	if (res->type != ACPI_PPTT_TYPE_CACHE)
-> +		return 0;
-> +
-> +	cache = (struct acpi_pptt_cache *) res;
-> +	while (cache) {
-> +		local_level++;
-> +
-> +		if ((local_level == level) &&
-> +		    (cache->flags & ACPI_PPTT_CACHE_TYPE_VALID) &&
-> +		    ((cache->attributes & ACPI_PPTT_MASK_CACHE_TYPE) == type)) {
-> +			if ((*found != NULL) && (cache != *found))
+On Mon, 15 Jan 2018 04:33:38 PST (-0800), sudeep.holla@arm.com wrote:
+> On Fri, Jan 12, 2018 at 06:59:10PM -0600, Jeremy Linton wrote:
+>> The original intent in cacheinfo was that an architecture
+>> specific populate_cache_leaves() would probe the hardware
+>> and then cache_shared_cpu_map_setup() and
+>> cache_override_properties() would provide firmware help to
+>> extend/expand upon what was probed. Arm64 was really
+>> the only architecture that was working this way, and
+>> with the removal of most of the hardware probing logic it
+>> became clear that it was possible to simplify the logic a bit.
+>>
+>> This patch combines the walk of the DT nodes with the
+>> code updating the cache size/line_size and nr_sets.
+>> cache_override_properties() (which was DT specific) is
+>> then removed. The result is that cacheinfo.of_node is
+>> no longer used as a temporary place to hold DT references
+>> for future calls that update cache properties. That change
+>> helps to clarify its one remaining use (matching
+>> cacheinfo nodes that represent shared caches) which
+>> will be used by the ACPI/PPTT code in the following patches.
+>>
+>> Cc: Palmer Dabbelt <palmer@sifive.com>
+>> Cc: Albert Ou <albert@sifive.com>
+>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+>> ---
+>>  arch/riscv/kernel/cacheinfo.c |  1 +
+>>  drivers/base/cacheinfo.c      | 65 +++++++++++++++++++------------------------
+>>  include/linux/cacheinfo.h     |  1 +
+>>  3 files changed, 31 insertions(+), 36 deletions(-)
+>>
+>> diff --git a/arch/riscv/kernel/cacheinfo.c b/arch/riscv/kernel/cacheinfo.c
+>> index 10ed2749e246..6f4500233cf8 100644
+>> --- a/arch/riscv/kernel/cacheinfo.c
+>> +++ b/arch/riscv/kernel/cacheinfo.c
+>> @@ -30,6 +30,7 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
+>>  		CACHE_WRITE_BACK
+>>  		| CACHE_READ_ALLOCATE
+>>  		| CACHE_WRITE_ALLOCATE;
+>> +	cache_of_set_props(this_leaf, node);
+>
+> This may be necessary but can it be done as later patch ? So far nothing
+> is added that may break riscv IIUC.
+>
+> Palmer, Albert,
+>
+> Can you confirm ? Also, as I see we can thin down arch specific
+> implementation on riscv if it's just using DT like ARM64. Sorry if
+> I am missing to see something, so thought of checking.
+>
+> [...]
 
-I forgot to mention this earlier, I see you have used parentheses too
-liberally at quite some place in this file like the above 4 line.
-Please drop those unnecessary parentheses.
+Sorry, I guess I'm a bit confused as to what's going on here.  RISC-V uses 
+device tree on all Linux systems.
 
---
-Regards,
-Sudeep
+>> diff --git a/include/linux/cacheinfo.h b/include/linux/cacheinfo.h
+>> index 3d9805297cda..d35299a590a4 100644
+>> --- a/include/linux/cacheinfo.h
+>> +++ b/include/linux/cacheinfo.h
+>> @@ -99,6 +99,7 @@ int func(unsigned int cpu)					\
+>>  struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu);
+>>  int init_cache_level(unsigned int cpu);
+>>  int populate_cache_leaves(unsigned int cpu);
+>> +void cache_of_set_props(struct cacheinfo *this_leaf, struct device_node *np);
+>>
+>
+> IIUC riscv is the only user for this outside of cacheinfo.c, right ?
+> Hopefully we can get rid of it.
+>
+> Other than that, it looks OK. I will wait for response from riscv team
+> do that these riscv related changes can be dropped or move to later
+> patch if really needed.
