@@ -1,22 +1,18 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.9 16/96] x86/acpi: Handle SCI interrupts above legacy space gracefully
-Date: Mon, 15 Jan 2018 13:34:15 +0100
-Message-ID: <20180115123405.891126787@linuxfoundation.org>
-References: <20180115123404.270241256@linuxfoundation.org>
+Subject: [PATCH 4.14 022/118] x86/acpi: Handle SCI interrupts above legacy space gracefully
+Date: Mon, 15 Jan 2018 13:34:09 +0100
+Message-ID: <20180115123416.578311508@linuxfoundation.org>
+References: <20180115123415.325497625@linuxfoundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:47318 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S966188AbeAOMmx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jan 2018 07:42:53 -0500
-In-Reply-To: <20180115123404.270241256@linuxfoundation.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180115123415.325497625@linuxfoundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>, Sunil V L <sunil.vl@hpe.com>, Thomas Gleixner <tglx@linutronix.de>, Abdul Lateef Attar <abdul-lateef.attar@hpe.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, kkamagui@gmail.com, linux-acpi@vger.kernel.org, Jean Delvare <jdelvare@suse.de>
+List-Id: linux-pm@vger.kernel.org
 
-4.9-stable review patch.  If anyone has any objections, please let me know.
+4.14-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -57,7 +53,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -422,6 +422,34 @@ static int mp_config_acpi_gsi(struct dev
+@@ -429,6 +429,34 @@ static int mp_config_acpi_gsi(struct dev
  	return 0;
  }
  
@@ -92,7 +88,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  static int __init
  acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
  {
-@@ -466,7 +494,11 @@ static void __init acpi_sci_ioapic_setup
+@@ -473,7 +501,11 @@ static void __init acpi_sci_ioapic_setup
  	if (acpi_sci_flags & ACPI_MADT_POLARITY_MASK)
  		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
  
