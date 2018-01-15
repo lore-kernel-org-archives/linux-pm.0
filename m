@@ -1,91 +1,57 @@
-From: Palmer Dabbelt <palmer@sifive.com>
-Subject: Re: [PATCH v6 02/12] drivers: base: cacheinfo: setup DT cache properties early
-Date: Mon, 15 Jan 2018 08:07:43 -0800 (PST)
-Message-ID: <mhng-72d1934a-43df-4a5b-851d-0dd6d8a1b30b@palmer-si-x1c4>
-References: <20180115123338.GB5473@e107155-lin>
-Mime-Version: 1.0 (MHng)
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/2] PM / core: genpd fix and pm_runtime_force_suspend|resume()
+ rework
+Date: Mon, 15 Jan 2018 17:17:16 +0100
+Message-ID: <CAJZ5v0hEVdARvFQo7ma3F756aE0+3vbqu+-L7Ffw0rgpWYt2rA@mail.gmail.com>
+References: <4928977.5hd79RbQlp@aspire.rjw.lan> <CAMuHMdX6dJzOcxkWyDR6anpcwZU5fy03sTeChEp35KY0d40iFg@mail.gmail.com>
+ <12351114.Ym7QOfxZhK@aspire.rjw.lan> <CAMuHMdVaiuscrvat=BqtmXxQnA35=wocb85FHEFvQWjQaY615g@mail.gmail.com>
+ <CAJZ5v0i5FhKCtvcvS_PfpFQKo-zjExT4YypYaaTC7JD5kX-kew@mail.gmail.com>
+ <CAMuHMdVEwHhjfCppYXKYX6viFrunCmH00wH6zUFNo4p5CdJCww@mail.gmail.com>
+ <CAMuHMdWLkji-GwtFW=RTW12bg_k01DgFocALt6fFF3bGAy6HAg@mail.gmail.com> <CAPDyKFq6a=sj_E5Nz9bSB=6rqWq+ar2MuwcrxJAcu36N+C+m2Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:37984 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755887AbeAOQHo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jan 2018 11:07:44 -0500
-Received: by mail-pf0-f194.google.com with SMTP id k19so8295231pfj.5
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jan 2018 08:07:44 -0800 (PST)
-In-Reply-To: <20180115123338.GB5473@e107155-lin>
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:42122 "EHLO
+        mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753699AbeAOQRS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jan 2018 11:17:18 -0500
+In-Reply-To: <CAPDyKFq6a=sj_E5Nz9bSB=6rqWq+ar2MuwcrxJAcu36N+C+m2Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-Cc: jeremy.linton@arm.com, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, Will Deacon <will.deacon@arm.com>, catalin.marinas@arm.com, Greg KH <gregkh@linuxfoundation.org>, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, albert@sifive.com, sudeep.holla@arm.com
+To: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Mon, 15 Jan 2018 04:33:38 PST (-0800), sudeep.holla@arm.com wrote:
-> On Fri, Jan 12, 2018 at 06:59:10PM -0600, Jeremy Linton wrote:
->> The original intent in cacheinfo was that an architecture
->> specific populate_cache_leaves() would probe the hardware
->> and then cache_shared_cpu_map_setup() and
->> cache_override_properties() would provide firmware help to
->> extend/expand upon what was probed. Arm64 was really
->> the only architecture that was working this way, and
->> with the removal of most of the hardware probing logic it
->> became clear that it was possible to simplify the logic a bit.
->>
->> This patch combines the walk of the DT nodes with the
->> code updating the cache size/line_size and nr_sets.
->> cache_override_properties() (which was DT specific) is
->> then removed. The result is that cacheinfo.of_node is
->> no longer used as a temporary place to hold DT references
->> for future calls that update cache properties. That change
->> helps to clarify its one remaining use (matching
->> cacheinfo nodes that represent shared caches) which
->> will be used by the ACPI/PPTT code in the following patches.
->>
->> Cc: Palmer Dabbelt <palmer@sifive.com>
->> Cc: Albert Ou <albert@sifive.com>
->> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->> ---
->>  arch/riscv/kernel/cacheinfo.c |  1 +
->>  drivers/base/cacheinfo.c      | 65 +++++++++++++++++++------------------------
->>  include/linux/cacheinfo.h     |  1 +
->>  3 files changed, 31 insertions(+), 36 deletions(-)
->>
->> diff --git a/arch/riscv/kernel/cacheinfo.c b/arch/riscv/kernel/cacheinfo.c
->> index 10ed2749e246..6f4500233cf8 100644
->> --- a/arch/riscv/kernel/cacheinfo.c
->> +++ b/arch/riscv/kernel/cacheinfo.c
->> @@ -30,6 +30,7 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
->>  		CACHE_WRITE_BACK
->>  		| CACHE_READ_ALLOCATE
->>  		| CACHE_WRITE_ALLOCATE;
->> +	cache_of_set_props(this_leaf, node);
->
-> This may be necessary but can it be done as later patch ? So far nothing
-> is added that may break riscv IIUC.
->
-> Palmer, Albert,
->
-> Can you confirm ? Also, as I see we can thin down arch specific
-> implementation on riscv if it's just using DT like ARM64. Sorry if
-> I am missing to see something, so thought of checking.
->
-> [...]
+On Mon, Jan 15, 2018 at 3:26 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 15 January 2018 at 14:22, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Sorry, I guess I'm a bit confused as to what's going on here.  RISC-V uses 
-device tree on all Linux systems.
+[cut]
 
->> diff --git a/include/linux/cacheinfo.h b/include/linux/cacheinfo.h
->> index 3d9805297cda..d35299a590a4 100644
->> --- a/include/linux/cacheinfo.h
->> +++ b/include/linux/cacheinfo.h
->> @@ -99,6 +99,7 @@ int func(unsigned int cpu)					\
->>  struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu);
->>  int init_cache_level(unsigned int cpu);
->>  int populate_cache_leaves(unsigned int cpu);
->> +void cache_of_set_props(struct cacheinfo *this_leaf, struct device_node *np);
 >>
+>> I did miss a small difference in topology: in pm/linux-next, H3 has DMA
+>> enabled for SCIF2, while M3 hasn't (yet).
+>> With DMA enabled on M3, it fails in the same way.
+>>
+>> As genpd_resume_noirq() no longer calls pm_runtime_force_resume(),
+>> rcar_dmac_runtime_resume() is no longer called, and the DMAC's registers
+>> are no longer reinitialized after system resume, breaking the serial port.
 >
-> IIUC riscv is the only user for this outside of cacheinfo.c, right ?
-> Hopefully we can get rid of it.
+> In drivers/dma/sh/rcar-dmac.c, I would try to replace the below line:
+> SET_SYSTEM_SLEEP_PM_OPS(rcar_dmac_sleep_suspend, rcar_dmac_sleep_resume)
 >
-> Other than that, it looks OK. I will wait for response from riscv team
-> do that these riscv related changes can be dropped or move to later
-> patch if really needed.
+> with:
+> SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend, pm_runtime_force_resume)
+
+Yes, that probably is the least intrusive thing that can be done to
+address the issue.
+
+> in case that may be too early to suspend the dma device (which is
+> rather common for dma devices) then try;
+>
+> SET_LATE_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend, pm_runtime_force_resume)
+
+Good suggestion, and I would go straight for it anyway.
+
+Geert, can you try if this works, please?
+
+Thanks,
+Rafael
