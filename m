@@ -1,47 +1,28 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression in next
-Date: Mon, 15 Jan 2018 10:06:26 -0800
-Message-ID: <20180115180626.GL4821@atomide.com>
-References: <20180112211535.GH21458@sirena.org.uk>
- <20180112215010.GG4821@atomide.com>
- <20180112221126.GK21458@sirena.org.uk>
- <20180112224959.GH4821@atomide.com>
- <20180112225947.GL21458@sirena.org.uk>
- <87wp0jzyig.wl%kuninori.morimoto.gx@renesas.com>
- <20180115165050.GJ4821@atomide.com>
- <20180115171917.GB12018@sirena.org.uk>
- <20180115175220.GK4821@atomide.com>
- <20180115175626.GC12018@sirena.org.uk>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH] thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()
+Date: Mon, 15 Jan 2018 16:09:26 -0200
+Message-ID: <CAOMZO5ABFzGTBrsO-QEM+fAjbeaOgP2hUQ5ErYiaQTF6Yg0YmA@mail.gmail.com>
+References: <1514976294-31880-1-git-send-email-festevam@gmail.com>
+ <1515851277.4764.2.camel@intel.com> <ba61b31f-74c0-7213-7d6c-7f4c80ee07e0@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:49472 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751284AbeAOSGa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 15 Jan 2018 13:06:30 -0500
-Content-Disposition: inline
-In-Reply-To: <20180115175626.GC12018@sirena.org.uk>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:46395 "EHLO
+        mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751478AbeAOSJ1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jan 2018 13:09:27 -0500
+Received: by mail-oi0-f52.google.com with SMTP id d124so8840577oib.13
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jan 2018 10:09:27 -0800 (PST)
+In-Reply-To: <ba61b31f-74c0-7213-7d6c-7f4c80ee07e0@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Andrew Morton <akpm@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Arthur Borsboom <arthurborsboom@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Pavel Machek <pavel@ucw.cz>
 
-* Mark Brown <broonie@kernel.org> [180115 17:56]:
-> On Mon, Jan 15, 2018 at 09:52:20AM -0800, Tony Lindgren wrote:
-> > * Mark Brown <broonie@kernel.org> [180115 17:19]:
-> 
-> > > Did anyone actually try testing the fix I posted yet?
-> 
-> > Hmm I don't seem to have anything in my inbox. What might
-> > be the subject for it?
-> 
-> Sorry, I didn't actually post it - just suggested adding the
-> snd_soc_codec_set_regmap() call.
+On Sat, Jan 13, 2018 at 7:17 PM, Guenter Roeck <linux@roeck-us.net> wrote:
 
-Oh I see. Yeah that seems like a good long term solution after
-the regressions are fixed.
+> I bet it gets confused by the quotes.
 
-Regards,
+In this particular case I think we should ignore checkpatch reported error.
 
-Tony
+Thanks
