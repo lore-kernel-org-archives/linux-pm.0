@@ -1,12 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v3 04/16] ARM: dtsi: axp209: add node for ADC
-Date: Mon, 15 Jan 2018 11:33:38 +0100
-Message-ID: <ea299dca30bb3d0413d35717522643b5a00e731c.1516012352.git-series.quentin.schulz@free-electrons.com>
+Subject: [PATCH v3 14/16] ARM: dtsi: axp81x: add battery power
+ supply subnode
+Date: Mon, 15 Jan 2018 11:33:48 +0100
+Message-ID: <9c045de8dcee9a71803978855762e272efdc41d3.1516012352.git-series.quentin.schulz@free-electrons.com>
 References: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBVMH6LJAKGQEO6YIDXQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBX4H6LJAKGQE2NICDPA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 In-Reply-To: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -21,29 +22,33 @@ To: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.g
 Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This adds a DT node for the ADC of the PMIC so that there can be
-consumers of its IIO channels declaring their consumptions via DT.
+The X-Powers AXP81X PMIC exposes battery supply various data such as
+the battery status (charging, discharging, full, dead), current max
+limit, current current, battery capacity (in percentage), voltage max
+and min limits, current voltage, and battery capacity (in Ah).
+
+This adds the battery power supply subnode for AXP81X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- arch/arm/boot/dts/axp209.dtsi | 5 +++++
+ arch/arm/boot/dts/axp81x.dtsi | 5 +++++
  1 file changed, 5 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-index 897103e..0d9ff12 100644
---- a/arch/arm/boot/dts/axp209.dtsi
-+++ b/arch/arm/boot/dts/axp209.dtsi
-@@ -58,6 +58,11 @@
- 		status = "disabled";
+diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
+index 6b5e7bc..1b05c7f 100644
+--- a/arch/arm/boot/dts/axp81x.dtsi
++++ b/arch/arm/boot/dts/axp81x.dtsi
+@@ -69,6 +69,11 @@
+ 		};
  	};
  
-+	axp_adc: adc {
-+		compatible = "x-powers,axp209-adc";
-+		#io-channel-cells = <1>;
++	battery_power_supply: battery-power-supply {
++		compatible = "x-powers,axp813-battery-power-supply";
++		status = "disabled";
 +	};
 +
- 	axp_gpio: gpio {
- 		compatible = "x-powers,axp209-gpio";
- 		gpio-controller;
+ 	regulators {
+ 		/* Default work frequency for buck regulators */
+ 		x-powers,dcdc-freq = <3000>;
 -- 
 git-series 0.9.1
