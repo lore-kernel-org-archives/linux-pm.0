@@ -1,7 +1,7 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.14 022/118] x86/acpi: Handle SCI interrupts above legacy space gracefully
-Date: Mon, 15 Jan 2018 13:34:09 +0100
-Message-ID: <20180115123416.578311508@linuxfoundation.org>
+Subject: [PATCH 4.14 031/118] x86/acpi: Reduce code duplication in mp_override_legacy_irq()
+Date: Mon, 15 Jan 2018 13:34:18 +0100
+Message-ID: <20180115123417.356866062@linuxfoundation.org>
 References: <20180115123415.325497625@linuxfoundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -9,7 +9,7 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180115123415.325497625@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>, Sunil V L <sunil.vl@hpe.com>, Thomas Gleixner <tglx@linutronix.de>, Abdul Lateef Attar <abdul-lateef.attar@hpe.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, kkamagui@gmail.com, linux-acpi@vger.kernel.org, Jean Delvare <jdelvare@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, kkamagui@gmail.com, linux-acpi@vger.kernel.org, Jean Delvare <jdelvare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
 4.14-stable review patch.  If anyone has any objections, please let me know.
@@ -18,86 +18,79 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
 
-commit 252714155f04c5d16989cb3aadb85fd1b5772f99 upstream.
+commit 4ee2ec1b122599f7b10c849fa7915cebb37b7edb upstream.
 
-Platforms which support only IOAPIC mode, pass the SCI information above
-the legacy space (0-15) via the FADT mechanism and not via MADT.
+The new function mp_register_ioapic_irq() is a subset of the code in
+mp_override_legacy_irq().
 
-In such cases mp_override_legacy_irq() which is invoked from
-acpi_sci_ioapic_setup() to register SCI interrupts fails for interrupts
-greater equal 16, since it is meant to handle only the legacy space and
-emits error "Invalid bus_irq %u for legacy override".
+Replace the code duplication by invoking mp_register_ioapic_irq() from
+mp_override_legacy_irq().
 
-Add a new function to handle SCI interrupts >= 16 and invoke it
-conditionally in acpi_sci_ioapic_setup().
-
-The code duplication due to this new function will be cleaned up in a
-separate patch.
-
-Co-developed-by: Sunil V L <sunil.vl@hpe.com>
 Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
-Signed-off-by: Sunil V L <sunil.vl@hpe.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Tested-by: Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: kkamagui@gmail.com
 Cc: linux-acpi@vger.kernel.org
-Link: https://lkml.kernel.org/r/1510848825-21965-2-git-send-email-vikas.cha.sajjan@hpe.com
+Link: https://lkml.kernel.org/r/1510848825-21965-3-git-send-email-vikas.cha.sajjan@hpe.com
 Cc: Jean Delvare <jdelvare@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 ---
- arch/x86/kernel/acpi/boot.c |   34 +++++++++++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
+ arch/x86/kernel/acpi/boot.c |   27 +++++----------------------
+ 1 file changed, 5 insertions(+), 22 deletions(-)
 
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -429,6 +429,34 @@ static int mp_config_acpi_gsi(struct dev
- 	return 0;
- }
+@@ -342,13 +342,12 @@ acpi_parse_lapic_nmi(struct acpi_subtabl
+ #ifdef CONFIG_X86_IO_APIC
+ #define MP_ISA_BUS		0
  
 +static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
-+						u8 trigger, u32 gsi)
-+{
-+	struct mpc_intsrc mp_irq;
-+	int ioapic, pin;
++						u8 trigger, u32 gsi);
 +
-+	/* Convert 'gsi' to 'ioapic.pin'(INTIN#) */
-+	ioapic = mp_find_ioapic(gsi);
-+	if (ioapic < 0) {
-+		pr_warn("Failed to find ioapic for gsi : %u\n", gsi);
-+		return ioapic;
-+	}
-+
-+	pin = mp_find_ioapic_pin(ioapic, gsi);
-+
-+	mp_irq.type = MP_INTSRC;
-+	mp_irq.irqtype = mp_INT;
-+	mp_irq.irqflag = (trigger << 2) | polarity;
-+	mp_irq.srcbus = MP_ISA_BUS;
-+	mp_irq.srcbusirq = bus_irq;
-+	mp_irq.dstapic = mpc_ioapic_id(ioapic);
-+	mp_irq.dstirq = pin;
-+
-+	mp_save_irq(&mp_irq);
-+
-+	return 0;
-+}
-+
- static int __init
- acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+ 					  u32 gsi)
  {
-@@ -473,7 +501,11 @@ static void __init acpi_sci_ioapic_setup
- 	if (acpi_sci_flags & ACPI_MADT_POLARITY_MASK)
- 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
- 
--	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
-+	if (bus_irq < NR_IRQS_LEGACY)
-+		mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
-+	else
-+		mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi);
-+
- 	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+-	int ioapic;
+-	int pin;
+-	struct mpc_intsrc mp_irq;
+-
+ 	/*
+ 	 * Check bus_irq boundary.
+ 	 */
+@@ -358,14 +357,6 @@ static void __init mp_override_legacy_ir
+ 	}
  
  	/*
+-	 * Convert 'gsi' to 'ioapic.pin'.
+-	 */
+-	ioapic = mp_find_ioapic(gsi);
+-	if (ioapic < 0)
+-		return;
+-	pin = mp_find_ioapic_pin(ioapic, gsi);
+-
+-	/*
+ 	 * TBD: This check is for faulty timer entries, where the override
+ 	 *      erroneously sets the trigger to level, resulting in a HUGE
+ 	 *      increase of timer interrupts!
+@@ -373,16 +364,8 @@ static void __init mp_override_legacy_ir
+ 	if ((bus_irq == 0) && (trigger == 3))
+ 		trigger = 1;
+ 
+-	mp_irq.type = MP_INTSRC;
+-	mp_irq.irqtype = mp_INT;
+-	mp_irq.irqflag = (trigger << 2) | polarity;
+-	mp_irq.srcbus = MP_ISA_BUS;
+-	mp_irq.srcbusirq = bus_irq;	/* IRQ */
+-	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
+-	mp_irq.dstirq = pin;	/* INTIN# */
+-
+-	mp_save_irq(&mp_irq);
+-
++	if (mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi) < 0)
++		return;
+ 	/*
+ 	 * Reset default identity mapping if gsi is also an legacy IRQ,
+ 	 * otherwise there will be more than one entry with the same GSI
