@@ -1,93 +1,124 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] PM / OPP: list_del_rcu should be used in function
- _remove_list_dev
-Date: Mon, 15 Jan 2018 09:03:28 +0100
-Message-ID: <20180115080328.GA23414@kroah.com>
-References: <20171218093738.27960-1-chunyan.zhang@spreadtrum.com>
- <20171218095717.GA12565@kroah.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/2] PM / core: genpd fix and pm_runtime_force_suspend|resume()
+ rework
+Date: Mon, 15 Jan 2018 09:16:58 +0100
+Message-ID: <CAMuHMdVEwHhjfCppYXKYX6viFrunCmH00wH6zUFNo4p5CdJCww@mail.gmail.com>
+References: <4928977.5hd79RbQlp@aspire.rjw.lan> <CAMuHMdX6dJzOcxkWyDR6anpcwZU5fy03sTeChEp35KY0d40iFg@mail.gmail.com>
+ <12351114.Ym7QOfxZhK@aspire.rjw.lan> <CAMuHMdVaiuscrvat=BqtmXxQnA35=wocb85FHEFvQWjQaY615g@mail.gmail.com>
+ <CAJZ5v0i5FhKCtvcvS_PfpFQKo-zjExT4YypYaaTC7JD5kX-kew@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171218095717.GA12565@kroah.com>
-Sender: stable-owner@vger.kernel.org
-To: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, stable <stable@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Wang <vincent.wang@spreadtrum.com>, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f196.google.com ([209.85.220.196]:45049 "EHLO
+        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751401AbeAOIQ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jan 2018 03:16:59 -0500
+In-Reply-To: <CAJZ5v0i5FhKCtvcvS_PfpFQKo-zjExT4YypYaaTC7JD5kX-kew@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Mon, Dec 18, 2017 at 10:57:17AM +0100, Greg Kroah-Hartman wrote:
-> On Mon, Dec 18, 2017 at 05:37:38PM +0800, Chunyan Zhang wrote:
-> > From: Vincent Wang <vincent.wang@spreadtrum.com>
-> > 
-> > list_del_rcu() should be used to replace list_del() in the function
-> > _remove_list_dev(), since the opp is a rcu protected pointer.
-> > 
-> > For example, on an ARM big.Little platform of spreadtrum, there are
-> > little cluster, big cluster and gpu using pm_opp. And the opp_table
-> > of big cluster will be removed when big cluster is removed, which
-> > is implemented in the cpufreq driver. Sometimes an issue maybe occur:
-> > 
-> > 
-> > [  237.647758] c0 Unable to handle kernel paging request at virtual address dead000000000110
-> > [  237.647776] c0 pgd = ffffffc073e78000
-> > [  237.647786] c0 [dead000000000110] *pgd=0000000000000000, *pud=0000000000000000
-> > [  237.647808] c0 Internal error: Oops: 96000004 [#1] PREEMPT SMP
-> > [  237.653535] c0 Modules linked in: sprdwl_ng(O) mtty marlin2_fm mali_kbase(O)
-> > [  237.653569] c0 CPU: 0 PID: 38 Comm: kworker/u12:1 Tainted: G S      W  O    4.4.83+ #1
-> > [  237.653578] c0 Hardware name: Spreadtrum SP9850KHsmt 1h10 Board (DT)
-> > [  237.653594] c0 Workqueue: devfreq_wq devfreq_monitor
-> > [  237.653605] c0 task: ffffffc0babd0d80 task.stack: ffffffc0badbc000
-> > [  237.653619] c0 PC is at _find_device_opp+0x58/0xac
-> > [  237.653629] c0 LR is at dev_pm_opp_find_freq_ceil+0x2c/0xb8
-> > 
-> > [  237.921294] c0 Call trace:
-> > [  237.921425] c0 [<ffffff80085362b0>] _find_device_opp+0x58/0xac
-> > [  237.921437] c0 [<ffffff8008536560>] dev_pm_opp_find_freq_ceil+0x2c/0xb8
-> > [  237.921452] c0 [<ffffff80088760f4>] devfreq_recommended_opp+0x54/0x7c
-> > [  237.921494] c0 [<ffffff8000b6a96c>] kbase_wait_write_flush+0x164/0x358 [mali_kbase]
-> > [  237.921504] c0 [<ffffff800887485c>] update_devfreq+0x8c/0xf8
-> > [  237.921514] c0 [<ffffff80088749e4>] devfreq_monitor+0x34/0x94
-> > [  237.921529] c0 [<ffffff80080bd75c>] process_one_work+0x154/0x458
-> > [  237.921539] c0 [<ffffff80080be428>] worker_thread+0x134/0x4a4
-> > [  237.921551] c0 [<ffffff80080c4bec>] kthread+0xdc/0xf0
-> > [  237.921564] c0 [<ffffff8008085f20>] ret_from_fork+0x10/0x30
-> > 
-> > Cc: stable <stable@vger.kernel.org>     # 4.4
-> > Signed-off-by: Vincent Wang <vincent.wang@spreadtrum.com>
-> > Signed-off-by: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > This patch is for 4.4 stable branch only.
-> > Once this patch accepted, I can cook a similar patch for 4.9 stable branch.
-> 
-> I need that one first, as you don't want to regress from a working 4.4
-> release when moving to a 4.9 release, right?
-> 
-> > This fix can't be done to upstream kernel as the OPP code doesn't
-> > use RCUs anymore.
-> 
-> What was the upstream fix that changed this?  Why is this not a problem
-> in 4.14?  In Linus's tree?
-> 
-> I _REALLY_ do not like taking patches that are not in Linus's tree, as
-> when we do that, we almost always get it wrong.  Seriously, our track
-> record here is horrid.
-> 
-> So I need a lot of assurance that this is the correct fix, that it has
-> been tested properly, and that there really is no way to take the
-> upstream patches instead of your one-off patch.
-> 
-> Also, what commit does this fix?  When did the bug show up?  When did it
-> go away?  Why not include a Fixes: line?
-> 
-> See, a lot more work needs to be done here, as I said previously :)
-> 
-> Taking patches that are not in Linus's tree is a very expensive, and
-> difficult thing, for good reason.
+Hi Rafael,
 
-Now dropped from my queue due to lack of response, if you want this
-applied, please address the questions I have above and resend.
+On Mon, Jan 15, 2018 at 1:04 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Sun, Jan 14, 2018 at 10:48 AM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> On Sat, Jan 13, 2018 at 1:38 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> On Friday, January 12, 2018 3:31:09 PM CET Geert Uytterhoeven wrote:
+>>>> On Fri, Jan 12, 2018 at 2:00 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>> > This comes from the recent discussion/testing effort that ensued after my
+>>>> > pm_runtime_force_suspend|resume() changes proposal:
+>>>> >
+>>>> > https://marc.info/?t=151497772000004&r=1&w=2
+>>>> >
+>>>> > Patch [1/2] basically is https://patchwork.kernel.org/patch/10152873/ rebased
+>>>> > on top of the current linux-next branch of the linux-pm.git tree (the relevant
+>>>> > part should be there in the linux-next tree proper ATM).  It applies on top
+>>>> > of https://patchwork.kernel.org/patch/10156077/ which should apply to the Linus'
+>>>> > tree cleanly.
+>>>> >
+>>>> > Patch [2/2] is a resend of https://patchwork.kernel.org/patch/10142047/ with
+>>>> > a very minor changelog modification and the R-b tag from Ulf.
+>>>> >
+>>>> > Geert, if possible, please test this on the Renesas systems that had the
+>>>> > problem with https://patchwork.kernel.org/patch/10142047/ previously and let
+>>>> > me know if you still see issues.
+>>>>
+>>>> I've tested this on two very similar systems: Salvator-XS with R-Car H3 ES2.0,
+>>>> and Salvator-X with R-Car M3-W ES1.0.
+>>>>
+>>>> On the M3-based system, everything seems to work fine.
+>>>
+>>> Good.
+>>>
+>>>> On the H3-based system, the serial console (the /dev/ttySC0 device, not kernel
+>>>> serial output) is dead after resume from s2ram, with and without
+>>>> no_console_suspend.
+>>>>
+>>>> With no_console_suspend, I see:
+>>>>
+>>>>     ttySC ttySC0: 1 input overrun(s)
+>>>>
+>>>> after typing on the serial console, so it looks like an interrupt problem.
+>>>>
+>>>> This issue seems to be caused by patch [1/2]. But I have no idea what's
+>>>> really happening, and why the two systems behave differently.
+>>
+>> Could be a firmware issue, too.
+>> While the kernel images are identical, the ARM trusted firmware configs aren't
+>> (same version, though).
+>>
+>> I'll do some more investigation...
+>
+> OK, thanks!
+>
+> It also would be good to know the topology of the device hierarchy and
+> how that maps to the domains on the failing system (and which UART
+> clocks are operated by genpd).
 
-thanks,
+The topology is the same on both systems.
+The UART's module clock is operated by genpd, on both systems.
 
-greg k-h
+>>> Well, that's not dramatic.
+>>>
+>>> Let's make a deal that we'll fix this on top of [1/2].
+>>
+>> ;-)
+>>
+>>> Which driver is this BTW?  sh-sci?  That one doesn't even support runtime
+>>> PM, confusingly enough.
+>>
+>> Yes, sh-sci. It does make pm_runtime_*() calls.
+>
+> Hmm.  I overlooked that part.
+>
+> This is sort of unusual, because the driver doesn't provide any
+> runtime PM callbacks, but still it does provided system suspend ones.
+> It looks like the idea is to never put it into runtime suspend if any
+> ports are enabled and always put it into runtime suspend otherwise.
+>
+> Which one is the case in your testing?  Is the port disabled or
+> enabled during system-wide suspend?
+
+It's enabled on both systems, as a getty is running.
+
+>> And of course there's uart_ops.pm, which is driven from serial_core...
+>
+> What does this point to for that particular device?
+
+sci_pm(), on both systems.
+
+See, there's no difference in topology on both systems, so I'll have to look
+a bit deeper first...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
