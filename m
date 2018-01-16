@@ -1,232 +1,184 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v2 1/2] PM / OPP: introduce an OPP power estimation helper
-Date: Tue, 16 Jan 2018 16:51:18 +0000
-Message-ID: <20180116165119.15168-2-quentin.perret@arm.com>
-References: <20180116165119.15168-1-quentin.perret@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:58120 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751097AbeAPQvu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Jan 2018 11:51:50 -0500
-In-Reply-To: <20180116165119.15168-1-quentin.perret@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: Re: [PATCH v6 05/12] ACPI/PPTT: Add Processor Properties Topology
+ Table parsing
+Date: Tue, 16 Jan 2018 14:22:22 -0600
+Message-ID: <096cdff0-d160-68ba-4cd2-0691dd04eac6@arm.com>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-6-jeremy.linton@arm.com>
+ <20180115154813.GB17664@e107155-lin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20180115154813.GB17664@e107155-lin>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com, joelaf@google.com, tkjos@google.com, Quentin Perret <quentin.perret@arm.com>
 
-The power dissipated by a CPU at a specific OPP is currently estimated by
-the thermal subsystem as P = C * V^2 * f, with P the power, C the CPU's
-capacitance, V the OPP's voltage and f the OPP's frequency. As this
-feature can be useful for other clients requiring energy models of CPUs,
-this commit introduces an equivalent power estimator directly into the OPP
-library, hence enabling code re-use.
+Hi,
 
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- drivers/opp/core.c     | 63 ++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/opp/of.c       | 13 +++++++----
- drivers/opp/opp.h      |  5 ++++
- include/linux/pm_opp.h | 14 +++++++++++
- 4 files changed, 91 insertions(+), 4 deletions(-)
+On 01/15/2018 09:48 AM, Sudeep Holla wrote:
+> On Fri, Jan 12, 2018 at 06:59:13PM -0600, Jeremy Linton wrote:
+>> ACPI 6.2 adds a new table, which describes how processing units
+>> are related to each other in tree like fashion. Caches are
+>> also sprinkled throughout the tree and describe the properties
+>> of the caches in relation to other caches and processing units.
+>>
+>> Add the code to parse the cache hierarchy and report the total
+>> number of levels of cache for a given core using
+>> acpi_find_last_cache_level() as well as fill out the individual
+>> cores cache information with cache_setup_acpi() once the
+>> cpu_cacheinfo structure has been populated by the arch specific
+>> code.
+>>
+>> An additional patch later in the set adds the ability to report
+>> peers in the topology using find_acpi_cpu_topology()
+>> to report a unique ID for each processing unit at a given level
+>> in the tree. These unique id's can then be used to match related
+>> processing units which exist as threads, COD (clusters
+>> on die), within a given package, etc.
+>>
+>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+>> ---
+>>   drivers/acpi/pptt.c | 476 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>   1 file changed, 476 insertions(+)
+>>   create mode 100644 drivers/acpi/pptt.c
+>>
+>> diff --git a/drivers/acpi/pptt.c b/drivers/acpi/pptt.c
+>> new file mode 100644
+>> index 000000000000..2c4b3ed862a8
+>> --- /dev/null
+>> +++ b/drivers/acpi/pptt.c
+>> @@ -0,0 +1,476 @@
+>> +/*
+>> + * Copyright (C) 2018, ARM
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify it
+>> + * under the terms and conditions of the GNU General Public License,
+>> + * version 2, as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope it will be useful, but WITHOUT
+>> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+>> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+>> + * more details.
+>> + *
+>> + * This file implements parsing of Processor Properties Topology Table (PPTT)
+>> + * which is optionally used to describe the processor and cache topology.
+>> + * Due to the relative pointers used throughout the table, this doesn't
+>> + * leverage the existing subtable parsing in the kernel.
+>> + *
+>> + * The PPTT structure is an inverted tree, with each node potentially
+>> + * holding one or two inverted tree data structures describing
+>> + * the caches available at that level. Each cache structure optionally
+>> + * contains properties describing the cache at a given level which can be
+>> + * used to override hardware probed values.
+>> + */
+>> +#define pr_fmt(fmt) "ACPI PPTT: " fmt
+>> +
+>> +#include <linux/acpi.h>
+>> +#include <linux/cacheinfo.h>
+>> +#include <acpi/processor.h>
+>> +
+>> +/* total number of attributes checked by the properties code */
+>> +#define PPTT_CHECKED_ATTRIBUTES 6
+>> +
+>> +/*
+>> + * Given the PPTT table, find and verify that the subtable entry
+>> + * is located within the table
+>> + */
+>> +static struct acpi_subtable_header *fetch_pptt_subtable(
+>> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
+>> +{
+>> +	struct acpi_subtable_header *entry;
+>> +
+>> +	/* there isn't a subtable at reference 0 */
+>> +	if (pptt_ref < sizeof(struct acpi_subtable_header))
+>> +		return NULL;
+>> +
+>> +	if (pptt_ref + sizeof(struct acpi_subtable_header) > table_hdr->length)
+>> +		return NULL;
+>> +
+>> +	entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr, pptt_ref);
+>> +
+>> +	if (pptt_ref + entry->length > table_hdr->length)
+>> +		return NULL;
+>> +
+>> +	return entry;
+>> +}
+>> +
+>> +static struct acpi_pptt_processor *fetch_pptt_node(
+>> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
+>> +{
+>> +	return (struct acpi_pptt_processor *)fetch_pptt_subtable(table_hdr,
+>> +								 pptt_ref);
+>> +}
+>> +
+>> +static struct acpi_pptt_cache *fetch_pptt_cache(
+>> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
+>> +{
+>> +	return (struct acpi_pptt_cache *)fetch_pptt_subtable(table_hdr,
+>> +							     pptt_ref);
+>> +}
+>> +
+>> +static struct acpi_subtable_header *acpi_get_pptt_resource(
+>> +	struct acpi_table_header *table_hdr,
+>> +	struct acpi_pptt_processor *node, int resource)
+>> +{
+>> +	u32 *ref;
+>> +
+>> +	if (resource >= node->number_of_priv_resources)
+>> +		return NULL;
+>> +
+>> +	ref = ACPI_ADD_PTR(u32, node, sizeof(struct acpi_pptt_processor));
+>> +	ref += resource;
+>> +
+>> +	return fetch_pptt_subtable(table_hdr, *ref);
+>> +}
+>> +
+>> +/*
+>> + * Attempt to find a given cache level, while counting the max number
+>> + * of cache levels for the cache node.
+>> + *
+>> + * Given a pptt resource, verify that it is a cache node, then walk
+>> + * down each level of caches, counting how many levels are found
+>> + * as well as checking the cache type (icache, dcache, unified). If a
+>> + * level & type match, then we set found, and continue the search.
+>> + * Once the entire cache branch has been walked return its max
+>> + * depth.
+>> + */
+>> +static int acpi_pptt_walk_cache(struct acpi_table_header *table_hdr,
+>> +				int local_level,
+>> +				struct acpi_subtable_header *res,
+>> +				struct acpi_pptt_cache **found,
+>> +				int level, int type)
+>> +{
+>> +	struct acpi_pptt_cache *cache;
+>> +
+>> +	if (res->type != ACPI_PPTT_TYPE_CACHE)
+>> +		return 0;
+>> +
+>> +	cache = (struct acpi_pptt_cache *) res;
+>> +	while (cache) {
+>> +		local_level++;
+>> +
+>> +		if ((local_level == level) &&
+>> +		    (cache->flags & ACPI_PPTT_CACHE_TYPE_VALID) &&
+>> +		    ((cache->attributes & ACPI_PPTT_MASK_CACHE_TYPE) == type)) {
+>> +			if ((*found != NULL) && (cache != *found))
+> 
+> I forgot to mention this earlier, I see you have used parentheses too
+> liberally at quite some place in this file like the above 4 line.
+> Please drop those unnecessary parentheses.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 92fa94a6dcc1..ca088b6230ca 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -127,6 +127,24 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
- 
-+/**
-+ * dev_pm_opp_get_power() - Gets the estimated power corresponding to an opp
-+ * @opp:	opp for which power has to be returned for
-+ *
-+ * Return: estimated power in mirco-watts corresponding to the opp, else
-+ * return 0
-+ */
-+unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
-+{
-+	if (IS_ERR_OR_NULL(opp)) {
-+		pr_err("%s: Invalid parameters\n", __func__);
-+		return 0;
-+	}
-+
-+	return opp->power_estimate_uw;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_get_power);
-+
- /**
-  * dev_pm_opp_is_turbo() - Returns if opp is turbo OPP or not
-  * @opp: opp for which turbo mode is being verified
-@@ -148,6 +166,29 @@ bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_is_turbo);
- 
-+/**
-+ * dev_pm_opp_has_power() - Get the status of power values for OPPs
-+ * @cpu_dev:	CPU device for which we do this operation
-+ *
-+ * Return: True if the OPPs hold power estimates for the CPU
-+ */
-+bool dev_pm_opp_has_power(struct device *cpu_dev)
-+{
-+	struct opp_table *opp_table;
-+	bool has_power;
-+
-+	opp_table = _find_opp_table(cpu_dev);
-+	if (IS_ERR(opp_table))
-+		return false;
-+
-+	has_power = opp_table->capacitance;
-+
-+	dev_pm_opp_put_opp_table(opp_table);
-+
-+	return has_power;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_has_power);
-+
- /**
-  * dev_pm_opp_get_max_clock_latency() - Get max clock latency in nanoseconds
-  * @dev:	device for which we do this operation
-@@ -1112,6 +1153,8 @@ int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
- 		goto free_opp;
- 	}
- 
-+	_opp_estimate_power(new_opp);
-+
- 	/*
- 	 * Notify the changes in the availability of the operable
- 	 * frequency/voltage list.
-@@ -1728,6 +1771,26 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
- 	return r;
- }
- 
-+/**
-+ * _opp_estimate_power() -- helper to estimate power of an OPP
-+ * @opp:	OPP for which we want to do this
-+ *
-+ * Estimate the power of an OPP as P = C * V^2 * f, with C the device's
-+ * capacitance, V the OPP's voltage and f the OPP's frequency.
-+ */
-+void _opp_estimate_power(struct dev_pm_opp *opp)
-+{
-+	unsigned long capacitance = opp->opp_table->capacitance;
-+	unsigned long mV, KHz, uW;
-+
-+	if (capacitance) {
-+		mV = opp->supplies[0].u_volt / 1000;
-+		KHz = opp->rate / 1000;
-+		uW = capacitance * mV * mV * KHz / 1000000000;
-+		opp->power_estimate_uw = uW;
-+	}
-+}
-+
- /**
-  * dev_pm_opp_enable() - Enable a specific OPP
-  * @dev:	device for which we do this operation
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index cb716aa2f44b..607566c4fc9a 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -55,14 +55,17 @@ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev)
- {
- 	struct device_node *np;
- 
--	/*
--	 * Only required for backward compatibility with v1 bindings, but isn't
--	 * harmful for other cases. And so we do it unconditionally.
--	 */
- 	np = of_node_get(dev->of_node);
- 	if (np) {
- 		u32 val;
- 
-+		of_property_read_u32(np, "dynamic-power-coefficient",
-+				     &opp_table->capacitance);
-+
-+		/*
-+		 * Required for backward compatibility with v1 bindings, but
-+		 * isn't harmful for other cases so we do it unconditionally.
-+		 */
- 		if (!of_property_read_u32(np, "clock-latency", &val))
- 			opp_table->clock_latency_ns_max = val;
- 		of_property_read_u32(np, "voltage-tolerance",
-@@ -336,6 +339,8 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
- 		goto free_opp;
- 	}
- 
-+	_opp_estimate_power(new_opp);
-+
- 	/* OPP to select on device suspend */
- 	if (of_property_read_bool(np, "opp-suspend")) {
- 		if (opp_table->suspend_opp) {
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 4d00061648a3..cb331f9a565b 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -84,6 +84,8 @@ struct dev_pm_opp {
- 
- 	unsigned long clock_latency_ns;
- 
-+	unsigned long power_estimate_uw;
-+
- 	struct opp_table *opp_table;
- 
- 	struct device_node *np;
-@@ -165,6 +167,8 @@ struct opp_table {
- 	/* For backward compatibility with v1 bindings */
- 	unsigned int voltage_tolerance_v1;
- 
-+	unsigned int capacitance;
-+
- 	enum opp_table_access shared_opp;
- 	struct dev_pm_opp *suspend_opp;
- 
-@@ -198,6 +202,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *o
- int _opp_add_v1(struct opp_table *opp_table, struct device *dev, unsigned long freq, long u_volt, bool dynamic);
- void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of);
- struct opp_table *_add_opp_table(struct device *dev);
-+void _opp_estimate_power(struct dev_pm_opp *opp);
- 
- #ifdef CONFIG_OF
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 6c2d2e88f066..ad50203b7ea9 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -85,8 +85,12 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp);
- 
- unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp);
- 
-+unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp);
-+
- bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp);
- 
-+bool dev_pm_opp_has_power(struct device *cpu_dev);
-+
- int dev_pm_opp_get_opp_count(struct device *dev);
- unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev);
- unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
-@@ -150,11 +154,21 @@ static inline unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
- 	return 0;
- }
- 
-+static inline unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
-+{
-+	return 0;
-+}
-+
- static inline bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
- {
- 	return false;
- }
- 
-+static inline bool dev_pm_opp_has_power(struct device *cpu_dev)
-+{
-+	return false;
-+}
-+
- static inline int dev_pm_opp_get_opp_count(struct device *dev)
- {
- 	return 0;
--- 
-2.15.1
+Yes, those tend to get leftover when I remove code, I realized not long 
+after posting this that in one of the previous patches I actually added 
+a pair where there wasn't one because I first shuffled something into 
+the if condition, then a few revisions later dropped it, and when I 
+squashed it before posting the result was some pointless churn.
+
+I will rescan the whole set for this.
+
+
+
