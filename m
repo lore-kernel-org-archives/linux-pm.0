@@ -1,50 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3] thermal: Add cooling device's statistics in sysfs
-Date: Tue, 16 Jan 2018 15:30:42 +0530
-Message-ID: <20180116100042.GJ22978@vireshk-i7>
-References: <087186fecdfd85bead58e110cf8bf7ccdfab517b.1515663078.git.viresh.kumar@linaro.org>
- <20180112174606.GA11076@localhost.localdomain>
- <20180115044616.GC22978@vireshk-i7>
- <20180115163221.GA3756@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:33519 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751689AbeAPKAq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jan 2018 05:00:46 -0500
-Received: by mail-pg0-f50.google.com with SMTP id i196so9247652pgd.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jan 2018 02:00:46 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20180115163221.GA3756@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH v3 0/8] MIPS: add support for the Microsemi MIPS SoCs
+Date: Tue, 16 Jan 2018 11:12:32 +0100
+Message-ID: <20180116101240.5393-1-alexandre.belloni@free-electrons.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: James Hogan <jhogan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>
+Cc: linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 15-01-18, 08:32, Eduardo Valentin wrote:
-> Same set you added for cooling devices should also be reflected on
-> thermal zones, but instead of cooling state, you want to do the account
-> on trips, at least for the context of this patch set.
+Hi,
 
-I never dived deep into the thermal core earlier and never had to implement any
-SoC side of it as well, so consider me a newbie here :)
+This patch series adds initial support for the Microsemi MIPS SoCs. It
+is currently focusing on the Microsemi Ocelot (VSC7513, VSC7514).
 
-I tried to look into the core on what I can do to get some stats out for the
-zones, but I am a bit confused.
+It also adds support for the reset controller.
 
-handle_thermal_trip() looked to be the function where I could update stats but
-then I realized that this is artificially called for every possible trip in most
-of the cases from thermal_zone_device_update() and so this can't be the real
-place.
+This produces a kernel that can boot to the console.
 
-Does it mean that this needs to be updated somehow from the thermal governor's,
-->throttle() callback? I am not sure if doing it from every governor code is
-what we want to do. And then the trip point of cooling devices can be different
-within the same thermal zone.
+This is a single series for reference but the reset driver can be taken
+separately.
 
-And so I posted the first patch again without thermal zone stuff in it as that
-would take more time.
+Changes in v3:
+ - removed the pinctrl driver as it has already been taken
+ - removed the irqchip driver as the bindings have been acked and will not
+   change
+ - changed the reset controller bindings following Rob's review
+
+Changes in v2:
+ - removed the wildcard in MAINAINERS
+ - corrected the Cc list
+ - added proper documentation for both syscons
+ - removed the mscc,cpucontrol property
+ - updated the ranges property in the ocelot dtsi
+
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+
+Alexandre Belloni (8):
+  dt-bindings: mips: Add bindings for Microsemi SoCs
+  dt-bindings: power: reset: Document ocelot-reset binding
+  power: reset: Add a driver for the Microsemi Ocelot reset
+  MIPS: mscc: Add initial support for Microsemi MIPS SoCs
+  MIPS: mscc: add ocelot dtsi
+  MIPS: mscc: add ocelot PCB123 device tree
+  MIPS: defconfigs: add a defconfig for Microsemi SoCs
+  MAINTAINERS: Add entry for Microsemi MIPS SoCs
+
+ Documentation/devicetree/bindings/mips/mscc.txt    |  44 +++++++++
+ .../bindings/power/reset/ocelot-reset.txt          |  14 +++
+ MAINTAINERS                                        |   7 ++
+ arch/mips/Kbuild.platforms                         |   1 +
+ arch/mips/Kconfig                                  |  24 +++++
+ arch/mips/boot/dts/Makefile                        |   1 +
+ arch/mips/boot/dts/mscc/Makefile                   |   6 ++
+ arch/mips/boot/dts/mscc/ocelot.dtsi                | 110 +++++++++++++++++++++
+ arch/mips/boot/dts/mscc/ocelot_pcb123.dts          |  27 +++++
+ arch/mips/configs/mscc_defconfig                   |  84 ++++++++++++++++
+ arch/mips/mscc/Makefile                            |  11 +++
+ arch/mips/mscc/Platform                            |  12 +++
+ arch/mips/mscc/setup.c                             | 106 ++++++++++++++++++++
+ drivers/power/reset/Kconfig                        |   7 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/ocelot-reset.c                 |  88 +++++++++++++++++
+ 16 files changed, 543 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mips/mscc.txt
+ create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+ create mode 100644 arch/mips/boot/dts/mscc/Makefile
+ create mode 100644 arch/mips/boot/dts/mscc/ocelot.dtsi
+ create mode 100644 arch/mips/boot/dts/mscc/ocelot_pcb123.dts
+ create mode 100644 arch/mips/configs/mscc_defconfig
+ create mode 100644 arch/mips/mscc/Makefile
+ create mode 100644 arch/mips/mscc/Platform
+ create mode 100644 arch/mips/mscc/setup.c
+ create mode 100644 drivers/power/reset/ocelot-reset.c
 
 -- 
-viresh
+2.15.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
