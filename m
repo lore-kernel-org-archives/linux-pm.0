@@ -1,54 +1,57 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v3 2/8] dt-bindings: power: reset: Document ocelot-reset binding
-Date: Tue, 16 Jan 2018 11:12:34 +0100
-Message-ID: <20180116101240.5393-3-alexandre.belloni@free-electrons.com>
-References: <20180116101240.5393-1-alexandre.belloni@free-electrons.com>
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <20180116101240.5393-1-alexandre.belloni@free-electrons.com>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: James Hogan <jhogan@kernel.org>, Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH v2 0/2] thermal, OPP: move the CPU power estimation to the OPP library
+Date: Tue, 16 Jan 2018 16:51:17 +0000
+Message-ID: <20180116165119.15168-1-quentin.perret@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:58096 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750747AbeAPQvl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 16 Jan 2018 11:51:41 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com, joelaf@google.com, tkjos@google.com, Quentin Perret <quentin.perret@arm.com>
 
-Add binding documentation for the Microsemi Ocelot reset block.
+Hi,
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: devicetree@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- .../devicetree/bindings/power/reset/ocelot-reset.txt       | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+Currently, IPA estimates the power dissipated by a CPU at each available OPP
+using its capacitance (the dynamic-power-coefficient DT binding). This series
+relocates this per-OPP power model in the OPP core as a preparation for
+future changes. More specifically:
 
-diff --git a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-new file mode 100644
-index 000000000000..1b4213eb3473
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-@@ -0,0 +1,14 @@
-+Microsemi Ocelot reset controller
-+
-+The DEVCPU_GCB:CHIP_REGS have a SOFT_RST register that can be used to reset the
-+SoC MIPS core.
-+
-+Required Properties:
-+ - compatible: "mscc,ocelot-chip-reset"
-+
-+Example:
-+	reset@1070008 {
-+		compatible = "mscc,ocelot-chip-reset";
-+		reg = <0x1070008 0x4>;
-+	};
-+
+   1. The current DT-based approach for power estimation will need deep
+      changes to support SCMI-provided power values. While the thermal
+      subsystem is not necessarily the best place to hide multiple power
+      estimation methods, the OPP library appears to be a good candidate to
+      implement the required platform abstraction and respect the existing
+      design (the thermal subsystem already relies on the OPP library to
+      provide voltages no matter where they come from -- DT or SCPI).
+
+   2. The energy models of CPUs will be needed by other clients in the future
+      (such as the task scheduler or CPUFreq governors for example) in order
+      to make energy-aware decisions. The relocation to the OPP library will
+      enable code re-use and all clients will benefit form the platform
+      abstraction mentioned previously.
+
+As mentionned during the review of V1, this series will have a chance to get
+merged only when the clients (the scheduler, or the SCMI driver) depending
+on it are ready to be merged as well. This V2 is here for reference and
+addresses the main changes requested on the V1.
+
+Changes in v2:
+ - Changed the OPP power estimation to be done upon OPP creation (V. Kumar)
+ - Updated the cover letter to motivate the choice of PM OPP (E. Valentin)
+
+Quentin Perret (2):
+  PM / OPP: introduce an OPP power estimation helper
+  thermal: cpu_cooling: use power models from the OPP library
+
+ drivers/opp/core.c            | 63 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/opp/of.c              | 13 ++++++---
+ drivers/opp/opp.h             |  5 ++++
+ drivers/thermal/cpu_cooling.c | 33 +++++++----------------
+ include/linux/pm_opp.h        | 14 ++++++++++
+ 5 files changed, 100 insertions(+), 28 deletions(-)
+
 -- 
 2.15.1
