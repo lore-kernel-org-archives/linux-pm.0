@@ -1,25 +1,26 @@
 From: Jeremy Linton <jeremy.linton@arm.com>
 Subject: Re: [PATCH v6 05/12] ACPI/PPTT: Add Processor Properties Topology
  Table parsing
-Date: Tue, 16 Jan 2018 14:22:22 -0600
-Message-ID: <096cdff0-d160-68ba-4cd2-0691dd04eac6@arm.com>
+Date: Tue, 16 Jan 2018 14:55:56 -0600
+Message-ID: <65c42ed6-8ac7-3adb-43f2-de20080eaaa9@arm.com>
 References: <20180113005920.28658-1-jeremy.linton@arm.com>
  <20180113005920.28658-6-jeremy.linton@arm.com>
- <20180115154813.GB17664@e107155-lin>
+ <20180115145839.GA12531@e107155-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20180115154813.GB17664@e107155-lin>
+In-Reply-To: <20180115145839.GA12531@e107155-lin>
 Content-Language: en-US
 Sender: linux-acpi-owner@vger.kernel.org
 To: Sudeep Holla <sudeep.holla@arm.com>
 Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
 
+
 Hi,
 
-On 01/15/2018 09:48 AM, Sudeep Holla wrote:
+On 01/15/2018 08:58 AM, Sudeep Holla wrote:
 > On Fri, Jan 12, 2018 at 06:59:13PM -0600, Jeremy Linton wrote:
 >> ACPI 6.2 adds a new table, which describes how processing units
 >> are related to each other in tree like fashion. Caches are
@@ -83,6 +84,13 @@ On 01/15/2018 09:48 AM, Sudeep Holla wrote:
 >> +
 >> +/* total number of attributes checked by the properties code */
 >> +#define PPTT_CHECKED_ATTRIBUTES 6
+> 
+> See comment on this below. If we retain this, move it closer to the usage so
+> that it's easier to understand what it actually stands for.
+
+Sure.
+
+> 
 >> +
 >> +/*
 >> + * Given the PPTT table, find and verify that the subtable entry
@@ -167,18 +175,425 @@ On 01/15/2018 09:48 AM, Sudeep Holla wrote:
 >> +		    (cache->flags & ACPI_PPTT_CACHE_TYPE_VALID) &&
 >> +		    ((cache->attributes & ACPI_PPTT_MASK_CACHE_TYPE) == type)) {
 >> +			if ((*found != NULL) && (cache != *found))
+>> +				pr_err("Found duplicate cache level/type unable to determine uniqueness\n");
+>> +
+>> +			pr_debug("Found cache @ level %d\n", level);
+>> +			*found = cache;
+>> +			/*
+>> +			 * continue looking at this node's resource list
+>> +			 * to verify that we don't find a duplicate
+>> +			 * cache node.
+>> +			 */
+>> +		}
+>> +		cache = fetch_pptt_cache(table_hdr, cache->next_level_of_cache);
+>> +	}
+>> +	return local_level;
+>> +}
+>> +
+>> +/*
+>> + * Given a CPU node look for cache levels that exist at this level, and then
+>> + * for each cache node, count how many levels exist below (logically above) it.
+>> + * If a level and type are specified, and we find that level/type, abort
+>> + * processing and return the acpi_pptt_cache structure.
+>> + */
+>> +static struct acpi_pptt_cache *acpi_find_cache_level(
+>> +	struct acpi_table_header *table_hdr,
+>> +	struct acpi_pptt_processor *cpu_node,
+>> +	int *starting_level, int level, int type)
+>> +{
+>> +	struct acpi_subtable_header *res;
+>> +	int number_of_levels = *starting_level;
+>> +	int resource = 0;
+>> +	struct acpi_pptt_cache *ret = NULL;
+>> +	int local_level;
+>> +
+>> +	/* walk down from processor node */
+>> +	while ((res = acpi_get_pptt_resource(table_hdr, cpu_node, resource))) {
+>> +		resource++;
+>> +
+>> +		local_level = acpi_pptt_walk_cache(table_hdr, *starting_level,
+>> +						   res, &ret, level, type);
+>> +		/*
+>> +		 * we are looking for the max depth. Since its potentially
+>> +		 * possible for a given node to have resources with differing
+>> +		 * depths verify that the depth we have found is the largest.
+>> +		 */
+>> +		if (number_of_levels < local_level)
+>> +			number_of_levels = local_level;
+>> +	}
+>> +	if (number_of_levels > *starting_level)
+>> +		*starting_level = number_of_levels;
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +/*
+>> + * Given a processor node containing a processing unit, walk into it and count
+>> + * how many levels exist solely for it, and then walk up each level until we hit
+>> + * the root node (ignore the package level because it may be possible to have
+>> + * caches that exist across packages). Count the number of cache levels that
+>> + * exist at each level on the way up.
+>> + */
+>> +static int acpi_process_node(struct acpi_table_header *table_hdr,
+>> +			     struct acpi_pptt_processor *cpu_node)
+>> +{
+>> +	int total_levels = 0;
+>> +
+>> +	do {
+>> +		acpi_find_cache_level(table_hdr, cpu_node, &total_levels, 0, 0);
+>> +		cpu_node = fetch_pptt_node(table_hdr, cpu_node->parent);
+>> +	} while (cpu_node);
+>> +
+>> +	return total_levels;
+>> +}
+>> +
+>> +/*
+>> + * Determine if the *node parameter is a leaf node by iterating the
+>> + * PPTT table, looking for nodes which reference it.
+>> + * Return 0 if we find a node referencing the passed node,
+>> + * or 1 if we don't.
+>> + */
+>> +static int acpi_pptt_leaf_node(struct acpi_table_header *table_hdr,
+>> +			       struct acpi_pptt_processor *node)
+>> +{
+>> +	struct acpi_subtable_header *entry;
+>> +	unsigned long table_end;
+>> +	u32 node_entry;
+>> +	struct acpi_pptt_processor *cpu_node;
+>> +
+>> +	table_end = (unsigned long)table_hdr + table_hdr->length;
+>> +	node_entry = ACPI_PTR_DIFF(node, table_hdr);
+>> +	entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr,
+>> +			     sizeof(struct acpi_table_pptt));
+>> +
+>> +	while ((unsigned long)(entry + 1) < table_end) {
 > 
-> I forgot to mention this earlier, I see you have used parentheses too
-> liberally at quite some place in this file like the above 4 line.
-> Please drop those unnecessary parentheses.
+> Is entry + 1 check sufficient to access entry of length ?
+> Shouldn't that be entry + sizeof(struct acpi_pptt_processor *) so that
+> we are sure it's valid entry ?
 
-Yes, those tend to get leftover when I remove code, I realized not long 
-after posting this that in one of the previous patches I actually added 
-a pair where there wasn't one because I first shuffled something into 
-the if condition, then a few revisions later dropped it, and when I 
-squashed it before posting the result was some pointless churn.
+All we need is the subtable_header size which gives us the type/len. As 
+we are just scanning the whole table touching the entry->length and the 
+while() terminates if that is > table_end it should be ok. In general 
+sizeof(acpi_pptt_processor) isn't right either since the structure only 
+covers a larger "header" portion due to attached entries extending 
+beyond it.
+> 
+>> +		cpu_node = (struct acpi_pptt_processor *)entry;
+>> +		if ((entry->type == ACPI_PPTT_TYPE_PROCESSOR) &&
+>> +		    (cpu_node->parent == node_entry))
+>> +			return 0;
+>> +		entry = ACPI_ADD_PTR(struct acpi_subtable_header, entry,
+>> +				     entry->length);
+>> +	}
+>> +	return 1;
+>> +}
+>> +
+>> +/*
+>> + * Find the subtable entry describing the provided processor.
+>> + * This is done by iterating the PPTT table looking for processor nodes
+>> + * which have an acpi_processor_id that matches the acpi_cpu_id parameter
+>> + * passed into the function. If we find a node that matches this criteria
+>> + * we verify that its a leaf node in the topology rather than depending
+>> + * on the valid flag, which doesn't need to be set for leaf nodes.
+>> + */
+>> +static struct acpi_pptt_processor *acpi_find_processor_node(
+>> +	struct acpi_table_header *table_hdr,
+>> +	u32 acpi_cpu_id)
+>> +{
+>> +	struct acpi_subtable_header *entry;
+>> +	unsigned long table_end;
+>> +	struct acpi_pptt_processor *cpu_node;
+>> +
+>> +	table_end = (unsigned long)table_hdr + table_hdr->length;
+>> +	entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr,
+>> +			     sizeof(struct acpi_table_pptt));
+>> +
+>> +	/* find the processor structure associated with this cpuid */
+>> +	while ((unsigned long)(entry + 1) < table_end) {
+> 
+> Same comment as above on entry + 
+This one is probably less clear than the one above, because we do access 
+a full acpi_pptt_processor sized structure, but only after making sure 
+that is actually a processor node. If anything the check should probably 
+dereference the len as a second check aka
 
-I will rescan the whole set for this.
+while ((entry+1 < table_end) && (entry+1->length < table_end))
+
+I think this may have been changed after previous review comments asked 
+for the cpu_node assignment earlier and of course moving the leaf_node 
+check into the if condition to avoid a bit of extra processing.
+
+> 
+>> +		cpu_node = (struct acpi_pptt_processor *)entry;
+>> +
+>> +		if (entry->length == 0) {
+>> +			pr_err("Invalid zero length subtable\n");
+>> +			break;
+>> +		}
+>> +		if ((entry->type == ACPI_PPTT_TYPE_PROCESSOR) &&
+>> +		    (acpi_cpu_id == cpu_node->acpi_processor_id) &&
+>> +		     acpi_pptt_leaf_node(table_hdr, cpu_node)) {
+>> +			return (struct acpi_pptt_processor *)entry;
+>> +		}
+>> +
+>> +		entry = ACPI_ADD_PTR(struct acpi_subtable_header, entry,
+>> +				     entry->length);
+>> +	}
+>> +
+>> +	return NULL;
+>> +}
+>> +
+>> +static int acpi_find_cache_levels(struct acpi_table_header *table_hdr,
+>> +				  u32 acpi_cpu_id)
+>> +{
+>> +	int number_of_levels = 0;
+>> +	struct acpi_pptt_processor *cpu;
+>> +
+>> +	cpu = acpi_find_processor_node(table_hdr, acpi_cpu_id);
+>> +	if (cpu)
+>> +		number_of_levels = acpi_process_node(table_hdr, cpu);
+>> +
+>> +	return number_of_levels;
+>> +}
+>> +
+>> +/* Convert the linux cache_type to a ACPI PPTT cache type value */
+>> +static u8 acpi_cache_type(enum cache_type type)
+>> +{
+> 
+> [nit] Just wondering if we can avoid this with some static mapping:
+> 
+> static u8 acpi_cache_type[] = {
+>          [CACHE_TYPE_NONE] = 0,
+>          [CACHE_TYPE_DATA] = ACPI_PPTT_CACHE_TYPE_DATA,
+>          [CACHE_TYPE_INST] = ACPI_PPTT_CACHE_TYPE_INSTR,
+>          [CACHE_TYPE_UNIFIED] = ACPI_PPTT_CACHE_TYPE_UNIFIED,
+> };
+
+Potentially, but the default case below is important and makes it a 
+little less brittle because, as the recent DT commit, in your table 
+TYPE_NONE actually needs to map to ACPI TYPE_UNIFIED to find the nodes.
+
+Doesn't matter much to me, and I would convert it if the switch() got a 
+lot bigger, but right now I tend to think what the code actually would 
+look like is a two entry conversion (data/instruction) with a default 
+initially set. So a loop for two entries is borderline IMHO.
+
+> 
+>> +	switch (type) {
+>> +	case CACHE_TYPE_DATA:
+>> +		pr_debug("Looking for data cache\n");
+>> +		return ACPI_PPTT_CACHE_TYPE_DATA;
+>> +	case CACHE_TYPE_INST:
+>> +		pr_debug("Looking for instruction cache\n");
+>> +		return ACPI_PPTT_CACHE_TYPE_INSTR;
+>> +	default:
+>> +	case CACHE_TYPE_UNIFIED:
+>> +		pr_debug("Looking for unified cache\n");
+>> +		/*
+>> +		 * It is important that ACPI_PPTT_CACHE_TYPE_UNIFIED
+>> +		 * contains the bit pattern that will match both
+>> +		 * ACPI unified bit patterns because we use it later
+>> +		 * to match both cases.
+>> +		 */
+>> +		return ACPI_PPTT_CACHE_TYPE_UNIFIED;
+>> +	}
+>> +}
+>> +
+>> +/* find the ACPI node describing the cache type/level for the given CPU */
+>> +static struct acpi_pptt_cache *acpi_find_cache_node(
+>> +	struct acpi_table_header *table_hdr, u32 acpi_cpu_id,
+>> +	enum cache_type type, unsigned int level,
+>> +	struct acpi_pptt_processor **node)
+>> +{
+>> +	int total_levels = 0;
+>> +	struct acpi_pptt_cache *found = NULL;
+>> +	struct acpi_pptt_processor *cpu_node;
+>> +	u8 acpi_type = acpi_cache_type(type);
+>> +
+>> +	pr_debug("Looking for CPU %d's level %d cache type %d\n",
+>> +		 acpi_cpu_id, level, acpi_type);
+>> +
+>> +	cpu_node = acpi_find_processor_node(table_hdr, acpi_cpu_id);
+>> +
+>> +	while ((cpu_node) && (!found)) {
+>> +		found = acpi_find_cache_level(table_hdr, cpu_node,
+>> +					      &total_levels, level, acpi_type);
+>> +		*node = cpu_node;
+>> +		cpu_node = fetch_pptt_node(table_hdr, cpu_node->parent);
+>> +	}
+>> +
+>> +	return found;
+>> +}
+>> +
+>> +/*
+>> + * The ACPI spec implies that the fields in the cache structures are used to
+>> + * extend and correct the information probed from the hardware. In the case
+>> + * of arm64 the CCSIDR probing has been removed because it might be incorrect.
+> 
+> Though ARM64 is only user now, it may get obsolete, so better to drop that
+> comment.
+
+Ok.
+
+> 
+>> + */
+>> +static void update_cache_properties(struct cacheinfo *this_leaf,
+>> +				    struct acpi_pptt_cache *found_cache,
+>> +				    struct acpi_pptt_processor *cpu_node)
+>> +{
+>> +	int valid_flags = 0;
+>> +
+>> +	if (found_cache->flags & ACPI_PPTT_SIZE_PROPERTY_VALID) {
+>> +		this_leaf->size = found_cache->size;
+>> +		valid_flags++;
+>> +	}
+>> +	if (found_cache->flags & ACPI_PPTT_LINE_SIZE_VALID) {
+>> +		this_leaf->coherency_line_size = found_cache->line_size;
+>> +		valid_flags++;
+>> +	}
+>> +	if (found_cache->flags & ACPI_PPTT_NUMBER_OF_SETS_VALID) {
+>> +		this_leaf->number_of_sets = found_cache->number_of_sets;
+>> +		valid_flags++;
+>> +	}
+>> +	if (found_cache->flags & ACPI_PPTT_ASSOCIATIVITY_VALID) {
+>> +		this_leaf->ways_of_associativity = found_cache->associativity;
+>> +		valid_flags++;
+>> +	}
+>> +	if (found_cache->flags & ACPI_PPTT_WRITE_POLICY_VALID) {
+>> +		switch (found_cache->attributes & ACPI_PPTT_MASK_WRITE_POLICY) {
+>> +		case ACPI_PPTT_CACHE_POLICY_WT:
+>> +			this_leaf->attributes = CACHE_WRITE_THROUGH;
+>> +			break;
+>> +		case ACPI_PPTT_CACHE_POLICY_WB:
+>> +			this_leaf->attributes = CACHE_WRITE_BACK;
+>> +			break;
+>> +		}
+>> +		valid_flags++;
+>> +	}
+>> +	if (found_cache->flags & ACPI_PPTT_ALLOCATION_TYPE_VALID) {
+>> +		switch (found_cache->attributes & ACPI_PPTT_MASK_ALLOCATION_TYPE) {
+>> +		case ACPI_PPTT_CACHE_READ_ALLOCATE:
+>> +			this_leaf->attributes |= CACHE_READ_ALLOCATE;
+>> +			break;
+>> +		case ACPI_PPTT_CACHE_WRITE_ALLOCATE:
+>> +			this_leaf->attributes |= CACHE_WRITE_ALLOCATE;
+>> +			break;
+>> +		case ACPI_PPTT_CACHE_RW_ALLOCATE:
+>> +		case ACPI_PPTT_CACHE_RW_ALLOCATE_ALT:
+>> +			this_leaf->attributes |=
+>> +				CACHE_READ_ALLOCATE | CACHE_WRITE_ALLOCATE;
+>> +			break;
+>> +		}
+>> +		valid_flags++;
+>> +	}
+>> +	/*
+>> +	 * If all the above flags are valid, and the cache type is NOCACHE
+>> +	 * update the cache type as well.
+>> +	 */
+> 
+> I am not sure if it makes sense to mandate at least last 2 (read allocate
+> and write policy). They can be optional.
+
+As I mentioned in the previous set, I'm of the opinion that some are 
+more useful than others, but to avoid having a discussion about which 
+ones, just decided to do them all. After all, its not going to hurt (AFAIK).
 
 
+If your more _sure_ and no one else has an opinion then i will remove 
+those two.
 
+
+> 
+>> +	if ((this_leaf->type == CACHE_TYPE_NOCACHE) &&
+>> +	    (valid_flags == PPTT_CHECKED_ATTRIBUTES))
+>> +		this_leaf->type = CACHE_TYPE_UNIFIED;
+>> +}
+>> +
+>> +/*
+>> + * Update the kernel cache information for each level of cache
+>> + * associated with the given acpi cpu.
+>> + */
+>> +static void cache_setup_acpi_cpu(struct acpi_table_header *table,
+>> +				 unsigned int cpu)
+>> +{
+>> +	struct acpi_pptt_cache *found_cache;
+>> +	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
+>> +	u32 acpi_cpu_id = get_acpi_id_for_cpu(cpu);
+>> +	struct cacheinfo *this_leaf;
+>> +	unsigned int index = 0;
+>> +	struct acpi_pptt_processor *cpu_node = NULL;
+>> +
+>> +	while (index < get_cpu_cacheinfo(cpu)->num_leaves) {
+>> +		this_leaf = this_cpu_ci->info_list + index;
+>> +		found_cache = acpi_find_cache_node(table, acpi_cpu_id,
+>> +						   this_leaf->type,
+>> +						   this_leaf->level,
+>> +						   &cpu_node);
+>> +		pr_debug("found = %p %p\n", found_cache, cpu_node);
+>> +		if (found_cache)
+>> +			update_cache_properties(this_leaf,
+>> +						found_cache,
+>> +						cpu_node);
+> 
+> [nit] unnecessary line break ?
+> 
+>> +
+>> +		index++;
+>> +	}
+>> +}
+>> +
+>> +/**
+>> + * acpi_find_last_cache_level() - Determines the number of cache levels for a PE
+> 
+> [nit] PE ? I think you mean processing element, but that's too ARM ARM thingy
+> :), can you s/PE/CPU ?
+
+Yes, I probably slipped up there.
+
+> 
+>> + * @cpu: Kernel logical cpu number
+>> + *
+>> + * Given a logical cpu number, returns the number of levels of cache represented
+>> + * in the PPTT. Errors caused by lack of a PPTT table, or otherwise, return 0
+>> + * indicating we didn't find any cache levels.
+>> + *
+>> + * Return: Cache levels visible to this core.
+>> + */
+>> +int acpi_find_last_cache_level(unsigned int cpu)
+>> +{
+>> +	u32 acpi_cpu_id;
+>> +	struct acpi_table_header *table;
+>> +	int number_of_levels = 0;
+>> +	acpi_status status;
+>> +
+>> +	pr_debug("Cache Setup find last level cpu=%d\n", cpu);
+>> +
+>> +	acpi_cpu_id = get_acpi_id_for_cpu(cpu);
+>> +	status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
+>> +	if (ACPI_FAILURE(status)) {
+>> +		pr_err_once("No PPTT table found, cache topology may be inaccurate\n");
+>> +	} else {
+>> +		number_of_levels = acpi_find_cache_levels(table, acpi_cpu_id);
+>> +		acpi_put_table(table);
+>> +	}
+>> +	pr_debug("Cache Setup find last level level=%d\n", number_of_levels);
+>> +
+>> +	return number_of_levels;
+>> +}
+>> +
+>> +/**
+>> + * cache_setup_acpi() - Override CPU cache topology with data from the PPTT
+> 
+> [nit]			  ^^^^ may be override/setup or just setup ?
+
+I think of it more as "expand upon", or override, but its obviosuly 
+creating (setting new) things too.
+
+
+> 
+>> + * @cpu: Kernel logical cpu number
+> 
+> [nit] kernel is implicit, no ?
+
+Probably...
