@@ -1,63 +1,32 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RESEND 0/9] mmc: sdhci-pci: Respect PM flags when enabling
- card detect GPIO IRQ wakeup
-Date: Tue, 16 Jan 2018 09:24:06 +0100
-Message-ID: <CAPDyKFoUqTtXMKT+_JyJSE2FWUggbX=Fiv4YVBb6qLpJh27j5g@mail.gmail.com>
-References: <1515484346-800-1-git-send-email-adrian.hunter@intel.com> <08283b49-fdaf-d289-e375-20bce7dbbf8f@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] thermal: Add cooling device's statistics in sysfs
+Date: Tue, 16 Jan 2018 14:14:20 +0530
+Message-ID: <20180116084420.GI22978@vireshk-i7>
+References: <087186fecdfd85bead58e110cf8bf7ccdfab517b.1515663078.git.viresh.kumar@linaro.org>
+ <20180112174606.GA11076@localhost.localdomain>
+ <20180115044616.GC22978@vireshk-i7>
+ <20180115163221.GA3756@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f54.google.com ([209.85.214.54]:42212 "EHLO
-        mail-it0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750822AbeAPIYI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jan 2018 03:24:08 -0500
-Received: by mail-it0-f54.google.com with SMTP id p139so3923576itb.1
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jan 2018 00:24:07 -0800 (PST)
-In-Reply-To: <08283b49-fdaf-d289-e375-20bce7dbbf8f@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180115163221.GA3756@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>
 
-On 16 January 2018 at 08:43, Adrian Hunter <adrian.hunter@intel.com> wrote:
-> On 09/01/18 09:52, Adrian Hunter wrote:
->> Hi
->>
->> Commit 03dbaa04a2e5 ("mmc: slot-gpio: Add support to enable irq wake on
->> cd_irq") enabled wakeup irrespective of the host controller's PM flags.
->> However, users also want to control it from sysfs power/wakeup attribute.
->> That means the driver needs to check the PM flags before enabling it in the
->> suspend callback.  Patch 9 adds support for that in sdhci-pci, which is the
->> only driver presently using the MMC_CAP_CD_WAKE flag.  Patches 1 - 7 tidy
->> up aspects of sdhci and sdhci-pci wakeup handling, and patch 8 adds a
->> helper function to make it easy for drivers.
->>
->> There are 2 contentious aspects to this patch set:
->>
->> 1) An existing problem with the SDIO API which does not let the host
->> controller driver know that the SDIO function driver has requested SDIO
->> card interrupt wakeup until the suspend callback - which results in the
->> host controller driver having to enable or disable wakeup in the suspend
->> callback.  Fixing the SDIO API is a separate issue IMHO.
->>
->> 2) In order to use the sysfs power/wakeup attribute, the driver must set the
->> device as wake capable even when it is really a GPIO that wakes the system.
->>
->
-> Given that we have more-or-less agreed to use sysfs power/wakeup attribute,
-> I don't see a problem with going ahead with these patches, and adjusting the
-> API later.  Thoughts?
+On 15-01-18, 08:32, Eduardo Valentin wrote:
+> On Mon, Jan 15, 2018 at 10:16:16AM +0530, Viresh Kumar wrote:
+> > No because I am exiting early for same sates in that routine.
+> 
+> Did I miss that hunk?
 
-Let me have look again, I might be able to pick up at least some of
-the changes in $subject series. No matter what, please re-post once
-4.16 rc1 is out.
+Yes. It is something like this.
 
-The reason for being conservative, is that I would prefer the
-discussion [1] to conclude on how to handle out/in band wakeups, as
-that would help to understand the final goal of $subject series.
++       if (stats->state == new_state)
++               goto unlock;
++
 
-Kind regards
-Uffe
-
-[1]
-https://marc.info/?l=linux-pm&m=151600749514917&w=2
+-- 
+viresh
