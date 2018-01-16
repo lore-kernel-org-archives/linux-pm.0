@@ -1,125 +1,48 @@
-From: "Tim Guo(BJ-RD)" <TimGuo@zhaoxin.com>
-Subject: =?utf-8?B?562U5aSNOiBbUEFUQ0hdIHg4Ni9hY3BpL2NzdGF0ZSBkZWxldGUgc29tZSB1?=
- =?utf-8?Q?nuseful_operations?=
-Date: Tue, 16 Jan 2018 01:34:34 +0000
-Message-ID: <dbc540870ee5438a83672fdad531c821@zhaoxin.com>
-References: <1513943704-4117-1-git-send-email-timguo@zhaoxin.com>
- <2688053.9MAEhVZnSn@aspire.rjw.lan>
+From: Adrian Hunter <adrian.hunter@intel.com>
+Subject: Re: [PATCH RESEND 0/9] mmc: sdhci-pci: Respect PM flags when enabling
+ card detect GPIO IRQ wakeup
+Date: Tue, 16 Jan 2018 09:43:04 +0200
+Message-ID: <08283b49-fdaf-d289-e375-20bce7dbbf8f@intel.com>
+References: <1515484346-800-1-git-send-email-adrian.hunter@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zxshcas1.zhaoxin.com ([180.169.121.91]:56748 "EHLO
-        ZXSHCAS1.zhaoxin.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751126AbeAPBfC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jan 2018 20:35:02 -0500
-Content-Language: zh-CN
+Received: from mga06.intel.com ([134.134.136.31]:59868 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751124AbeAPHnk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 16 Jan 2018 02:43:40 -0500
+In-Reply-To: <1515484346-800-1-git-send-email-adrian.hunter@intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "jrw@rjwysocki.net" <jrw@rjwysocki.net>, "lenb@kernel.org" <lenb@kernel.org>
-Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@kernel.org" <mingo@kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Bruce Chang (VAS)" <BruceChang@via-alliance.com>, "Cooper Yan(BJ-RD)" <CooperYan@zhaoxin.com>, "Qiyuan Wang(BJ-RD)" <QiyuanWang@zhaoxin.com>, Benjamin Pan <BenjaminPan@viatech.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>
 
-QWRkIG1vcmUuDQoNClRpbQ0KDQotLS0tLemCruS7tuWOn+S7ti0tLS0tDQrlj5Hku7bkuro6IFRp
-bSBHdW8oQkotUkQpDQrlj5HpgIHml7bpl7Q6IDIwMTjlubQx5pyIMTDml6UgMTE6NDcNCuaUtuS7
-tuS6ujogJ1JhZmFlbCBKLiBXeXNvY2tpJyA8cmp3QHJqd3lzb2NraS5uZXQ+DQrmioTpgIE6IHRn
-bHhAbGludXRyb25peC5kZTsgbWluZ29AcmVkaGF0LmNvbTsgaHBhQHp5dG9yLmNvbTsgbWluZ29A
-a2VybmVsLm9yZzsgeDg2QGtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGlu
-dXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgQnJ1Y2UgQ2hhbmcgKFZBUykgPEJydWNlQ2hhbmdA
-dmlhLWFsbGlhbmNlLmNvbT47IENvb3BlciBZYW4oQkotUkQpIDxDb29wZXJZYW5Aemhhb3hpbi5j
-b20+OyBRaXl1YW4gV2FuZyhCSi1SRCkgPFFpeXVhbldhbmdAemhhb3hpbi5jb20+OyBCZW5qYW1p
-biBQYW4gPEJlbmphbWluUGFuQHZpYXRlY2guY29tPg0K5Li76aKYOiDnrZTlpI06IFtQQVRDSF0g
-eDg2L2FjcGkvY3N0YXRlIGRlbGV0ZSBzb21lIHVudXNlZnVsIG9wZXJhdGlvbnMNCg0KRGVhciBS
-YWZhZWwsDQpTb3JyeSB0byBtaXNzIHRoaXMgbWFpbC4NCkkgdW5kZXJzdG9vZCB0aGF0IGl0IHdh
-cyBub3QgbmVjZXNzYXJ5IHRvIGRpc2FibGUgYnVzIG1hc3RlciBhcmJpdHJhdGlvbiBvbiBDMyBl
-bnRyeSBmb3IgQ2VudGF1ciBDUFVzLCB3aGljaCBpcyB3aHkgeW91IGNsZWFyIGJtX2NvbnRyb2ws
-IHJpZ2h0Pw0KW0NvbW1lbnQgYnkgVGltXSBZZXMuDQoNCkFuZCB0aGUgZ29hbCBpcyB0byByZWR1
-Y2UgdGhlIEMzIGxhdGVuY3ksIGJ1dCBJJ20gbm90IHN1cmUgYWJvdXQgdGhlIGNhY2hlIGZsdXNo
-aW5nIHBhcnQuICBEbyB5b3Ugd2FudCB0byBzYXkgdGhhdCBkaXNhYmxpbmcgYnVzIG1hc3RlciBh
-cmJpdHJhdGlvbiBjYXVzZXMgdGhlIENQVSBjYWNoZXMgdG8gYmUgZmx1c2hlZCB3aGljaCBpcyB0
-aW1lLWNvbnN1bWluZyBhbmQgc2hvdWxkIGJldHRlciBiZSBhdm9pZGVkIGlmIG5vdCBuZWNlc3Nh
-cnk/DQpbQ29tbWVudCBieSBUaW1dIExldCdzIHNlZSBhY3BpX2lkbGVfZW50ZXIoKSBmdW5jdGlv
-bi4gV2hlbiBlbnRlcmluZyBDMyB0eXBlIHN0YXRlLCBhbmQgd2hlbiBubyBibV9zdGF0dXMgaGFz
-IGJlZW4gZGV0ZWN0ZWQsIHdpbGwgZXhlY3V0ZSBhY3BpX2lkbGVfZW50ZXJfYm0oKSBmdW5jdGlv
-biB3aGVuIHNldHRpbmcgZmxhZ3MuYm1fY2hlY2sgd2l0aCAxLiBJbiBhY3BpX2lkbGVfZW50ZXJf
-Ym0oKSBmdW5jdGlvbiwgd2lsbCBub3QgZXhlY3V0ZSBBQ1BJX0ZMVVNIX0NQVV9DQUNIRSgpLiBB
-Q1BJX0ZMVVNIX0NQVV9DQUNIRSBuZWVkIGxvbmcgdGltZSB0byBjb21wbGV0ZS4gQWN0dWFsbHks
-IHRoaXMgc29mdHdhcmUgb3BlcmF0aW9uIGZvciBjZW50YXVyIENQVSBpcyBub3QgbmVjZXNzYXJ5
-LkJlY2F1c2UgdGhlIGNhY2hlIGZsdXNoIG9wZXJhdGlvbiB3aWxsIGJlIGV4ZWN1dGVkIGJ5IENQ
-VSBtaWNyb2NvZGUgYXV0b21hdGljYWxseS4NCg0Kc3RhdGljIGludCBhY3BpX2lkbGVfZW50ZXIo
-c3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsDQogICBzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRy
-diwgaW50IGluZGV4KSB7DQpzdHJ1Y3QgYWNwaV9wcm9jZXNzb3JfY3ggKmN4ID0gcGVyX2NwdShh
-Y3BpX2NzdGF0ZVtpbmRleF0sIGRldi0+Y3B1KTsNCnN0cnVjdCBhY3BpX3Byb2Nlc3NvciAqcHI7
-DQoNCnByID0gX190aGlzX2NwdV9yZWFkKHByb2Nlc3NvcnMpOw0KaWYgKHVubGlrZWx5KCFwcikp
-DQpyZXR1cm4gLUVJTlZBTDsNCg0KaWYgKGN4LT50eXBlICE9IEFDUElfU1RBVEVfQzEpIHsNCmlm
-IChhY3BpX2lkbGVfZmFsbGJhY2tfdG9fYzEocHIpICYmIG51bV9vbmxpbmVfY3B1cygpID4gMSkg
-ew0KaW5kZXggPSBBQ1BJX0lETEVfU1RBVEVfU1RBUlQ7DQpjeCA9IHBlcl9jcHUoYWNwaV9jc3Rh
-dGVbaW5kZXhdLCBkZXYtPmNwdSk7DQp9IGVsc2UgaWYgKGN4LT50eXBlID09IEFDUElfU1RBVEVf
-QzMgJiYgcHItPmZsYWdzLmJtX2NoZWNrKSB7DQppZiAoY3gtPmJtX3N0c19za2lwIHx8ICFhY3Bp
-X2lkbGVfYm1fY2hlY2soKSkgew0KYWNwaV9pZGxlX2VudGVyX2JtKHByLCBjeCwgdHJ1ZSk7DQpy
-ZXR1cm4gaW5kZXg7DQp9IGVsc2UgaWYgKGRydi0+c2FmZV9zdGF0ZV9pbmRleCA+PSAwKSB7DQpp
-bmRleCA9IGRydi0+c2FmZV9zdGF0ZV9pbmRleDsNCmN4ID0gcGVyX2NwdShhY3BpX2NzdGF0ZVtp
-bmRleF0sIGRldi0+Y3B1KTsNCn0gZWxzZSB7DQphY3BpX3NhZmVfaGFsdCgpOw0KcmV0dXJuIC1F
-QlVTWTsNCn0NCn0NCn0NCg0KbGFwaWNfdGltZXJfc3RhdGVfYnJvYWRjYXN0KHByLCBjeCwgMSk7
-DQoNCmlmIChjeC0+dHlwZSA9PSBBQ1BJX1NUQVRFX0MzKQ0KQUNQSV9GTFVTSF9DUFVfQ0FDSEUo
-KTsNCg0KYWNwaV9pZGxlX2RvX2VudHJ5KGN4KTsNCg0KbGFwaWNfdGltZXJfc3RhdGVfYnJvYWRj
-YXN0KHByLCBjeCwgMCk7DQoNCnJldHVybiBpbmRleDsNCn0NCg0KVGhhbmsgeW91Lg0KDQpUaW0N
-Cg0KLS0tLS3pgq7ku7bljp/ku7YtLS0tLQ0K5Y+R5Lu25Lq6OiBSYWZhZWwgSi4gV3lzb2NraSBb
-bWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0K5Y+R6YCB5pe26Ze0OiAyMDE45bm0MeaciDXml6Ug
-MjE6MjkNCuaUtuS7tuS6ujogVGltIEd1byhCSi1SRCkgPFRpbUd1b0B6aGFveGluLmNvbT4NCuaK
-hOmAgTogdGdseEBsaW51dHJvbml4LmRlOyBtaW5nb0ByZWRoYXQuY29tOyBocGFAenl0b3IuY29t
-OyBtaW5nb0BrZXJuZWwub3JnOyB4ODZAa2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwu
-b3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBCcnVjZSBDaGFuZyAoVkFTKSA8QnJ1
-Y2VDaGFuZ0B2aWEtYWxsaWFuY2UuY29tPjsgQ29vcGVyIFlhbihCSi1SRCkgPENvb3BlcllhbkB6
-aGFveGluLmNvbT47IFFpeXVhbiBXYW5nKEJKLVJEKSA8UWl5dWFuV2FuZ0B6aGFveGluLmNvbT47
-IEJlbmphbWluIFBhbiA8QmVuamFtaW5QYW5AdmlhdGVjaC5jb20+DQrkuLvpopg6IFJlOiBbUEFU
-Q0hdIHg4Ni9hY3BpL2NzdGF0ZSBkZWxldGUgc29tZSB1bnVzZWZ1bCBvcGVyYXRpb25zDQoNCk9u
-IEZyaWRheSwgRGVjZW1iZXIgMjIsIDIwMTcgMTI6NTU6MDQgUE0gQ0VUIFRpbUd1byB3cm90ZToN
-Cj4gVW51c2VmdWwgY2FjaGUgZmx1c2ggb3BlcmF0aW9ucyB3aGljaCB3aWxsIGJlIGV4ZWN1dGVk
-IGJ5IHVjb2RlIHdoZW4NCj4gZW50ZXJpbmcgQzMgd2lsbCBjYXVzZSBsYXJnZXIgQzMgZW50ZXIg
-bGF0ZW5jeS4gQW5kIHRoZSBidXMgbWFzdGVyDQo+IGRpc2FibGUgb3BlcmF0aW9uIGlzIG5vdCBu
-ZWVkIGZvciBjZW50YXVyIHBsYXRmb3Jtcy4NCg0KTXkgYXR0ZW1wdHMgdG8gbWFrZSBzb21lIHNl
-bnNlIG9mIHRoZSBhYm92ZSBob3BsZXNzbHkgZmFpbGVkLiA6LS8NCg0KSSB1bmRlcnN0b29kIHRo
-YXQgaXQgd2FzIG5vdCBuZWNlc3NhcnkgdG8gZGlzYWJsZSBidXMgbWFzdGVyIGFyYml0cmF0aW9u
-IG9uIEMzIGVudHJ5IGZvciBDZW50YXVyIENQVXMsIHdoaWNoIGlzIHdoeSB5b3UgY2xlYXIgYm1f
-Y29udHJvbCwgcmlnaHQ/DQoNCkFuZCB0aGUgZ29hbCBpcyB0byByZWR1Y2UgdGhlIEMzIGxhdGVu
-Y3ksIGJ1dCBJJ20gbm90IHN1cmUgYWJvdXQgdGhlIGNhY2hlIGZsdXNoaW5nIHBhcnQuICBEbyB5
-b3Ugd2FudCB0byBzYXkgdGhhdCBkaXNhYmxpbmcgYnVzIG1hc3RlciBhcmJpdHJhdGlvbiBjYXVz
-ZXMgdGhlIENQVSBjYWNoZXMgdG8gYmUgZmx1c2hlZCB3aGljaCBpcyB0aW1lLWNvbnN1bWluZyBh
-bmQgc2hvdWxkIGJldHRlciBiZSBhdm9pZGVkIGlmIG5vdCBuZWNlc3Nhcnk/DQoNCj4gU2lnbmVk
-LW9mZi1ieTogVGltR3VvIDx0aW1ndW9Aemhhb3hpbi5jb20+DQo+IC0tLQ0KPiAgYXJjaC94ODYv
-a2VybmVsL2FjcGkvY3N0YXRlLmMgfCAxMiArKysrKysrKysrKysNCj4gIDEgZmlsZSBjaGFuZ2Vk
-LCAxMiBpbnNlcnRpb25zKCspDQo+DQo+IGRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvYWNw
-aS9jc3RhdGUuYw0KPiBiL2FyY2gveDg2L2tlcm5lbC9hY3BpL2NzdGF0ZS5jIGluZGV4IGRkZTQz
-N2YuLjNlZWU0OTAgMTAwNjQ0DQo+IC0tLSBhL2FyY2gveDg2L2tlcm5lbC9hY3BpL2NzdGF0ZS5j
-DQo+ICsrKyBiL2FyY2gveDg2L2tlcm5lbC9hY3BpL2NzdGF0ZS5jDQo+IEBAIC01MSw2ICs1MSwx
-OCBAQCB2b2lkIGFjcGlfcHJvY2Vzc29yX3Bvd2VyX2luaXRfYm1fY2hlY2soc3RydWN0IGFjcGlf
-cHJvY2Vzc29yX2ZsYWdzICpmbGFncywNCj4gICAgICAgICBpZiAoYy0+eDg2X3ZlbmRvciA9PSBY
-ODZfVkVORE9SX0lOVEVMICYmDQo+ICAgICAgICAgICAgIChjLT54ODYgPiAweGYgfHwgKGMtPng4
-NiA9PSA2ICYmIGMtPng4Nl9tb2RlbCA+PSAweDBmKSkpDQo+ICAgICAgICAgICAgICAgICAgICAg
-ICAgIGZsYWdzLT5ibV9jb250cm9sID0gMDsNCj4gKw0KPiArICAgICAgIGlmIChjLT54ODZfdmVu
-ZG9yID09IFg4Nl9WRU5ET1JfQ0VOVEFVUikgew0KPiArICAgICAgICAgICAgICAgLyoNCj4gKyAg
-ICAgICAgICAgICAgICAqIG9uIGFsbCBjZW50YXVyIENQVXMsIHN3IG5lZWQgbm90IGV4ZWN1dGUg
-Y2FjaGUgZmx1c2ggb3BlcmF0aW9uDQo+ICsgICAgICAgICAgICAgICAgKiB3aGVuIGVudGVyaW5n
-IEMzIHR5cGUgc3RhdGUuDQo+ICsgICAgICAgICAgICAgICAgKg0KPiArICAgICAgICAgICAgICAg
-ICogT24gYWxsIENlbnRhdXIgcGxhdGZvcm1zLCBBUkJfRElTQUJMRSBpcyBub3QgcmVxdWlyZWQg
-d2hpbGUNCj4gKyAgICAgICAgICAgICAgICAqIGVudGVyaW5nIEMzIHR5cGUgc3RhdGUuDQo+ICsg
-ICAgICAgICAgICAgICAgKi8NCj4gKyAgICAgICAgICAgICAgIGZsYWdzLT5ibV9jaGVjayA9IDE7
-DQo+ICsgICAgICAgICAgICAgICBmbGFncy0+Ym1fY29udHJvbCA9IDA7DQo+ICsgICAgICAgIH0N
-Cj4gIH0NCj4gIEVYUE9SVF9TWU1CT0woYWNwaV9wcm9jZXNzb3JfcG93ZXJfaW5pdF9ibV9jaGVj
-ayk7DQo+DQo+IC0tDQo+IDEuOS4xDQo+DQo+DQo+DQo+IOS/neWvhuWjsOaYju+8mg0KPiDmnKzp
-gq7ku7blkKvmnInkv53lr4bmiJbkuJPmnInkv6Hmga/vvIzku4XkvpvmjIflrprmlLbku7bkurrk
-vb/nlKjjgILkuKXnpoHlr7nmnKzpgq7ku7bmiJblhbblhoXlrrnlgZrku7vkvZXmnKrnu4/mjojm
-nYPnmoTmn6XpmIXjgIHkvb/nlKjjgIHlpI3liLbmiJbovazlj5HjgIINCj4gQ09ORklERU5USUFM
-IE5PVEU6DQo+IFRoaXMgZW1haWwgY29udGFpbnMgY29uZmlkZW50aWFsIG9yIGxlZ2FsbHkgcHJp
-dmlsZWdlZCBpbmZvcm1hdGlvbiBhbmQgaXMgZm9yIHRoZSBzb2xlIHVzZSBvZiBpdHMgaW50ZW5k
-ZWQgcmVjaXBpZW50LiBBbnkgdW5hdXRob3JpemVkIHJldmlldywgdXNlLCBjb3B5aW5nIG9yIGZv
-cndhcmRpbmcgb2YgdGhpcyBlbWFpbCBvciB0aGUgY29udGVudCBvZiB0aGlzIGVtYWlsIGlzIHN0
-cmljdGx5IHByb2hpYml0ZWQuDQo+DQoNCg0KDQoNCuS/neWvhuWjsOaYju+8mg0K5pys6YKu5Lu2
-5ZCr5pyJ5L+d5a+G5oiW5LiT5pyJ5L+h5oGv77yM5LuF5L6b5oyH5a6a5pS25Lu25Lq65L2/55So
-44CC5Lil56aB5a+55pys6YKu5Lu25oiW5YW25YaF5a655YGa5Lu75L2V5pyq57uP5o6I5p2D55qE
-5p+l6ZiF44CB5L2/55So44CB5aSN5Yi25oiW6L2s5Y+R44CCDQpDT05GSURFTlRJQUwgTk9URToN
-ClRoaXMgZW1haWwgY29udGFpbnMgY29uZmlkZW50aWFsIG9yIGxlZ2FsbHkgcHJpdmlsZWdlZCBp
-bmZvcm1hdGlvbiBhbmQgaXMgZm9yIHRoZSBzb2xlIHVzZSBvZiBpdHMgaW50ZW5kZWQgcmVjaXBp
-ZW50LiBBbnkgdW5hdXRob3JpemVkIHJldmlldywgdXNlLCBjb3B5aW5nIG9yIGZvcndhcmRpbmcg
-b2YgdGhpcyBlbWFpbCBvciB0aGUgY29udGVudCBvZiB0aGlzIGVtYWlsIGlzIHN0cmljdGx5IHBy
-b2hpYml0ZWQuDQo=
+On 09/01/18 09:52, Adrian Hunter wrote:
+> Hi
+> 
+> Commit 03dbaa04a2e5 ("mmc: slot-gpio: Add support to enable irq wake on
+> cd_irq") enabled wakeup irrespective of the host controller's PM flags.
+> However, users also want to control it from sysfs power/wakeup attribute.
+> That means the driver needs to check the PM flags before enabling it in the
+> suspend callback.  Patch 9 adds support for that in sdhci-pci, which is the
+> only driver presently using the MMC_CAP_CD_WAKE flag.  Patches 1 - 7 tidy
+> up aspects of sdhci and sdhci-pci wakeup handling, and patch 8 adds a
+> helper function to make it easy for drivers.
+> 
+> There are 2 contentious aspects to this patch set:
+> 
+> 1) An existing problem with the SDIO API which does not let the host
+> controller driver know that the SDIO function driver has requested SDIO
+> card interrupt wakeup until the suspend callback - which results in the
+> host controller driver having to enable or disable wakeup in the suspend
+> callback.  Fixing the SDIO API is a separate issue IMHO.
+> 
+> 2) In order to use the sysfs power/wakeup attribute, the driver must set the
+> device as wake capable even when it is really a GPIO that wakes the system.
+> 
+
+Given that we have more-or-less agreed to use sysfs power/wakeup attribute,
+I don't see a problem with going ahead with these patches, and adjusting the
+API later.  Thoughts?
