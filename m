@@ -1,48 +1,66 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH RESEND 0/9] mmc: sdhci-pci: Respect PM flags when enabling
- card detect GPIO IRQ wakeup
-Date: Tue, 16 Jan 2018 09:43:04 +0200
-Message-ID: <08283b49-fdaf-d289-e375-20bce7dbbf8f@intel.com>
-References: <1515484346-800-1-git-send-email-adrian.hunter@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / runtime: Allow no callbacks in pm_runtime_force_suspend|resume()
+Date: Tue, 16 Jan 2018 09:01:27 +0100
+Message-ID: <1516089687-32003-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:59868 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751124AbeAPHnk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Jan 2018 02:43:40 -0500
-In-Reply-To: <1515484346-800-1-git-send-email-adrian.hunter@intel.com>
-Content-Language: en-US
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:45735 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750822AbeAPIBm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jan 2018 03:01:42 -0500
+Received: by mail-lf0-f68.google.com with SMTP id y71so16219386lfd.12
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jan 2018 00:01:42 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 09/01/18 09:52, Adrian Hunter wrote:
-> Hi
-> 
-> Commit 03dbaa04a2e5 ("mmc: slot-gpio: Add support to enable irq wake on
-> cd_irq") enabled wakeup irrespective of the host controller's PM flags.
-> However, users also want to control it from sysfs power/wakeup attribute.
-> That means the driver needs to check the PM flags before enabling it in the
-> suspend callback.  Patch 9 adds support for that in sdhci-pci, which is the
-> only driver presently using the MMC_CAP_CD_WAKE flag.  Patches 1 - 7 tidy
-> up aspects of sdhci and sdhci-pci wakeup handling, and patch 8 adds a
-> helper function to make it easy for drivers.
-> 
-> There are 2 contentious aspects to this patch set:
-> 
-> 1) An existing problem with the SDIO API which does not let the host
-> controller driver know that the SDIO function driver has requested SDIO
-> card interrupt wakeup until the suspend callback - which results in the
-> host controller driver having to enable or disable wakeup in the suspend
-> callback.  Fixing the SDIO API is a separate issue IMHO.
-> 
-> 2) In order to use the sysfs power/wakeup attribute, the driver must set the
-> device as wake capable even when it is really a GPIO that wakes the system.
-> 
+The pm_runtime_force_suspend|resume() helpers currently requires the device
+to at some level (PM domain, bus, etc), have the ->runtime_suspend|resume()
+callbacks assigned for it, else -ENOSYS is returned as an error.
 
-Given that we have more-or-less agreed to use sysfs power/wakeup attribute,
-I don't see a problem with going ahead with these patches, and adjusting the
-API later.  Thoughts?
+However, there are no reason for this requirement, so let's simply remove
+it by allowing these callbacks to be NULL.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/runtime.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index cb5e48b..8bef3cb 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1640,7 +1640,7 @@ static bool pm_runtime_need_not_resume(struct device *dev)
+ int pm_runtime_force_suspend(struct device *dev)
+ {
+ 	int (*callback)(struct device *);
+-	int ret = 0;
++	int ret;
+ 
+ 	pm_runtime_disable(dev);
+ 	if (pm_runtime_status_suspended(dev))
+@@ -1648,12 +1648,7 @@ int pm_runtime_force_suspend(struct device *dev)
+ 
+ 	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+ 
+-	if (!callback) {
+-		ret = -ENOSYS;
+-		goto err;
+-	}
+-
+-	ret = callback(dev);
++	ret = callback ? callback(dev) : 0;
+ 	if (ret)
+ 		goto err;
+ 
+@@ -1704,7 +1699,7 @@ int pm_runtime_force_resume(struct device *dev)
+ 
+ 	callback = RPM_GET_CALLBACK(dev, runtime_resume);
+ 
+-	ret = callback ? callback(dev) : -ENOSYS;
++	ret = callback ? callback(dev) : 0;
+ 	if (ret) {
+ 		pm_runtime_set_suspended(dev);
+ 		goto out;
+-- 
+2.7.4
