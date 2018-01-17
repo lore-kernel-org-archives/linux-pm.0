@@ -1,104 +1,163 @@
-From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: Re: [PATCH v6 02/12] drivers: base: cacheinfo: setup DT cache
- properties early
-Date: Wed, 17 Jan 2018 12:51:31 -0600
-Message-ID: <15884ccc-2cfb-da91-5844-369d8237175d@arm.com>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-3-jeremy.linton@arm.com>
- <20180115123338.GB5473@e107155-lin>
- <65f78c99-8b86-0098-7ced-899840a4bf16@arm.com>
- <ca64334c-9345-705c-80d8-f2deb924a679@arm.com>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: [PATCH] power: supply: ltc2941-battery-gauge: Add charge empty and
+ full properties
+Date: Wed, 17 Jan 2018 20:48:54 +0100
+Message-ID: <20180117194607.GA7563@lenoch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46322 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754380AbeAQSve (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 17 Jan 2018 13:51:34 -0500
-In-Reply-To: <ca64334c-9345-705c-80d8-f2deb924a679@arm.com>
-Content-Language: en-US
+Received: from eddie.linux-mips.org ([148.251.95.138]:56614 "EHLO
+        cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750908AbeAQTtK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jan 2018 14:49:10 -0500
+Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
+        (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
+        id S23993497AbeAQTtBbi7u- (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 17 Jan 2018 20:49:01 +0100
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>
+To: linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Mike Looijmans <mike.looijmans@topic.nl>
 
-Hi,
+Add properties for charge empty and charge full thresholds.
 
-On 01/17/2018 12:20 PM, Sudeep Holla wrote:
-> 
-> 
-> On 16/01/18 21:07, Jeremy Linton wrote:
->> Hi,
->>
->> On 01/15/2018 06:33 AM, Sudeep Holla wrote:
->>> On Fri, Jan 12, 2018 at 06:59:10PM -0600, Jeremy Linton wrote:
->>>> The original intent in cacheinfo was that an architecture
->>>> specific populate_cache_leaves() would probe the hardware
->>>> and then cache_shared_cpu_map_setup() and
->>>> cache_override_properties() would provide firmware help to
->>>> extend/expand upon what was probed. Arm64 was really
->>>> the only architecture that was working this way, and
->>>> with the removal of most of the hardware probing logic it
->>>> became clear that it was possible to simplify the logic a bit.
->>>>
->>>> This patch combines the walk of the DT nodes with the
->>>> code updating the cache size/line_size and nr_sets.
->>>> cache_override_properties() (which was DT specific) is
->>>> then removed. The result is that cacheinfo.of_node is
->>>> no longer used as a temporary place to hold DT references
->>>> for future calls that update cache properties. That change
->>>> helps to clarify its one remaining use (matching
->>>> cacheinfo nodes that represent shared caches) which
->>>> will be used by the ACPI/PPTT code in the following patches.
->>>>
->>>> Cc: Palmer Dabbelt <palmer@sifive.com>
->>>> Cc: Albert Ou <albert@sifive.com>
->>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->>>> ---
->>>>    arch/riscv/kernel/cacheinfo.c |  1 +
->>>>    drivers/base/cacheinfo.c      | 65
->>>> +++++++++++++++++++------------------------
->>>>    include/linux/cacheinfo.h     |  1 +
->>>>    3 files changed, 31 insertions(+), 36 deletions(-)
->>>>
->>>> diff --git a/arch/riscv/kernel/cacheinfo.c
->>>> b/arch/riscv/kernel/cacheinfo.c
->>>> index 10ed2749e246..6f4500233cf8 100644
->>>> --- a/arch/riscv/kernel/cacheinfo.c
->>>> +++ b/arch/riscv/kernel/cacheinfo.c
->>>> @@ -30,6 +30,7 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
->>>>            CACHE_WRITE_BACK
->>>>            | CACHE_READ_ALLOCATE
->>>>            | CACHE_WRITE_ALLOCATE;
->>>> +    cache_of_set_props(this_leaf, node);
->>>
->>> This may be necessary but can it be done as later patch ? So far nothing
->>> is added that may break riscv IIUC.
->>
->> Well I think you have a bisection issue where the additional information
->> will disappear between this patch and wherever we put this code back in.
->>
-> 
-> Hmm, I am sorry but I fail to see the issue. Before this change,
-> populate_cache_leaves just populated the info as per ci_leaf_init in
-> arch/riscv/kernel/cacheinfo.c and cache_override_properties used to fill
-> the remaining.
-> 
-> After this patch, the same is achieved in cache_shared_cpu_map_setup.
-> 
-> In both case, it was by the end of detect_cache_attributes, so I see no
-> issue.
-> 
+Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+---
+ drivers/power/supply/ltc2941-battery-gauge.c | 59 +++++++++++++++++++++++-----
+ 1 file changed, 50 insertions(+), 9 deletions(-)
 
-
-Hi,
-
-I must be misunderstanding something.
-
-AFAIK, The code in cache_setup_of_node() won't call cache_of_set_props() 
-because it returns when there is an existing of_node (fw_unique) created 
-by the riscv populate_cache_leaves(). That's why I'm making the direct 
-call here. If we fail to get that change in place before 
-cache_override_properties() is removed then the fields not set by the 
-riscv code (size/etc) will be missing.
+diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+index 08e4fd9ee607..523373ea9cbd 100644
+--- a/drivers/power/supply/ltc2941-battery-gauge.c
++++ b/drivers/power/supply/ltc2941-battery-gauge.c
+@@ -34,6 +34,10 @@ enum ltc294x_reg {
+ 	LTC294X_REG_CONTROL		= 0x01,
+ 	LTC294X_REG_ACC_CHARGE_MSB	= 0x02,
+ 	LTC294X_REG_ACC_CHARGE_LSB	= 0x03,
++	LTC294X_REG_CHARGE_THR_HIGH_MSB	= 0x04,
++	LTC294X_REG_CHARGE_THR_HIGH_LSB	= 0x05,
++	LTC294X_REG_CHARGE_THR_LOW_MSB	= 0x06,
++	LTC294X_REG_CHARGE_THR_LOW_LSB	= 0x07,
+ 	LTC294X_REG_VOLTAGE_MSB		= 0x08,
+ 	LTC294X_REG_VOLTAGE_LSB		= 0x09,
+ 	LTC2942_REG_TEMPERATURE_MSB	= 0x0C,
+@@ -178,21 +182,22 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
+ 	return ret;
+ }
+ 
+-static int ltc294x_read_charge_register(const struct ltc294x_info *info)
+-{
++static int ltc294x_read_charge_register(const struct ltc294x_info *info,
++					enum ltc294x_reg reg)
++ {
+ 	int ret;
+ 	u8 datar[2];
+ 
+-	ret = ltc294x_read_regs(info->client,
+-		LTC294X_REG_ACC_CHARGE_MSB, &datar[0], 2);
++	ret = ltc294x_read_regs(info->client, reg, &datar[0], 2);
+ 	if (ret < 0)
+ 		return ret;
+ 	return (datar[0] << 8) + datar[1];
+ }
+ 
+-static int ltc294x_get_charge_now(const struct ltc294x_info *info, int *val)
++static int ltc294x_get_charge(const struct ltc294x_info *info,
++				enum ltc294x_reg reg, int *val)
+ {
+-	int value = ltc294x_read_charge_register(info);
++	int value = ltc294x_read_charge_register(info, reg);
+ 
+ 	if (value < 0)
+ 		return value;
+@@ -244,10 +249,29 @@ static int ltc294x_set_charge_now(const struct ltc294x_info *info, int val)
+ 	return ret < 0 ? ret : 0;
+ }
+ 
++static int ltc294x_set_charge_thr(const struct ltc294x_info *info,
++					enum ltc294x_reg reg, int val)
++{
++	u8 dataw[2];
++	s32 value;
++
++	value = convert_uAh_to_bin(info, val);
++	/* Direction depends on how sense+/- were connected */
++	if (info->Qlsb < 0)
++		value += 0xFFFF;
++	if ((value < 0) || (value > 0xFFFF)) /* input validation */
++		return -EINVAL;
++
++	/* Set new charge value */
++	dataw[0] = I16_MSB(value);
++	dataw[1] = I16_LSB(value);
++	return ltc294x_write_regs(info->client, reg, &dataw[0], 2);
++}
++
+ static int ltc294x_get_charge_counter(
+ 	const struct ltc294x_info *info, int *val)
+ {
+-	int value = ltc294x_read_charge_register(info);
++	int value = ltc294x_read_charge_register(info, LTC294X_REG_ACC_CHARGE_MSB);
+ 
+ 	if (value < 0)
+ 		return value;
+@@ -335,8 +359,15 @@ static int ltc294x_get_property(struct power_supply *psy,
+ 	struct ltc294x_info *info = power_supply_get_drvdata(psy);
+ 
+ 	switch (prop) {
++	case POWER_SUPPLY_PROP_CHARGE_FULL:
++		return ltc294x_get_charge(info, LTC294X_REG_CHARGE_THR_HIGH_MSB,
++						&val->intval);
++	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
++		return ltc294x_get_charge(info, LTC294X_REG_CHARGE_THR_LOW_MSB,
++						&val->intval);
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
+-		return ltc294x_get_charge_now(info, &val->intval);
++		return ltc294x_get_charge(info, LTC294X_REG_ACC_CHARGE_MSB,
++						&val->intval);
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+ 		return ltc294x_get_charge_counter(info, &val->intval);
+ 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+@@ -357,6 +388,12 @@ static int ltc294x_set_property(struct power_supply *psy,
+ 	struct ltc294x_info *info = power_supply_get_drvdata(psy);
+ 
+ 	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_FULL:
++		return ltc294x_set_charge_thr(info,
++			LTC294X_REG_CHARGE_THR_HIGH_MSB, val->intval);
++	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
++		return ltc294x_set_charge_thr(info,
++			LTC294X_REG_CHARGE_THR_LOW_MSB, val->intval);
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
+ 		return ltc294x_set_charge_now(info, val->intval);
+ 	default:
+@@ -368,6 +405,8 @@ static int ltc294x_property_is_writeable(
+ 	struct power_supply *psy, enum power_supply_property psp)
+ {
+ 	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_FULL:
++	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
+ 		return 1;
+ 	default:
+@@ -377,7 +416,7 @@ static int ltc294x_property_is_writeable(
+ 
+ static void ltc294x_update(struct ltc294x_info *info)
+ {
+-	int charge = ltc294x_read_charge_register(info);
++	int charge = ltc294x_read_charge_register(info, LTC294X_REG_ACC_CHARGE_MSB);
+ 
+ 	if (charge != info->charge) {
+ 		info->charge = charge;
+@@ -396,6 +435,8 @@ static void ltc294x_work(struct work_struct *work)
+ 
+ static enum power_supply_property ltc294x_properties[] = {
+ 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
++	POWER_SUPPLY_PROP_CHARGE_FULL,
++	POWER_SUPPLY_PROP_CHARGE_EMPTY,
+ 	POWER_SUPPLY_PROP_CHARGE_NOW,
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ 	POWER_SUPPLY_PROP_TEMP,
+-- 
+2.15.1
