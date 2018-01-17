@@ -1,50 +1,37 @@
-From: Luis de Bethencourt <luisbg@kernel.org>
-Subject: [PATCH] powercap/intel_rapl: Fix trailing semicolon
-Date: Wed, 17 Jan 2018 10:30:34 +0000
-Message-ID: <20180117103034.21907-1-luisbg@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 1/2] PM / OPP: introduce an OPP power estimation helper
+Date: Wed, 17 Jan 2018 16:11:03 +0530
+Message-ID: <20180117104103.GC3012@vireshk-i7>
+References: <20180116165119.15168-1-quentin.perret@arm.com>
+ <20180116165119.15168-2-quentin.perret@arm.com>
+ <20180117053724.GL22978@vireshk-i7>
+ <20180117102746.GE23988@e108498-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-fw-33001.amazon.com ([207.171.190.10]:60852 "EHLO
-        smtp-fw-33001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751261AbeAQKav (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jan 2018 05:30:51 -0500
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:39864 "EHLO
+        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752403AbeAQKlG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jan 2018 05:41:06 -0500
+Received: by mail-pf0-f179.google.com with SMTP id e11so11310830pff.6
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jan 2018 02:41:06 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20180117102746.GE23988@e108498-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Joe Perches <joe@perches.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Luis de Bethencourt <luisbg@kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com, joelaf@google.com, tkjos@google.com
 
-The trailing semicolon is an empty statement that does no operation.
-Removing it since it doesn't do anything.
+On 17-01-18, 10:27, Quentin Perret wrote:
+> What I suggest is to call __cpufreq_cooling_register() with
+> has_power=true in of_cpufreq_cooling_register() and bail out from
+> update_freq_table() cleanly whenever dev_pm_opp_get_power() returns 0
+> (and in this case we fallback on the has_power=false path). Does that
+> make sense ?
 
-Signed-off-by: Luis de Bethencourt <luisbg@kernel.org>
----
+Maybe just remove the has_power thing completely and always call
+update_freq_table() and let it update power to 0 ? Its anyway a one time
+initialization thing, wouldn't matter much.
 
-Hi,
-
-After fixing the same thing in drivers/staging/rtl8723bs/, Joe Perches
-suggested I fix it treewide [0].
-
-Best regards 
-Luis
-
-
-[0] http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/2018-January/115410.html
-[1] http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/2018-January/115390.html
-
- drivers/powercap/intel_rapl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 0188cff98cdd..35636e1d8a3d 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1211,7 +1211,7 @@ static int rapl_package_register_powercap(struct rapl_package *rp)
- 	struct rapl_domain *rd;
- 	char dev_name[17]; /* max domain name = 7 + 1 + 8 for int + 1 for null*/
- 	struct powercap_zone *power_zone = NULL;
--	int nr_pl, ret;;
-+	int nr_pl, ret;
- 
- 	/* Update the domain data of the new package */
- 	rapl_update_domain_data(rp);
 -- 
-2.15.1
+viresh
