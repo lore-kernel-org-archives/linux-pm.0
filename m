@@ -1,24 +1,33 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 Subject: Re: [PATCH v6 02/12] drivers: base: cacheinfo: setup DT cache
  properties early
-Date: Wed, 17 Jan 2018 18:08:27 +0000
-Message-ID: <a7d2910e-ae73-61de-9349-c5d804269695@arm.com>
-References: <mhng-72d1934a-43df-4a5b-851d-0dd6d8a1b30b@palmer-si-x1c4>
+Date: Wed, 17 Jan 2018 18:20:25 +0000
+Message-ID: <ca64334c-9345-705c-80d8-f2deb924a679@arm.com>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-3-jeremy.linton@arm.com>
+ <20180115123338.GB5473@e107155-lin>
+ <65f78c99-8b86-0098-7ced-899840a4bf16@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <mhng-72d1934a-43df-4a5b-851d-0dd6d8a1b30b@palmer-si-x1c4>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:45818 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753514AbeAQSUe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 17 Jan 2018 13:20:34 -0500
+In-Reply-To: <65f78c99-8b86-0098-7ced-899840a4bf16@arm.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Palmer Dabbelt <palmer@sifive.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, jeremy.linton@arm.com, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, Will Deacon <will.deacon@arm.com>, catalin.marinas@arm.com, Greg KH <gregkh@linuxfoundation.org>, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, albert@sifive.com
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>
 
-(Sorry, somehow I missed this email until I saw Jeremy's reply today)
 
-On 15/01/18 16:07, Palmer Dabbelt wrote:
-> On Mon, 15 Jan 2018 04:33:38 PST (-0800), sudeep.holla@arm.com wrote:
+
+On 16/01/18 21:07, Jeremy Linton wrote:
+> Hi,
+> 
+> On 01/15/2018 06:33 AM, Sudeep Holla wrote:
 >> On Fri, Jan 12, 2018 at 06:59:10PM -0600, Jeremy Linton wrote:
 >>> The original intent in cacheinfo was that an architecture
 >>> specific populate_cache_leaves() would probe the hardware
@@ -43,11 +52,11 @@ On 15/01/18 16:07, Palmer Dabbelt wrote:
 >>> Cc: Albert Ou <albert@sifive.com>
 >>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
 >>> ---
->>>  arch/riscv/kernel/cacheinfo.c |  1 +
->>>  drivers/base/cacheinfo.c      | 65
+>>>   arch/riscv/kernel/cacheinfo.c |  1 +
+>>>   drivers/base/cacheinfo.c      | 65
 >>> +++++++++++++++++++------------------------
->>>  include/linux/cacheinfo.h     |  1 +
->>>  3 files changed, 31 insertions(+), 36 deletions(-)
+>>>   include/linux/cacheinfo.h     |  1 +
+>>>   3 files changed, 31 insertions(+), 36 deletions(-)
 >>>
 >>> diff --git a/arch/riscv/kernel/cacheinfo.c
 >>> b/arch/riscv/kernel/cacheinfo.c
@@ -55,31 +64,27 @@ On 15/01/18 16:07, Palmer Dabbelt wrote:
 >>> --- a/arch/riscv/kernel/cacheinfo.c
 >>> +++ b/arch/riscv/kernel/cacheinfo.c
 >>> @@ -30,6 +30,7 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
->>>          CACHE_WRITE_BACK
->>>          | CACHE_READ_ALLOCATE
->>>          | CACHE_WRITE_ALLOCATE;
+>>>           CACHE_WRITE_BACK
+>>>           | CACHE_READ_ALLOCATE
+>>>           | CACHE_WRITE_ALLOCATE;
 >>> +    cache_of_set_props(this_leaf, node);
 >>
 >> This may be necessary but can it be done as later patch ? So far nothing
 >> is added that may break riscv IIUC.
->>
->> Palmer, Albert,
->>
->> Can you confirm ? Also, as I see we can thin down arch specific
->> implementation on riscv if it's just using DT like ARM64. Sorry if
->> I am missing to see something, so thought of checking.
->>
->> [...]
 > 
-> Sorry, I guess I'm a bit confused as to what's going on here.  RISC-V
-> uses device tree on all Linux systems.
+> Well I think you have a bisection issue where the additional information
+> will disappear between this patch and wherever we put this code back in.
 > 
 
-Good. By thin down, I was thinking of moving the init_cache_level and
-populate_cache_leaves implementation of riscv to generic weak function
-under CONFIG_OF. You may even endup deleting riscv cacheinfo.c
+Hmm, I am sorry but I fail to see the issue. Before this change,
+populate_cache_leaves just populated the info as per ci_leaf_init in
+arch/riscv/kernel/cacheinfo.c and cache_override_properties used to fill
+the remaining.
 
-Just a thought, sorry for not being clear earlier.
+After this patch, the same is achieved in cache_shared_cpu_map_setup.
+
+In both case, it was by the end of detect_cache_attributes, so I see no
+issue.
 
 -- 
 Regards,
