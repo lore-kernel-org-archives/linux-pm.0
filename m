@@ -1,200 +1,75 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 1/3] mfd: cros_ec: Add USBPD charger commands and struct definitions.
-Date: Wed, 17 Jan 2018 18:59:30 +0100
-Message-ID: <20180117175932.20636-2-enric.balletbo@collabora.com>
+Subject: [PATCH 3/3] mfd: cros_ec_dev: Register cros_usbpd-charger driver as a subdevice.
+Date: Wed, 17 Jan 2018 18:59:32 +0100
+Message-ID: <20180117175932.20636-4-enric.balletbo@collabora.com>
 References: <20180117175932.20636-1-enric.balletbo@collabora.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:39972 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753843AbeAQR7m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jan 2018 12:59:42 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180117175932.20636-1-enric.balletbo@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
 Cc: Gwendal Grignou <gwendal@chromium.org>, Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sameer Nanda <snanda@chromium.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Sameer Nanda <snanda@chromium.org>
 
-The USB PD charger driver gets information from the ChromeOS EC, this
-patch adds the USBPD charger definitions needed by this driver.
+Check whether this EC instance has USBPD host command support and
+instatiate the cros_usbpd-charger driver as a subdevice in such case.
 
 Signed-off-by: Sameer Nanda <snanda@chromium.org>
 Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
- include/linux/mfd/cros_ec_commands.h | 135 +++++++++++++++++++++++++++++++++--
- 1 file changed, 131 insertions(+), 4 deletions(-)
+ drivers/mfd/cros_ec_dev.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/include/linux/mfd/cros_ec_commands.h b/include/linux/mfd/cros_ec_commands.h
-index 2b96e630e3b6..94dcf331796c 100644
---- a/include/linux/mfd/cros_ec_commands.h
-+++ b/include/linux/mfd/cros_ec_commands.h
-@@ -2593,14 +2593,18 @@ struct ec_params_current_limit {
- } __packed;
- 
- /*
-- * Set maximum external power current.
-+ * Set maximum external voltage / current.
-  */
--#define EC_CMD_EXT_POWER_CURRENT_LIMIT 0xa2
-+#define EC_CMD_EXTERNAL_POWER_LIMIT 0x00A2
- 
--struct ec_params_ext_power_current_limit {
--	uint32_t limit; /* in mA */
-+/* Command v0 is used only on Spring and is obsolete + unsupported */
-+struct ec_params_external_power_limit_v1 {
-+	uint16_t current_lim; /* in mA, or EC_POWER_LIMIT_NONE to clear limit */
-+	uint16_t voltage_lim; /* in mV, or EC_POWER_LIMIT_NONE to clear limit */
- } __packed;
- 
-+#define EC_POWER_LIMIT_NONE 0xffff
-+
- /* Inform the EC when entering a sleep state */
- #define EC_CMD_HOST_SLEEP_EVENT 0xa9
- 
-@@ -2948,6 +2952,9 @@ struct ec_response_usb_pd_control_v1 {
- 
- #define EC_CMD_USB_PD_PORTS 0x102
- 
-+/* Maximum number of PD ports on a device, num_ports will be <= this */
-+#define EC_USB_PD_MAX_PORTS 8
-+
- struct ec_response_usb_pd_ports {
- 	uint8_t num_ports;
- } __packed;
-@@ -2971,6 +2978,12 @@ enum usb_chg_type {
- 	USB_CHG_TYPE_VBUS,
- 	USB_CHG_TYPE_UNKNOWN,
+diff --git a/drivers/mfd/cros_ec_dev.c b/drivers/mfd/cros_ec_dev.c
+index 26a8731499bf..d98f03f3d251 100644
+--- a/drivers/mfd/cros_ec_dev.c
++++ b/drivers/mfd/cros_ec_dev.c
+@@ -37,6 +37,9 @@ static const struct attribute_group *cros_ec_groups[] = {
+ 	&cros_ec_attr_group,
+ 	&cros_ec_lightbar_attr_group,
+ 	&cros_ec_vbc_attr_group,
++#if IS_ENABLED(CONFIG_CHARGER_CROS_USB_PD)
++	&cros_usb_pd_charger_attr_group,
++#endif
+ 	NULL,
  };
-+enum usb_power_roles {
-+	USB_PD_PORT_POWER_DISCONNECTED,
-+	USB_PD_PORT_POWER_SOURCE,
-+	USB_PD_PORT_POWER_SINK,
-+	USB_PD_PORT_POWER_SINK_NOT_CHARGING,
-+};
  
- struct usb_chg_measures {
- 	uint16_t voltage_max;
-@@ -2988,6 +3001,120 @@ struct ec_response_usb_pd_power_info {
- 	uint32_t max_power;
- } __packed;
+@@ -269,6 +272,24 @@ static void __remove(struct device *dev)
+ 	kfree(ec);
+ }
  
-+struct ec_params_usb_pd_info_request {
-+	uint8_t port;
-+} __packed;
-+
-+/* Read USB-PD Device discovery info */
-+#define EC_CMD_USB_PD_DISCOVERY 0x0113
-+struct ec_params_usb_pd_discovery_entry {
-+	uint16_t vid;  /* USB-IF VID */
-+	uint16_t pid;  /* USB-IF PID */
-+	uint8_t ptype; /* product type (hub,periph,cable,ama) */
-+} __packed;
-+
-+/* Override default charge behavior */
-+#define EC_CMD_PD_CHARGE_PORT_OVERRIDE 0x0114
-+
-+/* Negative port parameters have special meaning */
-+enum usb_pd_override_ports {
-+	OVERRIDE_DONT_CHARGE = -2,
-+	OVERRIDE_OFF = -1,
-+	/* [0, CONFIG_USB_PD_PORT_COUNT): Port# */
++static const struct mfd_cell cros_usb_pd_charger_devs[] = {
++	{
++		.name = "cros-usb-pd-charger",
++		.id   = -1,
++	},
 +};
 +
-+struct ec_params_charge_port_override {
-+	int16_t override_port; /* Override port# */
-+} __packed;
++static void cros_ec_usb_pd_charger_register(struct cros_ec_dev *ec)
++{
++	int ret;
 +
-+/* Read (and delete) one entry of PD event log */
-+#define EC_CMD_PD_GET_LOG_ENTRY 0x0115
++	ret = mfd_add_devices(ec->dev, 0, cros_usb_pd_charger_devs,
++			      ARRAY_SIZE(cros_usb_pd_charger_devs),
++			      NULL, 0, NULL);
++	if (ret)
++		dev_err(ec->dev, "failed to add usb-pd-charger device\n");
++}
 +
-+struct ec_response_pd_log {
-+	uint32_t timestamp; /* relative timestamp in milliseconds */
-+	uint8_t type;       /* event type : see PD_EVENT_xx below */
-+	uint8_t size_port;  /* [7:5] port number [4:0] payload size in bytes */
-+	uint16_t data;      /* type-defined data payload */
-+	uint8_t payload[0]; /* optional additional data payload: 0..16 bytes */
-+} __packed;
-+
-+/* The timestamp is the microsecond counter shifted to get about a ms. */
-+#define PD_LOG_TIMESTAMP_SHIFT 10 /* 1 LSB = 1024us */
-+
-+#define PD_LOG_SIZE_MASK  0x1f
-+#define PD_LOG_PORT_MASK  0xe0
-+#define PD_LOG_PORT_SHIFT    5
-+#define PD_LOG_PORT_SIZE(port, size) (((port) << PD_LOG_PORT_SHIFT) | \
-+				      ((size) & PD_LOG_SIZE_MASK))
-+#define PD_LOG_PORT(size_port) ((size_port) >> PD_LOG_PORT_SHIFT)
-+#define PD_LOG_SIZE(size_port) ((size_port) & PD_LOG_SIZE_MASK)
-+
-+/* PD event log : entry types */
-+/* PD MCU events */
-+#define PD_EVENT_MCU_BASE       0x00
-+#define PD_EVENT_MCU_CHARGE             (PD_EVENT_MCU_BASE+0)
-+#define PD_EVENT_MCU_CONNECT            (PD_EVENT_MCU_BASE+1)
-+/* Reserved for custom board event */
-+#define PD_EVENT_MCU_BOARD_CUSTOM       (PD_EVENT_MCU_BASE+2)
-+/* PD generic accessory events */
-+#define PD_EVENT_ACC_BASE       0x20
-+#define PD_EVENT_ACC_RW_FAIL   (PD_EVENT_ACC_BASE+0)
-+#define PD_EVENT_ACC_RW_ERASE  (PD_EVENT_ACC_BASE+1)
-+/* PD power supply events */
-+#define PD_EVENT_PS_BASE        0x40
-+#define PD_EVENT_PS_FAULT      (PD_EVENT_PS_BASE+0)
-+/* PD video dongles events */
-+#define PD_EVENT_VIDEO_BASE     0x60
-+#define PD_EVENT_VIDEO_DP_MODE (PD_EVENT_VIDEO_BASE+0)
-+#define PD_EVENT_VIDEO_CODEC   (PD_EVENT_VIDEO_BASE+1)
-+/* Returned in the "type" field, when there is no entry available */
-+#define PD_EVENT_NO_ENTRY       0xff
-+
-+/*
-+ * PD_EVENT_MCU_CHARGE event definition :
-+ * the payload is "struct usb_chg_measures"
-+ * the data field contains the port state flags as defined below :
-+ */
-+/* Port partner is a dual role device */
-+#define CHARGE_FLAGS_DUAL_ROLE         (1 << 15)
-+/* Port is the pending override port */
-+#define CHARGE_FLAGS_DELAYED_OVERRIDE  (1 << 14)
-+/* Port is the override port */
-+#define CHARGE_FLAGS_OVERRIDE          (1 << 13)
-+/* Charger type */
-+#define CHARGE_FLAGS_TYPE_SHIFT               3
-+#define CHARGE_FLAGS_TYPE_MASK       (0xf << CHARGE_FLAGS_TYPE_SHIFT)
-+/* Power delivery role */
-+#define CHARGE_FLAGS_ROLE_MASK         (7 <<  0)
-+
-+/*
-+ * PD_EVENT_PS_FAULT data field flags definition :
-+ */
-+#define PS_FAULT_OCP                          1
-+#define PS_FAULT_FAST_OCP                     2
-+#define PS_FAULT_OVP                          3
-+#define PS_FAULT_DISCH                        4
-+
-+/*
-+ * PD_EVENT_VIDEO_CODEC payload is "struct mcdp_info".
-+ */
-+struct mcdp_version {
-+	uint8_t major;
-+	uint8_t minor;
-+	uint16_t build;
-+} __packed;
-+
-+struct mcdp_info {
-+	uint8_t family[2];
-+	uint8_t chipid[2];
-+	struct mcdp_version irom;
-+	struct mcdp_version fw;
-+} __packed;
-+
-+/* struct mcdp_info field decoding */
-+#define MCDP_CHIPID(chipid) ((chipid[0] << 8) | chipid[1])
-+#define MCDP_FAMILY(family) ((family[0] << 8) | family[1])
-+
- /* Get info about USB-C SS muxes */
- #define EC_CMD_USB_PD_MUX_INFO 0x11a
+ static void cros_ec_sensors_register(struct cros_ec_dev *ec)
+ {
+ 	/*
+@@ -451,6 +472,10 @@ static int ec_device_probe(struct platform_device *pdev)
+ 	if (cros_ec_debugfs_init(ec))
+ 		dev_warn(dev, "failed to create debugfs directory\n");
  
++	/* check whether this EC instance has the PD charge manager */
++	if (cros_ec_check_features(ec, EC_FEATURE_USB_PD))
++		cros_ec_usb_pd_charger_register(ec);
++
+ 	/* check whether this EC is a sensor hub. */
+ 	if (cros_ec_check_features(ec, EC_FEATURE_MOTION_SENSE))
+ 		cros_ec_sensors_register(ec);
 -- 
 2.15.1
