@@ -1,64 +1,178 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RESEND 0/9] mmc: sdhci-pci: Respect PM flags when enabling
- card detect GPIO IRQ wakeup
-Date: Wed, 17 Jan 2018 12:54:17 +0100
-Message-ID: <CAPDyKFrnqEPxXzrOfF4b9R6S2QtML4gErfZiW4M9mE4QcsCG+w@mail.gmail.com>
-References: <1515484346-800-1-git-send-email-adrian.hunter@intel.com>
- <08283b49-fdaf-d289-e375-20bce7dbbf8f@intel.com> <CAPDyKFoUqTtXMKT+_JyJSE2FWUggbX=Fiv4YVBb6qLpJh27j5g@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v6 05/12] ACPI/PPTT: Add Processor Properties Topology
+ Table parsing
+Date: Wed, 17 Jan 2018 17:58:06 +0000
+Message-ID: <6215c089-0b93-2ac5-34ac-8d5e726cbf58@arm.com>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-6-jeremy.linton@arm.com>
+ <20180115145839.GA12531@e107155-lin>
+ <65c42ed6-8ac7-3adb-43f2-de20080eaaa9@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f182.google.com ([209.85.223.182]:41589 "EHLO
-        mail-io0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753076AbeAQLyT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jan 2018 06:54:19 -0500
-Received: by mail-io0-f182.google.com with SMTP id f6so20564112ioh.8
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jan 2018 03:54:18 -0800 (PST)
-In-Reply-To: <CAPDyKFoUqTtXMKT+_JyJSE2FWUggbX=Fiv4YVBb6qLpJh27j5g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <65c42ed6-8ac7-3adb-43f2-de20080eaaa9@arm.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>
 
-On 16 January 2018 at 09:24, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 16 January 2018 at 08:43, Adrian Hunter <adrian.hunter@intel.com> wrote:
->> On 09/01/18 09:52, Adrian Hunter wrote:
->>> Hi
->>>
->>> Commit 03dbaa04a2e5 ("mmc: slot-gpio: Add support to enable irq wake on
->>> cd_irq") enabled wakeup irrespective of the host controller's PM flags.
->>> However, users also want to control it from sysfs power/wakeup attribute.
->>> That means the driver needs to check the PM flags before enabling it in the
->>> suspend callback.  Patch 9 adds support for that in sdhci-pci, which is the
->>> only driver presently using the MMC_CAP_CD_WAKE flag.  Patches 1 - 7 tidy
->>> up aspects of sdhci and sdhci-pci wakeup handling, and patch 8 adds a
->>> helper function to make it easy for drivers.
->>>
->>> There are 2 contentious aspects to this patch set:
->>>
->>> 1) An existing problem with the SDIO API which does not let the host
->>> controller driver know that the SDIO function driver has requested SDIO
->>> card interrupt wakeup until the suspend callback - which results in the
->>> host controller driver having to enable or disable wakeup in the suspend
->>> callback.  Fixing the SDIO API is a separate issue IMHO.
->>>
->>> 2) In order to use the sysfs power/wakeup attribute, the driver must set the
->>> device as wake capable even when it is really a GPIO that wakes the system.
->>>
->>
->> Given that we have more-or-less agreed to use sysfs power/wakeup attribute,
->> I don't see a problem with going ahead with these patches, and adjusting the
->> API later.  Thoughts?
->
-> Let me have look again, I might be able to pick up at least some of
-> the changes in $subject series. No matter what, please re-post once
-> 4.16 rc1 is out.
 
-I have picked up patch 1 -> patch 5, the rest seems like something we
-need to defer until we know how to deal with in/out-band wakeups.
-However, please re-post them once 4.16rc1 is out.
+
+On 16/01/18 20:55, Jeremy Linton wrote:
+> 
 
 [...]
 
-Kind regards
-Uffe
+>>> +/*
+>>> + * Determine if the *node parameter is a leaf node by iterating the
+>>> + * PPTT table, looking for nodes which reference it.
+>>> + * Return 0 if we find a node referencing the passed node,
+>>> + * or 1 if we don't.
+>>> + */
+>>> +static int acpi_pptt_leaf_node(struct acpi_table_header *table_hdr,
+>>> +                   struct acpi_pptt_processor *node)
+>>> +{
+>>> +    struct acpi_subtable_header *entry;
+>>> +    unsigned long table_end;
+>>> +    u32 node_entry;
+>>> +    struct acpi_pptt_processor *cpu_node;
+>>> +
+>>> +    table_end = (unsigned long)table_hdr + table_hdr->length;
+>>> +    node_entry = ACPI_PTR_DIFF(node, table_hdr);
+>>> +    entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr,
+>>> +                 sizeof(struct acpi_table_pptt));
+>>> +
+>>> +    while ((unsigned long)(entry + 1) < table_end) {
+>>
+>> Is entry + 1 check sufficient to access entry of length ?
+>> Shouldn't that be entry + sizeof(struct acpi_pptt_processor *) so that
+>> we are sure it's valid entry ?
+> 
+> All we need is the subtable_header size which gives us the type/len. As
+> we are just scanning the whole table touching the entry->length and the
+> while() terminates if that is > table_end it should be ok. In general
+> sizeof(acpi_pptt_processor) isn't right either since the structure only
+> covers a larger "header" portion due to attached entries extending
+> beyond it.
+
+OK, understood. In that case it should be at least
+entry + sizeof(struct acpi_subtable_header), no ?
+
+I did a quick check and acpi_parse_entries_array does exactly same.
+Does it make sense to keep it consistent with that ?
+
+Also looking at acpi_parse_entries_array, I recall now that it has some
+kind of handler to deal with such table parsing. I think we should be
+able to reuse, I need to stare more at the code to see how :(.
+Let me know if you already looked at that and found reasons not to use it.
+
+>>> +        cpu_node = (struct acpi_pptt_processor *)entry;
+>>> +        if ((entry->type == ACPI_PPTT_TYPE_PROCESSOR) &&
+>>> +            (cpu_node->parent == node_entry))
+>>> +            return 0;
+>>> +        entry = ACPI_ADD_PTR(struct acpi_subtable_header, entry,
+>>> +                     entry->length);
+>>> +    }
+>>> +    return 1;
+>>> +}
+>>> +
+>>> +/*
+>>> + * Find the subtable entry describing the provided processor.
+>>> + * This is done by iterating the PPTT table looking for processor nodes
+>>> + * which have an acpi_processor_id that matches the acpi_cpu_id
+>>> parameter
+>>> + * passed into the function. If we find a node that matches this
+>>> criteria
+>>> + * we verify that its a leaf node in the topology rather than depending
+>>> + * on the valid flag, which doesn't need to be set for leaf nodes.
+>>> + */
+>>> +static struct acpi_pptt_processor *acpi_find_processor_node(
+>>> +    struct acpi_table_header *table_hdr,
+>>> +    u32 acpi_cpu_id)
+>>> +{
+>>> +    struct acpi_subtable_header *entry;
+>>> +    unsigned long table_end;
+>>> +    struct acpi_pptt_processor *cpu_node;
+>>> +
+>>> +    table_end = (unsigned long)table_hdr + table_hdr->length;
+>>> +    entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr,
+>>> +                 sizeof(struct acpi_table_pptt));
+>>> +
+>>> +    /* find the processor structure associated with this cpuid */
+>>> +    while ((unsigned long)(entry + 1) < table_end) {
+>>
+>> Same comment as above on entry + 
+> This one is probably less clear than the one above, because we do access
+> a full acpi_pptt_processor sized structure, but only after making sure
+> that is actually a processor node. If anything the check should probably
+> dereference the len as a second check aka
+> 
+> while ((entry+1 < table_end) && (entry+1->length < table_end))
+> 
+> I think this may have been changed after previous review comments asked
+> for the cpu_node assignment earlier and of course moving the leaf_node
+> check into the if condition to avoid a bit of extra processing.
+> 
+
+Makes sense.
+
+
+>>> +/* Convert the linux cache_type to a ACPI PPTT cache type value */
+>>> +static u8 acpi_cache_type(enum cache_type type)
+>>> +{
+>>
+>> [nit] Just wondering if we can avoid this with some static mapping:
+>>
+>> static u8 acpi_cache_type[] = {
+>>          [CACHE_TYPE_NONE] = 0,
+>>          [CACHE_TYPE_DATA] = ACPI_PPTT_CACHE_TYPE_DATA,
+>>          [CACHE_TYPE_INST] = ACPI_PPTT_CACHE_TYPE_INSTR,
+>>          [CACHE_TYPE_UNIFIED] = ACPI_PPTT_CACHE_TYPE_UNIFIED,
+>> };
+> 
+> Potentially, but the default case below is important and makes it a
+> little less brittle because, as the recent DT commit, in your table
+> TYPE_NONE actually needs to map to ACPI TYPE_UNIFIED to find the nodes.
+> 
+
+OK
+
+> Doesn't matter much to me, and I would convert it if the switch() got a
+> lot bigger, but right now I tend to think what the code actually would
+> look like is a two entry conversion (data/instruction) with a default
+> initially set. So a loop for two entries is borderline IMHO.
+> 
+
+Sure, that sounds good.
+
+
+>>> +    /*
+>>> +     * If all the above flags are valid, and the cache type is NOCACHE
+>>> +     * update the cache type as well.
+>>> +     */
+>>
+>> I am not sure if it makes sense to mandate at least last 2 (read allocate
+>> and write policy). They can be optional.
+> 
+> As I mentioned in the previous set, I'm of the opinion that some are
+> more useful than others, but to avoid having a discussion about which
+> ones, just decided to do them all. After all, its not going to hurt
+> (AFAIK).
+> 
+
+Sorry I missed to notice that.
+
+> 
+> If your more _sure_ and no one else has an opinion then i will remove
+> those two.
+>
+
+That was just my opinion based on the possibility that some vendors
+don't what to provide those information. We can wait until we come
+across tables that have these missing.
+
+-- 
+Regards,
+Sudeep
