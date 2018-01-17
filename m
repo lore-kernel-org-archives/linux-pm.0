@@ -1,75 +1,48 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 3/3] mfd: cros_ec_dev: Register cros_usbpd-charger driver as a subdevice.
-Date: Wed, 17 Jan 2018 18:59:32 +0100
-Message-ID: <20180117175932.20636-4-enric.balletbo@collabora.com>
-References: <20180117175932.20636-1-enric.balletbo@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180117175932.20636-1-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Gwendal Grignou <gwendal@chromium.org>, Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sameer Nanda <snanda@chromium.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v6 05/12] ACPI/PPTT: Add Processor Properties Topology
+ Table parsing
+Date: Wed, 17 Jan 2018 18:00:34 +0000
+Message-ID: <caa1bb6b-7338-a9b0-467e-d0cd09783a9c@arm.com>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-6-jeremy.linton@arm.com>
+ <20180115154813.GB17664@e107155-lin>
+ <096cdff0-d160-68ba-4cd2-0691dd04eac6@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <096cdff0-d160-68ba-4cd2-0691dd04eac6@arm.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Sameer Nanda <snanda@chromium.org>
 
-Check whether this EC instance has USBPD host command support and
-instatiate the cros_usbpd-charger driver as a subdevice in such case.
 
-Signed-off-by: Sameer Nanda <snanda@chromium.org>
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
- drivers/mfd/cros_ec_dev.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+On 16/01/18 20:22, Jeremy Linton wrote:
+> Hi,
+> 
 
-diff --git a/drivers/mfd/cros_ec_dev.c b/drivers/mfd/cros_ec_dev.c
-index 26a8731499bf..d98f03f3d251 100644
---- a/drivers/mfd/cros_ec_dev.c
-+++ b/drivers/mfd/cros_ec_dev.c
-@@ -37,6 +37,9 @@ static const struct attribute_group *cros_ec_groups[] = {
- 	&cros_ec_attr_group,
- 	&cros_ec_lightbar_attr_group,
- 	&cros_ec_vbc_attr_group,
-+#if IS_ENABLED(CONFIG_CHARGER_CROS_USB_PD)
-+	&cros_usb_pd_charger_attr_group,
-+#endif
- 	NULL,
- };
- 
-@@ -269,6 +272,24 @@ static void __remove(struct device *dev)
- 	kfree(ec);
- }
- 
-+static const struct mfd_cell cros_usb_pd_charger_devs[] = {
-+	{
-+		.name = "cros-usb-pd-charger",
-+		.id   = -1,
-+	},
-+};
-+
-+static void cros_ec_usb_pd_charger_register(struct cros_ec_dev *ec)
-+{
-+	int ret;
-+
-+	ret = mfd_add_devices(ec->dev, 0, cros_usb_pd_charger_devs,
-+			      ARRAY_SIZE(cros_usb_pd_charger_devs),
-+			      NULL, 0, NULL);
-+	if (ret)
-+		dev_err(ec->dev, "failed to add usb-pd-charger device\n");
-+}
-+
- static void cros_ec_sensors_register(struct cros_ec_dev *ec)
- {
- 	/*
-@@ -451,6 +472,10 @@ static int ec_device_probe(struct platform_device *pdev)
- 	if (cros_ec_debugfs_init(ec))
- 		dev_warn(dev, "failed to create debugfs directory\n");
- 
-+	/* check whether this EC instance has the PD charge manager */
-+	if (cros_ec_check_features(ec, EC_FEATURE_USB_PD))
-+		cros_ec_usb_pd_charger_register(ec);
-+
- 	/* check whether this EC is a sensor hub. */
- 	if (cros_ec_check_features(ec, EC_FEATURE_MOTION_SENSE))
- 		cros_ec_sensors_register(ec);
+[..]
+
+>>
+>> I forgot to mention this earlier, I see you have used parentheses too
+>> liberally at quite some place in this file like the above 4 line.
+>> Please drop those unnecessary parentheses.
+> 
+> Yes, those tend to get leftover when I remove code, I realized not long
+> after posting this that in one of the previous patches I actually added
+> a pair where there wasn't one because I first shuffled something into
+> the if condition, then a few revisions later dropped it, and when I
+> squashed it before posting the result was some pointless churn.
+> 
+> I will rescan the whole set for this.
+> 
+
+Better, just to avoid keeping such things until the end, resulting in
+churning up series just for that.
+
 -- 
-2.15.1
+Regards,
+Sudeep
