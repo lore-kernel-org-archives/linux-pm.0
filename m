@@ -1,189 +1,51 @@
-From: Corentin Labbe <clabbe.montjoie@gmail.com>
-Subject: [PATCH] cpufreq: remove at32ap-cpufreq
-Date: Thu, 18 Jan 2018 21:02:02 +0100
-Message-ID: <20180118200202.11883-1-clabbe.montjoie@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Corentin Labbe <clabbe.montjoie@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / Hibernate: Remove unused parameter of enough_swap
+Date: Thu, 18 Jan 2018 22:36:12 +0100
+Message-ID: <20180118213612.GB17412@amd>
+References: <1516065583-29239-1-git-send-email-kyungsik.lee@lge.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="z6Eq5LdranGa6ru8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36477 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932182AbeARVgO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jan 2018 16:36:14 -0500
+Content-Disposition: inline
+In-Reply-To: <1516065583-29239-1-git-send-email-kyungsik.lee@lge.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kyungsik Lee <kyungsik.lee@lge.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chan.jeong@lge.com, raphael.andy.lee@gmail.com
 
-Since AVR32 arch was removed, at32ap-cpufreq is useless.
-Remove this driver.
 
-Signed-off-by: Corentin Labbe <clabbe.montjoie@gmail.com>
----
- drivers/cpufreq/Kconfig          |  10 ---
- drivers/cpufreq/Makefile         |   1 -
- drivers/cpufreq/at32ap-cpufreq.c | 127 ---------------------------------------
- 3 files changed, 138 deletions(-)
- delete mode 100644 drivers/cpufreq/at32ap-cpufreq.c
+--z6Eq5LdranGa6ru8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index d8addbce40bc..608af20a3494 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -239,16 +239,6 @@ if PPC32 || PPC64
- source "drivers/cpufreq/Kconfig.powerpc"
- endif
- 
--if AVR32
--config AVR32_AT32AP_CPUFREQ
--	bool "CPU frequency driver for AT32AP"
--	depends on PLATFORM_AT32AP
--	default n
--	help
--	  This enables the CPU frequency driver for AT32AP processors.
--	  If in doubt, say N.
--endif
--
- if IA64
- config IA64_ACPI_CPUFREQ
- 	tristate "ACPI Processor P-States driver"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index e07715ce8844..c60c1e141d9d 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -100,7 +100,6 @@ obj-$(CONFIG_POWERNV_CPUFREQ)		+= powernv-cpufreq.o
- 
- ##################################################################################
- # Other platform drivers
--obj-$(CONFIG_AVR32_AT32AP_CPUFREQ)	+= at32ap-cpufreq.o
- obj-$(CONFIG_BFIN_CPU_FREQ)		+= blackfin-cpufreq.o
- obj-$(CONFIG_BMIPS_CPUFREQ)		+= bmips-cpufreq.o
- obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-deleted file mode 100644
-index 7b612c8bb09e..000000000000
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ /dev/null
-@@ -1,127 +0,0 @@
--/*
-- * Copyright (C) 2004-2007 Atmel Corporation
-- *
-- * Based on MIPS implementation arch/mips/kernel/time.c
-- *   Copyright 2001 MontaVista Software Inc.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- */
--
--/*#define DEBUG*/
--
--#include <linux/kernel.h>
--#include <linux/types.h>
--#include <linux/init.h>
--#include <linux/cpufreq.h>
--#include <linux/io.h>
--#include <linux/clk.h>
--#include <linux/err.h>
--#include <linux/export.h>
--#include <linux/slab.h>
--
--static struct cpufreq_frequency_table *freq_table;
--
--static unsigned int	ref_freq;
--static unsigned long	loops_per_jiffy_ref;
--
--static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
--{
--	unsigned int old_freq, new_freq;
--
--	old_freq = policy->cur;
--	new_freq = freq_table[index].frequency;
--
--	if (!ref_freq) {
--		ref_freq = old_freq;
--		loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
--	}
--
--	if (old_freq < new_freq)
--		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
--				loops_per_jiffy_ref, ref_freq, new_freq);
--	clk_set_rate(policy->clk, new_freq * 1000);
--	if (new_freq < old_freq)
--		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
--				loops_per_jiffy_ref, ref_freq, new_freq);
--
--	return 0;
--}
--
--static int at32_cpufreq_driver_init(struct cpufreq_policy *policy)
--{
--	unsigned int frequency, rate, min_freq;
--	struct clk *cpuclk;
--	int retval, steps, i;
--
--	if (policy->cpu != 0)
--		return -EINVAL;
--
--	cpuclk = clk_get(NULL, "cpu");
--	if (IS_ERR(cpuclk)) {
--		pr_debug("cpufreq: could not get CPU clk\n");
--		retval = PTR_ERR(cpuclk);
--		goto out_err;
--	}
--
--	min_freq = (clk_round_rate(cpuclk, 1) + 500) / 1000;
--	frequency = (clk_round_rate(cpuclk, ~0UL) + 500) / 1000;
--	policy->cpuinfo.transition_latency = 0;
--
--	/*
--	 * AVR32 CPU frequency rate scales in power of two between maximum and
--	 * minimum, also add space for the table end marker.
--	 *
--	 * Further validate that the frequency is usable, and append it to the
--	 * frequency table.
--	 */
--	steps = fls(frequency / min_freq) + 1;
--	freq_table = kzalloc(steps * sizeof(struct cpufreq_frequency_table),
--			GFP_KERNEL);
--	if (!freq_table) {
--		retval = -ENOMEM;
--		goto out_err_put_clk;
--	}
--
--	for (i = 0; i < (steps - 1); i++) {
--		rate = clk_round_rate(cpuclk, frequency * 1000) / 1000;
--
--		if (rate != frequency)
--			freq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
--		else
--			freq_table[i].frequency = frequency;
--
--		frequency /= 2;
--	}
--
--	policy->clk = cpuclk;
--	freq_table[steps - 1].frequency = CPUFREQ_TABLE_END;
--
--	retval = cpufreq_table_validate_and_show(policy, freq_table);
--	if (!retval) {
--		printk("cpufreq: AT32AP CPU frequency driver\n");
--		return 0;
--	}
--
--	kfree(freq_table);
--out_err_put_clk:
--	clk_put(cpuclk);
--out_err:
--	return retval;
--}
--
--static struct cpufreq_driver at32_driver = {
--	.name		= "at32ap",
--	.init		= at32_cpufreq_driver_init,
--	.verify		= cpufreq_generic_frequency_table_verify,
--	.target_index	= at32_set_target,
--	.get		= cpufreq_generic_get,
--	.flags		= CPUFREQ_STICKY,
--};
--
--static int __init at32_cpufreq_init(void)
--{
--	return cpufreq_register_driver(&at32_driver);
--}
--late_initcall(at32_cpufreq_init);
--- 
-2.13.6
+On Tue 2018-01-16 10:19:43, Kyungsik Lee wrote:
+> Parameter flags is no longer used, remove it.
+>=20
+> Signed-off-by: Kyungsik Lee <kyungsik.lee@lge.com>
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--z6Eq5LdranGa6ru8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlphE0wACgkQMOfwapXb+vKZEACgoFqqsEBDdlRC1VPJldDTJXKc
+tpoAoKCgxHeOl1xzZir8Fc8XRmflelbZ
+=wFe3
+-----END PGP SIGNATURE-----
+
+--z6Eq5LdranGa6ru8--
