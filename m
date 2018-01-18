@@ -1,40 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/7] PM /Domain/OPP: Add support to get performance state
- from DT
-Date: Thu, 18 Jan 2018 12:04:04 +0530
-Message-ID: <20180118063404.GD3012@vireshk-i7>
-References: <cover.1513926033.git.viresh.kumar@linaro.org>
+From: Akshu Agrawal <akshu.agrawal@amd.com>
+Subject: [PATCH] cpufreq: AMD: Ignore the check for ProcFeedback in ST/CZ
+Date: Thu, 18 Jan 2018 14:21:28 +0530
+Message-ID: <1516265488-31452-1-git-send-email-akshu.agrawal@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:38672 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752062AbeARGeI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jan 2018 01:34:08 -0500
-Received: by mail-pg0-f46.google.com with SMTP id y27so7263286pgc.5
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jan 2018 22:34:08 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <cover.1513926033.git.viresh.kumar@linaro.org>
+Received: from mail-by2nam01on0068.outbound.protection.outlook.com ([104.47.34.68]:49647
+        "EHLO NAM01-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1750724AbeARJCG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Jan 2018 04:02:06 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <vireshk@kernel.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, satyajit.sahu@amd.com
 
-On 22-12-17, 12:56, Viresh Kumar wrote:
-> Hi,
-> 
-> Now that the DT bindings [1] are already Reviewed/Acked by respective
-> maintainers, here is the code to start using them.
-> 
-> The first two patches provide helpers in the OPP core, [3-5]/7 update
-> the PM domain core to start supporting domain OPP tables, etc, 6/7
-> updates the OPP core to use the new callback provided by the PM domains
-> to get performance state and the last one removes the unused helpers
-> now.
-> 
-> This is tested on Hikey620 and works just fine.
+In ST/CZ CPUID 8000_0007_EDX[11, ProcFeedbackInterface] is 0,
+but the mechanism is still available and can be used.
 
-Ping !
+Change-Id: I5751d92c628da9ad4e15ec34079090c4315d4f2a
+Signed-off-by: Akshu Agrawal <akshu.agrawal@amd.com>
+---
+ drivers/cpufreq/amd_freq_sensitivity.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
+index 042023bbbf62..be926d9a66e5 100644
+--- a/drivers/cpufreq/amd_freq_sensitivity.c
++++ b/drivers/cpufreq/amd_freq_sensitivity.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
++#include <linux/pci.h>
+ #include <linux/percpu-defs.h>
+ #include <linux/init.h>
+ #include <linux/mod_devicetable.h>
+@@ -109,12 +110,18 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
+ static int __init amd_freq_sensitivity_init(void)
+ {
+ 	u64 val;
++	struct pci_dev *pcidev;
+ 
+ 	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
+ 		return -ENODEV;
+ 
+-	if (!static_cpu_has(X86_FEATURE_PROC_FEEDBACK))
+-		return -ENODEV;
++	pcidev = pci_get_device(PCI_VENDOR_ID_AMD,
++			PCI_DEVICE_ID_AMD_KERNCZ_SMBUS, NULL);
++
++	if (!pcidev) {
++		if (!static_cpu_has(X86_FEATURE_PROC_FEEDBACK))
++			return -ENODEV;
++	}
+ 
+ 	if (rdmsrl_safe(MSR_AMD64_FREQ_SENSITIVITY_ACTUAL, &val))
+ 		return -ENODEV;
 -- 
-viresh
+2.13.5
