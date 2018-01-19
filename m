@@ -1,127 +1,100 @@
-From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: Re: [PATCH v6 02/12] drivers: base: cacheinfo: setup DT cache
- properties early
-Date: Fri, 19 Jan 2018 17:27:21 -0600
-Message-ID: <6627a9ef-8d62-3cdf-dbea-390770991f30@arm.com>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-3-jeremy.linton@arm.com>
- <20180115123338.GB5473@e107155-lin>
- <65f78c99-8b86-0098-7ced-899840a4bf16@arm.com>
- <ca64334c-9345-705c-80d8-f2deb924a679@arm.com>
- <15884ccc-2cfb-da91-5844-369d8237175d@arm.com>
- <05a8b375-70c4-34d4-6cde-8dd4cd62c10b@arm.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [PATCH v3 1/2] PM / OPP: introduce an OPP power estimation helper
+Date: Fri, 19 Jan 2018 15:36:42 -0800
+Message-ID: <CAJWu+opFktdGqGMxjAr6Fudt90Ecqe2KEZ76wS8wFZ07P071Sg@mail.gmail.com>
+References: <20180119094549.5468-1-quentin.perret@arm.com> <20180119094549.5468-2-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <05a8b375-70c4-34d4-6cde-8dd4cd62c10b@arm.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yb0-f196.google.com ([209.85.213.196]:44074 "EHLO
+        mail-yb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756027AbeASXgo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jan 2018 18:36:44 -0500
+Received: by mail-yb0-f196.google.com with SMTP id z90so1217852ybh.11
+        for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2018 15:36:44 -0800 (PST)
+In-Reply-To: <20180119094549.5468-2-quentin.perret@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, Todd Kjos <tkjos@google.com>
 
-Hi,
+On Fri, Jan 19, 2018 at 1:45 AM, Quentin Perret <quentin.perret@arm.com> wrote:
+> The power dissipated by a CPU at a specific OPP is currently estimated by
+> the thermal subsystem as P = C * V^2 * f, with P the power, C the CPU's
+> capacitance, V the OPP's voltage and f the OPP's frequency. As this
+> feature can be useful for other clients requiring energy models of CPUs,
+> this commit introduces an equivalent power estimator directly into the OPP
+> library, hence enabling code re-use.
+>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  drivers/opp/core.c     | 32 ++++++++++++++++++++++++++++++++
+>  drivers/opp/of.c       | 11 +++++++----
+>  drivers/opp/opp.h      |  7 +++++++
+>  include/linux/pm_opp.h |  7 +++++++
+>  4 files changed, 53 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 92fa94a6dcc1..81bf18554b34 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -127,6 +127,24 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
+>
+> +/**
+> + * dev_pm_opp_get_power() - Gets the estimated power corresponding to an opp
+> + * @opp:       opp for which power has to be returned for
+> + *
+> + * Return: estimated power in micro-watts corresponding to the opp, else
+> + * return 0
+> + */
+> +unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
+> +{
+> +       if (IS_ERR_OR_NULL(opp)) {
+> +               pr_err("%s: Invalid parameters\n", __func__);
+> +               return 0;
+> +       }
+> +
+> +       return opp->power_estimate_uw;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_get_power);
+> +
+>  /**
+>   * dev_pm_opp_is_turbo() - Returns if opp is turbo OPP or not
+>   * @opp: opp for which turbo mode is being verified
+> @@ -985,6 +1003,18 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
+>         return true;
+>  }
+>
+> +/**
+> + * Estimate the power of an OPP as P = C * V^2 * f, with C the device's
+> + * capacitance, V the OPP's voltage and f the OPP's frequency.
+> + */
+> +static void _opp_estimate_power(struct dev_pm_opp *opp, unsigned long cap)
+> +{
+> +       unsigned long mV = opp->supplies[0].u_volt / 1000;
+> +       unsigned long KHz = opp->rate / 1000;
+> +
+> +       opp->power_estimate_uw = cap * mV * mV * KHz / 1000000000;
+> +}
+> +
+>  /*
+>   * Returns:
+>   * 0: On success. And appropriate error message for duplicate OPPs.
+> @@ -1039,6 +1069,8 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+>         if (opp_table->get_pstate)
+>                 new_opp->pstate = opp_table->get_pstate(dev, new_opp->rate);
+>
+> +       _opp_estimate_power(new_opp, opp_table->capacitance);
+> +
 
-On 01/18/2018 04:14 AM, Sudeep Holla wrote:
-> 
-> 
-> On 17/01/18 18:51, Jeremy Linton wrote:
->> Hi,
->>
->> On 01/17/2018 12:20 PM, Sudeep Holla wrote:
->>>
->>>
->>> On 16/01/18 21:07, Jeremy Linton wrote:
->>>> Hi,
->>>>
->>>> On 01/15/2018 06:33 AM, Sudeep Holla wrote:
->>>>> On Fri, Jan 12, 2018 at 06:59:10PM -0600, Jeremy Linton wrote:
->>>>>> The original intent in cacheinfo was that an architecture
->>>>>> specific populate_cache_leaves() would probe the hardware
->>>>>> and then cache_shared_cpu_map_setup() and
->>>>>> cache_override_properties() would provide firmware help to
->>>>>> extend/expand upon what was probed. Arm64 was really
->>>>>> the only architecture that was working this way, and
->>>>>> with the removal of most of the hardware probing logic it
->>>>>> became clear that it was possible to simplify the logic a bit.
->>>>>>
->>>>>> This patch combines the walk of the DT nodes with the
->>>>>> code updating the cache size/line_size and nr_sets.
->>>>>> cache_override_properties() (which was DT specific) is
->>>>>> then removed. The result is that cacheinfo.of_node is
->>>>>> no longer used as a temporary place to hold DT references
->>>>>> for future calls that update cache properties. That change
->>>>>> helps to clarify its one remaining use (matching
->>>>>> cacheinfo nodes that represent shared caches) which
->>>>>> will be used by the ACPI/PPTT code in the following patches.
->>>>>>
->>>>>> Cc: Palmer Dabbelt <palmer@sifive.com>
->>>>>> Cc: Albert Ou <albert@sifive.com>
->>>>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->>>>>> ---
->>>>>>     arch/riscv/kernel/cacheinfo.c |  1 +
->>>>>>     drivers/base/cacheinfo.c      | 65
->>>>>> +++++++++++++++++++------------------------
->>>>>>     include/linux/cacheinfo.h     |  1 +
->>>>>>     3 files changed, 31 insertions(+), 36 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/riscv/kernel/cacheinfo.c
->>>>>> b/arch/riscv/kernel/cacheinfo.c
->>>>>> index 10ed2749e246..6f4500233cf8 100644
->>>>>> --- a/arch/riscv/kernel/cacheinfo.c
->>>>>> +++ b/arch/riscv/kernel/cacheinfo.c
->>>>>> @@ -30,6 +30,7 @@ static void ci_leaf_init(struct cacheinfo
->>>>>> *this_leaf,
->>>>>>             CACHE_WRITE_BACK
->>>>>>             | CACHE_READ_ALLOCATE
->>>>>>             | CACHE_WRITE_ALLOCATE;
->>>>>> +    cache_of_set_props(this_leaf, node);
->>>>>
->>>>> This may be necessary but can it be done as later patch ? So far
->>>>> nothing
->>>>> is added that may break riscv IIUC.
->>>>
->>>> Well I think you have a bisection issue where the additional information
->>>> will disappear between this patch and wherever we put this code back in.
->>>>
->>>
->>> Hmm, I am sorry but I fail to see the issue. Before this change,
->>> populate_cache_leaves just populated the info as per ci_leaf_init in
->>> arch/riscv/kernel/cacheinfo.c and cache_override_properties used to fill
->>> the remaining.
->>>
->>> After this patch, the same is achieved in cache_shared_cpu_map_setup.
->>>
->>> In both case, it was by the end of detect_cache_attributes, so I see no
->>> issue.
->>>
->>
->>
->> Hi,
->>
->> I must be misunderstanding something.
->>
-> 
-> Looks like I was missing to understand something :)
-> 
->> AFAIK, The code in cache_setup_of_node() won't call cache_of_set_props()
->> because it returns when there is an existing of_node (fw_unique) created
->> by the riscv populate_cache_leaves(). That's why I'm making the direct
->> call here. If we fail to get that change in place before
->> cache_override_properties() is removed then the fields not set by the
->> riscv code (size/etc) will be missing.
-> 
-> Indeed. I am trying to avoid use of cache_of_set_props outside.
-> How about skipping setting up of fw_unique in ci_leaf_init instead ?
-> 
+Does this need to be a separate static function? There's only one user
+of the function in the C file and it adds more LOC.
 
-I've been thinking about this, but I'm hesitant because I don't have a 
-good test platform for this code. Plus, I'm not 100% sure that the 
-results are the same (is it possible that the platform setup node isn't 
-the same as the one the the common code would find?).
+Otherwise, feel free to add FWIW:
+Reviewed-by: Joel Fernandes <joelaf@google.com>
 
-I also think I'm getting a little off topic with these patches in 
-relation to what the core goal is (adding PPTT parsing).
+thanks,
 
-
+- Joel
