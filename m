@@ -1,73 +1,84 @@
 From: Lina Iyer <ilina@codeaurora.org>
-Subject: [PATCH 4/4] drivers: qcom: rpmh: add RPMH helper functions
-Date: Thu, 18 Jan 2018 17:01:57 -0700
-Message-ID: <20180119000157.7380-5-ilina@codeaurora.org>
+Subject: [PATCH 3/4] drivers: qcom: rpmh-rsc: log RPMH requests in FTRACE
+Date: Thu, 18 Jan 2018 17:01:56 -0700
+Message-ID: <20180119000157.7380-4-ilina@codeaurora.org>
 References: <20180119000157.7380-1-ilina@codeaurora.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <20180119000157.7380-1-ilina@codeaurora.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: andy.gross@linaro.org, david.brown@linaro.org
-Cc: sboyd@codeaurora.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>
+Cc: sboyd@codeaurora.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
 
-Sending RPMH requests and waiting for response from the controller
-through a callback is common functionality across all platform drivers.
-To simplify drivers, add a library functions to create RPMH client and
-send resource state requests.
+Log sent RPMH requests and interrupt responses in FTRACE.
 
-rpmh_write() is a synchronous blocking call that can be used to send
-active state requests.
-
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Lina Iyer <ilina@codeaurora.org>
 ---
- drivers/soc/qcom/Makefile        |   2 +-
- drivers/soc/qcom/rpmh-internal.h |   2 +
- drivers/soc/qcom/rpmh-rsc.c      |   1 +
- drivers/soc/qcom/rpmh.c          | 264 +++++++++++++++++++++++++++++++++++++++
- include/soc/qcom/rpmh.h          |  41 ++++++
- 5 files changed, 309 insertions(+), 1 deletion(-)
- create mode 100644 drivers/soc/qcom/rpmh.c
- create mode 100644 include/soc/qcom/rpmh.h
+ drivers/soc/qcom/rpmh-rsc.c | 13 ++++++-
+ include/trace/events/rpmh.h | 89 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 101 insertions(+), 1 deletion(-)
+ create mode 100644 include/trace/events/rpmh.h
 
-diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-index b7951ce87663..0dba46387f1c 100644
---- a/drivers/soc/qcom/Makefile
-+++ b/drivers/soc/qcom/Makefile
-@@ -11,4 +11,4 @@ obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
- obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
- obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
- obj-$(CONFIG_QCOM_COMMAND_DB) += cmd-db.o
--obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o
-+obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o rpmh.o
-diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-index 0b482f788aa1..059637dcb55a 100644
---- a/drivers/soc/qcom/rpmh-internal.h
-+++ b/drivers/soc/qcom/rpmh-internal.h
-@@ -21,4 +21,6 @@ struct rsc_drv;
- 
- int rpmh_rsc_send_data(struct rsc_drv *drv, struct tcs_mbox_msg *msg);
- 
-+void rpmh_tx_done(struct tcs_mbox_msg *msg, int r);
-+
- #endif /* __RPM_INTERNAL_H__ */
 diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-index 424dc939b2e6..e4f307c54567 100644
+index 3e68cef5513e..424dc939b2e6 100644
 --- a/drivers/soc/qcom/rpmh-rsc.c
 +++ b/drivers/soc/qcom/rpmh-rsc.c
-@@ -374,6 +374,7 @@ static void tcs_notify_tx_done(unsigned long data)
- 		msg = resp->msg;
+@@ -33,6 +33,9 @@
+ 
+ #include "rpmh-internal.h"
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/rpmh.h>
++
+ #define MAX_CMDS_PER_TCS		16
+ #define MAX_TCS_PER_TYPE		3
+ 
+@@ -325,6 +328,8 @@ static irqreturn_t tcs_irq_handler(int irq, void *p)
+ 			}
+ 		}
+ 
++		trace_rpmh_notify_irq(drv->name, m, resp->msg->payload[0].addr,
++						resp->err);
+ 		write_tcs_reg(base, RSC_DRV_CMD_ENABLE, m, 0, 0);
+ 		write_tcs_reg(base, RSC_DRV_IRQ_CLEAR, 0, 0, BIT(m));
+ 		atomic_set(&drv->tcs_in_use[m], 0);
+@@ -351,7 +356,8 @@ static void tcs_notify_tx_done(unsigned long data)
+ 	struct rsc_drv *drv = (struct rsc_drv *)data;
+ 	struct tcs_response *resp;
+ 	unsigned long flags;
+-	int err;
++	int err, m;
++	struct tcs_mbox_msg *msg;
+ 
+ 	do {
+ 		spin_lock_irqsave(&drv->drv_lock, flags);
+@@ -364,7 +370,10 @@ static void tcs_notify_tx_done(unsigned long data)
+ 		list_del(&resp->list);
+ 		spin_unlock_irqrestore(&drv->drv_lock, flags);
+ 		err = resp->err;
++		m = resp->m;
++		msg = resp->msg;
  		free_response(resp);
- 		trace_rpmh_notify(drv->name, m, msg->payload[0].addr, err);
-+		rpmh_tx_done(msg, err);
++		trace_rpmh_notify(drv->name, m, msg->payload[0].addr, err);
  	} while (1);
  }
  
-diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
+@@ -393,6 +402,8 @@ static void __tcs_buffer_write(struct rsc_drv *drv, int m, int n,
+ 		write_tcs_reg(base, RSC_DRV_CMD_MSGID, m, n + i, msgid);
+ 		write_tcs_reg(base, RSC_DRV_CMD_ADDR, m, n + i, cmd->addr);
+ 		write_tcs_reg(base, RSC_DRV_CMD_DATA, m, n + i, cmd->data);
++		trace_rpmh_send_msg(drv->name, m, n + i, msgid, cmd->addr,
++						cmd->data, cmd->complete);
+ 	}
+ 
+ 	write_tcs_reg(base, RSC_DRV_CMD_WAIT_FOR_CMPL, m, 0, cmd_complete);
+diff --git a/include/trace/events/rpmh.h b/include/trace/events/rpmh.h
 new file mode 100644
-index 000000000000..ad1def2c362c
+index 000000000000..2cc44fc5ff95
 --- /dev/null
-+++ b/drivers/soc/qcom/rpmh.c
-@@ -0,0 +1,264 @@
++++ b/include/trace/events/rpmh.h
+@@ -0,0 +1,89 @@
 +/* Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -78,307 +89,85 @@ index 000000000000..ad1def2c362c
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 + * GNU General Public License for more details.
-+ *
 + */
 +
-+#include <linux/atomic.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/mailbox_client.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/types.h>
-+#include <linux/wait.h>
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM rpmh
 +
-+#include <soc/qcom/rpmh.h>
++#if !defined(_TRACE_RPMH_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_RPMH_H
 +
-+#include "rpmh-internal.h"
++#include <linux/tracepoint.h>
 +
-+#define RPMH_MAX_MBOXES			2
-+#define RPMH_TIMEOUT			msecs_to_jiffies(10000)
++DECLARE_EVENT_CLASS(rpmh_ack_recvd,
 +
-+#define DEFINE_RPMH_MSG_ONSTACK(rc, s, q, c, name)	\
-+	struct rpmh_msg name = {			\
-+		.msg = {				\
-+			.state = s,			\
-+			.payload = name.cmd,		\
-+			.num_payload = 0,		\
-+			.is_complete = true,		\
-+			.invalidate = false,		\
-+		},					\
-+		.cmd = { { 0 } },			\
-+		.completion = q,			\
-+		.wait_count = c,			\
-+		.rc = rc,				\
-+	}
++	TP_PROTO(const char *s, int m, u32 addr, int errno),
 +
-+/**
-+ * rpmh_msg: the message to be sent to rpmh-rsc
-+ *
-+ * @msg: the request
-+ * @cmd: the payload that will be part of the @msg
-+ * @completion: triggered when request is done
-+ * @wait_count: count of waiters for this completion
-+ * @err: err return from the controller
-+ */
-+struct rpmh_msg {
-+	struct tcs_mbox_msg msg;
-+	struct tcs_cmd cmd[MAX_RPMH_PAYLOAD];
-+	struct completion *completion;
-+	atomic_t *wait_count;
-+	struct rpmh_client *rc;
-+	int err;
-+};
++	TP_ARGS(s, m, addr, errno),
 +
-+/**
-+ * rpmh_ctrlr: our representation of the controller
-+ *
-+ * @drv: the controller instance
-+ */
-+struct rpmh_ctrlr {
-+	struct rsc_drv *drv;
-+};
++	TP_STRUCT__entry(
++		__field(const char *, name)
++		__field(int, m)
++		__field(u32, addr)
++		__field(int, errno)
++	),
 +
-+/**
-+ * rpmh_client: the client object
-+ *
-+ * @dev: the platform device that is the owner
-+ * @ctrlr: the controller associated with this client.
-+ */
-+struct rpmh_client {
-+	struct device *dev;
-+	struct rpmh_ctrlr *ctrlr;
-+};
++	TP_fast_assign(
++		__entry->name = s;
++		__entry->m = m;
++		__entry->addr = addr;
++		__entry->errno = errno;
++	),
 +
-+static struct rpmh_ctrlr rpmh_rsc[RPMH_MAX_MBOXES];
-+static DEFINE_MUTEX(rpmh_ctrlr_mutex);
++	TP_printk("%s: ack: tcs-m:%d addr: 0x%08x errno: %d",
++		__entry->name, __entry->m, __entry->addr, __entry->errno)
++);
 +
-+void rpmh_tx_done(struct tcs_mbox_msg *msg, int r)
-+{
-+	struct rpmh_msg *rpm_msg = container_of(msg, struct rpmh_msg, msg);
-+	atomic_t *wc = rpm_msg->wait_count;
-+	struct completion *compl = rpm_msg->completion;
++DEFINE_EVENT(rpmh_ack_recvd, rpmh_notify_irq,
++	TP_PROTO(const char *s, int m, u32 addr, int err),
++	TP_ARGS(s, m, addr, err)
++);
 +
-+	rpm_msg->err = r;
++DEFINE_EVENT(rpmh_ack_recvd, rpmh_notify,
++	TP_PROTO(const char *s, int m, u32 addr, int err),
++	TP_ARGS(s, m, addr, err)
++);
 +
-+	if (r)
-+		dev_err(rpm_msg->rc->dev,
-+			"RPMH TX fail in msg addr 0x%x, err=%d\n",
-+			rpm_msg->msg.payload[0].addr, r);
++TRACE_EVENT(rpmh_send_msg,
 +
-+	/* Signal the blocking thread we are done */
-+	if (wc && atomic_dec_and_test(wc))
-+		if (compl)
-+			complete(compl);
-+}
-+EXPORT_SYMBOL(rpmh_tx_done);
++	TP_PROTO(const char *s, int m, int n, u32 h, u32 a, u32 v, bool c),
 +
-+/**
-+ * wait_for_tx_done: Wait until the response is received.
-+ *
-+ * @rc: The RPMH client
-+ * @compl: The completion object
-+ * @addr: An addr that we sent in that request
-+ * @data: The data for the address in that request
-+ *
-+ */
-+static inline int wait_for_tx_done(struct rpmh_client *rc,
-+		struct completion *compl, u32 addr, u32 data)
-+{
-+	int ret;
++	TP_ARGS(s, m, n, h, a, v, c),
 +
-+	ret = wait_for_completion_timeout(compl, RPMH_TIMEOUT);
-+	if (ret)
-+		dev_dbg(rc->dev,
-+			"RPMH response received addr=0x%x data=0x%x\n",
-+			addr, data);
-+	else
-+		dev_err(rc->dev,
-+			"RPMH response timeout addr=0x%x data=0x%x\n",
-+			addr, data);
++	TP_STRUCT__entry(
++		__field(const char*, name)
++		__field(int, m)
++		__field(int, n)
++		__field(u32, hdr)
++		__field(u32, addr)
++		__field(u32, data)
++		__field(bool, complete)
++	),
 +
-+	return  (ret > 0) ? 0 : -ETIMEDOUT;
-+}
++	TP_fast_assign(
++		__entry->name = s;
++		__entry->m = m;
++		__entry->n = n;
++		__entry->hdr = h;
++		__entry->addr = a;
++		__entry->data = v;
++		__entry->complete = c;
++	),
 +
-+/**
-+ * __rpmh_write: send the RPMH request
-+ *
-+ * @rc: The RPMH client
-+ * @state: Active/Sleep request type
-+ * @rpm_msg: The data that needs to be sent (payload).
-+ */
-+int __rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
-+			struct rpmh_msg *rpm_msg)
-+{
-+	int ret = -EFAULT;
++	TP_printk("%s: send-msg: tcs(m): %d cmd(n): %d msgid: 0x%08x addr: 0x%08x data: 0x%08x complete: %d",
++			__entry->name, __entry->m, __entry->n, __entry->hdr,
++			__entry->addr, __entry->data, __entry->complete)
++);
 +
-+	rpm_msg->msg.state = state;
++#endif /* _TRACE_RPMH_H */
 +
-+	if (state == RPMH_ACTIVE_ONLY_STATE) {
-+		WARN_ON(irqs_disabled());
-+		ret = rpmh_rsc_send_data(rc->ctrlr->drv, &rpm_msg->msg);
-+		if (!ret)
-+			dev_dbg(rc->dev,
-+				"RPMH request sent addr=0x%x, data=0x%x\n",
-+				rpm_msg->msg.payload[0].addr,
-+				rpm_msg->msg.payload[0].data);
-+		else
-+			dev_warn(rc->dev,
-+				"Error in RPMH request addr=0x%x, data=0x%x\n",
-+				rpm_msg->msg.payload[0].addr,
-+				rpm_msg->msg.payload[0].data);
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * rpmh_write: Write a set of RPMH commands and block until response
-+ *
-+ * @rc: The RPMh handle got from rpmh_get_dev_channel
-+ * @state: Active/sleep set
-+ * @cmd: The payload data
-+ * @n: The number of elements in payload
-+ *
-+ * May sleep. Do not call from atomic contexts.
-+ */
-+int rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
-+			struct tcs_cmd *cmd, int n)
-+{
-+	DECLARE_COMPLETION_ONSTACK(compl);
-+	atomic_t wait_count = ATOMIC_INIT(1);
-+	DEFINE_RPMH_MSG_ONSTACK(rc, state, &compl, &wait_count, rpm_msg);
-+	int ret;
-+
-+	if (IS_ERR_OR_NULL(rc) || !cmd || n <= 0 || n > MAX_RPMH_PAYLOAD)
-+		return -EINVAL;
-+
-+	might_sleep();
-+
-+	memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
-+	rpm_msg.msg.num_payload = n;
-+
-+	ret = __rpmh_write(rc, state, &rpm_msg);
-+	if (ret)
-+		return ret;
-+
-+	return wait_for_tx_done(rc, &compl, cmd[0].addr, cmd[0].data);
-+}
-+EXPORT_SYMBOL(rpmh_write);
-+
-+static struct rpmh_ctrlr *get_rpmh_ctrlr(struct platform_device *pdev)
-+{
-+	int i;
-+	struct rsc_drv *drv = dev_get_drvdata(pdev->dev.parent);
-+	struct rpmh_ctrlr *ctrlr = ERR_PTR(-EFAULT);
-+
-+	if (!drv)
-+		return ctrlr;
-+
-+	mutex_lock(&rpmh_ctrlr_mutex);
-+	for (i = 0; i < RPMH_MAX_MBOXES; i++)
-+		if (rpmh_rsc[i].drv == drv) {
-+			ctrlr = &rpmh_rsc[i];
-+			goto unlock;
-+		}
-+
-+	if (i == RPMH_MAX_MBOXES)
-+		for (i = 0; i < RPMH_MAX_MBOXES; i++)
-+			if (rpmh_rsc[i].drv == NULL) {
-+				ctrlr = &rpmh_rsc[i];
-+				ctrlr->drv = drv;
-+				break;
-+			}
-+unlock:
-+	mutex_unlock(&rpmh_ctrlr_mutex);
-+	return ctrlr;
-+}
-+
-+/**
-+ * rpmh_get_client: Get the RPMh handle
-+ *
-+ * @pdev: the platform device which needs to communicate with RPM
-+ * accelerators
-+ * May sleep.
-+ */
-+struct rpmh_client *rpmh_get_client(struct platform_device *pdev)
-+{
-+	struct rpmh_client *rc;
-+
-+	rc = kzalloc(sizeof(*rc), GFP_KERNEL);
-+	if (!rc)
-+		return ERR_PTR(-ENOMEM);
-+
-+	rc->dev = &pdev->dev;
-+	rc->ctrlr = get_rpmh_ctrlr(pdev);
-+	if (IS_ERR(rc->ctrlr)) {
-+		kfree(rc);
-+		return ERR_PTR(-EFAULT);
-+	}
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(rpmh_get_client);
-+
-+/**
-+ * rpmh_release: Release the RPMH client
-+ *
-+ * @rc: The RPMh handle to be freed.
-+ */
-+void rpmh_release(struct rpmh_client *rc)
-+{
-+	kfree(rc);
-+}
-+EXPORT_SYMBOL(rpmh_release);
-diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
-new file mode 100644
-index 000000000000..bd1e316f0bbf
---- /dev/null
-+++ b/include/soc/qcom/rpmh.h
-@@ -0,0 +1,41 @@
-+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+#ifndef __SOC_QCOM_RPMH_H__
-+#define __SOC_QCOM_RPMH_H__
-+
-+#include <soc/qcom/tcs.h>
-+#include <linux/platform_device.h>
-+
-+struct rpmh_client;
-+
-+#ifdef CONFIG_QCOM_RPMH
-+int rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
-+			struct tcs_cmd *cmd, int n);
-+
-+struct rpmh_client *rpmh_get_client(struct platform_device *pdev);
-+
-+void rpmh_release(struct rpmh_client *rc);
-+
-+#else
-+
-+static inline int rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
-+			struct tcs_cmd *cmd, int n)
-+{ return -ENODEV; }
-+
-+struct rpmh_client *rpmh_get_client(struct platform_device *pdev)
-+{ return ERR_PTR(-ENODEV); }
-+
-+static inline void rpmh_release(struct rpmh_client *rc) { }
-+#endif /* CONFIG_QCOM_RPMH */
-+
-+#endif /* __SOC_QCOM_RPMH_H__ */
++#define TRACE_INCLUDE_FILE rpmh
++#include <trace/define_trace.h>
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
