@@ -1,132 +1,127 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH v3 2/2] thermal: cpu_cooling: use power models from the
- OPP library
-Date: Fri, 19 Jan 2018 15:15:41 -0800
-Message-ID: <CAJWu+orOoq3uKeaBnTjS+PytwXS3MwK+gasOCLNqj+QxXXZ7Ug@mail.gmail.com>
-References: <20180119094549.5468-1-quentin.perret@arm.com> <20180119094549.5468-3-quentin.perret@arm.com>
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: Re: [PATCH v6 02/12] drivers: base: cacheinfo: setup DT cache
+ properties early
+Date: Fri, 19 Jan 2018 17:27:21 -0600
+Message-ID: <6627a9ef-8d62-3cdf-dbea-390770991f30@arm.com>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-3-jeremy.linton@arm.com>
+ <20180115123338.GB5473@e107155-lin>
+ <65f78c99-8b86-0098-7ced-899840a4bf16@arm.com>
+ <ca64334c-9345-705c-80d8-f2deb924a679@arm.com>
+ <15884ccc-2cfb-da91-5844-369d8237175d@arm.com>
+ <05a8b375-70c4-34d4-6cde-8dd4cd62c10b@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yb0-f195.google.com ([209.85.213.195]:37673 "EHLO
-        mail-yb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752184AbeASXPn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jan 2018 18:15:43 -0500
-Received: by mail-yb0-f195.google.com with SMTP id p83so1206355yba.4
-        for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2018 15:15:43 -0800 (PST)
-In-Reply-To: <20180119094549.5468-3-quentin.perret@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <05a8b375-70c4-34d4-6cde-8dd4cd62c10b@arm.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, Todd Kjos <tkjos@google.com>
 
 Hi,
 
-On Fri, Jan 19, 2018 at 1:45 AM, Quentin Perret <quentin.perret@arm.com> wrote:
-> Now that the OPP library features a power estimator, the existing code
-> in IPA can be modified to rely only on dev_pm_opp_get_power() without
-> having to care about the dynamic-power-coefficient DT binding.
->
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> ---
-[..]
->   */
->  static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev,
-> -                            u32 capacitance)
-> +                            bool *found_power)
->  {
->         struct freq_table *freq_table = cpufreq_cdev->freq_table;
->         struct dev_pm_opp *opp;
-> @@ -225,11 +226,10 @@ static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev,
->                 return -EINVAL;
->         }
->
-> +       *found_power = true;
-> +
->         for (i = 0; i <= cpufreq_cdev->max_level; i++) {
-> -               unsigned long freq = freq_table[i].frequency * 1000;
-> -               u32 freq_mhz = freq_table[i].frequency / 1000;
-> -               u64 power;
-> -               u32 voltage_mv;
-> +               unsigned long power, freq = freq_table[i].frequency * 1000;
->
->                 /*
->                  * Find ceil frequency as 'freq' may be slightly lower than OPP
-> @@ -242,18 +242,12 @@ static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev,
->                         return -EINVAL;
->                 }
->
-> -               voltage_mv = dev_pm_opp_get_voltage(opp) / 1000;
-> -               dev_pm_opp_put(opp);
-> -
-> -               /*
-> -                * Do the multiplication with MHz and millivolt so as
-> -                * to not overflow.
-> -                */
-> -               power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-> -               do_div(power, 1000000000);
-> -
->                 /* power is stored in mW */
-> +               power = dev_pm_opp_get_power(opp) / 1000;
-> +               dev_pm_opp_put(opp);
->                 freq_table[i].power = power;
-> +               if (!power)
-> +                       *found_power = false;
->         }
->
->         return 0;
-> @@ -594,7 +588,6 @@ static unsigned int find_next_max(struct cpufreq_frequency_table *table,
->   * @np: a valid struct device_node to the cooling device device tree node
->   * @policy: cpufreq policy
->   * Normally this should be same as cpufreq policy->related_cpus.
-> - * @capacitance: dynamic power coefficient for these cpus
->   *
->   * This interface function registers the cpufreq cooling device with the name
->   * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
-> @@ -606,7 +599,7 @@ static unsigned int find_next_max(struct cpufreq_frequency_table *table,
->   */
->  static struct thermal_cooling_device *
->  __cpufreq_cooling_register(struct device_node *np,
-> -                       struct cpufreq_policy *policy, u32 capacitance)
-> +                       struct cpufreq_policy *policy)
->  {
->         struct thermal_cooling_device *cdev;
->         struct cpufreq_cooling_device *cpufreq_cdev;
-> @@ -614,7 +607,7 @@ __cpufreq_cooling_register(struct device_node *np,
->         unsigned int freq, i, num_cpus;
->         int ret;
->         struct thermal_cooling_device_ops *cooling_ops;
-> -       bool first;
-> +       bool first, found_power;
->
->         if (IS_ERR_OR_NULL(policy)) {
->                 pr_err("%s: cpufreq policy isn't valid: %p\n", __func__, policy);
-> @@ -675,18 +668,15 @@ __cpufreq_cooling_register(struct device_node *np,
->                         pr_debug("%s: freq:%u KHz\n", __func__, freq);
->         }
->
-> -       if (capacitance) {
-> -               ret = update_freq_table(cpufreq_cdev, capacitance);
-> -               if (ret) {
-> -                       cdev = ERR_PTR(ret);
-> -                       goto remove_ida;
-> -               }
-> -
-> -               cooling_ops = &cpufreq_power_cooling_ops;
-> -       } else {
-> -               cooling_ops = &cpufreq_cooling_ops;
+On 01/18/2018 04:14 AM, Sudeep Holla wrote:
+> 
+> 
+> On 17/01/18 18:51, Jeremy Linton wrote:
+>> Hi,
+>>
+>> On 01/17/2018 12:20 PM, Sudeep Holla wrote:
+>>>
+>>>
+>>> On 16/01/18 21:07, Jeremy Linton wrote:
+>>>> Hi,
+>>>>
+>>>> On 01/15/2018 06:33 AM, Sudeep Holla wrote:
+>>>>> On Fri, Jan 12, 2018 at 06:59:10PM -0600, Jeremy Linton wrote:
+>>>>>> The original intent in cacheinfo was that an architecture
+>>>>>> specific populate_cache_leaves() would probe the hardware
+>>>>>> and then cache_shared_cpu_map_setup() and
+>>>>>> cache_override_properties() would provide firmware help to
+>>>>>> extend/expand upon what was probed. Arm64 was really
+>>>>>> the only architecture that was working this way, and
+>>>>>> with the removal of most of the hardware probing logic it
+>>>>>> became clear that it was possible to simplify the logic a bit.
+>>>>>>
+>>>>>> This patch combines the walk of the DT nodes with the
+>>>>>> code updating the cache size/line_size and nr_sets.
+>>>>>> cache_override_properties() (which was DT specific) is
+>>>>>> then removed. The result is that cacheinfo.of_node is
+>>>>>> no longer used as a temporary place to hold DT references
+>>>>>> for future calls that update cache properties. That change
+>>>>>> helps to clarify its one remaining use (matching
+>>>>>> cacheinfo nodes that represent shared caches) which
+>>>>>> will be used by the ACPI/PPTT code in the following patches.
+>>>>>>
+>>>>>> Cc: Palmer Dabbelt <palmer@sifive.com>
+>>>>>> Cc: Albert Ou <albert@sifive.com>
+>>>>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+>>>>>> ---
+>>>>>>     arch/riscv/kernel/cacheinfo.c |  1 +
+>>>>>>     drivers/base/cacheinfo.c      | 65
+>>>>>> +++++++++++++++++++------------------------
+>>>>>>     include/linux/cacheinfo.h     |  1 +
+>>>>>>     3 files changed, 31 insertions(+), 36 deletions(-)
+>>>>>>
+>>>>>> diff --git a/arch/riscv/kernel/cacheinfo.c
+>>>>>> b/arch/riscv/kernel/cacheinfo.c
+>>>>>> index 10ed2749e246..6f4500233cf8 100644
+>>>>>> --- a/arch/riscv/kernel/cacheinfo.c
+>>>>>> +++ b/arch/riscv/kernel/cacheinfo.c
+>>>>>> @@ -30,6 +30,7 @@ static void ci_leaf_init(struct cacheinfo
+>>>>>> *this_leaf,
+>>>>>>             CACHE_WRITE_BACK
+>>>>>>             | CACHE_READ_ALLOCATE
+>>>>>>             | CACHE_WRITE_ALLOCATE;
+>>>>>> +    cache_of_set_props(this_leaf, node);
+>>>>>
+>>>>> This may be necessary but can it be done as later patch ? So far
+>>>>> nothing
+>>>>> is added that may break riscv IIUC.
+>>>>
+>>>> Well I think you have a bisection issue where the additional information
+>>>> will disappear between this patch and wherever we put this code back in.
+>>>>
+>>>
+>>> Hmm, I am sorry but I fail to see the issue. Before this change,
+>>> populate_cache_leaves just populated the info as per ci_leaf_init in
+>>> arch/riscv/kernel/cacheinfo.c and cache_override_properties used to fill
+>>> the remaining.
+>>>
+>>> After this patch, the same is achieved in cache_shared_cpu_map_setup.
+>>>
+>>> In both case, it was by the end of detect_cache_attributes, so I see no
+>>> issue.
+>>>
+>>
+>>
+>> Hi,
+>>
+>> I must be misunderstanding something.
+>>
+> 
+> Looks like I was missing to understand something :)
+> 
+>> AFAIK, The code in cache_setup_of_node() won't call cache_of_set_props()
+>> because it returns when there is an existing of_node (fw_unique) created
+>> by the riscv populate_cache_leaves(). That's why I'm making the direct
+>> call here. If we fail to get that change in place before
+>> cache_override_properties() is removed then the fields not set by the
+>> riscv code (size/etc) will be missing.
+> 
+> Indeed. I am trying to avoid use of cache_of_set_props outside.
+> How about skipping setting up of fw_unique in ci_leaf_init instead ?
+> 
 
-Instead of this, is it better to add an API to OPP library to query it
-if it has power data for all OPPs? Then you don't need to have a
-'found_power' variable and also don't unnecessarily call
-dev_pm_opp_find_freq_ceil in update_freq_table.
+I've been thinking about this, but I'm hesitant because I don't have a 
+good test platform for this code. Plus, I'm not 100% sure that the 
+results are the same (is it possible that the platform setup node isn't 
+the same as the one the the common code would find?).
 
-> +       ret = update_freq_table(cpufreq_cdev, &found_power);
-> +       if (ret) {
-> +               cdev = ERR_PTR(ret);
-> +               goto remove_ida;
->         }
-[..]
+I also think I'm getting a little off topic with these patches in 
+relation to what the core goal is (adding PPTT parsing).
 
-Thanks,
 
-- Joel
