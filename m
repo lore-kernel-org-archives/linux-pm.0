@@ -1,131 +1,60 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v6 0/6] iommu/arm-smmu: Add runtime pm/sleep support
-Date: Fri, 19 Jan 2018 17:13:37 +0530
-Message-ID: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
+Subject: [PATCH v6 1/6] base: power: runtime: Export
+	pm_runtime_get/put_suppliers
+Date: Fri, 19 Jan 2018 17:13:38 +0530
+Message-ID: <1516362223-22946-2-git-send-email-vivek.gautam@codeaurora.org>
+References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <1516362223-22946-1-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 To: alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This series provides the support for turning on the arm-smmu's
-clocks/power domains using runtime pm. This is done using the
-recently introduced device links patches, which lets the smmu's
-runtime to follow the master's runtime pm, so the smmu remains
-powered only when the masters use it.
-
-It also adds support for Qcom's arm-smmu-v2 variant that
-has different clocks and power requirements.
-
-Took some reference from the exynos runtime patches [1].
-
-After much discussion [3] over the use of pm_runtime_get/put() in
-.unmap op path for the arm-smmu, and after disussing over more than
-a couple of approaches to address this, we are putting forward the
-changes *without* using pm_runtime APIs in 'unmap'. Rather, letting
-the client device take the control of powering on/off the connected
-iommu through pm_runtime_get(put)_suppliers() APIs for the scnerios
-when the iommu power can't be directly controlled by clients through
-device links.
-Rafael has agreed to export the suppliers APIs [4].
-
-Hi Robin, Will,
-please consider reviewing this series.
-
-[V6]
-   * Added Ack given by Rafael to first patch in the series.
-   * Addressed Rob Herring's comment for adding soc specific compatible
-     string as well besides 'qcom,smmu-v2'.
-
-[V5]
-   * Dropped runtime pm calls from "arm_smmu_unmap" op as discussed over
-     the list [3] for the last patch series.
-   * Added a patch to export pm_runtime_get/put_suppliers() APIs to the
-     series as agreed with Rafael [4].
-   * Added the related patch for msm drm iommu layer to use
-     pm_runtime_get/put_suppliers() APIs in msm_mmu_funcs.
-   * Dropped arm-mmu500 clock patch since that would break existing
-     platforms.
-   * Changed compatible 'qcom,msm8996-smmu-v2' to 'qcom,smmu-v2' to reflect
-     the IP version rather than the platform on which it is used.
-     The same IP is used across multiple platforms including msm8996,
-     and sdm845 etc.
-   * Using clock bulk APIs to handle the clocks available to the IP as
-     suggested by Stephen Boyd.
-   * The first patch in v4 version of the patch-series:
-     ("iommu/arm-smmu: Fix the error path in arm_smmu_add_device") has
-     already made it to mainline.
-
-[V4]
-   * Reworked the clock handling part. We now take clock names as data
-     in the driver for supported compatible versions, and loop over them
-     to get, enable, and disable the clocks.
-   * Using qcom,msm8996 based compatibles for bindings instead of a generic
-     qcom compatible.
-   * Refactor MMU500 patch to just add the necessary clock names data and
-     corresponding bindings.
-   * Added the pm_runtime_get/put() calls in .unmap iommu op (fix added by
-     Stanimir on top of previous patch version.
-   * Added a patch to fix error path in arm_smmu_add_device()
-   * Removed patch 3/5 of V3 patch series that added qcom,smmu-v2 bindings.
-
-[V3]
-   * Reworked the patches to keep the clocks init/enabling function
-     separately for each compatible.
-
-   * Added clocks bindings for MMU40x/500.
-
-   * Added a new compatible for qcom,smmu-v2 implementation and
-     the clock bindings for the same.
-
-   * Rebased on top of 4.11-rc1
-
-[V2]
-   * Split the patches little differently.
-
-   * Addressed comments.
-
-   * Removed the patch #4 [2] from previous post
-     for arm-smmu context save restore. Planning to
-     post this separately after reworking/addressing Robin's
-     feedback.
-
-   * Reversed the sequence to disable clocks than enabling.
-     This was required for those cases where the
-     clocks are populated in a dependent order from DT.
-
-[1] https://lkml.org/lkml/2016/10/20/70
-[2] https://patchwork.kernel.org/patch/9389717/
-[3] https://patchwork.kernel.org/patch/9827825/
-[4] https://patchwork.kernel.org/patch/10102445/
-
-Sricharan R (3):
-  iommu/arm-smmu: Add pm_runtime/sleep ops
-  iommu/arm-smmu: Invoke pm_runtime during probe, add/remove device
-  iommu/arm-smmu: Add the device_link between masters and smmu
-
-Vivek Gautam (3):
-  base: power: runtime: Export pm_runtime_get/put_suppliers
-  iommu/arm-smmu: Add support for qcom,smmu-v2 variant
-  drm/msm: iommu: Replace runtime calls with runtime suppliers
-
- .../devicetree/bindings/iommu/arm,smmu.txt         |  43 +++++++
- drivers/base/power/runtime.c                       |   2 +
- drivers/gpu/drm/msm/msm_iommu.c                    |  16 +--
- drivers/iommu/arm-smmu.c                           | 124 ++++++++++++++++++++-
- 4 files changed, 171 insertions(+), 14 deletions(-)
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+VGhlIGRldmljZSBsaW5rIGFsbG93cyB0aGUgcG0gZnJhbWV3b3JrIHRvIHRpZSB0aGUgc3VwcGxp
+ZXIgYW5kCmNvbnN1bWVyLiBTbywgd2hlbmV2ZXIgdGhlIGNvbnN1bWVyIGlzIHBvd2VyZWQtb24g
+dGhlIHN1cHBsaWVyCmlzIHBvd2VyZWQtb24gZmlyc3QuCgpUaGVyZSBhcmUgaG93ZXZlciBjYXNl
+cyBpbiB3aGljaCB0aGUgY29uc3VtZXIgd2FudHMgdG8gcG93ZXItb24KdGhlIHN1cHBsaWVyLCBi
+dXQgbm90IGl0c2VsZi4KRS5nLiwgQSBHcmFwaGljcyBvciBtdWx0aW1lZGlhIGRyaXZlciB3YW50
+cyB0byBwb3dlci1vbiB0aGUgU01NVQp0byB1bm1hcCBhIGJ1ZmZlciBhbmQgZmluaXNoIHRoZSBU
+TEIgb3BlcmF0aW9ucyB3aXRob3V0IHBvd2VyaW5nCm9uIGl0c2VsZi4gU29tZSBvZiB0aGVzZSB1
+bm1hcCByZXF1ZXN0cyBhcmUgY29taW5nIGZyb20gdGhlCnVzZXIgc3BhY2Ugd2hlbiB0aGUgY29u
+dHJvbGxlciBpdHNlbGYgaXMgbm90IHBvd2VyZWQtdXAsIGFuZCBpdApjYW4gYmUgaHVnZSBwZW5h
+bHR5IGluIHRlcm1zIG9mIHBvd2VyIGFuZCBsYXRlbmN5IHRvIHBvd2VyLXVwCnRoZSBncmFwaGlj
+cy9tbSBjb250cm9sbGVycy4KVGhlcmUgY2FuIGJlIGFuIGFyZ3VtZW50IHRoYXQgdGhlIHN1cHBs
+aWVyIHNob3VsZCBoYW5kbGUgdGhpcyBjYXNlCm9uIGl0cyBvd24gYW5kIHRoZXJlIHNob3VsZCBu
+b3QgYmUgYSBuZWVkIGZvciB0aGUgY29uc3VtZXIgdG8KcG93ZXItb24gdGhlIHN1cHBsaWVyLiBC
+dXQgYXMgZGlzY3Vzc2VkIG9uIHRoZSB0aHJlYWQgWzFdIGFib3V0CkFSTS1TTU1VIHJ1bnRpbWUg
+cG0sIHdlIGRvbid0IHdhbnQgdG8gaW50cm9kdWNlIHJ1bnRpbWUgcG0gY2FsbHMKaW4gYXRvbWlj
+IHBhdGggaW4gYXJtX3NtbXVfdW5tYXAuCgpbMV0gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9y
+Zy9wYXRjaC85ODI3ODI1LwoKU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0
+YW1AY29kZWF1cm9yYS5vcmc+CkFja2VkLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmou
+d3lzb2NraUBpbnRlbC5jb20+Ci0tLQogZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYyB8IDIg
+KysKIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9kcml2ZXJz
+L2Jhc2UvcG93ZXIvcnVudGltZS5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwppbmRl
+eCA2ZTg5YjUxZWEzZDkuLjA2YTJhODhmZTg2NiAxMDA2NDQKLS0tIGEvZHJpdmVycy9iYXNlL3Bv
+d2VyL3J1bnRpbWUuYworKysgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCkBAIC0xNTc5
+LDYgKzE1NzksNyBAQCB2b2lkIHBtX3J1bnRpbWVfZ2V0X3N1cHBsaWVycyhzdHJ1Y3QgZGV2aWNl
+ICpkZXYpCiAKIAlkZXZpY2VfbGlua3NfcmVhZF91bmxvY2soaWR4KTsKIH0KK0VYUE9SVF9TWU1C
+T0xfR1BMKHBtX3J1bnRpbWVfZ2V0X3N1cHBsaWVycyk7CiAKIC8qKgogICogcG1fcnVudGltZV9w
+dXRfc3VwcGxpZXJzIC0gRHJvcCByZWZlcmVuY2VzIHRvIHN1cHBsaWVyIGRldmljZXMuCkBAIC0x
+NTk3LDYgKzE1OTgsNyBAQCB2b2lkIHBtX3J1bnRpbWVfcHV0X3N1cHBsaWVycyhzdHJ1Y3QgZGV2
+aWNlICpkZXYpCiAKIAlkZXZpY2VfbGlua3NfcmVhZF91bmxvY2soaWR4KTsKIH0KK0VYUE9SVF9T
+WU1CT0xfR1BMKHBtX3J1bnRpbWVfcHV0X3N1cHBsaWVycyk7CiAKIHZvaWQgcG1fcnVudGltZV9u
+ZXdfbGluayhzdHJ1Y3QgZGV2aWNlICpkZXYpCiB7Ci0tIApRVUFMQ09NTSBJTkRJQSwgb24gYmVo
+YWxmIG9mIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyCm9mIENv
+ZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQgYnkgVGhlIExpbnV4IEZvdW5kYXRpb24KCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5n
+IGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVk
+ZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
