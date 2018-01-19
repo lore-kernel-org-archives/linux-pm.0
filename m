@@ -1,53 +1,159 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v6 4/6] iommu/arm-smmu: Add the device_link
-	between masters and smmu
-Date: Fri, 19 Jan 2018 17:13:41 +0530
-Message-ID: <1516362223-22946-5-git-send-email-vivek.gautam@codeaurora.org>
+Subject: [PATCH v6 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
+	add/remove device
+Date: Fri, 19 Jan 2018 17:13:40 +0530
+Message-ID: <1516362223-22946-4-git-send-email-vivek.gautam@codeaurora.org>
 References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
 In-Reply-To: <1516362223-22946-1-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
 To: alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KCkZpbmFsbHkgYWRk
-IHRoZSBkZXZpY2UgbGluayBiZXR3ZWVuIHRoZSBtYXN0ZXIgZGV2aWNlIGFuZApzbW11LCBzbyB0
-aGF0IHRoZSBzbW11IGdldHMgcnVudGltZSBlbmFibGVkL2Rpc2FibGVkIG9ubHkgd2hlbiB0aGUK
-bWFzdGVyIG5lZWRzIGl0LiBUaGlzIGlzIGRvbmUgZnJvbSBhZGRfZGV2aWNlIGNhbGxiYWNrIHdo
-aWNoIGdldHMKY2FsbGVkIG9uY2Ugd2hlbiB0aGUgbWFzdGVyIGlzIGFkZGVkIHRvIHRoZSBzbW11
-LgoKU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4K
-LS0tCiBkcml2ZXJzL2lvbW11L2FybS1zbW11LmMgfCAxMSArKysrKysrKysrKwogMSBmaWxlIGNo
-YW5nZWQsIDExIGluc2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1z
-bW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKaW5kZXggOTU0NzhiZmIxODJjLi4zM2Ji
-Y2ZlZGI4OTYgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYworKysgYi9kcml2
-ZXJzL2lvbW11L2FybS1zbW11LmMKQEAgLTEzNjcsNiArMTM2Nyw3IEBAIHN0YXRpYyBpbnQgYXJt
-X3NtbXVfYWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlICpkZXYpCiAJc3RydWN0IGFybV9zbW11X2Rl
-dmljZSAqc21tdTsKIAlzdHJ1Y3QgYXJtX3NtbXVfbWFzdGVyX2NmZyAqY2ZnOwogCXN0cnVjdCBp
-b21tdV9md3NwZWMgKmZ3c3BlYyA9IGRldi0+aW9tbXVfZndzcGVjOworCXN0cnVjdCBkZXZpY2Vf
-bGluayAqbGluazsKIAlpbnQgaSwgcmV0OwogCiAJaWYgKHVzaW5nX2xlZ2FjeV9iaW5kaW5nKSB7
-CkBAIC0xNDI4LDYgKzE0MjksMTYgQEAgc3RhdGljIGludCBhcm1fc21tdV9hZGRfZGV2aWNlKHN0
-cnVjdCBkZXZpY2UgKmRldikKIAogCXBtX3J1bnRpbWVfcHV0X3N5bmMoc21tdS0+ZGV2KTsKIAor
-CS8qCisJICogRXN0YWJsaXNoIHRoZSBsaW5rIGJldHdlZW4gc21tdSBhbmQgbWFzdGVyLCBzbyB0
-aGF0IHRoZQorCSAqIHNtbXUgZ2V0cyBydW50aW1lIGVuYWJsZWQvZGlzYWJsZWQgYXMgcGVyIHRo
-ZSBtYXN0ZXIncworCSAqIG5lZWRzLgorCSAqLworCWxpbmsgPSBkZXZpY2VfbGlua19hZGQoZGV2
-LCBzbW11LT5kZXYsIERMX0ZMQUdfUE1fUlVOVElNRSk7CisJaWYgKCFsaW5rKQorCQlkZXZfd2Fy
-bihzbW11LT5kZXYsICJVbmFibGUgdG8gY3JlYXRlIGRldmljZSBsaW5rIGJldHdlZW4gJXMgYW5k
-ICVzXG4iLAorCQkJIGRldl9uYW1lKHNtbXUtPmRldiksIGRldl9uYW1lKGRldikpOworCiAJcmV0
-dXJuIDA7CiAKIG91dF9jZmdfZnJlZToKLS0gClFVQUxDT01NIElORElBLCBvbiBiZWhhbGYgb2Yg
-UXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIKb2YgQ29kZSBBdXJv
-cmEgRm9ydW0sIGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbgoKX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApG
-cmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Au
-b3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+
+The smmu device probe/remove and add/remove master device callbacks
+gets called when the smmu is not linked to its master, that is without
+the context of the master device. So calling runtime apis in those places
+separately.
+
+Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+[vivek: Cleanup pm runtime calls]
+Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+---
+ drivers/iommu/arm-smmu.c | 45 +++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 41 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+index 21acffe91a1c..95478bfb182c 100644
+--- a/drivers/iommu/arm-smmu.c
++++ b/drivers/iommu/arm-smmu.c
+@@ -914,11 +914,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+ 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
+ 	struct arm_smmu_device *smmu = smmu_domain->smmu;
+ 	struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
+-	int irq;
++	int ret, irq;
+ 
+ 	if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
+ 		return;
+ 
++	ret = pm_runtime_get_sync(smmu->dev);
++	if (ret)
++		return;
++
+ 	/*
+ 	 * Disable the context bank and free the page tables before freeing
+ 	 * it.
+@@ -933,6 +937,8 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+ 
+ 	free_io_pgtable_ops(smmu_domain->pgtbl_ops);
+ 	__arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
++
++	pm_runtime_put_sync(smmu->dev);
+ }
+ 
+ static struct iommu_domain *arm_smmu_domain_alloc(unsigned type)
+@@ -1408,12 +1414,20 @@ static int arm_smmu_add_device(struct device *dev)
+ 	while (i--)
+ 		cfg->smendx[i] = INVALID_SMENDX;
+ 
+-	ret = arm_smmu_master_alloc_smes(dev);
++	ret = pm_runtime_get_sync(smmu->dev);
+ 	if (ret)
+ 		goto out_cfg_free;
+ 
++	ret = arm_smmu_master_alloc_smes(dev);
++	if (ret) {
++		pm_runtime_put_sync(smmu->dev);
++		goto out_cfg_free;
++	}
++
+ 	iommu_device_link(&smmu->iommu, dev);
+ 
++	pm_runtime_put_sync(smmu->dev);
++
+ 	return 0;
+ 
+ out_cfg_free:
+@@ -1428,7 +1442,7 @@ static void arm_smmu_remove_device(struct device *dev)
+ 	struct iommu_fwspec *fwspec = dev->iommu_fwspec;
+ 	struct arm_smmu_master_cfg *cfg;
+ 	struct arm_smmu_device *smmu;
+-
++	int ret;
+ 
+ 	if (!fwspec || fwspec->ops != &arm_smmu_ops)
+ 		return;
+@@ -1436,8 +1450,21 @@ static void arm_smmu_remove_device(struct device *dev)
+ 	cfg  = fwspec->iommu_priv;
+ 	smmu = cfg->smmu;
+ 
++	/*
++	 * The device link between the master device and
++	 * smmu is already purged at this point.
++	 * So enable the power to smmu explicitly.
++	 */
++
++	ret = pm_runtime_get_sync(smmu->dev);
++	if (ret)
++		return;
++
+ 	iommu_device_unlink(&smmu->iommu, dev);
+ 	arm_smmu_master_free_smes(fwspec);
++
++	pm_runtime_put_sync(smmu->dev);
++
+ 	iommu_group_remove_device(dev);
+ 	kfree(fwspec->iommu_priv);
+ 	iommu_fwspec_free(dev);
+@@ -2130,6 +2157,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 	if (err)
+ 		return err;
+ 
++	platform_set_drvdata(pdev, smmu);
++
++	pm_runtime_enable(dev);
++
++	err = pm_runtime_get_sync(dev);
++	if (err)
++		return err;
++
+ 	err = arm_smmu_device_cfg_probe(smmu);
+ 	if (err)
+ 		return err;
+@@ -2171,9 +2206,9 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
+ 
+-	platform_set_drvdata(pdev, smmu);
+ 	arm_smmu_device_reset(smmu);
+ 	arm_smmu_test_smr_masks(smmu);
++	pm_runtime_put_sync(dev);
+ 
+ 	/*
+ 	 * For ACPI and generic DT bindings, an SMMU will be probed before
+@@ -2212,6 +2247,8 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
+ 
+ 	/* Turn the thing off */
+ 	writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
++	pm_runtime_force_suspend(smmu->dev);
++
+ 	return 0;
+ }
+ 
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
