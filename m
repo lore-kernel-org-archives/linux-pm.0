@@ -1,141 +1,88 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH 3/4] drivers: qcom: rpmh-rsc: log RPMH requests in FTRACE
-Date: Fri, 19 Jan 2018 07:35:01 +0000
-Message-ID: <20180119073501.GA26362@codeaurora.org>
-References: <20180119000157.7380-1-ilina@codeaurora.org>
- <20180119000157.7380-4-ilina@codeaurora.org>
- <20180118202607.3f40c238@gandalf.local.home>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH 4/8] irqchip/gic-v3: add ability to save/restore GIC/ITS
+ state
+Date: Fri, 19 Jan 2018 09:22:06 +0000
+Message-ID: <d84d49ef-cd8a-ec75-498e-22826809ab67@arm.com>
+References: <20180112212422.148625-1-dbasehore@chromium.org>
+ <20180112212422.148625-5-dbasehore@chromium.org>
+ <86fu79fx3n.wl-marc.zyngier@arm.com> <20180118233243.GA209323@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180118202607.3f40c238@gandalf.local.home>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, sboyd@codeaurora.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:36182 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750841AbeASJWK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Jan 2018 04:22:10 -0500
+In-Reply-To: <20180118233243.GA209323@google.com>
+Content-Language: en-GB
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: Derek Basehore <dbasehore@chromium.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, Sudeep Holla <sudeep.holla@arm.com>
 
-Hi Steven,
-
-On Thu, Jan 18 2018 at 01:26 +0000, Steven Rostedt wrote:
->
->I wasn't Cc'd on the rest of the patches and this wasn't Cc'd to LKML,
->and I'm not on any of the mailing lists that were Cc'd, I gotta just
->look at what I have here in this patch.
->
-I am so sorry. Will add LKML in the future.
-
-
->On Thu, 18 Jan 2018 17:01:56 -0700
->Lina Iyer <ilina@codeaurora.org> wrote:
->
-
->> @@ -325,6 +328,8 @@ static irqreturn_t tcs_irq_handler(int irq, void *p)
->>  			}
->>  		}
+On 18/01/18 23:33, Brian Norris wrote:
+> Hi,
+> 
+> On Sat, Jan 13, 2018 at 06:10:52PM +0000, Marc Zyngier wrote:
+>> On Fri, 12 Jan 2018 21:24:18 +0000,
+>> Derek Basehore wrote:
+>>>
+>>> Some platforms power off GIC logic in S3, so we need to save/restore
 >>
->> +		trace_rpmh_notify_irq(drv->name, m, resp->msg->payload[0].addr,
->> +						resp->err);
->
->Below, m came from resp->m, is it the same here?
->
-Yes, they will be the same.
-
->>  		write_tcs_reg(base, RSC_DRV_CMD_ENABLE, m, 0, 0);
->>  		write_tcs_reg(base, RSC_DRV_IRQ_CLEAR, 0, 0, BIT(m));
->>  		atomic_set(&drv->tcs_in_use[m], 0);
->> @@ -351,7 +356,8 @@ static void tcs_notify_tx_done(unsigned long data)
->>  	struct rsc_drv *drv = (struct rsc_drv *)data;
->>  	struct tcs_response *resp;
->>  	unsigned long flags;
->> -	int err;
->> +	int err, m;
->> +	struct tcs_mbox_msg *msg;
+>> S3 is a not a GIC concept, and is only vaguely mentioned in terms of
+>> the rk3399 silicon, if grep serves me right. Please expand on what
+>> state this is exactly.
 >>
->>  	do {
->>  		spin_lock_irqsave(&drv->drv_lock, flags);
->> @@ -364,7 +370,10 @@ static void tcs_notify_tx_done(unsigned long data)
->>  		list_del(&resp->list);
->>  		spin_unlock_irqrestore(&drv->drv_lock, flags);
->>  		err = resp->err;
->> +		m = resp->m;
->> +		msg = resp->msg;
->>  		free_response(resp);
->> +		trace_rpmh_notify(drv->name, m, msg->payload[0].addr, err);
->
->The reason I ask, is that this is causing more code to be executed
->even when tracing is off. What about passing in resp and assigning it
->within the tracepoint.
->
->	trace_rpmh_notify(drv->name, resp);
->
-The free_response(resp) will free the resp object and accessing resp->m
-is invalid after that.
-
->That would keep extra code from being used within the normal code path
->and only executed in the tracepoint. Get rid of the m = resp->m,
->msg = resp->msg.
->
->Even if m is something different above, you can still just pass in:
->
->	trace_rpmh_notify(drv->name, m, resp);
->
->
->>  	} while (1);
->>  }
-May be I can just move the free_response() afer the
-trace_rpmh_notify().
-
+>>> state. This adds a DT-binding to save/restore the GICD/GICR/GITS
+>>> states using the new CPU_PM_SYSTEM_ENTER/EXIT CPU PM states.
 >>
->> @@ -393,6 +402,8 @@ static void __tcs_buffer_write(struct rsc_drv *drv, int m, int n,
->>  		write_tcs_reg(base, RSC_DRV_CMD_MSGID, m, n + i, msgid);
->>  		write_tcs_reg(base, RSC_DRV_CMD_ADDR, m, n + i, cmd->addr);
->>  		write_tcs_reg(base, RSC_DRV_CMD_DATA, m, n + i, cmd->data);
->> +		trace_rpmh_send_msg(drv->name, m, n + i, msgid, cmd->addr,
->> +						cmd->data, cmd->complete);
->
->Here just pass in cmd. The less the parameters of a tracepoints, the
->more likely gcc wont leak code that would be executed when tracing is
->off.
->
-OK.
+>> DT binding? I can't see any in this patch.
+>>
+>>>
+>>> Change-Id: I1fb2117296373fa67397fdd4a8960077b241462e
+>>
+>> It's been mentioned somewhere else in the thread: these tags have no
+>> purpose in the kernel. Please sanitise your patches before posting them.
+>>
+>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+>>> Signed-off-by: Brian Norris <briannorris@chromium.org>
+>>
+>> Who is the author of this patch? If that's a joined authorship, please
+>> use the Co-Developed-by: tag.
+> 
+> I only did some minimal code shuffling when rebasing and working with
+> this code in our downstream tree. I probably didn't actually need to
+> apply my Signed-off-by at the time, but Derek carried it along anyway.
+> 
+> Derek is the author, and I'd be perfectly fine dropping my S-o-b from
+> these patches.
+> 
+>>> diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
+>>> index 9a7a15049903..95d37fb6f458 100644
+>>> --- a/drivers/irqchip/irq-gic-v3.c
+>>> +++ b/drivers/irqchip/irq-gic-v3.c
 
->> +#include <linux/tracepoint.h>
->> +
->> +DECLARE_EVENT_CLASS(rpmh_ack_recvd,
->> +
->> +	TP_PROTO(const char *s, int m, u32 addr, int errno),
->> +
->> +	TP_ARGS(s, m, addr, errno),
->
->Then we could just do:
->
->	TP_PROTO(const char *s, struct tcs_response *resp),
->
->	TP_ARGS(s, resp),
->
-Nice. Will use this.
+[...]
 
->> +
->> +	TP_STRUCT__entry(
->> +		__field(const char *, name)
->> +		__field(int, m)
->> +		__field(u32, addr)
->> +		__field(int, errno)
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__entry->name = s;
->> +		__entry->m = m;
->> +		__entry->addr = addr;
->> +		__entry->errno = errno;
->
->	__entry->m = resp->m;
->	__entry->addr = resp->msg->payload[0].addr;
->	__entry->errno = resp->err;
->
->-- Steve
->
-Thanks for the review.
+>>> +		if (IS_ERR(gicr_ctx)) {
+>>> +			err = PTR_ERR(gicr_ctx);
+>>> +			goto out_free_gicd_ctx;
+>>> +		}
+>>> +	}
+>>
+>> You really want to kill the box because something went wrong in your
+>> save area allocation? It doesn't feel quite right.
+> 
+> Isn't that what all drivers (including irqchip drivers) do on failed
+> allocations? What else would we do? Pretend that we can limp along and
+> just b0rk the system when it suspends?
+It would certainly give the user a chance to diagnostic the problem
+(which is otherwise pretty hard if the system doesn't boot). We kill the
+system if we cannot continue. In this case, we can. So why not try it?
 
--- Lina
+Thanks,
+
+	M.
+-- 
+Jazz is not dead. It just smells funny...
