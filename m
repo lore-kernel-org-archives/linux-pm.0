@@ -1,64 +1,131 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/2] thermal, OPP: move the CPU power estimation to
- the OPP library
-Date: Fri, 19 Jan 2018 15:42:30 +0530
-Message-ID: <20180119101230.GA2421@vireshk-i7>
-References: <20180119094549.5468-1-quentin.perret@arm.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v6 0/6] iommu/arm-smmu: Add runtime pm/sleep support
+Date: Fri, 19 Jan 2018 17:13:37 +0530
+Message-ID: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f52.google.com ([74.125.83.52]:41319 "EHLO
-        mail-pg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754881AbeASKMe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jan 2018 05:12:34 -0500
-Received: by mail-pg0-f52.google.com with SMTP id 136so1064288pgd.8
-        for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2018 02:12:34 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20180119094549.5468-1-quentin.perret@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com, joelaf@google.com, tkjos@google.com
 
-On 19-01-18, 09:45, Quentin Perret wrote:
-> Hi,
-> 
-> Currently, IPA estimates the power dissipated by a CPU at each available OPP
-> using its capacitance (the dynamic-power-coefficient DT binding). This series
-> relocates this per-OPP power model in the OPP core as a preparation for
-> future changes. More specifically:
-> 
->    1. The current DT-based approach for power estimation will need deep
->       changes to support SCMI-provided power values. While the thermal
->       subsystem is not necessarily the best place to hide multiple power
->       estimation methods, the OPP library appears to be a good candidate to
->       implement the required platform abstraction and respect the existing
->       design (the thermal subsystem already relies on the OPP library to
->       provide voltages no matter where they come from -- DT or SCPI).
-> 
->    2. The energy models of CPUs will be needed by other clients in the future
->       (such as the task scheduler or CPUFreq governors for example) in order
->       to make energy-aware decisions. The relocation to the OPP library will
->       enable code re-use and all clients will benefit form the platform
->       abstraction mentioned previously.
-> 
-> As mentionned during the review of V1, this series will have a chance to get
-> merged only when the clients (the scheduler, or the SCMI driver) depending
-> on it are ready to be merged as well. This V3 is here for reference and
-> addresses the main changes requested on the previous versions.
-> 
-> Changes in v2:
->  - Changed the OPP power estimation to be done upon OPP creation (V. Kumar)
->  - Updated the cover letter to motivate the choice of PM OPP (E. Valentin)
-> 
-> Changes in v3
->  - Removed the has_power logic to simplify the thermal code (V. Kumar)
->  - Moved _opp_estimate_power() call to _opp_add() to avoid duplication (V. Kumar)
+This series provides the support for turning on the arm-smmu's
+clocks/power domains using runtime pm. This is done using the
+recently introduced device links patches, which lets the smmu's
+runtime to follow the master's runtime pm, so the smmu remains
+powered only when the masters use it.
 
-So I am mostly fine with the changes here and can apply them to the OPP tree as
-soon as Eduardo Acks them (as he had some concerns about the users).
+It also adds support for Qcom's arm-smmu-v2 variant that
+has different clocks and power requirements.
 
-Thanks.
+Took some reference from the exynos runtime patches [1].
+
+After much discussion [3] over the use of pm_runtime_get/put() in
+.unmap op path for the arm-smmu, and after disussing over more than
+a couple of approaches to address this, we are putting forward the
+changes *without* using pm_runtime APIs in 'unmap'. Rather, letting
+the client device take the control of powering on/off the connected
+iommu through pm_runtime_get(put)_suppliers() APIs for the scnerios
+when the iommu power can't be directly controlled by clients through
+device links.
+Rafael has agreed to export the suppliers APIs [4].
+
+Hi Robin, Will,
+please consider reviewing this series.
+
+[V6]
+   * Added Ack given by Rafael to first patch in the series.
+   * Addressed Rob Herring's comment for adding soc specific compatible
+     string as well besides 'qcom,smmu-v2'.
+
+[V5]
+   * Dropped runtime pm calls from "arm_smmu_unmap" op as discussed over
+     the list [3] for the last patch series.
+   * Added a patch to export pm_runtime_get/put_suppliers() APIs to the
+     series as agreed with Rafael [4].
+   * Added the related patch for msm drm iommu layer to use
+     pm_runtime_get/put_suppliers() APIs in msm_mmu_funcs.
+   * Dropped arm-mmu500 clock patch since that would break existing
+     platforms.
+   * Changed compatible 'qcom,msm8996-smmu-v2' to 'qcom,smmu-v2' to reflect
+     the IP version rather than the platform on which it is used.
+     The same IP is used across multiple platforms including msm8996,
+     and sdm845 etc.
+   * Using clock bulk APIs to handle the clocks available to the IP as
+     suggested by Stephen Boyd.
+   * The first patch in v4 version of the patch-series:
+     ("iommu/arm-smmu: Fix the error path in arm_smmu_add_device") has
+     already made it to mainline.
+
+[V4]
+   * Reworked the clock handling part. We now take clock names as data
+     in the driver for supported compatible versions, and loop over them
+     to get, enable, and disable the clocks.
+   * Using qcom,msm8996 based compatibles for bindings instead of a generic
+     qcom compatible.
+   * Refactor MMU500 patch to just add the necessary clock names data and
+     corresponding bindings.
+   * Added the pm_runtime_get/put() calls in .unmap iommu op (fix added by
+     Stanimir on top of previous patch version.
+   * Added a patch to fix error path in arm_smmu_add_device()
+   * Removed patch 3/5 of V3 patch series that added qcom,smmu-v2 bindings.
+
+[V3]
+   * Reworked the patches to keep the clocks init/enabling function
+     separately for each compatible.
+
+   * Added clocks bindings for MMU40x/500.
+
+   * Added a new compatible for qcom,smmu-v2 implementation and
+     the clock bindings for the same.
+
+   * Rebased on top of 4.11-rc1
+
+[V2]
+   * Split the patches little differently.
+
+   * Addressed comments.
+
+   * Removed the patch #4 [2] from previous post
+     for arm-smmu context save restore. Planning to
+     post this separately after reworking/addressing Robin's
+     feedback.
+
+   * Reversed the sequence to disable clocks than enabling.
+     This was required for those cases where the
+     clocks are populated in a dependent order from DT.
+
+[1] https://lkml.org/lkml/2016/10/20/70
+[2] https://patchwork.kernel.org/patch/9389717/
+[3] https://patchwork.kernel.org/patch/9827825/
+[4] https://patchwork.kernel.org/patch/10102445/
+
+Sricharan R (3):
+  iommu/arm-smmu: Add pm_runtime/sleep ops
+  iommu/arm-smmu: Invoke pm_runtime during probe, add/remove device
+  iommu/arm-smmu: Add the device_link between masters and smmu
+
+Vivek Gautam (3):
+  base: power: runtime: Export pm_runtime_get/put_suppliers
+  iommu/arm-smmu: Add support for qcom,smmu-v2 variant
+  drm/msm: iommu: Replace runtime calls with runtime suppliers
+
+ .../devicetree/bindings/iommu/arm,smmu.txt         |  43 +++++++
+ drivers/base/power/runtime.c                       |   2 +
+ drivers/gpu/drm/msm/msm_iommu.c                    |  16 +--
+ drivers/iommu/arm-smmu.c                           | 124 ++++++++++++++++++++-
+ 4 files changed, 171 insertions(+), 14 deletions(-)
 
 -- 
-viresh
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
