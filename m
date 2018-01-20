@@ -1,100 +1,35 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH v3 1/2] PM / OPP: introduce an OPP power estimation helper
-Date: Fri, 19 Jan 2018 15:36:42 -0800
-Message-ID: <CAJWu+opFktdGqGMxjAr6Fudt90Ecqe2KEZ76wS8wFZ07P071Sg@mail.gmail.com>
-References: <20180119094549.5468-1-quentin.perret@arm.com> <20180119094549.5468-2-quentin.perret@arm.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 2/8] dt-bindings: power: reset: Document ocelot-reset
+ binding
+Date: Fri, 19 Jan 2018 18:34:10 -0600
+Message-ID: <20180120003410.gewxntrzlkurkfgk@rob-hp-laptop>
+References: <20180116101240.5393-1-alexandre.belloni@free-electrons.com>
+ <20180116101240.5393-3-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yb0-f196.google.com ([209.85.213.196]:44074 "EHLO
-        mail-yb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756027AbeASXgo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jan 2018 18:36:44 -0500
-Received: by mail-yb0-f196.google.com with SMTP id z90so1217852ybh.11
-        for <linux-pm@vger.kernel.org>; Fri, 19 Jan 2018 15:36:44 -0800 (PST)
-In-Reply-To: <20180119094549.5468-2-quentin.perret@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180116101240.5393-3-alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: James Hogan <jhogan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, Todd Kjos <tkjos@google.com>
 
-On Fri, Jan 19, 2018 at 1:45 AM, Quentin Perret <quentin.perret@arm.com> wrote:
-> The power dissipated by a CPU at a specific OPP is currently estimated by
-> the thermal subsystem as P = C * V^2 * f, with P the power, C the CPU's
-> capacitance, V the OPP's voltage and f the OPP's frequency. As this
-> feature can be useful for other clients requiring energy models of CPUs,
-> this commit introduces an equivalent power estimator directly into the OPP
-> library, hence enabling code re-use.
->
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+On Tue, Jan 16, 2018 at 11:12:34AM +0100, Alexandre Belloni wrote:
+> Add binding documentation for the Microsemi Ocelot reset block.
+> 
+> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 > ---
->  drivers/opp/core.c     | 32 ++++++++++++++++++++++++++++++++
->  drivers/opp/of.c       | 11 +++++++----
->  drivers/opp/opp.h      |  7 +++++++
->  include/linux/pm_opp.h |  7 +++++++
->  4 files changed, 53 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index 92fa94a6dcc1..81bf18554b34 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -127,6 +127,24 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
->
-> +/**
-> + * dev_pm_opp_get_power() - Gets the estimated power corresponding to an opp
-> + * @opp:       opp for which power has to be returned for
-> + *
-> + * Return: estimated power in micro-watts corresponding to the opp, else
-> + * return 0
-> + */
-> +unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
-> +{
-> +       if (IS_ERR_OR_NULL(opp)) {
-> +               pr_err("%s: Invalid parameters\n", __func__);
-> +               return 0;
-> +       }
-> +
-> +       return opp->power_estimate_uw;
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_get_power);
-> +
->  /**
->   * dev_pm_opp_is_turbo() - Returns if opp is turbo OPP or not
->   * @opp: opp for which turbo mode is being verified
-> @@ -985,6 +1003,18 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
->         return true;
->  }
->
-> +/**
-> + * Estimate the power of an OPP as P = C * V^2 * f, with C the device's
-> + * capacitance, V the OPP's voltage and f the OPP's frequency.
-> + */
-> +static void _opp_estimate_power(struct dev_pm_opp *opp, unsigned long cap)
-> +{
-> +       unsigned long mV = opp->supplies[0].u_volt / 1000;
-> +       unsigned long KHz = opp->rate / 1000;
-> +
-> +       opp->power_estimate_uw = cap * mV * mV * KHz / 1000000000;
-> +}
-> +
->  /*
->   * Returns:
->   * 0: On success. And appropriate error message for duplicate OPPs.
-> @@ -1039,6 +1069,8 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
->         if (opp_table->get_pstate)
->                 new_opp->pstate = opp_table->get_pstate(dev, new_opp->rate);
->
-> +       _opp_estimate_power(new_opp, opp_table->capacitance);
-> +
+>  .../devicetree/bindings/power/reset/ocelot-reset.txt       | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
 
-Does this need to be a separate static function? There's only one user
-of the function in the C file and it adds more LOC.
-
-Otherwise, feel free to add FWIW:
-Reviewed-by: Joel Fernandes <joelaf@google.com>
-
-thanks,
-
-- Joel
+Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
