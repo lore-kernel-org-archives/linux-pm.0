@@ -1,287 +1,455 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH] cpufreq: add and use cpufreq_for_each_{valid_,}entry_idx
-Date: Mon, 22 Jan 2018 05:53:27 +0800
-Message-ID: <201801220536.yPYB2F2S%fengguang.wu@intel.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: [PATCH v3] cpufreq: add and use cpufreq_for_each_{valid_,}entry_idx
+Date: Sun, 21 Jan 2018 22:57:06 +0100
+Message-ID: <20180121215706.GA2642@light.dominikbrodowski.net>
 References: <20180121161117.GA7073@light.dominikbrodowski.net>
+ <20180121182412.GA2876@light.dominikbrodowski.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="9jxsPFA5p3P2qPhR"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:6008 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750853AbeAUVyY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 21 Jan 2018 16:54:24 -0500
+Received: from isilmar-4.linta.de ([136.243.71.142]:34114 "EHLO
+        isilmar-4.linta.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750869AbeAUV56 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Jan 2018 16:57:58 -0500
 Content-Disposition: inline
-In-Reply-To: <20180121161117.GA7073@light.dominikbrodowski.net>
+In-Reply-To: <20180121182412.GA2876@light.dominikbrodowski.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: kbuild-all@01.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, viro@ZenIV.linux.org.uk
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Cc: viro@ZenIV.linux.org.uk
 
+Pointer subtraction is slow and tedious. Therefore, replace all instances
+where cpufreq_for_each_{valid_,}entry loops contained such substractions
+with a macro which provides an index to the element currently being
+iterated over.
 
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi Dominik,
-
-Thank you for the patch! Yet something to improve:
-
-[auto build test ERROR on pm/linux-next]
-[also build test ERROR on v4.15-rc8 next-20180119]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Dominik-Brodowski/cpufreq-add-and-use-cpufreq_for_each_-valid_-entry_idx/20180122-030433
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-config: sh-sh7710voipgw_defconfig (attached as .config)
-compiler: sh4-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=sh 
-
-All errors (new ones prefixed by >>):
-
-   drivers/sh/clk/core.c: In function 'clk_rate_table_find':
-   drivers/sh/clk/core.c:202:51: error: macro "cpufreq_for_each_valid_entry" passed 3 arguments, but takes just 2
-     cpufreq_for_each_valid_entry(pos, freq_table, idx)
-                                                      ^
->> drivers/sh/clk/core.c:202:2: error: 'cpufreq_for_each_valid_entry' undeclared (first use in this function); did you mean 'cpufreq_frequency_table_verify'?
-     cpufreq_for_each_valid_entry(pos, freq_table, idx)
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     cpufreq_frequency_table_verify
-   drivers/sh/clk/core.c:202:2: note: each undeclared identifier is reported only once for each function it appears in
-   drivers/sh/clk/core.c:203:3: error: expected ';' before 'if'
-      if (pos->frequency == rate)
-      ^~
-   drivers/sh/clk/core.c:200:6: warning: unused variable 'idx' [-Wunused-variable]
-     int idx;
-         ^~~
-   drivers/sh/clk/core.c:199:34: warning: unused variable 'pos' [-Wunused-variable]
-     struct cpufreq_frequency_table *pos;
-                                     ^~~
-
-vim +202 drivers/sh/clk/core.c
-
-   194	
-   195	int clk_rate_table_find(struct clk *clk,
-   196				struct cpufreq_frequency_table *freq_table,
-   197				unsigned long rate)
-   198	{
-   199		struct cpufreq_frequency_table *pos;
-   200		int idx;
-   201	
- > 202		cpufreq_for_each_valid_entry(pos, freq_table, idx)
-   203			if (pos->frequency == rate)
-   204				return idx;
-   205	
-   206		return -ENOENT;
-   207	}
-   208	
-
+Suggested-by: Al Viro <viro@ZenIV.linux.org.uk>
+Link: http://lkml.kernel.org/r/20180120020237.GM13338@ZenIV.linux.org.uk
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---9jxsPFA5p3P2qPhR
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+v3: Fix sh typo
+v2: Fix cpufreq_table_find_index_* to handle non-results properly
 
-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
-
---9jxsPFA5p3P2qPhR--
+diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+index 434c49cc7330..61546ac578d6 100644
+--- a/Documentation/cpu-freq/cpu-drivers.txt
++++ b/Documentation/cpu-freq/cpu-drivers.txt
+@@ -291,3 +291,7 @@ For example:
+ 		/* Do something with pos */
+ 		pos->frequency = ...
+ 	}
++
++If you need to work with the position of pos within driver_freq_table,
++do not subtract the pointers, as it is quite costly. Instead, use the
++macros cpufreq_for_each_entry_idx() and cpufreq_for_each_valid_entry_idx().
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index b6b369c22272..daf5d39e7529 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -115,10 +115,10 @@ static struct cpufreq_freqs freqs;
+ static int init_div_table(void)
+ {
+ 	struct cpufreq_frequency_table *pos, *freq_tbl = dvfs_info->freq_table;
+-	unsigned int tmp, clk_div, ema_div, freq, volt_id;
++	unsigned int tmp, clk_div, ema_div, freq, volt_id, idx;
+ 	struct dev_pm_opp *opp;
+ 
+-	cpufreq_for_each_entry(pos, freq_tbl) {
++	cpufreq_for_each_entry_idx(pos, freq_tbl, idx) {
+ 		opp = dev_pm_opp_find_freq_exact(dvfs_info->dev,
+ 					pos->frequency * 1000, true);
+ 		if (IS_ERR(opp)) {
+@@ -154,8 +154,7 @@ static int init_div_table(void)
+ 		tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
+ 			| ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
+ 
+-		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
+-						(pos - freq_tbl));
++		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * idx));
+ 		dev_pm_opp_put(opp);
+ 	}
+ 
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 3bbbf9e6960c..6d007f824ca7 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -143,10 +143,9 @@ int cpufreq_table_index_unsorted(struct cpufreq_policy *policy,
+ 		break;
+ 	}
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, i) {
+ 		freq = pos->frequency;
+ 
+-		i = pos - table;
+ 		if ((freq < policy->min) || (freq > policy->max))
+ 			continue;
+ 		if (freq == target_freq) {
+@@ -211,15 +210,16 @@ int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
+ 		unsigned int freq)
+ {
+ 	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
++	int idx;
+ 
+ 	if (unlikely(!table)) {
+ 		pr_debug("%s: Unable to find frequency table\n", __func__);
+ 		return -ENOENT;
+ 	}
+ 
+-	cpufreq_for_each_valid_entry(pos, table)
++	cpufreq_for_each_valid_entry_idx(pos, table, idx)
+ 		if (pos->frequency == freq)
+-			return pos - table;
++			return idx;
+ 
+ 	return -EINVAL;
+ }
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index c46a12df40dd..3177fa7ecb2c 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -600,7 +600,7 @@ static void longhaul_setup_voltagescaling(void)
+ 	/* Calculate kHz for one voltage step */
+ 	kHz_step = (highest_speed - min_vid_speed) / numvscales;
+ 
+-	cpufreq_for_each_entry(freq_pos, longhaul_table) {
++	cpufreq_for_each_entry_idx(freq_pos, longhaul_table, j) {
+ 		speed = freq_pos->frequency;
+ 		if (speed > min_vid_speed)
+ 			pos = (speed - min_vid_speed) / kHz_step + minvid.pos;
+@@ -609,7 +609,7 @@ static void longhaul_setup_voltagescaling(void)
+ 		freq_pos->driver_data |= mV_vrm_table[pos] << 8;
+ 		vid = vrm_mV_table[mV_vrm_table[pos]];
+ 		pr_info("f: %d kHz, index: %d, vid: %d mV\n",
+-			speed, (int)(freq_pos - longhaul_table), vid.mV);
++			speed, j, vid.mV);
+ 	}
+ 
+ 	can_scale_voltage = 1;
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index b257fc7d5204..75dfbd2a58ea 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -139,7 +139,7 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	struct cpufreq_frequency_table *pos;
+ 	const u32 *max_freqp;
+ 	u32 max_freq;
+-	int cur_astate;
++	int cur_astate, idx;
+ 	struct resource res;
+ 	struct device_node *cpu, *dn;
+ 	int err = -ENODEV;
+@@ -198,9 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	pr_debug("initializing frequency table\n");
+ 
+ 	/* initialize frequency table */
+-	cpufreq_for_each_entry(pos, pas_freqs) {
++	cpufreq_for_each_entry_idx(pos, pas_freqs, idx) {
+ 		pos->frequency = get_astate_freq(pos->driver_data) * 100000;
+-		pr_debug("%d: %d\n", (int)(pos - pas_freqs), pos->frequency);
++		pr_debug("%d: %d\n", idx, pos->frequency);
+ 	}
+ 
+ 	cur_astate = get_cur_astate(policy->cpu);
+diff --git a/drivers/sh/clk/core.c b/drivers/sh/clk/core.c
+index 92863e3818e5..9475353f49d6 100644
+--- a/drivers/sh/clk/core.c
++++ b/drivers/sh/clk/core.c
+@@ -197,10 +197,11 @@ int clk_rate_table_find(struct clk *clk,
+ 			unsigned long rate)
+ {
+ 	struct cpufreq_frequency_table *pos;
++	int idx;
+ 
+-	cpufreq_for_each_valid_entry(pos, freq_table)
++	cpufreq_for_each_valid_entry_idx(pos, freq_table, idx)
+ 		if (pos->frequency == rate)
+-			return pos - freq_table;
++			return idx;
+ 
+ 	return -ENOENT;
+ }
+diff --git a/drivers/staging/irda/drivers/sh_sir.c b/drivers/staging/irda/drivers/sh_sir.c
+index fede6864c737..0d0687cc454a 100644
+--- a/drivers/staging/irda/drivers/sh_sir.c
++++ b/drivers/staging/irda/drivers/sh_sir.c
+@@ -226,7 +226,7 @@ static u32 sh_sir_find_sclk(struct clk *irda_clk)
+ 	clk_put(pclk);
+ 
+ 	/* IrDA can not set over peripheral_clk */
+-	cpufreq_for_each_valid_entry(pos, freq_table) {
++	cpufreq_for_each_valid_entry_idx(pos, freq_table, index) {
+ 		u32 freq = pos->frequency;
+ 
+ 		/* IrDA should not over peripheral_clk */
+@@ -236,7 +236,7 @@ static u32 sh_sir_find_sclk(struct clk *irda_clk)
+ 		tmp = freq % SCLK_BASE;
+ 		if (tmp < min) {
+ 			min = tmp;
+-			index = pos - freq_table;
++			break;
+ 		}
+ 	}
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 065f3a8eb486..21e8d248d956 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -628,6 +628,18 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ #define cpufreq_for_each_entry(pos, table)	\
+ 	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)
+ 
++/*
++ * cpufreq_for_each_entry_idx -	iterate over a cpufreq_frequency_table
++ *	with index
++ * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
++ * @table:	the cpufreq_frequency_table * to iterate over.
++ * @idx:	the table entry currently being processed
++ */
++
++#define cpufreq_for_each_entry_idx(pos, table, idx)	\
++	for (pos = table, idx = 0; pos->frequency != CPUFREQ_TABLE_END; \
++		pos++, idx++)
++
+ /*
+  * cpufreq_for_each_valid_entry -     iterate over a cpufreq_frequency_table
+  *	excluding CPUFREQ_ENTRY_INVALID frequencies.
+@@ -641,6 +653,21 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ 			continue;					\
+ 		else
+ 
++/*
++ * cpufreq_for_each_valid_entry_idx -     iterate with index over a cpufreq
++ *	frequency_table excluding CPUFREQ_ENTRY_INVALID frequencies.
++ * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
++ * @table:	the cpufreq_frequency_table * to iterate over.
++ * @idx:	the table entry currently being processed
++ */
++
++#define cpufreq_for_each_valid_entry_idx(pos, table, idx)		\
++	cpufreq_for_each_entry_idx(pos, table, idx)			\
++		if (pos->frequency == CPUFREQ_ENTRY_INVALID)		\
++			continue;					\
++		else
++
++
+ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+ 				    struct cpufreq_frequency_table *table);
+ 
+@@ -667,19 +694,20 @@ static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = -1;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq >= target_freq)
+-			return pos - table;
++			return idx;
+ 
+-		best = pos;
++		best = idx;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Find lowest freq at or above target in a table in descending order */
+@@ -687,28 +715,29 @@ static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = -1;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq > target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found above target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == -1)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Works only on sorted freq-tables */
+@@ -728,28 +757,29 @@ static inline int cpufreq_table_find_index_ah(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = -1;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq < target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found below target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == -1)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Find highest freq at or below target in a table in descending order */
+@@ -757,19 +787,20 @@ static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = -1;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq <= target_freq)
+-			return pos - table;
++			return idx;
+ 
+-		best = pos;
++		best = idx;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Works only on sorted freq-tables */
+@@ -789,32 +820,33 @@ static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = -1;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq < target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found below target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == -1)
++			return idx;
+ 
+ 		/* Choose the closest freq */
+-		if (target_freq - best->frequency > freq - target_freq)
+-			return pos - table;
++		if (target_freq - table[best].frequency > freq - target_freq)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Find closest freq to target in a table in descending order */
+@@ -822,32 +854,33 @@ static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = -1;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq > target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found above target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == -1)
++			return idx;
+ 
+ 		/* Choose the closest freq */
+-		if (best->frequency - target_freq > target_freq - freq)
+-			return pos - table;
++		if (table[best].frequency - target_freq > target_freq - freq)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Works only on sorted freq-tables */
