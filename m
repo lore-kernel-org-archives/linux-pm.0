@@ -1,15 +1,17 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH] cpufreq: add and use cpufreq_for_each_{valid_,}entry_idx
-Date: Sun, 21 Jan 2018 17:11:17 +0100
-Message-ID: <20180121161117.GA7073@light.dominikbrodowski.net>
+Subject: [PATCH v2] cpufreq: add and use cpufreq_for_each_{valid_,}entry_idx
+Date: Sun, 21 Jan 2018 19:24:12 +0100
+Message-ID: <20180121182412.GA2876@light.dominikbrodowski.net>
+References: <20180121161117.GA7073@light.dominikbrodowski.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from isilmar-4.linta.de ([136.243.71.142]:51778 "EHLO
+Received: from isilmar-4.linta.de ([136.243.71.142]:56006 "EHLO
         isilmar-4.linta.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751206AbeAUQMJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Jan 2018 11:12:09 -0500
+        with ESMTP id S1750925AbeAUSY0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Jan 2018 13:24:26 -0500
 Content-Disposition: inline
+In-Reply-To: <20180121161117.GA7073@light.dominikbrodowski.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
@@ -23,6 +25,9 @@ iterated over.
 Suggested-by: Al Viro <viro@ZenIV.linux.org.uk>
 Link: http://lkml.kernel.org/r/20180120020237.GM13338@ZenIV.linux.org.uk
 Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+---
+
+v2: Fix cpufreq_table_find_index_* to handle non-results properly
 
 diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
 index 434c49cc7330..61546ac578d6 100644
@@ -186,7 +191,7 @@ index fede6864c737..0d0687cc454a 100644
  	}
  
 diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 065f3a8eb486..6ed58ca20db9 100644
+index 065f3a8eb486..21e8d248d956 100644
 --- a/include/linux/cpufreq.h
 +++ b/include/linux/cpufreq.h
 @@ -628,6 +628,18 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
@@ -237,7 +242,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
 -	struct cpufreq_frequency_table *pos, *best = table - 1;
 +	struct cpufreq_frequency_table *pos;
  	unsigned int freq;
-+	int idx, best = 0;
++	int idx, best = -1;
  
 -	cpufreq_for_each_valid_entry(pos, table) {
 +	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
@@ -263,7 +268,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
 -	struct cpufreq_frequency_table *pos, *best = table - 1;
 +	struct cpufreq_frequency_table *pos;
  	unsigned int freq;
-+	int idx, best = 0;
++	int idx, best = -1;
  
 -	cpufreq_for_each_valid_entry(pos, table) {
 +	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
@@ -282,7 +287,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
  		/* No freq found above target_freq */
 -		if (best == table - 1)
 -			return pos - table;
-+		if (best == 0)
++		if (best == -1)
 +			return idx;
  
 -		return best - table;
@@ -301,7 +306,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
 -	struct cpufreq_frequency_table *pos, *best = table - 1;
 +	struct cpufreq_frequency_table *pos;
  	unsigned int freq;
-+	int idx, best = 0;
++	int idx, best = -1;
  
 -	cpufreq_for_each_valid_entry(pos, table) {
 +	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
@@ -320,7 +325,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
  		/* No freq found below target_freq */
 -		if (best == table - 1)
 -			return pos - table;
-+		if (best == 0)
++		if (best == -1)
 +			return idx;
  
 -		return best - table;
@@ -339,7 +344,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
 -	struct cpufreq_frequency_table *pos, *best = table - 1;
 +	struct cpufreq_frequency_table *pos;
  	unsigned int freq;
-+	int idx, best = 0;
++	int idx, best = -1;
  
 -	cpufreq_for_each_valid_entry(pos, table) {
 +	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
@@ -365,7 +370,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
 -	struct cpufreq_frequency_table *pos, *best = table - 1;
 +	struct cpufreq_frequency_table *pos;
  	unsigned int freq;
-+	int idx, best = 0;
++	int idx, best = -1;
  
 -	cpufreq_for_each_valid_entry(pos, table) {
 +	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
@@ -384,7 +389,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
  		/* No freq found below target_freq */
 -		if (best == table - 1)
 -			return pos - table;
-+		if (best == 0)
++		if (best == -1)
 +			return idx;
  
  		/* Choose the closest freq */
@@ -409,7 +414,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
 -	struct cpufreq_frequency_table *pos, *best = table - 1;
 +	struct cpufreq_frequency_table *pos;
  	unsigned int freq;
-+	int idx, best = 0;
++	int idx, best = -1;
  
 -	cpufreq_for_each_valid_entry(pos, table) {
 +	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
@@ -428,7 +433,7 @@ index 065f3a8eb486..6ed58ca20db9 100644
  		/* No freq found above target_freq */
 -		if (best == table - 1)
 -			return pos - table;
-+		if (best == 0)
++		if (best == -1)
 +			return idx;
  
  		/* Choose the closest freq */
