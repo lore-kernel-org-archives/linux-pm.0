@@ -1,455 +1,305 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH v3] cpufreq: add and use cpufreq_for_each_{valid_,}entry_idx
-Date: Sun, 21 Jan 2018 22:57:06 +0100
-Message-ID: <20180121215706.GA2642@light.dominikbrodowski.net>
-References: <20180121161117.GA7073@light.dominikbrodowski.net>
- <20180121182412.GA2876@light.dominikbrodowski.net>
+From: Mark Salter <msalter@redhat.com>
+Subject: Re: [PATCH] acpi, spcr: Make SPCR available to x86
+Date: Sun, 21 Jan 2018 18:21:08 -0500
+Message-ID: <1516576868.2957.2.camel@redhat.com>
+References: <20180118150951.28964-1-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from isilmar-4.linta.de ([136.243.71.142]:34114 "EHLO
-        isilmar-4.linta.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750869AbeAUV56 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Jan 2018 16:57:58 -0500
-Content-Disposition: inline
-In-Reply-To: <20180121182412.GA2876@light.dominikbrodowski.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20180118150951.28964-1-prarit@redhat.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>, linux-kernel@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Timur Tabi <timur@codeaurora.org>, graeme.gregory@linaro.org, mark.salter@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
-Cc: viro@ZenIV.linux.org.uk
 
-Pointer subtraction is slow and tedious. Therefore, replace all instances
-where cpufreq_for_each_{valid_,}entry loops contained such substractions
-with a macro which provides an index to the element currently being
-iterated over.
+On Thu, 2018-01-18 at 10:09 -0500, Prarit Bhargava wrote:
+> Note on testing:  I've tested this on several ARM64 and x86 boxes (only
+> earlycon, console=ttyS0,115200, and with both options), verified that
+> functionality on ARM64 has not changed (ie, CONFIG_ACPI_SPCR_TABLE is
+> always =y), and verified functionality when !CONFIG_ACPI_SPCR_TABLE on
+> x86.
+> 
+> P.
+> 
+> ----8<----
+> 
+> SPCR is currently only enabled or ARM64 and x86 can use SPCR to setup an
+> early console.
+> 
+> General fixes include updating Documentation & Kconfig (for x86), updating
+> comments, and changing parse_spcr() to acpi_parse_spcr(), and
+> earlycon_init_is_deferred to earlycon_acpi_spcr_enable to be more
+> descriptive.
+> 
+> On x86, many systems have a valid SPCR table but the table version is not
+> 2 so the table version check must be a warning.
+> 
+> On ARM64 when the kernel parameter earlycon is used both the early console
+> and console are enabled.  On x86, only the earlycon should be enabled by
+> by default.  Modify acpi_parse_spcr() to allow options for initializing
+> the early console and console separately.
+> 
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> Cc: linux-acpi@vger.kernel.org
+> Cc: linux-doc@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-serial@vger.kernel.org
+> Cc: Bhupesh Sharma <bhsharma@redhat.com>
+> Cc: Lv Zheng <lv.zheng@intel.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: "Rafael J. Wysocki" Mrjw@rjwysocki.net>
+> Cc: Timur Tabi <timur@codeaurora.org>
+> Cc: graeme.gregory@linaro.org
+> Cc: mark.salter@redhat.com
+> ---
+>  Documentation/admin-guide/kernel-parameters.txt |  9 +++++---
+>  arch/arm64/kernel/acpi.c                        |  4 ++--
+>  arch/x86/kernel/acpi/boot.c                     |  3 +++
+>  drivers/acpi/Kconfig                            |  7 +++++-
+>  drivers/acpi/spcr.c                             | 29 +++++++++++++------------
+>  drivers/tty/serial/earlycon.c                   | 15 +++++--------
+>  include/linux/acpi.h                            |  7 ++++--
+>  include/linux/serial_core.h                     |  4 ++--
+>  8 files changed, 44 insertions(+), 34 deletions(-)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 46b26bfee27b..6f519230ed34 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -915,9 +915,12 @@
+>  
+>  	earlycon=	[KNL] Output early console device and options.
+>  
+> -			When used with no options, the early console is
+> -			determined by the stdout-path property in device
+> -			tree's chosen node.
+> +			[ARM64] The early console is determined by the
+> +			stdout-path property in device tree's chosen node,
+> +			or determined by the ACPI SPCR table.
+> +
+> +			[X86] When used with no options the early console is
+> +			determined by the ACPI SPCR table.
+>  
+>  		cdns,<addr>[,options]
+>  			Start an early, polled-mode console on a Cadence
+> diff --git a/arch/arm64/kernel/acpi.c b/arch/arm64/kernel/acpi.c
+> index b3162715ed78..2aa5609def27 100644
+> --- a/arch/arm64/kernel/acpi.c
+> +++ b/arch/arm64/kernel/acpi.c
+> @@ -230,10 +230,10 @@ void __init acpi_boot_table_init(void)
+>  
+>  done:
+>  	if (acpi_disabled) {
+> -		if (earlycon_init_is_deferred)
+> +		if (earlycon_acpi_spcr_enable)
+>  			early_init_dt_scan_chosen_stdout();
+>  	} else {
+> -		parse_spcr(earlycon_init_is_deferred);
+> +		acpi_parse_spcr(earlycon_acpi_spcr_enable, true);
+>  		if (IS_ENABLED(CONFIG_ACPI_BGRT))
+>  			acpi_table_parse(ACPI_SIG_BGRT, acpi_parse_bgrt);
+>  	}
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index f4c463df8b08..0bf6a58f7a6d 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -36,6 +36,7 @@
+>  #include <linux/ioport.h>
+>  #include <linux/pci.h>
+>  #include <linux/efi-bgrt.h>
+> +#include <linux/serial_core.h>
+>  
+>  #include <asm/e820/api.h>
+>  #include <asm/irqdomain.h>
+> @@ -1626,6 +1627,8 @@ int __init acpi_boot_init(void)
+>  	if (!acpi_noirq)
+>  		x86_init.pci.init = pci_acpi_init;
+>  
+> +	/* Do not enable ACPI SPCR console by default */
+> +	acpi_parse_spcr(earlycon_acpi_spcr_enable, false);
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 46505396869e..ddcb5f40e8ee 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -79,7 +79,12 @@ config ACPI_DEBUGGER_USER
+>  endif
+>  
+>  config ACPI_SPCR_TABLE
+> -	bool
+> +	bool "ACPI Serial Port Console Redirection Support"
+> +	default y if X86
+> +	help
+> +	  Enable support for Serial Port Console Redirection (SPCR) Table.
+> +	  This table provides information about the configuration of the
+> +	  earlycon console.
+>  
+>  config ACPI_LPIT
+>  	bool
+> diff --git a/drivers/acpi/spcr.c b/drivers/acpi/spcr.c
+> index 324b35bfe781..89e97d21a89c 100644
+> --- a/drivers/acpi/spcr.c
+> +++ b/drivers/acpi/spcr.c
+> @@ -21,7 +21,7 @@
+>   * occasionally getting stuck as 1. To avoid the potential for a hang, check
+>   * TXFE == 0 instead of BUSY == 1. This may not be suitable for all UART
+>   * implementations, so only do so if an affected platform is detected in
+> - * parse_spcr().
+> + * acpi_parse_spcr().
+>   */
+>  bool qdf2400_e44_present;
+>  EXPORT_SYMBOL(qdf2400_e44_present);
+> @@ -74,19 +74,21 @@ static bool xgene_8250_erratum_present(struct acpi_table_spcr *tb)
+>  }
+>  
+>  /**
+> - * parse_spcr() - parse ACPI SPCR table and add preferred console
+> + * acpi_parse_spcr() - parse ACPI SPCR table and add preferred console
+>   *
+> - * @earlycon: set up earlycon for the console specified by the table
+> + * @enable_earlycon: set up earlycon for the console specified by the table
+> + * @enable_console: setup the console specified by the table.
+>   *
+>   * For the architectures with support for ACPI, CONFIG_ACPI_SPCR_TABLE may be
+>   * defined to parse ACPI SPCR table.  As a result of the parsing preferred
+> - * console is registered and if @earlycon is true, earlycon is set up.
+> + * console is registered and if @enable_earlycon is true, earlycon is set up.
+> + * If @enable_console is true the system console is also configured.
+>   *
+>   * When CONFIG_ACPI_SPCR_TABLE is defined, this function should be called
+>   * from arch initialization code as soon as the DT/ACPI decision is made.
+>   *
+>   */
+> -int __init parse_spcr(bool earlycon)
+> +int __init acpi_parse_spcr(bool enable_earlycon, bool enable_console)
+>  {
+>  	static char opts[64];
+>  	struct acpi_table_spcr *table;
+> @@ -105,11 +107,8 @@ int __init parse_spcr(bool earlycon)
+>  	if (ACPI_FAILURE(status))
+>  		return -ENOENT;
+>  
+> -	if (table->header.revision < 2) {
+> -		err = -ENOENT;
+> -		pr_err("wrong table version\n");
+> -		goto done;
+> -	}
+> +	if (table->header.revision < 2)
+> +		pr_info("SPCR table version %d\n", table->header.revision);
+>  
+>  	if (table->serial_port.space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY) {
+>  		switch (ACPI_ACCESS_BIT_WIDTH((
+> @@ -185,7 +184,7 @@ int __init parse_spcr(bool earlycon)
+>  	 */
+>  	if (qdf2400_erratum_44_present(&table->header)) {
+>  		qdf2400_e44_present = true;
+> -		if (earlycon)
+> +		if (enable_earlycon)
+>  			uart = "qdf2400_e44";
+>  	}
+>  
+> @@ -205,11 +204,13 @@ int __init parse_spcr(bool earlycon)
+>  
+>  	pr_info("console: %s\n", opts);
+>  
+> -	if (earlycon)
+> +	if (enable_earlycon)
+>  		setup_earlycon(opts);
+>  
+> -	err = add_preferred_console(uart, 0, opts + strlen(uart) + 1);
+> -
+> +	if (enable_console)
+> +		err = add_preferred_console(uart, 0, opts + strlen(uart) + 1);
+> +	else
+> +		err = 0;
+>  done:
+>  	acpi_put_table((struct acpi_table_header *)table);
+>  	return err;
+> diff --git a/drivers/tty/serial/earlycon.c b/drivers/tty/serial/earlycon.c
+> index 4c8b80f1c688..870e84fb6e39 100644
+> --- a/drivers/tty/serial/earlycon.c
+> +++ b/drivers/tty/serial/earlycon.c
+> @@ -197,25 +197,20 @@ int __init setup_earlycon(char *buf)
+>  }
+>  
+>  /*
+> - * When CONFIG_ACPI_SPCR_TABLE is defined, "earlycon" without parameters in
+> - * command line does not start DT earlycon immediately, instead it defers
+> - * starting it until DT/ACPI decision is made.  At that time if ACPI is enabled
+> - * call parse_spcr(), else call early_init_dt_scan_chosen_stdout()
+> + * This defers the initialization of the early console until after ACPI has
+> + * been initialized.
+>   */
+> -bool earlycon_init_is_deferred __initdata;
+> +bool earlycon_acpi_spcr_enable __initdata;
+>  
+>  /* early_param wrapper for setup_earlycon() */
+>  static int __init param_setup_earlycon(char *buf)
+>  {
+>  	int err;
+>  
+> -	/*
+> -	 * Just 'earlycon' is a valid param for devicetree earlycons;
+> -	 * don't generate a warning from parse_early_params() in that case
+> -	 */
+> +	/* Just 'earlycon' is a valid param for devicetree and ACPI SPCR. */
+>  	if (!buf || !buf[0]) {
+>  		if (IS_ENABLED(CONFIG_ACPI_SPCR_TABLE)) {
+> -			earlycon_init_is_deferred = true;
+> +			earlycon_acpi_spcr_enable = true;
+>  			return 0;
+>  		} else if (!buf) {
+>  			return early_init_dt_scan_chosen_stdout();
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index dc1ebfeeb5ec..9aac8f0ebe23 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -1242,9 +1242,12 @@ static inline void acpi_table_upgrade(void) { }
+>  
+>  #ifdef CONFIG_ACPI_SPCR_TABLE
+>  extern bool qdf2400_e44_present;
+> -int parse_spcr(bool earlycon);
+> +int acpi_parse_spcr(bool enable_earlycon, bool enable_console);
+>  #else
+> -static inline int parse_spcr(bool earlycon) { return 0; }
+> +static inline int acpi_parse_spcr(bool enable_earlycon, bool enable_console)
+> +{
+> +	return 0;
+> +}
+>  #endif
+>  
+>  #if IS_ENABLED(CONFIG_ACPI_GENERIC_GSI)
+> diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+> index 37b044e78333..aefd0e5115da 100644
+> --- a/include/linux/serial_core.h
+> +++ b/include/linux/serial_core.h
+> @@ -376,10 +376,10 @@ extern int of_setup_earlycon(const struct earlycon_id *match,
+>  			     const char *options);
+>  
+>  #ifdef CONFIG_SERIAL_EARLYCON
+> -extern bool earlycon_init_is_deferred __initdata;
+> +extern bool earlycon_acpi_spcr_enable __initdata;
+>  int setup_earlycon(char *buf);
+>  #else
+> -static const bool earlycon_init_is_deferred;
+> +static const bool earlycon_acpi_spcr_enable;
+>  static inline int setup_earlycon(char *buf) { return 0; }
+>  #endif
+>  
 
-Suggested-by: Al Viro <viro@ZenIV.linux.org.uk>
-Link: http://lkml.kernel.org/r/20180120020237.GM13338@ZenIV.linux.org.uk
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
----
+This looks okay to me. Tested on a variety of arm64 platforms.
 
-v3: Fix sh typo
-v2: Fix cpufreq_table_find_index_* to handle non-results properly
+Reviewed-by: Mark Salter <msalter@redhat.com>
+Tested-by: Mark Salter <msalter@redhat.com>
 
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-index 434c49cc7330..61546ac578d6 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.txt
-@@ -291,3 +291,7 @@ For example:
- 		/* Do something with pos */
- 		pos->frequency = ...
- 	}
-+
-+If you need to work with the position of pos within driver_freq_table,
-+do not subtract the pointers, as it is quite costly. Instead, use the
-+macros cpufreq_for_each_entry_idx() and cpufreq_for_each_valid_entry_idx().
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index b6b369c22272..daf5d39e7529 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -115,10 +115,10 @@ static struct cpufreq_freqs freqs;
- static int init_div_table(void)
- {
- 	struct cpufreq_frequency_table *pos, *freq_tbl = dvfs_info->freq_table;
--	unsigned int tmp, clk_div, ema_div, freq, volt_id;
-+	unsigned int tmp, clk_div, ema_div, freq, volt_id, idx;
- 	struct dev_pm_opp *opp;
- 
--	cpufreq_for_each_entry(pos, freq_tbl) {
-+	cpufreq_for_each_entry_idx(pos, freq_tbl, idx) {
- 		opp = dev_pm_opp_find_freq_exact(dvfs_info->dev,
- 					pos->frequency * 1000, true);
- 		if (IS_ERR(opp)) {
-@@ -154,8 +154,7 @@ static int init_div_table(void)
- 		tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
- 			| ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
- 
--		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
--						(pos - freq_tbl));
-+		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * idx));
- 		dev_pm_opp_put(opp);
- 	}
- 
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 3bbbf9e6960c..6d007f824ca7 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -143,10 +143,9 @@ int cpufreq_table_index_unsorted(struct cpufreq_policy *policy,
- 		break;
- 	}
- 
--	cpufreq_for_each_valid_entry(pos, table) {
-+	cpufreq_for_each_valid_entry_idx(pos, table, i) {
- 		freq = pos->frequency;
- 
--		i = pos - table;
- 		if ((freq < policy->min) || (freq > policy->max))
- 			continue;
- 		if (freq == target_freq) {
-@@ -211,15 +210,16 @@ int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
- 		unsigned int freq)
- {
- 	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
-+	int idx;
- 
- 	if (unlikely(!table)) {
- 		pr_debug("%s: Unable to find frequency table\n", __func__);
- 		return -ENOENT;
- 	}
- 
--	cpufreq_for_each_valid_entry(pos, table)
-+	cpufreq_for_each_valid_entry_idx(pos, table, idx)
- 		if (pos->frequency == freq)
--			return pos - table;
-+			return idx;
- 
- 	return -EINVAL;
- }
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index c46a12df40dd..3177fa7ecb2c 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -600,7 +600,7 @@ static void longhaul_setup_voltagescaling(void)
- 	/* Calculate kHz for one voltage step */
- 	kHz_step = (highest_speed - min_vid_speed) / numvscales;
- 
--	cpufreq_for_each_entry(freq_pos, longhaul_table) {
-+	cpufreq_for_each_entry_idx(freq_pos, longhaul_table, j) {
- 		speed = freq_pos->frequency;
- 		if (speed > min_vid_speed)
- 			pos = (speed - min_vid_speed) / kHz_step + minvid.pos;
-@@ -609,7 +609,7 @@ static void longhaul_setup_voltagescaling(void)
- 		freq_pos->driver_data |= mV_vrm_table[pos] << 8;
- 		vid = vrm_mV_table[mV_vrm_table[pos]];
- 		pr_info("f: %d kHz, index: %d, vid: %d mV\n",
--			speed, (int)(freq_pos - longhaul_table), vid.mV);
-+			speed, j, vid.mV);
- 	}
- 
- 	can_scale_voltage = 1;
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index b257fc7d5204..75dfbd2a58ea 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -139,7 +139,7 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	struct cpufreq_frequency_table *pos;
- 	const u32 *max_freqp;
- 	u32 max_freq;
--	int cur_astate;
-+	int cur_astate, idx;
- 	struct resource res;
- 	struct device_node *cpu, *dn;
- 	int err = -ENODEV;
-@@ -198,9 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	pr_debug("initializing frequency table\n");
- 
- 	/* initialize frequency table */
--	cpufreq_for_each_entry(pos, pas_freqs) {
-+	cpufreq_for_each_entry_idx(pos, pas_freqs, idx) {
- 		pos->frequency = get_astate_freq(pos->driver_data) * 100000;
--		pr_debug("%d: %d\n", (int)(pos - pas_freqs), pos->frequency);
-+		pr_debug("%d: %d\n", idx, pos->frequency);
- 	}
- 
- 	cur_astate = get_cur_astate(policy->cpu);
-diff --git a/drivers/sh/clk/core.c b/drivers/sh/clk/core.c
-index 92863e3818e5..9475353f49d6 100644
---- a/drivers/sh/clk/core.c
-+++ b/drivers/sh/clk/core.c
-@@ -197,10 +197,11 @@ int clk_rate_table_find(struct clk *clk,
- 			unsigned long rate)
- {
- 	struct cpufreq_frequency_table *pos;
-+	int idx;
- 
--	cpufreq_for_each_valid_entry(pos, freq_table)
-+	cpufreq_for_each_valid_entry_idx(pos, freq_table, idx)
- 		if (pos->frequency == rate)
--			return pos - freq_table;
-+			return idx;
- 
- 	return -ENOENT;
- }
-diff --git a/drivers/staging/irda/drivers/sh_sir.c b/drivers/staging/irda/drivers/sh_sir.c
-index fede6864c737..0d0687cc454a 100644
---- a/drivers/staging/irda/drivers/sh_sir.c
-+++ b/drivers/staging/irda/drivers/sh_sir.c
-@@ -226,7 +226,7 @@ static u32 sh_sir_find_sclk(struct clk *irda_clk)
- 	clk_put(pclk);
- 
- 	/* IrDA can not set over peripheral_clk */
--	cpufreq_for_each_valid_entry(pos, freq_table) {
-+	cpufreq_for_each_valid_entry_idx(pos, freq_table, index) {
- 		u32 freq = pos->frequency;
- 
- 		/* IrDA should not over peripheral_clk */
-@@ -236,7 +236,7 @@ static u32 sh_sir_find_sclk(struct clk *irda_clk)
- 		tmp = freq % SCLK_BASE;
- 		if (tmp < min) {
- 			min = tmp;
--			index = pos - freq_table;
-+			break;
- 		}
- 	}
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 065f3a8eb486..21e8d248d956 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -628,6 +628,18 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
- #define cpufreq_for_each_entry(pos, table)	\
- 	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)
- 
-+/*
-+ * cpufreq_for_each_entry_idx -	iterate over a cpufreq_frequency_table
-+ *	with index
-+ * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
-+ * @table:	the cpufreq_frequency_table * to iterate over.
-+ * @idx:	the table entry currently being processed
-+ */
-+
-+#define cpufreq_for_each_entry_idx(pos, table, idx)	\
-+	for (pos = table, idx = 0; pos->frequency != CPUFREQ_TABLE_END; \
-+		pos++, idx++)
-+
- /*
-  * cpufreq_for_each_valid_entry -     iterate over a cpufreq_frequency_table
-  *	excluding CPUFREQ_ENTRY_INVALID frequencies.
-@@ -641,6 +653,21 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
- 			continue;					\
- 		else
- 
-+/*
-+ * cpufreq_for_each_valid_entry_idx -     iterate with index over a cpufreq
-+ *	frequency_table excluding CPUFREQ_ENTRY_INVALID frequencies.
-+ * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
-+ * @table:	the cpufreq_frequency_table * to iterate over.
-+ * @idx:	the table entry currently being processed
-+ */
-+
-+#define cpufreq_for_each_valid_entry_idx(pos, table, idx)		\
-+	cpufreq_for_each_entry_idx(pos, table, idx)			\
-+		if (pos->frequency == CPUFREQ_ENTRY_INVALID)		\
-+			continue;					\
-+		else
-+
-+
- int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
- 				    struct cpufreq_frequency_table *table);
- 
-@@ -667,19 +694,20 @@ static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpufreq_frequency_table *table = policy->freq_table;
--	struct cpufreq_frequency_table *pos, *best = table - 1;
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int freq;
-+	int idx, best = -1;
- 
--	cpufreq_for_each_valid_entry(pos, table) {
-+	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
- 		freq = pos->frequency;
- 
- 		if (freq >= target_freq)
--			return pos - table;
-+			return idx;
- 
--		best = pos;
-+		best = idx;
- 	}
- 
--	return best - table;
-+	return best;
- }
- 
- /* Find lowest freq at or above target in a table in descending order */
-@@ -687,28 +715,29 @@ static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpufreq_frequency_table *table = policy->freq_table;
--	struct cpufreq_frequency_table *pos, *best = table - 1;
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int freq;
-+	int idx, best = -1;
- 
--	cpufreq_for_each_valid_entry(pos, table) {
-+	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
- 		freq = pos->frequency;
- 
- 		if (freq == target_freq)
--			return pos - table;
-+			return idx;
- 
- 		if (freq > target_freq) {
--			best = pos;
-+			best = idx;
- 			continue;
- 		}
- 
- 		/* No freq found above target_freq */
--		if (best == table - 1)
--			return pos - table;
-+		if (best == -1)
-+			return idx;
- 
--		return best - table;
-+		return best;
- 	}
- 
--	return best - table;
-+	return best;
- }
- 
- /* Works only on sorted freq-tables */
-@@ -728,28 +757,29 @@ static inline int cpufreq_table_find_index_ah(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpufreq_frequency_table *table = policy->freq_table;
--	struct cpufreq_frequency_table *pos, *best = table - 1;
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int freq;
-+	int idx, best = -1;
- 
--	cpufreq_for_each_valid_entry(pos, table) {
-+	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
- 		freq = pos->frequency;
- 
- 		if (freq == target_freq)
--			return pos - table;
-+			return idx;
- 
- 		if (freq < target_freq) {
--			best = pos;
-+			best = idx;
- 			continue;
- 		}
- 
- 		/* No freq found below target_freq */
--		if (best == table - 1)
--			return pos - table;
-+		if (best == -1)
-+			return idx;
- 
--		return best - table;
-+		return best;
- 	}
- 
--	return best - table;
-+	return best;
- }
- 
- /* Find highest freq at or below target in a table in descending order */
-@@ -757,19 +787,20 @@ static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpufreq_frequency_table *table = policy->freq_table;
--	struct cpufreq_frequency_table *pos, *best = table - 1;
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int freq;
-+	int idx, best = -1;
- 
--	cpufreq_for_each_valid_entry(pos, table) {
-+	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
- 		freq = pos->frequency;
- 
- 		if (freq <= target_freq)
--			return pos - table;
-+			return idx;
- 
--		best = pos;
-+		best = idx;
- 	}
- 
--	return best - table;
-+	return best;
- }
- 
- /* Works only on sorted freq-tables */
-@@ -789,32 +820,33 @@ static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpufreq_frequency_table *table = policy->freq_table;
--	struct cpufreq_frequency_table *pos, *best = table - 1;
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int freq;
-+	int idx, best = -1;
- 
--	cpufreq_for_each_valid_entry(pos, table) {
-+	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
- 		freq = pos->frequency;
- 
- 		if (freq == target_freq)
--			return pos - table;
-+			return idx;
- 
- 		if (freq < target_freq) {
--			best = pos;
-+			best = idx;
- 			continue;
- 		}
- 
- 		/* No freq found below target_freq */
--		if (best == table - 1)
--			return pos - table;
-+		if (best == -1)
-+			return idx;
- 
- 		/* Choose the closest freq */
--		if (target_freq - best->frequency > freq - target_freq)
--			return pos - table;
-+		if (target_freq - table[best].frequency > freq - target_freq)
-+			return idx;
- 
--		return best - table;
-+		return best;
- 	}
- 
--	return best - table;
-+	return best;
- }
- 
- /* Find closest freq to target in a table in descending order */
-@@ -822,32 +854,33 @@ static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpufreq_frequency_table *table = policy->freq_table;
--	struct cpufreq_frequency_table *pos, *best = table - 1;
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int freq;
-+	int idx, best = -1;
- 
--	cpufreq_for_each_valid_entry(pos, table) {
-+	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
- 		freq = pos->frequency;
- 
- 		if (freq == target_freq)
--			return pos - table;
-+			return idx;
- 
- 		if (freq > target_freq) {
--			best = pos;
-+			best = idx;
- 			continue;
- 		}
- 
- 		/* No freq found above target_freq */
--		if (best == table - 1)
--			return pos - table;
-+		if (best == -1)
-+			return idx;
- 
- 		/* Choose the closest freq */
--		if (best->frequency - target_freq > target_freq - freq)
--			return pos - table;
-+		if (table[best].frequency - target_freq > target_freq - freq)
-+			return idx;
- 
--		return best - table;
-+		return best;
- 	}
- 
--	return best - table;
-+	return best;
- }
- 
- /* Works only on sorted freq-tables */
+
