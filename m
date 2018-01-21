@@ -1,284 +1,448 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH v3 07/16] iio: adc: axp20x_adc: add support for AXP813
- ADC
-Date: Sun, 21 Jan 2018 12:26:55 +0000
-Message-ID: <20180121122655.0efd9480@archlinux>
-References: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz@free-electrons.com>
-        <e9e6b1e841f6b2ce66076d3a4031e3579ead8486.1516012352.git-series.quentin.schulz@free-electrons.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: [PATCH] cpufreq: add and use cpufreq_for_each_{valid_,}entry_idx
+Date: Sun, 21 Jan 2018 17:11:17 +0100
+Message-ID: <20180121161117.GA7073@light.dominikbrodowski.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:47006 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751019AbeAUM1C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 21 Jan 2018 07:27:02 -0500
-In-Reply-To: <e9e6b1e841f6b2ce66076d3a4031e3579ead8486.1516012352.git-series.quentin.schulz@free-electrons.com>
+Received: from isilmar-4.linta.de ([136.243.71.142]:51778 "EHLO
+        isilmar-4.linta.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751206AbeAUQMJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Jan 2018 11:12:09 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, sre@kernel.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, linux-sunxi@googlegroups.com, julian.calaby@gmail.com
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Cc: viro@ZenIV.linux.org.uk
 
-On Mon, 15 Jan 2018 11:33:41 +0100
-Quentin Schulz <quentin.schulz@free-electrons.com> wrote:
+Pointer subtraction is slow and tedious. Therefore, replace all instances
+where cpufreq_for_each_{valid_,}entry loops contained such substractions
+with a macro which provides an index to the element currently being
+iterated over.
 
-> The X-Powers AXP813 PMIC is really close to what is already done for
-> AXP20X/AXP22X.
-> 
-> There are two pairs of bits to set the rate (one for Voltage and Current
-> measurements and one for TS/GPIO0 voltage measurements) instead of one.
-> 
-> The register to set the ADC rates is different from the one for
-> AXP20X/AXP22X.
-> 
-> GPIO0 can be used as an ADC (measuring Volts) unlike for AXP22X.
-> 
-> The scales to apply to the different inputs are unlike the ones from
-> AXP20X and AXP22X.
-> 
-> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Applied to the togreg branch of iio.git and pushed out as testing
-for the autobuilders to play with it.
+Suggested-by: Al Viro <viro@ZenIV.linux.org.uk>
+Link: http://lkml.kernel.org/r/20180120020237.GM13338@ZenIV.linux.org.uk
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
-One thing that might be nice to tidy up in this driver though.
-
-CHECK   drivers/iio/adc/axp20x_adc.c
-drivers/iio/adc/axp20x_adc.c:548:26: warning: dubious: !x & y
-drivers/iio/adc/axp20x_adc.c:553:26: warning: dubious: !x & y
-
-Those are 'interesting' code constructions.  It may be worth being
-a little more verbose to keep sparse happy and suppress the
-warning.
-
-Thanks,
-
-Jonathan
-
-> ---
->  drivers/iio/adc/axp20x_adc.c | 123 ++++++++++++++++++++++++++++++++++++-
->  include/linux/mfd/axp20x.h   |   2 +-
->  2 files changed, 125 insertions(+)
-> 
-> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-> index 3968053..7cdb8bc 100644
-> --- a/drivers/iio/adc/axp20x_adc.c
-> +++ b/drivers/iio/adc/axp20x_adc.c
-> @@ -35,8 +35,13 @@
->  #define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
->  
->  #define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
-> +#define AXP813_V_I_ADC_RATE_MASK		GENMASK(5, 4)
-> +#define AXP813_ADC_RATE_MASK			(AXP20X_ADC_RATE_MASK | AXP813_V_I_ADC_RATE_MASK)
->  #define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC_RATE_MASK)
->  #define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_ADC_RATE_MASK)
-> +#define AXP813_TS_GPIO0_ADC_RATE_HZ(x)		AXP20X_ADC_RATE_HZ(x)
-> +#define AXP813_V_I_ADC_RATE_HZ(x)		((ilog2((x) / 100) << 4) & AXP813_V_I_ADC_RATE_MASK)
-> +#define AXP813_ADC_RATE_HZ(x)			(AXP20X_ADC_RATE_HZ(x) | AXP813_V_I_ADC_RATE_HZ(x))
->  
->  #define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
->  	{							\
-> @@ -95,6 +100,12 @@ enum axp22x_adc_channel_i {
->  	AXP22X_BATT_DISCHRG_I,
->  };
->  
-> +enum axp813_adc_channel_v {
-> +	AXP813_TS_IN = 0,
-> +	AXP813_GPIO0_V,
-> +	AXP813_BATT_V,
-> +};
-> +
->  static struct iio_map axp20x_maps[] = {
->  	{
->  		.consumer_dev_name = "axp20x-usb-power-supply",
-> @@ -197,6 +208,25 @@ static const struct iio_chan_spec axp22x_adc_channels[] = {
->  			   AXP20X_BATT_DISCHRG_I_H),
->  };
->  
-> +static const struct iio_chan_spec axp813_adc_channels[] = {
-> +	{
-> +		.type = IIO_TEMP,
-> +		.address = AXP22X_PMIC_TEMP_H,
-> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
-> +				      BIT(IIO_CHAN_INFO_SCALE) |
-> +				      BIT(IIO_CHAN_INFO_OFFSET),
-> +		.datasheet_name = "pmic_temp",
-> +	},
-> +	AXP20X_ADC_CHANNEL(AXP813_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
-> +			   AXP288_GP_ADC_H),
-> +	AXP20X_ADC_CHANNEL(AXP813_BATT_V, "batt_v", IIO_VOLTAGE,
-> +			   AXP20X_BATT_V_H),
-> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-> +			   AXP20X_BATT_CHRG_I_H),
-> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
-> +			   AXP20X_BATT_DISCHRG_I_H),
-> +};
-> +
->  static int axp20x_adc_raw(struct iio_dev *indio_dev,
->  			  struct iio_chan_spec const *chan, int *val)
->  {
-> @@ -243,6 +273,18 @@ static int axp22x_adc_raw(struct iio_dev *indio_dev,
->  	return IIO_VAL_INT;
->  }
->  
-> +static int axp813_adc_raw(struct iio_dev *indio_dev,
-> +			  struct iio_chan_spec const *chan, int *val)
-> +{
-> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-> +
-> +	*val = axp20x_read_variable_width(info->regmap, chan->address, 12);
-> +	if (*val < 0)
-> +		return *val;
-> +
-> +	return IIO_VAL_INT;
-> +}
-> +
->  static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
->  {
->  	switch (channel) {
-> @@ -273,6 +315,24 @@ static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
->  	}
->  }
->  
-> +static int axp813_adc_scale_voltage(int channel, int *val, int *val2)
-> +{
-> +	switch (channel) {
-> +	case AXP813_GPIO0_V:
-> +		*val = 0;
-> +		*val2 = 800000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case AXP813_BATT_V:
-> +		*val = 1;
-> +		*val2 = 100000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
->  static int axp20x_adc_scale_current(int channel, int *val, int *val2)
->  {
->  	switch (channel) {
-> @@ -342,6 +402,26 @@ static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
->  	}
->  }
->  
-> +static int axp813_adc_scale(struct iio_chan_spec const *chan, int *val,
-> +			    int *val2)
-> +{
-> +	switch (chan->type) {
-> +	case IIO_VOLTAGE:
-> +		return axp813_adc_scale_voltage(chan->channel, val, val2);
-> +
-> +	case IIO_CURRENT:
-> +		*val = 1;
-> +		return IIO_VAL_INT;
-> +
-> +	case IIO_TEMP:
-> +		*val = 100;
-> +		return IIO_VAL_INT;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
->  static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
->  				     int *val)
->  {
-> @@ -425,6 +505,26 @@ static int axp22x_read_raw(struct iio_dev *indio_dev,
->  	}
->  }
->  
-> +static int axp813_read_raw(struct iio_dev *indio_dev,
-> +			   struct iio_chan_spec const *chan, int *val,
-> +			   int *val2, long mask)
-> +{
-> +	switch (mask) {
-> +	case IIO_CHAN_INFO_OFFSET:
-> +		*val = -2667;
-> +		return IIO_VAL_INT;
-> +
-> +	case IIO_CHAN_INFO_SCALE:
-> +		return axp813_adc_scale(chan, val, val2);
-> +
-> +	case IIO_CHAN_INFO_RAW:
-> +		return axp813_adc_raw(indio_dev, chan, val);
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
->  static int axp20x_write_raw(struct iio_dev *indio_dev,
->  			    struct iio_chan_spec const *chan, int val, int val2,
->  			    long mask)
-> @@ -470,6 +570,10 @@ static const struct iio_info axp22x_adc_iio_info = {
->  	.read_raw = axp22x_read_raw,
->  };
->  
-> +static const struct iio_info axp813_adc_iio_info = {
-> +	.read_raw = axp813_read_raw,
-> +};
-> +
->  static int axp20x_adc_rate(struct axp20x_adc_iio *info, int rate)
->  {
->  	return regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
-> @@ -484,6 +588,13 @@ static int axp22x_adc_rate(struct axp20x_adc_iio *info, int rate)
->  				  AXP22X_ADC_RATE_HZ(rate));
->  }
->  
-> +static int axp813_adc_rate(struct axp20x_adc_iio *info, int rate)
-> +{
-> +	return regmap_update_bits(info->regmap, AXP813_ADC_RATE,
-> +				 AXP813_ADC_RATE_MASK,
-> +				 AXP813_ADC_RATE_HZ(rate));
-> +}
-> +
->  struct axp_data {
->  	const struct iio_info		*iio_info;
->  	int				num_channels;
-> @@ -515,9 +626,20 @@ static const struct axp_data axp22x_data = {
->  	.maps = axp22x_maps,
->  };
->  
-> +static const struct axp_data axp813_data = {
-> +	.iio_info = &axp813_adc_iio_info,
-> +	.num_channels = ARRAY_SIZE(axp813_adc_channels),
-> +	.channels = axp813_adc_channels,
-> +	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
-> +	.adc_rate = axp813_adc_rate,
-> +	.adc_en2 = false,
-> +	.maps = axp22x_maps,
-> +};
-> +
->  static const struct of_device_id axp20x_adc_of_match[] = {
->  	{ .compatible = "x-powers,axp209-adc", .data = (void *)&axp20x_data, },
->  	{ .compatible = "x-powers,axp221-adc", .data = (void *)&axp22x_data, },
-> +	{ .compatible = "x-powers,axp813-adc", .data = (void *)&axp813_data, },
->  	{ /* sentinel */ }
->  };
->  MODULE_DEVICE_TABLE(of, axp20x_adc_of_match);
-> @@ -525,6 +647,7 @@ MODULE_DEVICE_TABLE(of, axp20x_adc_of_match);
->  static const struct platform_device_id axp20x_adc_id_match[] = {
->  	{ .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
->  	{ .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
-> +	{ .name = "axp813-adc", .driver_data = (kernel_ulong_t)&axp813_data, },
->  	{ /* sentinel */ },
->  };
->  MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index 080798f..82bf774 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -266,6 +266,8 @@ enum axp20x_variants {
->  #define AXP288_RT_BATT_V_H		0xa0
->  #define AXP288_RT_BATT_V_L		0xa1
->  
-> +#define AXP813_ADC_RATE			0x85
-> +
->  /* Fuel Gauge */
->  #define AXP288_FG_RDC1_REG          0xba
->  #define AXP288_FG_RDC0_REG          0xbb
+diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+index 434c49cc7330..61546ac578d6 100644
+--- a/Documentation/cpu-freq/cpu-drivers.txt
++++ b/Documentation/cpu-freq/cpu-drivers.txt
+@@ -291,3 +291,7 @@ For example:
+ 		/* Do something with pos */
+ 		pos->frequency = ...
+ 	}
++
++If you need to work with the position of pos within driver_freq_table,
++do not subtract the pointers, as it is quite costly. Instead, use the
++macros cpufreq_for_each_entry_idx() and cpufreq_for_each_valid_entry_idx().
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index b6b369c22272..daf5d39e7529 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -115,10 +115,10 @@ static struct cpufreq_freqs freqs;
+ static int init_div_table(void)
+ {
+ 	struct cpufreq_frequency_table *pos, *freq_tbl = dvfs_info->freq_table;
+-	unsigned int tmp, clk_div, ema_div, freq, volt_id;
++	unsigned int tmp, clk_div, ema_div, freq, volt_id, idx;
+ 	struct dev_pm_opp *opp;
+ 
+-	cpufreq_for_each_entry(pos, freq_tbl) {
++	cpufreq_for_each_entry_idx(pos, freq_tbl, idx) {
+ 		opp = dev_pm_opp_find_freq_exact(dvfs_info->dev,
+ 					pos->frequency * 1000, true);
+ 		if (IS_ERR(opp)) {
+@@ -154,8 +154,7 @@ static int init_div_table(void)
+ 		tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
+ 			| ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
+ 
+-		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
+-						(pos - freq_tbl));
++		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * idx));
+ 		dev_pm_opp_put(opp);
+ 	}
+ 
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 3bbbf9e6960c..6d007f824ca7 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -143,10 +143,9 @@ int cpufreq_table_index_unsorted(struct cpufreq_policy *policy,
+ 		break;
+ 	}
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, i) {
+ 		freq = pos->frequency;
+ 
+-		i = pos - table;
+ 		if ((freq < policy->min) || (freq > policy->max))
+ 			continue;
+ 		if (freq == target_freq) {
+@@ -211,15 +210,16 @@ int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
+ 		unsigned int freq)
+ {
+ 	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
++	int idx;
+ 
+ 	if (unlikely(!table)) {
+ 		pr_debug("%s: Unable to find frequency table\n", __func__);
+ 		return -ENOENT;
+ 	}
+ 
+-	cpufreq_for_each_valid_entry(pos, table)
++	cpufreq_for_each_valid_entry_idx(pos, table, idx)
+ 		if (pos->frequency == freq)
+-			return pos - table;
++			return idx;
+ 
+ 	return -EINVAL;
+ }
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index c46a12df40dd..3177fa7ecb2c 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -600,7 +600,7 @@ static void longhaul_setup_voltagescaling(void)
+ 	/* Calculate kHz for one voltage step */
+ 	kHz_step = (highest_speed - min_vid_speed) / numvscales;
+ 
+-	cpufreq_for_each_entry(freq_pos, longhaul_table) {
++	cpufreq_for_each_entry_idx(freq_pos, longhaul_table, j) {
+ 		speed = freq_pos->frequency;
+ 		if (speed > min_vid_speed)
+ 			pos = (speed - min_vid_speed) / kHz_step + minvid.pos;
+@@ -609,7 +609,7 @@ static void longhaul_setup_voltagescaling(void)
+ 		freq_pos->driver_data |= mV_vrm_table[pos] << 8;
+ 		vid = vrm_mV_table[mV_vrm_table[pos]];
+ 		pr_info("f: %d kHz, index: %d, vid: %d mV\n",
+-			speed, (int)(freq_pos - longhaul_table), vid.mV);
++			speed, j, vid.mV);
+ 	}
+ 
+ 	can_scale_voltage = 1;
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index b257fc7d5204..75dfbd2a58ea 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -139,7 +139,7 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	struct cpufreq_frequency_table *pos;
+ 	const u32 *max_freqp;
+ 	u32 max_freq;
+-	int cur_astate;
++	int cur_astate, idx;
+ 	struct resource res;
+ 	struct device_node *cpu, *dn;
+ 	int err = -ENODEV;
+@@ -198,9 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	pr_debug("initializing frequency table\n");
+ 
+ 	/* initialize frequency table */
+-	cpufreq_for_each_entry(pos, pas_freqs) {
++	cpufreq_for_each_entry_idx(pos, pas_freqs, idx) {
+ 		pos->frequency = get_astate_freq(pos->driver_data) * 100000;
+-		pr_debug("%d: %d\n", (int)(pos - pas_freqs), pos->frequency);
++		pr_debug("%d: %d\n", idx, pos->frequency);
+ 	}
+ 
+ 	cur_astate = get_cur_astate(policy->cpu);
+diff --git a/drivers/sh/clk/core.c b/drivers/sh/clk/core.c
+index 92863e3818e5..3ea3785ddae5 100644
+--- a/drivers/sh/clk/core.c
++++ b/drivers/sh/clk/core.c
+@@ -197,10 +197,11 @@ int clk_rate_table_find(struct clk *clk,
+ 			unsigned long rate)
+ {
+ 	struct cpufreq_frequency_table *pos;
++	int idx;
+ 
+-	cpufreq_for_each_valid_entry(pos, freq_table)
++	cpufreq_for_each_valid_entry(pos, freq_table, idx)
+ 		if (pos->frequency == rate)
+-			return pos - freq_table;
++			return idx;
+ 
+ 	return -ENOENT;
+ }
+diff --git a/drivers/staging/irda/drivers/sh_sir.c b/drivers/staging/irda/drivers/sh_sir.c
+index fede6864c737..0d0687cc454a 100644
+--- a/drivers/staging/irda/drivers/sh_sir.c
++++ b/drivers/staging/irda/drivers/sh_sir.c
+@@ -226,7 +226,7 @@ static u32 sh_sir_find_sclk(struct clk *irda_clk)
+ 	clk_put(pclk);
+ 
+ 	/* IrDA can not set over peripheral_clk */
+-	cpufreq_for_each_valid_entry(pos, freq_table) {
++	cpufreq_for_each_valid_entry_idx(pos, freq_table, index) {
+ 		u32 freq = pos->frequency;
+ 
+ 		/* IrDA should not over peripheral_clk */
+@@ -236,7 +236,7 @@ static u32 sh_sir_find_sclk(struct clk *irda_clk)
+ 		tmp = freq % SCLK_BASE;
+ 		if (tmp < min) {
+ 			min = tmp;
+-			index = pos - freq_table;
++			break;
+ 		}
+ 	}
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 065f3a8eb486..6ed58ca20db9 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -628,6 +628,18 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ #define cpufreq_for_each_entry(pos, table)	\
+ 	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)
+ 
++/*
++ * cpufreq_for_each_entry_idx -	iterate over a cpufreq_frequency_table
++ *	with index
++ * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
++ * @table:	the cpufreq_frequency_table * to iterate over.
++ * @idx:	the table entry currently being processed
++ */
++
++#define cpufreq_for_each_entry_idx(pos, table, idx)	\
++	for (pos = table, idx = 0; pos->frequency != CPUFREQ_TABLE_END; \
++		pos++, idx++)
++
+ /*
+  * cpufreq_for_each_valid_entry -     iterate over a cpufreq_frequency_table
+  *	excluding CPUFREQ_ENTRY_INVALID frequencies.
+@@ -641,6 +653,21 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ 			continue;					\
+ 		else
+ 
++/*
++ * cpufreq_for_each_valid_entry_idx -     iterate with index over a cpufreq
++ *	frequency_table excluding CPUFREQ_ENTRY_INVALID frequencies.
++ * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
++ * @table:	the cpufreq_frequency_table * to iterate over.
++ * @idx:	the table entry currently being processed
++ */
++
++#define cpufreq_for_each_valid_entry_idx(pos, table, idx)		\
++	cpufreq_for_each_entry_idx(pos, table, idx)			\
++		if (pos->frequency == CPUFREQ_ENTRY_INVALID)		\
++			continue;					\
++		else
++
++
+ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+ 				    struct cpufreq_frequency_table *table);
+ 
+@@ -667,19 +694,20 @@ static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = 0;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq >= target_freq)
+-			return pos - table;
++			return idx;
+ 
+-		best = pos;
++		best = idx;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Find lowest freq at or above target in a table in descending order */
+@@ -687,28 +715,29 @@ static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = 0;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq > target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found above target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == 0)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Works only on sorted freq-tables */
+@@ -728,28 +757,29 @@ static inline int cpufreq_table_find_index_ah(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = 0;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq < target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found below target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == 0)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Find highest freq at or below target in a table in descending order */
+@@ -757,19 +787,20 @@ static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = 0;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq <= target_freq)
+-			return pos - table;
++			return idx;
+ 
+-		best = pos;
++		best = idx;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Works only on sorted freq-tables */
+@@ -789,32 +820,33 @@ static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = 0;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq < target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found below target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == 0)
++			return idx;
+ 
+ 		/* Choose the closest freq */
+-		if (target_freq - best->frequency > freq - target_freq)
+-			return pos - table;
++		if (target_freq - table[best].frequency > freq - target_freq)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Find closest freq to target in a table in descending order */
+@@ -822,32 +854,33 @@ static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
+-	struct cpufreq_frequency_table *pos, *best = table - 1;
++	struct cpufreq_frequency_table *pos;
+ 	unsigned int freq;
++	int idx, best = 0;
+ 
+-	cpufreq_for_each_valid_entry(pos, table) {
++	cpufreq_for_each_valid_entry_idx(pos, table, idx) {
+ 		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return pos - table;
++			return idx;
+ 
+ 		if (freq > target_freq) {
+-			best = pos;
++			best = idx;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found above target_freq */
+-		if (best == table - 1)
+-			return pos - table;
++		if (best == 0)
++			return idx;
+ 
+ 		/* Choose the closest freq */
+-		if (best->frequency - target_freq > target_freq - freq)
+-			return pos - table;
++		if (table[best].frequency - target_freq > target_freq - freq)
++			return idx;
+ 
+-		return best - table;
++		return best;
+ 	}
+ 
+-	return best - table;
++	return best;
+ }
+ 
+ /* Works only on sorted freq-tables */
