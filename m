@@ -1,43 +1,50 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [bug report] cpufreq: scpi: remove arm_big_little dependency
-Date: Mon, 22 Jan 2018 13:48:23 +0300
-Message-ID: <20180122104823.GA25283@mwanda>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v3 2/2] thermal: cpu_cooling: use power models from the
+ OPP library
+Date: Mon, 22 Jan 2018 11:03:08 +0000
+Message-ID: <20180122110307.GA31111@e108498-lin.cambridge.arm.com>
+References: <20180119094549.5468-1-quentin.perret@arm.com>
+ <20180119094549.5468-3-quentin.perret@arm.com>
+ <CAJWu+orOoq3uKeaBnTjS+PytwXS3MwK+gasOCLNqj+QxXXZ7Ug@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp2120.oracle.com ([156.151.31.85]:52236 "EHLO
-        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751070AbeAVKsl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jan 2018 05:48:41 -0500
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:57136 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751028AbeAVLDQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 Jan 2018 06:03:16 -0500
 Content-Disposition: inline
+In-Reply-To: <CAJWu+orOoq3uKeaBnTjS+PytwXS3MwK+gasOCLNqj+QxXXZ7Ug@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep.Holla@arm.com
-Cc: linux-pm@vger.kernel.org
+To: Joel Fernandes <joelaf@google.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, Todd Kjos <tkjos@google.com>
 
-Hello Sudeep Holla,
+On Friday 19 Jan 2018 at 15:15:41 (-0800), Joel Fernandes wrote:
+> > @@ -675,18 +668,15 @@ __cpufreq_cooling_register(struct device_node *np,
+> >                         pr_debug("%s: freq:%u KHz\n", __func__, freq);
+> >         }
+> >
+> > -       if (capacitance) {
+> > -               ret = update_freq_table(cpufreq_cdev, capacitance);
+> > -               if (ret) {
+> > -                       cdev = ERR_PTR(ret);
+> > -                       goto remove_ida;
+> > -               }
+> > -
+> > -               cooling_ops = &cpufreq_power_cooling_ops;
+> > -       } else {
+> > -               cooling_ops = &cpufreq_cooling_ops;
+> 
+> Instead of this, is it better to add an API to OPP library to query it
+> if it has power data for all OPPs? Then you don't need to have a
+> 'found_power' variable and also don't unnecessarily call
+> dev_pm_opp_find_freq_ceil in update_freq_table.
 
-The patch 343a8d17fa8d: "cpufreq: scpi: remove arm_big_little
-dependency" from Jan 10, 2018, leads to the following static checker
-warning:
+I had an API that looked like that in v1 and v2 (not used here though)
+but we agreed with Viresh that it wasn't absolutely necessary so I got
+rid of it. I'm not sure how I can avoid to call dev_pm_opp_find_freq_ceil
+though. What did you mean by that ?
 
-	drivers/cpufreq/scpi-cpufreq.c:203 scpi_cpufreq_ready()
-	warn: 'cdev' isn't an ERR_PTR
-
-drivers/cpufreq/scpi-cpufreq.c
-   198  static void scpi_cpufreq_ready(struct cpufreq_policy *policy)
-   199  {
-   200          struct scpi_data *priv = policy->driver_data;
-   201          struct thermal_cooling_device *cdev;
-   202  
-   203          cdev = of_cpufreq_cooling_register(policy);
-   204          if (!IS_ERR(cdev))
-   205                  priv->cdev = cdev;
-
-of_cpufreq_cooling_register() returns NULL on error.  Probably just
-remove the if statement?
-
-   206  }
-
-regards,
-dan carpenter
+Thanks,
+Quentin
