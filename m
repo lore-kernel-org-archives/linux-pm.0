@@ -1,225 +1,308 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH v3] cpufreq: powernv: Add support of frequency domain
-Date: Mon, 22 Jan 2018 13:47:34 +0530
-Message-ID: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:39456 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751041AbeAVIRp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jan 2018 03:17:45 -0500
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id w0M8Eeuu008885
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2018 03:17:45 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2fn838ggmw-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2018 03:17:44 -0500
-Received: from localhost
-        by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
-        Mon, 22 Jan 2018 08:17:42 -0000
-Sender: linux-pm-owner@vger.kernel.org
+From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v3 07/16] iio: adc: axp20x_adc: add support
+ for AXP813 ADC
+Date: Mon, 22 Jan 2018 09:22:25 +0100
+Message-ID: <20180122082225.ovh4l4mu7uwnph3d@qschulz>
+References: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz@free-electrons.com>
+ <e9e6b1e841f6b2ce66076d3a4031e3579ead8486.1516012352.git-series.quentin.schulz@free-electrons.com>
+ <20180121122655.0efd9480@archlinux>
+Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="3kfaxkk7ftnpn2o5"
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBRF6S3JQKGQENALDZJQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20180121122655.0efd9480@archlinux>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, rjw@rjwysocki.net, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 
-Frequency-domain indicates group of CPUs that would share same frequency.
-It is detected using device-tree node "frequency-domain-indicator".
-frequency-domain-indicator is a bitmask which will have different value
-depending upon the generation of the processor.
 
-CPUs of the same chip for which the result of a bitwise AND between
-their PIR and the frequency-domain-indicator is the same share the same
-frequency.
+--3kfaxkk7ftnpn2o5
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
 
-In this patch, we define hash-table indexed by the aforementioned
-bitwise ANDed value to store the cpumask of the CPUs sharing the same
-frequency domain. Further, the cpufreq policy will be created per
-frequency-domain
+Hi Jonathan,
 
-So for POWER9, a cpufreq policy is created per quad while for POWER8 it
-is created per core. Governor decides frequency for each policy but
-multiple cores may come under same policy. In such case frequency needs
-to be set on each core sharing that policy.
+On Sun, Jan 21, 2018 at 12:26:55PM +0000, Jonathan Cameron wrote:
+> On Mon, 15 Jan 2018 11:33:41 +0100
+> Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> 
+> > The X-Powers AXP813 PMIC is really close to what is already done for
+> > AXP20X/AXP22X.
+> > 
+> > There are two pairs of bits to set the rate (one for Voltage and Current
+> > measurements and one for TS/GPIO0 voltage measurements) instead of one.
+> > 
+> > The register to set the ADC rates is different from the one for
+> > AXP20X/AXP22X.
+> > 
+> > GPIO0 can be used as an ADC (measuring Volts) unlike for AXP22X.
+> > 
+> > The scales to apply to the different inputs are unlike the ones from
+> > AXP20X and AXP22X.
+> > 
+> > Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> > Acked-by: Jonathan Cameron <Jonathan.Cameron-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>
+> Applied to the togreg branch of iio.git and pushed out as testing
+> for the autobuilders to play with it.
+> 
+> One thing that might be nice to tidy up in this driver though.
+> 
+> CHECK   drivers/iio/adc/axp20x_adc.c
+> drivers/iio/adc/axp20x_adc.c:548:26: warning: dubious: !x & y
+> drivers/iio/adc/axp20x_adc.c:553:26: warning: dubious: !x & y
+> 
+> Those are 'interesting' code constructions.  It may be worth being
+> a little more verbose to keep sparse happy and suppress the
+> warning.
+> 
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
+Would adding a val = !!val; before the call to the macro be "verbose"
+enough for you?
 
-Skiboot patch required for the corresponding device-tree changes have been
-posted here : http://patchwork.ozlabs.org/patch/862256/
+Sparse does not complain anymore after that.
 
- drivers/cpufreq/powernv-cpufreq.c | 104 ++++++++++++++++++++++++++++++++++----
- 1 file changed, 95 insertions(+), 9 deletions(-)
+Thanks,
+Quentin
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index b6d7c4c..aab23a4 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -37,6 +37,7 @@
- #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
- #include <asm/opal.h>
- #include <linux/timer.h>
-+#include <linux/hashtable.h>
- 
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
-@@ -130,6 +131,9 @@ enum throttle_reason_type {
- static int nr_chips;
- static DEFINE_PER_CPU(struct chip *, chip_info);
- 
-+static u32 freq_domain_indicator;
-+static bool p9_occ_quirk;
-+
- /*
-  * Note:
-  * The set of pstates consists of contiguous integers.
-@@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
- 	gpstates->last_gpstate_idx = 0;
- }
- 
-+#define SIZE NR_CPUS
-+#define ORDER_FREQ_MAP ilog2(SIZE)
-+
-+static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
-+
-+struct hashmap {
-+	cpumask_t mask;
-+	int chip_id;
-+	u32 pir_key;
-+	struct hlist_node hash_node;
-+};
-+
-+static void insert(u32 key, int cpu)
-+{
-+	struct hashmap *data;
-+
-+	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
-+		if (data->chip_id == cpu_to_chip_id(cpu) &&
-+			data->pir_key == key) {
-+			cpumask_set_cpu(cpu, &data->mask);
-+			return;
-+		}
-+	}
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
-+	cpumask_set_cpu(cpu, &data->mask);
-+	data->chip_id = cpu_to_chip_id(cpu);
-+	data->pir_key = key;
-+
-+}
-+
- /*
-  * Initialize the freq table based on data obtained
-  * from the firmware passed via device-tree
-@@ -206,6 +242,7 @@ static int init_powernv_pstates(void)
- 	u32 len_ids, len_freqs;
- 	u32 pstate_min, pstate_max, pstate_nominal;
- 	u32 pstate_turbo, pstate_ultra_turbo;
-+	u32 key;
- 
- 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
- 	if (!power_mgt) {
-@@ -246,9 +283,18 @@ static int init_powernv_pstates(void)
- 	else
- 		powernv_pstate_info.wof_enabled = true;
- 
-+	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
-+		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
-+				&freq_domain_indicator))
-+		pr_warn("ibm,freq-domain-indicator not found\n");
-+
-+        if (of_device_is_compatible(power_mgt, "p9-occ-quirk"))
-+		p9_occ_quirk = true;
-+
- next:
- 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
- 		pstate_nominal, pstate_max);
-+	pr_info("frequency domain indicator %d", freq_domain_indicator);
- 	pr_info("Workload Optimized Frequency is %s in the platform\n",
- 		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
- 
-@@ -276,6 +322,15 @@ static int init_powernv_pstates(void)
- 		return -ENODEV;
- 	}
- 
-+	if (freq_domain_indicator) {
-+		hash_init(freq_domain_map);
-+		for_each_possible_cpu(i) {
-+			key = ((u32) get_hard_smp_processor_id(i) &
-+				freq_domain_indicator);
-+			insert(key, i);
-+		}
-+	}
-+
- 	powernv_pstate_info.nr_pstates = nr_pstates;
- 	pr_debug("NR PStates %d\n", nr_pstates);
- 	for (i = 0; i < nr_pstates; i++) {
-@@ -760,25 +815,56 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 
- 	spin_unlock(&gpstates->gpstate_lock);
- 
--	/*
--	 * Use smp_call_function to send IPI and execute the
--	 * mtspr on target CPU.  We could do that without IPI
--	 * if current CPU is within policy->cpus (core)
-+	/* The current DVFS implementation in firmware requires that to set a
-+	 * frequency in a quad, all cores of the quad need to set frequency in
-+	 * their respective PMCR's. Ideally setting frequency on any of the
-+	 * core of that quad should change frequency for the quad.
- 	 */
--	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-+	if (p9_occ_quirk) {
-+		cpumask_t temp;
-+		u32 cpu;
-+
-+		cpumask_copy(&temp, policy->cpus);
-+		while (!cpumask_empty(&temp)) {
-+			cpu = cpumask_first(&temp);
-+			smp_call_function_any(cpu_sibling_mask(cpu),
-+					set_pstate, &freq_data, 1);
-+			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
-+		}
-+	} else {
-+		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-+	}
-+
- 	return 0;
- }
- 
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	int base, i, ret;
-+	int ret;
- 	struct kernfs_node *kn;
- 	struct global_pstate_info *gpstates;
- 
--	base = cpu_first_thread_sibling(policy->cpu);
-+	if (!freq_domain_indicator) {
-+		int base, i;
- 
--	for (i = 0; i < threads_per_core; i++)
--		cpumask_set_cpu(base + i, policy->cpus);
-+		base = cpu_first_thread_sibling(policy->cpu);
-+		for (i = 0; i < threads_per_core; i++)
-+			cpumask_set_cpu(base + i, policy->cpus);
-+	} else {
-+		u32 key;
-+		struct hashmap *data;
-+
-+		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
-+				freq_domain_indicator);
-+		hash_for_each_possible(freq_domain_map, data, hash_node,
-+								 key%SIZE) {
-+			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
-+				data->pir_key == key) {
-+				cpumask_copy(policy->cpus, &data->mask);
-+				break;
-+			}
-+		}
-+	}
- 
- 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
- 	if (!kn) {
--- 
-1.8.3.1
+> Thanks,
+> 
+> Jonathan
+> 
+> > ---
+> >  drivers/iio/adc/axp20x_adc.c | 123 ++++++++++++++++++++++++++++++++++++-
+> >  include/linux/mfd/axp20x.h   |   2 +-
+> >  2 files changed, 125 insertions(+)
+> > 
+> > diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+> > index 3968053..7cdb8bc 100644
+> > --- a/drivers/iio/adc/axp20x_adc.c
+> > +++ b/drivers/iio/adc/axp20x_adc.c
+> > @@ -35,8 +35,13 @@
+> >  #define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
+> >  
+> >  #define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
+> > +#define AXP813_V_I_ADC_RATE_MASK		GENMASK(5, 4)
+> > +#define AXP813_ADC_RATE_MASK			(AXP20X_ADC_RATE_MASK | AXP813_V_I_ADC_RATE_MASK)
+> >  #define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC_RATE_MASK)
+> >  #define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_ADC_RATE_MASK)
+> > +#define AXP813_TS_GPIO0_ADC_RATE_HZ(x)		AXP20X_ADC_RATE_HZ(x)
+> > +#define AXP813_V_I_ADC_RATE_HZ(x)		((ilog2((x) / 100) << 4) & AXP813_V_I_ADC_RATE_MASK)
+> > +#define AXP813_ADC_RATE_HZ(x)			(AXP20X_ADC_RATE_HZ(x) | AXP813_V_I_ADC_RATE_HZ(x))
+> >  
+> >  #define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
+> >  	{							\
+> > @@ -95,6 +100,12 @@ enum axp22x_adc_channel_i {
+> >  	AXP22X_BATT_DISCHRG_I,
+> >  };
+> >  
+> > +enum axp813_adc_channel_v {
+> > +	AXP813_TS_IN = 0,
+> > +	AXP813_GPIO0_V,
+> > +	AXP813_BATT_V,
+> > +};
+> > +
+> >  static struct iio_map axp20x_maps[] = {
+> >  	{
+> >  		.consumer_dev_name = "axp20x-usb-power-supply",
+> > @@ -197,6 +208,25 @@ static const struct iio_chan_spec axp22x_adc_channels[] = {
+> >  			   AXP20X_BATT_DISCHRG_I_H),
+> >  };
+> >  
+> > +static const struct iio_chan_spec axp813_adc_channels[] = {
+> > +	{
+> > +		.type = IIO_TEMP,
+> > +		.address = AXP22X_PMIC_TEMP_H,
+> > +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
+> > +				      BIT(IIO_CHAN_INFO_SCALE) |
+> > +				      BIT(IIO_CHAN_INFO_OFFSET),
+> > +		.datasheet_name = "pmic_temp",
+> > +	},
+> > +	AXP20X_ADC_CHANNEL(AXP813_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
+> > +			   AXP288_GP_ADC_H),
+> > +	AXP20X_ADC_CHANNEL(AXP813_BATT_V, "batt_v", IIO_VOLTAGE,
+> > +			   AXP20X_BATT_V_H),
+> > +	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
+> > +			   AXP20X_BATT_CHRG_I_H),
+> > +	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
+> > +			   AXP20X_BATT_DISCHRG_I_H),
+> > +};
+> > +
+> >  static int axp20x_adc_raw(struct iio_dev *indio_dev,
+> >  			  struct iio_chan_spec const *chan, int *val)
+> >  {
+> > @@ -243,6 +273,18 @@ static int axp22x_adc_raw(struct iio_dev *indio_dev,
+> >  	return IIO_VAL_INT;
+> >  }
+> >  
+> > +static int axp813_adc_raw(struct iio_dev *indio_dev,
+> > +			  struct iio_chan_spec const *chan, int *val)
+> > +{
+> > +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
+> > +
+> > +	*val = axp20x_read_variable_width(info->regmap, chan->address, 12);
+> > +	if (*val < 0)
+> > +		return *val;
+> > +
+> > +	return IIO_VAL_INT;
+> > +}
+> > +
+> >  static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
+> >  {
+> >  	switch (channel) {
+> > @@ -273,6 +315,24 @@ static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
+> >  	}
+> >  }
+> >  
+> > +static int axp813_adc_scale_voltage(int channel, int *val, int *val2)
+> > +{
+> > +	switch (channel) {
+> > +	case AXP813_GPIO0_V:
+> > +		*val = 0;
+> > +		*val2 = 800000;
+> > +		return IIO_VAL_INT_PLUS_MICRO;
+> > +
+> > +	case AXP813_BATT_V:
+> > +		*val = 1;
+> > +		*val2 = 100000;
+> > +		return IIO_VAL_INT_PLUS_MICRO;
+> > +
+> > +	default:
+> > +		return -EINVAL;
+> > +	}
+> > +}
+> > +
+> >  static int axp20x_adc_scale_current(int channel, int *val, int *val2)
+> >  {
+> >  	switch (channel) {
+> > @@ -342,6 +402,26 @@ static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
+> >  	}
+> >  }
+> >  
+> > +static int axp813_adc_scale(struct iio_chan_spec const *chan, int *val,
+> > +			    int *val2)
+> > +{
+> > +	switch (chan->type) {
+> > +	case IIO_VOLTAGE:
+> > +		return axp813_adc_scale_voltage(chan->channel, val, val2);
+> > +
+> > +	case IIO_CURRENT:
+> > +		*val = 1;
+> > +		return IIO_VAL_INT;
+> > +
+> > +	case IIO_TEMP:
+> > +		*val = 100;
+> > +		return IIO_VAL_INT;
+> > +
+> > +	default:
+> > +		return -EINVAL;
+> > +	}
+> > +}
+> > +
+> >  static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
+> >  				     int *val)
+> >  {
+> > @@ -425,6 +505,26 @@ static int axp22x_read_raw(struct iio_dev *indio_dev,
+> >  	}
+> >  }
+> >  
+> > +static int axp813_read_raw(struct iio_dev *indio_dev,
+> > +			   struct iio_chan_spec const *chan, int *val,
+> > +			   int *val2, long mask)
+> > +{
+> > +	switch (mask) {
+> > +	case IIO_CHAN_INFO_OFFSET:
+> > +		*val = -2667;
+> > +		return IIO_VAL_INT;
+> > +
+> > +	case IIO_CHAN_INFO_SCALE:
+> > +		return axp813_adc_scale(chan, val, val2);
+> > +
+> > +	case IIO_CHAN_INFO_RAW:
+> > +		return axp813_adc_raw(indio_dev, chan, val);
+> > +
+> > +	default:
+> > +		return -EINVAL;
+> > +	}
+> > +}
+> > +
+> >  static int axp20x_write_raw(struct iio_dev *indio_dev,
+> >  			    struct iio_chan_spec const *chan, int val, int val2,
+> >  			    long mask)
+> > @@ -470,6 +570,10 @@ static const struct iio_info axp22x_adc_iio_info = {
+> >  	.read_raw = axp22x_read_raw,
+> >  };
+> >  
+> > +static const struct iio_info axp813_adc_iio_info = {
+> > +	.read_raw = axp813_read_raw,
+> > +};
+> > +
+> >  static int axp20x_adc_rate(struct axp20x_adc_iio *info, int rate)
+> >  {
+> >  	return regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
+> > @@ -484,6 +588,13 @@ static int axp22x_adc_rate(struct axp20x_adc_iio *info, int rate)
+> >  				  AXP22X_ADC_RATE_HZ(rate));
+> >  }
+> >  
+> > +static int axp813_adc_rate(struct axp20x_adc_iio *info, int rate)
+> > +{
+> > +	return regmap_update_bits(info->regmap, AXP813_ADC_RATE,
+> > +				 AXP813_ADC_RATE_MASK,
+> > +				 AXP813_ADC_RATE_HZ(rate));
+> > +}
+> > +
+> >  struct axp_data {
+> >  	const struct iio_info		*iio_info;
+> >  	int				num_channels;
+> > @@ -515,9 +626,20 @@ static const struct axp_data axp22x_data = {
+> >  	.maps = axp22x_maps,
+> >  };
+> >  
+> > +static const struct axp_data axp813_data = {
+> > +	.iio_info = &axp813_adc_iio_info,
+> > +	.num_channels = ARRAY_SIZE(axp813_adc_channels),
+> > +	.channels = axp813_adc_channels,
+> > +	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
+> > +	.adc_rate = axp813_adc_rate,
+> > +	.adc_en2 = false,
+> > +	.maps = axp22x_maps,
+> > +};
+> > +
+> >  static const struct of_device_id axp20x_adc_of_match[] = {
+> >  	{ .compatible = "x-powers,axp209-adc", .data = (void *)&axp20x_data, },
+> >  	{ .compatible = "x-powers,axp221-adc", .data = (void *)&axp22x_data, },
+> > +	{ .compatible = "x-powers,axp813-adc", .data = (void *)&axp813_data, },
+> >  	{ /* sentinel */ }
+> >  };
+> >  MODULE_DEVICE_TABLE(of, axp20x_adc_of_match);
+> > @@ -525,6 +647,7 @@ MODULE_DEVICE_TABLE(of, axp20x_adc_of_match);
+> >  static const struct platform_device_id axp20x_adc_id_match[] = {
+> >  	{ .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
+> >  	{ .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
+> > +	{ .name = "axp813-adc", .driver_data = (kernel_ulong_t)&axp813_data, },
+> >  	{ /* sentinel */ },
+> >  };
+> >  MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
+> > diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> > index 080798f..82bf774 100644
+> > --- a/include/linux/mfd/axp20x.h
+> > +++ b/include/linux/mfd/axp20x.h
+> > @@ -266,6 +266,8 @@ enum axp20x_variants {
+> >  #define AXP288_RT_BATT_V_H		0xa0
+> >  #define AXP288_RT_BATT_V_L		0xa1
+> >  
+> > +#define AXP813_ADC_RATE			0x85
+> > +
+> >  /* Fuel Gauge */
+> >  #define AXP288_FG_RDC1_REG          0xba
+> >  #define AXP288_FG_RDC0_REG          0xbb
+> 
+--3kfaxkk7ftnpn2o5--
