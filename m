@@ -1,100 +1,132 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH] power: supply: max17042_battery: Always fall back to default platform-data
-Date: Mon, 22 Jan 2018 18:42:18 +0100
-Message-ID: <20180122174218.2492-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:44696 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751040AbeAVRmV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 22 Jan 2018 12:42:21 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Aishwarya Pant <aishpant@gmail.com>
+Subject: [PATCH v2] Documentation/ABI: update cpuidle sysfs
+ documentationDaniel Lezcano <daniel.lezcano@linaro.org>,
+Date: Mon, 22 Jan 2018 23:14:07 +0530
+Message-ID: <20180122174407.GA21985@mordor.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, linux-doc@vger.kernel.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-It is possible to have CONFIG_OF enabled on x86 builds, where we have no
-firmware provided max17042_platform_data. The CONFIG_OF implementation of
-max17042_get_pdata would return NULL in this case, causing the probe to
-fail.
+Update cpuidle documentation using git logs and existing documentation
+in Documentation/cpuidle/sysfs.txt. This might be useful for scripting
+and tracking changes in the ABI.
 
-Instead always fallback to the default platform-data, as used on x86 sofar,
-when there is no firmware provided pdata, independent of CONFIG_OF.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
 ---
- drivers/power/supply/max17042_battery.c | 27 ++++++++++++++++++---------
- 1 file changed, 18 insertions(+), 9 deletions(-)
+Change in v2:
+- Merge cpuidle_sysfs_switch attributes' description with the previous
+  entry.
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index 102b3f71e9a4..35dde81b1c9b 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -886,16 +886,13 @@ static void max17042_init_worker(struct work_struct *work)
+Documentation/ABI/testing/sysfs-devices-system-cpu | 80 +++++++++++++++++++++-
+ 1 file changed, 78 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index bfd29bc8d37a..113402ca9397 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -108,6 +108,8 @@ Description:	CPU topology files that describe a logical CPU's relationship
  
- #ifdef CONFIG_OF
- static struct max17042_platform_data *
--max17042_get_pdata(struct max17042_chip *chip)
-+max17042_get_of_pdata(struct max17042_chip *chip)
- {
- 	struct device *dev = &chip->client->dev;
- 	struct device_node *np = dev->of_node;
- 	u32 prop;
- 	struct max17042_platform_data *pdata;
+ What:		/sys/devices/system/cpu/cpuidle/current_driver
+ 		/sys/devices/system/cpu/cpuidle/current_governor_ro
++		/sys/devices/system/cpu/cpuidle/available_governors
++		/sys/devices/system/cpu/cpuidle/current_governor
+ Date:		September 2007
+ Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+ Description:	Discover cpuidle policy and mechanism
+@@ -119,13 +121,87 @@ Description:	Discover cpuidle policy and mechanism
+ 		Idle policy (governor) is differentiated from idle mechanism
+ 		(driver)
  
--	if (!np)
--		return dev->platform_data;
--
- 	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
- 	if (!pdata)
- 		return NULL;
-@@ -920,7 +917,8 @@ max17042_get_pdata(struct max17042_chip *chip)
+-		current_driver: displays current idle mechanism
++		System global cpuidle related information and tunables are under
++		/sys/devices/system/cpu/cpuidle. Briefly, the attributes are:
  
- 	return pdata;
- }
--#else
-+#endif
+-		current_governor_ro: displays current idle policy
++		current_driver: (RO) displays current idle mechanism
 +
- static struct max17042_reg_data max17047_default_pdata_init_regs[] = {
- 	/*
- 	 * Some firmwares do not set FullSOCThr, Enable End-of-Charge Detection
-@@ -930,15 +928,12 @@ static struct max17042_reg_data max17047_default_pdata_init_regs[] = {
- };
- 
- static struct max17042_platform_data *
--max17042_get_pdata(struct max17042_chip *chip)
-+max17042_get_default_pdata(struct max17042_chip *chip)
- {
- 	struct device *dev = &chip->client->dev;
- 	struct max17042_platform_data *pdata;
- 	int ret, misc_cfg;
- 
--	if (dev->platform_data)
--		return dev->platform_data;
--
- 	/*
- 	 * The MAX17047 gets used on x86 where we might not have pdata, assume
- 	 * the firmware will already have initialized the fuel-gauge and provide
-@@ -971,7 +966,21 @@ max17042_get_pdata(struct max17042_chip *chip)
- 
- 	return pdata;
- }
++		current_governor_ro: (RO) displays current idle policy
 +
-+static struct max17042_platform_data *
-+max17042_get_pdata(struct max17042_chip *chip)
-+{
-+	struct device *dev = &chip->client->dev;
++		With the cpuidle_sysfs_switch boot option enabled (meant for
++		developer testing), the following three attributes are visible
++		instead:
 +
-+#ifdef CONFIG_OF
-+	if (dev->of_node)
-+		return max17042_get_of_pdata(chip);
- #endif
-+	if (dev->platform_data)
-+		return dev->platform_data;
++		current_driver: same as described above
 +
-+	return max17042_get_default_pdata(chip);
-+}
++		available_governors: (RO) displays a space separated list of
++		available governors
++
++		current_governor: (RW) displays current idle policy. Users can
++		switch the governor at runtime by writing to this file.
  
- static const struct regmap_config max17042_regmap_config = {
- 	.reg_bits = 8,
+ 		See files in Documentation/cpuidle/ for more information.
+ 
+ 
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/name
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/latency
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/power
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/time
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
++Date:		September 2007
++KernelVersion:	v2.6.24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		The directory /sys/devices/system/cpu/cpuX/cpuidle contains per
++		logical CPU specific cpuidle information for each online cpu X.
++		The processor idle states which are available for use have the
++		following attributes:
++
++		name: (RO) Name of the idle state (string).
++
++		latency: (RO) The latency to exit out of this idle state (in
++		microseconds).
++
++		power: (RO) The power consumed while in this idle state (in
++		milliwatts).
++
++		time: (RO) The total time spent in this idle state (in microseconds).
++
++		usage: (RO) Number of times this state was entered (a count).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
++Date:		February 2008
++KernelVersion:	v2.6.25
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RO) A small description about the idle state (string).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/disable
++Date:		March 2012
++KernelVersion:	v3.10
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RW) Option to disable this idle state (bool). The behavior and
++		the effect of the disable variable depends on the implementation
++		of a particular governor. In the ladder governor, for example,
++		it is not coherent, i.e. if one is disabling a light state, then
++		all deeper states are disabled as well, but the disable variable
++		does not reflect it. Likewise, if one enables a deep state but a
++		lighter state still is disabled, then this has no effect.
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
++Date:		March 2014
++KernelVersion:	v3.15
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RO) Display the target residency i.e. the minimum amount of
++		time (in microseconds) this cpu should spend in this idle state
++		to make the transition worth the effort.
++
++
+ What:		/sys/devices/system/cpu/cpu#/cpufreq/*
+ Date:		pre-git history
+ Contact:	linux-pm@vger.kernel.org
 -- 
-2.14.3
+2.16.0
