@@ -1,42 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v1 2/4] cpufreq: mediatek: Add mediatek related projects
- into blacklist
-Date: Mon, 22 Jan 2018 15:46:45 +0530
-Message-ID: <20180122101645.GG2421@vireshk-i7>
-References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <1512713278-17807-3-git-send-email-andrew-sh.cheng@mediatek.com>
- <20171211075532.GB25177@vireshk-i7>
- <1516610369.12197.20.camel@mtkswgap22>
+From: davidwang <davidwang@zhaoxin.com>
+Subject: [PATCH] x86/centaur: Mark TSC invariant
+Date: Mon, 22 Jan 2018 18:14:17 +0800
+Message-ID: <1516616057-5158-1-git-send-email-davidwang@zhaoxin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:40952 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751102AbeAVKQs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jan 2018 05:16:48 -0500
-Received: by mail-pg0-f66.google.com with SMTP id g16so6730374pgn.7
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2018 02:16:48 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1516610369.12197.20.camel@mtkswgap22>
+Received: from zxshcas2.zhaoxin.com ([180.169.121.92]:14808 "EHLO
+        ZXSHCAS2.zhaoxin.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1750890AbeAVK3t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jan 2018 05:29:49 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sean Wang <sean.wang@mediatek.com>
-Cc: rjw@rjwysocki.net, Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>, mark.rutland@arm.com, khilman@baylibre.com, devicetree@vger.kernel.org, srv_heupstream@mediatek.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, linux-mediatek@lists.infradead.org, matthias.bgg@gmail.com, linux-arm-kernel@lists.infradead.org, steven.liu@mediatek.com, Ryder.Lee@mediatek.com, Mark-MC.Lee@mediatek.com
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, mingo@kernel.org, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, davidwang <davidwang@zhaoxin.com>
 
-On 22-01-18, 16:39, Sean Wang wrote:
-> Hi, Rafael and Viresh
-> 
-> Can you kindly guide me how to let the patch also be applied to 4.14 and
-> 4.15 tree? Do I need to submit another patches for them?
-> 
-> These trees really need them. Otherwise, multi_v7_defconfig setup will
-> cause an occasional hang or unexpected behaviors on related boards as
-> [1] kernelci reported :-(
+Centaur CPU has a constant frequency TSC and that TSC does not stop in
+C-States. But because the flags are not set for that CPU, the TSC is
+treated as not constant frequency and assumed to stop in C-States, which
+makes it an unreliable and unusable clock source. Setting those flags
+tells the kernel that the TSC is usable, so it will select it over HPET.
+The effect of this is that reading time stamps (from kernel or user space)
+will be faster and more efficent.
 
-You need to send them for stable kernels, just follow the following doc on how
-to send patches for stable kernels.
+Signed-off-by: davidwang <davidwang@zhaoxin.com>
+---
+ arch/x86/kernel/cpu/centaur.c | 4 ++++
+ drivers/acpi/processor_idle.c | 1 +
+ 2 files changed, 5 insertions(+)
 
-Documentation/process/stable-kernel-rules.rst
-
+diff --git a/arch/x86/kernel/cpu/centaur.c b/arch/x86/kernel/cpu/centaur.c
+index 68bc6d9..c578cd2 100644
+--- a/arch/x86/kernel/cpu/centaur.c
++++ b/arch/x86/kernel/cpu/centaur.c
+@@ -106,6 +106,10 @@ static void early_init_centaur(struct cpuinfo_x86 *c)
+ #ifdef CONFIG_X86_64
+ 	set_cpu_cap(c, X86_FEATURE_SYSENTER32);
+ #endif
++	if (c->x86_power & (1 << 8)) {
++		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
++		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
++	}
+ }
+ 
+ static void init_centaur(struct cpuinfo_x86 *c)
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index d50a7b6..5f0071c 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -207,6 +207,7 @@ static void tsc_check_state(int state)
+ 	switch (boot_cpu_data.x86_vendor) {
+ 	case X86_VENDOR_AMD:
+ 	case X86_VENDOR_INTEL:
++	case X86_VENDOR_CENTAUR:
+ 		/*
+ 		 * AMD Fam10h TSC will tick in all
+ 		 * C/P/S0/S1 states when this bit is set.
 -- 
-viresh
+1.9.1
