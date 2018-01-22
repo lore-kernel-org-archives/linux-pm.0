@@ -1,246 +1,225 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFD] Devices that need full power for wakeup
-Date: Mon, 22 Jan 2018 09:00:27 +0100
-Message-ID: <CAJZ5v0h9OniDdLGkSEpU1eKmYKfi49HaG6pBeZYKwtPP9w+LBg@mail.gmail.com>
-References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com>
- <CAJZ5v0iFGQ5uSvjk8mKUnVNL2=sT97qmHRaY9c5w4q8KHZfe_Q@mail.gmail.com>
- <CAPDyKFo+c_Hd9w-VhTx2KPVKF2k=iJdbomT4Hi_mMLgpWkdetw@mail.gmail.com>
- <1871558.5ybir6VhFs@aspire.rjw.lan> <CAPDyKFonEA6iphhPZWyqVbfFG8VbzK80bk8njuR06y_b-7uwDw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH v3] cpufreq: powernv: Add support of frequency domain
+Date: Mon, 22 Jan 2018 13:47:34 +0530
+Message-ID: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f176.google.com ([74.125.82.176]:38338 "EHLO
-        mail-ot0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751149AbeAVIA3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jan 2018 03:00:29 -0500
-Received: by mail-ot0-f176.google.com with SMTP id v5so6710832oth.5
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2018 00:00:29 -0800 (PST)
-In-Reply-To: <CAPDyKFonEA6iphhPZWyqVbfFG8VbzK80bk8njuR06y_b-7uwDw@mail.gmail.com>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:39456 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751041AbeAVIRp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jan 2018 03:17:45 -0500
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id w0M8Eeuu008885
+        for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2018 03:17:45 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2fn838ggmw-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Mon, 22 Jan 2018 03:17:44 -0500
+Received: from localhost
+        by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Mon, 22 Jan 2018 08:17:42 -0000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
+To: viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, rjw@rjwysocki.net, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 
-On Mon, Jan 15, 2018 at 10:11 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 13 January 2018 at 03:42, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Friday, January 12, 2018 12:59:04 PM CET Ulf Hansson wrote:
+Frequency-domain indicates group of CPUs that would share same frequency.
+It is detected using device-tree node "frequency-domain-indicator".
+frequency-domain-indicator is a bitmask which will have different value
+depending upon the generation of the processor.
 
-[cut]
+CPUs of the same chip for which the result of a bitwise AND between
+their PIR and the frequency-domain-indicator is the same share the same
+frequency.
 
->>
->>> >
->>> >> This means that serial console device may
->>> >> be completely powered off during system suspend. However, whether
->>> >> powering off the serial device (and its attached PM domain) can be
->>> >> done, is currently only known by the driver, as upper-layers (PM
->>> >> domain) don't know if the RX pin is re-routed to a GPIO wake IRQ or
->>> >> not.
->>> >
->>> > Well, then what does prevent you from defaulting to "turn off in-band
->>> > power on suspend" (which is the current state of affairs) and then
->>> > using PM_QOS_FLAG_NO_POWER_OFF for indicating the "no power off"
->>> > condition in case you've not rerouted the pin?
->>> >
->>>
->>> Using the PM_QOS_FLAG_NO_POWER_OFF doesn't work, because of the
->>> following reasons.
->>>
->>> If genpd would default to power off the "in-band-power" at system
->>> suspend, devices not supporting remote wakeups (keeping devices
->>> runtime resumed), needs to start announcing that genpd needs to keep
->>> the in-band-power on at system suspend. In other words, they need to
->>> set the PM_QOS_FLAG_NO_POWER_OFF flag.
->>>
->>> However, that wouldn't be sufficient, as the PM_QOS_FLAG_NO_POWER_OFF
->>> flag isn't propagated to parents devices and other wakeup path
->>> resources.
->>
->> It only needs to be propagated to parents if the parents actively
->> route wakeup signals from the children or provide them with power.
->
-> That is correct, but how would the children driver know when to
-> propagate the PM_QOS_FLAG_NO_POWER_OFF flag from the child device to
-> the parent device?
->
-> Or maybe that is not what you are suggesting?
+In this patch, we define hash-table indexed by the aforementioned
+bitwise ANDed value to store the cpumask of the CPUs sharing the same
+frequency domain. Further, the cpufreq policy will be created per
+frequency-domain
 
-No, it isn't.
+So for POWER9, a cpufreq policy is created per quad while for POWER8 it
+is created per core. Governor decides frequency for each policy but
+multiple cores may come under same policy. In such case frequency needs
+to be set on each core sharing that policy.
 
-I see no valid reasons for propagating PM_QOS_FLAG_NO_POWER_OFF.  The
-only case in which it could be potentially useful is when the parent
-is explicitly providing the children with power, but in that case it
-is the responsibility of the parent's driver to take the PM QoS flags
-of the children into account and avoid turning off power at the parent
-if need be.
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+---
 
-OTOH, I see valid reasons for PM_QOS_FLAG_NO_POWER_OFF to not be
-propagated (like when the parent does not provide the children with
-power directly in which case there is no reason to avoid turning off
-power at the parent when any of the children have that flag set).
+Skiboot patch required for the corresponding device-tree changes have been
+posted here : http://patchwork.ozlabs.org/patch/862256/
 
->> In the genpd case the latter is not relevant at least.
->
-> Why not?
->
-> Especially we may have cases when the child device isn't attached to
-> genpd, while the parent device may be.
+ drivers/cpufreq/powernv-cpufreq.c | 104 ++++++++++++++++++++++++++++++++++----
+ 1 file changed, 95 insertions(+), 9 deletions(-)
 
-That only matters if the parent provides power to the child directly
-in which case, again, the parent's driver should (a) know that and (b)
-take care of the child's PM QoS requirements as appropriate.
-
->>
->>> > And I still don't see why this isn't relevant to runtime PM too, at
->>> > least in principle.
->>>
->>> Regarding runtime PM; I don't see any issues,
->>
->> I wonder why.
->>
->> How exactly do you tell the middle layer to avoid turning the in-band power
->> off for devices that are suspended if they need in-band power to signal
->> remote wakeup?
->
-> The driver simply don't allow its device to become runtime suspended.
-
-Well, this is a strategy of dealing with the requirement, but it may
-be sort of wasteful in some cases, like when you could disable clocks
-for the suspended device while avoiding to remove in-band power from
-it at the same time.
-
-It arguably isn't the only strategy that can be used.
-
->>
->> Your example with the pin rerouting is perfectly relevant for runtime PM too,
->> in particular, as the driver may very well want to reroute the pin for remote
->> wakeup and turn the in-band power off for the device then during runtime
->> suspend just like it does for system-wide suspend.
->
-> Correct! In such case the driver allows its device to become runtime suspended.
-
-So instead of preventing runtime suspend from happening at all in the
-other case the driver could indicate the requirement to supply in-band
-power to the device via PM QoS and still allow runtime suspend to
-work.
-
-If that strategy is used, the runtime suspend and system-wide suspend
-cases are not distinct any more from the driver's perspective.
-
->>
->>> but perhaps you have some cases for the ACPI PM domain in mind?
->>>
->>> Anyway, for genpd and drivers that manages devices attached to it: If
->>> the driver and the device can't be configured for remote wakeup (at
->>> runtime suspend), runtime suspend must be prevented by the driver.
->>
->> Why?  I don't see any technical reason for that whatever.
->>
->> The "must" part seems to be totally artificial here.
->>
->>> That's the generic behavior drivers must support, no matter if their
->>> devices are attached to genpd or not, right!?
->>
->> Nope.
->
-> OK, this explains some of our disagreement. :-)
->
-> Artificial or not, I find it quite unlikely that this would work for
-> the general case. The reason is because of how runtime PM totally
-> respects for the device hierarchy.
->
-> For example, if a child driver allows it child device to enter runtime
-> suspend, while it still requires the in-band power to be provided to
-> its device - then how would the parent driver know how to behave in
-> this regards?
-
-Either the parent directly supplies in-band power to its children or
-it doesn't.  In the former case the parent's driver needs to know that
-this is the case and deal with it.  In the latter case it doesn't need
-to care.
-
-> Especially in cases when the parent device provides power to the
-> child, then, when the parent device's child count drops to zero, the
-> parent device may also enter runtime suspend.
-
-Yes, it can enter the "suspended" metastate, but that metastate may be
-mapped to multiple physical states.  Which of them is actually used
-may depend on the power requirements of the children.
-
-> In other words, what happens to the child when the parent stops providing power to it,
-> under these circumstances?
->
-> I think the general assumption for these cases, is that it wouldn't
-> play well, which is why the child device is prevented to enter runtime
-> suspend, in case it needs in-band power as to deliver remote-wakeups.
-
-That is how it may be implemented, but it doesn't have to be done this way.
-
-Again, please don't confuse a requirement with a strategy to meet it.
-
->>> The point is, for remote wakeups, genpd and its users don't need the
->>> PM_QOS_FLAG_NO_POWER_OFF flag, or anything else.
->>
->> Yes, they do or at least they may, which is why it is already supported in
->> there.
->
-> I did a quick investigation. The PM_QOS_FLAG_NO_POWER_OFF flag, added
-> in 2012, only have two drivers that use it today. These are:
->
-> 1) drivers/pci/pci-acpi.c.
-> I assume this isn't a driver for devices that can be attached to genpd.
->
-> 2) drivers/usb/core/port.c
-> This registers an internal struct device for the usb port, which it
-> deploys runtime PM support for and sets the PM_QOS_FLAG_NO_POWER_OFF
-> flag to. The internal created device can't be attached to genpd,
-> however it gets the usb hub device assigned to its parent, which is an
-> interesting part, as the PM_QOS_FLAG_NO_POWER_OFF doesn't become
-> propagated to it.
->
-> This made me realize that the code in genpd dealing with the
-> PM_QOS_FLAG_NO_POWER_OFF flag, is unused, unless I am missing another
-> use case, of course.
-
-That's probably the case.
-
-It was added in anticipation of future use in drivers.
-
-> Another observation regarding the PM_QOS_FLAG_NO_POWER_OFF flag, is
-> that it's QOS thing, which may also be controlled from userspace via
-> sysfs. Using a QOS flag to prevent to turn of in-band power as to be
-> able to support wakeups correctly, just doesn't seems right to me. I
-> rather consider this as a HW configuration that must be set to support
-> a requested wakeup.
-
-User space may want in-band power to be provided to the device while
-suspended too and I'm not sure what's the difference between that and
-the wakeup requirement.
-
-The point here, among other things, is that it doesn't really matter
-*why* the device needs to be provided with in-band power while
-suspended.  Potentially, there may be multiple valid reasons for that
-and wakeup is only one of them, so why does it need to be special?
-
-> Going back to what I think is needed. I think we need a per device PM
-> flag that the driver can set, to instruct upper layers about how it
-> has configured the wakeup (in-band or out-band). That flag needs to be
-> propagated to parents as well. Moreover, I am questioning whether such
-> flag may be useful for runtime PM, maybe it could.
-
-Upper layers need not be informed about wakeup in general, like genpd
-which only understands (a) whether or not to cut off in-band power and
-(b) whether or not to invoke the "stop" callback.  It doesn't need to
-care about why those two things may or may not be done.
-
-My first conclusion from the above is that the runtime PM case and the
-system-wide PM case are really the same from the wakeup setup
-perspective and I don't see general reasons for them to be handled
-differently.
-
-The way to communicate the requirements related to that to upper
-layers, parent drivers etc may be via PM QoS flags, but I'm not
-insisting on that.  It has just occurred to me that it is one possible
-way to do it and there was some work done in that direction.
-
-Thanks,
-Rafael
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b6d7c4c..aab23a4 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -37,6 +37,7 @@
+ #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+ #include <asm/opal.h>
+ #include <linux/timer.h>
++#include <linux/hashtable.h>
+ 
+ #define POWERNV_MAX_PSTATES	256
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+@@ -130,6 +131,9 @@ enum throttle_reason_type {
+ static int nr_chips;
+ static DEFINE_PER_CPU(struct chip *, chip_info);
+ 
++static u32 freq_domain_indicator;
++static bool p9_occ_quirk;
++
+ /*
+  * Note:
+  * The set of pstates consists of contiguous integers.
+@@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
+ 	gpstates->last_gpstate_idx = 0;
+ }
+ 
++#define SIZE NR_CPUS
++#define ORDER_FREQ_MAP ilog2(SIZE)
++
++static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
++
++struct hashmap {
++	cpumask_t mask;
++	int chip_id;
++	u32 pir_key;
++	struct hlist_node hash_node;
++};
++
++static void insert(u32 key, int cpu)
++{
++	struct hashmap *data;
++
++	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
++		if (data->chip_id == cpu_to_chip_id(cpu) &&
++			data->pir_key == key) {
++			cpumask_set_cpu(cpu, &data->mask);
++			return;
++		}
++	}
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
++	cpumask_set_cpu(cpu, &data->mask);
++	data->chip_id = cpu_to_chip_id(cpu);
++	data->pir_key = key;
++
++}
++
+ /*
+  * Initialize the freq table based on data obtained
+  * from the firmware passed via device-tree
+@@ -206,6 +242,7 @@ static int init_powernv_pstates(void)
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
+ 	u32 pstate_turbo, pstate_ultra_turbo;
++	u32 key;
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -246,9 +283,18 @@ static int init_powernv_pstates(void)
+ 	else
+ 		powernv_pstate_info.wof_enabled = true;
+ 
++	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
++		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
++				&freq_domain_indicator))
++		pr_warn("ibm,freq-domain-indicator not found\n");
++
++        if (of_device_is_compatible(power_mgt, "p9-occ-quirk"))
++		p9_occ_quirk = true;
++
+ next:
+ 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+ 		pstate_nominal, pstate_max);
++	pr_info("frequency domain indicator %d", freq_domain_indicator);
+ 	pr_info("Workload Optimized Frequency is %s in the platform\n",
+ 		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
+ 
+@@ -276,6 +322,15 @@ static int init_powernv_pstates(void)
+ 		return -ENODEV;
+ 	}
+ 
++	if (freq_domain_indicator) {
++		hash_init(freq_domain_map);
++		for_each_possible_cpu(i) {
++			key = ((u32) get_hard_smp_processor_id(i) &
++				freq_domain_indicator);
++			insert(key, i);
++		}
++	}
++
+ 	powernv_pstate_info.nr_pstates = nr_pstates;
+ 	pr_debug("NR PStates %d\n", nr_pstates);
+ 	for (i = 0; i < nr_pstates; i++) {
+@@ -760,25 +815,56 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 
+ 	spin_unlock(&gpstates->gpstate_lock);
+ 
+-	/*
+-	 * Use smp_call_function to send IPI and execute the
+-	 * mtspr on target CPU.  We could do that without IPI
+-	 * if current CPU is within policy->cpus (core)
++	/* The current DVFS implementation in firmware requires that to set a
++	 * frequency in a quad, all cores of the quad need to set frequency in
++	 * their respective PMCR's. Ideally setting frequency on any of the
++	 * core of that quad should change frequency for the quad.
+ 	 */
+-	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
++	if (p9_occ_quirk) {
++		cpumask_t temp;
++		u32 cpu;
++
++		cpumask_copy(&temp, policy->cpus);
++		while (!cpumask_empty(&temp)) {
++			cpu = cpumask_first(&temp);
++			smp_call_function_any(cpu_sibling_mask(cpu),
++					set_pstate, &freq_data, 1);
++			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
++		}
++	} else {
++		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
++	}
++
+ 	return 0;
+ }
+ 
+ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int base, i, ret;
++	int ret;
+ 	struct kernfs_node *kn;
+ 	struct global_pstate_info *gpstates;
+ 
+-	base = cpu_first_thread_sibling(policy->cpu);
++	if (!freq_domain_indicator) {
++		int base, i;
+ 
+-	for (i = 0; i < threads_per_core; i++)
+-		cpumask_set_cpu(base + i, policy->cpus);
++		base = cpu_first_thread_sibling(policy->cpu);
++		for (i = 0; i < threads_per_core; i++)
++			cpumask_set_cpu(base + i, policy->cpus);
++	} else {
++		u32 key;
++		struct hashmap *data;
++
++		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
++				freq_domain_indicator);
++		hash_for_each_possible(freq_domain_map, data, hash_node,
++								 key%SIZE) {
++			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
++				data->pir_key == key) {
++				cpumask_copy(policy->cpus, &data->mask);
++				break;
++			}
++		}
++	}
+ 
+ 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+ 	if (!kn) {
+-- 
+1.8.3.1
