@@ -1,28 +1,53 @@
-From: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Subject: Re: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
-Date: Mon, 22 Jan 2018 15:31:29 +0100
-Message-ID: <20180122143129.GA13897@kroah.com>
-References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [bug report] cpufreq: scpi: remove arm_big_little dependency
+Date: Mon, 22 Jan 2018 14:39:58 +0000
+Message-ID: <43ad2be9-4d21-727b-b315-d7330b2256b4@arm.com>
+References: <20180122104823.GA25283@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1514904982.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Heikki Krogerus <heikki.krogerus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Yueyao Zhu <yueyao.zhu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rui Miguel Silva <rmfrfs-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:59648 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750828AbeAVOkB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 Jan 2018 09:40:01 -0500
+In-Reply-To: <20180122104823.GA25283@mwanda>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org
 
-On Tue, Jan 02, 2018 at 03:50:48PM +0000, Adam Thomson wrote:
-> This patch set adds sink side support for the PPS feature introduced in the
-> USB PD 3.0 specification.
+Hi Dan,
 
-Heikki and Guenter, any thoughts on this patch series?
+On 22/01/18 10:48, Dan Carpenter wrote:
+> Hello Sudeep Holla,
+> 
+> The patch 343a8d17fa8d: "cpufreq: scpi: remove arm_big_little
+> dependency" from Jan 10, 2018, leads to the following static checker
+> warning:
+> 
+> 	drivers/cpufreq/scpi-cpufreq.c:203 scpi_cpufreq_ready()
+> 	warn: 'cdev' isn't an ERR_PTR
+> 
+> drivers/cpufreq/scpi-cpufreq.c
+>    198  static void scpi_cpufreq_ready(struct cpufreq_policy *policy)
+>    199  {
+>    200          struct scpi_data *priv = policy->driver_data;
+>    201          struct thermal_cooling_device *cdev;
+>    202  
+>    203          cdev = of_cpufreq_cooling_register(policy);
+>    204          if (!IS_ERR(cdev))
+>    205                  priv->cdev = cdev;
+> 
+> of_cpufreq_cooling_register() returns NULL on error.  Probably just
+> remove the if statement?
+> 
+>    206  }
+> 
 
-thanks,
+Thanks for the report, will post the fix soon.
 
-greg k-h
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Regards,
+Sudeep
