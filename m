@@ -1,105 +1,44 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 3/3] mfd: cros_ec_dev: Register cros_usbpd-charger driver
- as a subdevice.
-Date: Tue, 23 Jan 2018 11:57:36 +0000
-Message-ID: <20180123115736.2ai5tjgty5ekvrd2@dell>
-References: <20180117175932.20636-1-enric.balletbo@collabora.com>
- <20180117175932.20636-4-enric.balletbo@collabora.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] acpi, spcr: Make SPCR available to x86
+Date: Tue, 23 Jan 2018 07:41:56 -0500
+Message-ID: <5fab980d-d937-8806-9745-9850947a9096@redhat.com>
+References: <20180118150951.28964-1-prarit@redhat.com>
+ <745c9e29-f0b4-775b-28f7-8712cdc90fe1@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f194.google.com ([209.85.128.194]:33389 "EHLO
-        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751086AbeAWL5k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 06:57:40 -0500
-Received: by mail-wr0-f194.google.com with SMTP id p6so286707wrd.0
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 03:57:39 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20180117175932.20636-4-enric.balletbo@collabora.com>
+Received: from mx1.redhat.com ([209.132.183.28]:50158 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751291AbeAWMmE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Jan 2018 07:42:04 -0500
+In-Reply-To: <745c9e29-f0b4-775b-28f7-8712cdc90fe1@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sameer Nanda <snanda@chromium.org>
+To: Timur Tabi <timur@codeaurora.org>, linux-kernel@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, graeme.gregory@linaro.org, mark.salter@redhat.com
 
-On Wed, 17 Jan 2018, Enric Balletbo i Serra wrote:
 
-> From: Sameer Nanda <snanda@chromium.org>
+
+On 01/22/2018 04:49 PM, Timur Tabi wrote:
+> On 01/18/2018 09:09 AM, Prarit Bhargava wrote:
+>>       if (acpi_disabled) {
+>> -        if (earlycon_init_is_deferred)
+>> +        if (earlycon_acpi_spcr_enable)
 > 
-> Check whether this EC instance has USBPD host command support and
-> instatiate the cros_usbpd-charger driver as a subdevice in such case.
+> This patch works for me, so I can ACK it, but first you might want to rename
+> earlycon_acpi_spcr_enable, because these two lines don't make much sense.
 > 
-> Signed-off-by: Sameer Nanda <snanda@chromium.org>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
->  drivers/mfd/cros_ec_dev.c | 25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
+> "If ACPI is disabled, and ACPI SCPR is enabled, then ...."
 > 
-> diff --git a/drivers/mfd/cros_ec_dev.c b/drivers/mfd/cros_ec_dev.c
-> index 26a8731499bf..d98f03f3d251 100644
-> --- a/drivers/mfd/cros_ec_dev.c
-> +++ b/drivers/mfd/cros_ec_dev.c
-> @@ -37,6 +37,9 @@ static const struct attribute_group *cros_ec_groups[] = {
->  	&cros_ec_attr_group,
->  	&cros_ec_lightbar_attr_group,
->  	&cros_ec_vbc_attr_group,
-> +#if IS_ENABLED(CONFIG_CHARGER_CROS_USB_PD)
-> +	&cros_usb_pd_charger_attr_group,
-> +#endif
+> If ACPI is disabled, then how can a variable called "earlycon_acpi_spcr_enable"
+> be true?
+> 
+> Would it make more sense to rename it to earlycon_spcr_enable?
+> 
 
-I'd rather not introduce #ifery into *.c files.
+acpi_disabled is a global runtime flag that can be set via "acpi=off" on the
+command line.  It does not disable the tables, only the reading and interpreting
+of the data in the tables.
 
-Please find another way of doing this.  Perhaps create a nil-Byte
-alternative that you can shove away in a header file somewhere?
-
->  	NULL,
->  };
->  
-> @@ -269,6 +272,24 @@ static void __remove(struct device *dev)
->  	kfree(ec);
->  }
->  
-> +static const struct mfd_cell cros_usb_pd_charger_devs[] = {
-> +	{
-> +		.name = "cros-usb-pd-charger",
-> +		.id   = -1,
-
-What are you trying to achieve here?
-
-> +	},
-> +};
-> +
-> +static void cros_ec_usb_pd_charger_register(struct cros_ec_dev *ec)
-> +{
-> +	int ret;
-> +
-> +	ret = mfd_add_devices(ec->dev, 0, cros_usb_pd_charger_devs,
-
-What does 0 mean here?
-
-> +			      ARRAY_SIZE(cros_usb_pd_charger_devs),
-> +			      NULL, 0, NULL);
-> +	if (ret)
-> +		dev_err(ec->dev, "failed to add usb-pd-charger device\n");
-> +}
-> +
->  static void cros_ec_sensors_register(struct cros_ec_dev *ec)
->  {
->  	/*
-> @@ -451,6 +472,10 @@ static int ec_device_probe(struct platform_device *pdev)
->  	if (cros_ec_debugfs_init(ec))
->  		dev_warn(dev, "failed to create debugfs directory\n");
->  
-> +	/* check whether this EC instance has the PD charge manager */
-> +	if (cros_ec_check_features(ec, EC_FEATURE_USB_PD))
-> +		cros_ec_usb_pd_charger_register(ec);
-> +
->  	/* check whether this EC is a sensor hub. */
->  	if (cros_ec_check_features(ec, EC_FEATURE_MOTION_SENSE))
->  		cros_ec_sensors_register(ec);
-
--- 
-Lee Jones
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+P.
