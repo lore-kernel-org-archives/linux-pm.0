@@ -1,32 +1,133 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: [PATCH v3 11/16] dt-bindings: power: supply:
- axp20x: add AXP813 battery DT binding
-Date: Tue, 23 Jan 2018 23:43:28 +0800
-Message-ID: <CAGb2v67g34WRjEKvEzFDaqe2qJs-sY8wYSE3CC0q824yetqoeA@mail.gmail.com>
-References: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz@free-electrons.com>
- <7b53727c33207f4b7ae36218c99abfb86876e716.1516012352.git-series.quentin.schulz@free-electrons.com>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
+From: Aishwarya Pant <aishpant@gmail.com>
+Subject: [PATCH v3] Documentation/ABI: update cpuidle sysfs documentation
+Date: Tue, 23 Jan 2018 21:14:22 +0530
+Message-ID: <20180123154422.GA26644@mordor.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBN5QTXJQKGQE34GO5AA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <7b53727c33207f4b7ae36218c99abfb86876e716.1516012352.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Julian Calaby <julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 15, 2018 at 6:33 PM, Quentin Schulz
-<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> The AXP813 can have a battery as power supply, so let's add it to the
-> list of compatibles.
->
-> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Update cpuidle documentation using git logs and existing documentation
+in Documentation/cpuidle/sysfs.txt. This might be useful for scripting
+and tracking changes in the ABI.
 
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+---
+Change in v3:
+- Fix up the mess up in the subject line of previous version
+Change in v2:
+- Merge cpuidle_sysfs_switch attributes' description with the previous
+  entry.
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 80 +++++++++++++++++++++-
+ 1 file changed, 78 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index bfd29bc8d37a..113402ca9397 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -108,6 +108,8 @@ Description:	CPU topology files that describe a logical CPU's relationship
+ 
+ What:		/sys/devices/system/cpu/cpuidle/current_driver
+ 		/sys/devices/system/cpu/cpuidle/current_governor_ro
++		/sys/devices/system/cpu/cpuidle/available_governors
++		/sys/devices/system/cpu/cpuidle/current_governor
+ Date:		September 2007
+ Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+ Description:	Discover cpuidle policy and mechanism
+@@ -119,13 +121,87 @@ Description:	Discover cpuidle policy and mechanism
+ 		Idle policy (governor) is differentiated from idle mechanism
+ 		(driver)
+ 
+-		current_driver: displays current idle mechanism
++		System global cpuidle related information and tunables are under
++		/sys/devices/system/cpu/cpuidle. Briefly, the attributes are:
+ 
+-		current_governor_ro: displays current idle policy
++		current_driver: (RO) displays current idle mechanism
++
++		current_governor_ro: (RO) displays current idle policy
++
++		With the cpuidle_sysfs_switch boot option enabled (meant for
++		developer testing), the following three attributes are visible
++		instead:
++
++		current_driver: same as described above
++
++		available_governors: (RO) displays a space separated list of
++		available governors
++
++		current_governor: (RW) displays current idle policy. Users can
++		switch the governor at runtime by writing to this file.
+ 
+ 		See files in Documentation/cpuidle/ for more information.
+ 
+ 
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/name
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/latency
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/power
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/time
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
++Date:		September 2007
++KernelVersion:	v2.6.24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		The directory /sys/devices/system/cpu/cpuX/cpuidle contains per
++		logical CPU specific cpuidle information for each online cpu X.
++		The processor idle states which are available for use have the
++		following attributes:
++
++		name: (RO) Name of the idle state (string).
++
++		latency: (RO) The latency to exit out of this idle state (in
++		microseconds).
++
++		power: (RO) The power consumed while in this idle state (in
++		milliwatts).
++
++		time: (RO) The total time spent in this idle state (in microseconds).
++
++		usage: (RO) Number of times this state was entered (a count).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
++Date:		February 2008
++KernelVersion:	v2.6.25
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RO) A small description about the idle state (string).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/disable
++Date:		March 2012
++KernelVersion:	v3.10
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RW) Option to disable this idle state (bool). The behavior and
++		the effect of the disable variable depends on the implementation
++		of a particular governor. In the ladder governor, for example,
++		it is not coherent, i.e. if one is disabling a light state, then
++		all deeper states are disabled as well, but the disable variable
++		does not reflect it. Likewise, if one enables a deep state but a
++		lighter state still is disabled, then this has no effect.
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
++Date:		March 2014
++KernelVersion:	v3.15
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RO) Display the target residency i.e. the minimum amount of
++		time (in microseconds) this cpu should spend in this idle state
++		to make the transition worth the effort.
++
++
+ What:		/sys/devices/system/cpu/cpu#/cpufreq/*
+ Date:		pre-git history
+ Contact:	linux-pm@vger.kernel.org
+-- 
+2.16.1
