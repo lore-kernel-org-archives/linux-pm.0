@@ -1,15 +1,15 @@
 From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: [PATCH v3 05/16] ARM: dtsi: axp22x: add node for ADC
-Date: Tue, 23 Jan 2018 23:33:23 +0800
-Message-ID: <CAGb2v64=7T3Lf6Qymr9p59YD-5DCPkw1-S7_Uv_K5AJ1_+T=5Q@mail.gmail.com>
+Subject: Re: [PATCH v3 08/16] ARM: dtsi: axp81x: add node for ADC
+Date: Tue, 23 Jan 2018 23:33:52 +0800
+Message-ID: <CAGb2v67hDDhSCSLemSxZyi-iOwyROYf2UZT3qMBDCAmZA+w0Ew@mail.gmail.com>
 References: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz@free-electrons.com>
- <c73ef705e9feacde577de66355a2033b419ca004.1516012352.git-series.quentin.schulz@free-electrons.com>
+ <eb8f23f57dc9d7d7c87c5eea2f85e90470e27c83.1516012352.git-series.quentin.schulz@free-electrons.com>
 Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBW5LTXJQKGQEPGMJA5A-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCMILY6JWQBBB6NLTXJQKGQEZNYNFCA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <c73ef705e9feacde577de66355a2033b419ca004.1516012352.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+In-Reply-To: <eb8f23f57dc9d7d7c87c5eea2f85e90470e27c83.1516012352.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Archive: <https://groups.google.com/group/linux-sunxi
