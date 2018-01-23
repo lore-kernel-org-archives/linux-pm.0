@@ -1,59 +1,66 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/8] thermal/drivers/cpu_cooling: Add Software Package Data Exchange (SPDX)
-Date: Tue, 23 Jan 2018 16:34:25 +0100
-Message-ID: <1516721671-16360-3-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 4/8] thermal/drivers/Kconfig: Convert the CPU cooling device to a choice
+Date: Tue, 23 Jan 2018 16:34:27 +0100
+Message-ID: <1516721671-16360-5-git-send-email-daniel.lezcano@linaro.org>
 References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:39793 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751831AbeAWPf0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 10:35:26 -0500
-Received: by mail-wm0-f67.google.com with SMTP id b21so2722547wme.4
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 07:35:25 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com
-Cc: kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, Philippe Ombredanne <pombredanne@nexb.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>
+Cc: kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-For license auditing purpose, let's add the SPDX tag.
+The next changes will add new way to cool down a CPU. In order to
+sanitize and make the overall cpu cooling code consistent and robust
+we must prevent the cpu cooling devices to co-exists with the same
+purpose at the same time in the kernel.
 
-Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Make the CPU cooling device a choice in the Kconfig, so only one CPU
+cooling strategy can be chosen.
+
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
+ drivers/thermal/Kconfig | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 988fc55..e62be75 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0
- /*
-  *  linux/drivers/thermal/cpu_cooling.c
-  *
-@@ -8,21 +9,6 @@
-  *  Authors:	Amit Daniel <amit.kachhap@linaro.org>
-  *		Viresh Kumar <viresh.kumar@linaro.org>
-  *
-- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- *  This program is free software; you can redistribute it and/or modify
-- *  it under the terms of the GNU General Public License as published by
-- *  the Free Software Foundation; version 2 of the License.
-- *
-- *  This program is distributed in the hope that it will be useful, but
-- *  WITHOUT ANY WARRANTY; without even the implied warranty of
-- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-- *  General Public License for more details.
-- *
-- *  You should have received a copy of the GNU General Public License along
-- *  with this program; if not, write to the Free Software Foundation, Inc.,
-- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-- *
-- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  */
- #include <linux/module.h>
- #include <linux/thermal.h>
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 315ae29..925e73b 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -142,17 +142,31 @@ config THERMAL_GOV_POWER_ALLOCATOR
+ 	  allocating and limiting power to devices.
+ 
+ config CPU_THERMAL
+-	bool "generic cpu cooling support"
+-	depends on CPU_FREQ
++	bool "Generic cpu cooling support"
+ 	depends on THERMAL_OF
+ 	help
++	  Enable the CPU cooling features. If the system has no active
++	  cooling device available, this option allows to use the CPU
++	  as a cooling device.
++
++choice
++	prompt "CPU cooling strategies"
++	depends on CPU_THERMAL
++	default CPU_FREQ_THERMAL
++	help
++	  Select the CPU cooling strategy.
++
++config CPU_FREQ_THERMAL
++        bool "CPU frequency cooling strategy"
++	depends on CPU_FREQ
++	help
+ 	  This implements the generic cpu cooling mechanism through frequency
+ 	  reduction. An ACPI version of this already exists
+ 	  (drivers/acpi/processor_thermal.c).
+ 	  This will be useful for platforms using the generic thermal interface
+ 	  and not the ACPI interface.
+ 
+-	  If you want this support, you should say Y here.
++endchoice
+ 
+ config CLOCK_THERMAL
+ 	bool "Generic clock cooling support"
 -- 
 2.7.4
