@@ -1,150 +1,41 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Fixup domain-idle-states OF parsing
-Date: Tue, 23 Jan 2018 11:23:10 +0100
-Message-ID: <1516702990-25564-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:43434 "EHLO
-        mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751154AbeAWKXT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 05:23:19 -0500
-Received: by mail-lf0-f65.google.com with SMTP id o89so14351297lfg.10
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 02:23:19 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 1/3] mfd: cros_ec: Add USBPD charger commands and struct
+ definitions.
+Date: Tue, 23 Jan 2018 11:49:14 +0000
+Message-ID: <20180123114914.5wdpr4fszzqxhsop@dell>
+References: <20180117175932.20636-1-enric.balletbo@collabora.com>
+ <20180117175932.20636-2-enric.balletbo@collabora.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180117175932.20636-2-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sameer Nanda <snanda@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: khilman@kernel.org, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-The commit b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are
-not compatible"), made it possible to ignore non-compatible
-domain-idle-states OF nodes. However, in case that happens while doing the
-OF parsing, the number of elements in the allocated array would exceed the
-numbers actually needed.
+On Wed, 17 Jan 2018, Enric Balletbo i Serra wrote:
 
-Moreover, the behaviour may not only cause a bigger allocation than needed,
-but also makes of_genpd_parse_idle_states() to return the wrong number of
-allocated elements to the caller.
+> From: Sameer Nanda <snanda@chromium.org>
+> 
+> The USB PD charger driver gets information from the ChromeOS EC, this
+> patch adds the USBPD charger definitions needed by this driver.
+> 
+> Signed-off-by: Sameer Nanda <snanda@chromium.org>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+>  include/linux/mfd/cros_ec_commands.h | 135 +++++++++++++++++++++++++++++++++--
+>  1 file changed, 131 insertions(+), 4 deletions(-)
 
-Fix this by pre-iterating the genpd OF node and counting the number of
-compatible domain-idle-states nodes, before doing the allocation. While
-doing this, it makes sense to rework the code a bit to avoid open coding,
-of parts responsible for OF node iteration.
+Looks okay.
 
-Let's also take the opportunity to clarify the function header for
-of_genpd_parse_idle_states(), about what is being returned in case of
-errors.
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
-Fixes: b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are not compatible")
-Cc: Lina Iyer <ilina@codeaurora.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 76 +++++++++++++++++++++++++++------------------
- 1 file changed, 45 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 528b241..1ea0e25 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2290,6 +2290,38 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
- 	return 0;
- }
- 
-+static int genpd_iterate_idle_states(struct device_node *dn,
-+				     struct genpd_power_state *states)
-+{
-+	int ret;
-+	struct of_phandle_iterator it;
-+	struct device_node *np;
-+	int i = 0;
-+
-+	ret = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
-+	if (ret <= 0)
-+		return ret;
-+
-+	/* Loop over the phandles until all the requested entry is found */
-+	of_for_each_phandle(&it, ret, dn, "domain-idle-states", NULL, 0) {
-+		np = it.node;
-+		if (!of_match_node(idle_state_match, np))
-+			continue;
-+		if (states) {
-+			ret = genpd_parse_state(&states[i], np);
-+			if (ret) {
-+				pr_err("Parsing idle state node %pOF failed with err %d\n",
-+				       np, ret);
-+				of_node_put(np);
-+				return ret;
-+			}
-+		}
-+		i++;
-+	}
-+
-+	return i;
-+}
-+
- /**
-  * of_genpd_parse_idle_states: Return array of idle states for the genpd.
-  *
-@@ -2299,49 +2331,31 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
-  *
-  * Returns the device states parsed from the OF node. The memory for the states
-  * is allocated by this function and is the responsibility of the caller to
-- * free the memory after use.
-+ * free the memory after use. If no domain idle states is found it returns
-+ * -EINVAL and in case of errors, a negative error code.
-  */
- int of_genpd_parse_idle_states(struct device_node *dn,
- 			struct genpd_power_state **states, int *n)
- {
- 	struct genpd_power_state *st;
--	struct device_node *np;
--	int i = 0;
--	int err, ret;
--	int count;
--	struct of_phandle_iterator it;
--	const struct of_device_id *match_id;
-+	int ret;
- 
--	count = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
--	if (count <= 0)
--		return -EINVAL;
-+	ret = genpd_iterate_idle_states(dn, NULL);
-+	if (ret <= 0)
-+		return ret < 0 ? ret : -EINVAL;
- 
--	st = kcalloc(count, sizeof(*st), GFP_KERNEL);
-+	st = kcalloc(ret, sizeof(*st), GFP_KERNEL);
- 	if (!st)
- 		return -ENOMEM;
- 
--	/* Loop over the phandles until all the requested entry is found */
--	of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
--		np = it.node;
--		match_id = of_match_node(idle_state_match, np);
--		if (!match_id)
--			continue;
--		ret = genpd_parse_state(&st[i++], np);
--		if (ret) {
--			pr_err
--			("Parsing idle state node %pOF failed with err %d\n",
--							np, ret);
--			of_node_put(np);
--			kfree(st);
--			return ret;
--		}
-+	ret = genpd_iterate_idle_states(dn, st);
-+	if (ret <= 0) {
-+		kfree(st);
-+		return ret < 0 ? ret : -EINVAL;
- 	}
- 
--	*n = i;
--	if (!i)
--		kfree(st);
--	else
--		*states = st;
-+	*states = st;
-+	*n = ret;
- 
- 	return 0;
- }
 -- 
-2.7.4
+Lee Jones
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
