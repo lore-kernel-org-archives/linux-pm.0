@@ -1,93 +1,90 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH] cpufreq: mediatek: Add mediatek related projects into
- blacklist
-Date: Wed, 24 Jan 2018 02:26:54 +0800
-Message-ID: <1516732014.15199.38.camel@mtkswgap22>
-References: <8193c5fd73ee34b59799fdf5c6cc24ca60971d6e.1516693333.git.sean.wang@mediatek.com>
-         <20180123084651.GA26581@kroah.com> <1516700314.12197.48.camel@mtkswgap22>
-         <20180123094205.GA14587@kroah.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Fixup domain-idle-states OF parsing
+Date: Tue, 23 Jan 2018 21:34:30 +0100
+Message-ID: <CAPDyKFqFNrGXd4xcqfaf3au4V6b6oPFSHOOhv03P52sJiBkasg@mail.gmail.com>
+References: <1516702990-25564-1-git-send-email-ulf.hansson@linaro.org> <20180123161201.GA29171@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw02.mediatek.com ([210.61.82.184]:65464 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751721AbeAWS06 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 13:26:58 -0500
-In-Reply-To: <20180123094205.GA14587@kroah.com>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:42150 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752564AbeAWUec (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 15:34:32 -0500
+Received: by mail-it0-f68.google.com with SMTP id p139so2544710itb.1
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 12:34:31 -0800 (PST)
+In-Reply-To: <20180123161201.GA29171@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: stable@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, matthias.bgg@gmail.com, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>, Kevin Hilman <khilman@baylibre.com>
+To: Lina Iyer <ilina@codeaurora.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, 2018-01-23 at 10:42 +0100, Greg KH wrote:
-> On Tue, Jan 23, 2018 at 05:38:34PM +0800, Sean Wang wrote:
-> > On Tue, 2018-01-23 at 09:46 +0100, Greg KH wrote:
-> > > On Tue, Jan 23, 2018 at 04:31:11PM +0800, sean.wang@mediatek.com wrote:
-> > > > From: Sean Wang <sean.wang@mediatek.com>
-> > > > 
-> > > > commit 6066998cbd2b1012a8d5bc9a2957cfd0ad53150e upstream.
-> > > > 
-> > > > commit edeec420de24 ("cpufreq: dt-platdev: Automatically create cpufreq
-> > > > device with OPP v2") not added MediaTek SoCs to the blacklist that would
-> > > > lead to cause an occasional hang or unexpected behaviors on related boards
-> > > > as kernelci reported and complained on [1] specifically for 4.14 and 4.15
-> > > > tree.
-> > > > 
-> > > > For those reasons, add MediaTek SoCs into cpufreq-dt blacklist and wish
-> > > > the patch be applied to 4.14 and 4.15 tree to allow kernelci able to
-> > > > complete following automated kernel testing.
-> > > > 
-> > > > [1] https://kernelci.org/boot/mt7623n-bananapi-bpi-r2/
-> > > > 
-> > > > Fixes: edeec420de24 (cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2)
-> > > > Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
-> > > > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> > > > Cc: Kevin Hilman <khilman@baylibre.com>
-> > > > ---
-> > > >  drivers/cpufreq/cpufreq-dt-platdev.c | 8 ++++++++
-> > > >  1 file changed, 8 insertions(+)
-> > > 
-> > > What stable kernel tree(s) are you wanting this backported to?
-> > > 
-> > > thanks,
-> > > 
-> > > greg k-h
-> > 
-> > Hi, Greg,
-> > 
-> > thanks for your help!
-> > 
-> > stable and stable-rc are those trees I want this backported to 
-> 
-> I don't understand, what exactly do you mean by this?
-> 
-> Have you read:
->     https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
-> for how to do this properly?
-> 
-> > Hi, Viresh
-> > 
-> > currently, can the patch be permitted to go through tree linux-pm branch
-> > master to be part of mainline? 
-> 
-> Wait, this is not in Linus's tree already?  If not, what is that big
-> "commit XXXX upstream" in the changelog for?
-> 
-> I don't see that commit in Linus's tree at all.
-> 
-> totally confused,
-> 
-> greg k-h
+On 23 January 2018 at 17:12, Lina Iyer <ilina@codeaurora.org> wrote:
+> Hi Ulf,
+>
+> Thanks for the fix. The allocation is more than what is needed and this
+> will fix that.
+>
+> On Tue, Jan 23 2018 at 10:23 +0000, Ulf Hansson wrote:
+>>
+>> but also makes of_genpd_parse_idle_states() to return the wrong number of
+>> allocated elements to the caller.
+>>
+> How is this happening?
+>
+>>
+>> Fixes: b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are not
+>> compatible")
+>> Cc: Lina Iyer <ilina@codeaurora.org>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>> drivers/base/power/domain.c | 76
+>> +++++++++++++++++++++++++++------------------
+>> 1 file changed, 45 insertions(+), 31 deletions(-)
+>>
+>> -       /* Loop over the phandles until all the requested entry is found
+>> */
+>> -       of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
+>> -               np = it.node;
+>> -               match_id = of_match_node(idle_state_match, np);
+>> -               if (!match_id)
+>> -                       continue;
+>> -               ret = genpd_parse_state(&st[i++], np);
+>
+> This increments only if the state node matches the compatible.
+>
+>> -               if (ret) {
+>> -                       pr_err
+>> -                       ("Parsing idle state node %pOF failed with err
+>> %d\n",
+>> -                                                       np, ret);
+>> -                       of_node_put(np);
+>> -                       kfree(st);
+>> -                       return ret;
+>> -               }
+>> +       ret = genpd_iterate_idle_states(dn, st);
+>> +       if (ret <= 0) {
+>> +               kfree(st);
+>> +               return ret < 0 ? ret : -EINVAL;
+>>         }
+>>
+>> -       *n = i;
+>
+> Returns the count of matched state nodes.
+>
+> What am I missing?
 
+You are correct, there is nothing wrong here in regards to counting
+and returning the number a *valid* idle states nodes.
 
-Hi Greg,
+However, I was referring in the changelog to the number of elements
+that has been *allocated*. Obviously the number of elements allocated
+will not match the numbers of valid idle state nodes, in case there is
+one of more nodes not being compatible.
 
-thanks for your instructions
+This is probably not an issue, so let me re-phrase the change log, to
+make this more clear.
 
-Sorry for that I missed one thing: The patch is currently not in Linus
-tree, but it is already in linux-next tree. So, I will wait until the
-patch ends up in Linus's tree and submit again to wish the patch be
-applied into 4.14.y tree or 4.15.y tree in the near future.
+Thanks for reviewing!
 
-	Sean
+Kind regards
+Uffe
