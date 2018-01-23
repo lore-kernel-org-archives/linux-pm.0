@@ -1,46 +1,70 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH v2] PM / Domains: Fixup domain-idle-states OF parsing
-Date: Tue, 23 Jan 2018 21:01:28 +0000
-Message-ID: <20180123210128.GA16708@codeaurora.org>
-References: <1516740188-3580-1-git-send-email-ulf.hansson@linaro.org>
+From: Bo Yan <byan@nvidia.com>
+Subject: [PATCH] cpufreq: skip cpufreq resume if it's not suspended
+Date: Tue, 23 Jan 2018 13:57:55 -0800
+Message-ID: <1516744675-21233-1-git-send-email-byan@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:45042 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752679AbeAWVBa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 16:01:30 -0500
-Content-Disposition: inline
-In-Reply-To: <1516740188-3580-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: viresh.kumar@linaro.org, rjw@rjwysocki.net, sgurrappadi@nvidia.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Bo Yan <byan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, khilman@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, Jan 23 2018 at 20:43 +0000, Ulf Hansson wrote:
->The commit b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are
->not compatible"), made it possible to ignore non-compatible
->domain-idle-states OF nodes. However, in case that happens while doing the
->OF parsing, the number of elements in the allocated array would exceed the
->numbers actually needed, thus wasting memory.
->
->Fix this by pre-iterating the genpd OF node and counting the number of
->compatible domain-idle-states nodes, before doing the allocation. While
->doing this, it makes sense to rework the code a bit to avoid open coding,
->of parts responsible for the OF node iteration.
->
->Let's also take the opportunity to clarify the function header for
->of_genpd_parse_idle_states(), about what is being returned in case of
->errors.
->
->Fixes: b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are not compatible")
->Cc: Lina Iyer <ilina@codeaurora.org>
->Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->---
->
->Changes in v2:
->	- Updated changelog to clarify the problem is really about avoiding to
->	waste memory, according to comment from Lina.
->
->---
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+cpufreq_resume can be called even without preceding cpufreq_suspend.
+This can happen in following scenario:
+
+    suspend_devices_and_enter
+       --> dpm_suspend_start
+          --> dpm_prepare
+              --> device_prepare : this function errors out
+          --> dpm_suspend: this is skipped due to dpm_prepare failure
+                           this means cpufreq_suspend is skipped over
+       --> goto Recover_platform, due to previous error
+       --> goto Resume_devices
+       --> dpm_resume_end
+           --> dpm_resume
+               --> cpufreq_resume
+
+In case schedutil is used as frequency governor, cpufreq_resume will
+eventually call sugov_start, which does following:
+
+    memset(sg_cpu, 0, sizeof(*sg_cpu));
+    ....
+
+This effectively erases function pointer for frequency update, causing
+crash later on. The function pointer would have been set correctly if
+subsequent cpufreq_add_update_util_hook runs successfully, but that
+function returns earlier because cpufreq_suspend was not called:
+
+    if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
+		return;
+
+Ideally, suspend should succeed, then things will be fine. But even
+in case of suspend failure, system should not crash.
+
+The fix is to check cpufreq_suspended first, if it's false, that means
+cpufreq_suspend was not called in the first place, so do not resume
+cpufreq.
+
+Signed-off-by: Bo Yan <byan@nvidia.com>
+---
+ drivers/cpufreq/cpufreq.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 41d148af7748..95b1c4afe14e 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1680,6 +1680,10 @@ void cpufreq_resume(void)
+ 	if (!cpufreq_driver)
+ 		return;
+ 
++	if (unlikely(!cpufreq_suspended)) {
++		pr_warn("%s: resume after failing suspend\n", __func__);
++		return;
++	}
+ 	cpufreq_suspended = false;
+ 
+ 	if (!has_target() && !cpufreq_driver->resume)
+-- 
+2.7.4
