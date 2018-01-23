@@ -1,30 +1,59 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: [PATCH v3 08/16] ARM: dtsi: axp81x: add node for ADC
-Date: Tue, 23 Jan 2018 23:33:52 +0800
-Message-ID: <CAGb2v67hDDhSCSLemSxZyi-iOwyROYf2UZT3qMBDCAmZA+w0Ew@mail.gmail.com>
-References: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz@free-electrons.com>
- <eb8f23f57dc9d7d7c87c5eea2f85e90470e27c83.1516012352.git-series.quentin.schulz@free-electrons.com>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBB6NLTXJQKGQEZNYNFCA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <eb8f23f57dc9d7d7c87c5eea2f85e90470e27c83.1516012352.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Julian Calaby <julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 2/8] thermal/drivers/cpu_cooling: Add Software Package Data Exchange (SPDX)
+Date: Tue, 23 Jan 2018 16:34:25 +0100
+Message-ID: <1516721671-16360-3-git-send-email-daniel.lezcano@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:39793 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751831AbeAWPf0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 10:35:26 -0500
+Received: by mail-wm0-f67.google.com with SMTP id b21so2722547wme.4
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 07:35:25 -0800 (PST)
+In-Reply-To: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, Philippe Ombredanne <pombredanne@nexb.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>
 
-On Mon, Jan 15, 2018 at 6:33 PM, Quentin Schulz
-<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> This adds a DT node for the ADC of the PMIC so that there can be
-> consumers of its IIO channels declaring their consumptions via DT.
->
-> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+For license auditing purpose, let's add the SPDX tag.
 
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/cpu_cooling.c | 16 +---------------
+ 1 file changed, 1 insertion(+), 15 deletions(-)
+
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 988fc55..e62be75 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *  linux/drivers/thermal/cpu_cooling.c
+  *
+@@ -8,21 +9,6 @@
+  *  Authors:	Amit Daniel <amit.kachhap@linaro.org>
+  *		Viresh Kumar <viresh.kumar@linaro.org>
+  *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ #include <linux/module.h>
+ #include <linux/thermal.h>
+-- 
+2.7.4
