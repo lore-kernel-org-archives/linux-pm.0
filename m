@@ -1,48 +1,39 @@
-From: davidwang <davidwang@zhaoxin.com>
-Subject: [PATCH] x86/acpi/cstate: Delete some unuseful operations for centaur
-Date: Tue, 23 Jan 2018 17:57:51 +0800
-Message-ID: <1516701471-25374-1-git-send-email-davidwang@zhaoxin.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH -next] cpufreq: scpi: fix error return code in
+ scpi_cpufreq_init()
+Date: Tue, 23 Jan 2018 10:14:41 +0000
+Message-ID: <15661228-4bb6-233e-b81b-8f51f4579616@arm.com>
+References: <1516673342-170261-1-git-send-email-weiyongjun1@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, lukelin@viacpu.com, timguo@zhaoxin.com, cobechen@zhaoxin.com, jiangbowang@zhaoxin.com, chiachinchu@viacpu.com, davidwang <davidwang@zhaoxin.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1516673342-170261-1-git-send-email-weiyongjun1@huawei.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Wei Yongjun <weiyongjun1@huawei.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, kernel-janitors@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-For Centaur CPU, the ucode will make sure that each cpu core can keep cache
-coherency with each other when the CPU core entering to any C State. So the cache
-flush operations when enter C3 is not necessary and will cause large C3 enter/exit
-latency.
-And the bus master disable operation when CPU core entering C3 state is not needed
-too. Because the chipset will automatically do this operation. 
-Signed-off-by: davidwang <davidwang@zhaoxin.com>
----
- arch/x86/kernel/acpi/cstate.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
 
-diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-index dde437f..1cd357b 100644
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -51,6 +51,18 @@ void acpi_processor_power_init_bm_check(struct acpi_processor_flags *flags,
- 	if (c->x86_vendor == X86_VENDOR_INTEL &&
- 	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
- 			flags->bm_control = 0;
-+
-+        if (c->x86_vendor == X86_VENDOR_CENTAUR) {
-+		/*
-+		 * on all centaur CPUs, sw need not execute cache flush operation
-+		 * when entering C3 type State.
-+		 *
-+		 * On all Centaur platforms, sw need not execute ARB_DISABLE while
-+		 * entering C3 type state.
-+		 */
-+		flags->bm_check = 1;
-+		flags->bm_control = 0;
-+	}
- }
- EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
- 
+
+On 23/01/18 02:09, Wei Yongjun wrote:
+> Fix to return a negative error code from the clk_get() error handling
+> case instead of 0, as done elsewhere in this function.
+> 
+
+Thanks for catching this.
+
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+
 -- 
-1.9.1
+Regards,
+Sudeep
