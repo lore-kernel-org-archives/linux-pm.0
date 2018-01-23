@@ -1,90 +1,156 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Fixup domain-idle-states OF parsing
-Date: Tue, 23 Jan 2018 21:34:30 +0100
-Message-ID: <CAPDyKFqFNrGXd4xcqfaf3au4V6b6oPFSHOOhv03P52sJiBkasg@mail.gmail.com>
-References: <1516702990-25564-1-git-send-email-ulf.hansson@linaro.org> <20180123161201.GA29171@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:42150 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752564AbeAWUec (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 15:34:32 -0500
-Received: by mail-it0-f68.google.com with SMTP id p139so2544710itb.1
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 12:34:31 -0800 (PST)
-In-Reply-To: <20180123161201.GA29171@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: [PATCH 4.4-stable 1/2] x86/cpu/intel: Introduce macros for Intel family numbers
+Date: Tue, 23 Jan 2018 21:38:55 +0100
+Message-ID: <20180123203856.27727-1-jslaby@suse.cz>
+References: <15163532439137@kroah.com>
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <15163532439137@kroah.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: gregkh@linuxfoundation.org
+Cc: stable@vger.kernel.org, Dave Hansen <dave@sr71.net>, Dave Hansen <dave.hansen@linux.intel.com>, Adrian Hunter <adrian.hunter@intel.com>, Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Brian Gerst <brgerst@gmail.com>, Darren Hart <dvhart@infradead.org>, Denys Vlasenko <dvlasenk@redhat.com>, Doug Thompson <dougthompson@xmission.com>, Eduardo Valentin <edubezval@gmail.com>, "H . Peter Anvin" <hpa@zytor.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Kan Liang <kan.liang@intel.com>, Len Brown <lenb@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 23 January 2018 at 17:12, Lina Iyer <ilina@codeaurora.org> wrote:
-> Hi Ulf,
->
-> Thanks for the fix. The allocation is more than what is needed and this
-> will fix that.
->
-> On Tue, Jan 23 2018 at 10:23 +0000, Ulf Hansson wrote:
->>
->> but also makes of_genpd_parse_idle_states() to return the wrong number of
->> allocated elements to the caller.
->>
-> How is this happening?
->
->>
->> Fixes: b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are not
->> compatible")
->> Cc: Lina Iyer <ilina@codeaurora.org>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->> drivers/base/power/domain.c | 76
->> +++++++++++++++++++++++++++------------------
->> 1 file changed, 45 insertions(+), 31 deletions(-)
->>
->> -       /* Loop over the phandles until all the requested entry is found
->> */
->> -       of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
->> -               np = it.node;
->> -               match_id = of_match_node(idle_state_match, np);
->> -               if (!match_id)
->> -                       continue;
->> -               ret = genpd_parse_state(&st[i++], np);
->
-> This increments only if the state node matches the compatible.
->
->> -               if (ret) {
->> -                       pr_err
->> -                       ("Parsing idle state node %pOF failed with err
->> %d\n",
->> -                                                       np, ret);
->> -                       of_node_put(np);
->> -                       kfree(st);
->> -                       return ret;
->> -               }
->> +       ret = genpd_iterate_idle_states(dn, st);
->> +       if (ret <= 0) {
->> +               kfree(st);
->> +               return ret < 0 ? ret : -EINVAL;
->>         }
->>
->> -       *n = i;
->
-> Returns the count of matched state nodes.
->
-> What am I missing?
+From: Dave Hansen <dave@sr71.net>
 
-You are correct, there is nothing wrong here in regards to counting
-and returning the number a *valid* idle states nodes.
+commit 970442c599b22ccd644ebfe94d1d303bf6f87c05 upstream.
 
-However, I was referring in the changelog to the number of elements
-that has been *allocated*. Obviously the number of elements allocated
-will not match the numbers of valid idle state nodes, in case there is
-one of more nodes not being compatible.
+Problem:
 
-This is probably not an issue, so let me re-phrase the change log, to
-make this more clear.
+We have a boatload of open-coded family-6 model numbers.  Half of
+them have these model numbers in hex and the other half in
+decimal.  This makes grepping for them tons of fun, if you were
+to try.
 
-Thanks for reviewing!
+Solution:
 
-Kind regards
-Uffe
+Consolidate all the magic numbers.  Put all the definitions in
+one header.
+
+The names here are closely derived from the comments describing
+the models from arch/x86/events/intel/core.c.  We could easily
+make them shorter by doing things like s/SANDYBRIDGE/SNB/, but
+they seemed fine even with the longer versions to me.
+
+Do not take any of these names too literally, like "DESKTOP"
+or "MOBILE".  These are all colloquial names and not precise
+descriptions of everywhere a given model will show up.
+
+Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Brian Gerst <brgerst@gmail.com>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Dave Hansen <dave@sr71.net>
+Cc: Denys Vlasenko <dvlasenk@redhat.com>
+Cc: Doug Thompson <dougthompson@xmission.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Kan Liang <kan.liang@intel.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>
+Cc: Souvik Kumar Chakravarty <souvik.k.chakravarty@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Stephane Eranian <eranian@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Vishwanath Somayaji <vishwanath.somayaji@intel.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: jacob.jun.pan@intel.com
+Cc: linux-acpi@vger.kernel.org
+Cc: linux-edac@vger.kernel.org
+Cc: linux-mmc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: platform-driver-x86@vger.kernel.org
+Link: http://lkml.kernel.org/r/20160603001927.F2A7D828@viggo.jf.intel.com
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+---
+ arch/x86/include/asm/intel-family.h | 68 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
+ create mode 100644 arch/x86/include/asm/intel-family.h
+
+diff --git a/arch/x86/include/asm/intel-family.h b/arch/x86/include/asm/intel-family.h
+new file mode 100644
+index 000000000000..6999f7d01a0d
+--- /dev/null
++++ b/arch/x86/include/asm/intel-family.h
+@@ -0,0 +1,68 @@
++#ifndef _ASM_X86_INTEL_FAMILY_H
++#define _ASM_X86_INTEL_FAMILY_H
++
++/*
++ * "Big Core" Processors (Branded as Core, Xeon, etc...)
++ *
++ * The "_X" parts are generally the EP and EX Xeons, or the
++ * "Extreme" ones, like Broadwell-E.
++ *
++ * Things ending in "2" are usually because we have no better
++ * name for them.  There's no processor called "WESTMERE2".
++ */
++
++#define INTEL_FAM6_CORE_YONAH		0x0E
++#define INTEL_FAM6_CORE2_MEROM		0x0F
++#define INTEL_FAM6_CORE2_MEROM_L	0x16
++#define INTEL_FAM6_CORE2_PENRYN		0x17
++#define INTEL_FAM6_CORE2_DUNNINGTON	0x1D
++
++#define INTEL_FAM6_NEHALEM		0x1E
++#define INTEL_FAM6_NEHALEM_EP		0x1A
++#define INTEL_FAM6_NEHALEM_EX		0x2E
++#define INTEL_FAM6_WESTMERE		0x25
++#define INTEL_FAM6_WESTMERE2		0x1F
++#define INTEL_FAM6_WESTMERE_EP		0x2C
++#define INTEL_FAM6_WESTMERE_EX		0x2F
++
++#define INTEL_FAM6_SANDYBRIDGE		0x2A
++#define INTEL_FAM6_SANDYBRIDGE_X	0x2D
++#define INTEL_FAM6_IVYBRIDGE		0x3A
++#define INTEL_FAM6_IVYBRIDGE_X		0x3E
++
++#define INTEL_FAM6_HASWELL_CORE		0x3C
++#define INTEL_FAM6_HASWELL_X		0x3F
++#define INTEL_FAM6_HASWELL_ULT		0x45
++#define INTEL_FAM6_HASWELL_GT3E		0x46
++
++#define INTEL_FAM6_BROADWELL_CORE	0x3D
++#define INTEL_FAM6_BROADWELL_XEON_D	0x56
++#define INTEL_FAM6_BROADWELL_GT3E	0x47
++#define INTEL_FAM6_BROADWELL_X		0x4F
++
++#define INTEL_FAM6_SKYLAKE_MOBILE	0x4E
++#define INTEL_FAM6_SKYLAKE_DESKTOP	0x5E
++#define INTEL_FAM6_SKYLAKE_X		0x55
++#define INTEL_FAM6_KABYLAKE_MOBILE	0x8E
++#define INTEL_FAM6_KABYLAKE_DESKTOP	0x9E
++
++/* "Small Core" Processors (Atom) */
++
++#define INTEL_FAM6_ATOM_PINEVIEW	0x1C
++#define INTEL_FAM6_ATOM_LINCROFT	0x26
++#define INTEL_FAM6_ATOM_PENWELL		0x27
++#define INTEL_FAM6_ATOM_CLOVERVIEW	0x35
++#define INTEL_FAM6_ATOM_CEDARVIEW	0x36
++#define INTEL_FAM6_ATOM_SILVERMONT1	0x37 /* BayTrail/BYT / Valleyview */
++#define INTEL_FAM6_ATOM_SILVERMONT2	0x4D /* Avaton/Rangely */
++#define INTEL_FAM6_ATOM_AIRMONT		0x4C /* CherryTrail / Braswell */
++#define INTEL_FAM6_ATOM_MERRIFIELD1	0x4A /* Tangier */
++#define INTEL_FAM6_ATOM_MERRIFIELD2	0x5A /* Annidale */
++#define INTEL_FAM6_ATOM_GOLDMONT	0x5C
++#define INTEL_FAM6_ATOM_DENVERTON	0x5F /* Goldmont Microserver */
++
++/* Xeon Phi */
++
++#define INTEL_FAM6_XEON_PHI_KNL		0x57 /* Knights Landing */
++
++#endif /* _ASM_X86_INTEL_FAMILY_H */
+-- 
+2.16.0
+
