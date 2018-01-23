@@ -1,76 +1,39 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] cpufreq: mediatek: Add mediatek related projects into
- blacklist
-Date: Tue, 23 Jan 2018 10:42:05 +0100
-Message-ID: <20180123094205.GA14587@kroah.com>
-References: <8193c5fd73ee34b59799fdf5c6cc24ca60971d6e.1516693333.git.sean.wang@mediatek.com>
- <20180123084651.GA26581@kroah.com>
- <1516700314.12197.48.camel@mtkswgap22>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 09/16] mfd: axp20x: probe axp20x_adc driver for AXP813
+Date: Tue, 23 Jan 2018 09:53:05 +0000
+Message-ID: <20180123095305.lgxpq5gyzlo5cked@dell>
+References: <cover.2e5329bf5475a5160e613a4eb1e1377c662ce56e.1516012352.git-series.quentin.schulz@free-electrons.com>
+ <d5792ed6e1e989dde3c9ecdd018286109dfc101d.1516012352.git-series.quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1516700314.12197.48.camel@mtkswgap22>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sean Wang <sean.wang@mediatek.com>
-Cc: stable@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, matthias.bgg@gmail.com, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>, Kevin Hilman <khilman@baylibre.com>
+In-Reply-To: <d5792ed6e1e989dde3c9ecdd018286109dfc101d.1516012352.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 23, 2018 at 05:38:34PM +0800, Sean Wang wrote:
-> On Tue, 2018-01-23 at 09:46 +0100, Greg KH wrote:
-> > On Tue, Jan 23, 2018 at 04:31:11PM +0800, sean.wang@mediatek.com wrote:
-> > > From: Sean Wang <sean.wang@mediatek.com>
-> > > 
-> > > commit 6066998cbd2b1012a8d5bc9a2957cfd0ad53150e upstream.
-> > > 
-> > > commit edeec420de24 ("cpufreq: dt-platdev: Automatically create cpufreq
-> > > device with OPP v2") not added MediaTek SoCs to the blacklist that would
-> > > lead to cause an occasional hang or unexpected behaviors on related boards
-> > > as kernelci reported and complained on [1] specifically for 4.14 and 4.15
-> > > tree.
-> > > 
-> > > For those reasons, add MediaTek SoCs into cpufreq-dt blacklist and wish
-> > > the patch be applied to 4.14 and 4.15 tree to allow kernelci able to
-> > > complete following automated kernel testing.
-> > > 
-> > > [1] https://kernelci.org/boot/mt7623n-bananapi-bpi-r2/
-> > > 
-> > > Fixes: edeec420de24 (cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2)
-> > > Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
-> > > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> > > Cc: Kevin Hilman <khilman@baylibre.com>
-> > > ---
-> > >  drivers/cpufreq/cpufreq-dt-platdev.c | 8 ++++++++
-> > >  1 file changed, 8 insertions(+)
-> > 
-> > What stable kernel tree(s) are you wanting this backported to?
-> > 
-> > thanks,
-> > 
-> > greg k-h
+On Mon, 15 Jan 2018, Quentin Schulz wrote:
+
+> This makes the axp20x_adc driver probe with platform device id
+> "axp813-adc".
 > 
-> Hi, Greg,
-> 
-> thanks for your help!
-> 
-> stable and stable-rc are those trees I want this backported to 
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
+>  drivers/mfd/axp20x.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
-I don't understand, what exactly do you mean by this?
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Have you read:
-    https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
-for how to do this properly?
-
-> Hi, Viresh
-> 
-> currently, can the patch be permitted to go through tree linux-pm branch
-> master to be part of mainline? 
-
-Wait, this is not in Linus's tree already?  If not, what is that big
-"commit XXXX upstream" in the changelog for?
-
-I don't see that commit in Linus's tree at all.
-
-totally confused,
-
-greg k-h
+-- 
+Lee Jones
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
