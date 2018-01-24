@@ -1,50 +1,135 @@
-From: Pavan Kondeti <pkondeti@codeaurora.org>
-Subject: Re: [PATCH v3 2/3] sched/fair: use util_est in LB and WU paths
-Date: Wed, 24 Jan 2018 17:03:42 +0530
-Message-ID: <20180124113342.GD30677@codeaurora.org>
-References: <20180123180847.4477-1-patrick.bellasi@arm.com>
- <20180123180847.4477-3-patrick.bellasi@arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFD] Devices that need full power for wakeup
+Date: Wed, 24 Jan 2018 12:40:38 +0100
+Message-ID: <CAPDyKFradfq8Y2R=NcfJLVJ7_+XgAPUFRv3=t_v-9xwUW6XTiw@mail.gmail.com>
+References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com>
+ <CAJZ5v0iFGQ5uSvjk8mKUnVNL2=sT97qmHRaY9c5w4q8KHZfe_Q@mail.gmail.com>
+ <CAPDyKFo+c_Hd9w-VhTx2KPVKF2k=iJdbomT4Hi_mMLgpWkdetw@mail.gmail.com>
+ <1871558.5ybir6VhFs@aspire.rjw.lan> <CAPDyKFonEA6iphhPZWyqVbfFG8VbzK80bk8njuR06y_b-7uwDw@mail.gmail.com>
+ <CAJZ5v0h9OniDdLGkSEpU1eKmYKfi49HaG6pBeZYKwtPP9w+LBg@mail.gmail.com> <CAPDyKFpy9NQkN60sFwstveQg9T-1HLduGGXNF8+1QeRs8EvJQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180123180847.4477-3-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, pkondeti@codeaurora.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f170.google.com ([209.85.223.170]:36469 "EHLO
+        mail-io0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932891AbeAXLkk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jan 2018 06:40:40 -0500
+Received: by mail-io0-f170.google.com with SMTP id l17so4530981ioc.3
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jan 2018 03:40:40 -0800 (PST)
+In-Reply-To: <CAPDyKFpy9NQkN60sFwstveQg9T-1HLduGGXNF8+1QeRs8EvJQg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
 
-Hi Patrick,
+[...]
 
-On Tue, Jan 23, 2018 at 06:08:46PM +0000, Patrick Bellasi wrote:
->  static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
->  {
-> -	unsigned long util, capacity;
-> +	long util, util_est;
->  
->  	/* Task has no contribution or is new */
->  	if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
-> -		return cpu_util(cpu);
-> +		return cpu_util_est(cpu);
->  
-> -	capacity = capacity_orig_of(cpu);
-> -	util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
-> +	/* Discount task's blocked util from CPU's util */
-> +	util = cpu_util(cpu) - task_util(p);
-> +	util = max(util, 0L);
->  
-> -	return (util >= capacity) ? capacity : util;
-> +	if (!sched_feat(UTIL_EST))
-> +		return util;
+>>
+>> Yes, it can enter the "suspended" metastate, but that metastate may be
+>> mapped to multiple physical states.  Which of them is actually used
+>> may depend on the power requirements of the children.
+>
+> Again, you are right.
+>
+> However, what you are describing is to me a different (but related)
+> and more complex problem. As you say, this is about how to support
+> *multiple* device idle states.
+>
+> My point is, trying to make use of PM_QOS_FLAG_NO_POWER_OFF, would in
+> principle enable support for *one* more device idle state. To me, that
+> doesn't sounds like a future proof solution. Don't we need something
+> more flexible?
 
-At first, It is not clear to me why you are not clamping the capacity to
-CPU original capacity. It looks like it is not needed any more with
-commit f453ae2200b0 ("sched/fair: Consider RT/IRQ pressure in
-capacity_spare_wake()") inclusion. May be a separate patch to remove
-the clamping part?
+[...]
 
-Thanks,
-Pavan
--- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
+>>> Another observation regarding the PM_QOS_FLAG_NO_POWER_OFF flag, is
+>>> that it's QOS thing, which may also be controlled from userspace via
+>>> sysfs. Using a QOS flag to prevent to turn of in-band power as to be
+>>> able to support wakeups correctly, just doesn't seems right to me. I
+>>> rather consider this as a HW configuration that must be set to support
+>>> a requested wakeup.
+>>
+>> User space may want in-band power to be provided to the device while
+>> suspended too and I'm not sure what's the difference between that and
+>> the wakeup requirement.
+>
+> I am not sure I understand, why user space need to care about what is
+> powered and not powered?
+>
+> User space have wakeups to control and can set QoS latency
+> constraints, isn't that sufficient in this regards?
+
+Moreover, if we consider the runtime PM case, userspace can also force
+a device to remain runtime resumed.
+
+It sounds to me that userspace don't need yet another interface,
+allowing it to control the in-band power for a device. Yeah, it's
+already there for usb ports, but perhaps we can get rid of that!?
+
+>
+>>
+>> The point here, among other things, is that it doesn't really matter
+>> *why* the device needs to be provided with in-band power while
+>> suspended.  Potentially, there may be multiple valid reasons for that
+>> and wakeup is only one of them, so why does it need to be special?
+>
+> Sure, it doesn't needs to be special as long as it can cope with all
+> different scenarios.
+
+I have started to think a little bit more about how to support the
+"multiple device idle state" thingy and I have started to prepare and
+RFC. In fact it seems like quite limited amount of code, at least
+initially.
+
+In regards to that, it sure seems like it would be possible to find a
+common way (both for system suspend and runtime suspend) to cope with
+the out-band vs in-band wakeup problem.
+
+In principle what I am thinking around that, is that we need way to
+disable/enable the deepest supported idle state for a device, as that
+seems to match turning off the in-band power for the device.
+
+>
+>>
+>>> Going back to what I think is needed. I think we need a per device PM
+>>> flag that the driver can set, to instruct upper layers about how it
+>>> has configured the wakeup (in-band or out-band). That flag needs to be
+>>> propagated to parents as well. Moreover, I am questioning whether such
+>>> flag may be useful for runtime PM, maybe it could.
+>>
+>> Upper layers need not be informed about wakeup in general, like genpd
+>> which only understands (a) whether or not to cut off in-band power and
+>> (b) whether or not to invoke the "stop" callback.  It doesn't need to
+>> care about why those two things may or may not be done.
+>
+> That's true.
+>
+> Still I am a bit worried about not doing the propagation, because we
+> then need to walk the hierarchy of children instead of just checking a
+> per device flag that has been propagated already.
+
+Alright, even if I am still a bit concerned about this, let's start
+simple and leave the parent driver to check the children.
+
+>
+>>
+>> My first conclusion from the above is that the runtime PM case and the
+>> system-wide PM case are really the same from the wakeup setup
+>> perspective and I don't see general reasons for them to be handled
+>> differently.
+>>
+>> The way to communicate the requirements related to that to upper
+>> layers, parent drivers etc may be via PM QoS flags, but I'm not
+>> insisting on that.  It has just occurred to me that it is one possible
+>> way to do it and there was some work done in that direction.
+>
+> Okay, I see.
+
+Unless you have some additional thoughts, I plan to continue to cook
+the RFC for supporting multiple device idle states. When posted, we
+can continue the discussion around that instead.
+
+Do it sounds reasonable to you?
+
+Kind regards
+Uffe
