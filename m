@@ -1,32 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: mediatek: Add mediatek related projects into
- blacklist
-Date: Wed, 24 Jan 2018 08:33:13 +0530
-Message-ID: <20180124030313.GA19483@vireshk-i7>
-References: <8193c5fd73ee34b59799fdf5c6cc24ca60971d6e.1516693333.git.sean.wang@mediatek.com>
- <20180123084651.GA26581@kroah.com>
- <1516700314.12197.48.camel@mtkswgap22>
+From: Pavan Kondeti <pkondeti@codeaurora.org>
+Subject: Re: [PATCH v3 2/3] sched/fair: use util_est in LB and WU paths
+Date: Wed, 24 Jan 2018 17:03:42 +0530
+Message-ID: <20180124113342.GD30677@codeaurora.org>
+References: <20180123180847.4477-1-patrick.bellasi@arm.com>
+ <20180123180847.4477-3-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33310 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752108AbeAXDDQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 22:03:16 -0500
-Received: by mail-pf0-f196.google.com with SMTP id t5so1966714pfi.0
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 19:03:16 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1516700314.12197.48.camel@mtkswgap22>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20180123180847.4477-3-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, pkondeti@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: Sean Wang <sean.wang@mediatek.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>, stable@vger.kernel.org, rjw@rjwysocki.net, matthias.bgg@gmail.com, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>, Kevin Hilman <khilman@baylibre.com>
 
-On 23-01-18, 17:38, Sean Wang wrote:
-> currently, can the patch be permitted to go through tree linux-pm branch
-> master to be part of mainline? 
+Hi Patrick,
 
-As you already said it is in pm/linux-next. It will get merged in 4.16-rc1.
+On Tue, Jan 23, 2018 at 06:08:46PM +0000, Patrick Bellasi wrote:
+>  static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
+>  {
+> -	unsigned long util, capacity;
+> +	long util, util_est;
+>  
+>  	/* Task has no contribution or is new */
+>  	if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
+> -		return cpu_util(cpu);
+> +		return cpu_util_est(cpu);
+>  
+> -	capacity = capacity_orig_of(cpu);
+> -	util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
+> +	/* Discount task's blocked util from CPU's util */
+> +	util = cpu_util(cpu) - task_util(p);
+> +	util = max(util, 0L);
+>  
+> -	return (util >= capacity) ? capacity : util;
+> +	if (!sched_feat(UTIL_EST))
+> +		return util;
 
+At first, It is not clear to me why you are not clamping the capacity to
+CPU original capacity. It looks like it is not needed any more with
+commit f453ae2200b0 ("sched/fair: Consider RT/IRQ pressure in
+capacity_spare_wake()") inclusion. May be a separate patch to remove
+the clamping part?
+
+Thanks,
+Pavan
 -- 
-viresh
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
