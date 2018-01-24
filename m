@@ -1,100 +1,87 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 2/3] sched/fair: use util_est in LB and WU paths
-Date: Wed, 24 Jan 2018 19:31:38 +0000
-Message-ID: <20180124193138.GB5739@e110439-lin>
-References: <20180123180847.4477-1-patrick.bellasi@arm.com>
- <20180123180847.4477-3-patrick.bellasi@arm.com>
- <20180124113342.GD30677@codeaurora.org>
+From: Bo Yan <byan@nvidia.com>
+Subject: Re: [PATCH] cpufreq: skip cpufreq resume if it's not suspended
+Date: Wed, 24 Jan 2018 12:53:14 -0800
+Message-ID: <913f1715-bdd0-1c03-ad76-38be9d3d2298@nvidia.com>
+References: <1516744675-21233-1-git-send-email-byan@nvidia.com>
+ <1744712.rO4QOLozun@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:56874 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752339AbeAXTbo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 24 Jan 2018 14:31:44 -0500
-Content-Disposition: inline
-In-Reply-To: <20180124113342.GD30677@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1744712.rO4QOLozun@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: viresh.kumar@linaro.org, sgurrappadi@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavan Kondeti <pkondeti@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
-
-On 24-Jan 17:03, Pavan Kondeti wrote:
-> Hi Patrick,
-
-Hi Pavan,
 
 
-> On Tue, Jan 23, 2018 at 06:08:46PM +0000, Patrick Bellasi wrote:
-> >  static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
-> >  {
-> > -	unsigned long util, capacity;
-> > +	long util, util_est;
-> >  
-> >  	/* Task has no contribution or is new */
-> >  	if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
-> > -		return cpu_util(cpu);
-> > +		return cpu_util_est(cpu);
-> >  
-> > -	capacity = capacity_orig_of(cpu);
-> > -	util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
-> > +	/* Discount task's blocked util from CPU's util */
-> > +	util = cpu_util(cpu) - task_util(p);
-> > +	util = max(util, 0L);
-> >  
-> > -	return (util >= capacity) ? capacity : util;
-> > +	if (!sched_feat(UTIL_EST))
-> > +		return util;
-> 
-> At first, It is not clear to me why you are not clamping the capacity to
-> CPU original capacity. It looks like it is not needed any more with
-> commit f453ae2200b0 ("sched/fair: Consider RT/IRQ pressure in
-> capacity_spare_wake()") inclusion.
+On 01/23/2018 06:02 PM, Rafael J. Wysocki wrote:
+> On Tuesday, January 23, 2018 10:57:55 PM CET Bo Yan wrote:
+>>   drivers/cpufreq/cpufreq.c | 4 ++++
+>>   1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 41d148af7748..95b1c4afe14e 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1680,6 +1680,10 @@ void cpufreq_resume(void)
+>>   	if (!cpufreq_driver)
+>>   		return;
+>>   
+>> +	if (unlikely(!cpufreq_suspended)) {
+>> +		pr_warn("%s: resume after failing suspend\n", __func__);
+>> +		return;
+>> +	}
+>>   	cpufreq_suspended = false;
+>>   
+>>   	if (!has_target() && !cpufreq_driver->resume)
+>>
+> Good catch, but rather than doing this it would be better to avoid
+> calling cpufreq_resume() at all if cpufreq_suspend() has not been called.
+Yes, I thought about that, but there is no good way to skip over it 
+without introducing another flag. cpufreq_resume is called by 
+dpm_resume, cpufreq_suspend is called by dpm_suspend. In the failure 
+case, dpm_resume is called, but dpm_suspend is not. So on a higher level 
+it's already unbalanced.
 
-Mainly because the above code now uses only cpu_util() which is already clamped
-by capacity_orig_of().
+One possibility is to rely on the pm_transition flag. So something like:
 
-However, you made me notice that in the few lines which follows, where I do:
 
-> > +       /*
-> > +        * These are the main cases covered:
-> > +        * - if *p is the only task sleeping on this CPU, then:
-> > +        *      cpu_util (== task_util) > util_est (== 0)
-> > +        *   and thus we return:
-> > +        *      cpu_util_wake = (cpu_util - task_util) = 0
-> > +        *
-> > +        * - if other tasks are SLEEPING on the same CPU, which is just waking
-> > +        *   up, then:
-> > +        *      cpu_util >= task_util
-> > +        *      cpu_util > util_est (== 0)
-> > +        *   and thus we discount *p's blocked utilization to return:
-> > +        *      cpu_util_wake = (cpu_util - task_util) >= 0
-> > +        *
-> > +        * - if other tasks are RUNNABLE on that CPU and
-> > +        *      util_est > cpu_util
-> > +        *   then we use util_est since it returns a more restrictive
-> > +        *   estimation of the spare capacity on that CPU, by just considering
-> > +        *   the expected utilization of tasks already runnable on that CPU.
-> > +        */
-> > +       util_est = cpu_rq(cpu)->cfs.util_est_runnable;
-> > +       util = max(util, util_est);
-> > +
-> > +       return util;
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index dc259d20c967..8469e6fc2b2c 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -842,6 +842,7 @@ static void async_resume(void *data, async_cookie_t 
+cookie)
+  void dpm_resume(pm_message_t state)
+  {
+         struct device *dev;
++       bool suspended = (pm_transition.event != PM_EVENT_ON);
+         ktime_t starttime = ktime_get();
 
-I should instead clamp util before returning it! ;-)
+         trace_suspend_resume(TPS("dpm_resume"), state.event, true);
+@@ -885,7 +886,8 @@ void dpm_resume(pm_message_t state)
+         async_synchronize_full();
+         dpm_show_time(starttime, state, NULL);
 
-> May be a separate patch to remove  the clamping part?
+-       cpufreq_resume();
++       if (likely(suspended))
++               cpufreq_resume();
+         trace_suspend_resume(TPS("dpm_resume"), state.event, false);
+  }
 
-No, I think we should keep cpu_util_wake clamped to not affect the existing
-call sites. I just need to remove it where not needed (done) and add it where
-needed (will do on the next iteration).
+This relies on the fact that the pm_transition will stay as PMSG_ON if 
+dpm_prepare failed, in which case dpm_suspend will be skipped over, 
+pm_transition will remain as 0 until dpm_resume.
 
+dpm_suspend changes pm_transition to whatever state it receives, which 
+is never PMSG_ON. pm_transition is not changing to PMSG_ON before 
+dpm_resume. This is my understanding. does this make sense?
+
+
+>
 > Thanks,
-> Pavan
-
-Cheers Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+> Rafael
+>
+>
