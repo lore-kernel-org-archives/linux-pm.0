@@ -1,83 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: skip cpufreq resume if it's not suspended
-Date: Wed, 24 Jan 2018 03:02:09 +0100
-Message-ID: <1744712.rO4QOLozun@aspire.rjw.lan>
-References: <1516744675-21233-1-git-send-email-byan@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: mediatek: Add mediatek related projects into
+ blacklist
+Date: Wed, 24 Jan 2018 08:33:13 +0530
+Message-ID: <20180124030313.GA19483@vireshk-i7>
+References: <8193c5fd73ee34b59799fdf5c6cc24ca60971d6e.1516693333.git.sean.wang@mediatek.com>
+ <20180123084651.GA26581@kroah.com>
+ <1516700314.12197.48.camel@mtkswgap22>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:41606 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752043AbeAXCDk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 21:03:40 -0500
-In-Reply-To: <1516744675-21233-1-git-send-email-byan@nvidia.com>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:33310 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752108AbeAXDDQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jan 2018 22:03:16 -0500
+Received: by mail-pf0-f196.google.com with SMTP id t5so1966714pfi.0
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jan 2018 19:03:16 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1516700314.12197.48.camel@mtkswgap22>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bo Yan <byan@nvidia.com>
-Cc: viresh.kumar@linaro.org, sgurrappadi@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sean Wang <sean.wang@mediatek.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>, stable@vger.kernel.org, rjw@rjwysocki.net, matthias.bgg@gmail.com, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>, Kevin Hilman <khilman@baylibre.com>
 
-On Tuesday, January 23, 2018 10:57:55 PM CET Bo Yan wrote:
-> cpufreq_resume can be called even without preceding cpufreq_suspend.
-> This can happen in following scenario:
-> 
->     suspend_devices_and_enter
->        --> dpm_suspend_start
->           --> dpm_prepare
->               --> device_prepare : this function errors out
->           --> dpm_suspend: this is skipped due to dpm_prepare failure
->                            this means cpufreq_suspend is skipped over
->        --> goto Recover_platform, due to previous error
->        --> goto Resume_devices
->        --> dpm_resume_end
->            --> dpm_resume
->                --> cpufreq_resume
-> 
-> In case schedutil is used as frequency governor, cpufreq_resume will
-> eventually call sugov_start, which does following:
-> 
->     memset(sg_cpu, 0, sizeof(*sg_cpu));
->     ....
-> 
-> This effectively erases function pointer for frequency update, causing
-> crash later on. The function pointer would have been set correctly if
-> subsequent cpufreq_add_update_util_hook runs successfully, but that
-> function returns earlier because cpufreq_suspend was not called:
-> 
->     if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
-> 		return;
-> 
-> Ideally, suspend should succeed, then things will be fine. But even
-> in case of suspend failure, system should not crash.
-> 
-> The fix is to check cpufreq_suspended first, if it's false, that means
-> cpufreq_suspend was not called in the first place, so do not resume
-> cpufreq.
-> 
-> Signed-off-by: Bo Yan <byan@nvidia.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 41d148af7748..95b1c4afe14e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1680,6 +1680,10 @@ void cpufreq_resume(void)
->  	if (!cpufreq_driver)
->  		return;
->  
-> +	if (unlikely(!cpufreq_suspended)) {
-> +		pr_warn("%s: resume after failing suspend\n", __func__);
-> +		return;
-> +	}
->  	cpufreq_suspended = false;
->  
->  	if (!has_target() && !cpufreq_driver->resume)
-> 
+On 23-01-18, 17:38, Sean Wang wrote:
+> currently, can the patch be permitted to go through tree linux-pm branch
+> master to be part of mainline? 
 
-Good catch, but rather than doing this it would be better to avoid
-calling cpufreq_resume() at all if cpufreq_suspend() has not been called.
+As you already said it is in pm/linux-next. It will get merged in 4.16-rc1.
 
-Thanks,
-Rafael
+-- 
+viresh
