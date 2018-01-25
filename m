@@ -1,187 +1,152 @@
-From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
- topology
-Date: Thu, 25 Jan 2018 09:56:30 -0600
-Message-ID: <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-12-jeremy.linton@arm.com>
- <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFD] Devices that need full power for wakeup
+Date: Thu, 25 Jan 2018 17:08:47 +0100
+Message-ID: <CAJZ5v0jeShwYjUzvtTYiFO7PaSJwz6SveMPVZvqnVZ59A0cmkw@mail.gmail.com>
+References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com>
+ <CAJZ5v0iFGQ5uSvjk8mKUnVNL2=sT97qmHRaY9c5w4q8KHZfe_Q@mail.gmail.com>
+ <CAPDyKFo+c_Hd9w-VhTx2KPVKF2k=iJdbomT4Hi_mMLgpWkdetw@mail.gmail.com>
+ <1871558.5ybir6VhFs@aspire.rjw.lan> <CAPDyKFonEA6iphhPZWyqVbfFG8VbzK80bk8njuR06y_b-7uwDw@mail.gmail.com>
+ <CAJZ5v0h9OniDdLGkSEpU1eKmYKfi49HaG6pBeZYKwtPP9w+LBg@mail.gmail.com>
+ <CAPDyKFpy9NQkN60sFwstveQg9T-1HLduGGXNF8+1QeRs8EvJQg@mail.gmail.com> <CAPDyKFradfq8Y2R=NcfJLVJ7_+XgAPUFRv3=t_v-9xwUW6XTiw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Xiongfeng Wang <wangxiongfeng2@huawei.com>, linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Juri Lelli <juri.lelli@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f181.google.com ([74.125.82.181]:37045 "EHLO
+        mail-ot0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750980AbeAYQIs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jan 2018 11:08:48 -0500
+Received: by mail-ot0-f181.google.com with SMTP id a24so7135443otd.4
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jan 2018 08:08:48 -0800 (PST)
+In-Reply-To: <CAPDyKFradfq8Y2R=NcfJLVJ7_+XgAPUFRv3=t_v-9xwUW6XTiw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
 
-Hi,
+On Wed, Jan 24, 2018 at 12:40 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> [...]
+>
+>>>
+>>> Yes, it can enter the "suspended" metastate, but that metastate may be
+>>> mapped to multiple physical states.  Which of them is actually used
+>>> may depend on the power requirements of the children.
+>>
+>> Again, you are right.
+>>
+>> However, what you are describing is to me a different (but related)
+>> and more complex problem. As you say, this is about how to support
+>> *multiple* device idle states.
+>>
+>> My point is, trying to make use of PM_QOS_FLAG_NO_POWER_OFF, would in
+>> principle enable support for *one* more device idle state. To me, that
+>> doesn't sounds like a future proof solution. Don't we need something
+>> more flexible?
+>
+> [...]
+>
+>>>> Another observation regarding the PM_QOS_FLAG_NO_POWER_OFF flag, is
+>>>> that it's QOS thing, which may also be controlled from userspace via
+>>>> sysfs. Using a QOS flag to prevent to turn of in-band power as to be
+>>>> able to support wakeups correctly, just doesn't seems right to me. I
+>>>> rather consider this as a HW configuration that must be set to support
+>>>> a requested wakeup.
+>>>
+>>> User space may want in-band power to be provided to the device while
+>>> suspended too and I'm not sure what's the difference between that and
+>>> the wakeup requirement.
+>>
+>> I am not sure I understand, why user space need to care about what is
+>> powered and not powered?
+>>
+>> User space have wakeups to control and can set QoS latency
+>> constraints, isn't that sufficient in this regards?
+>
+> Moreover, if we consider the runtime PM case, userspace can also force
+> a device to remain runtime resumed.
+>
+> It sounds to me that userspace don't need yet another interface,
+> allowing it to control the in-band power for a device. Yeah, it's
+> already there for usb ports, but perhaps we can get rid of that!?
 
-On 01/25/2018 06:15 AM, Xiongfeng Wang wrote:
-> Hi Jeremy,
-> 
-> I have tested the patch with the newest UEFI. It prints the below error:
-> 
-> [    4.017371] BUG: arch topology borken
-> [    4.021069] BUG: arch topology borken
-> [    4.024764] BUG: arch topology borken
-> [    4.028460] BUG: arch topology borken
-> [    4.032153] BUG: arch topology borken
-> [    4.035849] BUG: arch topology borken
-> [    4.039543] BUG: arch topology borken
-> [    4.043239] BUG: arch topology borken
-> [    4.046932] BUG: arch topology borken
-> [    4.050629] BUG: arch topology borken
-> [    4.054322] BUG: arch topology borken
-> 
-> I checked the code and found that the newest UEFI set PPTT physical_package_flag on a physical package node and
-> the NUMA domain (SRAT domains) starts from the layer of DIE. (The topology of our board is core->cluster->die->package).
+Well, what about devices with multiple power states where the deepest
+one only is power-off and the in-band power is there in the remaining
+states?
 
-I commented about that on the EDK2 mailing list. While the current spec 
-doesn't explicitly ban having the flag set multiple times between the 
-leaf and the root I consider it a "bug" and there is an effort to 
-clarify the spec and the use of that flag.
-> 
-> When the kernel starts to build sched_domain, the multi-core sched_domain contains all the cores within a package,
-> and the lowest NUMA sched_domain contains all the cores within a die. But the kernel requires that the multi-core
-> sched_domain should be a subset of the lowest NUMA sched_domain, so the BUG info is printed.
+In those cases user space may very well still want the device to be
+suspended when not in use, but not in the deepest (power-off) state.
 
-Right. I've mentioned this problem a couple of times.
+>>> The point here, among other things, is that it doesn't really matter
+>>> *why* the device needs to be provided with in-band power while
+>>> suspended.  Potentially, there may be multiple valid reasons for that
+>>> and wakeup is only one of them, so why does it need to be special?
+>>
+>> Sure, it doesn't needs to be special as long as it can cope with all
+>> different scenarios.
+>
+> I have started to think a little bit more about how to support the
+> "multiple device idle state" thingy and I have started to prepare and
+> RFC. In fact it seems like quite limited amount of code, at least
+> initially.
+>
+> In regards to that, it sure seems like it would be possible to find a
+> common way (both for system suspend and runtime suspend) to cope with
+> the out-band vs in-band wakeup problem.
+>
+> In principle what I am thinking around that, is that we need way to
+> disable/enable the deepest supported idle state for a device, as that
+> seems to match turning off the in-band power for the device.
 
-At at the moment, the spec isn't clear about how the proximity domain is 
-detected/located within the PPTT topology (a node with a 1:1 
-correspondence isn't even required). As you can see from this patch set, 
-we are making the general assumption that the proximity domains are at 
-the same level as the physical socket. This isn't ideal for NUMA 
-topologies, like the D05, that don't align with the physical socket.
+That sounds reasonable.
 
-There are efforts underway to clarify and expand upon the specification 
-to deal with this general problem. The simple solution is another flag 
-(say PPTT_PROXIMITY_DOMAIN which would map to the D05 die) which could 
-be used to find nodes with 1:1 correspondence. At that point we could 
-add a fairly trivial patch to correct just the scheduler topology 
-without affecting the rest of the system topology code.
+We do some of that for PCI devices and in ACPI PM already.
 
-> 
-> If we modify the UEFI to make NUMA sched_domain start from the layer of package, then all the topology information
-> within the package will be discarded. I think we need to build the multi-core sched_domain using the cores within
-> the cluster instead of the cores within the package. I think that's what 'multi-core' means. Multi cores form a cluster. I guess.
-> If we build the multi-core sched_domain using the cores within a cluster, I think we need to add fields in struct cpu_topology
-> to record which cores are in each cluster.
+>>
+>>>
+>>>> Going back to what I think is needed. I think we need a per device PM
+>>>> flag that the driver can set, to instruct upper layers about how it
+>>>> has configured the wakeup (in-band or out-band). That flag needs to be
+>>>> propagated to parents as well. Moreover, I am questioning whether such
+>>>> flag may be useful for runtime PM, maybe it could.
+>>>
+>>> Upper layers need not be informed about wakeup in general, like genpd
+>>> which only understands (a) whether or not to cut off in-band power and
+>>> (b) whether or not to invoke the "stop" callback.  It doesn't need to
+>>> care about why those two things may or may not be done.
+>>
+>> That's true.
+>>
+>> Still I am a bit worried about not doing the propagation, because we
+>> then need to walk the hierarchy of children instead of just checking a
+>> per device flag that has been propagated already.
+>
+> Alright, even if I am still a bit concerned about this, let's start
+> simple and leave the parent driver to check the children.
 
-The problem is that there isn't a generic way to identify which level of 
-cache sharing is the "correct" top layer MC domain. For one system 
-cluster might be appropriate, for another it might be the highest 
-caching level within a socket, for another is might be a something in 
-between or a group of clusters or LLCs..
+Cool. :-)
 
-Hence the effort to standardize/guarantee a PPTT node that exactly 
-matches a SRAT domain. With that, each SOC/system provider has clearly 
-defined method for communicating where they want the proximity domain 
-information to begin.
+>>>
+>>> My first conclusion from the above is that the runtime PM case and the
+>>> system-wide PM case are really the same from the wakeup setup
+>>> perspective and I don't see general reasons for them to be handled
+>>> differently.
+>>>
+>>> The way to communicate the requirements related to that to upper
+>>> layers, parent drivers etc may be via PM QoS flags, but I'm not
+>>> insisting on that.  It has just occurred to me that it is one possible
+>>> way to do it and there was some work done in that direction.
+>>
+>> Okay, I see.
+>
+> Unless you have some additional thoughts, I plan to continue to cook
+> the RFC for supporting multiple device idle states. When posted, we
+> can continue the discussion around that instead.
+>
+> Do it sounds reasonable to you?
+
+Yes, it does, looking forward to seeing the patches. :-)
+
+[Sorry for the delayed responses, I've been in a totally different
+time zone lately.]
 
 Thanks,
-
-> 
-> 
-> Thanks,
-> Xiongfeng
-> 
-> On 2018/1/13 8:59, Jeremy Linton wrote:
->> Propagate the topology information from the PPTT tree to the
->> cpu_topology array. We can get the thread id, core_id and
->> cluster_id by assuming certain levels of the PPTT tree correspond
->> to those concepts. The package_id is flagged in the tree and can be
->> found by calling find_acpi_cpu_topology_package() which terminates
->> its search when it finds an ACPI node flagged as the physical
->> package. If the tree doesn't contain enough levels to represent
->> all of the requested levels then the root node will be returned
->> for all subsequent levels.
->>
->> Cc: Juri Lelli <juri.lelli@arm.com>
->> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->> ---
->>   arch/arm64/kernel/topology.c | 46 +++++++++++++++++++++++++++++++++++++++++++-
->>   1 file changed, 45 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
->> index 7b06e263fdd1..ce8ec7fd6b32 100644
->> --- a/arch/arm64/kernel/topology.c
->> +++ b/arch/arm64/kernel/topology.c
->> @@ -11,6 +11,7 @@
->>    * for more details.
->>    */
->>   
->> +#include <linux/acpi.h>
->>   #include <linux/arch_topology.h>
->>   #include <linux/cpu.h>
->>   #include <linux/cpumask.h>
->> @@ -22,6 +23,7 @@
->>   #include <linux/sched.h>
->>   #include <linux/sched/topology.h>
->>   #include <linux/slab.h>
->> +#include <linux/smp.h>
->>   #include <linux/string.h>
->>   
->>   #include <asm/cpu.h>
->> @@ -300,6 +302,46 @@ static void __init reset_cpu_topology(void)
->>   	}
->>   }
->>   
->> +#ifdef CONFIG_ACPI
->> +/*
->> + * Propagate the topology information of the processor_topology_node tree to the
->> + * cpu_topology array.
->> + */
->> +static int __init parse_acpi_topology(void)
->> +{
->> +	bool is_threaded;
->> +	int cpu, topology_id;
->> +
->> +	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
->> +
->> +	for_each_possible_cpu(cpu) {
->> +		topology_id = find_acpi_cpu_topology(cpu, 0);
->> +		if (topology_id < 0)
->> +			return topology_id;
->> +
->> +		if (is_threaded) {
->> +			cpu_topology[cpu].thread_id = topology_id;
->> +			topology_id = find_acpi_cpu_topology(cpu, 1);
->> +			cpu_topology[cpu].core_id   = topology_id;
->> +			topology_id = find_acpi_cpu_topology_package(cpu);
->> +			cpu_topology[cpu].package_id = topology_id;
->> +		} else {
->> +			cpu_topology[cpu].thread_id  = -1;
->> +			cpu_topology[cpu].core_id    = topology_id;
->> +			topology_id = find_acpi_cpu_topology_package(cpu);
->> +			cpu_topology[cpu].package_id = topology_id;
->> +		}
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +#else
->> +static inline int __init parse_acpi_topology(void)
->> +{
->> +	return -EINVAL;
->> +}
->> +#endif
->>   
->>   void __init init_cpu_topology(void)
->>   {
->> @@ -309,6 +351,8 @@ void __init init_cpu_topology(void)
->>   	 * Discard anything that was parsed if we hit an error so we
->>   	 * don't use partial information.
->>   	 */
->> -	if (of_have_populated_dt() && parse_dt_topology())
->> +	if ((!acpi_disabled) && parse_acpi_topology())
->> +		reset_cpu_topology();
->> +	else if (of_have_populated_dt() && parse_dt_topology())
->>   		reset_cpu_topology();
->>   }
->>
-> 
+Rafael
