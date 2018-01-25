@@ -1,80 +1,83 @@
-From: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE#
- signal for OF
-Date: Thu, 25 Jan 2018 09:47:29 -0800
-Message-ID: <20180125174728.rin6yghbn6gdtoxs@ban.mtv.corp.google.com>
-References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
- <5491520.JsEYlZiECc@aspire.rjw.lan>
- <20180105004130.GA151625@google.com>
- <2806186.IK6EZBC0cX@aspire.rjw.lan>
- <20180125012148.lcgnxi3uwcjzue7o@ban.mtv.corp.google.com>
- <20180125164010.GG4180@atomide.com>
- <CAJZ5v0h7JvEFTV1mbqxtK8P0aoums2Cvjy3uU1gK4E26_rtZ5g@mail.gmail.com>
+From: Bo Yan <byan@nvidia.com>
+Subject: [PATCH v2] cpufreq: skip cpufreq resume if it's not suspended
+Date: Thu, 25 Jan 2018 11:15:45 -0800
+Message-ID: <1516907745-13508-1-git-send-email-byan@nvidia.com>
+References: <1744712.rO4QOLozun@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0h7JvEFTV1mbqxtK8P0aoums2Cvjy3uU1gK4E26_rtZ5g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:17444 "EHLO
+        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751108AbeAYTPu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jan 2018 14:15:50 -0500
+In-Reply-To: <1744712.rO4QOLozun@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Bo Yan <byan@nvidia.com>
 
-Hi,
+cpufreq_resume can be called even without preceding cpufreq_suspend.
+This can happen in following scenario:
 
-On Thu, Jan 25, 2018 at 05:54:23PM +0100, Rafael J. Wysocki wrote:
-> On Thu, Jan 25, 2018 at 5:40 PM, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> wrote:
-> > * Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> [180125 01:22]:
-> >> On Fri, Jan 05, 2018 at 02:13:33AM +0100, Rafael J. Wysocki wrote:
-> >> > The "wakeup-interrupt" property at the bridge level basically has to be defined
-> >> > as the wakeup interrupt for all devices on the bus under the bridge.
-> >>
-> >> The only thing I'm at a loss for is whether this goes in (referring to
-> >> rk3399-gru.dtsi) &pcie or &pci_rootport. I think some versions of this
-> >> series have been aiming for the former, and some the latter.
-> >
-> > I'd keep the wakeup interrupt property at the rootport level. That way
-> > it can work with whatever pcie card that might be plugged into that
-> > slot. That is in case it's just a slot and not hardwired pcie device :)
+    suspend_devices_and_enter
+       --> dpm_suspend_start
+          --> dpm_prepare
+              --> device_prepare : this function errors out
+          --> dpm_suspend: this is skipped due to dpm_prepare failure
+                           this means cpufreq_suspend is skipped over
+       --> goto Recover_platform, due to previous error
+       --> goto Resume_devices
+       --> dpm_resume_end
+           --> dpm_resume
+               --> cpufreq_resume
 
-^^ Right, and that's what I believe this series was doing. Previous
-versions put it in &pcie, which might have had a similar effect. The
-existing behavior is the misguided bindings that put it in &mvl_wifi
-(the endpoint device).
+In case schedutil is used as frequency governor, cpufreq_resume will
+eventually call sugov_start, which does following:
 
-> Do I understand correctly that &pcie is the device and the
-> &pci_rootport is the port that device is connected to?
+    memset(sg_cpu, 0, sizeof(*sg_cpu));
+    ....
 
-No. (Assuming "device" means "endpoint PCIe device".)
+This effectively erases function pointer for frequency update, causing
+crash later on. The function pointer would have been set correctly if
+subsequent cpufreq_add_update_util_hook runs successfully, but that
+function returns earlier because cpufreq_suspend was not called:
 
-&pcie: The top-level representation of the host bridge
+    if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
+		return;
 
-&pci_rootport: a virtual representation of a root port. I don't think
-this corresponds to a Linux device in the end, but I thought it
-corresponded most closely to a "slot" [1]
+Ideally, suspend should succeed, then things will be fine. But even
+in case of suspend failure, system should not crash.
 
-&mvl_wifi: an endpoint device
+The fix is to check the pm_transition status in dpm_resume. if
+pm_transition.event == PMSG_ON, we know for sure dpm_suspend has not
+been called, so do not call cpufreq_resume.
 
-Brian
+Signed-off-by: Bo Yan <byan@nvidia.com>
+---
+ drivers/base/power/main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-[1] As another example, consider
-arch/arm/boot/dts/armada-370{.dtsi,-dlink-dns327l.dts}
-It has a structure of:
-
-  pciec: pcie@82000000 {
-    pcie0: pcie@1,0 /* Port 0, Lane 0 */ {
-      // Brian: no subnode, since we don't generally want to describe
-      // specific endpoints in DT, when they should be autodetectable
-    };
-    pcie2: pcie@2,0 /* Port 1, Lane 0 */ {
-      // Brian: no subnode, since we don't generally want to describe
-      // specific endpoints in DT, when they should be autodetectable
-    };
-  };
-
-Where Gru's &pcie is equivalent to Armada's &pciec, and Gru's
-&pci_rootport is equivalent to &pcie0 and &pcie2.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 08744b572af6..39829d7a9311 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -921,6 +921,7 @@ static void async_resume(void *data, async_cookie_t cookie)
+ void dpm_resume(pm_message_t state)
+ {
+ 	struct device *dev;
++	bool suspended = (pm_transition.event != PM_EVENT_ON);
+ 	ktime_t starttime = ktime_get();
+ 
+ 	trace_suspend_resume(TPS("dpm_resume"), state.event, true);
+@@ -964,7 +965,8 @@ void dpm_resume(pm_message_t state)
+ 	async_synchronize_full();
+ 	dpm_show_time(starttime, state, 0, NULL);
+ 
+-	cpufreq_resume();
++	if (likely(suspended))
++		cpufreq_resume();
+ 	trace_suspend_resume(TPS("dpm_resume"), state.event, false);
+ }
+ 
+-- 
+2.7.4
