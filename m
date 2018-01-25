@@ -1,139 +1,187 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: enable HWP before manipulating
- on corresponding registers
-Date: Thu, 25 Jan 2018 14:44:59 -0800
-Message-ID: <1516920299.16193.21.camel@linux.intel.com>
-References: <20180125110802.15141-1-yu.c.chen@intel.com>
+From: "dbasehore ." <dbasehore@chromium.org>
+Subject: Re: [PATCH 6/8] irqchip/gic-v3-its: add ability to resend MAPC on resume
+Date: Thu, 25 Jan 2018 15:07:15 -0800
+Message-ID: <CAGAzgsrEFu3UnFhL0yvgsNSY76NqjruhCo9LMvAbmzaG-Qcr9w@mail.gmail.com>
+References: <20180112212422.148625-1-dbasehore@chromium.org>
+ <20180112212422.148625-7-dbasehore@chromium.org> <86d12cg13b.wl-marc.zyngier@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:42854 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751238AbeAYWpB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Jan 2018 17:45:01 -0500
-In-Reply-To: <20180125110802.15141-1-yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <86d12cg13b.wl-marc.zyngier@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2018-01-25 at 19:08 +0800, Yu Chen wrote:
+On Sun, Jan 14, 2018 at 2:56 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> On Fri, 12 Jan 2018 21:24:20 +0000,
+> Derek Basehore wrote:
+>>
+>> This adds a DT-binding to resend the MAPC command to an ITS node on
+>
+> This isn't a DT binding. That's the driver implementation. The binding
+> is what you put in Documentation/device-tree...
+>
+>> resume. If the ITS is powered down during suspend and the collections
+>> are not backed by memory, the ITS will lose that state. This just sets
+>> up the known state for the collections after the ITS is restored.
+>>
+>> Change-Id: I4fe7f3f16500e1d3b14368262f03a43509c0049b
+>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+>> ---
+>>  drivers/irqchip/irq-gic-v3-its.c | 85 ++++++++++++++++++++++------------------
+>>  1 file changed, 47 insertions(+), 38 deletions(-)
+>>
+>> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+>> index 5cb808e3d0bf..6d2688a2ee67 100644
+>> --- a/drivers/irqchip/irq-gic-v3-its.c
+>> +++ b/drivers/irqchip/irq-gic-v3-its.c
+>> @@ -46,6 +46,7 @@
+>>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING                (1ULL << 0)
+>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375    (1ULL << 1)
+>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144    (1ULL << 2)
+>> +#define ITS_FLAGS_RESEND_MAPC_ON_RESUME              (1ULL << 3)
+>>
+>>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING  (1 << 0)
+>>
+>> @@ -1949,52 +1950,53 @@ static void its_cpu_init_lpis(void)
+>>       dsb(sy);
+>>  }
+>>
+>> -static void its_cpu_init_collection(void)
+>> +static void its_cpu_init_collection(struct its_node *its)
+>>  {
+>> -     struct its_node *its;
+>> -     int cpu;
+>> -
+>> -     spin_lock(&its_lock);
+>> -     cpu = smp_processor_id();
+>> -
+>> -     list_for_each_entry(its, &its_nodes, entry) {
+>> -             u64 target;
+>> +     int cpu = smp_processor_id();
+>> +     u64 target;
+>>
+>> -             /* avoid cross node collections and its mapping */
+>> -             if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+>> -                     struct device_node *cpu_node;
+>> +     /* avoid cross node collections and its mapping */
+>> +     if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+>> +             struct device_node *cpu_node;
+>>
+>> -                     cpu_node = of_get_cpu_node(cpu, NULL);
+>> -                     if (its->numa_node != NUMA_NO_NODE &&
+>> -                             its->numa_node != of_node_to_nid(cpu_node))
+>> -                             continue;
+>> -             }
+>> +             cpu_node = of_get_cpu_node(cpu, NULL);
+>> +             if (its->numa_node != NUMA_NO_NODE &&
+>> +                     its->numa_node != of_node_to_nid(cpu_node))
+>> +                     return;
+>> +     }
+>>
+>> +     /*
+>> +      * We now have to bind each collection to its target
+>> +      * redistributor.
+>> +      */
+>> +     if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+>>               /*
+>> -              * We now have to bind each collection to its target
+>> +              * This ITS wants the physical address of the
+>>                * redistributor.
+>>                */
+>> -             if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+>> -                     /*
+>> -                      * This ITS wants the physical address of the
+>> -                      * redistributor.
+>> -                      */
+>> -                     target = gic_data_rdist()->phys_base;
+>> -             } else {
+>> -                     /*
+>> -                      * This ITS wants a linear CPU number.
+>> -                      */
+>> -                     target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
+>> -                     target = GICR_TYPER_CPU_NUMBER(target) << 16;
+>> -             }
+>> +             target = gic_data_rdist()->phys_base;
+>> +     } else {
+>> +             /* This ITS wants a linear CPU number. */
+>> +             target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
+>> +             target = GICR_TYPER_CPU_NUMBER(target) << 16;
+>> +     }
+>>
+>> -             /* Perform collection mapping */
+>> -             its->collections[cpu].target_address = target;
+>> -             its->collections[cpu].col_id = cpu;
+>> +     /* Perform collection mapping */
+>> +     its->collections[cpu].target_address = target;
+>> +     its->collections[cpu].col_id = cpu;
+>>
+>> -             its_send_mapc(its, &its->collections[cpu], 1);
+>> -             its_send_invall(its, &its->collections[cpu]);
+>> -     }
+>> +     its_send_mapc(its, &its->collections[cpu], 1);
+>> +     its_send_invall(its, &its->collections[cpu]);
+>> +}
+>> +
+>> +static void its_cpu_init_collections(void)
+>> +{
+>> +     struct its_node *its;
+>> +
+>> +     spin_lock(&its_lock);
+>> +
+>> +     list_for_each_entry(its, &its_nodes, entry)
+>> +             its_cpu_init_collection(its);
+>>
+>>       spin_unlock(&its_lock);
+>>  }
+>> @@ -3089,6 +3091,9 @@ void its_restore_enable(void)
+>>                       its_write_baser(its, &its->tables[i],
+>>                                       its->tables[i].val);
+>>               writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>> +
+>> +             if (its->flags & ITS_FLAGS_RESEND_MAPC_ON_RESUME)
+>> +                     its_cpu_init_collection(its);
+>>       }
+>>       spin_unlock(&its_lock);
+>>  }
+>> @@ -3312,6 +3317,10 @@ static int __init its_probe_one(struct resource *res,
+>>               ctlr |= GITS_CTLR_ImDe;
+>>       writel_relaxed(ctlr, its->base + GITS_CTLR);
+>>
+>> +     if (fwnode_property_present(its->fwnode_handle,
+>> +                                 "resend-mapc-on-resume"))
+>> +             its->flags |= ITS_FLAGS_RESEND_MAPC_ON_RESUME;
+>
+> This function is firmware agnostic, and I really don't want to make
+> this thing a general purpose property.
+>
+> Please set this as a quirk when you detect some particular combination
+> of HW and firmware (in your case, GIC500 + this property). And again,
+> the property name is totally backward. IT should be something like
+> "collection-state-lost-on-suspend".
 
-Thanks for debugging.
+So name it ITS_FLAGS_WORKAROUND_GIC500_MAPC or should there be a quirk
+number for it?
 
-> The following warning was triggered after resumed from S3 -
-> if all the nonboot CPUs were put offline before suspend:
-> 
-> [ 1840.329515] unchecked MSR access error: RDMSR from 0x771 at rIP:
-> 0xffffffff86061e3a (native_read_msr+0xa/0x30)
-[...]
-
-[ 1840.329556]  acpi_processor_ppc_has_changed+0x65/0x80
-
-This is the problem. You are getting a _PPC during resume which needs
-_PSS table to really do anything.
-
-So the correct fix should not in intel_pstate IMO but
-
-diff --git a/drivers/acpi/processor_perflib.c
-b/drivers/acpi/processor_perflib.c
-index 18b72ee..c7cf48a 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -159,7 +159,7 @@ void acpi_processor_ppc_has_changed(struct
-acpi_processor *pr, int event_flag)
- {
-        int ret;
- 
--       if (ignore_ppc) {
-+       if (ignore_ppc || !pr->performance) {
-                /*
-                 * Only when it is notification event, the _OST object
-                 * will be evaluated. Otherwise it is skipped.
-
-
-...
-Since we don't call acpi_processor_register_performance(), the pr-
->performance will be NULL. When this is NULL we don't need to do PPC
-change notification.
-Even if we register performance, processing a PPC notification is
-complex as we have to wait for PPC=0 before enabling HWP otherwise we
-will be stuck with low performance (The event may not come once in HWP
-is in control).
-
-The important bug which you identified need a fix in resume when
-maxcpus=1.
-
-diff --git a/drivers/cpufreq/intel_pstate.c
-b/drivers/cpufreq/intel_pstate.c
-index 93a0e88..10e5efc 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -779,13 +779,16 @@ static int intel_pstate_hwp_save_state(struct
-cpufreq_policy *policy)
-        return 0;
- }
- 
-+static void intel_pstate_hwp_enable(struct cpudata *cpudata);
-+
- static int intel_pstate_resume(struct cpufreq_policy *policy)
- {
-        if (!hwp_active)
-                return 0;
- 
-        mutex_lock(&intel_pstate_limits_lock);
--
-+       if (!policy->cpu)
-+               intel_pstate_hwp_enable(all_cpu_data[policy->cpu]);
-        all_cpu_data[policy->cpu]->epp_policy = 0;
-        intel_pstate_hwp_set(policy->cpu);
-
-
-Thanks,
-Srinivas
-
-
-> This is because if there's only one online CPU, the MSR_PM_ENABLE
-> (package wide)can not be enabled after resumed, due to
-> intel_pstate_hwp_enable() will only be invoked on AP's online
-> process after resumed - if there's no AP online, the HWP remains
-> disabled after resumed (BIOS has disabled it in S3).
-> 
-> The re-enabling of HWP can not be put into intel_pstate_resume()
-> as it is too late according to the log above. It is applicable
-> to do it in syscore_resume() but this requires a new notifier.
-> Thus forcely enable the HWP before manipulating on them, and this
-> should not impact much because users seldom touch HWP registers.
-> 
-> Reported-by: Doug Smythies <dsmythies@telus.net>
-> Signed-off-by: Yu Chen <yu.c.chen@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index 93a0e88bef76..b808f0127192 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -689,6 +689,8 @@ static void intel_pstate_get_hwp_max(unsigned int
-> cpu, int *phy_max,
->  {
->  	u64 cap;
->  
-> +	/* In case HWP is disabled after resumed from S3. */
-> +	wrmsrl_on_cpu(cpu, MSR_PM_ENABLE, 0x1);
->  	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
->  	if (global.no_turbo)
->  		*current_max = HWP_GUARANTEED_PERF(cap);
-> @@ -711,6 +713,8 @@ static void intel_pstate_hwp_set(unsigned int
-> cpu)
->  	if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE)
->  		min = max;
->  
-> +	/* In case HWP is disabled after resumed from S3. */
-> +	wrmsrl_on_cpu(cpu, MSR_PM_ENABLE, 0x1);
->  	rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
->  
->  	value &= ~HWP_MIN_PERF(~0L);
+>
+>> +
+>>       err = its_init_domain(handle, its);
+>>       if (err)
+>>               goto out_free_tables;
+>> @@ -3347,7 +3356,7 @@ int its_cpu_init(void)
+>>                       return -ENXIO;
+>>               }
+>>               its_cpu_init_lpis();
+>> -             its_cpu_init_collection();
+>> +             its_cpu_init_collections();
+>>       }
+>>
+>>       return 0;
+>> --
+>> 2.16.0.rc1.238.g530d649a79-goog
+>>
+>
+> Thanks,
+>
+>         M.
