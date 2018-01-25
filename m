@@ -1,161 +1,113 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Subject: Re: [PATCH 4/8] thermal/drivers/Kconfig: Convert the CPU cooling
- device to a choice
-Date: Thu, 25 Jan 2018 10:57:15 +0000
-Message-ID: <20180125105715.sae3nwvz7u32v4va@oak.lan>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-5-git-send-email-daniel.lezcano@linaro.org>
- <20180124163441.7sqq7qny66d6sqrz@oak.lan>
- <02e80d2c-3672-f7e2-dfb2-aed3efc84759@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <02e80d2c-3672-f7e2-dfb2-aed3efc84759@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: enable HWP before manipulating on corresponding registers
+Date: Thu, 25 Jan 2018 19:08:02 +0800
+Message-ID: <20180125110802.15141-1-yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:48709 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750769AbeAYLEm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Jan 2018 06:04:42 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yu Chen <yu.c.chen@intel.com>
 
-On Wed, Jan 24, 2018 at 05:59:09PM +0100, Daniel Lezcano wrote:
-> On 24/01/2018 17:34, Daniel Thompson wrote:
-> > On Tue, Jan 23, 2018 at 04:34:27PM +0100, Daniel Lezcano wrote:
-> >> The next changes will add new way to cool down a CPU. In order to
-> >> sanitize and make the overall cpu cooling code consistent and robust
-> >> we must prevent the cpu cooling devices to co-exists with the same
-> >> purpose at the same time in the kernel.
-> >>
-> >> Make the CPU cooling device a choice in the Kconfig, so only one CPU
-> >> cooling strategy can be chosen.
-> > 
-> > I puzzled by the role of Kconfig here.
-> > 
-> > IIUC a distro kernel will always be forced to select the combo strategy 
-> > otherwise it will never be able to cool systems that don't have cpufreq
-> > (I hope the combo strategy treats such system as a special case with
-> > only one OPP).
-> 
-> Actually it does not make sense to select the combo if there is no
-> cpufreq support. The cpuidle cooling device must be used instead.
+The following warning was triggered after resumed from S3 -
+if all the nonboot CPUs were put offline before suspend:
 
-Well, I said before what I hoped. This is what I feared! ;-)
+[ 1840.329515] unchecked MSR access error: RDMSR from 0x771 at rIP: 0xffffffff86061e3a (native_read_msr+0xa/0x30)
+[ 1840.329516] Call Trace:
+[ 1840.329521]  __rdmsr_on_cpu+0x33/0x50
+[ 1840.329525]  generic_exec_single+0x81/0xb0
+[ 1840.329527]  smp_call_function_single+0xd2/0x100
+[ 1840.329530]  ? acpi_ds_result_pop+0xdd/0xf2
+[ 1840.329532]  ? acpi_ds_create_operand+0x215/0x23c
+[ 1840.329534]  rdmsrl_on_cpu+0x57/0x80
+[ 1840.329536]  ? cpumask_next+0x1b/0x20
+[ 1840.329538]  ? rdmsrl_on_cpu+0x57/0x80
+[ 1840.329541]  intel_pstate_update_perf_limits+0xf3/0x220
+[ 1840.329544]  ? notifier_call_chain+0x4a/0x70
+[ 1840.329546]  intel_pstate_set_policy+0x4e/0x150
+[ 1840.329548]  cpufreq_set_policy+0xcd/0x2f0
+[ 1840.329550]  cpufreq_update_policy+0xb2/0x130
+[ 1840.329552]  ? cpufreq_update_policy+0x130/0x130
+[ 1840.329556]  acpi_processor_ppc_has_changed+0x65/0x80
+[ 1840.329558]  acpi_processor_notify+0x80/0x100
+[ 1840.329561]  acpi_ev_notify_dispatch+0x44/0x5c
+[ 1840.329563]  acpi_os_execute_deferred+0x14/0x20
+[ 1840.329565]  process_one_work+0x193/0x3c0
+[ 1840.329567]  worker_thread+0x35/0x3b0
+[ 1840.329569]  kthread+0x125/0x140
+[ 1840.329571]  ? process_one_work+0x3c0/0x3c0
+[ 1840.329572]  ? kthread_park+0x60/0x60
+[ 1840.329575]  ? do_syscall_64+0x67/0x180
+[ 1840.329577]  ret_from_fork+0x25/0x30
+[ 1840.329585] unchecked MSR access error: WRMSR to 0x774 (tried to write 0x0000000000000000) at rIP: 0xffffffff86061f78 (native_write_msr+0x8/0x30)
+[ 1840.329586] Call Trace:
+[ 1840.329587]  __wrmsr_on_cpu+0x37/0x40
+[ 1840.329589]  generic_exec_single+0x81/0xb0
+[ 1840.329592]  smp_call_function_single+0xd2/0x100
+[ 1840.329594]  ? acpi_ds_create_operand+0x215/0x23c
+[ 1840.329595]  ? cpumask_next+0x1b/0x20
+[ 1840.329597]  wrmsrl_on_cpu+0x57/0x70
+[ 1840.329598]  ? rdmsrl_on_cpu+0x57/0x80
+[ 1840.329599]  ? wrmsrl_on_cpu+0x57/0x70
+[ 1840.329602]  intel_pstate_hwp_set+0xd3/0x150
+[ 1840.329604]  intel_pstate_set_policy+0x119/0x150
+[ 1840.329606]  cpufreq_set_policy+0xcd/0x2f0
+[ 1840.329607]  cpufreq_update_policy+0xb2/0x130
+[ 1840.329610]  ? cpufreq_update_policy+0x130/0x130
+[ 1840.329613]  acpi_processor_ppc_has_changed+0x65/0x80
+[ 1840.329615]  acpi_processor_notify+0x80/0x100
+[ 1840.329617]  acpi_ev_notify_dispatch+0x44/0x5c
+[ 1840.329619]  acpi_os_execute_deferred+0x14/0x20
+[ 1840.329620]  process_one_work+0x193/0x3c0
+[ 1840.329622]  worker_thread+0x35/0x3b0
+[ 1840.329624]  kthread+0x125/0x140
+[ 1840.329625]  ? process_one_work+0x3c0/0x3c0
+[ 1840.329626]  ? kthread_park+0x60/0x60
+[ 1840.329628]  ? do_syscall_64+0x67/0x180
+[ 1840.329631]  ret_from_fork+0x25/0x30
 
+This is because if there's only one online CPU, the MSR_PM_ENABLE
+(package wide)can not be enabled after resumed, due to
+intel_pstate_hwp_enable() will only be invoked on AP's online
+process after resumed - if there's no AP online, the HWP remains
+disabled after resumed (BIOS has disabled it in S3).
 
-> > This raises the question what the other options (cpufreq-only
-> > idle-injection-only) are for? Are they just for petrol heads who want to
-> > save a few bytes of code or is idle-injection undesirable for some
-> > users.
-> 
-> The combo cooling device must be used on a system with a proper support
-> for cpuidle and cpufreq and with the power numbers specified in the DT.
-> 
-> By proper support of cpuidle, I mean a cluster power down idle state,
-> fast enough. This idle state allows to drop the dynamic power *and* the
-> static leakage (the latter to prevent a thermal runaway).
-> 
-> If the system does not have power numbers, no (or bad) cpuidle, the
-> combo cooling device must not be used. If there is no cpufreq support,
-> the cpuidle cooling must be used and if there is no proper support for
-> both, the CPU cooling can't be used. In this case, you have to put a fan
-> on your board or reduce the frequency where the system stays in its
-> thermal envelope.
+The re-enabling of HWP can not be put into intel_pstate_resume()
+as it is too late according to the log above. It is applicable
+to do it in syscore_resume() but this requires a new notifier.
+Thus forcely enable the HWP before manipulating on them, and this
+should not impact much because users seldom touch HWP registers.
 
-How can we know (in the general case) what is going to be in the DT at
-compile time?
+Reported-by: Doug Smythies <dsmythies@telus.net>
+Signed-off-by: Yu Chen <yu.c.chen@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-
-> > If the later, how can a distro kernel mitigate the undesired effects
-> > whilst still selecting the combo strategy.
-> 
-> I'm not sure to understand the question. Distros always use the make
-> allmodconfig, so that chooses the cpufreq CPU cooling device which was
-> the case before without this change.
-
-So there's no regression. That's nice but doesn't that mean distros
-cannot exploit the new features.
-
-
-> However, we are talking about distros here but the CPU cooling mechanism
-> is for mobile and in this case the kernel (usually Android based) comes
-> with a specific configuration file and this is where the SoC vendor has
-> to choose the right strategy.
-
-I agree its hard to conceive of a modern Android device that doesn't implement
-both the needed features but the performance figures in the covering 
-letter come from Hikey (and they look pretty good) and Hikey is 
-supported by a good number of regular Linux distros now.
-
-Using Kconfig to force what should be runtime decisions to happen at 
-compile time means that Hikey becomes an example of a platform that
-is unable to run at max performance on the distros that have added 
-support for it.
-
-
-Daniel.
-
-
-> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >> ---
-> >>  drivers/thermal/Kconfig | 20 +++++++++++++++++---
-> >>  1 file changed, 17 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> >> index 315ae29..925e73b 100644
-> >> --- a/drivers/thermal/Kconfig
-> >> +++ b/drivers/thermal/Kconfig
-> >> @@ -142,17 +142,31 @@ config THERMAL_GOV_POWER_ALLOCATOR
-> >>  	  allocating and limiting power to devices.
-> >>  
-> >>  config CPU_THERMAL
-> >> -	bool "generic cpu cooling support"
-> >> -	depends on CPU_FREQ
-> >> +	bool "Generic cpu cooling support"
-> >>  	depends on THERMAL_OF
-> >>  	help
-> >> +	  Enable the CPU cooling features. If the system has no active
-> >> +	  cooling device available, this option allows to use the CPU
-> >> +	  as a cooling device.
-> >> +
-> >> +choice
-> >> +	prompt "CPU cooling strategies"
-> >> +	depends on CPU_THERMAL
-> >> +	default CPU_FREQ_THERMAL
-> >> +	help
-> >> +	  Select the CPU cooling strategy.
-> >> +
-> >> +config CPU_FREQ_THERMAL
-> >> +        bool "CPU frequency cooling strategy"
-> >> +	depends on CPU_FREQ
-> >> +	help
-> >>  	  This implements the generic cpu cooling mechanism through frequency
-> >>  	  reduction. An ACPI version of this already exists
-> >>  	  (drivers/acpi/processor_thermal.c).
-> >>  	  This will be useful for platforms using the generic thermal interface
-> >>  	  and not the ACPI interface.
-> >>  
-> >> -	  If you want this support, you should say Y here.
-> > 
-> > ... this may not be great advice... if you think you want this support
-> > then you *probably* actually want the comboappears to be terrible advice.
-> > 
-> > This cooling strategies should only be selected by petrolheads making a 
-> > device specific *and* are obsessive about code size.
-> > 
-> > The 
-> >> +endchoice
-> >>  
-> >>  config CLOCK_THERMAL
-> >>  	bool "Generic clock cooling support"
-> >> -- 
-> >> 2.7.4
-> >>
-> 
-> 
-> -- 
->  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-> 
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
-> 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 93a0e88bef76..b808f0127192 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -689,6 +689,8 @@ static void intel_pstate_get_hwp_max(unsigned int cpu, int *phy_max,
+ {
+ 	u64 cap;
+ 
++	/* In case HWP is disabled after resumed from S3. */
++	wrmsrl_on_cpu(cpu, MSR_PM_ENABLE, 0x1);
+ 	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
+ 	if (global.no_turbo)
+ 		*current_max = HWP_GUARANTEED_PERF(cap);
+@@ -711,6 +713,8 @@ static void intel_pstate_hwp_set(unsigned int cpu)
+ 	if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE)
+ 		min = max;
+ 
++	/* In case HWP is disabled after resumed from S3. */
++	wrmsrl_on_cpu(cpu, MSR_PM_ENABLE, 0x1);
+ 	rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+ 
+ 	value &= ~HWP_MIN_PERF(~0L);
+-- 
+2.13.6
