@@ -1,145 +1,125 @@
-From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
- topology
-Date: Thu, 25 Jan 2018 20:15:21 +0800
-Message-ID: <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-12-jeremy.linton@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 4/8] thermal/drivers/Kconfig: Convert the CPU cooling
+ device to a choice
+Date: Thu, 25 Jan 2018 14:36:12 +0100
+Message-ID: <b6181a0e-1e64-f343-1f68-ec22e69eac94@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-5-git-send-email-daniel.lezcano@linaro.org>
+ <20180124163441.7sqq7qny66d6sqrz@oak.lan>
+ <02e80d2c-3672-f7e2-dfb2-aed3efc84759@linaro.org>
+ <20180125105715.sae3nwvz7u32v4va@oak.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180113005920.28658-12-jeremy.linton@arm.com>
+In-Reply-To: <20180125105715.sae3nwvz7u32v4va@oak.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, morten.rasmussen@arm.com, Juri Lelli <juri.lelli@arm.com>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jeremy,
-
-I have tested the patch with the newest UEFI. It prints the below error:
-
-[    4.017371] BUG: arch topology borken
-[    4.021069] BUG: arch topology borken
-[    4.024764] BUG: arch topology borken
-[    4.028460] BUG: arch topology borken
-[    4.032153] BUG: arch topology borken
-[    4.035849] BUG: arch topology borken
-[    4.039543] BUG: arch topology borken
-[    4.043239] BUG: arch topology borken
-[    4.046932] BUG: arch topology borken
-[    4.050629] BUG: arch topology borken
-[    4.054322] BUG: arch topology borken
-
-I checked the code and found that the newest UEFI set PPTT physical_package_flag on a physical package node and
-the NUMA domain (SRAT domains) starts from the layer of DIE. (The topology of our board is core->cluster->die->package).
-
-When the kernel starts to build sched_domain, the multi-core sched_domain contains all the cores within a package,
-and the lowest NUMA sched_domain contains all the cores within a die. But the kernel requires that the multi-core
-sched_domain should be a subset of the lowest NUMA sched_domain, so the BUG info is printed.
-
-If we modify the UEFI to make NUMA sched_domain start from the layer of package, then all the topology information
-within the package will be discarded. I think we need to build the multi-core sched_domain using the cores within
-the cluster instead of the cores within the package. I think that's what 'multi-core' means. Multi cores form a cluster. I guess.
-If we build the multi-core sched_domain using the cores within a cluster, I think we need to add fields in struct cpu_topology
-to record which cores are in each cluster.
-
-
-Thanks,
-Xiongfeng
-
-On 2018/1/13 8:59, Jeremy Linton wrote:
-> Propagate the topology information from the PPTT tree to the
-> cpu_topology array. We can get the thread id, core_id and
-> cluster_id by assuming certain levels of the PPTT tree correspond
-> to those concepts. The package_id is flagged in the tree and can be
-> found by calling find_acpi_cpu_topology_package() which terminates
-> its search when it finds an ACPI node flagged as the physical
-> package. If the tree doesn't contain enough levels to represent
-> all of the requested levels then the root node will be returned
-> for all subsequent levels.
+On 25/01/2018 11:57, Daniel Thompson wrote:
+> On Wed, Jan 24, 2018 at 05:59:09PM +0100, Daniel Lezcano wrote:
+>> On 24/01/2018 17:34, Daniel Thompson wrote:
+>>> On Tue, Jan 23, 2018 at 04:34:27PM +0100, Daniel Lezcano wrote:
+>>>> The next changes will add new way to cool down a CPU. In order to
+>>>> sanitize and make the overall cpu cooling code consistent and robust
+>>>> we must prevent the cpu cooling devices to co-exists with the same
+>>>> purpose at the same time in the kernel.
+>>>>
+>>>> Make the CPU cooling device a choice in the Kconfig, so only one CPU
+>>>> cooling strategy can be chosen.
+>>>
+>>> I puzzled by the role of Kconfig here.
+>>>
+>>> IIUC a distro kernel will always be forced to select the combo strategy 
+>>> otherwise it will never be able to cool systems that don't have cpufreq
+>>> (I hope the combo strategy treats such system as a special case with
+>>> only one OPP).
+>>
+>> Actually it does not make sense to select the combo if there is no
+>> cpufreq support. The cpuidle cooling device must be used instead.
 > 
-> Cc: Juri Lelli <juri.lelli@arm.com>
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> ---
->  arch/arm64/kernel/topology.c | 46 +++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 45 insertions(+), 1 deletion(-)
+> Well, I said before what I hoped. This is what I feared! ;-)
 > 
-> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-> index 7b06e263fdd1..ce8ec7fd6b32 100644
-> --- a/arch/arm64/kernel/topology.c
-> +++ b/arch/arm64/kernel/topology.c
-> @@ -11,6 +11,7 @@
->   * for more details.
->   */
->  
-> +#include <linux/acpi.h>
->  #include <linux/arch_topology.h>
->  #include <linux/cpu.h>
->  #include <linux/cpumask.h>
-> @@ -22,6 +23,7 @@
->  #include <linux/sched.h>
->  #include <linux/sched/topology.h>
->  #include <linux/slab.h>
-> +#include <linux/smp.h>
->  #include <linux/string.h>
->  
->  #include <asm/cpu.h>
-> @@ -300,6 +302,46 @@ static void __init reset_cpu_topology(void)
->  	}
->  }
->  
-> +#ifdef CONFIG_ACPI
-> +/*
-> + * Propagate the topology information of the processor_topology_node tree to the
-> + * cpu_topology array.
-> + */
-> +static int __init parse_acpi_topology(void)
-> +{
-> +	bool is_threaded;
-> +	int cpu, topology_id;
-> +
-> +	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		topology_id = find_acpi_cpu_topology(cpu, 0);
-> +		if (topology_id < 0)
-> +			return topology_id;
-> +
-> +		if (is_threaded) {
-> +			cpu_topology[cpu].thread_id = topology_id;
-> +			topology_id = find_acpi_cpu_topology(cpu, 1);
-> +			cpu_topology[cpu].core_id   = topology_id;
-> +			topology_id = find_acpi_cpu_topology_package(cpu);
-> +			cpu_topology[cpu].package_id = topology_id;
-> +		} else {
-> +			cpu_topology[cpu].thread_id  = -1;
-> +			cpu_topology[cpu].core_id    = topology_id;
-> +			topology_id = find_acpi_cpu_topology_package(cpu);
-> +			cpu_topology[cpu].package_id = topology_id;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +#else
-> +static inline int __init parse_acpi_topology(void)
-> +{
-> +	return -EINVAL;
-> +}
-> +#endif
->  
->  void __init init_cpu_topology(void)
->  {
-> @@ -309,6 +351,8 @@ void __init init_cpu_topology(void)
->  	 * Discard anything that was parsed if we hit an error so we
->  	 * don't use partial information.
->  	 */
-> -	if (of_have_populated_dt() && parse_dt_topology())
-> +	if ((!acpi_disabled) && parse_acpi_topology())
-> +		reset_cpu_topology();
-> +	else if (of_have_populated_dt() && parse_dt_topology())
->  		reset_cpu_topology();
->  }
 > 
+>>> This raises the question what the other options (cpufreq-only
+>>> idle-injection-only) are for? Are they just for petrol heads who want to
+>>> save a few bytes of code or is idle-injection undesirable for some
+>>> users.
+>>
+>> The combo cooling device must be used on a system with a proper support
+>> for cpuidle and cpufreq and with the power numbers specified in the DT.
+>>
+>> By proper support of cpuidle, I mean a cluster power down idle state,
+>> fast enough. This idle state allows to drop the dynamic power *and* the
+>> static leakage (the latter to prevent a thermal runaway).
+>>
+>> If the system does not have power numbers, no (or bad) cpuidle, the
+>> combo cooling device must not be used. If there is no cpufreq support,
+>> the cpuidle cooling must be used and if there is no proper support for
+>> both, the CPU cooling can't be used. In this case, you have to put a fan
+>> on your board or reduce the frequency where the system stays in its
+>> thermal envelope.
+> 
+> How can we know (in the general case) what is going to be in the DT at
+> compile time?
+> 
+> 
+>>> If the later, how can a distro kernel mitigate the undesired effects
+>>> whilst still selecting the combo strategy.
+>>
+>> I'm not sure to understand the question. Distros always use the make
+>> allmodconfig, so that chooses the cpufreq CPU cooling device which was
+>> the case before without this change.
+> 
+> So there's no regression. That's nice but doesn't that mean distros
+> cannot exploit the new features.
+> 
+> 
+>> However, we are talking about distros here but the CPU cooling mechanism
+>> is for mobile and in this case the kernel (usually Android based) comes
+>> with a specific configuration file and this is where the SoC vendor has
+>> to choose the right strategy.
+> 
+> I agree its hard to conceive of a modern Android device that doesn't implement
+> both the needed features but the performance figures in the covering 
+> letter come from Hikey (and they look pretty good) and Hikey is 
+> supported by a good number of regular Linux distros now.
+> 
+> Using Kconfig to force what should be runtime decisions to happen at 
+> compile time means that Hikey becomes an example of a platform that
+> is unable to run at max performance on the distros that have added 
+> support for it.
+
+I disagree. The ARM64's defconfig is not distro ready. We have always to
+change the default option and fix things in the Kconfig to make the
+hikey to work (eg. the missing hi655x clock config), without speaking
+about the hikey960 which is not yet ready for full support.
+
+Hence, tweaking the Kconfig to choose the better strategy is not
+necessarily a problem for this first iteration of code.
+
+Note I'm not against changing the code to make it runtime selectable but
+that will need a major rework of the current CPU cooling code especially
+handling the change while the thermal framework is doing the mitigation
+(and probably also changes of the thermal framework).
+
+I prefer to keep simple self-encapsulated feature code and make it
+evolve to something better instead of sending a blowing patch series
+taking into account all possible combinations. Choosing the strategy at
+compile time may be look restrictive but we can live with that without
+problem and iteratively do the change until the choice becomes the
+default strategy selection option.
+
+
+
+
+
+
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
