@@ -1,70 +1,64 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V6 5/7] PCI: tegra: Add loadable kernel module support
-Date: Thu, 25 Jan 2018 15:27:59 +0100
-Message-ID: <20180125142759.GG27888@ulmo>
-References: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
- <1515650888-9459-6-git-send-email-mmaddireddy@nvidia.com>
+From: Pavan Kondeti <pkondeti@codeaurora.org>
+Subject: Re: [PATCH v3 2/3] sched/fair: use util_est in LB and WU paths
+Date: Thu, 25 Jan 2018 20:03:58 +0530
+Message-ID: <20180125143358.GE30677@codeaurora.org>
+References: <20180123180847.4477-1-patrick.bellasi@arm.com>
+ <20180123180847.4477-3-patrick.bellasi@arm.com>
+ <20180124113342.GD30677@codeaurora.org>
+ <20180124193138.GB5739@e110439-lin>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="9Iq5ULCa7nGtWwZS"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1515650888-9459-6-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, cyndis-/1wQRMveznE@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-Id: linux-pm@vger.kernel.org
-
-
---9Iq5ULCa7nGtWwZS
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:52758 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750980AbeAYOeG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jan 2018 09:34:06 -0500
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20180124193138.GB5739@e110439-lin>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On Thu, Jan 11, 2018 at 11:38:06AM +0530, Manikanta Maddireddy wrote:
-> Implement remove callback function for Tegra PCIe driver to add
-> loadable kernel module support. Change PCI_TEGRA config to tristate to
-> allow pci-tegra driver to be build as a module.
->=20
-> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
-> V2:
-> * no change in this patch
-> V3:
-> * use tegra_pcie_debugfs_exit() helper function in tegra_pcie_debugfs_ini=
-t()
-> V4:
-> * no change in this patch
-> V5:
-> * Decoupled from https://patchwork.ozlabs.org/patch/832053/ and
-> rebased on linux-next
-> V6:
-> * no change in this patch
->=20
->  drivers/pci/host/Kconfig     |  2 +-
->  drivers/pci/host/pci-tegra.c | 34 +++++++++++++++++++++++++++++++---
->  2 files changed, 32 insertions(+), 4 deletions(-)
+On Wed, Jan 24, 2018 at 07:31:38PM +0000, Patrick Bellasi wrote:
+> 
+> > > +       /*
+> > > +        * These are the main cases covered:
+> > > +        * - if *p is the only task sleeping on this CPU, then:
+> > > +        *      cpu_util (== task_util) > util_est (== 0)
+> > > +        *   and thus we return:
+> > > +        *      cpu_util_wake = (cpu_util - task_util) = 0
+> > > +        *
+> > > +        * - if other tasks are SLEEPING on the same CPU, which is just waking
+> > > +        *   up, then:
+> > > +        *      cpu_util >= task_util
+> > > +        *      cpu_util > util_est (== 0)
+> > > +        *   and thus we discount *p's blocked utilization to return:
+> > > +        *      cpu_util_wake = (cpu_util - task_util) >= 0
+> > > +        *
+> > > +        * - if other tasks are RUNNABLE on that CPU and
+> > > +        *      util_est > cpu_util
+> > > +        *   then we use util_est since it returns a more restrictive
+> > > +        *   estimation of the spare capacity on that CPU, by just considering
+> > > +        *   the expected utilization of tasks already runnable on that CPU.
+> > > +        */
+> > > +       util_est = cpu_rq(cpu)->cfs.util_est_runnable;
+> > > +       util = max(util, util_est);
+> > > +
+> > > +       return util;
+> 
+> I should instead clamp util before returning it! ;-)
+> 
+> > May be a separate patch to remove  the clamping part?
+> 
+> No, I think we should keep cpu_util_wake clamped to not affect the existing
+> call sites. I just need to remove it where not needed (done) and add it where
+> needed (will do on the next iteration).
 
-Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+cpu_util_wake() is called only from capacity_spare_wake(). There are no other
+callsites. The capacity_spare_wake() is clamping the return value of
+cpu_util_wake() to CPU capacity. The clamping is not needed, I think.
 
---9Iq5ULCa7nGtWwZS
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIyBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlpp6W8ACgkQ3SOs138+
-s6Fc7w/3dNRRNw4XT4DU/vHGkt3/ajK4yWAXdyX8aI/+cJcNXQVwRQGBDI2ukbO1
-IMTW1FwNwnzq3vSgl6Hk6OCz8lQaV6ohlq81++k4Ruw99JUJjTl8uQytXO8GOyDE
-OFzMSSQS+Mdod3oiKH7IMlZ/y5uB8m4IIzkPXghMDw0GzWtT5q3ss+iywYzEu4jU
-KtkTXeIC+ju/xVuNLVV2v/u1K5aPei2PLOReteDc5qd5FWl2UBibbUzWHSZoMDwK
-Eqdp5/2s0NlOA+WyZN2qjUVENXJLqZkl/07G0o6LqTjT1VM2N5fbQ2472WCku2WO
-qHGtqN5IqAg2CHBbmaYjCBF52ymiHOax2X2x1jpZFlHR9MxQq8MC6HSlBFR+KxaM
-G9wKwqudVZP7K3TGwEyrH38JX5CP+DdwQOFjjGmJgWMv0VYkCIG39fp9rax9SRcC
-/VRQC9NkpjkBTtVSIygT1PWGrLGn8emsvbM4ghLpm5XbSIs/wsLKS/yglQLbxsG+
-iNxMsBE8VNQfbiY8Rrm7jUfVl8pO8/7/1t5d3ihmR9UsGTGK4rZMcvePsxWVYTe8
-OxmEVEMAoq7CXmP2bFgOK8u8DdwCaLB2G1rFtYMlwCf05pdJyIFEZuv6FCN3KxSZ
-jYrzDB/YYg+LZQua3f4dyEdYKYW5b/fohNY54DGfavKk/NUQQw==
-=u2+G
------END PGP SIGNATURE-----
-
---9Iq5ULCa7nGtWwZS--
+-- 
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
