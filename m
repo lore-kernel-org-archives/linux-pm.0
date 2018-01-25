@@ -1,125 +1,74 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 4/8] thermal/drivers/Kconfig: Convert the CPU cooling
- device to a choice
-Date: Thu, 25 Jan 2018 14:36:12 +0100
-Message-ID: <b6181a0e-1e64-f343-1f68-ec22e69eac94@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-5-git-send-email-daniel.lezcano@linaro.org>
- <20180124163441.7sqq7qny66d6sqrz@oak.lan>
- <02e80d2c-3672-f7e2-dfb2-aed3efc84759@linaro.org>
- <20180125105715.sae3nwvz7u32v4va@oak.lan>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V6 4/7] PCI: tegra: Free resources on probe failure
+Date: Thu, 25 Jan 2018 15:25:52 +0100
+Message-ID: <20180125142552.GF27888@ulmo>
+References: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
+ <1515650888-9459-5-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180125105715.sae3nwvz7u32v4va@oak.lan>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="dgjlcl3Tl+kb3YDk"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1515650888-9459-5-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, cyndis-/1wQRMveznE@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25/01/2018 11:57, Daniel Thompson wrote:
-> On Wed, Jan 24, 2018 at 05:59:09PM +0100, Daniel Lezcano wrote:
->> On 24/01/2018 17:34, Daniel Thompson wrote:
->>> On Tue, Jan 23, 2018 at 04:34:27PM +0100, Daniel Lezcano wrote:
->>>> The next changes will add new way to cool down a CPU. In order to
->>>> sanitize and make the overall cpu cooling code consistent and robust
->>>> we must prevent the cpu cooling devices to co-exists with the same
->>>> purpose at the same time in the kernel.
->>>>
->>>> Make the CPU cooling device a choice in the Kconfig, so only one CPU
->>>> cooling strategy can be chosen.
->>>
->>> I puzzled by the role of Kconfig here.
->>>
->>> IIUC a distro kernel will always be forced to select the combo strategy 
->>> otherwise it will never be able to cool systems that don't have cpufreq
->>> (I hope the combo strategy treats such system as a special case with
->>> only one OPP).
->>
->> Actually it does not make sense to select the combo if there is no
->> cpufreq support. The cpuidle cooling device must be used instead.
-> 
-> Well, I said before what I hoped. This is what I feared! ;-)
-> 
-> 
->>> This raises the question what the other options (cpufreq-only
->>> idle-injection-only) are for? Are they just for petrol heads who want to
->>> save a few bytes of code or is idle-injection undesirable for some
->>> users.
->>
->> The combo cooling device must be used on a system with a proper support
->> for cpuidle and cpufreq and with the power numbers specified in the DT.
->>
->> By proper support of cpuidle, I mean a cluster power down idle state,
->> fast enough. This idle state allows to drop the dynamic power *and* the
->> static leakage (the latter to prevent a thermal runaway).
->>
->> If the system does not have power numbers, no (or bad) cpuidle, the
->> combo cooling device must not be used. If there is no cpufreq support,
->> the cpuidle cooling must be used and if there is no proper support for
->> both, the CPU cooling can't be used. In this case, you have to put a fan
->> on your board or reduce the frequency where the system stays in its
->> thermal envelope.
-> 
-> How can we know (in the general case) what is going to be in the DT at
-> compile time?
-> 
-> 
->>> If the later, how can a distro kernel mitigate the undesired effects
->>> whilst still selecting the combo strategy.
->>
->> I'm not sure to understand the question. Distros always use the make
->> allmodconfig, so that chooses the cpufreq CPU cooling device which was
->> the case before without this change.
-> 
-> So there's no regression. That's nice but doesn't that mean distros
-> cannot exploit the new features.
-> 
-> 
->> However, we are talking about distros here but the CPU cooling mechanism
->> is for mobile and in this case the kernel (usually Android based) comes
->> with a specific configuration file and this is where the SoC vendor has
->> to choose the right strategy.
-> 
-> I agree its hard to conceive of a modern Android device that doesn't implement
-> both the needed features but the performance figures in the covering 
-> letter come from Hikey (and they look pretty good) and Hikey is 
-> supported by a good number of regular Linux distros now.
-> 
-> Using Kconfig to force what should be runtime decisions to happen at 
-> compile time means that Hikey becomes an example of a platform that
-> is unable to run at max performance on the distros that have added 
-> support for it.
 
-I disagree. The ARM64's defconfig is not distro ready. We have always to
-change the default option and fix things in the Kconfig to make the
-hikey to work (eg. the missing hi655x clock config), without speaking
-about the hikey960 which is not yet ready for full support.
+--dgjlcl3Tl+kb3YDk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hence, tweaking the Kconfig to choose the better strategy is not
-necessarily a problem for this first iteration of code.
+On Thu, Jan 11, 2018 at 11:38:05AM +0530, Manikanta Maddireddy wrote:
+> tegra_pcie_probe() can fail in multiple instances, this patch takes care
+> of freeing the resources which are allocated before probe fail.
+>=20
+> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+> V2:
+> * no change in this patch
+> V3:
+> * change 'if check' to 'legacy_phy is true' for tegra_pcie_phys_put_legac=
+y()
+> * commit log correction
+> V4:
+> * no change in this patch
+> V5:
+> * Decoupled from https://patchwork.ozlabs.org/patch/832053/ and
+> rebased on linux-next
+> V6:
+> * no change in this patch
+>=20
+>  drivers/pci/host/pci-tegra.c | 99 +++++++++++++++++++++++++++++++++++---=
+------
+>  1 file changed, 79 insertions(+), 20 deletions(-)
 
-Note I'm not against changing the code to make it runtime selectable but
-that will need a major rework of the current CPU cooling code especially
-handling the change while the thermal framework is doing the mitigation
-(and probably also changes of the thermal framework).
+Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-I prefer to keep simple self-encapsulated feature code and make it
-evolve to something better instead of sending a blowing patch series
-taking into account all possible combinations. Choosing the strategy at
-compile time may be look restrictive but we can live with that without
-problem and iteratively do the change until the choice becomes the
-default strategy selection option.
+--dgjlcl3Tl+kb3YDk
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlpp6PAACgkQ3SOs138+
+s6HV0Q/8DhL7ecy4s5p4GPjEj7JU0VpMVn5sytnDdTlIMi5PHcNhT/z8P/ihKRpC
+oh3jMVQLsWiADtAvZHD8gMvhdK4m9kK7SNkDkDxxp/aWG3jFgn0aSuQMchQJ6wkj
+PY1w6AeHv44dfSkFK3oXektXlcTAZwiGjuhQLPpMgua2HZi2ou/bct5SKp68Yo41
+A5tC+CUfrY3cpKsH2rkN+ctznOgkZpovigXaInYj9pIUfDakgqLynVEVy4WaMCr1
+m/eDmisgo4Dgaq+ODFKrfNU54CH6PDHXS8Z+Juf/fZjDAL2jUhYt7S4KxTPX9zE4
+RNRc5V8Iu9eerX9tA3K+Mf2IDyXp72Op1cxGDJV2ihvQcFMGsyJMbO1dOHvmzWG9
+ptNhPqBYs4J45Wn3ovClAyuvD7fD6IgdjGVyRQp7Naewn/rHpj/yYvh+s3WEldQo
+Wo5rvU8KuJjTDLsc240C9i2BnlQaKKvbFao2Egbt5e5FJ8P2VNSINT5GOE7p5Oi8
+g8SmSOO9BMZu/bGbtqgXfwf220TVn9Xg/TD7YZL0wDJoA1hWMAbYiathgJ+MF1wV
+ZZRpVKY8M6zy+RdbImoy7UgtOPviZAxPlaXAGvgabkESs6QkHt1CLWKN3z8SYWXU
+5oEzWlTLdUkNtlmjB9RQUzSvV/247tW9ZDFubhFLHq/AgWM9koI=
+=0Jk2
+-----END PGP SIGNATURE-----
 
-
-
-
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+--dgjlcl3Tl+kb3YDk--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
