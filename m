@@ -1,135 +1,123 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 4/8] thermal/drivers/Kconfig: Convert the CPU cooling
- device to a choice
-Date: Fri, 26 Jan 2018 14:25:58 +0100
-Message-ID: <301b5fe7-472e-6291-2880-4202de657de8@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-5-git-send-email-daniel.lezcano@linaro.org>
- <20180124163441.7sqq7qny66d6sqrz@oak.lan>
- <02e80d2c-3672-f7e2-dfb2-aed3efc84759@linaro.org>
- <20180125105715.sae3nwvz7u32v4va@oak.lan>
- <b6181a0e-1e64-f343-1f68-ec22e69eac94@linaro.org>
- <20180126121609.qfahclcdamii7a27@oak.lan>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: enable HWP before manipulating
+ on corresponding registers
+Date: Fri, 26 Jan 2018 07:39:28 -0800
+Message-ID: <1516981168.16193.34.camel@linux.intel.com>
+References: <20180125110802.15141-1-yu.c.chen@intel.com>
+         <1516920299.16193.21.camel@linux.intel.com>
+         <20180126063517.GA16756@yu-chen.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:56204 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752455AbeAZN0C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jan 2018 08:26:02 -0500
-Received: by mail-wm0-f67.google.com with SMTP id 143so1254982wma.5
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jan 2018 05:26:02 -0800 (PST)
-In-Reply-To: <20180126121609.qfahclcdamii7a27@oak.lan>
-Content-Language: en-US
+Received: from mga11.intel.com ([192.55.52.93]:55446 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751861AbeAZPj3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 26 Jan 2018 10:39:29 -0500
+In-Reply-To: <20180126063517.GA16756@yu-chen.sh.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 26/01/2018 13:16, Daniel Thompson wrote:
-> On Thu, Jan 25, 2018 at 02:36:12PM +0100, Daniel Lezcano wrote:
->> On 25/01/2018 11:57, Daniel Thompson wrote:
->>> On Wed, Jan 24, 2018 at 05:59:09PM +0100, Daniel Lezcano wrote:
->>>> On 24/01/2018 17:34, Daniel Thompson wrote:
->>>> However, we are talking about distros here but the CPU cooling mechanism
->>>> is for mobile and in this case the kernel (usually Android based) comes
->>>> with a specific configuration file and this is where the SoC vendor has
->>>> to choose the right strategy.
->>>
->>> I agree its hard to conceive of a modern Android device that doesn't implement
->>> both the needed features but the performance figures in the covering 
->>> letter come from Hikey (and they look pretty good) and Hikey is 
->>> supported by a good number of regular Linux distros now.
->>>
->>> Using Kconfig to force what should be runtime decisions to happen at 
->>> compile time means that Hikey becomes an example of a platform that
->>> is unable to run at max performance on the distros that have added 
->>> support for it.
->>
->> I disagree. The ARM64's defconfig is not distro ready. We have always to
->> change the default option and fix things in the Kconfig to make the
->> hikey to work (eg. the missing hi655x clock config), without speaking
->> about the hikey960 which is not yet ready for full support.
->>
->> Hence, tweaking the Kconfig to choose the better strategy is not
->> necessarily a problem for this first iteration of code.
-> 
-> The problem is not about tweaking config for a distro. No distro I know 
-> defconfig kernels. Tweaking is normal and expected.
-> 
-> The problem is that a distro cannot generate a config that performs
-> optimally on all devices that it supports because enabling one form of
-> CPU cooling prevents other forms from being selected. There is no
-> correct value for us to select if we don't know in advance what board
-> the kernel image will be loaded on.
-> 
-> Given the massive work that has gone on (especially in ARM ecosystem) 
-> to allow one kernel binary to support many boards at once it surprises 
-> me to see new features proposed that cannot be exploited without
-> recompiling the kernel from platform to platform.
-> 
-> 
->> Note I'm not against changing the code to make it runtime selectable but
->> that will need a major rework of the current CPU cooling code especially
->> handling the change while the thermal framework is doing the mitigation
->> (and probably also changes of the thermal framework).
-> 
-> Perhaps I should have distinguished more between runtime-meaning-boot-time
-> and runtime-meaning-full-system-operation. To be clear none of my
-> comments are about being able to enable/disable idle injection on a
-> fully running system. It is the impact on multi-platform binaries that
-> attracted my attention.
-> 
-> 
->> I prefer to keep simple self-encapsulated feature code and make it
->> evolve to something better instead of sending a blowing patch series
->> taking into account all possible combinations. Choosing the strategy at
->> compile time may be look restrictive but we can live with that without
->> problem and iteratively do the change until the choice becomes the
->> default strategy selection option.
-> 
-> You won't find me arguing against iterative improvement. However I
-> did observe that the idle injection code consists almost exclusively 
-> of new lines of code. Thus I don't understand why this new code 
-> interferes with cpufreq cooling to the point that the existing cooling
-> options must compiled out of the kernel before we can exploit it.
-> 
-> I can see the combo code does have tentacles in more places but even so
-> I have the same question. What prevents the existing cooling strategy
-> from being compiled at the same time.
-> 
-> You appear to be saying that there's not yet enough infrastructure to
-> decide which type of cooler to instantiate[1] so its OK to hack around
-> the decision by forcing it to be made it at compile time. Even if we
-> want to force a decision by some means, is compile time really the best
-> point to do that?
+On Fri, 2018-01-26 at 14:35 +0800, Yu Chen wrote:
+> On Thu, Jan 25, 2018 at 02:44:59PM -0800, Srinivas Pandruvada wrote:
+> > 
+> > On Thu, 2018-01-25 at 19:08 +0800, Yu Chen wrote:
+> > 
+> > Thanks for debugging.
+> > 
+> > > 
+> > > The following warning was triggered after resumed from S3 -
+> > > if all the nonboot CPUs were put offline before suspend:
+> > > 
+> > > [ 1840.329515] unchecked MSR access error: RDMSR from 0x771 at
+> > > rIP:
+> > > 0xffffffff86061e3a (native_read_msr+0xa/0x30)
+> > [...]
+> > 
+> > [ 1840.329556]  acpi_processor_ppc_has_changed+0x65/0x80
+> > 
+> > This is the problem. You are getting a _PPC during resume which
+> > needs
+> > _PSS table to really do anything.
+> > 
+> OK.
+> > 
+> > So the correct fix should not in intel_pstate IMO but
+> > 
+> > diff --git a/drivers/acpi/processor_perflib.c
+> > b/drivers/acpi/processor_perflib.c
+> > index 18b72ee..c7cf48a 100644
+> > --- a/drivers/acpi/processor_perflib.c
+> > +++ b/drivers/acpi/processor_perflib.c
+> > @@ -159,7 +159,7 @@ void acpi_processor_ppc_has_changed(struct
+> > acpi_processor *pr, int event_flag)
+> >  {
+> >         int ret;
+> >  
+> > -       if (ignore_ppc) {
+> > +       if (ignore_ppc || !pr->performance) {
+> >                 /*
+> >                  * Only when it is notification event, the _OST
+> > object
+> >                  * will be evaluated. Otherwise it is skipped.
+> > 
+> > 
+> > ...
+> > Since we don't call acpi_processor_register_performance(), the pr-
+> > > 
+> > > performance will be NULL. When this is NULL we don't need to do
+> > > PPC
+> > change notification.
+> > Even if we register performance, processing a PPC notification is
+> > complex as we have to wait for PPC=0 before enabling HWP otherwise
+> > we
+> > will be stuck with low performance (The event may not come once in
+> > HWP
+> > is in control).
+> > 
+> OK.
+> > 
+> > The important bug which you identified need a fix in resume when
+> > maxcpus=1.
+> > 
+> > diff --git a/drivers/cpufreq/intel_pstate.c
+> > b/drivers/cpufreq/intel_pstate.c
+> > index 93a0e88..10e5efc 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -779,13 +779,16 @@ static int intel_pstate_hwp_save_state(struct
+> > cpufreq_policy *policy)
+> >         return 0;
+> >  }
+> >  
+> > +static void intel_pstate_hwp_enable(struct cpudata *cpudata);
+> > +
+> >  static int intel_pstate_resume(struct cpufreq_policy *policy)
+> >  {
+> >         if (!hwp_active)
+> >                 return 0;
+> >  
+> >         mutex_lock(&intel_pstate_limits_lock);
+> > -
+> > +       if (!policy->cpu)
+> The 'if' statement might not be needed, as intel_pstate_resume()
+> is always invoked on boot cpu IMO.
 
-For the moment, yes. We are backward compatible, there is no change with
-the current feature.
+It will be invoked on all CPUs. Since we already do this for other CPUs
+during cpu-online, this will avoid double calls to HWP enable.
 
-I don't see really the point of being so afraid with this compilation
-option, it is not the first time we have compile time code which
-migrates to runtime code. The important thing is we don't break the
-existing.
+Do these changes address your issues? If yes, you can submit two
+patches.
 
-Having the runtime selection is the objective after improving the CPU
-cooling devices. But this is far from being trivial and will need a
-rework of the cooling device / framework (and the changes grouped in a
-separate patch series).
+Thanks,
+Srinivas
 
-
-> [1] Is that because the DT isn't rich enough for us to figure out 
->     the trade off between using real OPPs and virtual idle-injected
->     ones nor whether cpuidle entry/exit is fast enough for cooling
->     to be effective?
-
-Yes, it is one aspect.
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> Thanks,
+> Yu
+> > 
+> > +               intel_pstate_hwp_enable(all_cpu_data[policy->cpu]);
+> >         all_cpu_data[policy->cpu]->epp_policy = 0;
+> >         intel_pstate_hwp_set(policy->cpu);
+> > 
