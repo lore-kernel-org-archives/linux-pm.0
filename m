@@ -1,45 +1,74 @@
-From: Jia-Ju Bai <baijiaju1990@gmail.com>
-Subject: [PATCH] opp: cpu: Replace GFP_ATOMIC with GFP_KERNEL in dev_pm_opp_init_cpufreq_table
-Date: Fri, 26 Jan 2018 16:48:49 +0800
-Message-ID: <1516956529-32264-1-git-send-email-baijiaju1990@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f67.google.com ([74.125.83.67]:38947 "EHLO
-        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752336AbeAZIoT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jan 2018 03:44:19 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Anson Huang <Anson.Huang@nxp.com>
+Subject: [PATCH V2 1/2] ARM: dts: imx7s: add temperature monitor support
+Date: Fri, 26 Jan 2018 16:09:39 +0800
+Message-ID: <1516954180-26029-1-git-send-email-Anson.Huang@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, linux@armlinux.org.uk, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, aisheng.dong@nxp.com
+Cc: Linux-imx@nxp.com
 List-Id: linux-pm@vger.kernel.org
-To: vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>
 
-After checking all possible call chains to 
-dev_pm_opp_init_cpufreq_table() here,
-my tool finds that this function is never called in atomic context, 
-namely never in an interrupt handler or holding a spinlock.
-And dev_pm_opp_init_cpufreq_table() calls dev_pm_opp_get_opp_count(), 
-which calls mutex_lock that can sleep.
-It indicates that atmtcp_v_send() can call functions which may sleep.
-Thus GFP_ATOMIC is not necessary, and it can be replaced with GFP_KERNEL.
+Add i.MX7 temperature monitor support.
 
-This is found by a static analysis tool named DCNS written by myself.
-
-Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/opp/cpu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+no changes since V1.
+ .../devicetree/bindings/thermal/imx-thermal.txt      |  5 +++--
+ arch/arm/boot/dts/imx7s.dtsi                         | 20 ++++++++++++++++++++
+ 2 files changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/opp/cpu.c b/drivers/opp/cpu.c
-index 2d87bc1..0c09107 100644
---- a/drivers/opp/cpu.c
-+++ b/drivers/opp/cpu.c
-@@ -55,7 +55,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
- 	if (max_opps <= 0)
- 		return max_opps ? max_opps : -ENODATA;
+diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+index 28be51a..9575d45 100644
+--- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+@@ -1,8 +1,9 @@
+ * Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
  
--	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_ATOMIC);
-+	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_KERNEL);
- 	if (!freq_table)
- 		return -ENOMEM;
+ Required properties:
+-- compatible : "fsl,imx6q-tempmon" for i.MX6Q, "fsl,imx6sx-tempmon" for i.MX6SX.
+-  i.MX6SX has two more IRQs than i.MX6Q, one is IRQ_LOW and the other is IRQ_PANIC,
++- compatible : "fsl,imx6q-tempmon" for i.MX6Q, "fsl,imx6sx-tempmon" for i.MX6SX,
++  "fsl,imx7-tempmon" for i.MX7S/D.
++  i.MX6SX and i.MX7S/D have two more IRQs than i.MX6Q, one is IRQ_LOW and the other is IRQ_PANIC,
+   when temperature is below than low threshold, IRQ_LOW will be triggered, when temperature
+   is higher than panic threshold, system will auto reboot by SRC module.
+ - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
+diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
+index 82ad26e..2e2eda53 100644
+--- a/arch/arm/boot/dts/imx7s.dtsi
++++ b/arch/arm/boot/dts/imx7s.dtsi
+@@ -497,9 +497,29 @@
+ 			};
  
+ 			ocotp: ocotp-ctrl@30350000 {
++				#address-cells = <1>;
++				#size-cells = <1>;
+ 				compatible = "fsl,imx7d-ocotp", "syscon";
+ 				reg = <0x30350000 0x10000>;
+ 				clocks = <&clks IMX7D_OCOTP_CLK>;
++
++				tempmon_calib: calib@3c {
++					reg = <0x3c 0x4>;
++				};
++
++				tempmon_temp_grade: temp-grade@10 {
++					reg = <0x10 0x4>;
++				};
++			};
++
++			tempmon: tempmon {
++				compatible = "fsl,imx7-tempmon";
++				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
++				fsl,tempmon =<&anatop>;
++				nvmem-cells = <&tempmon_calib>,
++					<&tempmon_temp_grade>;
++				nvmem-cell-names = "calib", "temp_grade";
++				clocks = <&clks IMX7D_PLL_SYS_MAIN_CLK>;
+ 			};
+ 
+ 			anatop: anatop@30360000 {
 -- 
-1.7.9.5
+2.7.4
