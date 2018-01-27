@@ -1,31 +1,42 @@
-From: Emile Kenold <dri001ed@gmail.com>
-Subject: Re:
-Date: Sat, 27 Jan 2018 03:56:24 +0000
-Message-ID: <CADx1BfGtXeZ69o0FmYkXZ4xHXCCRx0WbgySryO7STo8x3mEBiw@mail.gmail.com>
-Reply-To: em2keld@gmail.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f68.google.com ([209.85.213.68]:45157 "EHLO
-        mail-vk0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751588AbeA0D4Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jan 2018 22:56:25 -0500
-Received: by mail-vk0-f68.google.com with SMTP id j204so1491237vke.12
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jan 2018 19:56:25 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Liu Xiang <liu.xiang6@zte.com.cn>
+Subject: [PATCH] power: supply: bq27xxx: Update comments
+Date: Sat, 27 Jan 2018 22:27:41 +0800
+Message-ID: <1517063261-23296-1-git-send-email-liu.xiang6@zte.com.cn>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, sre@kernel.org, pali.rohar@gmail.com, afd@ti.com, Liu Xiang <liu.xiang6@zte.com.cn>
 List-Id: linux-pm@vger.kernel.org
 
---=20
-This is Mrs. Emile Kenold contacting you for missionary work and i
-pray you will be kind enough to deliver my =C2=A37 million donation to the
-less privileged ones.
+The URL of bq27441-g1 is missing and bq27520-g4 is duplicated.
 
-I am a widow suffering of lung cancer which has damaged my liver and
-back bone, i decided to entrust this fund to a God fearing person that
-will use it for Charity works and i want your sincere reply to know if
-you will be able to execute this project, I will give you more
-information on how the fund will be transferred to you immediately I
-receive your positive response.
+Signed-off-by: Liu Xiang <liu.xiang6@zte.com.cn>
+---
+ drivers/power/supply/bq27xxx_battery.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks and God bless you.
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 2de378a..c0e7c5b 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -26,7 +26,6 @@
+  * http://www.ti.com/product/bq27510-g1
+  * http://www.ti.com/product/bq27510-g2
+  * http://www.ti.com/product/bq27510-g3
+- * http://www.ti.com/product/bq27520-g4
+  * http://www.ti.com/product/bq27520-g1
+  * http://www.ti.com/product/bq27520-g2
+  * http://www.ti.com/product/bq27520-g3
+@@ -40,8 +39,9 @@
+  * http://www.ti.com/product/bq27545-g1
+  * http://www.ti.com/product/bq27421-g1
+  * http://www.ti.com/product/bq27425-g1
+- * http://www.ti.com/product/bq27411-g1
++ * http://www.ti.com/product/bq27441-g1
+  * http://www.ti.com/product/bq27621-g1
++ * http://www.ti.com/product/bq27411-g1
+  */
+ 
+ #include <linux/device.h>
+-- 
+1.9.1
