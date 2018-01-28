@@ -1,43 +1,69 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [RESEND PATCH 2/8] turbostat: Fix node and siblings lookup data
-Date: Sun, 28 Jan 2018 12:43:34 -0500
-Message-ID: <CAJvTdKmdNic5T-JTgN0L7U12OvQr8rPEKjz7eDM7ToK1b_0=hg@mail.gmail.com>
-References: <20171103122550.13341-1-prarit@redhat.com> <20171103122550.13341-3-prarit@redhat.com>
- <CAJvTdK=-pH_XTS5dNsgz+MEhqN-mYOwQaHOs_Qc+58+KpEp4Zw@mail.gmail.com>
- <0e6f30bf-8dad-a8a1-612c-6b39fcbf5e1c@redhat.com> <90ece10d-3b68-8d77-89af-b060ba8ba20e@redhat.com>
+Subject: Re: [RESEND][PATCH] tools/power: Don't make man pages executable
+Date: Sun, 28 Jan 2018 12:50:52 -0500
+Message-ID: <CAJvTdKmyZGE-uq9poCgmobdGwgqP-US1tBKk204wjU++g5Ayhg@mail.gmail.com>
+References: <20171220040231.5592-1-labbott@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f194.google.com ([209.85.216.194]:38108 "EHLO
-        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752008AbeA1Rnf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jan 2018 12:43:35 -0500
-Received: by mail-qt0-f194.google.com with SMTP id z10so10033698qti.5
-        for <linux-pm@vger.kernel.org>; Sun, 28 Jan 2018 09:43:34 -0800 (PST)
-In-Reply-To: <90ece10d-3b68-8d77-89af-b060ba8ba20e@redhat.com>
+Received: from mail-qk0-f193.google.com ([209.85.220.193]:34708 "EHLO
+        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751986AbeA1Rux (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jan 2018 12:50:53 -0500
+In-Reply-To: <20171220040231.5592-1-labbott@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, charles.rose@dell.com, "Rafael J. Wysocki" <rafael@kernel.org>, suravee.suthikulpanit@amd.com
+To: Laura Abbott <labbott@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
->>> This patch causes a core dump:
->>>
->>> turbostat: malloc.c:2394: sysmalloc: Assertion `(old_top ==
->>> initial_top (av) && old_size == 0) || ((unsigned long) (old_size) >=
->>> MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end &
->>> (pagesize - 1)) == 0)' failed.
->>>
->>> Aborted (core dumped)
->>>
->>
->> Odd.  I ran this on Intel Haswell and up ... what system did you run this on?
+Applied.
 
-my laptop.
-
-Let me take a closer look at this...
-
-I may have a patch for you to test on an AMD system for me, can you do that?
-I'll be putting the latest on my kernel.og turbostat branch.
-
-thanks,
+thanks!
 -Len
+
+
+On Tue, Dec 19, 2017 at 11:02 PM, Laura Abbott <labbott@redhat.com> wrote:
+> rpm-lint flagged these as being executable:
+>
+> kernel-tools.x86_64: W: spurious-executable-perm /usr/share/man/man8/turbostat.8.gz
+> kernel-tools.x86_64: W: spurious-executable-perm /usr/share/man/man8/x86_energy_perf_policy.8.gz
+>
+> Fix this
+>
+> Signed-off-by: Laura Abbott <labbott@redhat.com>
+> ---
+> Resent for linux-pm cc
+> ---
+>  tools/power/x86/turbostat/Makefile              | 2 +-
+>  tools/power/x86/x86_energy_perf_policy/Makefile | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/tools/power/x86/turbostat/Makefile b/tools/power/x86/turbostat/Makefile
+> index a9bc914a8fe8..2ab25aa38263 100644
+> --- a/tools/power/x86/turbostat/Makefile
+> +++ b/tools/power/x86/turbostat/Makefile
+> @@ -25,4 +25,4 @@ install : turbostat
+>         install -d  $(DESTDIR)$(PREFIX)/bin
+>         install $(BUILD_OUTPUT)/turbostat $(DESTDIR)$(PREFIX)/bin/turbostat
+>         install -d  $(DESTDIR)$(PREFIX)/share/man/man8
+> -       install turbostat.8 $(DESTDIR)$(PREFIX)/share/man/man8
+> +       install -m 644 turbostat.8 $(DESTDIR)$(PREFIX)/share/man/man8
+> diff --git a/tools/power/x86/x86_energy_perf_policy/Makefile b/tools/power/x86/x86_energy_perf_policy/Makefile
+> index 2447b1bbaacf..f4534fb8b951 100644
+> --- a/tools/power/x86/x86_energy_perf_policy/Makefile
+> +++ b/tools/power/x86/x86_energy_perf_policy/Makefile
+> @@ -24,5 +24,5 @@ install : x86_energy_perf_policy
+>         install -d  $(DESTDIR)$(PREFIX)/bin
+>         install $(BUILD_OUTPUT)/x86_energy_perf_policy $(DESTDIR)$(PREFIX)/bin/x86_energy_perf_policy
+>         install -d  $(DESTDIR)$(PREFIX)/share/man/man8
+> -       install x86_energy_perf_policy.8 $(DESTDIR)$(PREFIX)/share/man/man8
+> +       install -m 644 x86_energy_perf_policy.8 $(DESTDIR)$(PREFIX)/share/man/man8
+>
+> --
+> 2.14.3
+>
+
+
+
+-- 
+Len Brown, Intel Open Source Technology Center
