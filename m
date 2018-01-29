@@ -1,158 +1,213 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.4 06/74] x86/cpu/intel: Introduce macros for Intel family numbers
-Date: Mon, 29 Jan 2018 13:56:11 +0100
-Message-ID: <20180129123847.801231798@linuxfoundation.org>
-References: <20180129123847.507563674@linuxfoundation.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH V6 6/7] PCI: tegra: Broadcast PME_Turn_Off message before
+ link goes to L2
+Date: Mon, 29 Jan 2018 16:18:42 +0100
+Message-ID: <20180129151842.GA26264@ulmo>
+References: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
+ <1515650888-9459-7-git-send-email-mmaddireddy@nvidia.com>
+ <20180125143627.GH27888@ulmo>
+ <8adc2a7d-009b-168c-07f6-b50526ce0605@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20180129123847.507563674@linuxfoundation.org>
-Sender: stable-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Adrian Hunter <adrian.hunter@intel.com>, Andy Lutomirski <luto@amacapital.net>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Brian Gerst <brgerst@gmail.com>, Darren Hart <dvhart@infradead.org>, Dave Hansen <dave@sr71.net>, Denys Vlasenko <dvlasenk@redhat.com>, Doug Thompson <dougthompson@xmission.com>, Eduardo Valentin <edubezval@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Kan Liang <kan.liang@intel.com>, Len Brown <lenb@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <8adc2a7d-009b-168c-07f6-b50526ce0605@nvidia.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Cc: bhelgaas@google.com, lorenzo.pieralisi@arm.com, cyndis@kapsi.fi, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-4.4-stable review patch.  If anyone has any objections, please let me know.
 
-------------------
+--wRRV7LY7NUeQGEoC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-From: Dave Hansen <dave@sr71.net>
+On Mon, Jan 29, 2018 at 10:11:42AM +0530, Manikanta Maddireddy wrote:
+>=20
+>=20
+> On 25-Jan-18 8:06 PM, Thierry Reding wrote:
+> > On Thu, Jan 11, 2018 at 11:38:07AM +0530, Manikanta Maddireddy wrote:
+> >> Per PCIe r3.0, sec 5.3.3.2.1, PCIe root port shoould broadcast PME_Tur=
+n_Off
+> >> message before PCIe link goes to L2. PME_Turn_Off broadcast mechanism =
+is
+> >> implemented in AFI module. Each Tegra PCIe root port has its own
+> >> PME_Turn_Off and PME_TO_Ack bitmap in AFI_PME register, program this
+> >> register to broadcast PME_Turn_Off message.
+> >>
+> >> Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+> >> ---
+> >> V2:
+> >> * no change in this patch
+> >> V3:
+> >> * add PME bitmap in soc data instead of using compatible string
+> >> * replace while loop with readl_poll_timeout() for polling
+> >> * commit log correction
+> >> V4:
+> >> * no change in this patch
+> >> V5:
+> >> * Rebased on linux-next
+> >> V6:
+> >> * no change in this patch
+> >>
+> >>  drivers/pci/host/pci-tegra.c | 45 +++++++++++++++++++++++++++++++++++=
++++++++++
+> >>  1 file changed, 45 insertions(+)
+> >>
+> >> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra=
+=2Ec
+> >> index 981f126b14d6..cc33fc0fb300 100644
+> >> --- a/drivers/pci/host/pci-tegra.c
+> >> +++ b/drivers/pci/host/pci-tegra.c
+> >> @@ -31,6 +31,7 @@
+> >>  #include <linux/delay.h>
+> >>  #include <linux/export.h>
+> >>  #include <linux/interrupt.h>
+> >> +#include <linux/iopoll.h>
+> >>  #include <linux/irq.h>
+> >>  #include <linux/irqdomain.h>
+> >>  #include <linux/kernel.h>
+> >> @@ -153,6 +154,8 @@
+> >>  #define  AFI_INTR_EN_FPCI_TIMEOUT	(1 << 7)
+> >>  #define  AFI_INTR_EN_PRSNT_SENSE	(1 << 8)
+> >> =20
+> >> +#define AFI_PCIE_PME		0xf0
+> >> +
+> >>  #define AFI_PCIE_CONFIG					0x0f8
+> >>  #define  AFI_PCIE_CONFIG_PCIE_DISABLE(x)		(1 << ((x) + 1))
+> >>  #define  AFI_PCIE_CONFIG_PCIE_DISABLE_ALL		0xe
+> >> @@ -233,6 +236,8 @@
+> >>  #define PADS_REFCLK_CFG_PREDI_SHIFT		8  /* 11:8 */
+> >>  #define PADS_REFCLK_CFG_DRVI_SHIFT		12 /* 15:12 */
+> >> =20
+> >> +#define PME_ACK_TIMEOUT 10000
+> >> +
+> >>  struct tegra_msi {
+> >>  	struct msi_controller chip;
+> >>  	DECLARE_BITMAP(used, INT_PCI_MSI_NR);
+> >> @@ -251,6 +256,8 @@ struct tegra_pcie_soc {
+> >>  	u32 tx_ref_sel;
+> >>  	u32 pads_refclk_cfg0;
+> >>  	u32 pads_refclk_cfg1;
+> >> +	u8 pme_turnoff_bit[3];
+> >> +	u8 pme_ack_bit[3];
+> >=20
+> > This seems suboptimal to me. Perhaps a better way would be:
+> >=20
+> > 	struct tegra_pcie_port_soc {
+> > 		struct {
+> > 			u8 turnoff_bit;
+> > 			u8 ack_bit;
+> > 		} pme;
+> > 	};
+> >=20
+> > And since we already have num_ports which defines exactly how many ports
+> > we have:
+> >=20
+> > 	struct tegra_pcie_soc {
+> > 		unsigned int num_ports;
+> > 		const struct tegra_pcie_port_soc *ports;
+> > 		...
+> > 	};
+> >=20
+> > I suspect that as you're adding more features we may need more of this
+> > data.
+> >=20
+> > But I'm fine to keep it like this. We can always switch to something
+> > different if the above becomes too much cluttered.
+> >=20
+> I agree it is sub optimal. I moved pme bitmap values to soc data because
+> tegra30 and tegra186 have different bitmap values. To differentiate this
+> I allocated static memory in tegra_pcie_soc. I am a bit hesitant do dynam=
+ic
+> allocation based on num_ports because I need to use compatible string
+> to distinguish between tegra30 & tegra186 in runtime. I believe it is OK
+> to have trade off 16 bits to avoid these compatible check?
 
-commit 970442c599b22ccd644ebfe94d1d303bf6f87c05 upstream.
+Sorry if I was unclear. I didn't suggest that you'd dynamically allocate
+memory, instead you'd hook it up like so:
 
-Problem:
+	static const struct tegra_pcie_port_soc tegra186_pcie_ports[] =3D {
+		{ .turnoff_bit =3D  0, .ack_bit =3D  5 },
+		{ .turnoff_bit =3D  8, .ack_bit =3D 10 },
+		{ .turnoff_bit =3D 12, .ack_bit =3D 14 },
+	};
 
-We have a boatload of open-coded family-6 model numbers.  Half of
-them have these model numbers in hex and the other half in
-decimal.  This makes grepping for them tons of fun, if you were
-to try.
+And then in the existing tegra186_pcie, you'd set this:
 
-Solution:
+	static const struct tegra_pcie_soc tegra186_pcie =3D {
+		.num_ports =3D 3,
+		.ports =3D tegra186_pcie_ports,
+		...
+	};
 
-Consolidate all the magic numbers.  Put all the definitions in
-one header.
+And similar for the others. I realize that this is somewhat more verbose
+than your original, but I think it's more readable.
 
-The names here are closely derived from the comments describing
-the models from arch/x86/events/intel/core.c.  We could easily
-make them shorter by doing things like s/SANDYBRIDGE/SNB/, but
-they seemed fine even with the longer versions to me.
+It also allows you to reuse data, such as:
 
-Do not take any of these names too literally, like "DESKTOP"
-or "MOBILE".  These are all colloquial names and not precise
-descriptions of everywhere a given model will show up.
+	static const struct tegra_pcie_port_soc tegra20_pcie_ports[] =3D {
+		{ .turnoff_bit =3D 0, .ack_bit =3D  5 },
+		{ .turnoff_bit =3D 8, .ack_bit =3D 10 },
+	};
 
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Brian Gerst <brgerst@gmail.com>
-Cc: Darren Hart <dvhart@infradead.org>
-Cc: Dave Hansen <dave@sr71.net>
-Cc: Denys Vlasenko <dvlasenk@redhat.com>
-Cc: Doug Thompson <dougthompson@xmission.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Kan Liang <kan.liang@intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>
-Cc: Souvik Kumar Chakravarty <souvik.k.chakravarty@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Vishwanath Somayaji <vishwanath.somayaji@intel.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: jacob.jun.pan@intel.com
-Cc: linux-acpi@vger.kernel.org
-Cc: linux-edac@vger.kernel.org
-Cc: linux-mmc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: platform-driver-x86@vger.kernel.org
-Link: http://lkml.kernel.org/r/20160603001927.F2A7D828@viggo.jf.intel.com
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Cc: Jiri Slaby <jslaby@suse.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+	...
 
----
- arch/x86/include/asm/intel-family.h |   68 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+	static const struct tegra_pcie_soc tegra20_pcie =3D {
+		.num_ports =3D 2,
+		.ports =3D tegra20_pcie_ports,
+		...
+	};
 
---- /dev/null
-+++ b/arch/x86/include/asm/intel-family.h
-@@ -0,0 +1,68 @@
-+#ifndef _ASM_X86_INTEL_FAMILY_H
-+#define _ASM_X86_INTEL_FAMILY_H
-+
-+/*
-+ * "Big Core" Processors (Branded as Core, Xeon, etc...)
-+ *
-+ * The "_X" parts are generally the EP and EX Xeons, or the
-+ * "Extreme" ones, like Broadwell-E.
-+ *
-+ * Things ending in "2" are usually because we have no better
-+ * name for them.  There's no processor called "WESTMERE2".
-+ */
-+
-+#define INTEL_FAM6_CORE_YONAH		0x0E
-+#define INTEL_FAM6_CORE2_MEROM		0x0F
-+#define INTEL_FAM6_CORE2_MEROM_L	0x16
-+#define INTEL_FAM6_CORE2_PENRYN		0x17
-+#define INTEL_FAM6_CORE2_DUNNINGTON	0x1D
-+
-+#define INTEL_FAM6_NEHALEM		0x1E
-+#define INTEL_FAM6_NEHALEM_EP		0x1A
-+#define INTEL_FAM6_NEHALEM_EX		0x2E
-+#define INTEL_FAM6_WESTMERE		0x25
-+#define INTEL_FAM6_WESTMERE2		0x1F
-+#define INTEL_FAM6_WESTMERE_EP		0x2C
-+#define INTEL_FAM6_WESTMERE_EX		0x2F
-+
-+#define INTEL_FAM6_SANDYBRIDGE		0x2A
-+#define INTEL_FAM6_SANDYBRIDGE_X	0x2D
-+#define INTEL_FAM6_IVYBRIDGE		0x3A
-+#define INTEL_FAM6_IVYBRIDGE_X		0x3E
-+
-+#define INTEL_FAM6_HASWELL_CORE		0x3C
-+#define INTEL_FAM6_HASWELL_X		0x3F
-+#define INTEL_FAM6_HASWELL_ULT		0x45
-+#define INTEL_FAM6_HASWELL_GT3E		0x46
-+
-+#define INTEL_FAM6_BROADWELL_CORE	0x3D
-+#define INTEL_FAM6_BROADWELL_XEON_D	0x56
-+#define INTEL_FAM6_BROADWELL_GT3E	0x47
-+#define INTEL_FAM6_BROADWELL_X		0x4F
-+
-+#define INTEL_FAM6_SKYLAKE_MOBILE	0x4E
-+#define INTEL_FAM6_SKYLAKE_DESKTOP	0x5E
-+#define INTEL_FAM6_SKYLAKE_X		0x55
-+#define INTEL_FAM6_KABYLAKE_MOBILE	0x8E
-+#define INTEL_FAM6_KABYLAKE_DESKTOP	0x9E
-+
-+/* "Small Core" Processors (Atom) */
-+
-+#define INTEL_FAM6_ATOM_PINEVIEW	0x1C
-+#define INTEL_FAM6_ATOM_LINCROFT	0x26
-+#define INTEL_FAM6_ATOM_PENWELL		0x27
-+#define INTEL_FAM6_ATOM_CLOVERVIEW	0x35
-+#define INTEL_FAM6_ATOM_CEDARVIEW	0x36
-+#define INTEL_FAM6_ATOM_SILVERMONT1	0x37 /* BayTrail/BYT / Valleyview */
-+#define INTEL_FAM6_ATOM_SILVERMONT2	0x4D /* Avaton/Rangely */
-+#define INTEL_FAM6_ATOM_AIRMONT		0x4C /* CherryTrail / Braswell */
-+#define INTEL_FAM6_ATOM_MERRIFIELD1	0x4A /* Tangier */
-+#define INTEL_FAM6_ATOM_MERRIFIELD2	0x5A /* Annidale */
-+#define INTEL_FAM6_ATOM_GOLDMONT	0x5C
-+#define INTEL_FAM6_ATOM_DENVERTON	0x5F /* Goldmont Microserver */
-+
-+/* Xeon Phi */
-+
-+#define INTEL_FAM6_XEON_PHI_KNL		0x57 /* Knights Landing */
-+
-+#endif /* _ASM_X86_INTEL_FAMILY_H */
+	...
+
+	static const struct tegra_pcie_soc tegra124_pcie =3D {
+		.num_ports =3D 2,
+		.ports =3D tegra20_pcie_ports,
+		...
+	};
+
+	static const struct tegra_pcie_soc tegra210_pcie =3D {
+		.num_ports =3D 2,
+		.ports =3D tegra20_pcie_ports,
+		...
+	};
+
+Of course the sharing only works as long as the port definitions don't
+contain data that's different between the chips.
+
+You could even go and derive the .num_ports as ARRAY_SIZE() of the ports
+definition.
+
+So the above does not dynamically allocate memory, it is just a more
+explicit way of specifying the data. It puts the data closer together,
+and thereby makes it easier to read, in my opinion.
+
+But as I said, feel free to leave this as-is. We can easily rework this
+later on or if necessary.
+
+Thierry
+
+--wRRV7LY7NUeQGEoC
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlpvO08ACgkQ3SOs138+
+s6GCPg/+MH2hGE+xQ7PI84FzmIaX0w4U1cTbQ6+L0b8NL/1LO9IfQJ1VR8LonPXA
+lCafGzi3rpYhUQglociWVYbrS3KRx6AcWIx7+Ag3JlCt2y1CG4MoCuGX89+qdjiv
+1CzkFztqm+U9UxOMBbNgbWRF4OhoSqTpT8UpsBrGk9Fe3vTeX36+kJXc+yoIvh/P
+iqYE7IQQtfQABhv4FxteVg9+YOC36JWxc7iNNryoZlyO3VHUMVpk42Fltie+thIe
+yxTGrw/zAsMRVWarbN05LeNzdQZXLj5VDZuIXj8rviA45gKK4XFPOctvajYiRmei
+3Z1e0IHiG+UFp1ZqIcqnXHztcvS7TXjvLnH59vaDE3UfOkTL0hmc/lTh/4J+q65q
+0TDucx8R74tNU2/2arFWTv7Qv9mJkMCf82J5T5s4KXJHgYyONpJ4i9jz8OEYvQtr
+7Q15affIXxifR4C8y+hywmW7UuWYLHt/dS1B2/VfIjHx7c+rJEycQzLzm+zwd6+N
+QF9VDwjYCam1GBLt77cerCJYHsgJHu+vn2Y/DYrBSimeNPK3DV770mAQm1VFZHDz
+RVzVr4V0+LYGc64pvQKcjZIrMetDOFj1mNGlsMeSqG9eTGkglie0PZEQyw+Q2/6N
+LDUj2yL2km657WtO2gyZIBYedSSdkIXXRNEtmCOqd7KgwEosDzk=
+=u+Cf
+-----END PGP SIGNATURE-----
+
+--wRRV7LY7NUeQGEoC--
