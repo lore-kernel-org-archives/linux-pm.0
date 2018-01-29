@@ -1,89 +1,52 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/1] dt-bindings: thermal: imx: update the binding to new
- method
-Date: Mon, 29 Jan 2018 09:48:57 +0800
-Message-ID: <20180129014855.GA12957@dragon>
-References: <1516862269-25543-1-git-send-email-aisheng.dong@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:45955 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752301AbeA2Bt2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jan 2018 20:49:28 -0500
-Received: by mail-pf0-f193.google.com with SMTP id a88so3509880pfe.12
-        for <linux-pm@vger.kernel.org>; Sun, 28 Jan 2018 17:49:28 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1516862269-25543-1-git-send-email-aisheng.dong@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: [PATCH 2/2] cpufreq: intel_pstate: enable HWP after resumed
+Date: Mon, 29 Jan 2018 10:27:57 +0800
+Message-ID: <7ddf56d88ed43701cd498fd42d1ae75e4eea1340.1517192577.git.yu.c.chen@intel.com>
+References: <d71a6cf7352de5595ac1419000bd72b6d068cce1.1517192577.git.yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d71a6cf7352de5595ac1419000bd72b6d068cce1.1517192577.git.yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yu Chen <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dong Aisheng <aisheng.dong@nxp.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-imx@nxp.com, Leonard Crestez <leonard.crestez@nxp.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
-On Thu, Jan 25, 2018 at 02:37:49PM +0800, Dong Aisheng wrote:
-> Due to the old method has already been marked as deprecated in binding
-> doc, so obviously it's better to update the example to new bindings
-> as well.
-> 
-> Cc: Shawn Guo <shawn.guo@linaro.org>
+When maxcpus=1 is appended the BP is responsible
+for re-enabling the HWP - because currently only
+the APs invoke intel_pstate_hwp_enable() during
+their online process - which might put the system
+into unstable state after resume.
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+Fix this by enabling the HWP explicitly on BP during
+resume.
 
-Please use my kernel.org address for kernel patches.
+Reported-by: Doug Smythies <dsmythies@telus.net>
+Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Yu Chen <yu.c.chen@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Shawn
-
-> Cc: Leonard Crestez <leonard.crestez@nxp.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> ---
->  .../devicetree/bindings/thermal/imx-thermal.txt    | 25 ++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> index 28be51a..379eb76 100644
-> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> @@ -22,7 +22,32 @@ Optional properties:
->  - clocks : thermal sensor's clock source.
->  
->  Example:
-> +ocotp: ocotp@21bc000 {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	compatible = "fsl,imx6sx-ocotp", "syscon";
-> +	reg = <0x021bc000 0x4000>;
-> +	clocks = <&clks IMX6SX_CLK_OCOTP>;
->  
-> +	tempmon_calib: calib@38 {
-> +		reg = <0x38 4>;
-> +	};
-> +
-> +	tempmon_temp_grade: temp-grade@20 {
-> +		reg = <0x20 4>;
-> +	};
-> +};
-> +
-> +tempmon: tempmon {
-> +	compatible = "fsl,imx6sx-tempmon", "fsl,imx6q-tempmon";
-> +	interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
-> +	fsl,tempmon = <&anatop>;
-> +	nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
-> +	nvmem-cell-names = "calib", "temp_grade";
-> +	clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
-> +};
-> +
-> +Legacy method (Deprecated):
->  tempmon {
->  	compatible = "fsl,imx6q-tempmon";
->  	fsl,tempmon = <&anatop>;
-> -- 
-> 2.7.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 93a0e88bef76..89f637e8439c 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -779,6 +779,8 @@ static int intel_pstate_hwp_save_state(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
++static void intel_pstate_hwp_enable(struct cpudata *cpudata);
++
+ static int intel_pstate_resume(struct cpufreq_policy *policy)
+ {
+ 	if (!hwp_active)
+@@ -786,6 +788,8 @@ static int intel_pstate_resume(struct cpufreq_policy *policy)
+ 
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
++	if (!policy->cpu)
++		intel_pstate_hwp_enable(all_cpu_data[policy->cpu]);
+ 	all_cpu_data[policy->cpu]->epp_policy = 0;
+ 	intel_pstate_hwp_set(policy->cpu);
+ 
+-- 
+2.13.6
