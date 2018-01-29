@@ -1,80 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: governor: Ensure sufficiently large sampling intervals
-Date: Mon, 29 Jan 2018 12:51:23 +0530
-Message-ID: <5c514d244ce5b3f7f94d8675fcd64c58fba09417.1517210263.git.viresh.kumar@linaro.org>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: stable@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 198601] Conservative governor is broken in 4.14.14
+Date: Mon, 29 Jan 2018 07:49:31 +0000
+Message-ID: <bug-198601-137361-Pb2Kl4m0kd@https.bugzilla.kernel.org/>
+References: <bug-198601-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:52792 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751042AbeA2Hte (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jan 2018 02:49:34 -0500
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 6FD6228874
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jan 2018 07:49:34 +0000 (UTC)
+In-Reply-To: <bug-198601-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=198601
 
-[ Upstream commit 56026645e2b6f11ede34a5e6ab69d3eb56f9c8fc ]
+Artem S. Tashkinov (t.artem@mailcity.com) changed:
 
-After commit aa7519af450d (cpufreq: Use transition_delay_us for legacy
-governors as well) the sampling_rate field of struct dbs_data may be
-less than the tick period which causes dbs_update() to produce
-incorrect results, so make the code ensure that the value of that
-field will always be sufficiently large.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEEDINFO                    |ASSIGNED
 
-Cc: 4.14 <stable@vger.kernel.org> # 4.14
-Fixes: aa7519af450d (cpufreq: Use transition_delay_us for legacy governors as well)
-Reported-by: Andy Tang <andy.tang@nxp.com>
-Reported-by: Doug Smythies <dsmythies@telus.net>
-Tested-by: Andy Tang <andy.tang@nxp.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_governor.c | 19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
+--- Comment #3 from Artem S. Tashkinov (t.artem@mailcity.com) ---
+(In reply to Viresh Kumar from comment #2)
+> Try this commit (already in Linus's master), we solved this problem sometime
+> back
+> 
+> 56026645e2b6 cpufreq: governor: Ensure sufficiently large sampling intervals
+> 
+> Not sure if your problem is a new one though.
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 58d4f4e1ad6a..ca38229b045a 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -22,6 +22,8 @@
- 
- #include "cpufreq_governor.h"
- 
-+#define CPUFREQ_DBS_MIN_SAMPLING_INTERVAL	(2 * TICK_NSEC / NSEC_PER_USEC)
-+
- static DEFINE_PER_CPU(struct cpu_dbs_info, cpu_dbs);
- 
- static DEFINE_MUTEX(gov_dbs_data_mutex);
-@@ -47,11 +49,15 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	struct policy_dbs_info *policy_dbs;
-+	unsigned int sampling_interval;
- 	int ret;
--	ret = sscanf(buf, "%u", &dbs_data->sampling_rate);
--	if (ret != 1)
-+
-+	ret = sscanf(buf, "%u", &sampling_interval);
-+	if (ret != 1 || sampling_interval < CPUFREQ_DBS_MIN_SAMPLING_INTERVAL)
- 		return -EINVAL;
- 
-+	dbs_data->sampling_rate = sampling_interval;
-+
- 	/*
- 	 * We are operating under dbs_data->mutex and so the list and its
- 	 * entries can't be freed concurrently.
-@@ -430,7 +436,14 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
- 	if (ret)
- 		goto free_policy_dbs_info;
- 
--	dbs_data->sampling_rate = cpufreq_policy_transition_delay_us(policy);
-+	/*
-+	 * The sampling interval should not be less than the transition latency
-+	 * of the CPU and it also cannot be too small for dbs_update() to work
-+	 * correctly.
-+	 */
-+	dbs_data->sampling_rate = max_t(unsigned int,
-+					CPUFREQ_DBS_MIN_SAMPLING_INTERVAL,
-+					cpufreq_policy_transition_delay_us(policy));
- 
- 	if (!have_governor_per_policy())
- 		gov->gdbs_data = dbs_data;
+I can confirm that this patch fixes the issue.
+
+Please submit it for 4.14.16.
+
 -- 
-2.15.0.194.g9af6a3dea062
+You are receiving this mail because:
+You are the assignee for the bug.
