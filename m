@@ -1,52 +1,80 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: [PATCH 2/2] cpufreq: intel_pstate: enable HWP after resumed
-Date: Mon, 29 Jan 2018 10:27:57 +0800
-Message-ID: <7ddf56d88ed43701cd498fd42d1ae75e4eea1340.1517192577.git.yu.c.chen@intel.com>
-References: <d71a6cf7352de5595ac1419000bd72b6d068cce1.1517192577.git.yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d71a6cf7352de5595ac1419000bd72b6d068cce1.1517192577.git.yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yu Chen <yu.c.chen@intel.com>
+From: Len Brown <lenb@kernel.org>
+Subject: turbostat 18.01.28 is ready for testing!
+Date: Sun, 28 Jan 2018 22:01:00 -0500
+Message-ID: <CAJvTdK=3hO=t7TaxP=pym6G-kNGy9mGESb5b+FEeEU_zQnu=FA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f194.google.com ([209.85.216.194]:37171 "EHLO
+        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751670AbeA2DBB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jan 2018 22:01:01 -0500
+Received: by mail-qt0-f194.google.com with SMTP id d54so10980629qtd.4
+        for <linux-pm@vger.kernel.org>; Sun, 28 Jan 2018 19:01:01 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, charles.rose@dell.com, "Rafael J. Wysocki" <rafael@kernel.org>, suravee.suthikulpanit@amd.com
 
-When maxcpus=1 is appended the BP is responsible
-for re-enabling the HWP - because currently only
-the APs invoke intel_pstate_hwp_enable() during
-their online process - which might put the system
-into unstable state after resume.
+Please give this version a go.
+In particular, I'd like confirmation on multi-node AMD boxes that all
+the cores are listed, and the Node column is correct.
 
-Fix this by enabling the HWP explicitly on BP during
-resume.
+thanks,
+-Len
 
-Reported-by: Doug Smythies <dsmythies@telus.net>
-Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Yu Chen <yu.c.chen@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 93a0e88bef76..89f637e8439c 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -779,6 +779,8 @@ static int intel_pstate_hwp_save_state(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
-+static void intel_pstate_hwp_enable(struct cpudata *cpudata);
-+
- static int intel_pstate_resume(struct cpufreq_policy *policy)
- {
- 	if (!hwp_active)
-@@ -786,6 +788,8 @@ static int intel_pstate_resume(struct cpufreq_policy *policy)
- 
- 	mutex_lock(&intel_pstate_limits_lock);
- 
-+	if (!policy->cpu)
-+		intel_pstate_hwp_enable(all_cpu_data[policy->cpu]);
- 	all_cpu_data[policy->cpu]->epp_policy = 0;
- 	intel_pstate_hwp_set(policy->cpu);
- 
--- 
-2.13.6
+The following changes since commit d39a01eff9af1045f6e30ff9db40310517c4b45f:
+
+  Merge tag 'platform-drivers-x86-v4.15-3' of
+git://git.infradead.org/linux-platform-drivers-x86 (2017-12-12
+17:19:58 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
+
+for you to fetch changes up to 5bbffe1af8b104215cb9d48a135d6753cf7be089:
+
+  tools/power turbostat: update version number (2018-01-28 21:54:28 -0500)
+
+----------------------------------------------------------------
+Artem Bityutskiy (4):
+      tools/power turbostat: fix Skylake Xeon package C-state display
+      tools/power turbostat: fix printing on input
+      tools/power turbostat: dump BDX, SKX automatic C-state conversion bit
+      tools/power turbostat: a small C-states dump readability imporovement
+
+Laura Abbott (1):
+      tools/power: Don't make man pages executable
+
+Len Brown (12):
+      MAINTAINERS: add turbostat utility
+      tools/power turbostat: add --enable Time_Of_Day_Seconds
+      tools/power turbostat: on SIGINT: sample, print and exit
+      tools/power turbostat: on SIGUSR1: sample, print and continue
+      tools/power turbostat: end current interval upon newline input
+      tools/power turbostat: fix  MSR_IA32_MISC_ENABLE MWAIT printout
+      tools/power turbostat: fix possible sprintf buffer overflow
+      tools/power turbostat: do not hard-code 25MHz crystal on SKX
+      tools/power turbostat: remove blank lines
+      tools/power turbostat: Fix regression caused by previous patch
+      Merge branch 'turbostat.node' into turbostat
+      tools/power turbostat: update version number
+
+Prarit Bhargava (8):
+      tools/power turbostat: Set max_num_cpus equal to the cpumask length
+      tools/power turbostat: Fix node and siblings lookup data
+      tools/power turbostat: Calculate additional node information for a package
+      tools/power turbostat: Track thread ID in cpu_topology
+      tools/power turbostat: Rename num_cores_per_pkg to num_cores_per_node
+      tools/power turbostat: Remove num_ from cpu_topology struct
+      tools/power turbostat: Add node information into turbostat calculations
+      tools/power turbostat: Add Node in output
+
+ MAINTAINERS                                     |  10 +
+ tools/power/x86/turbostat/Makefile              |   2 +-
+ tools/power/x86/turbostat/turbostat.8           |  24 +-
+ tools/power/x86/turbostat/turbostat.c           | 750 ++++++++++++++++--------
+ tools/power/x86/x86_energy_perf_policy/Makefile |   2 +-
+ 5 files changed, 533 insertions(+), 255 deletions(-)
