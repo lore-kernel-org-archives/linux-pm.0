@@ -1,34 +1,78 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 5/6] iommu/arm-smmu: Add support for qcom,smmu-v2
- variant
-Date: Mon, 29 Jan 2018 13:42:51 -0600
-Message-ID: <20180129194251.3iypqdd4tz7zti6w@rob-hp-laptop>
-References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
- <1516362223-22946-6-git-send-email-vivek.gautam@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1516362223-22946-6-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: 0v3rdr0n3@gmail.com
+Subject: [PATCH] leds: use QoS to control LED suspend behavior from userspace
+Date: Mon, 29 Jan 2018 19:49:47 +0000
+Message-ID: <20180129194947.11071-1-0v3rdr0n3@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:36139 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751546AbeA3AuF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jan 2018 19:50:05 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-leds@vger.kernel.org
+Cc: samorris@lexmark.com
 
-On Fri, Jan 19, 2018 at 05:13:42PM +0530, Vivek Gautam wrote:
-> qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
-> clock and power requirements. This smmu core is used with
-> multiple masters on msm8996, viz. mdss, video, etc.
-> Add bindings for the same.
-> 
-> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> ---
->  .../devicetree/bindings/iommu/arm,smmu.txt         | 43 ++++++++++++++++++++++
->  drivers/iommu/arm-smmu.c                           | 13 +++++++
->  2 files changed, 56 insertions(+)
+From: Samuel Morris <samorris@lexmark.com>
 
-Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Samuel Morris <samorris@lexmark.com>
+---
+ drivers/leds/led-class.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
+index f2b0a80..9e9e265 100644
+--- a/drivers/leds/led-class.c
++++ b/drivers/leds/led-class.c
+@@ -20,6 +20,7 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/timer.h>
++#include <linux/pm_qos.h>
+ #include <uapi/linux/uleds.h>
+ #include "leds.h"
+ 
+@@ -196,6 +197,11 @@ static int led_suspend(struct device *dev)
+ {
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+ 
++	if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
++			PM_QOS_FLAGS_ALL) {
++		return 0;
++	}
++
+ 	if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
+ 		led_classdev_suspend(led_cdev);
+ 
+@@ -206,6 +212,11 @@ static int led_resume(struct device *dev)
+ {
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+ 
++	if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
++			PM_QOS_FLAGS_ALL) {
++		return 0;
++	}
++
+ 	if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
+ 		led_classdev_resume(led_cdev);
+ 
+@@ -287,6 +298,18 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
+ 	list_add_tail(&led_cdev->node, &leds_list);
+ 	up_write(&leds_list_lock);
+ 
++	/* Attempt to let userspace take over the policy. */
++	ret = dev_pm_qos_expose_flags(led_cdev->dev,
++			PM_QOS_FLAG_NO_POWER_OFF);
++	if (ret < 0) {
++		dev_warn(led_cdev->dev, "failed to expose pm_qos_no_poweroff\n");
++		return 0;
++	}
++
++	ret = dev_pm_qos_update_flags(led_cdev->dev,
++			PM_QOS_FLAG_NO_POWER_OFF,
++			0);
++
+ 	if (!led_cdev->max_brightness)
+ 		led_cdev->max_brightness = LED_FULL;
+ 
+-- 
+1.9.3
