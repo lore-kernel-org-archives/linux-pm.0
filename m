@@ -1,16 +1,15 @@
 From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V6 6/7] PCI: tegra: Broadcast PME_Turn_Off message before
- link goes to L2
-Date: Mon, 29 Jan 2018 10:11:42 +0530
-Message-ID: <8adc2a7d-009b-168c-07f6-b50526ce0605@nvidia.com>
+Subject: Re: [PATCH V6 7/7] PCI: tegra: Add power management support
+Date: Mon, 29 Jan 2018 10:16:45 +0530
+Message-ID: <83c2cbe2-f50b-cbee-9748-85d21edb08c7@nvidia.com>
 References: <1515650888-9459-1-git-send-email-mmaddireddy@nvidia.com>
- <1515650888-9459-7-git-send-email-mmaddireddy@nvidia.com>
- <20180125143627.GH27888@ulmo>
+ <1515650888-9459-8-git-send-email-mmaddireddy@nvidia.com>
+ <20180125144814.GI27888@ulmo>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20180125143627.GH27888@ulmo>
+In-Reply-To: <20180125144814.GI27888@ulmo>
 Content-Language: en-US
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
@@ -19,197 +18,122 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On 25-Jan-18 8:06 PM, Thierry Reding wrote:
-> On Thu, Jan 11, 2018 at 11:38:07AM +0530, Manikanta Maddireddy wrote:
->> Per PCIe r3.0, sec 5.3.3.2.1, PCIe root port shoould broadcast PME_Turn_Off
->> message before PCIe link goes to L2. PME_Turn_Off broadcast mechanism is
->> implemented in AFI module. Each Tegra PCIe root port has its own
->> PME_Turn_Off and PME_TO_Ack bitmap in AFI_PME register, program this
->> register to broadcast PME_Turn_Off message.
+On 25-Jan-18 8:18 PM, Thierry Reding wrote:
+> On Thu, Jan 11, 2018 at 11:38:08AM +0530, Manikanta Maddireddy wrote:
+>> Tegra186 powergate driver is implemented as power domain driver, power
+>> partition ungate/gate are registered as power_on/power_off callback
+>> functions. There are no direct functions to power gate/ungate host
+>> controller in Tegra186. Host controller driver should add "power-domains"
+>> property in device tree and implement runtime suspend and resume
+>> callback functons. Power gate and ungate is taken care by power domain
+>> driver when host controller driver calls pm_runtime_put_sync and
+>> pm_runtime_get_sync respectively.
+>>
+>> Register suspend_noirq & resume_noirq callback functions to allow PCIe to
+>> come up after resume from RAM. Both runtime and noirq pm ops share same
+>> callback functions.
 >>
 >> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 >> ---
 >> V2:
 >> * no change in this patch
 >> V3:
->> * add PME bitmap in soc data instead of using compatible string
->> * replace while loop with readl_poll_timeout() for polling
->> * commit log correction
+>> * no change in this patch
 >> V4:
 >> * no change in this patch
 >> V5:
->> * Rebased on linux-next
+>> * Decoupled from https://patchwork.ozlabs.org/patch/832053/ and
+>> rebased on linux-next
 >> V6:
 >> * no change in this patch
 >>
->>  drivers/pci/host/pci-tegra.c | 45 ++++++++++++++++++++++++++++++++++++++++++++
->>  1 file changed, 45 insertions(+)
+>>  drivers/pci/host/pci-tegra.c | 181 ++++++++++++++++++++++++++-----------------
+>>  1 file changed, 110 insertions(+), 71 deletions(-)
 >>
 >> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
->> index 981f126b14d6..cc33fc0fb300 100644
->> --- a/drivers/pci/host/pci-tegra.c
->> +++ b/drivers/pci/host/pci-tegra.c
->> @@ -31,6 +31,7 @@
->>  #include <linux/delay.h>
->>  #include <linux/export.h>
->>  #include <linux/interrupt.h>
->> +#include <linux/iopoll.h>
->>  #include <linux/irq.h>
->>  #include <linux/irqdomain.h>
->>  #include <linux/kernel.h>
->> @@ -153,6 +154,8 @@
->>  #define  AFI_INTR_EN_FPCI_TIMEOUT	(1 << 7)
->>  #define  AFI_INTR_EN_PRSNT_SENSE	(1 << 8)
+> [...]
+>> @@ -1536,37 +1526,41 @@ static int tegra_pcie_enable_msi(struct tegra_pcie *pcie)
+>>  	int err;
+>>  	u32 reg;
 >>  
->> +#define AFI_PCIE_PME		0xf0
->> +
->>  #define AFI_PCIE_CONFIG					0x0f8
->>  #define  AFI_PCIE_CONFIG_PCIE_DISABLE(x)		(1 << ((x) + 1))
->>  #define  AFI_PCIE_CONFIG_PCIE_DISABLE_ALL		0xe
->> @@ -233,6 +236,8 @@
->>  #define PADS_REFCLK_CFG_PREDI_SHIFT		8  /* 11:8 */
->>  #define PADS_REFCLK_CFG_DRVI_SHIFT		12 /* 15:12 */
+>> -	mutex_init(&msi->lock);
+>> +	if (!msi->phys) {
+>> +		mutex_init(&msi->lock);
 >>  
->> +#define PME_ACK_TIMEOUT 10000
->> +
->>  struct tegra_msi {
->>  	struct msi_controller chip;
->>  	DECLARE_BITMAP(used, INT_PCI_MSI_NR);
->> @@ -251,6 +256,8 @@ struct tegra_pcie_soc {
->>  	u32 tx_ref_sel;
->>  	u32 pads_refclk_cfg0;
->>  	u32 pads_refclk_cfg1;
->> +	u8 pme_turnoff_bit[3];
->> +	u8 pme_ack_bit[3];
-> 
-> This seems suboptimal to me. Perhaps a better way would be:
-> 
-> 	struct tegra_pcie_port_soc {
-> 		struct {
-> 			u8 turnoff_bit;
-> 			u8 ack_bit;
-> 		} pme;
-> 	};
-> 
-> And since we already have num_ports which defines exactly how many ports
-> we have:
-> 
-> 	struct tegra_pcie_soc {
-> 		unsigned int num_ports;
-> 		const struct tegra_pcie_port_soc *ports;
-> 		...
-> 	};
-> 
-> I suspect that as you're adding more features we may need more of this
-> data.
-> 
-> But I'm fine to keep it like this. We can always switch to something
-> different if the above becomes too much cluttered.
-> 
-I agree it is sub optimal. I moved pme bitmap values to soc data because
-tegra30 and tegra186 have different bitmap values. To differentiate this
-I allocated static memory in tegra_pcie_soc. I am a bit hesitant do dynamic
-allocation based on num_ports because I need to use compatible string
-to distinguish between tegra30 & tegra186 in runtime. I believe it is OK
-to have trade off 16 bits to avoid these compatible check?
-
->>  	bool has_pex_clkreq_en;
->>  	bool has_pex_bias_ctrl;
->>  	bool has_intr_prsnt_sense;
->> @@ -1358,6 +1365,31 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
->>  	return 0;
->>  }
+>> -	msi->chip.dev = dev;
+>> -	msi->chip.setup_irq = tegra_msi_setup_irq;
+>> -	msi->chip.teardown_irq = tegra_msi_teardown_irq;
+>> +		msi->chip.dev = dev;
+>> +		msi->chip.setup_irq = tegra_msi_setup_irq;
+>> +		msi->chip.teardown_irq = tegra_msi_teardown_irq;
 >>  
->> +static void tegra_pcie_pme_turnoff(struct tegra_pcie_port *port)
->> +{
->> +	struct tegra_pcie *pcie = port->pcie;
->> +	const struct tegra_pcie_soc *soc = pcie->soc;
->> +	int err;
->> +	u32 val;
->> +
->> +	val = afi_readl(pcie, AFI_PCIE_PME);
->> +	val |= (0x1 << soc->pme_turnoff_bit[port->index]);
->> +	afi_writel(pcie, val, AFI_PCIE_PME);
->> +
->> +	err = readl_poll_timeout(pcie->afi + AFI_PCIE_PME, val,
->> +				 val & (0x1 << soc->pme_ack_bit[port->index]),
->> +				 1, PME_ACK_TIMEOUT);
->> +	if (err)
->> +		dev_err(pcie->dev, "PME Ack is not received on port: %d\n",
->> +			port->index);
->> +
->> +	usleep_range(10000, 11000);
->> +
->> +	val = afi_readl(pcie, AFI_PCIE_PME);
->> +	val &= ~(0x1 << soc->pme_turnoff_bit[port->index]);
->> +	afi_writel(pcie, val, AFI_PCIE_PME);
->> +}
->> +
->>  static int tegra_msi_alloc(struct tegra_msi *chip)
->>  {
->>  	int msi;
->> @@ -2109,6 +2141,8 @@ static const struct tegra_pcie_soc tegra20_pcie = {
->>  	.pads_pll_ctl = PADS_PLL_CTL_TEGRA20,
->>  	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_DIV10,
->>  	.pads_refclk_cfg0 = 0xfa5cfa5c,
->> +	.pme_turnoff_bit = {0, 8},
->> +	.pme_ack_bit = {5, 10},
->>  	.has_pex_clkreq_en = false,
->>  	.has_pex_bias_ctrl = false,
->>  	.has_intr_prsnt_sense = false,
->> @@ -2125,6 +2159,8 @@ static const struct tegra_pcie_soc tegra30_pcie = {
->>  	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
->>  	.pads_refclk_cfg0 = 0xfa5cfa5c,
->>  	.pads_refclk_cfg1 = 0xfa5cfa5c,
->> +	.pme_turnoff_bit = {0, 8, 16},
->> +	.pme_ack_bit = {5, 10, 18},
->>  	.has_pex_clkreq_en = true,
->>  	.has_pex_bias_ctrl = true,
->>  	.has_intr_prsnt_sense = true,
->> @@ -2140,6 +2176,8 @@ static const struct tegra_pcie_soc tegra124_pcie = {
->>  	.pads_pll_ctl = PADS_PLL_CTL_TEGRA30,
->>  	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
->>  	.pads_refclk_cfg0 = 0x44ac44ac,
->> +	.pme_turnoff_bit = {0, 8},
->> +	.pme_ack_bit = {5, 10},
->>  	.has_pex_clkreq_en = true,
->>  	.has_pex_bias_ctrl = true,
->>  	.has_intr_prsnt_sense = true,
->> @@ -2155,6 +2193,8 @@ static const struct tegra_pcie_soc tegra210_pcie = {
->>  	.pads_pll_ctl = PADS_PLL_CTL_TEGRA30,
->>  	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
->>  	.pads_refclk_cfg0 = 0x90b890b8,
->> +	.pme_turnoff_bit = {0, 8},
->> +	.pme_ack_bit = {5, 10},
->>  	.has_pex_clkreq_en = true,
->>  	.has_pex_bias_ctrl = true,
->>  	.has_intr_prsnt_sense = true,
->> @@ -2171,6 +2211,8 @@ static const struct tegra_pcie_soc tegra186_pcie = {
->>  	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
->>  	.pads_refclk_cfg0 = 0x80b880b8,
->>  	.pads_refclk_cfg1 = 0x000480b8,
->> +	.pme_turnoff_bit = {0, 8, 12},
->> +	.pme_ack_bit = {5, 10, 14},
->>  	.has_pex_clkreq_en = true,
->>  	.has_pex_bias_ctrl = true,
->>  	.has_intr_prsnt_sense = true,
->> @@ -2399,11 +2441,14 @@ static int tegra_pcie_remove(struct platform_device *pdev)
->>  {
->>  	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
->>  	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
->> +	struct tegra_pcie_port *port, *tmp;
+>> -	msi->domain = irq_domain_add_linear(dev->of_node, INT_PCI_MSI_NR,
+>> -					    &msi_domain_ops, &msi->chip);
+>> -	if (!msi->domain) {
+>> -		dev_err(dev, "failed to create IRQ domain\n");
+>> -		return -ENOMEM;
+>> -	}
+>> +		msi->domain = irq_domain_add_linear(dev->of_node,
+>> +						    INT_PCI_MSI_NR,
+>> +						    &msi_domain_ops,
+>> +						    &msi->chip);
+>> +		if (!msi->domain) {
+>> +			dev_err(dev, "failed to create IRQ domain\n");
+>> +			return -ENOMEM;
+>> +		}
 >>  
->>  	if (IS_ENABLED(CONFIG_DEBUG_FS))
->>  		tegra_pcie_debugfs_exit(pcie);
->>  	pci_stop_root_bus(host->bus);
->>  	pci_remove_root_bus(host->bus);
->> +	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
->> +		tegra_pcie_pme_turnoff(port);
+>> -	err = platform_get_irq_byname(pdev, "msi");
+>> -	if (err < 0) {
+>> -		dev_err(dev, "failed to get IRQ: %d\n", err);
+>> -		goto err;
+>> -	}
+>> +		err = platform_get_irq_byname(pdev, "msi");
+>> +		if (err < 0) {
+>> +			dev_err(dev, "failed to get IRQ: %d\n", err);
+>> +			goto err;
+>> +		}
+>>  
+>> -	msi->irq = err;
+>> +		msi->irq = err;
+>>  
+>> -	err = request_irq(msi->irq, tegra_pcie_msi_irq, IRQF_NO_THREAD,
+>> -			  tegra_msi_irq_chip.name, pcie);
+>> -	if (err < 0) {
+>> -		dev_err(dev, "failed to request IRQ: %d\n", err);
+>> -		goto err;
+>> -	}
+>> +		err = request_irq(msi->irq, tegra_pcie_msi_irq, IRQF_NO_THREAD,
+>> +				  tegra_msi_irq_chip.name, pcie);
+>> +		if (err < 0) {
+>> +			dev_err(dev, "failed to request IRQ: %d\n", err);
+>> +			goto err;
+>> +		}
+>>  
+>> -	/* setup AFI/FPCI range */
+>> -	msi->pages = __get_free_pages(GFP_KERNEL, 0);
+>> -	msi->phys = virt_to_phys((void *)msi->pages);
+>> +		/* setup AFI/FPCI range */
+>> +		msi->pages = __get_free_pages(GFP_KERNEL, 0);
+>> +		msi->phys = virt_to_phys((void *)msi->pages);
+>> +	}
 > 
-> Why list_for_each_entry_safe()? tegra_pcie_pme_turnoff() doesn't do
-> anything that would make port become invalid.
-Apart from this reason, I don't see a scenario where "making port invalid"
-code run in parallel to this function. So it safe to use list_for_each_entry,
+> I think it'd be better to split this off into a separate function so
+> that we can get rid of the confusing if (!msi->phys) conditional. It
+> looks as though this would work, but it's confusing to have that code
+> in a resume handler.
+> 
+> It also becomes very asymmetric when you set up the MSIs in the resume
+> handler, but then don't call tegra_pcie_msi_disable() from the suspend
+> handler.
+> 
+> I'd suggest just pulling out all of the allocations and such into a
+> separate function, perhaps tegra_pcie_msi_setup(), and similarily split
+> off the resource part of tegra_pcie_disable_msi() into a separate
+> function, perhaps tegra_pcie_msi_teardown().
+> 
+> That way, suspend/resume will do only what they need (write registers)
+> and everything will look more symmetric again. That in turn makes the
+> code a lot easier to follow and maintain.
 I'll do this change in next version.
 > 
 > Thierry
