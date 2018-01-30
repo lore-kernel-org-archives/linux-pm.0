@@ -1,58 +1,306 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] regulator: core: Fix s2idle
-Date: Tue, 30 Jan 2018 13:11:16 +0100
-Message-ID: <CAMuHMdWgxyEfooAo1c8yKNrHijhbccV41Q=PEkoGoNbZ7sN5NA@mail.gmail.com>
-References: <1517308346-25299-1-git-send-email-geert+renesas@glider.be> <20180130120340.GB10525@sirena.org.uk>
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Subject: Re: [PATCH v4 1/7] typec: tcpm: Add PD Rev 3.0 definitions to PD
+ header
+Date: Tue, 30 Jan 2018 14:21:34 +0200
+Message-ID: <20180130122134.GA14922@kuha.fi.intel.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <ab71575c23391464262493ae353c098b268116a4.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f196.google.com ([209.85.220.196]:33437 "EHLO
-        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751411AbeA3MLS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jan 2018 07:11:18 -0500
-In-Reply-To: <20180130120340.GB10525@sirena.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <ab71575c23391464262493ae353c098b268116a4.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Liam Girdwood <lgirdwood@gmail.com>, Chunyan Zhang <zhang.chunyan@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Mark,
+On Tue, Jan 02, 2018 at 03:50:49PM +0000, Adam Thomson wrote:
+> This commit adds definitions for PD Rev 3.0 messages, including
+> APDO PPS and extended message support for TCPM.
+> 
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 
-On Tue, Jan 30, 2018 at 1:03 PM, Mark Brown <broonie@kernel.org> wrote:
-> On Tue, Jan 30, 2018 at 11:32:26AM +0100, Geert Uytterhoeven wrote:
->> But I have no idea what impact it has.  So far it doesn't seem to hurt,
->> though.
->
-> I suspect that instead what we should be doing is changing the
-> set_suspend_state() check to the below - if we don't have any
-> constraints or there's otherwise nothing to do just let the suspend
-> proceed.
->
-> Can you give this a spin and confirm if it fixes things?
+Just one nitpick. I noticed that you are exceeding the 80 character
+limit per line in several places in this series, and I many cases it
+does not look like splitting the line would make the code any less
+readable.
 
-Sure. Works, too.
+But I don't think that is critical, so if there are no other comments:
 
-> diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-> index 42681c10cbe4..dd4708c58480 100644
-> --- a/drivers/regulator/core.c
-> +++ b/drivers/regulator/core.c
-> @@ -758,7 +758,7 @@ static int suspend_set_state(struct regulator_dev *rdev,
->
->         rstate = regulator_get_suspend_state(rdev, state);
->         if (rstate == NULL)
-> -               return -EINVAL;
-> +               return 0;
->
->         /* If we have no suspend mode configration don't set anything;
->          * only warn if the driver implements set_suspend_voltage or
 
-Gr{oetje,eeting}s,
+Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 
-                        Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> ---
+>  include/linux/usb/pd.h | 185 ++++++++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 174 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
+> index b3d41d7..ff359bdf 100644
+> --- a/include/linux/usb/pd.h
+> +++ b/include/linux/usb/pd.h
+> @@ -35,6 +35,13 @@ enum pd_ctrl_msg_type {
+>  	PD_CTRL_WAIT = 12,
+>  	PD_CTRL_SOFT_RESET = 13,
+>  	/* 14-15 Reserved */
+> +	PD_CTRL_NOT_SUPP = 16,
+> +	PD_CTRL_GET_SOURCE_CAP_EXT = 17,
+> +	PD_CTRL_GET_STATUS = 18,
+> +	PD_CTRL_FR_SWAP = 19,
+> +	PD_CTRL_GET_PPS_STATUS = 20,
+> +	PD_CTRL_GET_COUNTRY_CODES = 21,
+> +	/* 22-31 Reserved */
+>  };
+>  
+>  enum pd_data_msg_type {
+> @@ -43,13 +50,39 @@ enum pd_data_msg_type {
+>  	PD_DATA_REQUEST = 2,
+>  	PD_DATA_BIST = 3,
+>  	PD_DATA_SINK_CAP = 4,
+> -	/* 5-14 Reserved */
+> +	PD_DATA_BATT_STATUS = 5,
+> +	PD_DATA_ALERT = 6,
+> +	PD_DATA_GET_COUNTRY_INFO = 7,
+> +	/* 8-14 Reserved */
+>  	PD_DATA_VENDOR_DEF = 15,
+> +	/* 16-31 Reserved */
+> +};
+> +
+> +enum pd_ext_msg_type {
+> +	/* 0 Reserved */
+> +	PD_EXT_SOURCE_CAP_EXT = 1,
+> +	PD_EXT_STATUS = 2,
+> +	PD_EXT_GET_BATT_CAP = 3,
+> +	PD_EXT_GET_BATT_STATUS = 4,
+> +	PD_EXT_BATT_CAP = 5,
+> +	PD_EXT_GET_MANUFACTURER_INFO = 6,
+> +	PD_EXT_MANUFACTURER_INFO = 7,
+> +	PD_EXT_SECURITY_REQUEST = 8,
+> +	PD_EXT_SECURITY_RESPONSE = 9,
+> +	PD_EXT_FW_UPDATE_REQUEST = 10,
+> +	PD_EXT_FW_UPDATE_RESPONSE = 11,
+> +	PD_EXT_PPS_STATUS = 12,
+> +	PD_EXT_COUNTRY_INFO = 13,
+> +	PD_EXT_COUNTRY_CODES = 14,
+> +	/* 15-31 Reserved */
+>  };
+>  
+>  #define PD_REV10	0x0
+>  #define PD_REV20	0x1
+> +#define PD_REV30	0x2
+> +#define PD_MAX_REV	PD_REV30
+>  
+> +#define PD_HEADER_EXT_HDR	BIT(15)
+>  #define PD_HEADER_CNT_SHIFT	12
+>  #define PD_HEADER_CNT_MASK	0x7
+>  #define PD_HEADER_ID_SHIFT	9
+> @@ -59,18 +92,19 @@ enum pd_data_msg_type {
+>  #define PD_HEADER_REV_MASK	0x3
+>  #define PD_HEADER_DATA_ROLE	BIT(5)
+>  #define PD_HEADER_TYPE_SHIFT	0
+> -#define PD_HEADER_TYPE_MASK	0xf
+> +#define PD_HEADER_TYPE_MASK	0x1f
+>  
+> -#define PD_HEADER(type, pwr, data, id, cnt)				\
+> +#define PD_HEADER(type, pwr, data, rev, id, cnt, ext_hdr)		\
+>  	((((type) & PD_HEADER_TYPE_MASK) << PD_HEADER_TYPE_SHIFT) |	\
+>  	 ((pwr) == TYPEC_SOURCE ? PD_HEADER_PWR_ROLE : 0) |		\
+>  	 ((data) == TYPEC_HOST ? PD_HEADER_DATA_ROLE : 0) |		\
+> -	 (PD_REV20 << PD_HEADER_REV_SHIFT) |				\
+> +	 (rev << PD_HEADER_REV_SHIFT) |					\
+>  	 (((id) & PD_HEADER_ID_MASK) << PD_HEADER_ID_SHIFT) |		\
+> -	 (((cnt) & PD_HEADER_CNT_MASK) << PD_HEADER_CNT_SHIFT))
+> +	 (((cnt) & PD_HEADER_CNT_MASK) << PD_HEADER_CNT_SHIFT) |	\
+> +	 ((ext_hdr) ? PD_HEADER_EXT_HDR : 0))
+>  
+>  #define PD_HEADER_LE(type, pwr, data, id, cnt) \
+> -	cpu_to_le16(PD_HEADER((type), (pwr), (data), (id), (cnt)))
+> +	cpu_to_le16(PD_HEADER((type), (pwr), (data), PD_REV20, (id), (cnt), (0)))
+>  
+>  static inline unsigned int pd_header_cnt(u16 header)
+>  {
+> @@ -102,16 +136,75 @@ static inline unsigned int pd_header_msgid_le(__le16 header)
+>  	return pd_header_msgid(le16_to_cpu(header));
+>  }
+>  
+> +static inline unsigned int pd_header_rev(u16 header)
+> +{
+> +	return (header >> PD_HEADER_REV_SHIFT) & PD_HEADER_REV_MASK;
+> +}
+> +
+> +static inline unsigned int pd_header_rev_le(__le16 header)
+> +{
+> +	return pd_header_rev(le16_to_cpu(header));
+> +}
+> +
+> +#define PD_EXT_HDR_CHUNKED		BIT(15)
+> +#define PD_EXT_HDR_CHUNK_NUM_SHIFT	11
+> +#define PD_EXT_HDR_CHUNK_NUM_MASK	0xf
+> +#define PD_EXT_HDR_REQ_CHUNK		BIT(10)
+> +#define PD_EXT_HDR_DATA_SIZE_SHIFT	0
+> +#define PD_EXT_HDR_DATA_SIZE_MASK	0x1ff
+> +
+> +#define PD_EXT_HDR(data_size, req_chunk, chunk_num, chunked)				\
+> +	((((data_size) & PD_EXT_HDR_DATA_SIZE_MASK) << PD_EXT_HDR_DATA_SIZE_SHIFT) |	\
+> +	 ((req_chunk) ? PD_EXT_HDR_REQ_CHUNK : 0) |					\
+> +	 (((chunk_num) & PD_EXT_HDR_CHUNK_NUM_MASK) << PD_EXT_HDR_CHUNK_NUM_SHIFT) |	\
+> +	 ((chunked) ? PD_EXT_HDR_CHUNKED : 0))
+> +
+> +#define PD_EXT_HDR_LE(data_size, req_chunk, chunk_num, chunked) \
+> +	cpu_to_le16(PD_EXT_HDR((data_size), (req_chunk), (chunk_num), (chunked)))
+> +
+> +static inline unsigned int pd_ext_header_chunk_num(u16 ext_header)
+> +{
+> +	return (ext_header >> PD_EXT_HDR_CHUNK_NUM_SHIFT) &
+> +		PD_EXT_HDR_CHUNK_NUM_MASK;
+> +}
+> +
+> +static inline unsigned int pd_ext_header_data_size(u16 ext_header)
+> +{
+> +	return (ext_header >> PD_EXT_HDR_DATA_SIZE_SHIFT) &
+> +		PD_EXT_HDR_DATA_SIZE_MASK;
+> +}
+> +
+> +static inline unsigned int pd_ext_header_data_size_le(__le16 ext_header)
+> +{
+> +	return pd_ext_header_data_size(le16_to_cpu(ext_header));
+> +}
+> +
+>  #define PD_MAX_PAYLOAD		7
+> +#define PD_EXT_MAX_CHUNK_DATA	26
+>  
+>  /**
+> - * struct pd_message - PD message as seen on wire
+> - * @header:	PD message header
+> - * @payload:	PD message payload
+> - */
+> +  * struct pd_chunked_ext_message_data - PD chunked extended message data as
+> +  *					 seen on wire
+> +  * @header:    PD extended message header
+> +  * @data:      PD extended message data
+> +  */
+> +struct pd_chunked_ext_message_data {
+> +	__le16 header;
+> +	u8 data[PD_EXT_MAX_CHUNK_DATA];
+> +} __packed;
+> +
+> +/**
+> +  * struct pd_message - PD message as seen on wire
+> +  * @header:    PD message header
+> +  * @payload:   PD message payload
+> +  * @ext_msg:   PD message chunked extended message data
+> +  */
+>  struct pd_message {
+>  	__le16 header;
+> -	__le32 payload[PD_MAX_PAYLOAD];
+> +	union {
+> +		__le32 payload[PD_MAX_PAYLOAD];
+> +		struct pd_chunked_ext_message_data ext_msg;
+> +	};
+>  } __packed;
+>  
+>  /* PDO: Power Data Object */
+> @@ -121,6 +214,7 @@ enum pd_pdo_type {
+>  	PDO_TYPE_FIXED = 0,
+>  	PDO_TYPE_BATT = 1,
+>  	PDO_TYPE_VAR = 2,
+> +	PDO_TYPE_APDO = 3,
+>  };
+>  
+>  #define PDO_TYPE_SHIFT		30
+> @@ -174,6 +268,34 @@ enum pd_pdo_type {
+>  	(PDO_TYPE(PDO_TYPE_VAR) | PDO_VAR_MIN_VOLT(min_mv) |	\
+>  	 PDO_VAR_MAX_VOLT(max_mv) | PDO_VAR_MAX_CURR(max_ma))
+>  
+> +enum pd_apdo_type {
+> +	APDO_TYPE_PPS = 0,
+> +};
+> +
+> +#define PDO_APDO_TYPE_SHIFT	28	/* Only valid value currently is 0x0 - PPS */
+> +#define PDO_APDO_TYPE_MASK	0x3
+> +
+> +#define PDO_APDO_TYPE(t)	((t) << PDO_APDO_TYPE_SHIFT)
+> +
+> +#define PDO_PPS_APDO_MAX_VOLT_SHIFT	17	/* 100mV units */
+> +#define PDO_PPS_APDO_MIN_VOLT_SHIFT	8	/* 100mV units */
+> +#define PDO_PPS_APDO_MAX_CURR_SHIFT	0	/* 50mA units */
+> +
+> +#define PDO_PPS_APDO_VOLT_MASK	0xff
+> +#define PDO_PPS_APDO_CURR_MASK	0x7f
+> +
+> +#define PDO_PPS_APDO_MIN_VOLT(mv)	\
+> +	((((mv) / 100) & PDO_PPS_APDO_VOLT_MASK) << PDO_PPS_APDO_MIN_VOLT_SHIFT)
+> +#define PDO_PPS_APDO_MAX_VOLT(mv)	\
+> +	((((mv) / 100) & PDO_PPS_APDO_VOLT_MASK) << PDO_PPS_APDO_MAX_VOLT_SHIFT)
+> +#define PDO_PPS_APDO_MAX_CURR(ma)	\
+> +	((((ma) / 50) & PDO_PPS_APDO_CURR_MASK) << PDO_PPS_APDO_MAX_CURR_SHIFT)
+> +
+> +#define PDO_PPS_APDO(min_mv, max_mv, max_ma)				\
+> +	(PDO_TYPE(PDO_TYPE_APDO) | PDO_APDO_TYPE(APDO_TYPE_PPS) |	\
+> +	PDO_PPS_APDO_MIN_VOLT(min_mv) | PDO_PPS_APDO_MAX_VOLT(max_mv) |	\
+> +	PDO_PPS_APDO_MAX_CURR(max_ma))
+> +
+>  static inline enum pd_pdo_type pdo_type(u32 pdo)
+>  {
+>  	return (pdo >> PDO_TYPE_SHIFT) & PDO_TYPE_MASK;
+> @@ -204,6 +326,29 @@ static inline unsigned int pdo_max_power(u32 pdo)
+>  	return ((pdo >> PDO_BATT_MAX_PWR_SHIFT) & PDO_PWR_MASK) * 250;
+>  }
+>  
+> +static inline enum pd_apdo_type pdo_apdo_type(u32 pdo)
+> +{
+> +	return (pdo >> PDO_APDO_TYPE_SHIFT) & PDO_APDO_TYPE_MASK;
+> +}
+> +
+> +static inline unsigned int pdo_pps_apdo_min_voltage(u32 pdo)
+> +{
+> +	return ((pdo >> PDO_PPS_APDO_MIN_VOLT_SHIFT) &
+> +		PDO_PPS_APDO_VOLT_MASK) * 100;
+> +}
+> +
+> +static inline unsigned int pdo_pps_apdo_max_voltage(u32 pdo)
+> +{
+> +	return ((pdo >> PDO_PPS_APDO_MAX_VOLT_SHIFT) &
+> +		PDO_PPS_APDO_VOLT_MASK) * 100;
+> +}
+> +
+> +static inline unsigned int pdo_pps_apdo_max_current(u32 pdo)
+> +{
+> +	return ((pdo >> PDO_PPS_APDO_MAX_CURR_SHIFT) &
+> +		PDO_PPS_APDO_CURR_MASK) * 50;
+> +}
+> +
+>  /* RDO: Request Data Object */
+>  #define RDO_OBJ_POS_SHIFT	28
+>  #define RDO_OBJ_POS_MASK	0x7
+> @@ -237,6 +382,24 @@ static inline unsigned int pdo_max_power(u32 pdo)
+>  	(RDO_OBJ(idx) | (flags) |				\
+>  	 RDO_BATT_OP_PWR(op_mw) | RDO_BATT_MAX_PWR(max_mw))
+>  
+> +#define RDO_PROG_VOLT_MASK	0x7ff
+> +#define RDO_PROG_CURR_MASK	0x7f
+> +
+> +#define RDO_PROG_VOLT_SHIFT	9
+> +#define RDO_PROG_CURR_SHIFT	0
+> +
+> +#define RDO_PROG_VOLT_MV_STEP	20
+> +#define RDO_PROG_CURR_MA_STEP	50
+> +
+> +#define PDO_PROG_OUT_VOLT(mv)	\
+> +	((((mv) / RDO_PROG_VOLT_MV_STEP) & RDO_PROG_VOLT_MASK) << RDO_PROG_VOLT_SHIFT)
+> +#define PDO_PROG_OP_CURR(ma)	\
+> +	((((ma) / RDO_PROG_CURR_MA_STEP) & RDO_PROG_CURR_MASK) << RDO_PROG_CURR_SHIFT)
+> +
+> +#define RDO_PROG(idx, out_mv, op_ma, flags)			\
+> +	(RDO_OBJ(idx) | (flags) |				\
+> +	 PDO_PROG_OUT_VOLT(out_mv) | PDO_PROG_OP_CURR(op_ma))
+> +
+>  static inline unsigned int rdo_index(u32 rdo)
+>  {
+>  	return (rdo >> RDO_OBJ_POS_SHIFT) & RDO_OBJ_POS_MASK;
+> -- 
+> 1.9.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+heikki
