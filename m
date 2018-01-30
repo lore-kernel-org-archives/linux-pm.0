@@ -1,71 +1,91 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Applied "regulator: Fix suspend to idle" to the regulator tree
-Date: Tue, 30 Jan 2018 16:19:27 +0000
-Message-ID: <E1egYd5-0000f8-9h@debutante>
-References: <20180130120340.GB10525@sirena.org.uk>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180130120340.GB10525@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>Geert Uytterhoeven <geert+renesas@glider.be>Geert Uytterhoeven <geert+renesas@glider.be>, Liam Girdwood <lgirdwood@gmail.com>, Chunyan Zhang <zhang.chunyan@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.orglinux-kernel@vger.kernel.org
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH 2/4] dt-bindings: introduce RPMH RSC bindings for
+ Qualcomm SoCs
+Date: Tue, 30 Jan 2018 16:24:24 +0000
+Message-ID: <20180130162424.GB20815@codeaurora.org>
+References: <20180119000157.7380-1-ilina@codeaurora.org>
+ <20180119000157.7380-3-ilina@codeaurora.org>
+ <20180129193344.iovcnka27hmap2l4@rob-hp-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180129193344.iovcnka27hmap2l4@rob-hp-laptop>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: andy.gross@linaro.org, david.brown@linaro.org, sboyd@codeaurora.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The patch
+Hi Rob,
 
-   regulator: Fix suspend to idle
+On Mon, Jan 29 2018 at 19:33 +0000, Rob Herring wrote:
+>On Thu, Jan 18, 2018 at 05:01:55PM -0700, Lina Iyer wrote:
+>> Add device binding documentation for Qualcomm Technology Inc's RPMH RSC
+>> driver. The hardware block is used for communicating resource state
+>> requests for shared resources.
+>>
+>> Cc: devicetree@vger.kernel.org
+>> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+>> ---
+>>  .../devicetree/bindings/arm/msm/rpmh-rsc.txt       | 134 +++++++++++++++++++++
+>
+>bindings/mailbox instead?
+>
+This doesn't use the mailbox framework, but is that still okay?
 
-has been applied to the regulator tree at
+>> +- qcom,drv-id:
+>> +	Usage: required
+>> +	Value type: <u32>
+>> +	Definition: the id of the DRV in the RSC block.
+>> +
+>> +- qcom, tcs-config:
+>          ^
+>space
+>
+Ok.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git 
+>> +	Usage: required
+>> +	Value type: <prop-encoded-array>
+>> +	Definition: the tuple definining the configuration of TCS.
+>> +	            Must have 2 cells which describe each TCS type.
+>> +	            <type number_of_tcs>
+>> +	- Cell #1 (TCS Type): TCS types can be specified -
+>> +		SLEEP_TCS
+>> +		WAKE_TCS
+>> +		ACTIVE_TCS
+>> +		CONTROL_TCS
+>
+>These defines belong in this patch.
+>
+The defines are also used by the driver, so it ended up there to avoid
+compilation errors. I guess I can make this patch a precursor to the
+driver patch.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
+>> +	- Cell #2 (Number of TCS): <u32>
+>
+>Is there some sort of range of numbers?
+>
+The range is limited by the area available and the complexity supported
+by the processor. Generally 1-3 per TCS type.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+>> +
+>> +- label:
+>> +	Usage: optional
+>> +	Value type: <string>
+>> +	Definition: Name for the RSC. The name would be used in trace logs.
+>> +
+>> +Clients the want to use the RSC to communicate with RPMH would specify their
+>
+>Clients the want?
+>
+Argh! Will fix.
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+>> +bindings as child of the corresponding RSC controllers.
+>
+>Need to be specific here about what the child nodes are.
+>
+Ok. The child nodes are the clients that would want to use RPMH
+communication.
 
 Thanks,
-Mark
-
->From 57a0dd187956ea04870f4bbbf25a63c425ee7cad Mon Sep 17 00:00:00 2001
-From: Mark Brown <broonie@kernel.org>
-Date: Tue, 30 Jan 2018 12:16:31 +0000
-Subject: [PATCH] regulator: Fix suspend to idle
-
-When suspending to idle with the new suspend mode configuration support
-we go through the suspend callbacks with a state of PM_SUSPEND_TO_IDLE
-which we don't have regulator constraints for, causing an error.  Avoid
-this and similar errors by treating missing constraints as a noop.
-
-Reported-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- drivers/regulator/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 42681c10cbe4..dd4708c58480 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -758,7 +758,7 @@ static int suspend_set_state(struct regulator_dev *rdev,
- 
- 	rstate = regulator_get_suspend_state(rdev, state);
- 	if (rstate == NULL)
--		return -EINVAL;
-+		return 0;
- 
- 	/* If we have no suspend mode configration don't set anything;
- 	 * only warn if the driver implements set_suspend_voltage or
--- 
-2.15.1
+Lina
