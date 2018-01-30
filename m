@@ -1,13 +1,13 @@
 From: Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject: [PATCH 1/3] pm-graph: config files and installer
-Date: Tue, 30 Jan 2018 00:17:18 -0800
-Message-ID: <ea05efd43283c731a17df599705253032f9616e9.1517297999.git.todd.e.brandt@linux.intel.com>
+Subject: [PATCH 2/3] pm-graph: AnalyzeBoot v2.2
+Date: Tue, 30 Jan 2018 00:17:19 -0800
+Message-ID: <3a35d8f11200b2739106c01df458f15406fb262c.1517297999.git.todd.e.brandt@linux.intel.com>
 References: <cover.1517297999.git.todd.e.brandt@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:31326 "EHLO mga14.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:31330 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751576AbeA3IRX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 30 Jan 2018 03:17:23 -0500
+        id S1751712AbeA3IRY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 30 Jan 2018 03:17:24 -0500
 In-Reply-To: <cover.1517297999.git.todd.e.brandt@linux.intel.com>
 In-Reply-To: <cover.1517297999.git.todd.e.brandt@linux.intel.com>
 References: <cover.1517297999.git.todd.e.brandt@linux.intel.com>
@@ -16,1520 +16,553 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, rjw@rjwysocki.net
 Cc: todd.e.brandt@linux.intel.com, todd.e.brandt@intel.com
 
-- name change: analyze_boot.py to bootgraph.py
-- name change: analyze_suspend.py to sleepgraph.py
-- added config files for easier sleepgraph usage
-- added example.cfg which describes all config options
-- added cgskip.txt definition for slimmer callgraphs
+- add -cgskip option to reduce callgraph output size
+- add -cgfilter option to focus on a list of devices
+- add -result option for exporting batch test results
+- removed all phoronix hooks, use -result to enable batch testing
+- changed argument -f to match sleegraph, -f = -callgraph
+- use -fstat for function status instead of -f
+- add -verbose option to print out timeline stats and kernel options
+- include command string and kernel params in timeline output header
 
 Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
 ---
- tools/power/pm-graph/Makefile                      |  29 ++-
- .../pm-graph/{analyze_boot.py => bootgraph.py}     |   0
- tools/power/pm-graph/config/cgskip.txt             |  65 +++++++
- .../pm-graph/config/custom-timeline-functions.cfg  | 205 +++++++++++++++++++++
- tools/power/pm-graph/config/example.cfg            | 133 +++++++++++++
- tools/power/pm-graph/config/freeze-callgraph.cfg   |  94 ++++++++++
- tools/power/pm-graph/config/freeze-dev.cfg         |  93 ++++++++++
- tools/power/pm-graph/config/freeze.cfg             |  93 ++++++++++
- tools/power/pm-graph/config/standby-callgraph.cfg  |  94 ++++++++++
- tools/power/pm-graph/config/standby-dev.cfg        |  93 ++++++++++
- tools/power/pm-graph/config/standby.cfg            |  93 ++++++++++
- tools/power/pm-graph/config/suspend-callgraph.cfg  |  98 ++++++++++
- tools/power/pm-graph/config/suspend-dev.cfg        |  93 ++++++++++
- tools/power/pm-graph/config/suspend-x2-proc.cfg    |  93 ++++++++++
- tools/power/pm-graph/config/suspend.cfg            |  93 ++++++++++
- .../pm-graph/{analyze_suspend.py => sleepgraph.py} |   0
- 16 files changed, 1362 insertions(+), 7 deletions(-)
- rename tools/power/pm-graph/{analyze_boot.py => bootgraph.py} (100%)
- create mode 100644 tools/power/pm-graph/config/cgskip.txt
- create mode 100644 tools/power/pm-graph/config/custom-timeline-functions.cfg
- create mode 100644 tools/power/pm-graph/config/example.cfg
- create mode 100644 tools/power/pm-graph/config/freeze-callgraph.cfg
- create mode 100644 tools/power/pm-graph/config/freeze-dev.cfg
- create mode 100644 tools/power/pm-graph/config/freeze.cfg
- create mode 100644 tools/power/pm-graph/config/standby-callgraph.cfg
- create mode 100644 tools/power/pm-graph/config/standby-dev.cfg
- create mode 100644 tools/power/pm-graph/config/standby.cfg
- create mode 100644 tools/power/pm-graph/config/suspend-callgraph.cfg
- create mode 100644 tools/power/pm-graph/config/suspend-dev.cfg
- create mode 100644 tools/power/pm-graph/config/suspend-x2-proc.cfg
- create mode 100644 tools/power/pm-graph/config/suspend.cfg
- rename tools/power/pm-graph/{analyze_suspend.py => sleepgraph.py} (100%)
+ tools/power/pm-graph/bootgraph.8  |  18 +++-
+ tools/power/pm-graph/bootgraph.py | 219 +++++++++++++++++++++++++-------------
+ 2 files changed, 160 insertions(+), 77 deletions(-)
 
-diff --git a/tools/power/pm-graph/Makefile b/tools/power/pm-graph/Makefile
-index 4e1e999e7b05..c1899cd72c80 100644
---- a/tools/power/pm-graph/Makefile
-+++ b/tools/power/pm-graph/Makefile
-@@ -7,11 +7,24 @@ all:
+diff --git a/tools/power/pm-graph/bootgraph.8 b/tools/power/pm-graph/bootgraph.8
+index dbdafcf546df..64d513f80a2a 100644
+--- a/tools/power/pm-graph/bootgraph.8
++++ b/tools/power/pm-graph/bootgraph.8
+@@ -37,6 +37,9 @@ Print the current tool version
+ Add the dmesg log to the html output. It will be viewable by
+ clicking a button in the timeline.
+ .TP
++\fB-result \fIfile\fR
++Export a results table to a text file for parsing.
++.TP
+ \fB-o \fIname\fR
+ Overrides the output subdirectory name when running a new test.
+ Use {date}, {time}, {hostname} for current values.
+@@ -44,14 +47,14 @@ Use {date}, {time}, {hostname} for current values.
+ e.g. boot-{hostname}-{date}-{time}
+ .SS "advanced"
+ .TP
+-\fB-f\fR
+-Use ftrace to add function detail (default: disabled)
+-.TP
+-\fB-callgraph\fR
++\fB-f or -callgraph\fR
+ Use ftrace to create initcall callgraphs (default: disabled). If -func
+ is not used there will be one callgraph per initcall. This can produce
+ very large outputs, i.e. 10MB - 100MB.
+ .TP
++\fB-fstat\fR
++Use ftrace to add function detail (default: disabled)
++.TP
+ \fB-maxdepth \fIlevel\fR
+ limit the callgraph trace depth to \fIlevel\fR (default: 2). This is
+ the best way to limit the output size when using -callgraph.
+@@ -67,6 +70,13 @@ Reduce callgraph output in the timeline by limiting it to a list of calls. The
+ argument can be a single function name or a comma delimited list.
+ (default: none)
+ .TP
++\fB-cgskip \fIfile\fR
++Reduce callgraph output in the timeline by skipping over uninteresting
++functions in the trace, e.g. printk or console_unlock. The functions listed
++in this file will show up as empty leaves in the callgraph with only the start/end
++times displayed.
++(default: none)
++.TP
+ \fB-timeprec \fIn\fR
+ Number of significant digits in timestamps (0:S, 3:ms, [6:us])
+ .TP
+diff --git a/tools/power/pm-graph/bootgraph.py b/tools/power/pm-graph/bootgraph.py
+index e83df141a597..abb4c38f029b 100755
+--- a/tools/power/pm-graph/bootgraph.py
++++ b/tools/power/pm-graph/bootgraph.py
+@@ -32,7 +32,7 @@ import platform
+ import shutil
+ from datetime import datetime, timedelta
+ from subprocess import call, Popen, PIPE
+-import analyze_suspend as aslib
++import sleepgraph as aslib
  
- install : uninstall
- 	install -d  $(DESTDIR)$(PREFIX)/lib/pm-graph
--	install analyze_suspend.py $(DESTDIR)$(PREFIX)/lib/pm-graph
--	install analyze_boot.py $(DESTDIR)$(PREFIX)/lib/pm-graph
-+	install sleepgraph.py $(DESTDIR)$(PREFIX)/lib/pm-graph
-+	install bootgraph.py $(DESTDIR)$(PREFIX)/lib/pm-graph
-+	install -d  $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/cgskip.txt $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/freeze-callgraph.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/freeze.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/freeze-dev.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/standby-callgraph.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/standby.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/standby-dev.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/suspend-callgraph.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/suspend.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/suspend-dev.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
-+	install -m 644 config/suspend-x2-proc.cfg $(DESTDIR)$(PREFIX)/lib/pm-graph/config
+ # ----------------- CLASSES --------------------
  
--	ln -s $(DESTDIR)$(PREFIX)/lib/pm-graph/analyze_boot.py $(DESTDIR)$(PREFIX)/bin/bootgraph
--	ln -s $(DESTDIR)$(PREFIX)/lib/pm-graph/analyze_suspend.py $(DESTDIR)$(PREFIX)/bin/sleepgraph
-+	install -d  $(DESTDIR)$(PREFIX)/bin
-+	ln -s $(DESTDIR)$(PREFIX)/lib/pm-graph/bootgraph.py $(DESTDIR)$(PREFIX)/bin/bootgraph
-+	ln -s $(DESTDIR)$(PREFIX)/lib/pm-graph/sleepgraph.py $(DESTDIR)$(PREFIX)/bin/sleepgraph
+@@ -42,23 +42,18 @@ import analyze_suspend as aslib
+ #	 store system values and test parameters
+ class SystemValues(aslib.SystemValues):
+ 	title = 'BootGraph'
+-	version = '2.1'
++	version = '2.2'
+ 	hostname = 'localhost'
+ 	testtime = ''
+ 	kernel = ''
+ 	dmesgfile = ''
+ 	ftracefile = ''
+ 	htmlfile = 'bootgraph.html'
+-	outfile = ''
+ 	testdir = ''
+-	testdirprefix = 'boot'
+-	embedded = False
+-	testlog = False
+-	dmesglog = False
+-	ftracelog = False
++	kparams = ''
++	result = ''
+ 	useftrace = False
+ 	usecallgraph = False
+-	usedevsrc = True
+ 	suspendmode = 'boot'
+ 	max_graph_depth = 2
+ 	graph_filter = 'do_one_initcall'
+@@ -69,11 +64,6 @@ class SystemValues(aslib.SystemValues):
+ 	bootloader = 'grub'
+ 	blexec = []
+ 	def __init__(self):
+-		if('LOG_FILE' in os.environ and 'TEST_RESULTS_IDENTIFIER' in os.environ):
+-			self.embedded = True
+-			self.dmesglog = True
+-			self.outfile = os.environ['LOG_FILE']
+-			self.htmlfile = os.environ['LOG_FILE']
+ 		self.hostname = platform.node()
+ 		self.testtime = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+ 		if os.path.exists('/proc/version'):
+@@ -148,11 +138,18 @@ class SystemValues(aslib.SystemValues):
+ 		cmdline = '%s -cronjob' % os.path.abspath(sys.argv[0])
+ 		args = iter(sys.argv[1:])
+ 		for arg in args:
+-			if arg in ['-h', '-v', '-cronjob', '-reboot']:
++			if arg in ['-h', '-v', '-cronjob', '-reboot', '-verbose']:
+ 				continue
+ 			elif arg in ['-o', '-dmesg', '-ftrace', '-func']:
+ 				args.next()
+ 				continue
++			elif arg == '-result':
++				cmdline += ' %s "%s"' % (arg, os.path.abspath(args.next()))
++				continue
++			elif arg == '-cgskip':
++				file = self.configFile(args.next())
++				cmdline += ' %s "%s"' % (arg, os.path.abspath(file))
++				continue
+ 			cmdline += ' '+arg
+ 		if self.graph_filter != 'do_one_initcall':
+ 			cmdline += ' -func "%s"' % self.graph_filter
+@@ -166,14 +163,6 @@ class SystemValues(aslib.SystemValues):
+ 		print '3. After reboot, re-run this tool with the same arguments but no command (w/o -reboot or -manual).\n'
+ 		print 'CMDLINE="%s"' % cmdline
+ 		sys.exit()
+-	def getExec(self, cmd):
+-		dirlist = ['/sbin', '/bin', '/usr/sbin', '/usr/bin',
+-			'/usr/local/sbin', '/usr/local/bin']
+-		for path in dirlist:
+-			cmdfull = os.path.join(path, cmd)
+-			if os.path.exists(cmdfull):
+-				return cmdfull
+-		return ''
+ 	def blGrub(self):
+ 		blcmd = ''
+ 		for cmd in ['update-grub', 'grub-mkconfig', 'grub2-mkconfig']:
+@@ -199,6 +188,14 @@ class SystemValues(aslib.SystemValues):
+ 			self.blGrub()
+ 		else:
+ 			doError('unknown boot loader: %s' % self.bootloader)
++	def writeDatafileHeader(self, filename):
++		self.kparams = open('/proc/cmdline', 'r').read().strip()
++		fp = open(filename, 'w')
++		fp.write(self.teststamp+'\n')
++		fp.write(self.sysstamp+'\n')
++		fp.write('# command | %s\n' % self.cmdline)
++		fp.write('# kparams | %s\n' % self.kparams)
++		fp.close()
  
- 	install -d  $(DESTDIR)$(PREFIX)/share/man/man8
- 	install bootgraph.8 $(DESTDIR)$(PREFIX)/share/man/man8
-@@ -24,9 +37,11 @@ uninstall :
- 	rm -f $(DESTDIR)$(PREFIX)/bin/bootgraph
- 	rm -f $(DESTDIR)$(PREFIX)/bin/sleepgraph
+ sysvals = SystemValues()
  
--	rm -f $(DESTDIR)$(PREFIX)/lib/pm-graph/analyze_boot.py
--	rm -f $(DESTDIR)$(PREFIX)/lib/pm-graph/analyze_suspend.py
--	rm -f $(DESTDIR)$(PREFIX)/lib/pm-graph/*.pyc
-+	rm -f $(DESTDIR)$(PREFIX)/lib/pm-graph/config/*
-+	if [ -d $(DESTDIR)$(PREFIX)/lib/pm-graph/config ] ; then \
-+		rmdir $(DESTDIR)$(PREFIX)/lib/pm-graph/config; \
-+	fi;
-+	rm -f $(DESTDIR)$(PREFIX)/lib/pm-graph/*
- 	if [ -d $(DESTDIR)$(PREFIX)/lib/pm-graph ] ; then \
- 		rmdir $(DESTDIR)$(PREFIX)/lib/pm-graph; \
- 	fi;
-diff --git a/tools/power/pm-graph/analyze_boot.py b/tools/power/pm-graph/bootgraph.py
-similarity index 100%
-rename from tools/power/pm-graph/analyze_boot.py
-rename to tools/power/pm-graph/bootgraph.py
-diff --git a/tools/power/pm-graph/config/cgskip.txt b/tools/power/pm-graph/config/cgskip.txt
-new file mode 100644
-index 000000000000..e48d588fbfb4
---- /dev/null
-+++ b/tools/power/pm-graph/config/cgskip.txt
-@@ -0,0 +1,65 @@
-+# -----------------------------------------------
-+# CallGraph function skip list
-+#
-+# This file contains a list of functions which are
-+# meant to be skipped in the callgraph trace. It reduces
-+# the callgraph html file size by treating these functions
-+# as leaves with no child calls. It can be editted by
-+# adding or removing function symbol names.
-+#
-+# The sleepgraph tool automatically pulls this file in when
-+# it is found in the config folder. It can be ignored if
-+# the tool is called with "-cgskip off".
-+# -----------------------------------------------
-+
-+# low level scheduling and timing
-+up
-+down_timeout
-+mutex_lock
-+down_read
-+complete_all
-+schedule_timeout
-+wake_up_process
-+msleep
-+__udelay
-+ktime_get
-+
-+# console calls
-+printk
-+dev_printk
-+console_unlock
-+
-+# memory handling
-+__kmalloc
-+__kmalloc_track_caller
-+kmem_cache_alloc
-+kmem_cache_alloc_trace
-+kmem_cache_free
-+kstrdup
-+kstrdup_const
-+kmalloc_slab
-+new_slab
-+__slab_alloc
-+__slab_free
-+raw_pci_read
-+pci_read
-+alloc_pages_current
-+
-+# debugfs and sysfs setup
-+debugfs_remove_recursive
-+debugfs_create_dir
-+debugfs_create_files
-+debugfs_create_dir
-+debugfs_get_inode
-+sysfs_add_file_mode_ns
-+sysfs_add_file
-+sysfs_create_dir_ns
-+sysfs_create_link
-+sysfs_create_group
-+sysfs_create_groups
-+sysfs_create_bin_file
-+dpm_sysfs_add
-+sysfs_create_file_ns
-+sysfs_merge_group
-+sysfs_add_link_to_group
-+sysfs_create_link_sd
-diff --git a/tools/power/pm-graph/config/custom-timeline-functions.cfg b/tools/power/pm-graph/config/custom-timeline-functions.cfg
-new file mode 100644
-index 000000000000..4f80ad7d7275
---- /dev/null
-+++ b/tools/power/pm-graph/config/custom-timeline-functions.cfg
-@@ -0,0 +1,205 @@
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config thisfile.txt
-+#
-+
-+[Settings]
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: mem
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: true
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 1
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: suspend-{hostname}-{date}-{time}-custom
-+
-+# Override default timeline entries
-+# Do not use the internal default functions for timeline entries (default: false)
-+# Set this to true if you intend to only use the ones defined in this config
-+override-timeline-functions: true
-+
-+# Override default dev timeline entries
-+# Do not use the internal default functions for dev timeline entries (default: false)
-+# Set this to true if you intend to only use the ones defined in this config
-+override-dev-timeline-functions: true
-+
-+[timeline_functions_x86_64]
-+#
-+# Function calls to display in the timeline alongside device callbacks.
-+# The tool has an internal set of these functions which should cover the
-+# whole of kernel execution, but you can append or override here.
-+#
-+# This is a list of kprobes which use both symbol data and function arg data.
-+# The function calls are displayed on the timeline alongside the device blocks.
-+# The args are pulled directly from the stack using this architecture's registers
-+# and stack formatting. Three pieces of info are required. The function name,
-+# a format string, and an argument list
-+#
-+# Entry format:
-+#
-+#   function: format{fn_arg1}_{fn_arg2} fn_arg1 fn_arg2 ... [color=purple]
-+#
-+# Required Arguments:
-+#
-+#   function: The symbol name for the function you want probed, this is the
-+#             minimum required for an entry, it will show up as the function
-+#             name with no arguments.
-+#
-+#       example: _cpu_up:
-+#
-+# Optional Arguments:
-+#
-+#   format: The format to display the data on the timeline in. Use braces to
-+#           enclose the arg names.
-+#
-+#       example: CPU_ON[{cpu}]
-+#
-+#   color: The color of the entry block in the timeline. The default color is
-+#          transparent, so the entry shares the phase color. The color is an
-+#          html color string, either a word, or an RGB.
-+#
-+#       example: [color=#CC00CC]
-+#
-+#   arglist: A list of arguments from registers/stack addresses. See URL:
-+#            https://www.kernel.org/doc/Documentation/trace/kprobetrace.txt
-+#
-+#       example: cpu=%di:s32
-+#
-+# Example: Display cpu resume in the timeline
-+#
-+#       _cpu_up: CPU_ON[{cpu}] cpu=%di:s32 [color=orange]
-+#
-+_cpu_down: CPU_OFF[{cpu}] cpu=%di:s32
-+_cpu_up: CPU_ON[{cpu}] cpu=%di:s32
-+sys_sync:
-+pm_prepare_console:
-+pm_notifier_call_chain:
-+freeze_processes:
-+freeze_kernel_threads:
-+pm_restrict_gfp_mask:
-+acpi_suspend_begin:
-+suspend_console:
-+acpi_pm_prepare:
-+syscore_suspend:
-+arch_enable_nonboot_cpus_end:
-+syscore_resume:
-+acpi_pm_finish:
-+resume_console:
-+acpi_pm_end:
-+pm_restore_gfp_mask:
-+thaw_processes:
-+pm_restore_console:
-+
-+[dev_timeline_functions_x86_64]
-+#
-+# Dev mode function calls to display inside timeline entries
-+#
-+# This is a list of kprobes which use both symbol data and function arg data.
-+# The function calls are displayed on the timeline alongside the device blocks.
-+# The args are pulled directly from the stack using this architecture's registers
-+# and stack formatting. Three pieces of info are required. The function name,
-+# a format string, and an argument list
-+#
-+# Entry format:
-+#
-+#   function: format{fn_arg1}_{fn_arg2} fn_arg1 fn_arg2 ... [color=purple]
-+#
-+# Required Arguments:
-+#
-+#   function: The symbol name for the function you want probed, this is the
-+#             minimum required for an entry, it will show up as the function
-+#             name with no arguments.
-+#
-+#       example: ata_eh_recover:
-+#
-+# Optional Arguments:
-+#
-+#   format: The format to display the data on the timeline in. Use braces to
-+#           enclose the arg names.
-+#
-+#       example: ata{port}_port_reset
-+# 
-+#   color: The color of the entry block in the timeline. The default color is
-+#          transparent, so the entry shares the phase color. The color is an
-+#          html color string, either a word, or an RGB.
-+#
-+#       example: [color=#CC00CC]
-+#
-+#   arglist: A list of arguments from registers/stack addresses. See URL:
-+#            https://www.kernel.org/doc/Documentation/trace/kprobetrace.txt
-+#
-+#       example: port=+36(%di):s32
-+#
-+# Example: Display ATA port reset as ataN_port_reset in the timeline
-+#
-+#       ata_eh_recover: ata{port}_port_reset port=+36(%di):s32
-+#
-+msleep: msleep time=%di:s32
-+schedule_timeout_uninterruptible: schedule_timeout_uninterruptible timeout=%di:s32
-+schedule_timeout: schedule_timeout timeout=%di:s32
-+usleep_range: usleep_range min=%di:s32 max=%si:s32
-+__const_udelay: udelay loops=%di:s32
-+__mutex_lock_slowpath: mutex_lock_slowpath
-+ata_eh_recover: ata_eh_recover port=+36(%di):s32
-+acpi_os_stall:
-+acpi_resume_power_resources:
-+acpi_ps_parse_aml:
-+ext4_sync_fs:
-+i915_gem_resume:
-+i915_restore_state:
-+intel_opregion_setup:
-+g4x_pre_enable_dp:
-+vlv_pre_enable_dp:
-+chv_pre_enable_dp:
-+g4x_enable_dp:
-+vlv_enable_dp:
-+intel_hpd_init:
-+intel_opregion_register:
-+intel_dp_detect:
-+intel_hdmi_detect:
-+intel_opregion_init:
-+intel_fbdev_set_suspend:
-diff --git a/tools/power/pm-graph/config/example.cfg b/tools/power/pm-graph/config/example.cfg
-new file mode 100644
-index 000000000000..05b2efb9bb54
---- /dev/null
-+++ b/tools/power/pm-graph/config/example.cfg
-@@ -0,0 +1,133 @@
-+#
-+# Generic S3 (Suspend to Mem) test
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/example.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: mem
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: suspend-{hostname}-{date}-{time}
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: true
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# Skip HTML generation
-+# Only capture the logs, don't generate the html timeline (default: false)
-+skiphtml: false
-+
-+# Sync filesystem before suspend
-+# run sync before the test, minimizes sys_sync call time (default: false)
-+sync: true
-+
-+# Runtime suspend enable/disable
-+# Enable/disable runtime suspend for all devices, restore all after test (default: no-action)
-+# rs: disable
-+
-+# Turn display on/off for test
-+# Switch the display on/off for the test using xset (default: no-action)
-+# display: on
-+
-+# Print results to text file
-+# Print the status of the test run in the given file (default: no-action)
-+result: result.txt
-+
-+# Gzip the log files to save space
-+# Gzip the generated log files, and read gzipped log files (default: false)
-+gzip: true
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of suspend (default: "")
-+# command: echo mem > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Multiple test runs
-+# Run N tests D seconds apart, generates separate outputs with a summary (default: false)
-+# multi: 3 5
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back and display in the same timeline (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 0.001
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Callgraph phase filter
-+# Only enable callgraphs for one phase, i.e. resume_noirq (default: all)
-+cgphase: suspend
-+
-+# Callgraph x2 test filter
-+# Only enable callgraphs test 0 or 1 when using -x2 (default: 1)
-+cgtest: 0
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 6
-+
-+# Device Filter
-+# show only devices whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-+
-+# Add kprobe functions to the timeline
-+# Add functions to the timeline from a text file (default: no-action)
-+# fadd: file.txt
-diff --git a/tools/power/pm-graph/config/freeze-callgraph.cfg b/tools/power/pm-graph/config/freeze-callgraph.cfg
-new file mode 100644
-index 000000000000..f692821c4828
---- /dev/null
-+++ b/tools/power/pm-graph/config/freeze-callgraph.cfg
-@@ -0,0 +1,94 @@
-+#
-+# Full Callgraph for S2 (Freeze) test
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/freeze-callgraph.cfg
-+#
-+# NOTE: the output of this test is very large (> 30MB)
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: freeze
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: freeze-{hostname}-{date}-{time}-cg
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of freeze (default: "")
-+# command: echo freeze > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 1
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: true
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 6
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/freeze-dev.cfg b/tools/power/pm-graph/config/freeze-dev.cfg
-new file mode 100644
-index 000000000000..c4ad5cea3cbf
---- /dev/null
-+++ b/tools/power/pm-graph/config/freeze-dev.cfg
-@@ -0,0 +1,93 @@
-+#
-+# Dev S2 (Freeze) test - includes src calls / kernel threads
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/freeze-dev.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: freeze
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: freeze-{hostname}-{date}-{time}-dev
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of freeze (default: "")
-+# command: echo freeze > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: true
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 1
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 3
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/freeze.cfg b/tools/power/pm-graph/config/freeze.cfg
-new file mode 100644
-index 000000000000..0b70e0b74527
---- /dev/null
-+++ b/tools/power/pm-graph/config/freeze.cfg
-@@ -0,0 +1,93 @@
-+#
-+# Generic S2 (Freeze) test
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/freeze.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: freeze
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: freeze-{hostname}-{date}-{time}
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of freeze (default: "")
-+# command: echo freeze > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 0.001
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 3
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/standby-callgraph.cfg b/tools/power/pm-graph/config/standby-callgraph.cfg
-new file mode 100644
-index 000000000000..f52a6b9d5c32
---- /dev/null
-+++ b/tools/power/pm-graph/config/standby-callgraph.cfg
-@@ -0,0 +1,94 @@
-+#
-+# Full Callgraph for S1 (Standby) test
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/standby-callgraph.cfg
-+#
-+# NOTE: the output of this test is very large (> 30MB)
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: standby
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: standby-{hostname}-{date}-{time}-cg
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of standby (default: "")
-+# command: echo standby > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 1
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: true
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 6
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/standby-dev.cfg b/tools/power/pm-graph/config/standby-dev.cfg
-new file mode 100644
-index 000000000000..a5498ece3def
---- /dev/null
-+++ b/tools/power/pm-graph/config/standby-dev.cfg
-@@ -0,0 +1,93 @@
-+#
-+# Dev S1 (Standby) test - includes src calls / kernel threads
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/standby-dev.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: standby
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: standby-{hostname}-{date}-{time}-dev
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of standby (default: "")
-+# command: echo standby > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: true
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 1
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 3
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/standby.cfg b/tools/power/pm-graph/config/standby.cfg
-new file mode 100644
-index 000000000000..f0dd264dfeff
---- /dev/null
-+++ b/tools/power/pm-graph/config/standby.cfg
-@@ -0,0 +1,93 @@
-+#
-+# Generic S1 (Standby) test
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/standby.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: standby
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: standby-{hostname}-{date}-{time}
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of standby (default: "")
-+# command: echo standby > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 0.001
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 3
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/suspend-callgraph.cfg b/tools/power/pm-graph/config/suspend-callgraph.cfg
-new file mode 100644
-index 000000000000..11b8cbc12d34
---- /dev/null
-+++ b/tools/power/pm-graph/config/suspend-callgraph.cfg
-@@ -0,0 +1,98 @@
-+#
-+# Full Callgraph for S3 (Suspend to Mem) test
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/suspend.cfg
-+#
-+# NOTE: the output of this test is very large (> 30MB)
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: mem
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: suspend-{hostname}-{date}-{time}-cg
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of suspend (default: "")
-+# command: echo mem > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 0.001
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: true
-+
-+# Max graph depth
-+# limit the callgraph trace to this depth (default: 0 = all)
-+maxdepth: 5
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 6
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/suspend-dev.cfg b/tools/power/pm-graph/config/suspend-dev.cfg
-new file mode 100644
-index 000000000000..56f1d21cc79b
---- /dev/null
-+++ b/tools/power/pm-graph/config/suspend-dev.cfg
-@@ -0,0 +1,93 @@
-+#
-+# Dev S3 (Suspend to Mem) test - includes src calls / kernel threads
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/suspend-dev.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: mem
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: suspend-{hostname}-{date}-{time}-dev
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of suspend (default: "")
-+# command: echo mem > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: true
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 1
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 3
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/suspend-x2-proc.cfg b/tools/power/pm-graph/config/suspend-x2-proc.cfg
-new file mode 100644
-index 000000000000..0ecca0ede138
---- /dev/null
-+++ b/tools/power/pm-graph/config/suspend-x2-proc.cfg
-@@ -0,0 +1,93 @@
-+#
-+# Proc S3 (Suspend to Mem) x2 test - includes user processes
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/suspend-proc.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: mem
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: suspend-{hostname}-{date}-{time}-x2-proc
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of suspend (default: "")
-+# command: echo mem > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: true
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: true
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 1000
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 1000
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 1000
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 1
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 3
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/config/suspend.cfg b/tools/power/pm-graph/config/suspend.cfg
-new file mode 100644
-index 000000000000..70d293231b06
---- /dev/null
-+++ b/tools/power/pm-graph/config/suspend.cfg
-@@ -0,0 +1,93 @@
-+#
-+# Generic S3 (Suspend to Mem) test
-+#
-+# This is the configuration file for sleepgraph. It contains
-+# all the tool arguments so that they don't have to be given on the
-+# command line. It also includes advanced settings for functions
-+# and kprobes. It is run like this
-+#
-+#    sudo ./sleepgraph.py -config config/suspend.cfg
-+#
-+
-+[Settings]
-+
-+# ---- General Options ----
-+
-+# Verbosity
-+# print verbose messages (default: false)
-+verbose: false
-+
-+# Suspend Mode
-+# e.g. standby, mem, freeze, disk (default: mem)
-+mode: mem
-+
-+# Output Directory Format
-+# output folder for html, ftrace, and dmesg. Use {date} and {time} for current values
-+output-dir: suspend-{hostname}-{date}-{time}
-+
-+# Automatic Wakeup
-+# Use rtcwake to autoresume after X seconds, or off to disable (default: 15)
-+rtcwake: 15
-+
-+# Add Logs
-+# add the dmesg and ftrace log to the html output (default: false)
-+addlogs: false
-+
-+# Suspend/Resume Gap
-+# insert a small visible gap between suspend and resume on the timeline (default: false)
-+srgap: false
-+
-+# ---- Advanced Options ----
-+
-+# Command to execute in lieu of suspend (default: "")
-+# command: echo mem > /sys/power/state
-+
-+# Display user processes
-+# graph user processes and cpu usage in the timeline (default: false)
-+proc: false
-+
-+# Display function calls
-+# graph source functions in the timeline (default: false)
-+dev: false
-+
-+# Back to Back Suspend/Resume
-+# Run two suspend/resumes back to back (default: false)
-+x2: false
-+
-+# Back to Back Suspend Delay
-+# Time delay between the two test runs in ms (default: 0 ms)
-+x2delay: 0
-+
-+# Pre Suspend Delay
-+# Include an N ms delay before (1st) suspend (default: 0 ms)
-+predelay: 0
-+
-+# Post Resume Delay
-+# Include an N ms delay after (last) resume (default: 0 ms)
-+postdelay: 0
-+
-+# Minimum Device Length
-+# graph only devices longer than min in the timeline (default: 0.001 ms)
-+mindev: 0.001
-+
-+# ---- Debug Options ----
-+
-+# Callgraph
-+# gather detailed ftrace callgraph data on all timeline events (default: false)
-+callgraph: false
-+
-+# Expand Callgraph
-+# pre-expand the callgraph data in the html output (default: disabled)
-+expandcg: false
-+
-+# Minimum Callgraph Length
-+# provide callgraph data for blocks longer than min (default: 0.001 ms)
-+mincg: 1
-+
-+# Timestamp Precision
-+# Number of significant digits in timestamps (0:S, [3:ms], 6:us)
-+timeprec: 3
-+
-+# Device Filter
-+# show only devs whose name/driver includes one of these strings
-+# devicefilter: _cpu_up,_cpu_down,i915,usb
-diff --git a/tools/power/pm-graph/analyze_suspend.py b/tools/power/pm-graph/sleepgraph.py
-similarity index 100%
-rename from tools/power/pm-graph/analyze_suspend.py
-rename to tools/power/pm-graph/sleepgraph.py
+@@ -249,7 +246,7 @@ class Data(aslib.Data):
+ 		return name
+ 	def deviceMatch(self, pid, cg):
+ 		if cg.end - cg.start == 0:
+-			return True
++			return ''
+ 		for p in data.phases:
+ 			list = self.dmesg[p]['list']
+ 			for devname in list:
+@@ -260,14 +257,25 @@ class Data(aslib.Data):
+ 					if(cg.start <= dev['start'] and cg.end >= dev['end'] and dev['length'] > 0):
+ 						dev['ftrace'] = cg
+ 						self.do_one_initcall = True
+-						return True
++						return devname
+ 				else:
+ 					if(cg.start > dev['start'] and cg.end < dev['end']):
+ 						if 'ftraces' not in dev:
+ 							dev['ftraces'] = []
+ 						dev['ftraces'].append(cg)
+-						return True
+-		return False
++						return devname
++		return ''
++	def printDetails(self):
++		sysvals.vprint('Timeline Details:')
++		sysvals.vprint('          Host: %s' % sysvals.hostname)
++		sysvals.vprint('        Kernel: %s' % sysvals.kernel)
++		sysvals.vprint('     Test time: %s' % sysvals.testtime)
++		sysvals.vprint('     Boot time: %s' % self.boottime)
++		for phase in self.phases:
++			dc = len(self.dmesg[phase]['list'])
++			sysvals.vprint('%9s mode: %.3f - %.3f (%d initcalls)' % (phase,
++				self.dmesg[phase]['start']*1000,
++				self.dmesg[phase]['end']*1000, dc))
+ 
+ # ----------------- FUNCTIONS --------------------
+ 
+@@ -275,6 +283,8 @@ class Data(aslib.Data):
+ # Description:
+ #	 parse a kernel log for boot data
+ def parseKernelLog():
++	sysvals.vprint('Analyzing the dmesg data (%s)...' % \
++		os.path.basename(sysvals.dmesgfile))
+ 	phase = 'kernel'
+ 	data = Data(0)
+ 	data.dmesg['kernel']['start'] = data.start = ktime = 0.0
+@@ -298,6 +308,12 @@ def parseKernelLog():
+ 		elif re.match(tp.sysinfofmt, line):
+ 			tp.sysinfo = line
+ 			continue
++		elif re.match(tp.cmdlinefmt, line):
++			tp.cmdline = line
++			continue
++		elif re.match(tp.kparamsfmt, line):
++			tp.kparams = line
++			continue
+ 		idx = line.find('[')
+ 		if idx > 1:
+ 			line = line[idx:]
+@@ -353,6 +369,17 @@ def parseKernelLog():
+ # Description:
+ #	 Check if trace is available and copy to a temp file
+ def parseTraceLog(data):
++	sysvals.vprint('Analyzing the ftrace data (%s)...' % \
++		os.path.basename(sysvals.ftracefile))
++	# if available, calculate cgfilter allowable ranges
++	cgfilter = []
++	if len(sysvals.cgfilter) > 0:
++		for p in data.phases:
++			list = data.dmesg[p]['list']
++			for i in sysvals.cgfilter:
++				if i in list:
++					cgfilter.append([list[i]['start']-0.0001,
++						list[i]['end']+0.0001])
+ 	# parse the trace log
+ 	ftemp = dict()
+ 	tp = aslib.TestProps()
+@@ -366,7 +393,16 @@ def parseTraceLog(data):
+ 			continue
+ 		m_time, m_proc, m_pid, m_msg, m_dur = \
+ 			m.group('time', 'proc', 'pid', 'msg', 'dur')
+-		if float(m_time) > data.end:
++		t = float(m_time)
++		if len(cgfilter) > 0:
++			allow = False
++			for r in cgfilter:
++				if t >= r[0] and t < r[1]:
++					allow = True
++					break
++			if not allow:
++				continue
++		if t > data.end:
+ 			break
+ 		if(m_time and m_pid and m_msg):
+ 			t = aslib.FTraceLine(m_time, m_msg, m_dur)
+@@ -378,24 +414,36 @@ def parseTraceLog(data):
+ 		key = (m_proc, pid)
+ 		if(key not in ftemp):
+ 			ftemp[key] = []
+-			ftemp[key].append(aslib.FTraceCallGraph(pid))
++			ftemp[key].append(aslib.FTraceCallGraph(pid, sysvals))
+ 		cg = ftemp[key][-1]
+-		if(cg.addLine(t)):
+-			ftemp[key].append(aslib.FTraceCallGraph(pid))
++		res = cg.addLine(t)
++		if(res != 0):
++			ftemp[key].append(aslib.FTraceCallGraph(pid, sysvals))
++		if(res == -1):
++			ftemp[key][-1].addLine(t)
++
+ 	tf.close()
+ 
+ 	# add the callgraph data to the device hierarchy
+ 	for key in ftemp:
+ 		proc, pid = key
+ 		for cg in ftemp[key]:
+-			if len(cg.list) < 1 or cg.invalid:
++			if len(cg.list) < 1 or cg.invalid or (cg.end - cg.start == 0):
+ 				continue
+ 			if(not cg.postProcess()):
+ 				print('Sanity check failed for %s-%d' % (proc, pid))
+ 				continue
+ 			# match cg data to devices
+-			if not data.deviceMatch(pid, cg):
+-				print ' BAD: %s %s-%d [%f - %f]' % (cg.name, proc, pid, cg.start, cg.end)
++			devname = data.deviceMatch(pid, cg)
++			if not devname:
++				kind = 'Orphan'
++				if cg.partial:
++					kind = 'Partial'
++				sysvals.vprint('%s callgraph found for %s %s-%d [%f - %f]' %\
++					(kind, cg.name, proc, pid, cg.start, cg.end))
++			elif len(cg.list) > 1000000:
++				print 'WARNING: the callgraph found for %s is massive! (%d lines)' %\
++					(devname, len(cg.list))
+ 
+ # Function: retrieveLogs
+ # Description:
+@@ -473,7 +521,7 @@ def createBootGraph(data):
+ 	devtl = aslib.Timeline(100, 20)
+ 
+ 	# write the test title and general info header
+-	devtl.createHeader(sysvals)
++	devtl.createHeader(sysvals, sysvals.stamp)
+ 
+ 	# Generate the header for this timeline
+ 	t0 = data.start
+@@ -574,12 +622,9 @@ def createBootGraph(data):
+ 			data.dmesg[phase]['color'], phase+'_mode', phase[0])
+ 	devtl.html += '</div>\n'
+ 
+-	if(sysvals.outfile == sysvals.htmlfile):
+-		hf = open(sysvals.htmlfile, 'a')
+-	else:
+-		hf = open(sysvals.htmlfile, 'w')
++	hf = open(sysvals.htmlfile, 'w')
+ 
+-	# add the css if this is not an embedded run
++	# add the css
+ 	extra = '\
+ 		.c1 {background:rgba(209,0,0,0.4);}\n\
+ 		.c2 {background:rgba(255,102,34,0.4);}\n\
+@@ -597,8 +642,7 @@ def createBootGraph(data):
+ 		.fstat td {text-align:left;width:35px;}\n\
+ 		.srccall {position:absolute;font-size:10px;z-index:7;overflow:hidden;color:black;text-align:center;white-space:nowrap;border-radius:5px;border:1px solid black;background:linear-gradient(to bottom right,#CCC,#969696);}\n\
+ 		.srccall:hover {color:white;font-weight:bold;border:1px solid white;}\n'
+-	if(not sysvals.embedded):
+-		aslib.addCSS(hf, sysvals, 1, False, extra)
++	aslib.addCSS(hf, sysvals, 1, False, extra)
+ 
+ 	# write the device timeline
+ 	hf.write(devtl.html)
+@@ -631,6 +675,9 @@ def createBootGraph(data):
+ 	if(sysvals.usecallgraph):
+ 		aslib.addCallgraphs(sysvals, hf, data)
+ 
++	# add the test log as a hidden div
++	if sysvals.testlog and sysvals.logmsg:
++		hf.write('<div id="testlog" style="display:none;">\n'+sysvals.logmsg+'</div>\n')
+ 	# add the dmesg log as a hidden div
+ 	if sysvals.dmesglog:
+ 		hf.write('<div id="dmesglog" style="display:none;">\n')
+@@ -639,14 +686,9 @@ def createBootGraph(data):
+ 			hf.write(line)
+ 		hf.write('</div>\n')
+ 
+-	if(not sysvals.embedded):
+-		# write the footer and close
+-		aslib.addScriptCode(hf, [data])
+-		hf.write('</body>\n</html>\n')
+-	else:
+-		# embedded out will be loaded in a page, skip the js
+-		hf.write('<div id=bounds style=display:none>%f,%f</div>' % \
+-			(data.start*1000, data.end*1000))
++	# write the footer and close
++	aslib.addScriptCode(hf, [data])
++	hf.write('</body>\n</html>\n')
+ 	hf.close()
+ 	return True
+ 
+@@ -780,6 +822,7 @@ def doError(msg, help=False):
+ 	if help == True:
+ 		printHelp()
+ 	print 'ERROR: %s\n' % msg
++	sysvals.outputResult({'error':msg})
+ 	sys.exit()
+ 
+ # Function: printHelp
+@@ -806,18 +849,21 @@ def printHelp():
+ 	print('Options:')
+ 	print('  -h            Print this help text')
+ 	print('  -v            Print the current tool version')
++	print('  -verbose      Print extra information during execution and analysis')
+ 	print('  -addlogs      Add the dmesg log to the html output')
++	print('  -result fn    Export a results table to a text file for parsing.')
+ 	print('  -o name       Overrides the output subdirectory name when running a new test')
+ 	print('                default: boot-{date}-{time}')
+ 	print(' [advanced]')
+-	print('  -f            Use ftrace to add function detail (default: disabled)')
+-	print('  -callgraph    Add callgraph detail, can be very large (default: disabled)')
++	print('  -fstat        Use ftrace to add function detail and statistics (default: disabled)')
++	print('  -f/-callgraph Add callgraph detail, can be very large (default: disabled)')
+ 	print('  -maxdepth N   limit the callgraph data to N call levels (default: 2)')
+ 	print('  -mincg ms     Discard all callgraphs shorter than ms milliseconds (e.g. 0.001 for us)')
+ 	print('  -timeprec N   Number of significant digits in timestamps (0:S, 3:ms, [6:us])')
+ 	print('  -expandcg     pre-expand the callgraph data in the html output (default: disabled)')
+ 	print('  -func list    Limit ftrace to comma-delimited list of functions (default: do_one_initcall)')
+ 	print('  -cgfilter S   Filter the callgraph output in the timeline')
++	print('  -cgskip file  Callgraph functions to skip, off to disable (default: cgskip.txt)')
+ 	print('  -bl name      Use the following boot loader for kernel params (default: grub)')
+ 	print('  -reboot       Reboot the machine automatically and generate a new timeline')
+ 	print('  -manual       Show the steps to generate a new timeline manually (used with -reboot)')
+@@ -837,8 +883,13 @@ if __name__ == '__main__':
+ 	# loop through the command line arguments
+ 	cmd = ''
+ 	testrun = True
++	switchoff = ['disable', 'off', 'false', '0']
+ 	simplecmds = ['-sysinfo', '-kpupdate', '-flistall', '-checkbl']
++	cgskip = ''
++	if '-f' in sys.argv:
++		cgskip = sysvals.configFile('cgskip.txt')
+ 	args = iter(sys.argv[1:])
++	mdset = False
+ 	for arg in args:
+ 		if(arg == '-h'):
+ 			printHelp()
+@@ -846,13 +897,17 @@ if __name__ == '__main__':
+ 		elif(arg == '-v'):
+ 			print("Version %s" % sysvals.version)
+ 			sys.exit()
++		elif(arg == '-verbose'):
++			sysvals.verbose = True
+ 		elif(arg in simplecmds):
+ 			cmd = arg[1:]
+-		elif(arg == '-f'):
++		elif(arg == '-fstat'):
+ 			sysvals.useftrace = True
+-		elif(arg == '-callgraph'):
++		elif(arg == '-callgraph' or arg == '-f'):
+ 			sysvals.useftrace = True
+ 			sysvals.usecallgraph = True
++		elif(arg == '-cgdump'):
++			sysvals.cgdump = True
+ 		elif(arg == '-mincg'):
+ 			sysvals.mincglen = aslib.getArgFloat('-mincg', args, 0.0, 10000.0)
+ 		elif(arg == '-cgfilter'):
+@@ -860,7 +915,18 @@ if __name__ == '__main__':
+ 				val = args.next()
+ 			except:
+ 				doError('No callgraph functions supplied', True)
+-			sysvals.setDeviceFilter(val)
++			sysvals.setCallgraphFilter(val)
++		elif(arg == '-cgskip'):
++			try:
++				val = args.next()
++			except:
++				doError('No file supplied', True)
++			if val.lower() in switchoff:
++				cgskip = ''
++			else:
++				cgskip = sysvals.configFile(val)
++				if(not cgskip):
++					doError('%s does not exist' % cgskip)
+ 		elif(arg == '-bl'):
+ 			try:
+ 				val = args.next()
+@@ -872,6 +938,7 @@ if __name__ == '__main__':
+ 		elif(arg == '-timeprec'):
+ 			sysvals.setPrecision(aslib.getArgInt('-timeprec', args, 0, 6))
+ 		elif(arg == '-maxdepth'):
++			mdset = True
+ 			sysvals.max_graph_depth = aslib.getArgInt('-maxdepth', args, 0, 1000)
+ 		elif(arg == '-func'):
+ 			try:
+@@ -902,8 +969,6 @@ if __name__ == '__main__':
+ 				doError('No dmesg file supplied', True)
+ 			if(os.path.exists(val) == False):
+ 				doError('%s does not exist' % val)
+-			if(sysvals.htmlfile == val or sysvals.outfile == val):
+-				doError('Output filename collision')
+ 			testrun = False
+ 			sysvals.dmesgfile = val
+ 		elif(arg == '-o'):
+@@ -912,6 +977,12 @@ if __name__ == '__main__':
+ 			except:
+ 				doError('No subdirectory name supplied', True)
+ 			sysvals.testdir = sysvals.setOutputFolder(val)
++		elif(arg == '-result'):
++			try:
++				val = args.next()
++			except:
++				doError('No result file supplied', True)
++			sysvals.result = val
+ 		elif(arg == '-reboot'):
+ 			sysvals.reboot = True
+ 		elif(arg == '-manual'):
+@@ -947,7 +1018,7 @@ if __name__ == '__main__':
+ 			sysvals.getBootLoader()
+ 			print 'Boot Loader: %s\n%s' % (sysvals.bootloader, sysvals.blexec)
+ 		elif(cmd == 'sysinfo'):
+-			sysvals.printSystemInfo()
++			sysvals.printSystemInfo(True)
+ 		sys.exit()
+ 
+ 	# reboot: update grub, setup a cronjob, and reboot
+@@ -963,6 +1034,10 @@ if __name__ == '__main__':
+ 			sysvals.manualRebootRequired()
+ 		sys.exit()
+ 
++	if sysvals.usecallgraph and cgskip:
++		sysvals.vprint('Using cgskip file: %s' % cgskip)
++		sysvals.setCallgraphBlacklist(cgskip)
++
+ 	# cronjob: remove the cronjob, grub changes, and disable ftrace
+ 	if sysvals.iscronjob:
+ 		updateCron(True)
+@@ -980,29 +1055,23 @@ if __name__ == '__main__':
+ 
+ 	# process the log data
+ 	if sysvals.dmesgfile:
++		if not mdset:
++			sysvals.max_graph_depth = 0
+ 		data = parseKernelLog()
+ 		if(not data.valid):
+ 			doError('No initcall data found in %s' % sysvals.dmesgfile)
+ 		if sysvals.useftrace and sysvals.ftracefile:
+ 			parseTraceLog(data)
++		if sysvals.cgdump:
++			data.debugPrint()
++			sys.exit()
+ 	else:
+ 		doError('dmesg file required')
+ 
+-	print('          Host: %s' % sysvals.hostname)
+-	print('     Test time: %s' % sysvals.testtime)
+-	print('     Boot time: %s' % data.boottime)
+-	print('Kernel Version: %s' % sysvals.kernel)
+-	print('  Kernel start: %.3f' % (data.start * 1000))
+-	print('Usermode start: %.3f' % (data.tUserMode * 1000))
+-	print('Last Init Call: %.3f' % (data.end * 1000))
+-
+-	# handle embedded output logs
+-	if(sysvals.outfile and sysvals.embedded):
+-		fp = open(sysvals.outfile, 'w')
+-		fp.write('pass %s initstart %.3f end %.3f boot %s\n' %
+-			(data.valid, data.tUserMode*1000, data.end*1000, data.boottime))
+-		fp.close()
+-
++	sysvals.vprint('Creating the html timeline (%s)...' % sysvals.htmlfile)
++	sysvals.vprint('Command:\n    %s' % sysvals.cmdline)
++	sysvals.vprint('Kernel parameters:\n    %s' % sysvals.kparams)
++	data.printDetails()
+ 	createBootGraph(data)
+ 
+ 	# if running as root, change output dir owner to sudo_user
+@@ -1010,3 +1079,7 @@ if __name__ == '__main__':
+ 		os.getuid() == 0 and 'SUDO_USER' in os.environ:
+ 		cmd = 'chown -R {0}:{0} {1} > /dev/null 2>&1'
+ 		call(cmd.format(os.environ['SUDO_USER'], sysvals.testdir), shell=True)
++
++	sysvals.stamp['boot'] = (data.tUserMode - data.start) * 1000
++	sysvals.stamp['lastinit'] = data.end * 1000
++	sysvals.outputResult(sysvals.stamp)
 -- 
 2.14.1
