@@ -1,40 +1,63 @@
-From: Nicolas Chauvet <kwizart@gmail.com>
-Subject: [PATCH] arm: imx: Add MODULE_ALIAS for cpufreq
-Date: Tue, 30 Jan 2018 10:55:26 +0100
-Message-ID: <20180130095526.9478-1-kwizart@gmail.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] regulator: core: Fix s2idle
+Date: Tue, 30 Jan 2018 11:32:26 +0100
+Message-ID: <1517308346-25299-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f196.google.com ([209.85.128.196]:45313 "EHLO
-        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751249AbeA3Jzb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jan 2018 04:55:31 -0500
-Received: by mail-wr0-f196.google.com with SMTP id 16so10383303wry.12
-        for <linux-pm@vger.kernel.org>; Tue, 30 Jan 2018 01:55:31 -0800 (PST)
+Received: from albert.telenet-ops.be ([195.130.137.90]:41108 "EHLO
+        albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751434AbeA3Kcd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jan 2018 05:32:33 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, Nicolas Chauvet <kwizart@gmail.com>
+To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Chunyan Zhang <zhang.chunyan@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Without this, the imx6q-cpufreq driver isn't loaded
-automatically when built as a module
+Systems using regulators can no longer be frozen:
 
-Tested on wandboard quad with a fedora 27 kernel rpm
+$ echo 0 > /sys/module/printk/parameters/console_suspend
+$ echo freeze > /sys/power/state
 
-Signed-off-by: Nicolas Chauvet <kwizart@gmail.com>
+    PM: suspend entry (s2idle)
+    PM: Syncing filesystems ... done.
+    Freezing user space processes ... (elapsed 0.011 seconds) done.
+    OOM killer disabled.
+    Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
+    dpm_run_callback(): regulator_suspend_late+0x0/0x44 returns -22
+    PM: Device regulator.7 failed to suspend late: error -22
+    PM: late suspend of devices failed
+
+Fix this by adding the missing case for s2idle.  Treat s2idle the same
+as standby, as there are no separate constraints defined for s2idle.
+
+Fixes: f7efad10b5c49289 ("regulator: add PM suspend and resume hooks")
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 1 +
+regulator_check_states() also considers PM_SUSPEND_TO_IDLE an invalid
+state:
+
+    /* return 0 if the state is valid */
+    static int regulator_check_states(suspend_state_t state)
+    {
+	    return (state > PM_SUSPEND_MAX || state == PM_SUSPEND_TO_IDLE);
+    }
+
+But I have no idea what impact it has.  So far it doesn't seem to hurt,
+though.
+
+ drivers/regulator/core.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index d9b2c2de49c4..cef3d46fd642 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -473,6 +473,7 @@ static struct platform_driver imx6q_cpufreq_platdrv = {
- };
- module_platform_driver(imx6q_cpufreq_platdrv);
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 42681c10cbe4fa9f..5f411b0cca9aa838 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -333,6 +333,7 @@ regulator_get_suspend_state(struct regulator_dev *rdev, suspend_state_t state)
+ 		return NULL;
  
-+MODULE_ALIAS("platform:imx6q-cpufreq");
- MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
- MODULE_DESCRIPTION("Freescale i.MX6Q cpufreq driver");
- MODULE_LICENSE("GPL");
+ 	switch (state) {
++	case PM_SUSPEND_TO_IDLE:
+ 	case PM_SUSPEND_STANDBY:
+ 		return &rdev->constraints->state_standby;
+ 	case PM_SUSPEND_MEM:
 -- 
-2.13.6
+2.7.4
