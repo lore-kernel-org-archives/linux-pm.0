@@ -1,58 +1,167 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 1/3] sched/fair: add util_est on top of PELT
-Date: Tue, 30 Jan 2018 14:04:32 +0100
-Message-ID: <20180130130432.GC2269@hirez.programming.kicks-ass.net>
-References: <20180123180847.4477-1-patrick.bellasi@arm.com>
- <20180123180847.4477-2-patrick.bellasi@arm.com>
- <20180129163642.GF2228@hirez.programming.kicks-ass.net>
- <20180130124632.GC5739@e110439-lin>
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Subject: Re: [PATCH v4 6/7] typec: tcpm: Represent source supply through
+ power_supply class
+Date: Tue, 30 Jan 2018 15:11:31 +0200
+Message-ID: <20180130131131.GF14922@kuha.fi.intel.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <e2cb104f53e20a01f3b44442068c549e5d0e1ac3.1514904983.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:55613 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751821AbeA3NEj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jan 2018 08:04:39 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180130124632.GC5739@e110439-lin>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <e2cb104f53e20a01f3b44442068c549e5d0e1ac3.1514904983.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On Tue, Jan 30, 2018 at 12:46:33PM +0000, Patrick Bellasi wrote:
-> > Aside from that being whitespace challenged, did you also try:
-> > 
-> > 	if ((unsigned)((util_est - util_last) + LIM - 1) < (2 * LIM - 1))
+Hi Adam,
+
+On Tue, Jan 02, 2018 at 03:50:54PM +0000, Adam Thomson wrote:
+> This commit adds a power_supply class instance to represent a
+> PD source's voltage and current properties. This provides an
+> interface for reading these properties from user-space or other
+> drivers.
 > 
-> No, since the above code IMO is so much "easy to parse for humans" :)
-
-Heh, true. Although that's fixable by wrapping it in some helper with a
-comment.
-
-> But, mainly because since the cache alignment update, also while testing on a
-> "big" Intel machine I cannot see regressions on hackbench.
+> For PPS enabled Sources, this also provides write access to set
+> the current and voltage and allows for swapping between standard
+> PDO and PPS APDO.
 > 
-> This is the code I get on my Xeon E5-2690 v2:
+> As this represents a superset of the information provided in the
+> fusb302 driver, the power_supply instance in that code is removed
+> as part of this change, so reverting the commit titled
+> 'typec: tcpm: Represent source supply through power_supply class'
+
+
+
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> ---
+>  .../ABI/testing/sysfs-class-power-tcpm-source-psy  |  92 ++++++++
+>  drivers/usb/typec/Kconfig                          |   1 +
+>  drivers/usb/typec/fusb302/Kconfig                  |   2 +-
+>  drivers/usb/typec/fusb302/fusb302.c                |  63 +-----
+>  drivers/usb/typec/tcpm.c                           | 233 ++++++++++++++++++++-
+>  5 files changed, 328 insertions(+), 63 deletions(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
 > 
->        if (abs(util_est - util_last) <= (SCHED_CAPACITY_SCALE / 100))
->    6ba0:       8b 86 7c 02 00 00       mov    0x27c(%rsi),%eax
->    6ba6:       48 29 c8                sub    %rcx,%rax
->    6ba9:       48 99                   cqto
->    6bab:       48 31 d0                xor    %rdx,%rax
->    6bae:       48 29 d0                sub    %rdx,%rax
->    6bb1:       48 83 f8 0a             cmp    $0xa,%rax
->    6bb5:       7e 1d                   jle    6bd4 <dequeue_task_fair+0x7e4>
-> 
-> Does it look so bad?
+> diff --git a/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+> new file mode 100644
+> index 0000000..4986cba
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+> @@ -0,0 +1,92 @@
+> +What: 		/sys/class/power_supply/tcpm-source-psy/type
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-only property describes the main type of source supply.
+> +	Type-C is a USB standard so this property always returns "USB".
+> +
+> +What: 		/sys/class/power_supply/tcpm-source-psy/connected_type
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-only property describes the type of source supply that is
+> +	connected, if the supply is online. The value is always Type C
+> +	unless a source has been attached which is identified as USB-PD capable.
+> +
+> +	Valid values:
+> +		- "USB_TYPE_C"	: Type C connected supply, not UBS-PD capable
+> +				  (default value)
+> +		- "USB_PD"	: USB-PD capable source supply connected
+> +		- "USB_PD_PPS"	: USB-PD PPS capable source supply connected
+> +
+> +What: 		/sys/class/power_supply/tcpm-source-psy/online
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-write property describes the online state of the source
+> +	supply. When the value of this property is not 0, and the supply allows
+> +	it, then it's possible to switch between online states (i.e. 1 -> 2,
+> +	2 -> 1)
+> +
+> +	Valid values:
+> +		- 0	: Offline, no source supply attached
+> +		- 1	: Fixed Online, Type-C or USB-PD capable supply
+> +			  attached, non-configurable current and voltage
+> +			  properties in this state.
+> +		- 2	: PPS Online, USB-PD PPS feature enabled, 'current_now'
+> +			  and 'voltage_now' properties can be modified in this
+> +			  state. Re-writing of this value again, once already
+> +			  set, will re-request the same configured voltage and
+> +			  current values. This can be used as a keep-alive for
+> +			  the PPS connection.
+> +			  [NOTE: This is value only selectable if
+> +			   'connected_type' reports a value of "USB_PD_PPS"]
+> +
+> +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_min
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-only property describes the minimum voltage the source supply
+> +	can provide.
+> +
+> +	Value in microvolts.
+> +
+> +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_max
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-only property describes the maximum voltage the source supply
+> +	can provide.
+> +
+> +	Value in microvolts.
+> +
+> +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_now
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-write property describes the voltage the source supply is
+> +	providing now. This property can only be written to if the source supply
+> +	is in online state '2' (PPS enabled), otherwise it's read-only
+> +	information.
+> +
+> +	Value in microvolts.
+> +
+> +What: 		/sys/class/power_supply/tcpm-source-psy/current_max
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-only property describes the maximum current the source supply
+> +	can provide.
+> +
+> +	Value in microamps.
+> +
+> +What: 		/sys/class/power_supply/tcpm-source-psy/current_now
+> +Date:		December 2017
+> +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> +Description:
+> +	This read-write property describes the current the source supply can
+> +	provide now. This property can only be written to if the source supply
+> +	is in online state '2' (PPS enabled), otherwise it's read-only
+> +	information.
+> +
+> +	Value in microamps.
 
-Its not terrible, and I think your GCC is far more clever than the one I
-used at the time. But that's 4 dependent instructions (cqto,xor,sub,cmp)
-whereas the one I proposed uses only 2 (add,cmp).
+I think those should be documented for the entire psy class, not just
+for this driver.
 
-Now, my proposal is, as you say, somewhat hard to read, and it also
-doesn't work right when our values are 'big' (which they will not be in
-our case, because util has a very definite bound), and I suspect you're
-right that ~2 cycles here will not be measurable.
+> diff --git a/drivers/usb/typec/Kconfig b/drivers/usb/typec/Kconfig
+> index bcb2744..1ef606d 100644
+> --- a/drivers/usb/typec/Kconfig
+> +++ b/drivers/usb/typec/Kconfig
+> @@ -48,6 +48,7 @@ if TYPEC
+>  config TYPEC_TCPM
+>  	tristate "USB Type-C Port Controller Manager"
+>  	depends on USB
+> +	select POWER_SUPPLY
 
-So yeah.... whatever ;-)
+I'm a little bit uncomfortable with such a strong dependency on an
+other subsystem that we may not always need, but let's see what
+Guenter says.
+
+
+Thanks,
+
+-- 
+heikki
