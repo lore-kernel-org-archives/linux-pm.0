@@ -1,63 +1,68 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] regulator: core: Fix s2idle
-Date: Tue, 30 Jan 2018 11:32:26 +0100
-Message-ID: <1517308346-25299-1-git-send-email-geert+renesas@glider.be>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] regulator: core: Fix s2idle
+Date: Tue, 30 Jan 2018 12:03:40 +0000
+Message-ID: <20180130120340.GB10525@sirena.org.uk>
+References: <1517308346-25299-1-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="wzJLGUyc3ArbnUjN"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:41108 "EHLO
-        albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751434AbeA3Kcd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jan 2018 05:32:33 -0500
+Received: from heliosphere.sirena.org.uk ([172.104.155.198]:51086 "EHLO
+        heliosphere.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751360AbeA3MDn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jan 2018 07:03:43 -0500
+Content-Disposition: inline
+In-Reply-To: <1517308346-25299-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Chunyan Zhang <zhang.chunyan@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Chunyan Zhang <zhang.chunyan@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Systems using regulators can no longer be frozen:
 
-$ echo 0 > /sys/module/printk/parameters/console_suspend
-$ echo freeze > /sys/power/state
+--wzJLGUyc3ArbnUjN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-    PM: suspend entry (s2idle)
-    PM: Syncing filesystems ... done.
-    Freezing user space processes ... (elapsed 0.011 seconds) done.
-    OOM killer disabled.
-    Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
-    dpm_run_callback(): regulator_suspend_late+0x0/0x44 returns -22
-    PM: Device regulator.7 failed to suspend late: error -22
-    PM: late suspend of devices failed
+On Tue, Jan 30, 2018 at 11:32:26AM +0100, Geert Uytterhoeven wrote:
 
-Fix this by adding the missing case for s2idle.  Treat s2idle the same
-as standby, as there are no separate constraints defined for s2idle.
+> But I have no idea what impact it has.  So far it doesn't seem to hurt,
+> though.
 
-Fixes: f7efad10b5c49289 ("regulator: add PM suspend and resume hooks")
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-regulator_check_states() also considers PM_SUSPEND_TO_IDLE an invalid
-state:
+I suspect that instead what we should be doing is changing the
+set_suspend_state() check to the below - if we don't have any
+constraints or there's otherwise nothing to do just let the suspend
+proceed.
 
-    /* return 0 if the state is valid */
-    static int regulator_check_states(suspend_state_t state)
-    {
-	    return (state > PM_SUSPEND_MAX || state == PM_SUSPEND_TO_IDLE);
-    }
-
-But I have no idea what impact it has.  So far it doesn't seem to hurt,
-though.
-
- drivers/regulator/core.c | 1 +
- 1 file changed, 1 insertion(+)
+Can you give this a spin and confirm if it fixes things?
 
 diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 42681c10cbe4fa9f..5f411b0cca9aa838 100644
+index 42681c10cbe4..dd4708c58480 100644
 --- a/drivers/regulator/core.c
 +++ b/drivers/regulator/core.c
-@@ -333,6 +333,7 @@ regulator_get_suspend_state(struct regulator_dev *rdev, suspend_state_t state)
- 		return NULL;
- 
- 	switch (state) {
-+	case PM_SUSPEND_TO_IDLE:
- 	case PM_SUSPEND_STANDBY:
- 		return &rdev->constraints->state_standby;
- 	case PM_SUSPEND_MEM:
--- 
-2.7.4
+@@ -758,7 +758,7 @@ static int suspend_set_state(struct regulator_dev *rdev,
+=20
+ 	rstate =3D regulator_get_suspend_state(rdev, state);
+ 	if (rstate =3D=3D NULL)
+-		return -EINVAL;
++		return 0;
+=20
+ 	/* If we have no suspend mode configration don't set anything;
+ 	 * only warn if the driver implements set_suspend_voltage or
+
+--wzJLGUyc3ArbnUjN
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlpwXxsACgkQJNaLcl1U
+h9Br/wf/VJSb0WDJbvRZhKgS99sXW57lkEju5+lHVsIW3h9eiHnkVMT50hw/ZDUp
+/olvormQdYrqdP800lfpUJGIPpMt3p+tdsWFP+AYgORVxoBGLDC3dpCwTGSglP0o
+bem9Z3y9eKbP3v/8Q3fF0MN06KUsafDbOqzO3IpqdRp1RKYQdhYCmugN+9LP6DwG
+HIp225jxbLy7bfQ03CkZCf/uFj5gYE63tnJydeOMO0Ld6DE5ZVJRPDs9oeDgsA0c
+PdAd2DeZrtf5Bav3bzDVM5F0iW4R7O4umglzi8a8NkhwDuoYNsYcyIY0cVoeAWBv
+NJRA4W9OnThy6ql2JNQIIhsF5Nhjcg==
+=iS9K
+-----END PGP SIGNATURE-----
+
+--wzJLGUyc3ArbnUjN--
