@@ -1,56 +1,112 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
-Date: Tue, 30 Jan 2018 06:27:44 -0800
-Message-ID: <3611b3dd-2512-441f-9239-17af2dab0929@roeck-us.net>
-References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <20180130132504.GH14922@kuha.fi.intel.com>
+From: Samuel Morris <samorris@lexmark.com>
+Subject: Re: [PATCH] leds: use QoS to control LED suspend behavior from userspace
+Date: Tue, 30 Jan 2018 09:55:27 -0500
+Message-ID: <CAFY_6qqX9x-DQ+CQRS0Q6DGwzF-zJ6w++OxgU8-+kL_fjXnN_w@mail.gmail.com>
+References: <20180129194947.11071-1-0v3rdr0n3@gmail.com> <20180130082817.GA4136@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180130132504.GH14922@kuha.fi.intel.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <20180130082817.GA4136@amd>
+Sender: linux-leds-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: 0v3rdr0n3@gmail.com, Linux PM <linux-pm@vger.kernel.org>, linux-leds@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01/30/2018 05:25 AM, Heikki Krogerus wrote:
-> On Tue, Jan 02, 2018 at 03:50:48PM +0000, Adam Thomson wrote:
->> This patch set adds sink side support for the PPS feature introduced in the
->> USB PD 3.0 specification.
+On Tue, Jan 30, 2018 at 3:28 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Mon 2018-01-29 19:49:47, 0v3rdr0n3@gmail.com wrote:
+>> From: Samuel Morris <samorris@lexmark.com>
 >>
->> The source PPS supply is represented using the Power Supply framework to provide
->> access and control APIs for dealing with it's operating voltage and current,
->> and switching between a standard PDO and PPS APDO operation. During standard PDO
->> operation the voltage and current is read-only, but for APDO PPS these are
->> writable as well to allow for control.
+>> Signed-off-by: Samuel Morris <samorris@lexmark.com>
+>
+> But... we'll really need description what this is supposed to do.
+
+I have an LED that indicates to the user that the machine is still
+powered when in suspend, so it needs to remain powered. This LED uses
+the leds-pwm driver, but it may use a different driver on future
+products, so making this change in that driver only would not be
+ideal. I asked linux-pm a related question a week or two ago, and
+Raphael Wysocki suggested looking into the PM_QOS_FLAG_NO_POWER_OFF
+flag. This is what I came up with. I realize this is a pretty broad
+change, but I figured I'd try the most general thing first.
+
+>
+> Because at least some LEDs (keyboard LEDs on PC) can't be powered on
+> during suspend.
+
+That is why I set the default behavior to PM_QOS_FLAG_NO_POWER_OFF=0 on probe.
+
+>
+> Does this work for your LEDs? Do we need a way for userspace to tell
+> if LED supports it or not?
+
+Yes, this fixes my problem. I could try testing on other LEDs as well
+that use different drivers if need be.
+
+I didn't see any reason not to make this userspace configurable. I
+imagine for some LEDs, the switch just won't work. Are you aware of
+any cases where attempting to keep an LED on would cause outright
+breakage? I would like these QoS parameters to be device tree, or
+otherwise per-board configurable, but I'm not aware of a standard way
+to do that. Maybe someone from linux-pm has an idea. Something like
+that might be more reasonable than allowing default userspace
+configurability.
+
+>
+>> @@ -196,6 +197,11 @@ static int led_suspend(struct device *dev)
+>>  {
+>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
 >>
->> It should be noted that the keepalive for PPS is not handled within TCPM. The
->> expectation is that the external user will be required to ensure re-requests
->> occur regularly to ensure PPS remains and the source does not hard reset.
-> 
-> Sorry for the late reply. I don't have any major problems with these
-> other than with 6/7. The documentation should be for the psy class,
-> not tcpm. I'm also not comfortable with the "select POWER_SUPPLY", but
-> if Guenter does not think it's a problem, I'm fine with it. I guess we
+>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
+>> +                     PM_QOS_FLAGS_ALL) {
+>> +             return 0;
+>> +     }
+>
+> "if (". No need for { } s.
 
-"select POWER_SUPPLY" seems to be quite widely used, so I don't have problems
-with it as long as it is ok for PS maintainers.
+Ok, I'll generate a new patch later if this seems likely to be integrated.
 
-> can always, for example, introduce stubs for the power_supply*
-> functions, and drop the dependency later.
-> 
-That doesn't sound like a good idea unless generic stubs are already available.
+>
+>> +
+>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
+>>               led_classdev_suspend(led_cdev);
+>>
+>> @@ -206,6 +212,11 @@ static int led_resume(struct device *dev)
+>>  {
+>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
+>>
+>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
+>> +                     PM_QOS_FLAGS_ALL) {
+>> +             return 0;
+>> +     }
+>> +
+>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
+>>               led_classdev_resume(led_cdev);
+>>
+>> @@ -287,6 +298,18 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
+>>       list_add_tail(&led_cdev->node, &leds_list);
+>>       up_write(&leds_list_lock);
+>>
+>> +     /* Attempt to let userspace take over the policy. */
+>> +     ret = dev_pm_qos_expose_flags(led_cdev->dev,
+>> +                     PM_QOS_FLAG_NO_POWER_OFF);
+>> +     if (ret < 0) {
+>> +             dev_warn(led_cdev->dev, "failed to expose pm_qos_no_poweroff\n");
+>> +             return 0;
+>> +     }
+>> +
+>> +     ret = dev_pm_qos_update_flags(led_cdev->dev,
+>> +                     PM_QOS_FLAG_NO_POWER_OFF,
+>> +                     0);
+>> +
+>>       if (!led_cdev->max_brightness)
+>>               led_cdev->max_brightness = LED_FULL;
+>>
+>
+> Best regards,
+>                                                                         Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-> But as usual with tcpm.c, Guenter needs to give his ACK.
-> 
-I'll try to get to it this week.
-
-Guenter
-
-> Oh yes, and Sebastian needs to ACK the power_supply changes or course.
-> 
-> 
-> Thanks,
-> 
+thanks,
+Sam
