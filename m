@@ -1,112 +1,49 @@
-From: Samuel Morris <samorris@lexmark.com>
-Subject: Re: [PATCH] leds: use QoS to control LED suspend behavior from userspace
-Date: Tue, 30 Jan 2018 09:55:27 -0500
-Message-ID: <CAFY_6qqX9x-DQ+CQRS0Q6DGwzF-zJ6w++OxgU8-+kL_fjXnN_w@mail.gmail.com>
-References: <20180129194947.11071-1-0v3rdr0n3@gmail.com> <20180130082817.GA4136@amd>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] arm: imx: Add MODULE_ALIAS for cpufreq
+Date: Tue, 30 Jan 2018 20:50:08 +0530
+Message-ID: <20180130152008.GE13395@vireshk-i7>
+References: <20180130095526.9478-1-kwizart@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <20180130082817.GA4136@amd>
-Sender: linux-leds-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: 0v3rdr0n3@gmail.com, Linux PM <linux-pm@vger.kernel.org>, linux-leds@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:39447 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751531AbeA3PUM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jan 2018 10:20:12 -0500
+Received: by mail-pf0-f193.google.com with SMTP id e11so9287263pff.6
+        for <linux-pm@vger.kernel.org>; Tue, 30 Jan 2018 07:20:12 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20180130095526.9478-1-kwizart@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Chauvet <kwizart@gmail.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Tue, Jan 30, 2018 at 3:28 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Mon 2018-01-29 19:49:47, 0v3rdr0n3@gmail.com wrote:
->> From: Samuel Morris <samorris@lexmark.com>
->>
->> Signed-off-by: Samuel Morris <samorris@lexmark.com>
->
-> But... we'll really need description what this is supposed to do.
+On 30-01-18, 10:55, Nicolas Chauvet wrote:
+> Without this, the imx6q-cpufreq driver isn't loaded
+> automatically when built as a module
+> 
+> Tested on wandboard quad with a fedora 27 kernel rpm
+> 
+> Signed-off-by: Nicolas Chauvet <kwizart@gmail.com>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index d9b2c2de49c4..cef3d46fd642 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -473,6 +473,7 @@ static struct platform_driver imx6q_cpufreq_platdrv = {
+>  };
+>  module_platform_driver(imx6q_cpufreq_platdrv);
+>  
+> +MODULE_ALIAS("platform:imx6q-cpufreq");
+>  MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
+>  MODULE_DESCRIPTION("Freescale i.MX6Q cpufreq driver");
+>  MODULE_LICENSE("GPL");
 
-I have an LED that indicates to the user that the machine is still
-powered when in suspend, so it needs to remain powered. This LED uses
-the leds-pwm driver, but it may use a different driver on future
-products, so making this change in that driver only would not be
-ideal. I asked linux-pm a related question a week or two ago, and
-Raphael Wysocki suggested looking into the PM_QOS_FLAG_NO_POWER_OFF
-flag. This is what I came up with. I realize this is a pretty broad
-change, but I figured I'd try the most general thing first.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
->
-> Because at least some LEDs (keyboard LEDs on PC) can't be powered on
-> during suspend.
-
-That is why I set the default behavior to PM_QOS_FLAG_NO_POWER_OFF=0 on probe.
-
->
-> Does this work for your LEDs? Do we need a way for userspace to tell
-> if LED supports it or not?
-
-Yes, this fixes my problem. I could try testing on other LEDs as well
-that use different drivers if need be.
-
-I didn't see any reason not to make this userspace configurable. I
-imagine for some LEDs, the switch just won't work. Are you aware of
-any cases where attempting to keep an LED on would cause outright
-breakage? I would like these QoS parameters to be device tree, or
-otherwise per-board configurable, but I'm not aware of a standard way
-to do that. Maybe someone from linux-pm has an idea. Something like
-that might be more reasonable than allowing default userspace
-configurability.
-
->
->> @@ -196,6 +197,11 @@ static int led_suspend(struct device *dev)
->>  {
->>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
->>
->> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->> +                     PM_QOS_FLAGS_ALL) {
->> +             return 0;
->> +     }
->
-> "if (". No need for { } s.
-
-Ok, I'll generate a new patch later if this seems likely to be integrated.
-
->
->> +
->>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>               led_classdev_suspend(led_cdev);
->>
->> @@ -206,6 +212,11 @@ static int led_resume(struct device *dev)
->>  {
->>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
->>
->> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->> +                     PM_QOS_FLAGS_ALL) {
->> +             return 0;
->> +     }
->> +
->>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>               led_classdev_resume(led_cdev);
->>
->> @@ -287,6 +298,18 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
->>       list_add_tail(&led_cdev->node, &leds_list);
->>       up_write(&leds_list_lock);
->>
->> +     /* Attempt to let userspace take over the policy. */
->> +     ret = dev_pm_qos_expose_flags(led_cdev->dev,
->> +                     PM_QOS_FLAG_NO_POWER_OFF);
->> +     if (ret < 0) {
->> +             dev_warn(led_cdev->dev, "failed to expose pm_qos_no_poweroff\n");
->> +             return 0;
->> +     }
->> +
->> +     ret = dev_pm_qos_update_flags(led_cdev->dev,
->> +                     PM_QOS_FLAG_NO_POWER_OFF,
->> +                     0);
->> +
->>       if (!led_cdev->max_brightness)
->>               led_cdev->max_brightness = LED_FULL;
->>
->
-> Best regards,
->                                                                         Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
-thanks,
-Sam
+-- 
+viresh
