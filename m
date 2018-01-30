@@ -1,35 +1,35 @@
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Subject: Re: [PATCH v4 2/7] typec: tcpm: Add ADO header for Alert message
+From: Heikki Krogerus <heikki.krogerus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [PATCH v4 3/7] typec: tcpm: Add SDB header for Status message
  handling
-Date: Tue, 30 Jan 2018 14:22:14 +0200
-Message-ID: <20180130122214.GB14922@kuha.fi.intel.com>
+Date: Tue, 30 Jan 2018 14:22:41 +0200
+Message-ID: <20180130122241.GC14922@kuha.fi.intel.com>
 References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <00dbaa0d4c1033166a55278ce8c24ffa2711d7bb.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <b11474b10b9a5a7865d38d58a166899a08d08521.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga18.intel.com ([134.134.136.126]:23987 "EHLO mga18.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751702AbeA3MWU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 30 Jan 2018 07:22:20 -0500
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <00dbaa0d4c1033166a55278ce8c24ffa2711d7bb.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <b11474b10b9a5a7865d38d58a166899a08d08521.1514904982.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Yueyao Zhu <yueyao.zhu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rui Miguel Silva <rmfrfs-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 
-On Tue, Jan 02, 2018 at 03:50:50PM +0000, Adam Thomson wrote:
-> This commit adds a header providing definitions for handling Alert
-> messages. Currently the header only focuses on handling incoming
-> alerts.
+On Tue, Jan 02, 2018 at 03:50:51PM +0000, Adam Thomson wrote:
+> This commit adds a header providing definitions for handling
+> Status messages. Currently the header only focuses on handling
+> incoming Status messages.
 > 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 
-Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Acked-by: Heikki Krogerus <heikki.krogerus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 
 
 Thanks,
 
 -- 
 heikki
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
