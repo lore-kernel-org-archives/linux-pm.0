@@ -1,57 +1,115 @@
-From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v6 4/6] iommu/arm-smmu: Add the device_link
- between masters and smmu
-Date: Wed, 31 Jan 2018 13:09:40 +0000
-Message-ID: <6b930150-cb81-b0a5-601c-16cb576c4341@arm.com>
-References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
- <1516362223-22946-5-git-send-email-vivek.gautam@codeaurora.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
+ cooling driver
+Date: Wed, 31 Jan 2018 16:27:44 +0100
+Message-ID: <22f4c4fc-fd74-b635-6859-7e2f599695f7@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+ <CAKfTPtD-cUYoAJfhtuTr-E1=rttZvWxVv1Qv7b+Si4vSBy0JVg@mail.gmail.com>
+ <11334876-ef8c-58fa-5e32-ab8499eebd7e@linaro.org>
+ <CAKfTPtBXcLHNHEObpttCGtfCWXmR+kwmOW5aD+G23bnYTJi6Yg@mail.gmail.com>
+ <6e776e6c-6f1e-b33b-58b7-b95410ca1f95@linaro.org>
+ <CAKfTPtAFNdOsNOBC8Qg3c=OB7P635gvePvfpDbc5QF10Tei-9Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <1516362223-22946-5-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Content-Language: en-GB
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:54954 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752704AbeAaP1s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jan 2018 10:27:48 -0500
+Received: by mail-wm0-f67.google.com with SMTP id i186so8923222wmi.4
+        for <linux-pm@vger.kernel.org>; Wed, 31 Jan 2018 07:27:48 -0800 (PST)
+In-Reply-To: <CAKfTPtAFNdOsNOBC8Qg3c=OB7P635gvePvfpDbc5QF10Tei-9Q@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kevin Wangtao <kevin.wangtao@linaro.org>, Leo Yan <leo.yan@linaro.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-T24gMTkvMDEvMTggMTE6NDMsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiBGcm9tOiBTcmljaGFyYW4g
-UiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+IAo+IEZpbmFsbHkgYWRkIHRoZSBkZXZpY2Ug
-bGluayBiZXR3ZWVuIHRoZSBtYXN0ZXIgZGV2aWNlIGFuZAo+IHNtbXUsIHNvIHRoYXQgdGhlIHNt
-bXUgZ2V0cyBydW50aW1lIGVuYWJsZWQvZGlzYWJsZWQgb25seSB3aGVuIHRoZQo+IG1hc3RlciBu
-ZWVkcyBpdC4gVGhpcyBpcyBkb25lIGZyb20gYWRkX2RldmljZSBjYWxsYmFjayB3aGljaCBnZXRz
-Cj4gY2FsbGVkIG9uY2Ugd2hlbiB0aGUgbWFzdGVyIGlzIGFkZGVkIHRvIHRoZSBzbW11LgoKRG9u
-J3Qgd2UgbmVlZCB0byBiYWxhbmNlIHRoaXMgd2l0aCBhIGRldmljZV9saW5rX2RlbCgpIGluIC5y
-ZW1vdmVfZGV2aWNlIAoobGlrZSBleHlub3MtaW9tbXUgZG9lcyk/CgpSb2Jpbi4KCj4gU2lnbmVk
-LW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAg
-IGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDExICsrKysrKysrKysrCj4gICAxIGZpbGUgY2hh
-bmdlZCwgMTEgaW5zZXJ0aW9ucygrKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2Fy
-bS1zbW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiBpbmRleCA5NTQ3OGJmYjE4MmMu
-LjMzYmJjZmVkYjg5NiAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiAr
-KysgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiBAQCAtMTM2Nyw2ICsxMzY3LDcgQEAgc3Rh
-dGljIGludCBhcm1fc21tdV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgIAlzdHJ1
-Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11Owo+ICAgCXN0cnVjdCBhcm1fc21tdV9tYXN0ZXJfY2Zn
-ICpjZmc7Cj4gICAJc3RydWN0IGlvbW11X2Z3c3BlYyAqZndzcGVjID0gZGV2LT5pb21tdV9md3Nw
-ZWM7Cj4gKwlzdHJ1Y3QgZGV2aWNlX2xpbmsgKmxpbms7Cj4gICAJaW50IGksIHJldDsKPiAgIAo+
-ICAgCWlmICh1c2luZ19sZWdhY3lfYmluZGluZykgewo+IEBAIC0xNDI4LDYgKzE0MjksMTYgQEAg
-c3RhdGljIGludCBhcm1fc21tdV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgIAo+
-ICAgCXBtX3J1bnRpbWVfcHV0X3N5bmMoc21tdS0+ZGV2KTsKPiAgIAo+ICsJLyoKPiArCSAqIEVz
-dGFibGlzaCB0aGUgbGluayBiZXR3ZWVuIHNtbXUgYW5kIG1hc3Rlciwgc28gdGhhdCB0aGUKPiAr
-CSAqIHNtbXUgZ2V0cyBydW50aW1lIGVuYWJsZWQvZGlzYWJsZWQgYXMgcGVyIHRoZSBtYXN0ZXIn
-cwo+ICsJICogbmVlZHMuCj4gKwkgKi8KPiArCWxpbmsgPSBkZXZpY2VfbGlua19hZGQoZGV2LCBz
-bW11LT5kZXYsIERMX0ZMQUdfUE1fUlVOVElNRSk7Cj4gKwlpZiAoIWxpbmspCj4gKwkJZGV2X3dh
-cm4oc21tdS0+ZGV2LCAiVW5hYmxlIHRvIGNyZWF0ZSBkZXZpY2UgbGluayBiZXR3ZWVuICVzIGFu
-ZCAlc1xuIiwKPiArCQkJIGRldl9uYW1lKHNtbXUtPmRldiksIGRldl9uYW1lKGRldikpOwo+ICsK
-PiAgIAlyZXR1cm4gMDsKPiAgIAo+ICAgb3V0X2NmZ19mcmVlOgo+IApfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZy
-ZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+On 31/01/2018 10:56, Vincent Guittot wrote:
+> On 31 January 2018 at 10:50, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>> On 31/01/2018 10:46, Vincent Guittot wrote:
+>>> On 31 January 2018 at 10:33, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>>> On 31/01/2018 10:01, Vincent Guittot wrote:
+>>>>> Hi Daniel,
+>>>>>
+>>>>> On 23 January 2018 at 16:34, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>>>
+>>>> [ ... ] (please trim :)
+>>>>
+>>>>>> +               /*
+>>>>>> +                * Each cooling device is per package. Each package
+>>>>>> +                * has a set of cpus where the physical number is
+>>>>>> +                * duplicate in the kernel namespace. We need a way to
+>>>>>> +                * address the waitq[] and tsk[] arrays with index
+>>>>>> +                * which are not Linux cpu numbered.
+>>>>>> +                *
+>>>>>> +                * One solution is to use the
+>>>>>> +                * topology_core_id(cpu). Other solution is to use the
+>>>>>> +                * modulo.
+>>>>>> +                *
+>>>>>> +                * eg. 2 x cluster - 4 cores.
+>>>>>> +                *
+>>>>>> +                * Physical numbering -> Linux numbering -> % nr_cpus
+>>>>>> +                *
+>>>>>> +                * Pkg0 - Cpu0 -> 0 -> 0
+>>>>>> +                * Pkg0 - Cpu1 -> 1 -> 1
+>>>>>> +                * Pkg0 - Cpu2 -> 2 -> 2
+>>>>>> +                * Pkg0 - Cpu3 -> 3 -> 3
+>>>>>> +                *
+>>>>>> +                * Pkg1 - Cpu0 -> 4 -> 0
+>>>>>> +                * Pkg1 - Cpu1 -> 5 -> 1
+>>>>>> +                * Pkg1 - Cpu2 -> 6 -> 2
+>>>>>> +                * Pkg1 - Cpu3 -> 7 -> 3
+>>>>>
+>>>>>
+>>>>> I'm not sure that the assumption above for the CPU numbering is safe.
+>>>>> Can't you use a per cpu structure to point to resources that are per
+>>>>> cpu instead ? so you will not have to rely on CPU ordering
+>>>>
+>>>> Can you elaborate ? I don't get the part with the percpu structure.
+>>>
+>>> Something like:
+>>>
+>>> struct cpuidle_cooling_cpu {
+>>>        struct task_struct *tsk;
+>>>        wait_queue_head_t waitq;
+>>> };
+>>>
+>>> DECLARE_PER_CPU(struct cpuidle_cooling_cpu *, cpu_data);
+>>
+>> I got this part but I don't get how that fixes the ordering thing.
+> 
+> Because you don't care of the CPU ordering to retrieve the data as
+> they are stored per cpu directly
+
+That's what I did initially, but for consistency reasons with the
+cpufreq cpu cooling device which is stored in a list and the combo cpu
+cooling device, the cpuidle cooling device must be per cluster and
+stored in a list.
+
+Alternatively I can do:
+
+struct cpuidle_cooling_device {
+	struct thermal_cooling_device *cdev;
+-	struct task_struct **tsk;
++	struct task_struct __percpu *tsk;
+	struct cpumask *cpumask;
+	struct list_head node;
+	struct hrtimer timer;
+	struct kref kref;
+-	wait_queue_head_t *waitq;
++	wait_queue_head_t __percpu waitq;
+	atomic_t count;
+	unsigned int idle_cycle;
+	unsigned int state;
+};
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
