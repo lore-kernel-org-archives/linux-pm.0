@@ -1,91 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: governor: Ensure sufficiently large sampling intervals
-Date: Wed, 31 Jan 2018 10:27:50 +0100
-Message-ID: <2630000.4uvCBXZKjv@aspire.rjw.lan>
-References: <5c514d244ce5b3f7f94d8675fcd64c58fba09417.1517210263.git.viresh.kumar@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
+ cooling driver
+Date: Wed, 31 Jan 2018 10:33:55 +0100
+Message-ID: <11334876-ef8c-58fa-5e32-ab8499eebd7e@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+ <CAKfTPtD-cUYoAJfhtuTr-E1=rttZvWxVv1Qv7b+Si4vSBy0JVg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:46143 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752825AbeAaJ3Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jan 2018 04:29:25 -0500
-In-Reply-To: <5c514d244ce5b3f7f94d8675fcd64c58fba09417.1517210263.git.viresh.kumar@linaro.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:40914 "EHLO
+        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752909AbeAaJd7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jan 2018 04:33:59 -0500
+Received: by mail-wm0-f53.google.com with SMTP id v123so6554647wmd.5
+        for <linux-pm@vger.kernel.org>; Wed, 31 Jan 2018 01:33:59 -0800 (PST)
+In-Reply-To: <CAKfTPtD-cUYoAJfhtuTr-E1=rttZvWxVv1Qv7b+Si4vSBy0JVg@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: stable@vger.kernel.org, linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kevin Wangtao <kevin.wangtao@linaro.org>, Leo Yan <leo.yan@linaro.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-On Monday, January 29, 2018 8:21:23 AM CET Viresh Kumar wrote:
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+On 31/01/2018 10:01, Vincent Guittot wrote:
+> Hi Daniel,
 > 
-> [ Upstream commit 56026645e2b6f11ede34a5e6ab69d3eb56f9c8fc ]
-> 
-> After commit aa7519af450d (cpufreq: Use transition_delay_us for legacy
-> governors as well) the sampling_rate field of struct dbs_data may be
-> less than the tick period which causes dbs_update() to produce
-> incorrect results, so make the code ensure that the value of that
-> field will always be sufficiently large.
-> 
-> Cc: 4.14 <stable@vger.kernel.org> # 4.14
-> Fixes: aa7519af450d (cpufreq: Use transition_delay_us for legacy governors as well)
-> Reported-by: Andy Tang <andy.tang@nxp.com>
-> Reported-by: Doug Smythies <dsmythies@telus.net>
-> Tested-by: Andy Tang <andy.tang@nxp.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 19 ++++++++++++++++---
->  1 file changed, 16 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 58d4f4e1ad6a..ca38229b045a 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -22,6 +22,8 @@
->  
->  #include "cpufreq_governor.h"
->  
-> +#define CPUFREQ_DBS_MIN_SAMPLING_INTERVAL	(2 * TICK_NSEC / NSEC_PER_USEC)
-> +
->  static DEFINE_PER_CPU(struct cpu_dbs_info, cpu_dbs);
->  
->  static DEFINE_MUTEX(gov_dbs_data_mutex);
-> @@ -47,11 +49,15 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
->  {
->  	struct dbs_data *dbs_data = to_dbs_data(attr_set);
->  	struct policy_dbs_info *policy_dbs;
-> +	unsigned int sampling_interval;
->  	int ret;
-> -	ret = sscanf(buf, "%u", &dbs_data->sampling_rate);
-> -	if (ret != 1)
-> +
-> +	ret = sscanf(buf, "%u", &sampling_interval);
-> +	if (ret != 1 || sampling_interval < CPUFREQ_DBS_MIN_SAMPLING_INTERVAL)
->  		return -EINVAL;
->  
-> +	dbs_data->sampling_rate = sampling_interval;
-> +
->  	/*
->  	 * We are operating under dbs_data->mutex and so the list and its
->  	 * entries can't be freed concurrently.
-> @@ -430,7 +436,14 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
->  	if (ret)
->  		goto free_policy_dbs_info;
->  
-> -	dbs_data->sampling_rate = cpufreq_policy_transition_delay_us(policy);
-> +	/*
-> +	 * The sampling interval should not be less than the transition latency
-> +	 * of the CPU and it also cannot be too small for dbs_update() to work
-> +	 * correctly.
-> +	 */
-> +	dbs_data->sampling_rate = max_t(unsigned int,
-> +					CPUFREQ_DBS_MIN_SAMPLING_INTERVAL,
-> +					cpufreq_policy_transition_delay_us(policy));
->  
->  	if (!have_governor_per_policy())
->  		gov->gdbs_data = dbs_data;
-> 
+> On 23 January 2018 at 16:34, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 
-Right, thanks for pushing this to -stable!
+[ ... ] (please trim :)
+
+>> +               /*
+>> +                * Each cooling device is per package. Each package
+>> +                * has a set of cpus where the physical number is
+>> +                * duplicate in the kernel namespace. We need a way to
+>> +                * address the waitq[] and tsk[] arrays with index
+>> +                * which are not Linux cpu numbered.
+>> +                *
+>> +                * One solution is to use the
+>> +                * topology_core_id(cpu). Other solution is to use the
+>> +                * modulo.
+>> +                *
+>> +                * eg. 2 x cluster - 4 cores.
+>> +                *
+>> +                * Physical numbering -> Linux numbering -> % nr_cpus
+>> +                *
+>> +                * Pkg0 - Cpu0 -> 0 -> 0
+>> +                * Pkg0 - Cpu1 -> 1 -> 1
+>> +                * Pkg0 - Cpu2 -> 2 -> 2
+>> +                * Pkg0 - Cpu3 -> 3 -> 3
+>> +                *
+>> +                * Pkg1 - Cpu0 -> 4 -> 0
+>> +                * Pkg1 - Cpu1 -> 5 -> 1
+>> +                * Pkg1 - Cpu2 -> 6 -> 2
+>> +                * Pkg1 - Cpu3 -> 7 -> 3
+> 
+> 
+> I'm not sure that the assumption above for the CPU numbering is safe.
+> Can't you use a per cpu structure to point to resources that are per
+> cpu instead ? so you will not have to rely on CPU ordering
+
+Can you elaborate ? I don't get the part with the percpu structure.
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
