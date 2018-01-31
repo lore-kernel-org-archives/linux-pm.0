@@ -1,168 +1,114 @@
-From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v6 2/6] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Wed, 31 Jan 2018 12:23:43 +0000
-Message-ID: <9942b74d-7437-21cc-cbd7-38f2844c5d1d@arm.com>
+From: Robin Murphy <robin.murphy@arm.com>
+Subject: Re: [PATCH v6 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
+ add/remove device
+Date: Wed, 31 Jan 2018 13:06:37 +0000
+Message-ID: <5367e45a-8406-6dd2-1eb8-e1de9095af1a@arm.com>
 References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
-	<1516362223-22946-3-git-send-email-vivek.gautam@codeaurora.org>
+ <1516362223-22946-4-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <1516362223-22946-3-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <1516362223-22946-4-git-send-email-vivek.gautam@codeaurora.org>
 Content-Language: en-GB
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Vivek Gautam <vivek.gautam@codeaurora.org>, alex.williamson@redhat.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, sboyd@codeaurora.org
+Cc: gregkh@linuxfoundation.org, sricharan@codeaurora.org, linux-arm-msm@vger.kernel.org, m.szyprowski@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On 19/01/18 11:43, Vivek Gautam wrote:
-> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> 
-> The smmu needs to be functional only when the respective
-> master's using it are active. The device_link feature
-> helps to track such functional dependencies, so that the
-> iommu gets powered when the master device enables itself
-> using pm_runtime. So by adapting the smmu driver for
-> runtime pm, above said dependency can be addressed.
-> 
-> This patch adds the pm runtime/sleep callbacks to the
-> driver and also the functions to parse the smmu clocks
-> from DT and enable them in resume/suspend.
-> 
-> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> [vivek: Clock rework to request bulk of clocks]
-> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> ---
->   drivers/iommu/arm-smmu.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++--
->   1 file changed, 53 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-> index 78d4c6b8f1ba..21acffe91a1c 100644
-> --- a/drivers/iommu/arm-smmu.c
-> +++ b/drivers/iommu/arm-smmu.c
-> @@ -48,6 +48,7 @@
->   #include <linux/of_iommu.h>
->   #include <linux/pci.h>
->   #include <linux/platform_device.h>
-> +#include <linux/pm_runtime.h>
->   #include <linux/slab.h>
->   #include <linux/spinlock.h>
->   
-> @@ -205,6 +206,9 @@ struct arm_smmu_device {
->   	u32				num_global_irqs;
->   	u32				num_context_irqs;
->   	unsigned int			*irqs;
-> +	struct clk_bulk_data		*clocks;
-> +	int				num_clks;
-> +	const char * const		*clk_names;
-
-This seems unnecessary, as we use it a grand total of of once, during 
-initialisation when we have the source data directly to hand. Just pass 
-data->clks into arm_smmu_init_clks() as an additional argument.
-
-Otherwise, I think this looks reasonable; it's about as unobtrusive as 
-it's going to get.
-
-Robin.
-
->   	u32				cavium_id_base; /* Specific to Cavium */
->   
-> @@ -1685,6 +1689,25 @@ static int arm_smmu_id_size_to_bits(int size)
->   	}
->   }
->   
-> +static int arm_smmu_init_clocks(struct arm_smmu_device *smmu)
-> +{
-> +	int i;
-> +	int num = smmu->num_clks;
-> +
-> +	if (num < 1)
-> +		return 0;
-> +
-> +	smmu->clocks = devm_kcalloc(smmu->dev, num,
-> +				    sizeof(*smmu->clocks), GFP_KERNEL);
-> +	if (!smmu->clocks)
-> +		return -ENOMEM;
-> +
-> +	for (i = 0; i < num; i++)
-> +		smmu->clocks[i].id = smmu->clk_names[i];
-> +
-> +	return devm_clk_bulk_get(smmu->dev, num, smmu->clocks);
-> +}
-> +
->   static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
->   {
->   	unsigned long size;
-> @@ -1897,10 +1920,12 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
->   struct arm_smmu_match_data {
->   	enum arm_smmu_arch_version version;
->   	enum arm_smmu_implementation model;
-> +	const char * const *clks;
-> +	int num_clks;
->   };
->   
->   #define ARM_SMMU_MATCH_DATA(name, ver, imp)	\
-> -static struct arm_smmu_match_data name = { .version = ver, .model = imp }
-> +static const struct arm_smmu_match_data name = { .version = ver, .model = imp }
->   
->   ARM_SMMU_MATCH_DATA(smmu_generic_v1, ARM_SMMU_V1, GENERIC_SMMU);
->   ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
-> @@ -2001,6 +2026,8 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev,
->   	data = of_device_get_match_data(dev);
->   	smmu->version = data->version;
->   	smmu->model = data->model;
-> +	smmu->clk_names = data->clks;
-> +	smmu->num_clks = data->num_clks;
->   
->   	parse_driver_options(smmu);
->   
-> @@ -2099,6 +2126,10 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
->   		smmu->irqs[i] = irq;
->   	}
->   
-> +	err = arm_smmu_init_clocks(smmu);
-> +	if (err)
-> +		return err;
-> +
->   	err = arm_smmu_device_cfg_probe(smmu);
->   	if (err)
->   		return err;
-> @@ -2197,7 +2228,27 @@ static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
->   	return 0;
->   }
->   
-> -static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
-> +static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
-> +{
-> +	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
-> +
-> +	return clk_bulk_prepare_enable(smmu->num_clks, smmu->clocks);
-> +}
-> +
-> +static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
-> +{
-> +	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
-> +
-> +	clk_bulk_disable_unprepare(smmu->num_clks, smmu->clocks);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct dev_pm_ops arm_smmu_pm_ops = {
-> +	SET_SYSTEM_SLEEP_PM_OPS(NULL, arm_smmu_pm_resume)
-> +	SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
-> +			   arm_smmu_runtime_resume, NULL)
-> +};
->   
->   static struct platform_driver arm_smmu_driver = {
->   	.driver	= {
-> 
+T24gMTkvMDEvMTggMTE6NDMsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiBGcm9tOiBTcmljaGFyYW4g
+UiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+IAo+IFRoZSBzbW11IGRldmljZSBwcm9iZS9y
+ZW1vdmUgYW5kIGFkZC9yZW1vdmUgbWFzdGVyIGRldmljZSBjYWxsYmFja3MKPiBnZXRzIGNhbGxl
+ZCB3aGVuIHRoZSBzbW11IGlzIG5vdCBsaW5rZWQgdG8gaXRzIG1hc3RlciwgdGhhdCBpcyB3aXRo
+b3V0Cj4gdGhlIGNvbnRleHQgb2YgdGhlIG1hc3RlciBkZXZpY2UuIFNvIGNhbGxpbmcgcnVudGlt
+ZSBhcGlzIGluIHRob3NlIHBsYWNlcwo+IHNlcGFyYXRlbHkuCj4gCj4gU2lnbmVkLW9mZi1ieTog
+U3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPiBbdml2ZWs6IENsZWFudXAg
+cG0gcnVudGltZSBjYWxsc10KPiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdh
+dXRhbUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8
+IDQ1ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLQo+ICAgMSBm
+aWxlIGNoYW5nZWQsIDQxIGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAt
+LWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUu
+Ywo+IGluZGV4IDIxYWNmZmU5MWExYy4uOTU0NzhiZmIxODJjIDEwMDY0NAo+IC0tLSBhL2RyaXZl
+cnMvaW9tbXUvYXJtLXNtbXUuYwo+ICsrKyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+IEBA
+IC05MTQsMTEgKzkxNCwxNSBAQCBzdGF0aWMgdm9pZCBhcm1fc21tdV9kZXN0cm95X2RvbWFpbl9j
+b250ZXh0KHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbikKPiAgIAlzdHJ1Y3QgYXJtX3NtbXVf
+ZG9tYWluICpzbW11X2RvbWFpbiA9IHRvX3NtbXVfZG9tYWluKGRvbWFpbik7Cj4gICAJc3RydWN0
+IGFybV9zbW11X2RldmljZSAqc21tdSA9IHNtbXVfZG9tYWluLT5zbW11Owo+ICAgCXN0cnVjdCBh
+cm1fc21tdV9jZmcgKmNmZyA9ICZzbW11X2RvbWFpbi0+Y2ZnOwo+IC0JaW50IGlycTsKPiArCWlu
+dCByZXQsIGlycTsKPiAgIAo+ICAgCWlmICghc21tdSB8fCBkb21haW4tPnR5cGUgPT0gSU9NTVVf
+RE9NQUlOX0lERU5USVRZKQo+ICAgCQlyZXR1cm47Cj4gICAKPiArCXJldCA9IHBtX3J1bnRpbWVf
+Z2V0X3N5bmMoc21tdS0+ZGV2KTsKPiArCWlmIChyZXQpCj4gKwkJcmV0dXJuOwo+ICsKPiAgIAkv
+Kgo+ICAgCSAqIERpc2FibGUgdGhlIGNvbnRleHQgYmFuayBhbmQgZnJlZSB0aGUgcGFnZSB0YWJs
+ZXMgYmVmb3JlIGZyZWVpbmcKPiAgIAkgKiBpdC4KPiBAQCAtOTMzLDYgKzkzNyw4IEBAIHN0YXRp
+YyB2b2lkIGFybV9zbW11X2Rlc3Ryb3lfZG9tYWluX2NvbnRleHQoc3RydWN0IGlvbW11X2RvbWFp
+biAqZG9tYWluKQo+ICAgCj4gICAJZnJlZV9pb19wZ3RhYmxlX29wcyhzbW11X2RvbWFpbi0+cGd0
+Ymxfb3BzKTsKPiAgIAlfX2FybV9zbW11X2ZyZWVfYml0bWFwKHNtbXUtPmNvbnRleHRfbWFwLCBj
+ZmctPmNibmR4KTsKPiArCj4gKwlwbV9ydW50aW1lX3B1dF9zeW5jKHNtbXUtPmRldik7Cj4gICB9
+Cj4gICAKPiAgIHN0YXRpYyBzdHJ1Y3QgaW9tbXVfZG9tYWluICphcm1fc21tdV9kb21haW5fYWxs
+b2ModW5zaWduZWQgdHlwZSkKPiBAQCAtMTQwOCwxMiArMTQxNCwyMCBAQCBzdGF0aWMgaW50IGFy
+bV9zbW11X2FkZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2KQo+ICAgCXdoaWxlIChpLS0pCj4g
+ICAJCWNmZy0+c21lbmR4W2ldID0gSU5WQUxJRF9TTUVORFg7Cj4gICAKPiAtCXJldCA9IGFybV9z
+bW11X21hc3Rlcl9hbGxvY19zbWVzKGRldik7Cj4gKwlyZXQgPSBwbV9ydW50aW1lX2dldF9zeW5j
+KHNtbXUtPmRldik7Cj4gICAJaWYgKHJldCkKPiAgIAkJZ290byBvdXRfY2ZnX2ZyZWU7Cj4gICAK
+PiArCXJldCA9IGFybV9zbW11X21hc3Rlcl9hbGxvY19zbWVzKGRldik7Cj4gKwlpZiAocmV0KSB7
+Cj4gKwkJcG1fcnVudGltZV9wdXRfc3luYyhzbW11LT5kZXYpOwo+ICsJCWdvdG8gb3V0X2NmZ19m
+cmVlOwoKUGxlYXNlIGtlZXAgdG8gdGhlIGV4aXN0aW5nIHBhdHRlcm4gYW5kIHB1dCB0aGlzIG9u
+IHRoZSBjbGVhbnVwIHBhdGggCndpdGggYSBuZXcgbGFiZWwsIHJhdGhlciB0aGFuIGlubGluZS4K
+Cj4gKwl9Cj4gKwo+ICAgCWlvbW11X2RldmljZV9saW5rKCZzbW11LT5pb21tdSwgZGV2KTsKPiAg
+IAo+ICsJcG1fcnVudGltZV9wdXRfc3luYyhzbW11LT5kZXYpOwo+ICsKPiAgIAlyZXR1cm4gMDsK
+PiAgIAo+ICAgb3V0X2NmZ19mcmVlOgo+IEBAIC0xNDI4LDcgKzE0NDIsNyBAQCBzdGF0aWMgdm9p
+ZCBhcm1fc21tdV9yZW1vdmVfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgIAlzdHJ1Y3Qg
+aW9tbXVfZndzcGVjICpmd3NwZWMgPSBkZXYtPmlvbW11X2Z3c3BlYzsKPiAgIAlzdHJ1Y3QgYXJt
+X3NtbXVfbWFzdGVyX2NmZyAqY2ZnOwo+ICAgCXN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXU7
+Cj4gLQo+ICsJaW50IHJldDsKPiAgIAo+ICAgCWlmICghZndzcGVjIHx8IGZ3c3BlYy0+b3BzICE9
+ICZhcm1fc21tdV9vcHMpCj4gICAJCXJldHVybjsKPiBAQCAtMTQzNiw4ICsxNDUwLDIxIEBAIHN0
+YXRpYyB2b2lkIGFybV9zbW11X3JlbW92ZV9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2KQo+ICAg
+CWNmZyAgPSBmd3NwZWMtPmlvbW11X3ByaXY7Cj4gICAJc21tdSA9IGNmZy0+c21tdTsKPiAgIAo+
+ICsJLyoKPiArCSAqIFRoZSBkZXZpY2UgbGluayBiZXR3ZWVuIHRoZSBtYXN0ZXIgZGV2aWNlIGFu
+ZAo+ICsJICogc21tdSBpcyBhbHJlYWR5IHB1cmdlZCBhdCB0aGlzIHBvaW50Lgo+ICsJICogU28g
+ZW5hYmxlIHRoZSBwb3dlciB0byBzbW11IGV4cGxpY2l0bHkuCj4gKwkgKi8KCkkgZG9uJ3QgdW5k
+ZXJzdGFuZCB0aGlzIGNvbW1lbnQsIGVzcGVjaWFsbHkgc2luY2Ugd2UgZG9uJ3QgZXZlbiAKaW50
+cm9kdWNlIGRldmljZSBsaW5rcyB1bnRpbCB0aGUgZm9sbG93aW5nIHBhdGNoLi4uIDovCgo+ICsK
+PiArCXJldCA9IHBtX3J1bnRpbWVfZ2V0X3N5bmMoc21tdS0+ZGV2KTsKPiArCWlmIChyZXQpCj4g
+KwkJcmV0dXJuOwo+ICsKPiAgIAlpb21tdV9kZXZpY2VfdW5saW5rKCZzbW11LT5pb21tdSwgZGV2
+KTsKPiAgIAlhcm1fc21tdV9tYXN0ZXJfZnJlZV9zbWVzKGZ3c3BlYyk7Cj4gKwo+ICsJcG1fcnVu
+dGltZV9wdXRfc3luYyhzbW11LT5kZXYpOwo+ICsKPiAgIAlpb21tdV9ncm91cF9yZW1vdmVfZGV2
+aWNlKGRldik7Cj4gICAJa2ZyZWUoZndzcGVjLT5pb21tdV9wcml2KTsKPiAgIAlpb21tdV9md3Nw
+ZWNfZnJlZShkZXYpOwo+IEBAIC0yMTMwLDYgKzIxNTcsMTQgQEAgc3RhdGljIGludCBhcm1fc21t
+dV9kZXZpY2VfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPiAgIAlpZiAoZXJy
+KQo+ICAgCQlyZXR1cm4gZXJyOwo+ICAgCj4gKwlwbGF0Zm9ybV9zZXRfZHJ2ZGF0YShwZGV2LCBz
+bW11KTsKPiArCj4gKwlwbV9ydW50aW1lX2VuYWJsZShkZXYpOwo+ICsKPiArCWVyciA9IHBtX3J1
+bnRpbWVfZ2V0X3N5bmMoZGV2KTsKPiArCWlmIChlcnIpCj4gKwkJcmV0dXJuIGVycjsKPiArCj4g
+ICAJZXJyID0gYXJtX3NtbXVfZGV2aWNlX2NmZ19wcm9iZShzbW11KTsKPiAgIAlpZiAoZXJyKQo+
+ICAgCQlyZXR1cm4gZXJyOwo+IEBAIC0yMTcxLDkgKzIyMDYsOSBAQCBzdGF0aWMgaW50IGFybV9z
+bW11X2RldmljZV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICAgCQlyZXR1
+cm4gZXJyOwo+ICAgCX0KPiAgIAo+IC0JcGxhdGZvcm1fc2V0X2RydmRhdGEocGRldiwgc21tdSk7
+Cj4gICAJYXJtX3NtbXVfZGV2aWNlX3Jlc2V0KHNtbXUpOwo+ICAgCWFybV9zbW11X3Rlc3Rfc21y
+X21hc2tzKHNtbXUpOwo+ICsJcG1fcnVudGltZV9wdXRfc3luYyhkZXYpOwo+ICAgCj4gICAJLyoK
+PiAgIAkgKiBGb3IgQUNQSSBhbmQgZ2VuZXJpYyBEVCBiaW5kaW5ncywgYW4gU01NVSB3aWxsIGJl
+IHByb2JlZCBiZWZvcmUKPiBAQCAtMjIxMiw2ICsyMjQ3LDggQEAgc3RhdGljIGludCBhcm1fc21t
+dV9kZXZpY2VfcmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gICAKPiAgIAkv
+KiBUdXJuIHRoZSB0aGluZyBvZmYgKi8KPiAgIAl3cml0ZWwoc0NSMF9DTElFTlRQRCwgQVJNX1NN
+TVVfR1IwX05TKHNtbXUpICsgQVJNX1NNTVVfR1IwX3NDUjApOwo+ICsJcG1fcnVudGltZV9mb3Jj
+ZV9zdXNwZW5kKHNtbXUtPmRldik7CgpXaHkgZG8gd2UgbmVlZCB0aGlzPyBJIGd1ZXNzIGl0IG1p
+Z2h0IGJlIGEgUXVhbGNvbW0taXNtIGFzIEkgZG9uJ3Qgc2VlIAphbnlvbmUgZWxzZSBjYWxsaW5n
+IGl0IGZyb20gLnJlbW92ZSBvdGhlciB0aGFuIGEgY291cGxlIG9mIG90aGVyIHFjb21fKiAKZHJp
+dmVycy4gR2l2ZW4gdGhhdCB3ZSBvbmx5IGdldCBoZXJlIGR1cmluZyBzeXN0ZW0gc2h1dGRvd24g
+KG9yIHRoZSByb290IAp1c2VyIGludGVudGlvbmFsbHkgcGlzc2luZyBhYm91dCB3aXRoIGRyaXZl
+ciB1bmJpbmRpbmcpLCBpdCBkb2Vzbid0IHNlZW0gCmxpa2UgYSBwb2ludCB3aGVyZSBwb3dlciBz
+YXZpbmcgcmVhbGx5IG1hdHRlcnMgYWxsIHRoYXQgbXVjaC4KCkknZCBhbHNvIG5haXZlbHkgZXhw
+ZWN0IHRoYXQgYW55dGhpbmcgdGhpcyBkZXZpY2Ugd2FzIHRoZSBsYXN0IGNvbnN1bWVyIApvZmYg
+d291bGQgZ2V0IHR1cm5lZCBvZmYgYnkgY29yZSBjb2RlIGFueXdheSBvbmNlIGl0J3MgcmVtb3Zl
+ZCwgYnV0IAptYXliZSB0aGluZ3MgYXJlbid0IHRoYXQgc2xpY2s7IEkgZHVubm8gOi8KClJvYmlu
+LgoKPiArCj4gICAJcmV0dXJuIDA7Cj4gICB9Cj4gICAKPiAKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2
+ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21h
+aWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
