@@ -1,146 +1,92 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: [GIT PULL] power-supply changes for 4.16
-Date: Wed, 31 Jan 2018 16:25:45 +0100
-Message-ID: <20180131152545.ue2jyhglncfe3brr@earth.universe>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 2/3] sched/fair: use util_est in LB and WU paths
+Date: Wed, 31 Jan 2018 15:32:23 +0000
+Message-ID: <20180131153223.GD5739@e110439-lin>
+References: <20180123180847.4477-1-patrick.bellasi@arm.com>
+ <20180123180847.4477-3-patrick.bellasi@arm.com>
+ <20180124113342.GD30677@codeaurora.org>
+ <20180124193138.GB5739@e110439-lin>
+ <20180125143358.GE30677@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bih3zmmmjmqduvbq"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <20180125143358.GE30677@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Pavan Kondeti <pkondeti@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 25-Jan 20:03, Pavan Kondeti wrote:
+> On Wed, Jan 24, 2018 at 07:31:38PM +0000, Patrick Bellasi wrote:
+> > 
+> > > > +       /*
+> > > > +        * These are the main cases covered:
+> > > > +        * - if *p is the only task sleeping on this CPU, then:
+> > > > +        *      cpu_util (== task_util) > util_est (== 0)
+> > > > +        *   and thus we return:
+> > > > +        *      cpu_util_wake = (cpu_util - task_util) = 0
+> > > > +        *
+> > > > +        * - if other tasks are SLEEPING on the same CPU, which is just waking
+> > > > +        *   up, then:
+> > > > +        *      cpu_util >= task_util
+> > > > +        *      cpu_util > util_est (== 0)
+> > > > +        *   and thus we discount *p's blocked utilization to return:
+> > > > +        *      cpu_util_wake = (cpu_util - task_util) >= 0
+> > > > +        *
+> > > > +        * - if other tasks are RUNNABLE on that CPU and
+> > > > +        *      util_est > cpu_util
+> > > > +        *   then we use util_est since it returns a more restrictive
+> > > > +        *   estimation of the spare capacity on that CPU, by just considering
+> > > > +        *   the expected utilization of tasks already runnable on that CPU.
+> > > > +        */
+> > > > +       util_est = cpu_rq(cpu)->cfs.util_est_runnable;
+> > > > +       util = max(util, util_est);
+> > > > +
+> > > > +       return util;
+> > 
+> > I should instead clamp util before returning it! ;-)
+> > 
+> > > May be a separate patch to remove  the clamping part?
+> > 
+> > No, I think we should keep cpu_util_wake clamped to not affect the existing
+> > call sites. I just need to remove it where not needed (done) and add it where
+> > needed (will do on the next iteration).
+> 
+> cpu_util_wake() is called only from capacity_spare_wake(). There are no other
+> callsites.
 
---bih3zmmmjmqduvbq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+True...
 
-Hi Linus,
+> The capacity_spare_wake() is clamping the return value of
+> cpu_util_wake() to CPU capacity.
 
-The following changes since commit 4fbd8d194f06c8a3fd2af1ce560ddb31f7ec8323:
+... actually it's clamping negative numbers with:
 
-  Linux 4.15-rc1 (2017-11-26 16:01:47 -0800)
+   max_t(long, capacity_of(cpu) - cpu_util_wake(cpu, p), 0);
 
-are available in the Git repository at:
+thus, by having cpu_util_wake returning potentially a value which is
+bigger then capacity_of or capacity_orig_of we should not have issues
+from a capacity_spare_wake() usage standpoint.
 
-  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.16
+> The clamping is not needed, I think.
 
-for you to fetch changes up to 2d7e6a8376c0eaf260f54b265acadd2e185d7b82:
+However, we can still argue that the cpu_util_wake() should never
+return something bigger then the maximum possible capacity of a CPU.
+At least that's the feature so fare.
 
-  power: supply: max17042_battery: Always fall back to default platform-data (2018-01-23 16:51:22 +0100)
+Thus, even just for the sake of consistency, with previous returns
+paths (e.g. when we bail out returning cpu_util), I would say that
+it's worth to maintain this semantics.
 
-----------------------------------------------------------------
-power supply and reset changes for the v4.16 series
+With a clamping, all these functions:
+ - cpu_util
+ - cpu_util_est
+ - cpu_util_wake
+will always return a signal which is never bigger then the maximum
+possible CPU capacity.
 
- * bq27xxx: add bq27521 support
- * drop unused imx-snvs-poweroff driver
- * improve axp288 driver
- * misc. fixes
+-- 
+#include <best/regards.h>
 
-----------------------------------------------------------------
-Arvind Yadav (1):
-      power: supply: cpcap-battery: Fix platform_get_irq_byname's error checking
-
-Bjorn Andersson (1):
-      power: reset: msm: Clarify restart and poweroff
-
-Christophe JAILLET (2):
-      power: supply: ab8500_charger: Fix an error handling path
-      power: supply: ab8500_charger: Bail out in case of error in 'ab8500_charger_init_hw_registers()'
-
-Dan Carpenter (1):
-      power: supply: sbs-message: double left shift bug in sbsm_select()
-
-Dong Aisheng (1):
-      power: reset: remove unused imx-snvs-poweroff driver
-
-Hans de Goede (19):
-      power: supply: bq24190_charger: Remove extcon handling
-      power: supply: axp288_charger: Do not stop + restart charging at boot
-      power: supply: axp288_charger: Add missing newlines to some messages
-      power: supply: axp288_charger: Remove charger-enabled state tracking
-      power: supply: axp288_charger: Cleanup some double empty lines
-      power: supply: axp288_charger: Use regmap_update_bits to set the input limits
-      power: supply: axp288_charger: Remove no longer needed locking
-      power: supply: axp288_charger: Do not cache input current limit value
-      power: supply: axp288_charger: Pick lower input current limit not higher
-      power: supply: axp288_charger: Use the right property for the input current limit
-      power: supply: axp288_charger: Simplify extcon cable handling
-      power: supply: axp288_charger: Properly stop work on probe-error / remove
-      power: supply: axp288_fuel_gauge: Get iio-channels once during boot
-      power: supply: axp288_fuel_gauge: Rework get_status()
-      power: supply: axp288_fuel_gauge: Optimize get_current()
-      power: supply: axp288_fuel_gauge: Do not register our psy on (some) HDMI sticks
-      MAINTAINERS: Add AXP288 PMIC entry
-      power: supply: max17042_battery: Check battery current for status when supplied
-      power: supply: max17042_battery: Always fall back to default platform-data
-
-Jesse Chan (1):
-      power: reset: zx-reboot: add missing MODULE_DESCRIPTION/AUTHOR/LICENSE
-
-Julia Lawall (2):
-      power: supply: account for const type of of_device_id.data
-      power: reset: account for const type of of_device_id.data
-
-Mike Looijmans (1):
-      power: ltc2941-battery-gauge: Disable continuous monitoring on shutdown
-
-Pavel Machek (2):
-      Add support for bq27521 battery monitor
-      bq24190: Simplify code in property_is_writeable
-
-Ryosuke Saito (1):
-      power: supply: charger-manager: Fix typo in condition
-
-Sebastian Reichel (1):
-      Merge branch 'fixes' into for-next
-
- .../bindings/power/reset/imx-snvs-poweroff.txt     |  23 --
- .../devicetree/bindings/power/supply/bq27xxx.txt   |   1 +
- MAINTAINERS                                        |   6 +
- drivers/power/reset/Kconfig                        |   9 -
- drivers/power/reset/Makefile                       |   1 -
- drivers/power/reset/at91-sama5d2_shdwc.c           |   4 +-
- drivers/power/reset/imx-snvs-poweroff.c            |  66 -----
- drivers/power/reset/msm-poweroff.c                 |   7 +-
- drivers/power/reset/zx-reboot.c                    |   4 +
- drivers/power/supply/ab8500_charger.c              |   6 +-
- drivers/power/supply/axp20x_ac_power.c             |   8 +-
- drivers/power/supply/axp288_charger.c              | 290 +++++++++------------
- drivers/power/supply/axp288_fuel_gauge.c           | 203 +++++++++------
- drivers/power/supply/bq24190_charger.c             | 126 +--------
- drivers/power/supply/bq27xxx_battery.c             |  39 ++-
- drivers/power/supply/bq27xxx_battery_i2c.c         |   2 +
- drivers/power/supply/charger-manager.c             |   2 +-
- drivers/power/supply/cpcap-battery.c               |   4 +-
- drivers/power/supply/ltc2941-battery-gauge.c       |  25 ++
- drivers/power/supply/max17042_battery.c            |  54 +++-
- drivers/power/supply/sbs-manager.c                 |   2 +-
- include/linux/power/bq27xxx_battery.h              |   1 +
- 22 files changed, 394 insertions(+), 489 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt
- delete mode 100644 drivers/power/reset/imx-snvs-poweroff.c
-
---bih3zmmmjmqduvbq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlpx3/kACgkQ2O7X88g7
-+prlug//d8Do/6GhK8by/ZEQj9PoQN/I19JfFJq38Km4k+/EACgY9Ptth/Ykfo3X
-/j69qqBtQYurnG3sD4WnlrjMjlxWLm6hbznyHNuGwZo/kw1UMGXzV4bwxu8i+JpN
-kE00uqGU7uxKfQ0NXckzKsFJ4kC7fZik4OSLKkS2hOUfB+ALyoyEy6dvm37d5mMt
-BK4ugL4QGzUE6BFH5P/E/DmJcBeUzkfEzq7NwfTkuitA3vUuCyXRk+EI8UxW05Ty
-WvLhn2i6xBncrItEBeaoa1UiknCNx+qlRLmG/9egN0HfFJZZZ7fTXjtd0dlrxnae
-u2X0B1VpoypaOKC2hNApxr/UOrPfQQNKS11H14xNOclX4yv7I6i8AgUbbPoSb7DO
-P0y8qJwnzXhyD8xIJGuA0bRW90A7Lojd0kV3toFTde3InzlTnL5eoJY8l499MIvn
-dt6x2J5CsyU2GLUvVJmVADcwHQfaHmLAxG/lMdApEghVE4qrGN6Te+MBc4YHWHE1
-8v4MXP+SP+N9hohTeAHzATBnIarhmEpyoujVayOckPGX4qWeLLrJajWjjUUjIfpF
-XMfiduhkWuLGtbsLaaNZvd58gbi7MMpIWBVxvqAnak73anTb4Wmk0xrpftCWrGcD
-0ng1BUDNdX/K4Jn6k2jEKGO7rEWwReNwlDU9bmCV98giOlyNFAU=
-=K0TO
------END PGP SIGNATURE-----
-
---bih3zmmmjmqduvbq--
+Patrick Bellasi
