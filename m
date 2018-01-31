@@ -1,694 +1,91 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
- cooling driver
-Date: Wed, 31 Jan 2018 10:01:21 +0100
-Message-ID: <CAKfTPtD-cUYoAJfhtuTr-E1=rttZvWxVv1Qv7b+Si4vSBy0JVg@mail.gmail.com>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org> <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: governor: Ensure sufficiently large sampling intervals
+Date: Wed, 31 Jan 2018 10:27:50 +0100
+Message-ID: <2630000.4uvCBXZKjv@aspire.rjw.lan>
+References: <5c514d244ce5b3f7f94d8675fcd64c58fba09417.1517210263.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:36888 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752731AbeAaJBn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jan 2018 04:01:43 -0500
-Received: by mail-io0-f193.google.com with SMTP id f89so14405536ioj.4
-        for <linux-pm@vger.kernel.org>; Wed, 31 Jan 2018 01:01:43 -0800 (PST)
-In-Reply-To: <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+Received: from cloudserver094114.home.pl ([79.96.170.134]:46143 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752825AbeAaJ3Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jan 2018 04:29:25 -0500
+In-Reply-To: <5c514d244ce5b3f7f94d8675fcd64c58fba09417.1517210263.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kevin Wangtao <kevin.wangtao@linaro.org>, Leo Yan <leo.yan@linaro.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: stable@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Daniel,
-
-On 23 January 2018 at 16:34, Daniel Lezcano <daniel.lezcano@linaro.org> wro=
-te:
-> The cpu idle cooling driver performs synchronized idle injection across a=
-ll
-> cpus belonging to the same cluster and offers a new method to cool down a=
- SoC.
->
-> Each cluster has its own idle cooling device, each core has its own idle
-> injection thread, each idle injection thread uses play_idle to enter idle=
-.  In
-> order to reach the deepest idle state, each cooling device has the idle
-> injection threads synchronized together.
->
-> It has some similarity with the intel power clamp driver but it is actual=
-ly
-> designed to work on the ARM architecture via the DT with a mathematical p=
-roof
-> with the power model which comes with the Documentation.
->
-> The idle injection cycle is fixed while the running cycle is variable. Th=
-at
-> allows to have control on the device reactivity for the user experience. =
-At
-> the mitigation point the idle threads are unparked, they play idle the
-> specified amount of time and they schedule themselves. The last thread se=
-ts
-> the next idle injection deadline and when the timer expires it wakes up a=
-ll
-> the threads which in turn play idle again. Meanwhile the running cycle is
-> changed by set_cur_state.  When the mitigation ends, the threads are park=
-ed.
-> The algorithm is self adaptive, so there is no need to handle hotplugging=
-.
->
-> If we take an example of the balanced point, we can use the DT for the hi=
-6220.
->
-> The sustainable power for the SoC is 3326mW to mitigate at 75=C2=B0C. Eig=
-ht cores
-> running at full blast at the maximum OPP consumes 5280mW. The first value=
- is
-> given in the DT, the second is calculated from the OPP with the formula:
->
->    Pdyn =3D Cdyn x Voltage^2 x Frequency
->
-> As the SoC vendors don't want to share the static leakage values, we assu=
-me
-> it is zero, so the Prun =3D Pdyn + Pstatic =3D Pdyn + 0 =3D Pdyn.
->
-> In order to reduce the power to 3326mW, we have to apply a ratio to the
-> running time.
->
-> ratio =3D (Prun - Ptarget) / Ptarget =3D (5280 - 3326) / 3326 =3D 0,5874
->
-> We know the idle cycle which is fixed, let's assume 10ms. However from th=
-is
-> duration we have to substract the wake up latency for the cluster idle st=
-ate.
-> In our case, it is 1.5ms. So for a 10ms latency for idle, we are really i=
-dle
-> 8.5ms.
->
-> As we know the idle duration and the ratio, we can compute the running cy=
-cle.
->
->    running_cycle =3D 8.5 / 0.5874 =3D 14.47ms
->
-> So for 8.5ms of idle, we have 14.47ms of running cycle, and that brings t=
-he
-> SoC to the balanced trip point of 75=C2=B0C.
->
-> The driver has been tested on the hi6220 and it appears the temperature
-> stabilizes at 75=C2=B0C with an idle injection time of 10ms (8.5ms real) =
-and
-> running cycle of 14ms as expected by the theory above.
->
-> Signed-off-by: Kevin WangTao <kevin.wangtao@linaro.org>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On Monday, January 29, 2018 8:21:23 AM CET Viresh Kumar wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> 
+> [ Upstream commit 56026645e2b6f11ede34a5e6ab69d3eb56f9c8fc ]
+> 
+> After commit aa7519af450d (cpufreq: Use transition_delay_us for legacy
+> governors as well) the sampling_rate field of struct dbs_data may be
+> less than the tick period which causes dbs_update() to produce
+> incorrect results, so make the code ensure that the value of that
+> field will always be sufficiently large.
+> 
+> Cc: 4.14 <stable@vger.kernel.org> # 4.14
+> Fixes: aa7519af450d (cpufreq: Use transition_delay_us for legacy governors as well)
+> Reported-by: Andy Tang <andy.tang@nxp.com>
+> Reported-by: Doug Smythies <dsmythies@telus.net>
+> Tested-by: Andy Tang <andy.tang@nxp.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/thermal/Kconfig       |  10 +
->  drivers/thermal/cpu_cooling.c | 471 ++++++++++++++++++++++++++++++++++++=
-++++++
->  include/linux/cpu_cooling.h   |   6 +
->  3 files changed, 487 insertions(+)
->
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 925e73b..4bd4be7 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -166,6 +166,16 @@ config CPU_FREQ_THERMAL
->           This will be useful for platforms using the generic thermal int=
-erface
->           and not the ACPI interface.
->
-> +config CPU_IDLE_THERMAL
-> +       bool "CPU idle cooling strategy"
-> +       depends on CPU_IDLE
-> +       help
-> +        This implements the generic CPU cooling mechanism through
-> +        idle injection.  This will throttle the CPU by injecting
-> +        fixed idle cycle.  All CPUs belonging to the same cluster
-> +        will enter idle synchronously to reach the deepest idle
-> +        state.
-> +
->  endchoice
->
->  config CLOCK_THERMAL
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.=
-c
-> index d05bb73..916a627 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -10,18 +10,33 @@
->   *             Viresh Kumar <viresh.kumar@linaro.org>
->   *
->   */
-> +#undef DEBUG
-> +#define pr_fmt(fmt) "CPU cooling: " fmt
-> +
->  #include <linux/module.h>
->  #include <linux/thermal.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/cpuidle.h>
->  #include <linux/err.h>
-> +#include <linux/freezer.h>
->  #include <linux/idr.h>
-> +#include <linux/kthread.h>
->  #include <linux/pm_opp.h>
->  #include <linux/slab.h>
-> +#include <linux/sched/prio.h>
-> +#include <linux/sched/rt.h>
->  #include <linux/cpu.h>
->  #include <linux/cpu_cooling.h>
-> +#include <linux/wait.h>
-> +
-> +#include <linux/platform_device.h>
-> +#include <linux/of_platform.h>
->
->  #include <trace/events/thermal.h>
->
-> +#include <uapi/linux/sched/types.h>
-> +
-> +#ifdef CONFIG_CPU_FREQ_THERMAL
->  /*
->   * Cooling state <-> CPUFreq frequency
->   *
-> @@ -926,3 +941,459 @@ void cpufreq_cooling_unregister(struct thermal_cool=
-ing_device *cdev)
->         kfree(cpufreq_cdev);
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_cooling_unregister);
-> +
-> +#endif /* CPU_FREQ_THERMAL */
-> +
-> +#ifdef CONFIG_CPU_IDLE_THERMAL
-> +/*
-> + * The idle duration injection. As we don't have yet a way to specify
-> + * from the DT configuration, let's default to a tick duration.
-> + */
-> +#define DEFAULT_IDLE_TIME_US TICK_USEC
-> +
-> +/**
-> + * struct cpuidle_cooling_device - data for the idle cooling device
-> + * @cdev: a pointer to a struct thermal_cooling_device
-> + * @tsk: an array of pointer to the idle injection tasks
-> + * @cpumask: a cpumask containing the CPU managed by the cooling device
-> + * @timer: a hrtimer giving the tempo for the idle injection cycles
-> + * @kref: a kernel refcount on this structure
-> + * @waitq: the waiq for the idle injection tasks
-> + * @count: an atomic to keep track of the last task exiting the idle cyc=
-le
-> + * @idle_cycle: an integer defining the duration of the idle injection
-> + * @state: an normalized integer giving the state of the cooling device
-> + */
-> +struct cpuidle_cooling_device {
-> +       struct thermal_cooling_device *cdev;
-> +       struct task_struct **tsk;
-> +       struct cpumask *cpumask;
-> +       struct list_head node;
-> +       struct hrtimer timer;
-> +       struct kref kref;
-> +       wait_queue_head_t *waitq;
-> +       atomic_t count;
-> +       unsigned int idle_cycle;
-> +       unsigned int state;
-> +};
-> +
-> +static LIST_HEAD(cpuidle_cdev_list);
-> +
-> +/**
-> + * cpuidle_cooling_wakeup - Wake up all idle injection threads
-> + * @idle_cdev: the idle cooling device
-> + *
-> + * Every idle injection task belonging to the idle cooling device and
-> + * running on an online cpu will be wake up by this call.
-> + */
-> +static void cpuidle_cooling_wakeup(struct cpuidle_cooling_device *idle_c=
-dev)
-> +{
-> +       int cpu;
-> +       int weight =3D cpumask_weight(idle_cdev->cpumask);
-> +
-> +       for_each_cpu_and(cpu, idle_cdev->cpumask, cpu_online_mask)
-> +               wake_up_process(idle_cdev->tsk[cpu % weight]);
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_wakeup_fn - Running cycle timer callback
-> + * @timer: a hrtimer structure
-> + *
-> + * When the mitigation is acting, the CPU is allowed to run an amount
-> + * of time, then the idle injection happens for the specified delay
-> + * and the idle task injection schedules itself until the timer event
-> + * wakes the idle injection tasks again for a new idle injection
-> + * cycle. The time between the end of the idle injection and the timer
-> + * expiration is the allocated running time for the CPU.
-> + *
-> + * Returns always HRTIMER_NORESTART
-> + */
-> +static enum hrtimer_restart cpuidle_cooling_wakeup_fn(struct hrtimer *ti=
-mer)
-> +{
-> +       struct cpuidle_cooling_device *idle_cdev =3D
-> +               container_of(timer, struct cpuidle_cooling_device, timer)=
-;
-> +
-> +       cpuidle_cooling_wakeup(idle_cdev);
-> +
-> +       return HRTIMER_NORESTART;
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_runtime - Running time computation
-> + * @idle_cdev: the idle cooling device
-> + *
-> + * The running duration is computed from the idle injection duration
-> + * which is fixed. If we reach 100% of idle injection ratio, that
-> + * means the running duration is zero. If we have a 50% ratio
-> + * injection, that means we have equal duration for idle and for
-> + * running duration.
-> + *
-> + * The formula is deduced as the following:
-> + *
-> + *  running =3D idle x ((100 / ratio) - 1)
-> + *
-> + * For precision purpose for integer math, we use the following:
-> + *
-> + *  running =3D (idle x 100) / ratio - idle
-> + *
-> + * For example, if we have an injected duration of 50%, then we end up
-> + * with 10ms of idle injection and 10ms of running duration.
-> + *
-> + * Returns a s64 nanosecond based
-> + */
-> +static s64 cpuidle_cooling_runtime(struct cpuidle_cooling_device *idle_c=
-dev)
-> +{
-> +       s64 next_wakeup;
-> +       int state =3D idle_cdev->state;
-> +
-> +       /*
-> +        * The function must never be called when there is no
-> +        * mitigation because:
-> +        * - that does not make sense
-> +        * - we end up with a division by zero
-> +        */
-> +       BUG_ON(!state);
-> +
-> +       next_wakeup =3D (s64)((idle_cdev->idle_cycle * 100) / state) -
-> +               idle_cdev->idle_cycle;
-> +
-> +       return next_wakeup * NSEC_PER_USEC;
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_injection_thread - Idle injection mainloop thread fun=
-ction
-> + * @arg: a void pointer containing the idle cooling device address
-> + *
-> + * This main function does basically two operations:
-> + *
-> + * - Goes idle for a specific amount of time
-> + *
-> + * - Sets a timer to wake up all the idle injection threads after a
-> + *   running period
-> + *
-> + * That happens only when the mitigation is enabled, otherwise the
-> + * task is scheduled out.
-> + *
-> + * In order to keep the tasks synchronized together, it is the last
-> + * task exiting the idle period which is in charge of setting the
-> + * timer.
-> + *
-> + * This function never returns.
-> + */
-> +static int cpuidle_cooling_injection_thread(void *arg)
-> +{
-> +       struct sched_param param =3D { .sched_priority =3D MAX_USER_RT_PR=
-IO/2 };
-> +       struct cpuidle_cooling_device *idle_cdev =3D arg;
-> +       int index =3D smp_processor_id() % cpumask_weight(idle_cdev->cpum=
-ask);
-> +       DEFINE_WAIT(wait);
-> +
-> +       set_freezable();
-> +
-> +       sched_setscheduler(current, SCHED_FIFO, &param);
-> +
-> +       while (1) {
-> +
-> +               s64 next_wakeup;
-> +
-> +               prepare_to_wait(&idle_cdev->waitq[index],
-> +                               &wait, TASK_INTERRUPTIBLE);
-> +
-> +               schedule();
-> +
-> +               atomic_inc(&idle_cdev->count);
-> +
-> +               play_idle(idle_cdev->idle_cycle / USEC_PER_MSEC);
-> +
-> +               /*
-> +                * The last CPU waking up is in charge of setting the
-> +                * timer. If the CPU is hotplugged, the timer will
-> +                * move to another CPU (which may not belong to the
-> +                * same cluster) but that is not a problem as the
-> +                * timer will be set again by another CPU belonging to
-> +                * the cluster, so this mechanism is self adaptive and
-> +                * does not require any hotplugging dance.
-> +                */
-> +               if (!atomic_dec_and_test(&idle_cdev->count))
-> +                       continue;
-> +
-> +               if (!idle_cdev->state)
-> +                       continue;
-> +
-> +               next_wakeup =3D cpuidle_cooling_runtime(idle_cdev);
-> +
-> +               hrtimer_start(&idle_cdev->timer, ns_to_ktime(next_wakeup)=
-,
-> +                             HRTIMER_MODE_REL_PINNED);
-> +       }
-> +
-> +       finish_wait(&idle_cdev->waitq[index], &wait);
-> +
-> +       return 0;
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_get_max_state - Get the maximum state
-> + * @cdev  : the thermal cooling device
-> + * @state : a pointer to the state variable to be filled
-> + *
-> + * The function gives always 100 as the injection ratio is percentile
-> + * based for consistency accros different platforms.
-> + *
-> + * The function can not fail, it returns always zero.
-> + */
-> +static int cpuidle_cooling_get_max_state(struct thermal_cooling_device *=
-cdev,
-> +                                        unsigned long *state)
-> +{
-> +       /*
-> +        * Depending on the configuration or the hardware, the running
-> +        * cycle and the idle cycle could be different. We want unify
-> +        * that to an 0..100 interval, so the set state interface will
-> +        * be the same whatever the platform is.
-> +        *
-> +        * The state 100% will make the cluster 100% ... idle. A 0%
-> +        * injection ratio means no idle injection at all and 50%
-> +        * means for 10ms of idle injection, we have 10ms of running
-> +        * time.
-> +        */
-> +       *state =3D 100;
-> +
-> +       return 0;
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_get_cur_state - Get the current cooling state
-> + * @cdev: the thermal cooling device
-> + * @state: a pointer to the state
-> + *
-> + * The function just copy the state value from the private thermal
-> + * cooling device structure, the mapping is 1 <-> 1.
-> + *
-> + * The function can not fail, it returns always zero.
-> + */
-> +static int cpuidle_cooling_get_cur_state(struct thermal_cooling_device *=
-cdev,
-> +                                        unsigned long *state)
-> +{
-> +        struct cpuidle_cooling_device *idle_cdev =3D cdev->devdata;
-> +
-> +       *state =3D idle_cdev->state;
-> +
-> +       return 0;
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_set_cur_state - Set the current cooling state
-> + * @cdev: the thermal cooling device
-> + * @state: the target state
-> + *
-> + * The function checks first if we are initiating the mitigation which
-> + * in turn wakes up all the idle injection tasks belonging to the idle
-> + * cooling device. In any case, it updates the internal state for the
-> + * cooling device.
-> + *
-> + * The function can not fail, it returns always zero.
-> + */
-> +static int cpuidle_cooling_set_cur_state(struct thermal_cooling_device *=
-cdev,
-> +                                        unsigned long state)
-> +{
-> +       struct cpuidle_cooling_device *idle_cdev =3D cdev->devdata;
-> +       unsigned long current_state =3D idle_cdev->state;
-> +
-> +       idle_cdev->state =3D state;
-> +
-> +       if (current_state =3D=3D 0 && state > 0) {
-> +               pr_debug("Starting cooling cpus '%*pbl'\n",
-> +                        cpumask_pr_args(idle_cdev->cpumask));
-> +               cpuidle_cooling_wakeup(idle_cdev);
-> +       } else if (current_state > 0 && !state)  {
-> +               pr_debug("Stopping cooling cpus '%*pbl'\n",
-> +                        cpumask_pr_args(idle_cdev->cpumask));
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_ops - thermal cooling device ops
-> + */
-> +static struct thermal_cooling_device_ops cpuidle_cooling_ops =3D {
-> +       .get_max_state =3D cpuidle_cooling_get_max_state,
-> +       .get_cur_state =3D cpuidle_cooling_get_cur_state,
-> +       .set_cur_state =3D cpuidle_cooling_set_cur_state,
-> +};
-> +
-> +/**
-> + * cpuidle_cooling_release - Kref based release helper
-> + * @kref: a pointer to the kref structure
-> + *
-> + * This function is automatically called by the kref_put function when
-> + * the idle cooling device refcount reaches zero. At this point, we
-> + * have the guarantee the structure is no longer in use and we can
-> + * safely release all the ressources.
-> + */
-> +static void __init cpuidle_cooling_release(struct kref *kref)
-> +{
-> +       struct cpuidle_cooling_device *idle_cdev =3D
-> +               container_of(kref, struct cpuidle_cooling_device, kref);
-> +
-> +       thermal_cooling_device_unregister(idle_cdev->cdev);
-> +       kfree(idle_cdev->waitq);
-> +       kfree(idle_cdev->tsk);
-> +       kfree(idle_cdev);
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_register - Idle cooling device initialization functio=
-n
-> + *
-> + * This function is in charge of creating a cooling device per cluster
-> + * and register it to thermal framework. For this we rely on the
-> + * topology as there is nothing yet describing better the idle state
-> + * power domains.
-> + *
-> + * For each first CPU of the cluster's cpumask, we allocate the idle
-> + * cooling device, initialize the general fields and then we initialze
-> + * the rest in a per cpu basis.
-> + *
-> + * Returns zero on success, < 0 otherwise.
-> + */
-> +int cpuidle_cooling_register(void)
-> +{
-> +       struct cpuidle_cooling_device *idle_cdev =3D NULL;
-> +       struct thermal_cooling_device *cdev;
-> +       struct task_struct *tsk;
-> +       struct device_node *np;
-> +       cpumask_t *cpumask;
-> +       char dev_name[THERMAL_NAME_LENGTH];
-> +       int weight;
-> +       int ret =3D -ENOMEM, cpu;
-> +       int index =3D 0;
-> +
-> +       for_each_possible_cpu(cpu) {
-> +
-> +               cpumask =3D topology_core_cpumask(cpu);
-> +               weight =3D cpumask_weight(cpumask);
-> +
-> +               /*
-> +                * This condition makes the first cpu belonging to the
-> +                * cluster to create a cooling device and allocates
-> +                * the structure. Others CPUs belonging to the same
-> +                * cluster will just increment the refcount on the
-> +                * cooling device structure and initialize it.
-> +                */
-> +               if (cpu =3D=3D cpumask_first(cpumask)) {
-> +
-> +                       np =3D of_cpu_device_node_get(cpu);
-> +
-> +                       idle_cdev =3D kzalloc(sizeof(*idle_cdev), GFP_KER=
-NEL);
-> +                       if (!idle_cdev)
-> +                               goto out_fail;
-> +
-> +                       idle_cdev->tsk =3D kzalloc(sizeof(*idle_cdev->tsk=
-) *
-> +                                                weight, GFP_KERNEL);
-> +                       if (!idle_cdev->tsk)
-> +                               goto out_fail;
-> +
-> +                       idle_cdev->waitq =3D kzalloc(sizeof(*idle_cdev->w=
-aitq) *
-> +                                                  weight, GFP_KERNEL);
-> +                       if (!idle_cdev->waitq)
-> +                               goto out_fail;
-> +
-> +                       idle_cdev->idle_cycle =3D DEFAULT_IDLE_TIME_US;
-> +
-> +                       atomic_set(&idle_cdev->count, 0);
-> +
-> +                       kref_init(&idle_cdev->kref);
-> +
-> +                       /*
-> +                        * Initialize the timer to wakeup all the idle
-> +                        * injection tasks
-> +                        */
-> +                       hrtimer_init(&idle_cdev->timer,
-> +                                    CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +
-> +                       /*
-> +                        * The wakeup function callback which is in
-> +                        * charge of waking up all CPUs belonging to
-> +                        * the same cluster
-> +                        */
-> +                       idle_cdev->timer.function =3D cpuidle_cooling_wak=
-eup_fn;
-> +
-> +                       /*
-> +                        * The thermal cooling device name
-> +                        */
-> +                       snprintf(dev_name, sizeof(dev_name), "thermal-idl=
-e-%d", index++);
-> +                       cdev =3D thermal_of_cooling_device_register(np, d=
-ev_name,
-> +                                                                 idle_cd=
-ev,
-> +                                                                 &cpuidl=
-e_cooling_ops);
-> +                       if (IS_ERR(cdev)) {
-> +                               ret =3D PTR_ERR(cdev);
-> +                               goto out_fail;
-> +                       }
-> +
-> +                       idle_cdev->cdev =3D cdev;
-> +
-> +                       idle_cdev->cpumask =3D cpumask;
-> +
-> +                       list_add(&idle_cdev->node, &cpuidle_cdev_list);
-> +
-> +                       pr_info("Created idle cooling device for cpus '%*=
-pbl'\n",
-> +                               cpumask_pr_args(cpumask));
-> +               }
-> +
-> +               kref_get(&idle_cdev->kref);
-> +
-> +               /*
-> +                * Each cooling device is per package. Each package
-> +                * has a set of cpus where the physical number is
-> +                * duplicate in the kernel namespace. We need a way to
-> +                * address the waitq[] and tsk[] arrays with index
-> +                * which are not Linux cpu numbered.
-> +                *
-> +                * One solution is to use the
-> +                * topology_core_id(cpu). Other solution is to use the
-> +                * modulo.
-> +                *
-> +                * eg. 2 x cluster - 4 cores.
-> +                *
-> +                * Physical numbering -> Linux numbering -> % nr_cpus
-> +                *
-> +                * Pkg0 - Cpu0 -> 0 -> 0
-> +                * Pkg0 - Cpu1 -> 1 -> 1
-> +                * Pkg0 - Cpu2 -> 2 -> 2
-> +                * Pkg0 - Cpu3 -> 3 -> 3
-> +                *
-> +                * Pkg1 - Cpu0 -> 4 -> 0
-> +                * Pkg1 - Cpu1 -> 5 -> 1
-> +                * Pkg1 - Cpu2 -> 6 -> 2
-> +                * Pkg1 - Cpu3 -> 7 -> 3
-
-
-I'm not sure that the assumption above for the CPU numbering is safe.
-Can't you use a per cpu structure to point to resources that are per
-cpu instead ? so you will not have to rely on CPU ordering
-
-
-> +                */
-> +               init_waitqueue_head(&idle_cdev->waitq[cpu % weight]);
-> +
-> +               tsk =3D kthread_create_on_cpu(cpuidle_cooling_injection_t=
-hread,
-> +                                           idle_cdev, cpu, "kidle_inject=
-/%u");
-> +               if (IS_ERR(tsk)) {
-> +                       ret =3D PTR_ERR(tsk);
-> +                       goto out_fail;
-> +               }
-> +
-> +               idle_cdev->tsk[cpu % weight] =3D tsk;
-> +
-> +               wake_up_process(tsk);
-> +       }
-> +
-> +       return 0;
-> +
-> +out_fail:
-> +       list_for_each_entry(idle_cdev, &cpuidle_cdev_list, node) {
-> +
-> +               for_each_cpu(cpu, idle_cdev->cpumask) {
-> +
-> +                       if (idle_cdev->tsk[cpu])
-> +                               kthread_stop(idle_cdev->tsk[cpu]);
-> +
-> +                       kref_put(&idle_cdev->kref, cpuidle_cooling_releas=
-e);
-> +               }
-> +       }
-> +
-> +       pr_err("Failed to create idle cooling device (%d)\n", ret);
-> +
-> +       return ret;
-> +}
-> +#endif
-> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-> index d4292eb..2b5950b 100644
-> --- a/include/linux/cpu_cooling.h
-> +++ b/include/linux/cpu_cooling.h
-> @@ -45,6 +45,7 @@ struct thermal_cooling_device *
->  cpufreq_power_cooling_register(struct cpufreq_policy *policy,
->                                u32 capacitance, get_static_t plat_static_=
-func);
->
-> +extern int cpuidle_cooling_register(void);
->  /**
->   * of_cpufreq_cooling_register - create cpufreq cooling device based on =
-DT.
->   * @np: a valid struct device_node to the cooling device device tree nod=
-e.
-> @@ -118,6 +119,11 @@ void cpufreq_cooling_unregister(struct thermal_cooli=
-ng_device *cdev)
+>  drivers/cpufreq/cpufreq_governor.c | 19 ++++++++++++++++---
+>  1 file changed, 16 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 58d4f4e1ad6a..ca38229b045a 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -22,6 +22,8 @@
+>  
+>  #include "cpufreq_governor.h"
+>  
+> +#define CPUFREQ_DBS_MIN_SAMPLING_INTERVAL	(2 * TICK_NSEC / NSEC_PER_USEC)
+> +
+>  static DEFINE_PER_CPU(struct cpu_dbs_info, cpu_dbs);
+>  
+>  static DEFINE_MUTEX(gov_dbs_data_mutex);
+> @@ -47,11 +49,15 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
 >  {
->         return;
->  }
+>  	struct dbs_data *dbs_data = to_dbs_data(attr_set);
+>  	struct policy_dbs_info *policy_dbs;
+> +	unsigned int sampling_interval;
+>  	int ret;
+> -	ret = sscanf(buf, "%u", &dbs_data->sampling_rate);
+> -	if (ret != 1)
 > +
-> +static inline int cpuidle_cooling_register(void)
-> +{
-> +       return 0;
-> +}
->  #endif /* CONFIG_CPU_THERMAL */
->
->  #endif /* __CPU_COOLING_H__ */
-> --
-> 2.7.4
->
+> +	ret = sscanf(buf, "%u", &sampling_interval);
+> +	if (ret != 1 || sampling_interval < CPUFREQ_DBS_MIN_SAMPLING_INTERVAL)
+>  		return -EINVAL;
+>  
+> +	dbs_data->sampling_rate = sampling_interval;
+> +
+>  	/*
+>  	 * We are operating under dbs_data->mutex and so the list and its
+>  	 * entries can't be freed concurrently.
+> @@ -430,7 +436,14 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
+>  	if (ret)
+>  		goto free_policy_dbs_info;
+>  
+> -	dbs_data->sampling_rate = cpufreq_policy_transition_delay_us(policy);
+> +	/*
+> +	 * The sampling interval should not be less than the transition latency
+> +	 * of the CPU and it also cannot be too small for dbs_update() to work
+> +	 * correctly.
+> +	 */
+> +	dbs_data->sampling_rate = max_t(unsigned int,
+> +					CPUFREQ_DBS_MIN_SAMPLING_INTERVAL,
+> +					cpufreq_policy_transition_delay_us(policy));
+>  
+>  	if (!have_governor_per_policy())
+>  		gov->gdbs_data = dbs_data;
+> 
+
+Right, thanks for pushing this to -stable!
