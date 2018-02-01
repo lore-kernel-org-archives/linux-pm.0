@@ -1,147 +1,216 @@
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Subject: Re: [PATCH] leds: use QoS to control LED suspend behavior from
- userspace
-Date: Thu, 1 Feb 2018 22:29:37 +0100
-Message-ID: <fbebed0e-22ec-a13a-0bdd-7b241c21ab30@gmail.com>
-References: <20180129194947.11071-1-0v3rdr0n3@gmail.com>
- <20180130082817.GA4136@amd>
- <CAFY_6qqX9x-DQ+CQRS0Q6DGwzF-zJ6w++OxgU8-+kL_fjXnN_w@mail.gmail.com>
+From: "dbasehore ." <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v3 4/5] irqchip/gic-v3-its: add ability to resend MAPC on resume
+Date: Thu, 1 Feb 2018 14:52:11 -0800
+Message-ID: <CAGAzgsrRSHsQ-rkSfVk_Jd9iVcFmP5phEy13E9RZTAYnJB-EsQ@mail.gmail.com>
+References: <20180130010007.256564-1-dbasehore@chromium.org> <20180130010007.256564-5-dbasehore@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <CAFY_6qqX9x-DQ+CQRS0Q6DGwzF-zJ6w++OxgU8-+kL_fjXnN_w@mail.gmail.com>
-Sender: linux-leds-owner@vger.kernel.org
-To: Samuel Morris <samorris@lexmark.com>, Pavel Machek <pavel@ucw.cz>
-Cc: 0v3rdr0n3@gmail.com, Linux PM <linux-pm@vger.kernel.org>, linux-leds@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20180130010007.256564-5-dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Soby Mathew <Soby.Mathew-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wysocki, Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Samuel,
+On Mon, Jan 29, 2018 at 5:00 PM, Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+> This adds functionality to resend the MAPC command to an ITS node on
+> resume. If the ITS is powered down during suspend and the collections
+> are not backed by memory, the ITS will lose that state. This just sets
+> up the known state for the collections after the ITS is restored.
+>
+> This feature is enabled via Kconfig and a device tree entry.
+>
+> Signed-off-by: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> ---
+>  arch/arm64/Kconfig               |  10 ++++
+>  drivers/irqchip/irq-gic-v3-its.c | 101 ++++++++++++++++++++++++---------------
+>  2 files changed, 73 insertions(+), 38 deletions(-)
+>
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 53612879fe56..f38f1a7b4266 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -571,6 +571,16 @@ config HISILICON_ERRATUM_161600802
+>
+>           If unsure, say Y.
+>
+> +config ARM_GIC500_COLLECTIONS_RESET
+> +       bool "GIC-500 Collections: Workaround for GIC-500 Collections on suspend reset"
+> +       default y
+> +       help
+> +         The GIC-500 can store Collections state internally for the ITS. If
+> +         the ITS is reset on suspend (ie from power getting disabled), the
+> +         collections need to be reconfigured on resume.
+> +
+> +         If unsure, say Y.
+> +
+>  config QCOM_FALKOR_ERRATUM_E1041
+>         bool "Falkor E1041: Speculative instruction fetches might cause errant memory access"
+>         default y
+> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+> index 759ede7048ed..7fc533cf3bf7 100644
+> --- a/drivers/irqchip/irq-gic-v3-its.c
+> +++ b/drivers/irqchip/irq-gic-v3-its.c
+> @@ -48,6 +48,7 @@
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375      (1ULL << 1)
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144      (1ULL << 2)
+>  #define ITS_FLAGS_SAVE_SUSPEND_STATE           (1ULL << 3)
+> +#define ITS_FLAGS_WORKAROUND_GIC500_MAPC       (1ULL << 4)
+>
+>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING    (1 << 0)
+>
+> @@ -1950,52 +1951,53 @@ static void its_cpu_init_lpis(void)
+>         dsb(sy);
+>  }
+>
+> -static void its_cpu_init_collection(void)
+> +static void its_cpu_init_collection(struct its_node *its)
+>  {
+> -       struct its_node *its;
+> -       int cpu;
+> -
+> -       spin_lock(&its_lock);
+> -       cpu = smp_processor_id();
+> -
+> -       list_for_each_entry(its, &its_nodes, entry) {
+> -               u64 target;
+> +       int cpu = smp_processor_id();
+> +       u64 target;
+>
+> -               /* avoid cross node collections and its mapping */
+> -               if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+> -                       struct device_node *cpu_node;
+> +       /* avoid cross node collections and its mapping */
+> +       if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+> +               struct device_node *cpu_node;
+>
+> -                       cpu_node = of_get_cpu_node(cpu, NULL);
+> -                       if (its->numa_node != NUMA_NO_NODE &&
+> -                               its->numa_node != of_node_to_nid(cpu_node))
+> -                               continue;
+> -               }
+> +               cpu_node = of_get_cpu_node(cpu, NULL);
+> +               if (its->numa_node != NUMA_NO_NODE &&
+> +                       its->numa_node != of_node_to_nid(cpu_node))
+> +                       return;
+> +       }
+>
+> +       /*
+> +        * We now have to bind each collection to its target
+> +        * redistributor.
+> +        */
+> +       if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+>                 /*
+> -                * We now have to bind each collection to its target
+> +                * This ITS wants the physical address of the
+>                  * redistributor.
+>                  */
+> -               if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+> -                       /*
+> -                        * This ITS wants the physical address of the
+> -                        * redistributor.
+> -                        */
+> -                       target = gic_data_rdist()->phys_base;
+> -               } else {
+> -                       /*
+> -                        * This ITS wants a linear CPU number.
+> -                        */
+> -                       target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
+> -                       target = GICR_TYPER_CPU_NUMBER(target) << 16;
+> -               }
+> +               target = gic_data_rdist()->phys_base;
+> +       } else {
+> +               /* This ITS wants a linear CPU number. */
+> +               target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
+> +               target = GICR_TYPER_CPU_NUMBER(target) << 16;
+> +       }
+>
+> -               /* Perform collection mapping */
+> -               its->collections[cpu].target_address = target;
+> -               its->collections[cpu].col_id = cpu;
+> +       /* Perform collection mapping */
+> +       its->collections[cpu].target_address = target;
+> +       its->collections[cpu].col_id = cpu;
+>
+> -               its_send_mapc(its, &its->collections[cpu], 1);
+> -               its_send_invall(its, &its->collections[cpu]);
+> -       }
+> +       its_send_mapc(its, &its->collections[cpu], 1);
+> +       its_send_invall(its, &its->collections[cpu]);
+> +}
+> +
+> +static void its_cpu_init_collections(void)
+> +{
+> +       struct its_node *its;
+> +
+> +       spin_lock(&its_lock);
+> +
+> +       list_for_each_entry(its, &its_nodes, entry)
+> +               its_cpu_init_collection(its);
+>
+>         spin_unlock(&its_lock);
+>  }
+> @@ -2997,6 +2999,18 @@ static bool __maybe_unused its_enable_quirk_hip07_161600802(void *data)
+>         return true;
+>  }
+>
+> +static bool __maybe_unused its_enable_quirk_gic500_collections(void *data)
+> +{
+> +       struct its_node *its = data;
+> +
+> +       if (fwnode_property_present(its->fwnode_handle,
+> +                                   "collections-reset-on-suspend")) {
+> +               its->flags |= ITS_FLAGS_WORKAROUND_GIC500_MAPC;
+> +               return true;
+> +       }
+> +       return false;
+> +}
+> +
+>  static const struct gic_quirk its_quirks[] = {
+>  #ifdef CONFIG_CAVIUM_ERRATUM_22375
+>         {
+> @@ -3042,6 +3056,14 @@ static const struct gic_quirk its_quirks[] = {
+>                 .mask   = 0xffffffff,
+>                 .init   = its_enable_quirk_hip07_161600802,
+>         },
+> +#endif
+> +#ifdef CONFIG_ARM_GIC500_COLLECTIONS_RESET
+> +       {
+> +               .desc   = "ITS: GIC-500 Collections Reset on Resume",
+> +               .iidr   = 0x00000000,
+> +               .mask   = 0xff000000,
+> +               .init   = its_enable_quirk_gic500_collections,
+> +       },
+>  #endif
+>         {
+>         }
+> @@ -3114,6 +3136,9 @@ static void its_restore_enable(void)
+>                         }
+>                         writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>                 }
 
-Thanks for the patch.
+Can anyone from ARM indicate whether we need to wait for the ITS to
+exit its Quiescent state before sending commands to it?
 
-On 01/30/2018 03:55 PM, Samuel Morris wrote:
-> On Tue, Jan 30, 2018 at 3:28 AM, Pavel Machek <pavel@ucw.cz> wrote:
->> On Mon 2018-01-29 19:49:47, 0v3rdr0n3@gmail.com wrote:
->>> From: Samuel Morris <samorris@lexmark.com>
->>>
->>> Signed-off-by: Samuel Morris <samorris@lexmark.com>
->>
->> But... we'll really need description what this is supposed to do.
-> 
-> I have an LED that indicates to the user that the machine is still
-> powered when in suspend, so it needs to remain powered. This LED uses
-> the leds-pwm driver, but it may use a different driver on future
-> products, so making this change in that driver only would not be
-> ideal. I asked linux-pm a related question a week or two ago, and
-> Raphael Wysocki suggested looking into the PM_QOS_FLAG_NO_POWER_OFF
-> flag. This is what I came up with. I realize this is a pretty broad
-> change, but I figured I'd try the most general thing first.
-> 
->>
->> Because at least some LEDs (keyboard LEDs on PC) can't be powered on
->> during suspend.
-> 
-> That is why I set the default behavior to PM_QOS_FLAG_NO_POWER_OFF=0 on probe.
-> 
->>
->> Does this work for your LEDs? Do we need a way for userspace to tell
->> if LED supports it or not?
-> 
-> Yes, this fixes my problem. I could try testing on other LEDs as well
-> that use different drivers if need be.
-> 
-> I didn't see any reason not to make this userspace configurable. I
-> imagine for some LEDs, the switch just won't work. Are you aware of
-> any cases where attempting to keep an LED on would cause outright
-> breakage? I would like these QoS parameters to be device tree, or
-> otherwise per-board configurable, but I'm not aware of a standard way
-> to do that. Maybe someone from linux-pm has an idea. Something like
-> that might be more reasonable than allowing default userspace
-> configurability.
-
-There is already retain-state-suspended property defined in
-Documentation/devicetree/bindings/leds/leds-gpio.txt and used
-in drivers/leds/leds-gpio.c. Now if we are going to add generic
-pm_qos support to the LED core, the DT property should be made generic
-too and moved to the Documentation/devicetree/bindings/leds/common.txt.
-
-Then, if the property is present, we shouldn't expose this setting
-to the userspace, see below.
-
->>
->>> @@ -196,6 +197,11 @@ static int led_suspend(struct device *dev)
->>>  {
->>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
->>>
->>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->>> +                     PM_QOS_FLAGS_ALL) {
->>> +             return 0;
->>> +     }
->>
->> "if (". No need for { } s.
-> 
-> Ok, I'll generate a new patch later if this seems likely to be integrated.
-
-Please also address problems detected by build bot [0].
-
->>> +
->>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>>               led_classdev_suspend(led_cdev);
->>>
->>> @@ -206,6 +212,11 @@ static int led_resume(struct device *dev)
->>>  {
->>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
->>>
->>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->>> +                     PM_QOS_FLAGS_ALL) {
->>> +             return 0;
->>> +     }
->>> +
->>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>>               led_classdev_resume(led_cdev);
->>>
->>> @@ -287,6 +298,18 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
->>>       list_add_tail(&led_cdev->node, &leds_list);
->>>       up_write(&leds_list_lock);
->>>
->>> +     /* Attempt to let userspace take over the policy. */
->>> +     ret = dev_pm_qos_expose_flags(led_cdev->dev,
->>> +                     PM_QOS_FLAG_NO_POWER_OFF);
->>> +     if (ret < 0) {
->>> +             dev_warn(led_cdev->dev, "failed to expose pm_qos_no_poweroff\n");
->>> +             return 0;
->>> +     }
->>> +
->>> +     ret = dev_pm_qos_update_flags(led_cdev->dev,
->>> +                     PM_QOS_FLAG_NO_POWER_OFF,
->>> +                     0);
->>> +
-
-So this part should be executed conditionally only if
-retain-state-suspended wasn't defined. BTW you will have
-to rebase your code onto some more recent code base.
-
-led_classdev_register() was renamed to of_led_classdev_register()
-in 4.12 and it now accepts struct device_node. leds-gpio.c was
-already changed to use it so it will be convenient to test the use case
-with retain-state-suspended DT property.
-
->>>       if (!led_cdev->max_brightness)
->>>               led_cdev->max_brightness = LED_FULL;
->>
->> Best regards,
->>                                                                         Pavel
->> --
->> (english) http://www.livejournal.com/~pavelmachek
->> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> 
-> thanks,
-> Sam
-> 
-
-[0] https://www.spinics.net/lists/linux-leds/msg09031.html
-
--- 
-Best regards,
-Jacek Anaszewski
+> +
+> +               if (its->flags & ITS_FLAGS_WORKAROUND_GIC500_MAPC)
+> +                       its_cpu_init_collection(its);
+>         }
+>         spin_unlock(&its_lock);
+>  }
+> @@ -3380,7 +3405,7 @@ int its_cpu_init(void)
+>                         return -ENXIO;
+>                 }
+>                 its_cpu_init_lpis();
+> -               its_cpu_init_collection();
+> +               its_cpu_init_collections();
+>         }
+>
+>         return 0;
+> --
+> 2.16.0.rc1.238.g530d649a79-goog
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
