@@ -1,64 +1,55 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v6 4/6] iommu/arm-smmu: Add the device_link
- between masters and smmu
-Date: Thu, 1 Feb 2018 14:23:11 +0530
-Message-ID: <b7887b45-774a-2515-4304-227037b9af1f@codeaurora.org>
-References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
- <1516362223-22946-5-git-send-email-vivek.gautam@codeaurora.org>
- <6b930150-cb81-b0a5-601c-16cb576c4341@arm.com>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH 1/2] dt-bindings: soc: add SCPSYS binding for MT7623 and MT7623A SoC
+Date: Thu, 1 Feb 2018 18:12:47 +0800
+Message-ID: <975fb80e1cdbe7f6d4a1d04fd3a2a21b619a193d.1517479588.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <6b930150-cb81-b0a5-601c-16cb576c4341-5wv7dgnIgG8@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailgw02.mediatek.com ([210.61.82.184]:55073 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1751748AbeBAKNA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Feb 2018 05:13:00 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: robh+dt@kernel.org, matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
+Cc: ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
 
-SGksCgoKT24gMS8zMS8yMDE4IDY6MzkgUE0sIFJvYmluIE11cnBoeSB3cm90ZToKPiBPbiAxOS8w
-MS8xOCAxMTo0MywgVml2ZWsgR2F1dGFtIHdyb3RlOgo+PiBGcm9tOiBTcmljaGFyYW4gUiA8c3Jp
-Y2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+Pgo+PiBGaW5hbGx5IGFkZCB0aGUgZGV2aWNlIGxpbmsg
-YmV0d2VlbiB0aGUgbWFzdGVyIGRldmljZSBhbmQKPj4gc21tdSwgc28gdGhhdCB0aGUgc21tdSBn
-ZXRzIHJ1bnRpbWUgZW5hYmxlZC9kaXNhYmxlZCBvbmx5IHdoZW4gdGhlCj4+IG1hc3RlciBuZWVk
-cyBpdC4gVGhpcyBpcyBkb25lIGZyb20gYWRkX2RldmljZSBjYWxsYmFjayB3aGljaCBnZXRzCj4+
-IGNhbGxlZCBvbmNlIHdoZW4gdGhlIG1hc3RlciBpcyBhZGRlZCB0byB0aGUgc21tdS4KPgo+IERv
-bid0IHdlIG5lZWQgdG8gYmFsYW5jZSB0aGlzIHdpdGggYSBkZXZpY2VfbGlua19kZWwoKSBpbiAK
-PiAucmVtb3ZlX2RldmljZSAobGlrZSBleHlub3MtaW9tbXUgZG9lcyk/CgpSaWdodC4gV2lsbCBh
-ZGQgZGV2aWNlX2xpbmtfZGVsKCkgY2FsbC4gVGhhbmtzIGZvciBwb2ludGluZyBvdXQuCgpyZWdh
-cmRzClZpdmVrCgo+Cj4gUm9iaW4uCj4KPj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNy
-aWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4gLS0tCj4+IMKgIGRyaXZlcnMvaW9tbXUvYXJtLXNt
-bXUuYyB8IDExICsrKysrKysrKysrCj4+IMKgIDEgZmlsZSBjaGFuZ2VkLCAxMSBpbnNlcnRpb25z
-KCspCj4+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMgYi9kcml2ZXJz
-L2lvbW11L2FybS1zbW11LmMKPj4gaW5kZXggOTU0NzhiZmIxODJjLi4zM2JiY2ZlZGI4OTYgMTAw
-NjQ0Cj4+IC0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+PiArKysgYi9kcml2ZXJzL2lv
-bW11L2FybS1zbW11LmMKPj4gQEAgLTEzNjcsNiArMTM2Nyw3IEBAIHN0YXRpYyBpbnQgYXJtX3Nt
-bXVfYWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4+IMKgwqDCoMKgwqAgc3RydWN0IGFy
-bV9zbW11X2RldmljZSAqc21tdTsKPj4gwqDCoMKgwqDCoCBzdHJ1Y3QgYXJtX3NtbXVfbWFzdGVy
-X2NmZyAqY2ZnOwo+PiDCoMKgwqDCoMKgIHN0cnVjdCBpb21tdV9md3NwZWMgKmZ3c3BlYyA9IGRl
-di0+aW9tbXVfZndzcGVjOwo+PiArwqDCoMKgIHN0cnVjdCBkZXZpY2VfbGluayAqbGluazsKPj4g
-wqDCoMKgwqDCoCBpbnQgaSwgcmV0Owo+PiDCoCDCoMKgwqDCoMKgIGlmICh1c2luZ19sZWdhY3lf
-YmluZGluZykgewo+PiBAQCAtMTQyOCw2ICsxNDI5LDE2IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVf
-YWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlIAo+PiAqZGV2KQo+PiDCoCDCoMKgwqDCoMKgIHBtX3J1
-bnRpbWVfcHV0X3N5bmMoc21tdS0+ZGV2KTsKPj4gwqAgK8KgwqDCoCAvKgo+PiArwqDCoMKgwqAg
-KiBFc3RhYmxpc2ggdGhlIGxpbmsgYmV0d2VlbiBzbW11IGFuZCBtYXN0ZXIsIHNvIHRoYXQgdGhl
-Cj4+ICvCoMKgwqDCoCAqIHNtbXUgZ2V0cyBydW50aW1lIGVuYWJsZWQvZGlzYWJsZWQgYXMgcGVy
-IHRoZSBtYXN0ZXIncwo+PiArwqDCoMKgwqAgKiBuZWVkcy4KPj4gK8KgwqDCoMKgICovCj4+ICvC
-oMKgwqAgbGluayA9IGRldmljZV9saW5rX2FkZChkZXYsIHNtbXUtPmRldiwgRExfRkxBR19QTV9S
-VU5USU1FKTsKPj4gK8KgwqDCoCBpZiAoIWxpbmspCj4+ICvCoMKgwqDCoMKgwqDCoCBkZXZfd2Fy
-bihzbW11LT5kZXYsICJVbmFibGUgdG8gY3JlYXRlIGRldmljZSBsaW5rIGJldHdlZW4gJXMgCj4+
-IGFuZCAlc1xuIiwKPj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBkZXZfbmFtZShzbW11LT5k
-ZXYpLCBkZXZfbmFtZShkZXYpKTsKPj4gKwo+PiDCoMKgwqDCoMKgIHJldHVybiAwOwo+PiDCoCDC
-oCBvdXRfY2ZnX2ZyZWU6Cj4+CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVz
-a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9m
-cmVlZHJlbm8K
+From: Sean Wang <sean.wang@mediatek.com>
+
+document the binding for enabling SCPSYS on MediaTek MT7623 and MT7623A
+SoC. Where MT7623 SoC has the same definition about power domains with
+MT2701, so it's fine to using MT2701 ones as MT7623's fallback.
+
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+---
+ Documentation/devicetree/bindings/soc/mediatek/scpsys.txt | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+index 76bf45b..d6fe16f 100644
+--- a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
++++ b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+@@ -21,6 +21,8 @@ Required properties:
+ 	- "mediatek,mt2712-scpsys"
+ 	- "mediatek,mt6797-scpsys"
+ 	- "mediatek,mt7622-scpsys"
++	- "mediatek,mt7623-scpsys", "mediatek,mt2701-scpsys": For MT7623 SoC
++	- "mediatek,mt7623a-scpsys": For MT7623A SoC
+ 	- "mediatek,mt8173-scpsys"
+ - #power-domain-cells: Must be 1
+ - reg: Address range of the SCPSYS unit
+@@ -28,10 +30,11 @@ Required properties:
+ - clock, clock-names: clocks according to the common clock binding.
+                       These are clocks which hardware needs to be
+                       enabled before enabling certain power domains.
+-	Required clocks for MT2701: "mm", "mfg", "ethif"
++	Required clocks for MT2701 or MT7623: "mm", "mfg", "ethif"
+ 	Required clocks for MT2712: "mm", "mfg", "venc", "jpgdec", "audio", "vdec"
+ 	Required clocks for MT6797: "mm", "mfg", "vdec"
+ 	Required clocks for MT7622: "hif_sel"
++	Required clocks for MT7622A: "ethif"
+ 	Required clocks for MT8173: "mm", "mfg", "venc", "venc_lt"
+ 
+ Optional properties:
+-- 
+2.7.4
