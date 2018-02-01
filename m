@@ -1,174 +1,147 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v6 2/6] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Thu, 1 Feb 2018 11:43:57 +0530
-Message-ID: <1bbaff1b-a3db-e9c4-5b32-2792ed6c4952@codeaurora.org>
-References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
- <1516362223-22946-3-git-send-email-vivek.gautam@codeaurora.org>
- <9942b74d-7437-21cc-cbd7-38f2844c5d1d@arm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
+ cooling driver
+Date: Thu, 1 Feb 2018 08:57:45 +0100
+Message-ID: <CAKfTPtCSWkXrmET9_6N-Nkt3+N-0deuT3j8E=mB=62ohzztmWw@mail.gmail.com>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+ <CAKfTPtD-cUYoAJfhtuTr-E1=rttZvWxVv1Qv7b+Si4vSBy0JVg@mail.gmail.com>
+ <11334876-ef8c-58fa-5e32-ab8499eebd7e@linaro.org> <CAKfTPtBXcLHNHEObpttCGtfCWXmR+kwmOW5aD+G23bnYTJi6Yg@mail.gmail.com>
+ <6e776e6c-6f1e-b33b-58b7-b95410ca1f95@linaro.org> <CAKfTPtAFNdOsNOBC8Qg3c=OB7P635gvePvfpDbc5QF10Tei-9Q@mail.gmail.com>
+ <22f4c4fc-fd74-b635-6859-7e2f599695f7@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <9942b74d-7437-21cc-cbd7-38f2844c5d1d-5wv7dgnIgG8@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <22f4c4fc-fd74-b635-6859-7e2f599695f7@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kevin Wangtao <kevin.wangtao@linaro.org>, Leo Yan <leo.yan@linaro.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 1/31/2018 5:53 PM, Robin Murphy wrote:
-> On 19/01/18 11:43, Vivek Gautam wrote:
->> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+On 31 January 2018 at 16:27, Daniel Lezcano <daniel.lezcano@linaro.org> wro=
+te:
+> On 31/01/2018 10:56, Vincent Guittot wrote:
+>> On 31 January 2018 at 10:50, Daniel Lezcano <daniel.lezcano@linaro.org> =
+wrote:
+>>> On 31/01/2018 10:46, Vincent Guittot wrote:
+>>>> On 31 January 2018 at 10:33, Daniel Lezcano <daniel.lezcano@linaro.org=
+> wrote:
+>>>>> On 31/01/2018 10:01, Vincent Guittot wrote:
+>>>>>> Hi Daniel,
+>>>>>>
+>>>>>> On 23 January 2018 at 16:34, Daniel Lezcano <daniel.lezcano@linaro.o=
+rg> wrote:
+>>>>>
+>>>>> [ ... ] (please trim :)
+>>>>>
+>>>>>>> +               /*
+>>>>>>> +                * Each cooling device is per package. Each package
+>>>>>>> +                * has a set of cpus where the physical number is
+>>>>>>> +                * duplicate in the kernel namespace. We need a way=
+ to
+>>>>>>> +                * address the waitq[] and tsk[] arrays with index
+>>>>>>> +                * which are not Linux cpu numbered.
+>>>>>>> +                *
+>>>>>>> +                * One solution is to use the
+>>>>>>> +                * topology_core_id(cpu). Other solution is to use =
+the
+>>>>>>> +                * modulo.
+>>>>>>> +                *
+>>>>>>> +                * eg. 2 x cluster - 4 cores.
+>>>>>>> +                *
+>>>>>>> +                * Physical numbering -> Linux numbering -> % nr_cp=
+us
+>>>>>>> +                *
+>>>>>>> +                * Pkg0 - Cpu0 -> 0 -> 0
+>>>>>>> +                * Pkg0 - Cpu1 -> 1 -> 1
+>>>>>>> +                * Pkg0 - Cpu2 -> 2 -> 2
+>>>>>>> +                * Pkg0 - Cpu3 -> 3 -> 3
+>>>>>>> +                *
+>>>>>>> +                * Pkg1 - Cpu0 -> 4 -> 0
+>>>>>>> +                * Pkg1 - Cpu1 -> 5 -> 1
+>>>>>>> +                * Pkg1 - Cpu2 -> 6 -> 2
+>>>>>>> +                * Pkg1 - Cpu3 -> 7 -> 3
+>>>>>>
+>>>>>>
+>>>>>> I'm not sure that the assumption above for the CPU numbering is safe=
+.
+>>>>>> Can't you use a per cpu structure to point to resources that are per
+>>>>>> cpu instead ? so you will not have to rely on CPU ordering
+>>>>>
+>>>>> Can you elaborate ? I don't get the part with the percpu structure.
+>>>>
+>>>> Something like:
+>>>>
+>>>> struct cpuidle_cooling_cpu {
+>>>>        struct task_struct *tsk;
+>>>>        wait_queue_head_t waitq;
+>>>> };
+>>>>
+>>>> DECLARE_PER_CPU(struct cpuidle_cooling_cpu *, cpu_data);
+>>>
+>>> I got this part but I don't get how that fixes the ordering thing.
 >>
->> The smmu needs to be functional only when the respective
->> master's using it are active. The device_link feature
->> helps to track such functional dependencies, so that the
->> iommu gets powered when the master device enables itself
->> using pm_runtime. So by adapting the smmu driver for
->> runtime pm, above said dependency can be addressed.
->>
->> This patch adds the pm runtime/sleep callbacks to the
->> driver and also the functions to parse the smmu clocks
->> from DT and enable them in resume/suspend.
->>
->> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->> Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->> [vivek: Clock rework to request bulk of clocks]
->> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->> ---
->>   drivers/iommu/arm-smmu.c | 55 
->> ++++++++++++++++++++++++++++++++++++++++++++++--
->>   1 file changed, 53 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
->> index 78d4c6b8f1ba..21acffe91a1c 100644
->> --- a/drivers/iommu/arm-smmu.c
->> +++ b/drivers/iommu/arm-smmu.c
->> @@ -48,6 +48,7 @@
->>   #include <linux/of_iommu.h>
->>   #include <linux/pci.h>
->>   #include <linux/platform_device.h>
->> +#include <linux/pm_runtime.h>
->>   #include <linux/slab.h>
->>   #include <linux/spinlock.h>
->>   @@ -205,6 +206,9 @@ struct arm_smmu_device {
->>       u32                num_global_irqs;
->>       u32                num_context_irqs;
->>       unsigned int            *irqs;
->> +    struct clk_bulk_data        *clocks;
->> +    int                num_clks;
->> +    const char * const        *clk_names;
+>> Because you don't care of the CPU ordering to retrieve the data as
+>> they are stored per cpu directly
 >
-> This seems unnecessary, as we use it a grand total of of once, during 
-> initialisation when we have the source data directly to hand. Just 
-> pass data->clks into arm_smmu_init_clks() as an additional argument.
+> That's what I did initially, but for consistency reasons with the
+> cpufreq cpu cooling device which is stored in a list and the combo cpu
+> cooling device, the cpuidle cooling device must be per cluster and
+> stored in a list.
 
-Sure, will do that.
->
-> Otherwise, I think this looks reasonable; it's about as unobtrusive as 
-> it's going to get.
+I'm not sure to catch your problem. You can still have cpuidle cooling
+device per cluster and stored in the list but keep per cpu data in a
 
-Thanks for reviewing.
-
-regards
-Vivek
+AFAICT, you will not have more than one cpu cooling device registered
+per CPU so one per cpu variable that will gathers cpu private data
+should be enough ?
 
 >
-> Robin.
+> Alternatively I can do:
 >
->>       u32                cavium_id_base; /* Specific to Cavium */
->>   @@ -1685,6 +1689,25 @@ static int arm_smmu_id_size_to_bits(int size)
->>       }
->>   }
->>   +static int arm_smmu_init_clocks(struct arm_smmu_device *smmu)
->> +{
->> +    int i;
->> +    int num = smmu->num_clks;
->> +
->> +    if (num < 1)
->> +        return 0;
->> +
->> +    smmu->clocks = devm_kcalloc(smmu->dev, num,
->> +                    sizeof(*smmu->clocks), GFP_KERNEL);
->> +    if (!smmu->clocks)
->> +        return -ENOMEM;
->> +
->> +    for (i = 0; i < num; i++)
->> +        smmu->clocks[i].id = smmu->clk_names[i];
->> +
->> +    return devm_clk_bulk_get(smmu->dev, num, smmu->clocks);
->> +}
->> +
->>   static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
->>   {
->>       unsigned long size;
->> @@ -1897,10 +1920,12 @@ static int arm_smmu_device_cfg_probe(struct 
->> arm_smmu_device *smmu)
->>   struct arm_smmu_match_data {
->>       enum arm_smmu_arch_version version;
->>       enum arm_smmu_implementation model;
->> +    const char * const *clks;
->> +    int num_clks;
->>   };
->>     #define ARM_SMMU_MATCH_DATA(name, ver, imp)    \
->> -static struct arm_smmu_match_data name = { .version = ver, .model = 
->> imp }
->> +static const struct arm_smmu_match_data name = { .version = ver, 
->> .model = imp }
->>     ARM_SMMU_MATCH_DATA(smmu_generic_v1, ARM_SMMU_V1, GENERIC_SMMU);
->>   ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
->> @@ -2001,6 +2026,8 @@ static int arm_smmu_device_dt_probe(struct 
->> platform_device *pdev,
->>       data = of_device_get_match_data(dev);
->>       smmu->version = data->version;
->>       smmu->model = data->model;
->> +    smmu->clk_names = data->clks;
->> +    smmu->num_clks = data->num_clks;
->>         parse_driver_options(smmu);
->>   @@ -2099,6 +2126,10 @@ static int arm_smmu_device_probe(struct 
->> platform_device *pdev)
->>           smmu->irqs[i] = irq;
->>       }
->>   +    err = arm_smmu_init_clocks(smmu);
->> +    if (err)
->> +        return err;
->> +
->>       err = arm_smmu_device_cfg_probe(smmu);
->>       if (err)
->>           return err;
->> @@ -2197,7 +2228,27 @@ static int __maybe_unused 
->> arm_smmu_pm_resume(struct device *dev)
->>       return 0;
->>   }
->>   -static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
->> +static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
->> +{
->> +    struct arm_smmu_device *smmu = dev_get_drvdata(dev);
->> +
->> +    return clk_bulk_prepare_enable(smmu->num_clks, smmu->clocks);
->> +}
->> +
->> +static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
->> +{
->> +    struct arm_smmu_device *smmu = dev_get_drvdata(dev);
->> +
->> +    clk_bulk_disable_unprepare(smmu->num_clks, smmu->clocks);
->> +
->> +    return 0;
->> +}
->> +
->> +static const struct dev_pm_ops arm_smmu_pm_ops = {
->> +    SET_SYSTEM_SLEEP_PM_OPS(NULL, arm_smmu_pm_resume)
->> +    SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
->> +               arm_smmu_runtime_resume, NULL)
->> +};
->>     static struct platform_driver arm_smmu_driver = {
->>       .driver    = {
->>
+> struct cpuidle_cooling_device {
+>         struct thermal_cooling_device *cdev;
+> -       struct task_struct **tsk;
+> +       struct task_struct __percpu *tsk;
+>         struct cpumask *cpumask;
+>         struct list_head node;
+>         struct hrtimer timer;
+>         struct kref kref;
+> -       wait_queue_head_t *waitq;
+> +       wait_queue_head_t __percpu waitq;
+>         atomic_t count;
+>         unsigned int idle_cycle;
+>         unsigned int state;
+> };
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+struct cpuidle_cooling_device {
+         struct thermal_cooling_device *cdev;
+         struct cpumask *cpumask;
+         struct list_head node;
+         struct hrtimer timer;
+         struct kref kref;
+         atomic_t count;
+         unsigned int idle_cycle;
+         unsigned int state;
+};
+
+struct cpuidle_cooling_cpu {
+        struct task_struct *tsk;
+        wait_queue_head_t waitq;
+};
+DECLARE_PER_CPU(struct cpuidle_cooling_cpu *, cpu_data);
+
+You continue to have cpuidle_cooling_device allocated dynamically per
+cluster and added in the list but task and waitq are stored per cpu
+
+>
+>
+> --
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
+RM SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+>
