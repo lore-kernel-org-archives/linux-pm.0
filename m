@@ -1,76 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
- cooling driver
-Date: Thu, 1 Feb 2018 09:25:29 +0100
-Message-ID: <73836143-e335-f6a1-3c37-d3050dd7ddde@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
- <CAKfTPtD-cUYoAJfhtuTr-E1=rttZvWxVv1Qv7b+Si4vSBy0JVg@mail.gmail.com>
- <11334876-ef8c-58fa-5e32-ab8499eebd7e@linaro.org>
- <CAKfTPtBXcLHNHEObpttCGtfCWXmR+kwmOW5aD+G23bnYTJi6Yg@mail.gmail.com>
- <6e776e6c-6f1e-b33b-58b7-b95410ca1f95@linaro.org>
- <CAKfTPtAFNdOsNOBC8Qg3c=OB7P635gvePvfpDbc5QF10Tei-9Q@mail.gmail.com>
- <22f4c4fc-fd74-b635-6859-7e2f599695f7@linaro.org>
- <CAKfTPtCSWkXrmET9_6N-Nkt3+N-0deuT3j8E=mB=62ohzztmWw@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v6 4/6] iommu/arm-smmu: Add the device_link
+ between masters and smmu
+Date: Thu, 1 Feb 2018 14:23:11 +0530
+Message-ID: <b7887b45-774a-2515-4304-227037b9af1f@codeaurora.org>
+References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
+ <1516362223-22946-5-git-send-email-vivek.gautam@codeaurora.org>
+ <6b930150-cb81-b0a5-601c-16cb576c4341@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:55899 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751925AbeBAIZd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Feb 2018 03:25:33 -0500
-Received: by mail-wm0-f66.google.com with SMTP id 143so4011210wma.5
-        for <linux-pm@vger.kernel.org>; Thu, 01 Feb 2018 00:25:33 -0800 (PST)
-In-Reply-To: <CAKfTPtCSWkXrmET9_6N-Nkt3+N-0deuT3j8E=mB=62ohzztmWw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <6b930150-cb81-b0a5-601c-16cb576c4341-5wv7dgnIgG8@public.gmane.org>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kevin Wangtao <kevin.wangtao@linaro.org>, Leo Yan <leo.yan@linaro.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-On 01/02/2018 08:57, Vincent Guittot wrote:
-> On 31 January 2018 at 16:27, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->> On 31/01/2018 10:56, Vincent Guittot wrote:
->>> On 31 January 2018 at 10:50, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>>> On 31/01/2018 10:46, Vincent Guittot wrote:
->>>>> On 31 January 2018 at 10:33, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>>>>> On 31/01/2018 10:01, Vincent Guittot wrote:
->>>>>>> Hi Daniel,
->>>>>>>
->>>>>>> On 23 January 2018 at 16:34, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>>>>>
->>>>>> [ ... ] (please trim :)
->>>>>>
-
-[ ... ]
-
-> struct cpuidle_cooling_device {
->          struct thermal_cooling_device *cdev;
->          struct cpumask *cpumask;
->          struct list_head node;
->          struct hrtimer timer;
->          struct kref kref;
->          atomic_t count;
->          unsigned int idle_cycle;
->          unsigned int state;
-> };
-> 
-> struct cpuidle_cooling_cpu {
->         struct task_struct *tsk;
->         wait_queue_head_t waitq;
-> };
-> DECLARE_PER_CPU(struct cpuidle_cooling_cpu *, cpu_data);
-> 
-> You continue to have cpuidle_cooling_device allocated dynamically per
-> cluster and added in the list but task and waitq are stored per cpu
-
-Ok. I will try that.
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+SGksCgoKT24gMS8zMS8yMDE4IDY6MzkgUE0sIFJvYmluIE11cnBoeSB3cm90ZToKPiBPbiAxOS8w
+MS8xOCAxMTo0MywgVml2ZWsgR2F1dGFtIHdyb3RlOgo+PiBGcm9tOiBTcmljaGFyYW4gUiA8c3Jp
+Y2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+Pgo+PiBGaW5hbGx5IGFkZCB0aGUgZGV2aWNlIGxpbmsg
+YmV0d2VlbiB0aGUgbWFzdGVyIGRldmljZSBhbmQKPj4gc21tdSwgc28gdGhhdCB0aGUgc21tdSBn
+ZXRzIHJ1bnRpbWUgZW5hYmxlZC9kaXNhYmxlZCBvbmx5IHdoZW4gdGhlCj4+IG1hc3RlciBuZWVk
+cyBpdC4gVGhpcyBpcyBkb25lIGZyb20gYWRkX2RldmljZSBjYWxsYmFjayB3aGljaCBnZXRzCj4+
+IGNhbGxlZCBvbmNlIHdoZW4gdGhlIG1hc3RlciBpcyBhZGRlZCB0byB0aGUgc21tdS4KPgo+IERv
+bid0IHdlIG5lZWQgdG8gYmFsYW5jZSB0aGlzIHdpdGggYSBkZXZpY2VfbGlua19kZWwoKSBpbiAK
+PiAucmVtb3ZlX2RldmljZSAobGlrZSBleHlub3MtaW9tbXUgZG9lcyk/CgpSaWdodC4gV2lsbCBh
+ZGQgZGV2aWNlX2xpbmtfZGVsKCkgY2FsbC4gVGhhbmtzIGZvciBwb2ludGluZyBvdXQuCgpyZWdh
+cmRzClZpdmVrCgo+Cj4gUm9iaW4uCj4KPj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNy
+aWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4gLS0tCj4+IMKgIGRyaXZlcnMvaW9tbXUvYXJtLXNt
+bXUuYyB8IDExICsrKysrKysrKysrCj4+IMKgIDEgZmlsZSBjaGFuZ2VkLCAxMSBpbnNlcnRpb25z
+KCspCj4+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMgYi9kcml2ZXJz
+L2lvbW11L2FybS1zbW11LmMKPj4gaW5kZXggOTU0NzhiZmIxODJjLi4zM2JiY2ZlZGI4OTYgMTAw
+NjQ0Cj4+IC0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+PiArKysgYi9kcml2ZXJzL2lv
+bW11L2FybS1zbW11LmMKPj4gQEAgLTEzNjcsNiArMTM2Nyw3IEBAIHN0YXRpYyBpbnQgYXJtX3Nt
+bXVfYWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4+IMKgwqDCoMKgwqAgc3RydWN0IGFy
+bV9zbW11X2RldmljZSAqc21tdTsKPj4gwqDCoMKgwqDCoCBzdHJ1Y3QgYXJtX3NtbXVfbWFzdGVy
+X2NmZyAqY2ZnOwo+PiDCoMKgwqDCoMKgIHN0cnVjdCBpb21tdV9md3NwZWMgKmZ3c3BlYyA9IGRl
+di0+aW9tbXVfZndzcGVjOwo+PiArwqDCoMKgIHN0cnVjdCBkZXZpY2VfbGluayAqbGluazsKPj4g
+wqDCoMKgwqDCoCBpbnQgaSwgcmV0Owo+PiDCoCDCoMKgwqDCoMKgIGlmICh1c2luZ19sZWdhY3lf
+YmluZGluZykgewo+PiBAQCAtMTQyOCw2ICsxNDI5LDE2IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVf
+YWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlIAo+PiAqZGV2KQo+PiDCoCDCoMKgwqDCoMKgIHBtX3J1
+bnRpbWVfcHV0X3N5bmMoc21tdS0+ZGV2KTsKPj4gwqAgK8KgwqDCoCAvKgo+PiArwqDCoMKgwqAg
+KiBFc3RhYmxpc2ggdGhlIGxpbmsgYmV0d2VlbiBzbW11IGFuZCBtYXN0ZXIsIHNvIHRoYXQgdGhl
+Cj4+ICvCoMKgwqDCoCAqIHNtbXUgZ2V0cyBydW50aW1lIGVuYWJsZWQvZGlzYWJsZWQgYXMgcGVy
+IHRoZSBtYXN0ZXIncwo+PiArwqDCoMKgwqAgKiBuZWVkcy4KPj4gK8KgwqDCoMKgICovCj4+ICvC
+oMKgwqAgbGluayA9IGRldmljZV9saW5rX2FkZChkZXYsIHNtbXUtPmRldiwgRExfRkxBR19QTV9S
+VU5USU1FKTsKPj4gK8KgwqDCoCBpZiAoIWxpbmspCj4+ICvCoMKgwqDCoMKgwqDCoCBkZXZfd2Fy
+bihzbW11LT5kZXYsICJVbmFibGUgdG8gY3JlYXRlIGRldmljZSBsaW5rIGJldHdlZW4gJXMgCj4+
+IGFuZCAlc1xuIiwKPj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBkZXZfbmFtZShzbW11LT5k
+ZXYpLCBkZXZfbmFtZShkZXYpKTsKPj4gKwo+PiDCoMKgwqDCoMKgIHJldHVybiAwOwo+PiDCoCDC
+oCBvdXRfY2ZnX2ZyZWU6Cj4+CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVz
+a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9m
+cmVlZHJlbm8K
