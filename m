@@ -1,81 +1,94 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
- cooling device
-Date: Fri, 2 Feb 2018 15:30:10 +0100
-Message-ID: <8dadd854-25ac-68aa-aa9f-33ba76a137a4@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
- <20180202104259.GA28462@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180202104259.GA28462@vireshk-i7>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 2/3] x86: fix swsusp_arch_resume prototype
+Date: Fri,  2 Feb 2018 15:56:18 +0100
+Message-ID: <20180202145634.200291-2-arnd@arndb.de>
+References: <20180202145434.100626-1-arnd@arndb.de>
+ <20180202145634.200291-1-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.130]:53657 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751795AbeBBO65 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Feb 2018 09:58:57 -0500
+In-Reply-To: <20180202145634.200291-1-arnd@arndb.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Len Brown <len.brown@intel.com>
+Cc: Nicolas Pitre <nico@linaro.org>, Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Bart Van Assche <bart.vanassche@wdc.com>, linux-pm@vger.kernel.org
 
-On 02/02/2018 11:42, Viresh Kumar wrote:
-> Hi Daniel,
+The declaration for swsusp_arch_resume marks it as 'asmlinkage',
+but the definition in x86-32 does not, and it fails to include
+the header with the declaration. This leads to a warning when
+building with link-time-optimizations:
 
-Hi Viresh,
+kernel/power/power.h:108:23: error: type of 'swsusp_arch_resume' does not match original declaration [-Werror=lto-type-mismatch]
+ extern asmlinkage int swsusp_arch_resume(void);
+                       ^
+arch/x86/power/hibernate_32.c:148:0: note: 'swsusp_arch_resume' was previously declared here
+ int swsusp_arch_resume(void)
 
+This moves the declaration into a globally visible header file
+and fixes up both x86 definitions to match it.
 
-> I have gone through the other review comments, specially from Daniel T.. While I
-> share some of his concerns, I have few more of mine.
-> 
-> On 23-01-18, 16:34, Daniel Lezcano wrote:
->> +late_initcall(cpu_cooling_init);
-> 
-> For example, this thing isn't going to fly nicely as you have assumed cpufreq
-> and cpuidle drivers are going to be part of the kernel itself. What if they are
-> modules and are inserted after late-init ? There are more cases like this where
-> the cpufreq driver may unregister the cpufreq cooling device on the fly and then
-> add it back. And so this stuff is a bit tricky.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/x86/power/hibernate_32.c | 2 +-
+ arch/x86/power/hibernate_64.c | 2 +-
+ include/linux/suspend.h       | 2 ++
+ kernel/power/power.h          | 3 ---
+ 4 files changed, 4 insertions(+), 5 deletions(-)
 
-The cpuidle driver can not be compiled as a module.
-
-Agree the cpufreq driver can be unloaded and this part needs some
-adjustments.
-
-> Here is how I see the whole thing now:
-> 
-> - Yes we need individual support for both cpufreq and cpuidle cooling devices,
->   and no one disagrees on that I believe.
-> 
-> - There is nothing in the thermal framework that disallows both cpufreq and
->   cpuidle cooling devices to co-exist. Both would be part of the same thermal
->   zone and so will get throttled with the same thermal sensor event. And so we
->   will end up trying to cool down the SoC using both cpufreq and cpuidle
->   technique.
-
-No. It does not work because we will need different state for each
-cooling device and we need some logic behind.
-
-> - Now I am just wondering if we really need the "combo" functionality or not.
->   Can we fine tune the DT cpu-cooling properties (existing ones) for a platform,
->   so that it automatically acts as a combo cooling device? I am not 100% sure
->   its gonna fly, but just wanted to make sure its not possible to work around
->   with and then only try the combo device thing.
-> 
-> For example, suppose that with just cpufreq-cooling device we need to take the
-> CPU down to 1 GHz from 2 GHz if we cross temperature 'X'. What if we can change
-> this policy from DT and say the cpufreq-cooling device goes to 1.5 GHz and
-> cpuidle-cooling device takes us to idle for 'y' us, and the effect of
-> combination of these two is >= the effect of the 1 GHz for just the
-> cpufreq-cooling device.
-> 
-> Is there any possibility of this to work ?
-
-It does not make sense. The combo does that automatically by computing
-the power equivalence more precisely.
-
-
+diff --git a/arch/x86/power/hibernate_32.c b/arch/x86/power/hibernate_32.c
+index c35fdb585c68..afc4ed7b1578 100644
+--- a/arch/x86/power/hibernate_32.c
++++ b/arch/x86/power/hibernate_32.c
+@@ -145,7 +145,7 @@ static inline void resume_init_first_level_page_table(pgd_t *pg_dir)
+ #endif
+ }
+ 
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
+ 
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index f910c514438f..0ef5e5204968 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -174,7 +174,7 @@ static int relocate_restore_code(void)
+ 	return 0;
+ }
+ 
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
+ 
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index cc22a24516d6..440b62f7502e 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -384,6 +384,8 @@ extern int swsusp_page_is_forbidden(struct page *);
+ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+ extern unsigned long get_safe_page(gfp_t gfp_mask);
++extern asmlinkage int swsusp_arch_suspend(void);
++extern asmlinkage int swsusp_arch_resume(void);
+ 
+ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index f29cd178df90..9e58bdc8a562 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -104,9 +104,6 @@ extern int in_suspend;
+ extern dev_t swsusp_resume_device;
+ extern sector_t swsusp_resume_block;
+ 
+-extern asmlinkage int swsusp_arch_suspend(void);
+-extern asmlinkage int swsusp_arch_resume(void);
+-
+ extern int create_basic_memory_bitmaps(void);
+ extern void free_basic_memory_bitmaps(void);
+ extern int hibernate_preallocate_memory(void);
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.9.0
