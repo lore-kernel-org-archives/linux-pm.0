@@ -1,138 +1,68 @@
-From: Prateek Sood <prsood@codeaurora.org>
-Subject: Re: Query related to usage of cpufreq_suspend() & cpufreq_resume
-Date: Fri, 2 Feb 2018 18:23:32 +0530
-Message-ID: <7d50aeb5-cc2d-521b-2f31-5477e6e18f20@codeaurora.org>
-References: <e9d13871-184b-dee3-c45f-c6d19e671eea@codeaurora.org>
- <1949391.4ffJqIIJSQ@aspire.rjw.lan>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v6 4/6] iommu/arm-smmu: Add the device_link between
+ masters and smmu
+Date: Fri, 2 Feb 2018 18:44:00 +0530
+Message-ID: <8476fe51-e6f9-2028-82e0-353182e4032f@codeaurora.org>
+References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
+ <1516362223-22946-5-git-send-email-vivek.gautam@codeaurora.org>
+ <6b930150-cb81-b0a5-601c-16cb576c4341@arm.com>
+ <b7887b45-774a-2515-4304-227037b9af1f@codeaurora.org>
+ <7cc4caec-4264-db9d-3afa-e3d20d3edfa7@codeaurora.org>
+ <f8932e2f-75bb-ce30-ae68-1870477fad5f@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:44722 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:55936 "EHLO
         smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752118AbeBBMxi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Feb 2018 07:53:38 -0500
-In-Reply-To: <1949391.4ffJqIIJSQ@aspire.rjw.lan>
+        with ESMTP id S1751643AbeBBNOJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Feb 2018 08:14:09 -0500
+In-Reply-To: <f8932e2f-75bb-ce30-ae68-1870477fad5f@arm.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gkohli@codeaurora.org, linux-arm-msm@vger.kernel.org
+To: Robin Murphy <robin.murphy@arm.com>, Vivek Gautam <vivek.gautam@codeaurora.org>, alex.williamson@redhat.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, sboyd@codeaurora.org
+Cc: gregkh@linuxfoundation.org, m.szyprowski@samsung.com, architt@codeaurora.org, linux-arm-msm@vger.kernel.org
 
-On 02/02/2018 05:18 PM, Rafael J. Wysocki wrote:
-> On Friday, February 2, 2018 12:41:58 PM CET Prateek Sood wrote:
->> Hi Viresh,
->>
->> One scenario is there where a kernel panic is observed in
->> cpufreq during suspend/resume.
->>
->> pm_suspend()
->>   suspend_devices_and_enter()
->>     dpm_suspend_start()
->>       dpm_prepare() 
->>
->> Failure in dpm_prepare() happend with following dmesg:
->>
->> [ 3746.316062] PM: Device xyz not prepared for power transition: code -16
->> [ 3746.316071] PM: Some devices failed to suspend, or early wake event detected
->>
->>
->> pm_suspend()
->>   suspend_devices_and_enter()
->>     dpm_suspend_start()
->>       dpm_prepare() //failed
->>     dpm_resume_end()
->>       dpm_resume()
->>         cpufreq_resume()
->>           cpufreq_start_governor()
->>             sugov_start()
->>               cpufreq_add_update_util_hook()
->>
->> After failure in dpm_prepare(), dpm_resume() called
->> cpufreq_resume(). Corresponding cpufreq_suspend() was not
->> called due to failure of dpm_prepare(). 
->>
->> This resulted in WARN_ON(per_cpu(cpufreq_update_util_data, cpu))
->> in cpufreq_add_update_util_hook() and cpufreq_add_update_util_hook->func
->> being inconsistent state. It caused crash in scheduler.
->>
->> Following are some of the ways to mitigate this issue. Could
->> you please provide feedback on below two approaches or suugest
->> a better way to fix this problem.
->>
->> -----------------------8<------------------------------
->>
->> Co-developed-by: Gaurav Kohli <gkohli@codeaurora.org>
->> Signed-off-by: Gaurav Kohli <gkohli@codeaurora.org> 
->> Signed-off-by: Prateek Sood <prsood@codeaurora.org>
->>
->> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->> index 02a497e..732e5a2 100644
->> --- a/drivers/base/power/main.c
->> +++ b/drivers/base/power/main.c
->> @@ -1038,6 +1038,7 @@ void dpm_resume(pm_message_t state)
->>  {
->>         struct device *dev;
->>         ktime_t starttime = ktime_get();
->> +       bool valid_resume = false;
->>
->>         trace_suspend_resume(TPS("dpm_resume"), state.event, true);
->>         might_sleep();
->> @@ -1055,6 +1056,7 @@ void dpm_resume(pm_message_t state)
->>         }
->>
->>         while (!list_empty(&dpm_suspended_list)) {
->> +               valid_resume = true;
->>                 dev = to_device(dpm_suspended_list.next);
->>                 get_device(dev);
->>                 if (!is_async(dev)) {
->> @@ -1080,7 +1082,8 @@ void dpm_resume(pm_message_t state)
->>         async_synchronize_full();
->>         dpm_show_time(starttime, state, 0, NULL);
->>
->> -       cpufreq_resume();
->> +       if (valid_resume)
->> +               cpufreq_resume();
->>         trace_suspend_resume(TPS("dpm_resume"), state.event, false);
->>  }
->>
->> --------------------8<--------------------------------------
->>
->> Signed-off-by: Prateek Sood <prsood@codeaurora.org>
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 421f318..439eab8 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -1648,7 +1648,7 @@ void cpufreq_suspend(void)
->>  {
->>         struct cpufreq_policy *policy;
->>
->> -       if (!cpufreq_driver)
->> +       if (!cpufreq_driver || cpufreq_suspended)
->>                 return;
->>
->>         if (!has_target() && !cpufreq_driver->suspend)
->> @@ -1683,7 +1683,7 @@ void cpufreq_resume(void)
->>         struct cpufreq_policy *policy;
->>         int ret;
->>
->> -       if (!cpufreq_driver)
->> +       if (!cpufreq_driver || !cpufreq_suspended)
->>                 return;
->>
->>         cpufreq_suspended = false;
-> 
-> Since we have cpufreq_suspended already, the second one is better.
-> 
-> Thanks,
-> Rafael
-> 
+Hi Robin,
 
-Thanks Rafael for the inputs, I will send a formal patch.
+On 2/2/2018 5:01 PM, Robin Murphy wrote:
+> On 02/02/18 05:40, Sricharan R wrote:
+>> Hi Robin/Vivek,
+>>
+>> On 2/1/2018 2:23 PM, Vivek Gautam wrote:
+>>> Hi,
+>>>
+>>>
+>>> On 1/31/2018 6:39 PM, Robin Murphy wrote:
+>>>> On 19/01/18 11:43, Vivek Gautam wrote:
+>>>>> From: Sricharan R <sricharan@codeaurora.org>
+>>>>>
+>>>>> Finally add the device link between the master device and
+>>>>> smmu, so that the smmu gets runtime enabled/disabled only when the
+>>>>> master needs it. This is done from add_device callback which gets
+>>>>> called once when the master is added to the smmu.
+>>>>
+>>>> Don't we need to balance this with a device_link_del() in .remove_device (like exynos-iommu does)?
+>>>
+>>> Right. Will add device_link_del() call. Thanks for pointing out.
+>>
+>>   The reason for not adding device_link_del from .remove_device was, the core device_del
+>>   which calls the .remove_device from notifier, calls device_links_purge before that.
+>>   That does the same thing as device_link_del. So by the time .remove_device is called,
+>>   device_links for that device is already cleaned up. Vivek, you may want to check once that
+>>   calling device_link_del from .remove_device has no effect, just to confirm once more.
+> 
+> There is at least one path in which .remove_device is not called via the notifier from device_del(), which is in the cleanup path of iommu_bus_init(). AFAICS any links created by .add_device during that process would be left dangling, because the device(s) would be live but otherwise disassociated from the IOMMU afterwards.
+> 
+> From a maintenance perspective it's easier to have the call in its logical place even if it does nothing 99% of the time; that way we shouldn't have to keep an eye out for subtle changes in the power management code or driver core that might invalidate the device_del() reasoning above, and the power management guys shouldn't have to comprehend the internals of the IOMMU API to make sense of the unbalanced call if they ever want to change their API.
 
+ Ha, for a moment was thinking that with probe deferral add/remove_iommu_group in iommu_bus_init is dummy.
+ But that may not be true for all Archs.
+ Surely agree for the maintainability reason as well. Thanks.
+
+Regards,
+ Sricharan
 
 -- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation
-Center, Inc., is a member of Code Aurora Forum, a Linux Foundation
-Collaborative Project
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
