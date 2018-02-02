@@ -1,152 +1,81 @@
-From: Prateek Sood <prsood@codeaurora.org>
-Subject: Re: Query related to usage of cpufreq_suspend() & cpufreq_resume
-Date: Fri, 2 Feb 2018 18:59:50 +0530
-Message-ID: <41912873-42d2-88a6-551a-5a0f732874d0@codeaurora.org>
-References: <e9d13871-184b-dee3-c45f-c6d19e671eea@codeaurora.org>
- <1949391.4ffJqIIJSQ@aspire.rjw.lan>
- <7d50aeb5-cc2d-521b-2f31-5477e6e18f20@codeaurora.org>
- <CAJZ5v0g1vJV5Lo0EaubUePF3X4eYn8nBrf9q3d9fL6s6o=MGPw@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
+ cooling device
+Date: Fri, 2 Feb 2018 15:30:10 +0100
+Message-ID: <8dadd854-25ac-68aa-aa9f-33ba76a137a4@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
+ <20180202104259.GA28462@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g1vJV5Lo0EaubUePF3X4eYn8nBrf9q3d9fL6s6o=MGPw@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180202104259.GA28462@vireshk-i7>
 Content-Language: en-US
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gkohli@codeaurora.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bo Yan <byan@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/02/2018 06:49 PM, Rafael J. Wysocki wrote:
-> On Fri, Feb 2, 2018 at 1:53 PM, Prateek Sood <prsood@codeaurora.org> wrote:
->> On 02/02/2018 05:18 PM, Rafael J. Wysocki wrote:
->>> On Friday, February 2, 2018 12:41:58 PM CET Prateek Sood wrote:
->>>> Hi Viresh,
->>>>
->>>> One scenario is there where a kernel panic is observed in
->>>> cpufreq during suspend/resume.
->>>>
->>>> pm_suspend()
->>>>   suspend_devices_and_enter()
->>>>     dpm_suspend_start()
->>>>       dpm_prepare()
->>>>
->>>> Failure in dpm_prepare() happend with following dmesg:
->>>>
->>>> [ 3746.316062] PM: Device xyz not prepared for power transition: code -16
->>>> [ 3746.316071] PM: Some devices failed to suspend, or early wake event detected
->>>>
->>>>
->>>> pm_suspend()
->>>>   suspend_devices_and_enter()
->>>>     dpm_suspend_start()
->>>>       dpm_prepare() //failed
->>>>     dpm_resume_end()
->>>>       dpm_resume()
->>>>         cpufreq_resume()
->>>>           cpufreq_start_governor()
->>>>             sugov_start()
->>>>               cpufreq_add_update_util_hook()
->>>>
->>>> After failure in dpm_prepare(), dpm_resume() called
->>>> cpufreq_resume(). Corresponding cpufreq_suspend() was not
->>>> called due to failure of dpm_prepare().
->>>>
->>>> This resulted in WARN_ON(per_cpu(cpufreq_update_util_data, cpu))
->>>> in cpufreq_add_update_util_hook() and cpufreq_add_update_util_hook->func
->>>> being inconsistent state. It caused crash in scheduler.
->>>>
->>>> Following are some of the ways to mitigate this issue. Could
->>>> you please provide feedback on below two approaches or suugest
->>>> a better way to fix this problem.
->>>>
->>>> -----------------------8<------------------------------
->>>>
->>>> Co-developed-by: Gaurav Kohli <gkohli@codeaurora.org>
->>>> Signed-off-by: Gaurav Kohli <gkohli@codeaurora.org>
->>>> Signed-off-by: Prateek Sood <prsood@codeaurora.org>
->>>>
->>>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->>>> index 02a497e..732e5a2 100644
->>>> --- a/drivers/base/power/main.c
->>>> +++ b/drivers/base/power/main.c
->>>> @@ -1038,6 +1038,7 @@ void dpm_resume(pm_message_t state)
->>>>  {
->>>>         struct device *dev;
->>>>         ktime_t starttime = ktime_get();
->>>> +       bool valid_resume = false;
->>>>
->>>>         trace_suspend_resume(TPS("dpm_resume"), state.event, true);
->>>>         might_sleep();
->>>> @@ -1055,6 +1056,7 @@ void dpm_resume(pm_message_t state)
->>>>         }
->>>>
->>>>         while (!list_empty(&dpm_suspended_list)) {
->>>> +               valid_resume = true;
->>>>                 dev = to_device(dpm_suspended_list.next);
->>>>                 get_device(dev);
->>>>                 if (!is_async(dev)) {
->>>> @@ -1080,7 +1082,8 @@ void dpm_resume(pm_message_t state)
->>>>         async_synchronize_full();
->>>>         dpm_show_time(starttime, state, 0, NULL);
->>>>
->>>> -       cpufreq_resume();
->>>> +       if (valid_resume)
->>>> +               cpufreq_resume();
->>>>         trace_suspend_resume(TPS("dpm_resume"), state.event, false);
->>>>  }
->>>>
->>>> --------------------8<--------------------------------------
->>>>
->>>> Signed-off-by: Prateek Sood <prsood@codeaurora.org>
->>>>
->>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>>> index 421f318..439eab8 100644
->>>> --- a/drivers/cpufreq/cpufreq.c
->>>> +++ b/drivers/cpufreq/cpufreq.c
->>>> @@ -1648,7 +1648,7 @@ void cpufreq_suspend(void)
->>>>  {
->>>>         struct cpufreq_policy *policy;
->>>>
->>>> -       if (!cpufreq_driver)
->>>> +       if (!cpufreq_driver || cpufreq_suspended)
->>>>                 return;
->>>>
->>>>         if (!has_target() && !cpufreq_driver->suspend)
->>>> @@ -1683,7 +1683,7 @@ void cpufreq_resume(void)
->>>>         struct cpufreq_policy *policy;
->>>>         int ret;
->>>>
->>>> -       if (!cpufreq_driver)
->>>> +       if (!cpufreq_driver || !cpufreq_suspended)
->>>>                 return;
->>>>
->>>>         cpufreq_suspended = false;
->>>
->>> Since we have cpufreq_suspended already, the second one is better.
->>>
->>
->> Thanks Rafael for the inputs, I will send a formal patch.
-> 
-> Bo Yan has posted something really similar already, however:
-> 
-> https://patchwork.kernel.org/patch/10181101/
-> 
-> so I would prefer to apply a new version of that one with the latest
-> comment taken into account:
-> 
-> https://patchwork.kernel.org/patch/10183075/
-> 
-> for the credit to go to the first submitter.
-> 
+On 02/02/2018 11:42, Viresh Kumar wrote:
+> Hi Daniel,
 
-Thanks for the information Rafael. 
+Hi Viresh,
 
-I believe safety check in both cpufreq_suspend() and
-cpufreq_resume() would be a good thing to have. 
+
+> I have gone through the other review comments, specially from Daniel T.. While I
+> share some of his concerns, I have few more of mine.
+> 
+> On 23-01-18, 16:34, Daniel Lezcano wrote:
+>> +late_initcall(cpu_cooling_init);
+> 
+> For example, this thing isn't going to fly nicely as you have assumed cpufreq
+> and cpuidle drivers are going to be part of the kernel itself. What if they are
+> modules and are inserted after late-init ? There are more cases like this where
+> the cpufreq driver may unregister the cpufreq cooling device on the fly and then
+> add it back. And so this stuff is a bit tricky.
+
+The cpuidle driver can not be compiled as a module.
+
+Agree the cpufreq driver can be unloaded and this part needs some
+adjustments.
+
+> Here is how I see the whole thing now:
+> 
+> - Yes we need individual support for both cpufreq and cpuidle cooling devices,
+>   and no one disagrees on that I believe.
+> 
+> - There is nothing in the thermal framework that disallows both cpufreq and
+>   cpuidle cooling devices to co-exist. Both would be part of the same thermal
+>   zone and so will get throttled with the same thermal sensor event. And so we
+>   will end up trying to cool down the SoC using both cpufreq and cpuidle
+>   technique.
+
+No. It does not work because we will need different state for each
+cooling device and we need some logic behind.
+
+> - Now I am just wondering if we really need the "combo" functionality or not.
+>   Can we fine tune the DT cpu-cooling properties (existing ones) for a platform,
+>   so that it automatically acts as a combo cooling device? I am not 100% sure
+>   its gonna fly, but just wanted to make sure its not possible to work around
+>   with and then only try the combo device thing.
+> 
+> For example, suppose that with just cpufreq-cooling device we need to take the
+> CPU down to 1 GHz from 2 GHz if we cross temperature 'X'. What if we can change
+> this policy from DT and say the cpufreq-cooling device goes to 1.5 GHz and
+> cpuidle-cooling device takes us to idle for 'y' us, and the effect of
+> combination of these two is >= the effect of the 1 GHz for just the
+> cpufreq-cooling device.
+> 
+> Is there any possibility of this to work ?
+
+It does not make sense. The combo does that automatically by computing
+the power equivalence more precisely.
 
 
 -- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation
-Center, Inc., is a member of Code Aurora Forum, a Linux Foundation
-Collaborative Project
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
