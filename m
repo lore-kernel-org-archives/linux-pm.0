@@ -1,80 +1,138 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: skip cpufreq resume if it's not suspended
-Date: Fri, 02 Feb 2018 12:54:17 +0100
-Message-ID: <17447147.z6jfkRxuEB@aspire.rjw.lan>
-References: <1516744675-21233-1-git-send-email-byan@nvidia.com> <1744712.rO4QOLozun@aspire.rjw.lan> <913f1715-bdd0-1c03-ad76-38be9d3d2298@nvidia.com>
+From: Prateek Sood <prsood@codeaurora.org>
+Subject: Re: Query related to usage of cpufreq_suspend() & cpufreq_resume
+Date: Fri, 2 Feb 2018 18:23:32 +0530
+Message-ID: <7d50aeb5-cc2d-521b-2f31-5477e6e18f20@codeaurora.org>
+References: <e9d13871-184b-dee3-c45f-c6d19e671eea@codeaurora.org>
+ <1949391.4ffJqIIJSQ@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <913f1715-bdd0-1c03-ad76-38be9d3d2298@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bo Yan <byan@nvidia.com>
-Cc: viresh.kumar@linaro.org, sgurrappadi@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:44722 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752118AbeBBMxi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Feb 2018 07:53:38 -0500
+In-Reply-To: <1949391.4ffJqIIJSQ@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gkohli@codeaurora.org, linux-arm-msm@vger.kernel.org
 
-On Wednesday, January 24, 2018 9:53:14 PM CET Bo Yan wrote:
+On 02/02/2018 05:18 PM, Rafael J. Wysocki wrote:
+> On Friday, February 2, 2018 12:41:58 PM CET Prateek Sood wrote:
+>> Hi Viresh,
+>>
+>> One scenario is there where a kernel panic is observed in
+>> cpufreq during suspend/resume.
+>>
+>> pm_suspend()
+>>   suspend_devices_and_enter()
+>>     dpm_suspend_start()
+>>       dpm_prepare() 
+>>
+>> Failure in dpm_prepare() happend with following dmesg:
+>>
+>> [ 3746.316062] PM: Device xyz not prepared for power transition: code -16
+>> [ 3746.316071] PM: Some devices failed to suspend, or early wake event detected
+>>
+>>
+>> pm_suspend()
+>>   suspend_devices_and_enter()
+>>     dpm_suspend_start()
+>>       dpm_prepare() //failed
+>>     dpm_resume_end()
+>>       dpm_resume()
+>>         cpufreq_resume()
+>>           cpufreq_start_governor()
+>>             sugov_start()
+>>               cpufreq_add_update_util_hook()
+>>
+>> After failure in dpm_prepare(), dpm_resume() called
+>> cpufreq_resume(). Corresponding cpufreq_suspend() was not
+>> called due to failure of dpm_prepare(). 
+>>
+>> This resulted in WARN_ON(per_cpu(cpufreq_update_util_data, cpu))
+>> in cpufreq_add_update_util_hook() and cpufreq_add_update_util_hook->func
+>> being inconsistent state. It caused crash in scheduler.
+>>
+>> Following are some of the ways to mitigate this issue. Could
+>> you please provide feedback on below two approaches or suugest
+>> a better way to fix this problem.
+>>
+>> -----------------------8<------------------------------
+>>
+>> Co-developed-by: Gaurav Kohli <gkohli@codeaurora.org>
+>> Signed-off-by: Gaurav Kohli <gkohli@codeaurora.org> 
+>> Signed-off-by: Prateek Sood <prsood@codeaurora.org>
+>>
+>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> index 02a497e..732e5a2 100644
+>> --- a/drivers/base/power/main.c
+>> +++ b/drivers/base/power/main.c
+>> @@ -1038,6 +1038,7 @@ void dpm_resume(pm_message_t state)
+>>  {
+>>         struct device *dev;
+>>         ktime_t starttime = ktime_get();
+>> +       bool valid_resume = false;
+>>
+>>         trace_suspend_resume(TPS("dpm_resume"), state.event, true);
+>>         might_sleep();
+>> @@ -1055,6 +1056,7 @@ void dpm_resume(pm_message_t state)
+>>         }
+>>
+>>         while (!list_empty(&dpm_suspended_list)) {
+>> +               valid_resume = true;
+>>                 dev = to_device(dpm_suspended_list.next);
+>>                 get_device(dev);
+>>                 if (!is_async(dev)) {
+>> @@ -1080,7 +1082,8 @@ void dpm_resume(pm_message_t state)
+>>         async_synchronize_full();
+>>         dpm_show_time(starttime, state, 0, NULL);
+>>
+>> -       cpufreq_resume();
+>> +       if (valid_resume)
+>> +               cpufreq_resume();
+>>         trace_suspend_resume(TPS("dpm_resume"), state.event, false);
+>>  }
+>>
+>> --------------------8<--------------------------------------
+>>
+>> Signed-off-by: Prateek Sood <prsood@codeaurora.org>
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 421f318..439eab8 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1648,7 +1648,7 @@ void cpufreq_suspend(void)
+>>  {
+>>         struct cpufreq_policy *policy;
+>>
+>> -       if (!cpufreq_driver)
+>> +       if (!cpufreq_driver || cpufreq_suspended)
+>>                 return;
+>>
+>>         if (!has_target() && !cpufreq_driver->suspend)
+>> @@ -1683,7 +1683,7 @@ void cpufreq_resume(void)
+>>         struct cpufreq_policy *policy;
+>>         int ret;
+>>
+>> -       if (!cpufreq_driver)
+>> +       if (!cpufreq_driver || !cpufreq_suspended)
+>>                 return;
+>>
+>>         cpufreq_suspended = false;
 > 
-> On 01/23/2018 06:02 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, January 23, 2018 10:57:55 PM CET Bo Yan wrote:
-> >>   drivers/cpufreq/cpufreq.c | 4 ++++
-> >>   1 file changed, 4 insertions(+)
-> >>
-> >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> >> index 41d148af7748..95b1c4afe14e 100644
-> >> --- a/drivers/cpufreq/cpufreq.c
-> >> +++ b/drivers/cpufreq/cpufreq.c
-> >> @@ -1680,6 +1680,10 @@ void cpufreq_resume(void)
-> >>   	if (!cpufreq_driver)
-> >>   		return;
-> >>   
-> >> +	if (unlikely(!cpufreq_suspended)) {
-> >> +		pr_warn("%s: resume after failing suspend\n", __func__);
-> >> +		return;
-> >> +	}
-> >>   	cpufreq_suspended = false;
-> >>   
-> >>   	if (!has_target() && !cpufreq_driver->resume)
-> >>
-> > Good catch, but rather than doing this it would be better to avoid
-> > calling cpufreq_resume() at all if cpufreq_suspend() has not been called.
-> Yes, I thought about that, but there is no good way to skip over it 
-> without introducing another flag. cpufreq_resume is called by 
-> dpm_resume, cpufreq_suspend is called by dpm_suspend. In the failure 
-> case, dpm_resume is called, but dpm_suspend is not. So on a higher level 
-> it's already unbalanced.
+> Since we have cpufreq_suspended already, the second one is better.
 > 
-> One possibility is to rely on the pm_transition flag. So something like:
+> Thanks,
+> Rafael
 > 
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index dc259d20c967..8469e6fc2b2c 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -842,6 +842,7 @@ static void async_resume(void *data, async_cookie_t 
-> cookie)
->   void dpm_resume(pm_message_t state)
->   {
->          struct device *dev;
-> +       bool suspended = (pm_transition.event != PM_EVENT_ON);
->          ktime_t starttime = ktime_get();
-> 
->          trace_suspend_resume(TPS("dpm_resume"), state.event, true);
-> @@ -885,7 +886,8 @@ void dpm_resume(pm_message_t state)
->          async_synchronize_full();
->          dpm_show_time(starttime, state, NULL);
-> 
-> -       cpufreq_resume();
-> +       if (likely(suspended))
-> +               cpufreq_resume();
->          trace_suspend_resume(TPS("dpm_resume"), state.event, false);
->   }
 
-I was thinking about something else.
+Thanks Rafael for the inputs, I will send a formal patch.
 
-Anyway, I think your original patch is OK too, but without printing the
-message.  Just combine the cpufreq_suspended check with the cpufreq_driver
-one and the unlikely() thing is not necessary.
 
-Thanks,
-Rafael
+-- 
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation
+Center, Inc., is a member of Code Aurora Forum, a Linux Foundation
+Collaborative Project
