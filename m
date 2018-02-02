@@ -1,59 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
- cooling device
-Date: Fri, 2 Feb 2018 16:12:59 +0530
-Message-ID: <20180202104259.GA28462@vireshk-i7>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
+From: Robin Murphy <robin.murphy@arm.com>
+Subject: Re: [PATCH v6 4/6] iommu/arm-smmu: Add the device_link between
+ masters and smmu
+Date: Fri, 2 Feb 2018 11:31:58 +0000
+Message-ID: <f8932e2f-75bb-ce30-ae68-1870477fad5f@arm.com>
+References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
+ <1516362223-22946-5-git-send-email-vivek.gautam@codeaurora.org>
+ <6b930150-cb81-b0a5-601c-16cb576c4341@arm.com>
+ <b7887b45-774a-2515-4304-227037b9af1f@codeaurora.org>
+ <7cc4caec-4264-db9d-3afa-e3d20d3edfa7@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <7cc4caec-4264-db9d-3afa-e3d20d3edfa7@codeaurora.org>
+Content-Language: en-GB
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, alex.williamson@redhat.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, sboyd@codeaurora.org
+Cc: gregkh@linuxfoundation.org, m.szyprowski@samsung.com, architt@codeaurora.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
+On 02/02/18 05:40, Sricharan R wrote:
+> Hi Robin/Vivek,
+> 
+> On 2/1/2018 2:23 PM, Vivek Gautam wrote:
+>> Hi,
+>>
+>>
+>> On 1/31/2018 6:39 PM, Robin Murphy wrote:
+>>> On 19/01/18 11:43, Vivek Gautam wrote:
+>>>> From: Sricharan R <sricharan@codeaurora.org>
+>>>>
+>>>> Finally add the device link between the master device and
+>>>> smmu, so that the smmu gets runtime enabled/disabled only when the
+>>>> master needs it. This is done from add_device callback which gets
+>>>> called once when the master is added to the smmu.
+>>>
+>>> Don't we need to balance this with a device_link_del() in .remove_device (like exynos-iommu does)?
+>>
+>> Right. Will add device_link_del() call. Thanks for pointing out.
+> 
+>   The reason for not adding device_link_del from .remove_device was, the core device_del
+>   which calls the .remove_device from notifier, calls device_links_purge before that.
+>   That does the same thing as device_link_del. So by the time .remove_device is called,
+>   device_links for that device is already cleaned up. Vivek, you may want to check once that
+>   calling device_link_del from .remove_device has no effect, just to confirm once more.
 
-I have gone through the other review comments, specially from Daniel T.. While I
-share some of his concerns, I have few more of mine.
+There is at least one path in which .remove_device is not called via the 
+notifier from device_del(), which is in the cleanup path of 
+iommu_bus_init(). AFAICS any links created by .add_device during that 
+process would be left dangling, because the device(s) would be live but 
+otherwise disassociated from the IOMMU afterwards.
 
-On 23-01-18, 16:34, Daniel Lezcano wrote:
-> +late_initcall(cpu_cooling_init);
+ From a maintenance perspective it's easier to have the call in its 
+logical place even if it does nothing 99% of the time; that way we 
+shouldn't have to keep an eye out for subtle changes in the power 
+management code or driver core that might invalidate the device_del() 
+reasoning above, and the power management guys shouldn't have to 
+comprehend the internals of the IOMMU API to make sense of the 
+unbalanced call if they ever want to change their API.
 
-For example, this thing isn't going to fly nicely as you have assumed cpufreq
-and cpuidle drivers are going to be part of the kernel itself. What if they are
-modules and are inserted after late-init ? There are more cases like this where
-the cpufreq driver may unregister the cpufreq cooling device on the fly and then
-add it back. And so this stuff is a bit tricky.
-
-Here is how I see the whole thing now:
-
-- Yes we need individual support for both cpufreq and cpuidle cooling devices,
-  and no one disagrees on that I believe.
-
-- There is nothing in the thermal framework that disallows both cpufreq and
-  cpuidle cooling devices to co-exist. Both would be part of the same thermal
-  zone and so will get throttled with the same thermal sensor event. And so we
-  will end up trying to cool down the SoC using both cpufreq and cpuidle
-  technique.
-
-- Now I am just wondering if we really need the "combo" functionality or not.
-  Can we fine tune the DT cpu-cooling properties (existing ones) for a platform,
-  so that it automatically acts as a combo cooling device? I am not 100% sure
-  its gonna fly, but just wanted to make sure its not possible to work around
-  with and then only try the combo device thing.
-
-For example, suppose that with just cpufreq-cooling device we need to take the
-CPU down to 1 GHz from 2 GHz if we cross temperature 'X'. What if we can change
-this policy from DT and say the cpufreq-cooling device goes to 1.5 GHz and
-cpuidle-cooling device takes us to idle for 'y' us, and the effect of
-combination of these two is >= the effect of the 1 GHz for just the
-cpufreq-cooling device.
-
-Is there any possibility of this to work ?
-
--- 
-viresh
+Thanks,
+Robin.
