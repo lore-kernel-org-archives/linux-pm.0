@@ -1,172 +1,63 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v3 2/5] irqchip/gic-v3-its: add ability to save/restore
- ITS state
-Date: Thu, 1 Feb 2018 14:54:33 -0800
-Message-ID: <CAGAzgsoy2TRqfnEZTszDkDAGeOsyTdfkF9R5m2Qv94b29hiRww@mail.gmail.com>
-References: <20180130010007.256564-1-dbasehore@chromium.org> <20180130010007.256564-3-dbasehore@chromium.org>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH V2 2/2] cpufreq: imx6q: add 696MHz operating point for
+ i.mx6ul
+Date: Fri, 2 Feb 2018 08:47:15 +0800
+Message-ID: <20180202004713.GC20833@dragon>
+References: <1515235360-1628-1-git-send-email-Anson.Huang@nxp.com>
+ <1515235360-1628-2-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180130010007.256564-3-dbasehore@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>, Marc Zyngier <marc.zyngier@arm.com>, Derek Basehore <dbasehore@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1515235360-1628-2-git-send-email-Anson.Huang@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Anson Huang <Anson.Huang@nxp.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, rafael@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, robh+dt@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 29, 2018 at 5:00 PM, Derek Basehore <dbasehore@chromium.org> wrote:
-> Some platforms power off GIC logic in suspend, so we need to
-> save/restore state. The distributor and redistributor registers need
-> to be handled in platform code due to access permissions on those
-> registers, but the ITS registers can be restored in the kernel.
->
-> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
-> ---
->  drivers/irqchip/irq-gic-v3-its.c | 86 ++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 86 insertions(+)
->
-> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-> index 06f025fd5726..759ede7048ed 100644
-> --- a/drivers/irqchip/irq-gic-v3-its.c
-> +++ b/drivers/irqchip/irq-gic-v3-its.c
-> @@ -33,6 +33,7 @@
->  #include <linux/of_platform.h>
->  #include <linux/percpu.h>
->  #include <linux/slab.h>
-> +#include <linux/syscore_ops.h>
->
->  #include <linux/irqchip.h>
->  #include <linux/irqchip/arm-gic-v3.h>
-> @@ -46,6 +47,7 @@
->  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING          (1ULL << 0)
->  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375      (1ULL << 1)
->  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144      (1ULL << 2)
-> +#define ITS_FLAGS_SAVE_SUSPEND_STATE           (1ULL << 3)
->
->  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING    (1 << 0)
->
-> @@ -83,6 +85,15 @@ struct its_baser {
->         u32             psz;
->  };
->
-> +/*
-> + * Saved ITS state - this is where saved state for the ITS is stored
-> + * when it's disabled during system suspend.
-> + */
-> +struct its_ctx {
-> +       u64                     cbaser;
-> +       u32                     ctlr;
-> +};
-> +
->  struct its_device;
->
->  /*
-> @@ -101,6 +112,7 @@ struct its_node {
->         struct its_collection   *collections;
->         struct fwnode_handle    *fwnode_handle;
->         u64                     (*get_msi_base)(struct its_device *its_dev);
-> +       struct its_ctx          its_ctx;
->         struct list_head        its_device_list;
->         u64                     flags;
->         unsigned long           list_nr;
-> @@ -3042,6 +3054,75 @@ static void its_enable_quirks(struct its_node *its)
->         gic_enable_quirks(iidr, its_quirks, its);
->  }
->
-> +static int its_save_disable(void)
-> +{
-> +       struct its_node *its;
-> +       int err = 0;
-> +
-> +       spin_lock(&its_lock);
-> +       list_for_each_entry(its, &its_nodes, entry) {
-> +               if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
-> +                       struct its_ctx *ctx = &its->its_ctx;
-> +                       void __iomem *base = its->base;
-> +
-> +                       ctx->ctlr = readl_relaxed(base + GITS_CTLR);
-> +                       err = its_force_quiescent(base);
-> +                       if (err) {
-> +                               pr_err("ITS failed to quiesce\n");
-> +                               writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-> +                               goto err;
-> +                       }
-> +
-> +                       ctx->cbaser = gits_read_cbaser(base + GITS_CBASER);
-> +               }
-> +       }
-> +
-> +err:
-> +       if (err) {
-> +               list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
-> +                       if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
-> +                               struct its_ctx *ctx = &its->its_ctx;
-> +                               void __iomem *base = its->base;
-> +
-> +                               writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-> +                       }
-> +               }
-> +       }
-> +
-> +       spin_unlock(&its_lock);
-> +
-> +       return err;
-> +}
-> +
-> +static void its_restore_enable(void)
-> +{
-> +       struct its_node *its;
-> +
-> +       spin_lock(&its_lock);
-> +       list_for_each_entry(its, &its_nodes, entry) {
-> +               if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
-> +                       struct its_ctx *ctx = &its->its_ctx;
-> +                       void __iomem *base = its->base;
-> +                       struct its_baser *baser;
-> +                       int i;
-> +
-> +                       gits_write_cbaser(ctx->cbaser, base + GITS_CBASER);
-> +                       /* Restore GITS_BASER from the value cache. */
-> +                       for (i = 0; i < GITS_BASER_NR_REGS; i++) {
-> +                               baser = &its->tables[i];
-> +                               its_write_baser(its, baser, baser->val);
-> +                       }
+On Sat, Jan 06, 2018 at 06:42:40PM +0800, Anson Huang wrote:
+> Add 696MHz operating point for i.MX6UL, only for those
+> parts with speed grading fuse set to 2b'10 supports
+> 696MHz operating point, so, speed grading check is also
+> added for i.MX6UL in this patch, the clock tree for each
+> operating point are as below:
+> 
+> 696MHz:
+>     pll1                       696000000
+>        pll1_bypass             696000000
+>           pll1_sys             696000000
+>              pll1_sw           696000000
+>                 arm            696000000
+> 528MHz:
+>     pll2                       528000000
+>        pll2_bypass             528000000
+>           pll2_bus             528000000
+>              ca7_secondary_sel 528000000
+>                 step           528000000
+>                    pll1_sw     528000000
+>                       arm      528000000
+> 396MHz:
+>     pll2_pfd2_396m             396000000
+>        ca7_secondary_sel       396000000
+>           step                 396000000
+>              pll1_sw           396000000
+>                 arm            396000000
+> 198MHz:
+>     pll2_pfd2_396m             396000000
+>        ca7_secondary_sel       396000000
+>           step                 396000000
+>              pll1_sw           396000000
+>                 arm            198000000
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 
-It seems that we need to resolve its->cmd_write with the current state
-of GITS_CREADR and GITS_CWRITER. Otherwise, the code that detects the
-ITS getting wedged will trigger.
-
-> +                       writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-> +               }
-> +       }
-> +       spin_unlock(&its_lock);
-> +}
-> +
-> +static struct syscore_ops its_syscore_ops = {
-> +       .suspend = its_save_disable,
-> +       .resume = its_restore_enable,
-> +};
-> +
->  static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
->  {
->         struct irq_domain *inner_domain;
-> @@ -3261,6 +3342,9 @@ static int __init its_probe_one(struct resource *res,
->                 ctlr |= GITS_CTLR_ImDe;
->         writel_relaxed(ctlr, its->base + GITS_CTLR);
->
-> +       if (fwnode_property_present(handle, "reset-on-suspend"))
-> +               its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
-> +
->         err = its_init_domain(handle, its);
->         if (err)
->                 goto out_free_tables;
-> @@ -3515,5 +3599,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
->                 }
->         }
->
-> +       register_syscore_ops(&its_syscore_ops);
-> +
->         return 0;
->  }
-> --
-> 2.16.0.rc1.238.g530d649a79-goog
->
+Acked-by: Shawn Guo <shawnguo@kernel.org>
