@@ -1,94 +1,59 @@
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v6 4/6] iommu/arm-smmu: Add the device_link between
- masters and smmu
-Date: Fri, 2 Feb 2018 11:10:25 +0530
-Message-ID: <7cc4caec-4264-db9d-3afa-e3d20d3edfa7@codeaurora.org>
-References: <1516362223-22946-1-git-send-email-vivek.gautam@codeaurora.org>
- <1516362223-22946-5-git-send-email-vivek.gautam@codeaurora.org>
- <6b930150-cb81-b0a5-601c-16cb576c4341@arm.com>
- <b7887b45-774a-2515-4304-227037b9af1f@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
+ cooling device
+Date: Fri, 2 Feb 2018 16:12:59 +0530
+Message-ID: <20180202104259.GA28462@vireshk-i7>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <b7887b45-774a-2515-4304-227037b9af1f-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Robin/Vivek,
+Hi Daniel,
 
-On 2/1/2018 2:23 PM, Vivek Gautam wrote:
-> Hi,
-> 
-> 
-> On 1/31/2018 6:39 PM, Robin Murphy wrote:
->> On 19/01/18 11:43, Vivek Gautam wrote:
->>> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->>>
->>> Finally add the device link between the master device and
->>> smmu, so that the smmu gets runtime enabled/disabled only when the
->>> master needs it. This is done from add_device callback which gets
->>> called once when the master is added to the smmu.
->>
->> Don't we need to balance this with a device_link_del() in .remove_device (like exynos-iommu does)?
-> 
-> Right. Will add device_link_del() call. Thanks for pointing out.
+I have gone through the other review comments, specially from Daniel T.. While I
+share some of his concerns, I have few more of mine.
 
- The reason for not adding device_link_del from .remove_device was, the core device_del 
- which calls the .remove_device from notifier, calls device_links_purge before that.
- That does the same thing as device_link_del. So by the time .remove_device is called,
- device_links for that device is already cleaned up. Vivek, you may want to check once that
- calling device_link_del from .remove_device has no effect, just to confirm once more.
+On 23-01-18, 16:34, Daniel Lezcano wrote:
+> +late_initcall(cpu_cooling_init);
 
-Regards,
- Sricharan
- 
-> 
-> regards
-> Vivek
-> 
->>
->> Robin.
->>
->>> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->>> ---
->>>   drivers/iommu/arm-smmu.c | 11 +++++++++++
->>>   1 file changed, 11 insertions(+)
->>>
->>> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
->>> index 95478bfb182c..33bbcfedb896 100644
->>> --- a/drivers/iommu/arm-smmu.c
->>> +++ b/drivers/iommu/arm-smmu.c
->>> @@ -1367,6 +1367,7 @@ static int arm_smmu_add_device(struct device *dev)
->>>       struct arm_smmu_device *smmu;
->>>       struct arm_smmu_master_cfg *cfg;
->>>       struct iommu_fwspec *fwspec = dev->iommu_fwspec;
->>> +    struct device_link *link;
->>>       int i, ret;
->>>         if (using_legacy_binding) {
->>> @@ -1428,6 +1429,16 @@ static int arm_smmu_add_device(struct device *dev)
->>>         pm_runtime_put_sync(smmu->dev);
->>>   +    /*
->>> +     * Establish the link between smmu and master, so that the
->>> +     * smmu gets runtime enabled/disabled as per the master's
->>> +     * needs.
->>> +     */
->>> +    link = device_link_add(dev, smmu->dev, DL_FLAG_PM_RUNTIME);
->>> +    if (!link)
->>> +        dev_warn(smmu->dev, "Unable to create device link between %s and %s\n",
->>> +             dev_name(smmu->dev), dev_name(dev));
->>> +
->>>       return 0;
->>>     out_cfg_free:
->>>
-> 
+For example, this thing isn't going to fly nicely as you have assumed cpufreq
+and cpuidle drivers are going to be part of the kernel itself. What if they are
+modules and are inserted after late-init ? There are more cases like this where
+the cpufreq driver may unregister the cpufreq cooling device on the fly and then
+add it back. And so this stuff is a bit tricky.
+
+Here is how I see the whole thing now:
+
+- Yes we need individual support for both cpufreq and cpuidle cooling devices,
+  and no one disagrees on that I believe.
+
+- There is nothing in the thermal framework that disallows both cpufreq and
+  cpuidle cooling devices to co-exist. Both would be part of the same thermal
+  zone and so will get throttled with the same thermal sensor event. And so we
+  will end up trying to cool down the SoC using both cpufreq and cpuidle
+  technique.
+
+- Now I am just wondering if we really need the "combo" functionality or not.
+  Can we fine tune the DT cpu-cooling properties (existing ones) for a platform,
+  so that it automatically acts as a combo cooling device? I am not 100% sure
+  its gonna fly, but just wanted to make sure its not possible to work around
+  with and then only try the combo device thing.
+
+For example, suppose that with just cpufreq-cooling device we need to take the
+CPU down to 1 GHz from 2 GHz if we cross temperature 'X'. What if we can change
+this policy from DT and say the cpufreq-cooling device goes to 1.5 GHz and
+cpuidle-cooling device takes us to idle for 'y' us, and the effect of
+combination of these two is >= the effect of the 1 GHz for just the
+cpufreq-cooling device.
+
+Is there any possibility of this to work ?
 
 -- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+viresh
