@@ -1,200 +1,108 @@
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Subject: Re: [PATCH] leds: use QoS to control LED suspend behavior from
- userspace
-Date: Fri, 2 Feb 2018 21:52:14 +0100
-Message-ID: <f415fc12-0ffa-35e9-b7e5-57184d1a9aee@gmail.com>
-References: <20180129194947.11071-1-0v3rdr0n3@gmail.com>
- <20180130082817.GA4136@amd>
- <CAFY_6qqX9x-DQ+CQRS0Q6DGwzF-zJ6w++OxgU8-+kL_fjXnN_w@mail.gmail.com>
- <fbebed0e-22ec-a13a-0bdd-7b241c21ab30@gmail.com>
- <CAFY_6qqxo2jF=5cd_Hd5svv3sGH7t8j+RVAShCZ-P-_gfAkufQ@mail.gmail.com>
+From: Bo Yan <byan@nvidia.com>
+Subject: Re: [PATCH] cpufreq: skip cpufreq resume if it's not suspended
+Date: Fri, 2 Feb 2018 13:28:15 -0800
+Message-ID: <dc33ef16-9684-3d8d-f4cc-6e24697f007f@nvidia.com>
+References: <1516744675-21233-1-git-send-email-byan@nvidia.com>
+ <1744712.rO4QOLozun@aspire.rjw.lan>
+ <913f1715-bdd0-1c03-ad76-38be9d3d2298@nvidia.com>
+ <17447147.z6jfkRxuEB@aspire.rjw.lan> <5A74BD55.5000402@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f179.google.com ([209.85.128.179]:45357 "EHLO
-        mail-wr0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752016AbeBBUx3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Feb 2018 15:53:29 -0500
-In-Reply-To: <CAFY_6qqxo2jF=5cd_Hd5svv3sGH7t8j+RVAShCZ-P-_gfAkufQ@mail.gmail.com>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:14217 "EHLO
+        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751699AbeBBV2R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Feb 2018 16:28:17 -0500
+In-Reply-To: <5A74BD55.5000402@codeaurora.org>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Samuel Morris <samorris@lexmark.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Sam Morris <0v3rdr0n3@gmail.com>, Linux PM <linux-pm@vger.kernel.org>, linux-leds@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: viresh.kumar@linaro.org, sgurrappadi@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 02/02/2018 04:40 PM, Samuel Morris wrote:
-> On Thu, Feb 1, 2018 at 4:29 PM, Jacek Anaszewski
-> <jacek.anaszewski@gmail.com> wrote:
->> Hi Samuel,
->>
->> Thanks for the patch.
->>
->> On 01/30/2018 03:55 PM, Samuel Morris wrote:
->>> On Tue, Jan 30, 2018 at 3:28 AM, Pavel Machek <pavel@ucw.cz> wrote:
->>>> On Mon 2018-01-29 19:49:47, 0v3rdr0n3@gmail.com wrote:
->>>>> From: Samuel Morris <samorris@lexmark.com>
+On 02/02/2018 11:34 AM, Saravana Kannan wrote:
+> On 02/02/2018 03:54 AM, Rafael J. Wysocki wrote:
+>> On Wednesday, January 24, 2018 9:53:14 PM CET Bo Yan wrote:
+>>>
+>>> On 01/23/2018 06:02 PM, Rafael J. Wysocki wrote:
+>>>> On Tuesday, January 23, 2018 10:57:55 PM CET Bo Yan wrote:
+>>>>>    drivers/cpufreq/cpufreq.c | 4 ++++
+>>>>>    1 file changed, 4 insertions(+)
 >>>>>
->>>>> Signed-off-by: Samuel Morris <samorris@lexmark.com>
->>>>
->>>> But... we'll really need description what this is supposed to do.
->>>
->>> I have an LED that indicates to the user that the machine is still
->>> powered when in suspend, so it needs to remain powered. This LED uses
->>> the leds-pwm driver, but it may use a different driver on future
->>> products, so making this change in that driver only would not be
->>> ideal. I asked linux-pm a related question a week or two ago, and
->>> Raphael Wysocki suggested looking into the PM_QOS_FLAG_NO_POWER_OFF
->>> flag. This is what I came up with. I realize this is a pretty broad
->>> change, but I figured I'd try the most general thing first.
->>>
->>>>
->>>> Because at least some LEDs (keyboard LEDs on PC) can't be powered on
->>>> during suspend.
->>>
->>> That is why I set the default behavior to PM_QOS_FLAG_NO_POWER_OFF=0 on probe.
->>>
->>>>
->>>> Does this work for your LEDs? Do we need a way for userspace to tell
->>>> if LED supports it or not?
->>>
->>> Yes, this fixes my problem. I could try testing on other LEDs as well
->>> that use different drivers if need be.
->>>
->>> I didn't see any reason not to make this userspace configurable. I
->>> imagine for some LEDs, the switch just won't work. Are you aware of
->>> any cases where attempting to keep an LED on would cause outright
->>> breakage? I would like these QoS parameters to be device tree, or
->>> otherwise per-board configurable, but I'm not aware of a standard way
->>> to do that. Maybe someone from linux-pm has an idea. Something like
->>> that might be more reasonable than allowing default userspace
->>> configurability.
->>
->> There is already retain-state-suspended property defined in
->> Documentation/devicetree/bindings/leds/leds-gpio.txt and used
->> in drivers/leds/leds-gpio.c. Now if we are going to add generic
->> pm_qos support to the LED core, the DT property should be made generic
->> too and moved to the Documentation/devicetree/bindings/leds/common.txt.
-> 
-> Sounds good, I'll start working on it. Though I can't help but think,
-> if all devices share this pm_qos interface, couldn't the device tree
-> interface be shared as well?
-
-Could you please elaborate on that?
-
->> Then, if the property is present, we shouldn't expose this setting
->> to the userspace, see below.
-> 
-> I'm okay with dt only configurability. Though, if you're suggesting we
-> should expose the flag to userspace based on whether or not it's dt
-> configurable, I'm not so sure. I think those decisions should be
-> independent. 
-
-My concern here is backward compatibility - current users expect that
-once the property is set in DT, the behavior on suspend is guaranteed
-to not change.
-
-> When you expose that flag with dev_pm_qos_expose_flags(),
-> you also expose other flags.
-
-How so? You're exposing only one flag:
-
-dev_pm_qos_expose_flags(led_cdev->dev, PM_QOS_FLAG_NO_POWER_OFF)
-
-I'm not familiar with this interface, though.
-
-> I will probably just remove the userspace
-> configurability for now. That can go in a separate patch, and maybe
-> that can be configurable from the dt, or a kernel config parameter.
-
-I'm fine with that.
-
->>>>
->>>>> @@ -196,6 +197,11 @@ static int led_suspend(struct device *dev)
->>>>>  {
->>>>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
+>>>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>>>> index 41d148af7748..95b1c4afe14e 100644
+>>>>> --- a/drivers/cpufreq/cpufreq.c
+>>>>> +++ b/drivers/cpufreq/cpufreq.c
+>>>>> @@ -1680,6 +1680,10 @@ void cpufreq_resume(void)
+>>>>>        if (!cpufreq_driver)
+>>>>>            return;
 >>>>>
->>>>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->>>>> +                     PM_QOS_FLAGS_ALL) {
->>>>> +             return 0;
->>>>> +     }
->>>>
->>>> "if (". No need for { } s.
+>>>>> +    if (unlikely(!cpufreq_suspended)) {
+>>>>> +        pr_warn("%s: resume after failing suspend\n", __func__);
+>>>>> +        return;
+>>>>> +    }
+>>>>>        cpufreq_suspended = false;
+>>>>>
+>>>>>        if (!has_target() && !cpufreq_driver->resume)
+>>>>>
+>>>> Good catch, but rather than doing this it would be better to avoid
+>>>> calling cpufreq_resume() at all if cpufreq_suspend() has not been 
+>>>> called.
+>>> Yes, I thought about that, but there is no good way to skip over it
+>>> without introducing another flag. cpufreq_resume is called by
+>>> dpm_resume, cpufreq_suspend is called by dpm_suspend. In the failure
+>>> case, dpm_resume is called, but dpm_suspend is not. So on a higher 
+>>> level
+>>> it's already unbalanced.
 >>>
->>> Ok, I'll generate a new patch later if this seems likely to be integrated.
->>
->> Please also address problems detected by build bot [0].
-> 
-> Will do.
-> 
->>
->>>>> +
->>>>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>>>>               led_classdev_suspend(led_cdev);
->>>>>
->>>>> @@ -206,6 +212,11 @@ static int led_resume(struct device *dev)
->>>>>  {
->>>>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
->>>>>
->>>>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->>>>> +                     PM_QOS_FLAGS_ALL) {
->>>>> +             return 0;
->>>>> +     }
->>>>> +
->>>>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>>>>               led_classdev_resume(led_cdev);
->>>>>
->>>>> @@ -287,6 +298,18 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
->>>>>       list_add_tail(&led_cdev->node, &leds_list);
->>>>>       up_write(&leds_list_lock);
->>>>>
->>>>> +     /* Attempt to let userspace take over the policy. */
->>>>> +     ret = dev_pm_qos_expose_flags(led_cdev->dev,
->>>>> +                     PM_QOS_FLAG_NO_POWER_OFF);
->>>>> +     if (ret < 0) {
->>>>> +             dev_warn(led_cdev->dev, "failed to expose pm_qos_no_poweroff\n");
->>>>> +             return 0;
->>>>> +     }
->>>>> +
->>>>> +     ret = dev_pm_qos_update_flags(led_cdev->dev,
->>>>> +                     PM_QOS_FLAG_NO_POWER_OFF,
->>>>> +                     0);
->>>>> +
->>
->> So this part should be executed conditionally only if
->> retain-state-suspended wasn't defined. BTW you will have
->> to rebase your code onto some more recent code base.
->>
->> led_classdev_register() was renamed to of_led_classdev_register()
->> in 4.12 and it now accepts struct device_node. leds-gpio.c was
->> already changed to use it so it will be convenient to test the use case
->> with retain-state-suspended DT property.
-> 
-> Sounds good.
-> 
->>
->>>>>       if (!led_cdev->max_brightness)
->>>>>               led_cdev->max_brightness = LED_FULL;
->>>>
->>>> Best regards,
->>>>                                                                         Pavel
->>>> --
->>>> (english) http://www.livejournal.com/~pavelmachek
->>>> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>>> One possibility is to rely on the pm_transition flag. So something 
+>>> like:
 >>>
->>> thanks,
->>> Sam
 >>>
+>>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>>> index dc259d20c967..8469e6fc2b2c 100644
+>>> --- a/drivers/base/power/main.c
+>>> +++ b/drivers/base/power/main.c
+>>> @@ -842,6 +842,7 @@ static void async_resume(void *data, async_cookie_t
+>>> cookie)
+>>>    void dpm_resume(pm_message_t state)
+>>>    {
+>>>           struct device *dev;
+>>> +       bool suspended = (pm_transition.event != PM_EVENT_ON);
+>>>           ktime_t starttime = ktime_get();
+>>>
+>>>           trace_suspend_resume(TPS("dpm_resume"), state.event, true);
+>>> @@ -885,7 +886,8 @@ void dpm_resume(pm_message_t state)
+>>>           async_synchronize_full();
+>>>           dpm_show_time(starttime, state, NULL);
+>>>
+>>> -       cpufreq_resume();
+>>> +       if (likely(suspended))
+>>> +               cpufreq_resume();
+>>>           trace_suspend_resume(TPS("dpm_resume"), state.event, false);
+>>>    }
 >>
->> [0] https://www.spinics.net/lists/linux-leds/msg09031.html
+>> I was thinking about something else.
 >>
->> --
->> Best regards,
->> Jacek Anaszewski
-> 
-> Thanks for the feedback,
-> Sam
-> 
-
--- 
-Best regards,
-Jacek Anaszewski
+>> Anyway, I think your original patch is OK too, but without printing the
+>> message.  Just combine the cpufreq_suspended check with the 
+>> cpufreq_driver
+>> one and the unlikely() thing is not necessary.
+>>
+>
+> I rather have this fixed in the dpm_suspend/resume() code. This is 
+> just masking the first issue that's being caused by unbalanced error 
+> handling. If that means adding flags in dpm_suspend/resume() then 
+> that's what we should do right now and clean it up later if it can be 
+> improved. Making cpufreq more messy doesn't seem like the right answer.
+>
+> Thanks,
+> Saravana
+>
+>
+dpm_suspend and dpm_resume by themselves are not balanced in this 
+particular case. As it's currently structured, dpm_resume can't be 
+omitted even if dpm_suspend is skipped due to earlier failure.  I think 
+checking cpufreq_suspended flag is a reasonable compromise. If we can 
+find a way to make dpm_suspend/dpm_resume also balanced, that will be best.
