@@ -1,34 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH] cpufreq: skip cpufreq resume if it's not suspended
-Date: Mon, 5 Feb 2018 14:35:46 +0530
-Message-ID: <20180205090546.GE28462@vireshk-i7>
+Date: Mon, 05 Feb 2018 10:19:55 +0100
+Message-ID: <1563547.VDOW1Ixonm@aspire.rjw.lan>
 References: <1516744675-21233-1-git-send-email-byan@nvidia.com>
- <dc33ef16-9684-3d8d-f4cc-6e24697f007f@nvidia.com>
- <20180205040118.GB28462@vireshk-i7>
- <1710637.vo8uP0oTBm@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pl0-f49.google.com ([209.85.160.49]:41701 "EHLO
-        mail-pl0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752250AbeBEJFu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 04:05:50 -0500
-Received: by mail-pl0-f49.google.com with SMTP id k8so9144582pli.8
-        for <linux-pm@vger.kernel.org>; Mon, 05 Feb 2018 01:05:49 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1710637.vo8uP0oTBm@aspire.rjw.lan>
+Received: from cloudserver094114.home.pl ([79.96.170.134]:64114 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752798AbeBEJVf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 04:21:35 -0500
+In-Reply-To: <1516744675-21233-1-git-send-email-byan@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bo Yan <byan@nvidia.com>, Saravana Kannan <skannan@codeaurora.org>, sgurrappadi@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bo Yan <byan@nvidia.com>
+Cc: viresh.kumar@linaro.org, sgurrappadi@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05-02-18, 09:50, Rafael J. Wysocki wrote:
-> By design (which I admit may be confusing) it should be fine to call
-> dpm_resume_end() after a failing dpm_suspend_start(), whatever the reason
-> for the failure is.  cpufreq_suspend/resume() don't take that into account,
-> everybody else does.
+On Tuesday, January 23, 2018 10:57:55 PM CET Bo Yan wrote:
+> cpufreq_resume can be called even without preceding cpufreq_suspend.
+> This can happen in following scenario:
+> 
+>     suspend_devices_and_enter
+>        --> dpm_suspend_start
+>           --> dpm_prepare
+>               --> device_prepare : this function errors out
+>           --> dpm_suspend: this is skipped due to dpm_prepare failure
+>                            this means cpufreq_suspend is skipped over
+>        --> goto Recover_platform, due to previous error
+>        --> goto Resume_devices
+>        --> dpm_resume_end
+>            --> dpm_resume
+>                --> cpufreq_resume
+> 
+> In case schedutil is used as frequency governor, cpufreq_resume will
+> eventually call sugov_start, which does following:
+> 
+>     memset(sg_cpu, 0, sizeof(*sg_cpu));
+>     ....
+> 
+> This effectively erases function pointer for frequency update, causing
+> crash later on. The function pointer would have been set correctly if
+> subsequent cpufreq_add_update_util_hook runs successfully, but that
+> function returns earlier because cpufreq_suspend was not called:
+> 
+>     if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
+> 		return;
+> 
+> Ideally, suspend should succeed, then things will be fine. But even
+> in case of suspend failure, system should not crash.
+> 
+> The fix is to check cpufreq_suspended first, if it's false, that means
+> cpufreq_suspend was not called in the first place, so do not resume
+> cpufreq.
+> 
+> Signed-off-by: Bo Yan <byan@nvidia.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 41d148af7748..95b1c4afe14e 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1680,6 +1680,10 @@ void cpufreq_resume(void)
+>  	if (!cpufreq_driver)
+>  		return;
+>  
+> +	if (unlikely(!cpufreq_suspended)) {
+> +		pr_warn("%s: resume after failing suspend\n", __func__);
+> +		return;
+> +	}
+>  	cpufreq_suspended = false;
+>  
+>  	if (!has_target() && !cpufreq_driver->resume)
 
-Hmm, I see. Can't do much then, just fix the only broken piece of code :)
+I've just edited this patch somewhat (mostly by dropping the pr_warn())
+and queued it up.
 
--- 
-viresh
+Thanks,
+Rafael
