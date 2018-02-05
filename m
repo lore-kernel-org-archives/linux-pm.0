@@ -1,65 +1,56 @@
-From: Adam Bennett <abennett72@gmail.com>
-Subject: [Solved] Re: SSD being put to sleep during boot-up when laptop on
- battery
-Date: Sun, 4 Feb 2018 21:33:05 -0500
-Message-ID: <cf496ae3-391e-cb9c-7e71-387c51be9a72@gmail.com>
-References: <Pine.LNX.4.44L0.1712251124400.9922-100000@netrider.rowland.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: skip cpufreq resume if it's not suspended
+Date: Mon, 5 Feb 2018 09:31:18 +0530
+Message-ID: <20180205040118.GB28462@vireshk-i7>
+References: <1516744675-21233-1-git-send-email-byan@nvidia.com>
+ <1744712.rO4QOLozun@aspire.rjw.lan>
+ <913f1715-bdd0-1c03-ad76-38be9d3d2298@nvidia.com>
+ <17447147.z6jfkRxuEB@aspire.rjw.lan>
+ <5A74BD55.5000402@codeaurora.org>
+ <dc33ef16-9684-3d8d-f4cc-6e24697f007f@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f49.google.com ([209.85.214.49]:56156 "EHLO
-        mail-it0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751979AbeBECeL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Feb 2018 21:34:11 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1712251124400.9922-100000@netrider.rowland.org>
-Content-Language: en-US
+Received: from mail-pl0-f66.google.com ([209.85.160.66]:46132 "EHLO
+        mail-pl0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751979AbeBEEBW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Feb 2018 23:01:22 -0500
+Received: by mail-pl0-f66.google.com with SMTP id 36so10941440ple.13
+        for <linux-pm@vger.kernel.org>; Sun, 04 Feb 2018 20:01:22 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <dc33ef16-9684-3d8d-f4cc-6e24697f007f@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>
+To: Bo Yan <byan@nvidia.com>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, sgurrappadi@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The problem was resolved upon upgrading laptop-mode-tools to 1.72.2.
+On 02-02-18, 13:28, Bo Yan wrote:
+> On 02/02/2018 11:34 AM, Saravana Kannan wrote:
+> >I rather have this fixed in the dpm_suspend/resume() code. This is just
+> >masking the first issue that's being caused by unbalanced error handling.
+> >If that means adding flags in dpm_suspend/resume() then that's what we
+> >should do right now and clean it up later if it can be improved. Making
+> >cpufreq more messy doesn't seem like the right answer.
 
-Adam
++1
 
+> dpm_suspend and dpm_resume by themselves are not balanced in this particular
+> case. As it's currently structured, dpm_resume can't be omitted even if
+> dpm_suspend is skipped due to earlier failure.� I think checking
+> cpufreq_suspended flag is a reasonable compromise. If we can find a way to
+> make dpm_suspend/dpm_resume also balanced, that will be best.
 
-On 12/25/2017 11:29 AM, Alan Stern wrote:
-> On Sun, 24 Dec 2017, Adam Bennett wrote:
->
->> Alan,
->>
->> I have a Dell Precision 7520 with an Samsung SSD in addition to an NVMe
->> drive.  I'm currently running 4.14.8 but have seen the below problem
->> since I moved from 4.9 to 4.13.
->>
->> When I boot without AC plugged in, the SSD is stopped almost immediately
->> in the boot process, not allowing the boot to continue.
->>
->> I can boot on fine on AC.  When I unplug the cord, I see the "Stopping
->> disk" message, and the system is unresponsive until I plug the AC back in.
->>
->> I initially thought the problem was in user-space, but I set up
->> laptop-mode-tools to keep "control" as "on", and the problem still
->> persists.  Also, I don't see the issue in 4.9.
-> It's entirely possible that the problem does lie in userspace, during
-> boot-up.  Don't forget that your initramfs image could be causing this;
-> have you tried to rebuild it with the new laptop settings?
->
->> I have temporarily worked around the problem by returning from
->> sd_suspend_runtime without calling sd_suspend_common in sd.c (obviously
->> not the true fix).
->>
->> I have tried a number of searches, and couldn't find any bug reports of
->> this nature, but I'm not that in-tune with the linux development process
->> to have searched all the correct places.
-> This should be sent to the linux-pm and linux-scsi mailing lists
-> (CC'ed).
->
->> I'd like to help track this problem down, do you have any suggestions or
->> is there some additional details I could provide?
-> You can try bisecting between the 4.9 and 4.13 kernels to find the
-> commit which first caused the problem.
->
-> Alan Stern
->
+I think cpufreq is just one of the users which broke. Others didn't break
+because:
+
+- They don't have a complicated resume part.
+- Or we just don't know that they broke.
+
+Resuming something that never suspended is just broken by design. Yeah, its much
+simpler in this particular case to fix cpufreq core but the
+suspend/resume/hibernation part is really core kernel and should be fixed to
+avoid such band-aids.
+
+-- 
+viresh
