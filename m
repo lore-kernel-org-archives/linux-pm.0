@@ -1,53 +1,98 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
-Date: Mon, 5 Feb 2018 10:30:12 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1C119E@SW-EX-MBX01.diasemi.com>
-References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <20180130132504.GH14922@kuha.fi.intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
+ cooling device
+Date: Mon, 5 Feb 2018 11:32:25 +0100
+Message-ID: <911804cd-2f1d-a1f7-61a2-6c8b95a88d6b@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
+ <20180202104259.GA28462@vireshk-i7>
+ <8dadd854-25ac-68aa-aa9f-33ba76a137a4@linaro.org>
+ <20180205041734.GD28462@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta6.messagelabs.com ([193.109.254.114]:46042 "EHLO
-        mail1.bemta6.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750949AbeBEKaQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 05:30:16 -0500
-In-Reply-To: <20180130132504.GH14922@kuha.fi.intel.com>
+Received: from mail-lf0-f52.google.com ([209.85.215.52]:43980 "EHLO
+        mail-lf0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752253AbeBEKca (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 05:32:30 -0500
+Received: by mail-lf0-f52.google.com with SMTP id o89so40984660lfg.10
+        for <linux-pm@vger.kernel.org>; Mon, 05 Feb 2018 02:32:29 -0800 (PST)
+In-Reply-To: <20180205041734.GD28462@vireshk-i7>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
 
-On 30 January 2018 13:25, Heikki Krogerus wrote:
+On 05/02/2018 05:17, Viresh Kumar wrote:
+> On 02-02-18, 15:30, Daniel Lezcano wrote:
+>> On 02/02/2018 11:42, Viresh Kumar wrote:
+>>> Here is how I see the whole thing now:
+>>>
+>>> - Yes we need individual support for both cpufreq and cpuidle cooling devices,
+>>>   and no one disagrees on that I believe.
+>>>
+>>> - There is nothing in the thermal framework that disallows both cpufreq and
+>>>   cpuidle cooling devices to co-exist. Both would be part of the same thermal
+>>>   zone and so will get throttled with the same thermal sensor event. And so we
+>>>   will end up trying to cool down the SoC using both cpufreq and cpuidle
+>>>   technique.
+>>
+>> No. It does not work because we will need different state for each
+>> cooling device and we need some logic behind.
+> 
+> Right, but I thought the cooling-maps can help us specify different cooling
+> states for different cooling devices for the same trip point. Maybe my
+> understanding of that is incorrect.
+> 
+>>> - Now I am just wondering if we really need the "combo" functionality or not.
+>>>   Can we fine tune the DT cpu-cooling properties (existing ones) for a platform,
+>>>   so that it automatically acts as a combo cooling device? I am not 100% sure
+>>>   its gonna fly, but just wanted to make sure its not possible to work around
+>>>   with and then only try the combo device thing.
+>>>
+>>> For example, suppose that with just cpufreq-cooling device we need to take the
+>>> CPU down to 1 GHz from 2 GHz if we cross temperature 'X'. What if we can change
+>>> this policy from DT and say the cpufreq-cooling device goes to 1.5 GHz and
+>>> cpuidle-cooling device takes us to idle for 'y' us, and the effect of
+>>> combination of these two is >= the effect of the 1 GHz for just the
+>>> cpufreq-cooling device.
+>>>
+>>> Is there any possibility of this to work ?
+>>
+>> It does not make sense. The combo does that automatically by computing
+>> the power equivalence more precisely.
+> 
+> Sure, but that works by creating a virtual combo-cooling device instead of two
+> separate cooling devices and then there are several limitation (at least right
+> now) where it doesn't sense the real situation automagically. For example I
+> would expect the combo to just work with cpuidle if cpufreq isn't present and as
+> soon as cpufreq comes in, covert itself to cpufreq+cpuidle. I was just trying to
+> present another view at solving the problem at hand, not that one is better
+> than the other.
+At the first glance, it sounds interesting but I'm afraid that raises
+more corner-cases than it solves because we have to take into account
+all the combinations: cpuidle=0 && cpufreq=1, cpuidle=1 && cpufreq=0,
+cpuidle=1 && cpufreq=1 with dynamic code changes when the cpufreq driver
+is loaded/unloaded.
 
-> On Tue, Jan 02, 2018 at 03:50:48PM +0000, Adam Thomson wrote:
-> > This patch set adds sink side support for the PPS feature introduced in the
-> > USB PD 3.0 specification.
-> >
-> > The source PPS supply is represented using the Power Supply framework to provide
-> > access and control APIs for dealing with it's operating voltage and current,
-> > and switching between a standard PDO and PPS APDO operation. During standard
-> PDO
-> > operation the voltage and current is read-only, but for APDO PPS these are
-> > writable as well to allow for control.
-> >
-> > It should be noted that the keepalive for PPS is not handled within TCPM. The
-> > expectation is that the external user will be required to ensure re-requests
-> > occur regularly to ensure PPS remains and the source does not hard reset.
-> 
-> Sorry for the late reply. I don't have any major problems with these
-> other than with 6/7. The documentation should be for the psy class,
-> not tcpm. I'm also not comfortable with the "select POWER_SUPPLY", but
-> if Guenter does not think it's a problem, I'm fine with it. I guess we
-> can always, for example, introduce stubs for the power_supply*
-> functions, and drop the dependency later.
-> 
-> But as usual with tcpm.c, Guenter needs to give his ACK.
-> 
-> Oh yes, and Sebastian needs to ACK the power_supply changes or course.
+I'm not against this approach as well as merging all the cpu cooling
+devices into a single one but that won't be trivial and will need
+several iterations before reaching this level of features.
 
-No problem. Thanks for your time reviewing this. Not the smallest patch set so
-appreciate the effort spent. Was travelling last week, but should now have a bit
-of free time to take a proper look at your comments and get back to you with
-some meaningful responses.
+IMO, we should keep the current approach (but handle the cpufreq
+loading/unloading) and then iteratively merge all the cooling device
+into a single one with policy change at runtime which will automatically
+handle the cpufreq load/unload.
+
+However I'm open to suggestion.
+
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
