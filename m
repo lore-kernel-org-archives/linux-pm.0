@@ -1,89 +1,73 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 1/3] sched/fair: add util_est on top of PELT
-Date: Mon, 5 Feb 2018 17:49:11 +0000
-Message-ID: <20180205174911.GE5739@e110439-lin>
-References: <20180123180847.4477-1-patrick.bellasi@arm.com>
- <20180123180847.4477-2-patrick.bellasi@arm.com>
- <20180129163642.GF2228@hirez.programming.kicks-ass.net>
- <20180130124632.GC5739@e110439-lin>
- <20180130130432.GC2269@hirez.programming.kicks-ass.net>
- <20180130140132.GI2295@hirez.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] Revert "cpuidle: Make drivers initialize polling state"
+Date: Mon, 05 Feb 2018 18:56:31 +0100
+Message-ID: <36158666.hf5grRdGNf@aspire.rjw.lan>
+References: <20180122162747.19103-1-ville.syrjala@linux.intel.com> <CAJZ5v0jKQh-YyjNjCuVqnj_oiPZ+HLLSftd4ECRJ1ZgPiroxSA@mail.gmail.com> <20180205140445.GH5453@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:53816 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752722AbeBERtQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 5 Feb 2018 12:49:16 -0500
-Content-Disposition: inline
-In-Reply-To: <20180130140132.GI2295@hirez.programming.kicks-ass.net>
+Received: from cloudserver094114.home.pl ([79.96.170.134]:45332 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753398AbeBER6M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 12:58:12 -0500
+In-Reply-To: <20180205140445.GH5453@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 30-Jan 15:01, Peter Zijlstra wrote:
-> On Tue, Jan 30, 2018 at 02:04:32PM +0100, Peter Zijlstra wrote:
-> > On Tue, Jan 30, 2018 at 12:46:33PM +0000, Patrick Bellasi wrote:
-> > > > Aside from that being whitespace challenged, did you also try:
-> > > > 
-> > > > 	if ((unsigned)((util_est - util_last) + LIM - 1) < (2 * LIM - 1))
-> > > 
-> > > No, since the above code IMO is so much "easy to parse for humans" :)
-> > 
-> > Heh, true. Although that's fixable by wrapping it in some helper with a
-> > comment.
-> > 
-> > > But, mainly because since the cache alignment update, also while testing on a
-> > > "big" Intel machine I cannot see regressions on hackbench.
-> > > 
-> > > This is the code I get on my Xeon E5-2690 v2:
-> > > 
-> > >        if (abs(util_est - util_last) <= (SCHED_CAPACITY_SCALE / 100))
-> > >    6ba0:       8b 86 7c 02 00 00       mov    0x27c(%rsi),%eax
-> > >    6ba6:       48 29 c8                sub    %rcx,%rax
-> > >    6ba9:       48 99                   cqto
-> > >    6bab:       48 31 d0                xor    %rdx,%rax
-> > >    6bae:       48 29 d0                sub    %rdx,%rax
-> > >    6bb1:       48 83 f8 0a             cmp    $0xa,%rax
-> > >    6bb5:       7e 1d                   jle    6bd4 <dequeue_task_fair+0x7e4>
-> > > 
-> > > Does it look so bad?
-> > 
-> > Its not terrible, and I think your GCC is far more clever than the one I
+On Monday, February 5, 2018 3:04:45 PM CET Ville Syrjälä wrote:
+> On Sun, Feb 04, 2018 at 10:18:07AM +0100, Rafael J. Wysocki wrote:
+> > On Sun, Feb 4, 2018 at 10:12 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > On Mon, Jan 22, 2018 at 5:27 PM, Ville Syrjala
+> > > <ville.syrjala@linux.intel.com> wrote:
+> > >> From: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> > >>
+> > >> This reverts commit 1b39e3f813b4685c7a30ae964d5529a1b0e3a286.
+> > >>
+> > >> Makes my P3 machine oops somewhere in cpuidle. I suspect
+> > >> CONFIG_ACPI=n may have something to do with this.
+> > >
+> > > And if you don't do CONFIG_ACPI=n, does it still oops?
 > 
-> To clarify; my GCC at the time generated conditional branches to compute
-> the absolute value; and in that case the thing I proposed wins hands
-> down because its unconditional.
+> Don't think I actually tried that. I can give it a whirl tonight.
 > 
-> However the above is also unconditional and then the difference is much
-> less important.
+> I think this machine should actually have ACPI, but it inherited
+> the .config from a P2 machine that did not. Apparently I was too
+> lazy to change .config when I swapped in the "new" machine.
 
-I've finally convinced myself that we can live with the "parsing
-complexity" of your proposal... and wrapped into an inline it turned
-out to be not so bad.
+I guess it would work, but never mind.
 
-> > used at the time. But that's 4 dependent instructions (cqto,xor,sub,cmp)
-> > whereas the one I proposed uses only 2 (add,cmp).
-
-The ARM64 generated code is also simpler.
-
-> > Now, my proposal is, as you say, somewhat hard to read, and it also
-> > doesn't work right when our values are 'big' (which they will not be in
-> > our case, because util has a very definite bound), and I suspect you're
-> > right that ~2 cycles here will not be measurable.
-
-Indeed, I cannot see noticeable differences if not just a slightly
-improvement...
-
+> > >
+> > > Anyway, there are later changes depending on this one, so reverting it
+> > > won't work in general.
+> > >
+> > > Let me look deeper at this.
 > > 
-> > So yeah.... whatever ;-)
+> > What's there in /sys/devices/system/cpu/cpuidle/current_driver on your
+> > system with the problematic commit reverted?
+> 
+> # cat /sys/devices/system/cpu/cpuidle/current_driver
+> apm_idle
 
-... I'm going to post a v4 using your proposal ;-)
+That is the key bit: I overlooked this little fellow.
 
-Thanks Patrick
+Does the below (untested here) help?
 
--- 
-#include <best/regards.h>
+---
+ arch/x86/kernel/apm_32.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Patrick Bellasi
+Index: linux-pm/arch/x86/kernel/apm_32.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/apm_32.c
++++ linux-pm/arch/x86/kernel/apm_32.c
+@@ -2389,6 +2389,7 @@ static int __init apm_init(void)
+ 	if (HZ != 100)
+ 		idle_period = (idle_period * HZ) / 100;
+ 	if (idle_threshold < 100) {
++		cpuidle_poll_state_init(&apm_idle_driver);
+ 		if (!cpuidle_register_driver(&apm_idle_driver))
+ 			if (cpuidle_register_device(&apm_cpuidle_device))
+ 				cpuidle_unregister_driver(&apm_idle_driver);
