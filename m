@@ -1,93 +1,65 @@
-From: Ulf Magnusson <ulfalizer@gmail.com>
-Subject: [PATCH 03/20] kconfig: Remove leftover references to AVR32 symbol
-Date: Mon,  5 Feb 2018 02:21:15 +0100
-Message-ID: <20180205012146.23981-4-ulfalizer@gmail.com>
-References: <20180205012146.23981-1-ulfalizer@gmail.com>
-Return-path: <linux-pwm-owner@vger.kernel.org>
-In-Reply-To: <20180205012146.23981-1-ulfalizer@gmail.com>
-Sender: linux-pwm-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-kbuild@vger.kernel.org, tfiga@chromium.org, paul.burton@mips.com, m.szyprowski@samsung.com, egtvedt@samfundet.no, linus.walleij@linaro.org, vgupta@synopsys.com, mgorman@techsingularity.net, hch@lst.de, mina86@mina86.com, robh@kernel.org, sboyd@codeaurora.org, paulus@ozlabs.org, will.deacon@arm.com, tony@atomide.com, npiggin@gmail.com, yamada.masahiro@socionext.com, Ulf Magnusson <ulfalizer@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sean Paul <seanpaul@chromium.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Christophe Leroy <christophe.leroy@c-s.fr>, linux-pm@vger.kernel.orgl
+From: Adam Bennett <abennett72@gmail.com>
+Subject: [Solved] Re: SSD being put to sleep during boot-up when laptop on
+ battery
+Date: Sun, 4 Feb 2018 21:33:05 -0500
+Message-ID: <cf496ae3-391e-cb9c-7e71-387c51be9a72@gmail.com>
+References: <Pine.LNX.4.44L0.1712251124400.9922-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f49.google.com ([209.85.214.49]:56156 "EHLO
+        mail-it0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751979AbeBECeL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Feb 2018 21:34:11 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1712251124400.9922-100000@netrider.rowland.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>
 
-The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
-support for AVR32 architecture"). Remove the remaining references to it
-from the Kconfig files.
+The problem was resolved upon upgrading laptop-mode-tools to 1.72.2.
 
-No references remain to the removed AVR32_AT32AP_CPUFREQ symbol either,
-so remove that one too.
+Adam
 
-Discovered with the
-https://github.com/ulfalizer/Kconfiglib/blob/master/examples/list_undefined.py
-script.
 
-Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
----
- drivers/cpufreq/Kconfig       | 10 ----------
- drivers/pwm/Kconfig           |  2 +-
- drivers/spi/Kconfig           |  2 +-
- drivers/video/console/Kconfig |  2 +-
- 4 files changed, 3 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index d8addbce40bc..608af20a3494 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -239,16 +239,6 @@ if PPC32 || PPC64
- source "drivers/cpufreq/Kconfig.powerpc"
- endif
- 
--if AVR32
--config AVR32_AT32AP_CPUFREQ
--	bool "CPU frequency driver for AT32AP"
--	depends on PLATFORM_AT32AP
--	default n
--	help
--	  This enables the CPU frequency driver for AT32AP processors.
--	  If in doubt, say N.
--endif
--
- if IA64
- config IA64_ACPI_CPUFREQ
- 	tristate "ACPI Processor P-States driver"
-diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig
-index 763ee50ea57d..f16aad3bf5d6 100644
---- a/drivers/pwm/Kconfig
-+++ b/drivers/pwm/Kconfig
-@@ -43,7 +43,7 @@ config PWM_AB8500
- 
- config PWM_ATMEL
- 	tristate "Atmel PWM support"
--	depends on ARCH_AT91 || AVR32
-+	depends on ARCH_AT91
- 	help
- 	  Generic PWM framework driver for Atmel SoC.
- 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 603783976b81..c1e455d46c7f 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -72,7 +72,7 @@ config SPI_ARMADA_3700
- config SPI_ATMEL
- 	tristate "Atmel SPI Controller"
- 	depends on HAS_DMA
--	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
-+	depends on (ARCH_AT91 || COMPILE_TEST)
- 	help
- 	  This selects a driver for the Atmel SPI Controller, present on
- 	  many AT32 (AVR32) and AT91 (ARM) chips.
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 7f1f1fbcef9e..be63759b6027 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -7,7 +7,7 @@ menu "Console display driver support"
- config VGA_CONSOLE
- 	bool "VGA text console" if EXPERT || !X86
- 	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
--		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
-+		!SUPERH && !BLACKFIN && !MN10300 && !CRIS && \
- 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
- 		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC
- 	default y
--- 
-2.14.1
+On 12/25/2017 11:29 AM, Alan Stern wrote:
+> On Sun, 24 Dec 2017, Adam Bennett wrote:
+>
+>> Alan,
+>>
+>> I have a Dell Precision 7520 with an Samsung SSD in addition to an NVMe
+>> drive.  I'm currently running 4.14.8 but have seen the below problem
+>> since I moved from 4.9 to 4.13.
+>>
+>> When I boot without AC plugged in, the SSD is stopped almost immediately
+>> in the boot process, not allowing the boot to continue.
+>>
+>> I can boot on fine on AC.  When I unplug the cord, I see the "Stopping
+>> disk" message, and the system is unresponsive until I plug the AC back in.
+>>
+>> I initially thought the problem was in user-space, but I set up
+>> laptop-mode-tools to keep "control" as "on", and the problem still
+>> persists.  Also, I don't see the issue in 4.9.
+> It's entirely possible that the problem does lie in userspace, during
+> boot-up.  Don't forget that your initramfs image could be causing this;
+> have you tried to rebuild it with the new laptop settings?
+>
+>> I have temporarily worked around the problem by returning from
+>> sd_suspend_runtime without calling sd_suspend_common in sd.c (obviously
+>> not the true fix).
+>>
+>> I have tried a number of searches, and couldn't find any bug reports of
+>> this nature, but I'm not that in-tune with the linux development process
+>> to have searched all the correct places.
+> This should be sent to the linux-pm and linux-scsi mailing lists
+> (CC'ed).
+>
+>> I'd like to help track this problem down, do you have any suggestions or
+>> is there some additional details I could provide?
+> You can try bisecting between the 4.9 and 4.13 kernels to find the
+> commit which first caused the problem.
+>
+> Alan Stern
+>
