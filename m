@@ -1,34 +1,46 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] dt-bindings: soc: add SCPSYS binding for MT7623 and
- MT7623A SoC
-Date: Mon, 5 Feb 2018 00:09:11 -0600
-Message-ID: <20180205035334.rb6rsl2r6kk2kvtu@rob-hp-laptop>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 2/2] soc: mediatek: add SCPSYS power domain driver for
+ MediaTek MT7623A SoC
+Date: Mon, 5 Feb 2018 00:09:13 -0600
+Message-ID: <20180205060913.ak62ammdposybdsf@rob-hp-laptop>
 References: <975fb80e1cdbe7f6d4a1d04fd3a2a21b619a193d.1517479588.git.sean.wang@mediatek.com>
+ <de07c071f968ae9da84543bb33cc5658ed184801.1517479588.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:43117 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752931AbeBEGJP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 01:09:15 -0500
 Content-Disposition: inline
-In-Reply-To: <975fb80e1cdbe7f6d4a1d04fd3a2a21b619a193d.1517479588.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
-Cc: matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <de07c071f968ae9da84543bb33cc5658ed184801.1517479588.git.sean.wang@mediatek.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sean.wang@mediatek.com
+Cc: matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Thu, Feb 01, 2018 at 06:12:47PM +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
-> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+On Thu, Feb 01, 2018 at 06:12:48PM +0800, sean.wang@mediatek.com wrote:
+> From: Sean Wang <sean.wang@mediatek.com>
 > 
-> document the binding for enabling SCPSYS on MediaTek MT7623 and MT7623A
-> SoC. Where MT7623 SoC has the same definition about power domains with
-> MT2701, so it's fine to using MT2701 ones as MT7623's fallback.
+> Add SCPSYS power domain driver for MT7623A SoC. The MT7623A's power
+> domains are the subset of MT7623 SoC's ones. As MT7623 SoC has full
+> features whereas MT7623A is being designed just for router applications.
+> Thus, MT7623A doesn't include those power domains multimedia function
+> belongs to. In order to avoid certain errors undoubtedly happening at
+> registering those power domains on MT7623A SoC using the existing MT7623
+> SCPSYS driver, it's required to define another setup specifically for
+> MT7623A SoC. Also, use a meaningful definition for bus_prot_mask instead
+> of just hardcoded for it.
 > 
-> Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 > ---
->  Documentation/devicetree/bindings/soc/mediatek/scpsys.txt | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  drivers/soc/mediatek/mtk-scpsys.c         | 60 +++++++++++++++++++++++++++++--
 
-Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>  include/dt-bindings/power/mt7623a-power.h | 10 ++++++
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+This belongs in the binding patch.
+
+>  include/linux/soc/mediatek/infracfg.h     |  4 +++
+>  3 files changed, 72 insertions(+), 2 deletions(-)
+>  create mode 100644 include/dt-bindings/power/mt7623a-power.h
+> 
