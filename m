@@ -1,370 +1,235 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH 4/4] drivers: qcom: rpmh: add RPMH helper functions
-Date: Mon, 5 Feb 2018 11:50:07 -0800
-Message-ID: <20180205195007.GD9465@builder>
-References: <20180119000157.7380-1-ilina@codeaurora.org>
- <20180119000157.7380-5-ilina@codeaurora.org>
+From: "dbasehore ." <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v4 2/5] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Mon, 5 Feb 2018 13:33:50 -0800
+Message-ID: <CAGAzgsp8M-t7k+pj4G9Lo_+NkeXQ9DeqH_r=-JcErO_+HuoJqA@mail.gmail.com>
+References: <20180203012450.18378-1-dbasehore@chromium.org>
+ <20180203012450.18378-3-dbasehore@chromium.org> <a1b81cab-8e73-2c6f-13e6-612ffc668923@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:46733 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751801AbeBETuL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 14:50:11 -0500
-Received: by mail-pg0-f65.google.com with SMTP id s9so19465497pgq.13
-        for <linux-pm@vger.kernel.org>; Mon, 05 Feb 2018 11:50:10 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20180119000157.7380-5-ilina@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <a1b81cab-8e73-2c6f-13e6-612ffc668923-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Soby Mathew <Soby.Mathew-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wysocki, Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, sboyd@codeaurora.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu 18 Jan 16:01 PST 2018, Lina Iyer wrote:
-> diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-> index b7951ce87663..0dba46387f1c 100644
-> --- a/drivers/soc/qcom/Makefile
-> +++ b/drivers/soc/qcom/Makefile
-> @@ -11,4 +11,4 @@ obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
->  obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
->  obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
->  obj-$(CONFIG_QCOM_COMMAND_DB) += cmd-db.o
-> -obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o
-> +obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o rpmh.o
+On Mon, Feb 5, 2018 at 7:56 AM, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org> wrote:
+> On 03/02/18 01:24, Derek Basehore wrote:
+>> Some platforms power off GIC logic in suspend, so we need to
+>> save/restore state. The distributor and redistributor registers need
+>> to be handled in platform code due to access permissions on those
+>> registers, but the ITS registers can be restored in the kernel.
+>>
+>> Signed-off-by: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>> ---
+>>  drivers/irqchip/irq-gic-v3-its.c | 101 +++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 101 insertions(+)
+>>
+>> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+>> index 06f025fd5726..e13515cdb68f 100644
+>> --- a/drivers/irqchip/irq-gic-v3-its.c
+>> +++ b/drivers/irqchip/irq-gic-v3-its.c
+>> @@ -33,6 +33,7 @@
+>>  #include <linux/of_platform.h>
+>>  #include <linux/percpu.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/syscore_ops.h>
+>>
+>>  #include <linux/irqchip.h>
+>>  #include <linux/irqchip/arm-gic-v3.h>
+>> @@ -46,6 +47,7 @@
+>>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING                (1ULL << 0)
+>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375    (1ULL << 1)
+>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144    (1ULL << 2)
+>> +#define ITS_FLAGS_SAVE_SUSPEND_STATE         (1ULL << 3)
+>>
+>>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING  (1 << 0)
+>>
+>> @@ -83,6 +85,15 @@ struct its_baser {
+>>       u32             psz;
+>>  };
+>>
+>> +/*
+>> + * Saved ITS state - this is where saved state for the ITS is stored
+>> + * when it's disabled during system suspend.
+>> + */
+>> +struct its_ctx {
+>> +     u64                     cbaser;
+>> +     u32                     ctlr;
+>> +};
+>
+> Nit: This is pretty small for the ITS context. Given that its_node is
+> the context, you can safely expand this in the its_node structure.
 
-I think it would be better if you built these two objects into the same
-module;
+Sounds reasonable. I think I just have it this way because I used to
+have more in here.
 
-obj-$(CONFIG_QCOM_RPMH) += qcom_rpmh.o
-qcom_rpmh-y += rpmh-rsc.o
-qcom_rpmh-y += rpmh.o
+>
+>> +
+>>  struct its_device;
+>>
+>>  /*
+>> @@ -101,6 +112,7 @@ struct its_node {
+>>       struct its_collection   *collections;
+>>       struct fwnode_handle    *fwnode_handle;
+>>       u64                     (*get_msi_base)(struct its_device *its_dev);
+>> +     struct its_ctx          its_ctx;
+>>       struct list_head        its_device_list;
+>>       u64                     flags;
+>>       unsigned long           list_nr;
+>> @@ -3042,6 +3054,90 @@ static void its_enable_quirks(struct its_node *its)
+>>       gic_enable_quirks(iidr, its_quirks, its);
+>>  }
+>>
+>> +static int its_save_disable(void)
+>> +{
+>> +     struct its_node *its;
+>> +     int err = 0;
+>> +
+>> +     spin_lock(&its_lock);
+>> +     list_for_each_entry(its, &its_nodes, entry) {
+>> +             struct its_ctx *ctx;
+>> +             void __iomem *base;
+>> +
+>> +             if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+>> +                     continue;
+>> +
+>> +             ctx = &its->its_ctx;
+>> +             base = its->base;
+>> +             ctx->ctlr = readl_relaxed(base + GITS_CTLR);
+>> +             err = its_force_quiescent(base);
+>> +             if (err) {
+>> +                     pr_err("ITS failed to quiesce\n");
+>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>> +                     goto err;
+>> +             }
+>> +
+>> +             ctx->cbaser = gits_read_cbaser(base + GITS_CBASER);
+>> +     }
+>> +
+>> +err:
+>> +     if (err) {
+>> +             list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
+>> +                     if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+>> +                             struct its_ctx *ctx = &its->its_ctx;
+>> +                             void __iomem *base = its->base;
+>> +
+>> +                             writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>> +                     }
+>> +             }
+>> +     }
+>> +
+>> +     spin_unlock(&its_lock);
+>> +
+>> +     return err;
+>> +}
+>> +
+>> +static void its_restore_enable(void)
+>> +{
+>> +     struct its_node *its;
+>> +
+>> +     spin_lock(&its_lock);
+>> +     list_for_each_entry(its, &its_nodes, entry) {
+>> +             if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+>> +                     struct its_ctx *ctx = &its->its_ctx;
+>> +                     void __iomem *base = its->base;
+>> +                     /*
+>> +                      * Only the lower 32 bits matter here since the upper 32
+>> +                      * don't include any of the offset.
+>> +                      */
+>> +                     u32 creader = readl_relaxed(base + GITS_CREADR);
+>
+> Accessor matching gits_write_cwriter and co?
+>
+>> +                     int i;
+>> +
+>> +                     /*
+>> +                      * Reset the write location to where the ITS is
+>> +                      * currently at.
+>> +                      */
+>> +                     gits_write_cbaser(ctx->cbaser, base + GITS_CBASER);
+>> +                     gits_write_cwriter(creader, base + GITS_CWRITER);
+>> +                     its->cmd_write = &its->cmd_base[
+>> +                             creader / sizeof(struct its_cmd_block)];
+>
+> Nit: please do not split lines like this, this is unreadable. We both
+> have screens that are wide enough for this to fit on a single line.
+>
+> More importantly: Why isn't it sufficient to reset both CREADR and
+> CWRITER to zero? Is there any case where you can suspend whilst having
+> anything in flight?
 
-> diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-[..]
-> diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
-[..]
-> +#define RPMH_TIMEOUT			msecs_to_jiffies(10000)
+CREADR is RO and we need to handle the non-zero case. I was planning
+on getting rid of the write to CWRITER since it shouldn't be needed.
+Either CREADR and CWRITER have the prior values, or both are reset to
+0.
 
-10 * HZ
+>
+>> +                     /* Restore GITS_BASER from the value cache. */
+>> +                     for (i = 0; i < GITS_BASER_NR_REGS; i++) {
+>> +                             struct its_baser *baser = &its->tables[i];
+>> +
+>> +                             its_write_baser(its, baser, baser->val);
+>
+> You may want to first test that this BASER register is actually
+> requiring something before writing to it. Yes, this is normally safe.
+> But HW is also normally broken.
+>
+>> +                     }
+>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>
+> Before restoring all of this, shouldn't you first test that the ITS is
+> actually in a disabled state?
 
-> +
-> +#define DEFINE_RPMH_MSG_ONSTACK(rc, s, q, c, name)	\
-> +	struct rpmh_msg name = {			\
-> +		.msg = {				\
-> +			.state = s,			\
-> +			.payload = name.cmd,		\
-> +			.num_payload = 0,		\
-> +			.is_complete = true,		\
-> +			.invalidate = false,		\
-> +		},					\
-> +		.cmd = { { 0 } },			\
-> +		.completion = q,			\
-> +		.wait_count = c,			\
-> +		.rc = rc,				\
-> +	}
-> +
-> +/**
-> + * rpmh_msg: the message to be sent to rpmh-rsc
-> + *
-> + * @msg: the request
-> + * @cmd: the payload that will be part of the @msg
-> + * @completion: triggered when request is done
-> + * @wait_count: count of waiters for this completion
-> + * @err: err return from the controller
-> + */
-> +struct rpmh_msg {
+The save_disable code put it in a disabled state. The reset state is
+also disabled. I don't expect PSCI to change the GITS_CTLR register at
+all. Are you expecting something on the other side of the PSCI layer
+to poke this register? We'd probably want to force disable at the
+start of restore_enable if so.
 
-struct rpmh_request ?
+>
+>> +             }
+>> +     }
+>> +     spin_unlock(&its_lock);
+>> +}
+>> +
+>> +static struct syscore_ops its_syscore_ops = {
+>> +     .suspend = its_save_disable,
+>> +     .resume = its_restore_enable,
+>> +};
+>> +
+>>  static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
+>>  {
+>>       struct irq_domain *inner_domain;
+>> @@ -3261,6 +3357,9 @@ static int __init its_probe_one(struct resource *res,
+>>               ctlr |= GITS_CTLR_ImDe;
+>>       writel_relaxed(ctlr, its->base + GITS_CTLR);
+>>
+>> +     if (fwnode_property_present(handle, "reset-on-suspend"))
+>> +             its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+>> +
+>>       err = its_init_domain(handle, its);
+>>       if (err)
+>>               goto out_free_tables;
+>> @@ -3515,5 +3614,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
+>>               }
+>>       }
+>>
+>> +     register_syscore_ops(&its_syscore_ops);
+>> +
+>>       return 0;
+>>  }
+>>
+>
+> Thanks,
+>
+>         M.
+> --
+> Jazz is not dead. It just smells funny...
 
-> +	struct tcs_mbox_msg msg;
-> +	struct tcs_cmd cmd[MAX_RPMH_PAYLOAD];
-> +	struct completion *completion;
-> +	atomic_t *wait_count;
-
-When will @wait_count > 1? As far as I can see the only purpose would be
-to be able to control whether you should complete @completion 0 or N
-times; but 0 times is covered already by not specifying a @completion.
-
-> +	struct rpmh_client *rc;
-> +	int err;
-> +};
-> +
-> +/**
-> + * rpmh_ctrlr: our representation of the controller
-> + *
-> + * @drv: the controller instance
-> + */
-> +struct rpmh_ctrlr {
-> +	struct rsc_drv *drv;
-
-Is this going to grow in the future? Otherwise just drop it and
-reference the rsc_drv directly. (Even if it's growing it might be
-cleaner to introduce it at that point)
-
-> +};
-> +
-> +/**
-> + * rpmh_client: the client object
-> + *
-> + * @dev: the platform device that is the owner
-> + * @ctrlr: the controller associated with this client.
-> + */
-> +struct rpmh_client {
-> +	struct device *dev;
-> +	struct rpmh_ctrlr *ctrlr;
-> +};
-> +
-> +static struct rpmh_ctrlr rpmh_rsc[RPMH_MAX_MBOXES];
-> +static DEFINE_MUTEX(rpmh_ctrlr_mutex);
-
-The client needs a reference to the rsc_drv, using the rpmh_ctrlr
-abstraction and these global variables only seems to add unnecessary
-complexity.
-
-> +
-> +void rpmh_tx_done(struct tcs_mbox_msg *msg, int r)
-> +{
-> +	struct rpmh_msg *rpm_msg = container_of(msg, struct rpmh_msg, msg);
-> +	atomic_t *wc = rpm_msg->wait_count;
-> +	struct completion *compl = rpm_msg->completion;
-> +
-> +	rpm_msg->err = r;
-> +
-> +	if (r)
-> +		dev_err(rpm_msg->rc->dev,
-> +			"RPMH TX fail in msg addr 0x%x, err=%d\n",
-> +			rpm_msg->msg.payload[0].addr, r);
-> +
-> +	/* Signal the blocking thread we are done */
-> +	if (wc && atomic_dec_and_test(wc))
-> +		if (compl)
-> +			complete(compl);
-
-I think that you should drop this function and just complete
-@rpm_msg->completion in the rcs driver.
-
-> +}
-> +EXPORT_SYMBOL(rpmh_tx_done);
-> +
-> +/**
-> + * wait_for_tx_done: Wait until the response is received.
-> + *
-> + * @rc: The RPMH client
-> + * @compl: The completion object
-> + * @addr: An addr that we sent in that request
-> + * @data: The data for the address in that request
-> + *
-> + */
-> +static inline int wait_for_tx_done(struct rpmh_client *rc,
-> +		struct completion *compl, u32 addr, u32 data)
-> +{
-> +	int ret;
-> +
-> +	ret = wait_for_completion_timeout(compl, RPMH_TIMEOUT);
-> +	if (ret)
-> +		dev_dbg(rc->dev,
-> +			"RPMH response received addr=0x%x data=0x%x\n",
-> +			addr, data);
-> +	else
-> +		dev_err(rc->dev,
-> +			"RPMH response timeout addr=0x%x data=0x%x\n",
-> +			addr, data);
-
-The request can contain a number of commands and these error messages
-ends up printing the first one, on behalf of the client. I suspect that
-this isn't useful enough in most cases, causing the client to print
-another time.
-
-I therefor suggest that you omit these prints.
-
-> +
-> +	return  (ret > 0) ? 0 : -ETIMEDOUT;
-> +}
-> +
-> +/**
-> + * __rpmh_write: send the RPMH request
-> + *
-> + * @rc: The RPMH client
-> + * @state: Active/Sleep request type
-> + * @rpm_msg: The data that needs to be sent (payload).
-> + */
-> +int __rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
-> +			struct rpmh_msg *rpm_msg)
-> +{
-> +	int ret = -EFAULT;
-> +
-> +	rpm_msg->msg.state = state;
-> +
-> +	if (state == RPMH_ACTIVE_ONLY_STATE) {
-> +		WARN_ON(irqs_disabled());
-> +		ret = rpmh_rsc_send_data(rc->ctrlr->drv, &rpm_msg->msg);
-> +		if (!ret)
-> +			dev_dbg(rc->dev,
-> +				"RPMH request sent addr=0x%x, data=0x%x\n",
-> +				rpm_msg->msg.payload[0].addr,
-> +				rpm_msg->msg.payload[0].data);
-> +		else
-> +			dev_warn(rc->dev,
-> +				"Error in RPMH request addr=0x%x, data=0x%x\n",
-> +				rpm_msg->msg.payload[0].addr,
-> +				rpm_msg->msg.payload[0].data);
-
-Same thing here, for the user to be able to make sense of this error the
-client will have to print something with more context. So I think you
-should omit these too.
-
-
-tracing failing addr/data pairs might make sense though!
-
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +/**
-> + * rpmh_write: Write a set of RPMH commands and block until response
-> + *
-> + * @rc: The RPMh handle got from rpmh_get_dev_channel
-> + * @state: Active/sleep set
-> + * @cmd: The payload data
-> + * @n: The number of elements in payload
-> + *
-> + * May sleep. Do not call from atomic contexts.
-> + */
-> +int rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
-> +			struct tcs_cmd *cmd, int n)
-> +{
-> +	DECLARE_COMPLETION_ONSTACK(compl);
-> +	atomic_t wait_count = ATOMIC_INIT(1);
-> +	DEFINE_RPMH_MSG_ONSTACK(rc, state, &compl, &wait_count, rpm_msg);
-> +	int ret;
-> +
-> +	if (IS_ERR_OR_NULL(rc) || !cmd || n <= 0 || n > MAX_RPMH_PAYLOAD)
-> +		return -EINVAL;
-> +
-> +	might_sleep();
-> +
-> +	memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
-> +	rpm_msg.msg.num_payload = n;
-> +
-> +	ret = __rpmh_write(rc, state, &rpm_msg);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return wait_for_tx_done(rc, &compl, cmd[0].addr, cmd[0].data);
-
-As you're returning here the completion object on the stack will be
-trash, so you must inform rpmh_rsc that it may no longer complete it.
-
-I suggest that you provide two functions in the rsc driver;
-rpmh_rsc_send_sync() and rpmh_rsc_send_async(), and move the
-wait-for-completion into the sync one. Also make the sync one return the
-msg->err (and drop the tx_done cross-call).
-
-(Or call them rpmh_rsc_send_wait() and rpmh_rsc_send_nowait())
-
-> +}
-> +EXPORT_SYMBOL(rpmh_write);
-> +
-> +static struct rpmh_ctrlr *get_rpmh_ctrlr(struct platform_device *pdev)
-> +{
-> +	int i;
-> +	struct rsc_drv *drv = dev_get_drvdata(pdev->dev.parent);
-> +	struct rpmh_ctrlr *ctrlr = ERR_PTR(-EFAULT);
-> +
-> +	if (!drv)
-> +		return ctrlr;
-> +
-> +	mutex_lock(&rpmh_ctrlr_mutex);
-> +	for (i = 0; i < RPMH_MAX_MBOXES; i++)
-> +		if (rpmh_rsc[i].drv == drv) {
-> +			ctrlr = &rpmh_rsc[i];
-> +			goto unlock;
-> +		}
-> +
-> +	if (i == RPMH_MAX_MBOXES)
-> +		for (i = 0; i < RPMH_MAX_MBOXES; i++)
-> +			if (rpmh_rsc[i].drv == NULL) {
-> +				ctrlr = &rpmh_rsc[i];
-> +				ctrlr->drv = drv;
-> +				break;
-> +			}
-
-I fail to see the reason for tracking rsc_drv references in a global
-array and try to find an existing one here. Just return the rsc_drv
-acquired from dev_get_drvdata() to the caller.
-
-> +unlock:
-> +	mutex_unlock(&rpmh_ctrlr_mutex);
-> +	return ctrlr;
-> +}
-> +
-> +/**
-> + * rpmh_get_client: Get the RPMh handle
-> + *
-> + * @pdev: the platform device which needs to communicate with RPM
-> + * accelerators
-> + * May sleep.
-> + */
-> +struct rpmh_client *rpmh_get_client(struct platform_device *pdev)
-
-To make this analog to previous rpm drivers I think you should take the
-device * of the parent here. I.e. client does:
-
-	rpmh = rpmh_get_client(&pdev->dev.parent).
-
-
-I recognize that this removes the possibility of providing error
-messages indicating which client caused the fault, but by above
-suggestions these functions would be moved into the rsc driver; or the
-error would be propagated to the client which could print these
-themselves.
-
-> +{
-> +	struct rpmh_client *rc;
-> +
-> +	rc = kzalloc(sizeof(*rc), GFP_KERNEL);
-> +	if (!rc)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	rc->dev = &pdev->dev;
-> +	rc->ctrlr = get_rpmh_ctrlr(pdev);
-> +	if (IS_ERR(rc->ctrlr)) {
-> +		kfree(rc);
-> +		return ERR_PTR(-EFAULT);
-> +	}
-> +
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL(rpmh_get_client);
-> +
-> +/**
-> + * rpmh_release: Release the RPMH client
-> + *
-> + * @rc: The RPMh handle to be freed.
-> + */
-> +void rpmh_release(struct rpmh_client *rc)
-> +{
-> +	kfree(rc);
-
-If you reduce above function to just return a rsc_drv reference you
-don't even need a release function, which simplifies clients further.
-
-> +}
-> +EXPORT_SYMBOL(rpmh_release);
-> diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
-[..]
-> +struct rpmh_client;
-> +
-> +#ifdef CONFIG_QCOM_RPMH
-
-I think it would be fine to just make clients depend on QCOM_RPMH. If
-you would prefer to get the compile testing in those drivers then make
-this:
-
-#if IS_ENABLED(CONFIG_QCOM_RPMH)
-
-In case someone in the future decides to make RPMH tristate.
-
-Regards,
-Bjorn
+Thanks for the review.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
