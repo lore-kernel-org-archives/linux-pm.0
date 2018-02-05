@@ -1,94 +1,67 @@
-From: <sean.wang@mediatek.com>
-Subject: [PATCH 2/2] thermal: mediatek: add support for MT7622 SoC
-Date: Mon, 5 Feb 2018 16:11:52 +0800
-Message-ID: <796b53ce7fc5e81a04c5ab9cfa4cee67015b355f.1517817887.git.sean.wang@mediatek.com>
-References: <0b7dabc3b2c7ed93b88ec0923c2cce2f84fba5b1.1517817887.git.sean.wang@mediatek.com>
+From: Anson Huang <Anson.Huang@nxp.com>
+Subject: [PATCH V3 1/2] ARM: dts: imx7s: add temperature monitor support
+Date: Mon, 5 Feb 2018 16:12:26 +0800
+Message-ID: <1517818347-7436-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0b7dabc3b2c7ed93b88ec0923c2cce2f84fba5b1.1517817887.git.sean.wang@mediatek.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, rui.zhang@intel.com, edubezval@gmail.com
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>, Shunli Wang <shunli.wang@mediatek.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, linux@armlinux.org.uk
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Linux-imx@nxp.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang@mediatek.com>
+Add i.MX7 temperature monitor support.
 
-MT7622 SoC has built-in thermal controller with one sensing point, the
-patch just is to extend the functionality of the existing logic.
-
-Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-Signed-off-by: Shunli Wang <shunli.wang@mediatek.com>
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/thermal/mtk_thermal.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+changes since V2:
+	Remove binding doc changes in this patch.
+ arch/arm/boot/dts/imx7s.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index 1e61c09..8a53151 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -158,6 +158,12 @@
- /* The number of sensing points per bank */
- #define MT2712_NUM_SENSORS_PER_ZONE	4
+diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
+index 82ad26e..2e2eda53 100644
+--- a/arch/arm/boot/dts/imx7s.dtsi
++++ b/arch/arm/boot/dts/imx7s.dtsi
+@@ -497,9 +497,29 @@
+ 			};
  
-+#define MT7622_TEMP_AUXADC_CHANNEL	11
-+#define MT7622_NUM_SENSORS		1
-+#define MT7622_NUM_ZONES		1
-+#define MT7622_NUM_SENSORS_PER_ZONE	1
-+#define MT7622_TS1	0
+ 			ocotp: ocotp-ctrl@30350000 {
++				#address-cells = <1>;
++				#size-cells = <1>;
+ 				compatible = "fsl,imx7d-ocotp", "syscon";
+ 				reg = <0x30350000 0x10000>;
+ 				clocks = <&clks IMX7D_OCOTP_CLK>;
 +
- #define THERMAL_NAME    "mtk-thermal"
- 
- struct mtk_thermal;
-@@ -249,6 +255,12 @@ static const int mt2712_adcpnp[MT2712_NUM_SENSORS_PER_ZONE] = {
- 
- static const int mt2712_mux_values[MT2712_NUM_SENSORS] = { 0, 1, 2, 3 };
- 
-+/* MT7622 thermal sensor data */
-+static const int mt7622_bank_data[MT7622_NUM_SENSORS] = { MT7622_TS1, };
-+static const int mt7622_msr[MT7622_NUM_SENSORS_PER_ZONE] = { TEMP_MSR0, };
-+static const int mt7622_adcpnp[MT7622_NUM_SENSORS_PER_ZONE] = { TEMP_ADCPNP0, };
-+static const int mt7622_mux_values[MT7622_NUM_SENSORS] = { 0, };
++				tempmon_calib: calib@3c {
++					reg = <0x3c 0x4>;
++				};
 +
- /**
-  * The MT8173 thermal controller has four banks. Each bank can read up to
-  * four temperature sensors simultaneously. The MT8173 has a total of 5
-@@ -336,6 +348,25 @@ static const struct mtk_thermal_data mt2712_thermal_data = {
- 	.sensor_mux_values = mt2712_mux_values,
- };
- 
-+/*
-+ * MT7622 have only one sensing point which uses AUXADC Channel 11 for raw data
-+ * access.
-+ */
-+static const struct mtk_thermal_data mt7622_thermal_data = {
-+	.auxadc_channel = MT7622_TEMP_AUXADC_CHANNEL,
-+	.num_banks = MT7622_NUM_ZONES,
-+	.num_sensors = MT7622_NUM_SENSORS,
-+	.bank_data = {
-+		{
-+			.num_sensors = 1,
-+			.sensors = mt7622_bank_data,
-+		},
-+	},
-+	.msr = mt7622_msr,
-+	.adcpnp = mt7622_adcpnp,
-+	.sensor_mux_values = mt7622_mux_values,
-+};
++				tempmon_temp_grade: temp-grade@10 {
++					reg = <0x10 0x4>;
++				};
++			};
 +
- /**
-  * raw_to_mcelsius - convert a raw ADC value to mcelsius
-  * @mt:		The thermal controller
-@@ -638,6 +669,10 @@ static const struct of_device_id mtk_thermal_of_match[] = {
- 	{
- 		.compatible = "mediatek,mt2712-thermal",
- 		.data = (void *)&mt2712_thermal_data,
-+	},
-+	{
-+		.compatible = "mediatek,mt7622-thermal",
-+		.data = (void *)&mt7622_thermal_data,
- 	}, {
- 	},
- };
++			tempmon: tempmon {
++				compatible = "fsl,imx7-tempmon";
++				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
++				fsl,tempmon =<&anatop>;
++				nvmem-cells = <&tempmon_calib>,
++					<&tempmon_temp_grade>;
++				nvmem-cell-names = "calib", "temp_grade";
++				clocks = <&clks IMX7D_PLL_SYS_MAIN_CLK>;
+ 			};
+ 
+ 			anatop: anatop@30360000 {
 -- 
 2.7.4
