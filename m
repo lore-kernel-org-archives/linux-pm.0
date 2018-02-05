@@ -1,217 +1,89 @@
-From: Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v4 2/5] irqchip/gic-v3-its: add ability to save/restore
- ITS state
-Date: Mon, 5 Feb 2018 15:56:07 +0000
-Message-ID: <a1b81cab-8e73-2c6f-13e6-612ffc668923@arm.com>
-References: <20180203012450.18378-1-dbasehore@chromium.org>
- <20180203012450.18378-3-dbasehore@chromium.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 1/3] sched/fair: add util_est on top of PELT
+Date: Mon, 5 Feb 2018 17:49:11 +0000
+Message-ID: <20180205174911.GE5739@e110439-lin>
+References: <20180123180847.4477-1-patrick.bellasi@arm.com>
+ <20180123180847.4477-2-patrick.bellasi@arm.com>
+ <20180129163642.GF2228@hirez.programming.kicks-ass.net>
+ <20180130124632.GC5739@e110439-lin>
+ <20180130130432.GC2269@hirez.programming.kicks-ass.net>
+ <20180130140132.GI2295@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20180203012450.18378-3-dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Content-Language: en-GB
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Soby.Mathew-5wv7dgnIgG8@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:53816 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752722AbeBERtQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 5 Feb 2018 12:49:16 -0500
+Content-Disposition: inline
+In-Reply-To: <20180130140132.GI2295@hirez.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On 03/02/18 01:24, Derek Basehore wrote:
-> Some platforms power off GIC logic in suspend, so we need to
-> save/restore state. The distributor and redistributor registers need
-> to be handled in platform code due to access permissions on those
-> registers, but the ITS registers can be restored in the kernel.
+On 30-Jan 15:01, Peter Zijlstra wrote:
+> On Tue, Jan 30, 2018 at 02:04:32PM +0100, Peter Zijlstra wrote:
+> > On Tue, Jan 30, 2018 at 12:46:33PM +0000, Patrick Bellasi wrote:
+> > > > Aside from that being whitespace challenged, did you also try:
+> > > > 
+> > > > 	if ((unsigned)((util_est - util_last) + LIM - 1) < (2 * LIM - 1))
+> > > 
+> > > No, since the above code IMO is so much "easy to parse for humans" :)
+> > 
+> > Heh, true. Although that's fixable by wrapping it in some helper with a
+> > comment.
+> > 
+> > > But, mainly because since the cache alignment update, also while testing on a
+> > > "big" Intel machine I cannot see regressions on hackbench.
+> > > 
+> > > This is the code I get on my Xeon E5-2690 v2:
+> > > 
+> > >        if (abs(util_est - util_last) <= (SCHED_CAPACITY_SCALE / 100))
+> > >    6ba0:       8b 86 7c 02 00 00       mov    0x27c(%rsi),%eax
+> > >    6ba6:       48 29 c8                sub    %rcx,%rax
+> > >    6ba9:       48 99                   cqto
+> > >    6bab:       48 31 d0                xor    %rdx,%rax
+> > >    6bae:       48 29 d0                sub    %rdx,%rax
+> > >    6bb1:       48 83 f8 0a             cmp    $0xa,%rax
+> > >    6bb5:       7e 1d                   jle    6bd4 <dequeue_task_fair+0x7e4>
+> > > 
+> > > Does it look so bad?
+> > 
+> > Its not terrible, and I think your GCC is far more clever than the one I
 > 
-> Signed-off-by: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-> ---
->  drivers/irqchip/irq-gic-v3-its.c | 101 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 101 insertions(+)
+> To clarify; my GCC at the time generated conditional branches to compute
+> the absolute value; and in that case the thing I proposed wins hands
+> down because its unconditional.
 > 
-> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-> index 06f025fd5726..e13515cdb68f 100644
-> --- a/drivers/irqchip/irq-gic-v3-its.c
-> +++ b/drivers/irqchip/irq-gic-v3-its.c
-> @@ -33,6 +33,7 @@
->  #include <linux/of_platform.h>
->  #include <linux/percpu.h>
->  #include <linux/slab.h>
-> +#include <linux/syscore_ops.h>
->  
->  #include <linux/irqchip.h>
->  #include <linux/irqchip/arm-gic-v3.h>
-> @@ -46,6 +47,7 @@
->  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING		(1ULL << 0)
->  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375	(1ULL << 1)
->  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144	(1ULL << 2)
-> +#define ITS_FLAGS_SAVE_SUSPEND_STATE		(1ULL << 3)
->  
->  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING	(1 << 0)
->  
-> @@ -83,6 +85,15 @@ struct its_baser {
->  	u32		psz;
->  };
->  
-> +/*
-> + * Saved ITS state - this is where saved state for the ITS is stored
-> + * when it's disabled during system suspend.
-> + */
-> +struct its_ctx {
-> +	u64			cbaser;
-> +	u32			ctlr;
-> +};
+> However the above is also unconditional and then the difference is much
+> less important.
 
-Nit: This is pretty small for the ITS context. Given that its_node is
-the context, you can safely expand this in the its_node structure.
+I've finally convinced myself that we can live with the "parsing
+complexity" of your proposal... and wrapped into an inline it turned
+out to be not so bad.
 
-> +
->  struct its_device;
->  
->  /*
-> @@ -101,6 +112,7 @@ struct its_node {
->  	struct its_collection	*collections;
->  	struct fwnode_handle	*fwnode_handle;
->  	u64			(*get_msi_base)(struct its_device *its_dev);
-> +	struct its_ctx		its_ctx;
->  	struct list_head	its_device_list;
->  	u64			flags;
->  	unsigned long		list_nr;
-> @@ -3042,6 +3054,90 @@ static void its_enable_quirks(struct its_node *its)
->  	gic_enable_quirks(iidr, its_quirks, its);
->  }
->  
-> +static int its_save_disable(void)
-> +{
-> +	struct its_node *its;
-> +	int err = 0;
-> +
-> +	spin_lock(&its_lock);
-> +	list_for_each_entry(its, &its_nodes, entry) {
-> +		struct its_ctx *ctx;
-> +		void __iomem *base;
-> +
-> +		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
-> +			continue;
-> +
-> +		ctx = &its->its_ctx;
-> +		base = its->base;
-> +		ctx->ctlr = readl_relaxed(base + GITS_CTLR);
-> +		err = its_force_quiescent(base);
-> +		if (err) {
-> +			pr_err("ITS failed to quiesce\n");
-> +			writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-> +			goto err;
-> +		}
-> +
-> +		ctx->cbaser = gits_read_cbaser(base + GITS_CBASER);
-> +	}
-> +
-> +err:
-> +	if (err) {
-> +		list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
-> +			if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
-> +				struct its_ctx *ctx = &its->its_ctx;
-> +				void __iomem *base = its->base;
-> +
-> +				writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-> +			}
-> +		}
-> +	}
-> +
-> +	spin_unlock(&its_lock);
-> +
-> +	return err;
-> +}
-> +
-> +static void its_restore_enable(void)
-> +{
-> +	struct its_node *its;
-> +
-> +	spin_lock(&its_lock);
-> +	list_for_each_entry(its, &its_nodes, entry) {
-> +		if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
-> +			struct its_ctx *ctx = &its->its_ctx;
-> +			void __iomem *base = its->base;
-> +			/*
-> +			 * Only the lower 32 bits matter here since the upper 32
-> +			 * don't include any of the offset.
-> +			 */
-> +			u32 creader = readl_relaxed(base + GITS_CREADR);
+> > used at the time. But that's 4 dependent instructions (cqto,xor,sub,cmp)
+> > whereas the one I proposed uses only 2 (add,cmp).
 
-Accessor matching gits_write_cwriter and co?
+The ARM64 generated code is also simpler.
 
-> +			int i;
-> +
-> +			/*
-> +			 * Reset the write location to where the ITS is
-> +			 * currently at.
-> +			 */
-> +			gits_write_cbaser(ctx->cbaser, base + GITS_CBASER);
-> +			gits_write_cwriter(creader, base + GITS_CWRITER);
-> +			its->cmd_write = &its->cmd_base[
-> +				creader / sizeof(struct its_cmd_block)];
+> > Now, my proposal is, as you say, somewhat hard to read, and it also
+> > doesn't work right when our values are 'big' (which they will not be in
+> > our case, because util has a very definite bound), and I suspect you're
+> > right that ~2 cycles here will not be measurable.
 
-Nit: please do not split lines like this, this is unreadable. We both
-have screens that are wide enough for this to fit on a single line.
+Indeed, I cannot see noticeable differences if not just a slightly
+improvement...
 
-More importantly: Why isn't it sufficient to reset both CREADR and
-CWRITER to zero? Is there any case where you can suspend whilst having
-anything in flight?
+> > 
+> > So yeah.... whatever ;-)
 
-> +			/* Restore GITS_BASER from the value cache. */
-> +			for (i = 0; i < GITS_BASER_NR_REGS; i++) {
-> +				struct its_baser *baser = &its->tables[i];
-> +
-> +				its_write_baser(its, baser, baser->val);
+... I'm going to post a v4 using your proposal ;-)
 
-You may want to first test that this BASER register is actually
-requiring something before writing to it. Yes, this is normally safe.
-But HW is also normally broken.
+Thanks Patrick
 
-> +			}
-> +			writel_relaxed(ctx->ctlr, base + GITS_CTLR);
-
-Before restoring all of this, shouldn't you first test that the ITS is
-actually in a disabled state?
-
-> +		}
-> +	}
-> +	spin_unlock(&its_lock);
-> +}
-> +
-> +static struct syscore_ops its_syscore_ops = {
-> +	.suspend = its_save_disable,
-> +	.resume = its_restore_enable,
-> +};
-> +
->  static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
->  {
->  	struct irq_domain *inner_domain;
-> @@ -3261,6 +3357,9 @@ static int __init its_probe_one(struct resource *res,
->  		ctlr |= GITS_CTLR_ImDe;
->  	writel_relaxed(ctlr, its->base + GITS_CTLR);
->  
-> +	if (fwnode_property_present(handle, "reset-on-suspend"))
-> +		its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
-> +
->  	err = its_init_domain(handle, its);
->  	if (err)
->  		goto out_free_tables;
-> @@ -3515,5 +3614,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
->  		}
->  	}
->  
-> +	register_syscore_ops(&its_syscore_ops);
-> +
->  	return 0;
->  }
-> 
-
-Thanks,
-
-	M.
 -- 
-Jazz is not dead. It just smells funny...
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+#include <best/regards.h>
+
+Patrick Bellasi
