@@ -1,261 +1,217 @@
-From: Samuel Morris <samorris@lexmark.com>
-Subject: Re: [PATCH] leds: use QoS to control LED suspend behavior from userspace
-Date: Mon, 5 Feb 2018 10:22:58 -0500
-Message-ID: <CAFY_6qroe4djUKf0mjom84Z6-GkE6c-1tvjXFHfC+oAChWrSsA@mail.gmail.com>
-References: <20180129194947.11071-1-0v3rdr0n3@gmail.com> <20180130082817.GA4136@amd>
- <CAFY_6qqX9x-DQ+CQRS0Q6DGwzF-zJ6w++OxgU8-+kL_fjXnN_w@mail.gmail.com>
- <fbebed0e-22ec-a13a-0bdd-7b241c21ab30@gmail.com> <CAFY_6qqxo2jF=5cd_Hd5svv3sGH7t8j+RVAShCZ-P-_gfAkufQ@mail.gmail.com>
- <f415fc12-0ffa-35e9-b7e5-57184d1a9aee@gmail.com> <CAFY_6qoE2uqh8Epk7b6RJC29GLAx9boVKgRBFdbJ8gf-7x7DDw@mail.gmail.com>
- <ba966d92-87e9-f734-a282-64e52365bc15@gmail.com>
+From: Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v4 2/5] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Mon, 5 Feb 2018 15:56:07 +0000
+Message-ID: <a1b81cab-8e73-2c6f-13e6-612ffc668923@arm.com>
+References: <20180203012450.18378-1-dbasehore@chromium.org>
+ <20180203012450.18378-3-dbasehore@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f176.google.com ([209.85.216.176]:33279 "EHLO
-        mail-qt0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753063AbeBEPXk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 10:23:40 -0500
-Received: by mail-qt0-f176.google.com with SMTP id d8so40002897qtm.0
-        for <linux-pm@vger.kernel.org>; Mon, 05 Feb 2018 07:23:40 -0800 (PST)
-In-Reply-To: <ba966d92-87e9-f734-a282-64e52365bc15@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20180203012450.18378-3-dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Content-Language: en-GB
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Soby.Mathew-5wv7dgnIgG8@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Sam Morris <0v3rdr0n3@gmail.com>, Linux PM <linux-pm@vger.kernel.org>, linux-leds@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
-On Sun, Feb 4, 2018 at 3:01 PM, Jacek Anaszewski
-<jacek.anaszewski@gmail.com> wrote:
-> On 02/02/2018 11:19 PM, Samuel Morris wrote:
->> On Fri, Feb 2, 2018 at 3:52 PM, Jacek Anaszewski
->> <jacek.anaszewski@gmail.com> wrote:
->>> On 02/02/2018 04:40 PM, Samuel Morris wrote:
->>>> On Thu, Feb 1, 2018 at 4:29 PM, Jacek Anaszewski
->>>> <jacek.anaszewski@gmail.com> wrote:
->>>>> Hi Samuel,
->>>>>
->>>>> Thanks for the patch.
->>>>>
->>>>> On 01/30/2018 03:55 PM, Samuel Morris wrote:
->>>>>> On Tue, Jan 30, 2018 at 3:28 AM, Pavel Machek <pavel@ucw.cz> wrote:
->>>>>>> On Mon 2018-01-29 19:49:47, 0v3rdr0n3@gmail.com wrote:
->>>>>>>> From: Samuel Morris <samorris@lexmark.com>
->>>>>>>>
->>>>>>>> Signed-off-by: Samuel Morris <samorris@lexmark.com>
->>>>>>>
->>>>>>> But... we'll really need description what this is supposed to do.
->>>>>>
->>>>>> I have an LED that indicates to the user that the machine is still
->>>>>> powered when in suspend, so it needs to remain powered. This LED uses
->>>>>> the leds-pwm driver, but it may use a different driver on future
->>>>>> products, so making this change in that driver only would not be
->>>>>> ideal. I asked linux-pm a related question a week or two ago, and
->>>>>> Raphael Wysocki suggested looking into the PM_QOS_FLAG_NO_POWER_OFF
->>>>>> flag. This is what I came up with. I realize this is a pretty broad
->>>>>> change, but I figured I'd try the most general thing first.
->>>>>>
->>>>>>>
->>>>>>> Because at least some LEDs (keyboard LEDs on PC) can't be powered on
->>>>>>> during suspend.
->>>>>>
->>>>>> That is why I set the default behavior to PM_QOS_FLAG_NO_POWER_OFF=0 on probe.
->>>>>>
->>>>>>>
->>>>>>> Does this work for your LEDs? Do we need a way for userspace to tell
->>>>>>> if LED supports it or not?
->>>>>>
->>>>>> Yes, this fixes my problem. I could try testing on other LEDs as well
->>>>>> that use different drivers if need be.
->>>>>>
->>>>>> I didn't see any reason not to make this userspace configurable. I
->>>>>> imagine for some LEDs, the switch just won't work. Are you aware of
->>>>>> any cases where attempting to keep an LED on would cause outright
->>>>>> breakage? I would like these QoS parameters to be device tree, or
->>>>>> otherwise per-board configurable, but I'm not aware of a standard way
->>>>>> to do that. Maybe someone from linux-pm has an idea. Something like
->>>>>> that might be more reasonable than allowing default userspace
->>>>>> configurability.
->>>>>
->>>>> There is already retain-state-suspended property defined in
->>>>> Documentation/devicetree/bindings/leds/leds-gpio.txt and used
->>>>> in drivers/leds/leds-gpio.c. Now if we are going to add generic
->>>>> pm_qos support to the LED core, the DT property should be made generic
->>>>> too and moved to the Documentation/devicetree/bindings/leds/common.txt.
->>>>
->>>> Sounds good, I'll start working on it. Though I can't help but think,
->>>> if all devices share this pm_qos interface, couldn't the device tree
->>>> interface be shared as well?
->>>
->>> Could you please elaborate on that?
->>
->> It just seems odd to me that there does not seem to be a standard way
->> to set QoS parameters like PM_QOS_FLAG_NO_POWER_OFF from the device
->> tree. Each subsystem must define its own way of saying essentially the
->> same thing afaik: leds-gpio chose 'retain-state-suspended' but it
->> could be any variation on "don't power off this device in suspend".
->
-> Well, that seems to be a question to pm and devicetree guys.
+On 03/02/18 01:24, Derek Basehore wrote:
+> Some platforms power off GIC logic in suspend, so we need to
+> save/restore state. The distributor and redistributor registers need
+> to be handled in platform code due to access permissions on those
+> registers, but the ITS registers can be restored in the kernel.
+> 
+> Signed-off-by: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> ---
+>  drivers/irqchip/irq-gic-v3-its.c | 101 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 101 insertions(+)
+> 
+> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+> index 06f025fd5726..e13515cdb68f 100644
+> --- a/drivers/irqchip/irq-gic-v3-its.c
+> +++ b/drivers/irqchip/irq-gic-v3-its.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/of_platform.h>
+>  #include <linux/percpu.h>
+>  #include <linux/slab.h>
+> +#include <linux/syscore_ops.h>
+>  
+>  #include <linux/irqchip.h>
+>  #include <linux/irqchip/arm-gic-v3.h>
+> @@ -46,6 +47,7 @@
+>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING		(1ULL << 0)
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375	(1ULL << 1)
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144	(1ULL << 2)
+> +#define ITS_FLAGS_SAVE_SUSPEND_STATE		(1ULL << 3)
+>  
+>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING	(1 << 0)
+>  
+> @@ -83,6 +85,15 @@ struct its_baser {
+>  	u32		psz;
+>  };
+>  
+> +/*
+> + * Saved ITS state - this is where saved state for the ITS is stored
+> + * when it's disabled during system suspend.
+> + */
+> +struct its_ctx {
+> +	u64			cbaser;
+> +	u32			ctlr;
+> +};
 
-Yes. And further, another thing that's bothered me, I noticed this in
-linux/Documentation/power/runtime_pm.txt:
+Nit: This is pretty small for the ITS context. Given that its_node is
+the context, you can safely expand this in the its_node structure.
 
-Once the subsystem-level suspend callback (or the driver suspend
-callback, if invoked directly) has completed successfully for the
-given device, the PM core regards the device as suspended, which need
-not mean that it has been put into a low power state.  It is supposed
-to mean, however, that the device will not process data and will not
-communicate with the CPU(s) and RAM until the appropriate resume
-callback is executed for it.  The runtime PM status of a device after
-successful execution of the suspend callback is 'suspended'.
+> +
+>  struct its_device;
+>  
+>  /*
+> @@ -101,6 +112,7 @@ struct its_node {
+>  	struct its_collection	*collections;
+>  	struct fwnode_handle	*fwnode_handle;
+>  	u64			(*get_msi_base)(struct its_device *its_dev);
+> +	struct its_ctx		its_ctx;
+>  	struct list_head	its_device_list;
+>  	u64			flags;
+>  	unsigned long		list_nr;
+> @@ -3042,6 +3054,90 @@ static void its_enable_quirks(struct its_node *its)
+>  	gic_enable_quirks(iidr, its_quirks, its);
+>  }
+>  
+> +static int its_save_disable(void)
+> +{
+> +	struct its_node *its;
+> +	int err = 0;
+> +
+> +	spin_lock(&its_lock);
+> +	list_for_each_entry(its, &its_nodes, entry) {
+> +		struct its_ctx *ctx;
+> +		void __iomem *base;
+> +
+> +		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+> +			continue;
+> +
+> +		ctx = &its->its_ctx;
+> +		base = its->base;
+> +		ctx->ctlr = readl_relaxed(base + GITS_CTLR);
+> +		err = its_force_quiescent(base);
+> +		if (err) {
+> +			pr_err("ITS failed to quiesce\n");
+> +			writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+> +			goto err;
+> +		}
+> +
+> +		ctx->cbaser = gits_read_cbaser(base + GITS_CBASER);
+> +	}
+> +
+> +err:
+> +	if (err) {
+> +		list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
+> +			if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+> +				struct its_ctx *ctx = &its->its_ctx;
+> +				void __iomem *base = its->base;
+> +
+> +				writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+> +			}
+> +		}
+> +	}
+> +
+> +	spin_unlock(&its_lock);
+> +
+> +	return err;
+> +}
+> +
+> +static void its_restore_enable(void)
+> +{
+> +	struct its_node *its;
+> +
+> +	spin_lock(&its_lock);
+> +	list_for_each_entry(its, &its_nodes, entry) {
+> +		if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+> +			struct its_ctx *ctx = &its->its_ctx;
+> +			void __iomem *base = its->base;
+> +			/*
+> +			 * Only the lower 32 bits matter here since the upper 32
+> +			 * don't include any of the offset.
+> +			 */
+> +			u32 creader = readl_relaxed(base + GITS_CREADR);
 
-I assume this applies to both runtime_suspend and system suspend. I
-imagine we might not be able to make the guarantee that if we allow
-any led(or any device for that matter) to remain powered that it will
-not communicate with CPU(s) and RAM. Is that so? Could that cause
-serious breakage if so? In my case, the pwm led does not, but if it
-did communicate with CPU/RAM, and there was no serious breakage, I
-would like to be able to make the decision to keep it powered.
-Otherwise I simply wouldn't be able to use system suspend at all
-without significant hardware changes. Maybe I'm misunderstanding
-something basic though...
+Accessor matching gits_write_cwriter and co?
 
->
->>>>> Then, if the property is present, we shouldn't expose this setting
->>>>> to the userspace, see below.
->>>>
->>>> I'm okay with dt only configurability. Though, if you're suggesting we
->>>> should expose the flag to userspace based on whether or not it's dt
->>>> configurable, I'm not so sure. I think those decisions should be
->>>> independent.
->>>
->>> My concern here is backward compatibility - current users expect that
->>> once the property is set in DT, the behavior on suspend is guaranteed
->>> to not change.
->>
->> I see now, yes, in a later patch, if we do expose this to userspace,
->> it would only initialize to zero if there is no dt setting.
->
-> I'd just not expose PM_QOS_FLAG_NO_POWER_OFF at all if DT provides
-> the property but I think it needs broader discussion and involvement
-> of pm and DT people.
->
-> Adding devicetree@vger.kernel.org and maintainers.
->
->>>> When you expose that flag with dev_pm_qos_expose_flags(),
->>>> you also expose other flags.
->>>
->>> How so? You're exposing only one flag:
->>>
->>> dev_pm_qos_expose_flags(led_cdev->dev, PM_QOS_FLAG_NO_POWER_OFF)
->>
->> Oh, yes, you're right, I don't know what I was thinking...
->>
->>>
->>> I'm not familiar with this interface, though.
->>>
->>>> I will probably just remove the userspace
->>>> configurability for now. That can go in a separate patch, and maybe
->>>> that can be configurable from the dt, or a kernel config parameter.
->>>
->>> I'm fine with that.
->>>
->>>>>>>
->>>>>>>> @@ -196,6 +197,11 @@ static int led_suspend(struct device *dev)
->>>>>>>>  {
->>>>>>>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
->>>>>>>>
->>>>>>>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->>>>>>>> +                     PM_QOS_FLAGS_ALL) {
->>>>>>>> +             return 0;
->>>>>>>> +     }
->>>>>>>
->>>>>>> "if (". No need for { } s.
->>>>>>
->>>>>> Ok, I'll generate a new patch later if this seems likely to be integrated.
->>>>>
->>>>> Please also address problems detected by build bot [0].
->>>>
->>>> Will do.
->>>>
->>>>>
->>>>>>>> +
->>>>>>>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>>>>>>>               led_classdev_suspend(led_cdev);
->>>>>>>>
->>>>>>>> @@ -206,6 +212,11 @@ static int led_resume(struct device *dev)
->>>>>>>>  {
->>>>>>>>       struct led_classdev *led_cdev = dev_get_drvdata(dev);
->>>>>>>>
->>>>>>>> +     if(dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF) ==
->>>>>>>> +                     PM_QOS_FLAGS_ALL) {
->>>>>>>> +             return 0;
->>>>>>>> +     }
->>>>>>>> +
->>>>>>>>       if (led_cdev->flags & LED_CORE_SUSPENDRESUME)
->>>>>>>>               led_classdev_resume(led_cdev);
->>>>>>>>
->>>>>>>> @@ -287,6 +298,18 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
->>>>>>>>       list_add_tail(&led_cdev->node, &leds_list);
->>>>>>>>       up_write(&leds_list_lock);
->>>>>>>>
->>>>>>>> +     /* Attempt to let userspace take over the policy. */
->>>>>>>> +     ret = dev_pm_qos_expose_flags(led_cdev->dev,
->>>>>>>> +                     PM_QOS_FLAG_NO_POWER_OFF);
->>>>>>>> +     if (ret < 0) {
->>>>>>>> +             dev_warn(led_cdev->dev, "failed to expose pm_qos_no_poweroff\n");
->>>>>>>> +             return 0;
->>>>>>>> +     }
->>>>>>>> +
->>>>>>>> +     ret = dev_pm_qos_update_flags(led_cdev->dev,
->>>>>>>> +                     PM_QOS_FLAG_NO_POWER_OFF,
->>>>>>>> +                     0);
->>>>>>>> +
->>>>>
->>>>> So this part should be executed conditionally only if
->>>>> retain-state-suspended wasn't defined. BTW you will have
->>>>> to rebase your code onto some more recent code base.
->>>>>
->>>>> led_classdev_register() was renamed to of_led_classdev_register()
->>>>> in 4.12 and it now accepts struct device_node. leds-gpio.c was
->>>>> already changed to use it so it will be convenient to test the use case
->>>>> with retain-state-suspended DT property.
->>>>
->>>> Sounds good.
->>>>
->>>>>
->>>>>>>>       if (!led_cdev->max_brightness)
->>>>>>>>               led_cdev->max_brightness = LED_FULL;
->>>>>>>
->>>>>>> Best regards,
->>>>>>>                                                                         Pavel
->>>>>>> --
->>>>>>> (english) http://www.livejournal.com/~pavelmachek
->>>>>>> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->>>>>>
->>>>>> thanks,
->>>>>> Sam
->>>>>>
->>>>>
->>>>> [0] https://www.spinics.net/lists/linux-leds/msg09031.html
->>>>>
->>>>> --
->>>>> Best regards,
->>>>> Jacek Anaszewski
->>>>
->>>> Thanks for the feedback,
->>>> Sam
->>>>
->>>
->>> --
->>> Best regards,
->>> Jacek Anaszewski
->>
->> thanks,
->> Sam
->>
->
-> --
-> Best regards,
-> Jacek Anaszewski
->
+> +			int i;
+> +
+> +			/*
+> +			 * Reset the write location to where the ITS is
+> +			 * currently at.
+> +			 */
+> +			gits_write_cbaser(ctx->cbaser, base + GITS_CBASER);
+> +			gits_write_cwriter(creader, base + GITS_CWRITER);
+> +			its->cmd_write = &its->cmd_base[
+> +				creader / sizeof(struct its_cmd_block)];
 
-thanks for the feedback,
-Sam
+Nit: please do not split lines like this, this is unreadable. We both
+have screens that are wide enough for this to fit on a single line.
+
+More importantly: Why isn't it sufficient to reset both CREADR and
+CWRITER to zero? Is there any case where you can suspend whilst having
+anything in flight?
+
+> +			/* Restore GITS_BASER from the value cache. */
+> +			for (i = 0; i < GITS_BASER_NR_REGS; i++) {
+> +				struct its_baser *baser = &its->tables[i];
+> +
+> +				its_write_baser(its, baser, baser->val);
+
+You may want to first test that this BASER register is actually
+requiring something before writing to it. Yes, this is normally safe.
+But HW is also normally broken.
+
+> +			}
+> +			writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+
+Before restoring all of this, shouldn't you first test that the ITS is
+actually in a disabled state?
+
+> +		}
+> +	}
+> +	spin_unlock(&its_lock);
+> +}
+> +
+> +static struct syscore_ops its_syscore_ops = {
+> +	.suspend = its_save_disable,
+> +	.resume = its_restore_enable,
+> +};
+> +
+>  static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
+>  {
+>  	struct irq_domain *inner_domain;
+> @@ -3261,6 +3357,9 @@ static int __init its_probe_one(struct resource *res,
+>  		ctlr |= GITS_CTLR_ImDe;
+>  	writel_relaxed(ctlr, its->base + GITS_CTLR);
+>  
+> +	if (fwnode_property_present(handle, "reset-on-suspend"))
+> +		its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+> +
+>  	err = its_init_domain(handle, its);
+>  	if (err)
+>  		goto out_free_tables;
+> @@ -3515,5 +3614,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
+>  		}
+>  	}
+>  
+> +	register_syscore_ops(&its_syscore_ops);
+> +
+>  	return 0;
+>  }
+> 
+
+Thanks,
+
+	M.
+-- 
+Jazz is not dead. It just smells funny...
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
