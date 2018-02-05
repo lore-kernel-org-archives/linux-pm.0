@@ -1,46 +1,41 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 2/2] soc: mediatek: add SCPSYS power domain driver for
- MediaTek MT7623A SoC
-Date: Mon, 5 Feb 2018 00:09:13 -0600
-Message-ID: <20180205060913.ak62ammdposybdsf@rob-hp-laptop>
-References: <975fb80e1cdbe7f6d4a1d04fd3a2a21b619a193d.1517479588.git.sean.wang@mediatek.com>
- <de07c071f968ae9da84543bb33cc5658ed184801.1517479588.git.sean.wang@mediatek.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH V2 1/2] ARM: dts: imx7s: add temperature monitor support
+Date: Mon, 5 Feb 2018 14:12:38 +0800
+Message-ID: <20180205061237.GE31354@dragon>
+References: <1516954180-26029-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:43117 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752931AbeBEGJP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 01:09:15 -0500
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <de07c071f968ae9da84543bb33cc5658ed184801.1517479588.git.sean.wang@mediatek.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1516954180-26029-1-git-send-email-Anson.Huang@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Anson Huang <Anson.Huang@nxp.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, edubezval@gmail.com, robh+dt@kernel.org, Linux-imx@nxp.com, kernel@pengutronix.de, fabio.estevam@nxp.com, rui.zhang@intel.com, aisheng.dong@nxp.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Thu, Feb 01, 2018 at 06:12:48PM +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
+On Fri, Jan 26, 2018 at 04:09:39PM +0800, Anson Huang wrote:
+> Add i.MX7 temperature monitor support.
 > 
-> Add SCPSYS power domain driver for MT7623A SoC. The MT7623A's power
-> domains are the subset of MT7623 SoC's ones. As MT7623 SoC has full
-> features whereas MT7623A is being designed just for router applications.
-> Thus, MT7623A doesn't include those power domains multimedia function
-> belongs to. In order to avoid certain errors undoubtedly happening at
-> registering those power domains on MT7623A SoC using the existing MT7623
-> SCPSYS driver, it's required to define another setup specifically for
-> MT7623A SoC. Also, use a meaningful definition for bus_prot_mask instead
-> of just hardcoded for it.
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
 > ---
->  drivers/soc/mediatek/mtk-scpsys.c         | 60 +++++++++++++++++++++++++++++--
+> no changes since V1.
+>  .../devicetree/bindings/thermal/imx-thermal.txt      |  5 +++--
 
->  include/dt-bindings/power/mt7623a-power.h | 10 ++++++
+The bindings doc should be a separate patch or part of related
+imx-thermal driver patch ...
 
-This belongs in the binding patch.
+>  arch/arm/boot/dts/imx7s.dtsi                         | 20 ++++++++++++++++++++
 
->  include/linux/soc/mediatek/infracfg.h     |  4 +++
->  3 files changed, 72 insertions(+), 2 deletions(-)
->  create mode 100644 include/dt-bindings/power/mt7623a-power.h
-> 
+..., and shouldn't be mixed with dts changes.
+
+Shawn
