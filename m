@@ -1,70 +1,93 @@
-From: Ulf Magnusson <ulfalizer@gmail.com>
-Subject: [PATCH v2 03/20] kconfig: Remove leftover references to AVR32 symbol
-Date: Mon,  5 Feb 2018 05:44:41 +0100
-Message-ID: <20180205044441.4440-1-ulfalizer@gmail.com>
-References: <20180205040515.GC28462@vireshk-i7>
-Return-path: <linux-pwm-owner@vger.kernel.org>
-In-Reply-To: <20180205040515.GC28462@vireshk-i7>
-Sender: linux-pwm-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-kbuild@vger.kernel.org, tfiga@chromium.org, paul.burton@mips.com, m.szyprowski@samsung.com, egtvedt@samfundet.no, linus.walleij@linaro.org, vgupta@synopsys.com, mgorman@techsingularity.net, hch@lst.de, mina86@mina86.com, robh@kernel.org, sboyd@codeaurora.org, paulus@ozlabs.org, will.deacon@arm.com, tony@atomide.com, npiggin@gmail.com, yamada.masahiro@socionext.com, ulfalizer@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com, broonie@kernel.org, b.zolnierkie@samsung.com, seanpaul@chromium.org, daniel.vetter@ffwll.ch, christophe.leroy@c-s.fr, linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V2 1/2] ARM: dts: imx7s: add temperature monitor support
+Date: Mon, 5 Feb 2018 00:07:13 -0600
+Message-ID: <20180205060713.fis5uawasxhgsjd6@rob-hp-laptop>
+References: <1516954180-26029-1-git-send-email-Anson.Huang@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1516954180-26029-1-git-send-email-Anson.Huang-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>
+Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, fabio.estevam-3arQi8VN3Tc@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, aisheng.dong-3arQi8VN3Tc@public.gmane.org, Linux-imx-3arQi8VN3Tc@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
-support for AVR32 architecture"). Remove the remaining references to it
-from the Kconfig files.
+On Fri, Jan 26, 2018 at 04:09:39PM +0800, Anson Huang wrote:
+> Add i.MX7 temperature monitor support.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>
+> Acked-by: Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>
+> ---
+> no changes since V1.
+>  .../devicetree/bindings/thermal/imx-thermal.txt      |  5 +++--
+>  arch/arm/boot/dts/imx7s.dtsi                         | 20 ++++++++++++++++++++
+>  2 files changed, 23 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> index 28be51a..9575d45 100644
+> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> @@ -1,8 +1,9 @@
+>  * Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
+>  
+>  Required properties:
+> -- compatible : "fsl,imx6q-tempmon" for i.MX6Q, "fsl,imx6sx-tempmon" for i.MX6SX.
+> -  i.MX6SX has two more IRQs than i.MX6Q, one is IRQ_LOW and the other is IRQ_PANIC,
+> +- compatible : "fsl,imx6q-tempmon" for i.MX6Q, "fsl,imx6sx-tempmon" for i.MX6SX,
+> +  "fsl,imx7-tempmon" for i.MX7S/D.
 
-Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
----
-Changes in v2:
-Removal of AVR32_AT32AP_CPUFREQ is already pending in
-https://marc.info/?i=20180118200202.11883-1-clabbe.montjoie%40gmail.com (which
-also does it properly -- I forgot to search for related files here). Just
-remove the other references.
+Please format as one valid compatible combination per line.
 
- drivers/pwm/Kconfig           | 2 +-
- drivers/spi/Kconfig           | 2 +-
- drivers/video/console/Kconfig | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+> +  i.MX6SX and i.MX7S/D have two more IRQs than i.MX6Q, one is IRQ_LOW and the other is IRQ_PANIC,
 
-diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig
-index 763ee50ea57d..f16aad3bf5d6 100644
---- a/drivers/pwm/Kconfig
-+++ b/drivers/pwm/Kconfig
-@@ -43,7 +43,7 @@ config PWM_AB8500
- 
- config PWM_ATMEL
- 	tristate "Atmel PWM support"
--	depends on ARCH_AT91 || AVR32
-+	depends on ARCH_AT91
- 	help
- 	  Generic PWM framework driver for Atmel SoC.
- 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 603783976b81..c1e455d46c7f 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -72,7 +72,7 @@ config SPI_ARMADA_3700
- config SPI_ATMEL
- 	tristate "Atmel SPI Controller"
- 	depends on HAS_DMA
--	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
-+	depends on (ARCH_AT91 || COMPILE_TEST)
- 	help
- 	  This selects a driver for the Atmel SPI Controller, present on
- 	  many AT32 (AVR32) and AT91 (ARM) chips.
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 7f1f1fbcef9e..be63759b6027 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -7,7 +7,7 @@ menu "Console display driver support"
- config VGA_CONSOLE
- 	bool "VGA text console" if EXPERT || !X86
- 	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
--		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
-+		!SUPERH && !BLACKFIN && !MN10300 && !CRIS && \
- 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
- 		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC
- 	default y
--- 
-2.14.1
+This belongs with the interrupt property.
+
+>    when temperature is below than low threshold, IRQ_LOW will be triggered, when temperature
+>    is higher than panic threshold, system will auto reboot by SRC module.
+>  - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
+> diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
+> index 82ad26e..2e2eda53 100644
+> --- a/arch/arm/boot/dts/imx7s.dtsi
+> +++ b/arch/arm/boot/dts/imx7s.dtsi
+> @@ -497,9 +497,29 @@
+>  			};
+>  
+>  			ocotp: ocotp-ctrl@30350000 {
+> +				#address-cells = <1>;
+> +				#size-cells = <1>;
+>  				compatible = "fsl,imx7d-ocotp", "syscon";
+>  				reg = <0x30350000 0x10000>;
+>  				clocks = <&clks IMX7D_OCOTP_CLK>;
+> +
+> +				tempmon_calib: calib@3c {
+> +					reg = <0x3c 0x4>;
+> +				};
+> +
+> +				tempmon_temp_grade: temp-grade@10 {
+> +					reg = <0x10 0x4>;
+> +				};
+> +			};
+> +
+> +			tempmon: tempmon {
+> +				compatible = "fsl,imx7-tempmon";
+> +				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+> +				fsl,tempmon =<&anatop>;
+> +				nvmem-cells = <&tempmon_calib>,
+> +					<&tempmon_temp_grade>;
+> +				nvmem-cell-names = "calib", "temp_grade";
+> +				clocks = <&clks IMX7D_PLL_SYS_MAIN_CLK>;
+>  			};
+>  
+>  			anatop: anatop@30360000 {
+> -- 
+> 2.7.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
