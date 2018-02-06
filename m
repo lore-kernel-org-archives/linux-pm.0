@@ -1,180 +1,169 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Tue, 6 Feb 2018 15:43:19 +0000
-Message-ID: <20180206154319.GF5739@e110439-lin>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
- <f574036c-7572-9b97-79a0-794ff48e4d49@evidence.eu.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v4 1/3] sched/fair: add util_est on top of PELT
+Date: Tue, 6 Feb 2018 16:50:56 +0100
+Message-ID: <20180206155056.GF2269@hirez.programming.kicks-ass.net>
+References: <20180206144131.31233-1-patrick.bellasi@arm.com>
+ <20180206144131.31233-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:38936 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752171AbeBFPnY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Feb 2018 10:43:24 -0500
+Received: from merlin.infradead.org ([205.233.59.134]:58010 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752135AbeBFPvQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 10:51:16 -0500
 Content-Disposition: inline
-In-Reply-To: <f574036c-7572-9b97-79a0-794ff48e4d49@evidence.eu.com>
+In-Reply-To: <20180206144131.31233-2-patrick.bellasi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Claudio Scordino <claudio@evidence.eu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
-
-Hi Claudio,
-
-On 06-Feb 11:55, Claudio Scordino wrote:
-> Hi Peter,
-> 
-> Il 20/12/2017 16:30, Peter Zijlstra ha scritto:
-> >
-> >So I ended up with the below (on top of Juri's cpufreq-dl patches).
-> >
-> >It compiles, but that's about all the testing it had.
-> >
-> >--- a/include/linux/sched/cpufreq.h
-> >+++ b/include/linux/sched/cpufreq.h
-
-[..]
-
-> >@@ -188,17 +187,23 @@ static void sugov_get_util(struct sugov_
-> >  static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
-> >  {
-> >+	unsigned long util = sg_cpu->util_cfs + sg_cpu->util_dl;
-> >+	struct rq *rq = cpu_rq(sg_cpu->cpu);
-> >+
-> >+	if (rq->rt.rt_nr_running)
-> >+		util = sg_cpu->max;
-> >+
-> >  	/*
-> >  	 * Ideally we would like to set util_dl as min/guaranteed freq and
-> >  	 * util_cfs + util_dl as requested freq. However, cpufreq is not yet
-> >  	 * ready for such an interface. So, we only do the latter for now.
-> >  	 */
-> >-	return min(sg_cpu->util_cfs + sg_cpu->util_dl, sg_cpu->max);
-> >+	return min(util, sg_cpu->max);
-> >  }
-
-[...]
-
-> 
-> What is the status of this patch ? I couldn't find it on the
-> tip/queue repositories.
-> 
-> BTW, I wonder if we actually want to remove also the information
-> about the scheduling class who triggered the frequency change.
-
-Removing flags was the main goal of the patch, since they represents
-mainly duplicated information which scheduling classes already know.
-
-This was making flags update error prone and difficult to keep
-aligned with existing scheduling classes info.
-
-> This prevents us from adopting class-specific behaviors.
-
-In Peter's proposal he replaces flags with checks like:
-
-   if (rq->rt.rt_nr_running)
-
-> For example, we might want to skip the rate limits when deadline
-> asks for an increase of frequency, as shown in the patch below.
-> In this case, we could just remove the flags from sugov_cpu, but
-> leave the defines and the argument for sugov_update_*()
-
-At first glance, your proposal below makes to make sense.
-
-However, I'm wondering if we cannot get it working using
-rq->dl's provided information instead of flags?
-
-> Best regards,
-> 
->                 Claudio
->
-> 
-> From ed13fa5a8f93a43f8ff8f7d354b18c0031df482c Mon Sep 17 00:00:00 2001
-> From: Claudio Scordino <claudio@evidence.eu.com>
-> Date: Wed, 27 Sep 2017 17:16:36 +0200
-> Subject: [PATCH RFC] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-> 
-> When the SCHED_DEADLINE scheduling class asks to increase CPU frequency,
-> we should not wait the rate limit, otherwise we may miss some deadline.
-> The patch just ignores the limit whenever SCHED_DEADLINE asks for a
-> higher CPU frequency.
-> 
-> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 24 +++++++++++++-----------
->  1 file changed, 13 insertions(+), 11 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index dd062a1..5027ab1 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -75,7 +75,8 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
->  /************************ Governor internals ***********************/
-> -static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> +static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time,
-> +				     unsigned int next_freq, unsigned int flags)
->  {
->  	s64 delta_ns;
-> @@ -112,6 +113,10 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->  		return true;
->  	}
-> +	/* Ignore rate limit if DL asked to increase CPU frequency */
-> +	if ((flags & SCHED_CPUFREQ_DL) && (next_freq > sg_policy->next_freq))
-> +		return true;
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
 
-static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
-{
-        unsigned long util = sg_cpu->util_cfs + sg_cpu->util_dl;
-        struct rq *rq = cpu_rq(sg_cpu->cpu);
+Mostly nice, I almost applied, except too many nits below.
 
-        if (rq->dl.dl_nr_running)
 
+
+On Tue, Feb 06, 2018 at 02:41:29PM +0000, Patrick Bellasi wrote:
+
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 7b6535987500..118f49c39b60 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -5193,6 +5193,20 @@ static inline void hrtick_update(struct rq *rq)
+>  }
+>  #endif
+>  
+> +static inline unsigned long task_util(struct task_struct *p);
+> +static inline unsigned long _task_util_est(struct task_struct *p);
+
+What's with the leading underscore? I don't see one without it.
 
 > +
->  	delta_ns = time - sg_policy->last_freq_update_time;
->  	return delta_ns >= sg_policy->freq_update_delay_ns;
->  }
-> @@ -275,9 +280,6 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->  	sugov_set_iowait_boost(sg_cpu, time);
->  	sg_cpu->last_update = time;
-> -	if (!sugov_should_update_freq(sg_policy, time))
-> -		return;
-> -
->  	busy = sugov_cpu_is_busy(sg_cpu);
->  	if (flags & SCHED_CPUFREQ_RT) {
-> @@ -299,7 +301,8 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->  			sg_policy->cached_raw_freq = 0;
->  		}
->  	}
-> -	sugov_update_commit(sg_policy, time, next_f);
-> +	if (sugov_should_update_freq(sg_policy, time, next_f, flags))
-> +		sugov_update_commit(sg_policy, time, next_f);
->  }
->  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
-> @@ -362,14 +365,13 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->  	sugov_set_iowait_boost(sg_cpu, time);
->  	sg_cpu->last_update = time;
-> -	if (sugov_should_update_freq(sg_policy, time)) {
-> -		if (flags & SCHED_CPUFREQ_RT)
-> -			next_f = sg_policy->policy->cpuinfo.max_freq;
-> -		else
-> -			next_f = sugov_next_freq_shared(sg_cpu, time);
-> +	if (flags & SCHED_CPUFREQ_RT)
-> +		next_f = sg_policy->policy->cpuinfo.max_freq;
-> +	else
-> +		next_f = sugov_next_freq_shared(sg_cpu, time);
-> +	if (sugov_should_update_freq(sg_policy, time, next_f, flags))
->  		sugov_update_commit(sg_policy, time, next_f);
-> -	}
->  	raw_spin_unlock(&sg_policy->update_lock);
->  }
-> -- 
-> 2.7.4
-> 
-> 
+> +static inline void util_est_enqueue(struct task_struct *p)
 
--- 
-#include <best/regards.h>
+Also pass @rq from enqueue_task_fair() ? I see no point in computing
+task_rq(p) if we already have the value around.
 
-Patrick Bellasi
+> +{
+> +	struct cfs_rq *cfs_rq = &task_rq(p)->cfs;
+> +
+> +	if (!sched_feat(UTIL_EST))
+> +		return;
+> +
+> +	/* Update root cfs_rq's estimated utilization */
+> +	cfs_rq->avg.util_est.enqueued += _task_util_est(p);
+> +}
+
+
+> +/*
+> + * Check if the specified (signed) value is within a specified margin,
+> + * based on the observation that:
+> + *     abs(x) < y := (unsigned)(x + y - 1) < (2 * y - 1)
+
+    * Note: this only works when x+y < INT_MAX.
+
+> + */
+> +static inline bool within_margin(long value, unsigned int margin)
+
+This mixing of long and int is dodgy, do we want to consistently use int
+here?
+
+> +{
+> +	return ((unsigned int)(value + margin - 1) < (2 * margin - 1));
+> +}
+> +
+> +static inline void util_est_dequeue(struct task_struct *p, int flags)
+> +{
+> +	struct cfs_rq *cfs_rq = &task_rq(p)->cfs;
+> +	unsigned long util_last;
+> +	long last_ewma_diff;
+> +	unsigned long ewma;
+> +	long util_est = 0;
+
+Why long?
+
+> +
+> +	if (!sched_feat(UTIL_EST))
+> +		return;
+> +
+> +	/*
+> +	 * Update root cfs_rq's estimated utilization
+> +	 *
+> +	 * If *p is the last task then the root cfs_rq's estimated utilization
+> +	 * of a CPU is 0 by definition.
+> +	 */
+> +	if (cfs_rq->nr_running) {
+> +		util_est  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+
+Because util_est.enqueued is of type 'unsigned int'.
+
+> +		util_est -= min_t(long, util_est, _task_util_est(p));
+> +	}
+> +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, util_est);
+
+long to int truncate
+
+> +
+> +	/*
+> +	 * Skip update of task's estimated utilization when the task has not
+> +	 * yet completed an activation, e.g. being migrated.
+> +	 */
+> +	if (!(flags & DEQUEUE_SLEEP))
+> +		return;
+> +
+> +	ewma = READ_ONCE(p->se.avg.util_est.ewma);
+> +	util_last = task_util(p);
+
+Again, all kinds of long, while the ewma type itself is of 'unsigned
+int'.
+
+> +
+> +	/*
+> +	 * Skip update of task's estimated utilization when its EWMA is
+> +	 * already ~1% close to its last activation value.
+> +	 */
+> +	last_ewma_diff = util_last - ewma;
+> +	if (within_margin(last_ewma_diff, (SCHED_CAPACITY_SCALE / 100)))
+> +		return;
+> +
+> +	/*
+> +	 * Update Task's estimated utilization
+> +	 *
+> +	 * When *p completes an activation we can consolidate another sample
+> +	 * about the task size. This is done by storing the last PELT value
+> +	 * for this task and using this value to load another sample in the
+> +	 * exponential weighted moving average:
+> +	 *
+> +	 *  ewma(t) = w *  task_util(p) + (1-w) * ewma(t-1)
+> +	 *          = w *  task_util(p) +         ewma(t-1)  - w * ewma(t-1)
+> +	 *          = w * (task_util(p) -         ewma(t-1)) +     ewma(t-1)
+> +	 *          = w * (      last_ewma_diff            ) +     ewma(t-1)
+> +	 *          = w * (last_ewma_diff  +  ewma(t-1) / w)
+> +	 *
+> +	 * Where 'w' is the weight of new samples, which is configured to be
+> +	 * 0.25, thus making w=1/4 ( >>= UTIL_EST_WEIGHT_SHIFT)
+> +	 */
+> +	ewma   = last_ewma_diff + (ewma << UTIL_EST_WEIGHT_SHIFT);
+> +	ewma >>= UTIL_EST_WEIGHT_SHIFT;
+> +
+> +	WRITE_ONCE(p->se.avg.util_est.ewma, ewma);
+> +	WRITE_ONCE(p->se.avg.util_est.enqueued, util_last);
+
+Two stores to that word... can we fix that nicely?
+
+> +}
+
+> +static inline unsigned long _task_util_est(struct task_struct *p)
+> +{
+> +	return max(p->se.avg.util_est.ewma, p->se.avg.util_est.enqueued);
+> +}
+
+Aside from the underscore thing I already noted, why is this here and
+not where the fwd declaration is?
+
+> +/*
+> + * UtilEstimation. Use estimated CPU utilization.
+> + */
+> +SCHED_FEAT(UTIL_EST, false)
+
+Since you couldn't measure it, do we wants it true?
