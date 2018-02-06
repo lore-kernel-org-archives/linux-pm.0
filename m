@@ -1,92 +1,74 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v4 3/3] sched/cpufreq_schedutil: use util_est for OPP selection
-Date: Tue,  6 Feb 2018 14:41:31 +0000
-Message-ID: <20180206144131.31233-4-patrick.bellasi@arm.com>
-References: <20180206144131.31233-1-patrick.bellasi@arm.com>
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Subject: Re: [PATCH v4 4/7] typec: tcpm: Add core support for sink side PPS
+Date: Tue, 6 Feb 2018 16:53:57 +0200
+Message-ID: <20180206145357.GA25136@kuha.fi.intel.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <26195a73c6f2f379b47dd39f23db9c2feec20371.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180130124653.GD14922@kuha.fi.intel.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1C1538@SW-EX-MBX01.diasemi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:38262 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752151AbeBFOlx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Feb 2018 09:41:53 -0500
-In-Reply-To: <20180206144131.31233-1-patrick.bellasi@arm.com>
+Received: from mga07.intel.com ([134.134.136.100]:23896 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752116AbeBFOyD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Feb 2018 09:54:03 -0500
+Content-Disposition: inline
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1C1538@SW-EX-MBX01.diasemi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-When schedutil looks at the CPU utilization, the current PELT value for
-that CPU is returned straight away. In certain scenarios this can have
-undesired side effects and delays on frequency selection.
+On Tue, Feb 06, 2018 at 02:33:08PM +0000, Adam Thomson wrote:
+> On 30 January 2018 12:47, Heikki Krogerus wrote:
+> 
+> > > +static int tcpm_pps_set_op_curr(struct tcpm_port *port, u16 op_curr)
+> > > +{
+> > > +	unsigned int target_mw;
+> > > +	int ret = 0;
+> > > +
+> > > +	mutex_lock(&port->swap_lock);
+> > > +	mutex_lock(&port->lock);
+> > > +
+> > > +	if (!port->pps_data.active) {
+> > > +		ret = -EOPNOTSUPP;
+> > > +		goto port_unlock;
+> > > +	}
+> > > +
+> > > +	if (port->state != SNK_READY) {
+> > > +		ret = -EAGAIN;
+> > > +		goto port_unlock;
+> > > +	}
+> > > +
+> > > +	if (op_curr > port->pps_data.max_curr) {
+> > > +		ret = -EINVAL;
+> > > +		goto port_unlock;
+> > > +	}
+> > > +
+> > > +	target_mw = (op_curr * port->pps_data.out_volt) / 1000;
+> > > +	if (target_mw < port->operating_snk_mw) {
+> > > +		ret = -EINVAL;
+> > > +		goto port_unlock;
+> > > +	}
+> > > +
+> > > +	reinit_completion(&port->pps_complete);
+> > > +	port->pps_data.op_curr = op_curr;
+> > > +	port->pps_status = 0;
+> > > +	port->pps_pending = true;
+> > > +	tcpm_set_state(port, SNK_NEGOTIATE_PPS_CAPABILITIES, 0);
+> >
+> > Why not just take the swap_lock here..
+> 
+> I believe this would result in deadlock. All of the existing uses of swap_lock
+> acquire it first before the port->lock is then acquired (and vice-versa for
+> unlock). We don't want the power role to change during this procedure, so we
+> hold the swap_lock for the whole process. Have a look at tcpm_dr_set() and
+> tcpm_pr_set() as examples of existing usage.
 
-For example, since the task utilization is decayed at wakeup time, a
-long sleeping big task newly enqueued does not add immediately a
-significant contribution to the target CPU. This introduces some latency
-before schedutil will be able to detect the best frequency required by
-that task.
+OK. Then I'm fine with this patch as well. FWIW:
 
-Moreover, the PELT signal build-up time is a function of the current
-frequency, because of the scale invariant load tracking support. Thus,
-starting from a lower frequency, the utilization build-up time will
-increase even more and further delays the selection of the actual
-frequency which better serves the task requirements.
+Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 
-In order to reduce this kind of latencies, we integrate the usage
-of the CPU's estimated utilization in the sugov_get_util function.
-This allows to properly consider the expected utilization of a CPU which,
-for example, has just got a big task running after a long sleep period.
-Ultimately this allows to select the best frequency to run a task
-right after its wake-up.
-
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Paul Turner <pjt@google.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-
----
-Changes in v4:
- - rebased on today's tip/sched/core (commit 460e8c3340a2)
- - use util_est.enqueued for cfs_rq's util_est (Joel)
- - simplify cpu_util_cfs() integration (Dietmar)
-
-Changes in v3:
- - rebase on today's tip/sched/core (commit 07881166a892)
- - moved into Juri's cpu_util_cfs(), which should also
-   address Rafael's suggestion to use a local variable.
-
-Changes in v2:
- - rebase on top of v4.15-rc2
- - tested that overhauled PELT code does not affect the util_est
-
-Change-Id: I62c01ed90d8ad45b06383be03d39fcf8c9041646
----
- kernel/sched/sched.h | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 2e95505e23c6..f3c7b6a83ef4 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -2127,7 +2127,12 @@ static inline unsigned long cpu_util_dl(struct rq *rq)
- 
- static inline unsigned long cpu_util_cfs(struct rq *rq)
- {
--	return rq->cfs.avg.util_avg;
-+	if (!sched_feat(UTIL_EST))
-+		return rq->cfs.avg.util_avg;
-+
-+	return max_t(unsigned long,
-+		     rq->cfs.avg.util_avg,
-+		     rq->cfs.avg.util_est.enqueued);
- }
- 
- #endif
 -- 
-2.15.1
+heikki
