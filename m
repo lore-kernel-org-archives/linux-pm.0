@@ -1,259 +1,163 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v4 2/5] irqchip/gic-v3-its: add ability to save/restore
- ITS state
-Date: Mon, 5 Feb 2018 17:02:25 -0800
-Message-ID: <CAGAzgspHrLi3yZjoL4xMEVNLKpCnQJarZd0fQQQoJR+HKOhd5A@mail.gmail.com>
-References: <20180203012450.18378-1-dbasehore@chromium.org>
- <20180203012450.18378-3-dbasehore@chromium.org> <a1b81cab-8e73-2c6f-13e6-612ffc668923@arm.com>
- <CAGAzgsrEPVVgMcTx6U9HUNr=VjOHkNJRd3erTnV+Pfv+8W_mgw@mail.gmail.com> <CAGAzgsqdQnMjrH6PpkCx_t151XxqjG5ghD7DCdULD0SQFuqSow@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: [PATCH v6 00/15] [v6] Krait clocks + Krait CPUfreq
+Date: Tue,  6 Feb 2018 09:38:13 +0530
+Message-ID: <1517890108-8140-1-git-send-email-sricharan@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:40002 "EHLO
-        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752337AbeBFBC1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 20:02:27 -0500
-Received: by mail-wm0-f65.google.com with SMTP id v123so597717wmd.5
-        for <linux-pm@vger.kernel.org>; Mon, 05 Feb 2018 17:02:26 -0800 (PST)
-In-Reply-To: <CAGAzgsqdQnMjrH6PpkCx_t151XxqjG5ghD7DCdULD0SQFuqSow@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:46282 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752118AbeBFEJD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 23:09:03 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marc Zyngier <marc.zyngier@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
+To: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org
+Cc: sricharan@codeaurora.org
 
-On Mon, Feb 5, 2018 at 5:01 PM, dbasehore . <dbasehore@chromium.org> wrote:
-> On Mon, Feb 5, 2018 at 4:33 PM, dbasehore . <dbasehore@chromium.org> wrot=
-e:
->> On Mon, Feb 5, 2018 at 7:56 AM, Marc Zyngier <marc.zyngier@arm.com> wrot=
-e:
->>> On 03/02/18 01:24, Derek Basehore wrote:
->>>> Some platforms power off GIC logic in suspend, so we need to
->>>> save/restore state. The distributor and redistributor registers need
->>>> to be handled in platform code due to access permissions on those
->>>> registers, but the ITS registers can be restored in the kernel.
->>>>
->>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
->>>> ---
->>>>  drivers/irqchip/irq-gic-v3-its.c | 101 ++++++++++++++++++++++++++++++=
-+++++++++
->>>>  1 file changed, 101 insertions(+)
->>>>
->>>> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gi=
-c-v3-its.c
->>>> index 06f025fd5726..e13515cdb68f 100644
->>>> --- a/drivers/irqchip/irq-gic-v3-its.c
->>>> +++ b/drivers/irqchip/irq-gic-v3-its.c
->>>> @@ -33,6 +33,7 @@
->>>>  #include <linux/of_platform.h>
->>>>  #include <linux/percpu.h>
->>>>  #include <linux/slab.h>
->>>> +#include <linux/syscore_ops.h>
->>>>
->>>>  #include <linux/irqchip.h>
->>>>  #include <linux/irqchip/arm-gic-v3.h>
->>>> @@ -46,6 +47,7 @@
->>>>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING                (1ULL << 0)
->>>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375    (1ULL << 1)
->>>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144    (1ULL << 2)
->>>> +#define ITS_FLAGS_SAVE_SUSPEND_STATE         (1ULL << 3)
->>>>
->>>>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING  (1 << 0)
->>>>
->>>> @@ -83,6 +85,15 @@ struct its_baser {
->>>>       u32             psz;
->>>>  };
->>>>
->>>> +/*
->>>> + * Saved ITS state - this is where saved state for the ITS is stored
->>>> + * when it's disabled during system suspend.
->>>> + */
->>>> +struct its_ctx {
->>>> +     u64                     cbaser;
->>>> +     u32                     ctlr;
->>>> +};
->>>
->>> Nit: This is pretty small for the ITS context. Given that its_node is
->>> the context, you can safely expand this in the its_node structure.
->>>
->>>> +
->>>>  struct its_device;
->>>>
->>>>  /*
->>>> @@ -101,6 +112,7 @@ struct its_node {
->>>>       struct its_collection   *collections;
->>>>       struct fwnode_handle    *fwnode_handle;
->>>>       u64                     (*get_msi_base)(struct its_device *its_d=
-ev);
->>>> +     struct its_ctx          its_ctx;
->>>>       struct list_head        its_device_list;
->>>>       u64                     flags;
->>>>       unsigned long           list_nr;
->>>> @@ -3042,6 +3054,90 @@ static void its_enable_quirks(struct its_node *=
-its)
->>>>       gic_enable_quirks(iidr, its_quirks, its);
->>>>  }
->>>>
->>>> +static int its_save_disable(void)
->>>> +{
->>>> +     struct its_node *its;
->>>> +     int err =3D 0;
->>>> +
->>>> +     spin_lock(&its_lock);
->>>> +     list_for_each_entry(its, &its_nodes, entry) {
->>>> +             struct its_ctx *ctx;
->>>> +             void __iomem *base;
->>>> +
->>>> +             if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
->>>> +                     continue;
->>>> +
->>>> +             ctx =3D &its->its_ctx;
->>>> +             base =3D its->base;
->>>> +             ctx->ctlr =3D readl_relaxed(base + GITS_CTLR);
->>>> +             err =3D its_force_quiescent(base);
->>>> +             if (err) {
->>>> +                     pr_err("ITS failed to quiesce\n");
->>>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
->>>> +                     goto err;
->>>> +             }
->>>> +
->>>> +             ctx->cbaser =3D gits_read_cbaser(base + GITS_CBASER);
->>>> +     }
->>>> +
->>>> +err:
->>>> +     if (err) {
->>>> +             list_for_each_entry_continue_reverse(its, &its_nodes, en=
-try) {
->>>> +                     if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
->>>> +                             struct its_ctx *ctx =3D &its->its_ctx;
->>>> +                             void __iomem *base =3D its->base;
->>>> +
->>>> +                             writel_relaxed(ctx->ctlr, base + GITS_CT=
-LR);
->>>> +                     }
->>>> +             }
->>>> +     }
->>>> +
->>>> +     spin_unlock(&its_lock);
->>>> +
->>>> +     return err;
->>>> +}
->>>> +
->>>> +static void its_restore_enable(void)
->>>> +{
->>>> +     struct its_node *its;
->>>> +
->>>> +     spin_lock(&its_lock);
->>>> +     list_for_each_entry(its, &its_nodes, entry) {
->>>> +             if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
->>>> +                     struct its_ctx *ctx =3D &its->its_ctx;
->>>> +                     void __iomem *base =3D its->base;
->>>> +                     /*
->>>> +                      * Only the lower 32 bits matter here since the =
-upper 32
->>>> +                      * don't include any of the offset.
->>>> +                      */
->>>> +                     u32 creader =3D readl_relaxed(base + GITS_CREADR=
-);
->>>
->>> Accessor matching gits_write_cwriter and co?
->>>
->>>> +                     int i;
->>>> +
->>>> +                     /*
->>>> +                      * Reset the write location to where the ITS is
->>>> +                      * currently at.
->>>> +                      */
->>>> +                     gits_write_cbaser(ctx->cbaser, base + GITS_CBASE=
-R);
->>>> +                     gits_write_cwriter(creader, base + GITS_CWRITER)=
-;
->>>> +                     its->cmd_write =3D &its->cmd_base[
->>>> +                             creader / sizeof(struct its_cmd_block)];
->>>
->>> Nit: please do not split lines like this, this is unreadable. We both
->>> have screens that are wide enough for this to fit on a single line.
->>>
->>> More importantly: Why isn't it sufficient to reset both CREADR and
->>> CWRITER to zero? Is there any case where you can suspend whilst having
->>> anything in flight?
->>>
->>>> +                     /* Restore GITS_BASER from the value cache. */
->>>> +                     for (i =3D 0; i < GITS_BASER_NR_REGS; i++) {
->>>> +                             struct its_baser *baser =3D &its->tables=
-[i];
->>>> +
->>>> +                             its_write_baser(its, baser, baser->val);
->>>
->>> You may want to first test that this BASER register is actually
->>> requiring something before writing to it. Yes, this is normally safe.
->>> But HW is also normally broken.
->>>
->>
->> Anything specific to test? I see that I can check if the BASER
->> register has the valid bit set and also that the type is not none.
->>
->
-> Okay, I found this snippet in the GICv3 Specification:
-> No memory is allocated for the translation table. The ITS discards any
-> writes to the
-> interrupt translation page when either:
-> =E2=80=A2 GITS_BASER<n>.Type specifies any valid table entry type other t=
-han interrupt
-> collections, that is, any value other than 100.
-> =E2=80=A2 GITS_BASER<n>.Type specifies an interrupt collection and
-> GITS_TYPER.HCC =3D=3D 0.
+[v6]
+  * Adrressed comments from Viresh for patch #14 in v5 [5]
+  * Introduced a new binding operating-points-v2-krait-cpu
+    as per discussion with Rob
+  * Added Review tags
 
-This is when GITS_BASER.Valid =3D=3D 0 by the way.
+[v5]
+  * Addressed comments from Rob for bindings
+  * Addressed comments from Viresh to use dev_pm_opp_set_prop_name, accordingly
+    dropped patch #12 and corrected patch #11 from previous patch set in [4]
+  * Converted to use #spdx tags for newly introduced files
 
->
-> I'll turn this into a test in code and only write the BASER if that passe=
-s.
->
->>>> +                     }
->>>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
->>>
->>> Before restoring all of this, shouldn't you first test that the ITS is
->>> actually in a disabled state?
->>>
->>>> +             }
->>>> +     }
->>>> +     spin_unlock(&its_lock);
->>>> +}
->>>> +
->>>> +static struct syscore_ops its_syscore_ops =3D {
->>>> +     .suspend =3D its_save_disable,
->>>> +     .resume =3D its_restore_enable,
->>>> +};
->>>> +
->>>>  static int its_init_domain(struct fwnode_handle *handle, struct its_n=
-ode *its)
->>>>  {
->>>>       struct irq_domain *inner_domain;
->>>> @@ -3261,6 +3357,9 @@ static int __init its_probe_one(struct resource =
-*res,
->>>>               ctlr |=3D GITS_CTLR_ImDe;
->>>>       writel_relaxed(ctlr, its->base + GITS_CTLR);
->>>>
->>>> +     if (fwnode_property_present(handle, "reset-on-suspend"))
->>>> +             its->flags |=3D ITS_FLAGS_SAVE_SUSPEND_STATE;
->>>> +
->>>>       err =3D its_init_domain(handle, its);
->>>>       if (err)
->>>>               goto out_free_tables;
->>>> @@ -3515,5 +3614,7 @@ int __init its_init(struct fwnode_handle *handle=
-, struct rdists *rdists,
->>>>               }
->>>>       }
->>>>
->>>> +     register_syscore_ops(&its_syscore_ops);
->>>> +
->>>>       return 0;
->>>>  }
->>>>
->>>
->>> Thanks,
->>>
->>>         M.
->>> --
->>> Jazz is not dead. It just smells funny...
+Mostly a resend of the v3 posted by Stephen quite some time back [1]
+except for few changes.
+  Based on reading some feedback from list,
+  * Dropped the patch "clk: Add safe switch hook" from v3 [2].
+    Now this is taken care by patch#10 in this series only for Krait.
+  * Dropped the path "clk: Avoid sending high rates to downstream
+		      clocks during set_rate" from v3 [3].
+  * Rebased on top of clk-next.
+  * Dropped the DT update from the series. Will send separately
+  * Now with cpufreq-dt+opp supporting voltage scaling, registering the
+    krait cpu supplies in DT should be sufficient. But one issue is,
+    the qcom-cpufreq drivers reads the efuse and based on that registers
+    the opp data and then registers the cpufreq-dt device. So when
+    cpufreq-dt driver probes and registers the regulator to the OPP framework,
+    it expects that the opp data for the device should not be registered before
+    the regulator. Will send a RFC patch removing that check, to find out the
+    right way of doing it.
+
+These patches provide cpufreq scaling on devices with Krait CPUs.
+In Krait CPU designs there's one PLL and two muxes per CPU, allowing
+us to switch CPU frequencies independently.
+
+				 secondary
+	 +-----+                    +
+	 | QSB |-------+------------|\
+	 +-----+       |            | |-+
+		       |    +-------|/  |
+		       |    |       +   |
+	 +-----+       |    |           |
+	 | PLL |----+-------+           |   primary
+	 +-----+    |  |                |     +
+		    |  |                +-----|\       +------+
+	 +-------+  |  |                      | \      |      |
+	 | HFPLL |----------+-----------------|  |-----| CPU0 |
+	 +-------+  |  |    |                 |  |     |      |
+		    |  |    | +-----+         | /      +------+
+		    |  |    +-| / 2 |---------|/
+		    |  |      +-----+         +
+		    |  |         secondary
+		    |  |            +
+		    |  +------------|\
+		    |               | |-+
+		    +---------------|/  |   primary
+				    +   |     +
+					+-----|\       +------+
+	 +-------+                            | \      |      |
+	 | HFPLL |----------------------------|  |-----| CPU1 |
+	 +-------+          |                 |  |     |      |
+			    | +-----+         | /      +------+
+			    +-| / 2 |---------|/
+			      +-----+         +
+
+To support this in the common clock framework we model the muxes,
+dividers, and PLLs as different clocks. CPUfreq only interacts
+with the primary mux (farthest right in the diagram). When CPUfreq
+sets a rate, the mux code finds the best parent that can provide the rate.
+Due to the design, QSB and the top PLL are always a fixed rate and thus
+only support one frequency each. These sources provide the lowest
+frequencies for the CPUs. The HFPLLs are where we can make the CPU go
+faster (GHz range). Sometimes we need to run the HFPLL twice as
+fast and divide it by two to get a particular frequency.
+
+When switching rates we can't leave the CPU clocked by the HFPLL because
+we need to turn off the output of the PLL when changing its frequency.
+This means we have to switch over to the secondary mux and use one of the
+fixed sources. This is why we need something like the safe parent patch.
+
+[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332607.html
+[2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332615.html
+[3] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332608.html
+[4] https://lwn.net/Articles/740994/ 
+[5] https://lkml.org/lkml/2017/12/19/537
+
+Sricharan R (2):
+  clk: qcom: Add safe switch hook for krait mux clocks
+  dt-bindings: cpufreq: Document operating-points-v2-krait-cpu
+
+Stephen Boyd (13):
+  ARM: Add Krait L2 register accessor functions
+  clk: mux: Split out register accessors for reuse
+  clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
+  clk: qcom: Add HFPLL driver
+  dt-bindings: clock: Document qcom,hfpll
+  clk: qcom: Add MSM8960/APQ8064's HFPLLs
+  clk: qcom: Add IPQ806X's HFPLLs
+  clk: qcom: Add support for Krait clocks
+  clk: qcom: Add KPSS ACC/GCC driver
+  dt-bindings: arm: Document qcom,kpss-gcc
+  clk: qcom: Add Krait clock controller driver
+  dt-bindings: clock: Document qcom,krait-cc
+  cpufreq: Add module to register cpufreq on Krait CPUs
+
+ .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |   7 +
+ .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  |  32 ++
+ .../devicetree/bindings/clock/qcom,hfpll.txt       |  46 +++
+ .../devicetree/bindings/clock/qcom,krait-cc.txt    |  22 ++
+ .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++
+ arch/arm/common/Kconfig                            |   3 +
+ arch/arm/common/Makefile                           |   1 +
+ arch/arm/common/krait-l2-accessors.c               |  48 +++
+ arch/arm/include/asm/krait-l2-accessors.h          |  10 +
+ drivers/clk/clk-mux.c                              |  75 ++--
+ drivers/clk/qcom/Kconfig                           |  28 ++
+ drivers/clk/qcom/Makefile                          |   5 +
+ drivers/clk/qcom/clk-hfpll.c                       | 244 +++++++++++++
+ drivers/clk/qcom/clk-hfpll.h                       |  45 +++
+ drivers/clk/qcom/clk-krait.c                       | 126 +++++++
+ drivers/clk/qcom/clk-krait.h                       |  41 +++
+ drivers/clk/qcom/gcc-ipq806x.c                     |  82 +++++
+ drivers/clk/qcom/gcc-msm8960.c                     | 172 +++++++++
+ drivers/clk/qcom/hfpll.c                           |  96 +++++
+ drivers/clk/qcom/kpss-xcc.c                        |  87 +++++
+ drivers/clk/qcom/krait-cc.c                        | 397 +++++++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   5 +
+ drivers/cpufreq/qcom-cpufreq.c                     | 162 +++++++++
+ include/dt-bindings/clock/qcom,gcc-msm8960.h       |   2 +
+ include/linux/clk-provider.h                       |   9 +-
+ 27 files changed, 2089 insertions(+), 30 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+ create mode 100644 arch/arm/common/krait-l2-accessors.c
+ create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
+ create mode 100644 drivers/clk/qcom/clk-hfpll.c
+ create mode 100644 drivers/clk/qcom/clk-hfpll.h
+ create mode 100644 drivers/clk/qcom/clk-krait.c
+ create mode 100644 drivers/clk/qcom/clk-krait.h
+ create mode 100644 drivers/clk/qcom/hfpll.c
+ create mode 100644 drivers/clk/qcom/kpss-xcc.c
+ create mode 100644 drivers/clk/qcom/krait-cc.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
