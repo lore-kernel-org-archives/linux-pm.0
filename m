@@ -1,224 +1,217 @@
 From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v4 4/5] irqchip/gic-v3-its: add ability to resend MAPC on resume
-Date: Tue, 6 Feb 2018 14:10:06 -0800
-Message-ID: <CAGAzgso3jx9en=B8xeGakWSq1VRNHY9Y_848E=H4r5a_2kD66A@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Tue, 6 Feb 2018 14:25:26 -0800
+Message-ID: <CAGAzgspxp05UGG6C3JL88HVDf3OxrVT93vBW3OAtfzOO6twPGw@mail.gmail.com>
 References: <20180203012450.18378-1-dbasehore@chromium.org>
- <20180203012450.18378-5-dbasehore@chromium.org> <34fea40b-4943-e8a8-6bf5-ca200122123d@arm.com>
+ <20180203012450.18378-3-dbasehore@chromium.org> <a1b81cab-8e73-2c6f-13e6-612ffc668923@arm.com>
+ <CAGAzgsp8M-t7k+pj4G9Lo_+NkeXQ9DeqH_r=-JcErO_+HuoJqA@mail.gmail.com> <f6a643dd-b835-adbf-6a06-ea3843fa8f12@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <34fea40b-4943-e8a8-6bf5-ca200122123d@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f195.google.com ([209.85.128.195]:44116 "EHLO
+        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753346AbeBFWZ3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 17:25:29 -0500
+Received: by mail-wr0-f195.google.com with SMTP id v31so3600651wrc.11
+        for <linux-pm@vger.kernel.org>; Tue, 06 Feb 2018 14:25:28 -0800 (PST)
+In-Reply-To: <f6a643dd-b835-adbf-6a06-ea3843fa8f12@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Marc Zyngier <marc.zyngier@arm.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
-List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 6, 2018 at 8:40 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
-> On 03/02/18 01:24, Derek Basehore wrote:
->> This adds functionality to resend the MAPC command to an ITS node on
->> resume. If the ITS is powered down during suspend and the collections
->> are not backed by memory, the ITS will lose that state. This just sets
->> up the known state for the collections after the ITS is restored.
+On Tue, Feb 6, 2018 at 8:23 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> On 05/02/18 21:33, dbasehore . wrote:
+>> On Mon, Feb 5, 2018 at 7:56 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+>>> On 03/02/18 01:24, Derek Basehore wrote:
+>>>> Some platforms power off GIC logic in suspend, so we need to
+>>>> save/restore state. The distributor and redistributor registers need
+>>>> to be handled in platform code due to access permissions on those
+>>>> registers, but the ITS registers can be restored in the kernel.
+>>>>
+>>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+>>>> ---
+>>>>  drivers/irqchip/irq-gic-v3-its.c | 101 +++++++++++++++++++++++++++++++++++++++
+>>>>  1 file changed, 101 insertions(+)
+>>>>
+>>>> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+>>>> index 06f025fd5726..e13515cdb68f 100644
+>>>> --- a/drivers/irqchip/irq-gic-v3-its.c
+>>>> +++ b/drivers/irqchip/irq-gic-v3-its.c
+>>>> @@ -33,6 +33,7 @@
+>>>>  #include <linux/of_platform.h>
+>>>>  #include <linux/percpu.h>
+>>>>  #include <linux/slab.h>
+>>>> +#include <linux/syscore_ops.h>
+>>>>
+>>>>  #include <linux/irqchip.h>
+>>>>  #include <linux/irqchip/arm-gic-v3.h>
+>>>> @@ -46,6 +47,7 @@
+>>>>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING                (1ULL << 0)
+>>>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375    (1ULL << 1)
+>>>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144    (1ULL << 2)
+>>>> +#define ITS_FLAGS_SAVE_SUSPEND_STATE         (1ULL << 3)
+>>>>
+>>>>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING  (1 << 0)
+>>>>
+>>>> @@ -83,6 +85,15 @@ struct its_baser {
+>>>>       u32             psz;
+>>>>  };
+>>>>
+>>>> +/*
+>>>> + * Saved ITS state - this is where saved state for the ITS is stored
+>>>> + * when it's disabled during system suspend.
+>>>> + */
+>>>> +struct its_ctx {
+>>>> +     u64                     cbaser;
+>>>> +     u32                     ctlr;
+>>>> +};
+>>>
+>>> Nit: This is pretty small for the ITS context. Given that its_node is
+>>> the context, you can safely expand this in the its_node structure.
 >>
->> This feature is enabled via Kconfig and a device tree entry.
+>> Sounds reasonable. I think I just have it this way because I used to
+>> have more in here.
 >>
->> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
->> ---
->>  arch/arm64/Kconfig               |  10 ++++
->>  drivers/irqchip/irq-gic-v3-its.c | 101 ++++++++++++++++++++++++---------------
->>  2 files changed, 73 insertions(+), 38 deletions(-)
+>>>
+>>>> +
+>>>>  struct its_device;
+>>>>
+>>>>  /*
+>>>> @@ -101,6 +112,7 @@ struct its_node {
+>>>>       struct its_collection   *collections;
+>>>>       struct fwnode_handle    *fwnode_handle;
+>>>>       u64                     (*get_msi_base)(struct its_device *its_dev);
+>>>> +     struct its_ctx          its_ctx;
+>>>>       struct list_head        its_device_list;
+>>>>       u64                     flags;
+>>>>       unsigned long           list_nr;
+>>>> @@ -3042,6 +3054,90 @@ static void its_enable_quirks(struct its_node *its)
+>>>>       gic_enable_quirks(iidr, its_quirks, its);
+>>>>  }
+>>>>
+>>>> +static int its_save_disable(void)
+>>>> +{
+>>>> +     struct its_node *its;
+>>>> +     int err = 0;
+>>>> +
+>>>> +     spin_lock(&its_lock);
+>>>> +     list_for_each_entry(its, &its_nodes, entry) {
+>>>> +             struct its_ctx *ctx;
+>>>> +             void __iomem *base;
+>>>> +
+>>>> +             if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+>>>> +                     continue;
+>>>> +
+>>>> +             ctx = &its->its_ctx;
+>>>> +             base = its->base;
+>>>> +             ctx->ctlr = readl_relaxed(base + GITS_CTLR);
+>>>> +             err = its_force_quiescent(base);
+>>>> +             if (err) {
+>>>> +                     pr_err("ITS failed to quiesce\n");
+>>>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>>>> +                     goto err;
+>>>> +             }
+>>>> +
+>>>> +             ctx->cbaser = gits_read_cbaser(base + GITS_CBASER);
+>>>> +     }
+>>>> +
+>>>> +err:
+>>>> +     if (err) {
+>>>> +             list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
+>>>> +                     if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+>>>> +                             struct its_ctx *ctx = &its->its_ctx;
+>>>> +                             void __iomem *base = its->base;
+>>>> +
+>>>> +                             writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>>>> +                     }
+>>>> +             }
+>>>> +     }
+>>>> +
+>>>> +     spin_unlock(&its_lock);
+>>>> +
+>>>> +     return err;
+>>>> +}
+>>>> +
+>>>> +static void its_restore_enable(void)
+>>>> +{
+>>>> +     struct its_node *its;
+>>>> +
+>>>> +     spin_lock(&its_lock);
+>>>> +     list_for_each_entry(its, &its_nodes, entry) {
+>>>> +             if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+>>>> +                     struct its_ctx *ctx = &its->its_ctx;
+>>>> +                     void __iomem *base = its->base;
+>>>> +                     /*
+>>>> +                      * Only the lower 32 bits matter here since the upper 32
+>>>> +                      * don't include any of the offset.
+>>>> +                      */
+>>>> +                     u32 creader = readl_relaxed(base + GITS_CREADR);
+>>>
+>>> Accessor matching gits_write_cwriter and co?
+>>>
+>>>> +                     int i;
+>>>> +
+>>>> +                     /*
+>>>> +                      * Reset the write location to where the ITS is
+>>>> +                      * currently at.
+>>>> +                      */
+>>>> +                     gits_write_cbaser(ctx->cbaser, base + GITS_CBASER);
+>>>> +                     gits_write_cwriter(creader, base + GITS_CWRITER);
+>>>> +                     its->cmd_write = &its->cmd_base[
+>>>> +                             creader / sizeof(struct its_cmd_block)];
+>>>
+>>> Nit: please do not split lines like this, this is unreadable. We both
+>>> have screens that are wide enough for this to fit on a single line.
+>>>
+>>> More importantly: Why isn't it sufficient to reset both CREADR and
+>>> CWRITER to zero? Is there any case where you can suspend whilst having
+>>> anything in flight?
 >>
->> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
->> index 53612879fe56..f38f1a7b4266 100644
->> --- a/arch/arm64/Kconfig
->> +++ b/arch/arm64/Kconfig
->> @@ -571,6 +571,16 @@ config HISILICON_ERRATUM_161600802
->>
->>         If unsure, say Y.
->>
->> +config ARM_GIC500_COLLECTIONS_RESET
->> +     bool "GIC-500 Collections: Workaround for GIC-500 Collections on suspend reset"
->> +     default y
->> +     help
->> +       The GIC-500 can store Collections state internally for the ITS. If
->> +       the ITS is reset on suspend (ie from power getting disabled), the
->> +       collections need to be reconfigured on resume.
->> +
->> +       If unsure, say Y.
->> +
->>  config QCOM_FALKOR_ERRATUM_E1041
->>       bool "Falkor E1041: Speculative instruction fetches might cause errant memory access"
->>       default y
->> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
->> index e13515cdb68f..63764efa4dcc 100644
->> --- a/drivers/irqchip/irq-gic-v3-its.c
->> +++ b/drivers/irqchip/irq-gic-v3-its.c
->> @@ -48,6 +48,7 @@
->>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375    (1ULL << 1)
->>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144    (1ULL << 2)
->>  #define ITS_FLAGS_SAVE_SUSPEND_STATE         (1ULL << 3)
->> +#define ITS_FLAGS_WORKAROUND_GIC500_MAPC     (1ULL << 4)
->>
->>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING  (1 << 0)
->>
->> @@ -1950,52 +1951,53 @@ static void its_cpu_init_lpis(void)
->>       dsb(sy);
->>  }
->>
->> -static void its_cpu_init_collection(void)
->> +static void its_cpu_init_collection(struct its_node *its)
->>  {
->> -     struct its_node *its;
->> -     int cpu;
->> -
->> -     spin_lock(&its_lock);
->> -     cpu = smp_processor_id();
->> -
->> -     list_for_each_entry(its, &its_nodes, entry) {
->> -             u64 target;
->> +     int cpu = smp_processor_id();
->> +     u64 target;
->>
->> -             /* avoid cross node collections and its mapping */
->> -             if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
->> -                     struct device_node *cpu_node;
->> +     /* avoid cross node collections and its mapping */
->> +     if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
->> +             struct device_node *cpu_node;
->>
->> -                     cpu_node = of_get_cpu_node(cpu, NULL);
->> -                     if (its->numa_node != NUMA_NO_NODE &&
->> -                             its->numa_node != of_node_to_nid(cpu_node))
->> -                             continue;
->> -             }
->> +             cpu_node = of_get_cpu_node(cpu, NULL);
->> +             if (its->numa_node != NUMA_NO_NODE &&
->> +                     its->numa_node != of_node_to_nid(cpu_node))
->> +                     return;
->> +     }
->>
->> +     /*
->> +      * We now have to bind each collection to its target
->> +      * redistributor.
->> +      */
->> +     if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
->>               /*
->> -              * We now have to bind each collection to its target
->> +              * This ITS wants the physical address of the
->>                * redistributor.
->>                */
->> -             if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
->> -                     /*
->> -                      * This ITS wants the physical address of the
->> -                      * redistributor.
->> -                      */
->> -                     target = gic_data_rdist()->phys_base;
->> -             } else {
->> -                     /*
->> -                      * This ITS wants a linear CPU number.
->> -                      */
->> -                     target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
->> -                     target = GICR_TYPER_CPU_NUMBER(target) << 16;
->> -             }
->> +             target = gic_data_rdist()->phys_base;
->> +     } else {
->> +             /* This ITS wants a linear CPU number. */
->> +             target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
->> +             target = GICR_TYPER_CPU_NUMBER(target) << 16;
->> +     }
->>
->> -             /* Perform collection mapping */
->> -             its->collections[cpu].target_address = target;
->> -             its->collections[cpu].col_id = cpu;
->> +     /* Perform collection mapping */
->> +     its->collections[cpu].target_address = target;
->> +     its->collections[cpu].col_id = cpu;
->>
->> -             its_send_mapc(its, &its->collections[cpu], 1);
->> -             its_send_invall(its, &its->collections[cpu]);
->> -     }
->> +     its_send_mapc(its, &its->collections[cpu], 1);
->> +     its_send_invall(its, &its->collections[cpu]);
->> +}
->> +
->> +static void its_cpu_init_collections(void)
->> +{
->> +     struct its_node *its;
->> +
->> +     spin_lock(&its_lock);
->> +
->> +     list_for_each_entry(its, &its_nodes, entry)
->> +             its_cpu_init_collection(its);
->>
->>       spin_unlock(&its_lock);
->>  }
->> @@ -2997,6 +2999,18 @@ static bool __maybe_unused its_enable_quirk_hip07_161600802(void *data)
->>       return true;
->>  }
->>
->> +static bool __maybe_unused its_enable_quirk_gic500_collections(void *data)
->> +{
->> +     struct its_node *its = data;
->> +
->> +     if (fwnode_property_present(its->fwnode_handle,
->> +                                 "collections-reset-on-suspend")) {
->> +             its->flags |= ITS_FLAGS_WORKAROUND_GIC500_MAPC;
->> +             return true;
->> +     }
->> +     return false;
->> +}
->> +
->>  static const struct gic_quirk its_quirks[] = {
->>  #ifdef CONFIG_CAVIUM_ERRATUM_22375
->>       {
->> @@ -3042,6 +3056,14 @@ static const struct gic_quirk its_quirks[] = {
->>               .mask   = 0xffffffff,
->>               .init   = its_enable_quirk_hip07_161600802,
->>       },
->> +#endif
->> +#ifdef CONFIG_ARM_GIC500_COLLECTIONS_RESET
->> +     {
->> +             .desc   = "ITS: GIC-500 Collections Reset on Resume",
->> +             .iidr   = 0x00000000,
->> +             .mask   = 0xff000000,
->> +             .init   = its_enable_quirk_gic500_collections,
->> +     },
->>  #endif
->>       {
->>       }
->> @@ -3129,6 +3151,9 @@ static void its_restore_enable(void)
->>                       }
->>                       writel_relaxed(ctx->ctlr, base + GITS_CTLR);
->>               }
->> +
->> +             if (its->flags & ITS_FLAGS_WORKAROUND_GIC500_MAPC)
->> +                     its_cpu_init_collection(its);
->>       }
->>       spin_unlock(&its_lock);
->>  }
->> @@ -3395,7 +3420,7 @@ int its_cpu_init(void)
->>                       return -ENXIO;
->>               }
->>               its_cpu_init_lpis();
->> -             its_cpu_init_collection();
->> +             its_cpu_init_collections();
->>       }
->>
->>       return 0;
->>
+>> CREADR is RO and we need to handle the non-zero case. I was planning
+>> on getting rid of the write to CWRITER since it shouldn't be needed.
+>> Either CREADR and CWRITER have the prior values, or both are reset to
+>> 0.
 >
-> I wonder if a better way to implement this is simply to bite the bullet
-> and implement the letter of the architecture:
->
-> If GITS_TYPER.HCC != 0, then collections 0...HCC-1 are held in HW, and
-> the rest in a SW-managed table. That would allow us to deal with this
-> without a quirk (which I asked for initially, apologies for changing my
-> mind).
->
-> We still the same DT flag to tell us we're going to be reset on suspend.
+> You're writing GITS_CBASER, which has for consequence: "When this
+> register is successfully written, the value of GITS_CREADR is set to
+> zero.". Ergo, none of that is necessary and you *must* set CWRITER to 0.
 
-So this would just be under the generic reset-on-suspend flag that I
-added in patch 2/5?
+Huh, I missed that. It at least makes this a lot simpler. That also
+means that the current code has a potential bug if suspend is
+preempted.
+
+>
+>>
+>>>
+>>>> +                     /* Restore GITS_BASER from the value cache. */
+>>>> +                     for (i = 0; i < GITS_BASER_NR_REGS; i++) {
+>>>> +                             struct its_baser *baser = &its->tables[i];
+>>>> +
+>>>> +                             its_write_baser(its, baser, baser->val);
+>>>
+>>> You may want to first test that this BASER register is actually
+>>> requiring something before writing to it. Yes, this is normally safe.
+>>> But HW is also normally broken.
+>>>
+>>>> +                     }
+>>>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>>>
+>>> Before restoring all of this, shouldn't you first test that the ITS is
+>>> actually in a disabled state?
+>>
+>> The save_disable code put it in a disabled state. The reset state is> also disabled. I don't expect PSCI to change the GITS_CTLR register at
+>> all. Are you expecting something on the other side of the PSCI layer
+>> to poke this register? We'd probably want to force disable at the
+>> start of restore_enable if so.
+>
+> I expect firmware to do its worse, because even if mainline ATF is close
+> to perfection, it will be hacked to death by platform people who usually
+> do not have a clue (that's definitely my experience). So I expect this
+> code to be written defensively.
+
+Fair enough. I'll disable the ITS at the start of restore_enable.
 
 >
 > Thanks,
