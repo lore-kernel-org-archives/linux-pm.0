@@ -1,63 +1,228 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 1/3] sched/fair: add util_est on top of PELT
-Date: Tue, 6 Feb 2018 20:15:07 +0100
-Message-ID: <20180206191507.GU2295@hirez.programming.kicks-ass.net>
-References: <20180206144131.31233-1-patrick.bellasi@arm.com>
- <20180206144131.31233-2-patrick.bellasi@arm.com>
- <20180206155056.GF2269@hirez.programming.kicks-ass.net>
- <20180206183315.GG5739@e110439-lin>
- <20180206190900.GN2249@hirez.programming.kicks-ass.net>
+From: "dbasehore ." <dbasehore@chromium.org>
+Subject: Re: [PATCH v4 4/5] irqchip/gic-v3-its: add ability to resend MAPC on resume
+Date: Tue, 6 Feb 2018 14:10:06 -0800
+Message-ID: <CAGAzgso3jx9en=B8xeGakWSq1VRNHY9Y_848E=H4r5a_2kD66A@mail.gmail.com>
+References: <20180203012450.18378-1-dbasehore@chromium.org>
+ <20180203012450.18378-5-dbasehore@chromium.org> <34fea40b-4943-e8a8-6bf5-ca200122123d@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:60858 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751574AbeBFUIz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 15:08:55 -0500
-Content-Disposition: inline
-In-Reply-To: <20180206190900.GN2249@hirez.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <34fea40b-4943-e8a8-6bf5-ca200122123d@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On Tue, Feb 06, 2018 at 08:09:00PM +0100, Peter Zijlstra wrote:
-> On Tue, Feb 06, 2018 at 06:33:15PM +0000, Patrick Bellasi wrote:
-> 
-> > Good point, I was actually expecting this question and I should have
-> > added it to the cover letter, sorry.
-> > 
-> > The reasoning was: the task's estimated utilization is defined as the
-> > max between PELT and the "estimation". Where "estimation" is
-> > the max between EWMA and the last ENQUEUED utilization.
-> > 
-> > Thus I was envisioning these two calls:
-> > 
-> >    _task_util_est := max(EWMA, ENQUEUED)
-> >     task_util_est := max(util_avg, _task_util_est)
-> > 
-> > but since now we have clients only for the first API, I've not added
-> > the second one. Still I would prefer to keep the "_" to make it clear
-> > that's and util_est's internal signal, not the actual task's estimated
-> > utilization.
-> > 
-> > Does it make sense?
-> > 
-> > Do you prefer I just remove the "_" and we will refactor it once we
-> > should add a customer for the proper task's util_est?
-> 
-> Hurm... I was thinking:
-> 
->   task_util_est := max(util_avg, EWMA)
-> 
-> But the above mixes ENQUEUED into it.. *confused*.
+On Tue, Feb 6, 2018 at 8:40 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> On 03/02/18 01:24, Derek Basehore wrote:
+>> This adds functionality to resend the MAPC command to an ITS node on
+>> resume. If the ITS is powered down during suspend and the collections
+>> are not backed by memory, the ITS will lose that state. This just sets
+>> up the known state for the collections after the ITS is restored.
+>>
+>> This feature is enabled via Kconfig and a device tree entry.
+>>
+>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+>> ---
+>>  arch/arm64/Kconfig               |  10 ++++
+>>  drivers/irqchip/irq-gic-v3-its.c | 101 ++++++++++++++++++++++++---------------
+>>  2 files changed, 73 insertions(+), 38 deletions(-)
+>>
+>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+>> index 53612879fe56..f38f1a7b4266 100644
+>> --- a/arch/arm64/Kconfig
+>> +++ b/arch/arm64/Kconfig
+>> @@ -571,6 +571,16 @@ config HISILICON_ERRATUM_161600802
+>>
+>>         If unsure, say Y.
+>>
+>> +config ARM_GIC500_COLLECTIONS_RESET
+>> +     bool "GIC-500 Collections: Workaround for GIC-500 Collections on suspend reset"
+>> +     default y
+>> +     help
+>> +       The GIC-500 can store Collections state internally for the ITS. If
+>> +       the ITS is reset on suspend (ie from power getting disabled), the
+>> +       collections need to be reconfigured on resume.
+>> +
+>> +       If unsure, say Y.
+>> +
+>>  config QCOM_FALKOR_ERRATUM_E1041
+>>       bool "Falkor E1041: Speculative instruction fetches might cause errant memory access"
+>>       default y
+>> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+>> index e13515cdb68f..63764efa4dcc 100644
+>> --- a/drivers/irqchip/irq-gic-v3-its.c
+>> +++ b/drivers/irqchip/irq-gic-v3-its.c
+>> @@ -48,6 +48,7 @@
+>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375    (1ULL << 1)
+>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144    (1ULL << 2)
+>>  #define ITS_FLAGS_SAVE_SUSPEND_STATE         (1ULL << 3)
+>> +#define ITS_FLAGS_WORKAROUND_GIC500_MAPC     (1ULL << 4)
+>>
+>>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING  (1 << 0)
+>>
+>> @@ -1950,52 +1951,53 @@ static void its_cpu_init_lpis(void)
+>>       dsb(sy);
+>>  }
+>>
+>> -static void its_cpu_init_collection(void)
+>> +static void its_cpu_init_collection(struct its_node *its)
+>>  {
+>> -     struct its_node *its;
+>> -     int cpu;
+>> -
+>> -     spin_lock(&its_lock);
+>> -     cpu = smp_processor_id();
+>> -
+>> -     list_for_each_entry(its, &its_nodes, entry) {
+>> -             u64 target;
+>> +     int cpu = smp_processor_id();
+>> +     u64 target;
+>>
+>> -             /* avoid cross node collections and its mapping */
+>> -             if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+>> -                     struct device_node *cpu_node;
+>> +     /* avoid cross node collections and its mapping */
+>> +     if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+>> +             struct device_node *cpu_node;
+>>
+>> -                     cpu_node = of_get_cpu_node(cpu, NULL);
+>> -                     if (its->numa_node != NUMA_NO_NODE &&
+>> -                             its->numa_node != of_node_to_nid(cpu_node))
+>> -                             continue;
+>> -             }
+>> +             cpu_node = of_get_cpu_node(cpu, NULL);
+>> +             if (its->numa_node != NUMA_NO_NODE &&
+>> +                     its->numa_node != of_node_to_nid(cpu_node))
+>> +                     return;
+>> +     }
+>>
+>> +     /*
+>> +      * We now have to bind each collection to its target
+>> +      * redistributor.
+>> +      */
+>> +     if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+>>               /*
+>> -              * We now have to bind each collection to its target
+>> +              * This ITS wants the physical address of the
+>>                * redistributor.
+>>                */
+>> -             if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+>> -                     /*
+>> -                      * This ITS wants the physical address of the
+>> -                      * redistributor.
+>> -                      */
+>> -                     target = gic_data_rdist()->phys_base;
+>> -             } else {
+>> -                     /*
+>> -                      * This ITS wants a linear CPU number.
+>> -                      */
+>> -                     target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
+>> -                     target = GICR_TYPER_CPU_NUMBER(target) << 16;
+>> -             }
+>> +             target = gic_data_rdist()->phys_base;
+>> +     } else {
+>> +             /* This ITS wants a linear CPU number. */
+>> +             target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
+>> +             target = GICR_TYPER_CPU_NUMBER(target) << 16;
+>> +     }
+>>
+>> -             /* Perform collection mapping */
+>> -             its->collections[cpu].target_address = target;
+>> -             its->collections[cpu].col_id = cpu;
+>> +     /* Perform collection mapping */
+>> +     its->collections[cpu].target_address = target;
+>> +     its->collections[cpu].col_id = cpu;
+>>
+>> -             its_send_mapc(its, &its->collections[cpu], 1);
+>> -             its_send_invall(its, &its->collections[cpu]);
+>> -     }
+>> +     its_send_mapc(its, &its->collections[cpu], 1);
+>> +     its_send_invall(its, &its->collections[cpu]);
+>> +}
+>> +
+>> +static void its_cpu_init_collections(void)
+>> +{
+>> +     struct its_node *its;
+>> +
+>> +     spin_lock(&its_lock);
+>> +
+>> +     list_for_each_entry(its, &its_nodes, entry)
+>> +             its_cpu_init_collection(its);
+>>
+>>       spin_unlock(&its_lock);
+>>  }
+>> @@ -2997,6 +2999,18 @@ static bool __maybe_unused its_enable_quirk_hip07_161600802(void *data)
+>>       return true;
+>>  }
+>>
+>> +static bool __maybe_unused its_enable_quirk_gic500_collections(void *data)
+>> +{
+>> +     struct its_node *its = data;
+>> +
+>> +     if (fwnode_property_present(its->fwnode_handle,
+>> +                                 "collections-reset-on-suspend")) {
+>> +             its->flags |= ITS_FLAGS_WORKAROUND_GIC500_MAPC;
+>> +             return true;
+>> +     }
+>> +     return false;
+>> +}
+>> +
+>>  static const struct gic_quirk its_quirks[] = {
+>>  #ifdef CONFIG_CAVIUM_ERRATUM_22375
+>>       {
+>> @@ -3042,6 +3056,14 @@ static const struct gic_quirk its_quirks[] = {
+>>               .mask   = 0xffffffff,
+>>               .init   = its_enable_quirk_hip07_161600802,
+>>       },
+>> +#endif
+>> +#ifdef CONFIG_ARM_GIC500_COLLECTIONS_RESET
+>> +     {
+>> +             .desc   = "ITS: GIC-500 Collections Reset on Resume",
+>> +             .iidr   = 0x00000000,
+>> +             .mask   = 0xff000000,
+>> +             .init   = its_enable_quirk_gic500_collections,
+>> +     },
+>>  #endif
+>>       {
+>>       }
+>> @@ -3129,6 +3151,9 @@ static void its_restore_enable(void)
+>>                       }
+>>                       writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>>               }
+>> +
+>> +             if (its->flags & ITS_FLAGS_WORKAROUND_GIC500_MAPC)
+>> +                     its_cpu_init_collection(its);
+>>       }
+>>       spin_unlock(&its_lock);
+>>  }
+>> @@ -3395,7 +3420,7 @@ int its_cpu_init(void)
+>>                       return -ENXIO;
+>>               }
+>>               its_cpu_init_lpis();
+>> -             its_cpu_init_collection();
+>> +             its_cpu_init_collections();
+>>       }
+>>
+>>       return 0;
+>>
+>
+> I wonder if a better way to implement this is simply to bite the bullet
+> and implement the letter of the architecture:
+>
+> If GITS_TYPER.HCC != 0, then collections 0...HCC-1 are held in HW, and
+> the rest in a SW-managed table. That would allow us to deal with this
+> without a quirk (which I asked for initially, apologies for changing my
+> mind).
+>
+> We still the same DT flag to tell us we're going to be reset on suspend.
 
-So mixing in ENQUEUED seems to give it an upward BIAS if the very last
-activation was 'high'. Thereby improving ramp-up.
+So this would just be under the generic reset-on-suspend flag that I
+added in patch 2/5?
 
-That seems to be what we want.. might be nice to have that in a comment
-;-)
-
-I'm thinking we want a different name for max(EWMA, ENQUEUED) though,
-but I really can't come up with a sensible suggestion, which I suppose,
-is why you stuck an underscore on it and went on with things.
+>
+> Thanks,
+>
+>         M.
+> --
+> Jazz is not dead. It just smells funny...
