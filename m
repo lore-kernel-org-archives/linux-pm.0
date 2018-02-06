@@ -1,190 +1,213 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v4 6/7] typec: tcpm: Represent source supply through
- power_supply class
-Date: Tue, 6 Feb 2018 15:51:26 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1C1595@SW-EX-MBX01.diasemi.com>
-References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <e2cb104f53e20a01f3b44442068c549e5d0e1ac3.1514904983.git.Adam.Thomson.Opensource@diasemi.com>
- <20180130131131.GF14922@kuha.fi.intel.com>
+From: Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v4 2/5] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Tue, 6 Feb 2018 16:23:03 +0000
+Message-ID: <f6a643dd-b835-adbf-6a06-ea3843fa8f12@arm.com>
+References: <20180203012450.18378-1-dbasehore@chromium.org>
+ <20180203012450.18378-3-dbasehore@chromium.org>
+ <a1b81cab-8e73-2c6f-13e6-612ffc668923@arm.com>
+ <CAGAzgsp8M-t7k+pj4G9Lo_+NkeXQ9DeqH_r=-JcErO_+HuoJqA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180130131131.GF14922@kuha.fi.intel.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAGAzgsp8M-t7k+pj4G9Lo_+NkeXQ9DeqH_r=-JcErO_+HuoJqA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-GB
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "dbasehore ." <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Soby Mathew <Soby.Mathew-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wysocki, Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30 January 2018 13:12, Heikki Krogerus wrote:
+On 05/02/18 21:33, dbasehore . wrote:
+> On Mon, Feb 5, 2018 at 7:56 AM, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org> wrote:
+>> On 03/02/18 01:24, Derek Basehore wrote:
+>>> Some platforms power off GIC logic in suspend, so we need to
+>>> save/restore state. The distributor and redistributor registers need
+>>> to be handled in platform code due to access permissions on those
+>>> registers, but the ITS registers can be restored in the kernel.
+>>>
+>>> Signed-off-by: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>>> ---
+>>>  drivers/irqchip/irq-gic-v3-its.c | 101 +++++++++++++++++++++++++++++++++++++++
+>>>  1 file changed, 101 insertions(+)
+>>>
+>>> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+>>> index 06f025fd5726..e13515cdb68f 100644
+>>> --- a/drivers/irqchip/irq-gic-v3-its.c
+>>> +++ b/drivers/irqchip/irq-gic-v3-its.c
+>>> @@ -33,6 +33,7 @@
+>>>  #include <linux/of_platform.h>
+>>>  #include <linux/percpu.h>
+>>>  #include <linux/slab.h>
+>>> +#include <linux/syscore_ops.h>
+>>>
+>>>  #include <linux/irqchip.h>
+>>>  #include <linux/irqchip/arm-gic-v3.h>
+>>> @@ -46,6 +47,7 @@
+>>>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING                (1ULL << 0)
+>>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375    (1ULL << 1)
+>>>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144    (1ULL << 2)
+>>> +#define ITS_FLAGS_SAVE_SUSPEND_STATE         (1ULL << 3)
+>>>
+>>>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING  (1 << 0)
+>>>
+>>> @@ -83,6 +85,15 @@ struct its_baser {
+>>>       u32             psz;
+>>>  };
+>>>
+>>> +/*
+>>> + * Saved ITS state - this is where saved state for the ITS is stored
+>>> + * when it's disabled during system suspend.
+>>> + */
+>>> +struct its_ctx {
+>>> +     u64                     cbaser;
+>>> +     u32                     ctlr;
+>>> +};
+>>
+>> Nit: This is pretty small for the ITS context. Given that its_node is
+>> the context, you can safely expand this in the its_node structure.
+> 
+> Sounds reasonable. I think I just have it this way because I used to
+> have more in here.
+> 
+>>
+>>> +
+>>>  struct its_device;
+>>>
+>>>  /*
+>>> @@ -101,6 +112,7 @@ struct its_node {
+>>>       struct its_collection   *collections;
+>>>       struct fwnode_handle    *fwnode_handle;
+>>>       u64                     (*get_msi_base)(struct its_device *its_dev);
+>>> +     struct its_ctx          its_ctx;
+>>>       struct list_head        its_device_list;
+>>>       u64                     flags;
+>>>       unsigned long           list_nr;
+>>> @@ -3042,6 +3054,90 @@ static void its_enable_quirks(struct its_node *its)
+>>>       gic_enable_quirks(iidr, its_quirks, its);
+>>>  }
+>>>
+>>> +static int its_save_disable(void)
+>>> +{
+>>> +     struct its_node *its;
+>>> +     int err = 0;
+>>> +
+>>> +     spin_lock(&its_lock);
+>>> +     list_for_each_entry(its, &its_nodes, entry) {
+>>> +             struct its_ctx *ctx;
+>>> +             void __iomem *base;
+>>> +
+>>> +             if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+>>> +                     continue;
+>>> +
+>>> +             ctx = &its->its_ctx;
+>>> +             base = its->base;
+>>> +             ctx->ctlr = readl_relaxed(base + GITS_CTLR);
+>>> +             err = its_force_quiescent(base);
+>>> +             if (err) {
+>>> +                     pr_err("ITS failed to quiesce\n");
+>>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>>> +                     goto err;
+>>> +             }
+>>> +
+>>> +             ctx->cbaser = gits_read_cbaser(base + GITS_CBASER);
+>>> +     }
+>>> +
+>>> +err:
+>>> +     if (err) {
+>>> +             list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
+>>> +                     if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+>>> +                             struct its_ctx *ctx = &its->its_ctx;
+>>> +                             void __iomem *base = its->base;
+>>> +
+>>> +                             writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>>> +                     }
+>>> +             }
+>>> +     }
+>>> +
+>>> +     spin_unlock(&its_lock);
+>>> +
+>>> +     return err;
+>>> +}
+>>> +
+>>> +static void its_restore_enable(void)
+>>> +{
+>>> +     struct its_node *its;
+>>> +
+>>> +     spin_lock(&its_lock);
+>>> +     list_for_each_entry(its, &its_nodes, entry) {
+>>> +             if (its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE) {
+>>> +                     struct its_ctx *ctx = &its->its_ctx;
+>>> +                     void __iomem *base = its->base;
+>>> +                     /*
+>>> +                      * Only the lower 32 bits matter here since the upper 32
+>>> +                      * don't include any of the offset.
+>>> +                      */
+>>> +                     u32 creader = readl_relaxed(base + GITS_CREADR);
+>>
+>> Accessor matching gits_write_cwriter and co?
+>>
+>>> +                     int i;
+>>> +
+>>> +                     /*
+>>> +                      * Reset the write location to where the ITS is
+>>> +                      * currently at.
+>>> +                      */
+>>> +                     gits_write_cbaser(ctx->cbaser, base + GITS_CBASER);
+>>> +                     gits_write_cwriter(creader, base + GITS_CWRITER);
+>>> +                     its->cmd_write = &its->cmd_base[
+>>> +                             creader / sizeof(struct its_cmd_block)];
+>>
+>> Nit: please do not split lines like this, this is unreadable. We both
+>> have screens that are wide enough for this to fit on a single line.
+>>
+>> More importantly: Why isn't it sufficient to reset both CREADR and
+>> CWRITER to zero? Is there any case where you can suspend whilst having
+>> anything in flight?
+> 
+> CREADR is RO and we need to handle the non-zero case. I was planning
+> on getting rid of the write to CWRITER since it shouldn't be needed.
+> Either CREADR and CWRITER have the prior values, or both are reset to
+> 0.
 
-> Hi Adam,
->
-> On Tue, Jan 02, 2018 at 03:50:54PM +0000, Adam Thomson wrote:
-> > This commit adds a power_supply class instance to represent a
-> > PD source's voltage and current properties. This provides an
-> > interface for reading these properties from user-space or other
-> > drivers.
-> >
-> > For PPS enabled Sources, this also provides write access to set
-> > the current and voltage and allows for swapping between standard
-> > PDO and PPS APDO.
-> >
-> > As this represents a superset of the information provided in the
-> > fusb302 driver, the power_supply instance in that code is removed
-> > as part of this change, so reverting the commit titled
-> > 'typec: tcpm: Represent source supply through power_supply class'
->
->
->
-> > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > ---
-> >  .../ABI/testing/sysfs-class-power-tcpm-source-psy  |  92 ++++++++
-> >  drivers/usb/typec/Kconfig                          |   1 +
-> >  drivers/usb/typec/fusb302/Kconfig                  |   2 +-
-> >  drivers/usb/typec/fusb302/fusb302.c                |  63 +-----
-> >  drivers/usb/typec/tcpm.c                           | 233 ++++++++++++++++++++-
-> >  5 files changed, 328 insertions(+), 63 deletions(-)
-> >  create mode 100644 Documentation/ABI/testing/sysfs-class-power-tcpm-source-
-> psy
-> >
-> > diff --git a/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
-> b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
-> > new file mode 100644
-> > index 0000000..4986cba
-> > --- /dev/null
-> > +++ b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
-> > @@ -0,0 +1,92 @@
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/type
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-only property describes the main type of source supply.
-> > +	Type-C is a USB standard so this property always returns "USB".
-> > +
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/connected_type
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-only property describes the type of source supply that is
-> > +	connected, if the supply is online. The value is always Type C
-> > +	unless a source has been attached which is identified as USB-PD capable.
-> > +
-> > +	Valid values:
-> > +		- "USB_TYPE_C"	: Type C connected supply, not UBS-PD capable
-> > +				  (default value)
-> > +		- "USB_PD"	: USB-PD capable source supply connected
-> > +		- "USB_PD_PPS"	: USB-PD PPS capable source supply connected
-> > +
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/online
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-write property describes the online state of the source
-> > +	supply. When the value of this property is not 0, and the supply allows
-> > +	it, then it's possible to switch between online states (i.e. 1 -> 2,
-> > +	2 -> 1)
-> > +
-> > +	Valid values:
-> > +		- 0	: Offline, no source supply attached
-> > +		- 1	: Fixed Online, Type-C or USB-PD capable supply
-> > +			  attached, non-configurable current and voltage
-> > +			  properties in this state.
-> > +		- 2	: PPS Online, USB-PD PPS feature enabled, 'current_now'
-> > +			  and 'voltage_now' properties can be modified in this
-> > +			  state. Re-writing of this value again, once already
-> > +			  set, will re-request the same configured voltage and
-> > +			  current values. This can be used as a keep-alive for
-> > +			  the PPS connection.
-> > +			  [NOTE: This is value only selectable if
-> > +			   'connected_type' reports a value of "USB_PD_PPS"]
-> > +
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_min
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-only property describes the minimum voltage the source supply
-> > +	can provide.
-> > +
-> > +	Value in microvolts.
-> > +
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_max
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-only property describes the maximum voltage the source supply
-> > +	can provide.
-> > +
-> > +	Value in microvolts.
-> > +
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_now
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-write property describes the voltage the source supply is
-> > +	providing now. This property can only be written to if the source supply
-> > +	is in online state '2' (PPS enabled), otherwise it's read-only
-> > +	information.
-> > +
-> > +	Value in microvolts.
-> > +
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/current_max
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-only property describes the maximum current the source supply
-> > +	can provide.
-> > +
-> > +	Value in microamps.
-> > +
-> > +What: 		/sys/class/power_supply/tcpm-source-psy/current_now
-> > +Date:		December 2017
-> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > +Description:
-> > +	This read-write property describes the current the source supply can
-> > +	provide now. This property can only be written to if the source supply
-> > +	is in online state '2' (PPS enabled), otherwise it's read-only
-> > +	information.
-> > +
-> > +	Value in microamps.
->
-> I think those should be documented for the entire psy class, not just
-> for this driver.
+You're writing GITS_CBASER, which has for consequence: "When this
+register is successfully written, the value of GITS_CREADR is set to
+zero.". Ergo, none of that is necessary and you *must* set CWRITER to 0.
 
-Right now there is no documentation for the generic psy class. The stuff in
-sysfs-class-power is device specific property information, and the same goes for
-sysfs-class-power-twl4030. The property usage can vary depending on driver
-implementation, an example being the 'online' property which can differ between
-drivers, so the usage I have here is very much tcpm related. Also, the ability
-to write to certain properties varies depending on the driver and HW, so here
-where we configure 'voltage_now' and 'current_now', the likelihood is that most
-other psy driver implementations won't allow for this.
+> 
+>>
+>>> +                     /* Restore GITS_BASER from the value cache. */
+>>> +                     for (i = 0; i < GITS_BASER_NR_REGS; i++) {
+>>> +                             struct its_baser *baser = &its->tables[i];
+>>> +
+>>> +                             its_write_baser(its, baser, baser->val);
+>>
+>> You may want to first test that this BASER register is actually
+>> requiring something before writing to it. Yes, this is normally safe.
+>> But HW is also normally broken.
+>>
+>>> +                     }
+>>> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
+>>
+>> Before restoring all of this, shouldn't you first test that the ITS is
+>> actually in a disabled state?
+> 
+> The save_disable code put it in a disabled state. The reset state is> also disabled. I don't expect PSCI to change the GITS_CTLR register at
+> all. Are you expecting something on the other side of the PSCI layer
+> to poke this register? We'd probably want to force disable at the
+> start of restore_enable if so.
 
-Sebastian, do you have any thoughts on this discussion? Would be useful to get
-your input here.
+I expect firmware to do its worse, because even if mainline ATF is close
+to perfection, it will be hacked to death by platform people who usually
+do not have a clue (that's definitely my experience). So I expect this
+code to be written defensively.
 
->
-> > diff --git a/drivers/usb/typec/Kconfig b/drivers/usb/typec/Kconfig
-> > index bcb2744..1ef606d 100644
-> > --- a/drivers/usb/typec/Kconfig
-> > +++ b/drivers/usb/typec/Kconfig
-> > @@ -48,6 +48,7 @@ if TYPEC
-> >  config TYPEC_TCPM
-> >  	tristate "USB Type-C Port Controller Manager"
-> >  	depends on USB
-> > +	select POWER_SUPPLY
->
-> I'm a little bit uncomfortable with such a strong dependency on an
-> other subsystem that we may not always need, but let's see what
-> Guenter says.
+Thanks,
 
-Right now I've used the psy class to represent power information from the
-external PD source supply, so for the scenarios where we're the source or a
-non-PD device has been attached then this is not going to provide any
-information to user-space. I guess in the future we could update to represent
-information when we're the PD source as well, although that'll likely be all
-just read-only info. Right now, not sure if this is something that would be
-useful.
-
-Sebastian, do you seen any problems on the dependency front?
+	M.
+-- 
+Jazz is not dead. It just smells funny...
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
