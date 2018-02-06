@@ -1,97 +1,132 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 1/3] sched/fair: add util_est on top of PELT
-Date: Tue, 6 Feb 2018 20:09:00 +0100
-Message-ID: <20180206190900.GN2249@hirez.programming.kicks-ass.net>
-References: <20180206144131.31233-1-patrick.bellasi@arm.com>
- <20180206144131.31233-2-patrick.bellasi@arm.com>
- <20180206155056.GF2269@hirez.programming.kicks-ass.net>
- <20180206183315.GG5739@e110439-lin>
+From: Aishwarya Pant <aishpant@gmail.com>
+Subject: [PATCH v4] Documentation/ABI: update cpuidle sysfs documentation
+Date: Wed, 7 Feb 2018 00:49:55 +0530
+Message-ID: <20180206191955.GA19222@mordor.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:60546 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752688AbeBFTJP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 14:09:15 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180206183315.GG5739@e110439-lin>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On Tue, Feb 06, 2018 at 06:33:15PM +0000, Patrick Bellasi wrote:
+Update cpuidle documentation using git logs and existing documentation
+in Documentation/cpuidle/sysfs.txt. This might be useful for scripting
+and tracking changes in the ABI.
 
-> Good point, I was actually expecting this question and I should have
-> added it to the cover letter, sorry.
-> 
-> The reasoning was: the task's estimated utilization is defined as the
-> max between PELT and the "estimation". Where "estimation" is
-> the max between EWMA and the last ENQUEUED utilization.
-> 
-> Thus I was envisioning these two calls:
-> 
->    _task_util_est := max(EWMA, ENQUEUED)
->     task_util_est := max(util_avg, _task_util_est)
-> 
-> but since now we have clients only for the first API, I've not added
-> the second one. Still I would prefer to keep the "_" to make it clear
-> that's and util_est's internal signal, not the actual task's estimated
-> utilization.
-> 
-> Does it make sense?
-> 
-> Do you prefer I just remove the "_" and we will refactor it once we
-> should add a customer for the proper task's util_est?
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+---
+Changes in v4:
+- Fix patch formatting
+v3:
+- Fix subject line
+v2:
+- Merge cpuidle_sysfs_switch attributes' description with the previous
+  entry.
 
-Hurm... I was thinking:
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 77 +++++++++++++++++++++-
+ 1 file changed, 75 insertions(+), 2 deletions(-)
 
-  task_util_est := max(util_avg, EWMA)
-
-But the above mixes ENQUEUED into it.. *confused*.
-
-Also, I think I'm confused by the 'enqueued' name... it makes sense for
-the cfs use-case, where we track the sum of all 'enqueued' tasks, but it
-doesn't make sense for the task use-case where it tracks task_util() at
-dequeue time.
-
-> > > +/*
-> > > + * Check if the specified (signed) value is within a specified margin,
-> > > + * based on the observation that:
-> > > + *     abs(x) < y := (unsigned)(x + y - 1) < (2 * y - 1)
-> > > + */
-> > > +static inline bool within_margin(long value, unsigned int margin)
-> > 
-> > This mixing of long and int is dodgy, do we want to consistently use int
-> > here?
-> 
-> Right, perhaps better "unsigned int" for both params, isn't?
-
-Can't, must be signed, since @value is supposed to be able to be
-negative remember? ;-)
-
-
-> > > +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, util_est);
-
-> > > +	WRITE_ONCE(p->se.avg.util_est.enqueued, util_last);
-> > 
-> > Two stores to that word... can we fix that nicely?
-> 
-> Good point, the single word comes from the goal to fit into the same
-> cache line of sched_avg.
-
-Its the above two stores I confuzzled to be the same. So n/m all that.
-
-> > > +SCHED_FEAT(UTIL_EST, false)
-> > 
-> > Since you couldn't measure it, do we wants it true?
-> 
-> I'm just a single tester so far, I would be more confident once
-> someone volunteer to turn this on to give a better coverage.
-
-Lets just enable it by default, that way its far more likely someone
-will complain about it :-), disabling it again is a trivial matter when
-needed.
-
-
-Also, your patch 2/3 have insufficient READ_ONCE()s.
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index bfd29bc8d37a..e9ee67f80933 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -108,6 +108,8 @@ Description:	CPU topology files that describe a logical CPU's relationship
+ 
+ What:		/sys/devices/system/cpu/cpuidle/current_driver
+ 		/sys/devices/system/cpu/cpuidle/current_governer_ro
++		/sys/devices/system/cpu/cpuidle/available_governors
++		/sys/devices/system/cpu/cpuidle/current_governor
+ Date:		September 2007
+ Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+ Description:	Discover cpuidle policy and mechanism
+@@ -119,13 +121,84 @@ Description:	Discover cpuidle policy and mechanism
+ 		Idle policy (governor) is differentiated from idle mechanism
+ 		(driver)
+ 
+-		current_driver: displays current idle mechanism
++		current_driver: (RO) displays current idle mechanism
+ 
+-		current_governor_ro: displays current idle policy
++		current_governor_ro: (RO) displays current idle policy
++
++		With the cpuidle_sysfs_switch boot option enabled (meant for
++		developer testing), the following three attributes are visible
++		instead:
++
++		current_driver: same as described above
++
++		available_governors: (RO) displays a space separated list of
++		available governors
++
++		current_governor: (RW) displays current idle policy. Users can
++		switch the governor at runtime by writing to this file.
+ 
+ 		See files in Documentation/cpuidle/ for more information.
+ 
+ 
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/name
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/latency
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/power
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/time
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
++Date:		September 2007
++KernelVersion:	v2.6.24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		The directory /sys/devices/system/cpu/cpuX/cpuidle contains per
++		logical CPU specific cpuidle information for each online cpu X.
++		The processor idle states which are available for use have the
++		following attributes:
++
++		name: (RO) Name of the idle state (string).
++
++		latency: (RO) The latency to exit out of this idle state (in
++		microseconds).
++
++		power: (RO) The power consumed while in this idle state (in
++		milliwatts).
++
++		time: (RO) The total time spent in this idle state (in microseconds).
++
++		usage: (RO) Number of times this state was entered (a count).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
++Date:		February 2008
++KernelVersion:	v2.6.25
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RO) A small description about the idle state (string).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/disable
++Date:		March 2012
++KernelVersion:	v3.10
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RW) Option to disable this idle state (bool). The behavior and
++		the effect of the disable variable depends on the implementation
++		of a particular governor. In the ladder governor, for example,
++		it is not coherent, i.e. if one is disabling a light state, then
++		all deeper states are disabled as well, but the disable variable
++		does not reflect it. Likewise, if one enables a deep state but a
++		lighter state still is disabled, then this has no effect.
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
++Date:		March 2014
++KernelVersion:	v3.15
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RO) Display the target residency i.e. the minimum amount of
++		time (in microseconds) this cpu should spend in this idle state
++		to make the transition worth the effort.
++
++
+ What:		/sys/devices/system/cpu/cpu#/cpufreq/*
+ Date:		pre-git history
+ Contact:	linux-pm@vger.kernel.org
+-- 
+2.16.1
