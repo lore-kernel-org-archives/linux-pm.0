@@ -1,169 +1,190 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 1/3] sched/fair: add util_est on top of PELT
-Date: Tue, 6 Feb 2018 16:50:56 +0100
-Message-ID: <20180206155056.GF2269@hirez.programming.kicks-ass.net>
-References: <20180206144131.31233-1-patrick.bellasi@arm.com>
- <20180206144131.31233-2-patrick.bellasi@arm.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v4 6/7] typec: tcpm: Represent source supply through
+ power_supply class
+Date: Tue, 6 Feb 2018 15:51:26 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1C1595@SW-EX-MBX01.diasemi.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <e2cb104f53e20a01f3b44442068c549e5d0e1ac3.1514904983.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180130131131.GF14922@kuha.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:58010 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752135AbeBFPvQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 10:51:16 -0500
-Content-Disposition: inline
-In-Reply-To: <20180206144131.31233-2-patrick.bellasi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180130131131.GF14922@kuha.fi.intel.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
+On 30 January 2018 13:12, Heikki Krogerus wrote:
 
-Mostly nice, I almost applied, except too many nits below.
+> Hi Adam,
+>
+> On Tue, Jan 02, 2018 at 03:50:54PM +0000, Adam Thomson wrote:
+> > This commit adds a power_supply class instance to represent a
+> > PD source's voltage and current properties. This provides an
+> > interface for reading these properties from user-space or other
+> > drivers.
+> >
+> > For PPS enabled Sources, this also provides write access to set
+> > the current and voltage and allows for swapping between standard
+> > PDO and PPS APDO.
+> >
+> > As this represents a superset of the information provided in the
+> > fusb302 driver, the power_supply instance in that code is removed
+> > as part of this change, so reverting the commit titled
+> > 'typec: tcpm: Represent source supply through power_supply class'
+>
+>
+>
+> > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > ---
+> >  .../ABI/testing/sysfs-class-power-tcpm-source-psy  |  92 ++++++++
+> >  drivers/usb/typec/Kconfig                          |   1 +
+> >  drivers/usb/typec/fusb302/Kconfig                  |   2 +-
+> >  drivers/usb/typec/fusb302/fusb302.c                |  63 +-----
+> >  drivers/usb/typec/tcpm.c                           | 233 ++++++++++++++++++++-
+> >  5 files changed, 328 insertions(+), 63 deletions(-)
+> >  create mode 100644 Documentation/ABI/testing/sysfs-class-power-tcpm-source-
+> psy
+> >
+> > diff --git a/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+> b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+> > new file mode 100644
+> > index 0000000..4986cba
+> > --- /dev/null
+> > +++ b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+> > @@ -0,0 +1,92 @@
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/type
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-only property describes the main type of source supply.
+> > +	Type-C is a USB standard so this property always returns "USB".
+> > +
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/connected_type
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-only property describes the type of source supply that is
+> > +	connected, if the supply is online. The value is always Type C
+> > +	unless a source has been attached which is identified as USB-PD capable.
+> > +
+> > +	Valid values:
+> > +		- "USB_TYPE_C"	: Type C connected supply, not UBS-PD capable
+> > +				  (default value)
+> > +		- "USB_PD"	: USB-PD capable source supply connected
+> > +		- "USB_PD_PPS"	: USB-PD PPS capable source supply connected
+> > +
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/online
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-write property describes the online state of the source
+> > +	supply. When the value of this property is not 0, and the supply allows
+> > +	it, then it's possible to switch between online states (i.e. 1 -> 2,
+> > +	2 -> 1)
+> > +
+> > +	Valid values:
+> > +		- 0	: Offline, no source supply attached
+> > +		- 1	: Fixed Online, Type-C or USB-PD capable supply
+> > +			  attached, non-configurable current and voltage
+> > +			  properties in this state.
+> > +		- 2	: PPS Online, USB-PD PPS feature enabled, 'current_now'
+> > +			  and 'voltage_now' properties can be modified in this
+> > +			  state. Re-writing of this value again, once already
+> > +			  set, will re-request the same configured voltage and
+> > +			  current values. This can be used as a keep-alive for
+> > +			  the PPS connection.
+> > +			  [NOTE: This is value only selectable if
+> > +			   'connected_type' reports a value of "USB_PD_PPS"]
+> > +
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_min
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-only property describes the minimum voltage the source supply
+> > +	can provide.
+> > +
+> > +	Value in microvolts.
+> > +
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_max
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-only property describes the maximum voltage the source supply
+> > +	can provide.
+> > +
+> > +	Value in microvolts.
+> > +
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/voltage_now
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-write property describes the voltage the source supply is
+> > +	providing now. This property can only be written to if the source supply
+> > +	is in online state '2' (PPS enabled), otherwise it's read-only
+> > +	information.
+> > +
+> > +	Value in microvolts.
+> > +
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/current_max
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-only property describes the maximum current the source supply
+> > +	can provide.
+> > +
+> > +	Value in microamps.
+> > +
+> > +What: 		/sys/class/power_supply/tcpm-source-psy/current_now
+> > +Date:		December 2017
+> > +Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > +Description:
+> > +	This read-write property describes the current the source supply can
+> > +	provide now. This property can only be written to if the source supply
+> > +	is in online state '2' (PPS enabled), otherwise it's read-only
+> > +	information.
+> > +
+> > +	Value in microamps.
+>
+> I think those should be documented for the entire psy class, not just
+> for this driver.
 
+Right now there is no documentation for the generic psy class. The stuff in
+sysfs-class-power is device specific property information, and the same goes for
+sysfs-class-power-twl4030. The property usage can vary depending on driver
+implementation, an example being the 'online' property which can differ between
+drivers, so the usage I have here is very much tcpm related. Also, the ability
+to write to certain properties varies depending on the driver and HW, so here
+where we configure 'voltage_now' and 'current_now', the likelihood is that most
+other psy driver implementations won't allow for this.
 
+Sebastian, do you have any thoughts on this discussion? Would be useful to get
+your input here.
 
-On Tue, Feb 06, 2018 at 02:41:29PM +0000, Patrick Bellasi wrote:
+>
+> > diff --git a/drivers/usb/typec/Kconfig b/drivers/usb/typec/Kconfig
+> > index bcb2744..1ef606d 100644
+> > --- a/drivers/usb/typec/Kconfig
+> > +++ b/drivers/usb/typec/Kconfig
+> > @@ -48,6 +48,7 @@ if TYPEC
+> >  config TYPEC_TCPM
+> >  	tristate "USB Type-C Port Controller Manager"
+> >  	depends on USB
+> > +	select POWER_SUPPLY
+>
+> I'm a little bit uncomfortable with such a strong dependency on an
+> other subsystem that we may not always need, but let's see what
+> Guenter says.
 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 7b6535987500..118f49c39b60 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -5193,6 +5193,20 @@ static inline void hrtick_update(struct rq *rq)
->  }
->  #endif
->  
-> +static inline unsigned long task_util(struct task_struct *p);
-> +static inline unsigned long _task_util_est(struct task_struct *p);
+Right now I've used the psy class to represent power information from the
+external PD source supply, so for the scenarios where we're the source or a
+non-PD device has been attached then this is not going to provide any
+information to user-space. I guess in the future we could update to represent
+information when we're the PD source as well, although that'll likely be all
+just read-only info. Right now, not sure if this is something that would be
+useful.
 
-What's with the leading underscore? I don't see one without it.
-
-> +
-> +static inline void util_est_enqueue(struct task_struct *p)
-
-Also pass @rq from enqueue_task_fair() ? I see no point in computing
-task_rq(p) if we already have the value around.
-
-> +{
-> +	struct cfs_rq *cfs_rq = &task_rq(p)->cfs;
-> +
-> +	if (!sched_feat(UTIL_EST))
-> +		return;
-> +
-> +	/* Update root cfs_rq's estimated utilization */
-> +	cfs_rq->avg.util_est.enqueued += _task_util_est(p);
-> +}
-
-
-> +/*
-> + * Check if the specified (signed) value is within a specified margin,
-> + * based on the observation that:
-> + *     abs(x) < y := (unsigned)(x + y - 1) < (2 * y - 1)
-
-    * Note: this only works when x+y < INT_MAX.
-
-> + */
-> +static inline bool within_margin(long value, unsigned int margin)
-
-This mixing of long and int is dodgy, do we want to consistently use int
-here?
-
-> +{
-> +	return ((unsigned int)(value + margin - 1) < (2 * margin - 1));
-> +}
-> +
-> +static inline void util_est_dequeue(struct task_struct *p, int flags)
-> +{
-> +	struct cfs_rq *cfs_rq = &task_rq(p)->cfs;
-> +	unsigned long util_last;
-> +	long last_ewma_diff;
-> +	unsigned long ewma;
-> +	long util_est = 0;
-
-Why long?
-
-> +
-> +	if (!sched_feat(UTIL_EST))
-> +		return;
-> +
-> +	/*
-> +	 * Update root cfs_rq's estimated utilization
-> +	 *
-> +	 * If *p is the last task then the root cfs_rq's estimated utilization
-> +	 * of a CPU is 0 by definition.
-> +	 */
-> +	if (cfs_rq->nr_running) {
-> +		util_est  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-
-Because util_est.enqueued is of type 'unsigned int'.
-
-> +		util_est -= min_t(long, util_est, _task_util_est(p));
-> +	}
-> +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, util_est);
-
-long to int truncate
-
-> +
-> +	/*
-> +	 * Skip update of task's estimated utilization when the task has not
-> +	 * yet completed an activation, e.g. being migrated.
-> +	 */
-> +	if (!(flags & DEQUEUE_SLEEP))
-> +		return;
-> +
-> +	ewma = READ_ONCE(p->se.avg.util_est.ewma);
-> +	util_last = task_util(p);
-
-Again, all kinds of long, while the ewma type itself is of 'unsigned
-int'.
-
-> +
-> +	/*
-> +	 * Skip update of task's estimated utilization when its EWMA is
-> +	 * already ~1% close to its last activation value.
-> +	 */
-> +	last_ewma_diff = util_last - ewma;
-> +	if (within_margin(last_ewma_diff, (SCHED_CAPACITY_SCALE / 100)))
-> +		return;
-> +
-> +	/*
-> +	 * Update Task's estimated utilization
-> +	 *
-> +	 * When *p completes an activation we can consolidate another sample
-> +	 * about the task size. This is done by storing the last PELT value
-> +	 * for this task and using this value to load another sample in the
-> +	 * exponential weighted moving average:
-> +	 *
-> +	 *  ewma(t) = w *  task_util(p) + (1-w) * ewma(t-1)
-> +	 *          = w *  task_util(p) +         ewma(t-1)  - w * ewma(t-1)
-> +	 *          = w * (task_util(p) -         ewma(t-1)) +     ewma(t-1)
-> +	 *          = w * (      last_ewma_diff            ) +     ewma(t-1)
-> +	 *          = w * (last_ewma_diff  +  ewma(t-1) / w)
-> +	 *
-> +	 * Where 'w' is the weight of new samples, which is configured to be
-> +	 * 0.25, thus making w=1/4 ( >>= UTIL_EST_WEIGHT_SHIFT)
-> +	 */
-> +	ewma   = last_ewma_diff + (ewma << UTIL_EST_WEIGHT_SHIFT);
-> +	ewma >>= UTIL_EST_WEIGHT_SHIFT;
-> +
-> +	WRITE_ONCE(p->se.avg.util_est.ewma, ewma);
-> +	WRITE_ONCE(p->se.avg.util_est.enqueued, util_last);
-
-Two stores to that word... can we fix that nicely?
-
-> +}
-
-> +static inline unsigned long _task_util_est(struct task_struct *p)
-> +{
-> +	return max(p->se.avg.util_est.ewma, p->se.avg.util_est.enqueued);
-> +}
-
-Aside from the underscore thing I already noted, why is this here and
-not where the fwd declaration is?
-
-> +/*
-> + * UtilEstimation. Use estimated CPU utilization.
-> + */
-> +SCHED_FEAT(UTIL_EST, false)
-
-Since you couldn't measure it, do we wants it true?
+Sebastian, do you seen any problems on the dependency front?
