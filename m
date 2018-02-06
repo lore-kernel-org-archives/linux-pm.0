@@ -1,8 +1,8 @@
 From: "dbasehore ." <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 Subject: Re: [PATCH v4 2/5] irqchip/gic-v3-its: add ability to save/restore
  ITS state
-Date: Mon, 5 Feb 2018 13:33:50 -0800
-Message-ID: <CAGAzgsp8M-t7k+pj4G9Lo_+NkeXQ9DeqH_r=-JcErO_+HuoJqA@mail.gmail.com>
+Date: Mon, 5 Feb 2018 16:33:35 -0800
+Message-ID: <CAGAzgsrEPVVgMcTx6U9HUNr=VjOHkNJRd3erTnV+Pfv+8W_mgw@mail.gmail.com>
 References: <20180203012450.18378-1-dbasehore@chromium.org>
  <20180203012450.18378-3-dbasehore@chromium.org> <a1b81cab-8e73-2c6f-13e6-612ffc668923@arm.com>
 Mime-Version: 1.0
@@ -61,10 +61,6 @@ On Mon, Feb 5, 2018 at 7:56 AM, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gm
 >
 > Nit: This is pretty small for the ITS context. Given that its_node is
 > the context, you can safely expand this in the its_node structure.
-
-Sounds reasonable. I think I just have it this way because I used to
-have more in here.
-
 >
 >> +
 >>  struct its_device;
@@ -159,12 +155,6 @@ have more in here.
 > More importantly: Why isn't it sufficient to reset both CREADR and
 > CWRITER to zero? Is there any case where you can suspend whilst having
 > anything in flight?
-
-CREADR is RO and we need to handle the non-zero case. I was planning
-on getting rid of the write to CWRITER since it shouldn't be needed.
-Either CREADR and CWRITER have the prior values, or both are reset to
-0.
-
 >
 >> +                     /* Restore GITS_BASER from the value cache. */
 >> +                     for (i = 0; i < GITS_BASER_NR_REGS; i++) {
@@ -176,18 +166,15 @@ Either CREADR and CWRITER have the prior values, or both are reset to
 > requiring something before writing to it. Yes, this is normally safe.
 > But HW is also normally broken.
 >
+
+Anything specific to test? I see that I can check if the BASER
+register has the valid bit set and also that the type is not none.
+
 >> +                     }
 >> +                     writel_relaxed(ctx->ctlr, base + GITS_CTLR);
 >
 > Before restoring all of this, shouldn't you first test that the ITS is
 > actually in a disabled state?
-
-The save_disable code put it in a disabled state. The reset state is
-also disabled. I don't expect PSCI to change the GITS_CTLR register at
-all. Are you expecting something on the other side of the PSCI layer
-to poke this register? We'd probably want to force disable at the
-start of restore_enable if so.
-
 >
 >> +             }
 >> +     }
@@ -227,8 +214,6 @@ start of restore_enable if so.
 >         M.
 > --
 > Jazz is not dead. It just smells funny...
-
-Thanks for the review.
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
