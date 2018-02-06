@@ -1,63 +1,46 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 3/3][RFC/RFT] PM / sleep: Do not delay the
- synchronization of MTRR during resume
-Date: Tue, 6 Feb 2018 22:16:14 +0800
-Message-ID: <20180206141614.GA912@yu-chen.sh.intel.com>
-References: <cover.1509438899.git.yu.c.chen@intel.com>
- <cbb3b328b1a07e61635c59db958b83318ca18dbd.1509438899.git.yu.c.chen@intel.com>
- <1613777.Al2QaFApID@aspire.rjw.lan>
- <20171213160242.GB29572@yu-chen.sh.intel.com>
- <20180206140417.GA14526@wunner.de>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v4 1/7] typec: tcpm: Add PD Rev 3.0 definitions to PD
+ header
+Date: Tue, 6 Feb 2018 14:14:06 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1C1519@SW-EX-MBX01.diasemi.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <ab71575c23391464262493ae353c098b268116a4.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180130122134.GA14922@kuha.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga17.intel.com ([192.55.52.151]:32797 "EHLO mga17.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751848AbeBFOMW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Feb 2018 09:12:22 -0500
-Content-Disposition: inline
-In-Reply-To: <20180206140417.GA14526@wunner.de>
+Received: from mail1.bemta6.messagelabs.com ([193.109.254.108]:14883 "EHLO
+        mail1.bemta6.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751756AbeBFOOL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 09:14:11 -0500
+In-Reply-To: <20180130122134.GA14922@kuha.fi.intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rui Zhang <rui.zhang@intel.com>
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-On Tue, Feb 06, 2018 at 03:04:17PM +0100, Lukas Wunner wrote:
-> On Thu, Dec 14, 2017 at 12:02:42AM +0800, Yu Chen wrote:
-> > On Wed, Dec 13, 2017 at 01:31:50AM +0100, Rafael J. Wysocki wrote:
-> > > On Tuesday, October 31, 2017 10:58:50 AM CET Yu Chen wrote:
-> [snip]
-> > > > In one word, with the patch applied, the cpu online time during resume
-> > > > has decreased by about 6 seconds on a bogus MTRR platform, and decreased
-> > > > by about 600ms on a 88 cpus Xeon platform after resumed.
-> > > > 
-> > > > Cc: Len Brown <len.brown@intel.com>
-> > > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > Cc: Rui Zhang <rui.zhang@intel.com>
-> > > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > > 
-> > > It will be better to combine this with patch [2/3] IMO, because that makes
-> > > it clear why the changes in that patch are needed.
-> > > 
-> > > Also you can define the new flag in mtrr/main.c, set it in
-> > > arch_enable_nonboot_cpus_begin() and clear it in
-> > > arch_enable_nonboot_cpus_end().  It is better to put it into the
-> > > arch-specific code as the flag itself is arch-specific.
-> > > 
-> > > Then, of course, you don't need patch [1/3] and all can be done in one
-> > >  patch.
-> > 
-> > Ok, will rewrite the patch, thanks! 
-> 
-> Just for the record, this series cuts down resume time from system sleep
-> by 4-5 seconds on my MacBookPro9,1.  Great work, looking forward to this
-> being respun and merged.
-> 
-> Tested-by: Lukas Wunner <lukas@wunner.de>
+On 30 January 2018 12:22, Heikki Krogerus wrote:
+
+> On Tue, Jan 02, 2018 at 03:50:49PM +0000, Adam Thomson wrote:
+> > This commit adds definitions for PD Rev 3.0 messages, including
+> > APDO PPS and extended message support for TCPM.
+> >
+> > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 >
-Thanks Lukas,
-I've sent the latest patch at:
-https://patchwork.kernel.org/patch/10150077/
-> Thanks,
-> 
-> Lukas
+> Just one nitpick. I noticed that you are exceeding the 80 character
+> limit per line in several places in this series, and I many cases it
+> does not look like splitting the line would make the code any less
+> readable.
+>
+> But I don't think that is critical, so if there are no other comments:
+>
+>
+> Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+
+Thanks for the Ack. The file, before I updated it, already had lines like this
+for similar definitions. With that in mind I'd erred on the side of style (and
+readability, at least in my opinion :)) rather than dropping onto new lines as
+they weren't going over by a great deal. However if there's a desire for this to
+change then I can update accordingly.
