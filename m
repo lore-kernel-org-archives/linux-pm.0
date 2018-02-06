@@ -1,92 +1,71 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v4 4/7] typec: tcpm: Add core support for sink side PPS
-Date: Tue, 6 Feb 2018 14:33:08 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1C1538@SW-EX-MBX01.diasemi.com>
-References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <26195a73c6f2f379b47dd39f23db9c2feec20371.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <20180130124653.GD14922@kuha.fi.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v4 0/3] Utilization estimation (util_est) for FAIR tasks
+Date: Tue,  6 Feb 2018 14:41:28 +0000
+Message-ID: <20180206144131.31233-1-patrick.bellasi@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta5.messagelabs.com ([195.245.231.139]:16374 "EHLO
-        mail1.bemta5.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751991AbeBFOdN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 09:33:13 -0500
-In-Reply-To: <20180130124653.GD14922@kuha.fi.intel.com>
-Content-Language: en-US
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:38194 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751396AbeBFOll (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Feb 2018 09:41:41 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On 30 January 2018 12:47, Heikki Krogerus wrote:
+Hi,
 
-> > +static int tcpm_pps_set_op_curr(struct tcpm_port *port, u16 op_curr)
-> > +{
-> > +	unsigned int target_mw;
-> > +	int ret = 0;
-> > +
-> > +	mutex_lock(&port->swap_lock);
-> > +	mutex_lock(&port->lock);
-> > +
-> > +	if (!port->pps_data.active) {
-> > +		ret = -EOPNOTSUPP;
-> > +		goto port_unlock;
-> > +	}
-> > +
-> > +	if (port->state != SNK_READY) {
-> > +		ret = -EAGAIN;
-> > +		goto port_unlock;
-> > +	}
-> > +
-> > +	if (op_curr > port->pps_data.max_curr) {
-> > +		ret = -EINVAL;
-> > +		goto port_unlock;
-> > +	}
-> > +
-> > +	target_mw = (op_curr * port->pps_data.out_volt) / 1000;
-> > +	if (target_mw < port->operating_snk_mw) {
-> > +		ret = -EINVAL;
-> > +		goto port_unlock;
-> > +	}
-> > +
-> > +	reinit_completion(&port->pps_complete);
-> > +	port->pps_data.op_curr = op_curr;
-> > +	port->pps_status = 0;
-> > +	port->pps_pending = true;
-> > +	tcpm_set_state(port, SNK_NEGOTIATE_PPS_CAPABILITIES, 0);
->
-> Why not just take the swap_lock here..
+This is a respin of [1], still based on today's tip/sche/core [2], which
+includes Juri's series [3] to integrate SCHED_DEADLINE into schedutil.
 
-I believe this would result in deadlock. All of the existing uses of swap_lock
-acquire it first before the port->lock is then acquired (and vice-versa for
-unlock). We don't want the power role to change during this procedure, so we
-hold the swap_lock for the whole process. Have a look at tcpm_dr_set() and
-tcpm_pr_set() as examples of existing usage.
+Thanks to everyone who provided feedback, all of them have been addressed.
 
-> > +	return ret;
-> > +}
-> > +
-> > +static int tcpm_pps_set_out_volt(struct tcpm_port *port, u16 out_volt)
-> > +{
-> > +	unsigned int target_mw;
-> > +	int ret = 0;
-> > +
-> > +	mutex_lock(&port->swap_lock);
-> > +	mutex_lock(&port->lock);
-> > +
-> > +	if (!port->pps_data.active) {
-> > +		ret = -EOPNOTSUPP;
-> > +		goto port_unlock;
->
-> Or, on top of what I said above, you could actually consider releasing
-> the port lock here and just returning. Then you would not need those
-> port_unlock and swap_unlock labels at all..
->
->                 mutex_unlock(&port->lock);
->                 return -EOPNOTSUPP;
+Testing on Intel and ARM (Android) devices confirms the negligible overheads
+and the power/performance benefits reported in the previous posting [1].
 
-Based on the comment above, I don't think this makes sense as you'd still need
-to release the swap_lock as well, so there would be quite a lot of duplicated
-code. Would prefer to stick with the present implementation.
+Changes in v4:
+ - rebased on today's tip/sched/core (commit 460e8c3340a2)
+ - renamed util_est's "last" into "enqueued"
+ - using util_est's "enqueued" for both se and cfs_rqs (Joel)
+ - update margin check to use more ASM friendly code (Peter)
+ - optimize EWMA updates (Peter)
+ - ensure cpu_util_wake() is cpu_capacity_orig()'s clamped (Pavan)
+ - simplify cpu_util_cfs() integration (Dietmar)
+
+Changes in v3:
+ - rebased on today's tip/sched/core (commit 07881166a892)
+ - moved util_est into sched_avg (Peter)
+ - use {READ,WRITE}_ONCE() for EWMA updates (Peter)
+ - using unsigned int to fit all sched_avg into a single 64B cache line
+ - schedutil integration using Juri's cpu_util_cfs()
+ - first patch dropped since it's already queued in tip/sched/core
+
+Changes in v2:
+ - rebased on top of v4.15-rc2
+ - tested that overhauled PELT code does not affect the util_est
+
+Cheers Patrick
+
+.:: References
+==============
+[1] https://lkml.org/lkml/2018/1/23/645
+    20180123180847.4477-1-patrick.bellasi@arm.com
+[2] git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
+    sched/core (commit 460e8c3340a2)
+[3] https://lkml.org/lkml/2017/12/4/173
+    20171204102325.5110-1-juri.lelli@redhat.com
+
+
+Patrick Bellasi (3):
+  sched/fair: add util_est on top of PELT
+  sched/fair: use util_est in LB and WU paths
+  sched/cpufreq_schedutil: use util_est for OPP selection
+
+ include/linux/sched.h   |  16 +++++
+ kernel/sched/debug.c    |   4 ++
+ kernel/sched/fair.c     | 179 ++++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/sched/features.h |   5 ++
+ kernel/sched/sched.h    |   7 +-
+ 5 files changed, 204 insertions(+), 7 deletions(-)
+
+-- 
+2.15.1
