@@ -1,123 +1,180 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v4.16-rc1
-Date: Tue, 06 Feb 2018 22:57:50 +0800
-Message-ID: <1517929070.3034.16.camel@intel.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
+Date: Tue, 6 Feb 2018 15:43:19 +0000
+Message-ID: <20180206154319.GF5739@e110439-lin>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+ <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
+ <f574036c-7572-9b97-79a0-794ff48e4d49@evidence.eu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga18.intel.com ([134.134.136.126]:39231 "EHLO mga18.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751834AbeBFO6B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Feb 2018 09:58:01 -0500
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:38936 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752171AbeBFPnY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Feb 2018 10:43:24 -0500
+Content-Disposition: inline
+In-Reply-To: <f574036c-7572-9b97-79a0-794ff48e4d49@evidence.eu.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-Hi, Linus,
+Hi Claudio,
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+On 06-Feb 11:55, Claudio Scordino wrote:
+> Hi Peter,
+> 
+> Il 20/12/2017 16:30, Peter Zijlstra ha scritto:
+> >
+> >So I ended up with the below (on top of Juri's cpufreq-dl patches).
+> >
+> >It compiles, but that's about all the testing it had.
+> >
+> >--- a/include/linux/sched/cpufreq.h
+> >+++ b/include/linux/sched/cpufreq.h
 
-to receive the latest Thermal Management updates for v4.16-rc1 with
-top-most commit 134f4010799a30acd969e603985c27b9f3e6f58d:
+[..]
 
-  Merge branches 'thermal-core', 'thermal-intel' and 'thermal-soc' into
-next (2018-01-15 13:57:18 +0800)
+> >@@ -188,17 +187,23 @@ static void sugov_get_util(struct sugov_
+> >  static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+> >  {
+> >+	unsigned long util = sg_cpu->util_cfs + sg_cpu->util_dl;
+> >+	struct rq *rq = cpu_rq(sg_cpu->cpu);
+> >+
+> >+	if (rq->rt.rt_nr_running)
+> >+		util = sg_cpu->max;
+> >+
+> >  	/*
+> >  	 * Ideally we would like to set util_dl as min/guaranteed freq and
+> >  	 * util_cfs + util_dl as requested freq. However, cpufreq is not yet
+> >  	 * ready for such an interface. So, we only do the latter for now.
+> >  	 */
+> >-	return min(sg_cpu->util_cfs + sg_cpu->util_dl, sg_cpu->max);
+> >+	return min(util, sg_cpu->max);
+> >  }
 
-on top of commit 464e1d5f23cca236b930ef068c328a64cab78fb1:
+[...]
 
-  Linux 4.15-rc5 (2017-12-23 20:47:16 -0800)
+> 
+> What is the status of this patch ? I couldn't find it on the
+> tip/queue repositories.
+> 
+> BTW, I wonder if we actually want to remove also the information
+> about the scheduling class who triggered the frequency change.
 
-Specifics:
- - Fix a race condition issue in power allocator governor (Yi Zeng).
- - Add support for AP806 and CP110 in armada thermal driver, together
-with several improvements (Baruch Siach, Miquel Raynal).
- - Add support for r8z7743 in rcar thermal driver (Biju Das).
- - convert thermal core to use new hwmon API to avoid warning (Fabio
-Estevam).
- - Small fixes and cleanups in thermal core and x86_pkg_thermal,
-int3400_thermal, hisi_thermal, mtk_thermal and imx_thermal drivers
-(Pravin Shedge, Geert Uytterhoeven, Alexey Khoroshilov, Brian Bian,
-Matthias Brugger, Nicolin Chen, Uwe Kleine-König).
+Removing flags was the main goal of the patch, since they represents
+mainly duplicated information which scheduling classes already know.
 
-thanks,
-rui
-----------------------------------------------------------------
-Alexey Khoroshilov (1):
-      thermal: int3400_thermal: fix error handling in
-int3400_thermal_probe()
+This was making flags update error prone and difficult to keep
+aligned with existing scheduling classes info.
 
-Baruch Siach (4):
-      dt-bindings: thermal: Describe Armada AP806 and CP110
-      thermal: armada: Use msleep for long delays
-      thermal: armada: Add support for Armada AP806
-      thermal: armada: Add support for Armada CP110
+> This prevents us from adopting class-specific behaviors.
 
-Biju Das (1):
-      dt-bindings: thermal: rcar: Add device tree support for r8a7743
+In Peter's proposal he replaces flags with checks like:
 
-Brian Bian (1):
-      thermal: int3400_thermal: Ignore Unknown Notification Codes
+   if (rq->rt.rt_nr_running)
 
-Fabio Estevam (1):
-      thermal: thermal_hwmon: Convert to
-hwmon_device_register_with_info()
+> For example, we might want to skip the rate limits when deadline
+> asks for an increase of frequency, as shown in the patch below.
+> In this case, we could just remove the flags from sugov_cpu, but
+> leave the defines and the argument for sugov_update_*()
 
-Geert Uytterhoeven (2):
-      thermal/drivers/hisi: Remove bogus const from function return
-type
-      thermal/x86 pkg temp: Remove debugfs_create_u32() casts
+At first glance, your proposal below makes to make sense.
 
-Matthias Brugger (1):
-      thermal: mtk: Cleanup unused defines
+However, I'm wondering if we cannot get it working using
+rq->dl's provided information instead of flags?
 
-Miquel Raynal (7):
-      thermal: armada: Simplify the check of the validity bit
-      thermal: armada: Clarify control registers accesses
-      thermal: armada: Use real status register name
-      thermal: armada: Update Kconfig and module description
-      thermal: armada: Change sensors trim default value
-      thermal: armada: Wait sensors validity before exiting the init
-callback
-      thermal: armada: Give meaningful names to the thermal zones
+> Best regards,
+> 
+>                 Claudio
+>
+> 
+> From ed13fa5a8f93a43f8ff8f7d354b18c0031df482c Mon Sep 17 00:00:00 2001
+> From: Claudio Scordino <claudio@evidence.eu.com>
+> Date: Wed, 27 Sep 2017 17:16:36 +0200
+> Subject: [PATCH RFC] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+> 
+> When the SCHED_DEADLINE scheduling class asks to increase CPU frequency,
+> we should not wait the rate limit, otherwise we may miss some deadline.
+> The patch just ignores the limit whenever SCHED_DEADLINE asks for a
+> higher CPU frequency.
+> 
+> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 24 +++++++++++++-----------
+>  1 file changed, 13 insertions(+), 11 deletions(-)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index dd062a1..5027ab1 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -75,7 +75,8 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+>  /************************ Governor internals ***********************/
+> -static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+> +static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time,
+> +				     unsigned int next_freq, unsigned int flags)
+>  {
+>  	s64 delta_ns;
+> @@ -112,6 +113,10 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>  		return true;
+>  	}
+> +	/* Ignore rate limit if DL asked to increase CPU frequency */
+> +	if ((flags & SCHED_CPUFREQ_DL) && (next_freq > sg_policy->next_freq))
+> +		return true;
 
-Nicolin Chen (1):
-      thermal: tegra: remove forward declarations
 
-Pravin Shedge (1):
-      drivers: thermal: remove duplicate includes
+static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+{
+        unsigned long util = sg_cpu->util_cfs + sg_cpu->util_dl;
+        struct rq *rq = cpu_rq(sg_cpu->cpu);
 
-Uwe Kleine-König (4):
-      thermal: imx: Use better parameter names than "val"
-      thermal: imx: improve comments describing algorithm for temp
-calculation
-      thermal: imx: use consistent style to write temperatures
-      thermal: imx: update to new formula according to NXP AN5215
+        if (rq->dl.dl_nr_running)
 
-Yi Zeng (1):
-      thermal: power_allocator: fix one race condition issue for
-thermal_instances list
 
-Zhang Rui (2):
-      Merge branch 'linus' of git://git.kernel.org/.../evalenti/linux-
-soc-thermal into thermal-soc
-      Merge branches 'thermal-core', 'thermal-intel' and 'thermal-soc'
-into next
+> +
+>  	delta_ns = time - sg_policy->last_freq_update_time;
+>  	return delta_ns >= sg_policy->freq_update_delay_ns;
+>  }
+> @@ -275,9 +280,6 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  	sugov_set_iowait_boost(sg_cpu, time);
+>  	sg_cpu->last_update = time;
+> -	if (!sugov_should_update_freq(sg_policy, time))
+> -		return;
+> -
+>  	busy = sugov_cpu_is_busy(sg_cpu);
+>  	if (flags & SCHED_CPUFREQ_RT) {
+> @@ -299,7 +301,8 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  			sg_policy->cached_raw_freq = 0;
+>  		}
+>  	}
+> -	sugov_update_commit(sg_policy, time, next_f);
+> +	if (sugov_should_update_freq(sg_policy, time, next_f, flags))
+> +		sugov_update_commit(sg_policy, time, next_f);
+>  }
+>  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
+> @@ -362,14 +365,13 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  	sugov_set_iowait_boost(sg_cpu, time);
+>  	sg_cpu->last_update = time;
+> -	if (sugov_should_update_freq(sg_policy, time)) {
+> -		if (flags & SCHED_CPUFREQ_RT)
+> -			next_f = sg_policy->policy->cpuinfo.max_freq;
+> -		else
+> -			next_f = sugov_next_freq_shared(sg_cpu, time);
+> +	if (flags & SCHED_CPUFREQ_RT)
+> +		next_f = sg_policy->policy->cpuinfo.max_freq;
+> +	else
+> +		next_f = sugov_next_freq_shared(sg_cpu, time);
+> +	if (sugov_should_update_freq(sg_policy, time, next_f, flags))
+>  		sugov_update_commit(sg_policy, time, next_f);
+> -	}
+>  	raw_spin_unlock(&sg_policy->update_lock);
+>  }
+> -- 
+> 2.7.4
+> 
+> 
 
- .../devicetree/bindings/thermal/armada-thermal.txt |  37 ++-
- .../devicetree/bindings/thermal/rcar-thermal.txt   |   1 +
- drivers/thermal/Kconfig                            |   4 +-
- drivers/thermal/armada_thermal.c                   | 253
-+++++++++++++++------
- drivers/thermal/hisi_thermal.c                     |   2 +-
- drivers/thermal/imx_thermal.c                      |  74 +++---
- drivers/thermal/int340x_thermal/int3400_thermal.c  |  12 +-
- drivers/thermal/mtk_thermal.c                      |   9 +-
- drivers/thermal/of-thermal.c                       |   1 -
- drivers/thermal/power_allocator.c                  |   2 +
- drivers/thermal/tegra/soctherm.c                   | 103 ++++-----
- drivers/thermal/thermal_hwmon.c                    |  20 +-
- drivers/thermal/x86_pkg_temp_thermal.c             |   4 +-
- 13 files changed, 312 insertions(+), 210 deletions(-)
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
