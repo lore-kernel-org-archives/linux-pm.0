@@ -1,98 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6 14/15] cpufreq: Add module to register cpufreq on
- Krait CPUs
-Date: Tue, 6 Feb 2018 09:56:42 +0530
-Message-ID: <20180206042642.GG28462@vireshk-i7>
+Subject: Re: [PATCH v6 15/15] dt-bindings: cpufreq: Document
+ operating-points-v2-krait-cpu
+Date: Tue, 6 Feb 2018 09:57:29 +0530
+Message-ID: <20180206042729.GH28462@vireshk-i7>
 References: <1517890108-8140-1-git-send-email-sricharan@codeaurora.org>
- <1517890108-8140-15-git-send-email-sricharan@codeaurora.org>
+ <1517890108-8140-16-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:37786 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752582AbeBFE0s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Feb 2018 23:26:48 -0500
-Received: by mail-pf0-f193.google.com with SMTP id p1so82511pfh.4
-        for <linux-pm@vger.kernel.org>; Mon, 05 Feb 2018 20:26:48 -0800 (PST)
+Return-path: <linux-clk-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1517890108-8140-15-git-send-email-sricharan@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1517890108-8140-16-git-send-email-sricharan@codeaurora.org>
+Sender: linux-clk-owner@vger.kernel.org
 To: Sricharan R <sricharan@codeaurora.org>
 Cc: robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 On 06-02-18, 09:38, Sricharan R wrote:
-> diff --git a/drivers/cpufreq/qcom-cpufreq.c b/drivers/cpufreq/qcom-cpufreq.c
-> new file mode 100644
-> index 0000000..5b988d4
-> --- /dev/null
-> +++ b/drivers/cpufreq/qcom-cpufreq.c
-> @@ -0,0 +1,161 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +// Copyright (c) 2018, The Linux Foundation. All rights reserved.
-> +
-> +#include <linux/cpu.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +#include "cpufreq-dt.h"
-> +#include <linux/nvmem-consumer.h>
+> In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
+> that has KRAIT processors the voltage/current value of each OPP
+> varies based on the silicon variant in use.
+> operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
+> and the operating-points-v2 table for each opp. The qcom-cpufreq driver
+> reads the efuse value from the SoC to provide the required information
+> that is used to determine the voltage and current value for each OPP of
+> operating-points-v2 table when it is parsed by the OPP framework.
+> 
+> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> ---
+>  .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
+>  1 file changed, 363 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
 
-I don't think you need all of these anymore, isn't it ? Can you cross check
-which ones are really required? For example, cpufreq-dt.h isn't required for
-sure.
+You can add my Ack if Rob also finds everything to be fine here.
 
-> +static int __init qcom_cpufreq_driver_init(void)
-> +{
-> +	struct device *cpu_dev;
-> +	struct device_node *np;
-> +	struct nvmem_cell *pvs_nvmem;
-> +	int ret;
-> +
-> +	cpu_dev = get_cpu_device(0);
-> +	if (!cpu_dev)
-> +		return -ENODEV;
-> +
-> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
-> +	if (!np)
-> +		return -ENOENT;
-> +
-> +	if (!of_device_is_compatible(np, "operating-points-v2-krait-cpu")) {
-> +		of_node_put(np);
-> +		return -ENODEV;
-> +	}
-> +
-> +	pvs_nvmem = of_nvmem_cell_get(np, NULL);
-> +	if (IS_ERR(pvs_nvmem)) {
-> +		dev_err(cpu_dev, "Could not get nvmem cell\n");
-> +		return PTR_ERR(pvs_nvmem);
-> +	}
-> +
-> +	of_node_put(np);
-> +
-> +	ret = qcom_cpufreq_populate_opps(pvs_nvmem);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return PTR_ERR(platform_device_register_simple("cpufreq-dt",
-> +						       -1, NULL, 0));
-
-Wanna do proper error handling here? For example, unset OPP name on failure here
-so that resources get freed ?
-
-> +}
-> +module_init(qcom_cpufreq_driver_init);
-> +
-> +MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
-> +MODULE_LICENSE("GPL v2");
-> -- 
-> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
