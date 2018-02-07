@@ -1,88 +1,178 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [Query] thermal: Who is using "cooling-{min|max}-level}"
- properties ?
-Date: Wed, 7 Feb 2018 11:45:31 +0100
-Message-ID: <11fbba25-7029-8a13-476e-ea2f2de6fbf9@linaro.org>
-References: <20180207065959.GN28462@vireshk-i7>
- <c7bd6ed5-b93e-3a07-b4a2-4c3b1eef5fac@linaro.org>
- <20180207102446.GS28462@vireshk-i7>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v4 1/3] sched/fair: add util_est on top of PELT
+Date: Wed, 7 Feb 2018 11:48:20 +0000
+Message-ID: <20180207114820.GI5739@e110439-lin>
+References: <20180206144131.31233-1-patrick.bellasi@arm.com>
+ <20180206144131.31233-2-patrick.bellasi@arm.com>
+ <20180206155056.GF2269@hirez.programming.kicks-ass.net>
+ <20180206183315.GG5739@e110439-lin>
+ <20180206190900.GN2249@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:51291 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753454AbeBGKpe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:45:34 -0500
-Received: by mail-wm0-f67.google.com with SMTP id r71so2280735wmd.1
-        for <linux-pm@vger.kernel.org>; Wed, 07 Feb 2018 02:45:33 -0800 (PST)
-In-Reply-To: <20180207102446.GS28462@vireshk-i7>
-Content-Language: en-US
+Received: from foss.arm.com ([217.140.101.70]:49794 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753478AbeBGLsZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Feb 2018 06:48:25 -0500
+Content-Disposition: inline
+In-Reply-To: <20180206190900.GN2249@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org, Punit.Agrawal@arm.com, ionela.voinescu@arm.com
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On 07/02/2018 11:24, Viresh Kumar wrote:
-> On 07-02-18, 11:04, Daniel Lezcano wrote:
->> Yeah, this is a bit fuzzy. There are still cooling-{min|max}-*state*
->> definitions in the DTs
->>
->> Documentation/devicetree/bindings/hwmon/pwm-fan.txt:
->> cooling-min-state = <0>;
->> arch/arm/boot/dts/exynos4412-odroidu3.dts:
->> cooling-min-state = <0>;
->> arch/arm/boot/dts/exynos5410-odroidxu.dts:
->> cooling-min-state = <0>;
->> arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi:
->> cooling-min-state = <0>;
->> arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi:
->> cooling-min-state = <0>;
->>
->>
->> IIUC, the cooling-device in the mapping defines the min and max states
->> which are the values used in the thermal zone binding.
->>
->> And the cooling-[min|max]-level are the hardware limits:
->>
->> cooling-min-level <= cooling-device min|max state <= cooling-max-level
->>
->> For example on the hikey6220:
->>
->> The DT specifies for CPU0:
->>
->> 	operating-points-v2 = <&cpu_opp_table>;
->> 	cooling-min-level = <4>;
->> 	cooling-max-level = <0>;
->> 	#cooling-cells = <2>; /* min followed by max */
->>
->> and for the cooling device for map0
->>
->> 	cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
->>
->> So if my understanding is correct, the optional property
->> cooling-[min|max]-level is used to make sure the cooling device min
->> state and max state are in the hardware boundaries. And the thermal
->> framework misses to do the consistency check at init.
->>
->> I'm not sure how useful are cooling-{min|max}-*state* bindings.
+On 06-Feb 20:09, Peter Zijlstra wrote:
+> On Tue, Feb 06, 2018 at 06:33:15PM +0000, Patrick Bellasi wrote:
+> 
+> > Good point, I was actually expecting this question and I should have
+> > added it to the cover letter, sorry.
+> > 
+> > The reasoning was: the task's estimated utilization is defined as the
+> > max between PELT and the "estimation". Where "estimation" is
+> > the max between EWMA and the last ENQUEUED utilization.
+> > 
+> > Thus I was envisioning these two calls:
+> > 
+> >    _task_util_est := max(EWMA, ENQUEUED)
+> >     task_util_est := max(util_avg, _task_util_est)
+> > 
+> > but since now we have clients only for the first API, I've not added
+> > the second one. Still I would prefer to keep the "_" to make it clear
+> > that's and util_est's internal signal, not the actual task's estimated
+> > utilization.
+> > 
+> > Does it make sense?
+> > 
+> > Do you prefer I just remove the "_" and we will refactor it once we
+> > should add a customer for the proper task's util_est?
+> 
+> Hurm... I was thinking:
+> 
+>   task_util_est := max(util_avg, EWMA)
+> 
+> But the above mixes ENQUEUED into it.. *confused*.
+> 
+> Also, I think I'm confused by the 'enqueued' name... it makes sense for
+> the cfs use-case, where we track the sum of all 'enqueued' tasks, but it
+> doesn't make sense for the task use-case where it tracks task_util() at
+> dequeue time.
 
-I meant here cooling-{min|max}-*level*
+Can be confusing at first, I've changed name in this version while
+trying to consolidate concepts in a reasonable way.
 
-> Okay, but we aren't validating it this way in code. Isn't it ?
+Let see if I can cast some light...
 
-Yes, that is my understanding. cooling-min-level and cooling-max-level
-are not used in the thermal framework code today.
+First of all:
 
-So if they are defined, we should check the cooling-device max and min
-are in the boundaries (if they are different from no-limit).
+  a)  task_util_est := max(util_avg, EWMA, enqueued)
+  b)       enqueued := util_avg@dequeue time
 
-That needs confirmation from the maintainers, I'm not 100% sure.
 
+a) why we mix "enqueued" into?
+
+   I think we need all the three components to properly describe these
+   scenarios:
+
+   - a task becoming smaller:
+     the "EWMA" amortize the task's utilization reduction, usually
+     converging to the new lower utilization in ~6 activations, which
+     should be reasonable at least for some mobile use-cases.
+
+   - a task becoming bigger:
+     the "enqueued" value better represents the task utilization while
+     the "EWMA" catches up, but... that's true only from the second
+     longer running activation.
+     For the first bigger activation, when the task starts to run
+     longer then before, at a certain point the util_avg will be
+     bigger both "enqueued" and "EWMA", thus task_util_est() should
+     just track the PELT's "util_avg".
+
+   Here is a picture showing all these behaviors using a "ramp" task
+   generated with rt-app:
+
+      https://photos.app.goo.gl/kRYgvpS6PTgvu2AM2
+
+b) why enqueued for tasks?
+
+  Since v3 it was:
+
+     task : util_avg { util_est { last, ewma } }
+     cpu  :   cfs_rq { util_est_enqueued }
+
+  and Joel noticed that, since now util_est{} is part of util_avg{},
+  which is included also by cfs_rq{}, then we can use the same
+  util_avg{} for cfs_rq{} too.
+
+  Problem was that using cfs_rq::util_est::last was not meaningful to
+  me, hence I've try to find a concept which was working well for both
+  cpus and tasks.
+
+  Enqueued IMO seems to work for both, provided you read the task's
+  enqueued util_est as:
+     "the util_est of a task which is currently enqueued in its cfs_rq"
+  which (only) happens to be the util_avg@dequeue time.
+
+  IMO, also for tasks, that's not worst than util_est.last...
+  Maybe it's just matter to add a bit of documentation in the util_est
+  struct definition?
+
+Does that makes a bit more sense now?
+
+> > > > +/*
+> > > > + * Check if the specified (signed) value is within a specified margin,
+> > > > + * based on the observation that:
+> > > > + *     abs(x) < y := (unsigned)(x + y - 1) < (2 * y - 1)
+> > > > + */
+> > > > +static inline bool within_margin(long value, unsigned int margin)
+> > > 
+> > > This mixing of long and int is dodgy, do we want to consistently use int
+> > > here?
+> > 
+> > Right, perhaps better "unsigned int" for both params, isn't?
+> 
+> Can't, must be signed, since @value is supposed to be able to be
+> negative remember? ;-)
+
+Right... :)
+
+> > > > +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, util_est);
+> 
+> > > > +	WRITE_ONCE(p->se.avg.util_est.enqueued, util_last);
+> > > 
+> > > Two stores to that word... can we fix that nicely?
+> > 
+> > Good point, the single word comes from the goal to fit into the same
+> > cache line of sched_avg.
+> 
+> Its the above two stores I confuzzled to be the same. So n/m all that.
+
+Ok, fine... however, isn't a single WRITE_ONCE on "struct util_est"
+still better? Did not checked at generated code...
+
+> > > > +SCHED_FEAT(UTIL_EST, false)
+> > > 
+> > > Since you couldn't measure it, do we wants it true?
+> > 
+> > I'm just a single tester so far, I would be more confident once
+> > someone volunteer to turn this on to give a better coverage.
+> 
+> Lets just enable it by default, that way its far more likely someone
+> will complain about it :-), disabling it again is a trivial matter when
+> needed.
+
+Ok, at the end it's your call... but you right, this could help on
+testing it better.
+
+Moreover, on low-utilization (desktop like) workloads we do see
+measurable benefits for interactive tasks.
+
+> Also, your patch 2/3 have insufficient READ_ONCE()s.
+
+Damn, I'll look at it...
+
+Cheers Patrick
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+#include <best/regards.h>
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Patrick Bellasi
