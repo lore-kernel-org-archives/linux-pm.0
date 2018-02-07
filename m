@@ -1,25 +1,25 @@
 From: kbuild test robot <fengguang.wu@intel.com>
 Subject: [pm:linux-next 23/25] drivers/acpi/ec.c:1936:12: error: redefinition
  of 'acpi_ec_suspend_noirq'
-Date: Thu, 8 Feb 2018 00:14:53 +0800
-Message-ID: <201802080051.FW6lumI7%fengguang.wu@intel.com>
+Date: Thu, 8 Feb 2018 03:45:21 +0800
+Message-ID: <201802080318.h0Bpvm4P%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="Kj7319i9nmIyA2yE"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:17094 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754666AbeBGQPS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Feb 2018 11:15:18 -0500
+Content-Type: multipart/mixed; boundary="2oS5YaxWCcQjTEyO"
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: kbuild-all@01.org, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---Kj7319i9nmIyA2yE
+--2oS5YaxWCcQjTEyO
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+
+Hi Rafael,
+
+FYI, the error/warning still remains.
 
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
 head:   fcc24b97be0fe8c21fff1204fdd8fbbd1dbc4025
@@ -90,12 +90,12 @@ vim +/acpi_ec_suspend_noirq +1936 drivers/acpi/ec.c
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---Kj7319i9nmIyA2yE
+--2oS5YaxWCcQjTEyO
 Content-Type: application/gzip
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICMMge1oAAy5jb25maWcAlDzbdtw2ku/5ij7OPsw8JJZsR+s5e/QAkmA33CTBAGDr8sKj
+H4sICMtOe1oAAy5jb25maWcAlDzbdtw2ku/5ij7OPsw8JJZsR+s5e/QAkmA33CTBAGDr8sKj
 2O1EZ2wpK8mzyd9vVYEXACx2Zvxgm1WFW6FQNxT6++++34hvL49f717uP959+fLn5tfjw/Hp
 7uX4afP5/svxfzaF3jTabWSh3I9AXN0/fPvj9R/vL/qLd5t3P57/9OPZZn98ejh+2eSPD5/v
 f/0Gje8fH777/rtcN6XaAl2m3OWf4+c1NY2+5w/VWGe63Cnd9IXMdSHNjNSdazvXl9rUwl2+
@@ -847,4 +847,4 @@ xwLIb5k7uSOzjHrLAmfipgQtm1wFN7SYYm+YdZ6BV4HkFm2nnT5tz7Rh9ARc1iCTCdOnApyM
 /gz017+uvRquf+E9NXGt4Jta5KRFFKR3qa0BjTdjCzMH8dlCFGQdcR/mkx2tjveMVpMmlqVp
 S5lnOz1TluHU3P0f/UMes9iEAgA=
 
---Kj7319i9nmIyA2yE--
+--2oS5YaxWCcQjTEyO--
