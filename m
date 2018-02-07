@@ -1,309 +1,78 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v12 1/4] battery: Add the battery hooking API
-Date: Wed, 7 Feb 2018 11:12:13 +0100
-Message-ID: <CAJZ5v0iGA+zQ1yt7hvSOr+2WHeCyqYcygV6p6t_7O0zqxaaAPw@mail.gmail.com>
-References: <20180103115847.GA10092@thinkpad> <5709554.PD1OuOmgsS@aspire.rjw.lan>
- <20180204091138.fi4s6665iybcj3hu@thinkpad>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 4/8] thermal/drivers/Kconfig: Convert the CPU cooling
+ device to a choice
+Date: Wed, 7 Feb 2018 11:15:52 +0100
+Message-ID: <4d66ce4f-c8eb-092a-04b5-a705793a1796@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-5-git-send-email-daniel.lezcano@linaro.org>
+ <20180207090448.GP28462@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:40997 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753676AbeBGKMO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:12:14 -0500
-In-Reply-To: <20180204091138.fi4s6665iybcj3hu@thinkpad>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:37466 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753610AbeBGKPz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:15:55 -0500
+Received: by mail-wm0-f68.google.com with SMTP id v71so2233593wmv.2
+        for <linux-pm@vger.kernel.org>; Wed, 07 Feb 2018 02:15:54 -0800 (PST)
+In-Reply-To: <20180207090448.GP28462@vireshk-i7>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Ognjen_Gali=C4=87?= <smclt30p@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-On Sun, Feb 4, 2018 at 10:11 AM, Ognjen Gali=C4=87 <smclt30p@gmail.com> wro=
-te:
-> On Sun, Feb 04, 2018 at 09:52:33AM +0100, Rafael J. Wysocki wrote:
->> On Wednesday, January 3, 2018 12:58:47 PM CET Ognjen Galic wrote:
->> > This is a patch that implements a generic hooking API for the
->> > generic ACPI battery driver.
->> >
->> > With this new generic API, drivers can expose platform specific
->> > behaviour via sysfs attributes in /sys/class/power_supply/BATn/
->> > in a generic way.
->> >
->> > A perfect example of the need for this API are Lenovo ThinkPads.
->> >
->> > Lenovo ThinkPads have a ACPI extension that allows the setting of
->> > start and stop charge thresholds in the EC and battery firmware
->> > via ACPI. The thinkpad_acpi module can use this API to expose
->> > sysfs attributes that it controls inside the ACPI battery driver
->> > sysfs tree, under /sys/class/power_supply/BATN/.
->> >
->> > The file drivers/acpi/battery.h has been moved to
->> > include/acpi/battery.h and the includes inside ac.c, sbs.c, and
->> > battery.c have been adjusted to reflect that.
->> >
->> > When drivers hooks into the API, the API calls add_battery() for
->> > each battery in the system that passes it a acpi_battery
->> > struct. Then, the drivers can use device_create_file() to create
->> > new sysfs attributes with that struct and identify the batteries
->> > for per-battery attributes.
->> >
->> > Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
->> > ---
->> >
->> > Notes:
->> >     v7:
->> >     * Implemented mutual exclusion for hooking methods and battery
->> >     callbacks
->> >     * Fixed a BUG where errors in other modules would occur when the
->> >     modules that depend on battery get unloaded
->> >
->> >     v8:
->> >     * Use list_for_each_safe instead of list_for_each for the module
->> >     exit function where deletion of nodes occurs
->> >
->> >     v9:
->> >     * No changes in this patch in v9
->> >
->> >     v10:
->> >     * Fix compiler warnings in Intel's 0-day CI
->> >
->> >     v11:
->> >     * Fix changelog formatting
->> >     * Make lists and mutex static
->> >
->> >     v12:
->> >     * Change all applicable list_for_each to list_for_each_entry
->> >     * Define pr_fmt to include module name for pr_*
->> >
->> >  drivers/acpi/ac.c      |   2 +-
->> >  drivers/acpi/battery.c | 151 ++++++++++++++++++++++++++++++++++++++++=
-++++++++-
->> >  drivers/acpi/battery.h |  11 ----
->> >  drivers/acpi/sbs.c     |   2 +-
->> >  include/acpi/battery.h |  21 +++++++
->> >  5 files changed, 171 insertions(+), 16 deletions(-)
->> >  delete mode 100644 drivers/acpi/battery.h
->> >  create mode 100644 include/acpi/battery.h
->> >
->> > diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
->> > index 47a7ed5..2d8de2f 100644
->> > --- a/drivers/acpi/ac.c
->> > +++ b/drivers/acpi/ac.c
->> > @@ -33,7 +33,7 @@
->> >  #include <linux/platform_device.h>
->> >  #include <linux/power_supply.h>
->> >  #include <linux/acpi.h>
->> > -#include "battery.h"
->> > +#include <acpi/battery.h>
->> >
->> >  #define PREFIX "ACPI: "
->> >
->> > diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
->> > index 13e7b56..7089e31 100644
->> > --- a/drivers/acpi/battery.c
->> > +++ b/drivers/acpi/battery.c
->> > @@ -21,8 +21,12 @@
->> >   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
-~~~~~~~~
->> >   */
->> >
->> > +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->> > +
->> >  #include <linux/kernel.h>
->> > +#include <linux/list.h>
->> >  #include <linux/module.h>
->> > +#include <linux/mutex.h>
->> >  #include <linux/init.h>
->> >  #include <linux/types.h>
->> >  #include <linux/jiffies.h>
->> > @@ -42,7 +46,7 @@
->> >  #include <linux/acpi.h>
->> >  #include <linux/power_supply.h>
->> >
->> > -#include "battery.h"
->> > +#include <acpi/battery.h>
->> >
->> >  #define PREFIX "ACPI: "
->> >
->> > @@ -124,6 +128,7 @@ struct acpi_battery {
->> >     struct power_supply_desc bat_desc;
->> >     struct acpi_device *device;
->> >     struct notifier_block pm_nb;
->> > +   struct list_head list;
->> >     unsigned long update_time;
->> >     int revision;
->> >     int rate_now;
->> > @@ -626,6 +631,142 @@ static const struct device_attribute alarm_attr =
-=3D {
->> >     .store =3D acpi_battery_alarm_store,
->> >  };
->> >
->> > +/*
->> > + * The Battery Hooking API
->> > + *
->> > + * This API is used inside other drivers that need to expose
->> > + * platform-specific behaviour within the generic driver in a
->> > + * generic way.
->> > + *
->> > + */
->> > +
->> > +static LIST_HEAD(acpi_battery_list);
->> > +static LIST_HEAD(battery_hook_list);
->> > +static DEFINE_MUTEX(hook_mutex);
->> > +
->> > +void __battery_hook_unregister(struct acpi_battery_hook *hook, int lo=
-ck)
->> > +{
->> > +   struct list_head *position;
->> > +   struct acpi_battery *battery;
->> > +   /*
->> > +    * In order to remove a hook, we first need to
->> > +    * de-register all the batteries that are registered.
->> > +    */
->> > +   if (lock)
->> > +           mutex_lock(&hook_mutex);
->> > +   list_for_each(position, &acpi_battery_list) {
->> > +           battery =3D list_entry(position, struct acpi_battery, list=
-);
->> > +           hook->remove_battery(battery->bat);
->> > +   }
->> > +   list_del(&hook->list);
->> > +   if (lock)
->> > +           mutex_unlock(&hook_mutex);
->> > +   pr_info("extension unregistered: %s\n", hook->name);
->> > +}
->> > +
->> > +void battery_hook_unregister(struct acpi_battery_hook *hook)
->> > +{
->> > +   __battery_hook_unregister(hook, 1);
->> > +}
->> > +EXPORT_SYMBOL_GPL(battery_hook_unregister);
->> > +
->> > +void battery_hook_register(struct acpi_battery_hook *hook)
->> > +{
->> > +   struct acpi_battery *battery;
->> > +
->> > +   mutex_lock(&hook_mutex);
->> > +   INIT_LIST_HEAD(&hook->list);
->> > +   list_add(&hook->list, &battery_hook_list);
->> > +   /*
->> > +    * Now that the driver is registered, we need
->> > +    * to notify the hook that a battery is available
->> > +    * for each battery, so that the driver may add
->> > +    * its attributes.
->> > +    */
->> > +   list_for_each_entry(battery, &acpi_battery_list, list) {
->> > +           if (hook->add_battery(battery->bat)) {
->> > +                   /*
->> > +                    * If a add-battery returns non-zero,
->> > +                    * the registration of the extension has failed,
->> > +                    * and we will not add it to the list of loaded
->> > +                    * hooks.
->> > +                    */
->> > +                   pr_err("extension failed to load: %s",
->> > +                                   hook->name);
->> > +                   __battery_hook_unregister(hook, 0);
->> > +                   return;
->> > +           }
->> > +   }
->> > +   pr_info("new extension: %s\n", hook->name);
->> > +   mutex_unlock(&hook_mutex);
->> > +}
->> > +EXPORT_SYMBOL_GPL(battery_hook_register);
->> > +
->> > +static void battery_hook_add_battery(struct acpi_battery *battery)
->> > +{
->> > +   /*
->> > +    * This function gets called right after the battery sysfs
->> > +    * attributes have been added, so that the drivers that
->> > +    * define custom sysfs attributes can add their own.
->> > +    */
->> > +   struct acpi_battery_hook *hook_node;
->> > +
->> > +   mutex_lock(&hook_mutex);
->> > +   INIT_LIST_HEAD(&battery->list);
->> > +   list_add(&battery->list, &acpi_battery_list);
->> > +   /*
->> > +    * Since we added a new battery to the list, we need to
->> > +    * iterate over the hooks and call add_battery for each
->> > +    * hook that was registered. This usually happens
->> > +    * when a battery gets hotplugged or initialized
->> > +    * during the battery module initialization.
->> > +    */
->> > +   list_for_each_entry(hook_node, &battery_hook_list, list) {
->> > +           if (hook_node->add_battery(battery->bat)) {
->> > +                   /*
->> > +                    * The notification of the extensions has failed, =
-to
->> > +                    * prevent further errors we will unload the exten=
-sion.
->> > +                    */
->> > +                   __battery_hook_unregister(hook_node, 0);
->> > +                   pr_err("error in extension, unloading: %s",
->> > +                                   hook_node->name);
->> > +           }
->> > +   }
->> > +   mutex_unlock(&hook_mutex);
->> > +}
->> > +
->> > +static void battery_hook_remove_battery(struct acpi_battery *battery)
->> > +{
->> > +   struct acpi_battery_hook *hook;
->> > +
->> > +   mutex_lock(&hook_mutex);
->> > +   /*
->> > +    * Before removing the hook, we need to remove all
->> > +    * custom attributes from the battery.
->> > +    */
->> > +   list_for_each_entry(hook, &battery_hook_list, list) {
->> > +           hook->remove_battery(battery->bat);
->> > +   }
->> > +   /* Then, just remove the battery from the list */
->> > +   list_del(&battery->list);
->> > +   mutex_unlock(&hook_mutex);
->> > +}
->> > +
->> > +static void __exit battery_hook_exit(void)
->> > +{
->> > +   struct acpi_battery_hook *hook;
->> > +   struct acpi_battery_hook *ptr;
->> > +   /*
->> > +    * At this point, the acpi_bus_unregister_driver
->> > +    * has called remove for all batteries. We just
->> > +    * need to remove the hooks.
->> > +    */
->> > +   list_for_each_entry_safe(hook, ptr, &battery_hook_list, list) {
->> > +           __battery_hook_unregister(hook, 1);
->> > +   }
->> > +   mutex_destroy(&hook_mutex);
->> > +}
->> > +
->> >  static int sysfs_add_battery(struct acpi_battery *battery)
->> >  {
->> >     struct power_supply_config psy_cfg =3D { .drv_data =3D battery, };
->> > @@ -647,6 +788,8 @@ static int sysfs_add_battery(struct acpi_battery *=
-battery)
->> >     battery->bat =3D power_supply_register_no_ws(&battery->device->dev=
-,
->> >                             &battery->bat_desc, &psy_cfg);
->> >
->> > +   battery_hook_add_battery(battery);
+On 07/02/2018 10:04, Viresh Kumar wrote:
+> On 23-01-18, 16:34, Daniel Lezcano wrote:
+>> The next changes will add new way to cool down a CPU. In order to
+>> sanitize and make the overall cpu cooling code consistent and robust
+>> we must prevent the cpu cooling devices to co-exists with the same
+>> purpose at the same time in the kernel.
 >>
->> I seem to see a problem here, as this may be called before
->> battery_hook_register() in some cases if I'm not mistaken and there seem=
-s to
->> be nothing to ensure that the "hook" code will actually see the battery =
-then.
->
-> There is a mechanism for late-loading of modules.
-> battery_hook_add_battery adds each battery to a list of batteries:
->
->> static LIST_HEAD(acpi_battery_list);
+>> Make the CPU cooling device a choice in the Kconfig, so only one CPU
+>> cooling strategy can be chosen.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>  drivers/thermal/Kconfig | 20 +++++++++++++++++---
+>>  1 file changed, 17 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index 315ae29..925e73b 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -142,17 +142,31 @@ config THERMAL_GOV_POWER_ALLOCATOR
+>>  	  allocating and limiting power to devices.
+>>  
+>>  config CPU_THERMAL
+>> -	bool "generic cpu cooling support"
+>> -	depends on CPU_FREQ
+>> +	bool "Generic cpu cooling support"
+>>  	depends on THERMAL_OF
+>>  	help
+>> +	  Enable the CPU cooling features. If the system has no active
+>> +	  cooling device available, this option allows to use the CPU
+>> +	  as a cooling device.
+>> +
+>> +choice
+>> +	prompt "CPU cooling strategies"
+>> +	depends on CPU_THERMAL
+>> +	default CPU_FREQ_THERMAL
+>> +	help
+>> +	  Select the CPU cooling strategy.
+>> +
+>> +config CPU_FREQ_THERMAL
+> 
+> Perhaps you should start using this macro in code in this patch
+> itself.
 
-OK, that should be fine then.
+Do you mean s/CPU_THERMAL/CPU_FREQ_THERMAL/ in include/linux/cpu_cooling.h ?
 
-Please respin the series with the comments from Andy addressed and I
-will queue it up.
 
-Thanks,
-Rafael
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
