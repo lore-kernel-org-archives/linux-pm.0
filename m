@@ -1,42 +1,37 @@
 From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH v5 1/4] cpu_pm: add syscore_suspend error handling
-Date: Tue,  6 Feb 2018 17:41:14 -0800
-Message-ID: <20180207014117.62611-2-dbasehore@chromium.org>
+Subject: [PATCH v5 3/4] DT/arm,gic-v3-its: add reset-on-suspend property
+Date: Tue,  6 Feb 2018 17:41:16 -0800
+Message-ID: <20180207014117.62611-4-dbasehore@chromium.org>
 References: <20180207014117.62611-1-dbasehore@chromium.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f67.google.com ([74.125.83.67]:38464 "EHLO
-        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932226AbeBGBl0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 20:41:26 -0500
-Received: by mail-pg0-f67.google.com with SMTP id l18so1876394pgc.5
-        for <linux-pm@vger.kernel.org>; Tue, 06 Feb 2018 17:41:26 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180207014117.62611-1-dbasehore@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org, marc.zyngier@arm.com, Derek Basehore <dbasehore@chromium.org>
+List-Id: linux-pm@vger.kernel.org
 
-If cpu_cluster_pm_enter() fails, cpu_pm_exit() should be called. This
-will put the CPU in the correct state to resume from the failure.
+This adds documentation for the new reset-on-suspend property. This
+property enables saving and restoring the ITS for when it loses state
+in system suspend.
 
 Signed-off-by: Derek Basehore <dbasehore@chromium.org>
 ---
- kernel/cpu_pm.c | 3 +++
+ Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
-index 67b02e138a47..03bcc0751a51 100644
---- a/kernel/cpu_pm.c
-+++ b/kernel/cpu_pm.c
-@@ -186,6 +186,9 @@ static int cpu_pm_suspend(void)
- 		return ret;
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt b/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
+index 0a57f2f4167d..a470147d4f14 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
++++ b/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
+@@ -78,6 +78,9 @@ These nodes must have the following properties:
+ Optional:
+ - socionext,synquacer-pre-its: (u32, u32) tuple describing the untranslated
+   address and size of the pre-ITS window.
++- reset-on-suspend: Boolean property. Indicates that the ITS state is
++  reset on suspend. The state is then saved on suspend and restored on
++  resume.
  
- 	ret = cpu_cluster_pm_enter();
-+	if (ret)
-+		cpu_pm_exit();
-+
- 	return ret;
- }
- 
+ The main GIC node must contain the appropriate #address-cells,
+ #size-cells and ranges properties for the reg property of all ITS
 -- 
 2.16.0.rc1.238.g530d649a79-goog
