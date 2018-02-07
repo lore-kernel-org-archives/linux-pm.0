@@ -1,32 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/8] thermal/drivers/Kconfig: Convert the CPU cooling
- device to a choice
-Date: Wed, 7 Feb 2018 15:50:45 +0530
-Message-ID: <20180207102045.GR28462@vireshk-i7>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-5-git-send-email-daniel.lezcano@linaro.org>
- <20180207090448.GP28462@vireshk-i7>
- <4d66ce4f-c8eb-092a-04b5-a705793a1796@linaro.org>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH v2 2/4] dt-bindings: soc: add header files required for MT7623A SCPSYS dt-binding
+Date: Wed, 7 Feb 2018 18:22:48 +0800
+Message-ID: <9955178588f8bde01782d0645b25a7b24cceb87b.1517998367.git.sean.wang@mediatek.com>
+References: <ecfc548fc3d22aa335b50e552ad2ad88427a0bb2.1517998367.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:37481 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753476AbeBGKUs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:20:48 -0500
-Received: by mail-pf0-f196.google.com with SMTP id p1so134249pfh.4
-        for <linux-pm@vger.kernel.org>; Wed, 07 Feb 2018 02:20:48 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <4d66ce4f-c8eb-092a-04b5-a705793a1796@linaro.org>
+Received: from mailgw01.mediatek.com ([210.61.82.183]:7346 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1753675AbeBGKW4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:22:56 -0500
+In-Reply-To: <ecfc548fc3d22aa335b50e552ad2ad88427a0bb2.1517998367.git.sean.wang@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: robh+dt@kernel.org, matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
+Cc: ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>, Rob Herring <robh@kernel.org>
 
-On 07-02-18, 11:15, Daniel Lezcano wrote:
-> Do you mean s/CPU_THERMAL/CPU_FREQ_THERMAL/ in include/linux/cpu_cooling.h ?
+From: Sean Wang <sean.wang@mediatek.com>
 
-Yes, but also in the .c file (which you have done in 5/8 anyway).
+Add relevant header files required for dt-bindings of SCPSYS power domain
+control for subsystems found on MT7623A SoC.
 
+v1 -> v2: fix typos and treat the patch as a dt-binding patch
+
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+Cc: Rob Herring <robh@kernel.org>
+---
+ include/dt-bindings/power/mt7623a-power.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+ create mode 100644 include/dt-bindings/power/mt7623a-power.h
+
+diff --git a/include/dt-bindings/power/mt7623a-power.h b/include/dt-bindings/power/mt7623a-power.h
+new file mode 100644
+index 0000000..2544822
+--- /dev/null
++++ b/include/dt-bindings/power/mt7623a-power.h
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _DT_BINDINGS_POWER_MT7623A_POWER_H
++#define _DT_BINDINGS_POWER_MT7623A_POWER_H
++
++#define MT7623A_POWER_DOMAIN_CONN	0
++#define MT7623A_POWER_DOMAIN_ETH	1
++#define MT7623A_POWER_DOMAIN_HIF	2
++#define MT7623A_POWER_DOMAIN_IFR_MSC	3
++
++#endif /* _DT_BINDINGS_POWER_MT7623A_POWER_H */
 -- 
-viresh
+2.7.4
