@@ -1,110 +1,193 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v7 5/6] iommu/arm-smmu: Add support for qcom,
- smmu-v2 variant
-Date: Wed,  7 Feb 2018 16:01:21 +0530
-Message-ID: <1517999482-17317-6-git-send-email-vivek.gautam@codeaurora.org>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
+ cooling driver
+Date: Wed, 7 Feb 2018 11:34:35 +0100
+Message-ID: <54759b82-29e9-f376-bbe8-dcf683ed0cce@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+ <20180207091231.GQ28462@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <1517999482-17317-1-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Cc: architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:55575 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753597AbeBGKej (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:34:39 -0500
+Received: by mail-wm0-f66.google.com with SMTP id 143so2178667wma.5
+        for <linux-pm@vger.kernel.org>; Wed, 07 Feb 2018 02:34:38 -0800 (PST)
+In-Reply-To: <20180207091231.GQ28462@vireshk-i7>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-cWNvbSxzbW11LXYyIGlzIGFuIGFybSxzbW11LXYyIGltcGxlbWVudGF0aW9uIHdpdGggc3BlY2lm
-aWMKY2xvY2sgYW5kIHBvd2VyIHJlcXVpcmVtZW50cy4gVGhpcyBzbW11IGNvcmUgaXMgdXNlZCB3
-aXRoCm11bHRpcGxlIG1hc3RlcnMgb24gbXNtODk5Niwgdml6LiBtZHNzLCB2aWRlbywgZXRjLgpB
-ZGQgYmluZGluZ3MgZm9yIHRoZSBzYW1lLgoKU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2
-aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+ClJldmlld2VkLWJ5OiBSb2IgSGVycmluZyA8cm9i
-aEBrZXJuZWwub3JnPgotLS0KIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2lvbW11L2FybSxzbW11
-LnR4dCAgICAgICAgIHwgNDMgKysrKysrKysrKysrKysrKysrKysrKwogZHJpdmVycy9pb21tdS9h
-cm0tc21tdS5jICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAxMyArKysrKysrCiAyIGZpbGVz
-IGNoYW5nZWQsIDU2IGluc2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL2lvbW11L2FybSxzbW11LnR4dAppbmRleCA4YTZmZmNlMTJhZjUuLjE2
-OTIyMmFlMjcwNiAxMDA2NDQKLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
-L2lvbW11L2FybSxzbW11LnR4dAorKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
-Z3MvaW9tbXUvYXJtLHNtbXUudHh0CkBAIC0xNywxMCArMTcsMTkgQEAgY29uZGl0aW9ucy4KICAg
-ICAgICAgICAgICAgICAgICAgICAgICJhcm0sbW11LTQwMSIKICAgICAgICAgICAgICAgICAgICAg
-ICAgICJhcm0sbW11LTUwMCIKICAgICAgICAgICAgICAgICAgICAgICAgICJjYXZpdW0sc21tdS12
-MiIKKyAgICAgICAgICAgICAgICAgICAgICAgICJxY29tLDxzb2M+LXNtbXUtdjIiLCAicWNvbSxz
-bW11LXYyIgogCiAgICAgICAgICAgICAgICAgICBkZXBlbmRpbmcgb24gdGhlIHBhcnRpY3VsYXIg
-aW1wbGVtZW50YXRpb24gYW5kL29yIHRoZQogICAgICAgICAgICAgICAgICAgdmVyc2lvbiBvZiB0
-aGUgYXJjaGl0ZWN0dXJlIGltcGxlbWVudGVkLgogCisgICAgICAgICAgICAgICAgICBBIG51bWJl
-ciBvZiBRY29tIFNvQ3MgdXNlIHFjb20sc21tdS12MiB2ZXJzaW9uIG9mIHRoZSBJUC4KKyAgICAg
-ICAgICAgICAgICAgICJxY29tLDxzb2M+LXNtbXUtdjIiIHJlcHJlc2VudHMgYSBzb2Mgc3BlY2lm
-aWMgY29tcGF0aWJsZQorICAgICAgICAgICAgICAgICAgc3RyaW5nIHRoYXQgc2hvdWxkIGJlIHBy
-ZXNlbnQgYWxvbmcgd2l0aCB0aGUgInFjb20sc21tdS12MiIKKyAgICAgICAgICAgICAgICAgIHRv
-IGZhY2lsaXRhdGUgU29DIHNwZWNpZmljIGNsb2Nrcy9wb3dlciBjb25uZWN0aW9ucyBhbmQgdG8K
-KyAgICAgICAgICAgICAgICAgIGFkZHJlc3Mgc3BlY2lmaWMgYnVnIGZpeGVzLgorICAgICAgICAg
-ICAgICAgICAgQW4gZXhhbXBsZSBzdHJpbmcgd291bGQgYmUgLQorICAgICAgICAgICAgICAgICAg
-InFjb20sbXNtODk5Ni1zbW11LXYyIiwgInFjb20sc21tdS12MiIuCisKIC0gcmVnICAgICAgICAg
-ICA6IEJhc2UgYWRkcmVzcyBhbmQgc2l6ZSBvZiB0aGUgU01NVS4KIAogLSAjZ2xvYmFsLWludGVy
-cnVwdHMgOiBUaGUgbnVtYmVyIG9mIGdsb2JhbCBpbnRlcnJ1cHRzIGV4cG9zZWQgYnkgdGhlCkBA
-IC03MSw2ICs4MCwyMyBAQCBjb25kaXRpb25zLgogICAgICAgICAgICAgICAgICAgb3IgdXNpbmcg
-c3RyZWFtIG1hdGNoaW5nIHdpdGggI2lvbW11LWNlbGxzID0gPDI+LCBhbmQKICAgICAgICAgICAg
-ICAgICAgIG1heSBiZSBpZ25vcmVkIGlmIHByZXNlbnQgaW4gc3VjaCBjYXNlcy4KIAorLSBjbG9j
-ay1uYW1lczogICAgU2hvdWxkIGJlICJidXMiLCBhbmQgImlmYWNlIiBmb3IgInFjb20sc21tdS12
-MiIKKyAgICAgICAgICAgICAgICAgIGltcGxlbWVudGF0aW9uLgorCisgICAgICAgICAgICAgICAg
-ICAiYnVzIiBjbG9jayBmb3IgInFjb20sc21tdS12MiIgaXMgcmVxdWlyZWQgZm9yIGRvd25zdHJl
-YW0KKyAgICAgICAgICAgICAgICAgIGJ1cyBhY2Nlc3MgYW5kIGZvciB0aGUgc21tdSBwdHcuCisK
-KyAgICAgICAgICAgICAgICAgICJpZmFjZSIgY2xvY2sgaXMgcmVxdWlyZWQgdG8gYWNjZXNzIHNt
-bXUncyByZWdpc3RlcnMgdGhyb3VnaAorICAgICAgICAgICAgICAgICAgdGhlIFRDVSdzIHByb2dy
-YW1taW5nIGludGVyZmFjZS4KKworLSBjbG9ja3M6ICAgICAgICAgUGhhbmRsZXMgZm9yIHJlc3Bl
-Y3RpdmUgY2xvY2tzIGRlc2NyaWJlZCBieSBjbG9jay1uYW1lcy4KKworLSBwb3dlci1kb21haW5z
-OiAgUGhhbmRsZXMgdG8gU01NVSdzIHBvd2VyIGRvbWFpbiBzcGVjaWZpZXIuIFRoaXMgaXMKKyAg
-ICAgICAgICAgICAgICAgIHJlcXVpcmVkIGV2ZW4gaWYgU01NVSBiZWxvbmdzIHRvIHRoZSBtYXN0
-ZXIncyBwb3dlcgorICAgICAgICAgICAgICAgICAgZG9tYWluLCBhcyB0aGUgU01NVSB3aWxsIGhh
-dmUgdG8gYmUgZW5hYmxlZCBhbmQKKyAgICAgICAgICAgICAgICAgIGFjY2Vzc2VkIGJlZm9yZSBt
-YXN0ZXIgZ2V0cyBlbmFibGVkIGFuZCBsaW5rZWQgdG8gaXRzCisgICAgICAgICAgICAgICAgICBT
-TU1VLgorCiAqKiBEZXByZWNhdGVkIHByb3BlcnRpZXM6CiAKIC0gbW11LW1hc3RlcnMgKGRlcHJl
-Y2F0ZWQgaW4gZmF2b3VyIG9mIHRoZSBnZW5lcmljICJpb21tdXMiIGJpbmRpbmcpIDoKQEAgLTEz
-NywzICsxNjMsMjAgQEAgY29uZGl0aW9ucy4KICAgICAgICAgICAgICAgICBpb21tdS1tYXAgPSA8
-MCAmc21tdTMgMCAweDQwMD47CiAgICAgICAgICAgICAgICAgLi4uCiAgICAgICAgIH07CisKKwkv
-KiBRY29tJ3MgYXJtLHNtbXUtdjIgaW1wbGVtZW50YXRpb24gKi8KKwlzbW11NDogaW9tbXUgewor
-CQljb21wYXRpYmxlID0gInFjb20sbXNtODk5Ni1zbW11LXYyIiwgInFjb20sc21tdS12MiI7CisJ
-CXJlZyA9IDwweGQwMDAwMCAweDEwMDAwPjsKKworCQkjZ2xvYmFsLWludGVycnVwdHMgPSA8MT47
-CisJCWludGVycnVwdHMgPSA8R0lDX1NQSSA3MyBJUlFfVFlQRV9MRVZFTF9ISUdIPiwKKwkJCSAg
-ICAgPEdJQ19TUEkgMzIwIElSUV9UWVBFX0xFVkVMX0hJR0g+LAorCQkJICAgICA8R0lDX1NQSSAz
-MjEgSVJRX1RZUEVfTEVWRUxfSElHSD47CisJCSNpb21tdS1jZWxscyA9IDwxPjsKKwkJcG93ZXIt
-ZG9tYWlucyA9IDwmbW1jYyBNRFNTX0dEU0M+OworCisJCWNsb2NrcyA9IDwmbW1jYyBTTU1VX01E
-UF9BWElfQ0xLPiwKKwkJCSA8Jm1tY2MgU01NVV9NRFBfQUhCX0NMSz47CisJCWNsb2NrLW5hbWVz
-ID0gImJ1cyIsICJpZmFjZSI7CisJfTsKZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNt
-bXUuYyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwppbmRleCBjN2U5MjRkNTUzYmQuLjcyMWNm
-MTI5MWY4NSAxMDA2NDQKLS0tIGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCisrKyBiL2RyaXZl
-cnMvaW9tbXUvYXJtLXNtbXUuYwpAQCAtMTE5LDYgKzExOSw3IEBAIGVudW0gYXJtX3NtbXVfaW1w
-bGVtZW50YXRpb24gewogCUdFTkVSSUNfU01NVSwKIAlBUk1fTU1VNTAwLAogCUNBVklVTV9TTU1V
-VjIsCisJUUNPTV9TTU1VVjIsCiB9OwogCiBzdHJ1Y3QgYXJtX3NtbXVfczJjciB7CkBAIC0xOTUw
-LDYgKzE5NTEsMTcgQEAgc3RydWN0IGFybV9zbW11X21hdGNoX2RhdGEgewogQVJNX1NNTVVfTUFU
-Q0hfREFUQShhcm1fbW11NTAwLCBBUk1fU01NVV9WMiwgQVJNX01NVTUwMCk7CiBBUk1fU01NVV9N
-QVRDSF9EQVRBKGNhdml1bV9zbW11djIsIEFSTV9TTU1VX1YyLCBDQVZJVU1fU01NVVYyKTsKIAor
-c3RhdGljIGNvbnN0IGNoYXIgKiBjb25zdCBxY29tX3NtbXV2Ml9jbGtzW10gPSB7CisJImJ1cyIs
-ICJpZmFjZSIsCit9OworCitzdGF0aWMgY29uc3Qgc3RydWN0IGFybV9zbW11X21hdGNoX2RhdGEg
-cWNvbV9zbW11djIgPSB7CisJLnZlcnNpb24gPSBBUk1fU01NVV9WMiwKKwkubW9kZWwgPSBRQ09N
-X1NNTVVWMiwKKwkuY2xrcyA9IHFjb21fc21tdXYyX2Nsa3MsCisJLm51bV9jbGtzID0gQVJSQVlf
-U0laRShxY29tX3NtbXV2Ml9jbGtzKSwKK307CisKIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2
-aWNlX2lkIGFybV9zbW11X29mX21hdGNoW10gPSB7CiAJeyAuY29tcGF0aWJsZSA9ICJhcm0sc21t
-dS12MSIsIC5kYXRhID0gJnNtbXVfZ2VuZXJpY192MSB9LAogCXsgLmNvbXBhdGlibGUgPSAiYXJt
-LHNtbXUtdjIiLCAuZGF0YSA9ICZzbW11X2dlbmVyaWNfdjIgfSwKQEAgLTE5NTcsNiArMTk2OSw3
-IEBAIHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIHsKIAl7IC5jb21wYXRpYmxlID0gImFybSxt
-bXUtNDAxIiwgLmRhdGEgPSAmYXJtX21tdTQwMSB9LAogCXsgLmNvbXBhdGlibGUgPSAiYXJtLG1t
-dS01MDAiLCAuZGF0YSA9ICZhcm1fbW11NTAwIH0sCiAJeyAuY29tcGF0aWJsZSA9ICJjYXZpdW0s
-c21tdS12MiIsIC5kYXRhID0gJmNhdml1bV9zbW11djIgfSwKKwl7IC5jb21wYXRpYmxlID0gInFj
-b20sc21tdS12MiIsIC5kYXRhID0gJnFjb21fc21tdXYyIH0sCiAJeyB9LAogfTsKIE1PRFVMRV9E
-RVZJQ0VfVEFCTEUob2YsIGFybV9zbW11X29mX21hdGNoKTsKLS0gClFVQUxDT01NIElORElBLCBv
-biBiZWhhbGYgb2YgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIK
-b2YgQ29kZSBBdXJvcmEgRm9ydW0sIGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbgoKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1h
-aWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+
+Hi Viresh,
+
+thanks for reviewing.
+
+On 07/02/2018 10:12, Viresh Kumar wrote:
+> On 23-01-18, 16:34, Daniel Lezcano wrote:
+>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> 
+>> +/**
+>> + * cpuidle_cooling_ops - thermal cooling device ops
+>> + */
+>> +static struct thermal_cooling_device_ops cpuidle_cooling_ops = {
+>> +	.get_max_state = cpuidle_cooling_get_max_state,
+>> +	.get_cur_state = cpuidle_cooling_get_cur_state,
+>> +	.set_cur_state = cpuidle_cooling_set_cur_state,
+>> +};
+>> +
+>> +/**
+>> + * cpuidle_cooling_release - Kref based release helper
+>> + * @kref: a pointer to the kref structure
+>> + *
+>> + * This function is automatically called by the kref_put function when
+>> + * the idle cooling device refcount reaches zero. At this point, we
+>> + * have the guarantee the structure is no longer in use and we can
+>> + * safely release all the ressources.
+>> + */
+> 
+> Don't really need doc style comments for internal routines.
+
+>From Documentation/doc-guide/kernel-doc.rst:
+
+"We also recommend providing kernel-doc formatted documentation for
+private (file "static") routines, for consistency of kernel source code
+layout. But this is lower priority and at the discretion of the
+MAINTAINER of that kernel source file."
+
+Vote is open :)
+
+>> +static void __init cpuidle_cooling_release(struct kref *kref)
+>> +{
+>> +	struct cpuidle_cooling_device *idle_cdev =
+>> +		container_of(kref, struct cpuidle_cooling_device, kref);
+>> +
+>> +	thermal_cooling_device_unregister(idle_cdev->cdev);
+>> +	kfree(idle_cdev->waitq);
+>> +	kfree(idle_cdev->tsk);
+>> +	kfree(idle_cdev);
+> 
+> What about list-del here (cpuidle_cdev_list) ?
+
+Yes, thanks for pointing this. I have to convert the calling loop with
+the 'safe' list variant.
+
+>> +}
+>> +
+>> +/**
+>> + * cpuidle_cooling_register - Idle cooling device initialization function
+>> + *
+>> + * This function is in charge of creating a cooling device per cluster
+>> + * and register it to thermal framework. For this we rely on the
+>> + * topology as there is nothing yet describing better the idle state
+>> + * power domains.
+>> + *
+>> + * For each first CPU of the cluster's cpumask, we allocate the idle
+>> + * cooling device, initialize the general fields and then we initialze
+>> + * the rest in a per cpu basis.
+>> + *
+>> + * Returns zero on success, < 0 otherwise.
+>> + */
+>> +int cpuidle_cooling_register(void)
+>> +{
+>> +	struct cpuidle_cooling_device *idle_cdev = NULL;
+>> +	struct thermal_cooling_device *cdev;
+>> +	struct task_struct *tsk;
+>> +	struct device_node *np;
+>> +	cpumask_t *cpumask;
+>> +	char dev_name[THERMAL_NAME_LENGTH];
+>> +	int weight;
+>> +	int ret = -ENOMEM, cpu;
+>> +	int index = 0;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +
+> 
+> Perhaps this is coding choice, but just for the sake of consistency in
+> this driver should we remove such empty lines at the beginning of a
+> blocks ?
+
+Yes, it is coding choice. I'm in favor of separated blocks. I can remove
+the lines if that hurts.
+
+>> +		cpumask = topology_core_cpumask(cpu);
+>> +		weight = cpumask_weight(cpumask);
+>> +
+>> +		/*
+>> +		 * This condition makes the first cpu belonging to the
+>> +		 * cluster to create a cooling device and allocates
+>> +		 * the structure. Others CPUs belonging to the same
+>> +		 * cluster will just increment the refcount on the
+>> +		 * cooling device structure and initialize it.
+>> +		 */
+>> +		if (cpu == cpumask_first(cpumask)) {
+>> +
+> 
+> Like here as well.
+
+Ok.
+
+[ ... ]
+
+>> +	pr_err("Failed to create idle cooling device (%d)\n", ret);
+>> +
+>> +	return ret;
+>> +}
+> 
+> What about cpuidle_cooling_unregister() ?
+
+The unregister function is not needed because cpuidle can't be unloaded.
+The cpuidle cooling device is registered after the cpuidle successfully
+initialized itself, there is no error path.
+
+>> +#endif
+>> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+>> index d4292eb..2b5950b 100644
+>> --- a/include/linux/cpu_cooling.h
+>> +++ b/include/linux/cpu_cooling.h
+>> @@ -45,6 +45,7 @@ struct thermal_cooling_device *
+>>  cpufreq_power_cooling_register(struct cpufreq_policy *policy,
+>>  			       u32 capacitance, get_static_t plat_static_func);
+>>  
+>> +extern int cpuidle_cooling_register(void);
+>>  /**
+>>   * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
+>>   * @np: a valid struct device_node to the cooling device device tree node.
+>> @@ -118,6 +119,11 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+>>  {
+>>  	return;
+>>  }
+>> +
+>> +static inline int cpuidle_cooling_register(void)
+> 
+> You need to use the new macros of cpufreq and cpuidle here as well,
+> else you will see compile time errors with some configurations.
+
+Ok, I thought I tried the different combinations but I will double check.
+
+Thanks
+
+  -- Daniel
+
+>> +{
+>> +	return 0;
+>> +}
+>>  #endif	/* CONFIG_CPU_THERMAL */
+>>  
+>>  #endif /* __CPU_COOLING_H__ */
+>> -- 
+>> 2.7.4
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
