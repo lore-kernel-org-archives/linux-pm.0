@@ -1,11 +1,13 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v7 0/6] iommu/arm-smmu: Add runtime pm/sleep support
-Date: Wed,  7 Feb 2018 16:01:16 +0530
-Message-ID: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
+Subject: [PATCH v7 2/6] iommu/arm-smmu: Add pm_runtime/sleep ops
+Date: Wed,  7 Feb 2018 16:01:18 +0530
+Message-ID: <1517999482-17317-3-git-send-email-vivek.gautam@codeaurora.org>
+References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <1517999482-17317-1-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
 	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
@@ -19,122 +21,139 @@ To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A
 Cc: airlied-cv59FeDIM0c@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This series provides the support for turning on the arm-smmu's
-clocks/power domains using runtime pm. This is done using the
-recently introduced device links patches, which lets the smmu's
-runtime to follow the master's runtime pm, so the smmu remains
-powered only when the masters use it.
+From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 
-It also adds support for Qcom's arm-smmu-v2 variant that
-has different clocks and power requirements.
+The smmu needs to be functional only when the respective
+master's using it are active. The device_link feature
+helps to track such functional dependencies, so that the
+iommu gets powered when the master device enables itself
+using pm_runtime. So by adapting the smmu driver for
+runtime pm, above said dependency can be addressed.
 
-Took some reference from the exynos runtime patches [1].
+This patch adds the pm runtime/sleep callbacks to the
+driver and also the functions to parse the smmu clocks
+from DT and enable them in resume/suspend.
 
-After much discussion [3] over the use of pm_runtime_get/put() in
-.unmap op path for the arm-smmu, and after disussing over more than
-a couple of approaches to address this, we are putting forward the
-changes *without* using pm_runtime APIs in 'unmap'. Rather, letting
-the client device take the control of powering on/off the connected
-iommu through pm_runtime_get(put)_suppliers() APIs for the scnerios
-when the iommu power can't be directly controlled by clients through
-device links.
-Rafael acked the change to export the suppliers APIs.
+Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+[vivek: Clock rework to request bulk of clocks]
+Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+---
+ drivers/iommu/arm-smmu.c | 56 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 54 insertions(+), 2 deletions(-)
 
-Previous version of this patch series is @ [5].
-
-[v7]
-   * Addressed review comments given by Robin Murphy -
-     -- Added device_link_del() in .remove_device path.
-     -- Error path cleanup in arm_smmu_add_device().
-     -- Added pm_runtime_get/put_sync() in .remove path, and replaced
-        pm_runtime_force_suspend() with pm_runtime_disable().
-     -- clk_names cleanup in arm_smmu_init_clks()
-   * Added 'Reviewed-by' given by Rob H.
-
-[V6]
-   * Added Ack given by Rafael to first patch in the series.
-   * Addressed Rob Herring's comment for adding soc specific compatible
-     string as well besides 'qcom,smmu-v2'.
-
-[V5]
-   * Dropped runtime pm calls from "arm_smmu_unmap" op as discussed over
-     the list [3] for the last patch series.
-   * Added a patch to export pm_runtime_get/put_suppliers() APIs to the
-     series as agreed with Rafael [4].
-   * Added the related patch for msm drm iommu layer to use
-     pm_runtime_get/put_suppliers() APIs in msm_mmu_funcs.
-   * Dropped arm-mmu500 clock patch since that would break existing
-     platforms.
-   * Changed compatible 'qcom,msm8996-smmu-v2' to 'qcom,smmu-v2' to reflect
-     the IP version rather than the platform on which it is used.
-     The same IP is used across multiple platforms including msm8996,
-     and sdm845 etc.
-   * Using clock bulk APIs to handle the clocks available to the IP as
-     suggested by Stephen Boyd.
-   * The first patch in v4 version of the patch-series:
-     ("iommu/arm-smmu: Fix the error path in arm_smmu_add_device") has
-     already made it to mainline.
-
-[V4]
-   * Reworked the clock handling part. We now take clock names as data
-     in the driver for supported compatible versions, and loop over them
-     to get, enable, and disable the clocks.
-   * Using qcom,msm8996 based compatibles for bindings instead of a generic
-     qcom compatible.
-   * Refactor MMU500 patch to just add the necessary clock names data and
-     corresponding bindings.
-   * Added the pm_runtime_get/put() calls in .unmap iommu op (fix added by
-     Stanimir on top of previous patch version.
-   * Added a patch to fix error path in arm_smmu_add_device()
-   * Removed patch 3/5 of V3 patch series that added qcom,smmu-v2 bindings.
-
-[V3]
-   * Reworked the patches to keep the clocks init/enabling function
-     separately for each compatible.
-
-   * Added clocks bindings for MMU40x/500.
-
-   * Added a new compatible for qcom,smmu-v2 implementation and
-     the clock bindings for the same.
-
-   * Rebased on top of 4.11-rc1
-
-[V2]
-   * Split the patches little differently.
-
-   * Addressed comments.
-
-   * Removed the patch #4 [2] from previous post
-     for arm-smmu context save restore. Planning to
-     post this separately after reworking/addressing Robin's
-     feedback.
-
-   * Reversed the sequence to disable clocks than enabling.
-     This was required for those cases where the
-     clocks are populated in a dependent order from DT.
-
-[1] https://lkml.org/lkml/2016/10/20/70
-[2] https://patchwork.kernel.org/patch/9389717/
-[3] https://patchwork.kernel.org/patch/9827825/
-[4] https://patchwork.kernel.org/patch/10102445/
-[5] https://lkml.org/lkml/2018/1/19/217
-
-Sricharan R (3):
-  iommu/arm-smmu: Add pm_runtime/sleep ops
-  iommu/arm-smmu: Invoke pm_runtime during probe, add/remove device
-  iommu/arm-smmu: Add the device_link between masters and smmu
-
-Vivek Gautam (3):
-  base: power: runtime: Export pm_runtime_get/put_suppliers
-  iommu/arm-smmu: Add support for qcom,smmu-v2 variant
-  drm/msm: iommu: Replace runtime calls with runtime suppliers
-
- .../devicetree/bindings/iommu/arm,smmu.txt         |  43 +++++++
- drivers/base/power/runtime.c                       |   2 +
- drivers/gpu/drm/msm/msm_iommu.c                    |  16 +--
- drivers/iommu/arm-smmu.c                           | 127 ++++++++++++++++++++-
- 4 files changed, 174 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+index 69e7c60792a8..9e2f917e16c2 100644
+--- a/drivers/iommu/arm-smmu.c
++++ b/drivers/iommu/arm-smmu.c
+@@ -48,6 +48,7 @@
+ #include <linux/of_iommu.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ 
+@@ -205,6 +206,8 @@ struct arm_smmu_device {
+ 	u32				num_global_irqs;
+ 	u32				num_context_irqs;
+ 	unsigned int			*irqs;
++	struct clk_bulk_data		*clocks;
++	int				num_clks;
+ 
+ 	u32				cavium_id_base; /* Specific to Cavium */
+ 
+@@ -1897,10 +1900,12 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
+ struct arm_smmu_match_data {
+ 	enum arm_smmu_arch_version version;
+ 	enum arm_smmu_implementation model;
++	const char * const *clks;
++	int num_clks;
+ };
+ 
+ #define ARM_SMMU_MATCH_DATA(name, ver, imp)	\
+-static struct arm_smmu_match_data name = { .version = ver, .model = imp }
++static const struct arm_smmu_match_data name = { .version = ver, .model = imp }
+ 
+ ARM_SMMU_MATCH_DATA(smmu_generic_v1, ARM_SMMU_V1, GENERIC_SMMU);
+ ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
+@@ -2001,6 +2006,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev,
+ 	data = of_device_get_match_data(dev);
+ 	smmu->version = data->version;
+ 	smmu->model = data->model;
++	smmu->num_clks = data->num_clks;
+ 
+ 	parse_driver_options(smmu);
+ 
+@@ -2039,6 +2045,28 @@ static void arm_smmu_bus_init(void)
+ #endif
+ }
+ 
++static int arm_smmu_init_clks(struct arm_smmu_device *smmu)
++{
++	int i;
++	int num = smmu->num_clks;
++	const struct arm_smmu_match_data *data;
++
++	if (num < 1)
++		return 0;
++
++	smmu->clocks = devm_kcalloc(smmu->dev, num,
++				    sizeof(*smmu->clocks), GFP_KERNEL);
++	if (!smmu->clocks)
++		return -ENOMEM;
++
++	data = of_device_get_match_data(smmu->dev);
++
++	for (i = 0; i < num; i++)
++		smmu->clocks[i].id = data->clks[i];
++
++	return devm_clk_bulk_get(smmu->dev, num, smmu->clocks);
++}
++
+ static int arm_smmu_device_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+@@ -2099,6 +2127,10 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 		smmu->irqs[i] = irq;
+ 	}
+ 
++	err = arm_smmu_init_clks(smmu);
++	if (err)
++		return err;
++
+ 	err = arm_smmu_device_cfg_probe(smmu);
+ 	if (err)
+ 		return err;
+@@ -2197,7 +2229,27 @@ static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
++static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
++{
++	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
++
++	return clk_bulk_prepare_enable(smmu->num_clks, smmu->clocks);
++}
++
++static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
++{
++	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
++
++	clk_bulk_disable_unprepare(smmu->num_clks, smmu->clocks);
++
++	return 0;
++}
++
++static const struct dev_pm_ops arm_smmu_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(NULL, arm_smmu_pm_resume)
++	SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
++			   arm_smmu_runtime_resume, NULL)
++};
+ 
+ static struct platform_driver arm_smmu_driver = {
+ 	.driver	= {
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
