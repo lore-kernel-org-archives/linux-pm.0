@@ -1,140 +1,32 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4] Documentation/ABI: update cpuidle sysfs documentation
-Date: Wed, 7 Feb 2018 11:36:15 +0100
-Message-ID: <CAJZ5v0gNZSoLgpKy60NEF=RhPLOFwwoKTRA4uDbgBhrGEvxkMA@mail.gmail.com>
-References: <20180206191955.GA19222@mordor.localdomain>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
+ cooling driver
+Date: Wed, 7 Feb 2018 16:11:31 +0530
+Message-ID: <20180207104131.GT28462@vireshk-i7>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+ <20180207091231.GQ28462@vireshk-i7>
+ <54759b82-29e9-f376-bbe8-dcf683ed0cce@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180206191955.GA19222@mordor.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Aishwarya Pant <aishpant@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f169.google.com ([209.85.223.169]:32823 "EHLO
+        mail-io0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932099AbeBGKle (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:41:34 -0500
+Received: by mail-io0-f169.google.com with SMTP id n7so1513947iob.0
+        for <linux-pm@vger.kernel.org>; Wed, 07 Feb 2018 02:41:34 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <54759b82-29e9-f376-bbe8-dcf683ed0cce@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-On Tue, Feb 6, 2018 at 8:19 PM, Aishwarya Pant <aishpant@gmail.com> wrote:
-> Update cpuidle documentation using git logs and existing documentation
-> in Documentation/cpuidle/sysfs.txt. This might be useful for scripting
-> and tracking changes in the ABI.
->
-> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
-> ---
-> Changes in v4:
-> - Fix patch formatting
-> v3:
-> - Fix subject line
-> v2:
-> - Merge cpuidle_sysfs_switch attributes' description with the previous
->   entry.
->
->  Documentation/ABI/testing/sysfs-devices-system-cpu | 77 +++++++++++++++++++++-
->  1 file changed, 75 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index bfd29bc8d37a..e9ee67f80933 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -108,6 +108,8 @@ Description:        CPU topology files that describe a logical CPU's relationship
->
->  What:          /sys/devices/system/cpu/cpuidle/current_driver
->                 /sys/devices/system/cpu/cpuidle/current_governer_ro
-> +               /sys/devices/system/cpu/cpuidle/available_governors
-> +               /sys/devices/system/cpu/cpuidle/current_governor
->  Date:          September 2007
->  Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
->  Description:   Discover cpuidle policy and mechanism
-> @@ -119,13 +121,84 @@ Description:      Discover cpuidle policy and mechanism
->                 Idle policy (governor) is differentiated from idle mechanism
->                 (driver)
->
-> -               current_driver: displays current idle mechanism
-> +               current_driver: (RO) displays current idle mechanism
->
-> -               current_governor_ro: displays current idle policy
-> +               current_governor_ro: (RO) displays current idle policy
-> +
-> +               With the cpuidle_sysfs_switch boot option enabled (meant for
-> +               developer testing), the following three attributes are visible
-> +               instead:
-> +
-> +               current_driver: same as described above
-> +
-> +               available_governors: (RO) displays a space separated list of
-> +               available governors
-> +
-> +               current_governor: (RW) displays current idle policy. Users can
-> +               switch the governor at runtime by writing to this file.
->
->                 See files in Documentation/cpuidle/ for more information.
->
->
-> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/name
-> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/latency
-> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/power
-> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/time
-> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
-> +Date:          September 2007
-> +KernelVersion: v2.6.24
-> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+On 07-02-18, 11:34, Daniel Lezcano wrote:
+> Ok, I thought I tried the different combinations but I will double check.
 
-Please replace "Linux kernel mailing list
-<linux-kernel@vger.kernel.org>" with "Linux power management list
-<linux-pm@vger.kernel.org>" here and below.
+You perhaps tried after the combo patch. Try after this one :)
 
-> +Description:
-> +               The directory /sys/devices/system/cpu/cpuX/cpuidle contains per
-> +               logical CPU specific cpuidle information for each online cpu X.
-> +               The processor idle states which are available for use have the
-> +               following attributes:
-> +
-> +               name: (RO) Name of the idle state (string).
-> +
-> +               latency: (RO) The latency to exit out of this idle state (in
-> +               microseconds).
-> +
-> +               power: (RO) The power consumed while in this idle state (in
-> +               milliwatts).
-> +
-> +               time: (RO) The total time spent in this idle state (in microseconds).
-> +
-> +               usage: (RO) Number of times this state was entered (a count).
-> +
-> +
-> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
-> +Date:          February 2008
-> +KernelVersion: v2.6.25
-> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> +Description:
-> +               (RO) A small description about the idle state (string).
-> +
-> +
-> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/disable
-> +Date:          March 2012
-> +KernelVersion: v3.10
-> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> +Description:
-> +               (RW) Option to disable this idle state (bool). The behavior and
-> +               the effect of the disable variable depends on the implementation
-> +               of a particular governor. In the ladder governor, for example,
-> +               it is not coherent, i.e. if one is disabling a light state, then
-> +               all deeper states are disabled as well, but the disable variable
-> +               does not reflect it. Likewise, if one enables a deep state but a
-> +               lighter state still is disabled, then this has no effect.
-> +
-> +
-> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
-> +Date:          March 2014
-> +KernelVersion: v3.15
-> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> +Description:
-> +               (RO) Display the target residency i.e. the minimum amount of
-> +               time (in microseconds) this cpu should spend in this idle state
-> +               to make the transition worth the effort.
-> +
-> +
->  What:          /sys/devices/system/cpu/cpu#/cpufreq/*
->  Date:          pre-git history
->  Contact:       linux-pm@vger.kernel.org
-> --
-> 2.16.1
->
+-- 
+viresh
