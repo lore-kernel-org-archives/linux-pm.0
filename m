@@ -1,12 +1,10 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH v2 3/4] soc: mediatek: avoid hardcoded value with bus_prot_mask
-Date: Wed, 7 Feb 2018 18:22:49 +0800
-Message-ID: <c101f416099f14521c4440058858007f5ff0a6c4.1517998367.git.sean.wang@mediatek.com>
-References: <ecfc548fc3d22aa335b50e552ad2ad88427a0bb2.1517998367.git.sean.wang@mediatek.com>
+Subject: [PATCH v2 1/4] dt-bindings: soc: add SCPSYS binding for MT7623 and MT7623A SoC
+Date: Wed, 7 Feb 2018 18:22:47 +0800
+Message-ID: <ecfc548fc3d22aa335b50e552ad2ad88427a0bb2.1517998367.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ecfc548fc3d22aa335b50e552ad2ad88427a0bb2.1517998367.git.sean.wang@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: robh+dt@kernel.org, matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
 Cc: ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
@@ -14,52 +12,41 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-use a meaningful definition for bus_prot_mask instead of just hardcoded
-for it.
+document the binding for enabling SCPSYS on MediaTek MT7623 and MT7623A
+SoC. Where MT7623 SoC has the same definition about power domains with
+MT2701, so it's fine to using MT2701 ones as MT7623's fallback.
 
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/soc/mediatek/mtk-scpsys.c     | 5 +++--
- include/linux/soc/mediatek/infracfg.h | 4 ++++
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/soc/mediatek/scpsys.txt | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/soc/mediatek/mtk-scpsys.c b/drivers/soc/mediatek/mtk-scpsys.c
-index 435ce5e..5346f33 100644
---- a/drivers/soc/mediatek/mtk-scpsys.c
-+++ b/drivers/soc/mediatek/mtk-scpsys.c
-@@ -518,7 +518,8 @@ static const struct scp_domain_data scp_domain_data_mt2701[] = {
- 		.name = "conn",
- 		.sta_mask = PWR_STATUS_CONN,
- 		.ctl_offs = SPM_CONN_PWR_CON,
--		.bus_prot_mask = 0x0104,
-+		.bus_prot_mask = MT2701_TOP_AXI_PROT_EN_CONN_M |
-+				 MT2701_TOP_AXI_PROT_EN_CONN_S,
- 		.clk_id = {CLK_NONE},
- 		.active_wakeup = true,
- 	},
-@@ -528,7 +529,7 @@ static const struct scp_domain_data scp_domain_data_mt2701[] = {
- 		.ctl_offs = SPM_DIS_PWR_CON,
- 		.sram_pdn_bits = GENMASK(11, 8),
- 		.clk_id = {CLK_MM},
--		.bus_prot_mask = 0x0002,
-+		.bus_prot_mask = MT2701_TOP_AXI_PROT_EN_MM_M0,
- 		.active_wakeup = true,
- 	},
- 	[MT2701_POWER_DOMAIN_MFG] = {
-diff --git a/include/linux/soc/mediatek/infracfg.h b/include/linux/soc/mediatek/infracfg.h
-index b0a507d..fd25f01 100644
---- a/include/linux/soc/mediatek/infracfg.h
-+++ b/include/linux/soc/mediatek/infracfg.h
-@@ -21,6 +21,10 @@
- #define MT8173_TOP_AXI_PROT_EN_MFG_M1		BIT(22)
- #define MT8173_TOP_AXI_PROT_EN_MFG_SNOOP_OUT	BIT(23)
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+index 76bf45b..d6fe16f 100644
+--- a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
++++ b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+@@ -21,6 +21,8 @@ Required properties:
+ 	- "mediatek,mt2712-scpsys"
+ 	- "mediatek,mt6797-scpsys"
+ 	- "mediatek,mt7622-scpsys"
++	- "mediatek,mt7623-scpsys", "mediatek,mt2701-scpsys": For MT7623 SoC
++	- "mediatek,mt7623a-scpsys": For MT7623A SoC
+ 	- "mediatek,mt8173-scpsys"
+ - #power-domain-cells: Must be 1
+ - reg: Address range of the SCPSYS unit
+@@ -28,10 +30,11 @@ Required properties:
+ - clock, clock-names: clocks according to the common clock binding.
+                       These are clocks which hardware needs to be
+                       enabled before enabling certain power domains.
+-	Required clocks for MT2701: "mm", "mfg", "ethif"
++	Required clocks for MT2701 or MT7623: "mm", "mfg", "ethif"
+ 	Required clocks for MT2712: "mm", "mfg", "venc", "jpgdec", "audio", "vdec"
+ 	Required clocks for MT6797: "mm", "mfg", "vdec"
+ 	Required clocks for MT7622: "hif_sel"
++	Required clocks for MT7622A: "ethif"
+ 	Required clocks for MT8173: "mm", "mfg", "venc", "venc_lt"
  
-+#define MT2701_TOP_AXI_PROT_EN_MM_M0		BIT(1)
-+#define MT2701_TOP_AXI_PROT_EN_CONN_M		BIT(2)
-+#define MT2701_TOP_AXI_PROT_EN_CONN_S		BIT(8)
-+
- #define MT7622_TOP_AXI_PROT_EN_ETHSYS		(BIT(3) | BIT(17))
- #define MT7622_TOP_AXI_PROT_EN_HIF0		(BIT(24) | BIT(25))
- #define MT7622_TOP_AXI_PROT_EN_HIF1		(BIT(26) | BIT(27) | \
+ Optional properties:
 -- 
 2.7.4
