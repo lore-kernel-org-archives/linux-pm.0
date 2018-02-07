@@ -1,38 +1,58 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [Query] thermal: Who is using "cooling-{min|max}-level}" properties ?
-Date: Wed, 7 Feb 2018 12:29:59 +0530
-Message-ID: <20180207065959.GN28462@vireshk-i7>
+Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
+ cooling device
+Date: Wed, 7 Feb 2018 12:56:06 +0530
+Message-ID: <20180207072606.GO28462@vireshk-i7>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
+ <20180202104259.GA28462@vireshk-i7>
+ <8dadd854-25ac-68aa-aa9f-33ba76a137a4@linaro.org>
+ <20180205041734.GD28462@vireshk-i7>
+ <911804cd-2f1d-a1f7-61a2-6c8b95a88d6b@linaro.org>
+ <20180206042853.GI28462@vireshk-i7>
+ <54081703-c48f-3e07-b79d-3a2831bc28d7@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f46.google.com ([209.85.214.46]:36709 "EHLO
-        mail-it0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753305AbeBGHAE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 02:00:04 -0500
-Received: by mail-it0-f46.google.com with SMTP id n206so1008450itg.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Feb 2018 23:00:04 -0800 (PST)
+Received: from mail-pl0-f46.google.com ([209.85.160.46]:36805 "EHLO
+        mail-pl0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751146AbeBGH0K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 02:26:10 -0500
+Received: by mail-pl0-f46.google.com with SMTP id v3so2943953plg.3
+        for <linux-pm@vger.kernel.org>; Tue, 06 Feb 2018 23:26:10 -0800 (PST)
 Content-Disposition: inline
+In-Reply-To: <54081703-c48f-3e07-b79d-3a2831bc28d7@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, Punit.Agrawal@arm.com, ionela.voinescu@arm.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
 
-Looks like I am missing the obvious and sorry for the noise in advance.
+On 06-02-18, 11:48, Daniel Lezcano wrote:
+> On 06/02/2018 05:28, Viresh Kumar wrote:
 
-But I couldn't find any code that parses the "cooling-{min|max}-level" DT
-bindings in the kernel. Yeah, almost every ARM platform have these properties
-set for their CPU nodes in DT, but I don't see how these are getting used.
+> > Surely we can do one thing at a time if that's the way we choose to do it.
+> 
+> Easy to say :)
+> 
+> The current code is to introduce the feature without impacting the DT
+> bindings in order to keep focused on the thermal mitigation aspect.
+> 
+> There are still a lot of improvements to do after that. You are
+> basically asking me to implement the copy-on-write before the memory
+> management is complete.
 
-I even tried to remove them for my hikey platform and everything worked as if
-nothing has changed (which I was expecting anyway). The deal is that the
-->get_max_state() callback of the cooling drivers are getting called to get the
-range at runtime and none of them refers to these bindings.
+Perhaps I wasn't clear. What I was trying to say is that we can do "one thing at
+a time" if we choose to create a "combo device" (the way you proposed). I am not
+trying to force you to solve all the problems in one go :)
 
-Removing code is always fun and I would be happy to post a series to clean
-things up if everyone agrees. Please let me know if my understanding is correct
-and if it would be fine to remove these bindings completely.
+> Can you give an example? Or your understanding is incorrect or I missed
+> the point.
 
-Thanks.
+So I tried to write it down and realized I was assuming that different
+cooling-maps can be provided for different cooling strategies
+(cpufreq/cpuidle) and obviously that's not the case as its per device.
+Not sure if it would be correct to explore the possibility of doing
+that.
 
 -- 
 viresh
