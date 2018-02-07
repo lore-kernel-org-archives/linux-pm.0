@@ -1,193 +1,140 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
- cooling driver
-Date: Wed, 7 Feb 2018 11:34:35 +0100
-Message-ID: <54759b82-29e9-f376-bbe8-dcf683ed0cce@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
- <20180207091231.GQ28462@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4] Documentation/ABI: update cpuidle sysfs documentation
+Date: Wed, 7 Feb 2018 11:36:15 +0100
+Message-ID: <CAJZ5v0gNZSoLgpKy60NEF=RhPLOFwwoKTRA4uDbgBhrGEvxkMA@mail.gmail.com>
+References: <20180206191955.GA19222@mordor.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:55575 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753597AbeBGKej (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 05:34:39 -0500
-Received: by mail-wm0-f66.google.com with SMTP id 143so2178667wma.5
-        for <linux-pm@vger.kernel.org>; Wed, 07 Feb 2018 02:34:38 -0800 (PST)
-In-Reply-To: <20180207091231.GQ28462@vireshk-i7>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180206191955.GA19222@mordor.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Aishwarya Pant <aishpant@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
+On Tue, Feb 6, 2018 at 8:19 PM, Aishwarya Pant <aishpant@gmail.com> wrote:
+> Update cpuidle documentation using git logs and existing documentation
+> in Documentation/cpuidle/sysfs.txt. This might be useful for scripting
+> and tracking changes in the ABI.
+>
+> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+> ---
+> Changes in v4:
+> - Fix patch formatting
+> v3:
+> - Fix subject line
+> v2:
+> - Merge cpuidle_sysfs_switch attributes' description with the previous
+>   entry.
+>
+>  Documentation/ABI/testing/sysfs-devices-system-cpu | 77 +++++++++++++++++++++-
+>  1 file changed, 75 insertions(+), 2 deletions(-)
+>
+> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+> index bfd29bc8d37a..e9ee67f80933 100644
+> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
+> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+> @@ -108,6 +108,8 @@ Description:        CPU topology files that describe a logical CPU's relationship
+>
+>  What:          /sys/devices/system/cpu/cpuidle/current_driver
+>                 /sys/devices/system/cpu/cpuidle/current_governer_ro
+> +               /sys/devices/system/cpu/cpuidle/available_governors
+> +               /sys/devices/system/cpu/cpuidle/current_governor
+>  Date:          September 2007
+>  Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+>  Description:   Discover cpuidle policy and mechanism
+> @@ -119,13 +121,84 @@ Description:      Discover cpuidle policy and mechanism
+>                 Idle policy (governor) is differentiated from idle mechanism
+>                 (driver)
+>
+> -               current_driver: displays current idle mechanism
+> +               current_driver: (RO) displays current idle mechanism
+>
+> -               current_governor_ro: displays current idle policy
+> +               current_governor_ro: (RO) displays current idle policy
+> +
+> +               With the cpuidle_sysfs_switch boot option enabled (meant for
+> +               developer testing), the following three attributes are visible
+> +               instead:
+> +
+> +               current_driver: same as described above
+> +
+> +               available_governors: (RO) displays a space separated list of
+> +               available governors
+> +
+> +               current_governor: (RW) displays current idle policy. Users can
+> +               switch the governor at runtime by writing to this file.
+>
+>                 See files in Documentation/cpuidle/ for more information.
+>
+>
+> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/name
+> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/latency
+> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/power
+> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/time
+> +               /sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
+> +Date:          September 2007
+> +KernelVersion: v2.6.24
+> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
 
-Hi Viresh,
+Please replace "Linux kernel mailing list
+<linux-kernel@vger.kernel.org>" with "Linux power management list
+<linux-pm@vger.kernel.org>" here and below.
 
-thanks for reviewing.
-
-On 07/02/2018 10:12, Viresh Kumar wrote:
-> On 23-01-18, 16:34, Daniel Lezcano wrote:
->> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> 
->> +/**
->> + * cpuidle_cooling_ops - thermal cooling device ops
->> + */
->> +static struct thermal_cooling_device_ops cpuidle_cooling_ops = {
->> +	.get_max_state = cpuidle_cooling_get_max_state,
->> +	.get_cur_state = cpuidle_cooling_get_cur_state,
->> +	.set_cur_state = cpuidle_cooling_set_cur_state,
->> +};
->> +
->> +/**
->> + * cpuidle_cooling_release - Kref based release helper
->> + * @kref: a pointer to the kref structure
->> + *
->> + * This function is automatically called by the kref_put function when
->> + * the idle cooling device refcount reaches zero. At this point, we
->> + * have the guarantee the structure is no longer in use and we can
->> + * safely release all the ressources.
->> + */
-> 
-> Don't really need doc style comments for internal routines.
-
->From Documentation/doc-guide/kernel-doc.rst:
-
-"We also recommend providing kernel-doc formatted documentation for
-private (file "static") routines, for consistency of kernel source code
-layout. But this is lower priority and at the discretion of the
-MAINTAINER of that kernel source file."
-
-Vote is open :)
-
->> +static void __init cpuidle_cooling_release(struct kref *kref)
->> +{
->> +	struct cpuidle_cooling_device *idle_cdev =
->> +		container_of(kref, struct cpuidle_cooling_device, kref);
->> +
->> +	thermal_cooling_device_unregister(idle_cdev->cdev);
->> +	kfree(idle_cdev->waitq);
->> +	kfree(idle_cdev->tsk);
->> +	kfree(idle_cdev);
-> 
-> What about list-del here (cpuidle_cdev_list) ?
-
-Yes, thanks for pointing this. I have to convert the calling loop with
-the 'safe' list variant.
-
->> +}
->> +
->> +/**
->> + * cpuidle_cooling_register - Idle cooling device initialization function
->> + *
->> + * This function is in charge of creating a cooling device per cluster
->> + * and register it to thermal framework. For this we rely on the
->> + * topology as there is nothing yet describing better the idle state
->> + * power domains.
->> + *
->> + * For each first CPU of the cluster's cpumask, we allocate the idle
->> + * cooling device, initialize the general fields and then we initialze
->> + * the rest in a per cpu basis.
->> + *
->> + * Returns zero on success, < 0 otherwise.
->> + */
->> +int cpuidle_cooling_register(void)
->> +{
->> +	struct cpuidle_cooling_device *idle_cdev = NULL;
->> +	struct thermal_cooling_device *cdev;
->> +	struct task_struct *tsk;
->> +	struct device_node *np;
->> +	cpumask_t *cpumask;
->> +	char dev_name[THERMAL_NAME_LENGTH];
->> +	int weight;
->> +	int ret = -ENOMEM, cpu;
->> +	int index = 0;
->> +
->> +	for_each_possible_cpu(cpu) {
->> +
-> 
-> Perhaps this is coding choice, but just for the sake of consistency in
-> this driver should we remove such empty lines at the beginning of a
-> blocks ?
-
-Yes, it is coding choice. I'm in favor of separated blocks. I can remove
-the lines if that hurts.
-
->> +		cpumask = topology_core_cpumask(cpu);
->> +		weight = cpumask_weight(cpumask);
->> +
->> +		/*
->> +		 * This condition makes the first cpu belonging to the
->> +		 * cluster to create a cooling device and allocates
->> +		 * the structure. Others CPUs belonging to the same
->> +		 * cluster will just increment the refcount on the
->> +		 * cooling device structure and initialize it.
->> +		 */
->> +		if (cpu == cpumask_first(cpumask)) {
->> +
-> 
-> Like here as well.
-
-Ok.
-
-[ ... ]
-
->> +	pr_err("Failed to create idle cooling device (%d)\n", ret);
->> +
->> +	return ret;
->> +}
-> 
-> What about cpuidle_cooling_unregister() ?
-
-The unregister function is not needed because cpuidle can't be unloaded.
-The cpuidle cooling device is registered after the cpuidle successfully
-initialized itself, there is no error path.
-
->> +#endif
->> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
->> index d4292eb..2b5950b 100644
->> --- a/include/linux/cpu_cooling.h
->> +++ b/include/linux/cpu_cooling.h
->> @@ -45,6 +45,7 @@ struct thermal_cooling_device *
->>  cpufreq_power_cooling_register(struct cpufreq_policy *policy,
->>  			       u32 capacitance, get_static_t plat_static_func);
->>  
->> +extern int cpuidle_cooling_register(void);
->>  /**
->>   * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
->>   * @np: a valid struct device_node to the cooling device device tree node.
->> @@ -118,6 +119,11 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
->>  {
->>  	return;
->>  }
->> +
->> +static inline int cpuidle_cooling_register(void)
-> 
-> You need to use the new macros of cpufreq and cpuidle here as well,
-> else you will see compile time errors with some configurations.
-
-Ok, I thought I tried the different combinations but I will double check.
-
-Thanks
-
-  -- Daniel
-
->> +{
->> +	return 0;
->> +}
->>  #endif	/* CONFIG_CPU_THERMAL */
->>  
->>  #endif /* __CPU_COOLING_H__ */
->> -- 
->> 2.7.4
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> +Description:
+> +               The directory /sys/devices/system/cpu/cpuX/cpuidle contains per
+> +               logical CPU specific cpuidle information for each online cpu X.
+> +               The processor idle states which are available for use have the
+> +               following attributes:
+> +
+> +               name: (RO) Name of the idle state (string).
+> +
+> +               latency: (RO) The latency to exit out of this idle state (in
+> +               microseconds).
+> +
+> +               power: (RO) The power consumed while in this idle state (in
+> +               milliwatts).
+> +
+> +               time: (RO) The total time spent in this idle state (in microseconds).
+> +
+> +               usage: (RO) Number of times this state was entered (a count).
+> +
+> +
+> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
+> +Date:          February 2008
+> +KernelVersion: v2.6.25
+> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +Description:
+> +               (RO) A small description about the idle state (string).
+> +
+> +
+> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/disable
+> +Date:          March 2012
+> +KernelVersion: v3.10
+> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +Description:
+> +               (RW) Option to disable this idle state (bool). The behavior and
+> +               the effect of the disable variable depends on the implementation
+> +               of a particular governor. In the ladder governor, for example,
+> +               it is not coherent, i.e. if one is disabling a light state, then
+> +               all deeper states are disabled as well, but the disable variable
+> +               does not reflect it. Likewise, if one enables a deep state but a
+> +               lighter state still is disabled, then this has no effect.
+> +
+> +
+> +What:          /sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
+> +Date:          March 2014
+> +KernelVersion: v3.15
+> +Contact:       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +Description:
+> +               (RO) Display the target residency i.e. the minimum amount of
+> +               time (in microseconds) this cpu should spend in this idle state
+> +               to make the transition worth the effort.
+> +
+> +
+>  What:          /sys/devices/system/cpu/cpu#/cpufreq/*
+>  Date:          pre-git history
+>  Contact:       linux-pm@vger.kernel.org
+> --
+> 2.16.1
+>
