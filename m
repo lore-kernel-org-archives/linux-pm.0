@@ -1,77 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [Query] thermal: Who is using "cooling-{min|max}-level}"
- properties ?
-Date: Wed, 7 Feb 2018 11:04:45 +0100
-Message-ID: <c7bd6ed5-b93e-3a07-b4a2-4c3b1eef5fac@linaro.org>
-References: <20180207065959.GN28462@vireshk-i7>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
+ cooling device
+Date: Wed, 7 Feb 2018 11:05:13 +0100
+Message-ID: <93e62f8b-bba6-96e6-0011-84504041930a@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
+ <20180202104259.GA28462@vireshk-i7>
+ <8dadd854-25ac-68aa-aa9f-33ba76a137a4@linaro.org>
+ <20180205041734.GD28462@vireshk-i7>
+ <911804cd-2f1d-a1f7-61a2-6c8b95a88d6b@linaro.org>
+ <20180206042853.GI28462@vireshk-i7>
+ <54081703-c48f-3e07-b79d-3a2831bc28d7@linaro.org>
+ <20180207072606.GO28462@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20180207065959.GN28462@vireshk-i7>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180207072606.GO28462@vireshk-i7>
 Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Punit.Agrawal-5wv7dgnIgG8@public.gmane.org, ionela.voinescu-5wv7dgnIgG8@public.gmane.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07/02/2018 07:59, Viresh Kumar wrote:
-> Looks like I am missing the obvious and sorry for the noise in advance.
+On 07/02/2018 08:26, Viresh Kumar wrote:
+> On 06-02-18, 11:48, Daniel Lezcano wrote:
+>> On 06/02/2018 05:28, Viresh Kumar wrote:
 > 
-> But I couldn't find any code that parses the "cooling-{min|max}-level" DT
-> bindings in the kernel. Yeah, almost every ARM platform have these properties
-> set for their CPU nodes in DT, but I don't see how these are getting used.
+>>> Surely we can do one thing at a time if that's the way we choose to do it.
+>>
+>> Easy to say :)
+>>
+>> The current code is to introduce the feature without impacting the DT
+>> bindings in order to keep focused on the thermal mitigation aspect.
+>>
+>> There are still a lot of improvements to do after that. You are
+>> basically asking me to implement the copy-on-write before the memory
+>> management is complete.
 > 
-> I even tried to remove them for my hikey platform and everything worked as if
-> nothing has changed (which I was expecting anyway). The deal is that the
-> ->get_max_state() callback of the cooling drivers are getting called to get the
-> range at runtime and none of them refers to these bindings.
+> Perhaps I wasn't clear. What I was trying to say is that we can do "one thing at
+> a time" if we choose to create a "combo device" (the way you proposed). I am not
+> trying to force you to solve all the problems in one go :)
+
+Oh, ok :)
+
+>> Can you give an example? Or your understanding is incorrect or I missed
+>> the point.
 > 
-> Removing code is always fun and I would be happy to post a series to clean
-> things up if everyone agrees. Please let me know if my understanding is correct
-> and if it would be fine to remove these bindings completely.
+> So I tried to write it down and realized I was assuming that different
+> cooling-maps can be provided for different cooling strategies
+> (cpufreq/cpuidle) and obviously that's not the case as its per device.
+> Not sure if it would be correct to explore the possibility of doing
+> that.
+> 
 
-Yeah, this is a bit fuzzy. There are still cooling-{min|max}-*state*
-definitions in the DTs
-
-Documentation/devicetree/bindings/hwmon/pwm-fan.txt:
-cooling-min-state = <0>;
-arch/arm/boot/dts/exynos4412-odroidu3.dts:
-cooling-min-state = <0>;
-arch/arm/boot/dts/exynos5410-odroidxu.dts:
-cooling-min-state = <0>;
-arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi:
-cooling-min-state = <0>;
-arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi:
-cooling-min-state = <0>;
-
-
-IIUC, the cooling-device in the mapping defines the min and max states
-which are the values used in the thermal zone binding.
-
-And the cooling-[min|max]-level are the hardware limits:
-
-cooling-min-level <= cooling-device min|max state <= cooling-max-level
-
-For example on the hikey6220:
-
-The DT specifies for CPU0:
-
-	operating-points-v2 = <&cpu_opp_table>;
-	cooling-min-level = <4>;
-	cooling-max-level = <0>;
-	#cooling-cells = <2>; /* min followed by max */
-
-and for the cooling device for map0
-
-	cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-
-So if my understanding is correct, the optional property
-cooling-[min|max]-level is used to make sure the cooling device min
-state and max state are in the hardware boundaries. And the thermal
-framework misses to do the consistency check at init.
-
-I'm not sure how useful are cooling-{min|max}-*state* bindings.
 
 -- 
  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
@@ -79,8 +61,3 @@ I'm not sure how useful are cooling-{min|max}-*state* bindings.
 Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
