@@ -1,257 +1,195 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
- cooling driver
-Date: Wed, 7 Feb 2018 14:42:31 +0530
-Message-ID: <20180207091231.GQ28462@vireshk-i7>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH v5 2/4] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Wed, 7 Feb 2018 09:18:09 +0000
+Message-ID: <8cad6e62-3577-5229-1147-5949599cae5a@arm.com>
+References: <20180207014117.62611-1-dbasehore@chromium.org>
+ <20180207014117.62611-3-dbasehore@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:47370 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753632AbeBGJSP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Feb 2018 04:18:15 -0500
+In-Reply-To: <20180207014117.62611-3-dbasehore@chromium.org>
+Content-Language: en-GB
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Derek Basehore <dbasehore@chromium.org>, linux-kernel@vger.kernel.org
+Cc: Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org
 
-On 23-01-18, 16:34, Daniel Lezcano wrote:
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+On 07/02/18 01:41, Derek Basehore wrote:
+> Some platforms power off GIC logic in suspend, so we need to
+> save/restore state. The distributor and redistributor registers need
+> to be handled in platform code due to access permissions on those
+> registers, but the ITS registers can be restored in the kernel.
+> 
+> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> ---
+>  drivers/irqchip/irq-gic-v3-its.c | 99 ++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 99 insertions(+)
+> 
+> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+> index 06f025fd5726..5e63635e2a7b 100644
+> --- a/drivers/irqchip/irq-gic-v3-its.c
+> +++ b/drivers/irqchip/irq-gic-v3-its.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/of_platform.h>
+>  #include <linux/percpu.h>
+>  #include <linux/slab.h>
+> +#include <linux/syscore_ops.h>
+>  
+>  #include <linux/irqchip.h>
+>  #include <linux/irqchip/arm-gic-v3.h>
+> @@ -46,6 +47,7 @@
+>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING		(1ULL << 0)
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375	(1ULL << 1)
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144	(1ULL << 2)
+> +#define ITS_FLAGS_SAVE_SUSPEND_STATE		(1ULL << 3)
+>  
+>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING	(1 << 0)
+>  
+> @@ -101,6 +103,8 @@ struct its_node {
+>  	struct its_collection	*collections;
+>  	struct fwnode_handle	*fwnode_handle;
+>  	u64			(*get_msi_base)(struct its_device *its_dev);
+> +	u64			cbaser_save;
+> +	u32			ctlr_save;
+>  	struct list_head	its_device_list;
+>  	u64			flags;
+>  	unsigned long		list_nr;
+> @@ -3042,6 +3046,96 @@ static void its_enable_quirks(struct its_node *its)
+>  	gic_enable_quirks(iidr, its_quirks, its);
+>  }
+>  
+> +static int its_save_disable(void)
+> +{
+> +	struct its_node *its;
+> +	int err = 0;
+> +
+> +	spin_lock(&its_lock);
+> +	list_for_each_entry(its, &its_nodes, entry) {
+> +		void __iomem *base;
+> +
+> +		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+> +			continue;
+> +
+> +		base = its->base;
+> +		its->ctlr_save = readl_relaxed(base + GITS_CTLR);
+> +		err = its_force_quiescent(base);
+> +		if (err) {
+> +			pr_err("ITS failed to quiesce\n");
+> +			writel_relaxed(its->ctlr_save, base + GITS_CTLR);
+> +			goto err;
+> +		}
+> +
+> +		its->cbaser_save = gits_read_cbaser(base + GITS_CBASER);
+> +	}
+> +
+> +err:
+> +	if (err) {
+> +		list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
+> +			void __iomem *base;
+> +
+> +			if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+> +				continue;
+> +
+> +			base = its->base;
+> +			writel_relaxed(its->ctlr_save, base + GITS_CTLR);
+> +		}
+> +	}
+> +	spin_unlock(&its_lock);
+> +
+> +	return err;
+> +}
+> +
+> +static void its_restore_enable(void)
+> +{
+> +	struct its_node *its;
+> +
+> +	spin_lock(&its_lock);
+> +	list_for_each_entry(its, &its_nodes, entry) {
+> +		void __iomem *base;
+> +		int i;
+> +
+> +		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+> +			continue;
+> +
+> +		base = its->base;
+> +
+> +		/*
+> +		 * Make sure that the ITS is disabled. There's not much we can
+> +		 * do if this fails.
+> +		 */
+> +		if (its_force_quiescent(base))
+> +			pr_err("ITS failed to quiesce on resume\n");
 
-> +/**
-> + * cpuidle_cooling_ops - thermal cooling device ops
-> + */
-> +static struct thermal_cooling_device_ops cpuidle_cooling_ops = {
-> +	.get_max_state = cpuidle_cooling_get_max_state,
-> +	.get_cur_state = cpuidle_cooling_get_cur_state,
-> +	.set_cur_state = cpuidle_cooling_set_cur_state,
+One thing we can do though is to abort the resume of this ITS, because
+"When GITS_CTLR.Enabled == 1 or GITS_CTLR.Quiescent == 0, writing this
+register is UNPREDICTABLE." (where "this register" is any of the
+GITS_BASER<n>).
+
+Printing the physical base address of the failing ITS can also help
+people to debug their HW (my toy platform has 8 of them...).
+
+> +
+> +		gits_write_cbaser(its->cbaser_save, base + GITS_CBASER);
+> +
+> +		/*
+> +		 * Writing CBASER resets CREADR to 0, so make CWRITER and
+> +		 * cmd_write line up with it.
+> +		 */
+> +		its->cmd_write = its->cmd_base;
+> +		gits_write_cwriter(0, base + GITS_CWRITER);
+> +
+> +		/* Restore GITS_BASER from the value cache. */
+> +		for (i = 0; i < GITS_BASER_NR_REGS; i++) {
+> +			struct its_baser *baser = &its->tables[i];
+> +
+> +			if (!(baser->val & GITS_BASER_VALID))
+> +				continue;
+> +
+> +			its_write_baser(its, baser, baser->val);
+> +		}
+> +		writel_relaxed(its->ctlr_save, base + GITS_CTLR);
+> +	}
+> +	spin_unlock(&its_lock);
+> +}
+> +
+> +static struct syscore_ops its_syscore_ops = {
+> +	.suspend = its_save_disable,
+> +	.resume = its_restore_enable,
 > +};
 > +
-> +/**
-> + * cpuidle_cooling_release - Kref based release helper
-> + * @kref: a pointer to the kref structure
-> + *
-> + * This function is automatically called by the kref_put function when
-> + * the idle cooling device refcount reaches zero. At this point, we
-> + * have the guarantee the structure is no longer in use and we can
-> + * safely release all the ressources.
-> + */
-
-Don't really need doc style comments for internal routines.
-
-> +static void __init cpuidle_cooling_release(struct kref *kref)
-> +{
-> +	struct cpuidle_cooling_device *idle_cdev =
-> +		container_of(kref, struct cpuidle_cooling_device, kref);
-> +
-> +	thermal_cooling_device_unregister(idle_cdev->cdev);
-> +	kfree(idle_cdev->waitq);
-> +	kfree(idle_cdev->tsk);
-> +	kfree(idle_cdev);
-
-What about list-del here (cpuidle_cdev_list) ?
-
-> +}
-> +
-> +/**
-> + * cpuidle_cooling_register - Idle cooling device initialization function
-> + *
-> + * This function is in charge of creating a cooling device per cluster
-> + * and register it to thermal framework. For this we rely on the
-> + * topology as there is nothing yet describing better the idle state
-> + * power domains.
-> + *
-> + * For each first CPU of the cluster's cpumask, we allocate the idle
-> + * cooling device, initialize the general fields and then we initialze
-> + * the rest in a per cpu basis.
-> + *
-> + * Returns zero on success, < 0 otherwise.
-> + */
-> +int cpuidle_cooling_register(void)
-> +{
-> +	struct cpuidle_cooling_device *idle_cdev = NULL;
-> +	struct thermal_cooling_device *cdev;
-> +	struct task_struct *tsk;
-> +	struct device_node *np;
-> +	cpumask_t *cpumask;
-> +	char dev_name[THERMAL_NAME_LENGTH];
-> +	int weight;
-> +	int ret = -ENOMEM, cpu;
-> +	int index = 0;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +
-
-Perhaps this is coding choice, but just for the sake of consistency in
-this driver should we remove such empty lines at the beginning of a
-blocks ?
-
-> +		cpumask = topology_core_cpumask(cpu);
-> +		weight = cpumask_weight(cpumask);
-> +
-> +		/*
-> +		 * This condition makes the first cpu belonging to the
-> +		 * cluster to create a cooling device and allocates
-> +		 * the structure. Others CPUs belonging to the same
-> +		 * cluster will just increment the refcount on the
-> +		 * cooling device structure and initialize it.
-> +		 */
-> +		if (cpu == cpumask_first(cpumask)) {
-> +
-
-Like here as well.
-
-> +			np = of_cpu_device_node_get(cpu);
-> +
-> +			idle_cdev = kzalloc(sizeof(*idle_cdev), GFP_KERNEL);
-> +			if (!idle_cdev)
-> +				goto out_fail;
-> +
-> +			idle_cdev->tsk = kzalloc(sizeof(*idle_cdev->tsk) *
-> +						 weight, GFP_KERNEL);
-> +			if (!idle_cdev->tsk)
-> +				goto out_fail;
-> +
-> +			idle_cdev->waitq = kzalloc(sizeof(*idle_cdev->waitq) *
-> +						   weight, GFP_KERNEL);
-> +			if (!idle_cdev->waitq)
-> +				goto out_fail;
-> +
-> +			idle_cdev->idle_cycle = DEFAULT_IDLE_TIME_US;
-> +
-> +			atomic_set(&idle_cdev->count, 0);
-> +
-> +			kref_init(&idle_cdev->kref);
-> +
-> +			/*
-> +			 * Initialize the timer to wakeup all the idle
-> +			 * injection tasks
-> +			 */
-> +			hrtimer_init(&idle_cdev->timer,
-> +				     CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +
-> +			/*
-> +			 * The wakeup function callback which is in
-> +			 * charge of waking up all CPUs belonging to
-> +			 * the same cluster
-> +			 */
-> +			idle_cdev->timer.function = cpuidle_cooling_wakeup_fn;
-> +
-> +			/*
-> +			 * The thermal cooling device name
-> +			 */
-> +			snprintf(dev_name, sizeof(dev_name), "thermal-idle-%d", index++);
-> +			cdev = thermal_of_cooling_device_register(np, dev_name,
-> +								  idle_cdev,
-> +								  &cpuidle_cooling_ops);
-> +			if (IS_ERR(cdev)) {
-> +				ret = PTR_ERR(cdev);
-> +				goto out_fail;
-> +			}
-> +
-> +			idle_cdev->cdev = cdev;
-> +
-> +			idle_cdev->cpumask = cpumask;
-> +
-> +			list_add(&idle_cdev->node, &cpuidle_cdev_list);
-> +
-> +			pr_info("Created idle cooling device for cpus '%*pbl'\n",
-> +				cpumask_pr_args(cpumask));
-> +		}
-> +
-> +		kref_get(&idle_cdev->kref);
-> +
-> +		/*
-> +		 * Each cooling device is per package. Each package
-> +		 * has a set of cpus where the physical number is
-> +		 * duplicate in the kernel namespace. We need a way to
-> +		 * address the waitq[] and tsk[] arrays with index
-> +		 * which are not Linux cpu numbered.
-> +		 *
-> +		 * One solution is to use the
-> +		 * topology_core_id(cpu). Other solution is to use the
-> +		 * modulo.
-> +		 *
-> +		 * eg. 2 x cluster - 4 cores.
-> +		 *
-> +		 * Physical numbering -> Linux numbering -> % nr_cpus
-> +		 *
-> +		 * Pkg0 - Cpu0 -> 0 -> 0
-> +		 * Pkg0 - Cpu1 -> 1 -> 1
-> +		 * Pkg0 - Cpu2 -> 2 -> 2
-> +		 * Pkg0 - Cpu3 -> 3 -> 3
-> +		 *
-> +		 * Pkg1 - Cpu0 -> 4 -> 0
-> +		 * Pkg1 - Cpu1 -> 5 -> 1
-> +		 * Pkg1 - Cpu2 -> 6 -> 2
-> +		 * Pkg1 - Cpu3 -> 7 -> 3
-> +		 */
-> +		init_waitqueue_head(&idle_cdev->waitq[cpu % weight]);
-> +
-> +		tsk = kthread_create_on_cpu(cpuidle_cooling_injection_thread,
-> +					    idle_cdev, cpu, "kidle_inject/%u");
-> +		if (IS_ERR(tsk)) {
-> +			ret = PTR_ERR(tsk);
-> +			goto out_fail;
-> +		}
-> +
-> +		idle_cdev->tsk[cpu % weight] = tsk;
-> +
-> +		wake_up_process(tsk);
-> +	}
-> +
-> +	return 0;
-> +
-> +out_fail:
-> +	list_for_each_entry(idle_cdev, &cpuidle_cdev_list, node) {
-> +
-> +		for_each_cpu(cpu, idle_cdev->cpumask) {
-> +
-> +			if (idle_cdev->tsk[cpu])
-> +				kthread_stop(idle_cdev->tsk[cpu]);
-> +
-> +			kref_put(&idle_cdev->kref, cpuidle_cooling_release);
-> +		}
-> +	}
-> +
-> +	pr_err("Failed to create idle cooling device (%d)\n", ret);
-> +
-> +	return ret;
-> +}
-
-What about cpuidle_cooling_unregister() ?
-
-> +#endif
-> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-> index d4292eb..2b5950b 100644
-> --- a/include/linux/cpu_cooling.h
-> +++ b/include/linux/cpu_cooling.h
-> @@ -45,6 +45,7 @@ struct thermal_cooling_device *
->  cpufreq_power_cooling_register(struct cpufreq_policy *policy,
->  			       u32 capacitance, get_static_t plat_static_func);
->  
-> +extern int cpuidle_cooling_register(void);
->  /**
->   * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
->   * @np: a valid struct device_node to the cooling device device tree node.
-> @@ -118,6 +119,11 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+>  static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
 >  {
->  	return;
->  }
-> +
-> +static inline int cpuidle_cooling_register(void)
-
-You need to use the new macros of cpufreq and cpuidle here as well,
-else you will see compile time errors with some configurations.
-
-> +{
-> +	return 0;
-> +}
->  #endif	/* CONFIG_CPU_THERMAL */
+>  	struct irq_domain *inner_domain;
+> @@ -3261,6 +3355,9 @@ static int __init its_probe_one(struct resource *res,
+>  		ctlr |= GITS_CTLR_ImDe;
+>  	writel_relaxed(ctlr, its->base + GITS_CTLR);
 >  
->  #endif /* __CPU_COOLING_H__ */
-> -- 
-> 2.7.4
+> +	if (fwnode_property_present(handle, "reset-on-suspend"))
+> +		its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+> +
+>  	err = its_init_domain(handle, its);
+>  	if (err)
+>  		goto out_free_tables;
+> @@ -3515,5 +3612,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
+>  		}
+>  	}
+>  
+> +	register_syscore_ops(&its_syscore_ops);
+> +
+>  	return 0;
+>  }
+> 
 
+Otherwise starting to look OK.
+
+Thanks,
+
+	M.
 -- 
-viresh
+Jazz is not dead. It just smells funny...
