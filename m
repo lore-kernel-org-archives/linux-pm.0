@@ -1,62 +1,138 @@
-From: liuxiang <liuxiang_1999@126.com>
-Subject: =?UTF-8?Q?=E6=9D=A5=E8=87=AAliuxiang=E7=9A=84=E9=82=AE=E4=BB=B6?=
-Date: Wed, 7 Feb 2018 20:10:03 +0800 (CST)
-Message-ID: <2d5c0de4.9028.161702c3d8a.Coremail.liuxiang_1999@126.com>
+From: Aishwarya Pant <aishpant@gmail.com>
+Subject: [PATCH v5] Documentation/ABI: update cpuidle sysfs documentation
+Date: Wed, 7 Feb 2018 19:04:36 +0530
+Message-ID: <20180207133436.GA7440@mordor.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: pali.rohar@gmail.com, afd@ti.com, sre@kernel.org, liu.xiang6@zte.com.cn, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:34167 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753876AbeBGNet (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 08:34:49 -0500
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-U29ycnksIEkgY2FuJ3QgdGVzdCB0aGVzZSBwaWVjZXMgb2YgY29kZSBub3cuCgpPbiBTYXR1cmRh
-eSAyNyBKYW51YXJ5IDIwMTggMjI6MjU6MzYgTGl1IFhpYW5nIHdyb3RlOgo+IEFjY29yZGluZyB0
-byB0aGUgZGF0YXNoZWV0LCBicTI3NDExIGlzIHNpbWlsYXIgdG8gYnEyNzQyMS4KPiAKPiBTaWdu
-ZWQtb2ZmLWJ5OiBMaXUgWGlhbmcgPGxpdS54aWFuZzZAenRlLmNvbS5jbj4KPiAtLS0KPiAgZHJp
-dmVycy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMgfCAxNCArKysrKysrKysrKysrKwo+
-ICBpbmNsdWRlL2xpbnV4L3Bvd2VyL2JxMjd4eHhfYmF0dGVyeS5oICB8ICAzICsrLQo+ICAyIGZp
-bGVzIGNoYW5nZWQsIDE2IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPiAKPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMgYi9kcml2ZXJzL3Bv
-d2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+IGluZGV4IDUxZjA5NjEuLjJkZTM3OGEgMTAw
-NjQ0Cj4gLS0tIGEvZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMKPiArKysg
-Yi9kcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+IEBAIC00MTAsNiArNDEw
-LDcgQEAgZW51bSBicTI3eHh4X3JlZ19pbmRleCB7Cj4gICNkZWZpbmUgYnEyNzQyNV9yZWdzIGJx
-Mjc0MjFfcmVncwo+ICAjZGVmaW5lIGJxMjc0NDFfcmVncyBicTI3NDIxX3JlZ3MKPiAgI2RlZmlu
-ZSBicTI3NjIxX3JlZ3MgYnEyNzQyMV9yZWdzCj4gKyNkZWZpbmUgYnEyNzQxMV9yZWdzIGJxMjc0
-MjFfcmVncwo+ICAKPiAgc3RhdGljIGVudW0gcG93ZXJfc3VwcGx5X3Byb3BlcnR5IGJxMjcwMDBf
-cHJvcHNbXSA9IHsKPiAgCVBPV0VSX1NVUFBMWV9QUk9QX1NUQVRVUywKPiBAQCAtNjMzLDYgKzYz
-NCw3IEBAIGVudW0gYnEyN3h4eF9yZWdfaW5kZXggewo+ICAjZGVmaW5lIGJxMjc0MjVfcHJvcHMg
-YnEyNzQyMV9wcm9wcwo+ICAjZGVmaW5lIGJxMjc0NDFfcHJvcHMgYnEyNzQyMV9wcm9wcwo+ICAj
-ZGVmaW5lIGJxMjc2MjFfcHJvcHMgYnEyNzQyMV9wcm9wcwo+ICsjZGVmaW5lIGJxMjc0MTFfcHJv
-cHMgYnEyNzQyMV9wcm9wcwo+ICAKPiAgc3RydWN0IGJxMjd4eHhfZG1fcmVnIHsKPiAgCXU4IHN1
-YmNsYXNzX2lkOwo+IEBAIC03MTYsNiArNzE4LDE3IEBAIGVudW0gYnEyN3h4eF9kbV9yZWdfaWQg
-ewo+ICAjZGVmaW5lIGJxMjc2MjFfZG1fcmVncyAwCj4gICNlbmRpZgo+ICAKPiArI2lmIDAgLyog
-bm90IHlldCB0ZXN0ZWQgKi8KPiArc3RhdGljIHN0cnVjdCBicTI3eHh4X2RtX3JlZyBicTI3NDEx
-X2RtX3JlZ3NbXSA9IHsKPiArCVtCUTI3WFhYX0RNX0RFU0lHTl9DQVBBQ0lUWV0gICA9IHsgODIs
-IDEwLCAyLCAgICAwLCAzMjc2NyB9LAo+ICsJW0JRMjdYWFhfRE1fREVTSUdOX0VORVJHWV0gICAg
-ID0geyA4MiwgMTIsIDIsICAgIDAsIDMyNzY3IH0sCj4gKwlbQlEyN1hYWF9ETV9URVJNSU5BVEVf
-Vk9MVEFHRV0gPSB7IDgyLCAxNiwgMiwgMjgwMCwgIDM3MDAgfSwKPiArfTsKPiArI2Vsc2UKPiAr
-I2RlZmluZSBicTI3NDExX2RtX3JlZ3MgMAo+ICsjZW5kaWYKCkNhbiB5b3UgdGVzdCBpdD8KCkkg
-ZG8gbm90IHRoaW5rIGl0IGlzIGEgZ29vZCBpZGVhIHRvIGFkZCBkZWFkIGNvZGUgaW50byBtYWlu
-bGluZSBrZXJuZWwuCgo+ICsKPiArCj4gICNkZWZpbmUgQlEyN1hYWF9PX1pFUk8JMHgwMDAwMDAw
-MQo+ICAjZGVmaW5lIEJRMjdYWFhfT19PVERDCTB4MDAwMDAwMDIKPiAgI2RlZmluZSBCUTI3WFhY
-X09fVVRPVCAgMHgwMDAwMDAwNAo+IEBAIC03NjIsNiArNzc1LDcgQEAgZW51bSBicTI3eHh4X2Rt
-X3JlZ19pZCB7Cj4gIAlbQlEyNzQyNV0gICA9IEJRMjdYWFhfREFUQShicTI3NDI1LCAgIDB4MDQx
-NDM2NzIsIEJRMjdYWFhfT19VVE9UIHwgQlEyN1hYWF9PX0NGR1VQKSwKPiAgCVtCUTI3NDQxXSAg
-ID0gQlEyN1hYWF9EQVRBKGJxMjc0NDEsICAgMHg4MDAwODAwMCwgQlEyN1hYWF9PX1VUT1QgfCBC
-UTI3WFhYX09fQ0ZHVVAgfCBCUTI3WFhYX09fUkFNKSwKPiAgCVtCUTI3NjIxXSAgID0gQlEyN1hY
-WF9EQVRBKGJxMjc2MjEsICAgMHg4MDAwODAwMCwgQlEyN1hYWF9PX1VUT1QgfCBCUTI3WFhYX09f
-Q0ZHVVAgfCBCUTI3WFhYX09fUkFNKSwKPiArCVtCUTI3NDExXSAgID0gQlEyN1hYWF9EQVRBKGJx
-Mjc0MTEsICAgMHg4MDAwODAwMCwgQlEyN1hYWF9PX1VUT1QgfCBCUTI3WFhYX09fQ0ZHVVAgfCBC
-UTI3WFhYX09fUkFNKSwKPiAgfTsKPiAgCj4gIHN0YXRpYyBERUZJTkVfTVVURVgoYnEyN3h4eF9s
-aXN0X2xvY2spOwo+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3Bvd2VyL2JxMjd4eHhfYmF0
-dGVyeS5oIGIvaW5jbHVkZS9saW51eC9wb3dlci9icTI3eHh4X2JhdHRlcnkuaAo+IGluZGV4IGU2
-MTg3ZjUuLjVmNDhlYjAgMTAwNjQ0Cj4gLS0tIGEvaW5jbHVkZS9saW51eC9wb3dlci9icTI3eHh4
-X2JhdHRlcnkuaAo+ICsrKyBiL2luY2x1ZGUvbGludXgvcG93ZXIvYnEyN3h4eF9iYXR0ZXJ5LmgK
-PiBAQCAtMjMsMTAgKzIzLDExIEBAIGVudW0gYnEyN3h4eF9jaGlwIHsKPiAgCUJRMjc1NDYsCj4g
-IAlCUTI3NzQyLAo+ICAJQlEyNzU0NSwgLyogYnEyNzU0NSAqLwo+IC0JQlEyNzQyMSwgLyogYnEy
-NzQyMSwgYnEyNzQyNSwgYnEyNzQ0MSwgYnEyNzYyMSAqLwo+ICsJQlEyNzQyMSwgLyogYnEyNzQy
-MSwgYnEyNzQyNSwgYnEyNzQ0MSwgYnEyNzYyMSwgYnEyNzQxMSAqLwo+ICAJQlEyNzQyNSwKPiAg
-CUJRMjc0NDEsCj4gIAlCUTI3NjIxLAo+ICsJQlEyNzQxMSwKPiAgfTsKPiAgCj4gIHN0cnVjdCBi
-cTI3eHh4X2RldmljZV9pbmZvOw==
+Update cpuidle documentation using git logs and existing documentation
+in Documentation/cpuidle/sysfs.txt. This might be useful for scripting
+and tracking changes in the ABI.
+
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+---
+Changes in v5:
+- Update contact information- LKML -> power management mailing list
+v4:
+- Fix patch formatting
+v3:
+- Fix subject line
+v2:
+- Merge cpuidle_sysfs_switch attributes' description with the previous
+  entry.
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 77 +++++++++++++++++++++-
+ 1 file changed, 75 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index bfd29bc8d37a..4ed63b6cfb15 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -108,6 +108,8 @@ Description:	CPU topology files that describe a logical CPU's relationship
+ 
+ What:		/sys/devices/system/cpu/cpuidle/current_driver
+ 		/sys/devices/system/cpu/cpuidle/current_governer_ro
++		/sys/devices/system/cpu/cpuidle/available_governors
++		/sys/devices/system/cpu/cpuidle/current_governor
+ Date:		September 2007
+ Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+ Description:	Discover cpuidle policy and mechanism
+@@ -119,13 +121,84 @@ Description:	Discover cpuidle policy and mechanism
+ 		Idle policy (governor) is differentiated from idle mechanism
+ 		(driver)
+ 
+-		current_driver: displays current idle mechanism
++		current_driver: (RO) displays current idle mechanism
+ 
+-		current_governor_ro: displays current idle policy
++		current_governor_ro: (RO) displays current idle policy
++
++		With the cpuidle_sysfs_switch boot option enabled (meant for
++		developer testing), the following three attributes are visible
++		instead:
++
++		current_driver: same as described above
++
++		available_governors: (RO) displays a space separated list of
++		available governors
++
++		current_governor: (RW) displays current idle policy. Users can
++		switch the governor at runtime by writing to this file.
+ 
+ 		See files in Documentation/cpuidle/ for more information.
+ 
+ 
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/name
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/latency
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/power
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/time
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
++Date:		September 2007
++KernelVersion:	v2.6.24
++Contact:	Linux power management list <linux-pm@vger.kernel.org>
++Description:
++		The directory /sys/devices/system/cpu/cpuX/cpuidle contains per
++		logical CPU specific cpuidle information for each online cpu X.
++		The processor idle states which are available for use have the
++		following attributes:
++
++		name: (RO) Name of the idle state (string).
++
++		latency: (RO) The latency to exit out of this idle state (in
++		microseconds).
++
++		power: (RO) The power consumed while in this idle state (in
++		milliwatts).
++
++		time: (RO) The total time spent in this idle state (in microseconds).
++
++		usage: (RO) Number of times this state was entered (a count).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
++Date:		February 2008
++KernelVersion:	v2.6.25
++Contact:	Linux power management list <linux-pm@vger.kernel.org>
++Description:
++		(RO) A small description about the idle state (string).
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/disable
++Date:		March 2012
++KernelVersion:	v3.10
++Contact:	Linux power management list <linux-pm@vger.kernel.org>
++Description:
++		(RW) Option to disable this idle state (bool). The behavior and
++		the effect of the disable variable depends on the implementation
++		of a particular governor. In the ladder governor, for example,
++		it is not coherent, i.e. if one is disabling a light state, then
++		all deeper states are disabled as well, but the disable variable
++		does not reflect it. Likewise, if one enables a deep state but a
++		lighter state still is disabled, then this has no effect.
++
++
++What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
++Date:		March 2014
++KernelVersion:	v3.15
++Contact:	Linux power management list <linux-pm@vger.kernel.org>
++Description:
++		(RO) Display the target residency i.e. the minimum amount of
++		time (in microseconds) this cpu should spend in this idle state
++		to make the transition worth the effort.
++
++
+ What:		/sys/devices/system/cpu/cpu#/cpufreq/*
+ Date:		pre-git history
+ Contact:	linux-pm@vger.kernel.org
+-- 
+2.16.1
