@@ -1,45 +1,160 @@
-From: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: [PATCH v5 0/5] GICv3 Save and Restore
-Date: Tue,  6 Feb 2018 17:41:13 -0800
-Message-ID: <20180207014117.62611-1-dbasehore@chromium.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Soby.Mathew-5wv7dgnIgG8@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, marc.zyngier-5wv7dgnIgG8@public.gmane.org, Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+From: Derek Basehore <dbasehore@chromium.org>
+Subject: [PATCH v5 4/4] irqchip/gic-v3-its: add ability to resend MAPC on resume
+Date: Tue,  6 Feb 2018 17:41:17 -0800
+Message-ID: <20180207014117.62611-5-dbasehore@chromium.org>
+References: <20180207014117.62611-1-dbasehore@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pl0-f66.google.com ([209.85.160.66]:41297 "EHLO
+        mail-pl0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932207AbeBGBlb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Feb 2018 20:41:31 -0500
+Received: by mail-pl0-f66.google.com with SMTP id k8so2478764pli.8
+        for <linux-pm@vger.kernel.org>; Tue, 06 Feb 2018 17:41:30 -0800 (PST)
+In-Reply-To: <20180207014117.62611-1-dbasehore@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org, marc.zyngier@arm.com, Derek Basehore <dbasehore@chromium.org>
 
-A lot of changes in v2. The distributor and redistributor saving and
-restoring is left to the PSCI/firmware implementation after
-discussions with ARM. This reduces the line changes by a lot and
-removes now unneeded patches.
+This adds functionality to resend the MAPC command to an ITS node on
+resume. If the ITS is powered down during suspend and the collections
+are not backed by memory, the ITS will lose that state. This just sets
+up the known state for the collections after the ITS is restored.
 
-Patches are verified on an RK3399 platform with pending patches in the
-ARM-Trusted-Firmware project.
+This is enabled via the reset-on-suspend flag in the DTS for an ITS
+that has a non-zero number of collections stored in it.
 
-Just a couple minor changes in v3 to formatting.
+Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+---
+ drivers/irqchip/irq-gic-v3-its.c   | 80 ++++++++++++++++++++------------------
+ include/linux/irqchip/arm-gic-v3.h |  1 +
+ 2 files changed, 43 insertions(+), 38 deletions(-)
 
-Fixed a false ITS wedged detection due to the cmd_write and creadr
-offsets not matching up on reset in v4. Also minor formatting changes.
-
-Got rid of additional device tree property with detecting if there are
-collections stored in the ITS in v5. Made other minor changes.
-
-Derek Basehore (4):
-  cpu_pm: add syscore_suspend error handling
-  irqchip/gic-v3-its: add ability to save/restore ITS state
-  DT/arm,gic-v3-its: add reset-on-suspend property
-  irqchip/gic-v3-its: add ability to resend MAPC on resume
-
- .../bindings/interrupt-controller/arm,gic-v3.txt   |   3 +
- drivers/irqchip/irq-gic-v3-its.c                   | 179 ++++++++++++++++-----
- include/linux/irqchip/arm-gic-v3.h                 |   1 +
- kernel/cpu_pm.c                                    |   3 +
- 4 files changed, 148 insertions(+), 38 deletions(-)
-
+diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+index 5e63635e2a7b..dd6cd6e68ed0 100644
+--- a/drivers/irqchip/irq-gic-v3-its.c
++++ b/drivers/irqchip/irq-gic-v3-its.c
+@@ -1942,52 +1942,53 @@ static void its_cpu_init_lpis(void)
+ 	dsb(sy);
+ }
+ 
+-static void its_cpu_init_collection(void)
++static void its_cpu_init_collection(struct its_node *its)
+ {
+-	struct its_node *its;
+-	int cpu;
+-
+-	spin_lock(&its_lock);
+-	cpu = smp_processor_id();
+-
+-	list_for_each_entry(its, &its_nodes, entry) {
+-		u64 target;
++	int cpu = smp_processor_id();
++	u64 target;
+ 
+-		/* avoid cross node collections and its mapping */
+-		if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
+-			struct device_node *cpu_node;
++	/* avoid cross node collections and its mapping */
++	if (its->flags & ITS_FLAGS_WORKAROUND_CAVIUM_23144) {
++		struct device_node *cpu_node;
+ 
+-			cpu_node = of_get_cpu_node(cpu, NULL);
+-			if (its->numa_node != NUMA_NO_NODE &&
+-				its->numa_node != of_node_to_nid(cpu_node))
+-				continue;
+-		}
++		cpu_node = of_get_cpu_node(cpu, NULL);
++		if (its->numa_node != NUMA_NO_NODE &&
++			its->numa_node != of_node_to_nid(cpu_node))
++			return;
++	}
+ 
++	/*
++	 * We now have to bind each collection to its target
++	 * redistributor.
++	 */
++	if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+ 		/*
+-		 * We now have to bind each collection to its target
++		 * This ITS wants the physical address of the
+ 		 * redistributor.
+ 		 */
+-		if (gic_read_typer(its->base + GITS_TYPER) & GITS_TYPER_PTA) {
+-			/*
+-			 * This ITS wants the physical address of the
+-			 * redistributor.
+-			 */
+-			target = gic_data_rdist()->phys_base;
+-		} else {
+-			/*
+-			 * This ITS wants a linear CPU number.
+-			 */
+-			target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
+-			target = GICR_TYPER_CPU_NUMBER(target) << 16;
+-		}
++		target = gic_data_rdist()->phys_base;
++	} else {
++		/* This ITS wants a linear CPU number. */
++		target = gic_read_typer(gic_data_rdist_rd_base() + GICR_TYPER);
++		target = GICR_TYPER_CPU_NUMBER(target) << 16;
++	}
+ 
+-		/* Perform collection mapping */
+-		its->collections[cpu].target_address = target;
+-		its->collections[cpu].col_id = cpu;
++	/* Perform collection mapping */
++	its->collections[cpu].target_address = target;
++	its->collections[cpu].col_id = cpu;
+ 
+-		its_send_mapc(its, &its->collections[cpu], 1);
+-		its_send_invall(its, &its->collections[cpu]);
+-	}
++	its_send_mapc(its, &its->collections[cpu], 1);
++	its_send_invall(its, &its->collections[cpu]);
++}
++
++static void its_cpu_init_collections(void)
++{
++	struct its_node *its;
++
++	spin_lock(&its_lock);
++
++	list_for_each_entry(its, &its_nodes, entry)
++		its_cpu_init_collection(its);
+ 
+ 	spin_unlock(&its_lock);
+ }
+@@ -3127,6 +3128,9 @@ static void its_restore_enable(void)
+ 			its_write_baser(its, baser, baser->val);
+ 		}
+ 		writel_relaxed(its->ctlr_save, base + GITS_CTLR);
++
++		if (GITS_TYPER_HWCOLLCNT(gic_read_typer(base + GITS_TYPER)) > 0)
++			its_cpu_init_collection(its);
+ 	}
+ 	spin_unlock(&its_lock);
+ }
+@@ -3393,7 +3397,7 @@ int its_cpu_init(void)
+ 			return -ENXIO;
+ 		}
+ 		its_cpu_init_lpis();
+-		its_cpu_init_collection();
++		its_cpu_init_collections();
+ 	}
+ 
+ 	return 0;
+diff --git a/include/linux/irqchip/arm-gic-v3.h b/include/linux/irqchip/arm-gic-v3.h
+index c00c4c33e432..c9c33b91a1f1 100644
+--- a/include/linux/irqchip/arm-gic-v3.h
++++ b/include/linux/irqchip/arm-gic-v3.h
+@@ -313,6 +313,7 @@
+ #define GITS_TYPER_DEVBITS(r)		((((r) >> GITS_TYPER_DEVBITS_SHIFT) & 0x1f) + 1)
+ #define GITS_TYPER_PTA			(1UL << 19)
+ #define GITS_TYPER_HWCOLLCNT_SHIFT	24
++#define GITS_TYPER_HWCOLLCNT(r)		(((r) >> GITS_TYPER_HWCOLLCNT_SHIFT) & 0xff)
+ #define GITS_TYPER_VMOVP		(1ULL << 37)
+ 
+ #define GITS_IIDR_REV_SHIFT		12
 -- 
 2.16.0.rc1.238.g530d649a79-goog
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
