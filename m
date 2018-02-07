@@ -1,8 +1,8 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v7 4/6] iommu/arm-smmu: Add the device_link between masters
-	and smmu
-Date: Wed,  7 Feb 2018 16:01:20 +0530
-Message-ID: <1517999482-17317-5-git-send-email-vivek.gautam@codeaurora.org>
+Subject: [PATCH v7 6/6] drm/msm: iommu: Replace runtime calls with runtime
+	suppliers
+Date: Wed,  7 Feb 2018 16:01:22 +0530
+Message-ID: <1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
 References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,60 +22,75 @@ To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A
 Cc: airlied-cv59FeDIM0c@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+While handling the concerned iommu, there should not be a
+need to power control the drm devices from iommu interface.
+If these drm devices need to be powered around this time,
+the respective drivers should take care of this.
 
-Finally add the device link between the master device and
-smmu, so that the smmu gets runtime enabled/disabled only when the
-master needs it. This is done from add_device callback which gets
-called once when the master is added to the smmu.
+Replace the pm_runtime_get/put_sync(<drm_device>) with
+pm_runtime_get/put_suppliers(<drm_device>) calls, to power-up
+the connected iommu through the device link interface.
+In case the device link is not setup these get/put_suppliers()
+calls will be a no-op, and the iommu driver should take care of
+powering on its devices accordingly.
 
-Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- drivers/iommu/arm-smmu.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/gpu/drm/msm/msm_iommu.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-index c024f69c1682..c7e924d553bd 100644
---- a/drivers/iommu/arm-smmu.c
-+++ b/drivers/iommu/arm-smmu.c
-@@ -215,6 +215,9 @@ struct arm_smmu_device {
+diff --git a/drivers/gpu/drm/msm/msm_iommu.c b/drivers/gpu/drm/msm/msm_iommu.c
+index b23d33622f37..1ab629bbee69 100644
+--- a/drivers/gpu/drm/msm/msm_iommu.c
++++ b/drivers/gpu/drm/msm/msm_iommu.c
+@@ -40,9 +40,9 @@ static int msm_iommu_attach(struct msm_mmu *mmu, const char * const *names,
+ 	struct msm_iommu *iommu = to_msm_iommu(mmu);
+ 	int ret;
  
- 	/* IOMMU core code handle */
- 	struct iommu_device		iommu;
-+
-+	/* runtime PM link to master */
-+	struct device_link *link;
- };
+-	pm_runtime_get_sync(mmu->dev);
++	pm_runtime_get_suppliers(mmu->dev);
+ 	ret = iommu_attach_device(iommu->domain, mmu->dev);
+-	pm_runtime_put_sync(mmu->dev);
++	pm_runtime_put_suppliers(mmu->dev);
  
- enum arm_smmu_context_fmt {
-@@ -1425,6 +1428,17 @@ static int arm_smmu_add_device(struct device *dev)
+ 	return ret;
+ }
+@@ -52,9 +52,9 @@ static void msm_iommu_detach(struct msm_mmu *mmu, const char * const *names,
+ {
+ 	struct msm_iommu *iommu = to_msm_iommu(mmu);
  
- 	pm_runtime_put_sync(smmu->dev);
+-	pm_runtime_get_sync(mmu->dev);
++	pm_runtime_get_suppliers(mmu->dev);
+ 	iommu_detach_device(iommu->domain, mmu->dev);
+-	pm_runtime_put_sync(mmu->dev);
++	pm_runtime_put_suppliers(mmu->dev);
+ }
  
-+	/*
-+	 * Establish the link between smmu and master, so that the
-+	 * smmu gets runtime enabled/disabled as per the master's
-+	 * needs.
-+	 */
-+	smmu->link = device_link_add(dev, smmu->dev, DL_FLAG_PM_RUNTIME);
-+	if (!smmu->link)
-+		dev_warn(smmu->dev,
-+			 "Unable to create device link between %s and %s\n",
-+			 dev_name(smmu->dev), dev_name(dev));
-+
+ static int msm_iommu_map(struct msm_mmu *mmu, uint64_t iova,
+@@ -63,9 +63,9 @@ static int msm_iommu_map(struct msm_mmu *mmu, uint64_t iova,
+ 	struct msm_iommu *iommu = to_msm_iommu(mmu);
+ 	size_t ret;
+ 
+-//	pm_runtime_get_sync(mmu->dev);
++	pm_runtime_get_suppliers(mmu->dev);
+ 	ret = iommu_map_sg(iommu->domain, iova, sgt->sgl, sgt->nents, prot);
+-//	pm_runtime_put_sync(mmu->dev);
++	pm_runtime_put_suppliers(mmu->dev);
+ 	WARN_ON(ret < 0);
+ 
+ 	return (ret == len) ? 0 : -EINVAL;
+@@ -76,9 +76,9 @@ static int msm_iommu_unmap(struct msm_mmu *mmu, uint64_t iova,
+ {
+ 	struct msm_iommu *iommu = to_msm_iommu(mmu);
+ 
+-	pm_runtime_get_sync(mmu->dev);
++	pm_runtime_get_suppliers(mmu->dev);
+ 	iommu_unmap(iommu->domain, iova, len);
+-	pm_runtime_put_sync(mmu->dev);
++	pm_runtime_put_suppliers(mmu->dev);
+ 
  	return 0;
- 
- out_rpm_put:
-@@ -1449,6 +1463,8 @@ static void arm_smmu_remove_device(struct device *dev)
- 	cfg  = fwspec->iommu_priv;
- 	smmu = cfg->smmu;
- 
-+	device_link_del(smmu->link);
-+
- 	ret = pm_runtime_get_sync(smmu->dev);
- 	if (ret)
- 		return;
+ }
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
