@@ -1,83 +1,62 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v4 1/3] sched/fair: add util_est on top of PELT
-Date: Wed, 7 Feb 2018 11:57:07 +0000
-Message-ID: <20180207115707.GJ5739@e110439-lin>
-References: <20180206144131.31233-1-patrick.bellasi@arm.com>
- <20180206144131.31233-2-patrick.bellasi@arm.com>
- <20180206155056.GF2269@hirez.programming.kicks-ass.net>
- <20180206183315.GG5739@e110439-lin>
- <20180206190900.GN2249@hirez.programming.kicks-ass.net>
- <20180206191507.GU2295@hirez.programming.kicks-ass.net>
+From: liuxiang <liuxiang_1999@126.com>
+Subject: =?UTF-8?Q?=E6=9D=A5=E8=87=AAliuxiang=E7=9A=84=E9=82=AE=E4=BB=B6?=
+Date: Wed, 7 Feb 2018 20:10:03 +0800 (CST)
+Message-ID: <2d5c0de4.9028.161702c3d8a.Coremail.liuxiang_1999@126.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:49890 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753497AbeBGL5N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Feb 2018 06:57:13 -0500
-Content-Disposition: inline
-In-Reply-To: <20180206191507.GU2295@hirez.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: pali.rohar@gmail.com, afd@ti.com, sre@kernel.org, liu.xiang6@zte.com.cn, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 
-On 06-Feb 20:15, Peter Zijlstra wrote:
-> On Tue, Feb 06, 2018 at 08:09:00PM +0100, Peter Zijlstra wrote:
-> > On Tue, Feb 06, 2018 at 06:33:15PM +0000, Patrick Bellasi wrote:
-> > 
-> > > Good point, I was actually expecting this question and I should have
-> > > added it to the cover letter, sorry.
-> > > 
-> > > The reasoning was: the task's estimated utilization is defined as the
-> > > max between PELT and the "estimation". Where "estimation" is
-> > > the max between EWMA and the last ENQUEUED utilization.
-> > > 
-> > > Thus I was envisioning these two calls:
-> > > 
-> > >    _task_util_est := max(EWMA, ENQUEUED)
-> > >     task_util_est := max(util_avg, _task_util_est)
-> > > 
-> > > but since now we have clients only for the first API, I've not added
-> > > the second one. Still I would prefer to keep the "_" to make it clear
-> > > that's and util_est's internal signal, not the actual task's estimated
-> > > utilization.
-> > > 
-> > > Does it make sense?
-> > > 
-> > > Do you prefer I just remove the "_" and we will refactor it once we
-> > > should add a customer for the proper task's util_est?
-> > 
-> > Hurm... I was thinking:
-> > 
-> >   task_util_est := max(util_avg, EWMA)
-> > 
-> > But the above mixes ENQUEUED into it.. *confused*.
-> 
-> So mixing in ENQUEUED seems to give it an upward BIAS if the very last
-> activation was 'high'. Thereby improving ramp-up.
-> 
-> That seems to be what we want.. might be nice to have that in a comment
-> ;-)
-
-Ok, I should have read this one before... to avoid you a longer
-(boring) response to your previous email :/
-
-> I'm thinking we want a different name for max(EWMA, ENQUEUED) though,
-> but I really can't come up with a sensible suggestion, which I suppose,
-> is why you stuck an underscore on it and went on with things.
-
-The only sensible way I come up with is to consider that max as a
-util_est "internals"... while the actual task_util_est() (without "_")
-should consider util_avg as well, for PELT tracking when a task
-is becoming bigger the it's previous activations.
-
-Is that not reasonable enough?
-
-Potentially I can add also the task_util_est() version... but right
-now we do not have clients... still gcc should not be upset.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+U29ycnksIEkgY2FuJ3QgdGVzdCB0aGVzZSBwaWVjZXMgb2YgY29kZSBub3cuCgpPbiBTYXR1cmRh
+eSAyNyBKYW51YXJ5IDIwMTggMjI6MjU6MzYgTGl1IFhpYW5nIHdyb3RlOgo+IEFjY29yZGluZyB0
+byB0aGUgZGF0YXNoZWV0LCBicTI3NDExIGlzIHNpbWlsYXIgdG8gYnEyNzQyMS4KPiAKPiBTaWdu
+ZWQtb2ZmLWJ5OiBMaXUgWGlhbmcgPGxpdS54aWFuZzZAenRlLmNvbS5jbj4KPiAtLS0KPiAgZHJp
+dmVycy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMgfCAxNCArKysrKysrKysrKysrKwo+
+ICBpbmNsdWRlL2xpbnV4L3Bvd2VyL2JxMjd4eHhfYmF0dGVyeS5oICB8ICAzICsrLQo+ICAyIGZp
+bGVzIGNoYW5nZWQsIDE2IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPiAKPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMgYi9kcml2ZXJzL3Bv
+d2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+IGluZGV4IDUxZjA5NjEuLjJkZTM3OGEgMTAw
+NjQ0Cj4gLS0tIGEvZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMKPiArKysg
+Yi9kcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+IEBAIC00MTAsNiArNDEw
+LDcgQEAgZW51bSBicTI3eHh4X3JlZ19pbmRleCB7Cj4gICNkZWZpbmUgYnEyNzQyNV9yZWdzIGJx
+Mjc0MjFfcmVncwo+ICAjZGVmaW5lIGJxMjc0NDFfcmVncyBicTI3NDIxX3JlZ3MKPiAgI2RlZmlu
+ZSBicTI3NjIxX3JlZ3MgYnEyNzQyMV9yZWdzCj4gKyNkZWZpbmUgYnEyNzQxMV9yZWdzIGJxMjc0
+MjFfcmVncwo+ICAKPiAgc3RhdGljIGVudW0gcG93ZXJfc3VwcGx5X3Byb3BlcnR5IGJxMjcwMDBf
+cHJvcHNbXSA9IHsKPiAgCVBPV0VSX1NVUFBMWV9QUk9QX1NUQVRVUywKPiBAQCAtNjMzLDYgKzYz
+NCw3IEBAIGVudW0gYnEyN3h4eF9yZWdfaW5kZXggewo+ICAjZGVmaW5lIGJxMjc0MjVfcHJvcHMg
+YnEyNzQyMV9wcm9wcwo+ICAjZGVmaW5lIGJxMjc0NDFfcHJvcHMgYnEyNzQyMV9wcm9wcwo+ICAj
+ZGVmaW5lIGJxMjc2MjFfcHJvcHMgYnEyNzQyMV9wcm9wcwo+ICsjZGVmaW5lIGJxMjc0MTFfcHJv
+cHMgYnEyNzQyMV9wcm9wcwo+ICAKPiAgc3RydWN0IGJxMjd4eHhfZG1fcmVnIHsKPiAgCXU4IHN1
+YmNsYXNzX2lkOwo+IEBAIC03MTYsNiArNzE4LDE3IEBAIGVudW0gYnEyN3h4eF9kbV9yZWdfaWQg
+ewo+ICAjZGVmaW5lIGJxMjc2MjFfZG1fcmVncyAwCj4gICNlbmRpZgo+ICAKPiArI2lmIDAgLyog
+bm90IHlldCB0ZXN0ZWQgKi8KPiArc3RhdGljIHN0cnVjdCBicTI3eHh4X2RtX3JlZyBicTI3NDEx
+X2RtX3JlZ3NbXSA9IHsKPiArCVtCUTI3WFhYX0RNX0RFU0lHTl9DQVBBQ0lUWV0gICA9IHsgODIs
+IDEwLCAyLCAgICAwLCAzMjc2NyB9LAo+ICsJW0JRMjdYWFhfRE1fREVTSUdOX0VORVJHWV0gICAg
+ID0geyA4MiwgMTIsIDIsICAgIDAsIDMyNzY3IH0sCj4gKwlbQlEyN1hYWF9ETV9URVJNSU5BVEVf
+Vk9MVEFHRV0gPSB7IDgyLCAxNiwgMiwgMjgwMCwgIDM3MDAgfSwKPiArfTsKPiArI2Vsc2UKPiAr
+I2RlZmluZSBicTI3NDExX2RtX3JlZ3MgMAo+ICsjZW5kaWYKCkNhbiB5b3UgdGVzdCBpdD8KCkkg
+ZG8gbm90IHRoaW5rIGl0IGlzIGEgZ29vZCBpZGVhIHRvIGFkZCBkZWFkIGNvZGUgaW50byBtYWlu
+bGluZSBrZXJuZWwuCgo+ICsKPiArCj4gICNkZWZpbmUgQlEyN1hYWF9PX1pFUk8JMHgwMDAwMDAw
+MQo+ICAjZGVmaW5lIEJRMjdYWFhfT19PVERDCTB4MDAwMDAwMDIKPiAgI2RlZmluZSBCUTI3WFhY
+X09fVVRPVCAgMHgwMDAwMDAwNAo+IEBAIC03NjIsNiArNzc1LDcgQEAgZW51bSBicTI3eHh4X2Rt
+X3JlZ19pZCB7Cj4gIAlbQlEyNzQyNV0gICA9IEJRMjdYWFhfREFUQShicTI3NDI1LCAgIDB4MDQx
+NDM2NzIsIEJRMjdYWFhfT19VVE9UIHwgQlEyN1hYWF9PX0NGR1VQKSwKPiAgCVtCUTI3NDQxXSAg
+ID0gQlEyN1hYWF9EQVRBKGJxMjc0NDEsICAgMHg4MDAwODAwMCwgQlEyN1hYWF9PX1VUT1QgfCBC
+UTI3WFhYX09fQ0ZHVVAgfCBCUTI3WFhYX09fUkFNKSwKPiAgCVtCUTI3NjIxXSAgID0gQlEyN1hY
+WF9EQVRBKGJxMjc2MjEsICAgMHg4MDAwODAwMCwgQlEyN1hYWF9PX1VUT1QgfCBCUTI3WFhYX09f
+Q0ZHVVAgfCBCUTI3WFhYX09fUkFNKSwKPiArCVtCUTI3NDExXSAgID0gQlEyN1hYWF9EQVRBKGJx
+Mjc0MTEsICAgMHg4MDAwODAwMCwgQlEyN1hYWF9PX1VUT1QgfCBCUTI3WFhYX09fQ0ZHVVAgfCBC
+UTI3WFhYX09fUkFNKSwKPiAgfTsKPiAgCj4gIHN0YXRpYyBERUZJTkVfTVVURVgoYnEyN3h4eF9s
+aXN0X2xvY2spOwo+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3Bvd2VyL2JxMjd4eHhfYmF0
+dGVyeS5oIGIvaW5jbHVkZS9saW51eC9wb3dlci9icTI3eHh4X2JhdHRlcnkuaAo+IGluZGV4IGU2
+MTg3ZjUuLjVmNDhlYjAgMTAwNjQ0Cj4gLS0tIGEvaW5jbHVkZS9saW51eC9wb3dlci9icTI3eHh4
+X2JhdHRlcnkuaAo+ICsrKyBiL2luY2x1ZGUvbGludXgvcG93ZXIvYnEyN3h4eF9iYXR0ZXJ5LmgK
+PiBAQCAtMjMsMTAgKzIzLDExIEBAIGVudW0gYnEyN3h4eF9jaGlwIHsKPiAgCUJRMjc1NDYsCj4g
+IAlCUTI3NzQyLAo+ICAJQlEyNzU0NSwgLyogYnEyNzU0NSAqLwo+IC0JQlEyNzQyMSwgLyogYnEy
+NzQyMSwgYnEyNzQyNSwgYnEyNzQ0MSwgYnEyNzYyMSAqLwo+ICsJQlEyNzQyMSwgLyogYnEyNzQy
+MSwgYnEyNzQyNSwgYnEyNzQ0MSwgYnEyNzYyMSwgYnEyNzQxMSAqLwo+ICAJQlEyNzQyNSwKPiAg
+CUJRMjc0NDEsCj4gIAlCUTI3NjIxLAo+ICsJQlEyNzQxMSwKPiAgfTsKPiAgCj4gIHN0cnVjdCBi
+cTI3eHh4X2RldmljZV9pbmZvOw==
