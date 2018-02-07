@@ -1,56 +1,36 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH v5 3/4] DT/arm,gic-v3-its: add reset-on-suspend property
-Date: Wed, 7 Feb 2018 09:21:59 +0000
-Message-ID: <b4c7bc62-6861-3851-513e-be8d7a440c91@arm.com>
-References: <20180207014117.62611-1-dbasehore@chromium.org>
- <20180207014117.62611-4-dbasehore@chromium.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86: PM: Make APM idle driver initialize polling state
+Date: Wed, 07 Feb 2018 10:20:58 +0100
+Message-ID: <1595367.GFL0qxR379@aspire.rjw.lan>
+References: <20180122162747.19103-1-ville.syrjala@linux.intel.com> <1862424.1bTBpgPzTf@aspire.rjw.lan> <20180206182617.GQ5453@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180207014117.62611-4-dbasehore@chromium.org>
-Content-Language: en-GB
+In-Reply-To: <20180206182617.GQ5453@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Derek Basehore <dbasehore@chromium.org>, linux-kernel@vger.kernel.org
-Cc: Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, x86 <x86@kernel.org>, Jiri Koshina <jikos@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/02/18 01:41, Derek Basehore wrote:
-> This adds documentation for the new reset-on-suspend property. This
-> property enables saving and restoring the ITS for when it loses state
-> in system suspend.
+On Tuesday, February 6, 2018 7:26:17 PM CET Ville Syrjälä wrote:
+> On Tue, Feb 06, 2018 at 07:02:58PM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Update the APM driver overlooked by commit 1b39e3f813b4 (cpuidle: Make
+> > drivers initialize polling state) to initialize the polling state like
+> > the other cpuidle drivers modified by that commit to prevent cpuidle
+> > from crashing.
+> > 
+> > Fixes: 1b39e3f813b4 (cpuidle: Make drivers initialize polling state)
+> > Reported-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> > Tested-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
-> ---
->  Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt | 3 +++
->  1 file changed, 3 insertions(+)
+> And maybe?
 > 
-> diff --git a/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt b/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
-> index 0a57f2f4167d..a470147d4f14 100644
-> --- a/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
-> +++ b/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
-> @@ -78,6 +78,9 @@ These nodes must have the following properties:
->  Optional:
->  - socionext,synquacer-pre-its: (u32, u32) tuple describing the untranslated
->    address and size of the pre-ITS window.
-> +- reset-on-suspend: Boolean property. Indicates that the ITS state is
-> +  reset on suspend. The state is then saved on suspend and restored on
-> +  resume.
+> Cc: <stable@vger.kernel.org> # v4.14+
 
-By whom? It is important to be clear about the respective
-responsibilities, as this forms a binding contract between firmware and OS.
+I add these when applying patches.
 
-Mark: Can you have a look at how to formulate this? I'm not sure we have
-other instances of a non-architected behaviour involving FW
-participation, aside from PSCI.
-
->  
->  The main GIC node must contain the appropriate #address-cells,
->  #size-cells and ranges properties for the reg property of all ITS
-> 
-
-Thanks,
-
-	M.
--- 
-Jazz is not dead. It just smells funny...
+Actually, I've queued up the patch with this tag already.
