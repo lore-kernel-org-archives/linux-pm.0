@@ -1,62 +1,98 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpufreq: intel_pstate: enable HWP after resumed
-Date: Thu, 08 Feb 2018 11:12:05 +0100
-Message-ID: <5530967.sVKap31zK9@aspire.rjw.lan>
-References: <d71a6cf7352de5595ac1419000bd72b6d068cce1.1517192577.git.yu.c.chen@intel.com> <7ddf56d88ed43701cd498fd42d1ae75e4eea1340.1517192577.git.yu.c.chen@intel.com>
+Subject: Re: [PATCH 2/3] x86: fix swsusp_arch_resume prototype
+Date: Thu, 08 Feb 2018 11:12:38 +0100
+Message-ID: <2199353.ODa2DYVeeo@aspire.rjw.lan>
+References: <20180202145434.100626-1-arnd@arndb.de> <20180202145634.200291-1-arnd@arndb.de> <20180202145634.200291-2-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:60946 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:64752 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752056AbeBHKNt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 05:13:49 -0500
-In-Reply-To: <7ddf56d88ed43701cd498fd42d1ae75e4eea1340.1517192577.git.yu.c.chen@intel.com>
+        with ESMTP id S1752212AbeBHKOV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 05:14:21 -0500
+In-Reply-To: <20180202145634.200291-2-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: x86@kernel.org, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@wdc.com>, linux-pm@vger.kernel.org
 
-On Monday, January 29, 2018 3:27:57 AM CET Yu Chen wrote:
-> When maxcpus=1 is appended the BP is responsible
-> for re-enabling the HWP - because currently only
-> the APs invoke intel_pstate_hwp_enable() during
-> their online process - which might put the system
-> into unstable state after resume.
+On Friday, February 2, 2018 3:56:18 PM CET Arnd Bergmann wrote:
+> The declaration for swsusp_arch_resume marks it as 'asmlinkage',
+> but the definition in x86-32 does not, and it fails to include
+> the header with the declaration. This leads to a warning when
+> building with link-time-optimizations:
 > 
-> Fix this by enabling the HWP explicitly on BP during
-> resume.
+> kernel/power/power.h:108:23: error: type of 'swsusp_arch_resume' does not match original declaration [-Werror=lto-type-mismatch]
+>  extern asmlinkage int swsusp_arch_resume(void);
+>                        ^
+> arch/x86/power/hibernate_32.c:148:0: note: 'swsusp_arch_resume' was previously declared here
+>  int swsusp_arch_resume(void)
 > 
-> Reported-by: Doug Smythies <dsmythies@telus.net>
-> Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Signed-off-by: Yu Chen <yu.c.chen@intel.com>
+> This moves the declaration into a globally visible header file
+> and fixes up both x86 definitions to match it.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
->  drivers/cpufreq/intel_pstate.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  arch/x86/power/hibernate_32.c | 2 +-
+>  arch/x86/power/hibernate_64.c | 2 +-
+>  include/linux/suspend.h       | 2 ++
+>  kernel/power/power.h          | 3 ---
+>  4 files changed, 4 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 93a0e88bef76..89f637e8439c 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -779,6 +779,8 @@ static int intel_pstate_hwp_save_state(struct cpufreq_policy *policy)
+> diff --git a/arch/x86/power/hibernate_32.c b/arch/x86/power/hibernate_32.c
+> index c35fdb585c68..afc4ed7b1578 100644
+> --- a/arch/x86/power/hibernate_32.c
+> +++ b/arch/x86/power/hibernate_32.c
+> @@ -145,7 +145,7 @@ static inline void resume_init_first_level_page_table(pgd_t *pg_dir)
+>  #endif
+>  }
+>  
+> -int swsusp_arch_resume(void)
+> +asmlinkage int swsusp_arch_resume(void)
+>  {
+>  	int error;
+>  
+> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+> index f910c514438f..0ef5e5204968 100644
+> --- a/arch/x86/power/hibernate_64.c
+> +++ b/arch/x86/power/hibernate_64.c
+> @@ -174,7 +174,7 @@ static int relocate_restore_code(void)
 >  	return 0;
 >  }
 >  
-> +static void intel_pstate_hwp_enable(struct cpudata *cpudata);
-> +
->  static int intel_pstate_resume(struct cpufreq_policy *policy)
+> -int swsusp_arch_resume(void)
+> +asmlinkage int swsusp_arch_resume(void)
 >  {
->  	if (!hwp_active)
-> @@ -786,6 +788,8 @@ static int intel_pstate_resume(struct cpufreq_policy *policy)
+>  	int error;
 >  
->  	mutex_lock(&intel_pstate_limits_lock);
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index cc22a24516d6..440b62f7502e 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -384,6 +384,8 @@ extern int swsusp_page_is_forbidden(struct page *);
+>  extern void swsusp_set_page_free(struct page *);
+>  extern void swsusp_unset_page_free(struct page *);
+>  extern unsigned long get_safe_page(gfp_t gfp_mask);
+> +extern asmlinkage int swsusp_arch_suspend(void);
+> +extern asmlinkage int swsusp_arch_resume(void);
 >  
-> +	if (!policy->cpu)
-> +		intel_pstate_hwp_enable(all_cpu_data[policy->cpu]);
->  	all_cpu_data[policy->cpu]->epp_policy = 0;
->  	intel_pstate_hwp_set(policy->cpu);
+>  extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+>  extern int hibernate(void);
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index f29cd178df90..9e58bdc8a562 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+> @@ -104,9 +104,6 @@ extern int in_suspend;
+>  extern dev_t swsusp_resume_device;
+>  extern sector_t swsusp_resume_block;
 >  
+> -extern asmlinkage int swsusp_arch_suspend(void);
+> -extern asmlinkage int swsusp_arch_resume(void);
+> -
+>  extern int create_basic_memory_bitmaps(void);
+>  extern void free_basic_memory_bitmaps(void);
+>  extern int hibernate_preallocate_memory(void);
 > 
 
-I've applied this one (with minor modifications) as a temporary measure, but
-it is based on the CPU0=BP assumption which may not be the case.
+Applied, thanks!
