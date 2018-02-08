@@ -1,204 +1,416 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 3/8] power: reset: Add a driver for the Microsemi
- Ocelot reset
-Date: Thu, 8 Feb 2018 23:32:52 +0100
-Message-ID: <20180208223252.oldyitedhjnpixfw@earth.universe>
-References: <20180116101240.5393-1-alexandre.belloni@free-electrons.com>
- <20180116101240.5393-4-alexandre.belloni@free-electrons.com>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH 4/4] drivers: qcom: rpmh: add RPMH helper functions
+Date: Thu, 8 Feb 2018 23:15:59 +0000
+Message-ID: <20180208231559.GC7084@codeaurora.org>
+References: <20180119000157.7380-1-ilina@codeaurora.org>
+ <20180119000157.7380-5-ilina@codeaurora.org>
+ <20180205195007.GD9465@builder>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="elfl32zc3amnzwwo"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:38220 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752100AbeBHWc4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 8 Feb 2018 17:32:56 -0500
+Received: from smtp.codeaurora.org ([198.145.29.96]:40270 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752372AbeBHXQC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 18:16:02 -0500
 Content-Disposition: inline
-In-Reply-To: <20180116101240.5393-4-alexandre.belloni@free-electrons.com>
+In-Reply-To: <20180205195007.GD9465@builder>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: James Hogan <jhogan@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: andy.gross@linaro.org, david.brown@linaro.org, sboyd@codeaurora.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
+On Mon, Feb 05 2018 at 19:50 +0000, Bjorn Andersson wrote:
+>On Thu 18 Jan 16:01 PST 2018, Lina Iyer wrote:
+>> diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+>> index b7951ce87663..0dba46387f1c 100644
+>> --- a/drivers/soc/qcom/Makefile
+>> +++ b/drivers/soc/qcom/Makefile
+>> @@ -11,4 +11,4 @@ obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
+>>  obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
+>>  obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
+>>  obj-$(CONFIG_QCOM_COMMAND_DB) += cmd-db.o
+>> -obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o
+>> +obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o rpmh.o
+>
+>I think it would be better if you built these two objects into the same
+>module;
+>
+>obj-$(CONFIG_QCOM_RPMH) += qcom_rpmh.o
+>qcom_rpmh-y += rpmh-rsc.o
+>qcom_rpmh-y += rpmh.o
+>
+Curious, how this would be better?
 
---elfl32zc3amnzwwo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>> diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
+>[..]
+>> diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
+>[..]
+>> +#define RPMH_TIMEOUT			msecs_to_jiffies(10000)
+>
+>10 * HZ
+>
+>> +
+>> +#define DEFINE_RPMH_MSG_ONSTACK(rc, s, q, c, name)	\
+>> +	struct rpmh_msg name = {			\
+>> +		.msg = {				\
+>> +			.state = s,			\
+>> +			.payload = name.cmd,		\
+>> +			.num_payload = 0,		\
+>> +			.is_complete = true,		\
+>> +			.invalidate = false,		\
+>> +		},					\
+>> +		.cmd = { { 0 } },			\
+>> +		.completion = q,			\
+>> +		.wait_count = c,			\
+>> +		.rc = rc,				\
+>> +	}
+>> +
+>> +/**
+>> + * rpmh_msg: the message to be sent to rpmh-rsc
+>> + *
+>> + * @msg: the request
+>> + * @cmd: the payload that will be part of the @msg
+>> + * @completion: triggered when request is done
+>> + * @wait_count: count of waiters for this completion
+>> + * @err: err return from the controller
+>> + */
+>> +struct rpmh_msg {
+>
+>struct rpmh_request ?
+>
+Hmm.. ok.
 
-Hi,
+>> +	struct tcs_mbox_msg msg;
+>> +	struct tcs_cmd cmd[MAX_RPMH_PAYLOAD];
+>> +	struct completion *completion;
+>> +	atomic_t *wait_count;
+>
+>When will @wait_count > 1? As far as I can see the only purpose would be
+>to be able to control whether you should complete @completion 0 or N
+>times; but 0 times is covered already by not specifying a @completion.
+>
+There is a patch that I haven't posted in this series. It sends a batch
+of requests instead of just 1. The wait count is equal to the number of
+requests in that batch. Sorry it is a bit ahead of its real use. Adding
+it later, increases unnecessary changes in the patches.
 
-On Tue, Jan 16, 2018 at 11:12:35AM +0100, Alexandre Belloni wrote:
-> The Microsemi Ocelot SoC has a register allowing to reset the MIPS core.
-> Unfortunately, the syscon-reboot driver can't be used directly (but almos=
-t)
-> as the reset control may be disabled using another register.
->=20
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> ---
+>> +	struct rpmh_client *rc;
+>> +	int err;
+>> +};
+>> +
+>> +/**
+>> + * rpmh_ctrlr: our representation of the controller
+>> + *
+>> + * @drv: the controller instance
+>> + */
+>> +struct rpmh_ctrlr {
+>> +	struct rsc_drv *drv;
+>
+>Is this going to grow in the future? Otherwise just drop it and
+>reference the rsc_drv directly. (Even if it's growing it might be
+>cleaner to introduce it at that point)
+>
+Will grow :)
 
-Thanks, queued. My for-next branch is waiting for 4.16-rc1 tag, though.
+>> +};
+>> +
+>> +/**
+>> + * rpmh_client: the client object
+>> + *
+>> + * @dev: the platform device that is the owner
+>> + * @ctrlr: the controller associated with this client.
+>> + */
+>> +struct rpmh_client {
+>> +	struct device *dev;
+>> +	struct rpmh_ctrlr *ctrlr;
+>> +};
+>> +
+>> +static struct rpmh_ctrlr rpmh_rsc[RPMH_MAX_MBOXES];
+>> +static DEFINE_MUTEX(rpmh_ctrlr_mutex);
+>
+>The client needs a reference to the rsc_drv, using the rpmh_ctrlr
+>abstraction and these global variables only seems to add unnecessary
+>complexity.
+>
+There would be more functionality that needs these as structures and
+a list of RSCs and therefore the global mutex and array.
 
--- Sebastian
+Please bear with me on this.
 
->  drivers/power/reset/Kconfig        |  7 +++
->  drivers/power/reset/Makefile       |  1 +
->  drivers/power/reset/ocelot-reset.c | 88 ++++++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 96 insertions(+)
->  create mode 100644 drivers/power/reset/ocelot-reset.c
->=20
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index ca0de1a78e85..2372f8e1040d 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -113,6 +113,13 @@ config POWER_RESET_MSM
->  	help
->  	  Power off and restart support for Qualcomm boards.
-> =20
-> +config POWER_RESET_OCELOT_RESET
-> +	bool "Microsemi Ocelot reset driver"
-> +	depends on MSCC_OCELOT || COMPILE_TEST
-> +	select MFD_SYSCON
-> +	help
-> +	  This driver supports restart for Microsemi Ocelot SoC.
-> +
->  config POWER_RESET_PIIX4_POWEROFF
->  	tristate "Intel PIIX4 power-off driver"
->  	depends on PCI
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index aeb65edb17b7..df9d92291c67 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restar=
-t.o
->  obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
->  obj-$(CONFIG_POWER_RESET_IMX) +=3D imx-snvs-poweroff.o
->  obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
-> +obj-$(CONFIG_POWER_RESET_OCELOT_RESET) +=3D ocelot-reset.o
->  obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) +=3D piix4-poweroff.o
->  obj-$(CONFIG_POWER_RESET_LTC2952) +=3D ltc2952-poweroff.o
->  obj-$(CONFIG_POWER_RESET_QNAP) +=3D qnap-poweroff.o
-> diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/oce=
-lot-reset.c
-> new file mode 100644
-> index 000000000000..5a13a5cc8188
-> --- /dev/null
-> +++ b/drivers/power/reset/ocelot-reset.c
-> @@ -0,0 +1,88 @@
-> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-> +/*
-> + * Microsemi MIPS SoC reset driver
-> + *
-> + * License: Dual MIT/GPL
-> + * Copyright (c) 2017 Microsemi Corporation
-> + */
-> +#include <linux/delay.h>
-> +#include <linux/io.h>
-> +#include <linux/notifier.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/reboot.h>
-> +#include <linux/regmap.h>
-> +
-> +struct ocelot_reset_context {
-> +	void __iomem *base;
-> +	struct regmap *cpu_ctrl;
-> +	struct notifier_block restart_handler;
-> +};
-> +
-> +#define ICPU_CFG_CPU_SYSTEM_CTRL_RESET 0x20
-> +#define CORE_RST_PROTECT BIT(2)
-> +
-> +#define SOFT_CHIP_RST BIT(0)
-> +
-> +static int ocelot_restart_handle(struct notifier_block *this,
-> +				 unsigned long mode, void *cmd)
-> +{
-> +	struct ocelot_reset_context *ctx =3D container_of(this, struct
-> +							ocelot_reset_context,
-> +							restart_handler);
-> +
-> +	/* Make sure the core is not protected from reset */
-> +	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_RESET,
-> +			   CORE_RST_PROTECT, 0);
-> +
-> +	writel(SOFT_CHIP_RST, ctx->base);
-> +
-> +	pr_emerg("Unable to restart system\n");
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static int ocelot_reset_probe(struct platform_device *pdev)
-> +{
-> +	struct ocelot_reset_context *ctx;
-> +	struct resource *res;
-> +
-> +	struct device *dev =3D &pdev->dev;
-> +	int err;
-> +
-> +	ctx =3D devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-> +	if (!ctx)
-> +		return -ENOMEM;
-> +
-> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	ctx->base =3D devm_ioremap_resource(dev, res);
-> +	if (IS_ERR(ctx->base))
-> +		return PTR_ERR(ctx->base);
-> +
-> +	ctx->cpu_ctrl =3D syscon_regmap_lookup_by_compatible("mscc,ocelot-cpu-s=
-yscon");
-> +	if (IS_ERR(ctx->cpu_ctrl))
-> +		return PTR_ERR(ctx->cpu_ctrl);
-> +
-> +	ctx->restart_handler.notifier_call =3D ocelot_restart_handle;
-> +	ctx->restart_handler.priority =3D 192;
-> +	err =3D register_restart_handler(&ctx->restart_handler);
-> +	if (err)
-> +		dev_err(dev, "can't register restart notifier (err=3D%d)\n", err);
-> +
-> +	return err;
-> +}
-> +
-> +static const struct of_device_id ocelot_reset_of_match[] =3D {
-> +	{ .compatible =3D "mscc,ocelot-chip-reset" },
-> +	{}
-> +};
-> +
-> +static struct platform_driver ocelot_reset_driver =3D {
-> +	.probe =3D ocelot_reset_probe,
-> +	.driver =3D {
-> +		.name =3D "ocelot-chip-reset",
-> +		.of_match_table =3D ocelot_reset_of_match,
-> +	},
-> +};
-> +builtin_platform_driver(ocelot_reset_driver);
-> --=20
-> 2.15.1
->=20
+>> +
+>> +void rpmh_tx_done(struct tcs_mbox_msg *msg, int r)
+>> +{
+>> +	struct rpmh_msg *rpm_msg = container_of(msg, struct rpmh_msg, msg);
+>> +	atomic_t *wc = rpm_msg->wait_count;
+>> +	struct completion *compl = rpm_msg->completion;
+>> +
+>> +	rpm_msg->err = r;
+>> +
+>> +	if (r)
+>> +		dev_err(rpm_msg->rc->dev,
+>> +			"RPMH TX fail in msg addr 0x%x, err=%d\n",
+>> +			rpm_msg->msg.payload[0].addr, r);
+>> +
+>> +	/* Signal the blocking thread we are done */
+>> +	if (wc && atomic_dec_and_test(wc))
+>> +		if (compl)
+>> +			complete(compl);
+>
+>I think that you should drop this function and just complete
+>@rpm_msg->completion in the rcs driver.
+>
+I am not sure how much  of it I can upstream. Downstream I add more
+functionality to this function to make it easier to debug on production.
+If its not a bother I would like to keep it as is. Who knows, may be I
+can get the debug code upstream.
 
---elfl32zc3amnzwwo
-Content-Type: application/pgp-signature; name="signature.asc"
+>> +}
+>> +EXPORT_SYMBOL(rpmh_tx_done);
+>> +
+>> +/**
+>> + * wait_for_tx_done: Wait until the response is received.
+>> + *
+>> + * @rc: The RPMH client
+>> + * @compl: The completion object
+>> + * @addr: An addr that we sent in that request
+>> + * @data: The data for the address in that request
+>> + *
+>> + */
+>> +static inline int wait_for_tx_done(struct rpmh_client *rc,
+>> +		struct completion *compl, u32 addr, u32 data)
+>> +{
+>> +	int ret;
+>> +
+>> +	ret = wait_for_completion_timeout(compl, RPMH_TIMEOUT);
+>> +	if (ret)
+>> +		dev_dbg(rc->dev,
+>> +			"RPMH response received addr=0x%x data=0x%x\n",
+>> +			addr, data);
+>> +	else
+>> +		dev_err(rc->dev,
+>> +			"RPMH response timeout addr=0x%x data=0x%x\n",
+>> +			addr, data);
+>
+>The request can contain a number of commands and these error messages
+>ends up printing the first one, on behalf of the client. I suspect that
+>this isn't useful enough in most cases, causing the client to print
+>another time.
+>
+>I therefor suggest that you omit these prints.
+>
+On the contrary, just the first address in the request is quite
+sufficient to know what request failed. The rest of the requests in
+dumped in the FTRACE while sending the request. That is enough to know
+what was sent and correlate with what failed.
 
------BEGIN PGP SIGNATURE-----
+>> +
+>> +	return  (ret > 0) ? 0 : -ETIMEDOUT;
+>> +}
+>> +
+>> +/**
+>> + * __rpmh_write: send the RPMH request
+>> + *
+>> + * @rc: The RPMH client
+>> + * @state: Active/Sleep request type
+>> + * @rpm_msg: The data that needs to be sent (payload).
+>> + */
+>> +int __rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
+>> +			struct rpmh_msg *rpm_msg)
+>> +{
+>> +	int ret = -EFAULT;
+>> +
+>> +	rpm_msg->msg.state = state;
+>> +
+>> +	if (state == RPMH_ACTIVE_ONLY_STATE) {
+>> +		WARN_ON(irqs_disabled());
+>> +		ret = rpmh_rsc_send_data(rc->ctrlr->drv, &rpm_msg->msg);
+>> +		if (!ret)
+>> +			dev_dbg(rc->dev,
+>> +				"RPMH request sent addr=0x%x, data=0x%x\n",
+>> +				rpm_msg->msg.payload[0].addr,
+>> +				rpm_msg->msg.payload[0].data);
+>> +		else
+>> +			dev_warn(rc->dev,
+>> +				"Error in RPMH request addr=0x%x, data=0x%x\n",
+>> +				rpm_msg->msg.payload[0].addr,
+>> +				rpm_msg->msg.payload[0].data);
+>
+>Same thing here, for the user to be able to make sense of this error the
+>client will have to print something with more context. So I think you
+>should omit these too.
+>
+>
+>tracing failing addr/data pairs might make sense though!
+>
+See explanation above.
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp80BQACgkQ2O7X88g7
-+pqGkxAAlKqfq9/Gz3C1hr/DQJnZjboBeYaX6Q0QBsNQwOEwDXiOtFFBD988ktR0
-KYi2nRkuAqMvABG4fwLbYXSnU/9+oZn57VLqBgT4mxDskEiIEzqIt4nI7rQZfqcv
-wIEjLTmMLN2RNGfkBQ+RFOldGxf5rOW11wt4cgNIPtbyXSQ9cJHRp2kkVR/yj2hL
-Exm8ROh88YwFLKfvknFR7g/kJ3UGIzc3M+a6hMO17tfCb9+5U2C7p7I0tctjeVqA
-7g9ZyKsmJxC+Xw7mmSZ9FzK9/xPS3snljrjDn+mQRqxIbC8SPKRmsnWTEZZ1qa5n
-cKRAEVAvxJbmgi421cHWoc+3Q5oYyVutnINC+FnHQ6/3M9uQFN2Te/+asy7XA68+
-mH5Y6n3y6RHCA3mmCEYbqs6YDXPGYQdm7rUmo1cndZoYAbum/1x4mUG+hoKfktqL
-XduRsq8McwHqBUq8DVGPKOHWM+JkmWrLRp/8b3WpBuWjWxdxIGIIiZzu/KNC/Uwz
-OZBapUIkSyuvTgyhVIpvzKqT06ZkRPFbJXciwZ61geb9vOhtI8qrUB8Hs7Tu0ddj
-9RMUN+Px5BSmN3Hkzc8COxvonR+/K9I31IdTQXnyE+BqGw4HGyRHlOxkFDbzJTuu
-Ipzk0XfNyJJ9Ek1Y6gxPqGaQd9X9DpDqhsGhrj0Iyt3Y3U+TPaI=
-=UJtJ
------END PGP SIGNATURE-----
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +/**
+>> + * rpmh_write: Write a set of RPMH commands and block until response
+>> + *
+>> + * @rc: The RPMh handle got from rpmh_get_dev_channel
+>> + * @state: Active/sleep set
+>> + * @cmd: The payload data
+>> + * @n: The number of elements in payload
+>> + *
+>> + * May sleep. Do not call from atomic contexts.
+>> + */
+>> +int rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
+>> +			struct tcs_cmd *cmd, int n)
+>> +{
+>> +	DECLARE_COMPLETION_ONSTACK(compl);
+>> +	atomic_t wait_count = ATOMIC_INIT(1);
+>> +	DEFINE_RPMH_MSG_ONSTACK(rc, state, &compl, &wait_count, rpm_msg);
+>> +	int ret;
+>> +
+>> +	if (IS_ERR_OR_NULL(rc) || !cmd || n <= 0 || n > MAX_RPMH_PAYLOAD)
+>> +		return -EINVAL;
+>> +
+>> +	might_sleep();
+>> +
+>> +	memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
+>> +	rpm_msg.msg.num_payload = n;
+>> +
+>> +	ret = __rpmh_write(rc, state, &rpm_msg);
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	return wait_for_tx_done(rc, &compl, cmd[0].addr, cmd[0].data);
+>
+>As you're returning here the completion object on the stack will be
+>trash, so you must inform rpmh_rsc that it may no longer complete it.
+>
+>I suggest that you provide two functions in the rsc driver;
+>rpmh_rsc_send_sync() and rpmh_rsc_send_async(), and move the
+>wait-for-completion into the sync one. Also make the sync one return the
+>msg->err (and drop the tx_done cross-call).
+>
+>(Or call them rpmh_rsc_send_wait() and rpmh_rsc_send_nowait())
+>
+This is the sync variant. The async variant follows this patch.
 
---elfl32zc3amnzwwo--
+The wait_for_tx_done() is blocking and the compl object will not be
+trashed until the completion is completed or it fails.
+
+>> +}
+>> +EXPORT_SYMBOL(rpmh_write);
+>> +
+>> +static struct rpmh_ctrlr *get_rpmh_ctrlr(struct platform_device *pdev)
+>> +{
+>> +	int i;
+>> +	struct rsc_drv *drv = dev_get_drvdata(pdev->dev.parent);
+>> +	struct rpmh_ctrlr *ctrlr = ERR_PTR(-EFAULT);
+>> +
+>> +	if (!drv)
+>> +		return ctrlr;
+>> +
+>> +	mutex_lock(&rpmh_ctrlr_mutex);
+>> +	for (i = 0; i < RPMH_MAX_MBOXES; i++)
+>> +		if (rpmh_rsc[i].drv == drv) {
+>> +			ctrlr = &rpmh_rsc[i];
+>> +			goto unlock;
+>> +		}
+>> +
+>> +	if (i == RPMH_MAX_MBOXES)
+>> +		for (i = 0; i < RPMH_MAX_MBOXES; i++)
+>> +			if (rpmh_rsc[i].drv == NULL) {
+>> +				ctrlr = &rpmh_rsc[i];
+>> +				ctrlr->drv = drv;
+>> +				break;
+>> +			}
+>
+>I fail to see the reason for tracking rsc_drv references in a global
+>array and try to find an existing one here. Just return the rsc_drv
+>acquired from dev_get_drvdata() to the caller.
+>
+There are multiple RSCs and clients would refer to one of them.
+
+Future patches add information to the RSC as dictated by the client
+(display driver is using the RSC) and therefore take action
+accordingly.
+
+>> +unlock:
+>> +	mutex_unlock(&rpmh_ctrlr_mutex);
+>> +	return ctrlr;
+>> +}
+>> +
+>> +/**
+>> + * rpmh_get_client: Get the RPMh handle
+>> + *
+>> + * @pdev: the platform device which needs to communicate with RPM
+>> + * accelerators
+>> + * May sleep.
+>> + */
+>> +struct rpmh_client *rpmh_get_client(struct platform_device *pdev)
+>
+>To make this analog to previous rpm drivers I think you should take the
+>device * of the parent here. I.e. client does:
+>
+>	rpmh = rpmh_get_client(&pdev->dev.parent).
+>
+>
+>I recognize that this removes the possibility of providing error
+>messages indicating which client caused the fault, but by above
+>suggestions these functions would be moved into the rsc driver; or the
+>error would be propagated to the client which could print these
+>themselves.
+>
+I don't see a particular reason to be analogous with RPM. But, let me
+think about it.
+
+>> +{
+>> +	struct rpmh_client *rc;
+>> +
+>> +	rc = kzalloc(sizeof(*rc), GFP_KERNEL);
+>> +	if (!rc)
+>> +		return ERR_PTR(-ENOMEM);
+>> +
+>> +	rc->dev = &pdev->dev;
+>> +	rc->ctrlr = get_rpmh_ctrlr(pdev);
+>> +	if (IS_ERR(rc->ctrlr)) {
+>> +		kfree(rc);
+>> +		return ERR_PTR(-EFAULT);
+>> +	}
+>> +
+>> +	return rc;
+>> +}
+>> +EXPORT_SYMBOL(rpmh_get_client);
+>> +
+>> +/**
+>> + * rpmh_release: Release the RPMH client
+>> + *
+>> + * @rc: The RPMh handle to be freed.
+>> + */
+>> +void rpmh_release(struct rpmh_client *rc)
+>> +{
+>> +	kfree(rc);
+>
+>If you reduce above function to just return a rsc_drv reference you
+>don't even need a release function, which simplifies clients further.
+>
+Hmm.. not sure I understand. I need to release the allocated memory.
+
+>> +}
+>> +EXPORT_SYMBOL(rpmh_release);
+>> diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
+>[..]
+>> +struct rpmh_client;
+>> +
+>> +#ifdef CONFIG_QCOM_RPMH
+>
+>I think it would be fine to just make clients depend on QCOM_RPMH. If
+>you would prefer to get the compile testing in those drivers then make
+>this:
+>
+>#if IS_ENABLED(CONFIG_QCOM_RPMH)
+>
+>In case someone in the future decides to make RPMH tristate.
+>
+OK.
+
+Thanks,
+Lina
