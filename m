@@ -1,49 +1,72 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v6 2/3] DT/arm,gic-v3-its: add reset-on-suspend property
-Date: Thu, 8 Feb 2018 13:46:50 +0000
-Message-ID: <20180208134650.maf72ikwexdsxz2v@lakrids.cambridge.arm.com>
-References: <20180208023648.89124-1-dbasehore@chromium.org>
- <20180208023648.89124-3-dbasehore@chromium.org>
+From: Philippe Ombredanne <pombredanne@nexb.com>
+Subject: Re: [PATCH 2/8] thermal/drivers/cpu_cooling: Add Software Package
+ Data Exchange (SPDX)
+Date: Thu, 8 Feb 2018 15:05:11 +0100
+Message-ID: <CAOFm3uEbg213MdHJrDthzH58udSAH4hErUo7osntZaMoAW5EDw@mail.gmail.com>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org> <1516721671-16360-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180208023648.89124-3-dbasehore@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Derek Basehore <dbasehore@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org, marc.zyngier@arm.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:35139 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751014AbeBHOFx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 09:05:53 -0500
+Received: by mail-wm0-f68.google.com with SMTP id r78so10207146wme.0
+        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2018 06:05:53 -0800 (PST)
+In-Reply-To: <1516721671-16360-3-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>
 
-On Wed, Feb 07, 2018 at 06:36:47PM -0800, Derek Basehore wrote:
-> This adds documentation for the new reset-on-suspend property. This
-> property enables saving and restoring the ITS for when it loses state
-> in system suspend.
-> 
-> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+Daniel,
+
+On Tue, Jan 23, 2018 at 4:34 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> For license auditing purpose, let's add the SPDX tag.
+>
+> Cc: Philippe Ombredanne <pombredanne@nexb.com>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > ---
->  Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt b/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
-> index 0a57f2f4167d..a470147d4f14 100644
-> --- a/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
-> +++ b/Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt
-> @@ -78,6 +78,9 @@ These nodes must have the following properties:
->  Optional:
->  - socionext,synquacer-pre-its: (u32, u32) tuple describing the untranslated
->    address and size of the pre-ITS window.
-> +- reset-on-suspend: Boolean property. Indicates that the ITS state is
-> +  reset on suspend. The state is then saved on suspend and restored on
-> +  resume.
+>  drivers/thermal/cpu_cooling.c | 16 +---------------
+>  1 file changed, 1 insertion(+), 15 deletions(-)
+>
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 988fc55..e62be75 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -1,3 +1,4 @@
+> +// SPDX-License-Identifier: GPL-2.0
+>  /*
+>   *  linux/drivers/thermal/cpu_cooling.c
+>   *
+> @@ -8,21 +9,6 @@
+>   *  Authors:   Amit Daniel <amit.kachhap@linaro.org>
+>   *             Viresh Kumar <viresh.kumar@linaro.org>
+>   *
+> - * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> - *  This program is free software; you can redistribute it and/or modify
+> - *  it under the terms of the GNU General Public License as published by
+> - *  the Free Software Foundation; version 2 of the License.
+> - *
+> - *  This program is distributed in the hope that it will be useful, but
+> - *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> - *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> - *  General Public License for more details.
+> - *
+> - *  You should have received a copy of the GNU General Public License along
+> - *  with this program; if not, write to the Free Software Foundation, Inc.,
+> - *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> - *
+> - * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>   */
+>  #include <linux/module.h>
+>  #include <linux/thermal.h>
 
-The latter sentence reads like a description of SW policy, rather than a
-description of what the HW does. I don't think that should be here
-(though it might be worth noting the FW will not restore state).
 
-Which state is lost? Is "ITS state" a well-defined term?
+Sorry for the late reply!
+Thank you.
+Acked-by: Philippe Ombredanne <pombredanne@nexB.com>
 
-By suspend do you mean a PSCI_SYSTEM_SUSPEND, or potentially other
-cases?
-
-Thanks,
-Mark.
+--
+Philippe
