@@ -1,104 +1,204 @@
-From: Claudio Scordino <claudio@evidence.eu.com>
-Subject: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Thu,  8 Feb 2018 18:01:42 +0100
-Message-ID: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH v6 1/3] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Thu, 8 Feb 2018 09:55:12 -0800
+Message-ID: <20180208175511.GC106856@ban.mtv.corp.google.com>
+References: <20180208023648.89124-1-dbasehore@chromium.org>
+ <20180208023648.89124-2-dbasehore@chromium.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f194.google.com ([209.85.128.194]:44284 "EHLO
-        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751094AbeBHRB5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 12:01:57 -0500
-Received: by mail-wr0-f194.google.com with SMTP id v31so5432144wrc.11
-        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2018 09:01:56 -0800 (PST)
+Received: from mail-pl0-f68.google.com ([209.85.160.68]:32868 "EHLO
+        mail-pl0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752166AbeBHRzQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 12:55:16 -0500
+Received: by mail-pl0-f68.google.com with SMTP id t4so206423plo.0
+        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2018 09:55:15 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20180208023648.89124-2-dbasehore@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: Claudio Scordino <claudio@evidence.eu.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Derek Basehore <dbasehore@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, marc.zyngier@arm.com
 
-When the SCHED_DEADLINE scheduling class increases the CPU utilization,
-we should not wait for the rate limit, otherwise we may miss some deadline.
+Hi Derek,
 
-Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
-misses for tasks with low RT periods.
+On Wed, Feb 07, 2018 at 06:36:46PM -0800, Derek Basehore wrote:
+> Some platforms power off GIC logic in suspend, so we need to
+> save/restore state. The distributor and redistributor registers need
+> to be handled in platform code due to access permissions on those
+> registers, but the ITS registers can be restored in the kernel.
+> 
+> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> ---
+>  drivers/irqchip/irq-gic-v3-its.c | 103 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 103 insertions(+)
+> 
+> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+> index 06f025fd5726..35ad48f51dfa 100644
+> --- a/drivers/irqchip/irq-gic-v3-its.c
+> +++ b/drivers/irqchip/irq-gic-v3-its.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/of_platform.h>
+>  #include <linux/percpu.h>
+>  #include <linux/slab.h>
+> +#include <linux/syscore_ops.h>
+>  
+>  #include <linux/irqchip.h>
+>  #include <linux/irqchip/arm-gic-v3.h>
+> @@ -46,6 +47,7 @@
+>  #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING		(1ULL << 0)
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_22375	(1ULL << 1)
+>  #define ITS_FLAGS_WORKAROUND_CAVIUM_23144	(1ULL << 2)
+> +#define ITS_FLAGS_SAVE_SUSPEND_STATE		(1ULL << 3)
+>  
+>  #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING	(1 << 0)
+>  
+> @@ -101,6 +103,8 @@ struct its_node {
+>  	struct its_collection	*collections;
+>  	struct fwnode_handle	*fwnode_handle;
+>  	u64			(*get_msi_base)(struct its_device *its_dev);
+> +	u64			cbaser_save;
+> +	u32			ctlr_save;
+>  	struct list_head	its_device_list;
+>  	u64			flags;
+>  	unsigned long		list_nr;
+> @@ -3042,6 +3046,100 @@ static void its_enable_quirks(struct its_node *its)
+>  	gic_enable_quirks(iidr, its_quirks, its);
+>  }
+>  
+> +static int its_save_disable(void)
+> +{
+> +	struct its_node *its;
+> +	int err = 0;
+> +
+> +	spin_lock(&its_lock);
+> +	list_for_each_entry(its, &its_nodes, entry) {
+> +		void __iomem *base;
+> +
+> +		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+> +			continue;
+> +
+> +		base = its->base;
+> +		its->ctlr_save = readl_relaxed(base + GITS_CTLR);
+> +		err = its_force_quiescent(base);
+> +		if (err) {
+> +			pr_err("ITS failed to quiesce\n");
 
-The patch applies on top of the one recently proposed by Peter to drop the
-SCHED_CPUFREQ_* flags.
+Isn't this a case where it was suggested to print the PA? Also, printing
+the error code never hurts. Like:
 
-Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-CC: Rafael J . Wysocki <rafael.j.wysocki@intel.com>
-CC: Patrick Bellasi <patrick.bellasi@arm.com>
-CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
-CC: Morten Rasmussen <morten.rasmussen@arm.com>
-CC: Juri Lelli <juri.lelli@redhat.com>
-CC: Viresh Kumar <viresh.kumar@linaro.org>
-CC: Vincent Guittot <vincent.guittot@linaro.org>
-CC: Todd Kjos <tkjos@android.com>
-CC: Joel Fernandes <joelaf@google.com>
-CC: linux-pm@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
----
- kernel/sched/cpufreq_schedutil.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+			pr_err("ITS@%pa: failed to quiesce: %d\n",
+			       &its->phys_base, err);
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index b0bd77d..d8dcba2 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -74,7 +74,10 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
- 
- /************************ Governor internals ***********************/
- 
--static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-+static bool sugov_should_update_freq(struct sugov_policy *sg_policy,
-+				     u64 time,
-+				     struct sugov_cpu *sg_cpu_old,
-+				     struct sugov_cpu *sg_cpu_new)
- {
- 	s64 delta_ns;
- 
-@@ -111,6 +114,10 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- 		return true;
- 	}
- 
-+	/* Ignore rate limit when DL increased utilization. */
-+	if (sg_cpu_new->util_dl > sg_cpu_old->util_dl)
-+		return true;
-+
- 	delta_ns = time - sg_policy->last_freq_update_time;
- 	return delta_ns >= sg_policy->freq_update_delay_ns;
- }
-@@ -271,6 +278,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 				unsigned int flags)
- {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
-+	struct sugov_cpu sg_cpu_old = *sg_cpu;
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	unsigned long util, max;
- 	unsigned int next_f;
-@@ -279,7 +287,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	sugov_set_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
--	if (!sugov_should_update_freq(sg_policy, time))
-+	if (!sugov_should_update_freq(sg_policy, time, &sg_cpu_old, sg_cpu))
- 		return;
- 
- 	busy = sugov_cpu_is_busy(sg_cpu);
-@@ -350,6 +358,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 				unsigned int flags)
- {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
-+	struct sugov_cpu sg_cpu_old = *sg_cpu;
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	unsigned int next_f;
- 
-@@ -359,7 +368,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 	sugov_set_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
--	if (sugov_should_update_freq(sg_policy, time)) {
-+	if (sugov_should_update_freq(sg_policy, time, &sg_cpu_old, sg_cpu)) {
- 		next_f = sugov_next_freq_shared(sg_cpu, time);
- 		sugov_update_commit(sg_policy, time, next_f);
- 	}
--- 
-2.7.4
+> +			writel_relaxed(its->ctlr_save, base + GITS_CTLR);
+> +			goto err;
+> +		}
+> +
+> +		its->cbaser_save = gits_read_cbaser(base + GITS_CBASER);
+> +	}
+> +
+> +err:
+> +	if (err) {
+> +		list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
+> +			void __iomem *base;
+> +
+> +			if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+> +				continue;
+> +
+> +			base = its->base;
+> +			writel_relaxed(its->ctlr_save, base + GITS_CTLR);
+> +		}
+> +	}
+> +	spin_unlock(&its_lock);
+> +
+> +	return err;
+> +}
+> +
+> +static void its_restore_enable(void)
+> +{
+> +	struct its_node *its;
+> +
+> +	spin_lock(&its_lock);
+> +	list_for_each_entry(its, &its_nodes, entry) {
+> +		void __iomem *base;
+> +		int i;
+> +
+> +		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
+> +			continue;
+> +
+> +		base = its->base;
+> +
+> +		/*
+> +		 * Make sure that the ITS is disabled. If it fails to quiesce,
+> +		 * don't restore it since writing to CBASER or BASER<n>
+> +		 * registers is undefined according to the GIC v3 ITS
+> +		 * Specification.
+> +		 */
+> +		if (its_force_quiescent(base)) {
+> +			pr_err("ITS(%p): failed to quiesce on resume\n", base);
+
+I think Marc was requesting the PA, not the VA. The VA isn't really very
+useful. Also, might as well log with similar style to the existing logs
+(ITS@xxx), and log the error code:
+
+			pr_err("ITS@%pa: failed to quiesce on resume: %d\n",
+			       &its->phys_base, ret);
+
+Brian
+
+> +			continue;
+> +		}
+> +
+> +		gits_write_cbaser(its->cbaser_save, base + GITS_CBASER);
+> +
+> +		/*
+> +		 * Writing CBASER resets CREADR to 0, so make CWRITER and
+> +		 * cmd_write line up with it.
+> +		 */
+> +		its->cmd_write = its->cmd_base;
+> +		gits_write_cwriter(0, base + GITS_CWRITER);
+> +
+> +		/* Restore GITS_BASER from the value cache. */
+> +		for (i = 0; i < GITS_BASER_NR_REGS; i++) {
+> +			struct its_baser *baser = &its->tables[i];
+> +
+> +			if (!(baser->val & GITS_BASER_VALID))
+> +				continue;
+> +
+> +			its_write_baser(its, baser, baser->val);
+> +		}
+> +		writel_relaxed(its->ctlr_save, base + GITS_CTLR);
+> +	}
+> +	spin_unlock(&its_lock);
+> +}
+> +
+> +static struct syscore_ops its_syscore_ops = {
+> +	.suspend = its_save_disable,
+> +	.resume = its_restore_enable,
+> +};
+> +
+>  static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
+>  {
+>  	struct irq_domain *inner_domain;
+> @@ -3261,6 +3359,9 @@ static int __init its_probe_one(struct resource *res,
+>  		ctlr |= GITS_CTLR_ImDe;
+>  	writel_relaxed(ctlr, its->base + GITS_CTLR);
+>  
+> +	if (fwnode_property_present(handle, "reset-on-suspend"))
+> +		its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+> +
+>  	err = its_init_domain(handle, its);
+>  	if (err)
+>  		goto out_free_tables;
+> @@ -3515,5 +3616,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
+>  		}
+>  	}
+>  
+> +	register_syscore_ops(&its_syscore_ops);
+> +
+>  	return 0;
+>  }
+> -- 
+> 2.16.0.rc1.238.g530d649a79-goog
+> 
