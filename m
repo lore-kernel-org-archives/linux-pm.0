@@ -1,50 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / Domains: Fixup domain-idle-states OF parsing
-Date: Thu, 08 Feb 2018 11:09:49 +0100
-Message-ID: <2218102.7hfeEuz1Tu@aspire.rjw.lan>
-References: <1516740188-3580-1-git-send-email-ulf.hansson@linaro.org> <20180123210128.GA16708@codeaurora.org>
+Subject: Re: [PATCH 2/2] cpufreq: intel_pstate: enable HWP after resumed
+Date: Thu, 08 Feb 2018 11:12:05 +0100
+Message-ID: <5530967.sVKap31zK9@aspire.rjw.lan>
+References: <d71a6cf7352de5595ac1419000bd72b6d068cce1.1517192577.git.yu.c.chen@intel.com> <7ddf56d88ed43701cd498fd42d1ae75e4eea1340.1517192577.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:63099 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:60946 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751079AbeBHKLd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 05:11:33 -0500
-In-Reply-To: <20180123210128.GA16708@codeaurora.org>
+        with ESMTP id S1752056AbeBHKNt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 05:13:49 -0500
+In-Reply-To: <7ddf56d88ed43701cd498fd42d1ae75e4eea1340.1517192577.git.yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, khilman@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, January 23, 2018 10:01:28 PM CET Lina Iyer wrote:
-> On Tue, Jan 23 2018 at 20:43 +0000, Ulf Hansson wrote:
-> >The commit b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are
-> >not compatible"), made it possible to ignore non-compatible
-> >domain-idle-states OF nodes. However, in case that happens while doing the
-> >OF parsing, the number of elements in the allocated array would exceed the
-> >numbers actually needed, thus wasting memory.
-> >
-> >Fix this by pre-iterating the genpd OF node and counting the number of
-> >compatible domain-idle-states nodes, before doing the allocation. While
-> >doing this, it makes sense to rework the code a bit to avoid open coding,
-> >of parts responsible for the OF node iteration.
-> >
-> >Let's also take the opportunity to clarify the function header for
-> >of_genpd_parse_idle_states(), about what is being returned in case of
-> >errors.
-> >
-> >Fixes: b539cc82d493 ("PM / Domains: Ignore domain-idle-states that are not compatible")
-> >Cc: Lina Iyer <ilina@codeaurora.org>
-> >Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >---
-> >
-> >Changes in v2:
-> >	- Updated changelog to clarify the problem is really about avoiding to
-> >	waste memory, according to comment from Lina.
-> >
-> >---
-> Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+On Monday, January 29, 2018 3:27:57 AM CET Yu Chen wrote:
+> When maxcpus=1 is appended the BP is responsible
+> for re-enabling the HWP - because currently only
+> the APs invoke intel_pstate_hwp_enable() during
+> their online process - which might put the system
+> into unstable state after resume.
+> 
+> Fix this by enabling the HWP explicitly on BP during
+> resume.
+> 
+> Reported-by: Doug Smythies <dsmythies@telus.net>
+> Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Signed-off-by: Yu Chen <yu.c.chen@intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 93a0e88bef76..89f637e8439c 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -779,6 +779,8 @@ static int intel_pstate_hwp_save_state(struct cpufreq_policy *policy)
+>  	return 0;
+>  }
+>  
+> +static void intel_pstate_hwp_enable(struct cpudata *cpudata);
+> +
+>  static int intel_pstate_resume(struct cpufreq_policy *policy)
+>  {
+>  	if (!hwp_active)
+> @@ -786,6 +788,8 @@ static int intel_pstate_resume(struct cpufreq_policy *policy)
+>  
+>  	mutex_lock(&intel_pstate_limits_lock);
+>  
+> +	if (!policy->cpu)
+> +		intel_pstate_hwp_enable(all_cpu_data[policy->cpu]);
+>  	all_cpu_data[policy->cpu]->epp_policy = 0;
+>  	intel_pstate_hwp_set(policy->cpu);
+>  
 > 
 
-Patch applied, thanks!
+I've applied this one (with minor modifications) as a temporary measure, but
+it is based on the CPU0=BP assumption which may not be the case.
