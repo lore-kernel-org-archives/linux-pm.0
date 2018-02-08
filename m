@@ -1,41 +1,50 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/8] thermal/drivers/cpu_cooling: Add Software Package
- Data Exchange (SPDX)
-Date: Thu, 8 Feb 2018 15:07:14 +0100
-Message-ID: <a6838bd4-be09-e716-0547-86601bdfa33a@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-3-git-send-email-daniel.lezcano@linaro.org>
- <CAOFm3uEbg213MdHJrDthzH58udSAH4hErUo7osntZaMoAW5EDw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] opp: cpu: Replace GFP_ATOMIC with GFP_KERNEL in
+ dev_pm_opp_init_cpufreq_table
+Date: Thu, 8 Feb 2018 20:15:13 +0530
+Message-ID: <20180208144513.GW28462@vireshk-i7>
+References: <1516956529-32264-1-git-send-email-baijiaju1990@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOFm3uEbg213MdHJrDthzH58udSAH4hErUo7osntZaMoAW5EDw@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1516956529-32264-1-git-send-email-baijiaju1990@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Philippe Ombredanne <pombredanne@nexb.com>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>
+To: Jia-Ju Bai <baijiaju1990@gmail.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/02/2018 15:05, Philippe Ombredanne wrote:
-> Daniel,
+On 26-01-18, 16:48, Jia-Ju Bai wrote:
+> After checking all possible call chains to 
+> dev_pm_opp_init_cpufreq_table() here,
+> my tool finds that this function is never called in atomic context, 
+> namely never in an interrupt handler or holding a spinlock.
+> And dev_pm_opp_init_cpufreq_table() calls dev_pm_opp_get_opp_count(), 
+> which calls mutex_lock that can sleep.
+> It indicates that atmtcp_v_send() can call functions which may sleep.
+> Thus GFP_ATOMIC is not necessary, and it can be replaced with GFP_KERNEL.
+> 
+> This is found by a static analysis tool named DCNS written by myself.
+> 
+> Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+> ---
+>  drivers/opp/cpu.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/opp/cpu.c b/drivers/opp/cpu.c
+> index 2d87bc1..0c09107 100644
+> --- a/drivers/opp/cpu.c
+> +++ b/drivers/opp/cpu.c
+> @@ -55,7 +55,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>  	if (max_opps <= 0)
+>  		return max_opps ? max_opps : -ENODATA;
+>  
+> -	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_ATOMIC);
+> +	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_KERNEL);
+>  	if (!freq_table)
+>  		return -ENOMEM;
 
-[ ... ]
-
-> Sorry for the late reply!
-> Thank you.
-> Acked-by: Philippe Ombredanne <pombredanne@nexB.com>
-
-No worries.
-
-Thanks for the ack.
-
-  -- Daniel
-
+Applied thanks.
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+viresh
