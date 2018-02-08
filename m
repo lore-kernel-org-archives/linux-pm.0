@@ -1,96 +1,107 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: linux/drivers/cpuidle: cpuidle_enter_state() issue
-Date: Thu, 8 Feb 2018 14:21:14 +1000
-Message-ID: <20180208142114.4b82bb72@roar.ozlabs.ibm.com>
-References: <CAE1O6mjJRypMK9XapAeY3GY4OLXZODzDH_kBgphGD-p6SL448w@mail.gmail.com>
-        <616a847f-500b-f0ca-2aa4-de159ba48725@intel.com>
+From: Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v5 4/4] irqchip/gic-v3-its: add ability to resend MAPC on
+ resume
+Date: Thu, 8 Feb 2018 09:08:26 +0000
+Message-ID: <56a5719f-a1ab-71c4-904a-a35e5e11a629@arm.com>
+References: <20180207014117.62611-1-dbasehore@chromium.org>
+ <20180207014117.62611-5-dbasehore@chromium.org>
+ <8276f426-e4a0-c400-9f87-31be3d6b1733@arm.com>
+ <20180207232201.GB106856@ban.mtv.corp.google.com>
+ <CAGAzgsprocoZRtccPrbArUqyBTYiQm=vr6qjrK-5rAMSeusZ-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:42069 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750815AbeBHEVc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Feb 2018 23:21:32 -0500
-In-Reply-To: <616a847f-500b-f0ca-2aa4-de159ba48725@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAGAzgsprocoZRtccPrbArUqyBTYiQm=vr6qjrK-5rAMSeusZ-Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-GB
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "dbasehore ." <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Soby Mathew <Soby.Mathew-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wysocki, Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Li Wang <wangli.ahau@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Colin Cross <ccross@android.com>, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
 
-On Wed, 7 Feb 2018 14:51:56 +0100
-"Rafael J. Wysocki" <rafael.j.wysocki@intel.com> wrote:
-
-> On 2/7/2018 7:59 AM, Li Wang wrote:
-> > Hi Kernel-developers,
-> >
-> > The flowing call trace was catch from kernel-v4.15, could anyone help
-> > to analysis the cpuidle problem?
-> > or, if you need any more detail info pls let me know.
-> >
-> > Test Env:
-> > IBM KVM Guest on ibm-p8-kvm-03
-> > POWER8E (raw), altivec supported
-> > 9216 MB memory, 107 GB disk space
-> >
-> > --------8<----------------
-> > [15002.722413] swapper/15: page allocation failure: order:0,
-> > mode:0x1080020(GFP_ATOMIC), nodemask=(null)
-> > [15002.853793] swapper/15 cpuset=/ mems_allowed=0
-> > [15002.853932] CPU: 15 PID: 0 Comm: swapper/15 Not tainted 4.15.0 #1
-> > [15002.854019] Call Trace:
-> > [15002.854129] [c00000023ff77650] [c000000000940b50]
-> > .dump_stack+0xac/0xfc (unreliable)
-> > [15002.854285] [c00000023ff776e0] [c00000000026c678] .warn_alloc+0xe8/0x180
-> > [15002.854376] [c00000023ff777a0] [c00000000026d50c]
-> > .__alloc_pages_nodemask+0xd6c/0xf90
-> > [15002.854490] [c00000023ff77980] [c0000000002e9cc0]
-> > .alloc_pages_current+0x90/0x120
-> > [15002.854624] [c00000023ff77a10] [c0000000007990cc]
-> > .skb_page_frag_refill+0x8c/0x120
-> > [15002.854746] [c00000023ff77aa0] [d000000003a561a8]
-> > .try_fill_recv+0x368/0x620 [virtio_net]
-> > [15003.422855] [c00000023ff77ba0] [d000000003a568ec]
-> > .virtnet_poll+0x25c/0x380 [virtio_net]
-> > [15003.423864] [c00000023ff77c70] [c0000000007c18d0] .net_rx_action+0x330/0x4a0
-> > [15003.424024] [c00000023ff77d90] [c000000000960d50] .__do_softirq+0x150/0x3a8
-> > [15003.424197] [c00000023ff77e90] [c0000000000ff608] .irq_exit+0x198/0x1b0
-> > [15003.424342] [c00000023ff77f10] [c000000000015504] .__do_irq+0x94/0x1f0
-> > [15003.424485] [c00000023ff77f90] [c000000000026d5c] .call_do_irq+0x14/0x24
-> > [15003.424627] [c00000023bc63820] [c0000000000156ec] .do_IRQ+0x8c/0x100
-> > [15003.424776] [c00000023bc638c0] [c000000000008b34]
-> > hardware_interrupt_common+0x114/0x120
-> > [15003.424963] --- interrupt: 501 at .snooze_loop+0xa4/0x1c0
-> >      LR = .snooze_loop+0x60/0x1c0
-> > [15003.425164] [c00000023bc63bb0] [c00000023bc63c50]
-> > 0xc00000023bc63c50 (unreliable)
-> > [15003.425346] [c00000023bc63c30] [c00000000075104c]
-> > .cpuidle_enter_state+0xac/0x390
-> > [15003.425534] [c00000023bc63ce0] [c000000000157adc] .call_cpuidle+0x3c/0x70
-> > [15003.425669] [c00000023bc63d50] [c000000000157e90] .do_idle+0x2a0/0x300
-> > [15003.425815] [c00000023bc63e20] [c0000000001580ac]
-> > .cpu_startup_entry+0x2c/0x40
-> > [15003.425995] [c00000023bc63ea0] [c000000000045790]
-> > .start_secondary+0x4d0/0x520
-> > [15003.426170] [c00000023bc63f90] [c00000000000aa70]
-> > start_secondary_prolog+0x10/0x14
-> > -------------8<-------------------
-> >
-> > Any response will be appreciated!
-> >  
+On 08/02/18 00:00, dbasehore . wrote:
+> On Wed, Feb 7, 2018 at 3:22 PM, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>> Hi Marc,
+>>
+>> I'm really not an expert on this, so take my observations with a large
+>> grain of salt:
+>>
+>> On Wed, Feb 07, 2018 at 08:46:42AM +0000, Marc Zyngier wrote:
+>>> On 07/02/18 01:41, Derek Basehore wrote:
+>>>> This adds functionality to resend the MAPC command to an ITS node on
+>>>> resume. If the ITS is powered down during suspend and the collections
+>>>> are not backed by memory, the ITS will lose that state. This just sets
+>>>> up the known state for the collections after the ITS is restored.
+>>>>
+>>>> This is enabled via the reset-on-suspend flag in the DTS for an ITS
+>>>> that has a non-zero number of collections stored in it.
+>>>>
+>>>> Signed-off-by: Derek Basehore <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>>>> ---
+>>>>  drivers/irqchip/irq-gic-v3-its.c   | 80 ++++++++++++++++++++------------------
+>>>>  include/linux/irqchip/arm-gic-v3.h |  1 +
+>>>>  2 files changed, 43 insertions(+), 38 deletions(-)
+>>>>
+>>>> diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+>>>> index 5e63635e2a7b..dd6cd6e68ed0 100644
+>>>> --- a/drivers/irqchip/irq-gic-v3-its.c
+>>>> +++ b/drivers/irqchip/irq-gic-v3-its.c
+>>>> @@ -1942,52 +1942,53 @@ static void its_cpu_init_lpis(void)
+>>>>     dsb(sy);
+>>>>  }
+>>>>
+>>>> -static void its_cpu_init_collection(void)
+>>>> +static void its_cpu_init_collection(struct its_node *its)
+>>
+>> ...
+>>
+>>>> @@ -3127,6 +3128,9 @@ static void its_restore_enable(void)
+>>>>                     its_write_baser(its, baser, baser->val);
+>>>>             }
+>>>>             writel_relaxed(its->ctlr_save, base + GITS_CTLR);
+>>>> +
+>>>> +           if (GITS_TYPER_HWCOLLCNT(gic_read_typer(base + GITS_TYPER)) > 0)
+>>>> +                   its_cpu_init_collection(its);
+>>>
+>>> This isn't correct. Think of a system where half the collections are in
+>>> HW, and the other half memory based (nothing in the spec forbids this).
+>>> You must evaluate the CID of each collection and replay the MAPC *only*
+>>> if it falls into the range [0..HCC-1]. The memory-based collections are
+>>> already mapped, and remapping an already mapped collection requires
+>>> extra care (see MAPC and the UNPREDICTABLE behaviour when V=1), so don't
+>>> go there.
+>>
+>> IIUC, this is only run on CPU0 (it's in syscore resume), so implicitly,
+>> CID is 0. Thus, the current condition is already doing what you ask:
+>>
+>>         HCC > 0 == CID
+>>
+>> which is equivalent to:
+>>
+>>         HCC - 1 >= CID
+>>
+>> Or should we really double check what CPU we're running on?
 > 
-> I'm not sure if this is a cpuidle problem in the first place.
-> 
-> It looks like the kernel was unable to allocate a page for something and 
-> it was trying to do an atomic allocation, so that's not guaranteed to be 
-> successful every time even though the failure here may be unexpected.
+> There seems to be the edge case where you hotplug CPU 0 before
+> suspending. In that case, I believe you're on the lowest number CPU
+> left?
 
-Yes you're right. An order-0 failure should be quite rare, but not impossible.
-This backtrace does not actually indicate a bug, but it's something to help
-kernel developers tune memory allocation.
+I don't think the core code makes any guarantee in that respect. This is
+probably what happens in practice, but I wouldn't bet anything on this
+being set in stone.
 
-Is there any negative impact to the running system? Do the messages occur
-often?
+> It seems that all of the CPUs that are disabled have the ITS
+> reinitialized from scratch via enable_nonboot_cpus(). This code runs
+> on only the CPU that firmware resumes with. If that CPU isn't CPU 0
+> for whatever reason, we need to make sure that it's processor ID is
+> less than HCC.
 
-Thanks,
-Nick
+Exactly, thanks for putting it better than I initially did.
+
+	M.
+-- 
+Jazz is not dead. It just smells funny...
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
