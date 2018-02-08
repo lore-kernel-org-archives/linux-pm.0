@@ -1,56 +1,104 @@
 From: Claudio Scordino <claudio@evidence.eu.com>
-Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Thu, 8 Feb 2018 17:14:58 +0100
-Message-ID: <574fa064-3551-27e8-5abf-bd625ba928de@evidence.eu.com>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
- <f574036c-7572-9b97-79a0-794ff48e4d49@evidence.eu.com>
- <20180206154319.GF5739@e110439-lin>
- <68afaf84-893e-6770-b9f1-619cd2b6dc9c@evidence.eu.com>
- <20180206183623.GH5739@e110439-lin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+Date: Thu,  8 Feb 2018 18:01:42 +0100
+Message-ID: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f179.google.com ([209.85.128.179]:44988 "EHLO
-        mail-wr0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750961AbeBHQPB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 11:15:01 -0500
-Received: by mail-wr0-f179.google.com with SMTP id v31so5263954wrc.11
-        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2018 08:15:01 -0800 (PST)
-In-Reply-To: <20180206183623.GH5739@e110439-lin>
-Content-Language: it-IT
+Received: from mail-wr0-f194.google.com ([209.85.128.194]:44284 "EHLO
+        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751094AbeBHRB5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 12:01:57 -0500
+Received: by mail-wr0-f194.google.com with SMTP id v31so5432144wrc.11
+        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2018 09:01:56 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Cc: Claudio Scordino <claudio@evidence.eu.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Patrick,
+When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+we should not wait for the rate limit, otherwise we may miss some deadline.
 
-Il 06/02/2018 19:36, Patrick Bellasi ha scritto:
-> On 06-Feb 19:14, Claudio Scordino wrote:
->> Hi Patrick,
-> 
->>> At first glance, your proposal below makes to make sense.
->>>
->>> However, I'm wondering if we cannot get it working using
->>> rq->dl's provided information instead of flags?
->>
->> Yes, we can use the value of rq->dl to check if there has been an increase of the deadline utilization.
->> Even if schedutil might have been triggered by a different scheduling class, the effect should be almost the same.
->>
->> Below a potential patch. I've kept all frequency update decisions in a single point (i.e. sugov_should_update_freq).
->> Not yet tested (waiting for further comments).
-> 
-> I have a todo list entry to backport/test Peter's series on Android...
-> will add this patch too. Thanks.
+Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
+misses for tasks with low RT periods.
 
-Please discard my latest patch, as the tests on Odroid have shown performance regressions
-(likely due to sugov_next_freq_shared being called more often)
+The patch applies on top of the one recently proposed by Peter to drop the
+SCHED_CPUFREQ_* flags.
 
-Never mind. I have already tested another (even simpler) patch.
-Sending soon as a new thread on LKML.
+Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+CC: Rafael J . Wysocki <rafael.j.wysocki@intel.com>
+CC: Patrick Bellasi <patrick.bellasi@arm.com>
+CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
+CC: Morten Rasmussen <morten.rasmussen@arm.com>
+CC: Juri Lelli <juri.lelli@redhat.com>
+CC: Viresh Kumar <viresh.kumar@linaro.org>
+CC: Vincent Guittot <vincent.guittot@linaro.org>
+CC: Todd Kjos <tkjos@android.com>
+CC: Joel Fernandes <joelaf@google.com>
+CC: linux-pm@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+---
+ kernel/sched/cpufreq_schedutil.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-Many thanks and best regards,
-
-                 Claudio
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index b0bd77d..d8dcba2 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -74,7 +74,10 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+ 
+ /************************ Governor internals ***********************/
+ 
+-static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
++static bool sugov_should_update_freq(struct sugov_policy *sg_policy,
++				     u64 time,
++				     struct sugov_cpu *sg_cpu_old,
++				     struct sugov_cpu *sg_cpu_new)
+ {
+ 	s64 delta_ns;
+ 
+@@ -111,6 +114,10 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+ 		return true;
+ 	}
+ 
++	/* Ignore rate limit when DL increased utilization. */
++	if (sg_cpu_new->util_dl > sg_cpu_old->util_dl)
++		return true;
++
+ 	delta_ns = time - sg_policy->last_freq_update_time;
+ 	return delta_ns >= sg_policy->freq_update_delay_ns;
+ }
+@@ -271,6 +278,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 				unsigned int flags)
+ {
+ 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
++	struct sugov_cpu sg_cpu_old = *sg_cpu;
+ 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+ 	unsigned long util, max;
+ 	unsigned int next_f;
+@@ -279,7 +287,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 	sugov_set_iowait_boost(sg_cpu, time, flags);
+ 	sg_cpu->last_update = time;
+ 
+-	if (!sugov_should_update_freq(sg_policy, time))
++	if (!sugov_should_update_freq(sg_policy, time, &sg_cpu_old, sg_cpu))
+ 		return;
+ 
+ 	busy = sugov_cpu_is_busy(sg_cpu);
+@@ -350,6 +358,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+ 				unsigned int flags)
+ {
+ 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
++	struct sugov_cpu sg_cpu_old = *sg_cpu;
+ 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+ 	unsigned int next_f;
+ 
+@@ -359,7 +368,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+ 	sugov_set_iowait_boost(sg_cpu, time, flags);
+ 	sg_cpu->last_update = time;
+ 
+-	if (sugov_should_update_freq(sg_policy, time)) {
++	if (sugov_should_update_freq(sg_policy, time, &sg_cpu_old, sg_cpu)) {
+ 		next_f = sugov_next_freq_shared(sg_cpu, time);
+ 		sugov_update_commit(sg_policy, time, next_f);
+ 	}
+-- 
+2.7.4
