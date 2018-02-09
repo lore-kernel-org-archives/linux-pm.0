@@ -1,255 +1,165 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v6 15/15] dt-bindings: cpufreq: Document
- operating-points-v2-krait-cpu
-Date: Fri, 9 Feb 2018 11:01:47 +0530
-Message-ID: <b81953c3-3bbd-2a06-90d3-a3cdd2a86418@codeaurora.org>
-References: <1517890108-8140-1-git-send-email-sricharan@codeaurora.org>
- <1517890108-8140-16-git-send-email-sricharan@codeaurora.org>
- <20180209025449.qvbirdvflijxo62j@rob-hp-laptop>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH] power: reset: Add Spreadtrum SC27xx PMIC power off support
+Date: Fri, 9 Feb 2018 14:25:40 +0800
+Message-ID: <CAMz4kuKb517P43DRsnqwkAUsa6rRXk7PdNuYoiPVq5cUQnF8tA@mail.gmail.com>
+References: <5822b56a4e65e27183f8bf712d5889b11f90111e.1515118527.git.baolin.wang@linaro.org>
+ <20180208215012.nrfhnr56r5jeb7vt@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:46044 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751060AbeBIFbz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 00:31:55 -0500
-In-Reply-To: <20180209025449.qvbirdvflijxo62j@rob-hp-laptop>
-Content-Language: en-US
+Received: from mail-ot0-f195.google.com ([74.125.82.195]:35218 "EHLO
+        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750830AbeBIGZl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 01:25:41 -0500
+Received: by mail-ot0-f195.google.com with SMTP id a2so6714593otf.2
+        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2018 22:25:41 -0800 (PST)
+In-Reply-To: <20180208215012.nrfhnr56r5jeb7vt@earth.universe>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Mark Brown <broonie@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Rob,
+Hi Sebastian,
 
-On 2/9/2018 8:24 AM, Rob Herring wrote:
-> On Tue, Feb 06, 2018 at 09:38:28AM +0530, Sricharan R wrote:
->> In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
->> that has KRAIT processors the voltage/current value of each OPP
->> varies based on the silicon variant in use.
->> operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
->> and the operating-points-v2 table for each opp. The qcom-cpufreq driver
->> reads the efuse value from the SoC to provide the required information
->> that is used to determine the voltage and current value for each OPP of
->> operating-points-v2 table when it is parsed by the OPP framework.
+On 9 February 2018 at 05:50, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi Baolin,
+>
+> On Mon, Jan 15, 2018 at 03:58:57PM +0800, Baolin Wang wrote:
+>> On Spreadtrum platform, we need power off system through external SC27xx
+>> series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 chips.
+>> Thus this patch adds SC27xx series PMICs power-off support.
 >>
->> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 >> ---
->>  .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
->>  1 file changed, 363 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+>>  drivers/power/reset/Kconfig           |    9 +++++
+>>  drivers/power/reset/Makefile          |    1 +
+>>  drivers/power/reset/sc27xx-poweroff.c |   65 +++++++++++++++++++++++++++++++++
+>>  3 files changed, 75 insertions(+)
+>>  create mode 100644 drivers/power/reset/sc27xx-poweroff.c
 >>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+>> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+>> index ca0de1a..611ae56 100644
+>> --- a/drivers/power/reset/Kconfig
+>> +++ b/drivers/power/reset/Kconfig
+>> @@ -227,5 +227,14 @@ config SYSCON_REBOOT_MODE
+>>         register, then the bootloader can read it to take different
+>>         action according to the mode.
+>>
+>> +config POWER_RESET_SC27XX
+>> +     tristate "Spreadtrum SC27xx PMIC power-off driver"
+>> +     depends on MFD_SC27XX_PMIC || COMPILE_TEST
+>> +     help
+>> +       This driver supports powering off a system through
+>> +       Spreadtrum SC27xx series PMICs. The SC27xx series
+>> +       PMICs includes the SC2720, SC2721, SC2723, SC2730
+>> +       and SC2731 chips.
+>> +
+>>  endif
+>>
+>> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+>> index aeb65ed..225d645 100644
+>> --- a/drivers/power/reset/Makefile
+>> +++ b/drivers/power/reset/Makefile
+>> @@ -27,3 +27,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
+>>  obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
+>>  obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
+>>  obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
+>> +obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
+>> diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
 >> new file mode 100644
->> index 0000000..e7351f7
+>> index 0000000..8e4b6a0
 >> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
->> @@ -0,0 +1,363 @@
->> +QCOM KRAIT CPUFreq and OPP bindings
->> +===================================
+>> +++ b/drivers/power/reset/sc27xx-poweroff.c
+>> @@ -0,0 +1,65 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (C) 2017 Spreadtrum Communications Inc.
+>> + * Copyright (c) 2017 Linaro Ltd.
+>> + */
 >> +
->> +In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
->> +that has KRAIT processors the voltage value of each OPP varies
->> +based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
->> +defines the voltage and current value based on the speed/pvs/version
->> +combination blown in the efuse. The qcom-cpufreq driver reads the efuse
->> +value from the SoC to provide the OPP framework with required information.
->> +This is used to determine the voltage and current value for each OPP of
->> +operating-points-v2 table when it is parsed by the OPP framework.
+>> +#include <linux/cpu.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/pm.h>
+>> +#include <linux/regmap.h>
+>> +#include <linux/syscore_ops.h>
 >> +
->> +Required properties:
->> +--------------------
->> +In 'cpus' nodes:
->> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+>> +#define SC27XX_PWR_PD_HW     0xc2c
+>> +#define SC27XX_PWR_OFF_EN    BIT(0)
 >> +
->> +In 'operating-points-v2' table:
->> +- compatible: Should be
->> +	- 'operating-points-v2-krait-cpu' for ipq8064, apq8064, msm8960,
->> +					      msm8974.
->> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
->> +		efuse registers that has information about the
->> +		speedbin/pvs/version that is used to select the right
->> +		voltage/current value pair. Note that the length field of the
->> +		nvmem-cell is used to differentiate between format 'A' or 'B'
->> +		efuse settings. len of '4' bytes is for format 'A' and '8'
->> +		bytes for format 'B'. Please refer the for nvmem-cells
->> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
->> +		and also examples below for both the cases.
->> +Example 1:
->> +---------
+>> +static struct regmap *regmap;
 >> +
->> +/* For arch/arm/boot/dts/apq8064.dtsi --> format 'A' */
->> +cpus {
->> +	#address-cells = <1>;
->> +	#size-cells = <0>;
+>> +/*
+>> + * On Spreadtrum platform, we need power off system through external SC27xx
+>> + * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
+>> + * which is not fast io access.
+>> + *
+>> + * So before stopping other cores, we need release other cores' resource by
+>> + * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
+>> + * system through PMIC.
+>> + */
+>> +void sc27xx_poweroff_shutdown(void)
+>> +{
+>> +     int cpu = smp_processor_id();
 >> +
->> +	CPU0: cpu@0 {
->> +		compatible = "qcom,krait";
->> +		enable-method = "qcom,kpss-acc-v1";
->> +		device_type = "cpu";
->> +		reg = <0>;
->> +		next-level-cache = <&L2>;
->> +		qcom,acc = <&acc0>;
->> +		qcom,saw = <&saw0>;
->> +		cpu-idle-states = <&CPU_SPC>;
->> +		operating-points-v2 = <&cpu_opp_table>;
->> +	};
+>> +     freeze_secondary_cpus(cpu);
+>> +}
+>> +
+>> +static struct syscore_ops poweroff_syscore_ops = {
+>> +     .shutdown = sc27xx_poweroff_shutdown,
 >> +};
 >> +
->> +qfprom: qfprom@700000 {
->> +	  compatible      = "qcom,qfprom";
->> +	  reg	      = <0x00700000 0x1000>;
->> +	  #address-cells  = <1>;
->> +	  #size-cells     = <1>;
->> +	  ranges;
->> +	  pvs_efuse: pvs {
->> +		reg = <0xc0 0x4>;
->> +	};
+>> +static void sc27xx_poweroff_do_poweroff(void)
+>> +{
+>> +     regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
+>> +}
+>> +
+>> +static int sc27xx_poweroff_probe(struct platform_device *pdev)
+>> +{
+>
+> if (regmap)
+>     return -EINVAL;
+
+OK.
+
+>
+>> +     regmap = dev_get_regmap(pdev->dev.parent, NULL);
+>> +     if (!regmap)
+>> +             return -ENODEV;
+>> +
+>> +     pm_power_off = sc27xx_poweroff_do_poweroff;
+>> +     register_syscore_ops(&poweroff_syscore_ops);
+>> +     return 0;
+>> +}
+>
+> static void sc27xx_poweroff_remove(struct platform_device *pdev) {
+>     if (pm_power_off == sc27xx_poweroff_do_poweroff)
+>         pm_power_off = NULL;
+>     regmap = NULL;
+> }
+
+OK. I will add it in next version.
+
+>
+>> +static struct platform_driver sc27xx_poweroff_driver = {
+>> +     .probe = sc27xx_poweroff_probe,
+>
+> .remove = sc27xx_poweroff_remove,
+>
+>> +     .driver = {
+>> +             .name = "sc27xx-poweroff",
+>> +     },
 >> +};
+>> +module_platform_driver(sc27xx_poweroff_driver);
 >> +
->> +cpu_opp_table: opp-table {
->> +	compatible = "operating-points-v2-krait-cpu";
->> +	nvmem-cells = <&pvs_efuse>;
->> +
->> +		/*
->> +		 * Missing opp-shared property means CPUs switch DVFS states
->> +		 * independently.
->> +		 */
->> +
->> +	       opp-918000000 {
->> +			opp-hz = /bits/ 64 <918000000>;
->> +			opp-microvolt-speed0-pvs0-v0 = <1100000>;
-> 
-> Where is this property defined? I'm not that happy with it, but don't 
-> have a better suggestion. Maybe make pvsN be an array of values with 0 
-> for any skipped indexes? The '-v0' seems pointless. 
-> 
+>> +MODULE_DESCRIPTION("Spreadtrum SC27xx PMIC Poweroff Driver");
+>> +MODULE_LICENSE("GPL v2");
+>
+> MODULE_ALIAS("platform:sc27xx-poweroff");
 
- 'opp-microvolt' is the property that comes from OPP-V2 bindings and rest
-  of the string "speed%s-pvs%s-v%s" gets concatenated to the string
-  by the cpufreq driver using dev_pm_opp_set_prop_name api. So all
-  the three speed,pvs,v (version) come from efuse and can vary.
-  Just that in the data so far, v is always '0'.
-
->> +			opp-microvolt-speed0-pvs1-v0 = <1050000>;
->> +			opp-microvolt-speed0-pvs3-v0 = <1000000>;
->> +			opp-microvolt-speed0-pvs4-v0 = <975000>;
->> +			opp-microvolt-speed1-pvs0-v0 = <1025000>;
->> +			opp-microvolt-speed1-pvs1-v0 = <1000000>;
->> +			opp-microvolt-speed1-pvs2-v0 = <950000>;
->> +			opp-microvolt-speed1-pvs3-v0 = <925000>;
->> +			opp-microvolt-speed1-pvs4-v0 = <900000>;
->> +			opp-microvolt-speed1-pvs5-v0 = <900000>;
->> +			opp-microvolt-speed1-pvs6-v0 = <900000>;
->> +			opp-microvolt-speed2-pvs0-v0 = <975000>;
->> +			opp-microvolt-speed2-pvs1-v0 = <950000>;
->> +			opp-microvolt-speed2-pvs2-v0 = <925000>;
->> +			opp-microvolt-speed2-pvs3-v0 = <912500>;
->> +			opp-microvolt-speed2-pvs4-v0 = <900000>;
->> +			opp-microvolt-speed2-pvs5-v0 = <900000>;
->> +			opp-microvolt-speed2-pvs6-v0 = <900000>;
->> +			opp-microvolt-speed14-pvs0-v0 = <1025000>;
->> +			opp-microvolt-speed14-pvs1-v0 = <1000000>;
->> +			opp-microvolt-speed14-pvs2-v0 = <950000>;
->> +			opp-microvolt-speed14-pvs3-v0 = <925000>;
->> +			opp-microvolt-speed14-pvs4-v0 = <900000>;
->> +			opp-microvolt-speed14-pvs5-v0 = <900000>;
->> +			opp-microvolt-speed14-pvs6-v0 = <900000>;
->> +		};
->> +
->> +		opp-810000000 {
->> +			opp-hz = /bits/ 64 <810000000>;
->> +			opp-microvolt-speed0-pvs0-v0 =  < 1075000>;
->> +			opp-microvolt-speed0-pvs1-v0 = 	< 1025000>;
->> +			opp-microvolt-speed0-pvs3-v0 = 	< 975000>;
->> +			opp-microvolt-speed0-pvs3-v0 = 	< 962500>;
->> +			opp-microvolt-speed1-pvs0-v0 = 	< 1000000>;
->> +			opp-microvolt-speed1-pvs1-v0 = 	< 975000>;
->> +			opp-microvolt-speed1-pvs2-v0 = 	< 937500>;
->> +			opp-microvolt-speed1-pvs3-v0 = 	< 900000>;
->> +			opp-microvolt-speed1-pvs4-v0 = 	< 887500>;
->> +			opp-microvolt-speed1-pvs5-v0 = 	< 887500>;
->> +			opp-microvolt-speed1-pvs6-v0 = 	< 887500>;
->> +			opp-microvolt-speed2-pvs0-v0 = 	< 962500>;
->> +			opp-microvolt-speed2-pvs1-v0 = 	< 937500>;
->> +			opp-microvolt-speed2-pvs2-v0 = 	< 912500>;
->> +			opp-microvolt-speed2-pvs3-v0 = 	< 900000>;
->> +			opp-microvolt-speed2-pvs4-v0 = 	< 887500>;
->> +			opp-microvolt-speed2-pvs5-v0 = 	< 887500>;
->> +			opp-microvolt-speed2-pvs6-v0 = 	< 887500>;
-> 
-> Some space then tab issues on the above. Also, drop the space after the 
-> '<'.
-
- ok, will fix it.
-
-> 
->> +			opp-microvolt-speed14-pvs0-v0 =	< 1000000>;
->> +			opp-microvolt-speed14-pvs1-v0 =	< 975000>;
->> +			opp-microvolt-speed14-pvs2-v0 =	< 937500>;
->> +			opp-microvolt-speed14-pvs3-v0 =	< 900000>;
->> +			opp-microvolt-speed14-pvs4-v0 =	< 887500>;
->> +			opp-microvolt-speed14-pvs5-v0 =	< 887500>;
->> +			opp-microvolt-speed14-pvs6-v0 =	< 887500>;
->> +		};
->> +
->> +		opp-702000000 {
->> +			 opp-hz = /bits/ 64 <702000000>;
->> +			 opp-microvolt-speed0-pvs0-v0 =  <1025000>;
->> +			 opp-microvolt-speed0-pvs1-v0 =  <975000>;
->> +			 opp-microvolt-speed0-pvs3-v0 =  <925000>;
->> +			 opp-microvolt-speed0-pvs3-v0 =  <925000>;
->> +			 opp-microvolt-speed1-pvs0-v0 =  <962500>;
->> +			 opp-microvolt-speed1-pvs1-v0 =  <962500>;
->> +			 opp-microvolt-speed1-pvs2-v0 =  <925000>;
->> +			 opp-microvolt-speed1-pvs3-v0 =  <900000>;
->> +			 opp-microvolt-speed1-pvs4-v0 =  <875000>;
->> +			 opp-microvolt-speed1-pvs5-v0 =  <875000>;
->> +			 opp-microvolt-speed1-pvs6-v0 =  <875000>;
->> +			 opp-microvolt-speed2-pvs0-v0 =  <950000>;
->> +			 opp-microvolt-speed2-pvs1-v0 =  <925000>;
->> +			 opp-microvolt-speed2-pvs2-v0 =  <900000>;
->> +			 opp-microvolt-speed2-pvs3-v0 =  <900000>;
->> +			 opp-microvolt-speed2-pvs4-v0 =  <875000>;
->> +			 opp-microvolt-speed2-pvs5-v0 =  <875000>;
->> +			 opp-microvolt-speed2-pvs6-v0 =  <875000>;
->> +			 opp-microvolt-speed14-pvs0-v0 = <962500>;
->> +			 opp-microvolt-speed14-pvs1-v0 = <962500>;
->> +			 opp-microvolt-speed14-pvs2-v0 = <925000>;
->> +			 opp-microvolt-speed14-pvs3-v0 = <900000>;
->> +			 opp-microvolt-speed14-pvs4-v0 = <875000>;
->> +			 opp-microvolt-speed14-pvs5-v0 = <875000>;
->> +			 opp-microvolt-speed14-pvs6-v0 = <875000>;
->> +		};
->> +
->> +		opp-594000000 {
->> +			opp-hz = /bits/ 64 <594000000>;
->> +			opp-microvolt-speed0-pvs0-v0 =  <1000000>;
->> +			opp-microvolt-speed0-pvs1-v0 = 	<950000>;
->> +			opp-microvolt-speed0-pvs3-v0 = 	<900000>;
->> +			opp-microvolt-speed0-pvs3-v0 = 	<900000>;
->> +			opp-microvolt-speed1-pvs0-v0 = 	<950000>;
->> +			opp-microvolt-speed1-pvs1-v0 = 	<950000>;
->> +			opp-microvolt-speed1-pvs2-v0 = 	<925000>;
->> +			opp-microvolt-speed1-pvs3-v0 = 	<900000>;
->> +			opp-microvolt-speed1-pvs4-v0 = 	<875000>;
->> +			opp-microvolt-speed1-pvs5-v0 = 	<875000>;
->> +			opp-microvolt-speed1-pvs6-v0 = 	<875000>;
->> +			opp-microvolt-speed2-pvs0-v0 = 	<950000>;
->> +			opp-microvolt-speed2-pvs1-v0 = 	<925000>;
->> +			opp-microvolt-speed2-pvs2-v0 = 	<900000>;
->> +			opp-microvolt-speed2-pvs3-v0 = 	<900000>;
->> +			opp-microvolt-speed2-pvs4-v0 = 	<875000>;
->> +			opp-microvolt-speed2-pvs5-v0 = 	<875000>;
->> +			opp-microvolt-speed2-pvs6-v0 = 	<875000>;
-> 
-> More space then tab issues after the '='.
-> 
- ok, will fix.
-
-Regards,
- Sricharan
+OK. Thanks for your comments.
 
 -- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+Baolin.wang
+Best Regards
