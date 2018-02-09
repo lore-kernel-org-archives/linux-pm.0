@@ -1,36 +1,39 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: ltc2941-battery-gauge: Add charge empty
- and full properties
-Date: Fri, 9 Feb 2018 13:27:09 +0100
-Message-ID: <20180209122709.les6asua5hb26yky@earth.universe>
-References: <20180117194607.GA7563@lenoch>
+Subject: Re: [PATCH v2] power: reset: Add Spreadtrum SC27xx PMIC power off
+ support
+Date: Fri, 9 Feb 2018 13:30:44 +0100
+Message-ID: <20180209123044.vjvkb3yfmk4gqfiv@earth.universe>
+References: <7655f39d44e804c9ed3209db475567abc250f642.1518169282.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="h5m7ojhyeauhvbwp"
+        protocol="application/pgp-signature"; boundary="vnqw4amogy25fqmo"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:41170 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:41394 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750918AbeBIM1N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 9 Feb 2018 07:27:13 -0500
+        id S1750918AbeBIMar (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Feb 2018 07:30:47 -0500
 Content-Disposition: inline
-In-Reply-To: <20180117194607.GA7563@lenoch>
+In-Reply-To: <7655f39d44e804c9ed3209db475567abc250f642.1518169282.git.baolin.wang@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ladislav Michl <ladis@linux-mips.org>
-Cc: linux-pm@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: arnd@arndb.de, broonie@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
---h5m7ojhyeauhvbwp
+--vnqw4amogy25fqmo
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Jan 17, 2018 at 08:48:54PM +0100, Ladislav Michl wrote:
-> Add properties for charge empty and charge full thresholds.
+On Fri, Feb 09, 2018 at 05:43:38PM +0800, Baolin Wang wrote:
+> On Spreadtrum platform, we need power off system through external SC27xx
+> series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 chip=
+s.
+> Thus this patch adds SC27xx series PMICs power-off support.
 >=20
-> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 > ---
 
 Thanks, queued. My public -next branch is waiting for 4.16-rc1,
@@ -38,172 +41,158 @@ though.
 
 -- Sebastian
 
->  drivers/power/supply/ltc2941-battery-gauge.c | 59 ++++++++++++++++++++++=
-+-----
->  1 file changed, 50 insertions(+), 9 deletions(-)
+> Changes since v1:
+>  - Add remove interface.
+>  - Add regmap checking when probing the driver.
+>  - Add MODULE_ALIAS()
+> ---
+>  drivers/power/reset/Kconfig           |    9 ++++
+>  drivers/power/reset/Makefile          |    1 +
+>  drivers/power/reset/sc27xx-poweroff.c |   79 +++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 89 insertions(+)
+>  create mode 100644 drivers/power/reset/sc27xx-poweroff.c
 >=20
-> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power=
-/supply/ltc2941-battery-gauge.c
-> index 08e4fd9ee607..523373ea9cbd 100644
-> --- a/drivers/power/supply/ltc2941-battery-gauge.c
-> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
-> @@ -34,6 +34,10 @@ enum ltc294x_reg {
->  	LTC294X_REG_CONTROL		=3D 0x01,
->  	LTC294X_REG_ACC_CHARGE_MSB	=3D 0x02,
->  	LTC294X_REG_ACC_CHARGE_LSB	=3D 0x03,
-> +	LTC294X_REG_CHARGE_THR_HIGH_MSB	=3D 0x04,
-> +	LTC294X_REG_CHARGE_THR_HIGH_LSB	=3D 0x05,
-> +	LTC294X_REG_CHARGE_THR_LOW_MSB	=3D 0x06,
-> +	LTC294X_REG_CHARGE_THR_LOW_LSB	=3D 0x07,
->  	LTC294X_REG_VOLTAGE_MSB		=3D 0x08,
->  	LTC294X_REG_VOLTAGE_LSB		=3D 0x09,
->  	LTC2942_REG_TEMPERATURE_MSB	=3D 0x0C,
-> @@ -178,21 +182,22 @@ static int ltc294x_reset(const struct ltc294x_info =
-*info, int prescaler_exp)
->  	return ret;
->  }
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index ca0de1a..611ae56 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -227,5 +227,14 @@ config SYSCON_REBOOT_MODE
+>  	  register, then the bootloader can read it to take different
+>  	  action according to the mode.
 > =20
-> -static int ltc294x_read_charge_register(const struct ltc294x_info *info)
-> -{
-> +static int ltc294x_read_charge_register(const struct ltc294x_info *info,
-> +					enum ltc294x_reg reg)
-> + {
->  	int ret;
->  	u8 datar[2];
+> +config POWER_RESET_SC27XX
+> +	tristate "Spreadtrum SC27xx PMIC power-off driver"
+> +	depends on MFD_SC27XX_PMIC || COMPILE_TEST
+> +	help
+> +	  This driver supports powering off a system through
+> +	  Spreadtrum SC27xx series PMICs. The SC27xx series
+> +	  PMICs includes the SC2720, SC2721, SC2723, SC2730
+> +	  and SC2731 chips.
+> +
+>  endif
 > =20
-> -	ret =3D ltc294x_read_regs(info->client,
-> -		LTC294X_REG_ACC_CHARGE_MSB, &datar[0], 2);
-> +	ret =3D ltc294x_read_regs(info->client, reg, &datar[0], 2);
->  	if (ret < 0)
->  		return ret;
->  	return (datar[0] << 8) + datar[1];
->  }
-> =20
-> -static int ltc294x_get_charge_now(const struct ltc294x_info *info, int *=
-val)
-> +static int ltc294x_get_charge(const struct ltc294x_info *info,
-> +				enum ltc294x_reg reg, int *val)
->  {
-> -	int value =3D ltc294x_read_charge_register(info);
-> +	int value =3D ltc294x_read_charge_register(info, reg);
-> =20
->  	if (value < 0)
->  		return value;
-> @@ -244,10 +249,29 @@ static int ltc294x_set_charge_now(const struct ltc2=
-94x_info *info, int val)
->  	return ret < 0 ? ret : 0;
->  }
-> =20
-> +static int ltc294x_set_charge_thr(const struct ltc294x_info *info,
-> +					enum ltc294x_reg reg, int val)
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index aeb65ed..225d645 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -27,3 +27,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) +=3D rmobile-reset.o
+>  obj-$(CONFIG_POWER_RESET_ZX) +=3D zx-reboot.o
+>  obj-$(CONFIG_REBOOT_MODE) +=3D reboot-mode.o
+>  obj-$(CONFIG_SYSCON_REBOOT_MODE) +=3D syscon-reboot-mode.o
+> +obj-$(CONFIG_POWER_RESET_SC27XX) +=3D sc27xx-poweroff.o
+> diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/=
+sc27xx-poweroff.c
+> new file mode 100644
+> index 0000000..73d9816
+> --- /dev/null
+> +++ b/drivers/power/reset/sc27xx-poweroff.c
+> @@ -0,0 +1,79 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (C) 2018 Spreadtrum Communications Inc.
+> + * Copyright (C) 2018 Linaro Ltd.
+> + */
+> +
+> +#include <linux/cpu.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm.h>
+> +#include <linux/regmap.h>
+> +#include <linux/syscore_ops.h>
+> +
+> +#define SC27XX_PWR_PD_HW	0xc2c
+> +#define SC27XX_PWR_OFF_EN	BIT(0)
+> +
+> +static struct regmap *regmap;
+> +
+> +/*
+> + * On Spreadtrum platform, we need power off system through external SC2=
+7xx
+> + * series PMICs, and it is one similar SPI bus mapped by regmap to acces=
+s PMIC,
+> + * which is not fast io access.
+> + *
+> + * So before stopping other cores, we need release other cores' resource=
+ by
+> + * taking cpus down to avoid racing regmap or spi mutex lock when powero=
+ff
+> + * system through PMIC.
+> + */
+> +void sc27xx_poweroff_shutdown(void)
 > +{
-> +	u8 dataw[2];
-> +	s32 value;
+> +	int cpu =3D smp_processor_id();
 > +
-> +	value =3D convert_uAh_to_bin(info, val);
-> +	/* Direction depends on how sense+/- were connected */
-> +	if (info->Qlsb < 0)
-> +		value +=3D 0xFFFF;
-> +	if ((value < 0) || (value > 0xFFFF)) /* input validation */
-> +		return -EINVAL;
-> +
-> +	/* Set new charge value */
-> +	dataw[0] =3D I16_MSB(value);
-> +	dataw[1] =3D I16_LSB(value);
-> +	return ltc294x_write_regs(info->client, reg, &dataw[0], 2);
+> +	freeze_secondary_cpus(cpu);
 > +}
 > +
->  static int ltc294x_get_charge_counter(
->  	const struct ltc294x_info *info, int *val)
->  {
-> -	int value =3D ltc294x_read_charge_register(info);
-> +	int value =3D ltc294x_read_charge_register(info, LTC294X_REG_ACC_CHARGE=
-_MSB);
-> =20
->  	if (value < 0)
->  		return value;
-> @@ -335,8 +359,15 @@ static int ltc294x_get_property(struct power_supply =
-*psy,
->  	struct ltc294x_info *info =3D power_supply_get_drvdata(psy);
-> =20
->  	switch (prop) {
-> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
-> +		return ltc294x_get_charge(info, LTC294X_REG_CHARGE_THR_HIGH_MSB,
-> +						&val->intval);
-> +	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
-> +		return ltc294x_get_charge(info, LTC294X_REG_CHARGE_THR_LOW_MSB,
-> +						&val->intval);
->  	case POWER_SUPPLY_PROP_CHARGE_NOW:
-> -		return ltc294x_get_charge_now(info, &val->intval);
-> +		return ltc294x_get_charge(info, LTC294X_REG_ACC_CHARGE_MSB,
-> +						&val->intval);
->  	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
->  		return ltc294x_get_charge_counter(info, &val->intval);
->  	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> @@ -357,6 +388,12 @@ static int ltc294x_set_property(struct power_supply =
-*psy,
->  	struct ltc294x_info *info =3D power_supply_get_drvdata(psy);
-> =20
->  	switch (psp) {
-> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
-> +		return ltc294x_set_charge_thr(info,
-> +			LTC294X_REG_CHARGE_THR_HIGH_MSB, val->intval);
-> +	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
-> +		return ltc294x_set_charge_thr(info,
-> +			LTC294X_REG_CHARGE_THR_LOW_MSB, val->intval);
->  	case POWER_SUPPLY_PROP_CHARGE_NOW:
->  		return ltc294x_set_charge_now(info, val->intval);
->  	default:
-> @@ -368,6 +405,8 @@ static int ltc294x_property_is_writeable(
->  	struct power_supply *psy, enum power_supply_property psp)
->  {
->  	switch (psp) {
-> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
-> +	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
->  	case POWER_SUPPLY_PROP_CHARGE_NOW:
->  		return 1;
->  	default:
-> @@ -377,7 +416,7 @@ static int ltc294x_property_is_writeable(
-> =20
->  static void ltc294x_update(struct ltc294x_info *info)
->  {
-> -	int charge =3D ltc294x_read_charge_register(info);
-> +	int charge =3D ltc294x_read_charge_register(info, LTC294X_REG_ACC_CHARG=
-E_MSB);
-> =20
->  	if (charge !=3D info->charge) {
->  		info->charge =3D charge;
-> @@ -396,6 +435,8 @@ static void ltc294x_work(struct work_struct *work)
-> =20
->  static enum power_supply_property ltc294x_properties[] =3D {
->  	POWER_SUPPLY_PROP_CHARGE_COUNTER,
-> +	POWER_SUPPLY_PROP_CHARGE_FULL,
-> +	POWER_SUPPLY_PROP_CHARGE_EMPTY,
->  	POWER_SUPPLY_PROP_CHARGE_NOW,
->  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
->  	POWER_SUPPLY_PROP_TEMP,
+> +static struct syscore_ops poweroff_syscore_ops =3D {
+> +	.shutdown =3D sc27xx_poweroff_shutdown,
+> +};
+> +
+> +static void sc27xx_poweroff_do_poweroff(void)
+> +{
+> +	regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
+> +}
+> +
+> +static int sc27xx_poweroff_probe(struct platform_device *pdev)
+> +{
+> +	if (regmap)
+> +		return -EINVAL;
+> +
+> +	regmap =3D dev_get_regmap(pdev->dev.parent, NULL);
+> +	if (!regmap)
+> +		return -ENODEV;
+> +
+> +	pm_power_off =3D sc27xx_poweroff_do_poweroff;
+> +	register_syscore_ops(&poweroff_syscore_ops);
+> +	return 0;
+> +}
+> +
+> +static int sc27xx_poweroff_remove(struct platform_device *pdev)
+> +{
+> +	if (pm_power_off =3D=3D sc27xx_poweroff_do_poweroff)
+> +		pm_power_off =3D NULL;
+> +
+> +	regmap =3D NULL;
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver sc27xx_poweroff_driver =3D {
+> +	.probe =3D sc27xx_poweroff_probe,
+> +	.remove =3D sc27xx_poweroff_remove,
+> +	.driver =3D {
+> +		.name =3D "sc27xx-poweroff",
+> +	},
+> +};
+> +module_platform_driver(sc27xx_poweroff_driver);
+> +
+> +MODULE_ALIAS("platform:sc27xx-poweroff");
+> +MODULE_DESCRIPTION("Spreadtrum SC27xx PMIC Poweroff Driver");
+> +MODULE_LICENSE("GPL v2");
 > --=20
-> 2.15.1
+> 1.7.9.5
 >=20
 
---h5m7ojhyeauhvbwp
+--vnqw4amogy25fqmo
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp9k5oACgkQ2O7X88g7
-+poRxRAAhkWV+TB9v2VTF0FsMf23a4UNaf7WznoTzXuz2pFRgCVn2GFqP0mfYOhL
-KG33x+0VCBRiL9HmAoGOpHHn2i/DvKxrhZbjP2ez5oVZt4gncqWpIVdeGECT26oo
-2MM1k75XDi5tNDH385C3hHdnVTV2i/EIPM5IQvNcH55yTQ7WeRCUZm1LKSf5o0DX
-6kZoT0FfVHCbU1Qc3KS6/VAASiUL42K8Y9wO+li5pTXx4IQ8RyC4gmTw9SUoDm82
-wzvupyc1X2JVZ2wRx+o3NWrMVqDcGEnACWWkHPgvvM19QMBNvniPgvdBTGyPA0rD
-lSkrzn2iA20GUQ0JUTaZefffi3KrWSVFDrvXeDVCbxMoiZEMLqo2QtzSpzQBpgdG
-kjARYfmg36LyFDEPxJPNVr9HhWR/Mv9TAri2ecBS/S7j24vDJeCPWQk8I/a0p6re
-XUX8v7VEKdVs/g7IshJYlMiXJgxvh7qF+nLslF7bDFldcMNwPZV2ZnSROWMJc54r
-t457uyd0GdT7UPL+l+aVPcJvFxkD++QaojoZt+UZtqQ1a1E4UeT/KPJWvDzhqTyJ
-SScPp1IRqYX1M9eWkFCkKOCwzTNcuaiIKBeH0ISGo79OBnq26GG957f7vvlDZmNK
-NG4cfi366E6ZKKdzt06rU4YijKgm1BLWO9R4xsnwAmByxjKer3I=
-=Y/l4
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp9lHQACgkQ2O7X88g7
++prVnA/8DKWrABybJ9RZf2yWNf6uy2tJIaPrPXsFqa7ZF1KvtV+KMLD8dI20N3HI
+wtRLzktYrUP6XhrhgptyI4a8gD4zbfHexPU0EvEG5r79EWwdGh4ofYAs9YWPXyMX
+hlD0joJTIRTuwOKtjQJ9dOT0aOucqH6D/dxf7U4XqEe6WVtKJFinRWJbkxhc5IxX
+3d5gHcAFZNgQlrWW4HQwJKICkiKwV3DNPrzwbkzRw8j3J7oCOMc0Fg4RvNAd9ebR
+nKFuQ9snRav0i/BFjbDQkeBeXpYQAQ7mRTd09L48qiSYzNQUlhqXFlcc7MbGuMH2
+2DLYYHhJ0RIY5uazZce1q9QGK++HRRN9kCz1UntAgXYs/ST8Se9YdF0D6nNpHokG
+e+s49IL+baLzYZ53jdiH51F+CjfxDQzc+sTU34rNqetfQUEOHhJ1a5uDl0CdsqT3
+dMUWGeyO5xB7tyBxtVgusrl+m32V0viP4/Ue/5SEgY4FnZ2bwe8yfxc+Ko6uQlxS
+bE2ijf7NKjp6vbHFcCf766v8CrfBvCMBdvKZNN2FoNtf39UnQV9v4ZGuj73n5Iaa
+/KN2YtnuD3fvOHUEBGF8d9H86podQCWDQoEnt5dfCZ5gkQL+7sBfnHm4ZTwHpA2j
+g43TWR4o+Djz+ZqRBx/q5iRro4S+WbAB4+ZL9VLJZ8bTqU1Uqac=
+=MCrC
 -----END PGP SIGNATURE-----
 
---h5m7ojhyeauhvbwp--
+--vnqw4amogy25fqmo--
