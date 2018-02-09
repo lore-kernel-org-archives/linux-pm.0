@@ -1,71 +1,84 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Fri, 9 Feb 2018 14:25:44 +0100
-Message-ID: <20180209132544.GI12979@localhost.localdomain>
-References: <197c26ba-c2a6-2de7-dffa-5b884079f746@evidence.eu.com>
- <11598161.veS9VGWB8G@aspire.rjw.lan>
- <20180209105305.GD12979@localhost.localdomain>
- <CAJZ5v0h9L2mMEaV6oECk9f2ob42Nr9zyqafymwvb+UP+G1q04Q@mail.gmail.com>
- <20180209112618.GE12979@localhost.localdomain>
- <CAJZ5v0g4bgDKP96rivKPE-EMr7SuUhL9OO=M+MQuAjbdq9R45g@mail.gmail.com>
- <20180209115155.GG12979@localhost.localdomain>
- <CAJZ5v0g-ypbVT77vSpjTX5mrpedu_=eH+O3b5d6PE5ydL1=VRQ@mail.gmail.com>
- <20180209125245.GH12979@localhost.localdomain>
- <CAJZ5v0i9ZpRZKd7FNLnC6SucJnOump4xhQhf9QabXOSTf_qfyw@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v13 4/4] battery: Add the ThinkPad "Not Charging" quirk
+Date: Fri, 9 Feb 2018 14:26:41 +0100
+Message-ID: <20180209132641.6vkwasa4b5pygjkr@earth.universe>
+References: <20180207145936.ockmmkipxtwkdsot@thinkpad>
+ <20180209104530.s5i6lymcpgkqyego@khazad-dum.debian.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="mz7u4sqedrcthzyh"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f43.google.com ([74.125.82.43]:54700 "EHLO
-        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750924AbeBINZt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 08:25:49 -0500
-Received: by mail-wm0-f43.google.com with SMTP id i186so15358676wmi.4
-        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 05:25:48 -0800 (PST)
+Received: from mail.kernel.org ([198.145.29.99]:46462 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751029AbeBIN0o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Feb 2018 08:26:44 -0500
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0i9ZpRZKd7FNLnC6SucJnOump4xhQhf9QabXOSTf_qfyw@mail.gmail.com>
+In-Reply-To: <20180209104530.s5i6lymcpgkqyego@khazad-dum.debian.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Claudio Scordino <claudio@evidence.eu.com>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Ognjen Galic <smclt30p@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 
-On 09/02/18 13:56, Rafael J. Wysocki wrote:
-> On Fri, Feb 9, 2018 at 1:52 PM, Juri Lelli <juri.lelli@redhat.com> wrote:
-> > On 09/02/18 13:08, Rafael J. Wysocki wrote:
-> >> On Fri, Feb 9, 2018 at 12:51 PM, Juri Lelli <juri.lelli@redhat.com> wrote:
 
-[...]
+--mz7u4sqedrcthzyh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> >> > My impression is that rate limit helps a lot for CFS, where the "true"
-> >> > utilization is not known in advance, and being too responsive might
-> >> > actually be counterproductive.
-> >> >
-> >> > For DEADLINE (and RT, with differences) we should always respond as
-> >> > quick as we can (and probably remember that a frequency transition was
-> >> > requested if hw was already performing one, but that's another patch)
-> >> > because, if we don't, a task belonging to a lower priority class might
-> >> > induce deadline misses in highest priority activities. E.g., a CFS task
-> >> > that happens to trigger a freq switch right before a DEADLINE task wakes
-> >> > up and needs an higher frequency to meet its deadline: if we wait for
-> >> > the rate limit of the CFS originated transition.. deadline miss!
-> >>
-> >> Fair enough, but if there's too much overhead as a result of this, you
-> >> can't guarantee the deadlines to be met anyway.
-> >
-> > Indeed. I guess this only works if corner cases as the one above don't
-> > happen too often.
-> 
-> Well, that's the point.
-> 
-> So there is a tradeoff: do we want to allow deadlines to be missed
-> because of excessive overhead or do we want to allow deadlines to be
-> missed because of the rate limit.
+Hi,
 
-The difference between the two seems to be that while overhead is an
-intrisic hw thing, rate limit is something we have mostly to cope with
-the nature of certain classes of tasks and how we describe/track them
-(at least IMHO). I'd say that for other classes of tasks (DL/RT) we
-would be better off consciously living with the former only and accept
-that real world is "seldom" not ideal.
+On Fri, Feb 09, 2018 at 08:45:30AM -0200, Henrique de Moraes Holschuh wrote:
+> On Wed, 07 Feb 2018, Ognjen Galic wrote:
+> > The EC/ACPI firmware on Lenovo ThinkPads used to report a status
+> > of "Unknown" when the battery is between the charge start and
+> > charge stop thresholds. On Windows, it reports "Not Charging"
+> > so the quirk has been added to also report correctly.
+> >=20
+> > Now the "status" attribute returns "Not Charging" when the
+> > battery on ThinkPads is not physicaly charging.
+> >=20
+> > Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> > Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
+>=20
+> AFAIK, This behavior goes back to the initial SBS implementation in the
+> IBM era ECs of the Thinkpads...  We've always called it "idle" in the
+> linux-thinkpad community.  The behavior comes from SBS
+> (http://smartbattery.org/specs/), the EC was reporting its status
+> (charging/not charging *THIS* battery) in one bit, and the battery's
+> status (discharging/not discharging *THIS* battery) in a different bit.
+>=20
+> It was rather simple to observe the behavior of those bits in a
+> two-battery system.
+>=20
+> Would that apply to these newer Lenovo models?  If so, you might want to
+> consider using "idle", instead. "not charging" does _not_ imply "neither
+> charging nor discharging", while "idle" does.
 
-But then again this is just another theory, experiments might easily
-prove me wrong. :)
+I agree, that "Idle" is a better term than "Not Charging", but
+the power supply property exists with this name since it has
+been introduced. This is exposed to userspace and cannot be
+changed easily.
+
+-- Sebastian
+
+--mz7u4sqedrcthzyh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp9oZEACgkQ2O7X88g7
++prx6g/+MURnUmcOywI7DGgmd2hm6czCCC4rxQK1BRBE2tc9rcpuEDZ9XAeCfUDS
+mkdYDkvz+Ap4GYHZXnZ3CbqsJv5jW/R3w6MVHVDoaN04t8x2BlRlTNQK60nUR5qe
+F9+NGvP8y/4M/yz6jLVhbTsyZP1JTOnZo9EoJik/Uuyx/kI+rzn+o5MrhkUnUB4t
+hxKl7Cd34Vdem/CNkXVIfylVcnDcaze5iQV20FbunDSUj1FEX/iiJAYqgi7ITGzi
+8QBoLzDs/vDaHEOAp7rHToV9AIhB4xbNO602e1oKykEDJa9nwXARNIKcZO1zIRWO
+tY5MqD5CuFNnHdEadfvneXgj0Qe6gQu6ZScgxD0qxXVVEob23h/dRXE+xnCS3ENT
+tVz3A2m++4DSqYgtkco/XcfLAvzYNT1hhuwigOsJ4In6OmsrIF9jvMAUzyrTSKOv
+z8GtKuXk9ltRGABtH+xJ/DcLu0iUOg/R1p76XmF7zMj09ywq6D+WcjuFX7RR1dcf
+T1gKgKmaK2cH50PkHf2VJhULq2kLQ4jHh/JpqJ/cmS95XVr/VhxE3atBalyO9iv5
+7wAtZQa+vgfYbvzpTQYAGOt1LBFtDXHOo8J3BgAAnHd76pGaBHXV9v2CL+FsX0g4
+hPceeoOSASIFNciA3J5fAC4buywd5PEiNP2F1w45vOqbS0P+gUA=
+=WoXc
+-----END PGP SIGNATURE-----
+
+--mz7u4sqedrcthzyh--
