@@ -1,55 +1,69 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v13 3/4] thinkpad_acpi: Add support for battery thresholds
-Date: Fri, 9 Feb 2018 11:49:40 +0100
-Message-ID: <CAJZ5v0h8YW03EpqEVO8LGti9ECo7+Gmm0PdgQViidUCZ=o0AQw@mail.gmail.com>
-References: <20180207145844.bd567c36juvlkjvz@thinkpad> <20180208220323.cr6j2kcozekwbzo6@earth.universe>
- <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com> <20180209103946.fkolldv6boml3e32@earth.universe>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+Date: Fri, 9 Feb 2018 11:53:05 +0100
+Message-ID: <20180209105305.GD12979@localhost.localdomain>
+References: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
+ <20180209035143.GX28462@vireshk-i7>
+ <197c26ba-c2a6-2de7-dffa-5b884079f746@evidence.eu.com>
+ <11598161.veS9VGWB8G@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20180209103946.fkolldv6boml3e32@earth.universe>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>, Ognjen Galic <smclt30p@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <11598161.veS9VGWB8G@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Claudio Scordino <claudio@evidence.eu.com>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 9, 2018 at 11:39 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Fri, Feb 09, 2018 at 10:22:54AM +0100, Rafael J. Wysocki wrote:
->> On Thu, Feb 8, 2018 at 11:03 PM, Sebastian Reichel <sre@kernel.org> wrote:
->> > Hi,
->> >
->> > On Wed, Feb 07, 2018 at 03:58:44PM +0100, Ognjen Galic wrote:
->> >> 1) Charge start threshold
->> >> /sys/class/power_supply/BATN/charge_start_threshold
->> >>
->> >> Valid values are [0, 99]. A value of 0 turns off the
->> >> start threshold wear control.
->> >>
->> >> 2) Charge stop threshold
->> >> /sys/class/power_supply/BATN/charge_stop_threshold
->> >>
->> >> Valid values are [1, 100]. A value of 100 turns off
->> >> the stop threshold wear control. This must be
->> >> configured first.
->> >
->> > This is a new sysfs file, that should be documented.
->>
->> Right, I should have remembered about that, sorry.
->>
->> > Also this looks pretty generic. Just introduce new POWER_SUPPLY_PROP_
->> > entries for start/stop charging threshold and use them.
->>
->> What about doing this as a follow-up?
->
-> Fine with me.
+Hi,
 
-OK
+On 09/02/18 11:36, Rafael J. Wysocki wrote:
+> On Friday, February 9, 2018 9:02:34 AM CET Claudio Scordino wrote:
+> > Hi Viresh,
+> > 
+> > Il 09/02/2018 04:51, Viresh Kumar ha scritto:
+> > > On 08-02-18, 18:01, Claudio Scordino wrote:
+> > >> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+> > >> we should not wait for the rate limit, otherwise we may miss some deadline.
+> > >>
+> > >> Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
+> > >> misses for tasks with low RT periods.
+> > >>
+> > >> The patch applies on top of the one recently proposed by Peter to drop the
+> > >> SCHED_CPUFREQ_* flags.
+> > >>
+> 
+> [cut]
+> 
+> > 
+> > > 
+> > > Is it possible to (somehow) check here if the DL tasks will miss
+> > > deadline if we continue to run at current frequency? And only ignore
+> > > rate-limit if that is the case ?
 
-Actually, I don't see any documentation whatever for ACPI battery and
-AC power supply properties, so I guess that needs to be added in
-general and I don't think it would be fair to ask Ognjen to do that in
-order to get the extension in.
+Isn't it always the case? Utilization associated to DL tasks is given by
+what the user said it's needed to meet a task deadlines (admission
+control). If that task wakes up and we realize that adding its
+utilization contribution is going to require a frequency change, we
+should _theoretically_ always do it, or it will be too late. Now, user
+might have asked for a bit more than what strictly required (this is
+usually the case to compensate for discrepancies between theory and real
+world, e.g.  hw transition limits), but I don't think there is a way to
+know "how much". :/
 
-Why don't we pencil this in as work to do?
+Thanks,
+
+- Juri
+
+> > 
+> > I need to think further about it.
+> 
+> That would be my approach FWIW.
+> 
+> Increasing the frequency beyond what is necessary means wasting energy
+> in any case.
+> 
+> Thanks,
+> Rafael
+> 
