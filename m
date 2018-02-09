@@ -1,102 +1,112 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v13 3/4] thinkpad_acpi: Add support for battery thresholds
-Date: Fri, 9 Feb 2018 13:34:14 +0100
-Message-ID: <20180209123414.xrtmtgmeeezmma5u@earth.universe>
-References: <20180207145844.bd567c36juvlkjvz@thinkpad>
- <20180208220323.cr6j2kcozekwbzo6@earth.universe>
- <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com>
- <20180209103946.fkolldv6boml3e32@earth.universe>
- <CAJZ5v0h8YW03EpqEVO8LGti9ECo7+Gmm0PdgQViidUCZ=o0AQw@mail.gmail.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+Date: Fri, 9 Feb 2018 13:52:45 +0100
+Message-ID: <20180209125245.GH12979@localhost.localdomain>
+References: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
+ <20180209035143.GX28462@vireshk-i7>
+ <197c26ba-c2a6-2de7-dffa-5b884079f746@evidence.eu.com>
+ <11598161.veS9VGWB8G@aspire.rjw.lan>
+ <20180209105305.GD12979@localhost.localdomain>
+ <CAJZ5v0h9L2mMEaV6oECk9f2ob42Nr9zyqafymwvb+UP+G1q04Q@mail.gmail.com>
+ <20180209112618.GE12979@localhost.localdomain>
+ <CAJZ5v0g4bgDKP96rivKPE-EMr7SuUhL9OO=M+MQuAjbdq9R45g@mail.gmail.com>
+ <20180209115155.GG12979@localhost.localdomain>
+ <CAJZ5v0g-ypbVT77vSpjTX5mrpedu_=eH+O3b5d6PE5ydL1=VRQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fnb6lqmcobuk4f35"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:41844 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750918AbeBIMeR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 9 Feb 2018 07:34:17 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0h8YW03EpqEVO8LGti9ECo7+Gmm0PdgQViidUCZ=o0AQw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>, Ognjen Galic <smclt30p@gmail.com>
-
-
---fnb6lqmcobuk4f35
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <CAJZ5v0g-ypbVT77vSpjTX5mrpedu_=eH+O3b5d6PE5ydL1=VRQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Claudio Scordino <claudio@evidence.eu.com>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Fri, Feb 09, 2018 at 11:49:40AM +0100, Rafael J. Wysocki wrote:
-> On Fri, Feb 9, 2018 at 11:39 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Hi,
-> >
-> > On Fri, Feb 09, 2018 at 10:22:54AM +0100, Rafael J. Wysocki wrote:
-> >> On Thu, Feb 8, 2018 at 11:03 PM, Sebastian Reichel <sre@kernel.org> wr=
-ote:
-> >> > Hi,
+On 09/02/18 13:08, Rafael J. Wysocki wrote:
+> On Fri, Feb 9, 2018 at 12:51 PM, Juri Lelli <juri.lelli@redhat.com> wrote:
+> > On 09/02/18 12:37, Rafael J. Wysocki wrote:
+> >> On Fri, Feb 9, 2018 at 12:26 PM, Juri Lelli <juri.lelli@redhat.com> wrote:
+> >> > On 09/02/18 12:04, Rafael J. Wysocki wrote:
+> >> >> On Fri, Feb 9, 2018 at 11:53 AM, Juri Lelli <juri.lelli@redhat.com> wrote:
+> >> >> > Hi,
+> >> >> >
+> >> >> > On 09/02/18 11:36, Rafael J. Wysocki wrote:
+> >> >> >> On Friday, February 9, 2018 9:02:34 AM CET Claudio Scordino wrote:
+> >> >> >> > Hi Viresh,
+> >> >> >> >
+> >> >> >> > Il 09/02/2018 04:51, Viresh Kumar ha scritto:
+> >> >> >> > > On 08-02-18, 18:01, Claudio Scordino wrote:
+> >> >> >> > >> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+> >> >> >> > >> we should not wait for the rate limit, otherwise we may miss some deadline.
+> >> >> >> > >>
+> >> >> >> > >> Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
+> >> >> >> > >> misses for tasks with low RT periods.
+> >> >> >> > >>
+> >> >> >> > >> The patch applies on top of the one recently proposed by Peter to drop the
+> >> >> >> > >> SCHED_CPUFREQ_* flags.
+> >> >> >> > >>
+> >> >> >>
+> >> >> >> [cut]
+> >> >> >>
+> >> >> >> >
+> >> >> >> > >
+> >> >> >> > > Is it possible to (somehow) check here if the DL tasks will miss
+> >> >> >> > > deadline if we continue to run at current frequency? And only ignore
+> >> >> >> > > rate-limit if that is the case ?
+> >> >> >
+> >> >> > Isn't it always the case? Utilization associated to DL tasks is given by
+> >> >> > what the user said it's needed to meet a task deadlines (admission
+> >> >> > control). If that task wakes up and we realize that adding its
+> >> >> > utilization contribution is going to require a frequency change, we
+> >> >> > should _theoretically_ always do it, or it will be too late. Now, user
+> >> >> > might have asked for a bit more than what strictly required (this is
+> >> >> > usually the case to compensate for discrepancies between theory and real
+> >> >> > world, e.g.  hw transition limits), but I don't think there is a way to
+> >> >> > know "how much". :/
+> >> >>
+> >> >> You are right.
+> >> >>
+> >> >> I'm somewhat concerned about "fast switch" cases when the rate limit
+> >> >> is used to reduce overhead.
 > >> >
-> >> > On Wed, Feb 07, 2018 at 03:58:44PM +0100, Ognjen Galic wrote:
-> >> >> 1) Charge start threshold
-> >> >> /sys/class/power_supply/BATN/charge_start_threshold
-> >> >>
-> >> >> Valid values are [0, 99]. A value of 0 turns off the
-> >> >> start threshold wear control.
-> >> >>
-> >> >> 2) Charge stop threshold
-> >> >> /sys/class/power_supply/BATN/charge_stop_threshold
-> >> >>
-> >> >> Valid values are [1, 100]. A value of 100 turns off
-> >> >> the stop threshold wear control. This must be
-> >> >> configured first.
+> >> > Mmm, right. I'm thinking that in those cases we could leave rate limit
+> >> > as is. The user should then be aware of it and consider it as proper
+> >> > overhead when designing her/his system.
 > >> >
-> >> > This is a new sysfs file, that should be documented.
+> >> > But then, isn't it the same for "non fast switch" platforms? I mean,
+> >> > even in the latter case we can't go faster than hw limits.. mmm, maybe
+> >> > the difference is that in the former case we could go as fast as theory
+> >> > would expect.. but we shouldn't. :)
 > >>
-> >> Right, I should have remembered about that, sorry.
+> >> Well, in practical terms that means "no difference" IMO. :-)
 > >>
-> >> > Also this looks pretty generic. Just introduce new POWER_SUPPLY_PROP_
-> >> > entries for start/stop charging threshold and use them.
+> >> I can imagine that in some cases this approach may lead to better
+> >> results than reducing the rate limit overall, but the general case I'm
+> >> not sure about.
 > >>
-> >> What about doing this as a follow-up?
+> >> I mean, if overriding the rate limit doesn't take place very often,
+> >> then it really should make no difference overhead-wise.  Now, of
+> >> course, how to define "not very often" is a good question as that
+> >> leads to rate-limiting the overriding of the original rate limit and
+> >> that scheme may continue indefinitely ...
 > >
-> > Fine with me.
->=20
-> OK
->=20
-> Actually, I don't see any documentation whatever for ACPI battery and
-> AC power supply properties, so I guess that needs to be added in
-> general and I don't think it would be fair to ask Ognjen to do that in
-> order to get the extension in.
->=20
-> Why don't we pencil this in as work to do?
+> > :)
+> >
+> > My impression is that rate limit helps a lot for CFS, where the "true"
+> > utilization is not known in advance, and being too responsive might
+> > actually be counterproductive.
+> >
+> > For DEADLINE (and RT, with differences) we should always respond as
+> > quick as we can (and probably remember that a frequency transition was
+> > requested if hw was already performing one, but that's another patch)
+> > because, if we don't, a task belonging to a lower priority class might
+> > induce deadline misses in highest priority activities. E.g., a CFS task
+> > that happens to trigger a freq switch right before a DEADLINE task wakes
+> > up and needs an higher frequency to meet its deadline: if we wait for
+> > the rate limit of the CFS originated transition.. deadline miss!
+> 
+> Fair enough, but if there's too much overhead as a result of this, you
+> can't guarantee the deadlines to be met anyway.
 
-The generic ones are documented here:
-
-Documentation/power/power_supply_class.txt
-
--- Sebastian
-
---fnb6lqmcobuk4f35
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp9lUUACgkQ2O7X88g7
-+ppp6Q/+PCLctWiBeL5daKJvjQ2a8MzTY+L28qamckfx9Tz9+sOWAR/lTCs1e2hU
-SGrIOyFSHRYv8O3OMKLuGhZE42IgckVB8mZEf5A25KyunkdZSFLDdqk0gx8fX2tQ
-tyRFcBNg7jpYQKT7m5C2di5+ulaDTin3QJQBZ8/EY7i1XkKUGPG/LZx6e0vQgvvz
-caRdlPl2EVIIbaF3CvI0Q2tqgK1LUJr4ZBtr5oCa/6JgB9//+o1KSP26yWuYVzGf
-9SGg7LfRy1SqCyeetEUOalR9lc+CAb5hdnM7w4MKQmxtYlY4CvEclLzzzBE5OTcX
-84ZAuFcQzBndfWRL6UewjMNrwppTafcwBzKxy/NuJ4jKF+kAKmj1fbfi+LXA87tV
-2UYT4TpqOKuS7J5UYDJXKA/XiWA7KKqZAB4XdaNQMcw5/yd333hwrlVRpxsLX4hG
-DRn4EI/9Qgxg6S2SdUH6tjNwpWhQM6JTowdNV/sJyKvCB2MnJS4JKCSDB/7Q/qc+
-yR/GlFHghXePouoyBmxYo7bYSAOTRNaMBbNuh7KD2Iek6mHEyUvnz63vdH/GY9gc
-eNOSl/cH1xOFd4KMrAstg03oAaRXpYmecWxlpmcB4WHNZ3wOASlru0Zq+wyF4DSD
-gNXI2SMMenw2u3/QcPLoIbcH6mSq2VPi4tjKXWqIG2gZIl/Vsn4=
-=CMUr
------END PGP SIGNATURE-----
-
---fnb6lqmcobuk4f35--
+Indeed. I guess this only works if corner cases as the one above don't
+happen too often.
