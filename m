@@ -1,21 +1,21 @@
 From: Neil Armstrong <narmstrong@baylibre.com>
-Subject: Re: [PATCH 06/10] ARM64: dts: meson: Remove "cooling-{min|max}-level"
- for CPU nodes
-Date: Fri, 9 Feb 2018 10:03:57 +0100
-Message-ID: <303e6c56-8076-e590-c778-81cb8c0181ed@baylibre.com>
+Subject: Re: [PATCH 08/10] ARM64: dts: meson: Remove "cooling-{min|max}-level"
+ for gpio-fan node
+Date: Fri, 9 Feb 2018 10:04:04 +0100
+Message-ID: <3237154b-18a9-9e8b-1e5f-a7ce261fe3ae@baylibre.com>
 References: <cover.1518166039.git.viresh.kumar@linaro.org>
- <6c91ebfecf86da98a7682c6d262ff1218a1d7343.1518166039.git.viresh.kumar@linaro.org>
+ <24b53440922491982c781a3eb032b04c167d733d.1518166039.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f195.google.com ([209.85.128.195]:42139 "EHLO
-        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750828AbeBIJEA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 04:04:00 -0500
-Received: by mail-wr0-f195.google.com with SMTP id 41so7415794wrc.9
-        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 01:04:00 -0800 (PST)
-In-Reply-To: <6c91ebfecf86da98a7682c6d262ff1218a1d7343.1518166039.git.viresh.kumar@linaro.org>
+Received: from mail-wr0-f194.google.com ([209.85.128.194]:35228 "EHLO
+        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751102AbeBIJEH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 04:04:07 -0500
+Received: by mail-wr0-f194.google.com with SMTP id w50so7438969wrc.2
+        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 01:04:06 -0800 (PST)
+In-Reply-To: <24b53440922491982c781a3eb032b04c167d733d.1518166039.git.viresh.kumar@linaro.org>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -25,33 +25,28 @@ Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Vincent Gui
 On 09/02/2018 09:58, Viresh Kumar wrote:
 > The "cooling-min-level" and "cooling-max-level" properties are not
 > parsed by any part of the kernel currently and the max cooling state of
-> a CPU cooling device is found by referring to the cpufreq table instead.
+> gpio-fan cooling device is found by referring to the
+> "gpio-fan,speed-map" instead.
 > 
-> Remove the unused properties from the CPU nodes.
+> Remove the unused properties from the gpio-fan node.
 > 
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts | 4 ----
->  1 file changed, 4 deletions(-)
+>  arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts | 2 --
+>  1 file changed, 2 deletions(-)
 > 
 > diff --git a/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts b/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts
-> index 1448c3dba08e..658215c9822c 100644
+> index 658215c9822c..8ee4a693c438 100644
 > --- a/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts
 > +++ b/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts
-> @@ -209,14 +209,10 @@
->  };
->  
->  &cpu0 {
-> -	cooling-min-level = <0>;
-> -	cooling-max-level = <6>;
->  	#cooling-cells = <2>;
->  };
->  
->  &cpu4 {
-> -	cooling-min-level = <0>;
-> -	cooling-max-level = <4>;
->  	#cooling-cells = <2>;
->  };
+> @@ -59,8 +59,6 @@
+>  				      1 1
+>  				      2 2
+>  				      3 3>;
+> -		cooling-min-level = <0>;
+> -		cooling-max-level = <3>;
+>  		#cooling-cells = <2>;
+>  	};
 >  
 > 
 
