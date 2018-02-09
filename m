@@ -1,66 +1,43 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [Query] thermal: Who is using "cooling-{min|max}-level}"
- properties ?
-Date: Fri, 9 Feb 2018 10:15:38 +0100
-Message-ID: <539699c7-9509-dea2-2b31-c5f6749c99c4@linaro.org>
-References: <20180207065959.GN28462@vireshk-i7>
- <c7bd6ed5-b93e-3a07-b4a2-4c3b1eef5fac@linaro.org>
- <20180207102446.GS28462@vireshk-i7>
- <11fbba25-7029-8a13-476e-ea2f2de6fbf9@linaro.org>
- <20180209064211.GY28462@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v13 3/4] thinkpad_acpi: Add support for battery thresholds
+Date: Fri, 9 Feb 2018 10:22:54 +0100
+Message-ID: <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com>
+References: <20180207145844.bd567c36juvlkjvz@thinkpad> <20180208220323.cr6j2kcozekwbzo6@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f41.google.com ([74.125.82.41]:51210 "EHLO
-        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751725AbeBIJPm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 04:15:42 -0500
-Received: by mail-wm0-f41.google.com with SMTP id r71so14202166wmd.1
-        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 01:15:41 -0800 (PST)
-In-Reply-To: <20180209064211.GY28462@vireshk-i7>
-Content-Language: en-US
+Received: from mail-ot0-f195.google.com ([74.125.82.195]:34277 "EHLO
+        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750942AbeBIJWz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 04:22:55 -0500
+In-Reply-To: <20180208220323.cr6j2kcozekwbzo6@earth.universe>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org, Punit.Agrawal@arm.com, ionela.voinescu@arm.com
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Ognjen Galic <smclt30p@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 
-On 09/02/2018 07:42, Viresh Kumar wrote:
-> On 07-02-18, 11:45, Daniel Lezcano wrote:
->> Yes, that is my understanding. cooling-min-level and cooling-max-level
->> are not used in the thermal framework code today.
-> 
-> Right.
-> 
->> So if they are defined, we should check the cooling-device max and min
->> are in the boundaries (if they are different from no-limit).
-> 
-> Hmm, I am not sure. We do compare those values (from maps) with the
-> max reported by the cooling driver, so there is some boundary check
-> happening. And I don't think it is worth comparing the min/max values
-> from DT cooling device's nodes. Why not just leave those for the
-> driver to return (which is already happening btw).
-> 
-> I don't think it would be correct for the thermal core to go and look
-> at the min/max properties of the cooling device directly, as those are
-> more for the thermal driver's help. The thermal core should just call
-> the get_max_state() callback and that's it.
-> 
-> Anyway, we can take decision on the binding itself after some time but
-> I will send some patches to get rid of this property from CPU nodes
-> for now. It doesn't make sense to have it there (anyway it is
-> optional), as the cpu cooling devices are kind of virtual cooling
-> devices which rely on OPP or freq-table currently. Maybe I will begin
-> by just updating one platform and once that is merged, update
-> everything else as well.
+On Thu, Feb 8, 2018 at 11:03 PM, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi,
+>
+> On Wed, Feb 07, 2018 at 03:58:44PM +0100, Ognjen Galic wrote:
+>> 1) Charge start threshold
+>> /sys/class/power_supply/BATN/charge_start_threshold
+>>
+>> Valid values are [0, 99]. A value of 0 turns off the
+>> start threshold wear control.
+>>
+>> 2) Charge stop threshold
+>> /sys/class/power_supply/BATN/charge_stop_threshold
+>>
+>> Valid values are [1, 100]. A value of 100 turns off
+>> the stop threshold wear control. This must be
+>> configured first.
+>
+> This is a new sysfs file, that should be documented.
 
-What about the "cooling-cells" ? Its usage is unclear in the code and
-I'm not sure it is really needed.
+Right, I should have remembered about that, sorry.
 
+> Also this looks pretty generic. Just introduce new POWER_SUPPLY_PROP_
+> entries for start/stop charging threshold and use them.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+What about doing this as a follow-up?
