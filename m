@@ -1,107 +1,112 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Fri, 9 Feb 2018 13:08:22 +0100
-Message-ID: <CAJZ5v0g-ypbVT77vSpjTX5mrpedu_=eH+O3b5d6PE5ydL1=VRQ@mail.gmail.com>
-References: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
- <20180209035143.GX28462@vireshk-i7> <197c26ba-c2a6-2de7-dffa-5b884079f746@evidence.eu.com>
- <11598161.veS9VGWB8G@aspire.rjw.lan> <20180209105305.GD12979@localhost.localdomain>
- <CAJZ5v0h9L2mMEaV6oECk9f2ob42Nr9zyqafymwvb+UP+G1q04Q@mail.gmail.com>
- <20180209112618.GE12979@localhost.localdomain> <CAJZ5v0g4bgDKP96rivKPE-EMr7SuUhL9OO=M+MQuAjbdq9R45g@mail.gmail.com>
- <20180209115155.GG12979@localhost.localdomain>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [Query] thermal: Who is using "cooling-{min|max}-level}"
+ properties ?
+Date: Fri, 9 Feb 2018 13:14:45 +0100
+Message-ID: <5722441d-c8be-4d29-fab7-28b4e5716961@linaro.org>
+References: <20180207065959.GN28462@vireshk-i7>
+ <c7bd6ed5-b93e-3a07-b4a2-4c3b1eef5fac@linaro.org>
+ <20180207102446.GS28462@vireshk-i7>
+ <11fbba25-7029-8a13-476e-ea2f2de6fbf9@linaro.org>
+ <20180209064211.GY28462@vireshk-i7>
+ <539699c7-9509-dea2-2b31-c5f6749c99c4@linaro.org>
+ <20180209092421.GL28462@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f175.google.com ([74.125.82.175]:34148 "EHLO
-        mail-ot0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751062AbeBIMIX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 07:08:23 -0500
-In-Reply-To: <20180209115155.GG12979@localhost.localdomain>
+Received: from mail-wm0-f43.google.com ([74.125.82.43]:33381 "EHLO
+        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751003AbeBIMOt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 07:14:49 -0500
+Received: by mail-wm0-f43.google.com with SMTP id x4so3706731wmc.0
+        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 04:14:48 -0800 (PST)
+In-Reply-To: <20180209092421.GL28462@vireshk-i7>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Claudio Scordino <claudio@evidence.eu.com>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org, Punit.Agrawal@arm.com, ionela.voinescu@arm.com
 
-On Fri, Feb 9, 2018 at 12:51 PM, Juri Lelli <juri.lelli@redhat.com> wrote:
-> On 09/02/18 12:37, Rafael J. Wysocki wrote:
->> On Fri, Feb 9, 2018 at 12:26 PM, Juri Lelli <juri.lelli@redhat.com> wrote:
->> > On 09/02/18 12:04, Rafael J. Wysocki wrote:
->> >> On Fri, Feb 9, 2018 at 11:53 AM, Juri Lelli <juri.lelli@redhat.com> wrote:
->> >> > Hi,
->> >> >
->> >> > On 09/02/18 11:36, Rafael J. Wysocki wrote:
->> >> >> On Friday, February 9, 2018 9:02:34 AM CET Claudio Scordino wrote:
->> >> >> > Hi Viresh,
->> >> >> >
->> >> >> > Il 09/02/2018 04:51, Viresh Kumar ha scritto:
->> >> >> > > On 08-02-18, 18:01, Claudio Scordino wrote:
->> >> >> > >> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
->> >> >> > >> we should not wait for the rate limit, otherwise we may miss some deadline.
->> >> >> > >>
->> >> >> > >> Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
->> >> >> > >> misses for tasks with low RT periods.
->> >> >> > >>
->> >> >> > >> The patch applies on top of the one recently proposed by Peter to drop the
->> >> >> > >> SCHED_CPUFREQ_* flags.
->> >> >> > >>
->> >> >>
->> >> >> [cut]
->> >> >>
->> >> >> >
->> >> >> > >
->> >> >> > > Is it possible to (somehow) check here if the DL tasks will miss
->> >> >> > > deadline if we continue to run at current frequency? And only ignore
->> >> >> > > rate-limit if that is the case ?
->> >> >
->> >> > Isn't it always the case? Utilization associated to DL tasks is given by
->> >> > what the user said it's needed to meet a task deadlines (admission
->> >> > control). If that task wakes up and we realize that adding its
->> >> > utilization contribution is going to require a frequency change, we
->> >> > should _theoretically_ always do it, or it will be too late. Now, user
->> >> > might have asked for a bit more than what strictly required (this is
->> >> > usually the case to compensate for discrepancies between theory and real
->> >> > world, e.g.  hw transition limits), but I don't think there is a way to
->> >> > know "how much". :/
->> >>
->> >> You are right.
->> >>
->> >> I'm somewhat concerned about "fast switch" cases when the rate limit
->> >> is used to reduce overhead.
->> >
->> > Mmm, right. I'm thinking that in those cases we could leave rate limit
->> > as is. The user should then be aware of it and consider it as proper
->> > overhead when designing her/his system.
->> >
->> > But then, isn't it the same for "non fast switch" platforms? I mean,
->> > even in the latter case we can't go faster than hw limits.. mmm, maybe
->> > the difference is that in the former case we could go as fast as theory
->> > would expect.. but we shouldn't. :)
->>
->> Well, in practical terms that means "no difference" IMO. :-)
->>
->> I can imagine that in some cases this approach may lead to better
->> results than reducing the rate limit overall, but the general case I'm
->> not sure about.
->>
->> I mean, if overriding the rate limit doesn't take place very often,
->> then it really should make no difference overhead-wise.  Now, of
->> course, how to define "not very often" is a good question as that
->> leads to rate-limiting the overriding of the original rate limit and
->> that scheme may continue indefinitely ...
->
-> :)
->
-> My impression is that rate limit helps a lot for CFS, where the "true"
-> utilization is not known in advance, and being too responsive might
-> actually be counterproductive.
->
-> For DEADLINE (and RT, with differences) we should always respond as
-> quick as we can (and probably remember that a frequency transition was
-> requested if hw was already performing one, but that's another patch)
-> because, if we don't, a task belonging to a lower priority class might
-> induce deadline misses in highest priority activities. E.g., a CFS task
-> that happens to trigger a freq switch right before a DEADLINE task wakes
-> up and needs an higher frequency to meet its deadline: if we wait for
-> the rate limit of the CFS originated transition.. deadline miss!
+On 09/02/2018 10:24, Viresh Kumar wrote:
+> On 09-02-18, 10:15, Daniel Lezcano wrote:
+>> On 09/02/2018 07:42, Viresh Kumar wrote:
+>>> On 07-02-18, 11:45, Daniel Lezcano wrote:
+>>>> Yes, that is my understanding. cooling-min-level and cooling-max-level
+>>>> are not used in the thermal framework code today.
+>>>
+>>> Right.
+>>>
+>>>> So if they are defined, we should check the cooling-device max and min
+>>>> are in the boundaries (if they are different from no-limit).
+>>>
+>>> Hmm, I am not sure. We do compare those values (from maps) with the
+>>> max reported by the cooling driver, so there is some boundary check
+>>> happening. And I don't think it is worth comparing the min/max values
+>>> from DT cooling device's nodes. Why not just leave those for the
+>>> driver to return (which is already happening btw).
+>>>
+>>> I don't think it would be correct for the thermal core to go and look
+>>> at the min/max properties of the cooling device directly, as those are
+>>> more for the thermal driver's help. The thermal core should just call
+>>> the get_max_state() callback and that's it.
+>>>
+>>> Anyway, we can take decision on the binding itself after some time but
+>>> I will send some patches to get rid of this property from CPU nodes
+>>> for now. It doesn't make sense to have it there (anyway it is
+>>> optional), as the cpu cooling devices are kind of virtual cooling
+>>> devices which rely on OPP or freq-table currently. Maybe I will begin
+>>> by just updating one platform and once that is merged, update
+>>> everything else as well.
+> 
+> So I eventually updated everything as very small number of platforms
+> were actually using it.
+> 
+> https://lkml.kernel.org/r/cover.1518166039.git.viresh.kumar@linaro.org
 
-Fair enough, but if there's too much overhead as a result of this, you
-can't guarantee the deadlines to be met anyway.
+Yep, saw them.
+
+>> What about the "cooling-cells" ? Its usage is unclear in the code and
+>> I'm not sure it is really needed.
+> 
+> As I can see, it is actually used (sometimes a bit indirectly).
+
+(yeah, that was the meaning of 'unclear')
+
+> - This field is used to check if a device is a cooling device or not.
+>   For example, the cpu-cooling device wouldn't be registered by the
+>   cpufreq drivers unless this property is present in the CPU node. So
+>   this is actually used.
+>
+> - This field (and its value) also comes into picture while parsing the
+>   "cooling-maps". The "cooling-device" property in the map needs to
+>   have "cooing-cells" + 1 fields. The first one is the cooling-device
+>   phandle, followed by min/max states.
+
+Right. The semantic is unclear. The expected cooling-cells value is
+always 2 (the code ignore values greater than two and yell if it is less
+than 2). And the cooling-device binding tells there are two states.
+
+So the question is why do we need a cooling-cells as the information is
+pointless here (always 2) ?
+
+I see this field is artificially used to tell the cpufreq driver "please
+register me as a cooling device". This is inconsistent from my pov.
+
+Furthermore, the thermal-zone with the cooling device binds with the CPU
+phandle, not the cooling-cells.
+
+Putting apart the device binding changes discussion for the moment. Why
+not register the cpufreq driver in all the cases and then drop
+cooling-cells ? So when the opps are present, its registers in the
+cpufreq->ready callback.
+
+
+
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
