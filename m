@@ -1,416 +1,417 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH 4/4] drivers: qcom: rpmh: add RPMH helper functions
-Date: Thu, 8 Feb 2018 23:15:59 +0000
-Message-ID: <20180208231559.GC7084@codeaurora.org>
-References: <20180119000157.7380-1-ilina@codeaurora.org>
- <20180119000157.7380-5-ilina@codeaurora.org>
- <20180205195007.GD9465@builder>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v6 15/15] dt-bindings: cpufreq: Document
+ operating-points-v2-krait-cpu
+Date: Thu, 8 Feb 2018 20:54:49 -0600
+Message-ID: <20180209025449.qvbirdvflijxo62j@rob-hp-laptop>
+References: <1517890108-8140-1-git-send-email-sricharan@codeaurora.org>
+ <1517890108-8140-16-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:40270 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752372AbeBHXQC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 18:16:02 -0500
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180205195007.GD9465@builder>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1517890108-8140-16-git-send-email-sricharan@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, sboyd@codeaurora.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, Feb 05 2018 at 19:50 +0000, Bjorn Andersson wrote:
->On Thu 18 Jan 16:01 PST 2018, Lina Iyer wrote:
->> diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
->> index b7951ce87663..0dba46387f1c 100644
->> --- a/drivers/soc/qcom/Makefile
->> +++ b/drivers/soc/qcom/Makefile
->> @@ -11,4 +11,4 @@ obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
->>  obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
->>  obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
->>  obj-$(CONFIG_QCOM_COMMAND_DB) += cmd-db.o
->> -obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o
->> +obj-$(CONFIG_QCOM_RPMH)	+=	rpmh-rsc.o rpmh.o
->
->I think it would be better if you built these two objects into the same
->module;
->
->obj-$(CONFIG_QCOM_RPMH) += qcom_rpmh.o
->qcom_rpmh-y += rpmh-rsc.o
->qcom_rpmh-y += rpmh.o
->
-Curious, how this would be better?
+On Tue, Feb 06, 2018 at 09:38:28AM +0530, Sricharan R wrote:
+> In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
+> that has KRAIT processors the voltage/current value of each OPP
+> varies based on the silicon variant in use.
+> operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
+> and the operating-points-v2 table for each opp. The qcom-cpufreq driver
+> reads the efuse value from the SoC to provide the required information
+> that is used to determine the voltage and current value for each OPP of
+> operating-points-v2 table when it is parsed by the OPP framework.
+> 
+> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> ---
+>  .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
+>  1 file changed, 363 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+> new file mode 100644
+> index 0000000..e7351f7
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+> @@ -0,0 +1,363 @@
+> +QCOM KRAIT CPUFreq and OPP bindings
+> +===================================
+> +
+> +In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
+> +that has KRAIT processors the voltage value of each OPP varies
+> +based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+> +defines the voltage and current value based on the speed/pvs/version
+> +combination blown in the efuse. The qcom-cpufreq driver reads the efuse
+> +value from the SoC to provide the OPP framework with required information.
+> +This is used to determine the voltage and current value for each OPP of
+> +operating-points-v2 table when it is parsed by the OPP framework.
+> +
+> +Required properties:
+> +--------------------
+> +In 'cpus' nodes:
+> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+> +
+> +In 'operating-points-v2' table:
+> +- compatible: Should be
+> +	- 'operating-points-v2-krait-cpu' for ipq8064, apq8064, msm8960,
+> +					      msm8974.
+> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+> +		efuse registers that has information about the
+> +		speedbin/pvs/version that is used to select the right
+> +		voltage/current value pair. Note that the length field of the
+> +		nvmem-cell is used to differentiate between format 'A' or 'B'
+> +		efuse settings. len of '4' bytes is for format 'A' and '8'
+> +		bytes for format 'B'. Please refer the for nvmem-cells
+> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
+> +		and also examples below for both the cases.
+> +Example 1:
+> +---------
+> +
+> +/* For arch/arm/boot/dts/apq8064.dtsi --> format 'A' */
+> +cpus {
+> +	#address-cells = <1>;
+> +	#size-cells = <0>;
+> +
+> +	CPU0: cpu@0 {
+> +		compatible = "qcom,krait";
+> +		enable-method = "qcom,kpss-acc-v1";
+> +		device_type = "cpu";
+> +		reg = <0>;
+> +		next-level-cache = <&L2>;
+> +		qcom,acc = <&acc0>;
+> +		qcom,saw = <&saw0>;
+> +		cpu-idle-states = <&CPU_SPC>;
+> +		operating-points-v2 = <&cpu_opp_table>;
+> +	};
+> +};
+> +
+> +qfprom: qfprom@700000 {
+> +	  compatible      = "qcom,qfprom";
+> +	  reg	      = <0x00700000 0x1000>;
+> +	  #address-cells  = <1>;
+> +	  #size-cells     = <1>;
+> +	  ranges;
+> +	  pvs_efuse: pvs {
+> +		reg = <0xc0 0x4>;
+> +	};
+> +};
+> +
+> +cpu_opp_table: opp-table {
+> +	compatible = "operating-points-v2-krait-cpu";
+> +	nvmem-cells = <&pvs_efuse>;
+> +
+> +		/*
+> +		 * Missing opp-shared property means CPUs switch DVFS states
+> +		 * independently.
+> +		 */
+> +
+> +	       opp-918000000 {
+> +			opp-hz = /bits/ 64 <918000000>;
+> +			opp-microvolt-speed0-pvs0-v0 = <1100000>;
 
->> diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
->[..]
->> diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
->[..]
->> +#define RPMH_TIMEOUT			msecs_to_jiffies(10000)
->
->10 * HZ
->
->> +
->> +#define DEFINE_RPMH_MSG_ONSTACK(rc, s, q, c, name)	\
->> +	struct rpmh_msg name = {			\
->> +		.msg = {				\
->> +			.state = s,			\
->> +			.payload = name.cmd,		\
->> +			.num_payload = 0,		\
->> +			.is_complete = true,		\
->> +			.invalidate = false,		\
->> +		},					\
->> +		.cmd = { { 0 } },			\
->> +		.completion = q,			\
->> +		.wait_count = c,			\
->> +		.rc = rc,				\
->> +	}
->> +
->> +/**
->> + * rpmh_msg: the message to be sent to rpmh-rsc
->> + *
->> + * @msg: the request
->> + * @cmd: the payload that will be part of the @msg
->> + * @completion: triggered when request is done
->> + * @wait_count: count of waiters for this completion
->> + * @err: err return from the controller
->> + */
->> +struct rpmh_msg {
->
->struct rpmh_request ?
->
-Hmm.. ok.
+Where is this property defined? I'm not that happy with it, but don't 
+have a better suggestion. Maybe make pvsN be an array of values with 0 
+for any skipped indexes? The '-v0' seems pointless. 
 
->> +	struct tcs_mbox_msg msg;
->> +	struct tcs_cmd cmd[MAX_RPMH_PAYLOAD];
->> +	struct completion *completion;
->> +	atomic_t *wait_count;
->
->When will @wait_count > 1? As far as I can see the only purpose would be
->to be able to control whether you should complete @completion 0 or N
->times; but 0 times is covered already by not specifying a @completion.
->
-There is a patch that I haven't posted in this series. It sends a batch
-of requests instead of just 1. The wait count is equal to the number of
-requests in that batch. Sorry it is a bit ahead of its real use. Adding
-it later, increases unnecessary changes in the patches.
+> +			opp-microvolt-speed0-pvs1-v0 = <1050000>;
+> +			opp-microvolt-speed0-pvs3-v0 = <1000000>;
+> +			opp-microvolt-speed0-pvs4-v0 = <975000>;
+> +			opp-microvolt-speed1-pvs0-v0 = <1025000>;
+> +			opp-microvolt-speed1-pvs1-v0 = <1000000>;
+> +			opp-microvolt-speed1-pvs2-v0 = <950000>;
+> +			opp-microvolt-speed1-pvs3-v0 = <925000>;
+> +			opp-microvolt-speed1-pvs4-v0 = <900000>;
+> +			opp-microvolt-speed1-pvs5-v0 = <900000>;
+> +			opp-microvolt-speed1-pvs6-v0 = <900000>;
+> +			opp-microvolt-speed2-pvs0-v0 = <975000>;
+> +			opp-microvolt-speed2-pvs1-v0 = <950000>;
+> +			opp-microvolt-speed2-pvs2-v0 = <925000>;
+> +			opp-microvolt-speed2-pvs3-v0 = <912500>;
+> +			opp-microvolt-speed2-pvs4-v0 = <900000>;
+> +			opp-microvolt-speed2-pvs5-v0 = <900000>;
+> +			opp-microvolt-speed2-pvs6-v0 = <900000>;
+> +			opp-microvolt-speed14-pvs0-v0 = <1025000>;
+> +			opp-microvolt-speed14-pvs1-v0 = <1000000>;
+> +			opp-microvolt-speed14-pvs2-v0 = <950000>;
+> +			opp-microvolt-speed14-pvs3-v0 = <925000>;
+> +			opp-microvolt-speed14-pvs4-v0 = <900000>;
+> +			opp-microvolt-speed14-pvs5-v0 = <900000>;
+> +			opp-microvolt-speed14-pvs6-v0 = <900000>;
+> +		};
+> +
+> +		opp-810000000 {
+> +			opp-hz = /bits/ 64 <810000000>;
+> +			opp-microvolt-speed0-pvs0-v0 =  < 1075000>;
+> +			opp-microvolt-speed0-pvs1-v0 = 	< 1025000>;
+> +			opp-microvolt-speed0-pvs3-v0 = 	< 975000>;
+> +			opp-microvolt-speed0-pvs3-v0 = 	< 962500>;
+> +			opp-microvolt-speed1-pvs0-v0 = 	< 1000000>;
+> +			opp-microvolt-speed1-pvs1-v0 = 	< 975000>;
+> +			opp-microvolt-speed1-pvs2-v0 = 	< 937500>;
+> +			opp-microvolt-speed1-pvs3-v0 = 	< 900000>;
+> +			opp-microvolt-speed1-pvs4-v0 = 	< 887500>;
+> +			opp-microvolt-speed1-pvs5-v0 = 	< 887500>;
+> +			opp-microvolt-speed1-pvs6-v0 = 	< 887500>;
+> +			opp-microvolt-speed2-pvs0-v0 = 	< 962500>;
+> +			opp-microvolt-speed2-pvs1-v0 = 	< 937500>;
+> +			opp-microvolt-speed2-pvs2-v0 = 	< 912500>;
+> +			opp-microvolt-speed2-pvs3-v0 = 	< 900000>;
+> +			opp-microvolt-speed2-pvs4-v0 = 	< 887500>;
+> +			opp-microvolt-speed2-pvs5-v0 = 	< 887500>;
+> +			opp-microvolt-speed2-pvs6-v0 = 	< 887500>;
 
->> +	struct rpmh_client *rc;
->> +	int err;
->> +};
->> +
->> +/**
->> + * rpmh_ctrlr: our representation of the controller
->> + *
->> + * @drv: the controller instance
->> + */
->> +struct rpmh_ctrlr {
->> +	struct rsc_drv *drv;
->
->Is this going to grow in the future? Otherwise just drop it and
->reference the rsc_drv directly. (Even if it's growing it might be
->cleaner to introduce it at that point)
->
-Will grow :)
+Some space then tab issues on the above. Also, drop the space after the 
+'<'.
 
->> +};
->> +
->> +/**
->> + * rpmh_client: the client object
->> + *
->> + * @dev: the platform device that is the owner
->> + * @ctrlr: the controller associated with this client.
->> + */
->> +struct rpmh_client {
->> +	struct device *dev;
->> +	struct rpmh_ctrlr *ctrlr;
->> +};
->> +
->> +static struct rpmh_ctrlr rpmh_rsc[RPMH_MAX_MBOXES];
->> +static DEFINE_MUTEX(rpmh_ctrlr_mutex);
->
->The client needs a reference to the rsc_drv, using the rpmh_ctrlr
->abstraction and these global variables only seems to add unnecessary
->complexity.
->
-There would be more functionality that needs these as structures and
-a list of RSCs and therefore the global mutex and array.
+> +			opp-microvolt-speed14-pvs0-v0 =	< 1000000>;
+> +			opp-microvolt-speed14-pvs1-v0 =	< 975000>;
+> +			opp-microvolt-speed14-pvs2-v0 =	< 937500>;
+> +			opp-microvolt-speed14-pvs3-v0 =	< 900000>;
+> +			opp-microvolt-speed14-pvs4-v0 =	< 887500>;
+> +			opp-microvolt-speed14-pvs5-v0 =	< 887500>;
+> +			opp-microvolt-speed14-pvs6-v0 =	< 887500>;
+> +		};
+> +
+> +		opp-702000000 {
+> +			 opp-hz = /bits/ 64 <702000000>;
+> +			 opp-microvolt-speed0-pvs0-v0 =  <1025000>;
+> +			 opp-microvolt-speed0-pvs1-v0 =  <975000>;
+> +			 opp-microvolt-speed0-pvs3-v0 =  <925000>;
+> +			 opp-microvolt-speed0-pvs3-v0 =  <925000>;
+> +			 opp-microvolt-speed1-pvs0-v0 =  <962500>;
+> +			 opp-microvolt-speed1-pvs1-v0 =  <962500>;
+> +			 opp-microvolt-speed1-pvs2-v0 =  <925000>;
+> +			 opp-microvolt-speed1-pvs3-v0 =  <900000>;
+> +			 opp-microvolt-speed1-pvs4-v0 =  <875000>;
+> +			 opp-microvolt-speed1-pvs5-v0 =  <875000>;
+> +			 opp-microvolt-speed1-pvs6-v0 =  <875000>;
+> +			 opp-microvolt-speed2-pvs0-v0 =  <950000>;
+> +			 opp-microvolt-speed2-pvs1-v0 =  <925000>;
+> +			 opp-microvolt-speed2-pvs2-v0 =  <900000>;
+> +			 opp-microvolt-speed2-pvs3-v0 =  <900000>;
+> +			 opp-microvolt-speed2-pvs4-v0 =  <875000>;
+> +			 opp-microvolt-speed2-pvs5-v0 =  <875000>;
+> +			 opp-microvolt-speed2-pvs6-v0 =  <875000>;
+> +			 opp-microvolt-speed14-pvs0-v0 = <962500>;
+> +			 opp-microvolt-speed14-pvs1-v0 = <962500>;
+> +			 opp-microvolt-speed14-pvs2-v0 = <925000>;
+> +			 opp-microvolt-speed14-pvs3-v0 = <900000>;
+> +			 opp-microvolt-speed14-pvs4-v0 = <875000>;
+> +			 opp-microvolt-speed14-pvs5-v0 = <875000>;
+> +			 opp-microvolt-speed14-pvs6-v0 = <875000>;
+> +		};
+> +
+> +		opp-594000000 {
+> +			opp-hz = /bits/ 64 <594000000>;
+> +			opp-microvolt-speed0-pvs0-v0 =  <1000000>;
+> +			opp-microvolt-speed0-pvs1-v0 = 	<950000>;
+> +			opp-microvolt-speed0-pvs3-v0 = 	<900000>;
+> +			opp-microvolt-speed0-pvs3-v0 = 	<900000>;
+> +			opp-microvolt-speed1-pvs0-v0 = 	<950000>;
+> +			opp-microvolt-speed1-pvs1-v0 = 	<950000>;
+> +			opp-microvolt-speed1-pvs2-v0 = 	<925000>;
+> +			opp-microvolt-speed1-pvs3-v0 = 	<900000>;
+> +			opp-microvolt-speed1-pvs4-v0 = 	<875000>;
+> +			opp-microvolt-speed1-pvs5-v0 = 	<875000>;
+> +			opp-microvolt-speed1-pvs6-v0 = 	<875000>;
+> +			opp-microvolt-speed2-pvs0-v0 = 	<950000>;
+> +			opp-microvolt-speed2-pvs1-v0 = 	<925000>;
+> +			opp-microvolt-speed2-pvs2-v0 = 	<900000>;
+> +			opp-microvolt-speed2-pvs3-v0 = 	<900000>;
+> +			opp-microvolt-speed2-pvs4-v0 = 	<875000>;
+> +			opp-microvolt-speed2-pvs5-v0 = 	<875000>;
+> +			opp-microvolt-speed2-pvs6-v0 = 	<875000>;
 
-Please bear with me on this.
+More space then tab issues after the '='.
 
->> +
->> +void rpmh_tx_done(struct tcs_mbox_msg *msg, int r)
->> +{
->> +	struct rpmh_msg *rpm_msg = container_of(msg, struct rpmh_msg, msg);
->> +	atomic_t *wc = rpm_msg->wait_count;
->> +	struct completion *compl = rpm_msg->completion;
->> +
->> +	rpm_msg->err = r;
->> +
->> +	if (r)
->> +		dev_err(rpm_msg->rc->dev,
->> +			"RPMH TX fail in msg addr 0x%x, err=%d\n",
->> +			rpm_msg->msg.payload[0].addr, r);
->> +
->> +	/* Signal the blocking thread we are done */
->> +	if (wc && atomic_dec_and_test(wc))
->> +		if (compl)
->> +			complete(compl);
->
->I think that you should drop this function and just complete
->@rpm_msg->completion in the rcs driver.
->
-I am not sure how much  of it I can upstream. Downstream I add more
-functionality to this function to make it easier to debug on production.
-If its not a bother I would like to keep it as is. Who knows, may be I
-can get the debug code upstream.
-
->> +}
->> +EXPORT_SYMBOL(rpmh_tx_done);
->> +
->> +/**
->> + * wait_for_tx_done: Wait until the response is received.
->> + *
->> + * @rc: The RPMH client
->> + * @compl: The completion object
->> + * @addr: An addr that we sent in that request
->> + * @data: The data for the address in that request
->> + *
->> + */
->> +static inline int wait_for_tx_done(struct rpmh_client *rc,
->> +		struct completion *compl, u32 addr, u32 data)
->> +{
->> +	int ret;
->> +
->> +	ret = wait_for_completion_timeout(compl, RPMH_TIMEOUT);
->> +	if (ret)
->> +		dev_dbg(rc->dev,
->> +			"RPMH response received addr=0x%x data=0x%x\n",
->> +			addr, data);
->> +	else
->> +		dev_err(rc->dev,
->> +			"RPMH response timeout addr=0x%x data=0x%x\n",
->> +			addr, data);
->
->The request can contain a number of commands and these error messages
->ends up printing the first one, on behalf of the client. I suspect that
->this isn't useful enough in most cases, causing the client to print
->another time.
->
->I therefor suggest that you omit these prints.
->
-On the contrary, just the first address in the request is quite
-sufficient to know what request failed. The rest of the requests in
-dumped in the FTRACE while sending the request. That is enough to know
-what was sent and correlate with what failed.
-
->> +
->> +	return  (ret > 0) ? 0 : -ETIMEDOUT;
->> +}
->> +
->> +/**
->> + * __rpmh_write: send the RPMH request
->> + *
->> + * @rc: The RPMH client
->> + * @state: Active/Sleep request type
->> + * @rpm_msg: The data that needs to be sent (payload).
->> + */
->> +int __rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
->> +			struct rpmh_msg *rpm_msg)
->> +{
->> +	int ret = -EFAULT;
->> +
->> +	rpm_msg->msg.state = state;
->> +
->> +	if (state == RPMH_ACTIVE_ONLY_STATE) {
->> +		WARN_ON(irqs_disabled());
->> +		ret = rpmh_rsc_send_data(rc->ctrlr->drv, &rpm_msg->msg);
->> +		if (!ret)
->> +			dev_dbg(rc->dev,
->> +				"RPMH request sent addr=0x%x, data=0x%x\n",
->> +				rpm_msg->msg.payload[0].addr,
->> +				rpm_msg->msg.payload[0].data);
->> +		else
->> +			dev_warn(rc->dev,
->> +				"Error in RPMH request addr=0x%x, data=0x%x\n",
->> +				rpm_msg->msg.payload[0].addr,
->> +				rpm_msg->msg.payload[0].data);
->
->Same thing here, for the user to be able to make sense of this error the
->client will have to print something with more context. So I think you
->should omit these too.
->
->
->tracing failing addr/data pairs might make sense though!
->
-See explanation above.
-
->> +	}
->> +
->> +	return ret;
->> +}
->> +
->> +/**
->> + * rpmh_write: Write a set of RPMH commands and block until response
->> + *
->> + * @rc: The RPMh handle got from rpmh_get_dev_channel
->> + * @state: Active/sleep set
->> + * @cmd: The payload data
->> + * @n: The number of elements in payload
->> + *
->> + * May sleep. Do not call from atomic contexts.
->> + */
->> +int rpmh_write(struct rpmh_client *rc, enum rpmh_state state,
->> +			struct tcs_cmd *cmd, int n)
->> +{
->> +	DECLARE_COMPLETION_ONSTACK(compl);
->> +	atomic_t wait_count = ATOMIC_INIT(1);
->> +	DEFINE_RPMH_MSG_ONSTACK(rc, state, &compl, &wait_count, rpm_msg);
->> +	int ret;
->> +
->> +	if (IS_ERR_OR_NULL(rc) || !cmd || n <= 0 || n > MAX_RPMH_PAYLOAD)
->> +		return -EINVAL;
->> +
->> +	might_sleep();
->> +
->> +	memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
->> +	rpm_msg.msg.num_payload = n;
->> +
->> +	ret = __rpmh_write(rc, state, &rpm_msg);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return wait_for_tx_done(rc, &compl, cmd[0].addr, cmd[0].data);
->
->As you're returning here the completion object on the stack will be
->trash, so you must inform rpmh_rsc that it may no longer complete it.
->
->I suggest that you provide two functions in the rsc driver;
->rpmh_rsc_send_sync() and rpmh_rsc_send_async(), and move the
->wait-for-completion into the sync one. Also make the sync one return the
->msg->err (and drop the tx_done cross-call).
->
->(Or call them rpmh_rsc_send_wait() and rpmh_rsc_send_nowait())
->
-This is the sync variant. The async variant follows this patch.
-
-The wait_for_tx_done() is blocking and the compl object will not be
-trashed until the completion is completed or it fails.
-
->> +}
->> +EXPORT_SYMBOL(rpmh_write);
->> +
->> +static struct rpmh_ctrlr *get_rpmh_ctrlr(struct platform_device *pdev)
->> +{
->> +	int i;
->> +	struct rsc_drv *drv = dev_get_drvdata(pdev->dev.parent);
->> +	struct rpmh_ctrlr *ctrlr = ERR_PTR(-EFAULT);
->> +
->> +	if (!drv)
->> +		return ctrlr;
->> +
->> +	mutex_lock(&rpmh_ctrlr_mutex);
->> +	for (i = 0; i < RPMH_MAX_MBOXES; i++)
->> +		if (rpmh_rsc[i].drv == drv) {
->> +			ctrlr = &rpmh_rsc[i];
->> +			goto unlock;
->> +		}
->> +
->> +	if (i == RPMH_MAX_MBOXES)
->> +		for (i = 0; i < RPMH_MAX_MBOXES; i++)
->> +			if (rpmh_rsc[i].drv == NULL) {
->> +				ctrlr = &rpmh_rsc[i];
->> +				ctrlr->drv = drv;
->> +				break;
->> +			}
->
->I fail to see the reason for tracking rsc_drv references in a global
->array and try to find an existing one here. Just return the rsc_drv
->acquired from dev_get_drvdata() to the caller.
->
-There are multiple RSCs and clients would refer to one of them.
-
-Future patches add information to the RSC as dictated by the client
-(display driver is using the RSC) and therefore take action
-accordingly.
-
->> +unlock:
->> +	mutex_unlock(&rpmh_ctrlr_mutex);
->> +	return ctrlr;
->> +}
->> +
->> +/**
->> + * rpmh_get_client: Get the RPMh handle
->> + *
->> + * @pdev: the platform device which needs to communicate with RPM
->> + * accelerators
->> + * May sleep.
->> + */
->> +struct rpmh_client *rpmh_get_client(struct platform_device *pdev)
->
->To make this analog to previous rpm drivers I think you should take the
->device * of the parent here. I.e. client does:
->
->	rpmh = rpmh_get_client(&pdev->dev.parent).
->
->
->I recognize that this removes the possibility of providing error
->messages indicating which client caused the fault, but by above
->suggestions these functions would be moved into the rsc driver; or the
->error would be propagated to the client which could print these
->themselves.
->
-I don't see a particular reason to be analogous with RPM. But, let me
-think about it.
-
->> +{
->> +	struct rpmh_client *rc;
->> +
->> +	rc = kzalloc(sizeof(*rc), GFP_KERNEL);
->> +	if (!rc)
->> +		return ERR_PTR(-ENOMEM);
->> +
->> +	rc->dev = &pdev->dev;
->> +	rc->ctrlr = get_rpmh_ctrlr(pdev);
->> +	if (IS_ERR(rc->ctrlr)) {
->> +		kfree(rc);
->> +		return ERR_PTR(-EFAULT);
->> +	}
->> +
->> +	return rc;
->> +}
->> +EXPORT_SYMBOL(rpmh_get_client);
->> +
->> +/**
->> + * rpmh_release: Release the RPMH client
->> + *
->> + * @rc: The RPMh handle to be freed.
->> + */
->> +void rpmh_release(struct rpmh_client *rc)
->> +{
->> +	kfree(rc);
->
->If you reduce above function to just return a rsc_drv reference you
->don't even need a release function, which simplifies clients further.
->
-Hmm.. not sure I understand. I need to release the allocated memory.
-
->> +}
->> +EXPORT_SYMBOL(rpmh_release);
->> diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
->[..]
->> +struct rpmh_client;
->> +
->> +#ifdef CONFIG_QCOM_RPMH
->
->I think it would be fine to just make clients depend on QCOM_RPMH. If
->you would prefer to get the compile testing in those drivers then make
->this:
->
->#if IS_ENABLED(CONFIG_QCOM_RPMH)
->
->In case someone in the future decides to make RPMH tristate.
->
-OK.
-
-Thanks,
-Lina
+> +			opp-microvolt-speed14-pvs0-v0 =	<950000>;
+> +			opp-microvolt-speed14-pvs1-v0 =	<950000>;
+> +			opp-microvolt-speed14-pvs2-v0 =	<925000>;
+> +			opp-microvolt-speed14-pvs3-v0 =	<900000>;
+> +			opp-microvolt-speed14-pvs4-v0 =	<875000>;
+> +			opp-microvolt-speed14-pvs5-v0 =	<875000>;
+> +			opp-microvolt-speed14-pvs6-v0 =	<875000>;
+> +		};
+> +
+> +		opp-486000000 {
+> +			 opp-hz = /bits/ 64 <486000000>;
+> +			 opp-microvolt-speed0-pvs0-v0 = <975000>;
+> +			 opp-microvolt-speed0-pvs1-v0 = <925000>;
+> +			 opp-microvolt-speed0-pvs3-v0 = <875000>;
+> +			 opp-microvolt-speed0-pvs3-v0 = <875000>;
+> +			 opp-microvolt-speed1-pvs0-v0 = <950000>;
+> +			 opp-microvolt-speed1-pvs1-v0 = <950000>;
+> +			 opp-microvolt-speed1-pvs2-v0 = <925000>;
+> +			 opp-microvolt-speed1-pvs3-v0 = <900000>;
+> +			 opp-microvolt-speed1-pvs4-v0 = <875000>;
+> +			 opp-microvolt-speed1-pvs5-v0 = <875000>;
+> +			 opp-microvolt-speed1-pvs6-v0 = <875000>;
+> +			 opp-microvolt-speed2-pvs0-v0 = <950000>;
+> +			 opp-microvolt-speed2-pvs1-v0 = <925000>;
+> +			 opp-microvolt-speed2-pvs2-v0 = <900000>;
+> +			 opp-microvolt-speed2-pvs3-v0 = <900000>;
+> +			 opp-microvolt-speed2-pvs4-v0 = <875000>;
+> +			 opp-microvolt-speed2-pvs5-v0 = <875000>;
+> +			 opp-microvolt-speed2-pvs6-v0 = <875000>;
+> +			 opp-microvolt-speed14-pvs0-v0 = <950000>;
+> +			 opp-microvolt-speed14-pvs1-v0 = <950000>;
+> +			 opp-microvolt-speed14-pvs2-v0 = <925000>;
+> +			 opp-microvolt-speed14-pvs3-v0 = <900000>;
+> +			 opp-microvolt-speed14-pvs4-v0 = <875000>;
+> +			 opp-microvolt-speed14-pvs5-v0 = <875000>;
+> +			 opp-microvolt-speed14-pvs6-v0 = <875000>;
+> +		};
+> +
+> +		opp-384000000 {
+> +			opp-hz = /bits/ 64 <384000000>;
+> +			opp-microvolt-speed0-pvs0-v0 = <950000>;
+> +			opp-microvolt-speed0-pvs1-v0 = <900000>;
+> +			opp-microvolt-speed0-pvs3-v0 = <850000>;
+> +			opp-microvolt-speed0-pvs3-v0 = <850000>;
+> +			opp-microvolt-speed1-pvs0-v0 = <950000>;
+> +			opp-microvolt-speed1-pvs1-v0 = <950000>;
+> +			opp-microvolt-speed1-pvs2-v0 = <925000>;
+> +			opp-microvolt-speed1-pvs3-v0 = <900000>;
+> +			opp-microvolt-speed1-pvs4-v0 = <875000>;
+> +			opp-microvolt-speed1-pvs5-v0 = <875000>;
+> +			opp-microvolt-speed1-pvs6-v0 = <875000>;
+> +			opp-microvolt-speed2-pvs0-v0 = <950000>;
+> +			opp-microvolt-speed2-pvs1-v0 = <925000>;
+> +			opp-microvolt-speed2-pvs2-v0 = <900000>;
+> +			opp-microvolt-speed2-pvs3-v0 = <900000>;
+> +			opp-microvolt-speed2-pvs4-v0 = <875000>;
+> +			opp-microvolt-speed2-pvs5-v0 = <875000>;
+> +			opp-microvolt-speed2-pvs6-v0 = <875000>;
+> +			opp-microvolt-speed14-pvs0-v0 = <950000>;
+> +			opp-microvolt-speed14-pvs1-v0 = <950000>;
+> +			opp-microvolt-speed14-pvs2-v0 = <925000>;
+> +			opp-microvolt-speed14-pvs3-v0 = <900000>;
+> +			opp-microvolt-speed14-pvs4-v0 = <875000>;
+> +			opp-microvolt-speed14-pvs5-v0 = <875000>;
+> +			opp-microvolt-speed14-pvs6-v0 = <875000>;
+> +		};
+> +};
+> +
+> +EXAMPLE 2:
+> +---------
+> +/* For arch/arm/boot/dts/qcom-msm8974.dtsi--> format 'B' */
+> +
+> +qfprom: qfprom@700000 {
+> +	  compatible      = "qcom,qfprom";
+> +	  reg	      = <0x00700000 0x1000>;
+> +	  #address-cells  = <1>;
+> +	  #size-cells     = <1>;
+> +	  ranges;
+> +	  pvs_efuse: pvs {
+> +		reg = <0xc0 0x8>;
+> +	};
+> +};
+> +
+> +cpu_opp_table: opp-table {
+> +	compatible = "operating-points-v2-krait-cpu";
+> +	nvmem-cells = <&pvs_efuse>;
+> +
+> +		/*
+> +		 * Missing opp-shared property means CPUs switch DVFS states
+> +		 * independently.
+> +		 */
+> +	opp-960000000 {
+> +		opp-hz = /bits/ 64 <960000000>;
+> +		opp-microvolt-speed0-pvs0-v0 = <915000>;
+> +		opp-microvolt-speed0-pvs1-v0 = <895000>;
+> +		opp-microvolt-speed0-pvs2-v0 = <875000>;
+> +		opp-microvolt-speed0-pvs3-v0 = <860000>;
+> +		opp-microvolt-speed0-pvs4-v0 = <850000>;
+> +		opp-microvolt-speed0-pvs5-v0 = <840000>;
+> +		opp-microvolt-speed0-pvs6-v0 = <830000>;
+> +		opp-microvolt-speed2-pvs0-v0 = <875000>;
+> +		opp-microvolt-speed2-pvs1-v0 = <860000>;
+> +		opp-microvolt-speed2-pvs2-v0 = <845000>;
+> +		opp-microvolt-speed2-pvs3-v0 = <830000>;
+> +		opp-microvolt-speed2-pvs4-v0 = <820000>;
+> +		opp-microvolt-speed2-pvs5-v0 = <810000>;
+> +		opp-microvolt-speed2-pvs6-v0 = <800000>;
+> +		opp-microvolt-speed1-pvs0-v0 = <840000>;
+> +		opp-microvolt-speed1-pvs1-v0 = <825000>;
+> +		opp-microvolt-speed1-pvs2-v0 = <810000>;
+> +		opp-microvolt-speed1-pvs3-v0 = <795000>;
+> +		opp-microvolt-speed1-pvs4-v0 = <785000>;
+> +		opp-microvolt-speed1-pvs5-v0 = <775000>;
+> +		opp-microvolt-speed1-pvs6-v0 = <765000>;
+> +
+> +		opp-microamp-speed0-pvs0-v0 = <252>;
+> +		opp-microamp-speed0-pvs1-v0 = <252>;
+> +		opp-microamp-speed0-pvs2-v0 = <252>;
+> +		opp-microamp-speed0-pvs3-v0 = <252>;
+> +		opp-microamp-speed0-pvs4-v0 = <252>;
+> +		opp-microamp-speed0-pvs5-v0 = <252>;
+> +		opp-microamp-speed0-pvs6-v0 = <252>;
+> +		opp-microamp-speed2-pvs0-v0 = <245>;
+> +		opp-microamp-speed2-pvs1-v0 = <245>;
+> +		opp-microamp-speed2-pvs2-v0 = <245>;
+> +		opp-microamp-speed2-pvs3-v0 = <245>;
+> +		opp-microamp-speed2-pvs4-v0 = <245>;
+> +		opp-microamp-speed2-pvs5-v0 = <245>;
+> +		opp-microamp-speed2-pvs6-v0 = <245>;
+> +		opp-microamp-speed1-pvs0-v0 = <242>;
+> +		opp-microamp-speed1-pvs1-v0 = <242>;
+> +		opp-microamp-speed1-pvs2-v0 = <242>;
+> +		opp-microamp-speed1-pvs3-v0 = <242>;
+> +		opp-microamp-speed1-pvs4-v0 = <242>;
+> +		opp-microamp-speed1-pvs5-v0 = <242>;
+> +		opp-microamp-speed1-pvs6-v0 = <242>;
+> +	};
+> +
+> +	opp-883200000 {
+> +		opp-hz = /bits/ 64 <883200000>;
+> +		opp-microvolt-speed0-pvs0-v0 = <900000>;
+> +		opp-microvolt-speed0-pvs1-v0 = <885000>;
+> +		opp-microvolt-speed0-pvs2-v0 = <865000>;
+> +		opp-microvolt-speed0-pvs3-v0 = <850000>;
+> +		opp-microvolt-speed0-pvs4-v0 = <840000>;
+> +		opp-microvolt-speed0-pvs5-v0 = <830000>;
+> +		opp-microvolt-speed0-pvs6-v0 = <820000>;
+> +		opp-microvolt-speed2-pvs0-v0 = <865000>;
+> +		opp-microvolt-speed2-pvs1-v0 = <850000>;
+> +		opp-microvolt-speed2-pvs2-v0 = <835000>;
+> +		opp-microvolt-speed2-pvs3-v0 = <820000>;
+> +		opp-microvolt-speed2-pvs4-v0 = <810000>;
+> +		opp-microvolt-speed2-pvs5-v0 = <800000>;
+> +		opp-microvolt-speed2-pvs6-v0 = <790000>;
+> +		opp-microvolt-speed1-pvs0-v0 = <830000>;
+> +		opp-microvolt-speed1-pvs1-v0 = <815000>;
+> +		opp-microvolt-speed1-pvs2-v0 = <800000>;
+> +		opp-microvolt-speed1-pvs3-v0 = <785000>;
+> +		opp-microvolt-speed1-pvs4-v0 = <775000>;
+> +		opp-microvolt-speed1-pvs5-v0 = <765000>;
+> +		opp-microvolt-speed1-pvs6-v0 = <755000>;
+> +
+> +		opp-microamp-speed0-pvs0-v0 = <229>;
+> +		opp-microamp-speed0-pvs1-v0 = <229>;
+> +		opp-microamp-speed0-pvs2-v0 = <229>;
+> +		opp-microamp-speed0-pvs3-v0 = <229>;
+> +		opp-microamp-speed0-pvs4-v0 = <229>;
+> +		opp-microamp-speed0-pvs5-v0 = <229>;
+> +		opp-microamp-speed0-pvs6-v0 = <229>;
+> +		opp-microamp-speed2-pvs0-v0 = <223>;
+> +		opp-microamp-speed2-pvs1-v0 = <223>;
+> +		opp-microamp-speed2-pvs2-v0 = <223>;
+> +		opp-microamp-speed2-pvs3-v0 = <223>;
+> +		opp-microamp-speed2-pvs4-v0 = <223>;
+> +		opp-microamp-speed2-pvs5-v0 = <223>;
+> +		opp-microamp-speed2-pvs6-v0 = <223>;
+> +		opp-microamp-speed1-pvs0-v0 = <221>;
+> +		opp-microamp-speed1-pvs1-v0 = <221>;
+> +		opp-microamp-speed1-pvs2-v0 = <221>;
+> +		opp-microamp-speed1-pvs3-v0 = <221>;
+> +		opp-microamp-speed1-pvs4-v0 = <221>;
+> +		opp-microamp-speed1-pvs5-v0 = <221>;
+> +		opp-microamp-speed1-pvs6-v0 = <221>;
+> +	};
+> +};
+> -- 
+> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+> 
