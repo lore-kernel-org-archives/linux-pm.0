@@ -1,86 +1,77 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Juri Lelli <juri.lelli@redhat.com>
 Subject: Re: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Fri, 9 Feb 2018 12:14:45 +0100
-Message-ID: <CAJZ5v0h25d9CCOBzU30mDggTSwbJ7UVnUbRD773UXhhAanqCdg@mail.gmail.com>
+Date: Fri, 9 Feb 2018 12:26:18 +0100
+Message-ID: <20180209112618.GE12979@localhost.localdomain>
 References: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
+ <20180209035143.GX28462@vireshk-i7>
+ <197c26ba-c2a6-2de7-dffa-5b884079f746@evidence.eu.com>
+ <11598161.veS9VGWB8G@aspire.rjw.lan>
+ <20180209105305.GD12979@localhost.localdomain>
+ <CAJZ5v0h9L2mMEaV6oECk9f2ob42Nr9zyqafymwvb+UP+G1q04Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Claudio Scordino <claudio@evidence.eu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:55918 "EHLO
+        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750863AbeBIL0X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 06:26:23 -0500
+Received: by mail-wm0-f52.google.com with SMTP id 143so14755814wma.5
+        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 03:26:23 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h9L2mMEaV6oECk9f2ob42Nr9zyqafymwvb+UP+G1q04Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Claudio Scordino <claudio@evidence.eu.com>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Feb 8, 2018 at 6:01 PM, Claudio Scordino
-<claudio@evidence.eu.com> wrote:
-> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
-> we should not wait for the rate limit, otherwise we may miss some deadline.
->
-> Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
-> misses for tasks with low RT periods.
->
-> The patch applies on top of the one recently proposed by Peter to drop the
-> SCHED_CPUFREQ_* flags.
->
-> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-> CC: Rafael J . Wysocki <rafael.j.wysocki@intel.com>
-> CC: Patrick Bellasi <patrick.bellasi@arm.com>
-> CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> CC: Morten Rasmussen <morten.rasmussen@arm.com>
-> CC: Juri Lelli <juri.lelli@redhat.com>
-> CC: Viresh Kumar <viresh.kumar@linaro.org>
-> CC: Vincent Guittot <vincent.guittot@linaro.org>
-> CC: Todd Kjos <tkjos@android.com>
-> CC: Joel Fernandes <joelaf@google.com>
-> CC: linux-pm@vger.kernel.org
-> CC: linux-kernel@vger.kernel.org
-> ---
->  kernel/sched/cpufreq_schedutil.c | 15 ++++++++++++---
->  1 file changed, 12 insertions(+), 3 deletions(-)
->
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index b0bd77d..d8dcba2 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -74,7 +74,10 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
->
->  /************************ Governor internals ***********************/
->
-> -static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> +static bool sugov_should_update_freq(struct sugov_policy *sg_policy,
-> +                                    u64 time,
-> +                                    struct sugov_cpu *sg_cpu_old,
-> +                                    struct sugov_cpu *sg_cpu_new)
+On 09/02/18 12:04, Rafael J. Wysocki wrote:
+> On Fri, Feb 9, 2018 at 11:53 AM, Juri Lelli <juri.lelli@redhat.com> wrote:
+> > Hi,
+> >
+> > On 09/02/18 11:36, Rafael J. Wysocki wrote:
+> >> On Friday, February 9, 2018 9:02:34 AM CET Claudio Scordino wrote:
+> >> > Hi Viresh,
+> >> >
+> >> > Il 09/02/2018 04:51, Viresh Kumar ha scritto:
+> >> > > On 08-02-18, 18:01, Claudio Scordino wrote:
+> >> > >> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+> >> > >> we should not wait for the rate limit, otherwise we may miss some deadline.
+> >> > >>
+> >> > >> Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
+> >> > >> misses for tasks with low RT periods.
+> >> > >>
+> >> > >> The patch applies on top of the one recently proposed by Peter to drop the
+> >> > >> SCHED_CPUFREQ_* flags.
+> >> > >>
+> >>
+> >> [cut]
+> >>
+> >> >
+> >> > >
+> >> > > Is it possible to (somehow) check here if the DL tasks will miss
+> >> > > deadline if we continue to run at current frequency? And only ignore
+> >> > > rate-limit if that is the case ?
+> >
+> > Isn't it always the case? Utilization associated to DL tasks is given by
+> > what the user said it's needed to meet a task deadlines (admission
+> > control). If that task wakes up and we realize that adding its
+> > utilization contribution is going to require a frequency change, we
+> > should _theoretically_ always do it, or it will be too late. Now, user
+> > might have asked for a bit more than what strictly required (this is
+> > usually the case to compensate for discrepancies between theory and real
+> > world, e.g.  hw transition limits), but I don't think there is a way to
+> > know "how much". :/
+> 
+> You are right.
+> 
+> I'm somewhat concerned about "fast switch" cases when the rate limit
+> is used to reduce overhead.
 
-This looks somewhat excessive for using just one field from each of these.
+Mmm, right. I'm thinking that in those cases we could leave rate limit
+as is. The user should then be aware of it and consider it as proper
+overhead when designing her/his system.
 
->  {
->         s64 delta_ns;
->
-> @@ -111,6 +114,10 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->                 return true;
->         }
->
-> +       /* Ignore rate limit when DL increased utilization. */
-> +       if (sg_cpu_new->util_dl > sg_cpu_old->util_dl)
-> +               return true;
-> +
->         delta_ns = time - sg_policy->last_freq_update_time;
->         return delta_ns >= sg_policy->freq_update_delay_ns;
->  }
-> @@ -271,6 +278,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->                                 unsigned int flags)
->  {
->         struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
-> +       struct sugov_cpu sg_cpu_old = *sg_cpu;
-
-And here you copy the entire struct to pass a pointer to the copy to a
-helper function so that it can access one field.
-
-That doesn't look particularly straightforward to me, let alone the overhead.
-
-I guess you may do the check before calling sugov_should_update_freq()
-and set sg_policy->need_freq_update if its true, as you know upfront
-that the previous sg_policy->next_freq value isn't going to be used
-anyway in that case.
+But then, isn't it the same for "non fast switch" platforms? I mean,
+even in the latter case we can't go faster than hw limits.. mmm, maybe
+the difference is that in the former case we could go as fast as theory
+would expect.. but we shouldn't. :)
