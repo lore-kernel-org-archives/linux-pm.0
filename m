@@ -1,60 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: imx6q: support frequencies >528MHz for i.MX6UL/ULL
-Date: Fri, 09 Feb 2018 12:52:22 +0100
-Message-ID: <1619001.eqAapW3X4z@aspire.rjw.lan>
-References: <20180118235836.17393-1-stefan@agner.ch>
+Subject: Re: [PATCH] x86/acpi/cstate: Delete some unuseful operations for centaur
+Date: Fri, 09 Feb 2018 12:55:40 +0100
+Message-ID: <30992269.nlskoqoYDk@aspire.rjw.lan>
+References: <1516701471-25374-1-git-send-email-davidwang@zhaoxin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180118235836.17393-1-stefan@agner.ch>
+In-Reply-To: <1516701471-25374-1-git-send-email-davidwang@zhaoxin.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stefan Agner <stefan@agner.ch>
-Cc: viresh.kumar@linaro.org, fabio.estevam@nxp.com, octavian.purdila@nxp.com, shawnguo@kernel.org, max.oss.09@gmail.com, marcel.ziswiler@toradex.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: davidwang <davidwang@zhaoxin.com>
+Cc: len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, lukelin@viacpu.com, timguo@zhaoxin.com, cobechen@zhaoxin.com, jiangbowang@zhaoxin.com, chiachinchu@viacpu.com
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 19, 2018 12:58:36 AM CET Stefan Agner wrote:
-> Depending on SKU i.MX6UL/i.MX6ULL support frequencies up to 900MHz.
-> Use PLL1 sys clock for all operating points higher than 528MHz.
-> 
-> Note: For higher operating points VDD_SOC_IN needs to be 125mV
-> higher than the ARM set-point (see datasheet). Specifically, the
-> i.MX6UL/ULL EVK boards have an external DC regulator which needs
-> adjustment. The regulator adjustment is not covered with this
-> change.
-> 
-> Signed-off-by: Stefan Agner <stefan@agner.ch>
+On Tuesday, January 23, 2018 10:57:51 AM CET davidwang wrote:
+> For Centaur CPU, the ucode will make sure that each cpu core can keep cache
+> coherency with each other when the CPU core entering to any C State. So the cache
+> flush operations when enter C3 is not necessary and will cause large C3 enter/exit
+> latency.
+> And the bus master disable operation when CPU core entering C3 state is not needed
+> too. Because the chipset will automatically do this operation. 
+> Signed-off-by: davidwang <davidwang@zhaoxin.com>
 
-This makes sense to me, but I need someone with the requisite platform
-knowledge to review it.
+I was about to apply this, but then I realized that your full name (as you
+formally spell it) is needed in the Signed-off-by tag.  Can you please provide it?
 
 > ---
->  drivers/cpufreq/imx6q-cpufreq.c | 14 ++++++++------
->  1 file changed, 8 insertions(+), 6 deletions(-)
+>  arch/x86/kernel/acpi/cstate.c | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 > 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 628fe899cb48..840f6386c780 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -114,12 +114,14 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  		 */
->  		clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
->  		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-> -		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
-> -			clk_set_parent(secondary_sel_clk, pll2_bus_clk);
-> -		else
-> -			clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
-> -		clk_set_parent(step_clk, secondary_sel_clk);
-> -		clk_set_parent(pll1_sw_clk, step_clk);
-> +		if (freq_hz <= clk_get_rate(pll2_bus_clk)) {
-> +			if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
-> +				clk_set_parent(secondary_sel_clk, pll2_bus_clk);
-> +			else
-> +				clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
-> +			clk_set_parent(step_clk, secondary_sel_clk);
-> +			clk_set_parent(pll1_sw_clk, step_clk);
-> +		}
->  	} else {
->  		clk_set_parent(step_clk, pll2_pfd2_396m_clk);
->  		clk_set_parent(pll1_sw_clk, step_clk);
+> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+> index dde437f..1cd357b 100644
+> --- a/arch/x86/kernel/acpi/cstate.c
+> +++ b/arch/x86/kernel/acpi/cstate.c
+> @@ -51,6 +51,18 @@ void acpi_processor_power_init_bm_check(struct acpi_processor_flags *flags,
+>  	if (c->x86_vendor == X86_VENDOR_INTEL &&
+>  	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
+>  			flags->bm_control = 0;
+> +
+> +        if (c->x86_vendor == X86_VENDOR_CENTAUR) {
+> +		/*
+> +		 * on all centaur CPUs, sw need not execute cache flush operation
+> +		 * when entering C3 type State.
+> +		 *
+> +		 * On all Centaur platforms, sw need not execute ARB_DISABLE while
+> +		 * entering C3 type state.
+> +		 */
+> +		flags->bm_check = 1;
+> +		flags->bm_control = 0;
+> +	}
+>  }
+>  EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
+>  
 > 
