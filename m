@@ -1,239 +1,209 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3] cpufreq: powernv: Add support of frequency domain
-Date: Fri, 09 Feb 2018 13:19:04 +0100
-Message-ID: <2235126.ZWAqWlELuo@aspire.rjw.lan>
-References: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: ltc2941-battery-gauge: Add charge empty
+ and full properties
+Date: Fri, 9 Feb 2018 13:27:09 +0100
+Message-ID: <20180209122709.les6asua5hb26yky@earth.universe>
+References: <20180117194607.GA7563@lenoch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Cc: viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="h5m7ojhyeauhvbwp"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:41170 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750918AbeBIM1N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Feb 2018 07:27:13 -0500
+Content-Disposition: inline
+In-Reply-To: <20180117194607.GA7563@lenoch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ladislav Michl <ladis@linux-mips.org>
+Cc: linux-pm@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>
 
-On Monday, January 22, 2018 9:17:34 AM CET Abhishek Goel wrote:
-> Frequency-domain indicates group of CPUs that would share same frequency.
-> It is detected using device-tree node "frequency-domain-indicator".
-> frequency-domain-indicator is a bitmask which will have different value
-> depending upon the generation of the processor.
-> 
-> CPUs of the same chip for which the result of a bitwise AND between
-> their PIR and the frequency-domain-indicator is the same share the same
-> frequency.
-> 
-> In this patch, we define hash-table indexed by the aforementioned
-> bitwise ANDed value to store the cpumask of the CPUs sharing the same
-> frequency domain. Further, the cpufreq policy will be created per
-> frequency-domain
-> 
-> So for POWER9, a cpufreq policy is created per quad while for POWER8 it
-> is created per core. Governor decides frequency for each policy but
-> multiple cores may come under same policy. In such case frequency needs
-> to be set on each core sharing that policy.
-> 
-> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+
+--h5m7ojhyeauhvbwp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Wed, Jan 17, 2018 at 08:48:54PM +0100, Ladislav Michl wrote:
+> Add properties for charge empty and charge full thresholds.
+>=20
+> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
 > ---
-> 
-> Skiboot patch required for the corresponding device-tree changes have been
-> posted here : http://patchwork.ozlabs.org/patch/862256/
-> 
->  drivers/cpufreq/powernv-cpufreq.c | 104 ++++++++++++++++++++++++++++++++++----
->  1 file changed, 95 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index b6d7c4c..aab23a4 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -37,6 +37,7 @@
->  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
->  #include <asm/opal.h>
->  #include <linux/timer.h>
-> +#include <linux/hashtable.h>
->  
->  #define POWERNV_MAX_PSTATES	256
->  #define PMSR_PSAFE_ENABLE	(1UL << 30)
-> @@ -130,6 +131,9 @@ enum throttle_reason_type {
->  static int nr_chips;
->  static DEFINE_PER_CPU(struct chip *, chip_info);
->  
-> +static u32 freq_domain_indicator;
-> +static bool p9_occ_quirk;
-> +
->  /*
->   * Note:
->   * The set of pstates consists of contiguous integers.
-> @@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
->  	gpstates->last_gpstate_idx = 0;
+
+Thanks, queued. My public -next branch is waiting for 4.16-rc1,
+though.
+
+-- Sebastian
+
+>  drivers/power/supply/ltc2941-battery-gauge.c | 59 ++++++++++++++++++++++=
++-----
+>  1 file changed, 50 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power=
+/supply/ltc2941-battery-gauge.c
+> index 08e4fd9ee607..523373ea9cbd 100644
+> --- a/drivers/power/supply/ltc2941-battery-gauge.c
+> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
+> @@ -34,6 +34,10 @@ enum ltc294x_reg {
+>  	LTC294X_REG_CONTROL		=3D 0x01,
+>  	LTC294X_REG_ACC_CHARGE_MSB	=3D 0x02,
+>  	LTC294X_REG_ACC_CHARGE_LSB	=3D 0x03,
+> +	LTC294X_REG_CHARGE_THR_HIGH_MSB	=3D 0x04,
+> +	LTC294X_REG_CHARGE_THR_HIGH_LSB	=3D 0x05,
+> +	LTC294X_REG_CHARGE_THR_LOW_MSB	=3D 0x06,
+> +	LTC294X_REG_CHARGE_THR_LOW_LSB	=3D 0x07,
+>  	LTC294X_REG_VOLTAGE_MSB		=3D 0x08,
+>  	LTC294X_REG_VOLTAGE_LSB		=3D 0x09,
+>  	LTC2942_REG_TEMPERATURE_MSB	=3D 0x0C,
+> @@ -178,21 +182,22 @@ static int ltc294x_reset(const struct ltc294x_info =
+*info, int prescaler_exp)
+>  	return ret;
 >  }
->  
-> +#define SIZE NR_CPUS
-> +#define ORDER_FREQ_MAP ilog2(SIZE)
-> +
-> +static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
-> +
-> +struct hashmap {
-> +	cpumask_t mask;
-> +	int chip_id;
-> +	u32 pir_key;
-> +	struct hlist_node hash_node;
-> +};
-> +
-> +static void insert(u32 key, int cpu)
+> =20
+> -static int ltc294x_read_charge_register(const struct ltc294x_info *info)
+> -{
+> +static int ltc294x_read_charge_register(const struct ltc294x_info *info,
+> +					enum ltc294x_reg reg)
+> + {
+>  	int ret;
+>  	u8 datar[2];
+> =20
+> -	ret =3D ltc294x_read_regs(info->client,
+> -		LTC294X_REG_ACC_CHARGE_MSB, &datar[0], 2);
+> +	ret =3D ltc294x_read_regs(info->client, reg, &datar[0], 2);
+>  	if (ret < 0)
+>  		return ret;
+>  	return (datar[0] << 8) + datar[1];
+>  }
+> =20
+> -static int ltc294x_get_charge_now(const struct ltc294x_info *info, int *=
+val)
+> +static int ltc294x_get_charge(const struct ltc294x_info *info,
+> +				enum ltc294x_reg reg, int *val)
+>  {
+> -	int value =3D ltc294x_read_charge_register(info);
+> +	int value =3D ltc294x_read_charge_register(info, reg);
+> =20
+>  	if (value < 0)
+>  		return value;
+> @@ -244,10 +249,29 @@ static int ltc294x_set_charge_now(const struct ltc2=
+94x_info *info, int val)
+>  	return ret < 0 ? ret : 0;
+>  }
+> =20
+> +static int ltc294x_set_charge_thr(const struct ltc294x_info *info,
+> +					enum ltc294x_reg reg, int val)
 > +{
-> +	struct hashmap *data;
+> +	u8 dataw[2];
+> +	s32 value;
 > +
-> +	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
-> +		if (data->chip_id == cpu_to_chip_id(cpu) &&
-> +			data->pir_key == key) {
-> +			cpumask_set_cpu(cpu, &data->mask);
-> +			return;
-> +		}
-> +	}
+> +	value =3D convert_uAh_to_bin(info, val);
+> +	/* Direction depends on how sense+/- were connected */
+> +	if (info->Qlsb < 0)
+> +		value +=3D 0xFFFF;
+> +	if ((value < 0) || (value > 0xFFFF)) /* input validation */
+> +		return -EINVAL;
 > +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
-> +	cpumask_set_cpu(cpu, &data->mask);
-> +	data->chip_id = cpu_to_chip_id(cpu);
-> +	data->pir_key = key;
-> +
+> +	/* Set new charge value */
+> +	dataw[0] =3D I16_MSB(value);
+> +	dataw[1] =3D I16_LSB(value);
+> +	return ltc294x_write_regs(info->client, reg, &dataw[0], 2);
 > +}
 > +
->  /*
->   * Initialize the freq table based on data obtained
->   * from the firmware passed via device-tree
-> @@ -206,6 +242,7 @@ static int init_powernv_pstates(void)
->  	u32 len_ids, len_freqs;
->  	u32 pstate_min, pstate_max, pstate_nominal;
->  	u32 pstate_turbo, pstate_ultra_turbo;
-> +	u32 key;
->  
->  	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
->  	if (!power_mgt) {
-> @@ -246,9 +283,18 @@ static int init_powernv_pstates(void)
->  	else
->  		powernv_pstate_info.wof_enabled = true;
->  
-> +	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
-> +		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
-> +				&freq_domain_indicator))
-> +		pr_warn("ibm,freq-domain-indicator not found\n");
-> +
-> +        if (of_device_is_compatible(power_mgt, "p9-occ-quirk"))
-> +		p9_occ_quirk = true;
-> +
->  next:
->  	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
->  		pstate_nominal, pstate_max);
-> +	pr_info("frequency domain indicator %d", freq_domain_indicator);
->  	pr_info("Workload Optimized Frequency is %s in the platform\n",
->  		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
->  
-> @@ -276,6 +322,15 @@ static int init_powernv_pstates(void)
->  		return -ENODEV;
->  	}
->  
-> +	if (freq_domain_indicator) {
-> +		hash_init(freq_domain_map);
-> +		for_each_possible_cpu(i) {
-> +			key = ((u32) get_hard_smp_processor_id(i) &
-> +				freq_domain_indicator);
-> +			insert(key, i);
-> +		}
-> +	}
-> +
->  	powernv_pstate_info.nr_pstates = nr_pstates;
->  	pr_debug("NR PStates %d\n", nr_pstates);
->  	for (i = 0; i < nr_pstates; i++) {
-> @@ -760,25 +815,56 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  	spin_unlock(&gpstates->gpstate_lock);
->  
-> -	/*
-> -	 * Use smp_call_function to send IPI and execute the
-> -	 * mtspr on target CPU.  We could do that without IPI
-> -	 * if current CPU is within policy->cpus (core)
-> +	/* The current DVFS implementation in firmware requires that to set a
-> +	 * frequency in a quad, all cores of the quad need to set frequency in
-> +	 * their respective PMCR's. Ideally setting frequency on any of the
-> +	 * core of that quad should change frequency for the quad.
->  	 */
-> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> +	if (p9_occ_quirk) {
-> +		cpumask_t temp;
-> +		u32 cpu;
-> +
-> +		cpumask_copy(&temp, policy->cpus);
-> +		while (!cpumask_empty(&temp)) {
-> +			cpu = cpumask_first(&temp);
-> +			smp_call_function_any(cpu_sibling_mask(cpu),
-> +					set_pstate, &freq_data, 1);
-> +			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
-> +		}
-> +	} else {
-> +		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> +	}
-> +
->  	return 0;
->  }
->  
->  static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  static int ltc294x_get_charge_counter(
+>  	const struct ltc294x_info *info, int *val)
 >  {
-> -	int base, i, ret;
-> +	int ret;
->  	struct kernfs_node *kn;
->  	struct global_pstate_info *gpstates;
->  
-> -	base = cpu_first_thread_sibling(policy->cpu);
-> +	if (!freq_domain_indicator) {
+> -	int value =3D ltc294x_read_charge_register(info);
+> +	int value =3D ltc294x_read_charge_register(info, LTC294X_REG_ACC_CHARGE=
+_MSB);
+> =20
+>  	if (value < 0)
+>  		return value;
+> @@ -335,8 +359,15 @@ static int ltc294x_get_property(struct power_supply =
+*psy,
+>  	struct ltc294x_info *info =3D power_supply_get_drvdata(psy);
+> =20
+>  	switch (prop) {
+> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
+> +		return ltc294x_get_charge(info, LTC294X_REG_CHARGE_THR_HIGH_MSB,
+> +						&val->intval);
+> +	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
+> +		return ltc294x_get_charge(info, LTC294X_REG_CHARGE_THR_LOW_MSB,
+> +						&val->intval);
+>  	case POWER_SUPPLY_PROP_CHARGE_NOW:
+> -		return ltc294x_get_charge_now(info, &val->intval);
+> +		return ltc294x_get_charge(info, LTC294X_REG_ACC_CHARGE_MSB,
+> +						&val->intval);
+>  	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+>  		return ltc294x_get_charge_counter(info, &val->intval);
+>  	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> @@ -357,6 +388,12 @@ static int ltc294x_set_property(struct power_supply =
+*psy,
+>  	struct ltc294x_info *info =3D power_supply_get_drvdata(psy);
+> =20
+>  	switch (psp) {
+> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
+> +		return ltc294x_set_charge_thr(info,
+> +			LTC294X_REG_CHARGE_THR_HIGH_MSB, val->intval);
+> +	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
+> +		return ltc294x_set_charge_thr(info,
+> +			LTC294X_REG_CHARGE_THR_LOW_MSB, val->intval);
+>  	case POWER_SUPPLY_PROP_CHARGE_NOW:
+>  		return ltc294x_set_charge_now(info, val->intval);
+>  	default:
+> @@ -368,6 +405,8 @@ static int ltc294x_property_is_writeable(
+>  	struct power_supply *psy, enum power_supply_property psp)
+>  {
+>  	switch (psp) {
+> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
+> +	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
+>  	case POWER_SUPPLY_PROP_CHARGE_NOW:
+>  		return 1;
+>  	default:
+> @@ -377,7 +416,7 @@ static int ltc294x_property_is_writeable(
+> =20
+>  static void ltc294x_update(struct ltc294x_info *info)
+>  {
+> -	int charge =3D ltc294x_read_charge_register(info);
+> +	int charge =3D ltc294x_read_charge_register(info, LTC294X_REG_ACC_CHARG=
+E_MSB);
+> =20
+>  	if (charge !=3D info->charge) {
+>  		info->charge =3D charge;
+> @@ -396,6 +435,8 @@ static void ltc294x_work(struct work_struct *work)
+> =20
+>  static enum power_supply_property ltc294x_properties[] =3D {
+>  	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+> +	POWER_SUPPLY_PROP_CHARGE_FULL,
+> +	POWER_SUPPLY_PROP_CHARGE_EMPTY,
+>  	POWER_SUPPLY_PROP_CHARGE_NOW,
+>  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>  	POWER_SUPPLY_PROP_TEMP,
+> --=20
+> 2.15.1
+>=20
 
-IMO it would be more straightforward to write this conditional as
+--h5m7ojhyeauhvbwp
+Content-Type: application/pgp-signature; name="signature.asc"
 
-if (freq_domain_indicator) {
-   do something
-} else {
-   do something else
-}
+-----BEGIN PGP SIGNATURE-----
 
-> +		int base, i;
->  
-> -	for (i = 0; i < threads_per_core; i++)
-> -		cpumask_set_cpu(base + i, policy->cpus);
-> +		base = cpu_first_thread_sibling(policy->cpu);
-> +		for (i = 0; i < threads_per_core; i++)
-> +			cpumask_set_cpu(base + i, policy->cpus);
-> +	} else {
-> +		u32 key;
-> +		struct hashmap *data;
-> +
-> +		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
-> +				freq_domain_indicator);
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp9k5oACgkQ2O7X88g7
++poRxRAAhkWV+TB9v2VTF0FsMf23a4UNaf7WznoTzXuz2pFRgCVn2GFqP0mfYOhL
+KG33x+0VCBRiL9HmAoGOpHHn2i/DvKxrhZbjP2ez5oVZt4gncqWpIVdeGECT26oo
+2MM1k75XDi5tNDH385C3hHdnVTV2i/EIPM5IQvNcH55yTQ7WeRCUZm1LKSf5o0DX
+6kZoT0FfVHCbU1Qc3KS6/VAASiUL42K8Y9wO+li5pTXx4IQ8RyC4gmTw9SUoDm82
+wzvupyc1X2JVZ2wRx+o3NWrMVqDcGEnACWWkHPgvvM19QMBNvniPgvdBTGyPA0rD
+lSkrzn2iA20GUQ0JUTaZefffi3KrWSVFDrvXeDVCbxMoiZEMLqo2QtzSpzQBpgdG
+kjARYfmg36LyFDEPxJPNVr9HhWR/Mv9TAri2ecBS/S7j24vDJeCPWQk8I/a0p6re
+XUX8v7VEKdVs/g7IshJYlMiXJgxvh7qF+nLslF7bDFldcMNwPZV2ZnSROWMJc54r
+t457uyd0GdT7UPL+l+aVPcJvFxkD++QaojoZt+UZtqQ1a1E4UeT/KPJWvDzhqTyJ
+SScPp1IRqYX1M9eWkFCkKOCwzTNcuaiIKBeH0ISGo79OBnq26GG957f7vvlDZmNK
+NG4cfi366E6ZKKdzt06rU4YijKgm1BLWO9R4xsnwAmByxjKer3I=
+=Y/l4
+-----END PGP SIGNATURE-----
 
-The outer paren on the right-hand side is not necessary.
-
-The explicit case to u32 isn't necessary as well AFAICS.
-
-> +		hash_for_each_possible(freq_domain_map, data, hash_node,
-> +								 key%SIZE) {
-> +			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
-> +				data->pir_key == key) {
-
-You have slightly confusing indentation here, as the continuation of the
-condition is at the same level as the statements in the conditional block.
-
-> +				cpumask_copy(policy->cpus, &data->mask);
-> +				break;
-> +			}
-> +		}
-> +	}
->  
->  	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
->  	if (!kn) {
-> 
-
-Overall, from cpufreq perspective, I don't see anything to complain about
-here.
-
-Thanks,
-Rafael
+--h5m7ojhyeauhvbwp--
