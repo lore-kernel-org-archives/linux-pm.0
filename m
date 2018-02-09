@@ -1,139 +1,77 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v4 6/7] typec: tcpm: Represent source supply through
- power_supply class
-Date: Fri, 9 Feb 2018 16:06:59 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1C203F@SW-EX-MBX01.diasemi.com>
-References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <e2cb104f53e20a01f3b44442068c549e5d0e1ac3.1514904983.git.Adam.Thomson.Opensource@diasemi.com>
- <20180130131131.GF14922@kuha.fi.intel.com>
- <2E89032DDAA8B9408CB92943514A0337014C1C1595@SW-EX-MBX01.diasemi.com>
- <20180208104517.GA7655@kuha.fi.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180208104517.GA7655@kuha.fi.intel.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH] PM / wakeirq: Fix unbalanced irq enable for wakeirq
+Date: Fri,  9 Feb 2018 08:11:26 -0800
+Message-ID: <20180209161126.18580-1-tony@atomide.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:56426 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751031AbeBIQLj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Feb 2018 11:11:39 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 08 February 2018 10:45, Heikki Krogerus wrote:
+If a device is runtime PM suspended when we enter suspend and has
+a dedicated wake irq, we can get the following warning:
 
-Hi Heikki,
+WARNING: CPU: 0 PID: 108 at kernel/irq/manage.c:526 enable_irq+0x40/0x94
+[  102.087860] Unbalanced enable for IRQ 147
+...
+(enable_irq) from [<c06117a8>] (dev_pm_arm_wake_irq+0x4c/0x60)
+(dev_pm_arm_wake_irq) from [<c0618360>]
+ (device_wakeup_arm_wake_irqs+0x58/0x9c)
+(device_wakeup_arm_wake_irqs) from [<c0615948>]
+(dpm_suspend_noirq+0x10/0x48)
+(dpm_suspend_noirq) from [<c01ac7ac>]
+(suspend_devices_and_enter+0x30c/0xf14)
+(suspend_devices_and_enter) from [<c01adf20>]
+(enter_state+0xad4/0xbd8)
+(enter_state) from [<c01ad3ec>] (pm_suspend+0x38/0x98)
+(pm_suspend) from [<c01ab3e8>] (state_store+0x68/0xc8)
 
-Comments in-line as usual. Bit verbose, and may have stated the obvious in
-places, but trying to build a picture and aim for something sensible.
+This is because the dedicated wake irq for the device may have been
+already enabled earlier by dev_pm_enable_wake_irq_check(). Fix the
+issue by checking for runtime PM suspended status.
 
-> Hi Adam,
->
-> On Tue, Feb 06, 2018 at 03:51:26PM +0000, Adam Thomson wrote:
-> > Right now there is no documentation for the generic psy class. The stuff in
-> > sysfs-class-power is device specific property information, and the same goes for
-> > sysfs-class-power-twl4030. The property usage can vary depending on driver
-> > implementation, an example being the 'online' property which can differ between
-> > drivers, so the usage I have here is very much tcpm related. Also, the ability
-> > to write to certain properties varies depending on the driver and HW, so here
-> > where we configure 'voltage_now' and 'current_now', the likelihood is that most
-> > other psy driver implementations won't allow for this.
->
-> The power supply class is missing documentation, YES! That is what I
-> have been saying! The fact that even an attribute like "online" can
-> mean different things depending on the driver is absolutely horrible.
-> The ABI documentation FOR THE POWER SUPPLY CLASS needs to provide
-> clear meaning for the attributes. It needs to also point out which
-> attributes can be hidden, and it should also give some hints for
-> things like which attributes can be expected to be visible for example
-> in case of USB type of psy and so on.
+This issue can be easily reproduced by setting serial console log level
+to zero, letting the serial console idle, and suspend the system from
+an ssh terminal. On resume, dmesg will have the warning above.
 
-There is some coverage under Documenation/power/power_supply_class.txt but it's
-not necessarily extensive, at least not to the level you're suggesting. With
-regards to the psy class though, I believe this is meant to cover a range of
-supply types so I guess the original intention was to make it flexible to cover
-those. Maybe along the way that's helped muddy the waters somewhat though.
+The reason why I have not ran into this issue earlier has been that I
+typically run my PM test cases from on a serial console instead over ssh.
 
-As an example, a 'Battery' type supply would represent say voltage_now
-and current_now, and those values would relate to VBAT and IBAT. However a
-Charger IC reporting the USB side information (probably of type 'USB', but could
-be AC, Mains) would report voltage_now and current_now, and those values would
-represent VIN/VBUS and IIN/IBUS. This example assumes that both sets of HW would
-be able to provide instantaneous readings. Some only give averaged readings.
-Just from this you can already start to see why that framework has evolved in
-the way it has.
+Fixes: c84345597558 ("PM / wakeirq: Enable dedicated wakeirq for suspend")
+Cc: Brian Norris <briannorris@chromium.org>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/base/power/wakeirq.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Covering the 'online' property, for Charger ICs this would indicate whether
-they were externally powered or not (i.e. external charger attached/detached),
-so a positive value would indicate external charger presence and 0 would mean
-not present. In drivers/power/supply/abx500_chargalg.c it goes further with this
-and the positive online value can differ based on what kind of charger was
-attached (i.e. Mains, USB). Not sure if anything in user-space would behave
-differently based on different values though and suspect a positive or 0 value
-will be the only differentiator. For the Battery type scenario 'online', if
-provided, is usually a repeat of battery presence information. Examples of this
-exist although it's really just redundant information, so a guideline would help
-to avoid this.
-
-So right now the only sensible method seems to be to describe property usage
-based on the main type, which brings me round to what you're suggesting I think.
-I can start something, at least for common USB property usage scenarios, and
-maybe Battery as well, but I do think this needs additional attention as there
-are so far 66 (including my new addition) properties to document, some of which
-may require multiple definitions based on type specific usage. With regards to
-presence of attributes, that's going to be solely related to HW and what is
-implemented for that device, I think. We can give preferred, sunny day examples,
-but I think you'll be hard pressed to make one size fit all. Or do you disagree
-with that sentiment?
-
->
-> We are talking about user space ABI for power supplies here. The user
-> space does not know that its dealing with tcpm in this case, or some
-> other driver in an other case, AND, the user space _must_ not be
-> expected to know that kind of details. The behaviour and meaning of an
-> individual attribute file quite simply has to be the same, always,
-> regardless of the platform, HW, driver or whatever. Otherwise this
-> whole ABI is completely useless.
-
-Not technically true as decisions could be based on psy naming. Generic TCPM
-usage of the power_supply framework would mean the naming of the psy sysfs entry
-(or entries) are well known, just like using /dev. I believe 'type' though is
-specifically used in Android to determine which properties it uses for specific
-purposes. Personally I go along with this and think 'type' should be the major
-determining factor on expectation/usage. User-space needs to know the type of
-supply it's dealing with to be able to act accordingly.
-
-> To summarize: We can't just accept chaos. Instead we should organize
-> the places without structure, in this case the user space ABI for
-> power supplies.
->
-> On top of ABI documentation, we will need driver API documentation as
-> well. I'm not expecting that you would also propose something for the
-> API too, but I just wanted to bring that up here. I would like to have
-> some guidelines on how the power supplies should be used also in
-> kernel.
->
-> Right now it is possible for one driver to create the power supply and
-> an other to take over the control of it. It is super easy to gain
-> access to a power supply. You can request it with just the name
-> without any control, and after gaining access, you have full control
-> over it. That makes it really easy to have race condition where both
-> the psy device driver and some other driver try to control the same
-> things of the same psy.
->
-> I guess the whole design of the psy class could use a little bit of
-> re-designing. So IMO, access to the psy should be more strict then it
-> is now, and also, even after gaining access to a psy handle, drivers
-> that are not the actual psy device drivers should have more controlled
-> access to it. So possibly separate API for them... OK, this is
-> definitely a separate topic. Sorry, I'll stop here.
-
-Actually being able to use psy's in other drivers is an approach that's very
-useful, especially for monitoring & controlling charging using PPS. You are
-right in that it's very easy to gain access and have control, but have not
-personally experienced race issues. I guess that's down to the individual
-driver's own locking implementation right now?
-
-Anyway, based on all of this, and assuming I get no major disagreement, I'll
-try and come up with something as a decent starting point to better document
-and fix property usage, based on supply type. It won't be every property, but
-hopefully will be a decent first stab at this.
+diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+--- a/drivers/base/power/wakeirq.c
++++ b/drivers/base/power/wakeirq.c
+@@ -321,7 +321,8 @@ void dev_pm_arm_wake_irq(struct wake_irq *wirq)
+ 		return;
+ 
+ 	if (device_may_wakeup(wirq->dev)) {
+-		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED)
++		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED &&
++		    !pm_runtime_status_suspended(wirq->dev))
+ 			enable_irq(wirq->irq);
+ 
+ 		enable_irq_wake(wirq->irq);
+@@ -343,7 +344,8 @@ void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
+ 	if (device_may_wakeup(wirq->dev)) {
+ 		disable_irq_wake(wirq->irq);
+ 
+-		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED)
++		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED &&
++		    !pm_runtime_status_suspended(wirq->dev))
+ 			disable_irq_nosync(wirq->irq);
+ 	}
+ }
+-- 
+2.16.1
