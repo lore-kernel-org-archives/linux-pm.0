@@ -1,40 +1,142 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
- cooling driver
-Date: Fri, 9 Feb 2018 15:11:00 +0530
-Message-ID: <20180209094100.GM28462@vireshk-i7>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
- <20180207091231.GQ28462@vireshk-i7>
- <54759b82-29e9-f376-bbe8-dcf683ed0cce@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v2] power: reset: Add Spreadtrum SC27xx PMIC power off support
+Date: Fri,  9 Feb 2018 17:43:38 +0800
+Message-ID: <7655f39d44e804c9ed3209db475567abc250f642.1518169282.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <54759b82-29e9-f376-bbe8-dcf683ed0cce@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: sre@kernel.org
+Cc: arnd@arndb.de, broonie@kernel.org, baolin.wang@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07-02-18, 11:34, Daniel Lezcano wrote:
-> On 07/02/2018 10:12, Viresh Kumar wrote:
-> > What about cpuidle_cooling_unregister() ?
-> 
-> The unregister function is not needed because cpuidle can't be unloaded.
-> The cpuidle cooling device is registered after the cpuidle successfully
-> initialized itself, there is no error path.
+On Spreadtrum platform, we need power off system through external SC27xx
+series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 chips.
+Thus this patch adds SC27xx series PMICs power-off support.
 
-Okay, then there are two more things here.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+Changes since v1:
+ - Add remove interface.
+ - Add regmap checking when probing the driver.
+ - Add MODULE_ALIAS()
+---
+ drivers/power/reset/Kconfig           |    9 ++++
+ drivers/power/reset/Makefile          |    1 +
+ drivers/power/reset/sc27xx-poweroff.c |   79 +++++++++++++++++++++++++++++++++
+ 3 files changed, 89 insertions(+)
+ create mode 100644 drivers/power/reset/sc27xx-poweroff.c
 
-First, you don't need a kref in your patch and simple counter should
-be used instead, as kref is obviously more heavy to be used for the
-single error path here.
-
-Secondly, what about CPU hotplug ? For example, the cpu-freq cooling
-device gets removed currently if all CPUs of a cluster are
-hotplugged-out. But with your code, even if the CPUs are gone, their
-cpu-idle cooling device will stay.
-
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index ca0de1a..611ae56 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -227,5 +227,14 @@ config SYSCON_REBOOT_MODE
+ 	  register, then the bootloader can read it to take different
+ 	  action according to the mode.
+ 
++config POWER_RESET_SC27XX
++	tristate "Spreadtrum SC27xx PMIC power-off driver"
++	depends on MFD_SC27XX_PMIC || COMPILE_TEST
++	help
++	  This driver supports powering off a system through
++	  Spreadtrum SC27xx series PMICs. The SC27xx series
++	  PMICs includes the SC2720, SC2721, SC2723, SC2730
++	  and SC2731 chips.
++
+ endif
+ 
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index aeb65ed..225d645 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -27,3 +27,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
+ obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
+ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
+ obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
++obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
+diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
+new file mode 100644
+index 0000000..73d9816
+--- /dev/null
++++ b/drivers/power/reset/sc27xx-poweroff.c
+@@ -0,0 +1,79 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2018 Spreadtrum Communications Inc.
++ * Copyright (C) 2018 Linaro Ltd.
++ */
++
++#include <linux/cpu.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/pm.h>
++#include <linux/regmap.h>
++#include <linux/syscore_ops.h>
++
++#define SC27XX_PWR_PD_HW	0xc2c
++#define SC27XX_PWR_OFF_EN	BIT(0)
++
++static struct regmap *regmap;
++
++/*
++ * On Spreadtrum platform, we need power off system through external SC27xx
++ * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
++ * which is not fast io access.
++ *
++ * So before stopping other cores, we need release other cores' resource by
++ * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
++ * system through PMIC.
++ */
++void sc27xx_poweroff_shutdown(void)
++{
++	int cpu = smp_processor_id();
++
++	freeze_secondary_cpus(cpu);
++}
++
++static struct syscore_ops poweroff_syscore_ops = {
++	.shutdown = sc27xx_poweroff_shutdown,
++};
++
++static void sc27xx_poweroff_do_poweroff(void)
++{
++	regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
++}
++
++static int sc27xx_poweroff_probe(struct platform_device *pdev)
++{
++	if (regmap)
++		return -EINVAL;
++
++	regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!regmap)
++		return -ENODEV;
++
++	pm_power_off = sc27xx_poweroff_do_poweroff;
++	register_syscore_ops(&poweroff_syscore_ops);
++	return 0;
++}
++
++static int sc27xx_poweroff_remove(struct platform_device *pdev)
++{
++	if (pm_power_off == sc27xx_poweroff_do_poweroff)
++		pm_power_off = NULL;
++
++	regmap = NULL;
++	return 0;
++}
++
++static struct platform_driver sc27xx_poweroff_driver = {
++	.probe = sc27xx_poweroff_probe,
++	.remove = sc27xx_poweroff_remove,
++	.driver = {
++		.name = "sc27xx-poweroff",
++	},
++};
++module_platform_driver(sc27xx_poweroff_driver);
++
++MODULE_ALIAS("platform:sc27xx-poweroff");
++MODULE_DESCRIPTION("Spreadtrum SC27xx PMIC Poweroff Driver");
++MODULE_LICENSE("GPL v2");
 -- 
-viresh
+1.7.9.5
