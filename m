@@ -1,80 +1,47 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH 10/10] dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
-Date: Fri,  9 Feb 2018 14:28:10 +0530
-Message-ID: <0ec53640f1a09e6e0d7aa1a21d1a3266c3c209c7.1518166039.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 08/10] ARM64: dts: meson: Remove "cooling-{min|max}-level" for gpio-fan node
+Date: Fri,  9 Feb 2018 14:28:08 +0530
+Message-ID: <24b53440922491982c781a3eb032b04c167d733d.1518166039.git.viresh.kumar@linaro.org>
 References: <cover.1518166039.git.viresh.kumar@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1518166039.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1518166039.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1518166039.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pl0-f65.google.com ([209.85.160.65]:33079 "EHLO
+        mail-pl0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752178AbeBII7C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 03:59:02 -0500
+Received: by mail-pl0-f65.google.com with SMTP id t4so1194870plo.0
+        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 00:59:01 -0800 (PST)
+In-Reply-To: <cover.1518166039.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1518166039.git.viresh.kumar@linaro.org>
+References: <cover.1518166039.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Carlo Caione <carlo@caione.org>, Kevin Hilman <khilman@baylibre.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org
 
 The "cooling-min-level" and "cooling-max-level" properties are not
-parsed by any part of kernel currently and the max cooling state of a
-CPU cooling device is found by referring to the cpufreq table instead.
+parsed by any part of the kernel currently and the max cooling state of
+gpio-fan cooling device is found by referring to the
+"gpio-fan,speed-map" instead.
 
-Remove the unused bindings.
+Remove the unused properties from the gpio-fan node.
 
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/devicetree/bindings/thermal/thermal.txt | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
+ arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-index 1719d47a5e2f..cc553f0952c5 100644
---- a/Documentation/devicetree/bindings/thermal/thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-@@ -55,8 +55,7 @@ of heat dissipation). For example a fan's cooling states correspond to
- the different fan speeds possible. Cooling states are referred to by
- single unsigned integers, where larger numbers mean greater heat
- dissipation. The precise set of cooling states associated with a device
--(as referred to by the cooling-min-level and cooling-max-level
--properties) should be defined in a particular device's binding.
-+should be defined in a particular device's binding.
- For more examples of cooling devices, refer to the example sections below.
- 
- Required properties:
-@@ -69,15 +68,6 @@ For more examples of cooling devices, refer to the example sections below.
- 			See Cooling device maps section below for more details
- 			on how consumers refer to cooling devices.
- 
--Optional properties:
--- cooling-min-level:	An integer indicating the smallest
--  Type: unsigned	cooling state accepted. Typically 0.
--  Size: one cell
--
--- cooling-max-level:	An integer indicating the largest
--  Type: unsigned	cooling state accepted.
--  Size: one cell
--
- * Trip points
- 
- The trip node is a node to describe a point in the temperature domain
-@@ -226,8 +216,6 @@ cpus {
- 			396000  950000
- 			198000  850000
- 		>;
+diff --git a/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts b/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts
+index 658215c9822c..8ee4a693c438 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-gxm-khadas-vim2.dts
+@@ -59,8 +59,6 @@
+ 				      1 1
+ 				      2 2
+ 				      3 3>;
 -		cooling-min-level = <0>;
 -		cooling-max-level = <3>;
- 		#cooling-cells = <2>; /* min followed by max */
+ 		#cooling-cells = <2>;
  	};
- 	...
-@@ -241,8 +229,6 @@ cpus {
- 	 */
- 	fan0: fan@48 {
- 		...
--		cooling-min-level = <0>;
--		cooling-max-level = <9>;
- 		#cooling-cells = <2>; /* min followed by max */
- 	};
- };
+ 
 -- 
 2.15.0.194.g9af6a3dea062
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
