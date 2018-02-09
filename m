@@ -1,112 +1,239 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [Query] thermal: Who is using "cooling-{min|max}-level}"
- properties ?
-Date: Fri, 9 Feb 2018 13:14:45 +0100
-Message-ID: <5722441d-c8be-4d29-fab7-28b4e5716961@linaro.org>
-References: <20180207065959.GN28462@vireshk-i7>
- <c7bd6ed5-b93e-3a07-b4a2-4c3b1eef5fac@linaro.org>
- <20180207102446.GS28462@vireshk-i7>
- <11fbba25-7029-8a13-476e-ea2f2de6fbf9@linaro.org>
- <20180209064211.GY28462@vireshk-i7>
- <539699c7-9509-dea2-2b31-c5f6749c99c4@linaro.org>
- <20180209092421.GL28462@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3] cpufreq: powernv: Add support of frequency domain
+Date: Fri, 09 Feb 2018 13:19:04 +0100
+Message-ID: <2235126.ZWAqWlELuo@aspire.rjw.lan>
+References: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f43.google.com ([74.125.82.43]:33381 "EHLO
-        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751003AbeBIMOt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 07:14:49 -0500
-Received: by mail-wm0-f43.google.com with SMTP id x4so3706731wmc.0
-        for <linux-pm@vger.kernel.org>; Fri, 09 Feb 2018 04:14:48 -0800 (PST)
-In-Reply-To: <20180209092421.GL28462@vireshk-i7>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Cc: viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org, Punit.Agrawal@arm.com, ionela.voinescu@arm.com
 
-On 09/02/2018 10:24, Viresh Kumar wrote:
-> On 09-02-18, 10:15, Daniel Lezcano wrote:
->> On 09/02/2018 07:42, Viresh Kumar wrote:
->>> On 07-02-18, 11:45, Daniel Lezcano wrote:
->>>> Yes, that is my understanding. cooling-min-level and cooling-max-level
->>>> are not used in the thermal framework code today.
->>>
->>> Right.
->>>
->>>> So if they are defined, we should check the cooling-device max and min
->>>> are in the boundaries (if they are different from no-limit).
->>>
->>> Hmm, I am not sure. We do compare those values (from maps) with the
->>> max reported by the cooling driver, so there is some boundary check
->>> happening. And I don't think it is worth comparing the min/max values
->>> from DT cooling device's nodes. Why not just leave those for the
->>> driver to return (which is already happening btw).
->>>
->>> I don't think it would be correct for the thermal core to go and look
->>> at the min/max properties of the cooling device directly, as those are
->>> more for the thermal driver's help. The thermal core should just call
->>> the get_max_state() callback and that's it.
->>>
->>> Anyway, we can take decision on the binding itself after some time but
->>> I will send some patches to get rid of this property from CPU nodes
->>> for now. It doesn't make sense to have it there (anyway it is
->>> optional), as the cpu cooling devices are kind of virtual cooling
->>> devices which rely on OPP or freq-table currently. Maybe I will begin
->>> by just updating one platform and once that is merged, update
->>> everything else as well.
+On Monday, January 22, 2018 9:17:34 AM CET Abhishek Goel wrote:
+> Frequency-domain indicates group of CPUs that would share same frequency.
+> It is detected using device-tree node "frequency-domain-indicator".
+> frequency-domain-indicator is a bitmask which will have different value
+> depending upon the generation of the processor.
 > 
-> So I eventually updated everything as very small number of platforms
-> were actually using it.
+> CPUs of the same chip for which the result of a bitwise AND between
+> their PIR and the frequency-domain-indicator is the same share the same
+> frequency.
 > 
-> https://lkml.kernel.org/r/cover.1518166039.git.viresh.kumar@linaro.org
-
-Yep, saw them.
-
->> What about the "cooling-cells" ? Its usage is unclear in the code and
->> I'm not sure it is really needed.
+> In this patch, we define hash-table indexed by the aforementioned
+> bitwise ANDed value to store the cpumask of the CPUs sharing the same
+> frequency domain. Further, the cpufreq policy will be created per
+> frequency-domain
 > 
-> As I can see, it is actually used (sometimes a bit indirectly).
+> So for POWER9, a cpufreq policy is created per quad while for POWER8 it
+> is created per core. Governor decides frequency for each policy but
+> multiple cores may come under same policy. In such case frequency needs
+> to be set on each core sharing that policy.
+> 
+> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+> ---
+> 
+> Skiboot patch required for the corresponding device-tree changes have been
+> posted here : http://patchwork.ozlabs.org/patch/862256/
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 104 ++++++++++++++++++++++++++++++++++----
+>  1 file changed, 95 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index b6d7c4c..aab23a4 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -37,6 +37,7 @@
+>  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+>  #include <asm/opal.h>
+>  #include <linux/timer.h>
+> +#include <linux/hashtable.h>
+>  
+>  #define POWERNV_MAX_PSTATES	256
+>  #define PMSR_PSAFE_ENABLE	(1UL << 30)
+> @@ -130,6 +131,9 @@ enum throttle_reason_type {
+>  static int nr_chips;
+>  static DEFINE_PER_CPU(struct chip *, chip_info);
+>  
+> +static u32 freq_domain_indicator;
+> +static bool p9_occ_quirk;
+> +
+>  /*
+>   * Note:
+>   * The set of pstates consists of contiguous integers.
+> @@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
+>  	gpstates->last_gpstate_idx = 0;
+>  }
+>  
+> +#define SIZE NR_CPUS
+> +#define ORDER_FREQ_MAP ilog2(SIZE)
+> +
+> +static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
+> +
+> +struct hashmap {
+> +	cpumask_t mask;
+> +	int chip_id;
+> +	u32 pir_key;
+> +	struct hlist_node hash_node;
+> +};
+> +
+> +static void insert(u32 key, int cpu)
+> +{
+> +	struct hashmap *data;
+> +
+> +	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
+> +		if (data->chip_id == cpu_to_chip_id(cpu) &&
+> +			data->pir_key == key) {
+> +			cpumask_set_cpu(cpu, &data->mask);
+> +			return;
+> +		}
+> +	}
+> +
+> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
+> +	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
+> +	cpumask_set_cpu(cpu, &data->mask);
+> +	data->chip_id = cpu_to_chip_id(cpu);
+> +	data->pir_key = key;
+> +
+> +}
+> +
+>  /*
+>   * Initialize the freq table based on data obtained
+>   * from the firmware passed via device-tree
+> @@ -206,6 +242,7 @@ static int init_powernv_pstates(void)
+>  	u32 len_ids, len_freqs;
+>  	u32 pstate_min, pstate_max, pstate_nominal;
+>  	u32 pstate_turbo, pstate_ultra_turbo;
+> +	u32 key;
+>  
+>  	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+>  	if (!power_mgt) {
+> @@ -246,9 +283,18 @@ static int init_powernv_pstates(void)
+>  	else
+>  		powernv_pstate_info.wof_enabled = true;
+>  
+> +	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
+> +		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
+> +				&freq_domain_indicator))
+> +		pr_warn("ibm,freq-domain-indicator not found\n");
+> +
+> +        if (of_device_is_compatible(power_mgt, "p9-occ-quirk"))
+> +		p9_occ_quirk = true;
+> +
+>  next:
+>  	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+>  		pstate_nominal, pstate_max);
+> +	pr_info("frequency domain indicator %d", freq_domain_indicator);
+>  	pr_info("Workload Optimized Frequency is %s in the platform\n",
+>  		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
+>  
+> @@ -276,6 +322,15 @@ static int init_powernv_pstates(void)
+>  		return -ENODEV;
+>  	}
+>  
+> +	if (freq_domain_indicator) {
+> +		hash_init(freq_domain_map);
+> +		for_each_possible_cpu(i) {
+> +			key = ((u32) get_hard_smp_processor_id(i) &
+> +				freq_domain_indicator);
+> +			insert(key, i);
+> +		}
+> +	}
+> +
+>  	powernv_pstate_info.nr_pstates = nr_pstates;
+>  	pr_debug("NR PStates %d\n", nr_pstates);
+>  	for (i = 0; i < nr_pstates; i++) {
+> @@ -760,25 +815,56 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  
+>  	spin_unlock(&gpstates->gpstate_lock);
+>  
+> -	/*
+> -	 * Use smp_call_function to send IPI and execute the
+> -	 * mtspr on target CPU.  We could do that without IPI
+> -	 * if current CPU is within policy->cpus (core)
+> +	/* The current DVFS implementation in firmware requires that to set a
+> +	 * frequency in a quad, all cores of the quad need to set frequency in
+> +	 * their respective PMCR's. Ideally setting frequency on any of the
+> +	 * core of that quad should change frequency for the quad.
+>  	 */
+> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+> +	if (p9_occ_quirk) {
+> +		cpumask_t temp;
+> +		u32 cpu;
+> +
+> +		cpumask_copy(&temp, policy->cpus);
+> +		while (!cpumask_empty(&temp)) {
+> +			cpu = cpumask_first(&temp);
+> +			smp_call_function_any(cpu_sibling_mask(cpu),
+> +					set_pstate, &freq_data, 1);
+> +			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
+> +		}
+> +	} else {
+> +		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+>  static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  {
+> -	int base, i, ret;
+> +	int ret;
+>  	struct kernfs_node *kn;
+>  	struct global_pstate_info *gpstates;
+>  
+> -	base = cpu_first_thread_sibling(policy->cpu);
+> +	if (!freq_domain_indicator) {
 
-(yeah, that was the meaning of 'unclear')
+IMO it would be more straightforward to write this conditional as
 
-> - This field is used to check if a device is a cooling device or not.
->   For example, the cpu-cooling device wouldn't be registered by the
->   cpufreq drivers unless this property is present in the CPU node. So
->   this is actually used.
->
-> - This field (and its value) also comes into picture while parsing the
->   "cooling-maps". The "cooling-device" property in the map needs to
->   have "cooing-cells" + 1 fields. The first one is the cooling-device
->   phandle, followed by min/max states.
+if (freq_domain_indicator) {
+   do something
+} else {
+   do something else
+}
 
-Right. The semantic is unclear. The expected cooling-cells value is
-always 2 (the code ignore values greater than two and yell if it is less
-than 2). And the cooling-device binding tells there are two states.
+> +		int base, i;
+>  
+> -	for (i = 0; i < threads_per_core; i++)
+> -		cpumask_set_cpu(base + i, policy->cpus);
+> +		base = cpu_first_thread_sibling(policy->cpu);
+> +		for (i = 0; i < threads_per_core; i++)
+> +			cpumask_set_cpu(base + i, policy->cpus);
+> +	} else {
+> +		u32 key;
+> +		struct hashmap *data;
+> +
+> +		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
+> +				freq_domain_indicator);
 
-So the question is why do we need a cooling-cells as the information is
-pointless here (always 2) ?
+The outer paren on the right-hand side is not necessary.
 
-I see this field is artificially used to tell the cpufreq driver "please
-register me as a cooling device". This is inconsistent from my pov.
+The explicit case to u32 isn't necessary as well AFAICS.
 
-Furthermore, the thermal-zone with the cooling device binds with the CPU
-phandle, not the cooling-cells.
+> +		hash_for_each_possible(freq_domain_map, data, hash_node,
+> +								 key%SIZE) {
+> +			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
+> +				data->pir_key == key) {
 
-Putting apart the device binding changes discussion for the moment. Why
-not register the cpufreq driver in all the cases and then drop
-cooling-cells ? So when the opps are present, its registers in the
-cpufreq->ready callback.
+You have slightly confusing indentation here, as the continuation of the
+condition is at the same level as the statements in the conditional block.
 
+> +				cpumask_copy(policy->cpus, &data->mask);
+> +				break;
+> +			}
+> +		}
+> +	}
+>  
+>  	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+>  	if (!kn) {
+> 
 
+Overall, from cpufreq perspective, I don't see anything to complain about
+here.
 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Rafael
