@@ -1,51 +1,78 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Fri, 09 Feb 2018 11:36:30 +0100
-Message-ID: <11598161.veS9VGWB8G@aspire.rjw.lan>
-References: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com> <20180209035143.GX28462@vireshk-i7> <197c26ba-c2a6-2de7-dffa-5b884079f746@evidence.eu.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v13 3/4] thinkpad_acpi: Add support for battery thresholds
+Date: Fri, 9 Feb 2018 11:39:46 +0100
+Message-ID: <20180209103946.fkolldv6boml3e32@earth.universe>
+References: <20180207145844.bd567c36juvlkjvz@thinkpad>
+ <20180208220323.cr6j2kcozekwbzo6@earth.universe>
+ <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:55401 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750961AbeBIKiP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Feb 2018 05:38:15 -0500
-In-Reply-To: <197c26ba-c2a6-2de7-dffa-5b884079f746@evidence.eu.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="3xq5us5xzfvyutl6"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ognjen Galic <smclt30p@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
-To: Claudio Scordino <claudio@evidence.eu.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, February 9, 2018 9:02:34 AM CET Claudio Scordino wrote:
-> Hi Viresh,
-> 
-> Il 09/02/2018 04:51, Viresh Kumar ha scritto:
-> > On 08-02-18, 18:01, Claudio Scordino wrote:
-> >> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
-> >> we should not wait for the rate limit, otherwise we may miss some deadline.
+
+--3xq5us5xzfvyutl6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Fri, Feb 09, 2018 at 10:22:54AM +0100, Rafael J. Wysocki wrote:
+> On Thu, Feb 8, 2018 at 11:03 PM, Sebastian Reichel <sre@kernel.org> wrote:
+> > Hi,
+> >
+> > On Wed, Feb 07, 2018 at 03:58:44PM +0100, Ognjen Galic wrote:
+> >> 1) Charge start threshold
+> >> /sys/class/power_supply/BATN/charge_start_threshold
 > >>
-> >> Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
-> >> misses for tasks with low RT periods.
+> >> Valid values are [0, 99]. A value of 0 turns off the
+> >> start threshold wear control.
 > >>
-> >> The patch applies on top of the one recently proposed by Peter to drop the
-> >> SCHED_CPUFREQ_* flags.
+> >> 2) Charge stop threshold
+> >> /sys/class/power_supply/BATN/charge_stop_threshold
 > >>
+> >> Valid values are [1, 100]. A value of 100 turns off
+> >> the stop threshold wear control. This must be
+> >> configured first.
+> >
+> > This is a new sysfs file, that should be documented.
+>=20
+> Right, I should have remembered about that, sorry.
+>=20
+> > Also this looks pretty generic. Just introduce new POWER_SUPPLY_PROP_
+> > entries for start/stop charging threshold and use them.
+>=20
+> What about doing this as a follow-up?
 
-[cut]
+Fine with me.
 
-> 
-> > 
-> > Is it possible to (somehow) check here if the DL tasks will miss
-> > deadline if we continue to run at current frequency? And only ignore
-> > rate-limit if that is the case ?
-> 
-> I need to think further about it.
+-- Sebastian
 
-That would be my approach FWIW.
+--3xq5us5xzfvyutl6
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Increasing the frequency beyond what is necessary means wasting energy
-in any case.
+-----BEGIN PGP SIGNATURE-----
 
-Thanks,
-Rafael
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp9em4ACgkQ2O7X88g7
++prlSA//TgdyXi95Nhm+D97ROps1xljEQo8Zb4q1KljKq4FN301ub8shC2zILE3w
+J/heoAiQvEJrdxVCFSar7PROHlyVKJNyfrjRbaR1Jm1cNd4odug66HYMRLpXmgMC
+4zuIWEbpvOBXT9MvCujbLGQaJaJ+6iD/QyybXhvXXnxejp+N8efOxktqH7iINNMX
+Mb+jG0HhfO7L3of2PP1E7pcO59lOEnaYk3UDTniy5cL/5GFL9xRIy+E1NPBxRYhA
+2tiCp8ftFsVeNyMUcK5vPqLuGgfj3RBCNVnDGaQDCIlrDIAKYZ5tTyg1/Ws/Qy+m
+z7FgV+GKOmbNlK1DjHZ48OlrfThkKbI+DqER7GEcDr18GUYuAl3AB9kn0i3FUYcO
+bVSSSjlWQ5I1VR7dFcT/TmHvYNcSrphnPB9hBhydI8Q46ZmsHS2biHsRQ7Xx1Orb
+zcnP8FBxnz2DIerJEFIOOLOlAprw64lCE2jajMIqMmEllP8b4E3cvhaOTLJwk3Cq
+Js9L1LspqFJoj9O8jwyczfSHa31dT7yGvzTjBqNJFNCQKrz1D0Q0BQW9BQ9URtUF
+JRWU9K58IUMtFG/yG7CsckTQfkl33ROtr4jV1jkNqagH/TJ8XkaoQeBhMq6Dnxu8
+dvXmR2iiYMlq5B1m+4DmHJ8K89TFBKAssdjE20Yef9BP//hRiZg=
+=K+VB
+-----END PGP SIGNATURE-----
+
+--3xq5us5xzfvyutl6--
