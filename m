@@ -1,84 +1,64 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v13 4/4] battery: Add the ThinkPad "Not Charging" quirk
-Date: Fri, 9 Feb 2018 14:26:41 +0100
-Message-ID: <20180209132641.6vkwasa4b5pygjkr@earth.universe>
-References: <20180207145936.ockmmkipxtwkdsot@thinkpad>
- <20180209104530.s5i6lymcpgkqyego@khazad-dum.debian.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] base: power: domain: Replace mdelay with msleep
+Date: Fri, 9 Feb 2018 14:58:21 +0100
+Message-ID: <CAPDyKFoft7aCoKtODz66AAjpDQELVhqGurFYBV6FHP9hzhy-Ug@mail.gmail.com>
+References: <1516955899-31810-1-git-send-email-baijiaju1990@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="mz7u4sqedrcthzyh"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:46462 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751029AbeBIN0o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 9 Feb 2018 08:26:44 -0500
-Content-Disposition: inline
-In-Reply-To: <20180209104530.s5i6lymcpgkqyego@khazad-dum.debian.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1516955899-31810-1-git-send-email-baijiaju1990@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jia-Ju Bai <baijiaju1990@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Ognjen Galic <smclt30p@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 
+On 26 January 2018 at 09:38, Jia-Ju Bai <baijiaju1990@gmail.com> wrote:
+> After checking all possible call chains to genpd_dev_pm_detach() and
+> genpd_dev_pm_attach() here,
+> my tool finds that these functions are never called in atomic context,
+> namely never in an interrupt handler or holding a spinlock.
+> Thus mdelay can be replaced with msleep to avoid busy wait.
+>
+> This is found by a static analysis tool named DCNS written by myself.
+>
+> Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+> ---
+>  drivers/base/power/domain.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 0c80bea..f84ac72 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2144,7 +2144,7 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+>                 if (ret != -EAGAIN)
+>                         break;
+>
+> -               mdelay(i);
+> +               msleep(i);
 
---mz7u4sqedrcthzyh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This looks like a nice improvement, however moving to msleep() makes
+the call to cond_resched() below a bit superfluous. Perhaps remove
+that as well.
 
-Hi,
+>                 cond_resched();
+>         }
+>
+> @@ -2231,7 +2231,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>                 if (ret != -EAGAIN)
+>                         break;
+>
+> -               mdelay(i);
+> +               msleep(i);
 
-On Fri, Feb 09, 2018 at 08:45:30AM -0200, Henrique de Moraes Holschuh wrote:
-> On Wed, 07 Feb 2018, Ognjen Galic wrote:
-> > The EC/ACPI firmware on Lenovo ThinkPads used to report a status
-> > of "Unknown" when the battery is between the charge start and
-> > charge stop thresholds. On Windows, it reports "Not Charging"
-> > so the quirk has been added to also report correctly.
-> >=20
-> > Now the "status" attribute returns "Not Charging" when the
-> > battery on ThinkPads is not physicaly charging.
-> >=20
-> > Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> > Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
->=20
-> AFAIK, This behavior goes back to the initial SBS implementation in the
-> IBM era ECs of the Thinkpads...  We've always called it "idle" in the
-> linux-thinkpad community.  The behavior comes from SBS
-> (http://smartbattery.org/specs/), the EC was reporting its status
-> (charging/not charging *THIS* battery) in one bit, and the battery's
-> status (discharging/not discharging *THIS* battery) in a different bit.
->=20
-> It was rather simple to observe the behavior of those bits in a
-> two-battery system.
->=20
-> Would that apply to these newer Lenovo models?  If so, you might want to
-> consider using "idle", instead. "not charging" does _not_ imply "neither
-> charging nor discharging", while "idle" does.
+Ditto.
 
-I agree, that "Idle" is a better term than "Not Charging", but
-the power supply property exists with this name since it has
-been introduced. This is exposed to userspace and cannot be
-changed easily.
+>                 cond_resched();
+>         }
+>         mutex_unlock(&gpd_list_lock);
+> --
+> 1.7.9.5
+>
 
--- Sebastian
-
---mz7u4sqedrcthzyh
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlp9oZEACgkQ2O7X88g7
-+prx6g/+MURnUmcOywI7DGgmd2hm6czCCC4rxQK1BRBE2tc9rcpuEDZ9XAeCfUDS
-mkdYDkvz+Ap4GYHZXnZ3CbqsJv5jW/R3w6MVHVDoaN04t8x2BlRlTNQK60nUR5qe
-F9+NGvP8y/4M/yz6jLVhbTsyZP1JTOnZo9EoJik/Uuyx/kI+rzn+o5MrhkUnUB4t
-hxKl7Cd34Vdem/CNkXVIfylVcnDcaze5iQV20FbunDSUj1FEX/iiJAYqgi7ITGzi
-8QBoLzDs/vDaHEOAp7rHToV9AIhB4xbNO602e1oKykEDJa9nwXARNIKcZO1zIRWO
-tY5MqD5CuFNnHdEadfvneXgj0Qe6gQu6ZScgxD0qxXVVEob23h/dRXE+xnCS3ENT
-tVz3A2m++4DSqYgtkco/XcfLAvzYNT1hhuwigOsJ4In6OmsrIF9jvMAUzyrTSKOv
-z8GtKuXk9ltRGABtH+xJ/DcLu0iUOg/R1p76XmF7zMj09ywq6D+WcjuFX7RR1dcf
-T1gKgKmaK2cH50PkHf2VJhULq2kLQ4jHh/JpqJ/cmS95XVr/VhxE3atBalyO9iv5
-7wAtZQa+vgfYbvzpTQYAGOt1LBFtDXHOo8J3BgAAnHd76pGaBHXV9v2CL+FsX0g4
-hPceeoOSASIFNciA3J5fAC4buywd5PEiNP2F1w45vOqbS0P+gUA=
-=WoXc
------END PGP SIGNATURE-----
-
---mz7u4sqedrcthzyh--
+Kind regards
+Uffe
