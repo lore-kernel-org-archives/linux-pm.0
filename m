@@ -1,417 +1,101 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v6 15/15] dt-bindings: cpufreq: Document
- operating-points-v2-krait-cpu
-Date: Thu, 8 Feb 2018 20:54:49 -0600
-Message-ID: <20180209025449.qvbirdvflijxo62j@rob-hp-laptop>
-References: <1517890108-8140-1-git-send-email-sricharan@codeaurora.org>
- <1517890108-8140-16-git-send-email-sricharan@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+Date: Fri, 9 Feb 2018 09:21:43 +0530
+Message-ID: <20180209035143.GX28462@vireshk-i7>
+References: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pl0-f68.google.com ([209.85.160.68]:32906 "EHLO
+        mail-pl0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752214AbeBIDvs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Feb 2018 22:51:48 -0500
+Received: by mail-pl0-f68.google.com with SMTP id t4so911804plo.0
+        for <linux-pm@vger.kernel.org>; Thu, 08 Feb 2018 19:51:48 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1517890108-8140-16-git-send-email-sricharan@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sricharan R <sricharan@codeaurora.org>
-Cc: viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <1518109302-8239-1-git-send-email-claudio@evidence.eu.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2018 at 09:38:28AM +0530, Sricharan R wrote:
-> In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
-> that has KRAIT processors the voltage/current value of each OPP
-> varies based on the silicon variant in use.
-> operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
-> and the operating-points-v2 table for each opp. The qcom-cpufreq driver
-> reads the efuse value from the SoC to provide the required information
-> that is used to determine the voltage and current value for each OPP of
-> operating-points-v2 table when it is parsed by the OPP framework.
+On 08-02-18, 18:01, Claudio Scordino wrote:
+> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+> we should not wait for the rate limit, otherwise we may miss some deadline.
 > 
-> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> Tests using rt-app on Exynos5422 have shown reductions of about 10% of deadline
+> misses for tasks with low RT periods.
+> 
+> The patch applies on top of the one recently proposed by Peter to drop the
+> SCHED_CPUFREQ_* flags.
+> 
+> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+> CC: Rafael J . Wysocki <rafael.j.wysocki@intel.com>
+> CC: Patrick Bellasi <patrick.bellasi@arm.com>
+> CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> CC: Morten Rasmussen <morten.rasmussen@arm.com>
+> CC: Juri Lelli <juri.lelli@redhat.com>
+> CC: Viresh Kumar <viresh.kumar@linaro.org>
+> CC: Vincent Guittot <vincent.guittot@linaro.org>
+> CC: Todd Kjos <tkjos@android.com>
+> CC: Joel Fernandes <joelaf@google.com>
+> CC: linux-pm@vger.kernel.org
+> CC: linux-kernel@vger.kernel.org
 > ---
->  .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
->  1 file changed, 363 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
-> new file mode 100644
-> index 0000000..e7351f7
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
-> @@ -0,0 +1,363 @@
-> +QCOM KRAIT CPUFreq and OPP bindings
-> +===================================
-> +
-> +In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
-> +that has KRAIT processors the voltage value of each OPP varies
-> +based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
-> +defines the voltage and current value based on the speed/pvs/version
-> +combination blown in the efuse. The qcom-cpufreq driver reads the efuse
-> +value from the SoC to provide the OPP framework with required information.
-> +This is used to determine the voltage and current value for each OPP of
-> +operating-points-v2 table when it is parsed by the OPP framework.
-> +
-> +Required properties:
-> +--------------------
-> +In 'cpus' nodes:
-> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> +
-> +In 'operating-points-v2' table:
-> +- compatible: Should be
-> +	- 'operating-points-v2-krait-cpu' for ipq8064, apq8064, msm8960,
-> +					      msm8974.
-> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-> +		efuse registers that has information about the
-> +		speedbin/pvs/version that is used to select the right
-> +		voltage/current value pair. Note that the length field of the
-> +		nvmem-cell is used to differentiate between format 'A' or 'B'
-> +		efuse settings. len of '4' bytes is for format 'A' and '8'
-> +		bytes for format 'B'. Please refer the for nvmem-cells
-> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
-> +		and also examples below for both the cases.
-> +Example 1:
-> +---------
-> +
-> +/* For arch/arm/boot/dts/apq8064.dtsi --> format 'A' */
-> +cpus {
-> +	#address-cells = <1>;
-> +	#size-cells = <0>;
-> +
-> +	CPU0: cpu@0 {
-> +		compatible = "qcom,krait";
-> +		enable-method = "qcom,kpss-acc-v1";
-> +		device_type = "cpu";
-> +		reg = <0>;
-> +		next-level-cache = <&L2>;
-> +		qcom,acc = <&acc0>;
-> +		qcom,saw = <&saw0>;
-> +		cpu-idle-states = <&CPU_SPC>;
-> +		operating-points-v2 = <&cpu_opp_table>;
-> +	};
-> +};
-> +
-> +qfprom: qfprom@700000 {
-> +	  compatible      = "qcom,qfprom";
-> +	  reg	      = <0x00700000 0x1000>;
-> +	  #address-cells  = <1>;
-> +	  #size-cells     = <1>;
-> +	  ranges;
-> +	  pvs_efuse: pvs {
-> +		reg = <0xc0 0x4>;
-> +	};
-> +};
-> +
-> +cpu_opp_table: opp-table {
-> +	compatible = "operating-points-v2-krait-cpu";
-> +	nvmem-cells = <&pvs_efuse>;
-> +
-> +		/*
-> +		 * Missing opp-shared property means CPUs switch DVFS states
-> +		 * independently.
-> +		 */
-> +
-> +	       opp-918000000 {
-> +			opp-hz = /bits/ 64 <918000000>;
-> +			opp-microvolt-speed0-pvs0-v0 = <1100000>;
+>  kernel/sched/cpufreq_schedutil.c | 15 ++++++++++++---
+>  1 file changed, 12 insertions(+), 3 deletions(-)
 
-Where is this property defined? I'm not that happy with it, but don't 
-have a better suggestion. Maybe make pvsN be an array of values with 0 
-for any skipped indexes? The '-v0' seems pointless. 
+So the previous commit was surely incorrect as it relied on comparing
+frequencies instead of dl-util, and freq requirements could have even
+changed due to CFS.
 
-> +			opp-microvolt-speed0-pvs1-v0 = <1050000>;
-> +			opp-microvolt-speed0-pvs3-v0 = <1000000>;
-> +			opp-microvolt-speed0-pvs4-v0 = <975000>;
-> +			opp-microvolt-speed1-pvs0-v0 = <1025000>;
-> +			opp-microvolt-speed1-pvs1-v0 = <1000000>;
-> +			opp-microvolt-speed1-pvs2-v0 = <950000>;
-> +			opp-microvolt-speed1-pvs3-v0 = <925000>;
-> +			opp-microvolt-speed1-pvs4-v0 = <900000>;
-> +			opp-microvolt-speed1-pvs5-v0 = <900000>;
-> +			opp-microvolt-speed1-pvs6-v0 = <900000>;
-> +			opp-microvolt-speed2-pvs0-v0 = <975000>;
-> +			opp-microvolt-speed2-pvs1-v0 = <950000>;
-> +			opp-microvolt-speed2-pvs2-v0 = <925000>;
-> +			opp-microvolt-speed2-pvs3-v0 = <912500>;
-> +			opp-microvolt-speed2-pvs4-v0 = <900000>;
-> +			opp-microvolt-speed2-pvs5-v0 = <900000>;
-> +			opp-microvolt-speed2-pvs6-v0 = <900000>;
-> +			opp-microvolt-speed14-pvs0-v0 = <1025000>;
-> +			opp-microvolt-speed14-pvs1-v0 = <1000000>;
-> +			opp-microvolt-speed14-pvs2-v0 = <950000>;
-> +			opp-microvolt-speed14-pvs3-v0 = <925000>;
-> +			opp-microvolt-speed14-pvs4-v0 = <900000>;
-> +			opp-microvolt-speed14-pvs5-v0 = <900000>;
-> +			opp-microvolt-speed14-pvs6-v0 = <900000>;
-> +		};
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index b0bd77d..d8dcba2 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -74,7 +74,10 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+>  
+>  /************************ Governor internals ***********************/
+>  
+> -static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+> +static bool sugov_should_update_freq(struct sugov_policy *sg_policy,
+> +				     u64 time,
+> +				     struct sugov_cpu *sg_cpu_old,
+> +				     struct sugov_cpu *sg_cpu_new)
+>  {
+>  	s64 delta_ns;
+>  
+> @@ -111,6 +114,10 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>  		return true;
+>  	}
+>  
+> +	/* Ignore rate limit when DL increased utilization. */
+> +	if (sg_cpu_new->util_dl > sg_cpu_old->util_dl)
+> +		return true;
 > +
-> +		opp-810000000 {
-> +			opp-hz = /bits/ 64 <810000000>;
-> +			opp-microvolt-speed0-pvs0-v0 =  < 1075000>;
-> +			opp-microvolt-speed0-pvs1-v0 = 	< 1025000>;
-> +			opp-microvolt-speed0-pvs3-v0 = 	< 975000>;
-> +			opp-microvolt-speed0-pvs3-v0 = 	< 962500>;
-> +			opp-microvolt-speed1-pvs0-v0 = 	< 1000000>;
-> +			opp-microvolt-speed1-pvs1-v0 = 	< 975000>;
-> +			opp-microvolt-speed1-pvs2-v0 = 	< 937500>;
-> +			opp-microvolt-speed1-pvs3-v0 = 	< 900000>;
-> +			opp-microvolt-speed1-pvs4-v0 = 	< 887500>;
-> +			opp-microvolt-speed1-pvs5-v0 = 	< 887500>;
-> +			opp-microvolt-speed1-pvs6-v0 = 	< 887500>;
-> +			opp-microvolt-speed2-pvs0-v0 = 	< 962500>;
-> +			opp-microvolt-speed2-pvs1-v0 = 	< 937500>;
-> +			opp-microvolt-speed2-pvs2-v0 = 	< 912500>;
-> +			opp-microvolt-speed2-pvs3-v0 = 	< 900000>;
-> +			opp-microvolt-speed2-pvs4-v0 = 	< 887500>;
-> +			opp-microvolt-speed2-pvs5-v0 = 	< 887500>;
-> +			opp-microvolt-speed2-pvs6-v0 = 	< 887500>;
 
-Some space then tab issues on the above. Also, drop the space after the 
-'<'.
+Changing the frequency has a penalty, specially in the ARM world (and
+that's where you are testing your stuff). I am worried that we will
+have (corner) cases where we will waste a lot of time changing the
+frequencies. For example (I may be wrong here), what if 10 small DL
+tasks are queued one after the other? The util will keep on changing
+and so will the frequency ? There may be more similar cases ?
 
-> +			opp-microvolt-speed14-pvs0-v0 =	< 1000000>;
-> +			opp-microvolt-speed14-pvs1-v0 =	< 975000>;
-> +			opp-microvolt-speed14-pvs2-v0 =	< 937500>;
-> +			opp-microvolt-speed14-pvs3-v0 =	< 900000>;
-> +			opp-microvolt-speed14-pvs4-v0 =	< 887500>;
-> +			opp-microvolt-speed14-pvs5-v0 =	< 887500>;
-> +			opp-microvolt-speed14-pvs6-v0 =	< 887500>;
-> +		};
-> +
-> +		opp-702000000 {
-> +			 opp-hz = /bits/ 64 <702000000>;
-> +			 opp-microvolt-speed0-pvs0-v0 =  <1025000>;
-> +			 opp-microvolt-speed0-pvs1-v0 =  <975000>;
-> +			 opp-microvolt-speed0-pvs3-v0 =  <925000>;
-> +			 opp-microvolt-speed0-pvs3-v0 =  <925000>;
-> +			 opp-microvolt-speed1-pvs0-v0 =  <962500>;
-> +			 opp-microvolt-speed1-pvs1-v0 =  <962500>;
-> +			 opp-microvolt-speed1-pvs2-v0 =  <925000>;
-> +			 opp-microvolt-speed1-pvs3-v0 =  <900000>;
-> +			 opp-microvolt-speed1-pvs4-v0 =  <875000>;
-> +			 opp-microvolt-speed1-pvs5-v0 =  <875000>;
-> +			 opp-microvolt-speed1-pvs6-v0 =  <875000>;
-> +			 opp-microvolt-speed2-pvs0-v0 =  <950000>;
-> +			 opp-microvolt-speed2-pvs1-v0 =  <925000>;
-> +			 opp-microvolt-speed2-pvs2-v0 =  <900000>;
-> +			 opp-microvolt-speed2-pvs3-v0 =  <900000>;
-> +			 opp-microvolt-speed2-pvs4-v0 =  <875000>;
-> +			 opp-microvolt-speed2-pvs5-v0 =  <875000>;
-> +			 opp-microvolt-speed2-pvs6-v0 =  <875000>;
-> +			 opp-microvolt-speed14-pvs0-v0 = <962500>;
-> +			 opp-microvolt-speed14-pvs1-v0 = <962500>;
-> +			 opp-microvolt-speed14-pvs2-v0 = <925000>;
-> +			 opp-microvolt-speed14-pvs3-v0 = <900000>;
-> +			 opp-microvolt-speed14-pvs4-v0 = <875000>;
-> +			 opp-microvolt-speed14-pvs5-v0 = <875000>;
-> +			 opp-microvolt-speed14-pvs6-v0 = <875000>;
-> +		};
-> +
-> +		opp-594000000 {
-> +			opp-hz = /bits/ 64 <594000000>;
-> +			opp-microvolt-speed0-pvs0-v0 =  <1000000>;
-> +			opp-microvolt-speed0-pvs1-v0 = 	<950000>;
-> +			opp-microvolt-speed0-pvs3-v0 = 	<900000>;
-> +			opp-microvolt-speed0-pvs3-v0 = 	<900000>;
-> +			opp-microvolt-speed1-pvs0-v0 = 	<950000>;
-> +			opp-microvolt-speed1-pvs1-v0 = 	<950000>;
-> +			opp-microvolt-speed1-pvs2-v0 = 	<925000>;
-> +			opp-microvolt-speed1-pvs3-v0 = 	<900000>;
-> +			opp-microvolt-speed1-pvs4-v0 = 	<875000>;
-> +			opp-microvolt-speed1-pvs5-v0 = 	<875000>;
-> +			opp-microvolt-speed1-pvs6-v0 = 	<875000>;
-> +			opp-microvolt-speed2-pvs0-v0 = 	<950000>;
-> +			opp-microvolt-speed2-pvs1-v0 = 	<925000>;
-> +			opp-microvolt-speed2-pvs2-v0 = 	<900000>;
-> +			opp-microvolt-speed2-pvs3-v0 = 	<900000>;
-> +			opp-microvolt-speed2-pvs4-v0 = 	<875000>;
-> +			opp-microvolt-speed2-pvs5-v0 = 	<875000>;
-> +			opp-microvolt-speed2-pvs6-v0 = 	<875000>;
+Is it possible to (somehow) check here if the DL tasks will miss
+deadline if we continue to run at current frequency? And only ignore
+rate-limit if that is the case ?
 
-More space then tab issues after the '='.
+>  	delta_ns = time - sg_policy->last_freq_update_time;
+>  	return delta_ns >= sg_policy->freq_update_delay_ns;
+>  }
+> @@ -271,6 +278,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  				unsigned int flags)
+>  {
+>  	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
+> +	struct sugov_cpu sg_cpu_old = *sg_cpu;
 
-> +			opp-microvolt-speed14-pvs0-v0 =	<950000>;
-> +			opp-microvolt-speed14-pvs1-v0 =	<950000>;
-> +			opp-microvolt-speed14-pvs2-v0 =	<925000>;
-> +			opp-microvolt-speed14-pvs3-v0 =	<900000>;
-> +			opp-microvolt-speed14-pvs4-v0 =	<875000>;
-> +			opp-microvolt-speed14-pvs5-v0 =	<875000>;
-> +			opp-microvolt-speed14-pvs6-v0 =	<875000>;
-> +		};
-> +
-> +		opp-486000000 {
-> +			 opp-hz = /bits/ 64 <486000000>;
-> +			 opp-microvolt-speed0-pvs0-v0 = <975000>;
-> +			 opp-microvolt-speed0-pvs1-v0 = <925000>;
-> +			 opp-microvolt-speed0-pvs3-v0 = <875000>;
-> +			 opp-microvolt-speed0-pvs3-v0 = <875000>;
-> +			 opp-microvolt-speed1-pvs0-v0 = <950000>;
-> +			 opp-microvolt-speed1-pvs1-v0 = <950000>;
-> +			 opp-microvolt-speed1-pvs2-v0 = <925000>;
-> +			 opp-microvolt-speed1-pvs3-v0 = <900000>;
-> +			 opp-microvolt-speed1-pvs4-v0 = <875000>;
-> +			 opp-microvolt-speed1-pvs5-v0 = <875000>;
-> +			 opp-microvolt-speed1-pvs6-v0 = <875000>;
-> +			 opp-microvolt-speed2-pvs0-v0 = <950000>;
-> +			 opp-microvolt-speed2-pvs1-v0 = <925000>;
-> +			 opp-microvolt-speed2-pvs2-v0 = <900000>;
-> +			 opp-microvolt-speed2-pvs3-v0 = <900000>;
-> +			 opp-microvolt-speed2-pvs4-v0 = <875000>;
-> +			 opp-microvolt-speed2-pvs5-v0 = <875000>;
-> +			 opp-microvolt-speed2-pvs6-v0 = <875000>;
-> +			 opp-microvolt-speed14-pvs0-v0 = <950000>;
-> +			 opp-microvolt-speed14-pvs1-v0 = <950000>;
-> +			 opp-microvolt-speed14-pvs2-v0 = <925000>;
-> +			 opp-microvolt-speed14-pvs3-v0 = <900000>;
-> +			 opp-microvolt-speed14-pvs4-v0 = <875000>;
-> +			 opp-microvolt-speed14-pvs5-v0 = <875000>;
-> +			 opp-microvolt-speed14-pvs6-v0 = <875000>;
-> +		};
-> +
-> +		opp-384000000 {
-> +			opp-hz = /bits/ 64 <384000000>;
-> +			opp-microvolt-speed0-pvs0-v0 = <950000>;
-> +			opp-microvolt-speed0-pvs1-v0 = <900000>;
-> +			opp-microvolt-speed0-pvs3-v0 = <850000>;
-> +			opp-microvolt-speed0-pvs3-v0 = <850000>;
-> +			opp-microvolt-speed1-pvs0-v0 = <950000>;
-> +			opp-microvolt-speed1-pvs1-v0 = <950000>;
-> +			opp-microvolt-speed1-pvs2-v0 = <925000>;
-> +			opp-microvolt-speed1-pvs3-v0 = <900000>;
-> +			opp-microvolt-speed1-pvs4-v0 = <875000>;
-> +			opp-microvolt-speed1-pvs5-v0 = <875000>;
-> +			opp-microvolt-speed1-pvs6-v0 = <875000>;
-> +			opp-microvolt-speed2-pvs0-v0 = <950000>;
-> +			opp-microvolt-speed2-pvs1-v0 = <925000>;
-> +			opp-microvolt-speed2-pvs2-v0 = <900000>;
-> +			opp-microvolt-speed2-pvs3-v0 = <900000>;
-> +			opp-microvolt-speed2-pvs4-v0 = <875000>;
-> +			opp-microvolt-speed2-pvs5-v0 = <875000>;
-> +			opp-microvolt-speed2-pvs6-v0 = <875000>;
-> +			opp-microvolt-speed14-pvs0-v0 = <950000>;
-> +			opp-microvolt-speed14-pvs1-v0 = <950000>;
-> +			opp-microvolt-speed14-pvs2-v0 = <925000>;
-> +			opp-microvolt-speed14-pvs3-v0 = <900000>;
-> +			opp-microvolt-speed14-pvs4-v0 = <875000>;
-> +			opp-microvolt-speed14-pvs5-v0 = <875000>;
-> +			opp-microvolt-speed14-pvs6-v0 = <875000>;
-> +		};
-> +};
-> +
-> +EXAMPLE 2:
-> +---------
-> +/* For arch/arm/boot/dts/qcom-msm8974.dtsi--> format 'B' */
-> +
-> +qfprom: qfprom@700000 {
-> +	  compatible      = "qcom,qfprom";
-> +	  reg	      = <0x00700000 0x1000>;
-> +	  #address-cells  = <1>;
-> +	  #size-cells     = <1>;
-> +	  ranges;
-> +	  pvs_efuse: pvs {
-> +		reg = <0xc0 0x8>;
-> +	};
-> +};
-> +
-> +cpu_opp_table: opp-table {
-> +	compatible = "operating-points-v2-krait-cpu";
-> +	nvmem-cells = <&pvs_efuse>;
-> +
-> +		/*
-> +		 * Missing opp-shared property means CPUs switch DVFS states
-> +		 * independently.
-> +		 */
-> +	opp-960000000 {
-> +		opp-hz = /bits/ 64 <960000000>;
-> +		opp-microvolt-speed0-pvs0-v0 = <915000>;
-> +		opp-microvolt-speed0-pvs1-v0 = <895000>;
-> +		opp-microvolt-speed0-pvs2-v0 = <875000>;
-> +		opp-microvolt-speed0-pvs3-v0 = <860000>;
-> +		opp-microvolt-speed0-pvs4-v0 = <850000>;
-> +		opp-microvolt-speed0-pvs5-v0 = <840000>;
-> +		opp-microvolt-speed0-pvs6-v0 = <830000>;
-> +		opp-microvolt-speed2-pvs0-v0 = <875000>;
-> +		opp-microvolt-speed2-pvs1-v0 = <860000>;
-> +		opp-microvolt-speed2-pvs2-v0 = <845000>;
-> +		opp-microvolt-speed2-pvs3-v0 = <830000>;
-> +		opp-microvolt-speed2-pvs4-v0 = <820000>;
-> +		opp-microvolt-speed2-pvs5-v0 = <810000>;
-> +		opp-microvolt-speed2-pvs6-v0 = <800000>;
-> +		opp-microvolt-speed1-pvs0-v0 = <840000>;
-> +		opp-microvolt-speed1-pvs1-v0 = <825000>;
-> +		opp-microvolt-speed1-pvs2-v0 = <810000>;
-> +		opp-microvolt-speed1-pvs3-v0 = <795000>;
-> +		opp-microvolt-speed1-pvs4-v0 = <785000>;
-> +		opp-microvolt-speed1-pvs5-v0 = <775000>;
-> +		opp-microvolt-speed1-pvs6-v0 = <765000>;
-> +
-> +		opp-microamp-speed0-pvs0-v0 = <252>;
-> +		opp-microamp-speed0-pvs1-v0 = <252>;
-> +		opp-microamp-speed0-pvs2-v0 = <252>;
-> +		opp-microamp-speed0-pvs3-v0 = <252>;
-> +		opp-microamp-speed0-pvs4-v0 = <252>;
-> +		opp-microamp-speed0-pvs5-v0 = <252>;
-> +		opp-microamp-speed0-pvs6-v0 = <252>;
-> +		opp-microamp-speed2-pvs0-v0 = <245>;
-> +		opp-microamp-speed2-pvs1-v0 = <245>;
-> +		opp-microamp-speed2-pvs2-v0 = <245>;
-> +		opp-microamp-speed2-pvs3-v0 = <245>;
-> +		opp-microamp-speed2-pvs4-v0 = <245>;
-> +		opp-microamp-speed2-pvs5-v0 = <245>;
-> +		opp-microamp-speed2-pvs6-v0 = <245>;
-> +		opp-microamp-speed1-pvs0-v0 = <242>;
-> +		opp-microamp-speed1-pvs1-v0 = <242>;
-> +		opp-microamp-speed1-pvs2-v0 = <242>;
-> +		opp-microamp-speed1-pvs3-v0 = <242>;
-> +		opp-microamp-speed1-pvs4-v0 = <242>;
-> +		opp-microamp-speed1-pvs5-v0 = <242>;
-> +		opp-microamp-speed1-pvs6-v0 = <242>;
-> +	};
-> +
-> +	opp-883200000 {
-> +		opp-hz = /bits/ 64 <883200000>;
-> +		opp-microvolt-speed0-pvs0-v0 = <900000>;
-> +		opp-microvolt-speed0-pvs1-v0 = <885000>;
-> +		opp-microvolt-speed0-pvs2-v0 = <865000>;
-> +		opp-microvolt-speed0-pvs3-v0 = <850000>;
-> +		opp-microvolt-speed0-pvs4-v0 = <840000>;
-> +		opp-microvolt-speed0-pvs5-v0 = <830000>;
-> +		opp-microvolt-speed0-pvs6-v0 = <820000>;
-> +		opp-microvolt-speed2-pvs0-v0 = <865000>;
-> +		opp-microvolt-speed2-pvs1-v0 = <850000>;
-> +		opp-microvolt-speed2-pvs2-v0 = <835000>;
-> +		opp-microvolt-speed2-pvs3-v0 = <820000>;
-> +		opp-microvolt-speed2-pvs4-v0 = <810000>;
-> +		opp-microvolt-speed2-pvs5-v0 = <800000>;
-> +		opp-microvolt-speed2-pvs6-v0 = <790000>;
-> +		opp-microvolt-speed1-pvs0-v0 = <830000>;
-> +		opp-microvolt-speed1-pvs1-v0 = <815000>;
-> +		opp-microvolt-speed1-pvs2-v0 = <800000>;
-> +		opp-microvolt-speed1-pvs3-v0 = <785000>;
-> +		opp-microvolt-speed1-pvs4-v0 = <775000>;
-> +		opp-microvolt-speed1-pvs5-v0 = <765000>;
-> +		opp-microvolt-speed1-pvs6-v0 = <755000>;
-> +
-> +		opp-microamp-speed0-pvs0-v0 = <229>;
-> +		opp-microamp-speed0-pvs1-v0 = <229>;
-> +		opp-microamp-speed0-pvs2-v0 = <229>;
-> +		opp-microamp-speed0-pvs3-v0 = <229>;
-> +		opp-microamp-speed0-pvs4-v0 = <229>;
-> +		opp-microamp-speed0-pvs5-v0 = <229>;
-> +		opp-microamp-speed0-pvs6-v0 = <229>;
-> +		opp-microamp-speed2-pvs0-v0 = <223>;
-> +		opp-microamp-speed2-pvs1-v0 = <223>;
-> +		opp-microamp-speed2-pvs2-v0 = <223>;
-> +		opp-microamp-speed2-pvs3-v0 = <223>;
-> +		opp-microamp-speed2-pvs4-v0 = <223>;
-> +		opp-microamp-speed2-pvs5-v0 = <223>;
-> +		opp-microamp-speed2-pvs6-v0 = <223>;
-> +		opp-microamp-speed1-pvs0-v0 = <221>;
-> +		opp-microamp-speed1-pvs1-v0 = <221>;
-> +		opp-microamp-speed1-pvs2-v0 = <221>;
-> +		opp-microamp-speed1-pvs3-v0 = <221>;
-> +		opp-microamp-speed1-pvs4-v0 = <221>;
-> +		opp-microamp-speed1-pvs5-v0 = <221>;
-> +		opp-microamp-speed1-pvs6-v0 = <221>;
-> +	};
-> +};
-> -- 
-> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
-> 
+Not really a big deal, but this structure is 80 bytes on ARM64, why
+copy everything when what we need is just 8 bytes ?
+
+-- 
+viresh
