@@ -1,74 +1,64 @@
-From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p@gmail.com>
-Subject: Re: [PATCH v13 3/4] thinkpad_acpi: Add support for battery thresholds
-Date: Sat, 10 Feb 2018 09:48:59 +0100
-Message-ID: <20180210084859.dtpydh5gkvoywoju@thinkpad>
-References: <20180207145844.bd567c36juvlkjvz@thinkpad>
- <20180208220323.cr6j2kcozekwbzo6@earth.universe>
- <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com>
- <20180209103946.fkolldv6boml3e32@earth.universe>
- <CAJZ5v0h8YW03EpqEVO8LGti9ECo7+Gmm0PdgQViidUCZ=o0AQw@mail.gmail.com>
- <20180209123414.xrtmtgmeeezmma5u@earth.universe>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH] cpufreq: imx6q: support frequencies >528MHz for i.MX6UL/ULL
+Date: Sat, 10 Feb 2018 14:25:37 -0200
+Message-ID: <CAOMZO5CBTTi2QMfM0yDVEMTYm06pGyasUcaLWD8wDHiVi9oshg@mail.gmail.com>
+References: <20180118235836.17393-1-stefan@agner.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180209123414.xrtmtgmeeezmma5u@earth.universe>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Andy Shevchenko <andy.shevchenko@gmail.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:35269 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750832AbeBJQZi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Feb 2018 11:25:38 -0500
+In-Reply-To: <20180118235836.17393-1-stefan@agner.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stefan Agner <stefan@agner.ch>, Yongcai Huang <anson.huang@nxp.com>
+Cc: rjw@rjwysocki.net, viresh kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Marcel Ziswiler <marcel.ziswiler@toradex.com>, max.oss.09@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, NXP Linux Team <linux-imx@nxp.com>
 
-On Fri, Feb 09, 2018 at 01:34:14PM +0100, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Fri, Feb 09, 2018 at 11:49:40AM +0100, Rafael J. Wysocki wrote:
-> > On Fri, Feb 9, 2018 at 11:39 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> > > Hi,
-> > >
-> > > On Fri, Feb 09, 2018 at 10:22:54AM +0100, Rafael J. Wysocki wrote:
-> > >> On Thu, Feb 8, 2018 at 11:03 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> > >> > Hi,
-> > >> >
-> > >> > On Wed, Feb 07, 2018 at 03:58:44PM +0100, Ognjen Galic wrote:
-> > >> >> 1) Charge start threshold
-> > >> >> /sys/class/power_supply/BATN/charge_start_threshold
-> > >> >>
-> > >> >> Valid values are [0, 99]. A value of 0 turns off the
-> > >> >> start threshold wear control.
-> > >> >>
-> > >> >> 2) Charge stop threshold
-> > >> >> /sys/class/power_supply/BATN/charge_stop_threshold
-> > >> >>
-> > >> >> Valid values are [1, 100]. A value of 100 turns off
-> > >> >> the stop threshold wear control. This must be
-> > >> >> configured first.
-> > >> >
-> > >> > This is a new sysfs file, that should be documented.
-> > >>
-> > >> Right, I should have remembered about that, sorry.
-> > >>
-> > >> > Also this looks pretty generic. Just introduce new POWER_SUPPLY_PROP_
-> > >> > entries for start/stop charging threshold and use them.
-> > >>
-> > >> What about doing this as a follow-up?
-> > >
-> > > Fine with me.
-> > 
-> > OK
-> > 
-> > Actually, I don't see any documentation whatever for ACPI battery and
-> > AC power supply properties, so I guess that needs to be added in
-> > general and I don't think it would be fair to ask Ognjen to do that in
-> > order to get the extension in.
-> > 
-> > Why don't we pencil this in as work to do?
-> 
-> The generic ones are documented here:
+Hi Anson,
 
-Do you guys want me to send in another revision of the patch with some
-documentation on the sysfs API?
+On Thu, Jan 18, 2018 at 9:58 PM, Stefan Agner <stefan@agner.ch> wrote:
+> Depending on SKU i.MX6UL/i.MX6ULL support frequencies up to 900MHz.
+> Use PLL1 sys clock for all operating points higher than 528MHz.
+>
+> Note: For higher operating points VDD_SOC_IN needs to be 125mV
+> higher than the ARM set-point (see datasheet). Specifically, the
+> i.MX6UL/ULL EVK boards have an external DC regulator which needs
+> adjustment. The regulator adjustment is not covered with this
+> change.
+>
+> Signed-off-by: Stefan Agner <stefan@agner.ch>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index 628fe899cb48..840f6386c780 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -114,12 +114,14 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>                  */
+>                 clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+>                 clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> -               if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+> -                       clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+> -               else
+> -                       clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+> -               clk_set_parent(step_clk, secondary_sel_clk);
+> -               clk_set_parent(pll1_sw_clk, step_clk);
+> +               if (freq_hz <= clk_get_rate(pll2_bus_clk)) {
+> +                       if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+> +                               clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+> +                       else
+> +                               clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+> +                       clk_set_parent(step_clk, secondary_sel_clk);
+> +                       clk_set_parent(pll1_sw_clk, step_clk);
+> +               }
+>         } else {
+>                 clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+>                 clk_set_parent(pll1_sw_clk, step_clk);
 
-> 
-> Documentation/power/power_supply_class.txt
-> 
-> -- Sebastian
+Could you please help reviewing this patch?
+
+Thanks
