@@ -1,80 +1,137 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH] cpufreq: imx6q: support frequencies >528MHz for
+From: Stefan Agner <stefan@agner.ch>
+Subject: Re: [PATCH] cpufreq: imx6q: support frequencies >528MHz for
  i.MX6UL/ULL
-Date: Sun, 11 Feb 2018 01:42:09 +0000
-Message-ID: <AM3PR04MB1315240E4A77431A58AC8501F5F00@AM3PR04MB1315.eurprd04.prod.outlook.com>
+Date: Sun, 11 Feb 2018 17:17:32 +0100
+Message-ID: <79baed40abbcc72920fd133bc43e378a@agner.ch>
 References: <20180118235836.17393-1-stefan@agner.ch>
  <CAOMZO5CBTTi2QMfM0yDVEMTYm06pGyasUcaLWD8wDHiVi9oshg@mail.gmail.com>
+ <AM3PR04MB1315240E4A77431A58AC8501F5F00@AM3PR04MB1315.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-eopbgr30064.outbound.protection.outlook.com ([40.107.3.64]:27680
-        "EHLO EUR03-AM5-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751050AbeBKBmP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 10 Feb 2018 20:42:15 -0500
-In-Reply-To: <CAOMZO5CBTTi2QMfM0yDVEMTYm06pGyasUcaLWD8wDHiVi9oshg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <AM3PR04MB1315240E4A77431A58AC8501F5F00@AM3PR04MB1315.eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: Fabio Estevam <festevam@gmail.com>, rjw@rjwysocki.net, viresh kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Marcel Ziswiler <marcel.ziswiler@toradex.com>, max.oss.09@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>, Stefan Agner <stefan@agner.ch>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, "max.oss.09@gmail.com" <max.oss.09@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, dl-linux-imx <linux-imx@nxp.com>
 
-DQoNCkFuc29uIEh1YW5nDQpCZXN0IFJlZ2FyZHMhDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
-Z2UtLS0tLQ0KPiBGcm9tOiBGYWJpbyBFc3RldmFtIFttYWlsdG86ZmVzdGV2YW1AZ21haWwuY29t
-XQ0KPiBTZW50OiBTdW5kYXksIEZlYnJ1YXJ5IDExLCAyMDE4IDEyOjI2IEFNDQo+IFRvOiBTdGVm
-YW4gQWduZXIgPHN0ZWZhbkBhZ25lci5jaD47IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAu
-Y29tPg0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaCBrdW1hciA8dmlyZXNoLmt1bWFy
-QGxpbmFyby5vcmc+Ow0KPiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IE1hcmNlbCBaaXN3aWxl
-ciA8bWFyY2VsLnppc3dpbGVyQHRvcmFkZXguY29tPjsNCj4gbWF4Lm9zcy4wOUBnbWFpbC5jb207
-IGxpbnV4LWtlcm5lbCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IE9jdGF2aWFuDQo+
-IFB1cmRpbGEgPG9jdGF2aWFuLnB1cmRpbGFAbnhwLmNvbT47IEZhYmlvIEVzdGV2YW0NCj4gPGZh
-YmlvLmVzdGV2YW1AbnhwLmNvbT47IFNoYXduIEd1byA8c2hhd25ndW9Aa2VybmVsLm9yZz47IG1v
-ZGVyYXRlZA0KPiBsaXN0OkFSTS9GUkVFU0NBTEUgSU1YIC8gTVhDIEFSTSBBUkNISVRFQ1RVUkUN
-Cj4gPGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZz47IGRsLWxpbnV4LWlteCA8
-bGludXgtaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IGlteDZx
-OiBzdXBwb3J0IGZyZXF1ZW5jaWVzID41MjhNSHogZm9yDQo+IGkuTVg2VUwvVUxMDQo+IA0KPiBI
-aSBBbnNvbiwNCj4gDQo+IE9uIFRodSwgSmFuIDE4LCAyMDE4IGF0IDk6NTggUE0sIFN0ZWZhbiBB
-Z25lciA8c3RlZmFuQGFnbmVyLmNoPiB3cm90ZToNCj4gPiBEZXBlbmRpbmcgb24gU0tVIGkuTVg2
-VUwvaS5NWDZVTEwgc3VwcG9ydCBmcmVxdWVuY2llcyB1cCB0byA5MDBNSHouDQo+ID4gVXNlIFBM
-TDEgc3lzIGNsb2NrIGZvciBhbGwgb3BlcmF0aW5nIHBvaW50cyBoaWdoZXIgdGhhbiA1MjhNSHou
-DQo+ID4NCj4gPiBOb3RlOiBGb3IgaGlnaGVyIG9wZXJhdGluZyBwb2ludHMgVkREX1NPQ19JTiBu
-ZWVkcyB0byBiZSAxMjVtViBoaWdoZXINCj4gPiB0aGFuIHRoZSBBUk0gc2V0LXBvaW50IChzZWUg
-ZGF0YXNoZWV0KS4gU3BlY2lmaWNhbGx5LCB0aGUgaS5NWDZVTC9VTEwNCj4gPiBFVksgYm9hcmRz
-IGhhdmUgYW4gZXh0ZXJuYWwgREMgcmVndWxhdG9yIHdoaWNoIG5lZWRzIGFkanVzdG1lbnQuIFRo
-ZQ0KPiA+IHJlZ3VsYXRvciBhZGp1c3RtZW50IGlzIG5vdCBjb3ZlcmVkIHdpdGggdGhpcyBjaGFu
-Z2UuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBTdGVmYW4gQWduZXIgPHN0ZWZhbkBhZ25lci5j
-aD4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyB8IDE0ICsr
-KysrKysrLS0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyksIDYgZGVs
-ZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNw
-dWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyBpbmRleCA2Mjhm
-ZTg5OWNiNDguLjg0MGY2Mzg2Yzc4MA0KPiA+IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvY3B1
-ZnJlcS9pbXg2cS1jcHVmcmVxLmMNCj4gPiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1
-ZnJlcS5jDQo+ID4gQEAgLTExNCwxMiArMTE0LDE0IEBAIHN0YXRpYyBpbnQgaW14NnFfc2V0X3Rh
-cmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kNCj4gKnBvbGljeSwgdW5zaWduZWQgaW50IGluZGV4
-KQ0KPiA+ICAgICAgICAgICAgICAgICAgKi8NCj4gPiAgICAgICAgICAgICAgICAgY2xrX3NldF9y
-YXRlKGFybV9jbGssIChvbGRfZnJlcSA+PiAxKSAqIDEwMDApOw0KPiA+ICAgICAgICAgICAgICAg
-ICBjbGtfc2V0X3BhcmVudChwbGwxX3N3X2NsaywgcGxsMV9zeXNfY2xrKTsNCj4gPiAtICAgICAg
-ICAgICAgICAgaWYgKGZyZXFfaHogPiBjbGtfZ2V0X3JhdGUocGxsMl9wZmQyXzM5Nm1fY2xrKSkN
-Cj4gPiAtICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChzZWNvbmRhcnlfc2Vs
-X2NsaywgcGxsMl9idXNfY2xrKTsNCj4gPiAtICAgICAgICAgICAgICAgZWxzZQ0KPiA+IC0gICAg
-ICAgICAgICAgICAgICAgICAgIGNsa19zZXRfcGFyZW50KHNlY29uZGFyeV9zZWxfY2xrLA0KPiBw
-bGwyX3BmZDJfMzk2bV9jbGspOw0KPiA+IC0gICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChz
-dGVwX2Nsaywgc2Vjb25kYXJ5X3NlbF9jbGspOw0KPiA+IC0gICAgICAgICAgICAgICBjbGtfc2V0
-X3BhcmVudChwbGwxX3N3X2Nsaywgc3RlcF9jbGspOw0KPiA+ICsgICAgICAgICAgICAgICBpZiAo
-ZnJlcV9oeiA8PSBjbGtfZ2V0X3JhdGUocGxsMl9idXNfY2xrKSkgew0KPiA+ICsgICAgICAgICAg
-ICAgICAgICAgICAgIGlmIChmcmVxX2h6ID4gY2xrX2dldF9yYXRlKHBsbDJfcGZkMl8zOTZtX2Ns
-aykpDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChz
-ZWNvbmRhcnlfc2VsX2NsaywNCj4gcGxsMl9idXNfY2xrKTsNCj4gPiArICAgICAgICAgICAgICAg
-ICAgICAgICBlbHNlDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0
-X3BhcmVudChzZWNvbmRhcnlfc2VsX2NsaywNCj4gcGxsMl9wZmQyXzM5Nm1fY2xrKTsNCj4gPiAr
-ICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChzdGVwX2Nsaywgc2Vjb25kYXJ5
-X3NlbF9jbGspOw0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGNsa19zZXRfcGFyZW50KHBs
-bDFfc3dfY2xrLCBzdGVwX2Nsayk7DQo+ID4gKyAgICAgICAgICAgICAgIH0NCg0KRm9yIGNwdWZy
-ZXEgPiA1MjhNSHosIEFSTSBQTEwgbmVlZHMgdG8gYmUgc2V0X3JhdGUsIEkgZGlkIE5PVCBzZWUg
-d2hlcmUgc2V0cyBBUk0gUExMIHJhdGU/DQoNCkFuc29uLg0KDQo+ID4gICAgICAgICB9IGVsc2Ug
-ew0KPiA+ICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChzdGVwX2NsaywgcGxsMl9wZmQy
-XzM5Nm1fY2xrKTsNCj4gPiAgICAgICAgICAgICAgICAgY2xrX3NldF9wYXJlbnQocGxsMV9zd19j
-bGssIHN0ZXBfY2xrKTsNCj4gDQo+IENvdWxkIHlvdSBwbGVhc2UgaGVscCByZXZpZXdpbmcgdGhp
-cyBwYXRjaD8NCj4gDQo+IFRoYW5rcw0K
+On 11.02.2018 02:42, Anson Huang wrote:
+> Anson Huang
+> Best Regards!
+> 
+> 
+>> -----Original Message-----
+>> From: Fabio Estevam [mailto:festevam@gmail.com]
+>> Sent: Sunday, February 11, 2018 12:26 AM
+>> To: Stefan Agner <stefan@agner.ch>; Anson Huang <anson.huang@nxp.com>
+>> Cc: rjw@rjwysocki.net; viresh kumar <viresh.kumar@linaro.org>;
+>> linux-pm@vger.kernel.org; Marcel Ziswiler <marcel.ziswiler@toradex.com>;
+>> max.oss.09@gmail.com; linux-kernel <linux-kernel@vger.kernel.org>; Octavian
+>> Purdila <octavian.purdila@nxp.com>; Fabio Estevam
+>> <fabio.estevam@nxp.com>; Shawn Guo <shawnguo@kernel.org>; moderated
+>> list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE
+>> <linux-arm-kernel@lists.infradead.org>; dl-linux-imx <linux-imx@nxp.com>
+>> Subject: Re: [PATCH] cpufreq: imx6q: support frequencies >528MHz for
+>> i.MX6UL/ULL
+>>
+>> Hi Anson,
+>>
+>> On Thu, Jan 18, 2018 at 9:58 PM, Stefan Agner <stefan@agner.ch> wrote:
+>> > Depending on SKU i.MX6UL/i.MX6ULL support frequencies up to 900MHz.
+>> > Use PLL1 sys clock for all operating points higher than 528MHz.
+>> >
+>> > Note: For higher operating points VDD_SOC_IN needs to be 125mV higher
+>> > than the ARM set-point (see datasheet). Specifically, the i.MX6UL/ULL
+>> > EVK boards have an external DC regulator which needs adjustment. The
+>> > regulator adjustment is not covered with this change.
+>> >
+>> > Signed-off-by: Stefan Agner <stefan@agner.ch>
+>> > ---
+>> >  drivers/cpufreq/imx6q-cpufreq.c | 14 ++++++++------
+>> >  1 file changed, 8 insertions(+), 6 deletions(-)
+>> >
+>> > diff --git a/drivers/cpufreq/imx6q-cpufreq.c
+>> > b/drivers/cpufreq/imx6q-cpufreq.c index 628fe899cb48..840f6386c780
+>> > 100644
+>> > --- a/drivers/cpufreq/imx6q-cpufreq.c
+>> > +++ b/drivers/cpufreq/imx6q-cpufreq.c
+>> > @@ -114,12 +114,14 @@ static int imx6q_set_target(struct cpufreq_policy
+>> *policy, unsigned int index)
+>> >                  */
+>> >                 clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+>> >                 clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+>> > -               if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+>> > -                       clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+>> > -               else
+>> > -                       clk_set_parent(secondary_sel_clk,
+>> pll2_pfd2_396m_clk);
+>> > -               clk_set_parent(step_clk, secondary_sel_clk);
+>> > -               clk_set_parent(pll1_sw_clk, step_clk);
+>> > +               if (freq_hz <= clk_get_rate(pll2_bus_clk)) {
+>> > +                       if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+>> > +                               clk_set_parent(secondary_sel_clk,
+>> pll2_bus_clk);
+>> > +                       else
+>> > +                               clk_set_parent(secondary_sel_clk,
+>> pll2_pfd2_396m_clk);
+>> > +                       clk_set_parent(step_clk, secondary_sel_clk);
+>> > +                       clk_set_parent(pll1_sw_clk, step_clk);
+>> > +               }
+> 
+> For cpufreq > 528MHz, ARM PLL needs to be set_rate, I did NOT see
+> where sets ARM PLL rate?
+
+This is done unconditionally after the if statement:
+
+	if (of_machine_is_compatible("fsl,imx6ul") ||
+	    of_machine_is_compatible("fsl,imx6ull")) {
+		/*
+		 * When changing pll1_sw_clk's parent to pll1_sys_clk,
+		 * CPU may run at higher than 528MHz, this will lead to
+		 * the system unstable if the voltage is lower than the
+		 * voltage of 528MHz, so lower the CPU frequency to one
+		 * half before changing CPU frequency.
+		 */
+		clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+		if (freq_hz <= clk_get_rate(pll2_bus_clk)) {
+			if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+				clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+			else
+				clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+			clk_set_parent(step_clk, secondary_sel_clk);
+			clk_set_parent(pll1_sw_clk, step_clk);
+		}
+	} else {
+		clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+		clk_set_parent(pll1_sw_clk, step_clk);
+		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
+			clk_set_rate(pll1_sys_clk, new_freq * 1000);
+			clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+		} else {
+			/* pll1_sys needs to be enabled for divider rate change to work. */
+			pll1_sys_temp_enabled = true;
+			clk_prepare_enable(pll1_sys_clk);
+		}
+	}
+
+	/* Ensure the arm clock divider is what we expect */
+	ret = clk_set_rate(arm_clk, new_freq * 1000);
+
+
+--
+Stefan
+
+
+
+> 
+> Anson.
+> 
+>> >         } else {
+>> >                 clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+>> >                 clk_set_parent(pll1_sw_clk, step_clk);
+>>
+>> Could you please help reviewing this patch?
+>>
+>> Thanks
