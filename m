@@ -1,48 +1,80 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH] PM / runtime: Update links_count also if !CONFIG_SRCU
-Date: Sat, 10 Feb 2018 19:13:58 +0100
-Message-ID: <68feef8bf476ab150e6481b54f1b6f5c401b8e10.1518286105.git.lukas__14334.2953794219$1518287822$gmane$org@wunner.de>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH] cpufreq: imx6q: support frequencies >528MHz for
+ i.MX6UL/ULL
+Date: Sun, 11 Feb 2018 01:42:09 +0000
+Message-ID: <AM3PR04MB1315240E4A77431A58AC8501F5F00@AM3PR04MB1315.eurprd04.prod.outlook.com>
+References: <20180118235836.17393-1-stefan@agner.ch>
+ <CAOMZO5CBTTi2QMfM0yDVEMTYm06pGyasUcaLWD8wDHiVi9oshg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bmailout1.hostsharing.net ([83.223.95.100]:53413 "EHLO
-        bmailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750835AbeBJSi6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Feb 2018 13:38:58 -0500
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (Client CN "*.hostsharing.net", Issuer "COMODO RSA Domain Validation Secure Server CA" (not verified))
-        by bmailout1.hostsharing.net (Postfix) with ESMTPS id D6EE0300002C4
-        for <linux-pm@vger.kernel.org>; Sat, 10 Feb 2018 19:37:39 +0100 (CET)
+Received: from mail-eopbgr30064.outbound.protection.outlook.com ([40.107.3.64]:27680
+        "EHLO EUR03-AM5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751050AbeBKBmP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 10 Feb 2018 20:42:15 -0500
+In-Reply-To: <CAOMZO5CBTTi2QMfM0yDVEMTYm06pGyasUcaLWD8wDHiVi9oshg@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>, Stefan Agner <stefan@agner.ch>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, "max.oss.09@gmail.com" <max.oss.09@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, dl-linux-imx <linux-imx@nxp.com>
 
-Commit baa8809f6097 ("PM / runtime: Optimize the use of device links")
-added an invocation of pm_runtime_drop_link() to __device_link_del().
-However there are two variants of that function, one for CONFIG_SRCU and
-another for !CONFIG_SRCU, and the commit only modified the former.
-
-Fixes: baa8809f6097 ("PM / runtime: Optimize the use of device links")
-Cc: stable@vger.kernel.org # v4.10+
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- drivers/base/core.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index b2261f92f2f1..5847364f25d9 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -310,6 +310,9 @@ static void __device_link_del(struct device_link *link)
- 	dev_info(link->consumer, "Dropping the link to %s\n",
- 		 dev_name(link->supplier));
- 
-+	if (link->flags & DL_FLAG_PM_RUNTIME)
-+		pm_runtime_drop_link(link->consumer);
-+
- 	list_del(&link->s_node);
- 	list_del(&link->c_node);
- 	device_link_free(link);
--- 
-2.15.1
+DQoNCkFuc29uIEh1YW5nDQpCZXN0IFJlZ2FyZHMhDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
+Z2UtLS0tLQ0KPiBGcm9tOiBGYWJpbyBFc3RldmFtIFttYWlsdG86ZmVzdGV2YW1AZ21haWwuY29t
+XQ0KPiBTZW50OiBTdW5kYXksIEZlYnJ1YXJ5IDExLCAyMDE4IDEyOjI2IEFNDQo+IFRvOiBTdGVm
+YW4gQWduZXIgPHN0ZWZhbkBhZ25lci5jaD47IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAu
+Y29tPg0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaCBrdW1hciA8dmlyZXNoLmt1bWFy
+QGxpbmFyby5vcmc+Ow0KPiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IE1hcmNlbCBaaXN3aWxl
+ciA8bWFyY2VsLnppc3dpbGVyQHRvcmFkZXguY29tPjsNCj4gbWF4Lm9zcy4wOUBnbWFpbC5jb207
+IGxpbnV4LWtlcm5lbCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IE9jdGF2aWFuDQo+
+IFB1cmRpbGEgPG9jdGF2aWFuLnB1cmRpbGFAbnhwLmNvbT47IEZhYmlvIEVzdGV2YW0NCj4gPGZh
+YmlvLmVzdGV2YW1AbnhwLmNvbT47IFNoYXduIEd1byA8c2hhd25ndW9Aa2VybmVsLm9yZz47IG1v
+ZGVyYXRlZA0KPiBsaXN0OkFSTS9GUkVFU0NBTEUgSU1YIC8gTVhDIEFSTSBBUkNISVRFQ1RVUkUN
+Cj4gPGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZz47IGRsLWxpbnV4LWlteCA8
+bGludXgtaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IGlteDZx
+OiBzdXBwb3J0IGZyZXF1ZW5jaWVzID41MjhNSHogZm9yDQo+IGkuTVg2VUwvVUxMDQo+IA0KPiBI
+aSBBbnNvbiwNCj4gDQo+IE9uIFRodSwgSmFuIDE4LCAyMDE4IGF0IDk6NTggUE0sIFN0ZWZhbiBB
+Z25lciA8c3RlZmFuQGFnbmVyLmNoPiB3cm90ZToNCj4gPiBEZXBlbmRpbmcgb24gU0tVIGkuTVg2
+VUwvaS5NWDZVTEwgc3VwcG9ydCBmcmVxdWVuY2llcyB1cCB0byA5MDBNSHouDQo+ID4gVXNlIFBM
+TDEgc3lzIGNsb2NrIGZvciBhbGwgb3BlcmF0aW5nIHBvaW50cyBoaWdoZXIgdGhhbiA1MjhNSHou
+DQo+ID4NCj4gPiBOb3RlOiBGb3IgaGlnaGVyIG9wZXJhdGluZyBwb2ludHMgVkREX1NPQ19JTiBu
+ZWVkcyB0byBiZSAxMjVtViBoaWdoZXINCj4gPiB0aGFuIHRoZSBBUk0gc2V0LXBvaW50IChzZWUg
+ZGF0YXNoZWV0KS4gU3BlY2lmaWNhbGx5LCB0aGUgaS5NWDZVTC9VTEwNCj4gPiBFVksgYm9hcmRz
+IGhhdmUgYW4gZXh0ZXJuYWwgREMgcmVndWxhdG9yIHdoaWNoIG5lZWRzIGFkanVzdG1lbnQuIFRo
+ZQ0KPiA+IHJlZ3VsYXRvciBhZGp1c3RtZW50IGlzIG5vdCBjb3ZlcmVkIHdpdGggdGhpcyBjaGFu
+Z2UuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBTdGVmYW4gQWduZXIgPHN0ZWZhbkBhZ25lci5j
+aD4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyB8IDE0ICsr
+KysrKysrLS0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyksIDYgZGVs
+ZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNw
+dWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyBpbmRleCA2Mjhm
+ZTg5OWNiNDguLjg0MGY2Mzg2Yzc4MA0KPiA+IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvY3B1
+ZnJlcS9pbXg2cS1jcHVmcmVxLmMNCj4gPiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1
+ZnJlcS5jDQo+ID4gQEAgLTExNCwxMiArMTE0LDE0IEBAIHN0YXRpYyBpbnQgaW14NnFfc2V0X3Rh
+cmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kNCj4gKnBvbGljeSwgdW5zaWduZWQgaW50IGluZGV4
+KQ0KPiA+ICAgICAgICAgICAgICAgICAgKi8NCj4gPiAgICAgICAgICAgICAgICAgY2xrX3NldF9y
+YXRlKGFybV9jbGssIChvbGRfZnJlcSA+PiAxKSAqIDEwMDApOw0KPiA+ICAgICAgICAgICAgICAg
+ICBjbGtfc2V0X3BhcmVudChwbGwxX3N3X2NsaywgcGxsMV9zeXNfY2xrKTsNCj4gPiAtICAgICAg
+ICAgICAgICAgaWYgKGZyZXFfaHogPiBjbGtfZ2V0X3JhdGUocGxsMl9wZmQyXzM5Nm1fY2xrKSkN
+Cj4gPiAtICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChzZWNvbmRhcnlfc2Vs
+X2NsaywgcGxsMl9idXNfY2xrKTsNCj4gPiAtICAgICAgICAgICAgICAgZWxzZQ0KPiA+IC0gICAg
+ICAgICAgICAgICAgICAgICAgIGNsa19zZXRfcGFyZW50KHNlY29uZGFyeV9zZWxfY2xrLA0KPiBw
+bGwyX3BmZDJfMzk2bV9jbGspOw0KPiA+IC0gICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChz
+dGVwX2Nsaywgc2Vjb25kYXJ5X3NlbF9jbGspOw0KPiA+IC0gICAgICAgICAgICAgICBjbGtfc2V0
+X3BhcmVudChwbGwxX3N3X2Nsaywgc3RlcF9jbGspOw0KPiA+ICsgICAgICAgICAgICAgICBpZiAo
+ZnJlcV9oeiA8PSBjbGtfZ2V0X3JhdGUocGxsMl9idXNfY2xrKSkgew0KPiA+ICsgICAgICAgICAg
+ICAgICAgICAgICAgIGlmIChmcmVxX2h6ID4gY2xrX2dldF9yYXRlKHBsbDJfcGZkMl8zOTZtX2Ns
+aykpDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChz
+ZWNvbmRhcnlfc2VsX2NsaywNCj4gcGxsMl9idXNfY2xrKTsNCj4gPiArICAgICAgICAgICAgICAg
+ICAgICAgICBlbHNlDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0
+X3BhcmVudChzZWNvbmRhcnlfc2VsX2NsaywNCj4gcGxsMl9wZmQyXzM5Nm1fY2xrKTsNCj4gPiAr
+ICAgICAgICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChzdGVwX2Nsaywgc2Vjb25kYXJ5
+X3NlbF9jbGspOw0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGNsa19zZXRfcGFyZW50KHBs
+bDFfc3dfY2xrLCBzdGVwX2Nsayk7DQo+ID4gKyAgICAgICAgICAgICAgIH0NCg0KRm9yIGNwdWZy
+ZXEgPiA1MjhNSHosIEFSTSBQTEwgbmVlZHMgdG8gYmUgc2V0X3JhdGUsIEkgZGlkIE5PVCBzZWUg
+d2hlcmUgc2V0cyBBUk0gUExMIHJhdGU/DQoNCkFuc29uLg0KDQo+ID4gICAgICAgICB9IGVsc2Ug
+ew0KPiA+ICAgICAgICAgICAgICAgICBjbGtfc2V0X3BhcmVudChzdGVwX2NsaywgcGxsMl9wZmQy
+XzM5Nm1fY2xrKTsNCj4gPiAgICAgICAgICAgICAgICAgY2xrX3NldF9wYXJlbnQocGxsMV9zd19j
+bGssIHN0ZXBfY2xrKTsNCj4gDQo+IENvdWxkIHlvdSBwbGVhc2UgaGVscCByZXZpZXdpbmcgdGhp
+cyBwYXRjaD8NCj4gDQo+IFRoYW5rcw0K
