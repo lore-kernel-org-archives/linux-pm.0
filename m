@@ -1,55 +1,67 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Query] thermal: Who is using "cooling-{min|max}-level}"
- properties ?
-Date: Mon, 12 Feb 2018 14:22:42 +0530
-Message-ID: <20180212085242.GQ28462@vireshk-i7>
-References: <20180207065959.GN28462@vireshk-i7>
- <c7bd6ed5-b93e-3a07-b4a2-4c3b1eef5fac@linaro.org>
- <20180207102446.GS28462@vireshk-i7>
- <11fbba25-7029-8a13-476e-ea2f2de6fbf9@linaro.org>
- <20180209064211.GY28462@vireshk-i7>
- <539699c7-9509-dea2-2b31-c5f6749c99c4@linaro.org>
- <20180209092421.GL28462@vireshk-i7>
- <5722441d-c8be-4d29-fab7-28b4e5716961@linaro.org>
- <20180212061015.GO28462@vireshk-i7>
- <0b73e1aa-a88f-fe4b-b33a-0f589000e148@linaro.org>
+Subject: Re: [PATCH] cpufreq: imx6q: support frequencies >528MHz for
+ i.MX6UL/ULL
+Date: Mon, 12 Feb 2018 14:23:02 +0530
+Message-ID: <20180212085302.GR28462@vireshk-i7>
+References: <20180118235836.17393-1-stefan@agner.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f169.google.com ([209.85.223.169]:46486 "EHLO
-        mail-io0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932967AbeBLIwq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Feb 2018 03:52:46 -0500
-Received: by mail-io0-f169.google.com with SMTP id k80so5118964ioe.13
-        for <linux-pm@vger.kernel.org>; Mon, 12 Feb 2018 00:52:46 -0800 (PST)
+Received: from mail-pl0-f65.google.com ([209.85.160.65]:40903 "EHLO
+        mail-pl0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933126AbeBLIxG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Feb 2018 03:53:06 -0500
+Received: by mail-pl0-f65.google.com with SMTP id g18so4734921plo.7
+        for <linux-pm@vger.kernel.org>; Mon, 12 Feb 2018 00:53:06 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <0b73e1aa-a88f-fe4b-b33a-0f589000e148@linaro.org>
+In-Reply-To: <20180118235836.17393-1-stefan@agner.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org, Punit.Agrawal@arm.com, ionela.voinescu@arm.com
+To: Stefan Agner <stefan@agner.ch>
+Cc: rjw@rjwysocki.net, fabio.estevam@nxp.com, octavian.purdila@nxp.com, shawnguo@kernel.org, max.oss.09@gmail.com, marcel.ziswiler@toradex.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 12-02-18, 09:39, Daniel Lezcano wrote:
-> On 12/02/2018 07:10, Viresh Kumar wrote:
-> > On 09-02-18, 13:14, Daniel Lezcano wrote:
-> >> Putting apart the device binding changes discussion for the moment. Why
-> >> not register the cpufreq driver in all the cases and then drop
-> > 
-> > s/cpufreq driver/cpufreq cooling driver/ ??
+On 19-01-18, 00:58, Stefan Agner wrote:
+> Depending on SKU i.MX6UL/i.MX6ULL support frequencies up to 900MHz.
+> Use PLL1 sys clock for all operating points higher than 528MHz.
 > 
-> yes.
+> Note: For higher operating points VDD_SOC_IN needs to be 125mV
+> higher than the ARM set-point (see datasheet). Specifically, the
+> i.MX6UL/ULL EVK boards have an external DC regulator which needs
+> adjustment. The regulator adjustment is not covered with this
+> change.
 > 
-> >> cooling-cells ? So when the opps are present, its registers in the
-> >> cpufreq->ready callback.
-> > 
-> > How will someone tell if they don't need the cooling infrastructure ?
-> > Specially for multiplatform thing.
+> Signed-off-by: Stefan Agner <stefan@agner.ch>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 > 
-> They don't define a cooling device in the DT ?
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index 628fe899cb48..840f6386c780 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -114,12 +114,14 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  		 */
+>  		clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+>  		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> -		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+> -			clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+> -		else
+> -			clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+> -		clk_set_parent(step_clk, secondary_sel_clk);
+> -		clk_set_parent(pll1_sw_clk, step_clk);
+> +		if (freq_hz <= clk_get_rate(pll2_bus_clk)) {
+> +			if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+> +				clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+> +			else
+> +				clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+> +			clk_set_parent(step_clk, secondary_sel_clk);
+> +			clk_set_parent(pll1_sw_clk, step_clk);
+> +		}
+>  	} else {
+>  		clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+>  		clk_set_parent(pll1_sw_clk, step_clk);
 
-Sorry but I am getting a bit confused on what you are suggesting.
-Maybe you need to rephrase it once more for me, from the very
-beginning :)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
