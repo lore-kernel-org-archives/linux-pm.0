@@ -1,75 +1,84 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
- cpufreq_table_find_index_dl()
-Date: Mon, 12 Feb 2018 16:03:42 +0530
-Message-ID: <14e2fe70-7628-4377-664d-3c4b0071e08d@linux.vnet.ibm.com>
-References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20180212102900.GU28462@vireshk-i7>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH] base: power: domain: Replace mdelay with msleep
+Date: Mon, 12 Feb 2018 11:38:13 +0100
+Message-ID: <1518431893.2744.1.camel@pengutronix.de>
+References: <1516955899-31810-1-git-send-email-baijiaju1990@gmail.com>
+         <CAPDyKFoft7aCoKtODz66AAjpDQELVhqGurFYBV6FHP9hzhy-Ug@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180212102900.GU28462@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([85.220.165.71]:57151 "EHLO
+        metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932505AbeBLKiZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Feb 2018 05:38:25 -0500
+In-Reply-To: <CAPDyKFoft7aCoKtODz66AAjpDQELVhqGurFYBV6FHP9hzhy-Ug@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Jia-Ju Bai <baijiaju1990@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi,
-
-On 02/12/2018 03:59 PM, Viresh Kumar wrote:
-> On 12-02-18, 15:51, Shilpasri G Bhat wrote:
->> This patch fixes the below Coverity warning:
->>
->> *** CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
->> /drivers/cpufreq/powernv-cpufreq.c: 1008 in powernv_fast_switch()
->> 1002     					unsigned int target_freq)
->> 1003     {
->> 1004     	int index;
->> 1005     	struct powernv_smp_call_data freq_data;
->> 1006
->> 1007     	index = cpufreq_table_find_index_dl(policy, target_freq);
->>>>>     CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
->>>>>     Using variable "index" as an index to array "powernv_freqs".
->> 1008     	freq_data.pstate_id = powernv_freqs[index].driver_data;
->> 1009     	freq_data.gpstate_id = powernv_freqs[index].driver_data;
->> 1010     	set_pstate(&freq_data);
->> 1011
->> 1012     	return powernv_freqs[index].frequency;
->> 1013     }
->>
->> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->> ---
->>  drivers/cpufreq/powernv-cpufreq.c | 3 +++
->>  1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->> index 29cdec1..69edfe9 100644
->> --- a/drivers/cpufreq/powernv-cpufreq.c
->> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -1005,6 +1005,9 @@ static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
->>  	struct powernv_smp_call_data freq_data;
->>  
->>  	index = cpufreq_table_find_index_dl(policy, target_freq);
->> +	if (unlikely(index < 0))
->> +		index = get_nominal_index();
->> +
+Am Freitag, den 09.02.2018, 14:58 +0100 schrieb Ulf Hansson:
+> On 26 January 2018 at 09:38, Jia-Ju Bai <baijiaju1990@gmail.com>
+> wrote:
+> > After checking all possible call chains to genpd_dev_pm_detach()
+> > and
+> > genpd_dev_pm_attach() here,
+> > my tool finds that these functions are never called in atomic
+> > context,
+> > namely never in an interrupt handler or holding a spinlock.
+> > Thus mdelay can be replaced with msleep to avoid busy wait.
+> > 
+> > This is found by a static analysis tool named DCNS written by
+> > myself.
+> > 
+> > Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+> > ---
+> >  drivers/base/power/domain.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/base/power/domain.c
+> > b/drivers/base/power/domain.c
+> > index 0c80bea..f84ac72 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -2144,7 +2144,7 @@ static void genpd_dev_pm_detach(struct device
+> > *dev, bool power_off)
+> >                 if (ret != -EAGAIN)
+> >                         break;
+> > 
+> > -               mdelay(i);
+> > +               msleep(i);
 > 
-> AFAICT, you will get -1 here only if the freq table had no valid
-> frequencies (or the freq table is empty). Why would that happen ?
+> This looks like a nice improvement, however moving to msleep() makes
+> the call to cond_resched() below a bit superfluous. Perhaps remove
+> that as well.
 
-I agree too. There is no way we can get -1 with initialized cpu frequency table.
-We don't initialize powernv-cpufreq if we don't have valid CPU frequency
-entries. Is there any other way to suppress the Coverity tool warning apart from
-ignoring it?
+At least for small values of i, msleep also has a high chance to
+overshoot the desired sleep by a lot. It would be better to convert
+them to usleep_range with an acceptable slack.
 
-Thanks and Regards,
-Shilpa
+Regards,
+Lucas
 
+> >                 cond_resched();
+> >         }
+> > 
+> > @@ -2231,7 +2231,7 @@ int genpd_dev_pm_attach(struct device *dev)
+> >                 if (ret != -EAGAIN)
+> >                         break;
+> > 
+> > -               mdelay(i);
+> > +               msleep(i);
 > 
->>  	freq_data.pstate_id = powernv_freqs[index].driver_data;
->>  	freq_data.gpstate_id = powernv_freqs[index].driver_data;
->>  	set_pstate(&freq_data);
->> -- 
->> 1.8.3.1
+> Ditto.
 > 
+> >                 cond_resched();
+> >         }
+> >         mutex_unlock(&gpd_list_lock);
+> > --
+> > 1.7.9.5
+> > 
+> 
+> Kind regards
+> Uffe
