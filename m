@@ -1,78 +1,62 @@
-From: Stefan Agner <stefan@agner.ch>
-Subject: Re: [PATCH] cpufreq: imx6q: support frequencies >528MHz for
- i.MX6UL/ULL
-Date: Mon, 12 Feb 2018 13:01:57 +0100
-Message-ID: <6935d5dee61697743a7cb9f0760f33d5@agner.ch>
-References: <20180118235836.17393-1-stefan@agner.ch>
- <CAJZ5v0jGCzb3q5q6QxZWK7kTKHj66oHvdq=VKVXJ3TeDW_EmEA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] base: power: domain: Replace mdelay with msleep
+Date: Mon, 12 Feb 2018 13:40:52 +0100
+Message-ID: <CAPDyKFo9sjavrNP4DbTkn4yX1WeOD_5EJJEcwFkHBt+Ag8OV-A@mail.gmail.com>
+References: <1516955899-31810-1-git-send-email-baijiaju1990@gmail.com>
+ <CAPDyKFoft7aCoKtODz66AAjpDQELVhqGurFYBV6FHP9hzhy-Ug@mail.gmail.com> <1518431893.2744.1.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jGCzb3q5q6QxZWK7kTKHj66oHvdq=VKVXJ3TeDW_EmEA@mail.gmail.com>
+In-Reply-To: <1518431893.2744.1.camel@pengutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, anson.huang@nxp.com
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Shawn Guo <shawnguo@kernel.org>, max.oss.09@gmail.com, marcel.ziswiler@toradex.com, Linux PM <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rjwysocki@gmail.com
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Jia-Ju Bai <baijiaju1990@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12.02.2018 11:18, Rafael J. Wysocki wrote:
-> On Fri, Jan 19, 2018 at 12:58 AM, Stefan Agner <stefan@agner.ch> wrote:
->> Depending on SKU i.MX6UL/i.MX6ULL support frequencies up to 900MHz.
->> Use PLL1 sys clock for all operating points higher than 528MHz.
+On 12 February 2018 at 11:38, Lucas Stach <l.stach@pengutronix.de> wrote:
+> Am Freitag, den 09.02.2018, 14:58 +0100 schrieb Ulf Hansson:
+>> On 26 January 2018 at 09:38, Jia-Ju Bai <baijiaju1990@gmail.com>
+>> wrote:
+>> > After checking all possible call chains to genpd_dev_pm_detach()
+>> > and
+>> > genpd_dev_pm_attach() here,
+>> > my tool finds that these functions are never called in atomic
+>> > context,
+>> > namely never in an interrupt handler or holding a spinlock.
+>> > Thus mdelay can be replaced with msleep to avoid busy wait.
+>> >
+>> > This is found by a static analysis tool named DCNS written by
+>> > myself.
+>> >
+>> > Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+>> > ---
+>> >  drivers/base/power/domain.c |    4 ++--
+>> >  1 file changed, 2 insertions(+), 2 deletions(-)
+>> >
+>> > diff --git a/drivers/base/power/domain.c
+>> > b/drivers/base/power/domain.c
+>> > index 0c80bea..f84ac72 100644
+>> > --- a/drivers/base/power/domain.c
+>> > +++ b/drivers/base/power/domain.c
+>> > @@ -2144,7 +2144,7 @@ static void genpd_dev_pm_detach(struct device
+>> > *dev, bool power_off)
+>> >                 if (ret != -EAGAIN)
+>> >                         break;
+>> >
+>> > -               mdelay(i);
+>> > +               msleep(i);
 >>
->> Note: For higher operating points VDD_SOC_IN needs to be 125mV
->> higher than the ARM set-point (see datasheet). Specifically, the
->> i.MX6UL/ULL EVK boards have an external DC regulator which needs
->> adjustment. The regulator adjustment is not covered with this
->> change.
->>
->> Signed-off-by: Stefan Agner <stefan@agner.ch>
-> 
-> Can you please rebase this on top of 4.16-rc1?  It doesn't apply for me as is.
-> 
+>> This looks like a nice improvement, however moving to msleep() makes
+>> the call to cond_resched() below a bit superfluous. Perhaps remove
+>> that as well.
+>
+> At least for small values of i, msleep also has a high chance to
+> overshoot the desired sleep by a lot. It would be better to convert
+> them to usleep_range with an acceptable slack.
 
-Oh I see, Anson actually already submitted a patch which makes higher
-CPU rates working.
+Ack!
 
-My solution is slightly different in that it avoids unnecessary parent
-changes...
+[...]
 
-I will rework this patch to apply this simplification to the current
-state of the driver.
-
---
-Stefan
-
-
->> ---
->>  drivers/cpufreq/imx6q-cpufreq.c | 14 ++++++++------
->>  1 file changed, 8 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
->> index 628fe899cb48..840f6386c780 100644
->> --- a/drivers/cpufreq/imx6q-cpufreq.c
->> +++ b/drivers/cpufreq/imx6q-cpufreq.c
->> @@ -114,12 +114,14 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->>                  */
->>                 clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
->>                 clk_set_parent(pll1_sw_clk, pll1_sys_clk);
->> -               if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
->> -                       clk_set_parent(secondary_sel_clk, pll2_bus_clk);
->> -               else
->> -                       clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
->> -               clk_set_parent(step_clk, secondary_sel_clk);
->> -               clk_set_parent(pll1_sw_clk, step_clk);
->> +               if (freq_hz <= clk_get_rate(pll2_bus_clk)) {
->> +                       if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
->> +                               clk_set_parent(secondary_sel_clk, pll2_bus_clk);
->> +                       else
->> +                               clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
->> +                       clk_set_parent(step_clk, secondary_sel_clk);
->> +                       clk_set_parent(pll1_sw_clk, step_clk);
->> +               }
->>         } else {
->>                 clk_set_parent(step_clk, pll2_pfd2_396m_clk);
->>                 clk_set_parent(pll1_sw_clk, step_clk);
->> --
->> 2.15.1
->>
+Kind regards
+Uffe
