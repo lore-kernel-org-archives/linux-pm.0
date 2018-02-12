@@ -1,62 +1,48 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] base: power: domain: Replace mdelay with msleep
-Date: Mon, 12 Feb 2018 13:40:52 +0100
-Message-ID: <CAPDyKFo9sjavrNP4DbTkn4yX1WeOD_5EJJEcwFkHBt+Ag8OV-A@mail.gmail.com>
-References: <1516955899-31810-1-git-send-email-baijiaju1990@gmail.com>
- <CAPDyKFoft7aCoKtODz66AAjpDQELVhqGurFYBV6FHP9hzhy-Ug@mail.gmail.com> <1518431893.2744.1.camel@pengutronix.de>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: i686 suspend broken in 4.15.2
+Date: Mon, 12 Feb 2018 13:58:04 +0100
+Message-ID: <22af3344-99c2-56a2-1465-638d5a07ae35@intel.com>
+References: <cd7033eb-1272-f8bc-f13f-afe09fd4864e@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1518431893.2744.1.camel@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Jia-Ju Bai <baijiaju1990@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga18.intel.com ([134.134.136.126]:39533 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S935054AbeBLM6I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Feb 2018 07:58:08 -0500
+In-Reply-To: <cd7033eb-1272-f8bc-f13f-afe09fd4864e@gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Woody Suwalski <terraluna977@gmail.com>
+Cc: william.grant@canonical.com, Thomas Gleixner <tglx@linutronix.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, x86@kernel.org
 
-On 12 February 2018 at 11:38, Lucas Stach <l.stach@pengutronix.de> wrote:
-> Am Freitag, den 09.02.2018, 14:58 +0100 schrieb Ulf Hansson:
->> On 26 January 2018 at 09:38, Jia-Ju Bai <baijiaju1990@gmail.com>
->> wrote:
->> > After checking all possible call chains to genpd_dev_pm_detach()
->> > and
->> > genpd_dev_pm_attach() here,
->> > my tool finds that these functions are never called in atomic
->> > context,
->> > namely never in an interrupt handler or holding a spinlock.
->> > Thus mdelay can be replaced with msleep to avoid busy wait.
->> >
->> > This is found by a static analysis tool named DCNS written by
->> > myself.
->> >
->> > Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
->> > ---
->> >  drivers/base/power/domain.c |    4 ++--
->> >  1 file changed, 2 insertions(+), 2 deletions(-)
->> >
->> > diff --git a/drivers/base/power/domain.c
->> > b/drivers/base/power/domain.c
->> > index 0c80bea..f84ac72 100644
->> > --- a/drivers/base/power/domain.c
->> > +++ b/drivers/base/power/domain.c
->> > @@ -2144,7 +2144,7 @@ static void genpd_dev_pm_detach(struct device
->> > *dev, bool power_off)
->> >                 if (ret != -EAGAIN)
->> >                         break;
->> >
->> > -               mdelay(i);
->> > +               msleep(i);
->>
->> This looks like a nice improvement, however moving to msleep() makes
->> the call to cond_resched() below a bit superfluous. Perhaps remove
->> that as well.
+On 2/12/2018 2:52 AM, Woody Suwalski wrote:
+> Howdy,
+> I have just tested 4.15.2 kernel on a 32-bit Thinkpad x60.
+> While hibernation works OK, suspend2ram fails on wakeup - system goes 
+> to sleep OK, however upon wake it simply reboots.
 >
-> At least for small values of i, msleep also has a high chance to
-> overshoot the desired sleep by a lot. It would be better to convert
-> them to usleep_range with an acceptable slack.
+> I have bisected the problem to:
+>
+> commit 62c00e6122a6b5aa7b1350023967a2d7a12b54c9
+> Author: William Grant <william.grant@canonical.com>
+> Date:   Tue Jan 30 22:22:55 2018 +1100
+>
+>     x86/mm: Fix overlap of i386 CPU_ENTRY_AREA with FIX_BTMAP
+>
 
-Ack!
+That would be commit 55f49fcb879fbeeb in the mainline.
 
-[...]
+> Removing that patch makes the suspend work again (testing is painful 
+> because this small patch triggers rebuild of virtually all kernel 
+> files :-( )
+>
+> Could there be something triggering it in my config file?
+>
 
-Kind regards
-Uffe
+Yes, in theory.
+
+Thanks,
+Rafael
