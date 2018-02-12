@@ -1,50 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Query] thermal: Who is using "cooling-{min|max}-level}"
- properties ?
-Date: Mon, 12 Feb 2018 15:47:46 +0530
-Message-ID: <20180212101746.GT28462@vireshk-i7>
-References: <20180207102446.GS28462@vireshk-i7>
- <11fbba25-7029-8a13-476e-ea2f2de6fbf9@linaro.org>
- <20180209064211.GY28462@vireshk-i7>
- <539699c7-9509-dea2-2b31-c5f6749c99c4@linaro.org>
- <20180209092421.GL28462@vireshk-i7>
- <5722441d-c8be-4d29-fab7-28b4e5716961@linaro.org>
- <20180212061015.GO28462@vireshk-i7>
- <0b73e1aa-a88f-fe4b-b33a-0f589000e148@linaro.org>
- <20180212085242.GQ28462@vireshk-i7>
- <f361b9a0-08ac-9d19-76b2-83e67a6a2406@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: imx6q: support frequencies >528MHz for i.MX6UL/ULL
+Date: Mon, 12 Feb 2018 11:18:33 +0100
+Message-ID: <CAJZ5v0jGCzb3q5q6QxZWK7kTKHj66oHvdq=VKVXJ3TeDW_EmEA@mail.gmail.com>
+References: <20180118235836.17393-1-stefan@agner.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f48.google.com ([74.125.83.48]:41202 "EHLO
-        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933006AbeBLKRu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Feb 2018 05:17:50 -0500
-Received: by mail-pg0-f48.google.com with SMTP id t4so6168372pgp.8
-        for <linux-pm@vger.kernel.org>; Mon, 12 Feb 2018 02:17:50 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <f361b9a0-08ac-9d19-76b2-83e67a6a2406@linaro.org>
+Received: from mail-ot0-f194.google.com ([74.125.82.194]:42403 "EHLO
+        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932663AbeBLKSf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Feb 2018 05:18:35 -0500
+In-Reply-To: <20180118235836.17393-1-stefan@agner.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org, Punit.Agrawal@arm.com, ionela.voinescu@arm.com
+To: Stefan Agner <stefan@agner.ch>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Shawn Guo <shawnguo@kernel.org>, max.oss.09@gmail.com, marcel.ziswiler@toradex.com, Linux PM <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 12-02-18, 10:52, Daniel Lezcano wrote:
-> Just to clarify my comment above, I understood you were asking how to
-> not use the cpu as a cooling device. As the binding between the cooling
-> device and the thermal zone happens when the DT nodes are the same, when
-> registering the cpufreq driver as a cooling device and when the
-> cooling-device registers itself at the cooling-map parsing time, if we
-> remove the cooling-device in the cooling-map, the binding never happens
-> thus the cpu is never used as a cooling device.
+On Fri, Jan 19, 2018 at 12:58 AM, Stefan Agner <stefan@agner.ch> wrote:
+> Depending on SKU i.MX6UL/i.MX6ULL support frequencies up to 900MHz.
+> Use PLL1 sys clock for all operating points higher than 528MHz.
+>
+> Note: For higher operating points VDD_SOC_IN needs to be 125mV
+> higher than the ARM set-point (see datasheet). Specifically, the
+> i.MX6UL/ULL EVK boards have an external DC regulator which needs
+> adjustment. The regulator adjustment is not covered with this
+> change.
+>
+> Signed-off-by: Stefan Agner <stefan@agner.ch>
 
-Ahh, understood your comment now.
+Can you please rebase this on top of 4.16-rc1?  It doesn't apply for me as is.
 
-> However, these are all
-> required fields, so the only way to do that is to remove the entire
-> thermal zone node, not sure it is what we want :)
-
-Yeah, so thing stay as is for now :)
-
--- 
-viresh
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index 628fe899cb48..840f6386c780 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -114,12 +114,14 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>                  */
+>                 clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+>                 clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> -               if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+> -                       clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+> -               else
+> -                       clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+> -               clk_set_parent(step_clk, secondary_sel_clk);
+> -               clk_set_parent(pll1_sw_clk, step_clk);
+> +               if (freq_hz <= clk_get_rate(pll2_bus_clk)) {
+> +                       if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+> +                               clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+> +                       else
+> +                               clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+> +                       clk_set_parent(step_clk, secondary_sel_clk);
+> +                       clk_set_parent(pll1_sw_clk, step_clk);
+> +               }
+>         } else {
+>                 clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+>                 clk_set_parent(pll1_sw_clk, step_clk);
+> --
+> 2.15.1
+>
