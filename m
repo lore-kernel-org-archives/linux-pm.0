@@ -1,70 +1,75 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernv: Check  negative value returned by
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
  cpufreq_table_find_index_dl()
-Date: Mon, 12 Feb 2018 15:59:00 +0530
-Message-ID: <20180212102900.GU28462@vireshk-i7>
+Date: Mon, 12 Feb 2018 16:03:42 +0530
+Message-ID: <14e2fe70-7628-4377-664d-3c4b0071e08d@linux.vnet.ibm.com>
 References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180212102900.GU28462@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pl0-f68.google.com ([209.85.160.68]:40831 "EHLO
-        mail-pl0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932877AbeBLK3D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Feb 2018 05:29:03 -0500
-Received: by mail-pl0-f68.google.com with SMTP id g18so4831801plo.7
-        for <linux-pm@vger.kernel.org>; Mon, 12 Feb 2018 02:29:03 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180212102900.GU28462@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+List-Id: linux-pm@vger.kernel.org
 
-On 12-02-18, 15:51, Shilpasri G Bhat wrote:
-> This patch fixes the below Coverity warning:
+Hi,
+
+On 02/12/2018 03:59 PM, Viresh Kumar wrote:
+> On 12-02-18, 15:51, Shilpasri G Bhat wrote:
+>> This patch fixes the below Coverity warning:
+>>
+>> *** CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>> /drivers/cpufreq/powernv-cpufreq.c: 1008 in powernv_fast_switch()
+>> 1002     					unsigned int target_freq)
+>> 1003     {
+>> 1004     	int index;
+>> 1005     	struct powernv_smp_call_data freq_data;
+>> 1006
+>> 1007     	index = cpufreq_table_find_index_dl(policy, target_freq);
+>>>>>     CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>>>>>     Using variable "index" as an index to array "powernv_freqs".
+>> 1008     	freq_data.pstate_id = powernv_freqs[index].driver_data;
+>> 1009     	freq_data.gpstate_id = powernv_freqs[index].driver_data;
+>> 1010     	set_pstate(&freq_data);
+>> 1011
+>> 1012     	return powernv_freqs[index].frequency;
+>> 1013     }
+>>
+>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> ---
+>>  drivers/cpufreq/powernv-cpufreq.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index 29cdec1..69edfe9 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -1005,6 +1005,9 @@ static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
+>>  	struct powernv_smp_call_data freq_data;
+>>  
+>>  	index = cpufreq_table_find_index_dl(policy, target_freq);
+>> +	if (unlikely(index < 0))
+>> +		index = get_nominal_index();
+>> +
 > 
-> *** CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
-> /drivers/cpufreq/powernv-cpufreq.c: 1008 in powernv_fast_switch()
-> 1002     					unsigned int target_freq)
-> 1003     {
-> 1004     	int index;
-> 1005     	struct powernv_smp_call_data freq_data;
-> 1006
-> 1007     	index = cpufreq_table_find_index_dl(policy, target_freq);
-> >>>     CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
-> >>>     Using variable "index" as an index to array "powernv_freqs".
-> 1008     	freq_data.pstate_id = powernv_freqs[index].driver_data;
-> 1009     	freq_data.gpstate_id = powernv_freqs[index].driver_data;
-> 1010     	set_pstate(&freq_data);
-> 1011
-> 1012     	return powernv_freqs[index].frequency;
-> 1013     }
+> AFAICT, you will get -1 here only if the freq table had no valid
+> frequencies (or the freq table is empty). Why would that happen ?
+
+I agree too. There is no way we can get -1 with initialized cpu frequency table.
+We don't initialize powernv-cpufreq if we don't have valid CPU frequency
+entries. Is there any other way to suppress the Coverity tool warning apart from
+ignoring it?
+
+Thanks and Regards,
+Shilpa
+
 > 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 3 +++
->  1 file changed, 3 insertions(+)
+>>  	freq_data.pstate_id = powernv_freqs[index].driver_data;
+>>  	freq_data.gpstate_id = powernv_freqs[index].driver_data;
+>>  	set_pstate(&freq_data);
+>> -- 
+>> 1.8.3.1
 > 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 29cdec1..69edfe9 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -1005,6 +1005,9 @@ static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
->  	struct powernv_smp_call_data freq_data;
->  
->  	index = cpufreq_table_find_index_dl(policy, target_freq);
-> +	if (unlikely(index < 0))
-> +		index = get_nominal_index();
-> +
-
-AFAICT, you will get -1 here only if the freq table had no valid
-frequencies (or the freq table is empty). Why would that happen ?
-
->  	freq_data.pstate_id = powernv_freqs[index].driver_data;
->  	freq_data.gpstate_id = powernv_freqs[index].driver_data;
->  	set_pstate(&freq_data);
-> -- 
-> 1.8.3.1
-
--- 
-viresh
