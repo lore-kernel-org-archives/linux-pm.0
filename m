@@ -1,39 +1,30 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/1] dt-bindings: thermal: imx: update the binding to new
- method
-Date: Mon, 12 Feb 2018 08:40:28 -0600
-Message-ID: <20180212144028.al7thpjxvefnfyze@rob-hp-laptop>
-References: <1516862269-25543-1-git-send-email-aisheng.dong@nxp.com>
+From: Timur Tabi <timur@codeaurora.org>
+Subject: Re: [PATCH] acpi, spcr: Make SPCR available to x86
+Date: Mon, 12 Feb 2018 08:43:45 -0600
+Message-ID: <953565bd-436b-c1fe-d3c5-cde731dee83d@codeaurora.org>
+References: <20180118150951.28964-1-prarit@redhat.com>
+ <20180212133429.GC25314@hirez.programming.kicks-ass.net>
+ <1e69fffc-1c3b-8cc0-f1cb-695de5ccdcb5@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f173.google.com ([74.125.82.173]:35397 "EHLO
-        mail-ot0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933843AbeBLOka (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Feb 2018 09:40:30 -0500
-Content-Disposition: inline
-In-Reply-To: <1516862269-25543-1-git-send-email-aisheng.dong@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1e69fffc-1c3b-8cc0-f1cb-695de5ccdcb5@redhat.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, graeme.gregory@linaro.org, mark.salter@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: Dong Aisheng <aisheng.dong@nxp.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-imx@nxp.com, Shawn Guo <shawn.guo@linaro.org>, Leonard Crestez <leonard.crestez@nxp.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>
 
-On Thu, Jan 25, 2018 at 02:37:49PM +0800, Dong Aisheng wrote:
-> Due to the old method has already been marked as deprecated in binding
-> doc, so obviously it's better to update the example to new bindings
-> as well.
-> 
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Cc: Leonard Crestez <leonard.crestez@nxp.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> ---
->  .../devicetree/bindings/thermal/imx-thermal.txt    | 25 ++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
+On 2/12/18 7:47 AM, Prarit Bhargava wrote:
+> ACPI SPCR is used by a vendor to define the serial console for a system.  If
+> SPCR exists a user can add kernel parameter "earlycon" (no extra kernel
+> parameters) and the console will work out-of-the-box.
 
-Applied, thanks.
+"earlycon" is needed only for an *early* console.  You don't need any 
+command line parameters for a normal console to work with SPCR.
 
-Rob
+-- 
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm
+Technologies, Inc.  Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
