@@ -1,33 +1,35 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 2/4] dt-bindings: soc: add header files required for
- MT7623A SCPSYS dt-binding
-Date: Mon, 12 Feb 2018 08:44:01 -0600
-Message-ID: <20180212144401.yzrecztdveua3zix@rob-hp-laptop>
-References: <ecfc548fc3d22aa335b50e552ad2ad88427a0bb2.1517998367.git.sean.wang@mediatek.com>
- <9955178588f8bde01782d0645b25a7b24cceb87b.1517998367.git.sean.wang@mediatek.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] acpi, spcr: Make SPCR available to x86
+Date: Mon, 12 Feb 2018 09:49:47 -0500
+Message-ID: <7bd5897f-d6da-7e29-29c4-aa26d24f6355@redhat.com>
+References: <20180118150951.28964-1-prarit@redhat.com>
+ <20180212133429.GC25314@hirez.programming.kicks-ass.net>
+ <1e69fffc-1c3b-8cc0-f1cb-695de5ccdcb5@redhat.com>
+ <953565bd-436b-c1fe-d3c5-cde731dee83d@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <9955178588f8bde01782d0645b25a7b24cceb87b.1517998367.git.sean.wang@mediatek.com>
+In-Reply-To: <953565bd-436b-c1fe-d3c5-cde731dee83d@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Timur Tabi <timur@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, graeme.gregory@linaro.org, mark.salter@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 07, 2018 at 06:22:48PM +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> Add relevant header files required for dt-bindings of SCPSYS power domain
-> control for subsystems found on MT7623A SoC.
-> 
-> v1 -> v2: fix typos and treat the patch as a dt-binding patch
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> Cc: Rob Herring <robh@kernel.org>
-> ---
->  include/dt-bindings/power/mt7623a-power.h | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->  create mode 100644 include/dt-bindings/power/mt7623a-power.h
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+
+On 02/12/2018 09:43 AM, Timur Tabi wrote:
+> On 2/12/18 7:47 AM, Prarit Bhargava wrote:
+>> ACPI SPCR is used by a vendor to define the serial console for a system.  If
+>> SPCR exists a user can add kernel parameter "earlycon" (no extra kernel
+>> parameters) and the console will work out-of-the-box.
+> 
+> "earlycon" is needed only for an *early* console.  You don't need any command
+> line parameters for a normal console to work with SPCR.
+
+That's true on ARM64.  I specifically did not enable the console by default on
+x86.  There are users who do not want a console active during boot & runtime.
+
+P.
+
+> 
