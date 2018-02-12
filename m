@@ -1,43 +1,128 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] acpi, spcr: Make SPCR available to x86
-Date: Mon, 12 Feb 2018 08:47:57 -0500
-Message-ID: <1e69fffc-1c3b-8cc0-f1cb-695de5ccdcb5@redhat.com>
-References: <20180118150951.28964-1-prarit@redhat.com>
- <20180212133429.GC25314@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180212133429.GC25314@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Timur Tabi <timur@codeaurora.org>, graeme.gregory@linaro.org, mark.salter@redhat.com
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v3 2/3] irqchip/renesas-irqc: Use wakeup_path i.s.o. explicit clock handling
+Date: Mon, 12 Feb 2018 14:55:12 +0100
+Message-ID: <1518443713-1835-3-git-send-email-geert+renesas@glider.be>
+References: <1518443713-1835-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <1518443713-1835-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
+Since commit 6f46aedb9c85873b ("irqchip: renesas-irqc: Add wake-up
+support"), when an IRQ is used for wakeup, the INTC
+block's module clock is manually kept running during system suspend, to
+make sure the device stays active.
 
+However, this explicit clock handling is merely a workaround for a
+failure to properly communicate wakeup information to the device core.
 
-On 02/12/2018 08:34 AM, Peter Zijlstra wrote:
-> On Thu, Jan 18, 2018 at 10:09:51AM -0500, Prarit Bhargava wrote:
->>  config ACPI_SPCR_TABLE
->> +	bool "ACPI Serial Port Console Redirection Support"
->> +	default y if X86
->> +	help
->> +	  Enable support for Serial Port Console Redirection (SPCR) Table.
->> +	  This table provides information about the configuration of the
->> +	  earlycon console.
-> 
-> I just got asked this by oldconfig, which left me rather puzzled, WTF
-> does this do?
+Instead, set the device's power.wakeup_path field, to indicate this
+device is part of the wakeup path.  Depending on the PM Domain's
+active_wakeup configuration, the genpd core code will keep the device
+enabled (and the clock running) during system suspend when needed.
+This allows for the removal of all explicit clock handling code from the
+driver.
 
-Odd -- I thought I had taken care of that :(  My apologies Peter.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v3:
+  - Revert to v1, as WAKEUP_PATH didn't make it,
+  - Use an atomic_t instead of a boolean flag, as the boolean tracked
+    only the status of the last configured GPIO, while multiple
+    interrupt pins on the same interrupt controller may be involved with
+    wake-up,
+  - Use new helper device_set_wakeup_path(),
+  - Drop checks for CONFIG_PM_SLEEP, as device_set_wakeup_path() is
+    always available, unlike dev_pm_info.wakeup_path,
+  - Mark irqc_suspend() __maybe_unused,
+  - Drop RFC state, now the dependencies are upstream.
 
-ACPI SPCR is used by a vendor to define the serial console for a system.  If
-SPCR exists a user can add kernel parameter "earlycon" (no extra kernel
-parameters) and the console will work out-of-the-box.
+v2 (sent by Ulf Hanson):
+  - Convert to use the WAKEUP_PATH driver PM flag (Ulf).
+---
+ drivers/irqchip/irq-renesas-irqc.c | 30 ++++++++++++++++--------------
+ 1 file changed, 16 insertions(+), 14 deletions(-)
 
-The serial console configuration varies from vendor to vendor.  This takes the
-guess-work out of defining a serial console.
+diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
+index 52304b139aa46a60..a4f11124024dcf32 100644
+--- a/drivers/irqchip/irq-renesas-irqc.c
++++ b/drivers/irqchip/irq-renesas-irqc.c
+@@ -17,7 +17,6 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
+-#include <linux/clk.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/spinlock.h>
+@@ -64,7 +63,7 @@ struct irqc_priv {
+ 	struct platform_device *pdev;
+ 	struct irq_chip_generic *gc;
+ 	struct irq_domain *irq_domain;
+-	struct clk *clk;
++	atomic_t wakeup_path;
+ };
+ 
+ static struct irqc_priv *irq_data_to_priv(struct irq_data *data)
+@@ -111,14 +110,10 @@ static int irqc_irq_set_wake(struct irq_data *d, unsigned int on)
+ 	int hw_irq = irqd_to_hwirq(d);
+ 
+ 	irq_set_irq_wake(p->irq[hw_irq].requested_irq, on);
+-
+-	if (!p->clk)
+-		return 0;
+-
+ 	if (on)
+-		clk_enable(p->clk);
++		atomic_inc(&p->wakeup_path);
+ 	else
+-		clk_disable(p->clk);
++		atomic_dec(&p->wakeup_path);
+ 
+ 	return 0;
+ }
+@@ -159,12 +154,6 @@ static int irqc_probe(struct platform_device *pdev)
+ 	p->pdev = pdev;
+ 	platform_set_drvdata(pdev, p);
+ 
+-	p->clk = devm_clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(p->clk)) {
+-		dev_warn(&pdev->dev, "unable to get clock\n");
+-		p->clk = NULL;
+-	}
+-
+ 	pm_runtime_enable(&pdev->dev);
+ 	pm_runtime_get_sync(&pdev->dev);
+ 
+@@ -276,6 +265,18 @@ static int irqc_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int __maybe_unused irqc_suspend(struct device *dev)
++{
++	struct irqc_priv *p = dev_get_drvdata(dev);
++
++	if (atomic_read(&p->wakeup_path))
++		device_set_wakeup_path(dev);
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(irqc_pm_ops, irqc_suspend, NULL);
++
+ static const struct of_device_id irqc_dt_ids[] = {
+ 	{ .compatible = "renesas,irqc", },
+ 	{},
+@@ -288,6 +289,7 @@ static struct platform_driver irqc_device_driver = {
+ 	.driver		= {
+ 		.name	= "renesas_irqc",
+ 		.of_match_table	= irqc_dt_ids,
++		.pm	= &irqc_pm_ops,
+ 	}
+ };
+ 
+-- 
+2.7.4
 
-P.
-
-> 
