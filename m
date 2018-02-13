@@ -1,96 +1,42 @@
-From: Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
- calls with runtime suppliers
-Date: Tue, 13 Feb 2018 13:03:13 -0500
-Message-ID: <CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 01/10] ARM: dts: exynos: Remove "cooling-{min|max}-level"
+ for CPU nodes
+Date: Tue, 13 Feb 2018 19:16:36 +0100
+Message-ID: <20180213181636.dwjyfqcunynonwrf@kozik-lap>
+References: <cover.1518166039.git.viresh.kumar@linaro.org>
+ <f808613a9c7a4f23d3a0c64b6f3d4df1b905b16b.1518166039.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:38284 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965286AbeBMSQk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Feb 2018 13:16:40 -0500
+Content-Disposition: inline
+In-Reply-To: <f808613a9c7a4f23d3a0c64b6f3d4df1b905b16b.1518166039.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-T24gVHVlLCBGZWIgMTMsIDIwMTggYXQgNDoxMCBBTSwgVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9t
-aXVtLm9yZz4gd3JvdGU6Cj4gSGkgVml2ZWssCj4KPiBUaGFua3MgZm9yIHRoZSBwYXRjaC4gUGxl
-YXNlIHNlZSBteSBjb21tZW50cyBpbmxpbmUuCj4KPiBPbiBXZWQsIEZlYiA3LCAyMDE4IGF0IDc6
-MzEgUE0sIFZpdmVrIEdhdXRhbQo+IDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3Rl
-Ogo+PiBXaGlsZSBoYW5kbGluZyB0aGUgY29uY2VybmVkIGlvbW11LCB0aGVyZSBzaG91bGQgbm90
-IGJlIGEKPj4gbmVlZCB0byBwb3dlciBjb250cm9sIHRoZSBkcm0gZGV2aWNlcyBmcm9tIGlvbW11
-IGludGVyZmFjZS4KPj4gSWYgdGhlc2UgZHJtIGRldmljZXMgbmVlZCB0byBiZSBwb3dlcmVkIGFy
-b3VuZCB0aGlzIHRpbWUsCj4+IHRoZSByZXNwZWN0aXZlIGRyaXZlcnMgc2hvdWxkIHRha2UgY2Fy
-ZSBvZiB0aGlzLgo+Pgo+PiBSZXBsYWNlIHRoZSBwbV9ydW50aW1lX2dldC9wdXRfc3luYyg8ZHJt
-X2RldmljZT4pIHdpdGgKPj4gcG1fcnVudGltZV9nZXQvcHV0X3N1cHBsaWVycyg8ZHJtX2Rldmlj
-ZT4pIGNhbGxzLCB0byBwb3dlci11cAo+PiB0aGUgY29ubmVjdGVkIGlvbW11IHRocm91Z2ggdGhl
-IGRldmljZSBsaW5rIGludGVyZmFjZS4KPj4gSW4gY2FzZSB0aGUgZGV2aWNlIGxpbmsgaXMgbm90
-IHNldHVwIHRoZXNlIGdldC9wdXRfc3VwcGxpZXJzKCkKPj4gY2FsbHMgd2lsbCBiZSBhIG5vLW9w
-LCBhbmQgdGhlIGlvbW11IGRyaXZlciBzaG91bGQgdGFrZSBjYXJlIG9mCj4+IHBvd2VyaW5nIG9u
-IGl0cyBkZXZpY2VzIGFjY29yZGluZ2x5Lgo+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0
-YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4gLS0tCj4+ICBkcml2ZXJzL2dwdS9k
-cm0vbXNtL21zbV9pb21tdS5jIHwgMTYgKysrKysrKystLS0tLS0tLQo+PiAgMSBmaWxlIGNoYW5n
-ZWQsIDggaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkKPj4KPj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvZ3B1L2RybS9tc20vbXNtX2lvbW11LmMgYi9kcml2ZXJzL2dwdS9kcm0vbXNtL21zbV9p
-b21tdS5jCj4+IGluZGV4IGIyM2QzMzYyMmYzNy4uMWFiNjI5YmJlZTY5IDEwMDY0NAo+PiAtLS0g
-YS9kcml2ZXJzL2dwdS9kcm0vbXNtL21zbV9pb21tdS5jCj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2Ry
-bS9tc20vbXNtX2lvbW11LmMKPj4gQEAgLTQwLDkgKzQwLDkgQEAgc3RhdGljIGludCBtc21faW9t
-bXVfYXR0YWNoKHN0cnVjdCBtc21fbW11ICptbXUsIGNvbnN0IGNoYXIgKiBjb25zdCAqbmFtZXMs
-Cj4+ICAgICAgICAgc3RydWN0IG1zbV9pb21tdSAqaW9tbXUgPSB0b19tc21faW9tbXUobW11KTsK
-Pj4gICAgICAgICBpbnQgcmV0Owo+Pgo+PiAtICAgICAgIHBtX3J1bnRpbWVfZ2V0X3N5bmMobW11
-LT5kZXYpOwo+PiArICAgICAgIHBtX3J1bnRpbWVfZ2V0X3N1cHBsaWVycyhtbXUtPmRldik7Cj4+
-ICAgICAgICAgcmV0ID0gaW9tbXVfYXR0YWNoX2RldmljZShpb21tdS0+ZG9tYWluLCBtbXUtPmRl
-dik7Cj4+IC0gICAgICAgcG1fcnVudGltZV9wdXRfc3luYyhtbXUtPmRldik7Cj4+ICsgICAgICAg
-cG1fcnVudGltZV9wdXRfc3VwcGxpZXJzKG1tdS0+ZGV2KTsKPgo+IEZvciBtZSwgaXQgbG9va3Mg
-bGlrZSBhIHdyb25nIHBsYWNlIHRvIGhhbmRsZSBydW50aW1lIFBNIG9mIElPTU1VCj4gaGVyZS4g
-aW9tbXVfYXR0YWNoX2RldmljZSgpIGNhbGxzIGludG8gSU9NTVUgZHJpdmVyJ3MgYXR0YWNoX2Rl
-dmljZSgpCj4gY2FsbGJhY2sgYW5kIHRoYXQncyB3aGVyZSBuZWNlc3NhcnkgcnVudGltZSBQTSBn
-ZXRzIHNob3VsZCBoYXBwZW4sIGlmCj4gYW55LiBJbiBvdGhlciB3b3JkcywgZHJpdmVyIEEgKE1T
-TSBEUk0gZHJpdmVyKSBzaG91bGRuJ3QgYmUgZGVhbGluZwo+IHdpdGggcG93ZXIgc3RhdGUgb2Yg
-ZGV2aWNlIGNvbnRyb2xsZWQgYnkgZHJpdmVyIEIgKEFSTSBTTU1VKS4KCk5vdGUgdGhhdCB3ZSBl
-bmQgdXAgaGF2aW5nIHRvIGRvIHRoZSBzYW1lLCBiZWNhdXNlIG9mIGlvbW11X3VubWFwKCkKd2hp
-bGUgRFJNIGRyaXZlciBpcyBwb3dlcmVkIG9mZi4uICBpdCBtaWdodCBiZSBjbGVhbmVyIGlmIGl0
-IHdhcyBhbGwKc2VsZiBjb250YWluZWQgaW4gdGhlIGlvbW11IGRyaXZlciwgYnV0IHRoYXQgd291
-bGQgbWFrZSBpdCBzbyBvdGhlcgpkcml2ZXJzIGNvdWxkbid0IGNhbGwgaW9tbXVfdW5tYXAoKSBm
-cm9tIGFuIGlycSBoYW5kbGVyLCB3aGljaCBpcwphcHBhcmVudGx5IHNvbWV0aGluZyB0aGF0IHNv
-bWUgb2YgdGhlbSB3YW50IHRvIGRvLi4KClNvIEknbSBoYXBweSB3aXRoIHRoZSBwbV9ydW50aW1l
-X2dldC9wdXRfc3VwcGxpZXJzKCkgYXBwcm9hY2ggYXMgYQpyZWFzb25hYmxlIGNvbXByb21pc2Uu
-CgooUGVyaGFwcyBzcGVjaWZpY2FsbHksIGF0dGFjaC9kZXRhY2ggdGhpcyBjb3VsZCBtb3ZlIGlu
-c2lkZSB0aGUgaW9tbXUKZHJpdmVyLCBidXQgd2Ugc3RpbGwgbmVlZCB0byBnZXQvcHV0X3N1cHBs
-aWVycygpIGZvciB1bm1hcCgpLCBzbyBtZWgpCgpCUiwKLVIKCj4gVGhpcyBpcyBhbHNvIGltcG9y
-dGFudCBmb3IgdGhlIHJlYXNvbnMgSSBzdGF0ZWQgaW4gbXkgY29tbWVudHMgdG8KPiAiW1BBVENI
-IHY3IDEvNl0gYmFzZTogcG93ZXI6IHJ1bnRpbWU6IEV4cG9ydAo+IHBtX3J1bnRpbWVfZ2V0L3B1
-dF9zdXBwbGllcnMiLiBRdW90aW5nIGZvciBldmVyeW9uZSdzIGNvbnZlbmllbmNlOgo+Cj4+PiBU
-aGVyZSBhcmUgaG93ZXZlciBjYXNlcyBpbiB3aGljaCB0aGUgY29uc3VtZXIgd2FudHMgdG8gcG93
-ZXItb24KPj4+IHRoZSBzdXBwbGllciwgYnV0IG5vdCBpdHNlbGYuCj4+PiBFLmcuLCBBIEdyYXBo
-aWNzIG9yIG11bHRpbWVkaWEgZHJpdmVyIHdhbnRzIHRvIHBvd2VyLW9uIHRoZSBTTU1VCj4+PiB0
-byB1bm1hcCBhIGJ1ZmZlciBhbmQgZmluaXNoIHRoZSBUTEIgb3BlcmF0aW9ucyB3aXRob3V0IHBv
-d2VyaW5nCj4+PiBvbiBpdHNlbGYuCj4+Cj4+VGhpcyBzb3VuZHMgc3RyYW5nZSB0byBtZS4gSWYg
-dGhlIFNNTVUgaXMgcG93ZXJlZCBkb3duLCB3b3VsZG4ndCB0aGUKPj5UTEIgbG9zZSBpdHMgY29u
-dGVudHMgYXMgd2VsbCAoYW5kIHNvIG5vIGZsdXNoaW5nIG5lZWRlZCk/Cj4+Cj4+T3RoZXIgdGhh
-biB0aGF0LCB3aGF0IGtpbmQgb2YgaGFyZHdhcmUgb3BlcmF0aW9ucyB3b3VsZCBiZSBuZWVkZWQK
-Pj5iZXNpZGVzIGp1c3QgdXBkYXRpbmcgdGhlIHBhZ2UgdGFibGVzIGZyb20gdGhlIENQVT8KPj4K
-Pgo+IEluIG90aGVyIHdvcmRzLCB0aGUgU01NVSBkcml2ZXIgY2FuIGRlYWwgd2l0aCBoYXJkd2Fy
-ZSBzdGF0ZSBiYXNlZCBvbgo+IHJldHVybiB2YWx1ZSBvZiBwbV9ydW50aW1lX2dldF9zeW5jKCkg
-b3IgcG1fcnVudGltZV9nZXRfaWZfaW5fdXNlKCkKPiBhbmQgZGVjaWRlIHdoZXRoZXIgc29tZSBv
-cGVyYXRpb25zIGFyZSBuZWNlc3Nhcnkgb3Igbm90LCBlLmcuCj4gLSBhIHN0YXRlIHJlc3RvcmUg
-aXMgbmVjZXNzYXJ5IGlmIHRoZSBkb21haW4gd2FzIHBvd2VyZWQgb2ZmLCBidXQgd2UKPiBhcmUg
-YnJpbmdpbmcgdGhlIG1hc3RlciBvbiwKPiAtIGEgZmx1c2ggbWF5IG5vdCBiZSByZXF1aXJlZCB3
-aGVuICh1biltYXBwaW5nIHdpdGggdGhlIGRvbWFpbiBwb3dlcmVkIG9mZiwKPiAtIGV0Yy4KPgo+
-IEJlc3QgcmVnYXJkcywKPiBUb21hc3oKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
-Zm8vZnJlZWRyZW5vCg==
+On Fri, Feb 09, 2018 at 02:28:01PM +0530, Viresh Kumar wrote:
+> The "cooling-min-level" and "cooling-max-level" properties are not
+> parsed by any part of the kernel currently and the max cooling state of
+> a CPU cooling device is found by referring to the cpufreq table instead.
+> 
+> Remove the unused properties from the CPU nodes.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  arch/arm/boot/dts/exynos4210.dtsi      |  2 --
+>  arch/arm/boot/dts/exynos4412.dtsi      |  2 --
+>  arch/arm/boot/dts/exynos5250.dtsi      |  2 --
+>  arch/arm/boot/dts/exynos5420-cpus.dtsi | 16 ----------------
+>  arch/arm/boot/dts/exynos5422-cpus.dtsi | 16 ----------------
+>  5 files changed, 38 deletions(-)
+> 
+
+Thanks, applied.
+
+Best regards,
+Krzysztof
