@@ -1,97 +1,115 @@
 From: Tomasz Figa <tfiga@chromium.org>
-Subject: Re: [PATCH v7 2/6] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Tue, 13 Feb 2018 17:03:48 +0900
-Message-ID: <CAAFQd5B2u8RL-tdB3qgPxVUcXnsBSEhXRBZWxqO-w6rYKAiOtg@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-3-git-send-email-vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH v7 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
+ add/remove device
+Date: Tue, 13 Feb 2018 17:24:53 +0900
+Message-ID: <CAAFQd5DxYhkK61VDAesby6bT+FtG2nqsbHQRvxkhrsSS0KWtog@mail.gmail.com>
+References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org> <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1517999482-17317-3-git-send-email-vivek.gautam@codeaurora.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Vivek Gautam <vivek.gautam@codeaurora.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>,
- Joerg Roedel <joro@8bytes.org>, " <iommu@lists.linux-foundation.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, freedreno@lists.freedesktop.org, Robin Murphy <robin.murphy@arm.com>, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f68.google.com ([209.85.213.68]:38691 "EHLO
+        mail-vk0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933584AbeBMIZP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Feb 2018 03:25:15 -0500
+Received: by mail-vk0-f68.google.com with SMTP id z9so10366511vkd.5
+        for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2018 00:25:15 -0800 (PST)
+Received: from mail-ua0-f175.google.com (mail-ua0-f175.google.com. [209.85.217.175])
+        by smtp.gmail.com with ESMTPSA id s1sm1587136uad.45.2018.02.13.00.25.14
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 13 Feb 2018 00:25:14 -0800 (PST)
+Received: by mail-ua0-f175.google.com with SMTP id n1so11089215uaa.2
+        for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2018 00:25:14 -0800 (PST)
+In-Reply-To: <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vivek Gautam <vivek.gautam@codeaurora.org>
+Cc: "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
+        Roedel <joro@8bytes.org>," <joro@8bytes.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Clark <robdclark@gmail.com>"list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
+        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, freedreno@lists.freedesktop.org, David Airlie <airlied@linux.ie>, Greg KH <gregkh@linuxfoundation.org>, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org
 
-SGkgVml2ZWssCgpUaGFua3MgZm9yIHRoZSBwYXRjaC4gUGxlYXNlIHNlZSBzb21lIGNvbW1lbnRz
-IGlubGluZS4KCk9uIFdlZCwgRmViIDcsIDIwMTggYXQgNzozMSBQTSwgVml2ZWsgR2F1dGFtCjx2
-aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+IEZyb206IFNyaWNoYXJhbiBSIDxz
-cmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4KPiBUaGUgc21tdSBuZWVkcyB0byBiZSBmdW5jdGlv
-bmFsIG9ubHkgd2hlbiB0aGUgcmVzcGVjdGl2ZQo+IG1hc3RlcidzIHVzaW5nIGl0IGFyZSBhY3Rp
-dmUuIFRoZSBkZXZpY2VfbGluayBmZWF0dXJlCj4gaGVscHMgdG8gdHJhY2sgc3VjaCBmdW5jdGlv
-bmFsIGRlcGVuZGVuY2llcywgc28gdGhhdCB0aGUKPiBpb21tdSBnZXRzIHBvd2VyZWQgd2hlbiB0
-aGUgbWFzdGVyIGRldmljZSBlbmFibGVzIGl0c2VsZgo+IHVzaW5nIHBtX3J1bnRpbWUuIFNvIGJ5
-IGFkYXB0aW5nIHRoZSBzbW11IGRyaXZlciBmb3IKPiBydW50aW1lIHBtLCBhYm92ZSBzYWlkIGRl
-cGVuZGVuY3kgY2FuIGJlIGFkZHJlc3NlZC4KPgo+IFRoaXMgcGF0Y2ggYWRkcyB0aGUgcG0gcnVu
-dGltZS9zbGVlcCBjYWxsYmFja3MgdG8gdGhlCj4gZHJpdmVyIGFuZCBhbHNvIHRoZSBmdW5jdGlv
-bnMgdG8gcGFyc2UgdGhlIHNtbXUgY2xvY2tzCj4gZnJvbSBEVCBhbmQgZW5hYmxlIHRoZW0gaW4g
-cmVzdW1lL3N1c3BlbmQuCj4KPiBTaWduZWQtb2ZmLWJ5OiBTcmljaGFyYW4gUiA8c3JpY2hhcmFu
-QGNvZGVhdXJvcmEub3JnPgo+IFNpZ25lZC1vZmYtYnk6IEFyY2hpdCBUYW5lamEgPGFyY2hpdHRA
-Y29kZWF1cm9yYS5vcmc+Cj4gW3ZpdmVrOiBDbG9jayByZXdvcmsgdG8gcmVxdWVzdCBidWxrIG9m
-IGNsb2Nrc10KPiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdhdXRhbUBjb2Rl
-YXVyb3JhLm9yZz4KPiAtLS0KPiAgZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIHwgNTYgKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tCj4gIDEgZmlsZSBjaGFu
-Z2VkLCA1NCBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQo+Cj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+IGluZGV4
-IDY5ZTdjNjA3OTJhOC4uOWUyZjkxN2UxNmMyIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvaW9tbXUv
-YXJtLXNtbXUuYwo+ICsrKyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+IEBAIC00OCw2ICs0
-OCw3IEBACj4gICNpbmNsdWRlIDxsaW51eC9vZl9pb21tdS5oPgo+ICAjaW5jbHVkZSA8bGludXgv
-cGNpLmg+Cj4gICNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KPiArI2luY2x1ZGUg
-PGxpbnV4L3BtX3J1bnRpbWUuaD4KPiAgI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KPiAgI2luY2x1
-ZGUgPGxpbnV4L3NwaW5sb2NrLmg+Cj4KPiBAQCAtMjA1LDYgKzIwNiw4IEBAIHN0cnVjdCBhcm1f
-c21tdV9kZXZpY2Ugewo+ICAgICAgICAgdTMyICAgICAgICAgICAgICAgICAgICAgICAgICAgICBu
-dW1fZ2xvYmFsX2lycXM7Cj4gICAgICAgICB1MzIgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IG51bV9jb250ZXh0X2lycXM7Cj4gICAgICAgICB1bnNpZ25lZCBpbnQgICAgICAgICAgICAgICAg
-ICAgICppcnFzOwo+ICsgICAgICAgc3RydWN0IGNsa19idWxrX2RhdGEgICAgICAgICAgICAqY2xv
-Y2tzOwo+ICsgICAgICAgaW50ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBudW1fY2xrczsK
-Cm5pdDogUGVyaGFwcyAibnVtX2Nsb2NrcyIgdG8gYmUgY29uc2lzdGVudCB3aXRoICJjbG9ja3Mi
-PwoKPgo+ICAgICAgICAgdTMyICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjYXZpdW1faWRf
-YmFzZTsgLyogU3BlY2lmaWMgdG8gQ2F2aXVtICovCj4KPiBAQCAtMTg5NywxMCArMTkwMCwxMiBA
-QCBzdGF0aWMgaW50IGFybV9zbW11X2RldmljZV9jZmdfcHJvYmUoc3RydWN0IGFybV9zbW11X2Rl
-dmljZSAqc21tdSkKPiAgc3RydWN0IGFybV9zbW11X21hdGNoX2RhdGEgewo+ICAgICAgICAgZW51
-bSBhcm1fc21tdV9hcmNoX3ZlcnNpb24gdmVyc2lvbjsKPiAgICAgICAgIGVudW0gYXJtX3NtbXVf
-aW1wbGVtZW50YXRpb24gbW9kZWw7Cj4gKyAgICAgICBjb25zdCBjaGFyICogY29uc3QgKmNsa3M7
-Cj4gKyAgICAgICBpbnQgbnVtX2Nsa3M7CgpuaXQ6IFBlcmhhcHMgcy9jbGtzL2Nsb2Nrcy8gaGVy
-ZSBvciBzL2Nsb2Nrcy9jbGtzLyBpbiBzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlPwoKPiAgfTsKPgo+
-ICAjZGVmaW5lIEFSTV9TTU1VX01BVENIX0RBVEEobmFtZSwgdmVyLCBpbXApICAgIFwKPiAtc3Rh
-dGljIHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIG5hbWUgPSB7IC52ZXJzaW9uID0gdmVyLCAu
-bW9kZWwgPSBpbXAgfQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGFybV9zbW11X21hdGNoX2RhdGEg
-bmFtZSA9IHsgLnZlcnNpb24gPSB2ZXIsIC5tb2RlbCA9IGltcCB9Cj4KPiAgQVJNX1NNTVVfTUFU
-Q0hfREFUQShzbW11X2dlbmVyaWNfdjEsIEFSTV9TTU1VX1YxLCBHRU5FUklDX1NNTVUpOwo+ICBB
-Uk1fU01NVV9NQVRDSF9EQVRBKHNtbXVfZ2VuZXJpY192MiwgQVJNX1NNTVVfVjIsIEdFTkVSSUNf
-U01NVSk7Cj4gQEAgLTIwMDEsNiArMjAwNiw3IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVfZGV2aWNl
-X2R0X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsCj4gICAgICAgICBkYXRhID0g
-b2ZfZGV2aWNlX2dldF9tYXRjaF9kYXRhKGRldik7Cj4gICAgICAgICBzbW11LT52ZXJzaW9uID0g
-ZGF0YS0+dmVyc2lvbjsKPiAgICAgICAgIHNtbXUtPm1vZGVsID0gZGF0YS0+bW9kZWw7Cj4gKyAg
-ICAgICBzbW11LT5udW1fY2xrcyA9IGRhdGEtPm51bV9jbGtzOwo+Cj4gICAgICAgICBwYXJzZV9k
-cml2ZXJfb3B0aW9ucyhzbW11KTsKPgo+IEBAIC0yMDM5LDYgKzIwNDUsMjggQEAgc3RhdGljIHZv
-aWQgYXJtX3NtbXVfYnVzX2luaXQodm9pZCkKPiAgI2VuZGlmCj4gIH0KPgo+ICtzdGF0aWMgaW50
-IGFybV9zbW11X2luaXRfY2xrcyhzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11KQo+ICt7Cj4g
-KyAgICAgICBpbnQgaTsKPiArICAgICAgIGludCBudW0gPSBzbW11LT5udW1fY2xrczsKPiArICAg
-ICAgIGNvbnN0IHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhICpkYXRhOwo+ICsKPiArICAgICAg
-IGlmIChudW0gPCAxKQo+ICsgICAgICAgICAgICAgICByZXR1cm4gMDsKPiArCj4gKyAgICAgICBz
-bW11LT5jbG9ja3MgPSBkZXZtX2tjYWxsb2Moc21tdS0+ZGV2LCBudW0sCj4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgc2l6ZW9mKCpzbW11LT5jbG9ja3MpLCBHRlBfS0VSTkVM
-KTsKPiArICAgICAgIGlmICghc21tdS0+Y2xvY2tzKQo+ICsgICAgICAgICAgICAgICByZXR1cm4g
-LUVOT01FTTsKPiArCj4gKyAgICAgICBkYXRhID0gb2ZfZGV2aWNlX2dldF9tYXRjaF9kYXRhKHNt
-bXUtPmRldik7Cj4gKwo+ICsgICAgICAgZm9yIChpID0gMDsgaSA8IG51bTsgaSsrKQo+ICsgICAg
-ICAgICAgICAgICBzbW11LT5jbG9ja3NbaV0uaWQgPSBkYXRhLT5jbGtzW2ldOwoKSSdkIGFyZ3Vl
-IHRoYXQgYXJtX3NtbXVfZGV2aWNlX2R0X3Byb2JlKCkgaXMgYSBiZXR0ZXIgcGxhY2UgZm9yIGFs
-bAp0aGUgY29kZSBhYm92ZSwgc2luY2UgdGhpcyBmdW5jdGlvbiBpcyBjYWxsZWQgcmVnYXJkbGVz
-cyBvZiB3aGV0aGVyCnRoZSBkZXZpY2UgaXMgcHJvYmVkIGZyb20gRFQgb3Igbm90LiBHb2luZyBm
-dXJ0aGVyLAphcm1fc21tdV9kZXZpY2VfYWNwaV9wcm9iZSgpIGNvdWxkIGZpbGwgc21tdS0+bnVt
-X2Nsa3MgYW5kIC0+Y2xvY2tzCnVzaW5nIEFDUEktbGlrZSB3YXkgKGFzIG9wcG9zZWQgdG8gT0Yg
-bWF0Y2ggZGF0YSkgaWYgbmVjZXNzYXJ5LgoKQmVzdCByZWdhcmRzLApUb21hc3oKX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcg
-bGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+Hi Vivek,
+
+Thanks for the patch. Please see my comments inline.
+
+On Wed, Feb 7, 2018 at 7:31 PM, Vivek Gautam
+<vivek.gautam@codeaurora.org> wrote:
+> From: Sricharan R <sricharan@codeaurora.org>
+>
+> The smmu device probe/remove and add/remove master device callbacks
+> gets called when the smmu is not linked to its master, that is without
+> the context of the master device. So calling runtime apis in those places
+> separately.
+>
+> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> [vivek: Cleanup pm runtime calls]
+> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+> ---
+>  drivers/iommu/arm-smmu.c | 42 ++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 38 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+> index 9e2f917e16c2..c024f69c1682 100644
+> --- a/drivers/iommu/arm-smmu.c
+> +++ b/drivers/iommu/arm-smmu.c
+> @@ -913,11 +913,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+>         struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
+>         struct arm_smmu_device *smmu = smmu_domain->smmu;
+>         struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
+> -       int irq;
+> +       int ret, irq;
+>
+>         if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
+>                 return;
+>
+> +       ret = pm_runtime_get_sync(smmu->dev);
+> +       if (ret)
+> +               return;
+
+pm_runtime_get_sync() will return 0 if the device was powered off, 1
+if it was already/still powered on or runtime PM is not compiled in,
+or a negative value on error, so shouldn't the test be (ret < 0)?
+
+Moreover, I'm actually wondering if it makes any sense to power up the
+hardware just to program it and power it down again. In a system where
+the IOMMU is located within a power domain, it would cause the IOMMU
+block to lose its state anyway.
+
+Actually, reflecting back on "[PATCH v7 2/6] iommu/arm-smmu: Add
+pm_runtime/sleep ops", perhaps it would make more sense to just
+control the clocks independently of runtime PM? Then, runtime PM could
+be used for real power management, e.g. really powering the block up
+and down, for further power saving.
+
++Generally similar comments for other places in this patch.
+
+> +
+>         /*
+>          * Disable the context bank and free the page tables before freeing
+>          * it.
+> @@ -932,6 +936,8 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+>
+>         free_io_pgtable_ops(smmu_domain->pgtbl_ops);
+>         __arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
+> +
+> +       pm_runtime_put_sync(smmu->dev);
+
+Is there any point in the put being sync here?
+
+[snip]
+
+> @@ -2131,6 +2152,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+>         if (err)
+>                 return err;
+>
+> +       platform_set_drvdata(pdev, smmu);
+> +
+> +       pm_runtime_enable(dev);
+
+I suspect this may be a disaster for systems where IOMMUs are located
+inside power domains, because the driver doesn't take care of the
+IOMMU block losing its state on physical power down, as I mentioned in
+my comments above.
+
+Best regards,
+Tomasz
