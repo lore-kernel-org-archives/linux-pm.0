@@ -1,73 +1,65 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2] power: reset: Add Spreadtrum SC27xx PMIC power off
- support
-Date: Tue, 13 Feb 2018 13:48:10 +0100
-Message-ID: <20180213124810.oyf4ec5bpbnsnkqy@earth.universe>
-References: <7655f39d44e804c9ed3209db475567abc250f642.1518169282.git.baolin.wang@linaro.org>
- <20180209123044.vjvkb3yfmk4gqfiv@earth.universe>
+From: Tomasz Figa <tfiga@chromium.org>
+Subject: Re: [PATCH v7 1/6] base: power: runtime: Export
+ pm_runtime_get/put_suppliers
+Date: Tue, 13 Feb 2018 21:54:26 +0900
+Message-ID: <CAAFQd5DNzGYnTRuc2hDr1osQ2=6ruM0wQqV8svP=a10hxTVOGQ@mail.gmail.com>
+References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
+ <1517999482-17317-2-git-send-email-vivek.gautam@codeaurora.org>
+ <CAAFQd5BmroRf-C8dQkvTKHWK1psGnNi1t7g-q=Xce6KjrGTsdw@mail.gmail.com>
+ <65d707c0-76cc-d59e-ff18-1fdd89306900@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="e3joup3i3zxrjweb"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:54548 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935077AbeBMMsO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 13 Feb 2018 07:48:14 -0500
-Content-Disposition: inline
-In-Reply-To: <20180209123044.vjvkb3yfmk4gqfiv@earth.universe>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <65d707c0-76cc-d59e-ff18-1fdd89306900@arm.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dri-devel <dri-devel@lists.freedesktop.org>, linux-kernel@vger.kernel.org, "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>, Rob Herring <robh+dt@kernel.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, Greg KH <gregkh@linuxfoundation.org>, freedreno@lists.freedesktop.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: arnd@arndb.de, broonie@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-
---e3joup3i3zxrjweb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Baolin,
-
-On Fri, Feb 09, 2018 at 01:30:44PM +0100, Sebastian Reichel wrote:
-> On Fri, Feb 09, 2018 at 05:43:38PM +0800, Baolin Wang wrote:
-> > On Spreadtrum platform, we need power off system through external SC27xx
-> > series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 ch=
-ips.
-> > Thus this patch adds SC27xx series PMICs power-off support.
-> >=20
-> > Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
->=20
-> Thanks, queued. My public -next branch is waiting for 4.16-rc1,
-> though.
-
-I just dropped this patch. It does not compile as a module:
-
-ERROR: "freeze_secondary_cpus" [drivers/power/reset/sc27xx-poweroff.ko] und=
-efined!
-
-There is no EXPORT_SYMBOL for freeze_secondary_cpus, so you either
-need to add that or make the new driver built-in only.
-
--- Sebastian
-
---e3joup3i3zxrjweb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlqC3ocACgkQ2O7X88g7
-+prqDw//VCglygGLR9QIGoWI9+fIXUOp4vte5Ru9R4eqtLau1h6/Jt86n9OmQS6y
-XLJf5PMfslOyvP62da+aYyEfI4UwEUbmxS/guhgksFMIFuG/Pdu8zoSU+fyuQxHc
-rqUnJgr4jcn2643iirQMabBEXM66Uxdl7qiLFSFkPcUAPIuGPFsvD5B3sQrE58qM
-UsaraVEhjDZvWCjHqy1nuUfZLXoeVFfOpZjtAK5sQrgSPAB5zEZlRVtjO8Z1nj4F
-JTgeLMjLqAQZcltDIjkQOYcTPBSIU97TSGrUt56y50qL8bSug9ccYcW1qf4u/NEm
-P9CFclrzp8tUSvBbcEkmDT/d3ToI//YYTQvm/e1pchdPxxMREg5IMO2wDmWkGtKg
-czg9f9qRuHR0fzenSEzh6RsOgnditkFrCx5SIZembfRTfkB7bKr5ATxEbw34mSzb
-RNaELFL4yqbewT6ImKC4JzQzYfsscY+viFhuJl+liJaSc9ZauCjoUK3xtyqL1ofP
-df1eKZwQXLRXbNVF5BSeZSWJT8735Pav1LXrVGZbnrXsboiysx72b8eoCugfEk8M
-1+ooJTI5ZDFIBpQR2tB202arzLSiTKaI5b/yc2hRV0anCvwIQ84Y4iH8iBhwKYM0
-8OiKs6m/Z6+U+OfaiDy31Pf3hmHOMCj/bZt4Ie4fZRHiNtujjpU=
-=oEbs
------END PGP SIGNATURE-----
-
---e3joup3i3zxrjweb--
+T24gVHVlLCBGZWIgMTMsIDIwMTggYXQgOTowMCBQTSwgUm9iaW4gTXVycGh5IDxyb2Jpbi5tdXJw
+aHlAYXJtLmNvbT4gd3JvdGU6Cj4gT24gMTMvMDIvMTggMDc6NDQsIFRvbWFzeiBGaWdhIHdyb3Rl
+Ogo+Pgo+PiBIaSBWaXZlaywKPj4KPj4gT24gV2VkLCBGZWIgNywgMjAxOCBhdCA3OjMxIFBNLCBW
+aXZlayBHYXV0YW0KPj4gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4+Pgo+
+Pj4gVGhlIGRldmljZSBsaW5rIGFsbG93cyB0aGUgcG0gZnJhbWV3b3JrIHRvIHRpZSB0aGUgc3Vw
+cGxpZXIgYW5kCj4+PiBjb25zdW1lci4gU28sIHdoZW5ldmVyIHRoZSBjb25zdW1lciBpcyBwb3dl
+cmVkLW9uIHRoZSBzdXBwbGllcgo+Pj4gaXMgcG93ZXJlZC1vbiBmaXJzdC4KPj4+Cj4+PiBUaGVy
+ZSBhcmUgaG93ZXZlciBjYXNlcyBpbiB3aGljaCB0aGUgY29uc3VtZXIgd2FudHMgdG8gcG93ZXIt
+b24KPj4+IHRoZSBzdXBwbGllciwgYnV0IG5vdCBpdHNlbGYuCj4+PiBFLmcuLCBBIEdyYXBoaWNz
+IG9yIG11bHRpbWVkaWEgZHJpdmVyIHdhbnRzIHRvIHBvd2VyLW9uIHRoZSBTTU1VCj4+PiB0byB1
+bm1hcCBhIGJ1ZmZlciBhbmQgZmluaXNoIHRoZSBUTEIgb3BlcmF0aW9ucyB3aXRob3V0IHBvd2Vy
+aW5nCj4+PiBvbiBpdHNlbGYuCj4+Cj4+Cj4+IFRoaXMgc291bmRzIHN0cmFuZ2UgdG8gbWUuIElm
+IHRoZSBTTU1VIGlzIHBvd2VyZWQgZG93biwgd291bGRuJ3QgdGhlCj4+IFRMQiBsb3NlIGl0cyBj
+b250ZW50cyBhcyB3ZWxsIChhbmQgc28gbm8gZmx1c2hpbmcgbmVlZGVkKT8KPgo+Cj4gRGVwZW5k
+cyBvbiBpbXBsZW1lbnRhdGlvbiBkZXRhaWxzIC0gaWYgcnVudGltZSBQTSBpcyBhY3R1YWxseSBp
+bXBsZW1lbnRlZAo+IHZpYSBleHRlcm5hbCBjbG9jayBnYXRpbmcgKGluIHRoZSBhYnNlbmNlIG9m
+IGZpbmUtZ3JhaW5lZCBwb3dlciBkb21haW5zKSwKPiB0aGVuICJzdXNwZW5kZWQiIFRMQnMgbWln
+aHQgYm90aCByZXRhaW4gc3RhdGUgYW5kIG5vdCByZWNlaXZlIGludmFsaWRhdGlvbgo+IHJlcXVl
+c3RzLCB3aGljaCBpcyByZWFsbHkgdGhlIHdvcnN0IGNhc2UuCgpBZ3JlZWQuIFRoYXQncyB3aHkg
+aW4gIltQQVRDSCB2NyAzLzZdIGlvbW11L2FybS1zbW11OiBJbnZva2UKcG1fcnVudGltZSBkdXJp
+bmcgcHJvYmUsIGFkZC9yZW1vdmUgZGV2aWNlIiBJIGFjdHVhbGx5IHN1Z2dlc3RlZAptYW5hZ2lu
+ZyBjbG9ja3Mgc2VwYXJhdGVseSBmcm9tIHJ1bnRpbWUgUE0uIEF0IGxlYXN0IHVudGlsIHJ1bnRp
+bWUgUE0KZnJhbWV3b3JrIGFycml2ZXMgYXQgYSBzdGF0ZSwgd2hlcmUgbXVsdGlwbGUgcG93ZXIg
+c3RhdGVzIGNhbiBiZQptYW5hZ2VkLCBpLmUuIGZ1bGwgcG93ZXIgc3RhdGUsIGNsb2NrLWdhdGVk
+IHN0YXRlLCBkb21haW4tb2ZmIHN0YXRlLgooSSB0aGluayBJIG1pZ2h0IGhhdmUgc2VlbiBzb21l
+IG9uZ29pbmcgd29yayBvbiB0aGlzIG9uIExXTiB0aG91Z2guLi4pCgo+Cj4+IE90aGVyIHRoYW4g
+dGhhdCwgd2hhdCBraW5kIG9mIGhhcmR3YXJlIG9wZXJhdGlvbnMgd291bGQgYmUgbmVlZGVkCj4+
+IGJlc2lkZXMganVzdCB1cGRhdGluZyB0aGUgcGFnZSB0YWJsZXMgZnJvbSB0aGUgQ1BVPwo+Cj4K
+PiBEb21haW4gYXR0YWNoL2RldGFjaCBhbHNvIHJlcXVpcmUgdXBkYXRpbmcgU01NVSBoYXJkd2Fy
+ZSBzdGF0ZSAoYW5kIHBvc3NpYmx5Cj4gVExCIG1haW50ZW5hbmNlKSwgYnV0IGRvbid0IGxvZ2lj
+YWxseSByZXF1aXJlIHRoZSBtYXN0ZXIgZGV2aWNlIGl0c2VsZiB0byBiZQo+IGFjdGl2ZSBhdCB0
+aGUgdGltZS4KCldvdWxkbid0IHRoaXMgaGFyZHdhcmUgc3RhdGUgbmVlZCB0byBiZSByZWluaXRp
+YWxpemVkIGFueXdheSBhZnRlcgpyZXNwZWN0aXZlIHBvd2VyIGRvbWFpbiBwb3dlciBjeWNsZXM/
+IChJbiBvdGhlciB3b3JkcywgaGFyZHdhcmUgd291bGQKb25seSBuZWVkIHByb2dyYW1taW5nIGlm
+IGl0J3MgcG93ZXJlZCBvbiBhdCB0aGUgbW9tZW50LikKCkJlc3QgcmVnYXJkcywKVG9tYXN6Cl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBt
+YWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
+LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
