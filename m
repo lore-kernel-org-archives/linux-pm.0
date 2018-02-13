@@ -1,130 +1,41 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
- calls with runtime suppliers
-Date: Wed, 14 Feb 2018 09:47:04 +0530
-Message-ID: <CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
- <CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
- <CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
- <CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
- <CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
+From: Alfred Cheuk Chow <rfurio@buenosaires.gob.ar>
+Subject: (unknown)
+Date: Tue, 13 Feb 2018 19:57:41 -0300
+Message-ID: <20180213195741.622334590uj3z0px__10710.3334893056$1518583127$gmane$org@webmail.buenosaires.gob.ar>
+Reply-To: Alfredcheuchow@qq.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtpgcba5.buenosaires.gob.ar ([200.16.89.92]:51534 "EHLO
+        smtpgcba5.buenosaires.gob.ar" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S966783AbeBNEkW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Feb 2018 23:40:22 -0500
+Received: from [10.20.2.181] ([10.20.2.181]:33435 "EHLO webmail.gcba.gob.ar"
+        smtp-auth: "rfurio@buenosaires.gob.ar" rhost-flags-FAIL-FAIL-OK-FAIL)
+        by alerce01n-mr.buenosaires.gob.ar with ESMTPSA
+        id S35072421AbeBMW7Fua7XF (ORCPT <rfc822;linux-pm@vger.kernel.org>
+        + 7 others); Tue, 13 Feb 2018 19:59:05 -0300
+Subject: 
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgVG9tYXN6LAoKT24gV2VkLCBGZWIgMTQsIDIwMTggYXQgODozMSBBTSwgVG9tYXN6IEZpZ2Eg
-PHRmaWdhQGNocm9taXVtLm9yZz4gd3JvdGU6Cj4gT24gV2VkLCBGZWIgMTQsIDIwMTggYXQgMTE6
-MTMgQU0sIFJvYiBDbGFyayA8cm9iZGNsYXJrQGdtYWlsLmNvbT4gd3JvdGU6Cj4+IE9uIFR1ZSwg
-RmViIDEzLCAyMDE4IGF0IDg6NTkgUE0sIFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+
-IHdyb3RlOgo+Pj4gT24gV2VkLCBGZWIgMTQsIDIwMTggYXQgMzowMyBBTSwgUm9iIENsYXJrIDxy
-b2JkY2xhcmtAZ21haWwuY29tPiB3cm90ZToKPj4+PiBPbiBUdWUsIEZlYiAxMywgMjAxOCBhdCA0
-OjEwIEFNLCBUb21hc3ogRmlnYSA8dGZpZ2FAY2hyb21pdW0ub3JnPiB3cm90ZToKPj4+Pj4gSGkg
-Vml2ZWssCj4+Pj4+Cj4+Pj4+IFRoYW5rcyBmb3IgdGhlIHBhdGNoLiBQbGVhc2Ugc2VlIG15IGNv
-bW1lbnRzIGlubGluZS4KPj4+Pj4KPj4+Pj4gT24gV2VkLCBGZWIgNywgMjAxOCBhdCA3OjMxIFBN
-LCBWaXZlayBHYXV0YW0KPj4+Pj4gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6
-Cj4+Pj4+PiBXaGlsZSBoYW5kbGluZyB0aGUgY29uY2VybmVkIGlvbW11LCB0aGVyZSBzaG91bGQg
-bm90IGJlIGEKPj4+Pj4+IG5lZWQgdG8gcG93ZXIgY29udHJvbCB0aGUgZHJtIGRldmljZXMgZnJv
-bSBpb21tdSBpbnRlcmZhY2UuCj4+Pj4+PiBJZiB0aGVzZSBkcm0gZGV2aWNlcyBuZWVkIHRvIGJl
-IHBvd2VyZWQgYXJvdW5kIHRoaXMgdGltZSwKPj4+Pj4+IHRoZSByZXNwZWN0aXZlIGRyaXZlcnMg
-c2hvdWxkIHRha2UgY2FyZSBvZiB0aGlzLgo+Pj4+Pj4KPj4+Pj4+IFJlcGxhY2UgdGhlIHBtX3J1
-bnRpbWVfZ2V0L3B1dF9zeW5jKDxkcm1fZGV2aWNlPikgd2l0aAo+Pj4+Pj4gcG1fcnVudGltZV9n
-ZXQvcHV0X3N1cHBsaWVycyg8ZHJtX2RldmljZT4pIGNhbGxzLCB0byBwb3dlci11cAo+Pj4+Pj4g
-dGhlIGNvbm5lY3RlZCBpb21tdSB0aHJvdWdoIHRoZSBkZXZpY2UgbGluayBpbnRlcmZhY2UuCj4+
-Pj4+PiBJbiBjYXNlIHRoZSBkZXZpY2UgbGluayBpcyBub3Qgc2V0dXAgdGhlc2UgZ2V0L3B1dF9z
-dXBwbGllcnMoKQo+Pj4+Pj4gY2FsbHMgd2lsbCBiZSBhIG5vLW9wLCBhbmQgdGhlIGlvbW11IGRy
-aXZlciBzaG91bGQgdGFrZSBjYXJlIG9mCj4+Pj4+PiBwb3dlcmluZyBvbiBpdHMgZGV2aWNlcyBh
-Y2NvcmRpbmdseS4KPj4+Pj4+Cj4+Pj4+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZp
-dmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4+Pj4+IC0tLQo+Pj4+Pj4gIGRyaXZlcnMvZ3B1
-L2RybS9tc20vbXNtX2lvbW11LmMgfCAxNiArKysrKysrKy0tLS0tLS0tCj4+Pj4+PiAgMSBmaWxl
-IGNoYW5nZWQsIDggaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkKPj4+Pj4+Cj4+Pj4+PiBk
-aWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL21zbS9tc21faW9tbXUuYyBiL2RyaXZlcnMvZ3B1
-L2RybS9tc20vbXNtX2lvbW11LmMKPj4+Pj4+IGluZGV4IGIyM2QzMzYyMmYzNy4uMWFiNjI5YmJl
-ZTY5IDEwMDY0NAo+Pj4+Pj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL21zbS9tc21faW9tbXUuYwo+
-Pj4+Pj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL21zbS9tc21faW9tbXUuYwo+Pj4+Pj4gQEAgLTQw
-LDkgKzQwLDkgQEAgc3RhdGljIGludCBtc21faW9tbXVfYXR0YWNoKHN0cnVjdCBtc21fbW11ICpt
-bXUsIGNvbnN0IGNoYXIgKiBjb25zdCAqbmFtZXMsCj4+Pj4+PiAgICAgICAgIHN0cnVjdCBtc21f
-aW9tbXUgKmlvbW11ID0gdG9fbXNtX2lvbW11KG1tdSk7Cj4+Pj4+PiAgICAgICAgIGludCByZXQ7
-Cj4+Pj4+Pgo+Pj4+Pj4gLSAgICAgICBwbV9ydW50aW1lX2dldF9zeW5jKG1tdS0+ZGV2KTsKPj4+
-Pj4+ICsgICAgICAgcG1fcnVudGltZV9nZXRfc3VwcGxpZXJzKG1tdS0+ZGV2KTsKPj4+Pj4+ICAg
-ICAgICAgcmV0ID0gaW9tbXVfYXR0YWNoX2RldmljZShpb21tdS0+ZG9tYWluLCBtbXUtPmRldik7
-Cj4+Pj4+PiAtICAgICAgIHBtX3J1bnRpbWVfcHV0X3N5bmMobW11LT5kZXYpOwo+Pj4+Pj4gKyAg
-ICAgICBwbV9ydW50aW1lX3B1dF9zdXBwbGllcnMobW11LT5kZXYpOwo+Pj4+Pgo+Pj4+PiBGb3Ig
-bWUsIGl0IGxvb2tzIGxpa2UgYSB3cm9uZyBwbGFjZSB0byBoYW5kbGUgcnVudGltZSBQTSBvZiBJ
-T01NVQo+Pj4+PiBoZXJlLiBpb21tdV9hdHRhY2hfZGV2aWNlKCkgY2FsbHMgaW50byBJT01NVSBk
-cml2ZXIncyBhdHRhY2hfZGV2aWNlKCkKPj4+Pj4gY2FsbGJhY2sgYW5kIHRoYXQncyB3aGVyZSBu
-ZWNlc3NhcnkgcnVudGltZSBQTSBnZXRzIHNob3VsZCBoYXBwZW4sIGlmCj4+Pj4+IGFueS4gSW4g
-b3RoZXIgd29yZHMsIGRyaXZlciBBIChNU00gRFJNIGRyaXZlcikgc2hvdWxkbid0IGJlIGRlYWxp
-bmcKPj4+Pj4gd2l0aCBwb3dlciBzdGF0ZSBvZiBkZXZpY2UgY29udHJvbGxlZCBieSBkcml2ZXIg
-QiAoQVJNIFNNTVUpLgo+Pj4+Cj4+Pj4gTm90ZSB0aGF0IHdlIGVuZCB1cCBoYXZpbmcgdG8gZG8g
-dGhlIHNhbWUsIGJlY2F1c2Ugb2YgaW9tbXVfdW5tYXAoKQo+Pj4+IHdoaWxlIERSTSBkcml2ZXIg
-aXMgcG93ZXJlZCBvZmYuLiAgaXQgbWlnaHQgYmUgY2xlYW5lciBpZiBpdCB3YXMgYWxsCj4+Pj4g
-c2VsZiBjb250YWluZWQgaW4gdGhlIGlvbW11IGRyaXZlciwgYnV0IHRoYXQgd291bGQgbWFrZSBp
-dCBzbyBvdGhlcgo+Pj4+IGRyaXZlcnMgY291bGRuJ3QgY2FsbCBpb21tdV91bm1hcCgpIGZyb20g
-YW4gaXJxIGhhbmRsZXIsIHdoaWNoIGlzCj4+Pj4gYXBwYXJlbnRseSBzb21ldGhpbmcgdGhhdCBz
-b21lIG9mIHRoZW0gd2FudCB0byBkby4uCj4+Pgo+Pj4gSSdkIGFzc3VtZSB0aGF0IHJ1bnRpbWUg
-UE0gc3RhdHVzIGlzIGFscmVhZHkgZ3VhcmFudGVlZCB0byBiZSBhY3RpdmUKPj4+IHdoZW4gdGhl
-IElSUSBoYW5kbGVyIGlzIHJ1bm5pbmcsIGJ5IHNvbWUgb3RoZXIgbWVhbnMgKGUuZy4KPj4+IHBt
-X3J1bnRpbWVfZ2V0X3N5bmMoKSBjYWxsZWQgZWFybGllciwgd2hlbiBxdWV1aW5nIHNvbWUgd29y
-ayB0byB0aGUKPj4+IGhhcmR3YXJlKS4gT3RoZXJ3aXNlLCBJJ20gbm90IHN1cmUgaG93IGEgcG93
-ZXJlZCBkb3duIGRldmljZSBjb3VsZAo+Pj4gdHJpZ2dlciBhbiBJUlEuCj4+Pgo+Pj4gU28sIGlm
-IHRoZSBtYXN0ZXIgZGV2aWNlIHBvd2VyIGlzIGFscmVhZHkgb24sIHN1cHBsaWVycyBzaG91bGQg
-YmUKPj4+IHBvd2VyZWQgb24gYXMgd2VsbCwgdGhhbmtzIHRvIGRldmljZSBsaW5rcy4KPj4+Cj4+
-Cj4+IHVtbSwgdGhhdCBpcyBraW5kb2YgdGhlIGludmVyc2Ugb2YgdGhlIHByb2JsZW0uLiAgdGhl
-IHByb2JsZW0gaXMKPj4gdGhpbmdzIGxpa2UgZ3B1IGRyaXZlciAoYW5kIHY0bDIgZHJpdmVycyB0
-aGF0IGltcG9ydCBkbWEtYnVmJ3MsCj4+IGFmYWljdCkuLiB0aGV5IHdpbGwgcG90ZW50aWFsbHkg
-Y2FsbCBpb21tdS0+dW5tYXAoKSB3aGVuIGRldmljZSBpcyBub3QKPj4gYWN0aXZlIChkdWUgdG8g
-dXNlcnNwYWNlIG9yIHRoaW5ncyBiZXlvbmQgdGhlIGNvbnRyb2wgb2YgdGhlIGRyaXZlcikuLgo+
-PiBzbyAqdGhleSogd291bGQgd2FudCBpb21tdSB0byBkbyBwbSBnZXQvcHV0IGNhbGxzLgo+Cj4g
-V2hpY2ggaXMgZmluZSBhbmQgd2hpY2ggaXMgYWN0dWFsbHkgYWxyZWFkeSBkb25lIGJ5IG9uZSBv
-ZiB0aGUgcGF0Y2hlcwo+IGluIHRoaXMgc2VyaWVzLCBub3QgZm9yIG1hcC91bm1hcCwgYnV0IHBy
-b2JlLCBhZGRfZGV2aWNlLAo+IHJlbW92ZV9kZXZpY2UuIEhhdmluZyBwYXJ0cyBvZiB0aGUgQVBJ
-IGRvaW5nIGl0IGluc2lkZSB0aGUgY2FsbGJhY2sKPiBhbmQgb3RoZXIgcGFydHMgb3V0c2lkZSBz
-b3VuZHMgYXQgbGVhc3QgaW5jb25zaXN0ZW50Lgo+Cj4+IEJ1dCBvdGhlciBkcml2ZXJzCj4+IHRy
-eWluZyB0byB1bm1hcCBmcm9tIGlycSBjdHggd291bGQgbm90LiAgV2hpY2ggaXMgdGhlIGNvbnRy
-YWRpY3RvcnkKPj4gcmVxdWlyZW1lbnQgdGhhdCBsZWFkIHRvIHRoZSBpZGVhIG9mIGlvbW11IHVz
-ZXIgcG93ZXJpbmcgdXAgaW9tbXUgZm9yCj4+IHVubWFwLgo+Cj4gU29ycnksIG1heWJlIEkgd2Fz
-bid0IGNsZWFyLiBNeSBsYXN0IG1lc3NhZ2Ugd2FzIHN1cHBvc2VkIHRvIHNob3cgdGhhdAo+IGl0
-J3Mgbm90IGNvbnRyYWRpY3RvcnkgYXQgYWxsLCBiZWNhdXNlICJvdGhlciBkcml2ZXJzIHRyeWlu
-ZyB0byB1bm1hcAo+IGZyb20gaXJxIGN0eCIgd291bGQgYWxyZWFkeSBoYXZlIGNhbGxlZCBwbV9y
-dW50aW1lX2dldF8qKCkgZWFybGllcgo+IGZyb20gYSBub24taXJxIGN0eCwgd2hpY2ggd291bGQg
-aGF2ZSBhbHNvIGRvbmUgdGhlIHNhbWUgb24gYWxsIHRoZQo+IGxpbmtlZCBzdXBwbGllcnMsIGlu
-Y2x1ZGluZyB0aGUgSU9NTVUuIFRoZSB1bHRpbWF0ZSByZXN1bHQgd291bGQgYmUKPiB0aGF0IHRo
-ZSBtYXAvdW5tYXAoKSBvZiB0aGUgSU9NTVUgZHJpdmVyIGNhbGxpbmcgcG1fcnVudGltZV9nZXRf
-c3luYygpCj4gd291bGQgZG8gbm90aGluZyBiZXNpZGVzIGluY3JlbWVudGluZyB0aGUgcmVmZXJl
-bmNlIGNvdW50LgoKVGhlIGVudGlyZSBwb2ludCB3YXMgdG8gYXZvaWQgdGhlIHNsb3dwYXRoIHRo
-YXQgcG1fcnVudGltZV9nZXQvcHV0X3N5bmMoKQp3b3VsZCBhZGQgaW4gbWFwL3VubWFwLiBJdCB3
-b3VsZCBub3QgYmUgY29ycmVjdCB0byBhZGQgYSBzbG93cGF0aCBpbiBpcnFfY3R4CmZvciB0YWtp
-bmcgY2FyZSBvZiBub24taXJxX2N0eCBhbmQgZm9yIHRoZSBzaXR1YXRpb25zIHdoZXJlIG1hc3Rl
-ciBpcyBhbHJlYWR5CnBvd2VyZWQtb2ZmLgoKPgo+Pgo+PiBUaGVyZSBoYXMgYWxyZWFkeSBiZWVu
-IHNvbWUgZGlzY3Vzc2lvbiBhYm91dCB0aGlzIG9uIHZhcmlvdXMgZWFybGllcgo+PiBwZXJtdXRh
-dGlvbnMgb2YgdGhpcyBwYXRjaHNldC4gIEkgdGhpbmsgd2UgaGF2ZSBleGhhdXN0ZWQgYWxsIG90
-aGVyCj4+IG9wdGlvbnMuCj4KPiBJIGd1ZXNzIEkgc2hvdWxkIGhhdmUgcmVhZCB0aG9zZS4gTGV0
-IG1lIGRvIHRoYXQgbm93LgpZZWEsIGkgcG9pbnQgdG8gdGhlIHRocmVhZCBpbiBjb3ZlciBsZXR0
-ZXIgYW5kIFtQQVRDSCAxLzZdLgpUaGFua3MuCgpyZWdhcmRzClZpdmVrCgo+Cj4gQmVzdCByZWdh
-cmRzLAo+IFRvbWFzego+IC0tCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQg
-dGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWFybS1tc20iIGluCj4gdGhlIGJvZHkgb2YgYSBt
-ZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKPiBNb3JlIG1ham9yZG9tbyBpbmZv
-IGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwKCgoKLS0gClFV
-QUxDT01NIElORElBLCBvbiBiZWhhbGYgb2YgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIElu
-Yy4gaXMgYSBtZW1iZXIKb2YgQ29kZSBBdXJvcmEgRm9ydW0sIGhvc3RlZCBieSBUaGUgTGludXgg
-Rm91bmRhdGlvbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcK
-aHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+
+
+
+Good Day,
+
+I am Mr. Alfred Cheuk Yu Chow, the Director for Credit & Marketing Chong
+Hing Bank, Hong Kong, Chong Hing Bank Center, 24 Des Voeux Road Central,
+Hong Kong. I have a business proposal of $ 38,980,369.00.
+
+All confirmable documents to back up the claims will be made available
+to you prior to your acceptance and as soon as I receive your return
+mail.
+
+Best Regards,
+Alfred Chow.
