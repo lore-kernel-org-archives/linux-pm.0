@@ -1,84 +1,63 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v7 4/6] iommu/arm-smmu: Add the device_link
- between masters and smmu
-Date: Tue, 13 Feb 2018 15:44:16 +0530
-Message-ID: <CAFp+6iFms9ciq5AkGGNobVqhXT3E6xJD3-DahT8i19gp1mLxTw@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-5-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5BQAs9=N27_Z0pJNSrndFY3vFin2KBP44UtiW+tMXy5nQ@mail.gmail.com>
+From: Tobias Jordan <Tobias.Jordan@elektrobit.com>
+Subject: pm_runtime_get_sync() vs pm_runtime_put_noidle()
+Date: Tue, 13 Feb 2018 11:18:48 +0100
+Message-ID: <20180213101848.iagpzschadqyq2vc@agrajag.zerfleddert.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAAFQd5BQAs9=N27_Z0pJNSrndFY3vFin2KBP44UtiW+tMXy5nQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from agrajag.zerfleddert.de ([88.198.237.222]:34746 "EHLO
+        agrajag.zerfleddert.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751132AbeBMKYY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Feb 2018 05:24:24 -0500
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: sil2linuxmp@lists.osadl.org
 
-SGkgVG9tYXN6LAoKCk9uIFR1ZSwgRmViIDEzLCAyMDE4IGF0IDI6MDEgUE0sIFRvbWFzeiBGaWdh
-IDx0ZmlnYUBjaHJvbWl1bS5vcmc+IHdyb3RlOgo+IEhpIFZpdmVrLAo+Cj4gVGhhbmtzIGZvciB0
-aGUgcGF0Y2guIFBsZWFzZSBzZWUgbXkgY29tbWVudHMgaW5saW5lLgoKVGhhbmtzIGZvciByZXZp
-ZXdpbmcgdGhlIHBhdGNoIHNlcmllcy4KCj4KPiBPbiBXZWQsIEZlYiA3LCAyMDE4IGF0IDc6MzEg
-UE0sIFZpdmVrIEdhdXRhbQo+IDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+
-PiBGcm9tOiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+Pgo+PiBGaW5h
-bGx5IGFkZCB0aGUgZGV2aWNlIGxpbmsgYmV0d2VlbiB0aGUgbWFzdGVyIGRldmljZSBhbmQKPj4g
-c21tdSwgc28gdGhhdCB0aGUgc21tdSBnZXRzIHJ1bnRpbWUgZW5hYmxlZC9kaXNhYmxlZCBvbmx5
-IHdoZW4gdGhlCj4+IG1hc3RlciBuZWVkcyBpdC4gVGhpcyBpcyBkb25lIGZyb20gYWRkX2Rldmlj
-ZSBjYWxsYmFjayB3aGljaCBnZXRzCj4+IGNhbGxlZCBvbmNlIHdoZW4gdGhlIG1hc3RlciBpcyBh
-ZGRlZCB0byB0aGUgc21tdS4KPj4KPj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNo
-YXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4gU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2aXZl
-ay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+IC0tLQo+PiAgZHJpdmVycy9pb21tdS9hcm0tc21t
-dS5jIHwgMTYgKysrKysrKysrKysrKysrKwo+PiAgMSBmaWxlIGNoYW5nZWQsIDE2IGluc2VydGlv
-bnMoKykKPj4KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZl
-cnMvaW9tbXUvYXJtLXNtbXUuYwo+PiBpbmRleCBjMDI0ZjY5YzE2ODIuLmM3ZTkyNGQ1NTNiZCAx
-MDA2NDQKPj4gLS0tIGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+ICsrKyBiL2RyaXZlcnMv
-aW9tbXUvYXJtLXNtbXUuYwo+PiBAQCAtMjE1LDYgKzIxNSw5IEBAIHN0cnVjdCBhcm1fc21tdV9k
-ZXZpY2Ugewo+Pgo+PiAgICAgICAgIC8qIElPTU1VIGNvcmUgY29kZSBoYW5kbGUgKi8KPj4gICAg
-ICAgICBzdHJ1Y3QgaW9tbXVfZGV2aWNlICAgICAgICAgICAgIGlvbW11Owo+PiArCj4+ICsgICAg
-ICAgLyogcnVudGltZSBQTSBsaW5rIHRvIG1hc3RlciAqLwo+PiArICAgICAgIHN0cnVjdCBkZXZp
-Y2VfbGluayAqbGluazsKPj4gIH07Cj4+Cj4+ICBlbnVtIGFybV9zbW11X2NvbnRleHRfZm10IHsK
-Pj4gQEAgLTE0MjUsNiArMTQyOCwxNyBAQCBzdGF0aWMgaW50IGFybV9zbW11X2FkZF9kZXZpY2Uo
-c3RydWN0IGRldmljZSAqZGV2KQo+Pgo+PiAgICAgICAgIHBtX3J1bnRpbWVfcHV0X3N5bmMoc21t
-dS0+ZGV2KTsKPj4KPj4gKyAgICAgICAvKgo+PiArICAgICAgICAqIEVzdGFibGlzaCB0aGUgbGlu
-ayBiZXR3ZWVuIHNtbXUgYW5kIG1hc3Rlciwgc28gdGhhdCB0aGUKPj4gKyAgICAgICAgKiBzbW11
-IGdldHMgcnVudGltZSBlbmFibGVkL2Rpc2FibGVkIGFzIHBlciB0aGUgbWFzdGVyJ3MKPj4gKyAg
-ICAgICAgKiBuZWVkcy4KPj4gKyAgICAgICAgKi8KPj4gKyAgICAgICBzbW11LT5saW5rID0gZGV2
-aWNlX2xpbmtfYWRkKGRldiwgc21tdS0+ZGV2LCBETF9GTEFHX1BNX1JVTlRJTUUpOwo+PiArICAg
-ICAgIGlmICghc21tdS0+bGluaykKPj4gKyAgICAgICAgICAgICAgIGRldl93YXJuKHNtbXUtPmRl
-diwKPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICJVbmFibGUgdG8gY3JlYXRlIGRldmljZSBs
-aW5rIGJldHdlZW4gJXMgYW5kICVzXG4iLAo+PiArICAgICAgICAgICAgICAgICAgICAgICAgZGV2
-X25hbWUoc21tdS0+ZGV2KSwgZGV2X25hbWUoZGV2KSk7Cj4KPiBIb3cgbGlrZWx5IGl0IGlzIHRo
-YXQgdGhlIG1hc3RlciBjYW4gd29yayBub3JtYWxseSBldmVuIGlmIHRoZSBsaW5rCj4gYWRkIGZh
-aWxzPyBQZXJoYXBzIHdlIHNob3VsZCBqdXN0IHJldHVybiBhbiBlcnJvciBoZXJlPwoKUmlnaHQu
-IFdlIGFyZSBhc3N1bWluZyB0aGF0IHRoZSBwb3dlciBpcyBoYW5kbGVkIGZvciBtb3N0IG9mIHRo
-ZQpzbW11IG9wZXJhdGlvbnMsIGFmdGVyIHdlIGFkZCB0aGUgbWFzdGVyIHdpdGggc21tdSwgYmFz
-ZWQgb24gdGhlIGZhY3QKdGhhdCB0aGUgZGV2aWNlIGxpbmsgaXMgc3VjY2Vzc2Z1bC4KV2Ugc2hv
-dWxkIHJldHVybiBlcnJvciBjb2RlIGhlcmUuIFdpbGwgbWFrZSB0aGUgbmVjZXNzYXJ5IGNoYW5n
-ZS4KCj4KPj4gKwo+PiAgICAgICAgIHJldHVybiAwOwo+Pgo+PiAgb3V0X3JwbV9wdXQ6Cj4+IEBA
-IC0xNDQ5LDYgKzE0NjMsOCBAQCBzdGF0aWMgdm9pZCBhcm1fc21tdV9yZW1vdmVfZGV2aWNlKHN0
-cnVjdCBkZXZpY2UgKmRldikKPj4gICAgICAgICBjZmcgID0gZndzcGVjLT5pb21tdV9wcml2Owo+
-PiAgICAgICAgIHNtbXUgPSBjZmctPnNtbXU7Cj4+Cj4+ICsgICAgICAgZGV2aWNlX2xpbmtfZGVs
-KHNtbXUtPmxpbmspOwo+Cj4gV2UgYWxsb3dlZCBzbW11LT5saW5rIGluIGFybV9zbW11X2FkZF9k
-ZXZpY2UoKSwgYnV0IGhlcmUgd2UgZG9uJ3QKPiBjaGVjayBpdC4gTG9va2luZyBhdCB0aGUgY29k
-ZSwgZGV2aWNlX2xpbmtfZGVsKCkgZG9lc24ndCBzZWVtIHRvIGNoZWNrCj4gZWl0aGVyLgo+Cj4g
-Tm90ZSB0aGF0IHRoaXMgcHJvYmxlbSB3b3VsZCBnbyBhd2F5IGlmIHdlIGZhaWwgYWRkX2Rldmlj
-ZSBvbgo+IGRldmljZV9saW5rX2FkZCgpIGZhaWx1cmUsIGFzIEkgc3VnZ2VzdGVkIGFib3ZlLCBz
-byBubyBjaGFuZ2Ugd291bGQgYmUKPiBuZWNlc3NhcnkuCgpTdXJlLiBBZnRlciBtYWtpbmcgdGhl
-IGFib3ZlIGNoYW5nZSwgdGhpcyBzaG91bGQgYWxzbyBiZSBoYW5kbGVkLgoKQmVzdCByZWdhcmRz
-ClZpdmVrCgo+Cj4gQmVzdCByZWdhcmRzLAo+IFRvbWFzegoKCgotLSAKUVVBTENPTU0gSU5ESUEs
-IG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJl
-cgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBt
-YWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+Hi linux-pm,
+
+for the OSADL SIL2LinuxMP project I'm looking at some static code
+analysis for the kernel using coccinelle. I think I've found some common
+error case that I'd ask you to confirm.
+
+The good case looks like this:
+
+	err = pm_runtime_get_sync(device);
+	if (err) {
+		pm_runtime_put_noidle(device);
+
+pm_runtime_get_sync() increments the usage count even when returning an
+error, so you have to call pm_runtime_put_noidle() in error handling.
+
+Looking at the drivers in linux-next, there's a lot of them that
+
+1) completely ignore the return value of pm_runtime_get_sync()
+
+2) do handle the return value, but don't do pm_runtime_put_noidle().
+
+For static analysis, I assume that scenario (1) might be correct (ie.
+these drivers somehow know that the get can't fail).
+
+For scenario (2), my first coccinelle script finds more than 100 cases.
+Before submitting patches to these, I wanted to ask:
+
+Is there a scenario where not doing a ...put_noidle() after
+...get_sync() returned an error is the correct way to go?
+
+Why isn't ...get_sync() directly calling ...put_noidle() but relies on
+the driver implementation to do it? It seems unintuitive for a _get_
+function to increase the usage count although returning an error.
+
+I'd be glad if you could give me some pointers here,
+
+Tobias
+
+P.S.: googling finds several commits that add the ...put_noidle(), so
+it seems to be a common case of bugs, e.g.
+Feb 2013:
+http://linux-kernel.2935.n7.nabble.com/PATCH-1-5-regmap-irq-call-pm-runtime-put-in-pm-runtime-get-sync-failed-case-td607900.html
+Mar 2015:
+http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/331190.html
+The patch that started this investigation was
+https://lkml.org/lkml/2018/1/3/354
