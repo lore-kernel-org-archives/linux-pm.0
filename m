@@ -1,88 +1,134 @@
 From: Tomasz Figa <tfiga@chromium.org>
-Subject: Re: [PATCH v7 4/6] iommu/arm-smmu: Add the device_link between
- masters and smmu
-Date: Tue, 13 Feb 2018 17:31:57 +0900
-Message-ID: <CAAFQd5BQAs9=N27_Z0pJNSrndFY3vFin2KBP44UtiW+tMXy5nQ@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org> <1517999482-17317-5-git-send-email-vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH v8 5/6] iommu/arm-smmu: Add support for qcom,smmu-v2 variant
+Date: Tue, 13 Feb 2018 17:57:39 +0900
+Message-ID: <CAAFQd5AVUDmxjFNBUU1Si6jU75kY6-mt8oVxHpG5k+y280Kc-A@mail.gmail.com>
+References: <1517999482-17317-6-git-send-email-vivek.gautam@codeaurora.org> <1518173826-11759-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1517999482-17317-5-git-send-email-vivek.gautam@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vivek Gautam <vivek.gautam@codeaurora.org>
-Cc: "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <joro@8bytes.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Clark <robdclark@gmail.com>"list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, freedreno@lists.freedesktop.org, David Airlie <airlied@linux.ie>, Greg KH <gregkh@linuxfoundation.org>, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ua0-f194.google.com ([209.85.217.194]:44067 "EHLO
+        mail-ua0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933740AbeBMI6C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Feb 2018 03:58:02 -0500
+Received: by mail-ua0-f194.google.com with SMTP id x4so11118259uaj.11
+        for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2018 00:58:02 -0800 (PST)
+Received: from mail-ua0-f170.google.com (mail-ua0-f170.google.com. [209.85.217.170])
+        by smtp.gmail.com with ESMTPSA id n7sm4054671vkd.43.2018.02.13.00.58.00
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 13 Feb 2018 00:58:01 -0800 (PST)
+Received: by mail-ua0-f170.google.com with SMTP id z3so11116358uae.12
+        for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2018 00:58:00 -0800 (PST)
+In-Reply-To: <1518173826-11759-1-git-send-email-vivek.gautam@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vivek Gautam <vivek.gautam@codeaurora.org>, Rob Herring <robh+dt@kernel.org>
+Cc: "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
+        Roedel <joro@8bytes.org>," <joro@8bytes.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Clark <robdclark@gmail.com>"list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
+        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, freedreno@lists.freedesktop.org, David Airlie <airlied@linux.ie>, Greg KH <gregkh@linuxfoundation.org>, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org
 
 Hi Vivek,
 
 Thanks for the patch. Please see my comments inline.
 
-On Wed, Feb 7, 2018 at 7:31 PM, Vivek Gautam
+On Fri, Feb 9, 2018 at 7:57 PM, Vivek Gautam
 <vivek.gautam@codeaurora.org> wrote:
-> From: Sricharan R <sricharan@codeaurora.org>
+> qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
+> clock and power requirements. This smmu core is used with
+> multiple masters on msm8996, viz. mdss, video, etc.
+> Add bindings for the same.
 >
-> Finally add the device link between the master device and
-> smmu, so that the smmu gets runtime enabled/disabled only when the
-> master needs it. This is done from add_device callback which gets
-> called once when the master is added to the smmu.
->
-> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
 > Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 > ---
->  drivers/iommu/arm-smmu.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
 >
-> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-> index c024f69c1682..c7e924d553bd 100644
-> --- a/drivers/iommu/arm-smmu.c
-> +++ b/drivers/iommu/arm-smmu.c
-> @@ -215,6 +215,9 @@ struct arm_smmu_device {
+> Changes in v8:
+>  - Added the missing IOMMU_OF_DECLARE declaration for "qcom,smmu-v2"
 >
->         /* IOMMU core code handle */
->         struct iommu_device             iommu;
-> +
-> +       /* runtime PM link to master */
-> +       struct device_link *link;
->  };
+>  .../devicetree/bindings/iommu/arm,smmu.txt         | 43 ++++++++++++++++++++++
+>  drivers/iommu/arm-smmu.c                           | 14 +++++++
+>  2 files changed, 57 insertions(+)
 >
->  enum arm_smmu_context_fmt {
-> @@ -1425,6 +1428,17 @@ static int arm_smmu_add_device(struct device *dev)
+> diff --git a/Documentation/devicetree/bindings/iommu/arm,smmu.txt b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+> index 8a6ffce12af5..169222ae2706 100644
+> --- a/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+> +++ b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+> @@ -17,10 +17,19 @@ conditions.
+>                          "arm,mmu-401"
+>                          "arm,mmu-500"
+>                          "cavium,smmu-v2"
+> +                        "qcom,<soc>-smmu-v2", "qcom,smmu-v2"
 >
->         pm_runtime_put_sync(smmu->dev);
+>                    depending on the particular implementation and/or the
+>                    version of the architecture implemented.
 >
-> +       /*
-> +        * Establish the link between smmu and master, so that the
-> +        * smmu gets runtime enabled/disabled as per the master's
-> +        * needs.
-> +        */
-> +       smmu->link = device_link_add(dev, smmu->dev, DL_FLAG_PM_RUNTIME);
-> +       if (!smmu->link)
-> +               dev_warn(smmu->dev,
-> +                        "Unable to create device link between %s and %s\n",
-> +                        dev_name(smmu->dev), dev_name(dev));
+> +                  A number of Qcom SoCs use qcom,smmu-v2 version of the IP.
+> +                  "qcom,<soc>-smmu-v2" represents a soc specific compatible
+> +                  string that should be present along with the "qcom,smmu-v2"
+> +                  to facilitate SoC specific clocks/power connections and to
+> +                  address specific bug fixes.
+> +                  An example string would be -
+> +                  "qcom,msm8996-smmu-v2", "qcom,smmu-v2".
 
-How likely it is that the master can work normally even if the link
-add fails? Perhaps we should just return an error here?
+Hmm, I remember that for <soc> and similar wildcards we required
+explicitly listing allowed values. Rob, has it changed since I
+stumbled upon such thing last time (or I just got it wrong before)?
 
 > +
->         return 0;
+>  - reg           : Base address and size of the SMMU.
 >
->  out_rpm_put:
-> @@ -1449,6 +1463,8 @@ static void arm_smmu_remove_device(struct device *dev)
->         cfg  = fwspec->iommu_priv;
->         smmu = cfg->smmu;
+>  - #global-interrupts : The number of global interrupts exposed by the
+> @@ -71,6 +80,23 @@ conditions.
+>                    or using stream matching with #iommu-cells = <2>, and
+>                    may be ignored if present in such cases.
 >
-> +       device_link_del(smmu->link);
+> +- clock-names:    Should be "bus", and "iface" for "qcom,smmu-v2"
+> +                  implementation.
+> +
+> +                  "bus" clock for "qcom,smmu-v2" is required for downstream
+> +                  bus access and for the smmu ptw.
+> +
+> +                  "iface" clock is required to access smmu's registers through
+> +                  the TCU's programming interface.
 
-We allowed smmu->link in arm_smmu_add_device(), but here we don't
-check it. Looking at the code, device_link_del() doesn't seem to check
-either.
+nit: Could we have it in a bit more structured way? E.g.
 
-Note that this problem would go away if we fail add_device on
-device_link_add() failure, as I suggested above, so no change would be
-necessary.
+- clock-names: List of names of clocks input to the device. The
+required list depends on particular implementation and is as follows:
+ - for "qcom,smmu-v2":
+   - "bus": clock required for downstream bus access and for the smmu ptw,
+   - "iface":  clock required to access smmu's registers through the
+TCU's programming interface.
+ - unspecified for other implementations.
+
+(+/- wrapping)
+
+> +
+> +- clocks:         Phandles for respective clocks described by clock-names.
+
+Phandle is just a pointer to another node. Clocks are however
+specified using a phandle and a number of arguments, depending on the
+clock controller. I'd change it to:
+
+- clocks:         Specifiers for all clocks listed in the clock-names
+property, as per generic clock bindings.
+
+> +
+> +- power-domains:  Phandles to SMMU's power domain specifier. This is
+> +                  required even if SMMU belongs to the master's power
+> +                  domain, as the SMMU will have to be enabled and
+> +                  accessed before master gets enabled and linked to its
+> +                  SMMU.
+
+>From DT point of view, the relationship of SMMU belonging to a master
+device doesn't exist. The power-domains property needs to be properly
+specified for all devices within power domains represented in DT, with
+an exception of the case when the parent-child relationship is
+explicitly stated in DT by child devices being represented by child
+nodes of the parent device node.
+
+- power-domains: Specifiers for power domains required to be powered
+on for the SMMU to operate, as per generic power domain bindings.
 
 Best regards,
 Tomasz
