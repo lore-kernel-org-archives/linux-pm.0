@@ -1,32 +1,19 @@
 From: Tomasz Figa <tfiga@chromium.org>
-Subject: Re: [PATCH v7 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
- add/remove device
-Date: Tue, 13 Feb 2018 17:24:53 +0900
-Message-ID: <CAAFQd5DxYhkK61VDAesby6bT+FtG2nqsbHQRvxkhrsSS0KWtog@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org> <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH v7 4/6] iommu/arm-smmu: Add the device_link between
+ masters and smmu
+Date: Tue, 13 Feb 2018 17:31:57 +0900
+Message-ID: <CAAFQd5BQAs9=N27_Z0pJNSrndFY3vFin2KBP44UtiW+tMXy5nQ@mail.gmail.com>
+References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org> <1517999482-17317-5-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f68.google.com ([209.85.213.68]:38691 "EHLO
-        mail-vk0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933584AbeBMIZP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Feb 2018 03:25:15 -0500
-Received: by mail-vk0-f68.google.com with SMTP id z9so10366511vkd.5
-        for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2018 00:25:15 -0800 (PST)
-Received: from mail-ua0-f175.google.com (mail-ua0-f175.google.com. [209.85.217.175])
-        by smtp.gmail.com with ESMTPSA id s1sm1587136uad.45.2018.02.13.00.25.14
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 13 Feb 2018 00:25:14 -0800 (PST)
-Received: by mail-ua0-f175.google.com with SMTP id n1so11089215uaa.2
-        for <linux-pm@vger.kernel.org>; Tue, 13 Feb 2018 00:25:14 -0800 (PST)
-In-Reply-To: <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1517999482-17317-5-git-send-email-vivek.gautam@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Vivek Gautam <vivek.gautam@codeaurora.org>
 Cc: "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
         Roedel <joro@8bytes.org>," <joro@8bytes.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Clark <robdclark@gmail.com>"list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
         Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, freedreno@lists.freedesktop.org, David Airlie <airlied@linux.ie>, Greg KH <gregkh@linuxfoundation.org>, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Hi Vivek,
 
@@ -36,80 +23,66 @@ On Wed, Feb 7, 2018 at 7:31 PM, Vivek Gautam
 <vivek.gautam@codeaurora.org> wrote:
 > From: Sricharan R <sricharan@codeaurora.org>
 >
-> The smmu device probe/remove and add/remove master device callbacks
-> gets called when the smmu is not linked to its master, that is without
-> the context of the master device. So calling runtime apis in those places
-> separately.
+> Finally add the device link between the master device and
+> smmu, so that the smmu gets runtime enabled/disabled only when the
+> master needs it. This is done from add_device callback which gets
+> called once when the master is added to the smmu.
 >
 > Signed-off-by: Sricharan R <sricharan@codeaurora.org>
-> [vivek: Cleanup pm runtime calls]
 > Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
 > ---
->  drivers/iommu/arm-smmu.c | 42 ++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 38 insertions(+), 4 deletions(-)
+>  drivers/iommu/arm-smmu.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
 >
 > diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-> index 9e2f917e16c2..c024f69c1682 100644
+> index c024f69c1682..c7e924d553bd 100644
 > --- a/drivers/iommu/arm-smmu.c
 > +++ b/drivers/iommu/arm-smmu.c
-> @@ -913,11 +913,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
->         struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
->         struct arm_smmu_device *smmu = smmu_domain->smmu;
->         struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
-> -       int irq;
-> +       int ret, irq;
+> @@ -215,6 +215,9 @@ struct arm_smmu_device {
 >
->         if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
->                 return;
+>         /* IOMMU core code handle */
+>         struct iommu_device             iommu;
+> +
+> +       /* runtime PM link to master */
+> +       struct device_link *link;
+>  };
 >
-> +       ret = pm_runtime_get_sync(smmu->dev);
-> +       if (ret)
-> +               return;
+>  enum arm_smmu_context_fmt {
+> @@ -1425,6 +1428,17 @@ static int arm_smmu_add_device(struct device *dev)
+>
+>         pm_runtime_put_sync(smmu->dev);
+>
+> +       /*
+> +        * Establish the link between smmu and master, so that the
+> +        * smmu gets runtime enabled/disabled as per the master's
+> +        * needs.
+> +        */
+> +       smmu->link = device_link_add(dev, smmu->dev, DL_FLAG_PM_RUNTIME);
+> +       if (!smmu->link)
+> +               dev_warn(smmu->dev,
+> +                        "Unable to create device link between %s and %s\n",
+> +                        dev_name(smmu->dev), dev_name(dev));
 
-pm_runtime_get_sync() will return 0 if the device was powered off, 1
-if it was already/still powered on or runtime PM is not compiled in,
-or a negative value on error, so shouldn't the test be (ret < 0)?
-
-Moreover, I'm actually wondering if it makes any sense to power up the
-hardware just to program it and power it down again. In a system where
-the IOMMU is located within a power domain, it would cause the IOMMU
-block to lose its state anyway.
-
-Actually, reflecting back on "[PATCH v7 2/6] iommu/arm-smmu: Add
-pm_runtime/sleep ops", perhaps it would make more sense to just
-control the clocks independently of runtime PM? Then, runtime PM could
-be used for real power management, e.g. really powering the block up
-and down, for further power saving.
-
-+Generally similar comments for other places in this patch.
+How likely it is that the master can work normally even if the link
+add fails? Perhaps we should just return an error here?
 
 > +
->         /*
->          * Disable the context bank and free the page tables before freeing
->          * it.
-> @@ -932,6 +936,8 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+>         return 0;
 >
->         free_io_pgtable_ops(smmu_domain->pgtbl_ops);
->         __arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
-> +
-> +       pm_runtime_put_sync(smmu->dev);
-
-Is there any point in the put being sync here?
-
-[snip]
-
-> @@ -2131,6 +2152,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
->         if (err)
->                 return err;
+>  out_rpm_put:
+> @@ -1449,6 +1463,8 @@ static void arm_smmu_remove_device(struct device *dev)
+>         cfg  = fwspec->iommu_priv;
+>         smmu = cfg->smmu;
 >
-> +       platform_set_drvdata(pdev, smmu);
-> +
-> +       pm_runtime_enable(dev);
+> +       device_link_del(smmu->link);
 
-I suspect this may be a disaster for systems where IOMMUs are located
-inside power domains, because the driver doesn't take care of the
-IOMMU block losing its state on physical power down, as I mentioned in
-my comments above.
+We allowed smmu->link in arm_smmu_add_device(), but here we don't
+check it. Looking at the code, device_link_del() doesn't seem to check
+either.
+
+Note that this problem would go away if we fail add_device on
+device_link_add() failure, as I suggested above, so no change would be
+necessary.
 
 Best regards,
 Tomasz
