@@ -1,65 +1,96 @@
-From: Tomasz Figa <tfiga@chromium.org>
-Subject: Re: [PATCH v7 1/6] base: power: runtime: Export
- pm_runtime_get/put_suppliers
-Date: Tue, 13 Feb 2018 21:54:26 +0900
-Message-ID: <CAAFQd5DNzGYnTRuc2hDr1osQ2=6ruM0wQqV8svP=a10hxTVOGQ@mail.gmail.com>
+From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v7 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
+	add/remove device
+Date: Tue, 13 Feb 2018 12:57:04 +0000
+Message-ID: <906051dd-8898-ec6f-5ad4-3f37716292cf@arm.com>
 References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-2-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5BmroRf-C8dQkvTKHWK1psGnNi1t7g-q=Xce6KjrGTsdw@mail.gmail.com>
- <65d707c0-76cc-d59e-ff18-1fdd89306900@arm.com>
+	<1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
+	<CAAFQd5DxYhkK61VDAesby6bT+FtG2nqsbHQRvxkhrsSS0KWtog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <65d707c0-76cc-d59e-ff18-1fdd89306900@arm.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dri-devel <dri-devel@lists.freedesktop.org>, linux-kernel@vger.kernel.org, "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>, Rob Herring <robh+dt@kernel.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, Greg KH <gregkh@linuxfoundation.org>, freedreno@lists.freedesktop.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <CAAFQd5DxYhkK61VDAesby6bT+FtG2nqsbHQRvxkhrsSS0KWtog-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-GB
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBGZWIgMTMsIDIwMTggYXQgOTowMCBQTSwgUm9iaW4gTXVycGh5IDxyb2Jpbi5tdXJw
-aHlAYXJtLmNvbT4gd3JvdGU6Cj4gT24gMTMvMDIvMTggMDc6NDQsIFRvbWFzeiBGaWdhIHdyb3Rl
-Ogo+Pgo+PiBIaSBWaXZlaywKPj4KPj4gT24gV2VkLCBGZWIgNywgMjAxOCBhdCA3OjMxIFBNLCBW
-aXZlayBHYXV0YW0KPj4gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4+Pgo+
-Pj4gVGhlIGRldmljZSBsaW5rIGFsbG93cyB0aGUgcG0gZnJhbWV3b3JrIHRvIHRpZSB0aGUgc3Vw
-cGxpZXIgYW5kCj4+PiBjb25zdW1lci4gU28sIHdoZW5ldmVyIHRoZSBjb25zdW1lciBpcyBwb3dl
-cmVkLW9uIHRoZSBzdXBwbGllcgo+Pj4gaXMgcG93ZXJlZC1vbiBmaXJzdC4KPj4+Cj4+PiBUaGVy
-ZSBhcmUgaG93ZXZlciBjYXNlcyBpbiB3aGljaCB0aGUgY29uc3VtZXIgd2FudHMgdG8gcG93ZXIt
-b24KPj4+IHRoZSBzdXBwbGllciwgYnV0IG5vdCBpdHNlbGYuCj4+PiBFLmcuLCBBIEdyYXBoaWNz
-IG9yIG11bHRpbWVkaWEgZHJpdmVyIHdhbnRzIHRvIHBvd2VyLW9uIHRoZSBTTU1VCj4+PiB0byB1
-bm1hcCBhIGJ1ZmZlciBhbmQgZmluaXNoIHRoZSBUTEIgb3BlcmF0aW9ucyB3aXRob3V0IHBvd2Vy
-aW5nCj4+PiBvbiBpdHNlbGYuCj4+Cj4+Cj4+IFRoaXMgc291bmRzIHN0cmFuZ2UgdG8gbWUuIElm
-IHRoZSBTTU1VIGlzIHBvd2VyZWQgZG93biwgd291bGRuJ3QgdGhlCj4+IFRMQiBsb3NlIGl0cyBj
-b250ZW50cyBhcyB3ZWxsIChhbmQgc28gbm8gZmx1c2hpbmcgbmVlZGVkKT8KPgo+Cj4gRGVwZW5k
-cyBvbiBpbXBsZW1lbnRhdGlvbiBkZXRhaWxzIC0gaWYgcnVudGltZSBQTSBpcyBhY3R1YWxseSBp
-bXBsZW1lbnRlZAo+IHZpYSBleHRlcm5hbCBjbG9jayBnYXRpbmcgKGluIHRoZSBhYnNlbmNlIG9m
-IGZpbmUtZ3JhaW5lZCBwb3dlciBkb21haW5zKSwKPiB0aGVuICJzdXNwZW5kZWQiIFRMQnMgbWln
-aHQgYm90aCByZXRhaW4gc3RhdGUgYW5kIG5vdCByZWNlaXZlIGludmFsaWRhdGlvbgo+IHJlcXVl
-c3RzLCB3aGljaCBpcyByZWFsbHkgdGhlIHdvcnN0IGNhc2UuCgpBZ3JlZWQuIFRoYXQncyB3aHkg
-aW4gIltQQVRDSCB2NyAzLzZdIGlvbW11L2FybS1zbW11OiBJbnZva2UKcG1fcnVudGltZSBkdXJp
-bmcgcHJvYmUsIGFkZC9yZW1vdmUgZGV2aWNlIiBJIGFjdHVhbGx5IHN1Z2dlc3RlZAptYW5hZ2lu
-ZyBjbG9ja3Mgc2VwYXJhdGVseSBmcm9tIHJ1bnRpbWUgUE0uIEF0IGxlYXN0IHVudGlsIHJ1bnRp
-bWUgUE0KZnJhbWV3b3JrIGFycml2ZXMgYXQgYSBzdGF0ZSwgd2hlcmUgbXVsdGlwbGUgcG93ZXIg
-c3RhdGVzIGNhbiBiZQptYW5hZ2VkLCBpLmUuIGZ1bGwgcG93ZXIgc3RhdGUsIGNsb2NrLWdhdGVk
-IHN0YXRlLCBkb21haW4tb2ZmIHN0YXRlLgooSSB0aGluayBJIG1pZ2h0IGhhdmUgc2VlbiBzb21l
-IG9uZ29pbmcgd29yayBvbiB0aGlzIG9uIExXTiB0aG91Z2guLi4pCgo+Cj4+IE90aGVyIHRoYW4g
-dGhhdCwgd2hhdCBraW5kIG9mIGhhcmR3YXJlIG9wZXJhdGlvbnMgd291bGQgYmUgbmVlZGVkCj4+
-IGJlc2lkZXMganVzdCB1cGRhdGluZyB0aGUgcGFnZSB0YWJsZXMgZnJvbSB0aGUgQ1BVPwo+Cj4K
-PiBEb21haW4gYXR0YWNoL2RldGFjaCBhbHNvIHJlcXVpcmUgdXBkYXRpbmcgU01NVSBoYXJkd2Fy
-ZSBzdGF0ZSAoYW5kIHBvc3NpYmx5Cj4gVExCIG1haW50ZW5hbmNlKSwgYnV0IGRvbid0IGxvZ2lj
-YWxseSByZXF1aXJlIHRoZSBtYXN0ZXIgZGV2aWNlIGl0c2VsZiB0byBiZQo+IGFjdGl2ZSBhdCB0
-aGUgdGltZS4KCldvdWxkbid0IHRoaXMgaGFyZHdhcmUgc3RhdGUgbmVlZCB0byBiZSByZWluaXRp
-YWxpemVkIGFueXdheSBhZnRlcgpyZXNwZWN0aXZlIHBvd2VyIGRvbWFpbiBwb3dlciBjeWNsZXM/
-IChJbiBvdGhlciB3b3JkcywgaGFyZHdhcmUgd291bGQKb25seSBuZWVkIHByb2dyYW1taW5nIGlm
-IGl0J3MgcG93ZXJlZCBvbiBhdCB0aGUgbW9tZW50LikKCkJlc3QgcmVnYXJkcywKVG9tYXN6Cl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBt
-YWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On 13/02/18 08:24, Tomasz Figa wrote:
+> Hi Vivek,
+> 
+> Thanks for the patch. Please see my comments inline.
+> 
+> On Wed, Feb 7, 2018 at 7:31 PM, Vivek Gautam
+> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>
+>> The smmu device probe/remove and add/remove master device callbacks
+>> gets called when the smmu is not linked to its master, that is without
+>> the context of the master device. So calling runtime apis in those places
+>> separately.
+>>
+>> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>> [vivek: Cleanup pm runtime calls]
+>> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>> ---
+>>   drivers/iommu/arm-smmu.c | 42 ++++++++++++++++++++++++++++++++++++++----
+>>   1 file changed, 38 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+>> index 9e2f917e16c2..c024f69c1682 100644
+>> --- a/drivers/iommu/arm-smmu.c
+>> +++ b/drivers/iommu/arm-smmu.c
+>> @@ -913,11 +913,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+>>          struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
+>>          struct arm_smmu_device *smmu = smmu_domain->smmu;
+>>          struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
+>> -       int irq;
+>> +       int ret, irq;
+>>
+>>          if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
+>>                  return;
+>>
+>> +       ret = pm_runtime_get_sync(smmu->dev);
+>> +       if (ret)
+>> +               return;
+> 
+> pm_runtime_get_sync() will return 0 if the device was powered off, 1
+> if it was already/still powered on or runtime PM is not compiled in,
+> or a negative value on error, so shouldn't the test be (ret < 0)?
+> 
+> Moreover, I'm actually wondering if it makes any sense to power up the
+> hardware just to program it and power it down again. In a system where
+> the IOMMU is located within a power domain, it would cause the IOMMU
+> block to lose its state anyway.
+
+This is generally for the case where the SMMU internal state remains 
+active, but the programming interface needs to be powered up in order to 
+access it.
+
+> Actually, reflecting back on "[PATCH v7 2/6] iommu/arm-smmu: Add
+> pm_runtime/sleep ops", perhaps it would make more sense to just
+> control the clocks independently of runtime PM? Then, runtime PM could
+> be used for real power management, e.g. really powering the block up
+> and down, for further power saving.
+
+Unfortunately that ends up pretty much unmanageable, because there are 
+numerous different SMMU microarchitectures with fundamentally different 
+clock/power domain schemes (multiplied by individual SoC integration 
+possibilities). Since this is fundamentally a generic architectural 
+driver, adding explicit clock support would probably make the whole 
+thing about 50% clock code, with complicated decision trees around every 
+hardware access calculating which clocks are necessary for a given 
+operation on a given system. That maintainability aspect is why we've 
+already nacked such a fine-grained approach in the past.
+
+Robin.
