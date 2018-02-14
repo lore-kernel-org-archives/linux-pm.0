@@ -1,25 +1,21 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: [PATCH 0/2] mmc: sdhci-pci: Fix S0i3 for Intel BYT-based controllers
-Date: Wed, 14 Feb 2018 15:57:42 +0200
-Message-ID: <1518616664-14342-1-git-send-email-adrian.hunter@intel.com>
-Return-path: <linux-mmc-owner@vger.kernel.org>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH resend 0/1] thermal: int3400_thermal: Ignore charger events
+Date: Wed, 14 Feb 2018 16:13:39 +0100
+Message-ID: <20180214151340.1811-1-hdegoede@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx3-rdu2.redhat.com ([66.187.233.73]:51302 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1030887AbeBNPNm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Feb 2018 10:13:42 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-Hi
+Hi All,
 
-Here is a small fix (cc stable) and a subsequent tidy-up.
+This patch seems to have fallen through the cracks, hence this resend.
 
+Regards,
 
-Adrian Hunter (2):
-      mmc: sdhci-pci: Fix S0i3 for Intel BYT-based controllers
-      mmc: sdhci-pci: Get rid of glk_cqe_enable()
-
- drivers/mmc/host/sdhci-pci-core.c | 55 +++++++++++++++++++++++----------------
- 1 file changed, 32 insertions(+), 23 deletions(-)
-
-
-Regards
-Adrian
+Hans
