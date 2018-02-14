@@ -1,8 +1,10 @@
 From: Carlo Caione <carlo@caione.org>
-Subject: [PATCH 0/2] power: supply: Fix AXP288 fallback when not needed
-Date: Wed, 14 Feb 2018 19:41:59 +0000
-Message-ID: <20180214194201.24385-1-carlo@caione.org>
+Subject: [PATCH 2/2] power: supply: ACPI/AXP288: Add quirks for ECS EF20EA
+Date: Wed, 14 Feb 2018 19:42:01 +0000
+Message-ID: <20180214194201.24385-3-carlo@caione.org>
+References: <20180214194201.24385-1-carlo@caione.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180214194201.24385-1-carlo@caione.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux@endlessm.com, hdegoede@redhat.com, rjw@rjwysocki.net, lenb@kernel.org, sre@kernel.org, wens@csie.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Carlo Caione <carlo@endlessm.com>
@@ -10,105 +12,70 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Carlo Caione <carlo@endlessm.com>
 
-With commits af3ec837 and dccfae6d a blacklist was introduced to avoid
-using the ACPI drivers for AC and battery when a native PMIC driver was
-already present. While this is in general a good idea (because of broken
-DSDT or proprietary and undocumented ACPI opregions for the ACPI
-AC/battery devices) we have come across at least one CherryTrail laptop
-(ECS EF20EA) shipping the AXP288 together with a separate FG controller
-(a MAX17047) instead of the one embedded in the AXP288.
+On the ECS EF20EA laptop we need to move away from the AXP288 FG driver
+and enable again the ACPI AC/battery drivers. Add the required quirks to
+do that. We rely only on the product name because all the other DMI
+entries are dummy or not filled in on this platform.
 
-This is the interesting analisys done by Hans de Goede (thank you):
+Signed-off-by: Carlo Caione <carlo@endlessm.com>
+---
+ drivers/acpi/ac.c                        | 7 +++++++
+ drivers/acpi/battery.c                   | 7 +++++++
+ drivers/power/supply/axp288_fuel_gauge.c | 6 ++++++
+ 3 files changed, 20 insertions(+)
 
-Looking at the _BIX method of the BATC/PNP0C0A device, we see it referencing
-FG10:
-
-Method (_BIX, 0, NotSerialized)  // _BIX: Battery Information Extend
-{
-    If (AVBL == One)
-    {
-        BUF2 = FG10 /* \_SB_.PCI0.I2C1.FG10 */
-
-And FG10 is defined as:
-
-Field (DVFG, BufferAcc, NoLock, Preserve)
-{
-    Connection (SMFG),
-    Offset (0x10),
-    AccessAs (BufferAcc, AttribBytes (0x02)),
-    FG10,   8
-}
-
-With SMFG being defined as:
-
-Name (SMFG, ResourceTemplate ()
-{
-    I2cSerialBusV2 (0x0036, ControllerInitiated, 0x000186A0,
-        AddressingMode7Bit, "\\_SB.PCI0.I2C1",
-        0x00, ResourceConsumer, , Exclusive,
-        )
-})
-
-Looking for I2C1 address 0x0036 we find:
-
-Device (ANFG)
-{
-    Name (_HID, "MAX17047" /* Fuel Gauge Controller */)  // _HID: Hardwa
-    Name (_CID, "MAX17047" /* Fuel Gauge Controller */)  // _CID: Compat
-    Name (_DDN, "Fuel Gauge Controller")  // _DDN: DOS Device Name
-    Name (RBUF, ResourceTemplate ()
-    {
-        I2cSerialBusV2 (0x0036, ControllerInitiated, 0x00061A80,
-            AddressingMode7Bit, "\\_SB.PCI0.I2C1",
-            0x00, ResourceConsumer, , Exclusive,
-            )
-        GpioInt (Level, ActiveLow, ExclusiveAndWake, PullNone, 0x0000,
-            "\\_SB.GPO3", 0x00, ResourceConsumer, ,
-            )
-            {   // Pin list
-                0x0001
-            }
-    })
-
-Where as the AXP288 PMIC is I2C7 address 0x034:
-
-Device (PMI1)
-{
-    Name (_ADR, Zero)  // _ADR: Address
-    Name (_HID, "INT33F4" /* XPOWER PMIC Controller */)  // _HID: Ha
-    Name (_CID, "INT33F4" /* XPOWER PMIC Controller */)  // _CID: Co
-    Name (_DDN, "XPOWER PMIC Controller")  // _DDN: DOS Device Name
-    Name (_HRV, 0x03)  // _HRV: Hardware Revision
-    Name (_UID, One)  // _UID: Unique ID
-
-    Method (_CRS, 0, NotSerialized)  // _CRS: Current Resource Setti
-    {
-        Name (SBUF, ResourceTemplate ()
-        {
-            I2cSerialBusV2 (0x0034, ControllerInitiated, 0x000F4240,
-                AddressingMode7Bit, "\\_SB.PCI0.I2C7",
-                0x00, ResourceConsumer, , Exclusive,
-                )
-
-So basically this laptopt is using a separate FG chip instead of the one
-embedded in the AXP288.
-
-To have this correctly working we need basically to avoid the fallback on the
-AXP288 driver enabling again the ACPI AC/battery drivers and at the same time
-avoiding that the AXP288 FG driver is probed at all.
-
-I'm still not fully convinced that having two different quirks (one to disable
-the blacklist and another to disable the AXP288 FG probing) is the right way to
-fix this. So any comment is welcome.
-
-Carlo Caione (2):
-  power: supply: ACPI/AXP288: Add quirk to avoid using PMIC
-  power: supply: ACPI/AXP288: Add quirks for ECS EF20EA
-
- drivers/acpi/ac.c                        | 33 ++++++++++++++++++++++++--------
- drivers/acpi/battery.c                   | 33 ++++++++++++++++++++++++--------
- drivers/power/supply/axp288_fuel_gauge.c |  6 ++++++
- 3 files changed, 56 insertions(+), 16 deletions(-)
-
+diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+index b9a4ca720309..39f778f954f5 100644
+--- a/drivers/acpi/ac.c
++++ b/drivers/acpi/ac.c
+@@ -332,6 +332,13 @@ static const struct dmi_system_id ac_dmi_table[] = {
+ 		DMI_MATCH(DMI_PRODUCT_NAME, "32597CG"),
+ 		},
+ 	},
++	{
++	.callback = ac_not_use_pmic_quirk,
++	.ident = "ECS EF20EA",
++	.matches = {
++		DMI_MATCH(DMI_PRODUCT_NAME, "EF20EA"),
++		},
++	},
+ 	{},
+ };
+ 
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 258d2e66f230..fe024f1a8ad5 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -1233,6 +1233,13 @@ static const struct dmi_system_id bat_dmi_table[] __initconst = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "UX410UAK"),
+ 		},
+ 	},
++	{
++		.callback = battery_not_use_pmic_quirk,
++		.ident = "ECS EF20EA",
++		.matches = {
++			DMI_MATCH(DMI_PRODUCT_NAME, "EF20EA"),
++		},
++	},
+ 	{},
+ };
+ 
+diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+index 4cc6e038dfdd..903891a9bcf0 100644
+--- a/drivers/power/supply/axp288_fuel_gauge.c
++++ b/drivers/power/supply/axp288_fuel_gauge.c
+@@ -708,6 +708,12 @@ static const struct dmi_system_id axp288_fuel_gauge_blacklist[] = {
+ 			DMI_MATCH(DMI_BOARD_VERSION, "V1.1"),
+ 		},
+ 	},
++	{
++		/* ECS EF20EA */
++		.matches = {
++			DMI_MATCH(DMI_PRODUCT_NAME, "EF20EA"),
++		},
++	},
+ 	{}
+ };
+ 
 -- 
 2.14.1
