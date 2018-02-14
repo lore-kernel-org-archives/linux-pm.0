@@ -1,90 +1,65 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH] PM / wakeirq: Add wakeup name to dedicated wake irqs
-Date: Wed, 14 Feb 2018 13:23:40 +0200
-Message-ID: <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
-References: <20180209161456.18951-1-tony@atomide.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="089e08231f04e41a8605652a57da"
+From: Adrian Hunter <adrian.hunter@intel.com>
+Subject: [PATCH V2 0/4] mmc: sdhci-pci: Respect PM flags when enabling card detect GPIO IRQ wakeup
+Date: Wed, 14 Feb 2018 14:56:28 +0200
+Message-ID: <1518612992-4951-1-git-send-email-adrian.hunter@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:38682 "EHLO
-        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S967255AbeBNLXl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Feb 2018 06:23:41 -0500
-In-Reply-To: <20180209161456.18951-1-tony@atomide.com>
+Received: from mga02.intel.com ([134.134.136.20]:11167 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S967589AbeBNM5P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Feb 2018 07:57:15 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>
 
---089e08231f04e41a8605652a57da
-Content-Type: text/plain; charset="UTF-8"
+Hi
 
-On Fri, Feb 9, 2018 at 6:14 PM, Tony Lindgren <tony@atomide.com> wrote:
-> This makes it easy to grep :wakeup /proc/interrupts.
+Commit 03dbaa04a2e5 ("mmc: slot-gpio: Add support to enable irq wake on
+cd_irq") enabled wakeup irrespective of the host controller's PM flags.
+However, users also want to control it from sysfs power/wakeup attribute.
+That means the driver needs to check the PM flags before enabling it in the
+suspend callback.  Patch 4 adds support for that in sdhci-pci, which is the
+only driver presently using the MMC_CAP_CD_WAKE flag.  Patches 1 - 1 tidy
+up aspects of sdhci and sdhci-pci wakeup handling, and patch 3 adds a
+helper function to make it easy for drivers.
 
-I used to have another patch (not published) to provide this
-information via /sys/kernel/irq.
+There are 2 contentious aspects to this patch set:
 
-OK, here we are:
+1) An existing problem with the SDIO API which does not let the host
+controller driver know that the SDIO function driver has requested SDIO
+card interrupt wakeup until the suspend callback - which results in the
+host controller driver having to enable or disable wakeup in the suspend
+callback.  Fixing the SDIO API is a separate issue IMHO.
+
+2) In order to use the sysfs power/wakeup attribute, the driver must set the
+device as wake capable even when it is really a GPIO that wakes the system.
 
 
-> +       namelen = strlen(dev_name(dev)) + strlen(postfix) + 1;
-> +       wirq->name = kzalloc(namelen, GFP_KERNEL);
+Changes in V2:
 
-kasprintf()
+      mmc: sdhci-pci: Stop calling sdhci_enable_irq_wakeups()
+      mmc: sdhci-pci: Use device wakeup capability to determine MMC_PM_WAKE_SDIO_IRQ capability
+      mmc: sdhci: Stop exporting sdhci_enable_irq_wakeups()
+      mmc: sdhci: Handle failure of enable_irq_wake()
+      mmc: sdhci: Rework sdhci_enable_irq_wakeups()
+	Dropped because they have been appled already
+      mmc: slot-gpio: Add a function to enable/disable card detect IRQ wakeup
+	Re-based
 
 
--- 
-With Best Regards,
-Andy Shevchenko
+Adrian Hunter (4):
+      mmc: sdhci: Do not unnecessarily enable wakeup for card detect interrupt
+      mmc: sdhci: Do not unnecessarily enable wakeup for SDIO card interrupt
+      mmc: slot-gpio: Add a function to enable/disable card detect IRQ wakeup
+      mmc: sdhci-pci: Respect PM flags when enabling card detect GPIO IRQ wakeup
 
---089e08231f04e41a8605652a57da
-Content-Type: text/x-patch; charset="US-ASCII";
-	name="0001-genirq-Add-wakeup-sysfs-node-to-show-IRQ-wakeup-stat.patch"
-Content-Disposition: attachment;
-	filename="0001-genirq-Add-wakeup-sysfs-node-to-show-IRQ-wakeup-stat.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_jdmzn67w0
+ drivers/mmc/core/core.c           |  3 +--
+ drivers/mmc/core/slot-gpio.c      | 25 +++++++++++++++++++++++--
+ drivers/mmc/host/sdhci-pci-core.c | 18 ++++++++++++++----
+ drivers/mmc/host/sdhci.c          | 23 ++++++++++++++++++++---
+ include/linux/mmc/slot-gpio.h     |  1 +
+ 5 files changed, 59 insertions(+), 11 deletions(-)
 
-RnJvbSBlZjM1ZDNmZDc4OWEzMmQ4NTIxMmIyYmNiODJmNzU0YWUyNDRjZDU4IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBBbmR5IFNoZXZjaGVua28gPGFuZHJpeS5zaGV2Y2hlbmtvQGxp
-bnV4LmludGVsLmNvbT4KRGF0ZTogRnJpLCAxMiBNYXkgMjAxNyAyMDoxOTozMiArMDMwMApTdWJq
-ZWN0OiBbUEFUQ0hdIGdlbmlycTogQWRkIHdha2V1cCBzeXNmcyBub2RlIHRvIHNob3cgSVJRIHdh
-a2V1cCBzdGF0ZQoKU3VycHJpc2luZ2x5IHRoZXJlIGlzIG5vIHNpbXBsZSB3YXkgdG8gc2VlIGlm
-IHRoZSBJUlEgbGluZSBpbiBxdWVzdGlvbgppcyB3YWtldXAgc291cmNlIG9yIG5vdC4KCk5vdGUg
-dGhhdCB3YWtldXAgbWlnaHQgYmUgYW4gT09CIChvdXQtb2YtYmFuZCkgc291cmNlIGxpa2UgR1BJ
-TyBsaW5lCndoaWNoIG1ha2VzIHRoaW5ncyBzbGlnaHRseSBtb3JlIGNvbXBsaWNhdGVkLgoKQWRk
-IGEgc3lzZnMgbm9kZSB0byBjb3ZlciB0aGlzIGNhc2UuCgpTaWduZWQtb2ZmLWJ5OiBBbmR5IFNo
-ZXZjaGVua28gPGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4LmludGVsLmNvbT4KLS0tCiBEb2N1bWVu
-dGF0aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWtlcm5lbC1pcnEgfCAgNyArKysrKysrCiBrZXJuZWwv
-aXJxL2lycWRlc2MuYyAgICAgICAgICAgICAgICAgICAgICAgfCAxNyArKysrKysrKysrKysrKysr
-KwogMiBmaWxlcyBjaGFuZ2VkLCAyNCBpbnNlcnRpb25zKCspCgpkaWZmIC0tZ2l0IGEvRG9jdW1l
-bnRhdGlvbi9BQkkvdGVzdGluZy9zeXNmcy1rZXJuZWwtaXJxIGIvRG9jdW1lbnRhdGlvbi9BQkkv
-dGVzdGluZy9zeXNmcy1rZXJuZWwtaXJxCmluZGV4IGViMDc0YjEwMDk4Ni4uMTBhZDk5OGY5NDEx
-IDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWtlcm5lbC1pcnEK
-KysrIGIvRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9zeXNmcy1rZXJuZWwtaXJxCkBAIC01MSwz
-ICs1MSwxMCBAQCBEYXRlOgkJU2VwdGVtYmVyIDIwMTYKIEtlcm5lbFZlcnNpb246CTQuOQogQ29u
-dGFjdDoJQ3JhaWcgR2FsbGVrIDxrcmFpZ0Bnb29nbGUuY29tPgogRGVzY3JpcHRpb246CVRoZSB0
-eXBlIG9mIHRoZSBpbnRlcnJ1cHQuICBFaXRoZXIgdGhlIHN0cmluZyAnbGV2ZWwnIG9yICdlZGdl
-Jy4KKworV2hhdDoJCS9zeXMva2VybmVsL2lycS88aXJxPi93YWtldXAKK0RhdGU6CQlKYW4gMjAx
-OAorS2VybmVsVmVyc2lvbjoJNC4xNgorQ29udGFjdDoJQW5keSBTaGV2Y2hlbmtvIDxhbmRyaXku
-c2hldmNoZW5rb0BsaW51eC5pbnRlbC5jb20+CitEZXNjcmlwdGlvbjoJVGhlIHdha2V1cCBzdGF0
-ZSBvZiB0aGUgaW50ZXJydXB0LiBFaXRoZXIgdGhlIHN0cmluZworCQknZW5hYmxlZCcgb3IgJ2Rp
-c2FibGVkJy4KZGlmZiAtLWdpdCBhL2tlcm5lbC9pcnEvaXJxZGVzYy5jIGIva2VybmVsL2lycS9p
-cnFkZXNjLmMKaW5kZXggNDliNTRlOTk3OWNjLi5kOWRlZDA4OGQzMzYgMTAwNjQ0Ci0tLSBhL2tl
-cm5lbC9pcnEvaXJxZGVzYy5jCisrKyBiL2tlcm5lbC9pcnEvaXJxZGVzYy5jCkBAIC0yMTAsNiAr
-MjEwLDIyIEBAIHN0YXRpYyBzc2l6ZV90IHR5cGVfc2hvdyhzdHJ1Y3Qga29iamVjdCAqa29iaiwK
-IH0KIElSUV9BVFRSX1JPKHR5cGUpOwogCitzdGF0aWMgc3NpemVfdCB3YWtldXBfc2hvdyhzdHJ1
-Y3Qga29iamVjdCAqa29iaiwKKwkJCSAgIHN0cnVjdCBrb2JqX2F0dHJpYnV0ZSAqYXR0ciwgY2hh
-ciAqYnVmKQoreworCXN0cnVjdCBpcnFfZGVzYyAqZGVzYyA9IGNvbnRhaW5lcl9vZihrb2JqLCBz
-dHJ1Y3QgaXJxX2Rlc2MsIGtvYmopOworCXNzaXplX3QgcmV0ID0gMDsKKworCXJhd19zcGluX2xv
-Y2tfaXJxKCZkZXNjLT5sb2NrKTsKKwlyZXQgPSBzcHJpbnRmKGJ1ZiwgIiVzXG4iLAorCQkgICAg
-ICBpcnFkX2lzX3dha2V1cF9zZXQoJmRlc2MtPmlycV9kYXRhKSA/ICJlbmFibGVkIiA6ICJkaXNh
-YmxlZCIpOworCXJhd19zcGluX3VubG9ja19pcnEoJmRlc2MtPmxvY2spOworCisJcmV0dXJuIHJl
-dDsKKworfQorSVJRX0FUVFJfUk8od2FrZXVwKTsKKwogc3RhdGljIHNzaXplX3QgbmFtZV9zaG93
-KHN0cnVjdCBrb2JqZWN0ICprb2JqLAogCQkJIHN0cnVjdCBrb2JqX2F0dHJpYnV0ZSAqYXR0ciwg
-Y2hhciAqYnVmKQogewpAQCAtMjUzLDYgKzI2OSw3IEBAIHN0YXRpYyBzdHJ1Y3QgYXR0cmlidXRl
-ICppcnFfYXR0cnNbXSA9IHsKIAkmY2hpcF9uYW1lX2F0dHIuYXR0ciwKIAkmaHdpcnFfYXR0ci5h
-dHRyLAogCSZ0eXBlX2F0dHIuYXR0ciwKKwkmd2FrZXVwX2F0dHIuYXR0ciwKIAkmbmFtZV9hdHRy
-LmF0dHIsCiAJJmFjdGlvbnNfYXR0ci5hdHRyLAogCU5VTEwKLS0gCjIuMTUuMQoK
---089e08231f04e41a8605652a57da--
+
+Regards
+Adrian
