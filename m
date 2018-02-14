@@ -1,44 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 04/10] ARM: dts: sun[4-7]i: Remove
- "cooling-{min|max}-level" for CPU nodes
-Date: Wed, 14 Feb 2018 08:42:52 +0530
-Message-ID: <20180214031252.GW28462@vireshk-i7>
-References: <cover.1518166039.git.viresh.kumar@linaro.org>
- <4d489d040ec1fc3821d8e4bf31ffcc2eebfa41e1.1518166039.git.viresh.kumar@linaro.org>
- <20180213091333.rq4rtvvkwppn5ypu@flea.lan>
- <CAGb2v65Rq5UY_=Fspb_j79a36SK_f+dd2Yb2zAqfg7riiaEO7g@mail.gmail.com>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH] thermal: imx: Fix race condition in imx_thermal_probe()
+Date: Wed, 14 Feb 2018 01:23:18 -0200
+Message-ID: <CAOMZO5D5rRask0pGQBFf+47sG0XURj17=pO4hMiAh4MZa4nkJQ@mail.gmail.com>
+References: <1517595466-23465-1-git-send-email-festevam@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAGb2v65Rq5UY_=Fspb_j79a36SK_f+dd2Yb2zAqfg7riiaEO7g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Maxime Ripard <maxime.ripard@bootlin.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1517595466-23465-1-git-send-email-festevam@gmail.com>
+Sender: stable-owner@vger.kernel.org
+To: "rui.zhang" <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Mikhail Lappo <mikhail.lappo@esrlabs.com>, linux-pm@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, stable <stable@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-02-18, 17:18, Chen-Yu Tsai wrote:
-> On Tue, Feb 13, 2018 at 5:13 PM, Maxime Ripard
-> <maxime.ripard@bootlin.com> wrote:
-> > On Fri, Feb 09, 2018 at 02:28:04PM +0530, Viresh Kumar wrote:
-> >> The "cooling-min-level" and "cooling-max-level" properties are not
-> >> parsed by any part of the kernel currently and the max cooling state of
-> >> a CPU cooling device is found by referring to the cpufreq table instead.
-> 
-> That doesn't mean that other systems aren't using it.
+Hi Eduardo and Rui,
 
-Are you aware of any systems which are using them ?
+On Fri, Feb 2, 2018 at 4:17 PM, Fabio Estevam <festevam@gmail.com> wrote:
+> From: Mikhail Lappo <mikhail.lappo@esrlabs.com>
+>
+> When device boots with T > T_trip_1 and requests interrupt,
+> the race condition takes place. The interrupt comes before
+> THERMAL_DEVICE_ENABLED is set. This leads to an attempt to
+> reading sensor value from irq and disabling the sensor, based on
+> the data->mode field, which expected to be THERMAL_DEVICE_ENABLED,
+> but still stays as THERMAL_DEVICE_DISABLED. Afher this issue
+> sensor is never re-enabled, as the driver state is wrong.
+>
+> Fix this problem by setting the 'data' members prior to
+> requesting the interrupts.
+>
+> Fixes: 37713a1e8e4c ("thermal: imx: implement thermal alarm interrupt handling")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Mikhail Lappo <mikhail.lappo@esrlabs.com>
+> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
 
-> It's still part of
-> the device tree binding. Last I checked, while they are optional, they
-> aren't deprecated.
+A gentle ping on this patch.
 
-Yeah, it isn't deprecated yet. Though the last patches of this series
-tries to do something similar.
-
-> Any comments from the device tree maintainers?
-
-None yet.
-
--- 
-viresh
+> ---
+>  drivers/thermal/imx_thermal.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index a67781b..ee3a215 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -637,6 +637,9 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>         regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
+>         regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
+>
+> +       data->irq_enabled = true;
+> +       data->mode = THERMAL_DEVICE_ENABLED;
+> +
+>         ret = devm_request_threaded_irq(&pdev->dev, data->irq,
+>                         imx_thermal_alarm_irq, imx_thermal_alarm_irq_thread,
+>                         0, "imx_thermal", data);
+> @@ -649,9 +652,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>                 return ret;
+>         }
+>
+> -       data->irq_enabled = true;
+> -       data->mode = THERMAL_DEVICE_ENABLED;
+> -
+>         return 0;
+>  }
+>
+> --
+> 2.7.4
+>
