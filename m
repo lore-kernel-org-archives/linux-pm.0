@@ -1,54 +1,150 @@
-From: Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [Freedreno] [PATCH v7 6/6] drm/msm: iommu: Replace runtime calls
- with runtime suppliers
-Date: Wed, 14 Feb 2018 11:12:23 -0500
-Message-ID: <CAF6AEGtFOwBtXw7HvDSpEj+w78dsg9+p2SVk9e-uDuCE23Fpbw@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
- <20180213164205.GA7599@jcrouse-lnx.qualcomm.com> <CAAFQd5CjQRFATfh-mRQv5J=WefYuxBVTkk=Ju09FoqA-Or5Cvg@mail.gmail.com>
- <20180214154850.GA25422@jcrouse-lnx.qualcomm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20180214154850.GA25422-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Joerg
-        Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>," <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Carlo Caione <carlo@caione.org>
+Subject: [PATCH 1/2] power: supply: ACPI/AXP288: Add quirk to avoid using PMIC
+Date: Wed, 14 Feb 2018 19:42:00 +0000
+Message-ID: <20180214194201.24385-2-carlo@caione.org>
+References: <20180214194201.24385-1-carlo@caione.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180214194201.24385-1-carlo@caione.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux@endlessm.com, hdegoede@redhat.com, rjw@rjwysocki.net, lenb@kernel.org, sre@kernel.org, wens@csie.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Carlo Caione <carlo@endlessm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 14, 2018 at 10:48 AM, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
-> On Wed, Feb 14, 2018 at 12:31:29PM +0900, Tomasz Figa wrote:
->>
->> - When submitting commands to the GPU, the GPU driver will
->> pm_runtime_get_sync() on the GPU device, which will automatically do
->> the same on all the linked suppliers, which would also include the
->> SMMU itself. The role of device links here is exactly that the GPU
->> driver doesn't have to care which other devices need to be brought up.
->
-> This is true.  Assuming that the device link works correctly we would not need
-> to explicitly power the SMMU which makes my point entirely moot.
+From: Carlo Caione <carlo@endlessm.com>
 
-Just to point out what motivated this patchset, the biggest problem is
-iommu_unmap() because that can happen when GPU is not powered on (or
-in the v4l2 case, because some other device dropped it's reference to
-the dma-buf allowing it to be free'd).  Currently we pm get/put the
-GPU device around unmap, but it is kinda silly to boot up the GPU just
-to unmap a buffer.
+With commits af3ec837 and dccfae6d a blacklist was introduced to avoid
+using the ACPI drivers for AC and battery when a native PMIC driver was
+already present. While this is in general a good idea (because of broken
+DSDT or proprietary and undocumented ACPI opregions for the ACPI
+AC/battery devices) we have come across at least one CherryTrail laptop
+(ECS EF20EA) shipping the AXP288 together with a separate FG controller
+(a MAX17047) instead of the one embedded in the AXP288.
 
-(Semi-related, I would also like to batch map/unmap's, I just haven't
-gotten around to implementing it yet.. but that would be another case
-where a single get_supplier()/put_supplier() outside of the iommu
-would make sense instead of pm_get/put() inside the iommu driver's
-->unmap().)
+The net effect of blacklisting the ACPI drivers is that on this platform
+the AC/battery reporting is broken since the information is coming from
+the AXP288 FG driver, not actually used in hardware.
 
-If you really dislike the get/put_supplier() approach, then perhaps we
-need iommu_pm_get()/iommu_pm_put() operations that the iommu user
-could use to accomplish the same thing?
+In this case we want to keep using the ACPI AC/battery driver that is
+able to interface correctly with the real FG controller.
 
-BR,
--R
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+We introduce therefore a new quirk to avoid the blacklist.
+
+Signed-off-by: Carlo Caione <carlo@endlessm.com>
+---
+ drivers/acpi/ac.c      | 26 ++++++++++++++++++--------
+ drivers/acpi/battery.c | 26 ++++++++++++++++++--------
+ 2 files changed, 36 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+index 47a7ed557bd6..b9a4ca720309 100644
+--- a/drivers/acpi/ac.c
++++ b/drivers/acpi/ac.c
+@@ -87,6 +87,7 @@ static int acpi_ac_open_fs(struct inode *inode, struct file *file);
+ 
+ 
+ static int ac_sleep_before_get_state_ms;
++static bool ac_not_use_pmic;
+ 
+ static struct acpi_driver acpi_ac_driver = {
+ 	.name = "ac",
+@@ -316,6 +317,12 @@ static int thinkpad_e530_quirk(const struct dmi_system_id *d)
+ 	return 0;
+ }
+ 
++static int ac_not_use_pmic_quirk(const struct dmi_system_id *d)
++{
++	ac_not_use_pmic = true;
++	return 0;
++}
++
+ static const struct dmi_system_id ac_dmi_table[] = {
+ 	{
+ 	.callback = thinkpad_e530_quirk,
+@@ -384,7 +391,6 @@ static int acpi_ac_add(struct acpi_device *device)
+ 		kfree(ac);
+ 	}
+ 
+-	dmi_check_system(ac_dmi_table);
+ 	return result;
+ }
+ 
+@@ -442,13 +448,17 @@ static int __init acpi_ac_init(void)
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
+-	for (i = 0; i < ARRAY_SIZE(acpi_ac_blacklist); i++)
+-		if (acpi_dev_present(acpi_ac_blacklist[i].hid, "1",
+-				     acpi_ac_blacklist[i].hrv)) {
+-			pr_info(PREFIX "AC: found native %s PMIC, not loading\n",
+-				acpi_ac_blacklist[i].hid);
+-			return -ENODEV;
+-		}
++	dmi_check_system(ac_dmi_table);
++
++	if (!ac_not_use_pmic) {
++		for (i = 0; i < ARRAY_SIZE(acpi_ac_blacklist); i++)
++			if (acpi_dev_present(acpi_ac_blacklist[i].hid, "1",
++					     acpi_ac_blacklist[i].hrv)) {
++				pr_info(PREFIX "AC: found native %s PMIC, not loading\n",
++					acpi_ac_blacklist[i].hid);
++				return -ENODEV;
++			}
++	}
+ 
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_ac_dir = acpi_lock_ac_dir();
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 7128488a3a72..258d2e66f230 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -71,6 +71,7 @@ static bool battery_driver_registered;
+ static int battery_bix_broken_package;
+ static int battery_notification_delay_ms;
+ static int battery_full_discharging;
++static bool battery_not_use_pmic;
+ static unsigned int cache_time = 1000;
+ module_param(cache_time, uint, 0644);
+ MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
+@@ -1176,6 +1177,13 @@ static int __init battery_full_discharging_quirk(const struct dmi_system_id *d)
+ 	return 0;
+ }
+ 
++static int __init
++battery_not_use_pmic_quirk(const struct dmi_system_id *d)
++{
++	battery_not_use_pmic = true;
++	return 0;
++}
++
+ static const struct dmi_system_id bat_dmi_table[] __initconst = {
+ 	{
+ 		.callback = battery_bix_broken_package_quirk,
+@@ -1364,16 +1372,18 @@ static void __init acpi_battery_init_async(void *unused, async_cookie_t cookie)
+ 	unsigned int i;
+ 	int result;
+ 
+-	for (i = 0; i < ARRAY_SIZE(acpi_battery_blacklist); i++)
+-		if (acpi_dev_present(acpi_battery_blacklist[i], "1", -1)) {
+-			pr_info(PREFIX ACPI_BATTERY_DEVICE_NAME
+-				": found native %s PMIC, not loading\n",
+-				acpi_battery_blacklist[i]);
+-			return;
+-		}
+-
+ 	dmi_check_system(bat_dmi_table);
+ 
++	if (!battery_not_use_pmic) {
++		for (i = 0; i < ARRAY_SIZE(acpi_battery_blacklist); i++)
++			if (acpi_dev_present(acpi_battery_blacklist[i], "1", -1)) {
++				pr_info(PREFIX ACPI_BATTERY_DEVICE_NAME
++					": found native %s PMIC, not loading\n",
++					acpi_battery_blacklist[i]);
++				return;
++			}
++	}
++
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_battery_dir = acpi_lock_battery_dir();
+ 	if (!acpi_battery_dir)
+-- 
+2.14.1
