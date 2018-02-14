@@ -1,171 +1,238 @@
-From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
- calls with runtime suppliers
-Date: Wed, 14 Feb 2018 18:16:00 +0900
-Message-ID: <CAAFQd5DiwAugGnPOTw0+XrEfef9x-n-vx59JFuXpNawjiXHwCw@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime calls with runtime
+	suppliers
+Date: Wed, 14 Feb 2018 16:03:46 +0530
+Message-ID: <CAFp+6iEW0faeHDfzN_F1bRrHGcVo3sPCk4HSY=t9dnEvHkDkYw@mail.gmail.com>
 References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
- <CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
- <CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
- <CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
- <CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
- <CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
- <CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg@mail.gmail.com>
- <CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg@mail.gmail.com>
+	<1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
+	<CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
+	<CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
+	<CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
+	<CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
+	<CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
+	<CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
+	<CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg@mail.gmail.com>
+	<CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg@mail.gmail.com>
+	<CAAFQd5DiwAugGnPOTw0+XrEfef9x-n-vx59JFuXpNawjiXHwCw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <CAAFQd5DiwAugGnPOTw0+XrEfef9x-n-vx59JFuXpNawjiXHwCw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBGZWIgMTQsIDIwMTggYXQgNjoxMyBQTSwgVml2ZWsgR2F1dGFtCjx2aXZlay5nYXV0
-YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+IEhpIFRvbWFzeiwKPgo+IE9uIFdlZCwgRmViIDE0
-LCAyMDE4IGF0IDExOjA4IEFNLCBUb21hc3ogRmlnYSA8dGZpZ2FAY2hyb21pdW0ub3JnPiB3cm90
-ZToKPj4gT24gV2VkLCBGZWIgMTQsIDIwMTggYXQgMToxNyBQTSwgVml2ZWsgR2F1dGFtCj4+IDx2
-aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+Pj4gSGkgVG9tYXN6LAo+Pj4KPj4+
-IE9uIFdlZCwgRmViIDE0LCAyMDE4IGF0IDg6MzEgQU0sIFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJv
-bWl1bS5vcmc+IHdyb3RlOgo+Pj4+IE9uIFdlZCwgRmViIDE0LCAyMDE4IGF0IDExOjEzIEFNLCBS
-b2IgQ2xhcmsgPHJvYmRjbGFya0BnbWFpbC5jb20+IHdyb3RlOgo+Pj4+PiBPbiBUdWUsIEZlYiAx
-MywgMjAxOCBhdCA4OjU5IFBNLCBUb21hc3ogRmlnYSA8dGZpZ2FAY2hyb21pdW0ub3JnPiB3cm90
-ZToKPj4+Pj4+IE9uIFdlZCwgRmViIDE0LCAyMDE4IGF0IDM6MDMgQU0sIFJvYiBDbGFyayA8cm9i
-ZGNsYXJrQGdtYWlsLmNvbT4gd3JvdGU6Cj4+Pj4+Pj4gT24gVHVlLCBGZWIgMTMsIDIwMTggYXQg
-NDoxMCBBTSwgVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4gd3JvdGU6Cj4+Pj4+Pj4+
-IEhpIFZpdmVrLAo+Pj4+Pj4+Pgo+Pj4+Pj4+PiBUaGFua3MgZm9yIHRoZSBwYXRjaC4gUGxlYXNl
-IHNlZSBteSBjb21tZW50cyBpbmxpbmUuCj4+Pj4+Pj4+Cj4+Pj4+Pj4+IE9uIFdlZCwgRmViIDcs
-IDIwMTggYXQgNzozMSBQTSwgVml2ZWsgR2F1dGFtCj4+Pj4+Pj4+IDx2aXZlay5nYXV0YW1AY29k
-ZWF1cm9yYS5vcmc+IHdyb3RlOgo+Pj4+Pj4+Pj4gV2hpbGUgaGFuZGxpbmcgdGhlIGNvbmNlcm5l
-ZCBpb21tdSwgdGhlcmUgc2hvdWxkIG5vdCBiZSBhCj4+Pj4+Pj4+PiBuZWVkIHRvIHBvd2VyIGNv
-bnRyb2wgdGhlIGRybSBkZXZpY2VzIGZyb20gaW9tbXUgaW50ZXJmYWNlLgo+Pj4+Pj4+Pj4gSWYg
-dGhlc2UgZHJtIGRldmljZXMgbmVlZCB0byBiZSBwb3dlcmVkIGFyb3VuZCB0aGlzIHRpbWUsCj4+
-Pj4+Pj4+PiB0aGUgcmVzcGVjdGl2ZSBkcml2ZXJzIHNob3VsZCB0YWtlIGNhcmUgb2YgdGhpcy4K
-Pj4+Pj4+Pj4+Cj4+Pj4+Pj4+PiBSZXBsYWNlIHRoZSBwbV9ydW50aW1lX2dldC9wdXRfc3luYyg8
-ZHJtX2RldmljZT4pIHdpdGgKPj4+Pj4+Pj4+IHBtX3J1bnRpbWVfZ2V0L3B1dF9zdXBwbGllcnMo
-PGRybV9kZXZpY2U+KSBjYWxscywgdG8gcG93ZXItdXAKPj4+Pj4+Pj4+IHRoZSBjb25uZWN0ZWQg
-aW9tbXUgdGhyb3VnaCB0aGUgZGV2aWNlIGxpbmsgaW50ZXJmYWNlLgo+Pj4+Pj4+Pj4gSW4gY2Fz
-ZSB0aGUgZGV2aWNlIGxpbmsgaXMgbm90IHNldHVwIHRoZXNlIGdldC9wdXRfc3VwcGxpZXJzKCkK
-Pj4+Pj4+Pj4+IGNhbGxzIHdpbGwgYmUgYSBuby1vcCwgYW5kIHRoZSBpb21tdSBkcml2ZXIgc2hv
-dWxkIHRha2UgY2FyZSBvZgo+Pj4+Pj4+Pj4gcG93ZXJpbmcgb24gaXRzIGRldmljZXMgYWNjb3Jk
-aW5nbHkuCj4+Pj4+Pj4+Pgo+Pj4+Pj4+Pj4gU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2
-aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+Pj4+Pj4+PiAtLS0KPj4+Pj4+Pj4+ICBkcml2
-ZXJzL2dwdS9kcm0vbXNtL21zbV9pb21tdS5jIHwgMTYgKysrKysrKystLS0tLS0tLQo+Pj4+Pj4+
-Pj4gIDEgZmlsZSBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pCj4+Pj4+
-Pj4+Pgo+Pj4+Pj4+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9tc20vbXNtX2lvbW11
-LmMgYi9kcml2ZXJzL2dwdS9kcm0vbXNtL21zbV9pb21tdS5jCj4+Pj4+Pj4+PiBpbmRleCBiMjNk
-MzM2MjJmMzcuLjFhYjYyOWJiZWU2OSAxMDA2NDQKPj4+Pj4+Pj4+IC0tLSBhL2RyaXZlcnMvZ3B1
-L2RybS9tc20vbXNtX2lvbW11LmMKPj4+Pj4+Pj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9tc20v
-bXNtX2lvbW11LmMKPj4+Pj4+Pj4+IEBAIC00MCw5ICs0MCw5IEBAIHN0YXRpYyBpbnQgbXNtX2lv
-bW11X2F0dGFjaChzdHJ1Y3QgbXNtX21tdSAqbW11LCBjb25zdCBjaGFyICogY29uc3QgKm5hbWVz
-LAo+Pj4+Pj4+Pj4gICAgICAgICBzdHJ1Y3QgbXNtX2lvbW11ICppb21tdSA9IHRvX21zbV9pb21t
-dShtbXUpOwo+Pj4+Pj4+Pj4gICAgICAgICBpbnQgcmV0Owo+Pj4+Pj4+Pj4KPj4+Pj4+Pj4+IC0g
-ICAgICAgcG1fcnVudGltZV9nZXRfc3luYyhtbXUtPmRldik7Cj4+Pj4+Pj4+PiArICAgICAgIHBt
-X3J1bnRpbWVfZ2V0X3N1cHBsaWVycyhtbXUtPmRldik7Cj4+Pj4+Pj4+PiAgICAgICAgIHJldCA9
-IGlvbW11X2F0dGFjaF9kZXZpY2UoaW9tbXUtPmRvbWFpbiwgbW11LT5kZXYpOwo+Pj4+Pj4+Pj4g
-LSAgICAgICBwbV9ydW50aW1lX3B1dF9zeW5jKG1tdS0+ZGV2KTsKPj4+Pj4+Pj4+ICsgICAgICAg
-cG1fcnVudGltZV9wdXRfc3VwcGxpZXJzKG1tdS0+ZGV2KTsKPj4+Pj4+Pj4KPj4+Pj4+Pj4gRm9y
-IG1lLCBpdCBsb29rcyBsaWtlIGEgd3JvbmcgcGxhY2UgdG8gaGFuZGxlIHJ1bnRpbWUgUE0gb2Yg
-SU9NTVUKPj4+Pj4+Pj4gaGVyZS4gaW9tbXVfYXR0YWNoX2RldmljZSgpIGNhbGxzIGludG8gSU9N
-TVUgZHJpdmVyJ3MgYXR0YWNoX2RldmljZSgpCj4+Pj4+Pj4+IGNhbGxiYWNrIGFuZCB0aGF0J3Mg
-d2hlcmUgbmVjZXNzYXJ5IHJ1bnRpbWUgUE0gZ2V0cyBzaG91bGQgaGFwcGVuLCBpZgo+Pj4+Pj4+
-PiBhbnkuIEluIG90aGVyIHdvcmRzLCBkcml2ZXIgQSAoTVNNIERSTSBkcml2ZXIpIHNob3VsZG4n
-dCBiZSBkZWFsaW5nCj4+Pj4+Pj4+IHdpdGggcG93ZXIgc3RhdGUgb2YgZGV2aWNlIGNvbnRyb2xs
-ZWQgYnkgZHJpdmVyIEIgKEFSTSBTTU1VKS4KPj4+Pj4+Pgo+Pj4+Pj4+IE5vdGUgdGhhdCB3ZSBl
-bmQgdXAgaGF2aW5nIHRvIGRvIHRoZSBzYW1lLCBiZWNhdXNlIG9mIGlvbW11X3VubWFwKCkKPj4+
-Pj4+PiB3aGlsZSBEUk0gZHJpdmVyIGlzIHBvd2VyZWQgb2ZmLi4gIGl0IG1pZ2h0IGJlIGNsZWFu
-ZXIgaWYgaXQgd2FzIGFsbAo+Pj4+Pj4+IHNlbGYgY29udGFpbmVkIGluIHRoZSBpb21tdSBkcml2
-ZXIsIGJ1dCB0aGF0IHdvdWxkIG1ha2UgaXQgc28gb3RoZXIKPj4+Pj4+PiBkcml2ZXJzIGNvdWxk
-bid0IGNhbGwgaW9tbXVfdW5tYXAoKSBmcm9tIGFuIGlycSBoYW5kbGVyLCB3aGljaCBpcwo+Pj4+
-Pj4+IGFwcGFyZW50bHkgc29tZXRoaW5nIHRoYXQgc29tZSBvZiB0aGVtIHdhbnQgdG8gZG8uLgo+
-Pj4+Pj4KPj4+Pj4+IEknZCBhc3N1bWUgdGhhdCBydW50aW1lIFBNIHN0YXR1cyBpcyBhbHJlYWR5
-IGd1YXJhbnRlZWQgdG8gYmUgYWN0aXZlCj4+Pj4+PiB3aGVuIHRoZSBJUlEgaGFuZGxlciBpcyBy
-dW5uaW5nLCBieSBzb21lIG90aGVyIG1lYW5zIChlLmcuCj4+Pj4+PiBwbV9ydW50aW1lX2dldF9z
-eW5jKCkgY2FsbGVkIGVhcmxpZXIsIHdoZW4gcXVldWluZyBzb21lIHdvcmsgdG8gdGhlCj4+Pj4+
-PiBoYXJkd2FyZSkuIE90aGVyd2lzZSwgSSdtIG5vdCBzdXJlIGhvdyBhIHBvd2VyZWQgZG93biBk
-ZXZpY2UgY291bGQKPj4+Pj4+IHRyaWdnZXIgYW4gSVJRLgo+Pj4+Pj4KPj4+Pj4+IFNvLCBpZiB0
-aGUgbWFzdGVyIGRldmljZSBwb3dlciBpcyBhbHJlYWR5IG9uLCBzdXBwbGllcnMgc2hvdWxkIGJl
-Cj4+Pj4+PiBwb3dlcmVkIG9uIGFzIHdlbGwsIHRoYW5rcyB0byBkZXZpY2UgbGlua3MuCj4+Pj4+
-Pgo+Pj4+Pgo+Pj4+PiB1bW0sIHRoYXQgaXMga2luZG9mIHRoZSBpbnZlcnNlIG9mIHRoZSBwcm9i
-bGVtLi4gIHRoZSBwcm9ibGVtIGlzCj4+Pj4+IHRoaW5ncyBsaWtlIGdwdSBkcml2ZXIgKGFuZCB2
-NGwyIGRyaXZlcnMgdGhhdCBpbXBvcnQgZG1hLWJ1ZidzLAo+Pj4+PiBhZmFpY3QpLi4gdGhleSB3
-aWxsIHBvdGVudGlhbGx5IGNhbGwgaW9tbXUtPnVubWFwKCkgd2hlbiBkZXZpY2UgaXMgbm90Cj4+
-Pj4+IGFjdGl2ZSAoZHVlIHRvIHVzZXJzcGFjZSBvciB0aGluZ3MgYmV5b25kIHRoZSBjb250cm9s
-IG9mIHRoZSBkcml2ZXIpLi4KPj4+Pj4gc28gKnRoZXkqIHdvdWxkIHdhbnQgaW9tbXUgdG8gZG8g
-cG0gZ2V0L3B1dCBjYWxscy4KPj4+Pgo+Pj4+IFdoaWNoIGlzIGZpbmUgYW5kIHdoaWNoIGlzIGFj
-dHVhbGx5IGFscmVhZHkgZG9uZSBieSBvbmUgb2YgdGhlIHBhdGNoZXMKPj4+PiBpbiB0aGlzIHNl
-cmllcywgbm90IGZvciBtYXAvdW5tYXAsIGJ1dCBwcm9iZSwgYWRkX2RldmljZSwKPj4+PiByZW1v
-dmVfZGV2aWNlLiBIYXZpbmcgcGFydHMgb2YgdGhlIEFQSSBkb2luZyBpdCBpbnNpZGUgdGhlIGNh
-bGxiYWNrCj4+Pj4gYW5kIG90aGVyIHBhcnRzIG91dHNpZGUgc291bmRzIGF0IGxlYXN0IGluY29u
-c2lzdGVudC4KPj4+Pgo+Pj4+PiBCdXQgb3RoZXIgZHJpdmVycwo+Pj4+PiB0cnlpbmcgdG8gdW5t
-YXAgZnJvbSBpcnEgY3R4IHdvdWxkIG5vdC4gIFdoaWNoIGlzIHRoZSBjb250cmFkaWN0b3J5Cj4+
-Pj4+IHJlcXVpcmVtZW50IHRoYXQgbGVhZCB0byB0aGUgaWRlYSBvZiBpb21tdSB1c2VyIHBvd2Vy
-aW5nIHVwIGlvbW11IGZvcgo+Pj4+PiB1bm1hcC4KPj4+Pgo+Pj4+IFNvcnJ5LCBtYXliZSBJIHdh
-c24ndCBjbGVhci4gTXkgbGFzdCBtZXNzYWdlIHdhcyBzdXBwb3NlZCB0byBzaG93IHRoYXQKPj4+
-PiBpdCdzIG5vdCBjb250cmFkaWN0b3J5IGF0IGFsbCwgYmVjYXVzZSAib3RoZXIgZHJpdmVycyB0
-cnlpbmcgdG8gdW5tYXAKPj4+PiBmcm9tIGlycSBjdHgiIHdvdWxkIGFscmVhZHkgaGF2ZSBjYWxs
-ZWQgcG1fcnVudGltZV9nZXRfKigpIGVhcmxpZXIKPj4+PiBmcm9tIGEgbm9uLWlycSBjdHgsIHdo
-aWNoIHdvdWxkIGhhdmUgYWxzbyBkb25lIHRoZSBzYW1lIG9uIGFsbCB0aGUKPj4+PiBsaW5rZWQg
-c3VwcGxpZXJzLCBpbmNsdWRpbmcgdGhlIElPTU1VLiBUaGUgdWx0aW1hdGUgcmVzdWx0IHdvdWxk
-IGJlCj4+Pj4gdGhhdCB0aGUgbWFwL3VubWFwKCkgb2YgdGhlIElPTU1VIGRyaXZlciBjYWxsaW5n
-IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKQo+Pj4+IHdvdWxkIGRvIG5vdGhpbmcgYmVzaWRlcyBpbmNy
-ZW1lbnRpbmcgdGhlIHJlZmVyZW5jZSBjb3VudC4KPj4+Cj4+PiBUaGUgZW50aXJlIHBvaW50IHdh
-cyB0byBhdm9pZCB0aGUgc2xvd3BhdGggdGhhdCBwbV9ydW50aW1lX2dldC9wdXRfc3luYygpCj4+
-PiB3b3VsZCBhZGQgaW4gbWFwL3VubWFwLiBJdCB3b3VsZCBub3QgYmUgY29ycmVjdCB0byBhZGQg
-YSBzbG93cGF0aCBpbiBpcnFfY3R4Cj4+PiBmb3IgdGFraW5nIGNhcmUgb2Ygbm9uLWlycV9jdHgg
-YW5kIGZvciB0aGUgc2l0dWF0aW9ucyB3aGVyZSBtYXN0ZXIgaXMgYWxyZWFkeQo+Pj4gcG93ZXJl
-ZC1vZmYuCj4+Cj4+IENvcnJlY3QgbWUgaWYgSSdtIHdyb25nLCBidXQgSSBiZWxpZXZlIHRoYXQg
-d2l0aCB3aGF0IEknbSBwcm9wb3NpbmcKPj4gdGhlcmUgd291bGRuJ3QgYmUgYW55IHNsb3cgcGF0
-aC4KPgo+IFllYSwgYnV0IG9ubHkgd2hlbiB0aGUgcG93ZXIgZG9tYWluIGlzIGlycS1zYWZlPyBB
-bmQgbm90IGFsbCBwbGF0Zm9ybXMKPiBlbmFibGUgaXJxLXNhZmUgcG93ZXIgZG9tYWlucy4gRm9y
-IGluc3RhbmNlLCBtc20gZG9lc24ndCBlbmFibGUgaXRzCj4gZ2RzYyBwb3dlciBkb21haW5zIGFz
-IGlycS1zYWZlLgo+IElzIGl0IHNvbWV0aGluZyBpIGFtIG1pc3Npbmc/CgppcnEtc2FmZSB3b3Vs
-ZCBtYXR0ZXIgaWYgdGhlcmUgd291bGQgZXhpc3QgYSBjYXNlIHdoZW4gdGhlIGNhbGwgaXMKZG9u
-ZSBmcm9tIElSUSBjb250ZXh0IGFuZCB0aGUgcG93ZXIgaXMgb2ZmLiBBcyBJIGV4cGxhaW5lZCBp
-biBhKSwgaXQKc2hvdWxkbid0IGhhcHBlbi4KCkJlc3QgcmVnYXJkcywKVG9tYXN6Cgo+Cj4+Cj4+
-IGEpIEZvciBJUlEgY29udGV4dCwgdGhlIG1hc3RlciBpcyBhbHJlYWR5IHBvd2VyZWQgb24gYW5k
-IHNvIHRoZSBTTU1VCj4+IGlzIGFsc28gcG93ZXJlZCBvbiwgdGhyb3VnaCByZXNwZWN0aXZlIGRl
-dmljZSBsaW5rLgo+PiBwbV9ydW50aW1lX2dldF9zeW5jKCkgd291bGQgdWx0aW1hdGVseSBqdXN0
-IGluY3JlbWVudCB0aGUgcnVudGltZSBQTQo+PiB1c2FnZSBjb3VudC4KPj4KPj4gYikgRm9yIGEg
-Y2FzZSB3aGVuIHRoZSBtYXN0ZXIgaXMgYWxyZWFkeSBwb3dlcmVkIG9mZiAod2hpY2ggd291bGRu
-J3QKPj4gYmUgSVJRIGNvbnRleHQsIGZvciB0aGUgcmVhc29uIHN0YXRlZCBpbiBhKSksIHBvd2Vy
-aW5nIG9uIHRoZSBTTU1VIGlzCj4+IHVuYXZvaWRhYmxlLCBpZiB0aGUgU01NVSBoYXJkd2FyZSBy
-ZWFsbHkgbmVlZHMgdG8gYmUgYWNjZXNzZWQgKGkuZS4KPj4gc29tZSBUTEJzIG5lZWQgdG8gYmUg
-aW52YWxpZGF0ZWQsIGlmIHRoZWlyIHN0YXRlIGlzIHByZXNlcnZlZCBkZXNwaXRlCj4+IG1hc3Rl
-ciBiZWluZyBwb3dlcmVkIGRvd24pLgo+Pgo+Pj4KPj4+Pgo+Pj4+Pgo+Pj4+PiBUaGVyZSBoYXMg
-YWxyZWFkeSBiZWVuIHNvbWUgZGlzY3Vzc2lvbiBhYm91dCB0aGlzIG9uIHZhcmlvdXMgZWFybGll
-cgo+Pj4+PiBwZXJtdXRhdGlvbnMgb2YgdGhpcyBwYXRjaHNldC4gIEkgdGhpbmsgd2UgaGF2ZSBl
-eGhhdXN0ZWQgYWxsIG90aGVyCj4+Pj4+IG9wdGlvbnMuCj4+Pj4KPj4+PiBJIGd1ZXNzIEkgc2hv
-dWxkIGhhdmUgcmVhZCB0aG9zZS4gTGV0IG1lIGRvIHRoYXQgbm93Lgo+Pj4gWWVhLCBpIHBvaW50
-IHRvIHRoZSB0aHJlYWQgaW4gY292ZXIgbGV0dGVyIGFuZCBbUEFUQ0ggMS82XS4KPj4+IFRoYW5r
-cy4KPj4KPj4gSSByZWFkIHRocm91Z2ggYWxsIHRoZSBsaW5rcyBpbiB0aGUgY292ZXIgbGV0dGVy
-IGFuZCBJIGNvdWxkIHNlZSBvdGhlcgo+PiBhdHRlbXB0cyBub3Qgd29ya2luZyBvdXQgaW5kZWVk
-LCBidXQgdGhleSB3ZXJlIGRpZmZlcmVudCBmcm9tIHdoYXQgSSdtCj4+IHByb3Bvc2luZy4KPj4K
-Pj4gVGhlcmUgd2FzIGFsc28gYSBwb2ludCByYWlzZWQgdGhhdCBfX3BtX3J1bnRpbWVfcmVzdW1l
-KCkgY2FsbGVkIGZyb20KPj4gcG1fcnVudGltZV9nZXRfc3luYygpIHdvdWxkIGdyYWIgZGV2LT5w
-b3dlcl9sb2NrIHNwaW5sb2NrLCB3aGljaCBpcwo+PiB0cnVlLCBleGNlcHQgdGhhdCBpZiB0aGUg
-ZGV2aWNlIGlzIGFscmVhZHkgYWN0aXZlLCBpdCB3b3VsZCBkbyBpdCBvbmx5Cj4+IGZvciB0aGUg
-dGltZSBvZiBjaGVja2luZyBkZXZpY2Ugc3RhdGUsIHNvIEkgZG91YnQgaXQgd291bGQgcmVhbGx5
-IGJlIGEKPj4gc2lnbmlmaWNhbnQgcG9pbnQgb2YgY29udGVudGlvbi4KPj4KPj4gQmVzdCByZWdh
-cmRzLAo+PiBUb21hc3oKPj4gLS0KPj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNl
-bmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWFybS1tc20iIGluCj4+IHRoZSBib2R5IG9m
-IGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCj4+IE1vcmUgbWFqb3Jkb21v
-IGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbAo+Cj4K
-Pgo+IC0tCj4gUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0aW9u
-IENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgo+IG9mIENvZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQg
-YnkgVGhlIExpbnV4IEZvdW5kYXRpb24KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
-Zm8vZnJlZWRyZW5vCg==
+On Wed, Feb 14, 2018 at 2:46 PM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+
+Adding Jordan to this thread as well.
+
+> On Wed, Feb 14, 2018 at 6:13 PM, Vivek Gautam
+> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>> Hi Tomasz,
+>>
+>> On Wed, Feb 14, 2018 at 11:08 AM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>>> On Wed, Feb 14, 2018 at 1:17 PM, Vivek Gautam
+>>> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>>>> Hi Tomasz,
+>>>>
+>>>> On Wed, Feb 14, 2018 at 8:31 AM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>>>>> On Wed, Feb 14, 2018 at 11:13 AM, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>>>>>> On Tue, Feb 13, 2018 at 8:59 PM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>>>>>>> On Wed, Feb 14, 2018 at 3:03 AM, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>>>>>>>> On Tue, Feb 13, 2018 at 4:10 AM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>>>>>>>>> Hi Vivek,
+>>>>>>>>>
+>>>>>>>>> Thanks for the patch. Please see my comments inline.
+>>>>>>>>>
+>>>>>>>>> On Wed, Feb 7, 2018 at 7:31 PM, Vivek Gautam
+>>>>>>>>> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>>>>>>>>>> While handling the concerned iommu, there should not be a
+>>>>>>>>>> need to power control the drm devices from iommu interface.
+>>>>>>>>>> If these drm devices need to be powered around this time,
+>>>>>>>>>> the respective drivers should take care of this.
+>>>>>>>>>>
+>>>>>>>>>> Replace the pm_runtime_get/put_sync(<drm_device>) with
+>>>>>>>>>> pm_runtime_get/put_suppliers(<drm_device>) calls, to power-up
+>>>>>>>>>> the connected iommu through the device link interface.
+>>>>>>>>>> In case the device link is not setup these get/put_suppliers()
+>>>>>>>>>> calls will be a no-op, and the iommu driver should take care of
+>>>>>>>>>> powering on its devices accordingly.
+>>>>>>>>>>
+>>>>>>>>>> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>>>>>>> ---
+>>>>>>>>>>  drivers/gpu/drm/msm/msm_iommu.c | 16 ++++++++--------
+>>>>>>>>>>  1 file changed, 8 insertions(+), 8 deletions(-)
+>>>>>>>>>>
+>>>>>>>>>> diff --git a/drivers/gpu/drm/msm/msm_iommu.c b/drivers/gpu/drm/msm/msm_iommu.c
+>>>>>>>>>> index b23d33622f37..1ab629bbee69 100644
+>>>>>>>>>> --- a/drivers/gpu/drm/msm/msm_iommu.c
+>>>>>>>>>> +++ b/drivers/gpu/drm/msm/msm_iommu.c
+>>>>>>>>>> @@ -40,9 +40,9 @@ static int msm_iommu_attach(struct msm_mmu *mmu, const char * const *names,
+>>>>>>>>>>         struct msm_iommu *iommu = to_msm_iommu(mmu);
+>>>>>>>>>>         int ret;
+>>>>>>>>>>
+>>>>>>>>>> -       pm_runtime_get_sync(mmu->dev);
+>>>>>>>>>> +       pm_runtime_get_suppliers(mmu->dev);
+>>>>>>>>>>         ret = iommu_attach_device(iommu->domain, mmu->dev);
+>>>>>>>>>> -       pm_runtime_put_sync(mmu->dev);
+>>>>>>>>>> +       pm_runtime_put_suppliers(mmu->dev);
+>>>>>>>>>
+>>>>>>>>> For me, it looks like a wrong place to handle runtime PM of IOMMU
+>>>>>>>>> here. iommu_attach_device() calls into IOMMU driver's attach_device()
+>>>>>>>>> callback and that's where necessary runtime PM gets should happen, if
+>>>>>>>>> any. In other words, driver A (MSM DRM driver) shouldn't be dealing
+>>>>>>>>> with power state of device controlled by driver B (ARM SMMU).
+>>>>>>>>
+>>>>>>>> Note that we end up having to do the same, because of iommu_unmap()
+>>>>>>>> while DRM driver is powered off..  it might be cleaner if it was all
+>>>>>>>> self contained in the iommu driver, but that would make it so other
+>>>>>>>> drivers couldn't call iommu_unmap() from an irq handler, which is
+>>>>>>>> apparently something that some of them want to do..
+>>>>>>>
+>>>>>>> I'd assume that runtime PM status is already guaranteed to be active
+>>>>>>> when the IRQ handler is running, by some other means (e.g.
+>>>>>>> pm_runtime_get_sync() called earlier, when queuing some work to the
+>>>>>>> hardware). Otherwise, I'm not sure how a powered down device could
+>>>>>>> trigger an IRQ.
+>>>>>>>
+>>>>>>> So, if the master device power is already on, suppliers should be
+>>>>>>> powered on as well, thanks to device links.
+>>>>>>>
+>>>>>>
+>>>>>> umm, that is kindof the inverse of the problem..  the problem is
+>>>>>> things like gpu driver (and v4l2 drivers that import dma-buf's,
+>>>>>> afaict).. they will potentially call iommu->unmap() when device is not
+>>>>>> active (due to userspace or things beyond the control of the driver)..
+>>>>>> so *they* would want iommu to do pm get/put calls.
+>>>>>
+>>>>> Which is fine and which is actually already done by one of the patches
+>>>>> in this series, not for map/unmap, but probe, add_device,
+>>>>> remove_device. Having parts of the API doing it inside the callback
+>>>>> and other parts outside sounds at least inconsistent.
+>>>>>
+>>>>>> But other drivers
+>>>>>> trying to unmap from irq ctx would not.  Which is the contradictory
+>>>>>> requirement that lead to the idea of iommu user powering up iommu for
+>>>>>> unmap.
+>>>>>
+>>>>> Sorry, maybe I wasn't clear. My last message was supposed to show that
+>>>>> it's not contradictory at all, because "other drivers trying to unmap
+>>>>> from irq ctx" would already have called pm_runtime_get_*() earlier
+>>>>> from a non-irq ctx, which would have also done the same on all the
+>>>>> linked suppliers, including the IOMMU. The ultimate result would be
+>>>>> that the map/unmap() of the IOMMU driver calling pm_runtime_get_sync()
+>>>>> would do nothing besides incrementing the reference count.
+>>>>
+>>>> The entire point was to avoid the slowpath that pm_runtime_get/put_sync()
+>>>> would add in map/unmap. It would not be correct to add a slowpath in irq_ctx
+>>>> for taking care of non-irq_ctx and for the situations where master is already
+>>>> powered-off.
+>>>
+>>> Correct me if I'm wrong, but I believe that with what I'm proposing
+>>> there wouldn't be any slow path.
+>>
+>> Yea, but only when the power domain is irq-safe? And not all platforms
+>> enable irq-safe power domains. For instance, msm doesn't enable its
+>> gdsc power domains as irq-safe.
+>> Is it something i am missing?
+>
+> irq-safe would matter if there would exist a case when the call is
+> done from IRQ context and the power is off. As I explained in a), it
+> shouldn't happen.
+
+Hi Robin, Will
+
+Does adding pm_runtime_get() in map/unmap sounds good to you?
+
+Quoting Tomasz once again here:
+>>> a) For IRQ context, the master is already powered on and so the SMMU
+>>> is also powered on, through respective device link.
+>>> pm_runtime_get_sync() would ultimately just increment the runtime PM
+>>> usage count.
+>>>
+>>> b) For a case when the master is already powered off (which wouldn't
+>>> be IRQ context, for the reason stated in a)), powering on the SMMU is
+>>> unavoidable, if the SMMU hardware really needs to be accessed (i.e.
+>>> some TLBs need to be invalidated, if their state is preserved despite
+>>> master being powered down).
+
+>>> There was also a point raised that __pm_runtime_resume() called from
+>>> pm_runtime_get_sync() would grab dev->power_lock spinlock, which is
+>>> true, except that if the device is already active, it would do it only
+>>> for the time of checking device state, so I doubt it would really be a
+>>> significant point of contention.
+
+Regards
+Vivek
+
+>
+> Best regards,
+> Tomasz
+>
+>>
+>>>
+>>> a) For IRQ context, the master is already powered on and so the SMMU
+>>> is also powered on, through respective device link.
+>>> pm_runtime_get_sync() would ultimately just increment the runtime PM
+>>> usage count.
+>>>
+>>> b) For a case when the master is already powered off (which wouldn't
+>>> be IRQ context, for the reason stated in a)), powering on the SMMU is
+>>> unavoidable, if the SMMU hardware really needs to be accessed (i.e.
+>>> some TLBs need to be invalidated, if their state is preserved despite
+>>> master being powered down).
+>>>
+>>>>
+>>>>>
+>>>>>>
+>>>>>> There has already been some discussion about this on various earlier
+>>>>>> permutations of this patchset.  I think we have exhausted all other
+>>>>>> options.
+>>>>>
+>>>>> I guess I should have read those. Let me do that now.
+>>>> Yea, i point to the thread in cover letter and [PATCH 1/6].
+>>>> Thanks.
+>>>
+>>> I read through all the links in the cover letter and I could see other
+>>> attempts not working out indeed, but they were different from what I'm
+>>> proposing.
+>>>
+>>> There was also a point raised that __pm_runtime_resume() called from
+>>> pm_runtime_get_sync() would grab dev->power_lock spinlock, which is
+>>> true, except that if the device is already active, it would do it only
+>>> for the time of checking device state, so I doubt it would really be a
+>>> significant point of contention.
+>>>
+>>> Best regards,
+>>> Tomasz
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+>>> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>>
+>>
+>> --
+>> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+>> of Code Aurora Forum, hosted by The Linux Foundation
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
