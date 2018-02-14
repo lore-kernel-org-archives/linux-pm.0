@@ -1,138 +1,84 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5] Documentation/ABI: update cpuidle sysfs documentation
-Date: Wed, 14 Feb 2018 11:51:00 +0100
-Message-ID: <6470168.Bc58CWhkOs@aspire.rjw.lan>
-References: <20180207133436.GA7440@mordor.localdomain>
+Subject: Re: [PATCH] PM / wakeirq: Fix unbalanced irq enable for wakeirq
+Date: Wed, 14 Feb 2018 11:52:07 +0100
+Message-ID: <1980232.muaKaqCUGd@aspire.rjw.lan>
+References: <20180209161126.18580-1-tony@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180207133436.GA7440@mordor.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Aishwarya Pant <aishpant@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, Julia Lawall <julia.lawall@lip6.fr>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.pl ([79.96.170.134]:52834 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S967114AbeBNKx4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Feb 2018 05:53:56 -0500
+In-Reply-To: <20180209161126.18580-1-tony@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Wednesday, February 7, 2018 2:34:36 PM CET Aishwarya Pant wrote:
-> Update cpuidle documentation using git logs and existing documentation
-> in Documentation/cpuidle/sysfs.txt. This might be useful for scripting
-> and tracking changes in the ABI.
+On Friday, February 9, 2018 5:11:26 PM CET Tony Lindgren wrote:
+> If a device is runtime PM suspended when we enter suspend and has
+> a dedicated wake irq, we can get the following warning:
 > 
-> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+> WARNING: CPU: 0 PID: 108 at kernel/irq/manage.c:526 enable_irq+0x40/0x94
+> [  102.087860] Unbalanced enable for IRQ 147
+> ...
+> (enable_irq) from [<c06117a8>] (dev_pm_arm_wake_irq+0x4c/0x60)
+> (dev_pm_arm_wake_irq) from [<c0618360>]
+>  (device_wakeup_arm_wake_irqs+0x58/0x9c)
+> (device_wakeup_arm_wake_irqs) from [<c0615948>]
+> (dpm_suspend_noirq+0x10/0x48)
+> (dpm_suspend_noirq) from [<c01ac7ac>]
+> (suspend_devices_and_enter+0x30c/0xf14)
+> (suspend_devices_and_enter) from [<c01adf20>]
+> (enter_state+0xad4/0xbd8)
+> (enter_state) from [<c01ad3ec>] (pm_suspend+0x38/0x98)
+> (pm_suspend) from [<c01ab3e8>] (state_store+0x68/0xc8)
+> 
+> This is because the dedicated wake irq for the device may have been
+> already enabled earlier by dev_pm_enable_wake_irq_check(). Fix the
+> issue by checking for runtime PM suspended status.
+> 
+> This issue can be easily reproduced by setting serial console log level
+> to zero, letting the serial console idle, and suspend the system from
+> an ssh terminal. On resume, dmesg will have the warning above.
+> 
+> The reason why I have not ran into this issue earlier has been that I
+> typically run my PM test cases from on a serial console instead over ssh.
+> 
+> Fixes: c84345597558 ("PM / wakeirq: Enable dedicated wakeirq for suspend")
+> Cc: Brian Norris <briannorris@chromium.org>
+> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 > ---
-> Changes in v5:
-> - Update contact information- LKML -> power management mailing list
-> v4:
-> - Fix patch formatting
-> v3:
-> - Fix subject line
-> v2:
-> - Merge cpuidle_sysfs_switch attributes' description with the previous
->   entry.
+>  drivers/base/power/wakeirq.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
->  Documentation/ABI/testing/sysfs-devices-system-cpu | 77 +++++++++++++++++++++-
->  1 file changed, 75 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index bfd29bc8d37a..4ed63b6cfb15 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -108,6 +108,8 @@ Description:	CPU topology files that describe a logical CPU's relationship
+> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+> --- a/drivers/base/power/wakeirq.c
+> +++ b/drivers/base/power/wakeirq.c
+> @@ -321,7 +321,8 @@ void dev_pm_arm_wake_irq(struct wake_irq *wirq)
+>  		return;
 >  
->  What:		/sys/devices/system/cpu/cpuidle/current_driver
->  		/sys/devices/system/cpu/cpuidle/current_governer_ro
-> +		/sys/devices/system/cpu/cpuidle/available_governors
-> +		/sys/devices/system/cpu/cpuidle/current_governor
->  Date:		September 2007
->  Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
->  Description:	Discover cpuidle policy and mechanism
-> @@ -119,13 +121,84 @@ Description:	Discover cpuidle policy and mechanism
->  		Idle policy (governor) is differentiated from idle mechanism
->  		(driver)
+>  	if (device_may_wakeup(wirq->dev)) {
+> -		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED)
+> +		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED &&
+> +		    !pm_runtime_status_suspended(wirq->dev))
+>  			enable_irq(wirq->irq);
 >  
-> -		current_driver: displays current idle mechanism
-> +		current_driver: (RO) displays current idle mechanism
+>  		enable_irq_wake(wirq->irq);
+> @@ -343,7 +344,8 @@ void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
+>  	if (device_may_wakeup(wirq->dev)) {
+>  		disable_irq_wake(wirq->irq);
 >  
-> -		current_governor_ro: displays current idle policy
-> +		current_governor_ro: (RO) displays current idle policy
-> +
-> +		With the cpuidle_sysfs_switch boot option enabled (meant for
-> +		developer testing), the following three attributes are visible
-> +		instead:
-> +
-> +		current_driver: same as described above
-> +
-> +		available_governors: (RO) displays a space separated list of
-> +		available governors
-> +
-> +		current_governor: (RW) displays current idle policy. Users can
-> +		switch the governor at runtime by writing to this file.
->  
->  		See files in Documentation/cpuidle/ for more information.
->  
->  
-> +What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/name
-> +		/sys/devices/system/cpu/cpuX/cpuidle/stateN/latency
-> +		/sys/devices/system/cpu/cpuX/cpuidle/stateN/power
-> +		/sys/devices/system/cpu/cpuX/cpuidle/stateN/time
-> +		/sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
-> +Date:		September 2007
-> +KernelVersion:	v2.6.24
-> +Contact:	Linux power management list <linux-pm@vger.kernel.org>
-> +Description:
-> +		The directory /sys/devices/system/cpu/cpuX/cpuidle contains per
-> +		logical CPU specific cpuidle information for each online cpu X.
-> +		The processor idle states which are available for use have the
-> +		following attributes:
-> +
-> +		name: (RO) Name of the idle state (string).
-> +
-> +		latency: (RO) The latency to exit out of this idle state (in
-> +		microseconds).
-> +
-> +		power: (RO) The power consumed while in this idle state (in
-> +		milliwatts).
-> +
-> +		time: (RO) The total time spent in this idle state (in microseconds).
-> +
-> +		usage: (RO) Number of times this state was entered (a count).
-> +
-> +
-> +What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
-> +Date:		February 2008
-> +KernelVersion:	v2.6.25
-> +Contact:	Linux power management list <linux-pm@vger.kernel.org>
-> +Description:
-> +		(RO) A small description about the idle state (string).
-> +
-> +
-> +What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/disable
-> +Date:		March 2012
-> +KernelVersion:	v3.10
-> +Contact:	Linux power management list <linux-pm@vger.kernel.org>
-> +Description:
-> +		(RW) Option to disable this idle state (bool). The behavior and
-> +		the effect of the disable variable depends on the implementation
-> +		of a particular governor. In the ladder governor, for example,
-> +		it is not coherent, i.e. if one is disabling a light state, then
-> +		all deeper states are disabled as well, but the disable variable
-> +		does not reflect it. Likewise, if one enables a deep state but a
-> +		lighter state still is disabled, then this has no effect.
-> +
-> +
-> +What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
-> +Date:		March 2014
-> +KernelVersion:	v3.15
-> +Contact:	Linux power management list <linux-pm@vger.kernel.org>
-> +Description:
-> +		(RO) Display the target residency i.e. the minimum amount of
-> +		time (in microseconds) this cpu should spend in this idle state
-> +		to make the transition worth the effort.
-> +
-> +
->  What:		/sys/devices/system/cpu/cpu#/cpufreq/*
->  Date:		pre-git history
->  Contact:	linux-pm@vger.kernel.org
+> -		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED)
+> +		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED &&
+> +		    !pm_runtime_status_suspended(wirq->dev))
+>  			disable_irq_nosync(wirq->irq);
+>  	}
+>  }
 > 
 
 Applied, thanks!
