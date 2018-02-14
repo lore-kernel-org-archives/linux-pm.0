@@ -1,121 +1,183 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: Re: [PATCH v7 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
- add/remove device
-Date: Wed, 14 Feb 2018 13:58:47 +0530
-Message-ID: <CAFp+6iGOsAxg63+T_xzAh5VmiPPsJp_0WxQVb+U0T407OTxvMQ@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime calls with runtime
+	suppliers
+Date: Wed, 14 Feb 2018 14:43:50 +0530
+Message-ID: <CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg@mail.gmail.com>
 References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org> <CAAFQd5DxYhkK61VDAesby6bT+FtG2nqsbHQRvxkhrsSS0KWtog@mail.gmail.com>
+	<1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
+	<CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
+	<CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
+	<CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
+	<CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
+	<CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
+	<CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
+	<CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAFQd5DxYhkK61VDAesby6bT+FtG2nqsbHQRvxkhrsSS0KWtog@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomasz Figa <tfiga@chromium.org>
-Cc: "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <joro@8bytes.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Clark <robdclark@gmail.com>"list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, devicetree@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, freedreno <freedreno@lists.freedesktop.org>, David Airlie <airlied@linux.ie>, Greg KH <gregkh@linuxfoundation.org>, Stephen Boyd <sboyd@codeau>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Tomasz,
 
+On Wed, Feb 14, 2018 at 11:08 AM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+> On Wed, Feb 14, 2018 at 1:17 PM, Vivek Gautam
+> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>> Hi Tomasz,
+>>
+>> On Wed, Feb 14, 2018 at 8:31 AM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>>> On Wed, Feb 14, 2018 at 11:13 AM, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>>>> On Tue, Feb 13, 2018 at 8:59 PM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>>>>> On Wed, Feb 14, 2018 at 3:03 AM, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>>>>>> On Tue, Feb 13, 2018 at 4:10 AM, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+>>>>>>> Hi Vivek,
+>>>>>>>
+>>>>>>> Thanks for the patch. Please see my comments inline.
+>>>>>>>
+>>>>>>> On Wed, Feb 7, 2018 at 7:31 PM, Vivek Gautam
+>>>>>>> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>>>>>>>> While handling the concerned iommu, there should not be a
+>>>>>>>> need to power control the drm devices from iommu interface.
+>>>>>>>> If these drm devices need to be powered around this time,
+>>>>>>>> the respective drivers should take care of this.
+>>>>>>>>
+>>>>>>>> Replace the pm_runtime_get/put_sync(<drm_device>) with
+>>>>>>>> pm_runtime_get/put_suppliers(<drm_device>) calls, to power-up
+>>>>>>>> the connected iommu through the device link interface.
+>>>>>>>> In case the device link is not setup these get/put_suppliers()
+>>>>>>>> calls will be a no-op, and the iommu driver should take care of
+>>>>>>>> powering on its devices accordingly.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>>>>> ---
+>>>>>>>>  drivers/gpu/drm/msm/msm_iommu.c | 16 ++++++++--------
+>>>>>>>>  1 file changed, 8 insertions(+), 8 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/drivers/gpu/drm/msm/msm_iommu.c b/drivers/gpu/drm/msm/msm_iommu.c
+>>>>>>>> index b23d33622f37..1ab629bbee69 100644
+>>>>>>>> --- a/drivers/gpu/drm/msm/msm_iommu.c
+>>>>>>>> +++ b/drivers/gpu/drm/msm/msm_iommu.c
+>>>>>>>> @@ -40,9 +40,9 @@ static int msm_iommu_attach(struct msm_mmu *mmu, const char * const *names,
+>>>>>>>>         struct msm_iommu *iommu = to_msm_iommu(mmu);
+>>>>>>>>         int ret;
+>>>>>>>>
+>>>>>>>> -       pm_runtime_get_sync(mmu->dev);
+>>>>>>>> +       pm_runtime_get_suppliers(mmu->dev);
+>>>>>>>>         ret = iommu_attach_device(iommu->domain, mmu->dev);
+>>>>>>>> -       pm_runtime_put_sync(mmu->dev);
+>>>>>>>> +       pm_runtime_put_suppliers(mmu->dev);
+>>>>>>>
+>>>>>>> For me, it looks like a wrong place to handle runtime PM of IOMMU
+>>>>>>> here. iommu_attach_device() calls into IOMMU driver's attach_device()
+>>>>>>> callback and that's where necessary runtime PM gets should happen, if
+>>>>>>> any. In other words, driver A (MSM DRM driver) shouldn't be dealing
+>>>>>>> with power state of device controlled by driver B (ARM SMMU).
+>>>>>>
+>>>>>> Note that we end up having to do the same, because of iommu_unmap()
+>>>>>> while DRM driver is powered off..  it might be cleaner if it was all
+>>>>>> self contained in the iommu driver, but that would make it so other
+>>>>>> drivers couldn't call iommu_unmap() from an irq handler, which is
+>>>>>> apparently something that some of them want to do..
+>>>>>
+>>>>> I'd assume that runtime PM status is already guaranteed to be active
+>>>>> when the IRQ handler is running, by some other means (e.g.
+>>>>> pm_runtime_get_sync() called earlier, when queuing some work to the
+>>>>> hardware). Otherwise, I'm not sure how a powered down device could
+>>>>> trigger an IRQ.
+>>>>>
+>>>>> So, if the master device power is already on, suppliers should be
+>>>>> powered on as well, thanks to device links.
+>>>>>
+>>>>
+>>>> umm, that is kindof the inverse of the problem..  the problem is
+>>>> things like gpu driver (and v4l2 drivers that import dma-buf's,
+>>>> afaict).. they will potentially call iommu->unmap() when device is not
+>>>> active (due to userspace or things beyond the control of the driver)..
+>>>> so *they* would want iommu to do pm get/put calls.
+>>>
+>>> Which is fine and which is actually already done by one of the patches
+>>> in this series, not for map/unmap, but probe, add_device,
+>>> remove_device. Having parts of the API doing it inside the callback
+>>> and other parts outside sounds at least inconsistent.
+>>>
+>>>> But other drivers
+>>>> trying to unmap from irq ctx would not.  Which is the contradictory
+>>>> requirement that lead to the idea of iommu user powering up iommu for
+>>>> unmap.
+>>>
+>>> Sorry, maybe I wasn't clear. My last message was supposed to show that
+>>> it's not contradictory at all, because "other drivers trying to unmap
+>>> from irq ctx" would already have called pm_runtime_get_*() earlier
+>>> from a non-irq ctx, which would have also done the same on all the
+>>> linked suppliers, including the IOMMU. The ultimate result would be
+>>> that the map/unmap() of the IOMMU driver calling pm_runtime_get_sync()
+>>> would do nothing besides incrementing the reference count.
+>>
+>> The entire point was to avoid the slowpath that pm_runtime_get/put_sync()
+>> would add in map/unmap. It would not be correct to add a slowpath in irq_ctx
+>> for taking care of non-irq_ctx and for the situations where master is already
+>> powered-off.
+>
+> Correct me if I'm wrong, but I believe that with what I'm proposing
+> there wouldn't be any slow path.
 
-On Tue, Feb 13, 2018 at 1:54 PM, Tomasz Figa <tfiga@chromium.org> wrote:
-> Hi Vivek,
->
-> Thanks for the patch. Please see my comments inline.
->
-> On Wed, Feb 7, 2018 at 7:31 PM, Vivek Gautam
-> <vivek.gautam@codeaurora.org> wrote:
->> From: Sricharan R <sricharan@codeaurora.org>
->>
->> The smmu device probe/remove and add/remove master device callbacks
->> gets called when the smmu is not linked to its master, that is without
->> the context of the master device. So calling runtime apis in those places
->> separately.
->>
->> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
->> [vivek: Cleanup pm runtime calls]
->> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
->> ---
->>  drivers/iommu/arm-smmu.c | 42 ++++++++++++++++++++++++++++++++++++++----
->>  1 file changed, 38 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
->> index 9e2f917e16c2..c024f69c1682 100644
->> --- a/drivers/iommu/arm-smmu.c
->> +++ b/drivers/iommu/arm-smmu.c
->> @@ -913,11 +913,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
->>         struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
->>         struct arm_smmu_device *smmu = smmu_domain->smmu;
->>         struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
->> -       int irq;
->> +       int ret, irq;
->>
->>         if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
->>                 return;
->>
->> +       ret = pm_runtime_get_sync(smmu->dev);
->> +       if (ret)
->> +               return;
->
-> pm_runtime_get_sync() will return 0 if the device was powered off, 1
-> if it was already/still powered on or runtime PM is not compiled in,
-> or a negative value on error, so shouldn't the test be (ret < 0)?
-
-Yes, I too noticed it while i was testing on a different platform, and
-was hitting
-a failure case. Will update at all places.
+Yea, but only when the power domain is irq-safe? And not all platforms
+enable irq-safe power domains. For instance, msm doesn't enable its
+gdsc power domains as irq-safe.
+Is it something i am missing?
 
 >
-> Moreover, I'm actually wondering if it makes any sense to power up the
-> hardware just to program it and power it down again. In a system where
-> the IOMMU is located within a power domain, it would cause the IOMMU
-> block to lose its state anyway.
+> a) For IRQ context, the master is already powered on and so the SMMU
+> is also powered on, through respective device link.
+> pm_runtime_get_sync() would ultimately just increment the runtime PM
+> usage count.
 >
-> Actually, reflecting back on "[PATCH v7 2/6] iommu/arm-smmu: Add
-> pm_runtime/sleep ops", perhaps it would make more sense to just
-> control the clocks independently of runtime PM? Then, runtime PM could
-> be used for real power management, e.g. really powering the block up
-> and down, for further power saving.
+> b) For a case when the master is already powered off (which wouldn't
+> be IRQ context, for the reason stated in a)), powering on the SMMU is
+> unavoidable, if the SMMU hardware really needs to be accessed (i.e.
+> some TLBs need to be invalidated, if their state is preserved despite
+> master being powered down).
 >
-> +Generally similar comments for other places in this patch.
->
->> +
->>         /*
->>          * Disable the context bank and free the page tables before freeing
->>          * it.
->> @@ -932,6 +936,8 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
 >>
->>         free_io_pgtable_ops(smmu_domain->pgtbl_ops);
->>         __arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
->> +
->> +       pm_runtime_put_sync(smmu->dev);
+>>>
+>>>>
+>>>> There has already been some discussion about this on various earlier
+>>>> permutations of this patchset.  I think we have exhausted all other
+>>>> options.
+>>>
+>>> I guess I should have read those. Let me do that now.
+>> Yea, i point to the thread in cover letter and [PATCH 1/6].
+>> Thanks.
 >
-> Is there any point in the put being sync here?
-
-No, I don't think. Can manage with just a 'put' here. Will modify.
-
-best regards
-Vivek
-
+> I read through all the links in the cover letter and I could see other
+> attempts not working out indeed, but they were different from what I'm
+> proposing.
 >
-> [snip]
->
->> @@ -2131,6 +2152,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
->>         if (err)
->>                 return err;
->>
->> +       platform_set_drvdata(pdev, smmu);
->> +
->> +       pm_runtime_enable(dev);
->
-> I suspect this may be a disaster for systems where IOMMUs are located
-> inside power domains, because the driver doesn't take care of the
-> IOMMU block losing its state on physical power down, as I mentioned in
-> my comments above.
+> There was also a point raised that __pm_runtime_resume() called from
+> pm_runtime_get_sync() would grab dev->power_lock spinlock, which is
+> true, except that if the device is already active, it would do it only
+> for the time of checking device state, so I doubt it would really be a
+> significant point of contention.
 >
 > Best regards,
 > Tomasz
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 
 
