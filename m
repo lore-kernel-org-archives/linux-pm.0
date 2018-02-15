@@ -1,91 +1,77 @@
-From: Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
- calls with runtime suppliers
-Date: Thu, 15 Feb 2018 09:14:40 -0500
-Message-ID: <CAF6AEGvWhG83gYOAHSkx4_t3y_y4WH3xEmE3VXzVnO8VExJ0Vw@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-7-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
- <20180213164205.GA7599@jcrouse-lnx.qualcomm.com>
- <CAAFQd5CjQRFATfh-mRQv5J=WefYuxBVTkk=Ju09FoqA-Or5Cvg@mail.gmail.com>
- <20180214154850.GA25422@jcrouse-lnx.qualcomm.com>
- <CAF6AEGtFOwBtXw7HvDSpEj+w78dsg9+p2SVk9e-uDuCE23Fpbw@mail.gmail.com>
- <CAAFQd5C-9mbd3hDSvz10a1oiO0--FT-L4EpsAYcALxxUvk6Fjg@mail.gmail.com>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH 4/4] drivers: qcom: rpmh: add RPMH helper functions
+Date: Thu, 15 Feb 2018 15:52:12 +0000
+Message-ID: <20180215155212.GA23714@codeaurora.org>
+References: <20180119000157.7380-1-ilina@codeaurora.org>
+ <20180119000157.7380-5-ilina@codeaurora.org>
+ <217e3652-c7e9-a81a-fcd8-9d97ab7736cd@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAAFQd5C-9mbd3hDSvz10a1oiO0--FT-L4EpsAYcALxxUvk6Fjg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:60840 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1425197AbeBOPwP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Feb 2018 10:52:15 -0500
+Content-Disposition: inline
+In-Reply-To: <217e3652-c7e9-a81a-fcd8-9d97ab7736cd@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: andy.gross@linaro.org, david.brown@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-T24gV2VkLCBGZWIgMTQsIDIwMTggYXQgMTE6MDkgUE0sIFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJv
-bWl1bS5vcmc+IHdyb3RlOgo+IE9uIFRodSwgRmViIDE1LCAyMDE4IGF0IDE6MTIgQU0sIFJvYiBD
-bGFyayA8cm9iZGNsYXJrQGdtYWlsLmNvbT4gd3JvdGU6Cj4+IE9uIFdlZCwgRmViIDE0LCAyMDE4
-IGF0IDEwOjQ4IEFNLCBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPiB3cm90
-ZToKPj4+IE9uIFdlZCwgRmViIDE0LCAyMDE4IGF0IDEyOjMxOjI5UE0gKzA5MDAsIFRvbWFzeiBG
-aWdhIHdyb3RlOgo+Pj4+Cj4+Pj4gLSBXaGVuIHN1Ym1pdHRpbmcgY29tbWFuZHMgdG8gdGhlIEdQ
-VSwgdGhlIEdQVSBkcml2ZXIgd2lsbAo+Pj4+IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKSBvbiB0aGUg
-R1BVIGRldmljZSwgd2hpY2ggd2lsbCBhdXRvbWF0aWNhbGx5IGRvCj4+Pj4gdGhlIHNhbWUgb24g
-YWxsIHRoZSBsaW5rZWQgc3VwcGxpZXJzLCB3aGljaCB3b3VsZCBhbHNvIGluY2x1ZGUgdGhlCj4+
-Pj4gU01NVSBpdHNlbGYuIFRoZSByb2xlIG9mIGRldmljZSBsaW5rcyBoZXJlIGlzIGV4YWN0bHkg
-dGhhdCB0aGUgR1BVCj4+Pj4gZHJpdmVyIGRvZXNuJ3QgaGF2ZSB0byBjYXJlIHdoaWNoIG90aGVy
-IGRldmljZXMgbmVlZCB0byBiZSBicm91Z2h0IHVwLgo+Pj4KPj4+IFRoaXMgaXMgdHJ1ZS4gIEFz
-c3VtaW5nIHRoYXQgdGhlIGRldmljZSBsaW5rIHdvcmtzIGNvcnJlY3RseSB3ZSB3b3VsZCBub3Qg
-bmVlZAo+Pj4gdG8gZXhwbGljaXRseSBwb3dlciB0aGUgU01NVSB3aGljaCBtYWtlcyBteSBwb2lu
-dCBlbnRpcmVseSBtb290Lgo+Pgo+PiBKdXN0IHRvIHBvaW50IG91dCB3aGF0IG1vdGl2YXRlZCB0
-aGlzIHBhdGNoc2V0LCB0aGUgYmlnZ2VzdCBwcm9ibGVtIGlzCj4+IGlvbW11X3VubWFwKCkgYmVj
-YXVzZSB0aGF0IGNhbiBoYXBwZW4gd2hlbiBHUFUgaXMgbm90IHBvd2VyZWQgb24gKG9yCj4+IGlu
-IHRoZSB2NGwyIGNhc2UsIGJlY2F1c2Ugc29tZSBvdGhlciBkZXZpY2UgZHJvcHBlZCBpdCdzIHJl
-ZmVyZW5jZSB0bwo+PiB0aGUgZG1hLWJ1ZiBhbGxvd2luZyBpdCB0byBiZSBmcmVlJ2QpLiAgQ3Vy
-cmVudGx5IHdlIHBtIGdldC9wdXQgdGhlCj4+IEdQVSBkZXZpY2UgYXJvdW5kIHVubWFwLCBidXQg
-aXQgaXMga2luZGEgc2lsbHkgdG8gYm9vdCB1cCB0aGUgR1BVIGp1c3QKPj4gdG8gdW5tYXAgYSBi
-dWZmZXIuCj4KPiBOb3RlIHRoYXQgaW4gVjRMMiBib3RoIG1hcHBpbmcgYW5kIHVubWFwcGluZyBj
-YW4gaGFwcGVuIGNvbXBsZXRlbHkKPiB3aXRob3V0IGludm9sdmluZyB0aGUgZHJpdmVyLiBTbyBB
-RkFJQ1QgdGhlIGFwcHJvYWNoIGJlaW5nIGltcGxlbWVudGVkCj4gYnkgdGhpcyBwYXRjaHNldCB3
-aWxsIG5vdCB3b3JrLCBiZWNhdXNlIHRoZXJlIHdpbGwgYmUgbm8gb25lIHRvIHBvd2VyCj4gdXAg
-dGhlIElPTU1VIGJlZm9yZSB0aGUgb3BlcmF0aW9uLiBNb3Jlb3ZlciwgdGhlcmUgYXJlIHBsYXRm
-b3JtcyBmb3IKPiB3aGljaCB0aGVyZSBpcyBubyByZWFzb24gdG8gcG93ZXIgdXAgdGhlIElPTU1V
-IGp1c3QgZm9yIG1hcC91bm1hcCwKPiBiZWNhdXNlIHRoZSBoYXJkd2FyZSBzdGF0ZSBpcyBsb3N0
-IGFueXdheSBhbmQgdGhlIG9ubHkgcmVhbCB3b3JrCj4gbmVlZGVkIGlzIHVwZGF0aW5nIHRoZSBw
-YWdlIHRhYmxlcyBpbiBtZW1vcnkuIChJIGZlZWwgbGlrZSB0aGlzIGlzCj4gYWN0dWFsbHkgdHJ1
-ZSBmb3IgbW9zdCBvZiB0aGUgcGxhdGZvcm1zIGluIHRoZSB3aWxkLCBidXQgdGhpcyBpcyBiYXNl
-ZAo+IHB1cmVseSBvbiB0aGUgbm90IHNvIHNtYWxsIG51bWJlciBvZiBwbGF0Zm9ybXMgSSB3b3Jr
-ZWQgd2l0aCwgaGF2ZW4ndAo+IGJvdGhlcmVkIGxvb2tpbmcgZm9yIG1vcmUgZ2VuZXJhbCBldmlk
-ZW5jZS4pCj4KCkF0IGxlYXN0IGFzIGZhciBhcyBkcm0vbXNtL2FkcmVubywgSSdtIG5vdCB0ZXJy
-aWJseSBjb25jZXJuZWQgYWJvdXQKb3RoZXIgcGxhdGZvcm1zIHRoYXQgZG9uJ3QgbmVlZCB0byBw
-b3dlciB1cCBpb21tdS4gIEl0J3Mgbm90IHJlYWxseQp0aGUgc2FtZSBzaXR1YXRpb24gYXMgYSBJ
-UCBibG9jayB0aGF0IHNob3dzIHVwIGluIGFsbCBkaWZmZXJlbnQKdmVuZG9yJ3MgU29Dcy4KCkJ1
-dCBpZiB5b3UgY2FuIGNvbnZpbmNlIFJvYmluIHRvIGdvIGZvciBnZXQvcHV0X3N5bmMoKSBjYWxs
-cyBpbnNpZGUKdGhlIGlvbW11IGRyaXZlciwgSSdtIGZpbmUgd2l0aCB0aGF0IGFwcHJvYWNoIHRv
-by4gIFRoYXQgaXMgd2hhdCBJIGRvCmluIHFjb21faW9tbXUgYWxyZWFkeS4gIEJ1dCBpZiBub3Qg
-SSdkIGxpa2UgdG8gYXQgbGVhc3Qgc29sdmUgdGhpcyBmb3IKc29tZSBwbGF0Zm9ybXMgaWYgd2Ug
-Y2FuJ3Qgc29sdmUgZm9yIGFsbC4KCkJSLAotUgoKPj4KPj4gKFNlbWktcmVsYXRlZCwgSSB3b3Vs
-ZCBhbHNvIGxpa2UgdG8gYmF0Y2ggbWFwL3VubWFwJ3MsIEkganVzdCBoYXZlbid0Cj4+IGdvdHRl
-biBhcm91bmQgdG8gaW1wbGVtZW50aW5nIGl0IHlldC4uIGJ1dCB0aGF0IHdvdWxkIGJlIGFub3Ro
-ZXIgY2FzZQo+PiB3aGVyZSBhIHNpbmdsZSBnZXRfc3VwcGxpZXIoKS9wdXRfc3VwcGxpZXIoKSBv
-dXRzaWRlIG9mIHRoZSBpb21tdQo+PiB3b3VsZCBtYWtlIHNlbnNlIGluc3RlYWQgb2YgcG1fZ2V0
-L3B1dCgpIGluc2lkZSB0aGUgaW9tbXUgZHJpdmVyJ3MKPj4gLT51bm1hcCgpLikKPj4KPj4gSWYg
-eW91IHJlYWxseSBkaXNsaWtlIHRoZSBnZXQvcHV0X3N1cHBsaWVyKCkgYXBwcm9hY2gsIHRoZW4g
-cGVyaGFwcyB3ZQo+PiBuZWVkIGlvbW11X3BtX2dldCgpL2lvbW11X3BtX3B1dCgpIG9wZXJhdGlv
-bnMgdGhhdCB0aGUgaW9tbXUgdXNlcgo+PiBjb3VsZCB1c2UgdG8gYWNjb21wbGlzaCB0aGUgc2Ft
-ZSB0aGluZz8KPgo+IEknbSBhZnJhaWQgdGhpcyB3b3VsZG4ndCB3b3JrIGZvciBWNEwyIGVpdGhl
-ci4gQW5kIEkgc3RpbGwgaGF2ZW4ndAo+IGJlZW4gZ2l2ZW4gYW55IGV2aWRlbmNlIHRoYXQgdGhl
-IGFwcHJvYWNoIEknbSBzdWdnZXN0aW5nLCB3aGljaCByZWxpZXMKPiBvbmx5IG9uIGV4aXN0aW5n
-IHBpZWNlcyBvZiBpbmZyYXN0cnVjdHVyZSBhbmQgd2hpY2ggd29ya2VkIGZvciBib3RoCj4gRXh5
-bm9zIGFuZCBSb2NrY2hpcCwgaW5jbHVkaW5nIFY0TDIsIHdvdWxkbid0IHdvcmsgZm9yIFNNTVUg
-YW5kL29yIFFDCj4gU29Dcy4KPgo+IEJlc3QgcmVnYXJkcywKPiBUb21hc3oKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlz
-dApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+On Thu, Feb 15 2018 at 08:49 +0000, Rajendra Nayak wrote:
+>[]..
+>
+>> diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
+>> new file mode 100644
+>> index 000000000000..ad1def2c362c
+>> --- /dev/null
+>> +++ b/drivers/soc/qcom/rpmh.c
+>> @@ -0,0 +1,264 @@
+>> +/* Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 and
+>> + * only version 2 as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/atomic.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/mailbox_client.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/types.h>
+>> +#include <linux/wait.h>
+>> +
+>> +#include <soc/qcom/rpmh.h>
+>> +
+>> +#include "rpmh-internal.h"
+>> +
+>> +#define RPMH_MAX_MBOXES			2
+>> +#define RPMH_TIMEOUT			msecs_to_jiffies(10000)
+>> +
+>> +#define DEFINE_RPMH_MSG_ONSTACK(rc, s, q, c, name)
+>> +	struct rpmh_msg name = {			\
+>> +		.msg = {				\
+>> +			.state = s,			\
+>> +			.payload = name.cmd,		\
+>> +			.num_payload = 0,		\
+>> +			.is_complete = true,		\
+>> +			.invalidate = false,		\
+>
+>There seems to be no field called 'invalidate' as part of the struct
+>
+Yup. Sorry, I will remove it in the next revision. I should be posting
+one in a day or so.
+
+Thanks,
+Lina
