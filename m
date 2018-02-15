@@ -1,71 +1,56 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH 1/2] cpufreq: powernow-k8: Delete an error message for a
- failed memory allocation in three functions
-Date: Thu, 15 Feb 2018 20:29:44 +0100
-Message-ID: <895a6088-5266-0be7-90f6-b1f838eb58c1@users.sourceforge.net>
+Subject: [PATCH 2/2] cpufreq: powernow-k8: Delete an unnecessary return
+ statement in two functions
+Date: Thu, 15 Feb 2018 20:30:33 +0100
+Message-ID: <f673f072-86f3-ed72-e715-bed883551be4@users.sourceforge.net>
 References: <4dd36236-fc39-19e6-c1a7-a094cf13469c@users.sourceforge.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.web.de ([212.227.17.11]:39655 "EHLO mout.web.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751104AbeBOTag (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Feb 2018 14:30:36 -0500
 In-Reply-To: <4dd36236-fc39-19e6-c1a7-a094cf13469c@users.sourceforge.net>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 15 Feb 2018 20:00:23 +0100
+Date: Thu, 15 Feb 2018 20:14:32 +0100
 
-Omit an extra message for a memory allocation failure in these functions.
+The script "checkpatch.pl" pointed information out like the following.
 
-This issue was detected by using the Coccinelle software.
+WARNING: void function return statements are not generally useful
+
+Thus remove such a statement in the affected functions.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/cpufreq/powernow-k8.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/cpufreq/powernow-k8.c | 2 --
+ 1 file changed, 2 deletions(-)
 
 diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index b01e31db5f83..460bf22a8a2b 100644
+index 460bf22a8a2b..782a8c2a359d 100644
 --- a/drivers/cpufreq/powernow-k8.c
 +++ b/drivers/cpufreq/powernow-k8.c
-@@ -591,10 +591,8 @@ static int fill_powernow_table(struct powernow_k8_data *data,
+@@ -122,14 +122,12 @@ static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
+ static void count_off_irt(struct powernow_k8_data *data)
+ {
+ 	udelay((1 << data->irt) * 10);
+-	return;
+ }
  
- 	powernow_table = kzalloc((sizeof(*powernow_table)
- 		* (data->numps + 1)), GFP_KERNEL);
--	if (!powernow_table) {
--		pr_err("powernow_table memory alloc failure\n");
-+	if (!powernow_table)
- 		return -ENOMEM;
--	}
+ /* the voltage stabilization time */
+ static void count_off_vst(struct powernow_k8_data *data)
+ {
+ 	udelay(data->vstable * VST_UNITS_20US);
+-	return;
+ }
  
- 	for (j = 0; j < data->numps; j++) {
- 		int freq;
-@@ -760,10 +758,8 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
- 	/* fill in data->powernow_table */
- 	powernow_table = kzalloc((sizeof(*powernow_table)
- 		* (data->acpi_data.state_count + 1)), GFP_KERNEL);
--	if (!powernow_table) {
--		pr_debug("powernow_table memory alloc failure\n");
-+	if (!powernow_table)
- 		goto err_out;
--	}
- 
- 	/* fill in data */
- 	data->numps = data->acpi_data.state_count;
-@@ -1042,10 +1038,8 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
- 		return -ENODEV;
- 
- 	data = kzalloc(sizeof(*data), GFP_KERNEL);
--	if (!data) {
--		pr_err("unable to alloc powernow_k8_data\n");
-+	if (!data)
- 		return -ENOMEM;
--	}
- 
- 	data->cpu = pol->cpu;
- 
+ /* need to init the control msr to a safe value (for each cpu) */
 -- 
 2.16.1
