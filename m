@@ -1,74 +1,97 @@
-From: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 4/4] drivers: qcom: rpmh: add RPMH helper functions
-Date: Thu, 15 Feb 2018 14:19:48 +0530
-Message-ID: <217e3652-c7e9-a81a-fcd8-9d97ab7736cd@codeaurora.org>
-References: <20180119000157.7380-1-ilina@codeaurora.org>
- <20180119000157.7380-5-ilina@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20180119000157.7380-5-ilina-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lina Iyer <ilina-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, david.brown-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH 2/2] power: supply: axp288_fuel_gauge: Remove polling from the driver
+Date: Thu, 15 Feb 2018 15:00:37 +0100
+Message-ID: <20180215140037.6097-2-hdegoede@redhat.com>
+References: <20180215140037.6097-1-hdegoede@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx3-rdu2.redhat.com ([66.187.233.73]:58580 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1032283AbeBOOAk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Feb 2018 09:00:40 -0500
+In-Reply-To: <20180215140037.6097-1-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
 
-[]..
+Userspace class/power_supply consumers such as upower, already know some
+supplies need to be polled to get up2date info. Doing this in the kernel
+and then waking up userspace just causes unnecessary wakeups and i2c
+transfers.
 
-> diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
-> new file mode 100644
-> index 000000000000..ad1def2c362c
-> --- /dev/null
-> +++ b/drivers/soc/qcom/rpmh.c
-> @@ -0,0 +1,264 @@
-> +/* Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/atomic.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mailbox_client.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +#include <linux/types.h>
-> +#include <linux/wait.h>
-> +
-> +#include <soc/qcom/rpmh.h>
-> +
-> +#include "rpmh-internal.h"
-> +
-> +#define RPMH_MAX_MBOXES			2
-> +#define RPMH_TIMEOUT			msecs_to_jiffies(10000)
-> +
-> +#define DEFINE_RPMH_MSG_ONSTACK(rc, s, q, c, name)
-> +	struct rpmh_msg name = {			\
-> +		.msg = {				\
-> +			.state = s,			\
-> +			.payload = name.cmd,		\
-> +			.num_payload = 0,		\
-> +			.is_complete = true,		\
-> +			.invalidate = false,		\
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/power/supply/axp288_fuel_gauge.c | 16 ----------------
+ 1 file changed, 16 deletions(-)
 
-There seems to be no field called 'invalidate' as part of the struct
-
+diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+index e58aad011eb7..c5a24aee901c 100644
+--- a/drivers/power/supply/axp288_fuel_gauge.c
++++ b/drivers/power/supply/axp288_fuel_gauge.c
+@@ -24,7 +24,6 @@
+ #include <linux/regmap.h>
+ #include <linux/jiffies.h>
+ #include <linux/interrupt.h>
+-#include <linux/workqueue.h>
+ #include <linux/mfd/axp20x.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+@@ -88,7 +87,6 @@
+ #define FG_LOW_CAP_CRIT_THR			4   /* 4 perc */
+ #define FG_LOW_CAP_SHDN_THR			0   /* 0 perc */
+ 
+-#define STATUS_MON_DELAY_JIFFIES    (HZ * 60)   /*60 sec */
+ #define NR_RETRY_CNT    3
+ #define DEV_NAME	"axp288_fuel_gauge"
+ 
+@@ -128,7 +126,6 @@ struct axp288_fg_info {
+ 	struct mutex lock;
+ 	int status;
+ 	int max_volt;
+-	struct delayed_work status_monitor;
+ 	struct dentry *debug_file;
+ };
+ 
+@@ -592,16 +589,6 @@ static int fuel_gauge_property_is_writeable(struct power_supply *psy,
+ 	return ret;
+ }
+ 
+-static void fuel_gauge_status_monitor(struct work_struct *work)
+-{
+-	struct axp288_fg_info *info = container_of(work,
+-		struct axp288_fg_info, status_monitor.work);
+-
+-	fuel_gauge_get_status(info);
+-	power_supply_changed(info->bat);
+-	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
+-}
+-
+ static irqreturn_t fuel_gauge_thread_handler(int irq, void *dev)
+ {
+ 	struct axp288_fg_info *info = dev;
+@@ -764,7 +751,6 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, info);
+ 
+ 	mutex_init(&info->lock);
+-	INIT_DELAYED_WORK(&info->status_monitor, fuel_gauge_status_monitor);
+ 
+ 	for (i = 0; i < IIO_CHANNEL_NUM; i++) {
+ 		/*
+@@ -824,7 +810,6 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ 
+ 	fuel_gauge_create_debugfs(info);
+ 	fuel_gauge_init_irq(info);
+-	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
+ 
+ 	return 0;
+ 
+@@ -847,7 +832,6 @@ static int axp288_fuel_gauge_remove(struct platform_device *pdev)
+ 	struct axp288_fg_info *info = platform_get_drvdata(pdev);
+ 	int i;
+ 
+-	cancel_delayed_work_sync(&info->status_monitor);
+ 	power_supply_unregister(info->bat);
+ 	fuel_gauge_remove_debugfs(info);
+ 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.14.3
