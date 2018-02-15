@@ -1,143 +1,57 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 0/2] power: supply: Fix AXP288 fallback when not needed
-Date: Thu, 15 Feb 2018 17:15:32 +0100
-Message-ID: <acfd286f-cedc-930e-3810-8795b4bd7dbb@redhat.com>
-References: <20180214194201.24385-1-carlo@caione.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] cpufreq: s3c24xx: Delete an error message for a failed memory
+ allocation in two functions
+Date: Thu, 15 Feb 2018 17:40:12 +0100
+Message-ID: <201722ce-019d-a5b4-fc00-74679d82b64f@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:33177 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1034043AbeBOQPf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Feb 2018 11:15:35 -0500
-Received: by mail-wm0-f67.google.com with SMTP id x4so1832699wmc.0
-        for <linux-pm@vger.kernel.org>; Thu, 15 Feb 2018 08:15:34 -0800 (PST)
-In-Reply-To: <20180214194201.24385-1-carlo@caione.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Carlo Caione <carlo@caione.org>, linux@endlessm.com, rjw@rjwysocki.net, lenb@kernel.org, sre@kernel.org, wens@csie.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Carlo Caione <carlo@endlessm.com>
 
-Hi Carlo,
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Thu, 15 Feb 2018 17:28:40 +0100
 
-On 14-02-18 20:41, Carlo Caione wrote:
-> From: Carlo Caione <carlo@endlessm.com>
-> 
-> With commits af3ec837 and dccfae6d a blacklist was introduced to avoid
-> using the ACPI drivers for AC and battery when a native PMIC driver was
-> already present. While this is in general a good idea (because of broken
-> DSDT or proprietary and undocumented ACPI opregions for the ACPI
-> AC/battery devices) we have come across at least one CherryTrail laptop
-> (ECS EF20EA) shipping the AXP288 together with a separate FG controller
-> (a MAX17047) instead of the one embedded in the AXP288.
+Omit an extra message for a memory allocation failure in these functions.
 
-Thank you for the patches, the code looks good, but I think you need
-to split them up a bit differently, the patches under drivers/acpi
-need to be merged into a different subsys tree as those under
-drivers/power/supply, so the "power: supply: ACPI/AXP288: Add quirks
-for ECS EF20EA" needs to be split I believe.
+This issue was detected by using the Coccinelle software.
 
-Also the patches to files under drivers/acpi should have an
-"ACPI: " prefix for their subject AFAIK.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/cpufreq/s3c24xx-cpufreq.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Regards,
-
-Hans
-
-
-
-
-> This is the interesting analisys done by Hans de Goede (thank you):
-> 
-> Looking at the _BIX method of the BATC/PNP0C0A device, we see it referencing
-> FG10:
-> 
-> Method (_BIX, 0, NotSerialized)  // _BIX: Battery Information Extend
-> {
->      If (AVBL == One)
->      {
->          BUF2 = FG10 /* \_SB_.PCI0.I2C1.FG10 */
-> 
-> And FG10 is defined as:
-> 
-> Field (DVFG, BufferAcc, NoLock, Preserve)
-> {
->      Connection (SMFG),
->      Offset (0x10),
->      AccessAs (BufferAcc, AttribBytes (0x02)),
->      FG10,   8
-> }
-> 
-> With SMFG being defined as:
-> 
-> Name (SMFG, ResourceTemplate ()
-> {
->      I2cSerialBusV2 (0x0036, ControllerInitiated, 0x000186A0,
->          AddressingMode7Bit, "\\_SB.PCI0.I2C1",
->          0x00, ResourceConsumer, , Exclusive,
->          )
-> })
-> 
-> Looking for I2C1 address 0x0036 we find:
-> 
-> Device (ANFG)
-> {
->      Name (_HID, "MAX17047" /* Fuel Gauge Controller */)  // _HID: Hardwa
->      Name (_CID, "MAX17047" /* Fuel Gauge Controller */)  // _CID: Compat
->      Name (_DDN, "Fuel Gauge Controller")  // _DDN: DOS Device Name
->      Name (RBUF, ResourceTemplate ()
->      {
->          I2cSerialBusV2 (0x0036, ControllerInitiated, 0x00061A80,
->              AddressingMode7Bit, "\\_SB.PCI0.I2C1",
->              0x00, ResourceConsumer, , Exclusive,
->              )
->          GpioInt (Level, ActiveLow, ExclusiveAndWake, PullNone, 0x0000,
->              "\\_SB.GPO3", 0x00, ResourceConsumer, ,
->              )
->              {   // Pin list
->                  0x0001
->              }
->      })
-> 
-> Where as the AXP288 PMIC is I2C7 address 0x034:
-> 
-> Device (PMI1)
-> {
->      Name (_ADR, Zero)  // _ADR: Address
->      Name (_HID, "INT33F4" /* XPOWER PMIC Controller */)  // _HID: Ha
->      Name (_CID, "INT33F4" /* XPOWER PMIC Controller */)  // _CID: Co
->      Name (_DDN, "XPOWER PMIC Controller")  // _DDN: DOS Device Name
->      Name (_HRV, 0x03)  // _HRV: Hardware Revision
->      Name (_UID, One)  // _UID: Unique ID
-> 
->      Method (_CRS, 0, NotSerialized)  // _CRS: Current Resource Setti
->      {
->          Name (SBUF, ResourceTemplate ()
->          {
->              I2cSerialBusV2 (0x0034, ControllerInitiated, 0x000F4240,
->                  AddressingMode7Bit, "\\_SB.PCI0.I2C7",
->                  0x00, ResourceConsumer, , Exclusive,
->                  )
-> 
-> So basically this laptopt is using a separate FG chip instead of the one
-> embedded in the AXP288.
-> 
-> To have this correctly working we need basically to avoid the fallback on the
-> AXP288 driver enabling again the ACPI AC/battery drivers and at the same time
-> avoiding that the AXP288 FG driver is probed at all.
-> 
-> I'm still not fully convinced that having two different quirks (one to disable
-> the blacklist and another to disable the AXP288 FG probing) is the right way to
-> fix this. So any comment is welcome.
-> 
-> Carlo Caione (2):
->    power: supply: ACPI/AXP288: Add quirk to avoid using PMIC
->    power: supply: ACPI/AXP288: Add quirks for ECS EF20EA
-> 
->   drivers/acpi/ac.c                        | 33 ++++++++++++++++++++++++--------
->   drivers/acpi/battery.c                   | 33 ++++++++++++++++++++++++--------
->   drivers/power/supply/axp288_fuel_gauge.c |  6 ++++++
->   3 files changed, 56 insertions(+), 16 deletions(-)
-> 
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index 7b596fa38ad2..024afd0b9458 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -473,10 +473,8 @@ int __init s3c_cpufreq_setboard(struct s3c_cpufreq_board *board)
+ 	 * initdata. */
+ 
+ 	ours = kzalloc(sizeof(*ours), GFP_KERNEL);
+-	if (ours == NULL) {
+-		pr_err("%s: no memory\n", __func__);
++	if (!ours)
+ 		return -ENOMEM;
+-	}
+ 
+ 	*ours = *board;
+ 	cpu_cur.board = ours;
+@@ -562,10 +560,8 @@ static int s3c_cpufreq_build_freq(void)
+ 	size++;
+ 
+ 	ftab = kzalloc(sizeof(*ftab) * size, GFP_KERNEL);
+-	if (!ftab) {
+-		pr_err("%s: no memory for tables\n", __func__);
++	if (!ftab)
+ 		return -ENOMEM;
+-	}
+ 
+ 	ftab_size = size;
+ 
+-- 
+2.16.1
