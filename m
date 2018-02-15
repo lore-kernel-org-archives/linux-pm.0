@@ -1,50 +1,70 @@
-From: Moritz Fischer <moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 1/2] dt-bindings: power: reset: gpio-poweroff: Add 'timeout' property
-Date: Thu, 15 Feb 2018 12:49:25 -0800
-Message-ID: <20180215204926.23347-1-moritz.fischer@ettus.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Subject: [PATCH 2/2] power: reset: gpio-poweroff: Add support for timeout from DT
+Date: Thu, 15 Feb 2018 12:49:26 -0800
+Message-ID: <20180215204926.23347-2-moritz.fischer@ettus.com>
+References: <20180215204926.23347-1-moritz.fischer@ettus.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180215204926.23347-1-moritz.fischer@ettus.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, robh+dt@kernel.org, sre@kernel.org, Moritz Fischer <mdf@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+From: Moritz Fischer <mdf@kernel.org>
 
-Add 'timeout' property to support boards where the 3s timeout that the
-current driver defaults to is too short.
+Add support for reading a timeout value from devicetree.
+Fall back to previous default of 3s if nothing is specified.
 
-Signed-off-by: Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/power/reset/gpio-poweroff.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt b/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt
-index e62d53d844cc..c2459c7d45d5 100644
---- a/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt
-+++ b/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt
-@@ -27,6 +27,8 @@ Optional properties:
-   it to an output when the power-off handler is called. If this optional
-   property is not specified, the GPIO is initialized as an output in its
-   inactive state.
-+- timeout: Time to wait before asserting a WARN_ON(1). If nothing is
-+           specified, 3000 ms is used.
+diff --git a/drivers/power/reset/gpio-poweroff.c b/drivers/power/reset/gpio-poweroff.c
+index be3d81ff51cc..bc9fad17d22a 100644
+--- a/drivers/power/reset/gpio-poweroff.c
++++ b/drivers/power/reset/gpio-poweroff.c
+@@ -19,11 +19,13 @@
+ #include <linux/of_platform.h>
+ #include <linux/module.h>
  
- Examples:
++#define DEFAULT_TIMEOUT_MS 3000
+ /*
+  * Hold configuration here, cannot be more than one instance of the driver
+  * since pm_power_off itself is global.
+  */
+ static struct gpio_desc *reset_gpio;
++static u32 timeout;
  
-@@ -34,3 +36,9 @@ gpio-poweroff {
- 	compatible = "gpio-poweroff";
- 	gpios = <&gpio 4 0>;
- };
+ static void gpio_poweroff_do_poweroff(void)
+ {
+@@ -40,7 +42,7 @@ static void gpio_poweroff_do_poweroff(void)
+ 	gpiod_set_value(reset_gpio, 1);
+ 
+ 	/* give it some time */
+-	mdelay(3000);
++	mdelay(timeout);
+ 
+ 	WARN_ON(1);
+ }
+@@ -49,6 +51,7 @@ static int gpio_poweroff_probe(struct platform_device *pdev)
+ {
+ 	bool input = false;
+ 	enum gpiod_flags flags;
++	int ret;
+ 
+ 	/* If a pm_power_off function has already been added, leave it alone */
+ 	if (pm_power_off != NULL) {
+@@ -64,6 +67,10 @@ static int gpio_poweroff_probe(struct platform_device *pdev)
+ 	else
+ 		flags = GPIOD_OUT_LOW;
+ 
++	ret = of_property_read_u32(pdev->dev.of_node, "timeout", &timeout);
++	if (ret)
++		timeout = DEFAULT_TIMEOUT_MS;
 +
-+gpio-poweroff {
-+	compatible = "gpio-poweroff";
-+	gpios = <&gpio 4 0>;
-+	timeout = <3000>;
-+};
+ 	reset_gpio = devm_gpiod_get(&pdev->dev, NULL, flags);
+ 	if (IS_ERR(reset_gpio))
+ 		return PTR_ERR(reset_gpio);
 -- 
 2.16.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
