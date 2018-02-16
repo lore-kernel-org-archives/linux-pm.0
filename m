@@ -1,89 +1,60 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 3/3] power: supply: axp288_fuel_gauge: Do not register
- FG on ECS EF20EA
-Date: Fri, 16 Feb 2018 15:26:55 +0100
-Message-ID: <20180216142655.heommid67q3g22qt@earth.universe>
-References: <20180216082616.25084-1-carlo@caione.org>
- <20180216082616.25084-4-carlo@caione.org>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH] PM / wakeirq: Add wakeup name to dedicated wake irqs
+Date: Fri, 16 Feb 2018 16:52:22 +0200
+Message-ID: <CAHp75VdxsDiwi8uux3Q4vYhEO1P3w0sePVBcm38RvimKez8XAg@mail.gmail.com>
+References: <20180209161456.18951-1-tony@atomide.com> <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
+ <CAJZ5v0gRtkBf7uu4C_k7ivNGo=JM0bB1PAdr_6Nbbs39OPevHw@mail.gmail.com>
+ <CAHp75VcVNDV9FmPFTBHsJRoiHtOviwC68Wk+aCqhqteZw41ZzQ@mail.gmail.com> <CAJZ5v0gowD179tVaAc_8Wy-pV=mAwsO1egs0DfCnA-eEWayJdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="wshm6zzqjg7sveev"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180216082616.25084-4-carlo@caione.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Carlo Caione <carlo@caione.org>
-Cc: linux@endlessm.com, hdegoede@redhat.com, rjw@rjwysocki.net, lenb@kernel.org, wens@csie.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f195.google.com ([209.85.220.195]:33190 "EHLO
+        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1033381AbeBPOwX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 09:52:23 -0500
+In-Reply-To: <CAJZ5v0gowD179tVaAc_8Wy-pV=mAwsO1egs0DfCnA-eEWayJdw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
+On Fri, Feb 16, 2018 at 12:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, Feb 16, 2018 at 11:39 AM, Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+>> On Fri, Feb 16, 2018 at 11:14 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> On Wed, Feb 14, 2018 at 12:23 PM, Andy Shevchenko
+>>> <andy.shevchenko@gmail.com> wrote:
 
---wshm6zzqjg7sveev
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>>> IMO it is somewhat excessive to put the entire sprintf() under a raw
+>>> spinlock and it's not even necessary.
+>>
+>> It's a copy'n'paste of from the rest of functions there.
+>
+> Fair enough. :-)
 
-Hi,
+>>> The value can change any time after you've dropped the lock and in
+>>> particular before the function returns, so why bother with locking?
+>>> desc will not go away from under you at that point anyway.
+>>
+>> IIRC descriptor's content might be changed, or descriptor itself might
+>> be gone (potential crash).
+>
+> No, desc cannot go away at this point AFAICS due to the kernfs
+> refcounting.  And the lock is *inside* of the desc object anyway, so
+> it doesn't help really against that.
 
-On Fri, Feb 16, 2018 at 08:26:16AM +0000, Carlo Caione wrote:
-> From: Carlo Caione <carlo@endlessm.com>
->=20
-> The ECS EF20EA laptop ships an AXP288 but it is actually using a
-> different, separate FG chip for AC and battery monitoring. On this
-> laptop we need to keep using the regular ACPI driver and disable the
-> AXP288 FG to avoid reporting two batteries to userspace.
->=20
-> Signed-off-by: Carlo Caione <carlo@endlessm.com>
-> ---
+Oh, indeed.
 
-It looks like this could be applied independently of the ACPI
-patches to the power-supply tree?
+> The contents may change, but so what?
+>
+> Effectively, you read an int and reading an int is atomic.  It may
+> change after that, but the lock doesn't prevent it from changing.  It
+> only prevents the change from being applied to it before you drop the
+> lock, but why do you care?
 
--- Sebastian
+So, with explanations above, perhaps we can produce the patch to
+remove those locks from the rest?
 
->  drivers/power/supply/axp288_fuel_gauge.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->=20
-> diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/sup=
-ply/axp288_fuel_gauge.c
-> index 4cc6e038dfdd..903891a9bcf0 100644
-> --- a/drivers/power/supply/axp288_fuel_gauge.c
-> +++ b/drivers/power/supply/axp288_fuel_gauge.c
-> @@ -708,6 +708,12 @@ static const struct dmi_system_id axp288_fuel_gauge_=
-blacklist[] =3D {
->  			DMI_MATCH(DMI_BOARD_VERSION, "V1.1"),
->  		},
->  	},
-> +	{
-> +		/* ECS EF20EA */
-> +		.matches =3D {
-> +			DMI_MATCH(DMI_PRODUCT_NAME, "EF20EA"),
-> +		},
-> +	},
->  	{}
->  };
-> =20
-> --=20
-> 2.14.1
->=20
-
---wshm6zzqjg7sveev
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlqG6i8ACgkQ2O7X88g7
-+poL4g/+OPnzr2lxPcaXb2Q+dNqRgWMa69O+3rKWZRGnUnYxToNTdCBvNFfKj6zJ
-7kZeVYmTotevZatUiV6mDpmLxQ4JvtuwfFOsOucSXktfNIzEx50ByK3lvoLWSsxt
-bAVDPXXZ6vHQ/Wx3wCQ8Jgr7QvuMC05YK5YtY/KTALoWRcD1/Pn+/rDpCsAtzxKz
-aHuVQmT/fbZV42vInm49yW65NXRlLgWjgh1h0jf6o5DhA9Aya8ahHOBO92k7zmmw
-4/stjP871xt80YoLl29derLI+l5UGcTTsQdxpZyCz04lZWodwVr5SbPo+nXDzXYA
-zvPU3vb/EiSTL0H8UJCPZ03ZNIKtOMQQi1iokWuDzYCSZZ5qpFAM7TnzXoYULSQh
-kshiT7lbRip1dSapqlJaIEFew4Z7MLMkCPlfa0n8IkBtu57hDgO3tJZ2i56nAcLo
-uuU2m1Y/iWPgCl+2Awe+yeb196+7eIOH4ASBCnIx+UeGSMm8h7SaQVgnMJn6lPvc
-lqR0T2af89PBGhjb/rgxLUelmK5xIpaFFNKHlMLSscTkqV/dzDsgcR4Pp4rS1gNg
-XJ+sZJ2K4pLtCV5BbcQnHZ6FXpqVMB3n8MuheUJAjLL4WUxHz5Ki2MAOlI90/k/m
-MGmy+Sj8aTpo+PK/ui0BZ9yf3hNKEMbbDEXO4nVSpqq1xOaRgG4=
-=2r8q
------END PGP SIGNATURE-----
-
---wshm6zzqjg7sveev--
+-- 
+With Best Regards,
+Andy Shevchenko
