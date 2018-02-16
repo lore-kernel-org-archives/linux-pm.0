@@ -1,42 +1,85 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH] PM / wakeirq: Add wakeup name to dedicated wake irqs
-Date: Fri, 16 Feb 2018 10:14:53 +0100
-Message-ID: <CAJZ5v0gRtkBf7uu4C_k7ivNGo=JM0bB1PAdr_6Nbbs39OPevHw@mail.gmail.com>
-References: <20180209161456.18951-1-tony@atomide.com> <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
+Date: Fri, 16 Feb 2018 10:42:07 +0100
+Message-ID: <CAJZ5v0iF0M+X5vujyaKmXrEWpBEceQ=PX6bhgcwFf8P-q7Cu-Q@mail.gmail.com>
+References: <20180209161456.18951-1-tony@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f193.google.com ([74.125.82.193]:34850 "EHLO
-        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757693AbeBPJOy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 04:14:54 -0500
-In-Reply-To: <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:35412 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932120AbeBPJmJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 04:42:09 -0500
+In-Reply-To: <20180209161456.18951-1-tony@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Wed, Feb 14, 2018 at 12:23 PM, Andy Shevchenko
-<andy.shevchenko@gmail.com> wrote:
-> On Fri, Feb 9, 2018 at 6:14 PM, Tony Lindgren <tony@atomide.com> wrote:
->> This makes it easy to grep :wakeup /proc/interrupts.
+On Fri, Feb 9, 2018 at 5:14 PM, Tony Lindgren <tony@atomide.com> wrote:
+> This makes it easy to grep :wakeup /proc/interrupts.
 >
-> I used to have another patch (not published) to provide this
-> information via /sys/kernel/irq.
+> Cc: Brian Norris <briannorris@chromium.org>
+> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Suggested-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  drivers/base/power/power.h   |  1 +
+>  drivers/base/power/wakeirq.c | 18 +++++++++++++++---
+>  2 files changed, 16 insertions(+), 3 deletions(-)
 >
-> OK, here we are:
+> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+> --- a/drivers/base/power/power.h
+> +++ b/drivers/base/power/power.h
+> @@ -31,6 +31,7 @@ struct wake_irq {
+>         struct device *dev;
+>         unsigned int status;
+>         int irq;
+> +       char *name;
+>  };
 >
+>  extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
+> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+> --- a/drivers/base/power/wakeirq.c
+> +++ b/drivers/base/power/wakeirq.c
+> @@ -112,6 +112,7 @@ void dev_pm_clear_wake_irq(struct device *dev)
+>                 free_irq(wirq->irq, wirq);
+>                 wirq->status &= ~WAKE_IRQ_DEDICATED_MASK;
+>         }
+> +       kfree(wirq->name);
+>         kfree(wirq);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_clear_wake_irq);
+> @@ -175,7 +176,8 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
+>  int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
+>  {
+>         struct wake_irq *wirq;
+> -       int err;
+> +       int err, namelen;
+> +       const char *postfix = ":wakeup";
 >
->> +       namelen = strlen(dev_name(dev)) + strlen(postfix) + 1;
->> +       wirq->name = kzalloc(namelen, GFP_KERNEL);
+>         if (irq < 0)
+>                 return -EINVAL;
+> @@ -184,6 +186,14 @@ int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
+>         if (!wirq)
+>                 return -ENOMEM;
 >
-> kasprintf()
+> +       namelen = strlen(dev_name(dev)) + strlen(postfix) + 1;
+> +       wirq->name = kzalloc(namelen, GFP_KERNEL);
+> +       if (!wirq->name) {
+> +               err = -ENOMEM;
+> +               goto err_free;
+> +       }
+> +
+> +       snprintf(wirq->name, namelen, "%s%s", dev_name(dev), postfix);
 
-It's a bit hard to comment patches sent as attachments, but I'll try anyway. :-)
+As Andy said you can do
 
-IMO it is somewhat excessive to put the entire sprintf() under a raw
-spinlock and it's not even necessary.
+wirq->name = kasprintf(GFP_KERNEL, "%s:wakeup", dev_name(dev));
+if (!wirq->name) {
+        err = -ENOMEM;
+        goto err_free;
+}
 
-The value can change any time after you've dropped the lock and in
-particular before the function returns, so why bother with locking?
-desc will not go away from under you at that point anyway.
+here and it will allocate the buffer for you.
