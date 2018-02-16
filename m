@@ -1,96 +1,51 @@
-From: Merlijn Wajer <merlijn@wizzup.org>
-Subject: Re: Charging status for N900/RX-51 with bq27200
-Date: Fri, 16 Feb 2018 10:45:45 +0100
-Message-ID: <e2b8465c-8ac3-cfac-e138-42773b8f1aa4@wizzup.org>
-References: <581dcb51-f469-61c9-e023-62ac535bc41a@wizzup.org>
- <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH] PM / wakeirq: Add wakeup name to dedicated wake irqs
+Date: Fri, 16 Feb 2018 12:39:48 +0200
+Message-ID: <CAHp75VcVNDV9FmPFTBHsJRoiHtOviwC68Wk+aCqhqteZw41ZzQ@mail.gmail.com>
+References: <20180209161456.18951-1-tony@atomide.com> <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
+ <CAJZ5v0gRtkBf7uu4C_k7ivNGo=JM0bB1PAdr_6Nbbs39OPevHw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nala.villavu.com ([188.165.243.101]:55297 "EHLO
-        nala.villavu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932979AbeBPKFw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 05:05:52 -0500
-In-Reply-To: <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
+Received: from mail-qk0-f194.google.com ([209.85.220.194]:41901 "EHLO
+        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933559AbeBPKju (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 05:39:50 -0500
+In-Reply-To: <CAJZ5v0gRtkBf7uu4C_k7ivNGo=JM0bB1PAdr_6Nbbs39OPevHw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3
-Content-Type: multipart/mixed; boundary="uVixhJJURryiObYmiDBIOcdvvj1RaIrpz";
- protected-headers="v1"
-From: Merlijn Wajer <merlijn@wizzup.org>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
-Message-ID: <e2b8465c-8ac3-cfac-e138-42773b8f1aa4@wizzup.org>
-Subject: Re: Charging status for N900/RX-51 with bq27200
-References: <581dcb51-f469-61c9-e023-62ac535bc41a@wizzup.org>
- <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
-In-Reply-To: <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
+On Fri, Feb 16, 2018 at 11:14 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Feb 14, 2018 at 12:23 PM, Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+>> On Fri, Feb 9, 2018 at 6:14 PM, Tony Lindgren <tony@atomide.com> wrote:
+>>> This makes it easy to grep :wakeup /proc/interrupts.
+>>
+>> I used to have another patch (not published) to provide this
+>> information via /sys/kernel/irq.
+>>
+>> OK, here we are:
 
---uVixhJJURryiObYmiDBIOcdvvj1RaIrpz
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-GB
-Content-Transfer-Encoding: quoted-printable
+> It's a bit hard to comment patches sent as attachments, but I'll try anyway. :-)
 
-Hi Sebastian,
+Sorry, I was thinking that Tony may test it first to see if it does
+what he wants.
+Of course I would send normally in case it's an expected approach.
 
-On 15/02/18 21:41, Sebastian Reichel wrote:
+> IMO it is somewhat excessive to put the entire sprintf() under a raw
+> spinlock and it's not even necessary.
 
->=20
-> "Not charging" is reported, when the battery is neither charged, nor
-> dis-charged. It's supposed to be used when a charger is connected
-> without charging the battery.
+It's a copy'n'paste of from the rest of functions there.
 
-Makes sense.
+> The value can change any time after you've dropped the lock and in
+> particular before the function returns, so why bother with locking?
+> desc will not go away from under you at that point anyway.
 
-> Basically the bq27xxx driver assumes, that charger is connected.
-> I guess the problem is, that the N900 devicetree does not specify,
-> that the bq27xxx is supplied by the charger, so
-> power_supply_am_i_supplied returns -ENODEV.
->=20
-> This can be fixed by adding the following to the N900 DT:
->=20
-> &bq27200 {
->     power-supplies =3D <&bq24150a>;
-> };
->=20
-> But there is also a bug in the bq27xxx driver, that should cope
-> with no charger being specified. The following patch should fix
-> the issue. I currently don't have my N900 with me. Could you
-> give it a try?
+IIRC descriptor's content might be changed, or descriptor itself might
+be gone (potential crash).
 
-I added the dts change and bq27xxx change on top of my kernel, but now
-the bq27xxx-battery does not want to probe:
-
-[   34.947082] power_supply bq27200-0: Not all required supplies found,
-defer probe
-[   34.958953] bq27xxx-battery 2-0055: failed to register battery
-
-Full boot log here: https://ptpb.pw/UeEV
-
-Thanks,
-Cheers,
-Merlijn
-
-
---uVixhJJURryiObYmiDBIOcdvvj1RaIrpz--
-
---blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEARYIAB0WIQRM5LT7NbLF9yb6a/UGN09rynK8WgUCWoaoSQAKCRAGN09rynK8
-WhigAP9YTWgxhnVrEh2WuuSOxTygi4mjyD6Bwy2SEHw+ls1ndQD/W7GvoE51nS7i
-MDDsE2AAoJgKsUyf/BGvPWdgdOvsEAY=
-=AetO
------END PGP SIGNATURE-----
-
---blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3--
+-- 
+With Best Regards,
+Andy Shevchenko
