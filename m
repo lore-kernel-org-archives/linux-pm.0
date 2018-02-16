@@ -1,119 +1,41 @@
-From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
- calls with runtime suppliers
-Date: Fri, 16 Feb 2018 09:13:50 +0900
-Message-ID: <CAAFQd5DkLtq2w00=Zd4sMDB4QOWqi7R-zgydECJXLdTmaHty+g@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
- <CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
- <CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
- <CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
- <CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
- <CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
- <CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg@mail.gmail.com>
- <CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg@mail.gmail.com>
- <CAAFQd5DiwAugGnPOTw0+XrEfef9x-n-vx59JFuXpNawjiXHwCw@mail.gmail.com>
- <CAFp+6iEW0faeHDfzN_F1bRrHGcVo3sPCk4HSY=t9dnEvHkDkYw@mail.gmail.com>
- <b003ecda-1cbe-4e5f-872b-107154ac40e5@arm.com>
- <CAAFQd5AmG1zSm+CouXOCJbs8SNGFk1-RqfU1nWGjMGJMB-qfvw@mail.gmail.com>
- <CAAFQd5A9B-di9svtiJbvk2hz1U1xo61rTY5vt6AD+KR5iMcG-A@mail.gmail.com>
- <7406f1ce-c2c9-a6bd-2886-5a34de45add6@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] ARM: cpuidle: Delete an error message for a failed memory
+ allocation in arm_idle_init_cpu()
+Date: Fri, 16 Feb 2018 09:03:57 +0100
+Message-ID: <582de86a-d0bd-3f2d-0cbd-cf0a7ca924d8@linaro.org>
+References: <7f419639-edfc-adb8-1dd2-d16b0dbfe19d@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <7406f1ce-c2c9-a6bd-2886-5a34de45add6-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f46.google.com ([74.125.82.46]:35167 "EHLO
+        mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753714AbeBPIEB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 03:04:01 -0500
+Received: by mail-wm0-f46.google.com with SMTP id x21so1530574wmh.0
+        for <linux-pm@vger.kernel.org>; Fri, 16 Feb 2018 00:04:00 -0800 (PST)
+In-Reply-To: <7f419639-edfc-adb8-1dd2-d16b0dbfe19d@users.sourceforge.net>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-T24gRnJpLCBGZWIgMTYsIDIwMTggYXQgMjoxNCBBTSwgUm9iaW4gTXVycGh5IDxyb2Jpbi5tdXJw
-aHlAYXJtLmNvbT4gd3JvdGU6Cj4gT24gMTUvMDIvMTggMDQ6MTcsIFRvbWFzeiBGaWdhIHdyb3Rl
-Ogo+IFsuLi5dCj4+Pgo+Pj4gQ291bGQgeW91IGVsYWJvcmF0ZSBvbiB3aGF0IGtpbmQgb2YgbG9j
-a2luZyB5b3UgYXJlIGNvbmNlcm5lZCBhYm91dD8KPj4+IEFzIEkgZXhwbGFpbmVkIGJlZm9yZSwg
-dGhlIG5vcm1hbGx5IGhhcHBlbmluZyBmYXN0IHBhdGggd291bGQgbG9jawo+Pj4gZGV2LT5wb3dl
-cl9sb2NrIG9ubHkgZm9yIHRoZSBicmllZiBtb21lbnQgb2YgaW5jcmVtZW50aW5nIHRoZSBydW50
-aW1lCj4+PiBQTSB1c2FnZSBjb3VudGVyLgo+Pgo+Pgo+PiBNeSBiYWQsIHRoYXQncyBub3QgZXZl
-biBpdC4KPj4KPj4gVGhlIGF0b21pYyB1c2FnZSBjb3VudGVyIGlzIGluY3JlbWVudGVkIGJlZm9y
-ZWhhbmRzLCB3aXRob3V0IGFueQo+PiBsb2NraW5nIFsxXSBhbmQgdGhlIHNwaW5sb2NrIGlzIGFj
-cXVpcmVkIG9ubHkgZm9yIHRoZSBzYWtlIG9mCj4+IHZhbGlkYXRpbmcgdGhhdCBkZXZpY2UncyBy
-dW50aW1lIFBNIHN0YXRlIHJlbWFpbmVkIHZhbGlkIGluZGVlZCBbMl0sCj4+IHdoaWNoIHdvdWxk
-IGJlIHRoZSBjYXNlIGluIHRoZSBmYXN0IHBhdGggb2YgdGhlIHNhbWUgZHJpdmVyIGRvaW5nIHR3
-bwo+PiBtYXBwaW5ncyBpbiBwYXJhbGxlbCwgd2l0aCB0aGUgbWFzdGVyIHBvd2VyZWQgb24gKGFu
-ZCBzbyB0aGUgU01NVSwKPj4gdGhyb3VnaCBkZXZpY2UgbGlua3M7IGlmIG1hc3RlciB3YXMgbm90
-IHBvd2VyZWQgb24gYWxyZWFkeSwgcG93ZXJpbmcKPj4gb24gdGhlIFNNTVUgaXMgdW5hdm9pZGFi
-bGUgYW55d2F5IGFuZCBpdCB3b3VsZCBhZGQgbXVjaCBtb3JlIGxhdGVuY3kKPj4gdGhhbiB0aGUg
-c3BpbmxvY2sgaXRzZWxmKS4KPgo+Cj4gV2Ugbm93IGhhdmUgbm8gbG9ja2luZyBhdCBhbGwgaW4g
-dGhlIG1hcCBwYXRoLCBhbmQgb25seSBhIHBlci1kb21haW4gbG9jawo+IGFyb3VuZCBUTEIgc3lu
-YyBpbiB1bm1hcCB3aGljaCBpcyB1bmZvcnR1bmF0ZWx5IG5lY2Vzc2FyeSBmb3IgY29ycmVjdG5l
-c3M7Cj4gdGhlIGxhdHRlciBpc24ndCB0b28gdGVycmlibGUsIHNpbmNlIGluICJzZXJpb3VzIiBo
-YXJkd2FyZSBpdCBzaG91bGQgb25seSBiZQo+IHNlcmlhbGlzaW5nIGEgZmV3IGNwdXMgc2Vydmlu
-ZyB0aGUgc2FtZSBkZXZpY2UgYWdhaW5zdCBlYWNoIG90aGVyIChlLmcuIGZvcgo+IG11bHRpcGxl
-IHF1ZXVlcyBvbiBhIHNpbmdsZSBOSUMpLgo+Cj4gUHV0dGluZyBpbiBhIGdsb2JhbCBsb2NrIHdo
-aWNoIHNlcmlhbGlzZXMgKmFsbCogY29uY3VycmVudCBtYXAgYW5kIHVubWFwCj4gY2FsbHMgZm9y
-ICphbGwqIHVucmVsYXRlZCBkZXZpY2VzIG1ha2VzIHRoaW5ncyB3b3JzZS4gUGVyaW9kLiBFdmVu
-IGlmIHRoZQo+IGxvY2sgaXRzZWxmIHdlcmUgaGVsZCBmb3IgdGhlIG1pbmltdW0gcG9zc2libGUg
-dGltZSwgaS5lLiB0cml2aWFsbHkKPiAic3Bpbl9sb2NrKCZsb2NrKTsgc3Bpbl91bmxvY2soJmxv
-Y2spIiwgdGhlIGNvc3Qgb2YgcmVwZWF0ZWRseSBib3VuY2luZyB0aGF0Cj4gb25lIGNhY2hlIGxp
-bmUgYXJvdW5kIGJldHdlZW4gOTYgQ1BVcyBhY3Jvc3MgdHdvIHNvY2tldHMgaXMgbm90IG5lZ2xp
-Z2libGUuCgpGYWlyIGVub3VnaC4gTm90ZSB0aGF0IHdlJ3JlIGluIGEgcXVpdGUgaW50ZXJlc3Rp
-bmcgc2l0dWF0aW9uIG5vdzoKIGEpIFdlIG5lZWQgdG8gaGF2ZSBydW50aW1lIFBNIGVuYWJsZWQg
-b24gUXVhbGNvbW0gU29DIHRvIGhhdmUgcG93ZXIKcHJvcGVybHkgbWFuYWdlZCwKIGIpIFdlIG5l
-ZWQgdG8gaGF2ZSBsb2NrLWZyZWUgbWFwL3VubWFwIG9uIHN1Y2ggZGlzdHJpYnV0ZWQgc3lzdGVt
-cywKIGMpIElmIHJ1bnRpbWUgUE0gaXMgZW5hYmxlZCwgd2UgbmVlZCB0byBjYWxsIGludG8gcnVu
-dGltZSBQTSBmcm9tIGFueQpjb2RlIHRoYXQgZG9lcyBoYXJkd2FyZSBhY2Nlc3Nlcywgb3RoZXJ3
-aXNlIHRoZSBJT01NVSBBUEkgKGFuZCBzbyBETUEKQVBJIGFuZCB0aGVuIGFueSBWNEwyIGRyaXZl
-cikgYmVjb21lcyB1bnVzYWJsZS4KCkkgY2FuIHNlZSBvbmUgbW9yZSB3YXkgdGhhdCBjb3VsZCBw
-b3RlbnRpYWxseSBsZXQgdXMgaGF2ZSBhbGwgdGhlCnRocmVlLiBIb3cgYWJvdXQgZW5hYmxpbmcg
-cnVudGltZSBQTSBvbmx5IG9uIHNlbGVjdGVkIGltcGxlbWVudGF0aW9ucwooZS5nLiBxY29tLHNt
-bXUpIGFuZCB0aGVuIGhhdmluZyBhbGwgdGhlIHJ1bnRpbWUgUE0gY2FsbHMgc3Vycm91bmRlZAp3
-aXRoIGlmIChwbV9ydW50aW1lX2VuYWJsZWQoKSksIHdoaWNoIGlzIGxvY2tsZXNzPwoKPgo+PiBb
-MV0KPj4gaHR0cDovL2VsaXhpci5mcmVlLWVsZWN0cm9ucy5jb20vbGludXgvdjQuMTYtcmMxL3Nv
-dXJjZS9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jI0wxMDI4Cj4+IFsyXQo+PiBodHRwOi8v
-ZWxpeGlyLmZyZWUtZWxlY3Ryb25zLmNvbS9saW51eC92NC4xNi1yYzEvc291cmNlL2RyaXZlcnMv
-YmFzZS9wb3dlci9ydW50aW1lLmMjTDYxMwo+Pgo+PiBJbiBhbnkgY2FzZSwgSSBjYW4ndCBpbWFn
-aW5lIHRoaXMgd29ya2luZyB3aXRoIFY0TDIgb3IgYW55dGhpbmcgZWxzZQo+PiByZWx5aW5nIG9u
-IGFueSBtZW1vcnkgbWFuYWdlbWVudCBtb3JlIGdlbmVyaWMgdGhhbiBjYWxsaW5nIElPTU1VIEFQ
-SQo+PiBkaXJlY3RseSBmcm9tIHRoZSBkcml2ZXIsIHdpdGggdGhlIElPTU1VIGRldmljZSBoYXZp
-bmcgcnVudGltZSBQTQo+PiBlbmFibGVkLCBidXQgd2l0aG91dCBtYW5hZ2luZyB0aGUgcnVudGlt
-ZSBQTSBmcm9tIHRoZSBJT01NVSBkcml2ZXIncwo+PiBjYWxsYmFja3MgdGhhdCBuZWVkIGFjY2Vz
-cyB0byB0aGUgaGFyZHdhcmUuIEFzIEkgbWVudGlvbmVkIGJlZm9yZSwKPj4gb25seSB0aGUgSU9N
-TVUgZHJpdmVyIGtub3dzIHdoZW4gZXhhY3RseSB0aGUgcmVhbCBoYXJkd2FyZSBhY2Nlc3MKPj4g
-bmVlZHMgdG8gYmUgZG9uZSAoZS5nLiBSb2NrY2hpcC9FeHlub3MgZG9uJ3QgbmVlZCB0byBkbyB0
-aGF0IGZvcgo+PiBtYXAvdW5tYXAgaWYgdGhlIHBvd2VyIGlzIGRvd24sIGJ1dCBzb21lIGltcGxl
-bWVudGF0aW9ucyBvZiBTTU1VIHdpdGgKPj4gVExCIHBvd2VyZWQgc2VwYXJhdGVseSBtaWdodCBu
-ZWVkIHRvIGRvIHNvKS4KPgo+Cj4gSXQncyB3b3J0aCBub3RpbmcgdGhhdCBFeHlub3MgYW5kIFJv
-Y2tjaGlwIGFyZSByZWxhdGl2ZWx5IHNtYWxsCj4gc2VsZi1jb250YWluZWQgSVAgYmxvY2tzIGlu
-dGVncmF0ZWQgY2xvc2VseSB3aXRoIHRoZSBpbnRlcmZhY2VzIG9mIHRoZWlyCj4gcmVsZXZhbnQg
-bWFzdGVyIGRldmljZXM7IFNNTVUgaXMgYW4gYXJjaGl0ZWN0dXJlLCBpbXBsZW1lbnRhdGlvbnMg
-b2Ygd2hpY2gKPiBtYXkgYmUgbGFyZ2UsIGRpc3RyaWJ1dGVkLCBhbmQgaGF2ZSBjb21wbGV4IGFu
-ZCB3aWxkbHkgZGlmZmVyaW5nIGludGVybmFsCj4gdG9wb2xvZ2llcy4gQXMgc3VjaCwgaXQncyBh
-IGxvdCBoYXJkZXIgdG8gbWFrZSBoYXJkd2FyZS1zcGVjaWZpYyBhc3N1bXB0aW9ucwo+IGFuZC9v
-ciBiZSBjb3JyZWN0IGZvciBhbGwgcG9zc2libGUgY2FzZXMuCj4KPiBEb24ndCBnZXQgbWUgd3Jv
-bmcsIEkgZG8gdWx0aW1hdGVseSBhZ3JlZSB0aGF0IHRoZSBJT01NVSBkcml2ZXIgaXMgdGhlIG9u
-bHkKPiBhZ2VudCB3aG8gdWx0aW1hdGVseSBrbm93cyB3aGF0IGNhbGxzIGFyZSBnb2luZyB0byBi
-ZSBuZWNlc3NhcnkgZm9yIHdoYXRldmVyCj4gb3BlcmF0aW9uIGl0J3MgcGVyZm9ybWluZyBvbiBp
-dHMgb3duIGhhcmR3YXJlKjsgaXQncyBqdXN0IHRoYXQgZm9yIFNNTVUgaXQKPiBuZWVkcyB0byBi
-ZSBpbXBsZW1lbnRlZCBpbiBhIHdheSB0aGF0IGhhcyB6ZXJvIGltcGFjdCBvbiB0aGUgY2FzZXMg
-d2hlcmUgaXQKPiBkb2Vzbid0IG1hdHRlciwgYmVjYXVzZSBpdCdzIG5vdCB2aWFibGUgdG8gc3Bl
-Y2lhbGlzZSB0aGF0IGRyaXZlciBmb3IgYW55Cj4gcGFydGljdWxhciBJUCBpbXBsZW1lbnRhdGlv
-bi91c2UtY2FzZS4KClN0aWxsLCBleGFjdGx5IHRoZSBzYW1lIGhvbGRzIGZvciB0aGUgbG93IHBv
-d2VyIGVtYmVkZGVkIHVzZSBjYXNlcywKd2hlcmUgd2Ugc3RyaXZlIGZvciB0aGUgbG93ZXN0IHBv
-c3NpYmxlIHBvd2VyIGNvbnN1bXB0aW9uLCB3aGlsZQptYWludGFpbmluZyBwZXJmb3JtYW5jZSBs
-ZXZlbHMgaGlnaCBhcyB3ZWxsLiBBbmQgc28gdGhlIFNNTVUgY29kZSBpcwpleHBlY3RlZCB0byBh
-bHNvIHdvcmsgd2l0aCBvdXIgdXNlIGNhc2VzLCBzdWNoIGFzIFY0TDIgb3IgRFJNIGRyaXZlcnMu
-ClNpbmNlIHRoZXNlIHBvaW50cyBkb24ndCBob2xkIGZvciBjdXJyZW50IFNNTVUgY29kZSwgSSBj
-b3VsZCBzYXkgdGhhdAp0aGUgaXQgaGFzIGJlZW4gYWxyZWFkeSBzcGVjaWFsaXplZCBmb3IgbGFy
-Z2UsIGRpc3RyaWJ1dGVkCmltcGxlbWVudGF0aW9ucy4KCkJlc3QgcmVnYXJkcywKVG9tYXN6Cl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBt
-YWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+On 15/02/2018 16:46, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 15 Feb 2018 16:40:38 +0100
+> 
+> Omit an extra message for a memory allocation failure in this function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
