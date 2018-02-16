@@ -1,45 +1,42 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
- cooling device
-Date: Fri, 16 Feb 2018 10:11:19 +0100
-Message-ID: <f3d05cc2-265f-d0ba-5221-362114abe82d@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
- <20180202104259.GA28462@vireshk-i7>
- <8dadd854-25ac-68aa-aa9f-33ba76a137a4@linaro.org>
- <20180209094419.GN28462@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / wakeirq: Add wakeup name to dedicated wake irqs
+Date: Fri, 16 Feb 2018 10:14:53 +0100
+Message-ID: <CAJZ5v0gRtkBf7uu4C_k7ivNGo=JM0bB1PAdr_6Nbbs39OPevHw@mail.gmail.com>
+References: <20180209161456.18951-1-tony@atomide.com> <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f53.google.com ([74.125.82.53]:38471 "EHLO
-        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757563AbeBPJLW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 04:11:22 -0500
-Received: by mail-wm0-f53.google.com with SMTP id 141so1832636wme.3
-        for <linux-pm@vger.kernel.org>; Fri, 16 Feb 2018 01:11:22 -0800 (PST)
-In-Reply-To: <20180209094419.GN28462@vireshk-i7>
-Content-Language: en-US
+Received: from mail-ot0-f193.google.com ([74.125.82.193]:34850 "EHLO
+        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757693AbeBPJOy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 04:14:54 -0500
+In-Reply-To: <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 09/02/2018 10:44, Viresh Kumar wrote:
-> On 02-02-18, 15:30, Daniel Lezcano wrote:
->> Agree the cpufreq driver can be unloaded and this part needs some
->> adjustments.
-> 
-> Also note that the cpufreq cooling device has two separate set of
-> callbacks, one for the power-specific callbacks. You haven't taken
-> care of them in the combo thing.
+On Wed, Feb 14, 2018 at 12:23 PM, Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> On Fri, Feb 9, 2018 at 6:14 PM, Tony Lindgren <tony@atomide.com> wrote:
+>> This makes it easy to grep :wakeup /proc/interrupts.
+>
+> I used to have another patch (not published) to provide this
+> information via /sys/kernel/irq.
+>
+> OK, here we are:
+>
+>
+>> +       namelen = strlen(dev_name(dev)) + strlen(postfix) + 1;
+>> +       wirq->name = kzalloc(namelen, GFP_KERNEL);
+>
+> kasprintf()
 
-The plan is add them after.
+It's a bit hard to comment patches sent as attachments, but I'll try anyway. :-)
 
+IMO it is somewhat excessive to put the entire sprintf() under a raw
+spinlock and it's not even necessary.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+The value can change any time after you've dropped the lock and in
+particular before the function returns, so why bother with locking?
+desc will not go away from under you at that point anyway.
