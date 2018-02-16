@@ -1,85 +1,96 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / wakeirq: Add wakeup name to dedicated wake irqs
-Date: Fri, 16 Feb 2018 10:42:07 +0100
-Message-ID: <CAJZ5v0iF0M+X5vujyaKmXrEWpBEceQ=PX6bhgcwFf8P-q7Cu-Q@mail.gmail.com>
-References: <20180209161456.18951-1-tony@atomide.com>
+From: Merlijn Wajer <merlijn@wizzup.org>
+Subject: Re: Charging status for N900/RX-51 with bq27200
+Date: Fri, 16 Feb 2018 10:45:45 +0100
+Message-ID: <e2b8465c-8ac3-cfac-e138-42773b8f1aa4@wizzup.org>
+References: <581dcb51-f469-61c9-e023-62ac535bc41a@wizzup.org>
+ <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:35412 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932120AbeBPJmJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 04:42:09 -0500
-In-Reply-To: <20180209161456.18951-1-tony@atomide.com>
+Received: from nala.villavu.com ([188.165.243.101]:55297 "EHLO
+        nala.villavu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932979AbeBPKFw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 05:05:52 -0500
+In-Reply-To: <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Feb 9, 2018 at 5:14 PM, Tony Lindgren <tony@atomide.com> wrote:
-> This makes it easy to grep :wakeup /proc/interrupts.
->
-> Cc: Brian Norris <briannorris@chromium.org>
-> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Suggested-by: Jeffy Chen <jeffy.chen@rock-chips.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/base/power/power.h   |  1 +
->  drivers/base/power/wakeirq.c | 18 +++++++++++++++---
->  2 files changed, 16 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-> --- a/drivers/base/power/power.h
-> +++ b/drivers/base/power/power.h
-> @@ -31,6 +31,7 @@ struct wake_irq {
->         struct device *dev;
->         unsigned int status;
->         int irq;
-> +       char *name;
->  };
->
->  extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
-> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
-> --- a/drivers/base/power/wakeirq.c
-> +++ b/drivers/base/power/wakeirq.c
-> @@ -112,6 +112,7 @@ void dev_pm_clear_wake_irq(struct device *dev)
->                 free_irq(wirq->irq, wirq);
->                 wirq->status &= ~WAKE_IRQ_DEDICATED_MASK;
->         }
-> +       kfree(wirq->name);
->         kfree(wirq);
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_clear_wake_irq);
-> @@ -175,7 +176,8 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
->  int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
->  {
->         struct wake_irq *wirq;
-> -       int err;
-> +       int err, namelen;
-> +       const char *postfix = ":wakeup";
->
->         if (irq < 0)
->                 return -EINVAL;
-> @@ -184,6 +186,14 @@ int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
->         if (!wirq)
->                 return -ENOMEM;
->
-> +       namelen = strlen(dev_name(dev)) + strlen(postfix) + 1;
-> +       wirq->name = kzalloc(namelen, GFP_KERNEL);
-> +       if (!wirq->name) {
-> +               err = -ENOMEM;
-> +               goto err_free;
-> +       }
-> +
-> +       snprintf(wirq->name, namelen, "%s%s", dev_name(dev), postfix);
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3
+Content-Type: multipart/mixed; boundary="uVixhJJURryiObYmiDBIOcdvvj1RaIrpz";
+ protected-headers="v1"
+From: Merlijn Wajer <merlijn@wizzup.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+Message-ID: <e2b8465c-8ac3-cfac-e138-42773b8f1aa4@wizzup.org>
+Subject: Re: Charging status for N900/RX-51 with bq27200
+References: <581dcb51-f469-61c9-e023-62ac535bc41a@wizzup.org>
+ <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
+In-Reply-To: <20180215204153.ztdal3qhtmgi7sjo@earth.universe>
 
-As Andy said you can do
+--uVixhJJURryiObYmiDBIOcdvvj1RaIrpz
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-GB
+Content-Transfer-Encoding: quoted-printable
 
-wirq->name = kasprintf(GFP_KERNEL, "%s:wakeup", dev_name(dev));
-if (!wirq->name) {
-        err = -ENOMEM;
-        goto err_free;
-}
+Hi Sebastian,
 
-here and it will allocate the buffer for you.
+On 15/02/18 21:41, Sebastian Reichel wrote:
+
+>=20
+> "Not charging" is reported, when the battery is neither charged, nor
+> dis-charged. It's supposed to be used when a charger is connected
+> without charging the battery.
+
+Makes sense.
+
+> Basically the bq27xxx driver assumes, that charger is connected.
+> I guess the problem is, that the N900 devicetree does not specify,
+> that the bq27xxx is supplied by the charger, so
+> power_supply_am_i_supplied returns -ENODEV.
+>=20
+> This can be fixed by adding the following to the N900 DT:
+>=20
+> &bq27200 {
+>     power-supplies =3D <&bq24150a>;
+> };
+>=20
+> But there is also a bug in the bq27xxx driver, that should cope
+> with no charger being specified. The following patch should fix
+> the issue. I currently don't have my N900 with me. Could you
+> give it a try?
+
+I added the dts change and bq27xxx change on top of my kernel, but now
+the bq27xxx-battery does not want to probe:
+
+[   34.947082] power_supply bq27200-0: Not all required supplies found,
+defer probe
+[   34.958953] bq27xxx-battery 2-0055: failed to register battery
+
+Full boot log here: https://ptpb.pw/UeEV
+
+Thanks,
+Cheers,
+Merlijn
+
+
+--uVixhJJURryiObYmiDBIOcdvvj1RaIrpz--
+
+--blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYIAB0WIQRM5LT7NbLF9yb6a/UGN09rynK8WgUCWoaoSQAKCRAGN09rynK8
+WhigAP9YTWgxhnVrEh2WuuSOxTygi4mjyD6Bwy2SEHw+ls1ndQD/W7GvoE51nS7i
+MDDsE2AAoJgKsUyf/BGvPWdgdOvsEAY=
+=AetO
+-----END PGP SIGNATURE-----
+
+--blWnWj9fBjKbJo3mVNwEfLKtrTjNI6Iq3--
