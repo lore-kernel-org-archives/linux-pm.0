@@ -1,20 +1,30 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/3] ACPI: AC/battery: Add quirk to avoid using PMIC
-Date: Fri, 16 Feb 2018 09:40:43 +0100
-Message-ID: <CAJZ5v0iP5o9-eeyB9JTvPSR97Z+d+=or_5F5QB107GipvteuAw@mail.gmail.com>
-References: <20180216082616.25084-1-carlo@caione.org> <20180216082616.25084-2-carlo@caione.org>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 0/3] power: supply: Fix AXP288 fallback when not needed
+Date: Fri, 16 Feb 2018 09:41:05 +0100
+Message-ID: <da070fa2-9678-5a53-6984-2f200ac93862@redhat.com>
+References: <20180216082616.25084-1-carlo@caione.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20180216082616.25084-2-carlo@caione.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Carlo Caione <carlo@caione.org>
-Cc: Linux Upstreaming Team <linux@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Carlo Caione <carlo@endlessm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:55021 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754778AbeBPIlI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 03:41:08 -0500
+Received: by mail-wm0-f67.google.com with SMTP id z81so1710801wmb.4
+        for <linux-pm@vger.kernel.org>; Fri, 16 Feb 2018 00:41:08 -0800 (PST)
+In-Reply-To: <20180216082616.25084-1-carlo@caione.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Carlo Caione <carlo@caione.org>, linux@endlessm.com, rjw@rjwysocki.net, lenb@kernel.org, sre@kernel.org, wens@csie.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Carlo Caione <carlo@endlessm.com>
 
-On Fri, Feb 16, 2018 at 9:26 AM, Carlo Caione <carlo@caione.org> wrote:
+Hi,
+
+On 16-02-18 09:26, Carlo Caione wrote:
 > From: Carlo Caione <carlo@endlessm.com>
->
+> 
 > With commits af3ec837 and dccfae6d a blacklist was introduced to avoid
 > using the ACPI drivers for AC and battery when a native PMIC driver was
 > already present. While this is in general a good idea (because of broken
@@ -22,39 +32,118 @@ On Fri, Feb 16, 2018 at 9:26 AM, Carlo Caione <carlo@caione.org> wrote:
 > AC/battery devices) we have come across at least one CherryTrail laptop
 > (ECS EF20EA) shipping the AXP288 together with a separate FG controller
 > (a MAX17047) instead of the one embedded in the AXP288.
->
-> The net effect of blacklisting the ACPI drivers is that on this platform
-> the AC/battery reporting is broken since the information is coming from
-> the AXP288 FG driver, not actually used in hardware.
->
-> In this case we want to keep using the ACPI AC/battery driver that is
-> able to interface correctly with the real FG controller.
->
-> We introduce therefore a new quirk to avoid the blacklist.
->
-> Signed-off-by: Carlo Caione <carlo@endlessm.com>
 
-First, please don't split the patches the way you have split them.
+Thank you for the new version. This looks good and surprisingly
+clean / small given amounts of warts surrounding this all.
 
-Put all battery material into one patch and all AC material into the
-next one.  It is better to introduce things like
-ac_not_use_pmic_quirk() along with the quirks actually using them.
+The entire series is:
 
-> ---
->  drivers/acpi/ac.c      | 26 ++++++++++++++++++--------
->  drivers/acpi/battery.c | 26 ++++++++++++++++++--------
->  2 files changed, 36 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
-> index 47a7ed557bd6..b9a4ca720309 100644
-> --- a/drivers/acpi/ac.c
-> +++ b/drivers/acpi/ac.c
-> @@ -87,6 +87,7 @@ static int acpi_ac_open_fs(struct inode *inode, struct file *file);
->
->
->  static int ac_sleep_before_get_state_ms;
-> +static bool ac_not_use_pmic;
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 
-I would use a different name here, this one is confusing IMO.
+Regards,
 
-Something like ac_skip_pmic_blacklist would be better.
+Hans
+
+
+
+
+> 
+> This is the interesting analisys done by Hans de Goede (thank you):
+> 
+> Looking at the _BIX method of the BATC/PNP0C0A device, we see it referencing
+> FG10:
+> 
+> Method (_BIX, 0, NotSerialized)  // _BIX: Battery Information Extend
+> {
+>      If (AVBL == One)
+>      {
+>          BUF2 = FG10 /* \_SB_.PCI0.I2C1.FG10 */
+> 
+> And FG10 is defined as:
+> 
+> Field (DVFG, BufferAcc, NoLock, Preserve)
+> {
+>      Connection (SMFG),
+>      Offset (0x10),
+>      AccessAs (BufferAcc, AttribBytes (0x02)),
+>      FG10,   8
+> }
+> 
+> With SMFG being defined as:
+> 
+> Name (SMFG, ResourceTemplate ()
+> {
+>      I2cSerialBusV2 (0x0036, ControllerInitiated, 0x000186A0,
+>          AddressingMode7Bit, "\\_SB.PCI0.I2C1",
+>          0x00, ResourceConsumer, , Exclusive,
+>          )
+> })
+> 
+> Looking for I2C1 address 0x0036 we find:
+> 
+> Device (ANFG)
+> {
+>      Name (_HID, "MAX17047" /* Fuel Gauge Controller */)  // _HID: Hardwa
+>      Name (_CID, "MAX17047" /* Fuel Gauge Controller */)  // _CID: Compat
+>      Name (_DDN, "Fuel Gauge Controller")  // _DDN: DOS Device Name
+>      Name (RBUF, ResourceTemplate ()
+>      {
+>          I2cSerialBusV2 (0x0036, ControllerInitiated, 0x00061A80,
+>              AddressingMode7Bit, "\\_SB.PCI0.I2C1",
+>              0x00, ResourceConsumer, , Exclusive,
+>              )
+>          GpioInt (Level, ActiveLow, ExclusiveAndWake, PullNone, 0x0000,
+>              "\\_SB.GPO3", 0x00, ResourceConsumer, ,
+>              )
+>              {   // Pin list
+>                  0x0001
+>              }
+>      })
+> 
+> Where as the AXP288 PMIC is I2C7 address 0x034:
+> 
+> Device (PMI1)
+> {
+>      Name (_ADR, Zero)  // _ADR: Address
+>      Name (_HID, "INT33F4" /* XPOWER PMIC Controller */)  // _HID: Ha
+>      Name (_CID, "INT33F4" /* XPOWER PMIC Controller */)  // _CID: Co
+>      Name (_DDN, "XPOWER PMIC Controller")  // _DDN: DOS Device Name
+>      Name (_HRV, 0x03)  // _HRV: Hardware Revision
+>      Name (_UID, One)  // _UID: Unique ID
+> 
+>      Method (_CRS, 0, NotSerialized)  // _CRS: Current Resource Setti
+>      {
+>          Name (SBUF, ResourceTemplate ()
+>          {
+>              I2cSerialBusV2 (0x0034, ControllerInitiated, 0x000F4240,
+>                  AddressingMode7Bit, "\\_SB.PCI0.I2C7",
+>                  0x00, ResourceConsumer, , Exclusive,
+>                  )
+> 
+> So basically this laptopt is using a separate FG chip instead of the one
+> embedded in the AXP288.
+> 
+> To have this correctly working we need basically to avoid the fallback on the
+> AXP288 driver enabling again the ACPI AC/battery drivers and at the same time
+> avoiding that the AXP288 FG driver is probed at all.
+> 
+> I'm still not fully convinced that having two different quirks (one to disable
+> the blacklist and another to disable the AXP288 FG probing) is the right way to
+> fix this. So any comment is welcome.
+> 
+> Changelog:
+> 
+> v2:
+>    - Split [PATCH 2/2] in two parts
+>    - Rework subject prefixes
+> 
+> Carlo Caione (3):
+>    ACPI: AC/battery: Add quirk to avoid using PMIC
+>    ACPI: AC/battery: Add quirks for ECS EF20EA
+>    power: supply: axp288_fuel_gauge: Do not register FG on ECS EF20EA
+> 
+>   drivers/acpi/ac.c                        | 33 ++++++++++++++++++++++++--------
+>   drivers/acpi/battery.c                   | 33 ++++++++++++++++++++++++--------
+>   drivers/power/supply/axp288_fuel_gauge.c |  6 ++++++
+>   3 files changed, 56 insertions(+), 16 deletions(-)
+> 
