@@ -1,31 +1,45 @@
-From: Carlo Caione <carlo@endlessm.com>
-Subject: Re: [PATCH v2 0/3] power: supply: Fix AXP288 fallback when not needed
-Date: Fri, 16 Feb 2018 08:58:53 +0000
-Message-ID: <CAL9uMOEJuH7hG5Sp2geECrnW_vcyqhYGsR3aCJFMdAfNAPVrRQ@mail.gmail.com>
-References: <20180216082616.25084-1-carlo@caione.org> <da070fa2-9678-5a53-6984-2f200ac93862@redhat.com>
- <CAJZ5v0hLa5O18OPnX9zke9F0PMNdyy+3wgAvT4GXBJGaqngTzw@mail.gmail.com> <6e1f34ae-54d3-8daf-e531-976f36f3cb07@redhat.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 8/8] thermal/drivers/cpu_cooling: Add the combo cpu
+ cooling device
+Date: Fri, 16 Feb 2018 10:11:19 +0100
+Message-ID: <f3d05cc2-265f-d0ba-5221-362114abe82d@linaro.org>
+References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
+ <1516721671-16360-9-git-send-email-daniel.lezcano@linaro.org>
+ <20180202104259.GA28462@vireshk-i7>
+ <8dadd854-25ac-68aa-aa9f-33ba76a137a4@linaro.org>
+ <20180209094419.GN28462@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6e1f34ae-54d3-8daf-e531-976f36f3cb07@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Carlo Caione <carlo@caione.org>, Linux Upstreaming Team <linux@endlessm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:38471 "EHLO
+        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757563AbeBPJLW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 04:11:22 -0500
+Received: by mail-wm0-f53.google.com with SMTP id 141so1832636wme.3
+        for <linux-pm@vger.kernel.org>; Fri, 16 Feb 2018 01:11:22 -0800 (PST)
+In-Reply-To: <20180209094419.GN28462@vireshk-i7>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, daniel.thompson@linaro.org
 
-On Fri, Feb 16, 2018 at 8:52 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
+On 09/02/2018 10:44, Viresh Kumar wrote:
+> On 02-02-18, 15:30, Daniel Lezcano wrote:
+>> Agree the cpufreq driver can be unloaded and this part needs some
+>> adjustments.
+> 
+> Also note that the cpufreq cooling device has two separate set of
+> callbacks, one for the power-specific callbacks. You haven't taken
+> care of them in the combo thing.
 
->> Well, to be honest, I very much prefer it when changes are made to one
->> driver at a time.
->
->
-> I understand completely, Carlo can you do a v4 with the changes
-> Rafael requested please? Feel free to keep my Reviewed-by for the v4.
+The plan is add them after.
 
-No problem. Thank you both for the reviews.
-
-Cheers,
 
 -- 
-Carlo Caione  |  +44.7384.69.16.04  |  Endless
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
