@@ -1,60 +1,70 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
+From: Tony Lindgren <tony@atomide.com>
 Subject: Re: [PATCH] PM / wakeirq: Add wakeup name to dedicated wake irqs
-Date: Fri, 16 Feb 2018 16:52:22 +0200
-Message-ID: <CAHp75VdxsDiwi8uux3Q4vYhEO1P3w0sePVBcm38RvimKez8XAg@mail.gmail.com>
-References: <20180209161456.18951-1-tony@atomide.com> <CAHp75VcSRxLZJxmqXWpAGypvZa6W2cEAiTF2muJWqdaOYu_TpA@mail.gmail.com>
- <CAJZ5v0gRtkBf7uu4C_k7ivNGo=JM0bB1PAdr_6Nbbs39OPevHw@mail.gmail.com>
- <CAHp75VcVNDV9FmPFTBHsJRoiHtOviwC68Wk+aCqhqteZw41ZzQ@mail.gmail.com> <CAJZ5v0gowD179tVaAc_8Wy-pV=mAwsO1egs0DfCnA-eEWayJdw@mail.gmail.com>
+Date: Fri, 16 Feb 2018 08:42:40 -0800
+Message-ID: <20180216164240.GU6364@atomide.com>
+References: <20180209161456.18951-1-tony@atomide.com>
+ <CAJZ5v0iF0M+X5vujyaKmXrEWpBEceQ=PX6bhgcwFf8P-q7Cu-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f195.google.com ([209.85.220.195]:33190 "EHLO
-        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1033381AbeBPOwX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 09:52:23 -0500
-In-Reply-To: <CAJZ5v0gowD179tVaAc_8Wy-pV=mAwsO1egs0DfCnA-eEWayJdw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iF0M+X5vujyaKmXrEWpBEceQ=PX6bhgcwFf8P-q7Cu-Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 16, 2018 at 12:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Feb 16, 2018 at 11:39 AM, Andy Shevchenko
-> <andy.shevchenko@gmail.com> wrote:
->> On Fri, Feb 16, 2018 at 11:14 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Wed, Feb 14, 2018 at 12:23 PM, Andy Shevchenko
->>> <andy.shevchenko@gmail.com> wrote:
+* Rafael J. Wysocki <rafael@kernel.org> [180216 09:42]:
+> On Fri, Feb 9, 2018 at 5:14 PM, Tony Lindgren <tony@atomide.com> wrote:
+> > This makes it easy to grep :wakeup /proc/interrupts.
+> > diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+> > --- a/drivers/base/power/wakeirq.c
+> > +++ b/drivers/base/power/wakeirq.c
+> > @@ -112,6 +112,7 @@ void dev_pm_clear_wake_irq(struct device *dev)
+> >                 free_irq(wirq->irq, wirq);
+> >                 wirq->status &= ~WAKE_IRQ_DEDICATED_MASK;
+> >         }
+> > +       kfree(wirq->name);
+> >         kfree(wirq);
+> >  }
+> >  EXPORT_SYMBOL_GPL(dev_pm_clear_wake_irq);
+> > @@ -175,7 +176,8 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
+> >  int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
+> >  {
+> >         struct wake_irq *wirq;
+> > -       int err;
+> > +       int err, namelen;
+> > +       const char *postfix = ":wakeup";
+> >
+> >         if (irq < 0)
+> >                 return -EINVAL;
+> > @@ -184,6 +186,14 @@ int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
+> >         if (!wirq)
+> >                 return -ENOMEM;
+> >
+> > +       namelen = strlen(dev_name(dev)) + strlen(postfix) + 1;
+> > +       wirq->name = kzalloc(namelen, GFP_KERNEL);
+> > +       if (!wirq->name) {
+> > +               err = -ENOMEM;
+> > +               goto err_free;
+> > +       }
+> > +
+> > +       snprintf(wirq->name, namelen, "%s%s", dev_name(dev), postfix);
+> 
+> As Andy said you can do
+> 
+> wirq->name = kasprintf(GFP_KERNEL, "%s:wakeup", dev_name(dev));
+> if (!wirq->name) {
+>         err = -ENOMEM;
+>         goto err_free;
+> }
+> 
+> here and it will allocate the buffer for you.
 
->>> IMO it is somewhat excessive to put the entire sprintf() under a raw
->>> spinlock and it's not even necessary.
->>
->> It's a copy'n'paste of from the rest of functions there.
->
-> Fair enough. :-)
+Yeah great, will update and repost next week. I'll also
+give Andy's patch a try, sounds like we may want to do
+both though.
 
->>> The value can change any time after you've dropped the lock and in
->>> particular before the function returns, so why bother with locking?
->>> desc will not go away from under you at that point anyway.
->>
->> IIRC descriptor's content might be changed, or descriptor itself might
->> be gone (potential crash).
->
-> No, desc cannot go away at this point AFAICS due to the kernfs
-> refcounting.  And the lock is *inside* of the desc object anyway, so
-> it doesn't help really against that.
+Regards,
 
-Oh, indeed.
-
-> The contents may change, but so what?
->
-> Effectively, you read an int and reading an int is atomic.  It may
-> change after that, but the lock doesn't prevent it from changing.  It
-> only prevents the change from being applied to it before you drop the
-> lock, but why do you care?
-
-So, with explanations above, perhaps we can produce the patch to
-remove those locks from the rest?
-
--- 
-With Best Regards,
-Andy Shevchenko
+Tony
