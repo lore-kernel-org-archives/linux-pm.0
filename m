@@ -1,72 +1,47 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 5/8] thermal/drivers/cpu_cooling: Introduce the cpu idle
- cooling driver
-Date: Fri, 16 Feb 2018 18:39:35 +0100
-Message-ID: <71c94b53-5945-bc91-18ce-b5ef7ba9ec3c@linaro.org>
-References: <1516721671-16360-1-git-send-email-daniel.lezcano@linaro.org>
- <1516721671-16360-6-git-send-email-daniel.lezcano@linaro.org>
- <20180207091231.GQ28462@vireshk-i7>
- <54759b82-29e9-f376-bbe8-dcf683ed0cce@linaro.org>
- <20180209094100.GM28462@vireshk-i7>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH resend 0/1] thermal: int3400_thermal: Ignore charger
+ events
+Date: Sat, 17 Feb 2018 13:58:36 +0800
+Message-ID: <1518847116.2739.0.camel@intel.com>
+References: <20180214151340.1811-1-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:39069 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1162246AbeBPRjj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Feb 2018 12:39:39 -0500
-Received: by mail-wm0-f67.google.com with SMTP id b21so4459060wme.4
-        for <linux-pm@vger.kernel.org>; Fri, 16 Feb 2018 09:39:38 -0800 (PST)
-In-Reply-To: <20180209094100.GM28462@vireshk-i7>
-Content-Language: en-US
+Received: from mga18.intel.com ([134.134.136.126]:24633 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750803AbeBQF6j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 17 Feb 2018 00:58:39 -0500
+In-Reply-To: <20180214151340.1811-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: Hans de Goede <hdegoede@redhat.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-
-Hi Viresh,
-
-sorry for the late reply.
-
-
-On 09/02/2018 10:41, Viresh Kumar wrote:
-> On 07-02-18, 11:34, Daniel Lezcano wrote:
->> On 07/02/2018 10:12, Viresh Kumar wrote:
->>> What about cpuidle_cooling_unregister() ?
->>
->> The unregister function is not needed because cpuidle can't be unloaded.
->> The cpuidle cooling device is registered after the cpuidle successfully
->> initialized itself, there is no error path.
+On Wed, 2018-02-14 at 16:13 +0100, Hans de Goede wrote:
+> Hi All,
 > 
-> Okay, then there are two more things here.
+> This patch seems to have fallen through the cracks, hence this
+> resend.
 > 
-> First, you don't need a kref in your patch and simple counter should
-> be used instead, as kref is obviously more heavy to be used for the
-> single error path here.
+I think the problem can be covered by this commit, right?
 
-I prefer to keep the kref for its API.
+commit 261ac1d2d9ef9a29c57f8aff341ae3dc323a707c
+Author:     Brian Bian <brian.bian@linux.intel.com>
+AuthorDate: Tue Nov 14 09:36:36 2017 -0800
+Commit:     Zhang Rui <rui.zhang@intel.com>
+CommitDate: Wed Dec 27 10:14:58 2017 +0800
 
-And I disagree about the heavy aspect :)
+    thermal: int3400_thermal: Ignore Unknown Notification Codes
+    
+    Some BIOS implementations route ACPI codes other than 0x83 to
+INT3400
+    device. Ignore these ACPI notification codes because the INT3400
+driver
+    does not handle them.
+    
+    Signed-off-by: Brian Bian <brian.bian@linux.intel.com>
+    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 
-struct kref {
-        refcount_t refcount;
-};
-
-
-> Secondly, what about CPU hotplug ? For example, the cpu-freq cooling
-> device gets removed currently if all CPUs of a cluster are
-> hotplugged-out. But with your code, even if the CPUs are gone, their
-> cpu-idle cooling device will stay.
-
-Yes and it will continue to compute the state, so if new CPUs are
-inserted the cooling device automatically uses the cooling state.
-I don't see a problem with that.
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+thanks,
+rui
