@@ -1,100 +1,99 @@
-From: <sean.wang@mediatek.com>
-Subject: [PATCH v2 2/2] thermal: mediatek: add support for MT7622 SoC
-Date: Sat, 17 Feb 2018 16:49:02 +0800
-Message-ID: <5030064e79d65b812e3c71118bf10aa197928418.1518856935.git.sean.wang@mediatek.com>
-References: <c72262a17332a227aa2db39b682db50e2324821a.1518856935.git.sean.wang@mediatek.com>
+From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH 0/7] Modernize vga_switcheroo by using device link
+ for HDA
+Date: Sun, 18 Feb 2018 09:38:32 +0100
+Message-ID: <cover.1518941072.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw01.mediatek.com ([210.61.82.183]:33134 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751122AbeBQItO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Feb 2018 03:49:14 -0500
-In-Reply-To: <c72262a17332a227aa2db39b682db50e2324821a.1518856935.git.sean.wang@mediatek.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: robh+dt@kernel.org, rui.zhang@intel.com, edubezval@gmail.com
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>, Shunli Wang <shunli.wang@mediatek.com>
 
-From: Sean Wang <sean.wang@mediatek.com>
-
-MT7622 SoC has built-in thermal controller with one sensing point, the
-patch just is to extend the functionality of the existing logic.
-
-Changes v1 -> v2: rebase to 4.16-rc1
-
-Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-Signed-off-by: Shunli Wang <shunli.wang@mediatek.com>
----
- drivers/thermal/mtk_thermal.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
-
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index c75661a..e709acb 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -153,6 +153,12 @@
- /* The number of sensing points per bank */
- #define MT2712_NUM_SENSORS_PER_ZONE	4
- 
-+#define MT7622_TEMP_AUXADC_CHANNEL	11
-+#define MT7622_NUM_SENSORS		1
-+#define MT7622_NUM_ZONES		1
-+#define MT7622_NUM_SENSORS_PER_ZONE	1
-+#define MT7622_TS1	0
-+
- struct mtk_thermal;
- 
- struct thermal_bank_cfg {
-@@ -242,6 +248,12 @@ static const int mt2712_adcpnp[MT2712_NUM_SENSORS_PER_ZONE] = {
- 
- static const int mt2712_mux_values[MT2712_NUM_SENSORS] = { 0, 1, 2, 3 };
- 
-+/* MT7622 thermal sensor data */
-+static const int mt7622_bank_data[MT7622_NUM_SENSORS] = { MT7622_TS1, };
-+static const int mt7622_msr[MT7622_NUM_SENSORS_PER_ZONE] = { TEMP_MSR0, };
-+static const int mt7622_adcpnp[MT7622_NUM_SENSORS_PER_ZONE] = { TEMP_ADCPNP0, };
-+static const int mt7622_mux_values[MT7622_NUM_SENSORS] = { 0, };
-+
- /**
-  * The MT8173 thermal controller has four banks. Each bank can read up to
-  * four temperature sensors simultaneously. The MT8173 has a total of 5
-@@ -329,6 +341,25 @@ static const struct mtk_thermal_data mt2712_thermal_data = {
- 	.sensor_mux_values = mt2712_mux_values,
- };
- 
-+/*
-+ * MT7622 have only one sensing point which uses AUXADC Channel 11 for raw data
-+ * access.
-+ */
-+static const struct mtk_thermal_data mt7622_thermal_data = {
-+	.auxadc_channel = MT7622_TEMP_AUXADC_CHANNEL,
-+	.num_banks = MT7622_NUM_ZONES,
-+	.num_sensors = MT7622_NUM_SENSORS,
-+	.bank_data = {
-+		{
-+			.num_sensors = 1,
-+			.sensors = mt7622_bank_data,
-+		},
-+	},
-+	.msr = mt7622_msr,
-+	.adcpnp = mt7622_adcpnp,
-+	.sensor_mux_values = mt7622_mux_values,
-+};
-+
- /**
-  * raw_to_mcelsius - convert a raw ADC value to mcelsius
-  * @mt:		The thermal controller
-@@ -631,6 +662,10 @@ static const struct of_device_id mtk_thermal_of_match[] = {
- 	{
- 		.compatible = "mediatek,mt2712-thermal",
- 		.data = (void *)&mt2712_thermal_data,
-+	},
-+	{
-+		.compatible = "mediatek,mt7622-thermal",
-+		.data = (void *)&mt7622_thermal_data,
- 	}, {
- 	},
- };
--- 
-2.7.4
+TW9kZXJuaXplIHZnYV9zd2l0Y2hlcm9vIGJ5IHVzaW5nIGEgImRldmljZSBsaW5rIiB0byBlbmZv
+cmNlIGEgcnVudGltZSBQTQpkZXBlbmRlbmN5IGZyb20gYW4gSERBIGNvbnRyb2xsZXIgdG8gdGhl
+IEdQVSBpdCdzIGludGVncmF0ZWQgaW50by4KUmVtb3ZlIHRoZXJlYnkgb2Jzb2xldGVkIGNvZGUg
+YW5kIGZpeCBhIGJ1bmNoIG9mIGJ1Z3MuCkRldmljZSBsaW5rcyB3ZXJlIGludHJvZHVjZWQgaW4g
+djQuMTAuCgpVc2VycyBtaWdodCBzZWUgYSBzbWFsbCBwb3dlciBzYXZpbmcgaWYgdGhlIGRpc2Ny
+ZXRlIEdQVSBpcyBpbiB1c2UgYW5kCml0cyBIREEgY29udHJvbGxlciBpcyBub3QsIGJlY2F1c2Ug
+dGhlIEhEQSBjb250cm9sbGVyIGlzIG5vdyBhbGxvd2VkCnRvIHJ1bnRpbWUgc3VzcGVuZCB0byBE
+M2hvdC4gIFByb2JpbmcgYW5kIGFjY2Vzc2luZyB0aGUgSERBIGNvbnRyb2xsZXIKd2hpbGUgdGhl
+IEdQVSBpcyBpbiBEM2NvbGQgc2hvdWxkIGJlIHZlcnkgcm9idXN0LCB1bmxpa2UgYmVmb3JlLgpV
+bmRlciB0aGUgaG9vZCB0aGluZ3MgYmVjb21lIHF1aXRlIGEgYml0IGxlYW5lci4KCkFsc28sIHRo
+aXMgc2VyaWVzIGdldHMgdXMgb25lIHN0ZXAgY2xvc2VyIHRvIHN1cHBvcnRpbmcgcnVudGltZSBQ
+TSBvbgptdXhlZCBsYXB0b3BzIHN1Y2ggYXMgdGhlIE1hY0Jvb2sgUHJvIGJlY2F1c2UgaXQgZml4
+ZXMgYSBkZWFkbG9jawpvY2N1cnJpbmcgd2hlbiBydW50aW1lIHJlc3VtaW5nIHRoZSBkaXNjcmV0
+ZSBHUFUgb24gc3dpdGNoaW5nIHRoZSBtdXguCihUaGUgZGVhZGxvY2sgb2NjdXJzIGluIHZnYV9z
+d2l0Y2hlcm9vX3NldF9keW5hbWljX3N3aXRjaCgpIGFuZCB0aGF0CmZ1bmN0aW9uIGlzIG9ic29s
+ZXRlZCBhbmQgcmVtb3ZlZCBieSB0aGlzIHNlcmllcy4pCgpUaGUgbWVhdCBvZiB0aGUgc2VyaWVz
+IGlzIGluIHBhdGNoIFs1LzddLCByZWFkIGl0cyBjb21taXQgbWVzc2FnZSBmb3IKZGV0YWlscy4g
+IFRoZSBvdGhlciBwYXRjaGVzIGNvbnRhaW4gcHJlcCBhbmQgY2xlYW51cCB3b3JrLgoKUGF0Y2hl
+cyBbMS83XSwgWzIvN10gYW5kIFs1LzddIHJlcXVpcmUgYW4gYWNrIGZyb20gQmpvcm4gKGFuZCBS
+YWZhZWw/KSwKcGF0Y2ggWzUvN10gcmVxdWlyZXMgYW4gYWNrIGZyb20gVGFrYXNoaS4KQWRkaXRp
+b25hbGx5IEknZCBhcHByZWNpYXRlIGEgVGVzdGVkLWJ5IGFuZC9vciBBY2tlZC1ieSBmcm9tIFBl
+dGVyIFd1LAp0aGUgcmVzaWRlbnQgTnZpZGlhIE9wdGltdXMgZXhwZXJ0LCBhbmQgZnJvbSBBbGV4
+IGZvciBBTUQgUG93ZXJYcHJlc3MKYmVjYXVzZSBteSBvd24gdGVzdGluZyBvbmx5IGNvdmVycyB0
+aGUgTWFjQm9vayBQcm8uClRlc3RpbmcgYW5kIGNvbW1lbnRzIGZyb20gYW55b25lIGVsc2UgYXJl
+IG1vc3Qgd2VsY29tZSBvZiBjb3Vyc2UuCgpUaGUgc2VyaWVzIGlzIGJhc2VkIG9uIDQuMTYtcmMx
+LiAgVG8gdGVzdCBpdCBvbiA0LjE1LCB5b3UgbmVlZCB0bwpjaGVycnktcGljayA3NTA2ZGM3OTg5
+OTMgYW5kIDJmYTZkNmNkYWYyOC4gIEZvciB5b3VyIGNvbnZlbmllbmNlCkkndmUgcHVzaGVkIGEg
+NC4xNS1iYXNlZCBicmFuY2ggdG86Cmh0dHBzOi8vZ2l0aHViLmNvbS9sMWsvbGludXgvY29tbWl0
+cy9zd2l0Y2hlcm9vX2RldmxpbmtfdjEKCk1pbmltYWwgdGVzdCBwcm9jZWR1cmUgZm9yIG5vbi1N
+YWNzOgoKLSBOb3RlIHdlbGw6IFJlY2VudCBPcHRpbXVzIHJlcXVpcmUgdGhhdCBhIE1pbmktRFAg
+b3IgSERNSSBjYWJsZSBpcwogIHBsdWdnZWQgaW4gb24gYm9vdCBmb3IgdGhlIEhEQSBkZXZpY2Ug
+dG8gYmUgcHJlc2VudC4KCi0gQ2hlY2sgdGhhdCBIREEsIEdQVSBhbmQgcm9vdCBwb3J0IGF1dG9z
+dXNwZW5kIHdoZW4gbm90IGluIHVzZToKICBjYXQgL3N5cy9idXMvcGNpL2RldmljZXMvMDAwMDow
+MTowMC4xL3Bvd2VyL3J1bnRpbWVfc3RhdHVzICAjIEhEQQogIGNhdCAvc3lzL2J1cy9wY2kvZGV2
+aWNlcy8wMDAwOjAxOjAwLjAvcG93ZXIvcnVudGltZV9zdGF0dXMgICMgR1BVCiAgY2F0IC9zeXMv
+YnVzL3BjaS9kZXZpY2VzLzAwMDA6MDA6MDEuMC9wb3dlci9ydW50aW1lX3N0YXR1cyAgIyBSb290
+IFBvcnQKCi0gQ2hlY2sgdGhhdCBhbGwgdGhyZWUgYXV0b3Jlc3VtZSB3aGVuIGFjY2Vzc2luZyB0
+aGUgSERBOgogIGhkYWphY2tzZW5zZXRlc3QgLWMgMQoKLSBVbmJpbmQgdGhlIEhEQSBjb250cm9s
+bGVyOgogIGVjaG8gMDAwMDowMTowMC4xID4gL3N5cy9idXMvcGNpL2RyaXZlcnMvc25kX2hkYV9p
+bnRlbC91bmJpbmQKICBXYWl0IGZvciBHUFUgdG8gcG93ZXIgb2ZmLCB0aGVuIHJlYmluZCB0aGUg
+SERBIGNvbnRyb2xsZXI6CiAgZWNobyAwMDAwOjAxOjAwLjEgPiAvc3lzL2J1cy9wY2kvZHJpdmVy
+cy9zbmRfaGRhX2ludGVsL2JpbmQKICBDaGVjayBkbWVzZyBmb3IgZXJyb3JzLCB0cnkgYWNjZXNz
+aW5nIEhEQSB3aXRoIGhkYWphY2tzZW5zZXRlc3QuCgotIElmIHlvdXIgbGFwdG9wIHVzZXMgdGhl
+IHJvb3QgcG9ydCdzIF9QUjMgdG8gY3V0IHBvd2VyIHRvIHRoZSBHUFU6CiAgVW5iaW5kIHRoZSBH
+UFU6CiAgZWNobyAwMDAwOjAxOjAwLjAgPiAvc3lzL2J1cy9wY2kvZHJpdmVycy97bm91dmVhdSxh
+bWRncHUscmFkZW9ufS91bmJpbmQKICBBbGxvdyBydW50aW1lIFBNIG9uIHRoZSBHUFU6CiAgZWNo
+byBhdXRvID4gL3N5cy9idXMvcGNpL2RldmljZXMvMDAwMDowMTowMC4wL3Bvd2VyL2NvbnRyb2wK
+ICBXYWl0IGZvciBHUFUgdG8gcG93ZXIgb2ZmLCB0aGVuIHJlYmluZCBpdDoKICBlY2hvIDAwMDA6
+MDE6MDAuMCA+IC9zeXMvYnVzL3BjaS9kcml2ZXJzL3tub3V2ZWF1LGFtZGdwdSxyYWRlb259L2Jp
+bmQKICBDaGVjayBkbWVzZyBmb3IgZXJyb3JzLiAgSWYgeW91IHNlZSBhbnkgdGhlbiB3ZSBtYXkg
+bmVlZCB0byBwZXJmb3JtCiAgZnVydGhlciBhY3Rpb25zIGluIHBjaV9wbV9ydW50aW1lX3Jlc3Vt
+ZSgpLCBzZWUgcGF0Y2ggWzEvN10uCgpUaGFua3MsCgpMdWthcwoKTHVrYXMgV3VubmVyICg3KToK
+ICBQQ0k6IFJlc3RvcmUgQkFScyBvbiBydW50aW1lIHJlc3VtZSBkZXNwaXRlIGJlaW5nIHVuYm91
+bmQKICBQQ0k6IE1ha2UgcGNpX3dha2V1cF9idXMoKSAmIHBjaV9idXNfc2V0X2N1cnJlbnRfc3Rh
+dGUoKSBwdWJsaWMKICB2Z2Ffc3dpdGNoZXJvbzogVXBkYXRlIFBDSSBjdXJyZW50X3N0YXRlIG9u
+IHBvd2VyIGNoYW5nZQogIHZnYV9zd2l0Y2hlcm9vOiBEZWR1cGxpY2F0ZSBwb3dlciBzdGF0ZSB0
+cmFja2luZwogIHZnYV9zd2l0Y2hlcm9vOiBVc2UgZGV2aWNlIGxpbmsgZm9yIEhEQSBjb250cm9s
+bGVyCiAgdmdhX3N3aXRjaGVyb286IExldCBIREEgYXV0b3N1c3BlbmQgb24gbXV4IGNoYW5nZQog
+IGRybS9ub3V2ZWF1OiBSdW50aW1lIHN1c3BlbmQgZGVzcGl0ZSBIREEgYmVpbmcgdW5ib3VuZAoK
+IGRyaXZlcnMvZ3B1L2RybS9hbWQvYW1kZ3B1L2FtZGdwdV9kcnYuYyB8ICAgMiAtCiBkcml2ZXJz
+L2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2RybS5jICAgfCAgNDYgLS0tLS0tLS0tLQogZHJpdmVy
+cy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9kcnYuaCAgIHwgICAxIC0KIGRyaXZlcnMvZ3B1L2Ry
+bS9yYWRlb24vcmFkZW9uX2Rydi5jICAgICB8ICAgMiAtCiBkcml2ZXJzL2dwdS92Z2EvdmdhX3N3
+aXRjaGVyb28uYyAgICAgICAgfCAxNTIgKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
+IGRyaXZlcnMvcGNpL3BjaS1kcml2ZXIuYyAgICAgICAgICAgICAgICB8ICAgOCArLQogZHJpdmVy
+cy9wY2kvcGNpLmMgICAgICAgICAgICAgICAgICAgICAgIHwgIDEwICstLQogZHJpdmVycy9wY2kv
+cGNpLmggICAgICAgICAgICAgICAgICAgICAgIHwgICAxICsKIGRyaXZlcnMvcGNpL3F1aXJrcy5j
+ICAgICAgICAgICAgICAgICAgICB8ICAzOSArKysrKysrKwogaW5jbHVkZS9saW51eC9wY2kuaCAg
+ICAgICAgICAgICAgICAgICAgIHwgICAyICsKIGluY2x1ZGUvbGludXgvcGNpX2lkcy5oICAgICAg
+ICAgICAgICAgICB8ICAgMSArCiBpbmNsdWRlL2xpbnV4L3ZnYV9zd2l0Y2hlcm9vLmggICAgICAg
+ICAgfCAgIDYgLS0KIGluY2x1ZGUvc291bmQvaGRhdWRpby5oICAgICAgICAgICAgICAgICB8ICAg
+MyAtCiBzb3VuZC9wY2kvaGRhL2hkYV9pbnRlbC5jICAgICAgICAgICAgICAgfCAgMzYgKysrKyst
+LS0KIHNvdW5kL3BjaS9oZGEvaGRhX2ludGVsLmggICAgICAgICAgICAgICB8ICAgMyAtCiAxNSBm
+aWxlcyBjaGFuZ2VkLCAxMTQgaW5zZXJ0aW9ucygrKSwgMTk4IGRlbGV0aW9ucygtKQoKLS0gCjIu
+MTUuMQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91
+dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9s
+aXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
