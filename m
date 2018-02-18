@@ -1,90 +1,40 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 7/7] drm/nouveau: Runtime suspend despite HDA being unbound
-Date: Sun, 18 Feb 2018 09:38:32 +0100
-Message-ID: <7f8b25446be941000f2b01da9b227d435c5d879f.1518941073.git.lukas@wunner.de>
-References: <cover.1518941072.git.lukas@wunner.de>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 03/10] ARM: dts: mt7623: Remove "cooling-{min|max}-level"
+ for CPU nodes
+Date: Sun, 18 Feb 2018 17:26:23 -0600
+Message-ID: <20180218232622.au3cjy7p47xabvv7@rob-hp-laptop>
+References: <cover.1518166039.git.viresh.kumar@linaro.org>
+ <33d7494641d2f89c827e5e09d1143f125c33e784.1518166039.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <cover.1518941072.git.lukas@wunner.de>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: dri-devel@lists.freedesktop.org
-Cc: alsa-devel@alsa-project.org, linux-pm@vger.kernel.org, nouveau@lists.freedesktop.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>, Hans de Goede <hdegoede@redhat.com>, Peter Wu <peter@lekensteyn.nl>, Bastien Nocera <hadess@hadess.net>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Ben Skeggs <bskeggs@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <33d7494641d2f89c827e5e09d1143f125c33e784.1518166039.git.viresh.kumar@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Q29tbWl0IDVhZGRjZjBhNWYwZiAoIm5vdXZlYXU6IGFkZCBydW50aW1lIFBNIHN1cHBvcnQgKHYw
-LjkpIikgcHJldmVudHMKcnVudGltZSBzdXNwZW5kIG9mIHRoZSBHUFUgaWYgaXRzIGludGVncmF0
-ZWQgSERBIGNvbnRyb2xsZXIgaXMgbm90IGJvdW5kCnRvIGEgZHJpdmVyLiAgVGhlIHJhdGlvbmFs
-ZSBhcHBlYXJzIHRvIGJlIHRoYXQgcHJvYmluZyB0aGUgSERBIGZhaWxzIGlmCnRoZSBHUFUgaXMg
-aW4gRDNjb2xkLgoKSG93ZXZlciB3ZSBub3cgdXNlIGEgZGV2aWNlIGxpbmsgdG8gZW5zdXJlIHRo
-YXQgdGhlIEdQVSBpcyBydW50aW1lCnJlc3VtZWQgd2hpbGUgdGhlIEhEQSBjb250cm9sbGVyIGlz
-IHByb2JlZCwgcmVuZGVyaW5nIHRoaXMgc2FmZXR5Cm1lYXN1cmUgb2Jzb2xldGUuICBSZW1vdmUg
-aXQuCgpDYzogRGF2ZSBBaXJsaWUgPGFpcmxpZWRAcmVkaGF0LmNvbT4KQ2M6IEJlbiBTa2VnZ3Mg
-PGJza2VnZ3NAcmVkaGF0LmNvbT4KQ2M6IFRha2FzaGkgSXdhaSA8dGl3YWlAc3VzZS5kZT4KQ2M6
-IFBldGVyIFd1IDxwZXRlckBsZWtlbnN0ZXluLm5sPgpDYzogQWxleCBEZXVjaGVyIDxhbGV4YW5k
-ZXIuZGV1Y2hlckBhbWQuY29tPgpDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29j
-a2lAaW50ZWwuY29tPgpTaWduZWQtb2ZmLWJ5OiBMdWthcyBXdW5uZXIgPGx1a2FzQHd1bm5lci5k
-ZT4KLS0tCiBkcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2RybS5jIHwgNDQgLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIGRyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25v
-dXZlYXVfZHJ2LmggfCAgMSAtCiAyIGZpbGVzIGNoYW5nZWQsIDQ1IGRlbGV0aW9ucygtKQoKZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfZHJtLmMgYi9kcml2ZXJz
-L2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2RybS5jCmluZGV4IDY5NTk5NTFkNDVkNi4uYmJiZjM1
-MzY4MmUxIDEwMDY0NAotLS0gYS9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2RybS5j
-CisrKyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfZHJtLmMKQEAgLTUxMCwzNyAr
-NTEwLDYgQEAgc3RhdGljIGludCBub3V2ZWF1X2RybV9wcm9iZShzdHJ1Y3QgcGNpX2RldiAqcGRl
-diwKIAlyZXR1cm4gMDsKIH0KIAotI2RlZmluZSBQQ0lfQ0xBU1NfTVVMVElNRURJQV9IRF9BVURJ
-TyAweDA0MDMKLQotc3RhdGljIHZvaWQKLW5vdXZlYXVfZ2V0X2hkbWlfZGV2KHN0cnVjdCBub3V2
-ZWF1X2RybSAqZHJtKQotewotCXN0cnVjdCBwY2lfZGV2ICpwZGV2ID0gZHJtLT5kZXYtPnBkZXY7
-Ci0KLQlpZiAoIXBkZXYpIHsKLQkJTlZfREVCVUcoZHJtLCAibm90IGEgUENJIGRldmljZTsgbm8g
-SERNSVxuIik7Ci0JCWRybS0+aGRtaV9kZXZpY2UgPSBOVUxMOwotCQlyZXR1cm47Ci0JfQotCi0J
-Lyogc3ViZnVuY3Rpb24gb25lIGlzIGEgaGRtaSBhdWRpbyBkZXZpY2U/ICovCi0JZHJtLT5oZG1p
-X2RldmljZSA9IHBjaV9nZXRfZG9tYWluX2J1c19hbmRfc2xvdChwY2lfZG9tYWluX25yKHBkZXYt
-PmJ1cyksCi0JCQkJCQkodW5zaWduZWQgaW50KXBkZXYtPmJ1cy0+bnVtYmVyLAotCQkJCQkJUENJ
-X0RFVkZOKFBDSV9TTE9UKHBkZXYtPmRldmZuKSwgMSkpOwotCi0JaWYgKCFkcm0tPmhkbWlfZGV2
-aWNlKSB7Ci0JCU5WX0RFQlVHKGRybSwgImhkbWkgZGV2aWNlIG5vdCBmb3VuZCAlZCAlZCAlZFxu
-IiwgcGRldi0+YnVzLT5udW1iZXIsIFBDSV9TTE9UKHBkZXYtPmRldmZuKSwgMSk7Ci0JCXJldHVy
-bjsKLQl9Ci0KLQlpZiAoKGRybS0+aGRtaV9kZXZpY2UtPmNsYXNzID4+IDgpICE9IFBDSV9DTEFT
-U19NVUxUSU1FRElBX0hEX0FVRElPKSB7Ci0JCU5WX0RFQlVHKGRybSwgInBvc3NpYmxlIGhkbWkg
-ZGV2aWNlIG5vdCBhdWRpbyAlZFxuIiwgZHJtLT5oZG1pX2RldmljZS0+Y2xhc3MpOwotCQlwY2lf
-ZGV2X3B1dChkcm0tPmhkbWlfZGV2aWNlKTsKLQkJZHJtLT5oZG1pX2RldmljZSA9IE5VTEw7Ci0J
-CXJldHVybjsKLQl9Ci19Ci0KIHN0YXRpYyBpbnQKIG5vdXZlYXVfZHJtX2xvYWQoc3RydWN0IGRy
-bV9kZXZpY2UgKmRldiwgdW5zaWduZWQgbG9uZyBmbGFncykKIHsKQEAgLTU2OCw4ICs1MzcsNiBA
-QCBub3V2ZWF1X2RybV9sb2FkKHN0cnVjdCBkcm1fZGV2aWNlICpkZXYsIHVuc2lnbmVkIGxvbmcg
-ZmxhZ3MpCiAJSU5JVF9MSVNUX0hFQUQoJmRybS0+Y2xpZW50cyk7CiAJc3Bpbl9sb2NrX2luaXQo
-JmRybS0+dGlsZS5sb2NrKTsKIAotCW5vdXZlYXVfZ2V0X2hkbWlfZGV2KGRybSk7Ci0KIAkvKiB3
-b3JrYXJvdW5kIGFuIG9kZCBpc3N1ZSBvbiBudmMxIGJ5IGRpc2FibGluZyB0aGUgZGV2aWNlJ3MK
-IAkgKiBub3Nub29wIGNhcGFiaWxpdHkuICBob3BlZnVsbHkgd29uJ3QgY2F1c2UgaXNzdWVzIHVu
-dGlsIGEKIAkgKiBiZXR0ZXIgZml4IGlzIGZvdW5kIC0gYXNzdW1pbmcgdGhlcmUgaXMgb25lLi4u
-CkBAIC02NTUsOCArNjIyLDYgQEAgbm91dmVhdV9kcm1fdW5sb2FkKHN0cnVjdCBkcm1fZGV2aWNl
-ICpkZXYpCiAJbm91dmVhdV90dG1fZmluaShkcm0pOwogCW5vdXZlYXVfdmdhX2ZpbmkoZHJtKTsK
-IAotCWlmIChkcm0tPmhkbWlfZGV2aWNlKQotCQlwY2lfZGV2X3B1dChkcm0tPmhkbWlfZGV2aWNl
-KTsKIAlub3V2ZWF1X2NsaV9maW5pKCZkcm0tPmNsaWVudCk7CiAJbm91dmVhdV9jbGlfZmluaSgm
-ZHJtLT5tYXN0ZXIpOwogCWtmcmVlKGRybSk7CkBAIC05MTEsMTUgKzg3Niw2IEBAIG5vdXZlYXVf
-cG1vcHNfcnVudGltZV9pZGxlKHN0cnVjdCBkZXZpY2UgKmRldikKIAkJcmV0dXJuIC1FQlVTWTsK
-IAl9CiAKLQkvKiBpZiB3ZSBoYXZlIGEgaGRtaSBhdWRpbyBkZXZpY2UgLSBtYWtlIHN1cmUgaXQg
-aGFzIGEgZHJpdmVyIGxvYWRlZCAqLwotCWlmIChkcm0tPmhkbWlfZGV2aWNlKSB7Ci0JCWlmICgh
-ZHJtLT5oZG1pX2RldmljZS0+ZHJpdmVyKSB7Ci0JCQlEUk1fREVCVUdfRFJJVkVSKCJmYWlsaW5n
-IHRvIHBvd2VyIG9mZiAtIG5vIEhETUkgYXVkaW8gZHJpdmVyIGxvYWRlZFxuIik7Ci0JCQlwbV9y
-dW50aW1lX21hcmtfbGFzdF9idXN5KGRldik7Ci0JCQlyZXR1cm4gLUVCVVNZOwotCQl9Ci0JfQot
-CiAJbGlzdF9mb3JfZWFjaF9lbnRyeShjcnRjLCAmZHJtLT5kZXYtPm1vZGVfY29uZmlnLmNydGNf
-bGlzdCwgaGVhZCkgewogCQlpZiAoY3J0Yy0+ZW5hYmxlZCkgewogCQkJRFJNX0RFQlVHX0RSSVZF
-UigiZmFpbGluZyB0byBwb3dlciBvZmYgLSBjcnRjIGFjdGl2ZVxuIik7CmRpZmYgLS1naXQgYS9k
-cml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2Rydi5oIGIvZHJpdmVycy9ncHUvZHJtL25v
-dXZlYXUvbm91dmVhdV9kcnYuaAppbmRleCA5NmY2YmQ4YWVlNWQuLjg4MWI0NGI4OWEwMSAxMDA2
-NDQKLS0tIGEvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9kcnYuaAorKysgYi9kcml2
-ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2Rydi5oCkBAIC0yMDgsNyArMjA4LDYgQEAgc3Ry
-dWN0IG5vdXZlYXVfZHJtIHsKIAlib29sIGhhdmVfZGlzcF9wb3dlcl9yZWY7CiAKIAlzdHJ1Y3Qg
-ZGV2X3BtX2RvbWFpbiB2Z2FfcG1fZG9tYWluOwotCXN0cnVjdCBwY2lfZGV2ICpoZG1pX2Rldmlj
-ZTsKIH07CiAKIHN0YXRpYyBpbmxpbmUgc3RydWN0IG5vdXZlYXVfZHJtICoKLS0gCjIuMTUuMQoK
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVs
-IG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+On Fri, Feb 09, 2018 at 02:28:03PM +0530, Viresh Kumar wrote:
+> The "cooling-min-level" and "cooling-max-level" properties are not
+> parsed by any part of the kernel currently and the max cooling state of
+> a CPU cooling device is found by referring to the cpufreq table instead.
+> 
+> Remove the unused properties from the CPU nodes.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt | 4 ----
+>  arch/arm/boot/dts/mt7623.dtsi                                  | 2 --
+>  2 files changed, 6 deletions(-)
+
+Reviewed-by: Rob Herring <robh@kernel.org>
