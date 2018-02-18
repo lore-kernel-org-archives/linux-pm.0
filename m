@@ -1,88 +1,95 @@
-From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH 1/7] PCI: Restore BARs on runtime resume despite
- being unbound
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH 2/7] PCI: Make pci_wakeup_bus() & pci_bus_set_current_state()
+ public
 Date: Sun, 18 Feb 2018 09:38:32 +0100
-Message-ID: <f7593132608eb9a83d7268cc5b3ef12b3dd9c52d.1518941073.git.lukas@wunner.de>
+Message-ID: <9d36522bc3d7e0ed1c1d5f653514d9fb0d34c0a8.1518941073.git.lukas@wunner.de>
 References: <cover.1518941072.git.lukas@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <cover.1518941072.git.lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.hostsharing.net ([83.223.90.233]:36527 "EHLO
+        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751052AbeBRIjj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Feb 2018 03:39:39 -0500
+In-Reply-To: <cover.1518941072.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: dri-devel@lists.freedesktop.org
+Cc: Peter Wu <peter@lekensteyn.nl>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, nouveau@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>, Lyude Paul <lyude@redhat.com>, Hans de Goede <hdegoede@redhat.com>, alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pierre Moreau <pierre.morrow@free.fr>, Bastien Nocera <hadess@hadess.net>, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
 
-UENJIGRldmljZXMgbm90IGJvdW5kIHRvIGEgZHJpdmVyIGFyZSBzdXBwb3NlZCB0byBzdGF5IGlu
-IEQwIGR1cmluZwpydW50aW1lIHN1c3BlbmQuICBCdXQgdGhleSBtYXkgaGF2ZSBhIHBhcmVudCB3
-aGljaCBpcyBib3VuZCBhbmQgY2FuIGJlCnRyYW5zaXRpb25lZCB0byBEM2NvbGQgYXQgcnVudGlt
-ZS4gIE9uY2UgdGhlIHBhcmVudCBnb2VzIHRvIEQzY29sZCwgdGhlCnVuYm91bmQgY2hpbGQgbWF5
-IGdvIHRvIEQzY29sZCBhcyB3ZWxsLiAgV2hlbiB0aGUgY2hpbGQgY29tZXMgb3V0IG9mCkQzY29s
-ZCwgaXRzIEJBUnMgYXJlIHVuaW5pdGlhbGl6ZWQgYW5kIHRodXMgaW5hY2Nlc3NpYmxlIHdoZW4g
-YSBkcml2ZXIKdHJpZXMgdG8gcHJvYmUuCgpPbmUgZXhhbXBsZSBhcmUgcmVjZW50IGh5YnJpZCBn
-cmFwaGljcyBsYXB0b3BzIHdoaWNoIGN1dCBwb3dlciB0byB0aGUKZGlzY3JldGUgR1BVIHdoZW4g
-dGhlIHJvb3QgcG9ydCBhYm92ZSBpdCBnb2VzIHRvIEFDUEkgcG93ZXIgc3RhdGUgRDMuClVzZXJz
-IG1heSBwcm92b2tlIHRoaXMgYnkgdW5iaW5kaW5nIHRoZSBHUFUgZHJpdmVyIGFuZCBhbGxvd2lu
-ZyBydW50aW1lClBNIG9uIHRoZSBHUFUgdmlhIHN5c2ZzOiAgVGhlIFBNIGNvcmUgd2lsbCB0aGVu
-IHRyZWF0IHRoZSBHUFUgYXMKInN1c3BlbmRlZCIsIHdoaWNoIGluIHR1cm4gYWxsb3dzIHRoZSBy
-b290IHBvcnQgdG8gcnVudGltZSBzdXNwZW5kLApjYXVzaW5nIHRoZSBwb3dlciByZXNvdXJjZXMg
-bGlzdGVkIGluIGl0cyBfUFIzIG9iamVjdCB0byBiZSBwb3dlcmVkIG9mZi4KVGhlIEdQVSdzIEJB
-UnMgd2lsbCBiZSB1bmluaXRpYWxpemVkIHdoZW4gYSBkcml2ZXIgbGF0ZXIgcHJvYmVzIGl0LgoK
-QW5vdGhlciBleGFtcGxlIGFyZSBoeWJyaWQgZ3JhcGhpY3MgbGFwdG9wcyB3aGVyZSB0aGUgR1BV
-IGl0c2VsZiAocmF0aGVyCnRoYW4gdGhlIHJvb3QgcG9ydCkgaXMgY2FwYWJsZSBvZiBydW50aW1l
-IHN1c3BlbmRpbmcgdG8gRDNjb2xkLiAgSWYgdGhlCkdQVSdzIGludGVncmF0ZWQgSERBIGNvbnRy
-b2xsZXIgaXMgbm90IGJvdW5kIGFuZCB0aGUgR1BVJ3MgZHJpdmVyCmRlY2lkZXMgdG8gcnVudGlt
-ZSBzdXNwZW5kIHRvIEQzY29sZCwgdGhlIEhEQSBjb250cm9sbGVyJ3MgQkFScyB3aWxsIGJlCnVu
-aW5pdGlhbGl6ZWQgd2hlbiBhIGRyaXZlciBsYXRlciBwcm9iZXMgaXQuCgpGaXggYnkgcmVzdG9y
-aW5nIHRoZSBCQVJzIG9uIHJ1bnRpbWUgcmVzdW1lIGlmIHRoZSBkZXZpY2UgaXMgbm90IGJvdW5k
-LgpUaGlzIGlzIHN1ZmZpY2llbnQgdG8gZml4IHRoZSBhYm92ZS1tZW50aW9uZWQgdXNlIGNhc2Vz
-LiAgT3RoZXIgdXNlCmNhc2VzIG1pZ2h0IHJlcXVpcmUgYSBmdWxsLWJsb3duIHBjaV9zYXZlX3N0
-YXRlKCkgLyBwY2lfcmVzdG9yZV9zdGF0ZSgpCm9yIGV4ZWN1dGlvbiBvZiBmaXh1cHMuICBXZSBj
-YW4gYWRkIHRoYXQgb25jZSB1c2UgY2FzZXMgbWF0ZXJpYWxpemUsCmxldCdzIG5vdCBpbmZsYXRl
-IHRoZSBjb2RlIHVubmVjZXNzYXJpbHkuCgpDYzogQmpvcm4gSGVsZ2FhcyA8YmhlbGdhYXNAZ29v
-Z2xlLmNvbT4KQ2M6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNv
-bT4KU2lnbmVkLW9mZi1ieTogTHVrYXMgV3VubmVyIDxsdWthc0B3dW5uZXIuZGU+Ci0tLQogZHJp
-dmVycy9wY2kvcGNpLWRyaXZlci5jIHwgOCArKysrKystLQogZHJpdmVycy9wY2kvcGNpLmMgICAg
-ICAgIHwgMiArLQogZHJpdmVycy9wY2kvcGNpLmggICAgICAgIHwgMSArCiAzIGZpbGVzIGNoYW5n
-ZWQsIDggaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJz
-L3BjaS9wY2ktZHJpdmVyLmMgYi9kcml2ZXJzL3BjaS9wY2ktZHJpdmVyLmMKaW5kZXggM2JlZDZi
-ZWRhMDUxLi41MWIxMWNiZDQ4ZjYgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcGNpL3BjaS1kcml2ZXIu
-YworKysgYi9kcml2ZXJzL3BjaS9wY2ktZHJpdmVyLmMKQEAgLTEyNzcsMTAgKzEyNzcsMTQgQEAg
-c3RhdGljIGludCBwY2lfcG1fcnVudGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQogCiAJ
-LyoKIAkgKiBJZiBwY2lfZGV2LT5kcml2ZXIgaXMgbm90IHNldCAodW5ib3VuZCksIHRoZSBkZXZp
-Y2Ugc2hvdWxkCi0JICogYWx3YXlzIHJlbWFpbiBpbiBEMCByZWdhcmRsZXNzIG9mIHRoZSBydW50
-aW1lIFBNIHN0YXR1cworCSAqIGFsd2F5cyByZW1haW4gaW4gRDAgcmVnYXJkbGVzcyBvZiB0aGUg
-cnVudGltZSBQTSBzdGF0dXMuCisJICogQnV0IGlmIGl0cyBwYXJlbnQgY2FuIGdvIHRvIEQzY29s
-ZCwgdGhpcyBkZXZpY2UgbWF5IGhhdmUKKwkgKiBiZWVuIGluIEQzY29sZCBhcyB3ZWxsIGFuZCBy
-ZXF1aXJlIHJlc3RvcmF0aW9uIG9mIGl0cyBCQVJzLgogCSAqLwotCWlmICghcGNpX2Rldi0+ZHJp
-dmVyKQorCWlmICghcGNpX2Rldi0+ZHJpdmVyKSB7CisJCXBjaV9yZXN0b3JlX2JhcnMocGNpX2Rl
-dik7CiAJCXJldHVybiAwOworCX0KIAogCWlmICghcG0gfHwgIXBtLT5ydW50aW1lX3Jlc3VtZSkK
-IAkJcmV0dXJuIC1FTk9TWVM7CmRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZl
-cnMvcGNpL3BjaS5jCmluZGV4IGY2YTRkZDEwZDliMC4uZjY5NDY1MDIzNWYyIDEwMDY0NAotLS0g
-YS9kcml2ZXJzL3BjaS9wY2kuYworKysgYi9kcml2ZXJzL3BjaS9wY2kuYwpAQCAtNTYzLDcgKzU2
-Myw3IEBAIGludCBwY2lfd2FpdF9mb3JfcGVuZGluZyhzdHJ1Y3QgcGNpX2RldiAqZGV2LCBpbnQg
-cG9zLCB1MTYgbWFzaykKICAqIFJlc3RvcmUgdGhlIEJBUiB2YWx1ZXMgZm9yIGEgZ2l2ZW4gZGV2
-aWNlLCBzbyBhcyB0byBtYWtlIGl0CiAgKiBhY2Nlc3NpYmxlIGJ5IGl0cyBkcml2ZXIuCiAgKi8K
-LXN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2JhcnMoc3RydWN0IHBjaV9kZXYgKmRldikKK3ZvaWQg
-cGNpX3Jlc3RvcmVfYmFycyhzdHJ1Y3QgcGNpX2RldiAqZGV2KQogewogCWludCBpOwogCmRpZmYg
-LS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuaCBiL2RyaXZlcnMvcGNpL3BjaS5oCmluZGV4IGZjZDgx
-OTExYjEyNy4uMjlkYzE1YmJlM2JmIDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9wY2kuaAorKysg
-Yi9kcml2ZXJzL3BjaS9wY2kuaApAQCAtODMsNiArODMsNyBAQCB2b2lkIHBjaV9hbGxvY2F0ZV9j
-YXBfc2F2ZV9idWZmZXJzKHN0cnVjdCBwY2lfZGV2ICpkZXYpOwogdm9pZCBwY2lfZnJlZV9jYXBf
-c2F2ZV9idWZmZXJzKHN0cnVjdCBwY2lfZGV2ICpkZXYpOwogYm9vbCBwY2lfYnJpZGdlX2QzX3Bv
-c3NpYmxlKHN0cnVjdCBwY2lfZGV2ICpkZXYpOwogdm9pZCBwY2lfYnJpZGdlX2QzX3VwZGF0ZShz
-dHJ1Y3QgcGNpX2RldiAqZGV2KTsKK3ZvaWQgcGNpX3Jlc3RvcmVfYmFycyhzdHJ1Y3QgcGNpX2Rl
-diAqZGV2KTsKIAogc3RhdGljIGlubGluZSB2b2lkIHBjaV93YWtldXBfZXZlbnQoc3RydWN0IHBj
-aV9kZXYgKmRldikKIHsKLS0gCjIuMTUuMQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9ub3V2ZWF1Cg==
+There are PCI devices which are power-manageable by a nonstandard means,
+such as a custom ACPI method.  One example are discrete GPUs in hybrid
+graphics laptops, another are Thunderbolt controllers in Macs.
+
+Such devices can't be put into D3cold with pci_set_power_state() because
+pci_platform_power_transition() fails with -ENODEV.  Instead they're put
+into D3hot by pci_set_power_state() and subsequently into D3cold by
+invoking the nonstandard means.  However as a consequence the cached
+current_state is incorrectly left at D3hot.
+
+What we need to do is walk the hierarchy below such a PCI device on
+powerdown and update the current_state to D3cold.  On powerup the PCI
+device itself and the hierarchy below it is in D0uninitialized, so we
+need to walk the hierarchy again and wake all devices, causing them to
+be put into D0active and then letting them autosuspend as they see fit.
+
+To this end make pci_wakeup_bus() & pci_bus_set_current_state() public
+so PCI drivers don't have to reinvent the wheel.
+
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/pci.c   | 8 ++++----
+ include/linux/pci.h | 2 ++
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index f694650235f2..6e6e322a5a7d 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -800,7 +800,7 @@ static int pci_wakeup(struct pci_dev *pci_dev, void *ign)
+  * pci_wakeup_bus - Walk given bus and wake up devices on it
+  * @bus: Top bus of the subtree to walk.
+  */
+-static void pci_wakeup_bus(struct pci_bus *bus)
++void pci_wakeup_bus(struct pci_bus *bus)
+ {
+ 	if (bus)
+ 		pci_walk_bus(bus, pci_wakeup, NULL);
+@@ -850,11 +850,11 @@ static int __pci_dev_set_current_state(struct pci_dev *dev, void *data)
+ }
+ 
+ /**
+- * __pci_bus_set_current_state - Walk given bus and set current state of devices
++ * pci_bus_set_current_state - Walk given bus and set current state of devices
+  * @bus: Top bus of the subtree to walk.
+  * @state: state to be set
+  */
+-static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
++void pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
+ {
+ 	if (bus)
+ 		pci_walk_bus(bus, __pci_dev_set_current_state, &state);
+@@ -876,7 +876,7 @@ int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state)
+ 	ret = pci_platform_power_transition(dev, state);
+ 	/* Power off the bridge may power off the whole hierarchy */
+ 	if (!ret && state == PCI_D3cold)
+-		__pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
++		pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(__pci_complete_power_transition);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 024a1beda008..ae42289662df 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1147,6 +1147,8 @@ void pci_pme_wakeup_bus(struct pci_bus *bus);
+ void pci_d3cold_enable(struct pci_dev *dev);
+ void pci_d3cold_disable(struct pci_dev *dev);
+ bool pcie_relaxed_ordering_enabled(struct pci_dev *dev);
++void pci_wakeup_bus(struct pci_bus *bus);
++void pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state);
+ 
+ /* PCI Virtual Channel */
+ int pci_save_vc_state(struct pci_dev *dev);
+-- 
+2.15.1
