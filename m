@@ -1,95 +1,96 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 2/7] PCI: Make pci_wakeup_bus() & pci_bus_set_current_state()
- public
+Subject: [PATCH 3/7] vga_switcheroo: Update PCI current_state on power change
 Date: Sun, 18 Feb 2018 09:38:32 +0100
-Message-ID: <9d36522bc3d7e0ed1c1d5f653514d9fb0d34c0a8.1518941073.git.lukas@wunner.de>
+Message-ID: <847bcea7d76adfe74abb32fc3da66f5c3cfe8203.1518941073.git.lukas@wunner.de>
 References: <cover.1518941072.git.lukas@wunner.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:36527 "EHLO
+Received: from mailout2.hostsharing.net ([83.223.90.233]:36325 "EHLO
         mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751052AbeBRIjj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Feb 2018 03:39:39 -0500
+        with ESMTP id S1751052AbeBRIkF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Feb 2018 03:40:05 -0500
 In-Reply-To: <cover.1518941072.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: dri-devel@lists.freedesktop.org
-Cc: Peter Wu <peter@lekensteyn.nl>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, nouveau@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>, Lyude Paul <lyude@redhat.com>, Hans de Goede <hdegoede@redhat.com>, alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pierre Moreau <pierre.morrow@free.fr>, Bastien Nocera <hadess@hadess.net>, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
+Cc: Peter Wu <peter@lekensteyn.nl>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, nouveau@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>, Lyude Paul <lyude@redhat.com>, Hans de Goede <hdegoede@redhat.com>, alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pierre Moreau <pierre.morrow@free.fr>, Bastien Nocera <hadess@hadess.net>
 
-There are PCI devices which are power-manageable by a nonstandard means,
-such as a custom ACPI method.  One example are discrete GPUs in hybrid
-graphics laptops, another are Thunderbolt controllers in Macs.
+When cutting power to a GPU and its integrated HDA controller, their
+cached current_state should be updated to D3cold to reflect reality.
 
-Such devices can't be put into D3cold with pci_set_power_state() because
-pci_platform_power_transition() fails with -ENODEV.  Instead they're put
-into D3hot by pci_set_power_state() and subsequently into D3cold by
-invoking the nonstandard means.  However as a consequence the cached
-current_state is incorrectly left at D3hot.
+We currently rely on the DRM and HDA drivers to do that, however:
 
-What we need to do is walk the hierarchy below such a PCI device on
-powerdown and update the current_state to D3cold.  On powerup the PCI
-device itself and the hierarchy below it is in D0uninitialized, so we
-need to walk the hierarchy again and wake all devices, causing them to
-be put into D0active and then letting them autosuspend as they see fit.
+- The HDA driver updates the current_state in azx_vs_set_state(), which
+  will no longer be called with driver power control once we migrate to
+  device links.  (It will still be called with manual power control.)
 
-To this end make pci_wakeup_bus() & pci_bus_set_current_state() public
-so PCI drivers don't have to reinvent the wheel.
+- If the HDA device is not bound, its current_state remains at D0 even
+  though the GPU driver may decide to go to D3cold.
 
+- The DRM drivers update the current_state using pci_set_power_state()
+  which can't put the device into a deeper power state than D3hot if the
+  GPU is not deemed power-manageable by the platform (even though it
+  *is* power-manageable by some nonstandard means, such as a _DSM).
+
+Centralize updating the current_state of the GPU and HDA controller in
+vga_switcheroo's ->runtime_suspend hook to overcome these deficiencies.
+
+The GPU and HDA controller are two functions of the same PCI device
+(VGA class device on function 0 and audio device on function 1) and
+no other PCI devices reside on the same bus since this is a PCIe
+point-to-point link, so we can just walk the bus and update the
+current_state of all devices.
+
+On ->runtime_resume, the HDA controller is in D0uninitialized state.
+Resume to D0active and then let it autosuspend as it sees fit.
+
+Note that vga_switcheroo_init_domain_pm_ops() is not supposed to be
+called by hybrid graphics laptops which power down the GPU via its root
+port's _PR3 resources and consequently vga_switcheroo_runtime_suspend()
+is not used.  On those laptops, the root port is power-manageable by the
+platform (instead of by a nonstandard means) and the current_state is
+therefore updated by the PCI core through the following call chain:
+
+  pci_set_power_state()
+    __pci_complete_power_transition()
+      pci_bus_set_current_state()
+
+Resuming to D0active happens through:
+
+  pci_set_power_state()
+    __pci_start_power_transition()
+      pci_wakeup_bus()
+
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Ben Skeggs <bskeggs@redhat.com>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Peter Wu <peter@lekensteyn.nl>
+Cc: Alex Deucher <alexander.deucher@amd.com>
 Cc: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pci.c   | 8 ++++----
- include/linux/pci.h | 2 ++
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/gpu/vga/vga_switcheroo.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index f694650235f2..6e6e322a5a7d 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -800,7 +800,7 @@ static int pci_wakeup(struct pci_dev *pci_dev, void *ign)
-  * pci_wakeup_bus - Walk given bus and wake up devices on it
-  * @bus: Top bus of the subtree to walk.
-  */
--static void pci_wakeup_bus(struct pci_bus *bus)
-+void pci_wakeup_bus(struct pci_bus *bus)
- {
- 	if (bus)
- 		pci_walk_bus(bus, pci_wakeup, NULL);
-@@ -850,11 +850,11 @@ static int __pci_dev_set_current_state(struct pci_dev *dev, void *data)
- }
- 
- /**
-- * __pci_bus_set_current_state - Walk given bus and set current state of devices
-+ * pci_bus_set_current_state - Walk given bus and set current state of devices
-  * @bus: Top bus of the subtree to walk.
-  * @state: state to be set
-  */
--static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
-+void pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
- {
- 	if (bus)
- 		pci_walk_bus(bus, __pci_dev_set_current_state, &state);
-@@ -876,7 +876,7 @@ int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state)
- 	ret = pci_platform_power_transition(dev, state);
- 	/* Power off the bridge may power off the whole hierarchy */
- 	if (!ret && state == PCI_D3cold)
--		__pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
-+		pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(__pci_complete_power_transition);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 024a1beda008..ae42289662df 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1147,6 +1147,8 @@ void pci_pme_wakeup_bus(struct pci_bus *bus);
- void pci_d3cold_enable(struct pci_dev *dev);
- void pci_d3cold_disable(struct pci_dev *dev);
- bool pcie_relaxed_ordering_enabled(struct pci_dev *dev);
-+void pci_wakeup_bus(struct pci_bus *bus);
-+void pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state);
- 
- /* PCI Virtual Channel */
- int pci_save_vc_state(struct pci_dev *dev);
+diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
+index 3cd153c6d271..09dd40dd1dbe 100644
+--- a/drivers/gpu/vga/vga_switcheroo.c
++++ b/drivers/gpu/vga/vga_switcheroo.c
+@@ -1022,6 +1022,7 @@ static int vga_switcheroo_runtime_suspend(struct device *dev)
+ 		vgasr_priv.handler->switchto(VGA_SWITCHEROO_IGD);
+ 		mutex_unlock(&vgasr_priv.mux_hw_lock);
+ 	}
++	pci_bus_set_current_state(pdev->bus, PCI_D3cold);
+ 	vga_switcheroo_power_switch(pdev, VGA_SWITCHEROO_OFF);
+ 	mutex_unlock(&vgasr_mutex);
+ 	return 0;
+@@ -1035,6 +1036,7 @@ static int vga_switcheroo_runtime_resume(struct device *dev)
+ 	mutex_lock(&vgasr_mutex);
+ 	vga_switcheroo_power_switch(pdev, VGA_SWITCHEROO_ON);
+ 	mutex_unlock(&vgasr_mutex);
++	pci_wakeup_bus(pdev->bus);
+ 	ret = dev->bus->pm->runtime_resume(dev);
+ 	if (ret)
+ 		return ret;
 -- 
 2.15.1
