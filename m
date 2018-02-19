@@ -1,96 +1,52 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/7] PCI: Restore BARs on runtime resume
- despite being unbound
-Date: Mon, 19 Feb 2018 10:49:15 +0100
-Message-ID: <CAJZ5v0jr0dM7VAPUvjEh0HoVgORzvFov3vPvyaO2nynKyJhNjg@mail.gmail.com>
-References: <cover.1518941072.git.lukas@wunner.de>
- <f7593132608eb9a83d7268cc5b3ef12b3dd9c52d.1518941073.git.lukas@wunner.de>
+From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v4 05/13] mfd: axp20x: probe axp20x_adc driver
+ for AXP813
+Date: Mon, 19 Feb 2018 13:47:28 +0100
+Message-ID: <a82ff9673c8652d3fbc17c5966feb230349e6200.1519044068.git-series.quentin.schulz@bootlin.com>
+References: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz@bootlin.com>
+Reply-To: quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <f7593132608eb9a83d7268cc5b3ef12b3dd9c52d.1518941073.git.lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBDUPVPKAKGQEJSYEAUY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+In-Reply-To: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+References: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas.petazzoni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBGZWIgMTgsIDIwMTggYXQgOTozOCBBTSwgTHVrYXMgV3VubmVyIDxsdWthc0B3dW5u
-ZXIuZGU+IHdyb3RlOgo+IFBDSSBkZXZpY2VzIG5vdCBib3VuZCB0byBhIGRyaXZlciBhcmUgc3Vw
-cG9zZWQgdG8gc3RheSBpbiBEMCBkdXJpbmcKPiBydW50aW1lIHN1c3BlbmQuICBCdXQgdGhleSBt
-YXkgaGF2ZSBhIHBhcmVudCB3aGljaCBpcyBib3VuZCBhbmQgY2FuIGJlCj4gdHJhbnNpdGlvbmVk
-IHRvIEQzY29sZCBhdCBydW50aW1lLiAgT25jZSB0aGUgcGFyZW50IGdvZXMgdG8gRDNjb2xkLCB0
-aGUKPiB1bmJvdW5kIGNoaWxkIG1heSBnbyB0byBEM2NvbGQgYXMgd2VsbC4gIFdoZW4gdGhlIGNo
-aWxkIGNvbWVzIG91dCBvZgo+IEQzY29sZCwgaXRzIEJBUnMgYXJlIHVuaW5pdGlhbGl6ZWQgYW5k
-IHRodXMgaW5hY2Nlc3NpYmxlIHdoZW4gYSBkcml2ZXIKPiB0cmllcyB0byBwcm9iZS4KPgo+IE9u
-ZSBleGFtcGxlIGFyZSByZWNlbnQgaHlicmlkIGdyYXBoaWNzIGxhcHRvcHMgd2hpY2ggY3V0IHBv
-d2VyIHRvIHRoZQo+IGRpc2NyZXRlIEdQVSB3aGVuIHRoZSByb290IHBvcnQgYWJvdmUgaXQgZ29l
-cyB0byBBQ1BJIHBvd2VyIHN0YXRlIEQzLgo+IFVzZXJzIG1heSBwcm92b2tlIHRoaXMgYnkgdW5i
-aW5kaW5nIHRoZSBHUFUgZHJpdmVyIGFuZCBhbGxvd2luZyBydW50aW1lCj4gUE0gb24gdGhlIEdQ
-VSB2aWEgc3lzZnM6ICBUaGUgUE0gY29yZSB3aWxsIHRoZW4gdHJlYXQgdGhlIEdQVSBhcwo+ICJz
-dXNwZW5kZWQiLCB3aGljaCBpbiB0dXJuIGFsbG93cyB0aGUgcm9vdCBwb3J0IHRvIHJ1bnRpbWUg
-c3VzcGVuZCwKPiBjYXVzaW5nIHRoZSBwb3dlciByZXNvdXJjZXMgbGlzdGVkIGluIGl0cyBfUFIz
-IG9iamVjdCB0byBiZSBwb3dlcmVkIG9mZi4KPiBUaGUgR1BVJ3MgQkFScyB3aWxsIGJlIHVuaW5p
-dGlhbGl6ZWQgd2hlbiBhIGRyaXZlciBsYXRlciBwcm9iZXMgaXQuCj4KPiBBbm90aGVyIGV4YW1w
-bGUgYXJlIGh5YnJpZCBncmFwaGljcyBsYXB0b3BzIHdoZXJlIHRoZSBHUFUgaXRzZWxmIChyYXRo
-ZXIKPiB0aGFuIHRoZSByb290IHBvcnQpIGlzIGNhcGFibGUgb2YgcnVudGltZSBzdXNwZW5kaW5n
-IHRvIEQzY29sZC4gIElmIHRoZQo+IEdQVSdzIGludGVncmF0ZWQgSERBIGNvbnRyb2xsZXIgaXMg
-bm90IGJvdW5kIGFuZCB0aGUgR1BVJ3MgZHJpdmVyCj4gZGVjaWRlcyB0byBydW50aW1lIHN1c3Bl
-bmQgdG8gRDNjb2xkLCB0aGUgSERBIGNvbnRyb2xsZXIncyBCQVJzIHdpbGwgYmUKPiB1bmluaXRp
-YWxpemVkIHdoZW4gYSBkcml2ZXIgbGF0ZXIgcHJvYmVzIGl0Lgo+Cj4gRml4IGJ5IHJlc3Rvcmlu
-ZyB0aGUgQkFScyBvbiBydW50aW1lIHJlc3VtZSBpZiB0aGUgZGV2aWNlIGlzIG5vdCBib3VuZC4K
-PiBUaGlzIGlzIHN1ZmZpY2llbnQgdG8gZml4IHRoZSBhYm92ZS1tZW50aW9uZWQgdXNlIGNhc2Vz
-LiAgT3RoZXIgdXNlCj4gY2FzZXMgbWlnaHQgcmVxdWlyZSBhIGZ1bGwtYmxvd24gcGNpX3NhdmVf
-c3RhdGUoKSAvIHBjaV9yZXN0b3JlX3N0YXRlKCkKPiBvciBleGVjdXRpb24gb2YgZml4dXBzLiAg
-V2UgY2FuIGFkZCB0aGF0IG9uY2UgdXNlIGNhc2VzIG1hdGVyaWFsaXplLAo+IGxldCdzIG5vdCBp
-bmZsYXRlIHRoZSBjb2RlIHVubmVjZXNzYXJpbHkuCj4KPiBDYzogQmpvcm4gSGVsZ2FhcyA8Ymhl
-bGdhYXNAZ29vZ2xlLmNvbT4KPiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29j
-a2lAaW50ZWwuY29tPgo+IFNpZ25lZC1vZmYtYnk6IEx1a2FzIFd1bm5lciA8bHVrYXNAd3VubmVy
-LmRlPgoKUmV2aWV3ZWQtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGlu
-dGVsLmNvbT4KCj4gLS0tCj4gIGRyaXZlcnMvcGNpL3BjaS1kcml2ZXIuYyB8IDggKysrKysrLS0K
-PiAgZHJpdmVycy9wY2kvcGNpLmMgICAgICAgIHwgMiArLQo+ICBkcml2ZXJzL3BjaS9wY2kuaCAg
-ICAgICAgfCAxICsKPiAgMyBmaWxlcyBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyksIDMgZGVsZXRp
-b25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jIGIvZHJpdmVy
-cy9wY2kvcGNpLWRyaXZlci5jCj4gaW5kZXggM2JlZDZiZWRhMDUxLi41MWIxMWNiZDQ4ZjYgMTAw
-NjQ0Cj4gLS0tIGEvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jCj4gKysrIGIvZHJpdmVycy9wY2kv
-cGNpLWRyaXZlci5jCj4gQEAgLTEyNzcsMTAgKzEyNzcsMTQgQEAgc3RhdGljIGludCBwY2lfcG1f
-cnVudGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQo+Cj4gICAgICAgICAvKgo+ICAgICAg
-ICAgICogSWYgcGNpX2Rldi0+ZHJpdmVyIGlzIG5vdCBzZXQgKHVuYm91bmQpLCB0aGUgZGV2aWNl
-IHNob3VsZAo+IC0gICAgICAgICogYWx3YXlzIHJlbWFpbiBpbiBEMCByZWdhcmRsZXNzIG9mIHRo
-ZSBydW50aW1lIFBNIHN0YXR1cwo+ICsgICAgICAgICogYWx3YXlzIHJlbWFpbiBpbiBEMCByZWdh
-cmRsZXNzIG9mIHRoZSBydW50aW1lIFBNIHN0YXR1cy4KPiArICAgICAgICAqIEJ1dCBpZiBpdHMg
-cGFyZW50IGNhbiBnbyB0byBEM2NvbGQsIHRoaXMgZGV2aWNlIG1heSBoYXZlCj4gKyAgICAgICAg
-KiBiZWVuIGluIEQzY29sZCBhcyB3ZWxsIGFuZCByZXF1aXJlIHJlc3RvcmF0aW9uIG9mIGl0cyBC
-QVJzLgo+ICAgICAgICAgICovCj4gLSAgICAgICBpZiAoIXBjaV9kZXYtPmRyaXZlcikKPiArICAg
-ICAgIGlmICghcGNpX2Rldi0+ZHJpdmVyKSB7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0b3Jl
-X2JhcnMocGNpX2Rldik7Cj4gICAgICAgICAgICAgICAgIHJldHVybiAwOwo+ICsgICAgICAgfQo+
-Cj4gICAgICAgICBpZiAoIXBtIHx8ICFwbS0+cnVudGltZV9yZXN1bWUpCj4gICAgICAgICAgICAg
-ICAgIHJldHVybiAtRU5PU1lTOwo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2Ry
-aXZlcnMvcGNpL3BjaS5jCj4gaW5kZXggZjZhNGRkMTBkOWIwLi5mNjk0NjUwMjM1ZjIgMTAwNjQ0
-Cj4gLS0tIGEvZHJpdmVycy9wY2kvcGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBA
-IC01NjMsNyArNTYzLDcgQEAgaW50IHBjaV93YWl0X2Zvcl9wZW5kaW5nKHN0cnVjdCBwY2lfZGV2
-ICpkZXYsIGludCBwb3MsIHUxNiBtYXNrKQo+ICAgKiBSZXN0b3JlIHRoZSBCQVIgdmFsdWVzIGZv
-ciBhIGdpdmVuIGRldmljZSwgc28gYXMgdG8gbWFrZSBpdAo+ICAgKiBhY2Nlc3NpYmxlIGJ5IGl0
-cyBkcml2ZXIuCj4gICAqLwo+IC1zdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9iYXJzKHN0cnVjdCBw
-Y2lfZGV2ICpkZXYpCj4gK3ZvaWQgcGNpX3Jlc3RvcmVfYmFycyhzdHJ1Y3QgcGNpX2RldiAqZGV2
-KQo+ICB7Cj4gICAgICAgICBpbnQgaTsKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2ku
-aCBiL2RyaXZlcnMvcGNpL3BjaS5oCj4gaW5kZXggZmNkODE5MTFiMTI3Li4yOWRjMTViYmUzYmYg
-MTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9wY2kvcGNpLmgKPiArKysgYi9kcml2ZXJzL3BjaS9wY2ku
-aAo+IEBAIC04Myw2ICs4Myw3IEBAIHZvaWQgcGNpX2FsbG9jYXRlX2NhcF9zYXZlX2J1ZmZlcnMo
-c3RydWN0IHBjaV9kZXYgKmRldik7Cj4gIHZvaWQgcGNpX2ZyZWVfY2FwX3NhdmVfYnVmZmVycyhz
-dHJ1Y3QgcGNpX2RldiAqZGV2KTsKPiAgYm9vbCBwY2lfYnJpZGdlX2QzX3Bvc3NpYmxlKHN0cnVj
-dCBwY2lfZGV2ICpkZXYpOwo+ICB2b2lkIHBjaV9icmlkZ2VfZDNfdXBkYXRlKHN0cnVjdCBwY2lf
-ZGV2ICpkZXYpOwo+ICt2b2lkIHBjaV9yZXN0b3JlX2JhcnMoc3RydWN0IHBjaV9kZXYgKmRldik7
-Cj4KPiAgc3RhdGljIGlubGluZSB2b2lkIHBjaV93YWtldXBfZXZlbnQoc3RydWN0IHBjaV9kZXYg
-KmRldikKPiAgewo+IC0tCj4gMi4xNS4xCj4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9ub3V2ZWF1Cg==
+This makes the axp20x_adc driver probe with platform device id
+"axp813-adc".
+
+Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+---
+ drivers/mfd/axp20x.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 1977a03..e5516aa 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -885,7 +885,10 @@ static struct mfd_cell axp813_cells[] = {
+ 	}, {
+ 		.name			= "axp20x-gpio",
+ 		.of_compatible		= "x-powers,axp813-gpio",
+-	}
++	}, {
++		.name			= "axp813-adc",
++		.of_compatible		= "x-powers,axp813-adc",
++	},
+ };
+ 
+ static struct axp20x_dev *axp20x_pm_power_off;
+-- 
+git-series 0.9.1
