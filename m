@@ -1,71 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: s3c24xx: Delete an error message for a failed
- memory allocation in two functions
-Date: Mon, 19 Feb 2018 09:14:54 +0530
-Message-ID: <20180219034454.GM28462@vireshk-i7>
-References: <201722ce-019d-a5b4-fc00-74679d82b64f@users.sourceforge.net>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/7] PCI: Restore BARs on runtime resume
+ despite being unbound
+Date: Mon, 19 Feb 2018 10:49:15 +0100
+Message-ID: <CAJZ5v0jr0dM7VAPUvjEh0HoVgORzvFov3vPvyaO2nynKyJhNjg@mail.gmail.com>
+References: <cover.1518941072.git.lukas@wunner.de>
+ <f7593132608eb9a83d7268cc5b3ef12b3dd9c52d.1518941073.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <201722ce-019d-a5b4-fc00-74679d82b64f@users.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <f7593132608eb9a83d7268cc5b3ef12b3dd9c52d.1518941073.git.lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 15-02-18, 17:40, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Thu, 15 Feb 2018 17:28:40 +0100
-> 
-> Omit an extra message for a memory allocation failure in these functions.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  drivers/cpufreq/s3c24xx-cpufreq.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-> index 7b596fa38ad2..024afd0b9458 100644
-> --- a/drivers/cpufreq/s3c24xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-> @@ -473,10 +473,8 @@ int __init s3c_cpufreq_setboard(struct s3c_cpufreq_board *board)
->  	 * initdata. */
->  
->  	ours = kzalloc(sizeof(*ours), GFP_KERNEL);
-> -	if (ours == NULL) {
-> -		pr_err("%s: no memory\n", __func__);
-> +	if (!ours)
->  		return -ENOMEM;
-> -	}
->  
->  	*ours = *board;
->  	cpu_cur.board = ours;
-> @@ -562,10 +560,8 @@ static int s3c_cpufreq_build_freq(void)
->  	size++;
->  
->  	ftab = kzalloc(sizeof(*ftab) * size, GFP_KERNEL);
-> -	if (!ftab) {
-> -		pr_err("%s: no memory for tables\n", __func__);
-> +	if (!ftab)
->  		return -ENOMEM;
-> -	}
->  
->  	ftab_size = size;
->  
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+T24gU3VuLCBGZWIgMTgsIDIwMTggYXQgOTozOCBBTSwgTHVrYXMgV3VubmVyIDxsdWthc0B3dW5u
+ZXIuZGU+IHdyb3RlOgo+IFBDSSBkZXZpY2VzIG5vdCBib3VuZCB0byBhIGRyaXZlciBhcmUgc3Vw
+cG9zZWQgdG8gc3RheSBpbiBEMCBkdXJpbmcKPiBydW50aW1lIHN1c3BlbmQuICBCdXQgdGhleSBt
+YXkgaGF2ZSBhIHBhcmVudCB3aGljaCBpcyBib3VuZCBhbmQgY2FuIGJlCj4gdHJhbnNpdGlvbmVk
+IHRvIEQzY29sZCBhdCBydW50aW1lLiAgT25jZSB0aGUgcGFyZW50IGdvZXMgdG8gRDNjb2xkLCB0
+aGUKPiB1bmJvdW5kIGNoaWxkIG1heSBnbyB0byBEM2NvbGQgYXMgd2VsbC4gIFdoZW4gdGhlIGNo
+aWxkIGNvbWVzIG91dCBvZgo+IEQzY29sZCwgaXRzIEJBUnMgYXJlIHVuaW5pdGlhbGl6ZWQgYW5k
+IHRodXMgaW5hY2Nlc3NpYmxlIHdoZW4gYSBkcml2ZXIKPiB0cmllcyB0byBwcm9iZS4KPgo+IE9u
+ZSBleGFtcGxlIGFyZSByZWNlbnQgaHlicmlkIGdyYXBoaWNzIGxhcHRvcHMgd2hpY2ggY3V0IHBv
+d2VyIHRvIHRoZQo+IGRpc2NyZXRlIEdQVSB3aGVuIHRoZSByb290IHBvcnQgYWJvdmUgaXQgZ29l
+cyB0byBBQ1BJIHBvd2VyIHN0YXRlIEQzLgo+IFVzZXJzIG1heSBwcm92b2tlIHRoaXMgYnkgdW5i
+aW5kaW5nIHRoZSBHUFUgZHJpdmVyIGFuZCBhbGxvd2luZyBydW50aW1lCj4gUE0gb24gdGhlIEdQ
+VSB2aWEgc3lzZnM6ICBUaGUgUE0gY29yZSB3aWxsIHRoZW4gdHJlYXQgdGhlIEdQVSBhcwo+ICJz
+dXNwZW5kZWQiLCB3aGljaCBpbiB0dXJuIGFsbG93cyB0aGUgcm9vdCBwb3J0IHRvIHJ1bnRpbWUg
+c3VzcGVuZCwKPiBjYXVzaW5nIHRoZSBwb3dlciByZXNvdXJjZXMgbGlzdGVkIGluIGl0cyBfUFIz
+IG9iamVjdCB0byBiZSBwb3dlcmVkIG9mZi4KPiBUaGUgR1BVJ3MgQkFScyB3aWxsIGJlIHVuaW5p
+dGlhbGl6ZWQgd2hlbiBhIGRyaXZlciBsYXRlciBwcm9iZXMgaXQuCj4KPiBBbm90aGVyIGV4YW1w
+bGUgYXJlIGh5YnJpZCBncmFwaGljcyBsYXB0b3BzIHdoZXJlIHRoZSBHUFUgaXRzZWxmIChyYXRo
+ZXIKPiB0aGFuIHRoZSByb290IHBvcnQpIGlzIGNhcGFibGUgb2YgcnVudGltZSBzdXNwZW5kaW5n
+IHRvIEQzY29sZC4gIElmIHRoZQo+IEdQVSdzIGludGVncmF0ZWQgSERBIGNvbnRyb2xsZXIgaXMg
+bm90IGJvdW5kIGFuZCB0aGUgR1BVJ3MgZHJpdmVyCj4gZGVjaWRlcyB0byBydW50aW1lIHN1c3Bl
+bmQgdG8gRDNjb2xkLCB0aGUgSERBIGNvbnRyb2xsZXIncyBCQVJzIHdpbGwgYmUKPiB1bmluaXRp
+YWxpemVkIHdoZW4gYSBkcml2ZXIgbGF0ZXIgcHJvYmVzIGl0Lgo+Cj4gRml4IGJ5IHJlc3Rvcmlu
+ZyB0aGUgQkFScyBvbiBydW50aW1lIHJlc3VtZSBpZiB0aGUgZGV2aWNlIGlzIG5vdCBib3VuZC4K
+PiBUaGlzIGlzIHN1ZmZpY2llbnQgdG8gZml4IHRoZSBhYm92ZS1tZW50aW9uZWQgdXNlIGNhc2Vz
+LiAgT3RoZXIgdXNlCj4gY2FzZXMgbWlnaHQgcmVxdWlyZSBhIGZ1bGwtYmxvd24gcGNpX3NhdmVf
+c3RhdGUoKSAvIHBjaV9yZXN0b3JlX3N0YXRlKCkKPiBvciBleGVjdXRpb24gb2YgZml4dXBzLiAg
+V2UgY2FuIGFkZCB0aGF0IG9uY2UgdXNlIGNhc2VzIG1hdGVyaWFsaXplLAo+IGxldCdzIG5vdCBp
+bmZsYXRlIHRoZSBjb2RlIHVubmVjZXNzYXJpbHkuCj4KPiBDYzogQmpvcm4gSGVsZ2FhcyA8Ymhl
+bGdhYXNAZ29vZ2xlLmNvbT4KPiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29j
+a2lAaW50ZWwuY29tPgo+IFNpZ25lZC1vZmYtYnk6IEx1a2FzIFd1bm5lciA8bHVrYXNAd3VubmVy
+LmRlPgoKUmV2aWV3ZWQtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGlu
+dGVsLmNvbT4KCj4gLS0tCj4gIGRyaXZlcnMvcGNpL3BjaS1kcml2ZXIuYyB8IDggKysrKysrLS0K
+PiAgZHJpdmVycy9wY2kvcGNpLmMgICAgICAgIHwgMiArLQo+ICBkcml2ZXJzL3BjaS9wY2kuaCAg
+ICAgICAgfCAxICsKPiAgMyBmaWxlcyBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyksIDMgZGVsZXRp
+b25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jIGIvZHJpdmVy
+cy9wY2kvcGNpLWRyaXZlci5jCj4gaW5kZXggM2JlZDZiZWRhMDUxLi41MWIxMWNiZDQ4ZjYgMTAw
+NjQ0Cj4gLS0tIGEvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jCj4gKysrIGIvZHJpdmVycy9wY2kv
+cGNpLWRyaXZlci5jCj4gQEAgLTEyNzcsMTAgKzEyNzcsMTQgQEAgc3RhdGljIGludCBwY2lfcG1f
+cnVudGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQo+Cj4gICAgICAgICAvKgo+ICAgICAg
+ICAgICogSWYgcGNpX2Rldi0+ZHJpdmVyIGlzIG5vdCBzZXQgKHVuYm91bmQpLCB0aGUgZGV2aWNl
+IHNob3VsZAo+IC0gICAgICAgICogYWx3YXlzIHJlbWFpbiBpbiBEMCByZWdhcmRsZXNzIG9mIHRo
+ZSBydW50aW1lIFBNIHN0YXR1cwo+ICsgICAgICAgICogYWx3YXlzIHJlbWFpbiBpbiBEMCByZWdh
+cmRsZXNzIG9mIHRoZSBydW50aW1lIFBNIHN0YXR1cy4KPiArICAgICAgICAqIEJ1dCBpZiBpdHMg
+cGFyZW50IGNhbiBnbyB0byBEM2NvbGQsIHRoaXMgZGV2aWNlIG1heSBoYXZlCj4gKyAgICAgICAg
+KiBiZWVuIGluIEQzY29sZCBhcyB3ZWxsIGFuZCByZXF1aXJlIHJlc3RvcmF0aW9uIG9mIGl0cyBC
+QVJzLgo+ICAgICAgICAgICovCj4gLSAgICAgICBpZiAoIXBjaV9kZXYtPmRyaXZlcikKPiArICAg
+ICAgIGlmICghcGNpX2Rldi0+ZHJpdmVyKSB7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0b3Jl
+X2JhcnMocGNpX2Rldik7Cj4gICAgICAgICAgICAgICAgIHJldHVybiAwOwo+ICsgICAgICAgfQo+
+Cj4gICAgICAgICBpZiAoIXBtIHx8ICFwbS0+cnVudGltZV9yZXN1bWUpCj4gICAgICAgICAgICAg
+ICAgIHJldHVybiAtRU5PU1lTOwo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2Ry
+aXZlcnMvcGNpL3BjaS5jCj4gaW5kZXggZjZhNGRkMTBkOWIwLi5mNjk0NjUwMjM1ZjIgMTAwNjQ0
+Cj4gLS0tIGEvZHJpdmVycy9wY2kvcGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBA
+IC01NjMsNyArNTYzLDcgQEAgaW50IHBjaV93YWl0X2Zvcl9wZW5kaW5nKHN0cnVjdCBwY2lfZGV2
+ICpkZXYsIGludCBwb3MsIHUxNiBtYXNrKQo+ICAgKiBSZXN0b3JlIHRoZSBCQVIgdmFsdWVzIGZv
+ciBhIGdpdmVuIGRldmljZSwgc28gYXMgdG8gbWFrZSBpdAo+ICAgKiBhY2Nlc3NpYmxlIGJ5IGl0
+cyBkcml2ZXIuCj4gICAqLwo+IC1zdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9iYXJzKHN0cnVjdCBw
+Y2lfZGV2ICpkZXYpCj4gK3ZvaWQgcGNpX3Jlc3RvcmVfYmFycyhzdHJ1Y3QgcGNpX2RldiAqZGV2
+KQo+ICB7Cj4gICAgICAgICBpbnQgaTsKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2ku
+aCBiL2RyaXZlcnMvcGNpL3BjaS5oCj4gaW5kZXggZmNkODE5MTFiMTI3Li4yOWRjMTViYmUzYmYg
+MTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9wY2kvcGNpLmgKPiArKysgYi9kcml2ZXJzL3BjaS9wY2ku
+aAo+IEBAIC04Myw2ICs4Myw3IEBAIHZvaWQgcGNpX2FsbG9jYXRlX2NhcF9zYXZlX2J1ZmZlcnMo
+c3RydWN0IHBjaV9kZXYgKmRldik7Cj4gIHZvaWQgcGNpX2ZyZWVfY2FwX3NhdmVfYnVmZmVycyhz
+dHJ1Y3QgcGNpX2RldiAqZGV2KTsKPiAgYm9vbCBwY2lfYnJpZGdlX2QzX3Bvc3NpYmxlKHN0cnVj
+dCBwY2lfZGV2ICpkZXYpOwo+ICB2b2lkIHBjaV9icmlkZ2VfZDNfdXBkYXRlKHN0cnVjdCBwY2lf
+ZGV2ICpkZXYpOwo+ICt2b2lkIHBjaV9yZXN0b3JlX2JhcnMoc3RydWN0IHBjaV9kZXYgKmRldik7
+Cj4KPiAgc3RhdGljIGlubGluZSB2b2lkIHBjaV93YWtldXBfZXZlbnQoc3RydWN0IHBjaV9kZXYg
+KmRldikKPiAgewo+IC0tCj4gMi4xNS4xCj4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9ub3V2ZWF1Cg==
