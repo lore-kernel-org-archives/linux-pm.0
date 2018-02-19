@@ -1,13 +1,12 @@
 From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v4 03/13] mfd: axp20x: make AXP209/22x cells
- probe their ADC via DT
-Date: Mon, 19 Feb 2018 13:47:26 +0100
-Message-ID: <d9e6a3d2a2a8d6d29360183c94fe63d8dbaedae8.1519044068.git-series.quentin.schulz@bootlin.com>
+Subject: [PATCH v4 01/13] ARM: dtsi: axp209: add node for ADC
+Date: Mon, 19 Feb 2018 13:47:24 +0100
+Message-ID: <f9ae0852cbb8f902197c6e9f7d1c372408cd0ee0.1519044068.git-series.quentin.schulz@bootlin.com>
 References: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz@bootlin.com>
 Reply-To: quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBCEPVPKAKGQEGQ2DDAQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBB4PVPKAKGQEVFWP5OY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 In-Reply-To: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
@@ -22,45 +21,30 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas.petazzoni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This makes AXP209 and AXP22x ADCs probe first via DT and then by
-fallback via platform.
+This adds a DT node for the ADC of the PMIC so that there can be
+consumers of its IIO channels declaring their consumptions via DT.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
- drivers/mfd/axp20x.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/axp209.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index e94c72c..1977a03 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -660,6 +660,7 @@ static struct mfd_cell axp20x_cells[] = {
- 		.name		= "axp20x-regulator",
- 	}, {
- 		.name		= "axp20x-adc",
-+		.of_compatible	= "x-powers,axp209-adc",
- 	}, {
- 		.name		= "axp20x-battery-power-supply",
- 		.of_compatible	= "x-powers,axp209-battery-power-supply",
-@@ -684,7 +685,8 @@ static struct mfd_cell axp221_cells[] = {
- 	}, {
- 		.name		= "axp20x-regulator",
- 	}, {
--		.name		= "axp22x-adc"
-+		.name		= "axp22x-adc",
-+		.of_compatible	= "x-powers,axp221-adc",
- 	}, {
- 		.name		= "axp20x-ac-power-supply",
- 		.of_compatible	= "x-powers,axp221-ac-power-supply",
-@@ -708,6 +710,7 @@ static struct mfd_cell axp223_cells[] = {
- 		.resources		= axp22x_pek_resources,
- 	}, {
- 		.name		= "axp22x-adc",
-+		.of_compatible	= "x-powers,axp221-adc",
- 	}, {
- 		.name		= "axp20x-battery-power-supply",
- 		.of_compatible	= "x-powers,axp221-battery-power-supply",
+diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+index 897103e..0d9ff12 100644
+--- a/arch/arm/boot/dts/axp209.dtsi
++++ b/arch/arm/boot/dts/axp209.dtsi
+@@ -58,6 +58,11 @@
+ 		status = "disabled";
+ 	};
+ 
++	axp_adc: adc {
++		compatible = "x-powers,axp209-adc";
++		#io-channel-cells = <1>;
++	};
++
+ 	axp_gpio: gpio {
+ 		compatible = "x-powers,axp209-gpio";
+ 		gpio-controller;
 -- 
 git-series 0.9.1
