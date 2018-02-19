@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v4 05/13] mfd: axp20x: probe axp20x_adc driver
- for AXP813
-Date: Mon, 19 Feb 2018 13:47:28 +0100
-Message-ID: <a82ff9673c8652d3fbc17c5966feb230349e6200.1519044068.git-series.quentin.schulz@bootlin.com>
+Subject: [PATCH v4 13/13] iio: adc: axp20x_adc: remove !! in
+ favor of ternary condition
+Date: Mon, 19 Feb 2018 13:47:36 +0100
+Message-ID: <9ec180ff4358ac6e163115aa7832a0674b6a640e.1519044068.git-series.quentin.schulz@bootlin.com>
 References: <cover.6545459c99a33874413abf619136986f53d2c2a2.1519044068.git-series.quentin.schulz@bootlin.com>
 Reply-To: quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
@@ -22,31 +22,46 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas.petazzoni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This makes the axp20x_adc driver probe with platform device id
-"axp813-adc".
+!!'s behaviour isn't that obvious and sparse complained about it, so
+let's replace it with a ternary condition.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
- drivers/mfd/axp20x.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/iio/adc/axp20x_adc.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 1977a03..e5516aa 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -885,7 +885,10 @@ static struct mfd_cell axp813_cells[] = {
- 	}, {
- 		.name			= "axp20x-gpio",
- 		.of_compatible		= "x-powers,axp813-gpio",
--	}
-+	}, {
-+		.name			= "axp813-adc",
-+		.of_compatible		= "x-powers,axp813-adc",
-+	},
- };
+diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+index a30a972..7a745cf 100644
+--- a/drivers/iio/adc/axp20x_adc.c
++++ b/drivers/iio/adc/axp20x_adc.c
+@@ -365,7 +365,7 @@ static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
+ 		return -EINVAL;
+ 	}
  
- static struct axp20x_dev *axp20x_pm_power_off;
+-	*val = !!(*val) * 700000;
++	*val = *val ? 700000 : 0;
+ 
+ 	return IIO_VAL_INT;
+ }
+@@ -442,15 +442,17 @@ static int axp20x_write_raw(struct iio_dev *indio_dev,
+ 	if (val != 0 && val != 700000)
+ 		return -EINVAL;
+ 
++	val = val ? 1 : 0;
++
+ 	switch (chan->channel) {
+ 	case AXP20X_GPIO0_V:
+ 		reg = AXP20X_GPIO10_IN_RANGE_GPIO0;
+-		regval = AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(!!val);
++		regval = AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(val);
+ 		break;
+ 
+ 	case AXP20X_GPIO1_V:
+ 		reg = AXP20X_GPIO10_IN_RANGE_GPIO1;
+-		regval = AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(!!val);
++		regval = AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(val);
+ 		break;
+ 
+ 	default:
 -- 
 git-series 0.9.1
