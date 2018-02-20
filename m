@@ -1,18 +1,14 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 10/10] dt-bindings: thermal: Remove
- "cooling-{min|max}-level" properties
-Date: Mon, 19 Feb 2018 12:01:24 -0600
-Message-ID: <20180219180124.22rcnjoyvv3qw3cl@rob-hp-laptop>
-References: <cover.1518166039.git.viresh.kumar@linaro.org>
- <0ec53640f1a09e6e0d7aa1a21d1a3266c3c209c7.1518166039.git.viresh.kumar@linaro.org>
- <20180218232906.jkpymin3a4qxjhnc@rob-hp-laptop>
- <20180219034338.GI28462@vireshk-i7>
+From: kbuild test robot <lkp@intel.com>
+Subject: [RFC PATCH] power: supply: axp20x_battery: axp209_data can be static
+Date: Tue, 20 Feb 2018 17:12:25 +0800
+Message-ID: <20180220091225.GA95450@cairo>
+References: <52f68b8ed9452d643d9156a849014c9d0eb4404b.1519044068.git-series.quentin.schulz@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20180219034338.GI28462@vireshk-i7>
+In-Reply-To: <52f68b8ed9452d643d9156a849014c9d0eb4404b.1519044068.git-series.quentin.schulz@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,23 +18,34 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, Quentin Schulz <quentin.schulz@bootlin.com>, lars@metafoo.de, thomas.petazzoni@bootlin.com, linux-pm@vger.kernel.org, maxime.ripard@bootlin.com, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, linux@armlinux.org.uk, sre@kernel.org, linux-iio@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, kbuild-all@01.org, pmeerw@pmeerw.net, knaack.h@gmx.de, lee.jones@linaro.org, jic23@kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 19, 2018 at 09:13:38AM +0530, Viresh Kumar wrote:
-> On 18-02-18, 17:29, Rob Herring wrote:
-> > On Fri, Feb 09, 2018 at 02:28:10PM +0530, Viresh Kumar wrote:
-> > > The "cooling-min-level" and "cooling-max-level" properties are not
-> > > parsed by any part of kernel currently and the max cooling state of a
-> > > CPU cooling device is found by referring to the cpufreq table instead.
-> > 
-> > What about non-CPU devices? A fan for example.
-> 
-> Even they aren't using these properties. The gpio-fan binding[1] for
-> example uses the "gpio-fan,speed-map" property instead to find the
-> number of states it supports.
 
-Okay.
+Fixes: 94767270f0b0 ("power: supply: axp20x_battery: use data struct for variant specific code")
+Signed-off-by: Fengguang Wu <fengguang.wu@intel.com>
+---
+ axp20x_battery.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+index 099e785..04a0d91 100644
+--- a/drivers/power/supply/axp20x_battery.c
++++ b/drivers/power/supply/axp20x_battery.c
+@@ -476,14 +476,14 @@ static const struct power_supply_desc axp20x_batt_ps_desc = {
+ 	.set_property = axp20x_battery_set_prop,
+ };
+ 
+-const struct axp_data axp209_data = {
++static const struct axp_data axp209_data = {
+ 	.ccc_scale = 100000,
+ 	.ccc_offset = 300000,
+ 	.get_max_voltage = axp20x_battery_get_max_voltage,
+ 	.set_max_voltage = axp20x_battery_set_max_voltage,
+ };
+ 
+-const struct axp_data axp221_data = {
++static const struct axp_data axp221_data = {
+ 	.ccc_scale = 150000,
+ 	.ccc_offset = 300000,
+ 	.has_fg_valid = true,
