@@ -1,64 +1,69 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PM / core: move device and its children to end of dpm list
-Date: Wed, 28 Feb 2018 13:56:41 -0600
-Message-ID: <20180228195641.GI127842@bhelgaas-glaptop.roam.corp.google.com>
-References: <1519843555-982-1-git-send-email-fkan@apm.com>
+From: Ivid Suvarna <ivid.suvarna@gmail.com>
+Subject: Timekeeping warning during resume from suspend to disk
+Date: Tue, 20 Feb 2018 12:53:26 +0530
+Message-ID: <CABXF_AAQVJ7eMt4gFhiEcgZTD7Y4R66-9ELZ1OJ2gAmKPeLMAw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1519843555-982-1-git-send-email-fkan@apm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Feng Kan <fkan@apm.com>
-Cc: lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <kernelnewbies-bounces+glkk-kernelnewbies=gmane.org@kernelnewbies.org>
+List-Unsubscribe: <https://lists.kernelnewbies.org/mailman/options/kernelnewbies>,
+ <mailto:kernelnewbies-request@kernelnewbies.org?subject=unsubscribe>
+List-Archive: <http://lists.kernelnewbies.org/pipermail/kernelnewbies/>
+List-Post: <mailto:kernelnewbies@kernelnewbies.org>
+List-Help: <mailto:kernelnewbies-request@kernelnewbies.org?subject=help>
+List-Subscribe: <https://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies>,
+ <mailto:kernelnewbies-request@kernelnewbies.org?subject=subscribe>
+Errors-To: kernelnewbies-bounces+glkk-kernelnewbies=gmane.org@kernelnewbies.org
+To: Kernel development list <linux-kernel@vger.kernel.org>, kernelnewbies@kernelnewbies.org, Linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 28, 2018 at 10:45:55AM -0800, Feng Kan wrote:
-> When bridge and its endpoint is enumated the devices are added to the
-> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
-> This causes the bridge to be moved to the end of the dpm list when deferred
-> probe kicks in. The order of the dpm list for bridge and endpoint is
-> reversed.
-> 
-> Add reordering code to re-position the bridge and its children so the order
-> for suspend and resume is not altered.
-> 
-> Signed-off-by: Feng Kan <fkan@apm.com>
-> Signed-off-by: Toan Le <toanle@apm.com>
+Hi All,
 
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 9d32000..1ec12d5 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -1272,6 +1272,9 @@ extern void devm_device_remove_group(struct device *dev,
->  /* debugging and troubleshooting/diagnostic helpers. */
->  extern const char *dev_driver_string(const struct device *dev);
->  
-> +/* reorder device and its children to end of dpm list */
-> +void device_pm_reorder(struct device *dev);
+Facing below warning backtrace during resume from suspend to disk. I
+am using 4.1.15 freescale kernel. After this warning there is a huge
+time gap (nearly 10 sec) between Enabling non-boot cpus and CPU1 being
+up. Any pointers on this would be helpful.
 
-Do you expect drivers to use this, or only the driver core in
-drivers/base/?  There is a drivers/base/base.h; maybe this would fit
-there rather than being exposed to the rest of the kernel via
-include/linux/device.h?
+[  545.227081] Hardware name: Freescale i.MX6 Quad/DualLite (Device Tree)
+[  545.227081] [<80018674>] (unwind_backtrace) from [<80013c24>]
+(show_stack+0x20/0x24)
+[  545.227081] [<80013c24>] (show_stack) from [<80684220>]
+(dump_stack+0x7c/0xbc)
+[  545.227081] [<80684220>] (dump_stack) from [<80034fcc>]
+(warn_slowpath_common+0x94/0xc4)
+[  545.227081] [<80034fcc>] (warn_slowpath_common) from [<800350b8>]
+(warn_slowpath_null+0x2c/0x34)
+[  545.227081] [<800350b8>] (warn_slowpath_null) from [<8009ce24>]
+(clockevents_program_event+0x14c/0x15c)
+[  545.227081] [<8009ce24>] (clockevents_program_event) from
+[<8009f39c>] (tick_resume_oneshot+0x5c/0x64)
+[  545.227081] [<8009f39c>] (tick_resume_oneshot) from [<8009daa8>]
+(tick_resume_local+0x58/0x68)
+[  545.227081] [<8009daa8>] (tick_resume_local) from [<8009daf4>]
+(tick_resume+0x1c/0x20)
+[  545.227081] [<8009daf4>] (tick_resume) from [<80096328>]
+(timekeeping_resume+0x1c8/0x2bc)
+[  545.227081] [<80096328>] (timekeeping_resume) from [<803e5a7c>]
+(syscore_resume+0x94/0x250)
+[  545.227081] [<803e5a7c>] (syscore_resume) from [<800721b0>]
+(suspend_devices_and_enter+0x78c/0x99c)
+[  545.227081] [<800721b0>] (suspend_devices_and_enter) from
+[<800728a0>] (pm_suspend+0x4e0/0x74c)
+[  545.227081] [<800728a0>] (pm_suspend) from [<80070adc>]
+(state_store+0x74/0xa0)
+[  545.227081] [<80070adc>] (state_store) from [<8031f3c4>]
+(kobj_attr_store+0x1c/0x28)
+[  545.227081] [<8031f3c4>] (kobj_attr_store) from [<801a9814>]
+(sysfs_kf_write+0x50/0x54)
+[  545.227081] [<801a9814>] (sysfs_kf_write) from [<801a8fc8>]
+(kernfs_fop_write+0xcc/0x1b8)
+[  545.227081] [<801a8fc8>] (kernfs_fop_write) from [<8013c1d4>]
+(__vfs_write+0x3c/0xec)
+[  545.227081] [<8013c1d4>] (__vfs_write) from [<8013ca88>]
+(vfs_write+0xa0/0x180)
+[  545.227081] [<8013ca88>] (vfs_write) from [<8013d2fc>] (SyS_write+0x4c/0xa0)
+[  545.227081] [<8013d2fc>] (SyS_write) from [<8000fd3c>]
+(__cpuset_migrate_return+0x0/0x24)
 
->  /* Device links interface. */
->  struct device_link *device_link_add(struct device *consumer,
->  				    struct device *supplier, u32 flags);
-> -- 
-> 1.8.3.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Regards,
+IVID
