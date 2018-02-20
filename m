@@ -1,15 +1,11 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH v4 06/13] power: supply: axp20x_battery: use data struct
- for variant specific code
-Date: Tue, 20 Feb 2018 17:12:25 +0800
-Message-ID: <201802201606.lLg38XZv%fengguang.wu@intel.com>
-References: <52f68b8ed9452d643d9156a849014c9d0eb4404b.1519044068.git-series.quentin.schulz@bootlin.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: [PATCH] cpufreq: scpi: invoke frequency-invariance setter function
+Date: Tue, 20 Feb 2018 11:10:57 +0000
+Message-ID: <20180220111057.14756-1-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <52f68b8ed9452d643d9156a849014c9d0eb4404b.1519044068.git-series.quentin.schulz@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,30 +15,57 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, Quentin Schulz <quentin.schulz@bootlin.com>, lars@metafoo.de, thomas.petazzoni@bootlin.com, linux-pm@vger.kernel.org, maxime.ripard@bootlin.com, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, linux@armlinux.org.uk, sre@kernel.org, linux-iio@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, kbuild-all@01.org, pmeerw@pmeerw.net, knaack.h@gmx.de, lee.jones@linaro.org, jic23@kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
+Commit 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
+changed the cpufreq driver on juno from arm_big_little to scpi.
 
-Thank you for the patch! Perhaps something to improve:
+The scpi set_target function does not call the frequency-invariance
+setter function arch_set_freq_scale() like the arm_big_little set_target
+function does. As a result the task scheduler load and utilization
+signals are not frequency-invariant on this platform anymore.
 
-[auto build test WARNING on ]
+Fix this by adding a call to arch_set_freq_scale() into
+scpi_cpufreq_set_target().
 
-url:    https://github.com/0day-ci/linux/commits/Quentin-Schulz/add-support-for-AXP813-ADC-and-battery-power-supply/20180220-051138
-base:    
-reproduce:
-        # apt-get install sparse
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF=-D__CHECK_ENDIAN__
-
-
-sparse warnings: (new ones prefixed by >>)
-
->> drivers/power/supply/axp20x_battery.c:479:23: sparse: symbol 'axp209_data' was not declared. Should it be
->> drivers/power/supply/axp20x_battery.c:486:23: sparse: symbol 'axp221_data' was not declared. Should it be
-
-Please review and possibly fold the followup patch.
-
+Fixes: 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/cpufreq/scpi-cpufreq.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+index c32a833e1b00..3101d4e9c2de 100644
+--- a/drivers/cpufreq/scpi-cpufreq.c
++++ b/drivers/cpufreq/scpi-cpufreq.c
+@@ -51,13 +51,19 @@ static unsigned int scpi_cpufreq_get_rate(unsigned int cpu)
+ static int
+ scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+ {
++	unsigned long freq = policy->freq_table[index].frequency;
+ 	struct scpi_data *priv = policy->driver_data;
+-	u64 rate = policy->freq_table[index].frequency * 1000;
++	u64 rate = freq * 1000;
+ 	int ret;
+ 
+ 	ret = clk_set_rate(priv->clk, rate);
+-	if (!ret && (clk_get_rate(priv->clk) != rate))
+-		ret = -EIO;
++	if (!ret) {
++		if (clk_get_rate(priv->clk) != rate)
++			ret = -EIO;
++
++		arch_set_freq_scale(policy->related_cpus, freq,
++				    policy->cpuinfo.max_freq);
++	}
+ 
+ 	return ret;
+ }
+-- 
+2.11.0
