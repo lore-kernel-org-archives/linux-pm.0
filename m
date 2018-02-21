@@ -1,114 +1,47 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/7] PCI: Restore BARs on runtime resume
- despite being unbound
-Date: Wed, 21 Feb 2018 10:57:14 +0100
-Message-ID: <CAJZ5v0h+qipaKKDxxFFpkwUKgMjnoaUB8_p+FRDb+fSM_v+wBw@mail.gmail.com>
-References: <cover.1518941072.git.lukas@wunner.de>
- <f7593132608eb9a83d7268cc5b3ef12b3dd9c52d.1518941073.git.lukas@wunner.de>
- <20180220212922.GC32228@bhelgaas-glaptop.roam.corp.google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
+ cpufreq_table_find_index_dl()
+Date: Wed, 21 Feb 2018 15:32:09 +0530
+Message-ID: <20180221100209.GP28462@vireshk-i7>
+References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180212102900.GU28462@vireshk-i7>
+ <874lmasxxx.fsf@concordia.ellerman.id.au>
+ <20180221055450.GO28462@vireshk-i7>
+ <CAJZ5v0jEg7FELH6mBY16mB5sfo7s2mbH2SGheH4KVeKLnStjjg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180220212922.GC32228-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jEg7FELH6mBY16mB5sfo7s2mbH2SGheH4KVeKLnStjjg@mail.gmail.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBGZWIgMjAsIDIwMTggYXQgMTA6MjkgUE0sIEJqb3JuIEhlbGdhYXMgPGhlbGdhYXNA
-a2VybmVsLm9yZz4gd3JvdGU6Cj4gT24gU3VuLCBGZWIgMTgsIDIwMTggYXQgMDk6Mzg6MzJBTSAr
-MDEwMCwgTHVrYXMgV3VubmVyIHdyb3RlOgo+PiBQQ0kgZGV2aWNlcyBub3QgYm91bmQgdG8gYSBk
-cml2ZXIgYXJlIHN1cHBvc2VkIHRvIHN0YXkgaW4gRDAgZHVyaW5nCj4+IHJ1bnRpbWUgc3VzcGVu
-ZC4KPgo+IERvZXNuJ3QgInJ1bnRpbWUgc3VzcGVuZCIgbWVhbiBhbiBpbmRpdmlkdWFsIGRldmlj
-ZSBpcyBzdXNwZW5kZWQgd2hpbGUKPiB0aGUgcmVzdCBvZiB0aGUgc3lzdGVtIHJlbWFpbnMgYWN0
-aXZlPwo+Cj4gSWYgc28sIG1heWJlIGl0IHdvdWxkIGJlIG1vcmUgZGlyZWN0IHRvIHNheSAiUENJ
-IGRldmljZXMgbm90IGJvdW5kIHRvCj4gYSBkcml2ZXIgY2Fubm90IGJlIHJ1bnRpbWUgc3VzcGVu
-ZGVkIj8KPgo+IChJdCdzIGEgc2VwYXJhdGUgcXVlc3Rpb24gbm90IHJlbGV2YW50IHRvIHRoaXMg
-cGF0Y2gsIGJ1dCBJJ20gbm90Cj4gY29udmluY2VkIHRoYXQgIlBDSSBkZXZpY2VzIHdpdGhvdXQg
-YSBkcml2ZXIgY2Fubm90IGJlIHN1c3BlbmRlZCIKPiBzaG91bGQgYmUgYWNjZXB0ZWQgYXMgYSBy
-dWxlLiAgSWYgaXQgaXMgYSBydWxlLCB3ZSBzaG91bGQgYmUgYWJsZSB0bwo+IGRlZHVjZSBpdCBm
-cm9tIHRoZSBzcGVjcy4pCj4KPj4gQnV0IHRoZXkgbWF5IGhhdmUgYSBwYXJlbnQgd2hpY2ggaXMg
-Ym91bmQgYW5kIGNhbiBiZQo+PiB0cmFuc2l0aW9uZWQgdG8gRDNjb2xkIGF0IHJ1bnRpbWUuICBP
-bmNlIHRoZSBwYXJlbnQgZ29lcyB0byBEM2NvbGQsIHRoZQo+PiB1bmJvdW5kIGNoaWxkIG1heSBn
-byB0byBEM2NvbGQgYXMgd2VsbC4gIFdoZW4gdGhlIGNoaWxkIGNvbWVzIG91dCBvZgo+PiBEM2Nv
-bGQsIGl0cyBCQVJzIGFyZSB1bmluaXRpYWxpemVkIGFuZCB0aHVzIGluYWNjZXNzaWJsZSB3aGVu
-IGEgZHJpdmVyCj4+IHRyaWVzIHRvIHByb2JlLgo+Pgo+PiBPbmUgZXhhbXBsZSBhcmUgcmVjZW50
-IGh5YnJpZCBncmFwaGljcyBsYXB0b3BzIHdoaWNoIGN1dCBwb3dlciB0byB0aGUKPj4gZGlzY3Jl
-dGUgR1BVIHdoZW4gdGhlIHJvb3QgcG9ydCBhYm92ZSBpdCBnb2VzIHRvIEFDUEkgcG93ZXIgc3Rh
-dGUgRDMuCj4+IFVzZXJzIG1heSBwcm92b2tlIHRoaXMgYnkgdW5iaW5kaW5nIHRoZSBHUFUgZHJp
-dmVyIGFuZCBhbGxvd2luZyBydW50aW1lCj4+IFBNIG9uIHRoZSBHUFUgdmlhIHN5c2ZzOiAgVGhl
-IFBNIGNvcmUgd2lsbCB0aGVuIHRyZWF0IHRoZSBHUFUgYXMKPj4gInN1c3BlbmRlZCIsIHdoaWNo
-IGluIHR1cm4gYWxsb3dzIHRoZSByb290IHBvcnQgdG8gcnVudGltZSBzdXNwZW5kLAo+PiBjYXVz
-aW5nIHRoZSBwb3dlciByZXNvdXJjZXMgbGlzdGVkIGluIGl0cyBfUFIzIG9iamVjdCB0byBiZSBw
-b3dlcmVkIG9mZi4KPj4gVGhlIEdQVSdzIEJBUnMgd2lsbCBiZSB1bmluaXRpYWxpemVkIHdoZW4g
-YSBkcml2ZXIgbGF0ZXIgcHJvYmVzIGl0Lgo+Pgo+PiBBbm90aGVyIGV4YW1wbGUgYXJlIGh5YnJp
-ZCBncmFwaGljcyBsYXB0b3BzIHdoZXJlIHRoZSBHUFUgaXRzZWxmIChyYXRoZXIKPj4gdGhhbiB0
-aGUgcm9vdCBwb3J0KSBpcyBjYXBhYmxlIG9mIHJ1bnRpbWUgc3VzcGVuZGluZyB0byBEM2NvbGQu
-ICBJZiB0aGUKPj4gR1BVJ3MgaW50ZWdyYXRlZCBIREEgY29udHJvbGxlciBpcyBub3QgYm91bmQg
-YW5kIHRoZSBHUFUncyBkcml2ZXIKPj4gZGVjaWRlcyB0byBydW50aW1lIHN1c3BlbmQgdG8gRDNj
-b2xkLCB0aGUgSERBIGNvbnRyb2xsZXIncyBCQVJzIHdpbGwgYmUKPj4gdW5pbml0aWFsaXplZCB3
-aGVuIGEgZHJpdmVyIGxhdGVyIHByb2JlcyBpdC4KPj4KPj4gRml4IGJ5IHJlc3RvcmluZyB0aGUg
-QkFScyBvbiBydW50aW1lIHJlc3VtZSBpZiB0aGUgZGV2aWNlIGlzIG5vdCBib3VuZC4KPj4gVGhp
-cyBpcyBzdWZmaWNpZW50IHRvIGZpeCB0aGUgYWJvdmUtbWVudGlvbmVkIHVzZSBjYXNlcy4gIE90
-aGVyIHVzZQo+PiBjYXNlcyBtaWdodCByZXF1aXJlIGEgZnVsbC1ibG93biBwY2lfc2F2ZV9zdGF0
-ZSgpIC8gcGNpX3Jlc3RvcmVfc3RhdGUoKQo+PiBvciBleGVjdXRpb24gb2YgZml4dXBzLiAgV2Ug
-Y2FuIGFkZCB0aGF0IG9uY2UgdXNlIGNhc2VzIG1hdGVyaWFsaXplLAo+PiBsZXQncyBub3QgaW5m
-bGF0ZSB0aGUgY29kZSB1bm5lY2Vzc2FyaWx5Lgo+Cj4gV2h5IHdvdWxkIHdlIG5vdCBkbyBhIGZ1
-bGwtYmxvd24gcmVzdG9yZT8gIFdpdGggdGhpcyBwYXRjaCwgSSB0aGluawo+IHNvbWUgY29uZmln
-dXJhdGlvbiBkb25lIGR1cmluZyBlbnVtZXJhdGlvbiwgZS5nLiwgQVNQTSBhbmQgTVBTLCB3aWxs
-Cj4gYmUgbG9zdC4gICJsc3BjaSAtdnYiIG9mIHRoZSBIREEgYmVmb3JlIGFuZCBhZnRlciB0aGUg
-c3VzcGVuZCBtYXkgc2hvdwo+IGRpZmZlcmVudCB0aGluZ3MsIHdoaWNoIHNlZW1zIGNvdW50ZXIt
-aW50dWl0aXZlLgoKUmlnaHQuCgo+IEkgd291bGRuJ3QgdGhpbmsgb2YgYSBmdWxsLWJsb3duIHJl
-c3RvcmUgYXMgImluZmxhdGluZyB0aGUgY29kZSI7IEkKPiB3b3VsZCB0aGluayBvZiBpdCBhcyAi
-aGF2aW5nIGZld2VyIHNwZWNpYWwgY2FzZXMiLCBpLmUuLCB3ZSBhbHdheXMgdXNlCj4gdGhlIHNh
-bWUgcmVzdG9yZSBwYXRoIGluc3RlYWQgb2YgaGF2aW5nIHRoZSBtYWluIG9uZSBwbHVzIGEgc3Bl
-Y2lhbAo+IG9uZSBmb3IgdW5ib3VuZCBkZXZpY2VzLgoKVGhhdCBpcyBhIGZhaXIgcG9pbnQsIGJ1
-dCBpZiB5b3UgbG9vayBhdCBwY2lfcG1fcnVudGltZV9zdXNwZW5kKCksIGl0CmRvZXNuJ3QgYWN0
-dWFsbHkgc2F2ZSBhbnl0aGluZyBmb3IgZGV2aWNlcyB3aXRob3V0IGRyaXZlcnMsIHNvIHdlJ2QK
-anVzdCByZXN0b3JlIHRoZSBvcmlnaW5hbCBpbml0aWFsIHN0YXRlIGZvciB0aGVtIGV2ZXJ5IHRp
-bWUuCgpJZiB3ZSBhcmUgdG8gcmVzdG9yZSB0aGUgZW50aXJlIHN0YXRlIG9uIHJ1bnRpbWUgcmVz
-dW1lLApwY2lfcG1fcnVudGltZV9zdXNwZW5kKCkgc2hvdWxkIGJlIGNoYW5nZWQgdG8gY2FsbCBw
-Y2lfc2F2ZV9zdGF0ZSgpCmJlZm9yZSByZXR1cm5pbmcgMCBpbiB0aGUgIWRldi0+ZHJpdmVyIGNh
-c2UgQUZBSUNTLgoKPj4gQ2M6IEJqb3JuIEhlbGdhYXMgPGJoZWxnYWFzQGdvb2dsZS5jb20+Cj4+
-IENjOiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+Cj4+IFNp
-Z25lZC1vZmYtYnk6IEx1a2FzIFd1bm5lciA8bHVrYXNAd3VubmVyLmRlPgo+PiAtLS0KPj4gIGRy
-aXZlcnMvcGNpL3BjaS1kcml2ZXIuYyB8IDggKysrKysrLS0KPj4gIGRyaXZlcnMvcGNpL3BjaS5j
-ICAgICAgICB8IDIgKy0KPj4gIGRyaXZlcnMvcGNpL3BjaS5oICAgICAgICB8IDEgKwo+PiAgMyBm
-aWxlcyBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4+Cj4+IGRpZmYg
-LS1naXQgYS9kcml2ZXJzL3BjaS9wY2ktZHJpdmVyLmMgYi9kcml2ZXJzL3BjaS9wY2ktZHJpdmVy
-LmMKPj4gaW5kZXggM2JlZDZiZWRhMDUxLi41MWIxMWNiZDQ4ZjYgMTAwNjQ0Cj4+IC0tLSBhL2Ry
-aXZlcnMvcGNpL3BjaS1kcml2ZXIuYwo+PiArKysgYi9kcml2ZXJzL3BjaS9wY2ktZHJpdmVyLmMK
-Pj4gQEAgLTEyNzcsMTAgKzEyNzcsMTQgQEAgc3RhdGljIGludCBwY2lfcG1fcnVudGltZV9yZXN1
-bWUoc3RydWN0IGRldmljZSAqZGV2KQo+Pgo+PiAgICAgICAvKgo+PiAgICAgICAgKiBJZiBwY2lf
-ZGV2LT5kcml2ZXIgaXMgbm90IHNldCAodW5ib3VuZCksIHRoZSBkZXZpY2Ugc2hvdWxkCj4+IC0g
-ICAgICAqIGFsd2F5cyByZW1haW4gaW4gRDAgcmVnYXJkbGVzcyBvZiB0aGUgcnVudGltZSBQTSBz
-dGF0dXMKPj4gKyAgICAgICogYWx3YXlzIHJlbWFpbiBpbiBEMCByZWdhcmRsZXNzIG9mIHRoZSBy
-dW50aW1lIFBNIHN0YXR1cy4KPj4gKyAgICAgICogQnV0IGlmIGl0cyBwYXJlbnQgY2FuIGdvIHRv
-IEQzY29sZCwgdGhpcyBkZXZpY2UgbWF5IGhhdmUKPj4gKyAgICAgICogYmVlbiBpbiBEM2NvbGQg
-YXMgd2VsbCBhbmQgcmVxdWlyZSByZXN0b3JhdGlvbiBvZiBpdHMgQkFScy4KPj4gICAgICAgICov
-Cj4+IC0gICAgIGlmICghcGNpX2Rldi0+ZHJpdmVyKQo+PiArICAgICBpZiAoIXBjaV9kZXYtPmRy
-aXZlcikgewo+PiArICAgICAgICAgICAgIHBjaV9yZXN0b3JlX2JhcnMocGNpX2Rldik7Cj4KPiBJ
-ZiB3ZSBkbyBkZWNpZGUgbm90IHRvIGRvIGEgZnVsbC1ibG93biByZXN0b3JlLCBob3cgZG8gd2Ug
-ZGVjaWRlCj4gd2hldGhlciB0byB1c2UgcGNpX3Jlc3RvcmVfYmFycygpIG9yIHBjaV9yZXN0b3Jl
-X2NvbmZpZ19zcGFjZSgpPwo+Cj4gSSdtIG5vdCBzdXJlIHdoeSB3ZSBoYXZlIGJvdGguCgpNZSBu
-ZWl0aGVyLgoKPiBUaGUgcGNpX3Jlc3RvcmVfYmFycygpIHBhdGggbG9va3MgYQo+IGxpdHRsZSBz
-bWFydGVyIGluIHRoYXQgaXQgaXMgbW9yZSBjYXJlZnVsIHdoZW4gdXBkYXRpbmcgNjQtYml0IEJB
-UnMKPiB0aGF0IGNhbid0IGJlIHVwZGF0ZWQgYXRvbWljYWxseS4KPgo+PiAgICAgICAgICAgICAg
-IHJldHVybiAwOwo+PiArICAgICB9Cj4+Cj4+ICAgICAgIGlmICghcG0gfHwgIXBtLT5ydW50aW1l
-X3Jlc3VtZSkKPj4gICAgICAgICAgICAgICByZXR1cm4gLUVOT1NZUzsKClNvIGlmIHBjaV9wbV9y
-dW50aW1lX3N1c3BlbmQoKSBpcyBtb2RpZmllZCB0byBjYWxsIHBjaV9zYXZlX3N0YXRlKCkKYmVm
-b3JlIHJldHVybmluZyAwIGluIHRoZSAhZGV2LT5kcml2ZXIgY2FzZSwgd2UgY2FuIGp1c3QgbW92
-ZSB0aGUKcGNpX3Jlc3RvcmVfc3RhbmRhcmRfY29uZmlnKCkgaW52b2NhdGlvbiBpbiBwY2lfcG1f
-cnVudGltZV9yZXN1bWUoKSB1cAp0byB0aGUgdmVyeSB0b3AgYW5kIGNoZWNrIGRldi0+ZHJpdmVy
-IGxhdGVyLgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpO
-b3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczov
-L2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+On 21-02-18, 10:27, Rafael J. Wysocki wrote:
+> To be precise, ->init() should fail as that's where the table is
+> created.  The registration fails as a result then.
+> 
+> But what if the bug is that ->init() doesn't fail when it should?
+> 
+> I guess the core could double check the frequency table after ->init()
+> if ->target_index is not NULL.
+> 
+> The overall point here is that if you get a negative index in
+> ->fast_switch(), that's way too late anyway and we should be able to
+> catch that error much earlier.
+
+I don't want to end up doing double checking as some of it is already
+done at init, but let me check on what can be done.
+
+-- 
+viresh
