@@ -1,78 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: scpi: invoke frequency-invariance setter function
-Date: Wed, 21 Feb 2018 09:05:51 +0530
-Message-ID: <20180221033551.GN28462@vireshk-i7>
-References: <20180220111057.14756-1-dietmar.eggemann@arm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
+ cpufreq_table_find_index_dl()
+Date: Wed, 21 Feb 2018 16:39:54 +1100
+Message-ID: <874lmasxxx.fsf@concordia.ellerman.id.au>
+References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180212102900.GU28462@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20180220111057.14756-1-dietmar.eggemann@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20180212102900.GU28462@vireshk-i7>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 20-02-18, 11:10, Dietmar Eggemann wrote:
-> Commit 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
-> changed the cpufreq driver on juno from arm_big_little to scpi.
-> 
-> The scpi set_target function does not call the frequency-invariance
-> setter function arch_set_freq_scale() like the arm_big_little set_target
-> function does. As a result the task scheduler load and utilization
-> signals are not frequency-invariant on this platform anymore.
-> 
-> Fix this by adding a call to arch_set_freq_scale() into
-> scpi_cpufreq_set_target().
-> 
-> Fixes: 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/cpufreq/scpi-cpufreq.c | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-> index c32a833e1b00..3101d4e9c2de 100644
-> --- a/drivers/cpufreq/scpi-cpufreq.c
-> +++ b/drivers/cpufreq/scpi-cpufreq.c
-> @@ -51,13 +51,19 @@ static unsigned int scpi_cpufreq_get_rate(unsigned int cpu)
->  static int
->  scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
->  {
-> +	unsigned long freq = policy->freq_table[index].frequency;
->  	struct scpi_data *priv = policy->driver_data;
-> -	u64 rate = policy->freq_table[index].frequency * 1000;
-> +	u64 rate = freq * 1000;
->  	int ret;
->  
->  	ret = clk_set_rate(priv->clk, rate);
-> -	if (!ret && (clk_get_rate(priv->clk) != rate))
-> -		ret = -EIO;
-> +	if (!ret) {
-> +		if (clk_get_rate(priv->clk) != rate)
-> +			ret = -EIO;
-> +
-> +		arch_set_freq_scale(policy->related_cpus, freq,
-> +				    policy->cpuinfo.max_freq);
-> +	}
->  
->  	return ret;
->  }
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> On 12-02-18, 15:51, Shilpasri G Bhat wrote:
+>> This patch fixes the below Coverity warning:
+>> 
+>> *** CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>> /drivers/cpufreq/powernv-cpufreq.c: 1008 in powernv_fast_switch()
+>> 1002     					unsigned int target_freq)
+>> 1003     {
+>> 1004     	int index;
+>> 1005     	struct powernv_smp_call_data freq_data;
+>> 1006
+>> 1007     	index = cpufreq_table_find_index_dl(policy, target_freq);
+>> >>>     CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>> >>>     Using variable "index" as an index to array "powernv_freqs".
+>> 1008     	freq_data.pstate_id = powernv_freqs[index].driver_data;
+>> 1009     	freq_data.gpstate_id = powernv_freqs[index].driver_data;
+>> 1010     	set_pstate(&freq_data);
+>> 1011
+>> 1012     	return powernv_freqs[index].frequency;
+>> 1013     }
+>> 
+>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> ---
+>>  drivers/cpufreq/powernv-cpufreq.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>> 
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index 29cdec1..69edfe9 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -1005,6 +1005,9 @@ static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
+>>  	struct powernv_smp_call_data freq_data;
+>>  
+>>  	index = cpufreq_table_find_index_dl(policy, target_freq);
+>> +	if (unlikely(index < 0))
+>> +		index = get_nominal_index();
+>> +
+>
+> AFAICT, you will get -1 here only if the freq table had no valid
+> frequencies (or the freq table is empty). Why would that happen ?
 
--- 
-viresh
+Bugs?
+
+Or if you ask for a target_freq that is higher than anything in the
+table.
+
+Or the API changes, and we forget to update this call site.
+
+If you're saying that cpufreq_table_find_index_dl() can NEVER fail, then
+write it so that it can never fail and change it to return unsigned int.
+
+Having it potentially return -1, which is then used to index an array
+and not handling that is just asking for bugs to happen.
+
+cheers
