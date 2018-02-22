@@ -1,125 +1,49 @@
-From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
- calls with runtime suppliers
-Date: Thu, 22 Feb 2018 17:13:56 +0900
-Message-ID: <CAAFQd5CQoDqunAunwoVo7W=QXa=ET=eJ2s_j9j+3YgAR2EGgCg@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
- <CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
- <CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
- <CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
- <CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
- <CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
- <CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg@mail.gmail.com>
- <CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg@mail.gmail.com>
- <CAAFQd5DiwAugGnPOTw0+XrEfef9x-n-vx59JFuXpNawjiXHwCw@mail.gmail.com>
- <CAFp+6iEW0faeHDfzN_F1bRrHGcVo3sPCk4HSY=t9dnEvHkDkYw@mail.gmail.com>
- <b003ecda-1cbe-4e5f-872b-107154ac40e5@arm.com>
- <CAAFQd5AmG1zSm+CouXOCJbs8SNGFk1-RqfU1nWGjMGJMB-qfvw@mail.gmail.com>
- <CAAFQd5A9B-di9svtiJbvk2hz1U1xo61rTY5vt6AD+KR5iMcG-A@mail.gmail.com>
- <7406f1ce-c2c9-a6bd-2886-5a34de45add6@arm.com>
- <CAAFQd5DkLtq2w00=Zd4sMDB4QOWqi7R-zgydECJXLdTmaHty+g@mail.gmail.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v5 19/20] cpufreq: add support for CPU DVFS based on SCMI
+ message protocol
+Date: Thu, 22 Feb 2018 09:04:04 +0000
+Message-ID: <20180222085936.GA2290@e108498-lin.cambridge.arm.com>
+References: <1518461124-17371-1-git-send-email-sudeep.holla@arm.com>
+ <1518461124-17371-20-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAAFQd5DkLtq2w00=Zd4sMDB4QOWqi7R-zgydECJXLdTmaHty+g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1518461124-17371-20-git-send-email-sudeep.holla@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: DTML <devicetree@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Alexey Klimov <klimov.linux@gmail.com>, ALKML <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBGZWIgMTYsIDIwMTggYXQgOToxMyBBTSwgVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9t
-aXVtLm9yZz4gd3JvdGU6Cj4gT24gRnJpLCBGZWIgMTYsIDIwMTggYXQgMjoxNCBBTSwgUm9iaW4g
-TXVycGh5IDxyb2Jpbi5tdXJwaHlAYXJtLmNvbT4gd3JvdGU6Cj4+IE9uIDE1LzAyLzE4IDA0OjE3
-LCBUb21hc3ogRmlnYSB3cm90ZToKPj4gWy4uLl0KPj4+Pgo+Pj4+IENvdWxkIHlvdSBlbGFib3Jh
-dGUgb24gd2hhdCBraW5kIG9mIGxvY2tpbmcgeW91IGFyZSBjb25jZXJuZWQgYWJvdXQ/Cj4+Pj4g
-QXMgSSBleHBsYWluZWQgYmVmb3JlLCB0aGUgbm9ybWFsbHkgaGFwcGVuaW5nIGZhc3QgcGF0aCB3
-b3VsZCBsb2NrCj4+Pj4gZGV2LT5wb3dlcl9sb2NrIG9ubHkgZm9yIHRoZSBicmllZiBtb21lbnQg
-b2YgaW5jcmVtZW50aW5nIHRoZSBydW50aW1lCj4+Pj4gUE0gdXNhZ2UgY291bnRlci4KPj4+Cj4+
-Pgo+Pj4gTXkgYmFkLCB0aGF0J3Mgbm90IGV2ZW4gaXQuCj4+Pgo+Pj4gVGhlIGF0b21pYyB1c2Fn
-ZSBjb3VudGVyIGlzIGluY3JlbWVudGVkIGJlZm9yZWhhbmRzLCB3aXRob3V0IGFueQo+Pj4gbG9j
-a2luZyBbMV0gYW5kIHRoZSBzcGlubG9jayBpcyBhY3F1aXJlZCBvbmx5IGZvciB0aGUgc2FrZSBv
-Zgo+Pj4gdmFsaWRhdGluZyB0aGF0IGRldmljZSdzIHJ1bnRpbWUgUE0gc3RhdGUgcmVtYWluZWQg
-dmFsaWQgaW5kZWVkIFsyXSwKPj4+IHdoaWNoIHdvdWxkIGJlIHRoZSBjYXNlIGluIHRoZSBmYXN0
-IHBhdGggb2YgdGhlIHNhbWUgZHJpdmVyIGRvaW5nIHR3bwo+Pj4gbWFwcGluZ3MgaW4gcGFyYWxs
-ZWwsIHdpdGggdGhlIG1hc3RlciBwb3dlcmVkIG9uIChhbmQgc28gdGhlIFNNTVUsCj4+PiB0aHJv
-dWdoIGRldmljZSBsaW5rczsgaWYgbWFzdGVyIHdhcyBub3QgcG93ZXJlZCBvbiBhbHJlYWR5LCBw
-b3dlcmluZwo+Pj4gb24gdGhlIFNNTVUgaXMgdW5hdm9pZGFibGUgYW55d2F5IGFuZCBpdCB3b3Vs
-ZCBhZGQgbXVjaCBtb3JlIGxhdGVuY3kKPj4+IHRoYW4gdGhlIHNwaW5sb2NrIGl0c2VsZikuCj4+
-Cj4+Cj4+IFdlIG5vdyBoYXZlIG5vIGxvY2tpbmcgYXQgYWxsIGluIHRoZSBtYXAgcGF0aCwgYW5k
-IG9ubHkgYSBwZXItZG9tYWluIGxvY2sKPj4gYXJvdW5kIFRMQiBzeW5jIGluIHVubWFwIHdoaWNo
-IGlzIHVuZm9ydHVuYXRlbHkgbmVjZXNzYXJ5IGZvciBjb3JyZWN0bmVzczsKPj4gdGhlIGxhdHRl
-ciBpc24ndCB0b28gdGVycmlibGUsIHNpbmNlIGluICJzZXJpb3VzIiBoYXJkd2FyZSBpdCBzaG91
-bGQgb25seSBiZQo+PiBzZXJpYWxpc2luZyBhIGZldyBjcHVzIHNlcnZpbmcgdGhlIHNhbWUgZGV2
-aWNlIGFnYWluc3QgZWFjaCBvdGhlciAoZS5nLiBmb3IKPj4gbXVsdGlwbGUgcXVldWVzIG9uIGEg
-c2luZ2xlIE5JQykuCj4+Cj4+IFB1dHRpbmcgaW4gYSBnbG9iYWwgbG9jayB3aGljaCBzZXJpYWxp
-c2VzICphbGwqIGNvbmN1cnJlbnQgbWFwIGFuZCB1bm1hcAo+PiBjYWxscyBmb3IgKmFsbCogdW5y
-ZWxhdGVkIGRldmljZXMgbWFrZXMgdGhpbmdzIHdvcnNlLiBQZXJpb2QuIEV2ZW4gaWYgdGhlCj4+
-IGxvY2sgaXRzZWxmIHdlcmUgaGVsZCBmb3IgdGhlIG1pbmltdW0gcG9zc2libGUgdGltZSwgaS5l
-LiB0cml2aWFsbHkKPj4gInNwaW5fbG9jaygmbG9jayk7IHNwaW5fdW5sb2NrKCZsb2NrKSIsIHRo
-ZSBjb3N0IG9mIHJlcGVhdGVkbHkgYm91bmNpbmcgdGhhdAo+PiBvbmUgY2FjaGUgbGluZSBhcm91
-bmQgYmV0d2VlbiA5NiBDUFVzIGFjcm9zcyB0d28gc29ja2V0cyBpcyBub3QgbmVnbGlnaWJsZS4K
-Pgo+IEZhaXIgZW5vdWdoLiBOb3RlIHRoYXQgd2UncmUgaW4gYSBxdWl0ZSBpbnRlcmVzdGluZyBz
-aXR1YXRpb24gbm93Ogo+ICBhKSBXZSBuZWVkIHRvIGhhdmUgcnVudGltZSBQTSBlbmFibGVkIG9u
-IFF1YWxjb21tIFNvQyB0byBoYXZlIHBvd2VyCj4gcHJvcGVybHkgbWFuYWdlZCwKPiAgYikgV2Ug
-bmVlZCB0byBoYXZlIGxvY2stZnJlZSBtYXAvdW5tYXAgb24gc3VjaCBkaXN0cmlidXRlZCBzeXN0
-ZW1zLAo+ICBjKSBJZiBydW50aW1lIFBNIGlzIGVuYWJsZWQsIHdlIG5lZWQgdG8gY2FsbCBpbnRv
-IHJ1bnRpbWUgUE0gZnJvbSBhbnkKPiBjb2RlIHRoYXQgZG9lcyBoYXJkd2FyZSBhY2Nlc3Nlcywg
-b3RoZXJ3aXNlIHRoZSBJT01NVSBBUEkgKGFuZCBzbyBETUEKPiBBUEkgYW5kIHRoZW4gYW55IFY0
-TDIgZHJpdmVyKSBiZWNvbWVzIHVudXNhYmxlLgo+Cj4gSSBjYW4gc2VlIG9uZSBtb3JlIHdheSB0
-aGF0IGNvdWxkIHBvdGVudGlhbGx5IGxldCB1cyBoYXZlIGFsbCB0aGUKPiB0aHJlZS4gSG93IGFi
-b3V0IGVuYWJsaW5nIHJ1bnRpbWUgUE0gb25seSBvbiBzZWxlY3RlZCBpbXBsZW1lbnRhdGlvbnMK
-PiAoZS5nLiBxY29tLHNtbXUpIGFuZCB0aGVuIGhhdmluZyBhbGwgdGhlIHJ1bnRpbWUgUE0gY2Fs
-bHMgc3Vycm91bmRlZAo+IHdpdGggaWYgKHBtX3J1bnRpbWVfZW5hYmxlZCgpKSwgd2hpY2ggaXMg
-bG9ja2xlc3M/Cj4KClNvcnJ5IGZvciBwaW5naW5nLCBidXQgYW55IG9waW5pb24gb24gdGhpcyBr
-aW5kIG9mIGFwcHJvYWNoPwoKQmVzdCByZWdhcmRzLApUb21hc3oKCj4+Cj4+PiBbMV0KPj4+IGh0
-dHA6Ly9lbGl4aXIuZnJlZS1lbGVjdHJvbnMuY29tL2xpbnV4L3Y0LjE2LXJjMS9zb3VyY2UvZHJp
-dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYyNMMTAyOAo+Pj4gWzJdCj4+PiBodHRwOi8vZWxpeGly
-LmZyZWUtZWxlY3Ryb25zLmNvbS9saW51eC92NC4xNi1yYzEvc291cmNlL2RyaXZlcnMvYmFzZS9w
-b3dlci9ydW50aW1lLmMjTDYxMwo+Pj4KPj4+IEluIGFueSBjYXNlLCBJIGNhbid0IGltYWdpbmUg
-dGhpcyB3b3JraW5nIHdpdGggVjRMMiBvciBhbnl0aGluZyBlbHNlCj4+PiByZWx5aW5nIG9uIGFu
-eSBtZW1vcnkgbWFuYWdlbWVudCBtb3JlIGdlbmVyaWMgdGhhbiBjYWxsaW5nIElPTU1VIEFQSQo+
-Pj4gZGlyZWN0bHkgZnJvbSB0aGUgZHJpdmVyLCB3aXRoIHRoZSBJT01NVSBkZXZpY2UgaGF2aW5n
-IHJ1bnRpbWUgUE0KPj4+IGVuYWJsZWQsIGJ1dCB3aXRob3V0IG1hbmFnaW5nIHRoZSBydW50aW1l
-IFBNIGZyb20gdGhlIElPTU1VIGRyaXZlcidzCj4+PiBjYWxsYmFja3MgdGhhdCBuZWVkIGFjY2Vz
-cyB0byB0aGUgaGFyZHdhcmUuIEFzIEkgbWVudGlvbmVkIGJlZm9yZSwKPj4+IG9ubHkgdGhlIElP
-TU1VIGRyaXZlciBrbm93cyB3aGVuIGV4YWN0bHkgdGhlIHJlYWwgaGFyZHdhcmUgYWNjZXNzCj4+
-PiBuZWVkcyB0byBiZSBkb25lIChlLmcuIFJvY2tjaGlwL0V4eW5vcyBkb24ndCBuZWVkIHRvIGRv
-IHRoYXQgZm9yCj4+PiBtYXAvdW5tYXAgaWYgdGhlIHBvd2VyIGlzIGRvd24sIGJ1dCBzb21lIGlt
-cGxlbWVudGF0aW9ucyBvZiBTTU1VIHdpdGgKPj4+IFRMQiBwb3dlcmVkIHNlcGFyYXRlbHkgbWln
-aHQgbmVlZCB0byBkbyBzbykuCj4+Cj4+Cj4+IEl0J3Mgd29ydGggbm90aW5nIHRoYXQgRXh5bm9z
-IGFuZCBSb2NrY2hpcCBhcmUgcmVsYXRpdmVseSBzbWFsbAo+PiBzZWxmLWNvbnRhaW5lZCBJUCBi
-bG9ja3MgaW50ZWdyYXRlZCBjbG9zZWx5IHdpdGggdGhlIGludGVyZmFjZXMgb2YgdGhlaXIKPj4g
-cmVsZXZhbnQgbWFzdGVyIGRldmljZXM7IFNNTVUgaXMgYW4gYXJjaGl0ZWN0dXJlLCBpbXBsZW1l
-bnRhdGlvbnMgb2Ygd2hpY2gKPj4gbWF5IGJlIGxhcmdlLCBkaXN0cmlidXRlZCwgYW5kIGhhdmUg
-Y29tcGxleCBhbmQgd2lsZGx5IGRpZmZlcmluZyBpbnRlcm5hbAo+PiB0b3BvbG9naWVzLiBBcyBz
-dWNoLCBpdCdzIGEgbG90IGhhcmRlciB0byBtYWtlIGhhcmR3YXJlLXNwZWNpZmljIGFzc3VtcHRp
-b25zCj4+IGFuZC9vciBiZSBjb3JyZWN0IGZvciBhbGwgcG9zc2libGUgY2FzZXMuCj4+Cj4+IERv
-bid0IGdldCBtZSB3cm9uZywgSSBkbyB1bHRpbWF0ZWx5IGFncmVlIHRoYXQgdGhlIElPTU1VIGRy
-aXZlciBpcyB0aGUgb25seQo+PiBhZ2VudCB3aG8gdWx0aW1hdGVseSBrbm93cyB3aGF0IGNhbGxz
-IGFyZSBnb2luZyB0byBiZSBuZWNlc3NhcnkgZm9yIHdoYXRldmVyCj4+IG9wZXJhdGlvbiBpdCdz
-IHBlcmZvcm1pbmcgb24gaXRzIG93biBoYXJkd2FyZSo7IGl0J3MganVzdCB0aGF0IGZvciBTTU1V
-IGl0Cj4+IG5lZWRzIHRvIGJlIGltcGxlbWVudGVkIGluIGEgd2F5IHRoYXQgaGFzIHplcm8gaW1w
-YWN0IG9uIHRoZSBjYXNlcyB3aGVyZSBpdAo+PiBkb2Vzbid0IG1hdHRlciwgYmVjYXVzZSBpdCdz
-IG5vdCB2aWFibGUgdG8gc3BlY2lhbGlzZSB0aGF0IGRyaXZlciBmb3IgYW55Cj4+IHBhcnRpY3Vs
-YXIgSVAgaW1wbGVtZW50YXRpb24vdXNlLWNhc2UuCj4KPiBTdGlsbCwgZXhhY3RseSB0aGUgc2Ft
-ZSBob2xkcyBmb3IgdGhlIGxvdyBwb3dlciBlbWJlZGRlZCB1c2UgY2FzZXMsCj4gd2hlcmUgd2Ug
-c3RyaXZlIGZvciB0aGUgbG93ZXN0IHBvc3NpYmxlIHBvd2VyIGNvbnN1bXB0aW9uLCB3aGlsZQo+
-IG1haW50YWluaW5nIHBlcmZvcm1hbmNlIGxldmVscyBoaWdoIGFzIHdlbGwuIEFuZCBzbyB0aGUg
-U01NVSBjb2RlIGlzCj4gZXhwZWN0ZWQgdG8gYWxzbyB3b3JrIHdpdGggb3VyIHVzZSBjYXNlcywg
-c3VjaCBhcyBWNEwyIG9yIERSTSBkcml2ZXJzLgo+IFNpbmNlIHRoZXNlIHBvaW50cyBkb24ndCBo
-b2xkIGZvciBjdXJyZW50IFNNTVUgY29kZSwgSSBjb3VsZCBzYXkgdGhhdAo+IHRoZSBpdCBoYXMg
-YmVlbiBhbHJlYWR5IHNwZWNpYWxpemVkIGZvciBsYXJnZSwgZGlzdHJpYnV0ZWQKPiBpbXBsZW1l
-bnRhdGlvbnMuCj4KPiBCZXN0IHJlZ2FyZHMsCj4gVG9tYXN6Cl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRy
-ZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+Hi Sudeep,
+
+On Monday 12 Feb 2018 at 18:45:23 (+0000), Sudeep Holla wrote:
+[...]
+> +/*
+> + * perf_ops->freq_set is not a synchronous, the actual OPP change will
+> + * happen asynchronously and can get notified if the events are
+> + * subscribed for by the SCMI firmware
+> + */
+> +static int
+> +scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+> +{
+> +	struct scmi_data *priv = policy->driver_data;
+> +	struct scmi_perf_ops *perf_ops = handle->perf_ops;
+> +	u64 freq = policy->freq_table[index].frequency * 1000;
+> +
+> +	return perf_ops->freq_set(handle, priv->domain_id, freq, false);
+> +}
+
+Is arch_set_freq_scale() needed in this function ?
+
+Thanks,
+Quentin
