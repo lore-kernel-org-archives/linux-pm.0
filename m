@@ -1,92 +1,95 @@
-From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/7] PCI: Make pci_wakeup_bus() &
- pci_bus_set_current_state() public
-Date: Thu, 22 Feb 2018 11:45:11 -0600
-Message-ID: <20180222174511.GA16519@bhelgaas-glaptop.roam.corp.google.com>
-References: <cover.1518941072.git.lukas@wunner.de>
- <9d36522bc3d7e0ed1c1d5f653514d9fb0d34c0a8.1518941073.git.lukas@wunner.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: scpi: invoke frequency-invariance setter function
+Date: Thu, 22 Feb 2018 23:27:45 +0100
+Message-ID: <CAJZ5v0hB+Uk8SNVqUH3fr1y0SXbY1Rd26b84P-8PPV8FiPbnWw@mail.gmail.com>
+References: <20180220111057.14756-1-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <9d36522bc3d7e0ed1c1d5f653514d9fb0d34c0a8.1518941073.git.lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180220111057.14756-1-dietmar.eggemann@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBGZWIgMTgsIDIwMTggYXQgMDk6Mzg6MzJBTSArMDEwMCwgTHVrYXMgV3VubmVyIHdy
-b3RlOgo+IFRoZXJlIGFyZSBQQ0kgZGV2aWNlcyB3aGljaCBhcmUgcG93ZXItbWFuYWdlYWJsZSBi
-eSBhIG5vbnN0YW5kYXJkIG1lYW5zLAo+IHN1Y2ggYXMgYSBjdXN0b20gQUNQSSBtZXRob2QuICBP
-bmUgZXhhbXBsZSBhcmUgZGlzY3JldGUgR1BVcyBpbiBoeWJyaWQKPiBncmFwaGljcyBsYXB0b3Bz
-LCBhbm90aGVyIGFyZSBUaHVuZGVyYm9sdCBjb250cm9sbGVycyBpbiBNYWNzLgo+IAo+IFN1Y2gg
-ZGV2aWNlcyBjYW4ndCBiZSBwdXQgaW50byBEM2NvbGQgd2l0aCBwY2lfc2V0X3Bvd2VyX3N0YXRl
-KCkgYmVjYXVzZQo+IHBjaV9wbGF0Zm9ybV9wb3dlcl90cmFuc2l0aW9uKCkgZmFpbHMgd2l0aCAt
-RU5PREVWLiAgSW5zdGVhZCB0aGV5J3JlIHB1dAo+IGludG8gRDNob3QgYnkgcGNpX3NldF9wb3dl
-cl9zdGF0ZSgpIGFuZCBzdWJzZXF1ZW50bHkgaW50byBEM2NvbGQgYnkKPiBpbnZva2luZyB0aGUg
-bm9uc3RhbmRhcmQgbWVhbnMuICBIb3dldmVyIGFzIGEgY29uc2VxdWVuY2UgdGhlIGNhY2hlZAo+
-IGN1cnJlbnRfc3RhdGUgaXMgaW5jb3JyZWN0bHkgbGVmdCBhdCBEM2hvdC4KPiAKPiBXaGF0IHdl
-IG5lZWQgdG8gZG8gaXMgd2FsayB0aGUgaGllcmFyY2h5IGJlbG93IHN1Y2ggYSBQQ0kgZGV2aWNl
-IG9uCj4gcG93ZXJkb3duIGFuZCB1cGRhdGUgdGhlIGN1cnJlbnRfc3RhdGUgdG8gRDNjb2xkLiAg
-T24gcG93ZXJ1cCB0aGUgUENJCj4gZGV2aWNlIGl0c2VsZiBhbmQgdGhlIGhpZXJhcmNoeSBiZWxv
-dyBpdCBpcyBpbiBEMHVuaW5pdGlhbGl6ZWQsIHNvIHdlCj4gbmVlZCB0byB3YWxrIHRoZSBoaWVy
-YXJjaHkgYWdhaW4gYW5kIHdha2UgYWxsIGRldmljZXMsIGNhdXNpbmcgdGhlbSB0bwo+IGJlIHB1
-dCBpbnRvIEQwYWN0aXZlIGFuZCB0aGVuIGxldHRpbmcgdGhlbSBhdXRvc3VzcGVuZCBhcyB0aGV5
-IHNlZSBmaXQuCj4gCj4gVG8gdGhpcyBlbmQgbWFrZSBwY2lfd2FrZXVwX2J1cygpICYgcGNpX2J1
-c19zZXRfY3VycmVudF9zdGF0ZSgpIHB1YmxpYwo+IHNvIFBDSSBkcml2ZXJzIGRvbid0IGhhdmUg
-dG8gcmVpbnZlbnQgdGhlIHdoZWVsLgo+IAo+IENjOiBCam9ybiBIZWxnYWFzIDxiaGVsZ2Fhc0Bn
-b29nbGUuY29tPgo+IENjOiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRl
-bC5jb20+Cj4gU2lnbmVkLW9mZi1ieTogTHVrYXMgV3VubmVyIDxsdWthc0B3dW5uZXIuZGU+CgpB
-Y2tlZC1ieTogQmpvcm4gSGVsZ2FhcyA8YmhlbGdhYXNAZ29vZ2xlLmNvbT4KCj4gLS0tCj4gIGRy
-aXZlcnMvcGNpL3BjaS5jICAgfCA4ICsrKystLS0tCj4gIGluY2x1ZGUvbGludXgvcGNpLmggfCAy
-ICsrCj4gIDIgZmlsZXMgY2hhbmdlZCwgNiBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQo+
-IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCj4g
-aW5kZXggZjY5NDY1MDIzNWYyLi42ZTZlMzIyYTVhN2QgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9w
-Y2kvcGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBAIC04MDAsNyArODAwLDcgQEAg
-c3RhdGljIGludCBwY2lfd2FrZXVwKHN0cnVjdCBwY2lfZGV2ICpwY2lfZGV2LCB2b2lkICppZ24p
-Cj4gICAqIHBjaV93YWtldXBfYnVzIC0gV2FsayBnaXZlbiBidXMgYW5kIHdha2UgdXAgZGV2aWNl
-cyBvbiBpdAo+ICAgKiBAYnVzOiBUb3AgYnVzIG9mIHRoZSBzdWJ0cmVlIHRvIHdhbGsuCj4gICAq
-Lwo+IC1zdGF0aWMgdm9pZCBwY2lfd2FrZXVwX2J1cyhzdHJ1Y3QgcGNpX2J1cyAqYnVzKQo+ICt2
-b2lkIHBjaV93YWtldXBfYnVzKHN0cnVjdCBwY2lfYnVzICpidXMpCj4gIHsKPiAgCWlmIChidXMp
-Cj4gIAkJcGNpX3dhbGtfYnVzKGJ1cywgcGNpX3dha2V1cCwgTlVMTCk7Cj4gQEAgLTg1MCwxMSAr
-ODUwLDExIEBAIHN0YXRpYyBpbnQgX19wY2lfZGV2X3NldF9jdXJyZW50X3N0YXRlKHN0cnVjdCBw
-Y2lfZGV2ICpkZXYsIHZvaWQgKmRhdGEpCj4gIH0KPiAgCj4gIC8qKgo+IC0gKiBfX3BjaV9idXNf
-c2V0X2N1cnJlbnRfc3RhdGUgLSBXYWxrIGdpdmVuIGJ1cyBhbmQgc2V0IGN1cnJlbnQgc3RhdGUg
-b2YgZGV2aWNlcwo+ICsgKiBwY2lfYnVzX3NldF9jdXJyZW50X3N0YXRlIC0gV2FsayBnaXZlbiBi
-dXMgYW5kIHNldCBjdXJyZW50IHN0YXRlIG9mIGRldmljZXMKPiAgICogQGJ1czogVG9wIGJ1cyBv
-ZiB0aGUgc3VidHJlZSB0byB3YWxrLgo+ICAgKiBAc3RhdGU6IHN0YXRlIHRvIGJlIHNldAo+ICAg
-Ki8KPiAtc3RhdGljIHZvaWQgX19wY2lfYnVzX3NldF9jdXJyZW50X3N0YXRlKHN0cnVjdCBwY2lf
-YnVzICpidXMsIHBjaV9wb3dlcl90IHN0YXRlKQo+ICt2b2lkIHBjaV9idXNfc2V0X2N1cnJlbnRf
-c3RhdGUoc3RydWN0IHBjaV9idXMgKmJ1cywgcGNpX3Bvd2VyX3Qgc3RhdGUpCj4gIHsKPiAgCWlm
-IChidXMpCj4gIAkJcGNpX3dhbGtfYnVzKGJ1cywgX19wY2lfZGV2X3NldF9jdXJyZW50X3N0YXRl
-LCAmc3RhdGUpOwo+IEBAIC04NzYsNyArODc2LDcgQEAgaW50IF9fcGNpX2NvbXBsZXRlX3Bvd2Vy
-X3RyYW5zaXRpb24oc3RydWN0IHBjaV9kZXYgKmRldiwgcGNpX3Bvd2VyX3Qgc3RhdGUpCj4gIAly
-ZXQgPSBwY2lfcGxhdGZvcm1fcG93ZXJfdHJhbnNpdGlvbihkZXYsIHN0YXRlKTsKPiAgCS8qIFBv
-d2VyIG9mZiB0aGUgYnJpZGdlIG1heSBwb3dlciBvZmYgdGhlIHdob2xlIGhpZXJhcmNoeSAqLwo+
-ICAJaWYgKCFyZXQgJiYgc3RhdGUgPT0gUENJX0QzY29sZCkKPiAtCQlfX3BjaV9idXNfc2V0X2N1
-cnJlbnRfc3RhdGUoZGV2LT5zdWJvcmRpbmF0ZSwgUENJX0QzY29sZCk7Cj4gKwkJcGNpX2J1c19z
-ZXRfY3VycmVudF9zdGF0ZShkZXYtPnN1Ym9yZGluYXRlLCBQQ0lfRDNjb2xkKTsKPiAgCXJldHVy
-biByZXQ7Cj4gIH0KPiAgRVhQT1JUX1NZTUJPTF9HUEwoX19wY2lfY29tcGxldGVfcG93ZXJfdHJh
-bnNpdGlvbik7Cj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvcGNpLmggYi9pbmNsdWRlL2xp
-bnV4L3BjaS5oCj4gaW5kZXggMDI0YTFiZWRhMDA4Li5hZTQyMjg5NjYyZGYgMTAwNjQ0Cj4gLS0t
-IGEvaW5jbHVkZS9saW51eC9wY2kuaAo+ICsrKyBiL2luY2x1ZGUvbGludXgvcGNpLmgKPiBAQCAt
-MTE0Nyw2ICsxMTQ3LDggQEAgdm9pZCBwY2lfcG1lX3dha2V1cF9idXMoc3RydWN0IHBjaV9idXMg
-KmJ1cyk7Cj4gIHZvaWQgcGNpX2QzY29sZF9lbmFibGUoc3RydWN0IHBjaV9kZXYgKmRldik7Cj4g
-IHZvaWQgcGNpX2QzY29sZF9kaXNhYmxlKHN0cnVjdCBwY2lfZGV2ICpkZXYpOwo+ICBib29sIHBj
-aWVfcmVsYXhlZF9vcmRlcmluZ19lbmFibGVkKHN0cnVjdCBwY2lfZGV2ICpkZXYpOwo+ICt2b2lk
-IHBjaV93YWtldXBfYnVzKHN0cnVjdCBwY2lfYnVzICpidXMpOwo+ICt2b2lkIHBjaV9idXNfc2V0
-X2N1cnJlbnRfc3RhdGUoc3RydWN0IHBjaV9idXMgKmJ1cywgcGNpX3Bvd2VyX3Qgc3RhdGUpOwo+
-ICAKPiAgLyogUENJIFZpcnR1YWwgQ2hhbm5lbCAqLwo+ICBpbnQgcGNpX3NhdmVfdmNfc3RhdGUo
-c3RydWN0IHBjaV9kZXYgKmRldik7Cj4gLS0gCj4gMi4xNS4xCj4gCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZl
-YXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21h
-aWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
+On Tue, Feb 20, 2018 at 12:10 PM, Dietmar Eggemann
+<dietmar.eggemann@arm.com> wrote:
+> Commit 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
+> changed the cpufreq driver on juno from arm_big_little to scpi.
+>
+> The scpi set_target function does not call the frequency-invariance
+> setter function arch_set_freq_scale() like the arm_big_little set_target
+> function does. As a result the task scheduler load and utilization
+> signals are not frequency-invariant on this platform anymore.
+>
+> Fix this by adding a call to arch_set_freq_scale() into
+> scpi_cpufreq_set_target().
+>
+> Fixes: 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+
+This is really minor, but I would reorder this slightly.
+
+> ---
+>  drivers/cpufreq/scpi-cpufreq.c | 12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+> index c32a833e1b00..3101d4e9c2de 100644
+> --- a/drivers/cpufreq/scpi-cpufreq.c
+> +++ b/drivers/cpufreq/scpi-cpufreq.c
+> @@ -51,13 +51,19 @@ static unsigned int scpi_cpufreq_get_rate(unsigned int cpu)
+>  static int
+>  scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  {
+> +       unsigned long freq = policy->freq_table[index].frequency;
+>         struct scpi_data *priv = policy->driver_data;
+> -       u64 rate = policy->freq_table[index].frequency * 1000;
+> +       u64 rate = freq * 1000;
+>         int ret;
+>
+>         ret = clk_set_rate(priv->clk, rate);
+> -       if (!ret && (clk_get_rate(priv->clk) != rate))
+> -               ret = -EIO;
+> +       if (!ret) {
+
+I would do:
+
+if (ret)
+        return ret;
+
+arch_set_freq_scale(policy->related_cpus, freq, policy->cpuinfo.max_freq);
+
+if (clk_get_rate(priv->clk) != rate)
+        return -EIO;
+
+return 0;
+
+That's somewhat easier to follow for me.
+
+> +               if (clk_get_rate(priv->clk) != rate)
+> +                       ret = -EIO;
+> +
+> +               arch_set_freq_scale(policy->related_cpus, freq,
+> +                                   policy->cpuinfo.max_freq);
+> +       }
+>
+>         return ret;
+>  }
+> --
+
+I also am not sure why you want to call arch_set_freq_scale() even if
+the new clock rate didn't stick.
