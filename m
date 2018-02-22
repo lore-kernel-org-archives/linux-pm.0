@@ -1,95 +1,86 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: scpi: invoke frequency-invariance setter function
-Date: Thu, 22 Feb 2018 23:27:45 +0100
-Message-ID: <CAJZ5v0hB+Uk8SNVqUH3fr1y0SXbY1Rd26b84P-8PPV8FiPbnWw@mail.gmail.com>
-References: <20180220111057.14756-1-dietmar.eggemann@arm.com>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v7 3/6] iommu/arm-smmu: Invoke pm_runtime
+ during probe, add/remove device
+Date: Thu, 22 Feb 2018 16:52:00 -0700
+Message-ID: <20180222235200.GA18743@jcrouse-lnx.qualcomm.com>
+References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
+ <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180220111057.14756-1-dietmar.eggemann@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1517999482-17317-4-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 20, 2018 at 12:10 PM, Dietmar Eggemann
-<dietmar.eggemann@arm.com> wrote:
-> Commit 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
-> changed the cpufreq driver on juno from arm_big_little to scpi.
->
-> The scpi set_target function does not call the frequency-invariance
-> setter function arch_set_freq_scale() like the arm_big_little set_target
-> function does. As a result the task scheduler load and utilization
-> signals are not frequency-invariant on this platform anymore.
->
-> Fix this by adding a call to arch_set_freq_scale() into
-> scpi_cpufreq_set_target().
->
-> Fixes: 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-
-This is really minor, but I would reorder this slightly.
-
-> ---
->  drivers/cpufreq/scpi-cpufreq.c | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-> index c32a833e1b00..3101d4e9c2de 100644
-> --- a/drivers/cpufreq/scpi-cpufreq.c
-> +++ b/drivers/cpufreq/scpi-cpufreq.c
-> @@ -51,13 +51,19 @@ static unsigned int scpi_cpufreq_get_rate(unsigned int cpu)
->  static int
->  scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
->  {
-> +       unsigned long freq = policy->freq_table[index].frequency;
->         struct scpi_data *priv = policy->driver_data;
-> -       u64 rate = policy->freq_table[index].frequency * 1000;
-> +       u64 rate = freq * 1000;
->         int ret;
->
->         ret = clk_set_rate(priv->clk, rate);
-> -       if (!ret && (clk_get_rate(priv->clk) != rate))
-> -               ret = -EIO;
-> +       if (!ret) {
-
-I would do:
-
-if (ret)
-        return ret;
-
-arch_set_freq_scale(policy->related_cpus, freq, policy->cpuinfo.max_freq);
-
-if (clk_get_rate(priv->clk) != rate)
-        return -EIO;
-
-return 0;
-
-That's somewhat easier to follow for me.
-
-> +               if (clk_get_rate(priv->clk) != rate)
-> +                       ret = -EIO;
-> +
-> +               arch_set_freq_scale(policy->related_cpus, freq,
-> +                                   policy->cpuinfo.max_freq);
-> +       }
->
->         return ret;
->  }
-> --
-
-I also am not sure why you want to call arch_set_freq_scale() even if
-the new clock rate didn't stick.
+T24gV2VkLCBGZWIgMDcsIDIwMTggYXQgMDQ6MDE6MTlQTSArMDUzMCwgVml2ZWsgR2F1dGFtIHdy
+b3RlOgo+IEZyb206IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4gCj4g
+VGhlIHNtbXUgZGV2aWNlIHByb2JlL3JlbW92ZSBhbmQgYWRkL3JlbW92ZSBtYXN0ZXIgZGV2aWNl
+IGNhbGxiYWNrcwo+IGdldHMgY2FsbGVkIHdoZW4gdGhlIHNtbXUgaXMgbm90IGxpbmtlZCB0byBp
+dHMgbWFzdGVyLCB0aGF0IGlzIHdpdGhvdXQKPiB0aGUgY29udGV4dCBvZiB0aGUgbWFzdGVyIGRl
+dmljZS4gU28gY2FsbGluZyBydW50aW1lIGFwaXMgaW4gdGhvc2UgcGxhY2VzCj4gc2VwYXJhdGVs
+eS4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEu
+b3JnPgo+IFt2aXZlazogQ2xlYW51cCBwbSBydW50aW1lIGNhbGxzXQo+IFNpZ25lZC1vZmYtYnk6
+IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPgo+IC0tLQo+ICBkcml2
+ZXJzL2lvbW11L2FybS1zbW11LmMgfCA0MiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKy0tLS0KPiAgMSBmaWxlIGNoYW5nZWQsIDM4IGluc2VydGlvbnMoKyksIDQgZGVsZXRp
+b25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZl
+cnMvaW9tbXUvYXJtLXNtbXUuYwo+IGluZGV4IDllMmY5MTdlMTZjMi4uYzAyNGY2OWMxNjgyIDEw
+MDY0NAo+IC0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+ICsrKyBiL2RyaXZlcnMvaW9t
+bXUvYXJtLXNtbXUuYwo+IEBAIC05MTMsMTEgKzkxMywxNSBAQCBzdGF0aWMgdm9pZCBhcm1fc21t
+dV9kZXN0cm95X2RvbWFpbl9jb250ZXh0KHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbikKPiAg
+CXN0cnVjdCBhcm1fc21tdV9kb21haW4gKnNtbXVfZG9tYWluID0gdG9fc21tdV9kb21haW4oZG9t
+YWluKTsKPiAgCXN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUgPSBzbW11X2RvbWFpbi0+c21t
+dTsKPiAgCXN0cnVjdCBhcm1fc21tdV9jZmcgKmNmZyA9ICZzbW11X2RvbWFpbi0+Y2ZnOwo+IC0J
+aW50IGlycTsKPiArCWludCByZXQsIGlycTsKPiAgCj4gIAlpZiAoIXNtbXUgfHwgZG9tYWluLT50
+eXBlID09IElPTU1VX0RPTUFJTl9JREVOVElUWSkKPiAgCQlyZXR1cm47Cj4gIAo+ICsJcmV0ID0g
+cG1fcnVudGltZV9nZXRfc3luYyhzbW11LT5kZXYpOwo+ICsJaWYgKHJldCkKPiArCQlyZXR1cm47
+Cj4gKwo+ICAJLyoKPiAgCSAqIERpc2FibGUgdGhlIGNvbnRleHQgYmFuayBhbmQgZnJlZSB0aGUg
+cGFnZSB0YWJsZXMgYmVmb3JlIGZyZWVpbmcKPiAgCSAqIGl0Lgo+IEBAIC05MzIsNiArOTM2LDgg
+QEAgc3RhdGljIHZvaWQgYXJtX3NtbXVfZGVzdHJveV9kb21haW5fY29udGV4dChzdHJ1Y3QgaW9t
+bXVfZG9tYWluICpkb21haW4pCj4gIAo+ICAJZnJlZV9pb19wZ3RhYmxlX29wcyhzbW11X2RvbWFp
+bi0+cGd0Ymxfb3BzKTsKPiAgCV9fYXJtX3NtbXVfZnJlZV9iaXRtYXAoc21tdS0+Y29udGV4dF9t
+YXAsIGNmZy0+Y2JuZHgpOwo+ICsKPiArCXBtX3J1bnRpbWVfcHV0X3N5bmMoc21tdS0+ZGV2KTsK
+PiAgfQo+ICAKPiAgc3RhdGljIHN0cnVjdCBpb21tdV9kb21haW4gKmFybV9zbW11X2RvbWFpbl9h
+bGxvYyh1bnNpZ25lZCB0eXBlKQo+IEBAIC0xNDA3LDE0ICsxNDEzLDIyIEBAIHN0YXRpYyBpbnQg
+YXJtX3NtbXVfYWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gIAl3aGlsZSAoaS0tKQo+
+ICAJCWNmZy0+c21lbmR4W2ldID0gSU5WQUxJRF9TTUVORFg7Cj4gIAo+IC0JcmV0ID0gYXJtX3Nt
+bXVfbWFzdGVyX2FsbG9jX3NtZXMoZGV2KTsKPiArCXJldCA9IHBtX3J1bnRpbWVfZ2V0X3N5bmMo
+c21tdS0+ZGV2KTsKPiAgCWlmIChyZXQpCj4gIAkJZ290byBvdXRfY2ZnX2ZyZWU7CgpIZXkgVml2
+ZWssIEkganVzdCBoaXQgYSBwcm9ibGVtIHdpdGggdGhpcyBvbiBzZG04NDUuIEl0IHR1cm5zIG91
+dCB0aGF0CnBtX3J1bnRpbWVfZ2V0X3N5bmMoKSByZXR1cm5zIGEgcG9zaXRpdmUgMSBpZiB0aGUg
+ZGV2aWNlIGlzIGFscmVhZHkgYWN0aXZlLgoKSSBoaXQgdGhpcyBpbiB0aGUgR1BVIGNvZGUuIFRo
+ZSBhNnh4IGhhcyB0d28gcGxhdGZvcm0gZGV2aWNlcyB0aGF0IGVhY2ggdXNlIGEKZGlmZmVyZW50
+IHNpZCBvbiB0aGUgaW9tbXUuIFRoZSBHUFUgaXMgcHJvYmVkIG5vcm1hbGx5IGZyb20gYSBwbGF0
+Zm9ybSBkcml2ZXIKYW5kIGl0IGluIHR1cm4gaW5pdGlhbGl6ZXMgdGhlIEdNVSBkZXZpY2UgYnkg
+d2F5IG9mIGEgcGhhbmRsZS4KCkJlY2F1c2UgdGhlIEdNVSBpc24ndCBwcm9iZWQgd2l0aCBhIHBs
+YXRmb3JtIGRyaXZlciB3ZSBuZWVkIHRvIGNhbGwKb2ZfZG1hX2NvbmZpZ3VyZSgpIG9uIHRoZSBk
+ZXZpY2UgdG8gc2V0IHVwIHRoZSBJT01NVSBmb3IgdGhlIGRldmljZSB3aGljaCBlbmRzCnVwIGNh
+bGxpbmcgdGhyb3VnaCB0aGlzIHBhdGggYW5kIHdlIGRpc2NvdmVyIHRoYXQgdGhlIHNtbXUtPmRl
+diBpcyBhbHJlYWR5CnBvd2VyZWQgKHBtX3J1bnRpbWVfZ2V0X3N5bmMgcmV0dXJucyAxKS4KCkkn
+bSBub3QgaW1tZWRpYXRlbHkgc3VyZSBpZiB0aGlzIGlzIGEgYnVnIG9uIHNkbTg0NSBvciBub3Qg
+YmVjYXVzZSBhIGN1cnNvcnkKaW5zcGVjdGlvbiBzYXlzIHRoYXQgdGhlIFNNTVUgZGV2aWNlIHNo
+b3VsZG4ndCBiZSBwb3dlcmVkIGF0IHRoaXMgdGltZSBidXQgdGhlcmUKbWlnaHQgYmUgYSBjb25u
+ZWN0aW9uIHRoYXQgSSdtIG5vdCBzZWVpbmcuIE9idmlvdXNseSBpZiB0aGUgU01NVSB3YXMgbGVm
+dApwb3dlcmVkIHRoYXRzIGEgYmFkIHRoaW5nLiBCdXQgcHV0dGluZyB0aGF0IGFzaWRlIGl0IGlz
+IG9idmlvdXMgdGhhdCB0aGlzCmNvZGUgc2hvdWxkIGJlIGFjY29tbW9kYXRpbmcgb2YgdGhlIHBv
+c3NpYmlsaXR5IHRoYXQgdGhlIGRldmljZSBpcyBhbHJlYWR5CnBvd2VyZWQsIGFuZCBzbyB0aGlz
+IHNob3VsZCBiZQoKaWYgKHJldCA8IDApCglnb3RvIG91dF9jZmdfZnJlZTsKCldpdGggdGhhdCB0
+aGUgR1BVL0dNVSBzdWNjZXNzZnVsbHkgY29tZXMgdXAgb24gU2VhbiBQYXVsJ3MgZGlzcGxheSB0
+ZXN0aW5nCmJyYW5jaC4KCkpvcmRhbgoKLS0gClRoZSBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRl
+ciwgSW5jLiBpcyBhIG1lbWJlciBvZiBDb2RlIEF1cm9yYSBGb3J1bSwKYSBMaW51eCBGb3VuZGF0
+aW9uIENvbGxhYm9yYXRpdmUgUHJvamVjdApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5m
+cmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0
+aW5mby9mcmVlZHJlbm8K
