@@ -1,38 +1,102 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] thermal: exynos: Read soc_type from match data
-Date: Thu, 22 Feb 2018 15:41:45 +0100
-Message-ID: <2023948.K0BAVOQXYc@amdc3058>
-References: <CGME20180220121554eucas1p1e97fba2b784a024233d3537c33989f6a@eucas1p1.samsung.com>
- <1519128948-11818-1-git-send-email-m.purski@samsung.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
+ calls with runtime suppliers
+Date: Thu, 22 Feb 2018 22:54:46 +0530
+Message-ID: <CAFp+6iF3cEV60NrFMXZqP=enrVNtP9PPLTUOXhasRp2jc2Qd0w@mail.gmail.com>
+References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
+ <CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
+ <CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
+ <CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
+ <CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
+ <CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
+ <CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg@mail.gmail.com>
+ <CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg@mail.gmail.com>
+ <CAAFQd5DiwAugGnPOTw0+XrEfef9x-n-vx59JFuXpNawjiXHwCw@mail.gmail.com>
+ <CAFp+6iEW0faeHDfzN_F1bRrHGcVo3sPCk4HSY=t9dnEvHkDkYw@mail.gmail.com>
+ <b003ecda-1cbe-4e5f-872b-107154ac40e5@arm.com>
+ <CAAFQd5AmG1zSm+CouXOCJbs8SNGFk1-RqfU1nWGjMGJMB-qfvw@mail.gmail.com>
+ <CAAFQd5A9B-di9svtiJbvk2hz1U1xo61rTY5vt6AD+KR5iMcG-A@mail.gmail.com>
+ <7406f1ce-c2c9-a6bd-2886-5a34de45add6@arm.com>
+ <CAAFQd5DkLtq2w00=Zd4sMDB4QOWqi7R-zgydECJXLdTmaHty+g@mail.gmail.com>
+ <28466b36-b5d3-4f60-a45e-b75d79c2a3cb@arm.com>
+ <CAAFQd5CzOJ0oS8LLcKP-DgyXSXgzafg5CWPAvnR-QDPS+DZAUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1519128948-11818-1-git-send-email-m.purski@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Maciej Purski <m.purski@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAAFQd5CzOJ0oS8LLcKP-DgyXSXgzafg5CWPAvnR-QDPS+DZAUg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 20, 2018 01:15:48 PM Maciej Purski wrote:
-> Device context's field data->soc is currently obtained by comparing
-> of_compatible's. Provide soc_type as .data field in device's match
-> table, as it is done in most drivers.
-> 
-> Signed-off-by: Maciej Purski <m.purski@samsung.com>
-
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+SGksCgpPbiBUaHUsIEZlYiAyMiwgMjAxOCBhdCA3OjQyIFBNLCBUb21hc3ogRmlnYSA8dGZpZ2FA
+Y2hyb21pdW0ub3JnPiB3cm90ZToKPiBPbiBUaHUsIEZlYiAyMiwgMjAxOCBhdCAxMDo0NSBQTSwg
+Um9iaW4gTXVycGh5IDxyb2Jpbi5tdXJwaHlAYXJtLmNvbT4gd3JvdGU6Cj4+IFtzb3JyeSwgSSBo
+YWQgaW50ZW5kZWQgdG8gcmVwbHkgc29vbmVyIGJ1dCBjbGVhcmx5IGZvcmdvdF0KPj4KPj4KPj4g
+T24gMTYvMDIvMTggMDA6MTMsIFRvbWFzeiBGaWdhIHdyb3RlOgo+Pj4KPj4+IE9uIEZyaSwgRmVi
+IDE2LCAyMDE4IGF0IDI6MTQgQU0sIFJvYmluIE11cnBoeSA8cm9iaW4ubXVycGh5QGFybS5jb20+
+Cj4+PiB3cm90ZToKPj4+Pgo+Pj4+IE9uIDE1LzAyLzE4IDA0OjE3LCBUb21hc3ogRmlnYSB3cm90
+ZToKPj4+PiBbLi4uXQo+Pj4+Pj4KPj4+Pj4+Cj4+Pj4+PiBDb3VsZCB5b3UgZWxhYm9yYXRlIG9u
+IHdoYXQga2luZCBvZiBsb2NraW5nIHlvdSBhcmUgY29uY2VybmVkIGFib3V0Pwo+Pj4+Pj4gQXMg
+SSBleHBsYWluZWQgYmVmb3JlLCB0aGUgbm9ybWFsbHkgaGFwcGVuaW5nIGZhc3QgcGF0aCB3b3Vs
+ZCBsb2NrCj4+Pj4+PiBkZXYtPnBvd2VyX2xvY2sgb25seSBmb3IgdGhlIGJyaWVmIG1vbWVudCBv
+ZiBpbmNyZW1lbnRpbmcgdGhlIHJ1bnRpbWUKPj4+Pj4+IFBNIHVzYWdlIGNvdW50ZXIuCj4+Pj4+
+Cj4+Pj4+Cj4+Pj4+Cj4+Pj4+IE15IGJhZCwgdGhhdCdzIG5vdCBldmVuIGl0Lgo+Pj4+Pgo+Pj4+
+PiBUaGUgYXRvbWljIHVzYWdlIGNvdW50ZXIgaXMgaW5jcmVtZW50ZWQgYmVmb3JlaGFuZHMsIHdp
+dGhvdXQgYW55Cj4+Pj4+IGxvY2tpbmcgWzFdIGFuZCB0aGUgc3BpbmxvY2sgaXMgYWNxdWlyZWQg
+b25seSBmb3IgdGhlIHNha2Ugb2YKPj4+Pj4gdmFsaWRhdGluZyB0aGF0IGRldmljZSdzIHJ1bnRp
+bWUgUE0gc3RhdGUgcmVtYWluZWQgdmFsaWQgaW5kZWVkIFsyXSwKPj4+Pj4gd2hpY2ggd291bGQg
+YmUgdGhlIGNhc2UgaW4gdGhlIGZhc3QgcGF0aCBvZiB0aGUgc2FtZSBkcml2ZXIgZG9pbmcgdHdv
+Cj4+Pj4+IG1hcHBpbmdzIGluIHBhcmFsbGVsLCB3aXRoIHRoZSBtYXN0ZXIgcG93ZXJlZCBvbiAo
+YW5kIHNvIHRoZSBTTU1VLAo+Pj4+PiB0aHJvdWdoIGRldmljZSBsaW5rczsgaWYgbWFzdGVyIHdh
+cyBub3QgcG93ZXJlZCBvbiBhbHJlYWR5LCBwb3dlcmluZwo+Pj4+PiBvbiB0aGUgU01NVSBpcyB1
+bmF2b2lkYWJsZSBhbnl3YXkgYW5kIGl0IHdvdWxkIGFkZCBtdWNoIG1vcmUgbGF0ZW5jeQo+Pj4+
+PiB0aGFuIHRoZSBzcGlubG9jayBpdHNlbGYpLgo+Pj4+Cj4+Pj4KPj4+Pgo+Pj4+IFdlIG5vdyBo
+YXZlIG5vIGxvY2tpbmcgYXQgYWxsIGluIHRoZSBtYXAgcGF0aCwgYW5kIG9ubHkgYSBwZXItZG9t
+YWluIGxvY2sKPj4+PiBhcm91bmQgVExCIHN5bmMgaW4gdW5tYXAgd2hpY2ggaXMgdW5mb3J0dW5h
+dGVseSBuZWNlc3NhcnkgZm9yCj4+Pj4gY29ycmVjdG5lc3M7Cj4+Pj4gdGhlIGxhdHRlciBpc24n
+dCB0b28gdGVycmlibGUsIHNpbmNlIGluICJzZXJpb3VzIiBoYXJkd2FyZSBpdCBzaG91bGQgb25s
+eQo+Pj4+IGJlCj4+Pj4gc2VyaWFsaXNpbmcgYSBmZXcgY3B1cyBzZXJ2aW5nIHRoZSBzYW1lIGRl
+dmljZSBhZ2FpbnN0IGVhY2ggb3RoZXIgKGUuZy4KPj4+PiBmb3IKPj4+PiBtdWx0aXBsZSBxdWV1
+ZXMgb24gYSBzaW5nbGUgTklDKS4KPj4+Pgo+Pj4+IFB1dHRpbmcgaW4gYSBnbG9iYWwgbG9jayB3
+aGljaCBzZXJpYWxpc2VzICphbGwqIGNvbmN1cnJlbnQgbWFwIGFuZCB1bm1hcAo+Pj4+IGNhbGxz
+IGZvciAqYWxsKiB1bnJlbGF0ZWQgZGV2aWNlcyBtYWtlcyB0aGluZ3Mgd29yc2UuIFBlcmlvZC4g
+RXZlbiBpZiB0aGUKPj4+PiBsb2NrIGl0c2VsZiB3ZXJlIGhlbGQgZm9yIHRoZSBtaW5pbXVtIHBv
+c3NpYmxlIHRpbWUsIGkuZS4gdHJpdmlhbGx5Cj4+Pj4gInNwaW5fbG9jaygmbG9jayk7IHNwaW5f
+dW5sb2NrKCZsb2NrKSIsIHRoZSBjb3N0IG9mIHJlcGVhdGVkbHkgYm91bmNpbmcKPj4+PiB0aGF0
+Cj4+Pj4gb25lIGNhY2hlIGxpbmUgYXJvdW5kIGJldHdlZW4gOTYgQ1BVcyBhY3Jvc3MgdHdvIHNv
+Y2tldHMgaXMgbm90Cj4+Pj4gbmVnbGlnaWJsZS4KPj4+Cj4+Pgo+Pj4gRmFpciBlbm91Z2guIE5v
+dGUgdGhhdCB3ZSdyZSBpbiBhIHF1aXRlIGludGVyZXN0aW5nIHNpdHVhdGlvbiBub3c6Cj4+PiAg
+IGEpIFdlIG5lZWQgdG8gaGF2ZSBydW50aW1lIFBNIGVuYWJsZWQgb24gUXVhbGNvbW0gU29DIHRv
+IGhhdmUgcG93ZXIKPj4+IHByb3Blcmx5IG1hbmFnZWQsCj4+PiAgIGIpIFdlIG5lZWQgdG8gaGF2
+ZSBsb2NrLWZyZWUgbWFwL3VubWFwIG9uIHN1Y2ggZGlzdHJpYnV0ZWQgc3lzdGVtcywKPj4+ICAg
+YykgSWYgcnVudGltZSBQTSBpcyBlbmFibGVkLCB3ZSBuZWVkIHRvIGNhbGwgaW50byBydW50aW1l
+IFBNIGZyb20gYW55Cj4+PiBjb2RlIHRoYXQgZG9lcyBoYXJkd2FyZSBhY2Nlc3Nlcywgb3RoZXJ3
+aXNlIHRoZSBJT01NVSBBUEkgKGFuZCBzbyBETUEKPj4+IEFQSSBhbmQgdGhlbiBhbnkgVjRMMiBk
+cml2ZXIpIGJlY29tZXMgdW51c2FibGUuCj4+Pgo+Pj4gSSBjYW4gc2VlIG9uZSBtb3JlIHdheSB0
+aGF0IGNvdWxkIHBvdGVudGlhbGx5IGxldCB1cyBoYXZlIGFsbCB0aGUKPj4+IHRocmVlLiBIb3cg
+YWJvdXQgZW5hYmxpbmcgcnVudGltZSBQTSBvbmx5IG9uIHNlbGVjdGVkIGltcGxlbWVudGF0aW9u
+cwo+Pj4gKGUuZy4gcWNvbSxzbW11KSBhbmQgdGhlbiBoYXZpbmcgYWxsIHRoZSBydW50aW1lIFBN
+IGNhbGxzIHN1cnJvdW5kZWQKPj4+IHdpdGggaWYgKHBtX3J1bnRpbWVfZW5hYmxlZCgpKSwgd2hp
+Y2ggaXMgbG9ja2xlc3M/Cj4+Cj4+Cj4+IFllcywgdGhhdCdzIHRoZSBraW5kIG9mIHRoaW5nIEkg
+d2FzIGdyYXZpdGF0aW5nIHRvd2FyZHMgLSBteSB2YWd1ZSB0aG91Z2h0Cj4+IHdhcyBhZGRpbmcg
+c29tZSBmbGFnIHRvIHRoZSBzbW11X2RvbWFpbiwgYnV0IHBtX3J1bnRpbWVfZW5hYmxlZCgpIGRv
+ZXMgbG9vawo+PiBjb25jZXB0dWFsbHkgYSBsb3QgY2xlYW5lci4KPgo+IEdyZWF0LCB0aGFua3Mu
+IExvb2tzIGxpa2Ugd2UncmUgaW4gYWdyZWVtZW50IG5vdy4gXG8vCj4KPiBWaXZlaywgZG9lcyB0
+aGlzIHNvdW5kIHJlYXNvbmFibGUgdG8geW91PwoKWWVhLCBzb3VuZCBnb29kIHRvIG1lLiBJIHdp
+bGwgcmVzcGluIHRoZSBwYXRjaGVzLgoKVGhhbmtzICYgUmVnYXJkcwpWaXZlawoKPgo+IEJlc3Qg
+cmVnYXJkcywKPiBUb21hc3oKCgoKLS0gClFVQUxDT01NIElORElBLCBvbiBiZWhhbGYgb2YgUXVh
+bGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIKb2YgQ29kZSBBdXJvcmEg
+Rm9ydW0sIGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVk
+cmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
