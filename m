@@ -1,59 +1,91 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v5 19/20] cpufreq: add support for CPU DVFS based on SCMI
- message protocol
-Date: Thu, 22 Feb 2018 09:48:06 +0000
-Message-ID: <1f04bbaf-83ae-6351-dbc9-82d27af030e1@arm.com>
-References: <1518461124-17371-1-git-send-email-sudeep.holla@arm.com>
- <1518461124-17371-20-git-send-email-sudeep.holla@arm.com>
- <20180222085936.GA2290@e108498-lin.cambridge.arm.com>
+From: Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v7 6/6] drm/msm: iommu: Replace runtime
+ calls with runtime suppliers
+Date: Thu, 22 Feb 2018 08:30:35 -0500
+Message-ID: <CAF6AEGvspue=27t3-n2hwuHh+1RNCrqiE6vLsh6fqR9CA=N8pg@mail.gmail.com>
+References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
+ <CAAFQd5AjopiX6fDgD+mO+-+d0yj-swEnVCNvccWRBSMO+XVJkA@mail.gmail.com>
+ <CAF6AEGs8qcRTvz6srSfc39ybZrPYMVg2w6qkaO2AdWL1GD4mQw@mail.gmail.com>
+ <CAAFQd5BKRumpEfAKNF_RKS-ZZ8D671DfOz4vB2+w1SV3aG9NxQ@mail.gmail.com>
+ <CAF6AEGuNZJKtwGZ5mLfqNND2jtU+HYM11UONfAtVTzoM0QVpdg@mail.gmail.com>
+ <CAAFQd5BZJ1G0RG32hYErNzPRvisBhhiSNCBsjbzfm0WzO=DnsQ@mail.gmail.com>
+ <CAFp+6iHaycK=CcE1S15EeuMkaw8LnW0ebptU0hM6tUtWdeEOtA@mail.gmail.com>
+ <CAAFQd5Afj-Bj+3wHwmF2tT7y=46EsYEtO_mXfY6stXBgHutEUg@mail.gmail.com>
+ <CAFp+6iGX6pr+MdPSSHHG=qOnhHky_8OHiDqAcJ9UudEUv=JMHg@mail.gmail.com>
+ <CAAFQd5DiwAugGnPOTw0+XrEfef9x-n-vx59JFuXpNawjiXHwCw@mail.gmail.com>
+ <CAFp+6iEW0faeHDfzN_F1bRrHGcVo3sPCk4HSY=t9dnEvHkDkYw@mail.gmail.com>
+ <b003ecda-1cbe-4e5f-872b-107154ac40e5@arm.com>
+ <CAAFQd5AmG1zSm+CouXOCJbs8SNGFk1-RqfU1nWGjMGJMB-qfvw@mail.gmail.com>
+ <CAAFQd5A9B-di9svtiJbvk2hz1U1xo61rTY5vt6AD+KR5iMcG-A@mail.gmail.com>
+ <7406f1ce-c2c9-a6bd-2886-5a34de45add6@arm.com>
+ <CAAFQd5DkLtq2w00=Zd4sMDB4QOWqi7R-zgydECJXLdTmaHty+g@mail.gmail.com>
+ <CAAFQd5CQoDqunAunwoVo7W=QXa=ET=eJ2s_j9j+3YgAR2EGgCg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180222085936.GA2290@e108498-lin.cambridge.arm.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: DTML <devicetree@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Alexey Klimov <klimov.linux@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, ALKML <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAAFQd5CQoDqunAunwoVo7W=QXa=ET=eJ2s_j9j+3YgAR2EGgCg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 22/02/18 09:04, Quentin Perret wrote:
-> Hi Sudeep,
-> 
-> On Monday 12 Feb 2018 at 18:45:23 (+0000), Sudeep Holla wrote:
-> [...]
->> +/*
->> + * perf_ops->freq_set is not a synchronous, the actual OPP change will
->> + * happen asynchronously and can get notified if the events are
->> + * subscribed for by the SCMI firmware
->> + */
->> +static int
->> +scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
->> +{
->> +	struct scmi_data *priv = policy->driver_data;
->> +	struct scmi_perf_ops *perf_ops = handle->perf_ops;
->> +	u64 freq = policy->freq_table[index].frequency * 1000;
->> +
->> +	return perf_ops->freq_set(handle, priv->domain_id, freq, false);
->> +}
-> 
-> Is arch_set_freq_scale() needed in this function ?
-> 
-
-Yes indeed, already added locally[1] after Dietmar started the discussion.
-
--- 
-Regards,
-Sudeep
-
-[1] https://git.kernel.org/sudeep.holla/linux/h/for-list/new_arm_scmi
+T24gVGh1LCBGZWIgMjIsIDIwMTggYXQgMzoxMyBBTSwgVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9t
+aXVtLm9yZz4gd3JvdGU6Cj4gT24gRnJpLCBGZWIgMTYsIDIwMTggYXQgOToxMyBBTSwgVG9tYXN6
+IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4gd3JvdGU6Cj4+IE9uIEZyaSwgRmViIDE2LCAyMDE4
+IGF0IDI6MTQgQU0sIFJvYmluIE11cnBoeSA8cm9iaW4ubXVycGh5QGFybS5jb20+IHdyb3RlOgo+
+Pj4gT24gMTUvMDIvMTggMDQ6MTcsIFRvbWFzeiBGaWdhIHdyb3RlOgo+Pj4gWy4uLl0KPj4+Pj4K
+Pj4+Pj4gQ291bGQgeW91IGVsYWJvcmF0ZSBvbiB3aGF0IGtpbmQgb2YgbG9ja2luZyB5b3UgYXJl
+IGNvbmNlcm5lZCBhYm91dD8KPj4+Pj4gQXMgSSBleHBsYWluZWQgYmVmb3JlLCB0aGUgbm9ybWFs
+bHkgaGFwcGVuaW5nIGZhc3QgcGF0aCB3b3VsZCBsb2NrCj4+Pj4+IGRldi0+cG93ZXJfbG9jayBv
+bmx5IGZvciB0aGUgYnJpZWYgbW9tZW50IG9mIGluY3JlbWVudGluZyB0aGUgcnVudGltZQo+Pj4+
+PiBQTSB1c2FnZSBjb3VudGVyLgo+Pj4+Cj4+Pj4KPj4+PiBNeSBiYWQsIHRoYXQncyBub3QgZXZl
+biBpdC4KPj4+Pgo+Pj4+IFRoZSBhdG9taWMgdXNhZ2UgY291bnRlciBpcyBpbmNyZW1lbnRlZCBi
+ZWZvcmVoYW5kcywgd2l0aG91dCBhbnkKPj4+PiBsb2NraW5nIFsxXSBhbmQgdGhlIHNwaW5sb2Nr
+IGlzIGFjcXVpcmVkIG9ubHkgZm9yIHRoZSBzYWtlIG9mCj4+Pj4gdmFsaWRhdGluZyB0aGF0IGRl
+dmljZSdzIHJ1bnRpbWUgUE0gc3RhdGUgcmVtYWluZWQgdmFsaWQgaW5kZWVkIFsyXSwKPj4+PiB3
+aGljaCB3b3VsZCBiZSB0aGUgY2FzZSBpbiB0aGUgZmFzdCBwYXRoIG9mIHRoZSBzYW1lIGRyaXZl
+ciBkb2luZyB0d28KPj4+PiBtYXBwaW5ncyBpbiBwYXJhbGxlbCwgd2l0aCB0aGUgbWFzdGVyIHBv
+d2VyZWQgb24gKGFuZCBzbyB0aGUgU01NVSwKPj4+PiB0aHJvdWdoIGRldmljZSBsaW5rczsgaWYg
+bWFzdGVyIHdhcyBub3QgcG93ZXJlZCBvbiBhbHJlYWR5LCBwb3dlcmluZwo+Pj4+IG9uIHRoZSBT
+TU1VIGlzIHVuYXZvaWRhYmxlIGFueXdheSBhbmQgaXQgd291bGQgYWRkIG11Y2ggbW9yZSBsYXRl
+bmN5Cj4+Pj4gdGhhbiB0aGUgc3BpbmxvY2sgaXRzZWxmKS4KPj4+Cj4+Pgo+Pj4gV2Ugbm93IGhh
+dmUgbm8gbG9ja2luZyBhdCBhbGwgaW4gdGhlIG1hcCBwYXRoLCBhbmQgb25seSBhIHBlci1kb21h
+aW4gbG9jawo+Pj4gYXJvdW5kIFRMQiBzeW5jIGluIHVubWFwIHdoaWNoIGlzIHVuZm9ydHVuYXRl
+bHkgbmVjZXNzYXJ5IGZvciBjb3JyZWN0bmVzczsKPj4+IHRoZSBsYXR0ZXIgaXNuJ3QgdG9vIHRl
+cnJpYmxlLCBzaW5jZSBpbiAic2VyaW91cyIgaGFyZHdhcmUgaXQgc2hvdWxkIG9ubHkgYmUKPj4+
+IHNlcmlhbGlzaW5nIGEgZmV3IGNwdXMgc2VydmluZyB0aGUgc2FtZSBkZXZpY2UgYWdhaW5zdCBl
+YWNoIG90aGVyIChlLmcuIGZvcgo+Pj4gbXVsdGlwbGUgcXVldWVzIG9uIGEgc2luZ2xlIE5JQyku
+Cj4+Pgo+Pj4gUHV0dGluZyBpbiBhIGdsb2JhbCBsb2NrIHdoaWNoIHNlcmlhbGlzZXMgKmFsbCog
+Y29uY3VycmVudCBtYXAgYW5kIHVubWFwCj4+PiBjYWxscyBmb3IgKmFsbCogdW5yZWxhdGVkIGRl
+dmljZXMgbWFrZXMgdGhpbmdzIHdvcnNlLiBQZXJpb2QuIEV2ZW4gaWYgdGhlCj4+PiBsb2NrIGl0
+c2VsZiB3ZXJlIGhlbGQgZm9yIHRoZSBtaW5pbXVtIHBvc3NpYmxlIHRpbWUsIGkuZS4gdHJpdmlh
+bGx5Cj4+PiAic3Bpbl9sb2NrKCZsb2NrKTsgc3Bpbl91bmxvY2soJmxvY2spIiwgdGhlIGNvc3Qg
+b2YgcmVwZWF0ZWRseSBib3VuY2luZyB0aGF0Cj4+PiBvbmUgY2FjaGUgbGluZSBhcm91bmQgYmV0
+d2VlbiA5NiBDUFVzIGFjcm9zcyB0d28gc29ja2V0cyBpcyBub3QgbmVnbGlnaWJsZS4KPj4KPj4g
+RmFpciBlbm91Z2guIE5vdGUgdGhhdCB3ZSdyZSBpbiBhIHF1aXRlIGludGVyZXN0aW5nIHNpdHVh
+dGlvbiBub3c6Cj4+ICBhKSBXZSBuZWVkIHRvIGhhdmUgcnVudGltZSBQTSBlbmFibGVkIG9uIFF1
+YWxjb21tIFNvQyB0byBoYXZlIHBvd2VyCj4+IHByb3Blcmx5IG1hbmFnZWQsCj4+ICBiKSBXZSBu
+ZWVkIHRvIGhhdmUgbG9jay1mcmVlIG1hcC91bm1hcCBvbiBzdWNoIGRpc3RyaWJ1dGVkIHN5c3Rl
+bXMsCj4+ICBjKSBJZiBydW50aW1lIFBNIGlzIGVuYWJsZWQsIHdlIG5lZWQgdG8gY2FsbCBpbnRv
+IHJ1bnRpbWUgUE0gZnJvbSBhbnkKPj4gY29kZSB0aGF0IGRvZXMgaGFyZHdhcmUgYWNjZXNzZXMs
+IG90aGVyd2lzZSB0aGUgSU9NTVUgQVBJIChhbmQgc28gRE1BCj4+IEFQSSBhbmQgdGhlbiBhbnkg
+VjRMMiBkcml2ZXIpIGJlY29tZXMgdW51c2FibGUuCj4+Cj4+IEkgY2FuIHNlZSBvbmUgbW9yZSB3
+YXkgdGhhdCBjb3VsZCBwb3RlbnRpYWxseSBsZXQgdXMgaGF2ZSBhbGwgdGhlCj4+IHRocmVlLiBI
+b3cgYWJvdXQgZW5hYmxpbmcgcnVudGltZSBQTSBvbmx5IG9uIHNlbGVjdGVkIGltcGxlbWVudGF0
+aW9ucwo+PiAoZS5nLiBxY29tLHNtbXUpIGFuZCB0aGVuIGhhdmluZyBhbGwgdGhlIHJ1bnRpbWUg
+UE0gY2FsbHMgc3Vycm91bmRlZAo+PiB3aXRoIGlmIChwbV9ydW50aW1lX2VuYWJsZWQoKSksIHdo
+aWNoIGlzIGxvY2tsZXNzPwo+Pgo+Cj4gU29ycnkgZm9yIHBpbmdpbmcsIGJ1dCBhbnkgb3Bpbmlv
+biBvbiB0aGlzIGtpbmQgb2YgYXBwcm9hY2g/Cj4KCkl0IGlzIG9rIGJ5IG1lLCBmb3Igd2hhdGV2
+ZXIgdGhhdCBpcyB3b3J0aAoKQlIsCi1SCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZy
+ZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2ZyZWVkcmVubwo=
