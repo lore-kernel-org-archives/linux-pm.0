@@ -1,65 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
- cpufreq_table_find_index_dl()
-Date: Wed, 21 Feb 2018 14:25:10 +0100
-Message-ID: <CAJZ5v0gVUO5OMfHUrQKd0T1EKo2c9iJ+zb-v9i2tkkS0MJbntA@mail.gmail.com>
-References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20180212102900.GU28462@vireshk-i7> <874lmasxxx.fsf@concordia.ellerman.id.au>
- <20180221055450.GO28462@vireshk-i7>
- <CAJZ5v0jEg7FELH6mBY16mB5sfo7s2mbH2SGheH4KVeKLnStjjg@mail.gmail.com>
- <87vaeqqye8.fsf@concordia.ellerman.id.au>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH] PM / devfreq: exynos-ppmu: Delete an error message
+ for a failed memory allocation in exynos_ppmu_probe()
+Date: Thu, 22 Feb 2018 14:14:18 +0900
+Message-ID: <20180222051418epcms1p515085d1b1fabaf50983ff2ecb3442c02@epcms1p5>
+References: <5A8364F8.8050801@samsung.com>
+ <e4d3a870-f420-5a06-1665-59152c1924a3@users.sourceforge.net>
+ <CGME20180213211754epcas1p12c743dac97dbc187c46206bc2fa16c78@epcms1p5>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <87vaeqqye8.fsf@concordia.ellerman.id.au>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <5A8364F8.8050801@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, SF Markus Elfring <elfring@users.sourceforge.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 21, 2018 at 2:13 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> "Rafael J. Wysocki" <rafael@kernel.org> writes:
->
->> On Wed, Feb 21, 2018 at 6:54 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> On 21-02-18, 16:39, Michael Ellerman wrote:
->>>> Viresh Kumar <viresh.kumar@linaro.org> writes:
->>>
->>>> > AFAICT, you will get -1 here only if the freq table had no valid
->>>> > frequencies (or the freq table is empty). Why would that happen ?
->>>>
->>>> Bugs?
->>>
->>> The cupfreq driver shouldn't have registered itself in that case (i.e.
->>> if the cpufreq table is empty).
->>
->> To be precise, ->init() should fail as that's where the table is
->> created.  The registration fails as a result then.
->>
->> But what if the bug is that ->init() doesn't fail when it should?
->>
->> I guess the core could double check the frequency table after ->init()
->> if ->target_index is not NULL.
->>
->> The overall point here is that if you get a negative index in
->> ->fast_switch(), that's way too late anyway and we should be able to
->> catch that error much earlier.
->
-> OK.
->
-> Still it's one thing for the driver to print a warning and bail out,
-> it's another to access off the front of an array and keep running using
-> some junk values, or oops (though not in this case because the array
-> happens to be static).
-
-Well, let me rephrase.  If ->fast_switch() runs, then it must not be
-possible to get a negative index in it.  That has to be guaranteed by
-the core.
+PiBPbiAyMDE464WEIDAy7JuUIDE07J28IDA2OjE3LCBTRiBNYXJrdXMgRWxmcmluZyB3cm90ZToN
+Cj4gPiBGcm9tOiBNYXJrdXMgRWxmcmluZyA8ZWxmcmluZ0B1c2Vycy5zb3VyY2Vmb3JnZS5uZXQ+
+DQo+ID4gRGF0ZTogVHVlLCAxMyBGZWIgMjAxOCAyMjoxMDo0MiArMDEwMA0KPiA+IA0KPiA+IE9t
+aXQgYW4gZXh0cmEgbWVzc2FnZSBmb3IgYSBtZW1vcnkgYWxsb2NhdGlvbiBmYWlsdXJlIGluIHRo
+aXMgZnVuY3Rpb24uDQo+ID4gDQo+ID4gVGhpcyBpc3N1ZSB3YXMgZGV0ZWN0ZWQgYnkgdXNpbmcg
+dGhlIENvY2NpbmVsbGUgc29mdHdhcmUuDQo+ID4gDQo+ID4gU2lnbmVkLW9mZi1ieTogTWFya3Vz
+IEVsZnJpbmcgPGVsZnJpbmdAdXNlcnMuc291cmNlZm9yZ2UubmV0Pg0KPiA+IC0tLQ0KPiA+ICBk
+cml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuYyB8IDYgKystLS0tDQo+ID4gIDEgZmls
+ZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pDQo+ID4gDQo+ID4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9ldmVudC9leHlub3MtcHBtdS5jIGIvZHJpdmVycy9k
+ZXZmcmVxL2V2ZW50L2V4eW5vcy1wcG11LmMNCj4gPiBpbmRleCBkOTZlM2RjNzFjZjguLjcyYWM5
+MTEzNTAwZCAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBw
+bXUuYw0KPiA+ICsrKyBiL2RyaXZlcnMvZGV2ZnJlcS9ldmVudC9leHlub3MtcHBtdS5jDQo+ID4g
+QEAgLTYyNywxMSArNjI3LDkgQEAgc3RhdGljIGludCBleHlub3NfcHBtdV9wcm9iZShzdHJ1Y3Qg
+cGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICANCj4gPiAgCXNpemUgPSBzaXplb2Yoc3RydWN0
+IGRldmZyZXFfZXZlbnRfZGV2ICopICogaW5mby0+bnVtX2V2ZW50czsNCj4gPiAgCWluZm8tPmVk
+ZXYgPSBkZXZtX2t6YWxsb2MoJnBkZXYtPmRldiwgc2l6ZSwgR0ZQX0tFUk5FTCk7DQo+ID4gLQlp
+ZiAoIWluZm8tPmVkZXYpIHsNCj4gPiAtCQlkZXZfZXJyKCZwZGV2LT5kZXYsDQo+ID4gLQkJCSJm
+YWlsZWQgdG8gYWxsb2NhdGUgbWVtb3J5IGRldmZyZXEtZXZlbnQgZGV2aWNlc1xuIik7DQo+ID4g
+KwlpZiAoIWluZm8tPmVkZXYpDQo+ID4gIAkJcmV0dXJuIC1FTk9NRU07DQo+ID4gLQl9DQo+ID4g
+Kw0KPiA+ICAJZWRldiA9IGluZm8tPmVkZXY7DQo+ID4gIAlwbGF0Zm9ybV9zZXRfZHJ2ZGF0YShw
+ZGV2LCBpbmZvKTsNCj4gPiAgDQo+ID4gDQo+IA0KPiBBY2tlZC1ieTogQ2hhbndvbyBDaG9pIDxj
+dzAwLmNob2lAc2Ftc3VuZy5jb20+DQo+IA0KDQpBY2tlZC1ieTogTXl1bmdKb28gSGFtIDxteXVu
+Z2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCg0KCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1h
+cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
