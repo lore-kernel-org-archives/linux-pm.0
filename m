@@ -1,86 +1,47 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v7 3/6] iommu/arm-smmu: Invoke pm_runtime
- during probe, add/remove device
-Date: Thu, 22 Feb 2018 16:52:00 -0700
-Message-ID: <20180222235200.GA18743@jcrouse-lnx.qualcomm.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
+From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH] cpufreq: mediatek: Convert pr_warn() to pr_debug()
+Date: Fri, 23 Feb 2018 10:22:10 +0800
+Message-ID: <1519352530.9025.63.camel@mtkswgap22>
+References: <5bc4db542fa521c32d295f490a1ad1dadf715098.1519278976.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1517999482-17317-4-git-send-email-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <5bc4db542fa521c32d295f490a1ad1dadf715098.1519278976.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBGZWIgMDcsIDIwMTggYXQgMDQ6MDE6MTlQTSArMDUzMCwgVml2ZWsgR2F1dGFtIHdy
-b3RlOgo+IEZyb206IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4gCj4g
-VGhlIHNtbXUgZGV2aWNlIHByb2JlL3JlbW92ZSBhbmQgYWRkL3JlbW92ZSBtYXN0ZXIgZGV2aWNl
-IGNhbGxiYWNrcwo+IGdldHMgY2FsbGVkIHdoZW4gdGhlIHNtbXUgaXMgbm90IGxpbmtlZCB0byBp
-dHMgbWFzdGVyLCB0aGF0IGlzIHdpdGhvdXQKPiB0aGUgY29udGV4dCBvZiB0aGUgbWFzdGVyIGRl
-dmljZS4gU28gY2FsbGluZyBydW50aW1lIGFwaXMgaW4gdGhvc2UgcGxhY2VzCj4gc2VwYXJhdGVs
-eS4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEu
-b3JnPgo+IFt2aXZlazogQ2xlYW51cCBwbSBydW50aW1lIGNhbGxzXQo+IFNpZ25lZC1vZmYtYnk6
-IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPgo+IC0tLQo+ICBkcml2
-ZXJzL2lvbW11L2FybS1zbW11LmMgfCA0MiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKy0tLS0KPiAgMSBmaWxlIGNoYW5nZWQsIDM4IGluc2VydGlvbnMoKyksIDQgZGVsZXRp
-b25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZl
-cnMvaW9tbXUvYXJtLXNtbXUuYwo+IGluZGV4IDllMmY5MTdlMTZjMi4uYzAyNGY2OWMxNjgyIDEw
-MDY0NAo+IC0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+ICsrKyBiL2RyaXZlcnMvaW9t
-bXUvYXJtLXNtbXUuYwo+IEBAIC05MTMsMTEgKzkxMywxNSBAQCBzdGF0aWMgdm9pZCBhcm1fc21t
-dV9kZXN0cm95X2RvbWFpbl9jb250ZXh0KHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbikKPiAg
-CXN0cnVjdCBhcm1fc21tdV9kb21haW4gKnNtbXVfZG9tYWluID0gdG9fc21tdV9kb21haW4oZG9t
-YWluKTsKPiAgCXN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUgPSBzbW11X2RvbWFpbi0+c21t
-dTsKPiAgCXN0cnVjdCBhcm1fc21tdV9jZmcgKmNmZyA9ICZzbW11X2RvbWFpbi0+Y2ZnOwo+IC0J
-aW50IGlycTsKPiArCWludCByZXQsIGlycTsKPiAgCj4gIAlpZiAoIXNtbXUgfHwgZG9tYWluLT50
-eXBlID09IElPTU1VX0RPTUFJTl9JREVOVElUWSkKPiAgCQlyZXR1cm47Cj4gIAo+ICsJcmV0ID0g
-cG1fcnVudGltZV9nZXRfc3luYyhzbW11LT5kZXYpOwo+ICsJaWYgKHJldCkKPiArCQlyZXR1cm47
-Cj4gKwo+ICAJLyoKPiAgCSAqIERpc2FibGUgdGhlIGNvbnRleHQgYmFuayBhbmQgZnJlZSB0aGUg
-cGFnZSB0YWJsZXMgYmVmb3JlIGZyZWVpbmcKPiAgCSAqIGl0Lgo+IEBAIC05MzIsNiArOTM2LDgg
-QEAgc3RhdGljIHZvaWQgYXJtX3NtbXVfZGVzdHJveV9kb21haW5fY29udGV4dChzdHJ1Y3QgaW9t
-bXVfZG9tYWluICpkb21haW4pCj4gIAo+ICAJZnJlZV9pb19wZ3RhYmxlX29wcyhzbW11X2RvbWFp
-bi0+cGd0Ymxfb3BzKTsKPiAgCV9fYXJtX3NtbXVfZnJlZV9iaXRtYXAoc21tdS0+Y29udGV4dF9t
-YXAsIGNmZy0+Y2JuZHgpOwo+ICsKPiArCXBtX3J1bnRpbWVfcHV0X3N5bmMoc21tdS0+ZGV2KTsK
-PiAgfQo+ICAKPiAgc3RhdGljIHN0cnVjdCBpb21tdV9kb21haW4gKmFybV9zbW11X2RvbWFpbl9h
-bGxvYyh1bnNpZ25lZCB0eXBlKQo+IEBAIC0xNDA3LDE0ICsxNDEzLDIyIEBAIHN0YXRpYyBpbnQg
-YXJtX3NtbXVfYWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gIAl3aGlsZSAoaS0tKQo+
-ICAJCWNmZy0+c21lbmR4W2ldID0gSU5WQUxJRF9TTUVORFg7Cj4gIAo+IC0JcmV0ID0gYXJtX3Nt
-bXVfbWFzdGVyX2FsbG9jX3NtZXMoZGV2KTsKPiArCXJldCA9IHBtX3J1bnRpbWVfZ2V0X3N5bmMo
-c21tdS0+ZGV2KTsKPiAgCWlmIChyZXQpCj4gIAkJZ290byBvdXRfY2ZnX2ZyZWU7CgpIZXkgVml2
-ZWssIEkganVzdCBoaXQgYSBwcm9ibGVtIHdpdGggdGhpcyBvbiBzZG04NDUuIEl0IHR1cm5zIG91
-dCB0aGF0CnBtX3J1bnRpbWVfZ2V0X3N5bmMoKSByZXR1cm5zIGEgcG9zaXRpdmUgMSBpZiB0aGUg
-ZGV2aWNlIGlzIGFscmVhZHkgYWN0aXZlLgoKSSBoaXQgdGhpcyBpbiB0aGUgR1BVIGNvZGUuIFRo
-ZSBhNnh4IGhhcyB0d28gcGxhdGZvcm0gZGV2aWNlcyB0aGF0IGVhY2ggdXNlIGEKZGlmZmVyZW50
-IHNpZCBvbiB0aGUgaW9tbXUuIFRoZSBHUFUgaXMgcHJvYmVkIG5vcm1hbGx5IGZyb20gYSBwbGF0
-Zm9ybSBkcml2ZXIKYW5kIGl0IGluIHR1cm4gaW5pdGlhbGl6ZXMgdGhlIEdNVSBkZXZpY2UgYnkg
-d2F5IG9mIGEgcGhhbmRsZS4KCkJlY2F1c2UgdGhlIEdNVSBpc24ndCBwcm9iZWQgd2l0aCBhIHBs
-YXRmb3JtIGRyaXZlciB3ZSBuZWVkIHRvIGNhbGwKb2ZfZG1hX2NvbmZpZ3VyZSgpIG9uIHRoZSBk
-ZXZpY2UgdG8gc2V0IHVwIHRoZSBJT01NVSBmb3IgdGhlIGRldmljZSB3aGljaCBlbmRzCnVwIGNh
-bGxpbmcgdGhyb3VnaCB0aGlzIHBhdGggYW5kIHdlIGRpc2NvdmVyIHRoYXQgdGhlIHNtbXUtPmRl
-diBpcyBhbHJlYWR5CnBvd2VyZWQgKHBtX3J1bnRpbWVfZ2V0X3N5bmMgcmV0dXJucyAxKS4KCkkn
-bSBub3QgaW1tZWRpYXRlbHkgc3VyZSBpZiB0aGlzIGlzIGEgYnVnIG9uIHNkbTg0NSBvciBub3Qg
-YmVjYXVzZSBhIGN1cnNvcnkKaW5zcGVjdGlvbiBzYXlzIHRoYXQgdGhlIFNNTVUgZGV2aWNlIHNo
-b3VsZG4ndCBiZSBwb3dlcmVkIGF0IHRoaXMgdGltZSBidXQgdGhlcmUKbWlnaHQgYmUgYSBjb25u
-ZWN0aW9uIHRoYXQgSSdtIG5vdCBzZWVpbmcuIE9idmlvdXNseSBpZiB0aGUgU01NVSB3YXMgbGVm
-dApwb3dlcmVkIHRoYXRzIGEgYmFkIHRoaW5nLiBCdXQgcHV0dGluZyB0aGF0IGFzaWRlIGl0IGlz
-IG9idmlvdXMgdGhhdCB0aGlzCmNvZGUgc2hvdWxkIGJlIGFjY29tbW9kYXRpbmcgb2YgdGhlIHBv
-c3NpYmlsaXR5IHRoYXQgdGhlIGRldmljZSBpcyBhbHJlYWR5CnBvd2VyZWQsIGFuZCBzbyB0aGlz
-IHNob3VsZCBiZQoKaWYgKHJldCA8IDApCglnb3RvIG91dF9jZmdfZnJlZTsKCldpdGggdGhhdCB0
-aGUgR1BVL0dNVSBzdWNjZXNzZnVsbHkgY29tZXMgdXAgb24gU2VhbiBQYXVsJ3MgZGlzcGxheSB0
-ZXN0aW5nCmJyYW5jaC4KCkpvcmRhbgoKLS0gClRoZSBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRl
-ciwgSW5jLiBpcyBhIG1lbWJlciBvZiBDb2RlIEF1cm9yYSBGb3J1bSwKYSBMaW51eCBGb3VuZGF0
-aW9uIENvbGxhYm9yYXRpdmUgUHJvamVjdApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5m
-cmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9mcmVlZHJlbm8K
+On Thu, 2018-02-22 at 11:26 +0530, Viresh Kumar wrote:
+> With multi-platform build images, this shows a message on non mediatek
+> platforms, which is unnecessary. Convert pr_warn() to pr_debug() here.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/cpufreq/mediatek-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+> index 8c04dddd3c28..84d658d57029 100644
+> --- a/drivers/cpufreq/mediatek-cpufreq.c
+> +++ b/drivers/cpufreq/mediatek-cpufreq.c
+> @@ -578,7 +578,7 @@ static int __init mtk_cpufreq_driver_init(void)
+>  	match = of_match_node(mtk_cpufreq_machines, np);
+>  	of_node_put(np);
+>  	if (!match) {
+> -		pr_warn("Machine is not compatible with mtk-cpufreq\n");
+> +		pr_debug("Machine is not compatible with mtk-cpufreq\n");
+>  		return -ENODEV;
+>  	}
+>  
+
+Acked-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
