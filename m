@@ -1,120 +1,155 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v7 3/6] iommu/arm-smmu: Invoke pm_runtime
- during probe, add/remove device
-Date: Fri, 23 Feb 2018 23:13:00 +0530
-Message-ID: <CAFp+6iF+uiJW-zAYXvVCgQof7A41ZQwPBq9wRebsTrZJk1Ts2w@mail.gmail.com>
-References: <1517999482-17317-1-git-send-email-vivek.gautam@codeaurora.org>
- <1517999482-17317-4-git-send-email-vivek.gautam@codeaurora.org>
- <20180222235200.GA18743@jcrouse-lnx.qualcomm.com>
- <CAFp+6iGQ5Vckui14Jb=V0uk_Pjes95hOxo=KBijR4yxPeDDzFg@mail.gmail.com>
- <20180223154048.GB18743@jcrouse-lnx.qualcomm.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 11/12] PM / AVS: SmartReflex: Prepare to use device tree based
+ probing
+Date: Fri, 23 Feb 2018 13:00:59 -0800
+Message-ID: <20180223210100.86732-12-tony@atomide.com>
+References: <20180223210100.86732-1-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180223154048.GB18743-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180223210100.86732-1-tony@atomide.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-omap@vger.kernel.org
+Cc: Nishanth Menon <nm@ti.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Dave Gerlach <d-gerlach@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBGZWIgMjMsIDIwMTggYXQgOToxMCBQTSwgSm9yZGFuIENyb3VzZSA8amNyb3VzZUBj
-b2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4gT24gRnJpLCBGZWIgMjMsIDIwMTggYXQgMDQ6MDY6MzlQ
-TSArMDUzMCwgVml2ZWsgR2F1dGFtIHdyb3RlOgo+PiBPbiBGcmksIEZlYiAyMywgMjAxOCBhdCA1
-OjIyIEFNLCBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPj4g
-PiBPbiBXZWQsIEZlYiAwNywgMjAxOCBhdCAwNDowMToxOVBNICswNTMwLCBWaXZlayBHYXV0YW0g
-d3JvdGU6Cj4+ID4+IEZyb206IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+
-Cj4+ID4+Cj4+ID4+IFRoZSBzbW11IGRldmljZSBwcm9iZS9yZW1vdmUgYW5kIGFkZC9yZW1vdmUg
-bWFzdGVyIGRldmljZSBjYWxsYmFja3MKPj4gPj4gZ2V0cyBjYWxsZWQgd2hlbiB0aGUgc21tdSBp
-cyBub3QgbGlua2VkIHRvIGl0cyBtYXN0ZXIsIHRoYXQgaXMgd2l0aG91dAo+PiA+PiB0aGUgY29u
-dGV4dCBvZiB0aGUgbWFzdGVyIGRldmljZS4gU28gY2FsbGluZyBydW50aW1lIGFwaXMgaW4gdGhv
-c2UgcGxhY2VzCj4+ID4+IHNlcGFyYXRlbHkuCj4+ID4+Cj4+ID4+IFNpZ25lZC1vZmYtYnk6IFNy
-aWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4+ID4+IFt2aXZlazogQ2xlYW51
-cCBwbSBydW50aW1lIGNhbGxzXQo+PiA+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZp
-dmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4gPj4gLS0tCj4+ID4+ICBkcml2ZXJzL2lvbW11
-L2FybS1zbW11LmMgfCA0MiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0t
-LS0KPj4gPj4gIDEgZmlsZSBjaGFuZ2VkLCAzOCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygt
-KQo+PiA+Pgo+PiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIGIvZHJp
-dmVycy9pb21tdS9hcm0tc21tdS5jCj4+ID4+IGluZGV4IDllMmY5MTdlMTZjMi4uYzAyNGY2OWMx
-NjgyIDEwMDY0NAo+PiA+PiAtLS0gYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPj4gPj4gKysr
-IGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+ID4+IEBAIC05MTMsMTEgKzkxMywxNSBAQCBz
-dGF0aWMgdm9pZCBhcm1fc21tdV9kZXN0cm95X2RvbWFpbl9jb250ZXh0KHN0cnVjdCBpb21tdV9k
-b21haW4gKmRvbWFpbikKPj4gPj4gICAgICAgc3RydWN0IGFybV9zbW11X2RvbWFpbiAqc21tdV9k
-b21haW4gPSB0b19zbW11X2RvbWFpbihkb21haW4pOwo+PiA+PiAgICAgICBzdHJ1Y3QgYXJtX3Nt
-bXVfZGV2aWNlICpzbW11ID0gc21tdV9kb21haW4tPnNtbXU7Cj4+ID4+ICAgICAgIHN0cnVjdCBh
-cm1fc21tdV9jZmcgKmNmZyA9ICZzbW11X2RvbWFpbi0+Y2ZnOwo+PiA+PiAtICAgICBpbnQgaXJx
-Owo+PiA+PiArICAgICBpbnQgcmV0LCBpcnE7Cj4+ID4+Cj4+ID4+ICAgICAgIGlmICghc21tdSB8
-fCBkb21haW4tPnR5cGUgPT0gSU9NTVVfRE9NQUlOX0lERU5USVRZKQo+PiA+PiAgICAgICAgICAg
-ICAgIHJldHVybjsKPj4gPj4KPj4gPj4gKyAgICAgcmV0ID0gcG1fcnVudGltZV9nZXRfc3luYyhz
-bW11LT5kZXYpOwo+PiA+PiArICAgICBpZiAocmV0KQo+PiA+PiArICAgICAgICAgICAgIHJldHVy
-bjsKPj4gPj4gKwo+PiA+PiAgICAgICAvKgo+PiA+PiAgICAgICAgKiBEaXNhYmxlIHRoZSBjb250
-ZXh0IGJhbmsgYW5kIGZyZWUgdGhlIHBhZ2UgdGFibGVzIGJlZm9yZSBmcmVlaW5nCj4+ID4+ICAg
-ICAgICAqIGl0Lgo+PiA+PiBAQCAtOTMyLDYgKzkzNiw4IEBAIHN0YXRpYyB2b2lkIGFybV9zbW11
-X2Rlc3Ryb3lfZG9tYWluX2NvbnRleHQoc3RydWN0IGlvbW11X2RvbWFpbiAqZG9tYWluKQo+PiA+
-Pgo+PiA+PiAgICAgICBmcmVlX2lvX3BndGFibGVfb3BzKHNtbXVfZG9tYWluLT5wZ3RibF9vcHMp
-Owo+PiA+PiAgICAgICBfX2FybV9zbW11X2ZyZWVfYml0bWFwKHNtbXUtPmNvbnRleHRfbWFwLCBj
-ZmctPmNibmR4KTsKPj4gPj4gKwo+PiA+PiArICAgICBwbV9ydW50aW1lX3B1dF9zeW5jKHNtbXUt
-PmRldik7Cj4+ID4+ICB9Cj4+ID4+Cj4+ID4+ICBzdGF0aWMgc3RydWN0IGlvbW11X2RvbWFpbiAq
-YXJtX3NtbXVfZG9tYWluX2FsbG9jKHVuc2lnbmVkIHR5cGUpCj4+ID4+IEBAIC0xNDA3LDE0ICsx
-NDEzLDIyIEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVfYWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlICpk
-ZXYpCj4+ID4+ICAgICAgIHdoaWxlIChpLS0pCj4+ID4+ICAgICAgICAgICAgICAgY2ZnLT5zbWVu
-ZHhbaV0gPSBJTlZBTElEX1NNRU5EWDsKPj4gPj4KPj4gPj4gLSAgICAgcmV0ID0gYXJtX3NtbXVf
-bWFzdGVyX2FsbG9jX3NtZXMoZGV2KTsKPj4gPj4gKyAgICAgcmV0ID0gcG1fcnVudGltZV9nZXRf
-c3luYyhzbW11LT5kZXYpOwo+PiA+PiAgICAgICBpZiAocmV0KQo+PiA+PiAgICAgICAgICAgICAg
-IGdvdG8gb3V0X2NmZ19mcmVlOwo+PiA+Cj4+ID4gSGV5IFZpdmVrLCBJIGp1c3QgaGl0IGEgcHJv
-YmxlbSB3aXRoIHRoaXMgb24gc2RtODQ1LiBJdCB0dXJucyBvdXQgdGhhdAo+PiA+IHBtX3J1bnRp
-bWVfZ2V0X3N5bmMoKSByZXR1cm5zIGEgcG9zaXRpdmUgMSBpZiB0aGUgZGV2aWNlIGlzIGFscmVh
-ZHkgYWN0aXZlLgo+PiA+Cj4+ID4gSSBoaXQgdGhpcyBpbiB0aGUgR1BVIGNvZGUuIFRoZSBhNnh4
-IGhhcyB0d28gcGxhdGZvcm0gZGV2aWNlcyB0aGF0IGVhY2ggdXNlIGEKPj4gPiBkaWZmZXJlbnQg
-c2lkIG9uIHRoZSBpb21tdS4gVGhlIEdQVSBpcyBwcm9iZWQgbm9ybWFsbHkgZnJvbSBhIHBsYXRm
-b3JtIGRyaXZlcgo+PiA+IGFuZCBpdCBpbiB0dXJuIGluaXRpYWxpemVzIHRoZSBHTVUgZGV2aWNl
-IGJ5IHdheSBvZiBhIHBoYW5kbGUuCj4+ID4KPj4gPiBCZWNhdXNlIHRoZSBHTVUgaXNuJ3QgcHJv
-YmVkIHdpdGggYSBwbGF0Zm9ybSBkcml2ZXIgd2UgbmVlZCB0byBjYWxsCj4+ID4gb2ZfZG1hX2Nv
-bmZpZ3VyZSgpIG9uIHRoZSBkZXZpY2UgdG8gc2V0IHVwIHRoZSBJT01NVSBmb3IgdGhlIGRldmlj
-ZSB3aGljaCBlbmRzCj4+ID4gdXAgY2FsbGluZyB0aHJvdWdoIHRoaXMgcGF0aCBhbmQgd2UgZGlz
-Y292ZXIgdGhhdCB0aGUgc21tdS0+ZGV2IGlzIGFscmVhZHkKPj4gPiBwb3dlcmVkIChwbV9ydW50
-aW1lX2dldF9zeW5jIHJldHVybnMgMSkuCj4+ID4KPj4gPiBJJ20gbm90IGltbWVkaWF0ZWx5IHN1
-cmUgaWYgdGhpcyBpcyBhIGJ1ZyBvbiBzZG04NDUgb3Igbm90IGJlY2F1c2UgYSBjdXJzb3J5Cj4+
-ID4gaW5zcGVjdGlvbiBzYXlzIHRoYXQgdGhlIFNNTVUgZGV2aWNlIHNob3VsZG4ndCBiZSBwb3dl
-cmVkIGF0IHRoaXMgdGltZSBidXQgdGhlcmUKPj4gPiBtaWdodCBiZSBhIGNvbm5lY3Rpb24gdGhh
-dCBJJ20gbm90IHNlZWluZy4gT2J2aW91c2x5IGlmIHRoZSBTTU1VIHdhcyBsZWZ0Cj4+ID4gcG93
-ZXJlZCB0aGF0cyBhIGJhZCB0aGluZy4gQnV0IHB1dHRpbmcgdGhhdCBhc2lkZSBpdCBpcyBvYnZp
-b3VzIHRoYXQgdGhpcwo+PiA+IGNvZGUgc2hvdWxkIGJlIGFjY29tbW9kYXRpbmcgb2YgdGhlIHBv
-c3NpYmlsaXR5IHRoYXQgdGhlIGRldmljZSBpcyBhbHJlYWR5Cj4+ID4gcG93ZXJlZCwgYW5kIHNv
-IHRoaXMgc2hvdWxkIGJlCj4+ID4KPj4gPiBpZiAocmV0IDwgMCkKPj4gPiAgICAgICAgIGdvdG8g
-b3V0X2NmZ19mcmVlOwo+Pgo+PiBSaWdodCwgYXMgVG9tYXN6IGFsc28gcG9pbnRlZCwgd2Ugc2hv
-dWxkIHN1cmVseSBjaGVjayB0aGUgbmVnYXRpdmUgdmFsdWUgb2YKPj4gcG1fcnVudGltZV9nZXRf
-c3luYygpLgo+Cj4gU29ycnksIEkgZGlkbid0IG5vdGljZSB0aGF0IFRvbWFzeiBoYWQgcG9pbnRl
-ZCBpdCBvdXQgYXMgd2VsbC4gSSB3YW50ZWQgdG8KPiBxdWlja2x5IGdldCBpdCBvbiB0aGUgbWFp
-bGluZyBsaXN0IHNvIHlvdSBjb3VsZCBjYXRjaCBpdCBpbiB5b3VyIHRpbWUgem9uZS4KPgo+PiBG
-cm9tIHlvdXIgZGVzY3JpcHRpb24sIGl0IG1heSBiZSB0aGF0IHRoZSBHUFUgaGFzIHR1cm5lZCBv
-biB0aGUgc21tdSwgYW5kCj4+IHRoZW4gb25jZSBpZiBnb2VzIGFuZCBwcm9iZXMgdGhlIEdNVSwg
-dGhlIEdNVSBkZXZpY2UgYWxzbyB3YW50cyB0byB0dXJuLW9uCj4+IHRoZSBzYW1lIHNtbXUgZGV2
-aWNlLiBCdXQgdGhhdCdzIGFscmVhZHkgYWN0aXZlLiBTbyBwbV9ydW50aW1lX2dldF9zeW5jKCkK
-Pj4gcmV0dXJucyAxLgo+PiBBbSBpIG1ha2luZyBzZW5zZT8KPgo+IE15IGNvbmNlcm4gaXMgdGhh
-dCB0aGlzIGlzIGhhcHBlbmluZyBkdXJpbmcgdGhlIHByb2JlIGFuZCB3ZSBzaG91bGRuJ3QgYmUK
-PiBlbmVyZ2l6aW5nIHRoZSBHUFUgYXQgdGhpcyBwb2ludC4gQnV0IGl0IGlzIGVudGlyZWx5IHBv
-c3NpYmxlIHRoYXQgdGhlCj4gYnVzIGlzIG9uIGZvciBvdGhlciByZWFzb25zLiBJJ2xsIGRvIGEg
-Yml0IG9mIGRpZ2dpbmcgdG9kYXkgYW5kIHNlZSBleGFjdGx5Cj4gd2hpY2ggZGV2aWNlIGlzIGF0
-IGZhdWx0LgoKSSB3aWxsIHRyeSB0byBjaGVjayBpdCBteXNlbGYgdG9vLgoKcmVnYXJkcwpWaXZl
-awo+Cj4KPiBKb3JkYW4KPiAtLQo+IFRoZSBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5j
-LiBpcyBhIG1lbWJlciBvZiBDb2RlIEF1cm9yYSBGb3J1bSwKPiBhIExpbnV4IEZvdW5kYXRpb24g
-Q29sbGFib3JhdGl2ZSBQcm9qZWN0Cj4gLS0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlz
-dDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtYXJtLW1zbSIgaW4KPiB0aGUgYm9k
-eSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwo+IE1vcmUgbWFqb3Jk
-b21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbAoK
-CgotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0aW9uIENl
-bnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVkIGJ5IFRo
-ZSBMaW51eCBGb3VuZGF0aW9uCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNr
-dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Zy
-ZWVkcmVubwo=
+We are currently probing smartreflex with omap_device while we are
+already probing smartreflex related interconnect target module with
+ti-sysc driver and dts data.
+
+Before we can flip things on for ti-sysc, we need to prepare the
+smartreflex driver a bit:
+
+1. The smartreflex clock is really for the whole interconnect target
+   module. So it may be configured at the parent device level with
+   ti-sysc
+
+2. With ti-sysc, we have the child device manage interconnect target
+   module directly if pm_runtime_irq_safe() is set and there is only
+   one child. In that case nobody else is going to call pm_runtime_get
+   and put, so we need to add these calls to idle smartreflex properly
+   after probe if not fully configured
+
+3. With ti-sysc, the parent driver may rebind. So we want to use
+   platform_driver_register() and don't want probe to be __init
+
+Note that this patch depends on the related changes to ti-sysc driver
+and omap_device probing to prevent both ti-sysc and omap_device to
+try to probe smartreflex.
+
+Cc: linux-pm@vger.kernel.org
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/power/avs/smartreflex.c | 41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
+--- a/drivers/power/avs/smartreflex.c
++++ b/drivers/power/avs/smartreflex.c
+@@ -132,12 +132,16 @@ static void sr_set_clk_length(struct omap_sr *sr)
+ 	struct clk *fck;
+ 	u32 fclk_speed;
+ 
+-	fck = clk_get(&sr->pdev->dev, "fck");
+-
++	/* Try interconnect target module fck first if it already exists */
++	fck = clk_get(sr->pdev->dev.parent, "fck");
+ 	if (IS_ERR(fck)) {
+-		dev_err(&sr->pdev->dev, "%s: unable to get fck for device %s\n",
+-			__func__, dev_name(&sr->pdev->dev));
+-		return;
++		fck = clk_get(&sr->pdev->dev, "fck");
++		if (IS_ERR(fck)) {
++			dev_err(&sr->pdev->dev,
++				"%s: unable to get fck for device %s\n",
++				__func__, dev_name(&sr->pdev->dev));
++			return;
++		}
+ 	}
+ 
+ 	fclk_speed = clk_get_rate(fck);
+@@ -838,7 +842,7 @@ static int omap_sr_autocomp_store(void *data, u64 val)
+ DEFINE_SIMPLE_ATTRIBUTE(pm_sr_fops, omap_sr_autocomp_show,
+ 			omap_sr_autocomp_store, "%llu\n");
+ 
+-static int __init omap_sr_probe(struct platform_device *pdev)
++static int omap_sr_probe(struct platform_device *pdev)
+ {
+ 	struct omap_sr *sr_info;
+ 	struct omap_sr_data *pdata = pdev->dev.platform_data;
+@@ -898,6 +902,12 @@ static int __init omap_sr_probe(struct platform_device *pdev)
+ 
+ 	list_add(&sr_info->node, &sr_list);
+ 
++	ret = pm_runtime_get_sync(&pdev->dev);
++	if (ret < 0) {
++		pm_runtime_put_noidle(&pdev->dev);
++		goto err_list_del;
++	}
++
+ 	/*
+ 	 * Call into late init to do initializations that require
+ 	 * both sr driver and sr class driver to be initiallized.
+@@ -966,12 +976,17 @@ static int __init omap_sr_probe(struct platform_device *pdev)
+ 
+ 	}
+ 
++	pm_runtime_put_sync(&pdev->dev);
++
+ 	return ret;
+ 
+ err_debugfs:
+ 	debugfs_remove_recursive(sr_info->dbg_dir);
+ err_list_del:
+ 	list_del(&sr_info->node);
++
++	pm_runtime_put_sync(&pdev->dev);
++
+ 	return ret;
+ }
+ 
+@@ -1025,11 +1040,23 @@ static void omap_sr_shutdown(struct platform_device *pdev)
+ 	return;
+ }
+ 
++static const struct of_device_id omap_sr_match[] = {
++	{ .compatible = "ti,omap3-smartreflex-core", },
++	{ .compatible = "ti,omap3-smartreflex-mpu-iva", },
++	{ .compatible = "ti,omap4-smartreflex-core", },
++	{ .compatible = "ti,omap4-smartreflex-mpu", },
++	{ .compatible = "ti,omap4-smartreflex-iva", },
++	{  },
++};
++MODULE_DEVICE_TABLE(of, omap_sr_match);
++
+ static struct platform_driver smartreflex_driver = {
++	.probe		= omap_sr_probe,
+ 	.remove         = omap_sr_remove,
+ 	.shutdown	= omap_sr_shutdown,
+ 	.driver		= {
+ 		.name	= DRIVER_NAME,
++		.of_match_table	= omap_sr_match,
+ 	},
+ };
+ 
+@@ -1048,7 +1075,7 @@ static int __init sr_init(void)
+ 	else
+ 		pr_warn("%s: No PMIC hook to init smartreflex\n", __func__);
+ 
+-	ret = platform_driver_probe(&smartreflex_driver, omap_sr_probe);
++	ret = platform_driver_register(&smartreflex_driver);
+ 	if (ret) {
+ 		pr_err("%s: platform driver register failed for SR\n",
+ 		       __func__);
+-- 
+2.16.2
