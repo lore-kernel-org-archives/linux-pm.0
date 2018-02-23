@@ -1,59 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: s3c24xx: Fix broken s3c_cpufreq_init()
-Date: Fri, 23 Feb 2018 09:38:28 +0530
-Message-ID: <6b737a9c285840b4b2036fa51b692ee835664ec8.1519358505.git.viresh.kumar@linaro.org>
+From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Subject: Re: [PATCH 5/7] vga_switcheroo: Use device link for HDA
+ controller
+Date: Fri, 23 Feb 2018 10:51:47 +0100
+Message-ID: <20180223095147.GB17092@wunner.de>
+References: <cover.1518941072.git.lukas@wunner.de>
+ <99358da18f1c61b226678c7c70240e4407ac575b.1518941073.git.lukas@wunner.de>
+ <20180220222059.GD32228@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-samsung-soc@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, =?UTF-8?q?Bart=C5=82omiej=20=C5=BBo=C5=82nierkiewicz?= <b.zolnierkie@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180220222059.GD32228-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-commit a307a1e6bc0d ("cpufreq: s3c: use cpufreq_generic_init()")
-accidentally broke cpufreq on s3c2410 and s3c2412. These two platforms
-don't have a CPU frequency table and used to skip calling
-cpufreq_table_validate_and_show() for them. But with the above commit,
-we started calling it unconditionally and that will eventually fail as
-the frequency table pointer is NULL.
-
-Fix this by calling cpufreq_table_validate_and_show() conditionally
-again.
-
-Cc: stable@vger.kernel.org # v3.13+
-Fixes: a307a1e6bc0d ("cpufreq: s3c: use cpufreq_generic_init()")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/s3c24xx-cpufreq.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index 7b596fa38ad2..6bebc1f9f55a 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -351,7 +351,13 @@ struct clk *s3c_cpufreq_clk_get(struct device *dev, const char *name)
- static int s3c_cpufreq_init(struct cpufreq_policy *policy)
- {
- 	policy->clk = clk_arm;
--	return cpufreq_generic_init(policy, ftab, cpu_cur.info->latency);
-+
-+	policy->cpuinfo.transition_latency = cpu_cur.info->latency;
-+
-+	if (ftab)
-+		return cpufreq_table_validate_and_show(policy, ftab);
-+
-+	return 0;
- }
- 
- static int __init s3c_cpufreq_initclks(void)
--- 
-2.15.0.194.g9af6a3dea062
+T24gVHVlLCBGZWIgMjAsIDIwMTggYXQgMDQ6MjA6NTlQTSAtMDYwMCwgQmpvcm4gSGVsZ2FhcyB3
+cm90ZToKPiBPbiBTdW4sIEZlYiAxOCwgMjAxOCBhdCAwOTozODozMkFNICswMTAwLCBMdWthcyBX
+dW5uZXIgd3JvdGU6Cj4gPiBUaGUgZGV2aWNlIGxpbmsgaXMgYWRkZWQgaW4gYSBQQ0kgcXVpcmsg
+cmF0aGVyIHRoYW4gaW4gaGRhX2ludGVsLmMuCj4gPiBJdCBpcyB0aGVyZWZvcmUgbGVnYWwgZm9y
+IHRoZSBHUFUgdG8gcnVudGltZSBzdXNwZW5kIHRvIEQzY29sZCBldmVuIGlmCj4gPiB0aGUgSERB
+IGNvbnRyb2xsZXIgaXMgbm90IGJvdW5kIHRvIGEgZHJpdmVyIG9yIGlmIENPTkZJR19TTkRfSERB
+X0lOVEVMCj4gPiBpcyBub3QgZW5hYmxlZCwgZm9yIGFjY2Vzc2VzIHRvIHRoZSBIREEgY29udHJv
+bGxlciB3aWxsIGNhdXNlIHRoZSBHUFUgdG8KPiA+IHdha2UgdXAgcmVnYXJkbGVzcyBpZiB0aGV5
+J3JlIG9jY3VycmluZyBvdXRzaWRlIG9mIGhkYV9pbnRlbC5jICh0aGluawo+ID4gY29uZmlnIHNw
+YWNlIHJlYWRvdXQgdmlhIHN5c2ZzKS4KPiAKPiBJIGd1ZXNzIHRoaXMgR1BVIHdha2V1cCBoYXBw
+ZW5zICppZiogdGhlIHBhdGggYWNjZXNzaW5nIHRoZSBIREEKPiBjb250cm9sbGVyIGNhbGxzIHBt
+X3J1bnRpbWVfZ2V0X3N5bmMoKSBvciBzaW1pbGFyLCByaWdodD8KClJpZ2h0LgoKPiBXZSBkbyBo
+YXZlCj4gdGhhdCBpbiB0aGUgc3lzZnMgY29uZmlnIGFjY2Vzc29ycyB2aWEgcGNpX2NvbmZpZ19w
+bV9ydW50aW1lX2dldCgpLAo+IGJ1dCBub3QgaW4gdGhlIHN5c2ZzIG1tYXAgcGF0aHMuICBJIHRo
+aW5rIHRoYXQncyBhIGxhdGVudCBQQ0kgY29yZQo+IGRlZmVjdCBpbmRlcGVuZGVudCBvZiB0aGlz
+IHNlcmllcy4KClllcywgdGhlcmUgbWF5IGJlIGEgZmV3IHBsYWNlcyB3aGVyZSB0aGUgcGFyZW50
+IG9mIHRoZSBkZXZpY2UgaXMKZXJyb25lb3VzbHkgbm90IHJ1bnRpbWUgcmVzdW1lZCB3aGVuIHN5
+c2ZzIGZpbGVzIGFyZSBhY2Nlc3NlZC4KSSd2ZSBuZXZlciB1c2VkIHRoZSBzeXNmcyBtbWFwIGZl
+YXR1cmUsIHNvIG5ldmVyIHdpdG5lc3NlZCBpc3N1ZXMKd2l0aCBpdC4KCj4gV2UgYWxzbyBkb24n
+dCBoYXZlIHRoYXQgaW4gUENJIGNvcmUgY29uZmlnIGFjY2Vzc29ycy4gIFRoYXQgbWF5YmUKPiBk
+b2Vzbid0IG1hdHRlciBiZWNhdXNlIHRoZSBjb3JlIHByb2JhYmx5IHNob3VsZG4ndCBiZSB0b3Vj
+aGluZyBkZXZpY2VzCj4gYWZ0ZXIgZW51bWVyYXRpb24gKGFsdGhvdWdoIHRoZXJlIG1pZ2h0IGJl
+IGhvbGVzIHRoZXJlIGZvciB0aGluZ3MgbGlrZQo+IEFTUE0gd2hlcmUgYSBzeXNmcyBmaWxlIGNh
+biBjYXVzZSByZWNvbmZpZ3VyYXRpb24gb2Ygc2V2ZXJhbCBkZXZpY2VzKS4KCkkgYXNzdW1lIHdp
+dGggUENJIGNvcmUgY29uZmlnIGFjY2Vzc29ycyB5b3UncmUgcmVmZXJyaW5nIHRvCnBjaV9yZWFk
+X2NvbmZpZ193b3JkKCkgYW5kIGZyaWVuZHM/ICBUaG9zZSBhcmUgYXJndWFibHkgaG90cGF0aHMK
+d2hlcmUgd2Ugd291bGRuJ3Qgd2FudCB0aGUgb3ZlcmhlYWQgdG8gY2hlY2sgcnVudGltZSBQTSBz
+dGF0dXMKZXZlcnl0aW1lLiAgVGhleSBtaWdodCBhbHNvIGJlIGNhbGxlZCBmcm9tIGF0b21pYyBj
+b250ZXh0LCBJJ20Kbm90IHN1cmUsIGFuZCB0aGUgcnVudGltZSBQTSBjYWxsYmFja3MgbWF5IHNs
+ZWVwIGJ5IGRlZmF1bHQKKHVubGVzcyBwbV9ydW50aW1lX2lycV9zYWZlKCkgd2FzIGNhbGxlZCku
+Cgo+ID4gK3N0YXRpYyB2b2lkIHF1aXJrX2dwdV9oZGEoc3RydWN0IHBjaV9kZXYgKmhkYSkKPiA+
+ICt7Cj4gPiArCXN0cnVjdCBwY2lfZGV2ICpncHUgPSBOVUxMOwo+ID4gKwo+ID4gKwlpZiAoUENJ
+X0ZVTkMoaGRhLT5kZXZmbikgIT0gMSkKPiA+ICsJCXJldHVybjsKPiA+ICsKPiA+ICsJZ3B1ID0g
+cGNpX2dldF9kb21haW5fYnVzX2FuZF9zbG90KHBjaV9kb21haW5fbnIoaGRhLT5idXMpLAo+IAo+
+IFVubmVjZXNzYXJ5IGluaXRpYWxpemF0aW9uLgoKVGhhbmtzIGZvciBzcG90dGluZyB0aGlzLCBp
+dCdzIGEgcmVtbmFudCBvZiBhbiBlYXJsaWVyIHZlcnNpb24gb2YgdGhlCnBhdGNoIHdoaWNoIGNh
+bGxlZCBwY2lfZGV2X3B1dChncHUpIGluIHRoZSAoUENJX0ZVTkMoaGRhLT5kZXZmbikgIT0gMSkK
+Y2FzZS4KCkJlc3QgcmVnYXJkcywKCkx1a2FzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbm91dmVhdQo=
