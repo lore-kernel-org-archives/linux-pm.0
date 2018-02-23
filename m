@@ -1,209 +1,77 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
- topology
-Date: Fri, 23 Feb 2018 11:02:38 +0000
-Message-ID: <20180223110238.GB20461@e107981-ln.cambridge.arm.com>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-12-jeremy.linton@arm.com>
- <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
- <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 5/7] vga_switcheroo: Use device link for HDA
+ controller
+Date: Fri, 23 Feb 2018 08:23:21 -0600
+Message-ID: <20180223142321.GI14632@bhelgaas-glaptop.roam.corp.google.com>
+References: <cover.1518941072.git.lukas@wunner.de>
+ <99358da18f1c61b226678c7c70240e4407ac575b.1518941073.git.lukas@wunner.de>
+ <20180220222059.GD32228@bhelgaas-glaptop.roam.corp.google.com>
+ <20180223095147.GB17092@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, austinwc@codeaurora.org, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, vkilari@codeaurora.org, Jayachandran.Nair@cavium.com, Juri Lelli <juri.lelli@arm.com>, jhugo@codeaurora.org, Xiongfeng Wang <wangxiongfeng2@huawei.com>, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, ahs3@redhat.com, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, hanjun.guo@linaro.org, sudeep.holla@arm.com
+In-Reply-To: <20180223095147.GB17092-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Jaroslav Kysela <perex-/Fr2/VpizcU@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bastien Nocera <hadess-0MeiytkfxGOsTnJN9+BGXg@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, George Cherian <george.cherian-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 25, 2018 at 09:56:30AM -0600, Jeremy Linton wrote:
-> Hi,
-> 
-> On 01/25/2018 06:15 AM, Xiongfeng Wang wrote:
-> >Hi Jeremy,
-> >
-> >I have tested the patch with the newest UEFI. It prints the below error:
-> >
-> >[    4.017371] BUG: arch topology borken
-> >[    4.021069] BUG: arch topology borken
-> >[    4.024764] BUG: arch topology borken
-> >[    4.028460] BUG: arch topology borken
-> >[    4.032153] BUG: arch topology borken
-> >[    4.035849] BUG: arch topology borken
-> >[    4.039543] BUG: arch topology borken
-> >[    4.043239] BUG: arch topology borken
-> >[    4.046932] BUG: arch topology borken
-> >[    4.050629] BUG: arch topology borken
-> >[    4.054322] BUG: arch topology borken
-> >
-> >I checked the code and found that the newest UEFI set PPTT physical_package_flag on a physical package node and
-> >the NUMA domain (SRAT domains) starts from the layer of DIE. (The topology of our board is core->cluster->die->package).
-> 
-> I commented about that on the EDK2 mailing list. While the current spec
-> doesn't explicitly ban having the flag set multiple times between the leaf
-> and the root I consider it a "bug" and there is an effort to clarify the
-> spec and the use of that flag.
-> >
-> >When the kernel starts to build sched_domain, the multi-core sched_domain contains all the cores within a package,
-> >and the lowest NUMA sched_domain contains all the cores within a die. But the kernel requires that the multi-core
-> >sched_domain should be a subset of the lowest NUMA sched_domain, so the BUG info is printed.
-> 
-> Right. I've mentioned this problem a couple of times.
-> 
-> At at the moment, the spec isn't clear about how the proximity domain is
-> detected/located within the PPTT topology (a node with a 1:1 correspondence
-> isn't even required). As you can see from this patch set, we are making the
-> general assumption that the proximity domains are at the same level as the
-> physical socket. This isn't ideal for NUMA topologies, like the D05, that
-> don't align with the physical socket.
-> 
-> There are efforts underway to clarify and expand upon the specification to
-> deal with this general problem. The simple solution is another flag (say
-> PPTT_PROXIMITY_DOMAIN which would map to the D05 die) which could be used to
-> find nodes with 1:1 correspondence. At that point we could add a fairly
-> trivial patch to correct just the scheduler topology without affecting the
-> rest of the system topology code.
-
-I think Morten asked already but isn't this the same end result we end
-up having if we remove the DIE level if NUMA-within-package is detected
-(instead of using the default_topology[]) and we create our own ARM64
-domain hierarchy (with DIE level removed) through set_sched_topology()
-accordingly ?
-
-Put it differently: do we really need to rely on another PPTT flag to
-collect this information ?
-
-I can't merge code that breaks a platform with legitimate firmware
-bindings.
-
-Thanks,
-Lorenzo
-
-> 
-> >
-> >If we modify the UEFI to make NUMA sched_domain start from the layer of package, then all the topology information
-> >within the package will be discarded. I think we need to build the multi-core sched_domain using the cores within
-> >the cluster instead of the cores within the package. I think that's what 'multi-core' means. Multi cores form a cluster. I guess.
-> >If we build the multi-core sched_domain using the cores within a cluster, I think we need to add fields in struct cpu_topology
-> >to record which cores are in each cluster.
-> 
-> The problem is that there isn't a generic way to identify which level of
-> cache sharing is the "correct" top layer MC domain. For one system cluster
-> might be appropriate, for another it might be the highest caching level
-> within a socket, for another is might be a something in between or a group
-> of clusters or LLCs..
-> 
-> Hence the effort to standardize/guarantee a PPTT node that exactly matches a
-> SRAT domain. With that, each SOC/system provider has clearly defined method
-> for communicating where they want the proximity domain information to begin.
-> 
-> Thanks,
-> 
-> >
-> >
-> >Thanks,
-> >Xiongfeng
-> >
-> >On 2018/1/13 8:59, Jeremy Linton wrote:
-> >>Propagate the topology information from the PPTT tree to the
-> >>cpu_topology array. We can get the thread id, core_id and
-> >>cluster_id by assuming certain levels of the PPTT tree correspond
-> >>to those concepts. The package_id is flagged in the tree and can be
-> >>found by calling find_acpi_cpu_topology_package() which terminates
-> >>its search when it finds an ACPI node flagged as the physical
-> >>package. If the tree doesn't contain enough levels to represent
-> >>all of the requested levels then the root node will be returned
-> >>for all subsequent levels.
-> >>
-> >>Cc: Juri Lelli <juri.lelli@arm.com>
-> >>Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> >>---
-> >>  arch/arm64/kernel/topology.c | 46 +++++++++++++++++++++++++++++++++++++++++++-
-> >>  1 file changed, 45 insertions(+), 1 deletion(-)
-> >>
-> >>diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-> >>index 7b06e263fdd1..ce8ec7fd6b32 100644
-> >>--- a/arch/arm64/kernel/topology.c
-> >>+++ b/arch/arm64/kernel/topology.c
-> >>@@ -11,6 +11,7 @@
-> >>   * for more details.
-> >>   */
-> >>+#include <linux/acpi.h>
-> >>  #include <linux/arch_topology.h>
-> >>  #include <linux/cpu.h>
-> >>  #include <linux/cpumask.h>
-> >>@@ -22,6 +23,7 @@
-> >>  #include <linux/sched.h>
-> >>  #include <linux/sched/topology.h>
-> >>  #include <linux/slab.h>
-> >>+#include <linux/smp.h>
-> >>  #include <linux/string.h>
-> >>  #include <asm/cpu.h>
-> >>@@ -300,6 +302,46 @@ static void __init reset_cpu_topology(void)
-> >>  	}
-> >>  }
-> >>+#ifdef CONFIG_ACPI
-> >>+/*
-> >>+ * Propagate the topology information of the processor_topology_node tree to the
-> >>+ * cpu_topology array.
-> >>+ */
-> >>+static int __init parse_acpi_topology(void)
-> >>+{
-> >>+	bool is_threaded;
-> >>+	int cpu, topology_id;
-> >>+
-> >>+	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
-> >>+
-> >>+	for_each_possible_cpu(cpu) {
-> >>+		topology_id = find_acpi_cpu_topology(cpu, 0);
-> >>+		if (topology_id < 0)
-> >>+			return topology_id;
-> >>+
-> >>+		if (is_threaded) {
-> >>+			cpu_topology[cpu].thread_id = topology_id;
-> >>+			topology_id = find_acpi_cpu_topology(cpu, 1);
-> >>+			cpu_topology[cpu].core_id   = topology_id;
-> >>+			topology_id = find_acpi_cpu_topology_package(cpu);
-> >>+			cpu_topology[cpu].package_id = topology_id;
-> >>+		} else {
-> >>+			cpu_topology[cpu].thread_id  = -1;
-> >>+			cpu_topology[cpu].core_id    = topology_id;
-> >>+			topology_id = find_acpi_cpu_topology_package(cpu);
-> >>+			cpu_topology[cpu].package_id = topology_id;
-> >>+		}
-> >>+	}
-> >>+
-> >>+	return 0;
-> >>+}
-> >>+
-> >>+#else
-> >>+static inline int __init parse_acpi_topology(void)
-> >>+{
-> >>+	return -EINVAL;
-> >>+}
-> >>+#endif
-> >>  void __init init_cpu_topology(void)
-> >>  {
-> >>@@ -309,6 +351,8 @@ void __init init_cpu_topology(void)
-> >>  	 * Discard anything that was parsed if we hit an error so we
-> >>  	 * don't use partial information.
-> >>  	 */
-> >>-	if (of_have_populated_dt() && parse_dt_topology())
-> >>+	if ((!acpi_disabled) && parse_acpi_topology())
-> >>+		reset_cpu_topology();
-> >>+	else if (of_have_populated_dt() && parse_dt_topology())
-> >>  		reset_cpu_topology();
-> >>  }
-> >>
-> >
-> 
+WytjYyBHZW9yZ2VdCgpPbiBGcmksIEZlYiAyMywgMjAxOCBhdCAxMDo1MTo0N0FNICswMTAwLCBM
+dWthcyBXdW5uZXIgd3JvdGU6Cj4gT24gVHVlLCBGZWIgMjAsIDIwMTggYXQgMDQ6MjA6NTlQTSAt
+MDYwMCwgQmpvcm4gSGVsZ2FhcyB3cm90ZToKPiA+IE9uIFN1biwgRmViIDE4LCAyMDE4IGF0IDA5
+OjM4OjMyQU0gKzAxMDAsIEx1a2FzIFd1bm5lciB3cm90ZToKPiA+ID4gVGhlIGRldmljZSBsaW5r
+IGlzIGFkZGVkIGluIGEgUENJIHF1aXJrIHJhdGhlciB0aGFuIGluIGhkYV9pbnRlbC5jLgo+ID4g
+PiBJdCBpcyB0aGVyZWZvcmUgbGVnYWwgZm9yIHRoZSBHUFUgdG8gcnVudGltZSBzdXNwZW5kIHRv
+IEQzY29sZCBldmVuIGlmCj4gPiA+IHRoZSBIREEgY29udHJvbGxlciBpcyBub3QgYm91bmQgdG8g
+YSBkcml2ZXIgb3IgaWYgQ09ORklHX1NORF9IREFfSU5URUwKPiA+ID4gaXMgbm90IGVuYWJsZWQs
+IGZvciBhY2Nlc3NlcyB0byB0aGUgSERBIGNvbnRyb2xsZXIgd2lsbCBjYXVzZSB0aGUgR1BVIHRv
+Cj4gPiA+IHdha2UgdXAgcmVnYXJkbGVzcyBpZiB0aGV5J3JlIG9jY3VycmluZyBvdXRzaWRlIG9m
+IGhkYV9pbnRlbC5jICh0aGluawo+ID4gPiBjb25maWcgc3BhY2UgcmVhZG91dCB2aWEgc3lzZnMp
+Lgo+ID4gCj4gPiBJIGd1ZXNzIHRoaXMgR1BVIHdha2V1cCBoYXBwZW5zICppZiogdGhlIHBhdGgg
+YWNjZXNzaW5nIHRoZSBIREEKPiA+IGNvbnRyb2xsZXIgY2FsbHMgcG1fcnVudGltZV9nZXRfc3lu
+YygpIG9yIHNpbWlsYXIsIHJpZ2h0Pwo+IAo+IFJpZ2h0Lgo+IAo+ID4gV2UgZG8gaGF2ZQo+ID4g
+dGhhdCBpbiB0aGUgc3lzZnMgY29uZmlnIGFjY2Vzc29ycyB2aWEgcGNpX2NvbmZpZ19wbV9ydW50
+aW1lX2dldCgpLAo+ID4gYnV0IG5vdCBpbiB0aGUgc3lzZnMgbW1hcCBwYXRocy4gIEkgdGhpbmsg
+dGhhdCdzIGEgbGF0ZW50IFBDSSBjb3JlCj4gPiBkZWZlY3QgaW5kZXBlbmRlbnQgb2YgdGhpcyBz
+ZXJpZXMuCj4gCj4gWWVzLCB0aGVyZSBtYXkgYmUgYSBmZXcgcGxhY2VzIHdoZXJlIHRoZSBwYXJl
+bnQgb2YgdGhlIGRldmljZSBpcwo+IGVycm9uZW91c2x5IG5vdCBydW50aW1lIHJlc3VtZWQgd2hl
+biBzeXNmcyBmaWxlcyBhcmUgYWNjZXNzZWQuCj4gSSd2ZSBuZXZlciB1c2VkIHRoZSBzeXNmcyBt
+bWFwIGZlYXR1cmUsIHNvIG5ldmVyIHdpdG5lc3NlZCBpc3N1ZXMKPiB3aXRoIGl0Lgo+IAo+ID4g
+V2UgYWxzbyBkb24ndCBoYXZlIHRoYXQgaW4gUENJIGNvcmUgY29uZmlnIGFjY2Vzc29ycy4gIFRo
+YXQgbWF5YmUKPiA+IGRvZXNuJ3QgbWF0dGVyIGJlY2F1c2UgdGhlIGNvcmUgcHJvYmFibHkgc2hv
+dWxkbid0IGJlIHRvdWNoaW5nIGRldmljZXMKPiA+IGFmdGVyIGVudW1lcmF0aW9uIChhbHRob3Vn
+aCB0aGVyZSBtaWdodCBiZSBob2xlcyB0aGVyZSBmb3IgdGhpbmdzIGxpa2UKPiA+IEFTUE0gd2hl
+cmUgYSBzeXNmcyBmaWxlIGNhbiBjYXVzZSByZWNvbmZpZ3VyYXRpb24gb2Ygc2V2ZXJhbCBkZXZp
+Y2VzKS4KPiAKPiBJIGFzc3VtZSB3aXRoIFBDSSBjb3JlIGNvbmZpZyBhY2Nlc3NvcnMgeW91J3Jl
+IHJlZmVycmluZyB0bwo+IHBjaV9yZWFkX2NvbmZpZ193b3JkKCkgYW5kIGZyaWVuZHM/ICBUaG9z
+ZSBhcmUgYXJndWFibHkgaG90cGF0aHMKPiB3aGVyZSB3ZSB3b3VsZG4ndCB3YW50IHRoZSBvdmVy
+aGVhZCB0byBjaGVjayBydW50aW1lIFBNIHN0YXR1cwo+IGV2ZXJ5dGltZS4gIFRoZXkgbWlnaHQg
+YWxzbyBiZSBjYWxsZWQgZnJvbSBhdG9taWMgY29udGV4dCwgSSdtCj4gbm90IHN1cmUsIGFuZCB0
+aGUgcnVudGltZSBQTSBjYWxsYmFja3MgbWF5IHNsZWVwIGJ5IGRlZmF1bHQKPiAodW5sZXNzIHBt
+X3J1bnRpbWVfaXJxX3NhZmUoKSB3YXMgY2FsbGVkKS4KClllcywgSSB3YXMgdGhpbmtpbmcgb2Yg
+cGNpX3JlYWRfY29uZmlnX3dvcmQoKSwgZXRjLiAgVGhleSdyZSB1c2VkIGJ5CnRoZSBjb3JlIGR1
+cmluZyBlbnVtZXJhdGlvbiBhbmQgb2NjYXNpb25hbGx5IGJ5IGRyaXZlcnMsIGFuZCBib3RoCmNh
+c2VzIGFscmVhZHkgcGF5IGF0dGVudGlvbiB0byBQTS4gIEkgdGhpbmsgd2UgaGF2ZSBhIGZldyBo
+b2xlcyBpbiB0aGUKcnVudGltZSBzeXNmcyBhcmVhLCBidXQgSSB0aGluayBpdCdzIHJlYXNvbmFi
+bGUgdG8gZGVhbCB3aXRoIHRob3NlIGluCnRoZSBjYWxsZXJzLgoKU28gSSBkb24ndCB0aGluayB0
+aG9zZSBuZWVkIHRvIGFjdHVhbGx5ICpkbyogYW55dGhpbmcgd2l0aCBQTSBzdGF0dXMsCmFsdGhv
+dWdoIGl0IG1pZ2h0IGJlIGludGVyZXN0aW5nIHRvIGFkZCBzb21lIChvcHRpb25hbCkgY2hlY2tp
+bmcKdGhlcmUuICBHZW9yZ2UgQ2hlcmlhbiBpcyB0dXJuaW5nIHVwIHNvbWUgaXNzdWVzIGluIHRo
+aXMgYXJlYSBiZWNhdXNlCmhlIGhhcyBhIHJvb3QgcG9ydCB0aGF0IHJlcG9ydHMgZXJyb3JzIHdp
+dGggYW4gZXhjZXB0aW9uIGluc3RlYWQgb2YKc2lsZW50bHkgc3ludGhlc2l6aW5nIGFsbCBvbmVz
+IGRhdGEgbGlrZSBtb3N0IGhhcmR3YXJlIGRvZXMgWzFdLgoKQmpvcm4KClsxXSBodHRwczovL2xr
+bWwua2VybmVsLm9yZy9yLzE1MTc1NTQ4NDYtMTY3MDMtMS1naXQtc2VuZC1lbWFpbC1nZW9yZ2Uu
+Y2hlcmlhbkBjYXZpdW0uY29tCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Au
+b3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVh
+dQo=
