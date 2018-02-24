@@ -1,104 +1,52 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCIe bridge deferred probe breaks suspend resume
-Date: Sat, 24 Feb 2018 10:47:26 +0100
-Message-ID: <CAJZ5v0jJMODOsZV41Jn18LCtttMemFQyXonJxZnUgXday8_4iw@mail.gmail.com>
-References: <1519433209-14581-1-git-send-email-fkan@apm.com>
- <CAJZ5v0hDM=DtBZA1awz7ao62cpe4CAhUz1L7KkLTv=G3YQhuEw@mail.gmail.com>
+From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v13 3/4] thinkpad_acpi: Add support for
+ battery thresholds
+Date: Sat, 24 Feb 2018 11:31:40 +0100
+Message-ID: <20180224103140.lyisawzxxkboez42@thinkpad>
+References: <20180207145844.bd567c36juvlkjvz@thinkpad>
+ <20180208220323.cr6j2kcozekwbzo6@earth.universe>
+ <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com>
+ <20180209103946.fkolldv6boml3e32@earth.universe>
+ <CAJZ5v0h8YW03EpqEVO8LGti9ECo7+Gmm0PdgQViidUCZ=o0AQw@mail.gmail.com>
+ <20180209123414.xrtmtgmeeezmma5u@earth.universe>
+ <20180210084859.dtpydh5gkvoywoju@thinkpad>
+ <CAHp75Vej+EjOd-fHjM9R45E0M_qttGsEBOQrwp7WdJ16X6qxXQ@mail.gmail.com>
+ <CAJZ5v0hdpzW3fqwOaHhV1wc19oLtLNXMGUgV9yMBRuqdn6PpHA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJZ5v0hDM=DtBZA1awz7ao62cpe4CAhUz1L7KkLTv=G3YQhuEw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Feng Kan <fkan@apm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hdpzW3fqwOaHhV1wc19oLtLNXMGUgV9yMBRuqdn6PpHA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
+List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lv Zheng <lv.zheng-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 24, 2018 at 10:35 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Sat, Feb 24, 2018 at 1:46 AM, Feng Kan <fkan@apm.com> wrote:
->> This is not a patch, but rather a question regarding the deferred
->> probe's effect on PCIe PM ordering. This happens on our system
->> which defer the probing of root bridge due to  the IOMMU not being
->> ready. Because of the deferred action, the bridge is moved to the
->> end of the dpm_list which results in incorrect suspend and resume
->> sequence.
->>
->> In the cases I have seen, the bridge is always reordered because of
->> startup sequence. They are always place after the endpoint. If that
->> is the case the following code should be able to prevent such cases.
->> However, is there some cases here that would violate such situation?
->
-> The code in dd.c assumes that the device being probed has no children
-> (or consumers, for that matter) and so it is safe to move it to the
-> end of the list.
->
-> If the device has children (or consumers), moving it to the end of the
-> list by itself doesn't work, which is the case for you.
->
->> ---
->>  drivers/base/dd.c | 20 +++++++++++---------
->>  1 file changed, 11 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
->> index de6fd09..5b96d5c 100644
->> --- a/drivers/base/dd.c
->> +++ b/drivers/base/dd.c
->> @@ -116,15 +116,17 @@ static void deferred_probe_work_func(struct work_struct *work)
->>                  */
->>                 mutex_unlock(&deferred_probe_mutex);
->>
->> -               /*
->> -                * Force the device to the end of the dpm_list since
->> -                * the PM code assumes that the order we add things to
->> -                * the list is a good order for suspend but deferred
->> -                * probe makes that very unsafe.
->> -                */
->> -               device_pm_lock();
->> -               device_pm_move_last(dev);
->> -               device_pm_unlock();
->> +                if (!dev_is_pci(dev)) {
->
-> You can't do this here.
->
-> It is not clear why all PCI devices should be an exception in the
-> first place.  There may be PCI devices without children that need to
-> be moved to the end of the list and you'd break that case.
->
->> +                        /*
->> +                         * Force the device to the end of the dpm_list since
->> +                         * the PM code assumes that the order we add things to
->> +                         * the list is a good order for suspend but deferred
->> +                         * probe makes that very unsafe.
->> +                         */
->> +                        device_pm_lock();
->> +                        device_pm_move_last(dev);
->> +                        device_pm_unlock();
->> +                }
->>
->>                 dev_dbg(dev, "Retrying from deferred list\n");
->>                 if (initcall_debug && !initcalls_done)
->> --
->
-> You can try to replace the device_pm_move_last(dev) in
-> deferred_probe_work_func(struct() with device_reorder_to_tail(), but
-> that has to be called under device_links_read_lock/unloc () and
-> device_pm_lock/unloc() (in the right order).
-
-Alternatively, you can replace your !dev_is_pci(dev) check with a
-check for the presence of children or consumers and only move the
-device to the end of the PM list if there are not any.  That would
-kind of make sense, but it may break other assumptions in the deferred
-probing mechanism which I don't recall ATM.
-
-Or avoid deferred probing of the host bridge driver entirely.  I guess
-you can use it with limited functionality until the IOMMU driver is
-ready and switch over to the fully functional operation mode when that
-happens, but that would need to hook into the IOMMU code somehow.
+T24gU2F0LCBGZWIgMjQsIDIwMTggYXQgMTA6MDc6MjBBTSArMDEwMCwgUmFmYWVsIEouIFd5c29j
+a2kgd3JvdGU6Cj4gT24gRnJpLCBGZWIgMjMsIDIwMTggYXQgNjoyMSBQTSwgQW5keSBTaGV2Y2hl
+bmtvCj4gPGFuZHkuc2hldmNoZW5rb0BnbWFpbC5jb20+IHdyb3RlOgo+ID4gT24gU2F0LCBGZWIg
+MTAsIDIwMTggYXQgMTA6NDggQU0sIE9nbmplbiBHYWxpxIcgPHNtY2x0MzBwQGdtYWlsLmNvbT4g
+d3JvdGU6Cj4gPgo+ID4+IERvIHlvdSBndXlzIHdhbnQgbWUgdG8gc2VuZCBpbiBhbm90aGVyIHJl
+dmlzaW9uIG9mIHRoZSBwYXRjaCB3aXRoIHNvbWUKPiA+PiBkb2N1bWVudGF0aW9uIG9uIHRoZSBz
+eXNmcyBBUEk/Cj4gPgo+ID4gSSBub3RpY2VkIEkgZGlkbid0IGFwcGx5IGl0IGJlY2F1c2Ugb2Yg
+c29tZSBwZW5kaW5nIGNoYW5nZXMgZGlzY3Vzc2VkLAo+ID4gcGVyaGFwcyB0aGlzIG9uZSBhYm92
+ZS4KPiA+Cj4gPiBTbywgZGVmaW5pdGVseSBwbGVhc2Ugc2VuZCBhIG5ldyB2ZXJzaW9uIHdoaWNo
+IGFkZHJlc3NlcyBjb21tZW50cy4KPiAKPiBObywgaXQgYWN0dWFsbHkgaGFzIGJlZW4gYXBwbGll
+ZCBhbHJlYWR5LgoKU28gaXQgaGFzIGJlZW4gcXVldWVkIHVwIGZvciA0LjE3PwoKSWYgaXQgaGFz
+LCB0aGF0IGlzIGF3ZXNvbWUhIFRoYW5rcyEKCj4gCj4gV2hhdCBpcyBuZWVkZWQgaXMgYSBmb2xs
+b3ctdXAgcGF0Y2gsIGJ1dCBJJ2xsIHdyaXRlIG9uIHRoYXQgbGF0ZXIuCj4gCj4gVGhhbmtzLAo+
+IFJhZmFlbAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkNoZWNrIG91dCB0aGUgdmlicmFudCB0ZWNo
+IGNvbW11bml0eSBvbiBvbmUgb2YgdGhlIHdvcmxkJ3MgbW9zdAplbmdhZ2luZyB0ZWNoIHNpdGVz
+LCBTbGFzaGRvdC5vcmchIGh0dHA6Ly9zZG0ubGluay9zbGFzaGRvdApfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwppYm0tYWNwaS1kZXZlbCBtYWlsaW5nIGxp
+c3QKaWJtLWFjcGktZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291
+cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2libS1hY3BpLWRldmVsCg==
