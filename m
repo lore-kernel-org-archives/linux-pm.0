@@ -1,15 +1,18 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH V3 2/2] thermal: imx: add i.MX7 thermal sensor support
-Date: Sat, 24 Feb 2018 10:51:31 +0800
-Message-ID: <20180224025130.GV3217@dragon>
-References: <1517818347-7436-1-git-send-email-Anson.Huang@nxp.com>
- <1517818347-7436-2-git-send-email-Anson.Huang@nxp.com>
+From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
+ topology
+Date: Sat, 24 Feb 2018 11:05:53 +0800
+Message-ID: <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-12-jeremy.linton@arm.com>
+ <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
+ <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
+ <20180223110238.GB20461@e107981-ln.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1517818347-7436-2-git-send-email-Anson.Huang@nxp.com>
+In-Reply-To: <20180223110238.GB20461@e107981-ln.cambridge.arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,575 +22,205 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Anson Huang <Anson.Huang@nxp.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, edubezval@gmail.com, robh+dt@kernel.org, Linux-imx@nxp.com, kernel@pengutronix.de, fabio.estevam@nxp.com, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jeremy Linton <jeremy.linton@arm.com>
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, catalin.marinas@arm.com, Juri Lelli <juri.lelli@arm.com>, gregkh@linuxfoundation.org, jhugo@codeaurora.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, morten.rasmussen@arm.com, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, hanjun.guo@linaro.org, sudeep.holla@arm.com, austinwc@codeaurora.org, vkilari@codeaurora.org, ahs3@redhat.com, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 05, 2018 at 04:12:27PM +0800, Anson Huang wrote:
-> This patch adds i.MX7 thermal sensor support, most
-> of the i.MX7 thermal sensor functions are same with
-> i.MX6 except the registers offset/layout, so we move
-> those registers offset/layout definitions to soc data
-> structure.
+
+Hi,
+On 2018/2/23 19:02, Lorenzo Pieralisi wrote:
+> On Thu, Jan 25, 2018 at 09:56:30AM -0600, Jeremy Linton wrote:
+>> Hi,
+>>
+>> On 01/25/2018 06:15 AM, Xiongfeng Wang wrote:
+>>> Hi Jeremy,
+>>>
+>>> I have tested the patch with the newest UEFI. It prints the below error:
+>>>
+>>> [    4.017371] BUG: arch topology borken
+>>> [    4.021069] BUG: arch topology borken
+>>> [    4.024764] BUG: arch topology borken
+>>> [    4.028460] BUG: arch topology borken
+>>> [    4.032153] BUG: arch topology borken
+>>> [    4.035849] BUG: arch topology borken
+>>> [    4.039543] BUG: arch topology borken
+>>> [    4.043239] BUG: arch topology borken
+>>> [    4.046932] BUG: arch topology borken
+>>> [    4.050629] BUG: arch topology borken
+>>> [    4.054322] BUG: arch topology borken
+>>>
+>>> I checked the code and found that the newest UEFI set PPTT physical_package_flag on a physical package node and
+>>> the NUMA domain (SRAT domains) starts from the layer of DIE. (The topology of our board is core->cluster->die->package).
+>>
+>> I commented about that on the EDK2 mailing list. While the current spec
+>> doesn't explicitly ban having the flag set multiple times between the leaf
+>> and the root I consider it a "bug" and there is an effort to clarify the
+>> spec and the use of that flag.
+>>>
+>>> When the kernel starts to build sched_domain, the multi-core sched_domain contains all the cores within a package,
+>>> and the lowest NUMA sched_domain contains all the cores within a die. But the kernel requires that the multi-core
+>>> sched_domain should be a subset of the lowest NUMA sched_domain, so the BUG info is printed.
+>>
+>> Right. I've mentioned this problem a couple of times.
+>>
+>> At at the moment, the spec isn't clear about how the proximity domain is
+>> detected/located within the PPTT topology (a node with a 1:1 correspondence
+>> isn't even required). As you can see from this patch set, we are making the
+>> general assumption that the proximity domains are at the same level as the
+>> physical socket. This isn't ideal for NUMA topologies, like the D05, that
+>> don't align with the physical socket.
+>>
+>> There are efforts underway to clarify and expand upon the specification to
+>> deal with this general problem. The simple solution is another flag (say
+>> PPTT_PROXIMITY_DOMAIN which would map to the D05 die) which could be used to
+>> find nodes with 1:1 correspondence. At that point we could add a fairly
+>> trivial patch to correct just the scheduler topology without affecting the
+>> rest of the system topology code.
 > 
-> i.MX7 uses single calibration data @25C, the calibration
-> data is located at OCOTP offset 0x4F0, bit[17:9], the
-> formula is as below:
+> I think Morten asked already but isn't this the same end result we end
+> up having if we remove the DIE level if NUMA-within-package is detected
+> (instead of using the default_topology[]) and we create our own ARM64
+> domain hierarchy (with DIE level removed) through set_sched_topology()
+> accordingly ?
 > 
-> Tmeas = (Nmeas - n1) + 25; n1 is the fuse value for 25C.
+> Put it differently: do we really need to rely on another PPTT flag to
+> collect this information ?
 > 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> Signed-off-by: Bai Ping <ping.bai@nxp.com>
-> ---
-> changes since V2:
-> 	Add bindind doc changes in this patch according to review comments.
->  .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
->  drivers/thermal/imx_thermal.c                      | 314 ++++++++++++++++-----
->  2 files changed, 254 insertions(+), 69 deletions(-)
+> I can't merge code that breaks a platform with legitimate firmware
+> bindings.
+
+I think we really need another PPTT flag, from which we can get information
+about how to build a multi-core sched_domain. I think only cache-sharing information
+is not enough to get information about how to build a multi-core shced_domain.
+
+How about this? We assume the upper layer of the lowest layer to be multi-core layer.
+After that flag is added into ACPI specs, we add another patch to adapt to the change.
+
+Thanks,
+Xiongfeng
+
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> index 28be51a..79f97bc 100644
-> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> @@ -1,8 +1,13 @@
->  * Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
->  
->  Required properties:
-> -- compatible : "fsl,imx6q-tempmon" for i.MX6Q, "fsl,imx6sx-tempmon" for i.MX6SX.
-> -  i.MX6SX has two more IRQs than i.MX6Q, one is IRQ_LOW and the other is IRQ_PANIC,
-> +- compatible : must be one of following:
-> +  - "fsl,imx6q-tempmon" for i.MX6Q,
-> +  - "fsl,imx6sx-tempmon" for i.MX6SX,
-> +  - "fsl,imx7-tempmon" for i.MX7S/D.
-
-We generally use a SoC name rather than SoC family name for compatible.
-So imx7d or imx7s should be used in there, right?
-
-> +- interrupts : the interrupt output of the controller:
-> +  i.MX6Q has one IRQ which will be triggered when temperature is higher than high threshold,
-> +  i.MX6SX and i.MX7S/D have two more IRQs than i.MX6Q, one is IRQ_LOW and the other is IRQ_PANIC,
->    when temperature is below than low threshold, IRQ_LOW will be triggered, when temperature
->    is higher than panic threshold, system will auto reboot by SRC module.
->  - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index e7d4ffc..c95fa82 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -31,34 +31,58 @@
->  #define REG_CLR		0x8
->  #define REG_TOG		0xc
->  
-> -#define MISC0				0x0150
-> -#define MISC0_REFTOP_SELBIASOFF		(1 << 3)
-> -#define MISC1				0x0160
-> -#define MISC1_IRQ_TEMPHIGH		(1 << 29)
-> +/* i.MX6 specific */
-> +#define IMX6_MISC0				0x0150
-> +#define IMX6_MISC0_REFTOP_SELBIASOFF		(1 << 3)
-> +#define IMX6_MISC1				0x0160
-> +#define IMX6_MISC1_IRQ_TEMPHIGH			(1 << 29)
->  /* Below LOW and PANIC bits are only for TEMPMON_IMX6SX */
-> -#define MISC1_IRQ_TEMPLOW		(1 << 28)
-> -#define MISC1_IRQ_TEMPPANIC		(1 << 27)
-> -
-> -#define TEMPSENSE0			0x0180
-> -#define TEMPSENSE0_ALARM_VALUE_SHIFT	20
-> -#define TEMPSENSE0_ALARM_VALUE_MASK	(0xfff << TEMPSENSE0_ALARM_VALUE_SHIFT)
-> -#define TEMPSENSE0_TEMP_CNT_SHIFT	8
-> -#define TEMPSENSE0_TEMP_CNT_MASK	(0xfff << TEMPSENSE0_TEMP_CNT_SHIFT)
-> -#define TEMPSENSE0_FINISHED		(1 << 2)
-> -#define TEMPSENSE0_MEASURE_TEMP		(1 << 1)
-> -#define TEMPSENSE0_POWER_DOWN		(1 << 0)
-> -
-> -#define TEMPSENSE1			0x0190
-> -#define TEMPSENSE1_MEASURE_FREQ		0xffff
-> -/* Below TEMPSENSE2 is only for TEMPMON_IMX6SX */
-> -#define TEMPSENSE2			0x0290
-> -#define TEMPSENSE2_LOW_VALUE_SHIFT	0
-> -#define TEMPSENSE2_LOW_VALUE_MASK	0xfff
-> -#define TEMPSENSE2_PANIC_VALUE_SHIFT	16
-> -#define TEMPSENSE2_PANIC_VALUE_MASK	0xfff0000
-> +#define IMX6_MISC1_IRQ_TEMPLOW			(1 << 28)
-> +#define IMX6_MISC1_IRQ_TEMPPANIC		(1 << 27)
-> +
-> +#define IMX6_TEMPSENSE0				0x0180
-> +#define IMX6_TEMPSENSE0_ALARM_VALUE_SHIFT	20
-> +#define IMX6_TEMPSENSE0_ALARM_VALUE_MASK	(0xfff << 20)
-> +#define IMX6_TEMPSENSE0_TEMP_CNT_SHIFT		8
-> +#define IMX6_TEMPSENSE0_TEMP_CNT_MASK		(0xfff << 8)
-> +#define IMX6_TEMPSENSE0_FINISHED		(1 << 2)
-> +#define IMX6_TEMPSENSE0_MEASURE_TEMP		(1 << 1)
-> +#define IMX6_TEMPSENSE0_POWER_DOWN		(1 << 0)
-> +
-> +#define IMX6_TEMPSENSE1				0x0190
-> +#define IMX6_TEMPSENSE1_MEASURE_FREQ		0xffff
-> +#define IMX6_TEMPSENSE1_MEASURE_FREQ_SHIFT	0
->  
-> -#define OCOTP_MEM0			0x0480
-> -#define OCOTP_ANA1			0x04e0
-> +/* Below TEMPSENSE2 is only for TEMPMON_IMX6SX */
-> +#define IMX6_TEMPSENSE2				0x0290
-> +#define IMX6_TEMPSENSE2_LOW_VALUE_SHIFT		0
-> +#define IMX6_TEMPSENSE2_LOW_VALUE_MASK		0xfff
-> +#define IMX6_TEMPSENSE2_PANIC_VALUE_SHIFT	16
-> +#define IMX6_TEMPSENSE2_PANIC_VALUE_MASK	0xfff0000
-> +
-> +/* i.MX7 specific */
-> +#define IMX7_ANADIG_DIGPROG			0x800
-> +#define IMX7_TEMPSENSE0				0x300
-> +#define IMX7_TEMPSENSE0_PANIC_ALARM_SHIFT	18
-> +#define IMX7_TEMPSENSE0_PANIC_ALARM_MASK	(0x1ff << 18)
-> +#define IMX7_TEMPSENSE0_HIGH_ALARM_SHIFT	9
-> +#define IMX7_TEMPSENSE0_HIGH_ALARM_MASK		(0x1ff << 9)
-> +#define IMX7_TEMPSENSE0_LOW_ALARM_SHIFT		0
-> +#define IMX7_TEMPSENSE0_LOW_ALARM_MASK		0x1ff
-> +
-> +#define IMX7_TEMPSENSE1				0x310
-> +#define IMX7_TEMPSENSE1_MEASURE_FREQ_SHIFT	16
-> +#define IMX7_TEMPSENSE1_MEASURE_FREQ_MASK	(0xffff << 16)
-> +#define IMX7_TEMPSENSE1_FINISHED		(1 << 11)
-> +#define IMX7_TEMPSENSE1_MEASURE_TEMP		(1 << 10)
-> +#define IMX7_TEMPSENSE1_POWER_DOWN		(1 << 9)
-> +#define IMX7_TEMPSENSE1_TEMP_VALUE_SHIFT	0
-> +#define IMX7_TEMPSENSE1_TEMP_VALUE_MASK		0x1ff
-> +
-> +#define IMX6_OCOTP_MEM0				0x0480
-> +#define IMX6_OCOTP_ANA1				0x04e0
-> +#define IMX7_OCOTP_TESTER3			0x0440
-> +#define IMX7_OCOTP_ANA1				0x04f0
->  
->  /* The driver supports 1 passive trip point and 1 critical trip point */
->  enum imx_thermal_trip {
-> @@ -76,17 +100,114 @@ enum imx_thermal_trip {
->  
->  #define TEMPMON_IMX6Q			1
->  #define TEMPMON_IMX6SX			2
-> +#define TEMPMON_IMX7			3
->  
->  struct thermal_soc_data {
->  	u32 version;
-> +
-> +	u32 sensor_ctrl;
-> +	u32 power_down_mask;
-> +	u32 measure_temp_mask;
-> +
-> +	u32 measure_freq_ctrl;
-> +	u32 measure_freq_mask;
-> +	u32 measure_freq_shift;
-> +
-> +	u32 temp_data;
-> +	u32 temp_value_mask;
-> +	u32 temp_value_shift;
-> +	u32 temp_valid_mask;
-> +
-> +	u32 panic_alarm_ctrl;
-> +	u32 panic_alarm_mask;
-> +	u32 panic_alarm_shift;
-> +
-> +	u32 high_alarm_ctrl;
-> +	u32 high_alarm_mask;
-> +	u32 high_alarm_shift;
-> +
-> +	u32 low_alarm_ctrl;
-> +	u32 low_alarm_mask;
-> +	u32 low_alarm_shift;
->  };
->  
->  static struct thermal_soc_data thermal_imx6q_data = {
->  	.version = TEMPMON_IMX6Q,
-> +
-> +	.sensor_ctrl = IMX6_TEMPSENSE0,
-> +	.power_down_mask = IMX6_TEMPSENSE0_POWER_DOWN,
-> +	.measure_temp_mask = IMX6_TEMPSENSE0_MEASURE_TEMP,
-> +
-> +	.measure_freq_ctrl = IMX6_TEMPSENSE1,
-> +	.measure_freq_shift = IMX6_TEMPSENSE1_MEASURE_FREQ_SHIFT,
-> +	.measure_freq_mask = IMX6_TEMPSENSE1_MEASURE_FREQ,
-> +
-> +	.temp_data = IMX6_TEMPSENSE0,
-> +	.temp_value_mask = IMX6_TEMPSENSE0_TEMP_CNT_MASK,
-> +	.temp_value_shift = IMX6_TEMPSENSE0_TEMP_CNT_SHIFT,
-> +	.temp_valid_mask = IMX6_TEMPSENSE0_FINISHED,
-> +
-> +	.high_alarm_ctrl = IMX6_TEMPSENSE0,
-> +	.high_alarm_mask = IMX6_TEMPSENSE0_ALARM_VALUE_MASK,
-> +	.high_alarm_shift = IMX6_TEMPSENSE0_ALARM_VALUE_SHIFT,
->  };
->  
->  static struct thermal_soc_data thermal_imx6sx_data = {
->  	.version = TEMPMON_IMX6SX,
-> +
-> +	.sensor_ctrl = IMX6_TEMPSENSE0,
-> +	.power_down_mask = IMX6_TEMPSENSE0_POWER_DOWN,
-> +	.measure_temp_mask = IMX6_TEMPSENSE0_MEASURE_TEMP,
-> +
-> +	.measure_freq_ctrl = IMX6_TEMPSENSE1,
-> +	.measure_freq_shift = IMX6_TEMPSENSE1_MEASURE_FREQ_SHIFT,
-> +	.measure_freq_mask = IMX6_TEMPSENSE1_MEASURE_FREQ,
-> +
-> +	.temp_data = IMX6_TEMPSENSE0,
-> +	.temp_value_mask = IMX6_TEMPSENSE0_TEMP_CNT_MASK,
-> +	.temp_value_shift = IMX6_TEMPSENSE0_TEMP_CNT_SHIFT,
-> +	.temp_valid_mask = IMX6_TEMPSENSE0_FINISHED,
-> +
-> +	.high_alarm_ctrl = IMX6_TEMPSENSE0,
-> +	.high_alarm_mask = IMX6_TEMPSENSE0_ALARM_VALUE_MASK,
-> +	.high_alarm_shift = IMX6_TEMPSENSE0_ALARM_VALUE_SHIFT,
-> +
-> +	.panic_alarm_ctrl = IMX6_TEMPSENSE2,
-> +	.panic_alarm_mask = IMX6_TEMPSENSE2_PANIC_VALUE_MASK,
-> +	.panic_alarm_shift = IMX6_TEMPSENSE2_PANIC_VALUE_SHIFT,
-> +
-> +	.low_alarm_ctrl = IMX6_TEMPSENSE2,
-> +	.low_alarm_mask = IMX6_TEMPSENSE2_LOW_VALUE_MASK,
-> +	.low_alarm_shift = IMX6_TEMPSENSE2_LOW_VALUE_SHIFT,
-> +};
-> +
-> +static struct thermal_soc_data thermal_imx7_data = {
-> +	.version = TEMPMON_IMX7,
-> +
-> +	.sensor_ctrl = IMX7_TEMPSENSE1,
-> +	.power_down_mask = IMX7_TEMPSENSE1_POWER_DOWN,
-> +	.measure_temp_mask = IMX7_TEMPSENSE1_MEASURE_TEMP,
-> +
-> +	.measure_freq_ctrl = IMX7_TEMPSENSE1,
-> +	.measure_freq_shift = IMX7_TEMPSENSE1_MEASURE_FREQ_SHIFT,
-> +	.measure_freq_mask = IMX7_TEMPSENSE1_MEASURE_FREQ_MASK,
-> +
-> +	.temp_data = IMX7_TEMPSENSE1,
-> +	.temp_value_mask = IMX7_TEMPSENSE1_TEMP_VALUE_MASK,
-> +	.temp_value_shift = IMX7_TEMPSENSE1_TEMP_VALUE_SHIFT,
-> +	.temp_valid_mask = IMX7_TEMPSENSE1_FINISHED,
-> +
-> +	.panic_alarm_ctrl = IMX7_TEMPSENSE1,
-> +	.panic_alarm_mask = IMX7_TEMPSENSE0_PANIC_ALARM_MASK,
-> +	.panic_alarm_shift = IMX7_TEMPSENSE0_PANIC_ALARM_SHIFT,
-> +
-> +	.high_alarm_ctrl = IMX7_TEMPSENSE0,
-> +	.high_alarm_mask = IMX7_TEMPSENSE0_HIGH_ALARM_MASK,
-> +	.high_alarm_shift = IMX7_TEMPSENSE0_HIGH_ALARM_SHIFT,
-> +
-> +	.low_alarm_ctrl = IMX7_TEMPSENSE0,
-> +	.low_alarm_mask = IMX7_TEMPSENSE0_LOW_ALARM_MASK,
-> +	.low_alarm_shift = IMX7_TEMPSENSE0_LOW_ALARM_SHIFT,
->  };
->  
->  struct imx_thermal_data {
-> @@ -112,30 +233,41 @@ static void imx_set_panic_temp(struct imx_thermal_data *data,
->  			       int panic_temp)
->  {
->  	struct regmap *map = data->tempmon;
-> +	const struct thermal_soc_data *soc_data = data->socdata;
-
-When possible, please keep the local variable area from the longest line
-to the shortest.
-
->  	int critical_value;
->  
->  	critical_value = (data->c2 - panic_temp) / data->c1;
-> -	regmap_write(map, TEMPSENSE2 + REG_CLR, TEMPSENSE2_PANIC_VALUE_MASK);
-> -	regmap_write(map, TEMPSENSE2 + REG_SET, critical_value <<
-> -			TEMPSENSE2_PANIC_VALUE_SHIFT);
-> +
-> +	regmap_write(map, soc_data->panic_alarm_ctrl + REG_CLR,
-> +		     soc_data->panic_alarm_mask);
-> +	regmap_write(map, soc_data->panic_alarm_ctrl + REG_SET,
-> +		     critical_value << soc_data->panic_alarm_shift);
->  }
->  
->  static void imx_set_alarm_temp(struct imx_thermal_data *data,
->  			       int alarm_temp)
->  {
->  	struct regmap *map = data->tempmon;
-> +	const struct thermal_soc_data *soc_data = data->socdata;
->  	int alarm_value;
->  
->  	data->alarm_temp = alarm_temp;
-> -	alarm_value = (data->c2 - alarm_temp) / data->c1;
-> -	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_ALARM_VALUE_MASK);
-> -	regmap_write(map, TEMPSENSE0 + REG_SET, alarm_value <<
-> -			TEMPSENSE0_ALARM_VALUE_SHIFT);
-> +
-> +	if (data->socdata->version == TEMPMON_IMX7)
-> +		alarm_value = alarm_temp / 1000 + data->c1 - 25;
-> +	else
-> +		alarm_value = (data->c2 - alarm_temp) / data->c1;
-> +
-> +	regmap_write(map, soc_data->high_alarm_ctrl + REG_CLR,
-> +		     soc_data->high_alarm_mask);
-> +	regmap_write(map, soc_data->high_alarm_ctrl + REG_SET,
-> +		     alarm_value << soc_data->high_alarm_shift);
->  }
->  
->  static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
->  {
->  	struct imx_thermal_data *data = tz->devdata;
-> +	const struct thermal_soc_data *soc_data = data->socdata;
->  	struct regmap *map = data->tempmon;
->  	unsigned int n_meas;
->  	bool wait;
-> @@ -143,16 +275,18 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
->  
->  	if (data->mode == THERMAL_DEVICE_ENABLED) {
->  		/* Check if a measurement is currently in progress */
-> -		regmap_read(map, TEMPSENSE0, &val);
-> -		wait = !(val & TEMPSENSE0_FINISHED);
-> +		regmap_read(map, soc_data->temp_data, &val);
-> +		wait = !(val & soc_data->temp_valid_mask);
->  	} else {
->  		/*
->  		 * Every time we measure the temperature, we will power on the
->  		 * temperature sensor, enable measurements, take a reading,
->  		 * disable measurements, power off the temperature sensor.
->  		 */
-> -		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> -		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_CLR,
-> +			    soc_data->power_down_mask);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_SET,
-> +			    soc_data->measure_temp_mask);
->  
->  		wait = true;
->  	}
-> @@ -164,22 +298,28 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
->  	if (wait)
->  		usleep_range(20, 50);
->  
-> -	regmap_read(map, TEMPSENSE0, &val);
-> +	regmap_read(map, soc_data->temp_data, &val);
->  
->  	if (data->mode != THERMAL_DEVICE_ENABLED) {
-> -		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> -		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_CLR,
-> +			     soc_data->measure_temp_mask);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_SET,
-> +			     soc_data->power_down_mask);
->  	}
->  
-> -	if ((val & TEMPSENSE0_FINISHED) == 0) {
-> +	if ((val & soc_data->temp_valid_mask) == 0) {
->  		dev_dbg(&tz->device, "temp measurement never finished\n");
->  		return -EAGAIN;
->  	}
->  
-> -	n_meas = (val & TEMPSENSE0_TEMP_CNT_MASK) >> TEMPSENSE0_TEMP_CNT_SHIFT;
-> +	n_meas = (val & soc_data->temp_value_mask)
-> +		>> soc_data->temp_value_shift;
->  
->  	/* See imx_init_calib() for formula derivation */
-> -	*temp = data->c2 - n_meas * data->c1;
-> +	if (data->socdata->version == TEMPMON_IMX7)
-> +		*temp = (n_meas - data->c1 + 25) * 1000;
-> +	else
-> +		*temp = data->c2 - n_meas * data->c1;
->  
->  	/* Update alarm value to next higher trip point for TEMPMON_IMX6Q */
->  	if (data->socdata->version == TEMPMON_IMX6Q) {
-> @@ -223,21 +363,26 @@ static int imx_set_mode(struct thermal_zone_device *tz,
->  {
->  	struct imx_thermal_data *data = tz->devdata;
->  	struct regmap *map = data->tempmon;
-> +	const struct thermal_soc_data *soc_data = data->socdata;
->  
->  	if (mode == THERMAL_DEVICE_ENABLED) {
->  		tz->polling_delay = IMX_POLLING_DELAY;
->  		tz->passive_delay = IMX_PASSIVE_DELAY;
->  
-> -		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> -		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_CLR,
-> +			     soc_data->power_down_mask);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_SET,
-> +			     soc_data->measure_temp_mask);
->  
->  		if (!data->irq_enabled) {
->  			data->irq_enabled = true;
->  			enable_irq(data->irq);
->  		}
->  	} else {
-> -		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> -		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_CLR,
-> +			     soc_data->measure_temp_mask);
-> +		regmap_write(map, soc_data->sensor_ctrl + REG_SET,
-> +			     soc_data->power_down_mask);
->  
->  		tz->polling_delay = 0;
->  		tz->passive_delay = 0;
-> @@ -359,6 +504,15 @@ static int imx_init_calib(struct platform_device *pdev, u32 val)
->  	}
->  
->  	/*
-> +	 * On i.MX7, we only use the calibration data at 25C to get the temp,
-> +	 * Tmeas = ( Nmeas - n1) + 25; n1 is the fuse value for 25C.
-> +	 */
-> +	if (data->socdata->version == TEMPMON_IMX7) {
-> +		data->c1 = (val >> 9) & 0x1ff;
-> +		return 0;
-> +	}
-> +
-> +	/*
->  	 * Sensor data layout:
->  	 *   [31:20] - sensor value @ 25C
->  	 * Use universal formula now and only need sensor value @ 25C
-
-This chunk of code conflicts with mainline.  Please rebase the patch to
-v4.16-rc.
-
-Shawn
-
-> @@ -426,6 +580,7 @@ static void imx_init_temp_grade(struct platform_device *pdev, u32 val)
->  
->  static int imx_init_from_tempmon_data(struct platform_device *pdev)
->  {
-> +	const struct imx_thermal_data *data = platform_get_drvdata(pdev);
->  	struct regmap *map;
->  	int ret;
->  	u32 val;
-> @@ -438,7 +593,11 @@ static int imx_init_from_tempmon_data(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> -	ret = regmap_read(map, OCOTP_ANA1, &val);
-> +	if (data->socdata->version == TEMPMON_IMX7)
-> +		ret = regmap_read(map, IMX7_OCOTP_ANA1, &val);
-> +	else
-> +		ret = regmap_read(map, IMX6_OCOTP_ANA1, &val);
-> +
->  	if (ret) {
->  		dev_err(&pdev->dev, "failed to read sensor data: %d\n", ret);
->  		return ret;
-> @@ -447,7 +606,11 @@ static int imx_init_from_tempmon_data(struct platform_device *pdev)
->  	if (ret)
->  		return ret;
->  
-> -	ret = regmap_read(map, OCOTP_MEM0, &val);
-> +	/* use OTP for thermal grade */
-> +	if (data->socdata->version == TEMPMON_IMX7)
-> +		ret = regmap_read(map, IMX7_OCOTP_TESTER3, &val);
-> +	else
-> +		ret = regmap_read(map, IMX6_OCOTP_MEM0, &val);
->  	if (ret) {
->  		dev_err(&pdev->dev, "failed to read sensor data: %d\n", ret);
->  		return ret;
-> @@ -500,6 +663,7 @@ static irqreturn_t imx_thermal_alarm_irq_thread(int irq, void *dev)
->  static const struct of_device_id of_imx_thermal_match[] = {
->  	{ .compatible = "fsl,imx6q-tempmon", .data = &thermal_imx6q_data, },
->  	{ .compatible = "fsl,imx6sx-tempmon", .data = &thermal_imx6sx_data, },
-> +	{ .compatible = "fsl,imx7-tempmon", .data = &thermal_imx7_data, },
->  	{ /* end */ }
->  };
->  MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
-> @@ -531,14 +695,15 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  
->  	/* make sure the IRQ flag is clear before enabling irq on i.MX6SX */
->  	if (data->socdata->version == TEMPMON_IMX6SX) {
-> -		regmap_write(map, MISC1 + REG_CLR, MISC1_IRQ_TEMPHIGH |
-> -			MISC1_IRQ_TEMPLOW | MISC1_IRQ_TEMPPANIC);
-> +		regmap_write(map, IMX6_MISC1 + REG_CLR,
-> +			IMX6_MISC1_IRQ_TEMPHIGH | IMX6_MISC1_IRQ_TEMPLOW
-> +			| IMX6_MISC1_IRQ_TEMPPANIC);
->  		/*
->  		 * reset value of LOW ALARM is incorrect, set it to lowest
->  		 * value to avoid false trigger of low alarm.
->  		 */
-> -		regmap_write(map, TEMPSENSE2 + REG_SET,
-> -			TEMPSENSE2_LOW_VALUE_MASK);
-> +		regmap_write(map, data->socdata->low_alarm_ctrl + REG_SET,
-> +			     data->socdata->low_alarm_mask);
->  	}
->  
->  	data->irq = platform_get_irq(pdev, 0);
-> @@ -565,11 +730,17 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  	}
->  
->  	/* Make sure sensor is in known good state for measurements */
-> -	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> -	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> -	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
-> -	regmap_write(map, MISC0 + REG_SET, MISC0_REFTOP_SELBIASOFF);
-> -	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_CLR,
-> +		     data->socdata->power_down_mask);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_CLR,
-> +		     data->socdata->measure_temp_mask);
-> +	regmap_write(map, data->socdata->measure_freq_ctrl + REG_CLR,
-> +		     data->socdata->measure_freq_mask);
-> +	if (data->socdata->version != TEMPMON_IMX7)
-> +		regmap_write(map, IMX6_MISC0 + REG_SET,
-> +			IMX6_MISC0_REFTOP_SELBIASOFF);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
-> +		     data->socdata->power_down_mask);
->  
->  	data->policy = cpufreq_cpu_get(0);
->  	if (!data->policy) {
-> @@ -634,16 +805,20 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  		 data->temp_passive / 1000);
->  
->  	/* Enable measurements at ~ 10 Hz */
-> -	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
-> +	regmap_write(map, data->socdata->measure_freq_ctrl + REG_CLR,
-> +		     data->socdata->measure_freq_mask);
->  	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
-> -	regmap_write(map, TEMPSENSE1 + REG_SET, measure_freq);
-> +	regmap_write(map, data->socdata->measure_freq_ctrl + REG_SET,
-> +		     measure_freq << data->socdata->measure_freq_shift);
->  	imx_set_alarm_temp(data, data->temp_passive);
->  
->  	if (data->socdata->version == TEMPMON_IMX6SX)
->  		imx_set_panic_temp(data, data->temp_critical);
->  
-> -	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> -	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_CLR,
-> +		     data->socdata->power_down_mask);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
-> +		     data->socdata->measure_temp_mask);
->  
->  	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
->  			imx_thermal_alarm_irq, imx_thermal_alarm_irq_thread,
-> @@ -669,7 +844,8 @@ static int imx_thermal_remove(struct platform_device *pdev)
->  	struct regmap *map = data->tempmon;
->  
->  	/* Disable measurements */
-> -	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
-> +		     data->socdata->power_down_mask);
->  	if (!IS_ERR(data->thermal_clk))
->  		clk_disable_unprepare(data->thermal_clk);
->  
-> @@ -692,8 +868,10 @@ static int imx_thermal_suspend(struct device *dev)
->  	 * temperature will be read as the thermal sensor is powered
->  	 * down.
->  	 */
-> -	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> -	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_CLR,
-> +		     data->socdata->measure_temp_mask);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
-> +		     data->socdata->power_down_mask);
->  	data->mode = THERMAL_DEVICE_DISABLED;
->  	clk_disable_unprepare(data->thermal_clk);
->  
-> @@ -710,8 +888,10 @@ static int imx_thermal_resume(struct device *dev)
->  	if (ret)
->  		return ret;
->  	/* Enabled thermal sensor after resume */
-> -	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> -	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_CLR,
-> +		     data->socdata->power_down_mask);
-> +	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
-> +		     data->socdata->measure_temp_mask);
->  	data->mode = THERMAL_DEVICE_ENABLED;
->  
->  	return 0;
-> -- 
-> 2.7.4
+> Thanks,
+> Lorenzo
 > 
+>>
+>>>
+>>> If we modify the UEFI to make NUMA sched_domain start from the layer of package, then all the topology information
+>>> within the package will be discarded. I think we need to build the multi-core sched_domain using the cores within
+>>> the cluster instead of the cores within the package. I think that's what 'multi-core' means. Multi cores form a cluster. I guess.
+>>> If we build the multi-core sched_domain using the cores within a cluster, I think we need to add fields in struct cpu_topology
+>>> to record which cores are in each cluster.
+>>
+>> The problem is that there isn't a generic way to identify which level of
+>> cache sharing is the "correct" top layer MC domain. For one system cluster
+>> might be appropriate, for another it might be the highest caching level
+>> within a socket, for another is might be a something in between or a group
+>> of clusters or LLCs..
+>>
+>> Hence the effort to standardize/guarantee a PPTT node that exactly matches a
+>> SRAT domain. With that, each SOC/system provider has clearly defined method
+>> for communicating where they want the proximity domain information to begin.
+>>
+>> Thanks,
+>>
+>>>
+>>>
+>>> Thanks,
+>>> Xiongfeng
+>>>
+>>> On 2018/1/13 8:59, Jeremy Linton wrote:
+>>>> Propagate the topology information from the PPTT tree to the
+>>>> cpu_topology array. We can get the thread id, core_id and
+>>>> cluster_id by assuming certain levels of the PPTT tree correspond
+>>>> to those concepts. The package_id is flagged in the tree and can be
+>>>> found by calling find_acpi_cpu_topology_package() which terminates
+>>>> its search when it finds an ACPI node flagged as the physical
+>>>> package. If the tree doesn't contain enough levels to represent
+>>>> all of the requested levels then the root node will be returned
+>>>> for all subsequent levels.
+>>>>
+>>>> Cc: Juri Lelli <juri.lelli@arm.com>
+>>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+>>>> ---
+>>>>  arch/arm64/kernel/topology.c | 46 +++++++++++++++++++++++++++++++++++++++++++-
+>>>>  1 file changed, 45 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+>>>> index 7b06e263fdd1..ce8ec7fd6b32 100644
+>>>> --- a/arch/arm64/kernel/topology.c
+>>>> +++ b/arch/arm64/kernel/topology.c
+>>>> @@ -11,6 +11,7 @@
+>>>>   * for more details.
+>>>>   */
+>>>> +#include <linux/acpi.h>
+>>>>  #include <linux/arch_topology.h>
+>>>>  #include <linux/cpu.h>
+>>>>  #include <linux/cpumask.h>
+>>>> @@ -22,6 +23,7 @@
+>>>>  #include <linux/sched.h>
+>>>>  #include <linux/sched/topology.h>
+>>>>  #include <linux/slab.h>
+>>>> +#include <linux/smp.h>
+>>>>  #include <linux/string.h>
+>>>>  #include <asm/cpu.h>
+>>>> @@ -300,6 +302,46 @@ static void __init reset_cpu_topology(void)
+>>>>  	}
+>>>>  }
+>>>> +#ifdef CONFIG_ACPI
+>>>> +/*
+>>>> + * Propagate the topology information of the processor_topology_node tree to the
+>>>> + * cpu_topology array.
+>>>> + */
+>>>> +static int __init parse_acpi_topology(void)
+>>>> +{
+>>>> +	bool is_threaded;
+>>>> +	int cpu, topology_id;
+>>>> +
+>>>> +	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
+>>>> +
+>>>> +	for_each_possible_cpu(cpu) {
+>>>> +		topology_id = find_acpi_cpu_topology(cpu, 0);
+>>>> +		if (topology_id < 0)
+>>>> +			return topology_id;
+>>>> +
+>>>> +		if (is_threaded) {
+>>>> +			cpu_topology[cpu].thread_id = topology_id;
+>>>> +			topology_id = find_acpi_cpu_topology(cpu, 1);
+>>>> +			cpu_topology[cpu].core_id   = topology_id;
+>>>> +			topology_id = find_acpi_cpu_topology_package(cpu);
+>>>> +			cpu_topology[cpu].package_id = topology_id;
+>>>> +		} else {
+>>>> +			cpu_topology[cpu].thread_id  = -1;
+>>>> +			cpu_topology[cpu].core_id    = topology_id;
+>>>> +			topology_id = find_acpi_cpu_topology_package(cpu);
+>>>> +			cpu_topology[cpu].package_id = topology_id;
+>>>> +		}
+>>>> +	}
+>>>> +
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>> +#else
+>>>> +static inline int __init parse_acpi_topology(void)
+>>>> +{
+>>>> +	return -EINVAL;
+>>>> +}
+>>>> +#endif
+>>>>  void __init init_cpu_topology(void)
+>>>>  {
+>>>> @@ -309,6 +351,8 @@ void __init init_cpu_topology(void)
+>>>>  	 * Discard anything that was parsed if we hit an error so we
+>>>>  	 * don't use partial information.
+>>>>  	 */
+>>>> -	if (of_have_populated_dt() && parse_dt_topology())
+>>>> +	if ((!acpi_disabled) && parse_acpi_topology())
+>>>> +		reset_cpu_topology();
+>>>> +	else if (of_have_populated_dt() && parse_dt_topology())
+>>>>  		reset_cpu_topology();
+>>>>  }
+>>>>
+>>>
+>>
 > 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> .
+> 
