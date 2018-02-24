@@ -1,15 +1,13 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH V4 2/2] thermal: imx: add i.MX7 thermal sensor support
-Date: Sat, 24 Feb 2018 17:20:12 +0800
-Message-ID: <20180224092011.GR3217@dragon>
-References: <1519459369-29083-1-git-send-email-Anson.Huang@nxp.com>
- <1519459369-29083-2-git-send-email-Anson.Huang@nxp.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PCIe bridge deferred probe breaks suspend resume
+Date: Sat, 24 Feb 2018 10:35:25 +0100
+Message-ID: <CAJZ5v0hDM=DtBZA1awz7ao62cpe4CAhUz1L7KkLTv=G3YQhuEw@mail.gmail.com>
+References: <1519433209-14581-1-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1519459369-29083-2-git-send-email-Anson.Huang@nxp.com>
+In-Reply-To: <1519433209-14581-1-git-send-email-fkan@apm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,24 +17,75 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Anson Huang <Anson.Huang@nxp.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, edubezval@gmail.com, robh+dt@kernel.org, Linux-imx@nxp.com, kernel@pengutronix.de, fabio.estevam@nxp.com, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+To: Feng Kan <fkan@apm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 24, 2018 at 04:02:49PM +0800, Anson Huang wrote:
-> This patch adds i.MX7 thermal sensor support, most
-> of the i.MX7 thermal sensor functions are same with
-> i.MX6 except the registers offset/layout, so we move
-> those registers offset/layout definitions to soc data
-> structure.
-> 
-> i.MX7 uses single calibration data @25C, the calibration
-> data is located at OCOTP offset 0x4F0, bit[17:9], the
-> formula is as below:
-> 
-> Tmeas = (Nmeas - n1) + 25; n1 is the fuse value for 25C.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> Signed-off-by: Bai Ping <ping.bai@nxp.com>
+On Sat, Feb 24, 2018 at 1:46 AM, Feng Kan <fkan@apm.com> wrote:
+> This is not a patch, but rather a question regarding the deferred
+> probe's effect on PCIe PM ordering. This happens on our system
+> which defer the probing of root bridge due to  the IOMMU not being
+> ready. Because of the deferred action, the bridge is moved to the
+> end of the dpm_list which results in incorrect suspend and resume
+> sequence.
+>
+> In the cases I have seen, the bridge is always reordered because of
+> startup sequence. They are always place after the endpoint. If that
+> is the case the following code should be able to prevent such cases.
+> However, is there some cases here that would violate such situation?
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+The code in dd.c assumes that the device being probed has no children
+(or consumers, for that matter) and so it is safe to move it to the
+end of the list.
+
+If the device has children (or consumers), moving it to the end of the
+list by itself doesn't work, which is the case for you.
+
+> ---
+>  drivers/base/dd.c | 20 +++++++++++---------
+>  1 file changed, 11 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index de6fd09..5b96d5c 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -116,15 +116,17 @@ static void deferred_probe_work_func(struct work_struct *work)
+>                  */
+>                 mutex_unlock(&deferred_probe_mutex);
+>
+> -               /*
+> -                * Force the device to the end of the dpm_list since
+> -                * the PM code assumes that the order we add things to
+> -                * the list is a good order for suspend but deferred
+> -                * probe makes that very unsafe.
+> -                */
+> -               device_pm_lock();
+> -               device_pm_move_last(dev);
+> -               device_pm_unlock();
+> +                if (!dev_is_pci(dev)) {
+
+You can't do this here.
+
+It is not clear why all PCI devices should be an exception in the
+first place.  There may be PCI devices without children that need to
+be moved to the end of the list and you'd break that case.
+
+> +                        /*
+> +                         * Force the device to the end of the dpm_list since
+> +                         * the PM code assumes that the order we add things to
+> +                         * the list is a good order for suspend but deferred
+> +                         * probe makes that very unsafe.
+> +                         */
+> +                        device_pm_lock();
+> +                        device_pm_move_last(dev);
+> +                        device_pm_unlock();
+> +                }
+>
+>                 dev_dbg(dev, "Retrying from deferred list\n");
+>                 if (initcall_debug && !initcalls_done)
+> --
+
+You can try to replace the device_pm_move_last(dev) in
+deferred_probe_work_func(struct() with device_reorder_to_tail(), but
+that has to be called under device_links_read_lock/unloc () and
+device_pm_lock/unloc() (in the right order).
