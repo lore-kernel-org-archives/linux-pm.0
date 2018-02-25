@@ -1,288 +1,99 @@
-From: <vkilari@codeaurora.org>
-Subject: RE: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
- topology
-Date: Sun, 25 Feb 2018 11:47:41 +0530
-Message-ID: <010a01d3ae00$650e10d0$2f2a3270$@codeaurora.org>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-12-jeremy.linton@arm.com>
- <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
- <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
- <20180223110238.GB20461@e107981-ln.cambridge.arm.com>
- <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH 1/7] PCI: Restore BARs on runtime resume
+ despite being unbound
+Date: Sun, 25 Feb 2018 09:59:00 +0100
+Message-ID: <20180225085900.GA923@wunner.de>
+References: <cover.1518941072.git.lukas@wunner.de>
+ <20180220212922.GC32228@bhelgaas-glaptop.roam.corp.google.com>
+ <CAJZ5v0h+qipaKKDxxFFpkwUKgMjnoaUB8_p+FRDb+fSM_v+wBw@mail.gmail.com>
+ <6131920.sr0PL0JerP@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
-Content-Language: en-us
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: 'Xiongfeng Wang' <wangxiongfeng2@huawei.com>, 'Lorenzo Pieralisi' <lorenzo.pieralisi@arm.com>, 'Jeremy Linton' <jeremy.linton@arm.com>
-Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, 'Juri Lelli' <juri.lelli@arm.com>, vikrams@codeaurora.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, gregkh@linuxfoundation.org, sudeep.holla@arm.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, ahs3@redhat.com, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, hanjun.guo@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
+Return-path: <alsa-devel-bounces@alsa-project.org>
+Content-Disposition: inline
+In-Reply-To: <6131920.sr0PL0JerP@aspire.rjw.lan>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pierre Moreau <pierre.morrow@free.fr>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, Lyude Paul <lyude@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, nouveau@lists.freedesktop.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Hans de Goede <hdegoede@redhat.com>, Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, Bastien Nocera <hadess@hadess.net>, Linux PCI <linux-pci@vger.kernel.org>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Ben Skeggs <bskeggs@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, Feb 21, 2018 at 01:39:34PM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, February 21, 2018 10:57:14 AM CET Rafael J. Wysocki wrote:
+> > So if pci_pm_runtime_suspend() is modified to call pci_save_state()
+> > before returning 0 in the !dev->driver case, we can just move the
+> > pci_restore_standard_config() invocation in pci_pm_runtime_resume() up
+> > to the very top and check dev->driver later.
+> 
+> I mean something like the patch below, overall (untested).
+> 
+> Tentatively-signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> -----Original Message-----
-> From: linux-arm-kernel
-[mailto:linux-arm-kernel-bounces@lists.infradead.org]
-> On Behalf Of Xiongfeng Wang
-> Sent: Saturday, February 24, 2018 8:36 AM
-> To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>; Jeremy Linton
-> <jeremy.linton@arm.com>
-> Cc: mark.rutland@arm.com; Jonathan.Zhang@cavium.com;
-> Jayachandran.Nair@cavium.com; catalin.marinas@arm.com; Juri Lelli
-> <juri.lelli@arm.com>; gregkh@linuxfoundation.org; jhugo@codeaurora.org;
-> rjw@rjwysocki.net; linux-pm@vger.kernel.org; will.deacon@arm.com; linux-
-> kernel@vger.kernel.org; morten.rasmussen@arm.com; linux-
-> acpi@vger.kernel.org; viresh.kumar@linaro.org; hanjun.guo@linaro.org;
-> sudeep.holla@arm.com; austinwc@codeaurora.org; vkilari@codeaurora.org;
-> ahs3@redhat.com; linux-arm-kernel@lists.infradead.org; lenb@kernel.org
-> Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
-> topology
-> 
-> 
-> Hi,
-> On 2018/2/23 19:02, Lorenzo Pieralisi wrote:
-> > On Thu, Jan 25, 2018 at 09:56:30AM -0600, Jeremy Linton wrote:
-> >> Hi,
-> >>
-> >> On 01/25/2018 06:15 AM, Xiongfeng Wang wrote:
-> >>> Hi Jeremy,
-> >>>
-> >>> I have tested the patch with the newest UEFI. It prints the below
-error:
-> >>>
-> >>> [    4.017371] BUG: arch topology borken
-> >>> [    4.021069] BUG: arch topology borken
-> >>> [    4.024764] BUG: arch topology borken
-> >>> [    4.028460] BUG: arch topology borken
-> >>> [    4.032153] BUG: arch topology borken
-> >>> [    4.035849] BUG: arch topology borken
-> >>> [    4.039543] BUG: arch topology borken
-> >>> [    4.043239] BUG: arch topology borken
-> >>> [    4.046932] BUG: arch topology borken
-> >>> [    4.050629] BUG: arch topology borken
-> >>> [    4.054322] BUG: arch topology borken
-> >>>
-> >>> I checked the code and found that the newest UEFI set PPTT
-> >>> physical_package_flag on a physical package node and the NUMA domain
-> (SRAT domains) starts from the layer of DIE. (The topology of our board is
-core-
-> >cluster->die->package).
-> >>
-> >> I commented about that on the EDK2 mailing list. While the current
-> >> spec doesn't explicitly ban having the flag set multiple times
-> >> between the leaf and the root I consider it a "bug" and there is an
-> >> effort to clarify the spec and the use of that flag.
-> >>>
-> >>> When the kernel starts to build sched_domain, the multi-core
-> >>> sched_domain contains all the cores within a package, and the lowest
-> >>> NUMA sched_domain contains all the cores within a die. But the kernel
-> requires that the multi-core sched_domain should be a subset of the lowest
-> NUMA sched_domain, so the BUG info is printed.
-> >>
-> >> Right. I've mentioned this problem a couple of times.
-> >>
-> >> At at the moment, the spec isn't clear about how the proximity domain
-> >> is detected/located within the PPTT topology (a node with a 1:1
-> >> correspondence isn't even required). As you can see from this patch
-> >> set, we are making the general assumption that the proximity domains
-> >> are at the same level as the physical socket. This isn't ideal for
-> >> NUMA topologies, like the D05, that don't align with the physical
-socket.
-> >>
-> >> There are efforts underway to clarify and expand upon the
-> >> specification to deal with this general problem. The simple solution
-> >> is another flag (say PPTT_PROXIMITY_DOMAIN which would map to the D05
-> >> die) which could be used to find nodes with 1:1 correspondence. At
-> >> that point we could add a fairly trivial patch to correct just the
-> >> scheduler topology without affecting the rest of the system topology
-code.
-> >
-> > I think Morten asked already but isn't this the same end result we end
-> > up having if we remove the DIE level if NUMA-within-package is
-> > detected (instead of using the default_topology[]) and we create our
-> > own ARM64 domain hierarchy (with DIE level removed) through
-> > set_sched_topology() accordingly ?
+Okay I've tested this successfully now.  I'll have to respin the series
+at least one more time to address the unnecessary initialization Bjorn
+spotted in patch [5/7] and will then replace patch [1/7] with this one.
 
-To overcome this, on x86 as well the DIE level is removed when
-NUMA-within-package is detected with this patch
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/ar
-ch/x86/kernel/smpboot.c?h=v4.16-rc2&id=8f37961cf22304fb286c7604d3a7f6104dcc1
-283
+I'll wait a few more days before respinning to allow for further
+comments, in particular I'm hoping for feedback from Takashi and
+someone testing this on Optimus/ATPX.
 
-Solving with PPTT would be clean approach instead of overriding
-default_topology[]
+Thanks!
 
-> >
-> > Put it differently: do we really need to rely on another PPTT flag to
-> > collect this information ?
-> >
-> > I can't merge code that breaks a platform with legitimate firmware
-> > bindings.
+Lukas
+
+> ---
+>  drivers/pci/pci-driver.c |   16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
 > 
-> I think we really need another PPTT flag, from which we can get
-information
-> about how to build a multi-core sched_domain. I think only cache-sharing
-> information is not enough to get information about how to build a
-multi-core
-> shced_domain.
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -1224,11 +1224,14 @@ static int pci_pm_runtime_suspend(struct
+>  	int error;
+>  
+>  	/*
+> -	 * If pci_dev->driver is not set (unbound), the device should
+> -	 * always remain in D0 regardless of the runtime PM status
+> +	 * If pci_dev->driver is not set (unbound), the device may go to D3cold,
+> +	 * but only if the bridge above it is suspended.  In case that happens,
+> +	 * save its config space.
+>  	 */
+> -	if (!pci_dev->driver)
+> +	if (!pci_dev->driver) {
+> +		pci_save_state(pci_dev);
+>  		return 0;
+> +	}
+>  
+>  	if (!pm || !pm->runtime_suspend)
+>  		return -ENOSYS;
+> @@ -1276,16 +1279,17 @@ static int pci_pm_runtime_resume(struct
+>  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	/*
+> -	 * If pci_dev->driver is not set (unbound), the device should
+> -	 * always remain in D0 regardless of the runtime PM status
+> +	 * Regardless of whether or not the driver is there, the device might
+> +	 * have been put into D3cold as a result of suspending the bridge above
+> +	 * it, so restore the config spaces of all devices here.
+>  	 */
+> +	pci_restore_standard_config(pci_dev);
+>  	if (!pci_dev->driver)
+>  		return 0;
+>  
+>  	if (!pm || !pm->runtime_resume)
+>  		return -ENOSYS;
+>  
+> -	pci_restore_standard_config(pci_dev);
+>  	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+>  	pci_enable_wake(pci_dev, PCI_D0, false);
+>  	pci_fixup_device(pci_fixup_resume, pci_dev);
 > 
-> How about this? We assume the upper layer of the lowest layer to be multi-
-> core layer.
-> After that flag is added into ACPI specs, we add another patch to adapt to
-the
-> change.
-> 
-> Thanks,
-> Xiongfeng
-> 
-> >
-> > Thanks,
-> > Lorenzo
-> >
-> >>
-> >>>
-> >>> If we modify the UEFI to make NUMA sched_domain start from the layer
-> >>> of package, then all the topology information within the package
-> >>> will be discarded. I think we need to build the multi-core
-sched_domain
-> using the cores within the cluster instead of the cores within the
-package. I
-> think that's what 'multi-core' means. Multi cores form a cluster. I guess.
-> >>> If we build the multi-core sched_domain using the cores within a
-> >>> cluster, I think we need to add fields in struct cpu_topology to
-record which
-> cores are in each cluster.
-> >>
-> >> The problem is that there isn't a generic way to identify which level
-> >> of cache sharing is the "correct" top layer MC domain. For one system
-> >> cluster might be appropriate, for another it might be the highest
-> >> caching level within a socket, for another is might be a something in
-> >> between or a group of clusters or LLCs..
-> >>
-> >> Hence the effort to standardize/guarantee a PPTT node that exactly
-> >> matches a SRAT domain. With that, each SOC/system provider has
-> >> clearly defined method for communicating where they want the proximity
-> domain information to begin.
-> >>
-> >> Thanks,
-> >>
-> >>>
-> >>>
-> >>> Thanks,
-> >>> Xiongfeng
-> >>>
-> >>> On 2018/1/13 8:59, Jeremy Linton wrote:
-> >>>> Propagate the topology information from the PPTT tree to the
-> >>>> cpu_topology array. We can get the thread id, core_id and
-> >>>> cluster_id by assuming certain levels of the PPTT tree correspond
-> >>>> to those concepts. The package_id is flagged in the tree and can be
-> >>>> found by calling find_acpi_cpu_topology_package() which terminates
-> >>>> its search when it finds an ACPI node flagged as the physical
-> >>>> package. If the tree doesn't contain enough levels to represent all
-> >>>> of the requested levels then the root node will be returned for all
-> >>>> subsequent levels.
-> >>>>
-> >>>> Cc: Juri Lelli <juri.lelli@arm.com>
-> >>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> >>>> ---
-> >>>>  arch/arm64/kernel/topology.c | 46
-> >>>> +++++++++++++++++++++++++++++++++++++++++++-
-> >>>>  1 file changed, 45 insertions(+), 1 deletion(-)
-> >>>>
-> >>>> diff --git a/arch/arm64/kernel/topology.c
-> >>>> b/arch/arm64/kernel/topology.c index 7b06e263fdd1..ce8ec7fd6b32
-> >>>> 100644
-> >>>> --- a/arch/arm64/kernel/topology.c
-> >>>> +++ b/arch/arm64/kernel/topology.c
-> >>>> @@ -11,6 +11,7 @@
-> >>>>   * for more details.
-> >>>>   */
-> >>>> +#include <linux/acpi.h>
-> >>>>  #include <linux/arch_topology.h>
-> >>>>  #include <linux/cpu.h>
-> >>>>  #include <linux/cpumask.h>
-> >>>> @@ -22,6 +23,7 @@
-> >>>>  #include <linux/sched.h>
-> >>>>  #include <linux/sched/topology.h>
-> >>>>  #include <linux/slab.h>
-> >>>> +#include <linux/smp.h>
-> >>>>  #include <linux/string.h>
-> >>>>  #include <asm/cpu.h>
-> >>>> @@ -300,6 +302,46 @@ static void __init reset_cpu_topology(void)
-> >>>>  	}
-> >>>>  }
-> >>>> +#ifdef CONFIG_ACPI
-> >>>> +/*
-> >>>> + * Propagate the topology information of the
-> >>>> +processor_topology_node tree to the
-> >>>> + * cpu_topology array.
-> >>>> + */
-> >>>> +static int __init parse_acpi_topology(void) {
-> >>>> +	bool is_threaded;
-> >>>> +	int cpu, topology_id;
-> >>>> +
-> >>>> +	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
-> >>>> +
-> >>>> +	for_each_possible_cpu(cpu) {
-> >>>> +		topology_id = find_acpi_cpu_topology(cpu, 0);
-> >>>> +		if (topology_id < 0)
-> >>>> +			return topology_id;
-> >>>> +
-> >>>> +		if (is_threaded) {
-> >>>> +			cpu_topology[cpu].thread_id = topology_id;
-> >>>> +			topology_id = find_acpi_cpu_topology(cpu,
-1);
-> >>>> +			cpu_topology[cpu].core_id   = topology_id;
-> >>>> +			topology_id =
-find_acpi_cpu_topology_package(cpu);
-> >>>> +			cpu_topology[cpu].package_id = topology_id;
-> >>>> +		} else {
-> >>>> +			cpu_topology[cpu].thread_id  = -1;
-> >>>> +			cpu_topology[cpu].core_id    = topology_id;
-> >>>> +			topology_id =
-find_acpi_cpu_topology_package(cpu);
-> >>>> +			cpu_topology[cpu].package_id = topology_id;
-> >>>> +		}
-> >>>> +	}
-> >>>> +
-> >>>> +	return 0;
-> >>>> +}
-> >>>> +
-> >>>> +#else
-> >>>> +static inline int __init parse_acpi_topology(void) {
-> >>>> +	return -EINVAL;
-> >>>> +}
-> >>>> +#endif
-> >>>>  void __init init_cpu_topology(void)  { @@ -309,6 +351,8 @@ void
-> >>>> __init init_cpu_topology(void)
-> >>>>  	 * Discard anything that was parsed if we hit an error so we
-> >>>>  	 * don't use partial information.
-> >>>>  	 */
-> >>>> -	if (of_have_populated_dt() && parse_dt_topology())
-> >>>> +	if ((!acpi_disabled) && parse_acpi_topology())
-> >>>> +		reset_cpu_topology();
-> >>>> +	else if (of_have_populated_dt() && parse_dt_topology())
-> >>>>  		reset_cpu_topology();
-> >>>>  }
-> >>>>
-> >>>
-> >>
-> >
-> > .
-> >
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
