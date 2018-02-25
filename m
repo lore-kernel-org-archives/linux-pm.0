@@ -1,88 +1,29 @@
-From: Feng Kan <fkan@apm.com>
-Subject: Re: [PATCH] PCIe bridge deferred probe breaks suspend resume
-Date: Sun, 25 Feb 2018 08:28:56 -0800
-Message-ID: <CAL85gmCQjVb4i6+LUBKXsqM1cRTt_YWLvWxz+U4e_ahE+8dE1w@mail.gmail.com>
-References: <1519433209-14581-1-git-send-email-fkan@apm.com>
- <CAJZ5v0hDM=DtBZA1awz7ao62cpe4CAhUz1L7KkLTv=G3YQhuEw@mail.gmail.com>
- <CAJZ5v0jJMODOsZV41Jn18LCtttMemFQyXonJxZnUgXday8_4iw@mail.gmail.com>
- <20180224135946.GA1735@wunner.de>
- <CAJZ5v0gDDUKy_vzjBiBiBLThsaeZxwpi7t9se0VKPsB1eo778Q@mail.gmail.com>
+From: Mike Lothian <mike@fireburn.co.uk>
+Subject: Re: [PATCH 0/7] Modernize vga_switcheroo by using device link for HDA
+Date: Sun, 25 Feb 2018 23:24:57 +0000
+Message-ID: <CAHbf0-FnF=h9xoPCRS5k81D3o6cJbd1Y37QpdrRse_6AALFCJQ@mail.gmail.com>
+References: <cover.1518941072.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJZ5v0gDDUKy_vzjBiBiBLThsaeZxwpi7t9se0VKPsB1eo778Q@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <cover.1518941072.git.lukas@wunner.de>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: alsa-devel@alsa-project.org, Linux PM list <linux-pm@vger.kernel.org>, nouveau@lists.freedesktop.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Takashi Iwai <tiwai@suse.com>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Jaroslav Kysela <perex@perex.cz>, Hans de Goede <hdegoede@redhat.com>, Peter Wu <peter@lekensteyn.nl>, Bastien Nocera <hadess@hadess.net>, linux-pci@vger.kernel.org, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Ben Skeggs <bskeggs@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 25, 2018 at 1:29 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Sat, Feb 24, 2018 at 2:59 PM, Lukas Wunner <lukas@wunner.de> wrote:
->> On Sat, Feb 24, 2018 at 10:47:26AM +0100, Rafael J. Wysocki wrote:
->>> On Sat, Feb 24, 2018 at 10:35 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> > On Sat, Feb 24, 2018 at 1:46 AM, Feng Kan <fkan@apm.com> wrote:
->>> >> This is not a patch, but rather a question regarding the deferred
->>> >> probe's effect on PCIe PM ordering. This happens on our system
->>> >> which defer the probing of root bridge due to  the IOMMU not being
->>> >> ready. Because of the deferred action, the bridge is moved to the
->>> >> end of the dpm_list which results in incorrect suspend and resume
->>> >> sequence.
->>> >>
->>> >> In the cases I have seen, the bridge is always reordered because of
->>> >> startup sequence. They are always place after the endpoint. If that
->>> >> is the case the following code should be able to prevent such cases.
->>> >> However, is there some cases here that would violate such situation?
->>> >
->>> > The code in dd.c assumes that the device being probed has no children
->>> > (or consumers, for that matter) and so it is safe to move it to the
->>> > end of the list.
->>> >
->>> > If the device has children (or consumers), moving it to the end of the
->>> > list by itself doesn't work, which is the case for you.
->>> >
->>> > You can try to replace the device_pm_move_last(dev) in
->>> > deferred_probe_work_func(struct() with device_reorder_to_tail(), but
->>> > that has to be called under device_links_read_lock/unloc () and
->>> > device_pm_lock/unloc() (in the right order).
->>>
->>> Alternatively, you can replace your !dev_is_pci(dev) check with a
->>> check for the presence of children or consumers and only move the
->>> device to the end of the PM list if there are not any.  That would
->>> kind of make sense, but it may break other assumptions in the deferred
->>> probing mechanism which I don't recall ATM.
->>>
->>> Or avoid deferred probing of the host bridge driver entirely.  I guess
->>> you can use it with limited functionality until the IOMMU driver is
->>> ready and switch over to the fully functional operation mode when that
->>> happens, but that would need to hook into the IOMMU code somehow.
->>
->> Or model the root bridge's dependency on the iommu using a device link:
->> https://www.kernel.org/doc/html/latest/driver-api/device_link.html
->
-> Apparently, there are children registered under the bridge device
-> before the driver for it is probed.
-
-Yes, so the order seems to be like this:
-1. root port and endporint is enumerated and added to dpm_list
-2. root port probed and deferred
-3. iommu probed and successful
-4. root port probed again and successful -> moved to last in dpm_list
-5. endpoint probed and successful
-
-I guess another approach would be to prevent 1 from happening by not
-adding to dpm_list until the probe is successful.
-
->
-> That is kind of unusual and I'm not really sure why it happens at all,
-> because (in theory) the bridge driver should be responsible for
-> assigning resources to the devices on the bus, among other things.
-> Depending on what the reason is, your suggestion may or may not work.
+SGkKCkkndmUgbm90IHNlZW4gYW55dGhpbmcgdW50b3dhcmQgd2l0aCB0aGVzZSBwYXRjaGVzIHdp
+dGggbXkgQU1EIFBSSU1FIHN5c3RlbSBoZXJlCgpUZXN0ZWQtYnk6IE1pa2UgTG90aGlhbiA8bWlr
+ZUBmaXJlYnVybi5jby51az4KCkNoZWVycwoKTWlrZQpfX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBs
+aXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
+bi9saXN0aW5mby9kcmktZGV2ZWwK
