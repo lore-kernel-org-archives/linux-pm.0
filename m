@@ -1,56 +1,288 @@
-From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v13 3/4] thinkpad_acpi: Add support for
- battery thresholds
-Date: Sat, 24 Feb 2018 18:32:17 +0100
-Message-ID: <20180224173217.l62d52qyn2yghk2v@thinkpad>
-References: <20180207145844.bd567c36juvlkjvz@thinkpad>
- <20180208220323.cr6j2kcozekwbzo6@earth.universe>
- <CAJZ5v0hOf1DfQuoqcqb3Xjmw_Y49MGCnY19Xv6Qz88KyT5T+xQ@mail.gmail.com>
- <20180209103946.fkolldv6boml3e32@earth.universe>
- <CAJZ5v0h8YW03EpqEVO8LGti9ECo7+Gmm0PdgQViidUCZ=o0AQw@mail.gmail.com>
- <20180209123414.xrtmtgmeeezmma5u@earth.universe>
- <20180210084859.dtpydh5gkvoywoju@thinkpad>
- <CAHp75Vej+EjOd-fHjM9R45E0M_qttGsEBOQrwp7WdJ16X6qxXQ@mail.gmail.com>
- <CAJZ5v0hdpzW3fqwOaHhV1wc19oLtLNXMGUgV9yMBRuqdn6PpHA@mail.gmail.com>
+From: <vkilari@codeaurora.org>
+Subject: RE: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
+ topology
+Date: Sun, 25 Feb 2018 11:47:41 +0530
+Message-ID: <010a01d3ae00$650e10d0$2f2a3270$@codeaurora.org>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-12-jeremy.linton@arm.com>
+ <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
+ <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
+ <20180223110238.GB20461@e107981-ln.cambridge.arm.com>
+ <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hdpzW3fqwOaHhV1wc19oLtLNXMGUgV9yMBRuqdn6PpHA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
-List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lv Zheng <lv.zheng-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
+Content-Language: en-us
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: 'Xiongfeng Wang' <wangxiongfeng2@huawei.com>, 'Lorenzo Pieralisi' <lorenzo.pieralisi@arm.com>, 'Jeremy Linton' <jeremy.linton@arm.com>
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, 'Juri Lelli' <juri.lelli@arm.com>, vikrams@codeaurora.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, gregkh@linuxfoundation.org, sudeep.holla@arm.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, ahs3@redhat.com, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, hanjun.guo@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBGZWIgMjQsIDIwMTggYXQgMTA6MDc6MjBBTSArMDEwMCwgUmFmYWVsIEouIFd5c29j
-a2kgd3JvdGU6Cj4gT24gRnJpLCBGZWIgMjMsIDIwMTggYXQgNjoyMSBQTSwgQW5keSBTaGV2Y2hl
-bmtvCj4gPGFuZHkuc2hldmNoZW5rb0BnbWFpbC5jb20+IHdyb3RlOgo+ID4gT24gU2F0LCBGZWIg
-MTAsIDIwMTggYXQgMTA6NDggQU0sIE9nbmplbiBHYWxpxIcgPHNtY2x0MzBwQGdtYWlsLmNvbT4g
-d3JvdGU6Cj4gPgo+ID4+IERvIHlvdSBndXlzIHdhbnQgbWUgdG8gc2VuZCBpbiBhbm90aGVyIHJl
-dmlzaW9uIG9mIHRoZSBwYXRjaCB3aXRoIHNvbWUKPiA+PiBkb2N1bWVudGF0aW9uIG9uIHRoZSBz
-eXNmcyBBUEk/Cj4gPgo+ID4gSSBub3RpY2VkIEkgZGlkbid0IGFwcGx5IGl0IGJlY2F1c2Ugb2Yg
-c29tZSBwZW5kaW5nIGNoYW5nZXMgZGlzY3Vzc2VkLAo+ID4gcGVyaGFwcyB0aGlzIG9uZSBhYm92
-ZS4KPiA+Cj4gPiBTbywgZGVmaW5pdGVseSBwbGVhc2Ugc2VuZCBhIG5ldyB2ZXJzaW9uIHdoaWNo
-IGFkZHJlc3NlcyBjb21tZW50cy4KPiAKPiBObywgaXQgYWN0dWFsbHkgaGFzIGJlZW4gYXBwbGll
-ZCBhbHJlYWR5LgoKQW5kIGFsc28sIGhvdyBpcyBpdCBhcHBsaWVkIGlmIGl0IGRvZXMgbm90IGFw
-cGx5IHRvIDQuMTYtcmMyIGFueW1vcmU/IApEbyB5b3UgbmVlZCBhIG5ldyByZXZpc2lvbiB0aGF0
-IHNvbHZlcyB0aGUgYXBwbHkgY29uZmxpY3RzPwpEbyB5b3UgbmVlZCBhIG5ldyByZXZpc2lvbiB0
-aGF0IGFkZHJlc3NlcyB0aGUgZG9jdW1lbnRhdGlvbj8KRGlkIHlvdSBhcHBseSBpdCBlYXJsaWVy
-IHRoYW4gNC4xNi1yYzI/IApXaGVuIGRpZCB5b3UgYXBwbHkgaXQ/IApEaWQgeW91IGFwcGx5IGl0
-IGF0IGFsbD8KCj4gCj4gV2hhdCBpcyBuZWVkZWQgaXMgYSBmb2xsb3ctdXAgcGF0Y2gsIGJ1dCBJ
-J2xsIHdyaXRlIG9uIHRoYXQgbGF0ZXIuCj4gCj4gVGhhbmtzLAo+IFJhZmFlbAoKLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tCkNoZWNrIG91dCB0aGUgdmlicmFudCB0ZWNoIGNvbW11bml0eSBvbiBvbmUg
-b2YgdGhlIHdvcmxkJ3MgbW9zdAplbmdhZ2luZyB0ZWNoIHNpdGVzLCBTbGFzaGRvdC5vcmchIGh0
-dHA6Ly9zZG0ubGluay9zbGFzaGRvdApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwppYm0tYWNwaS1kZXZlbCBtYWlsaW5nIGxpc3QKaWJtLWFjcGktZGV2ZWxA
-bGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3Rz
-L2xpc3RpbmZvL2libS1hY3BpLWRldmVsCg==
+Hi,
+
+> -----Original Message-----
+> From: linux-arm-kernel
+[mailto:linux-arm-kernel-bounces@lists.infradead.org]
+> On Behalf Of Xiongfeng Wang
+> Sent: Saturday, February 24, 2018 8:36 AM
+> To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>; Jeremy Linton
+> <jeremy.linton@arm.com>
+> Cc: mark.rutland@arm.com; Jonathan.Zhang@cavium.com;
+> Jayachandran.Nair@cavium.com; catalin.marinas@arm.com; Juri Lelli
+> <juri.lelli@arm.com>; gregkh@linuxfoundation.org; jhugo@codeaurora.org;
+> rjw@rjwysocki.net; linux-pm@vger.kernel.org; will.deacon@arm.com; linux-
+> kernel@vger.kernel.org; morten.rasmussen@arm.com; linux-
+> acpi@vger.kernel.org; viresh.kumar@linaro.org; hanjun.guo@linaro.org;
+> sudeep.holla@arm.com; austinwc@codeaurora.org; vkilari@codeaurora.org;
+> ahs3@redhat.com; linux-arm-kernel@lists.infradead.org; lenb@kernel.org
+> Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
+> topology
+> 
+> 
+> Hi,
+> On 2018/2/23 19:02, Lorenzo Pieralisi wrote:
+> > On Thu, Jan 25, 2018 at 09:56:30AM -0600, Jeremy Linton wrote:
+> >> Hi,
+> >>
+> >> On 01/25/2018 06:15 AM, Xiongfeng Wang wrote:
+> >>> Hi Jeremy,
+> >>>
+> >>> I have tested the patch with the newest UEFI. It prints the below
+error:
+> >>>
+> >>> [    4.017371] BUG: arch topology borken
+> >>> [    4.021069] BUG: arch topology borken
+> >>> [    4.024764] BUG: arch topology borken
+> >>> [    4.028460] BUG: arch topology borken
+> >>> [    4.032153] BUG: arch topology borken
+> >>> [    4.035849] BUG: arch topology borken
+> >>> [    4.039543] BUG: arch topology borken
+> >>> [    4.043239] BUG: arch topology borken
+> >>> [    4.046932] BUG: arch topology borken
+> >>> [    4.050629] BUG: arch topology borken
+> >>> [    4.054322] BUG: arch topology borken
+> >>>
+> >>> I checked the code and found that the newest UEFI set PPTT
+> >>> physical_package_flag on a physical package node and the NUMA domain
+> (SRAT domains) starts from the layer of DIE. (The topology of our board is
+core-
+> >cluster->die->package).
+> >>
+> >> I commented about that on the EDK2 mailing list. While the current
+> >> spec doesn't explicitly ban having the flag set multiple times
+> >> between the leaf and the root I consider it a "bug" and there is an
+> >> effort to clarify the spec and the use of that flag.
+> >>>
+> >>> When the kernel starts to build sched_domain, the multi-core
+> >>> sched_domain contains all the cores within a package, and the lowest
+> >>> NUMA sched_domain contains all the cores within a die. But the kernel
+> requires that the multi-core sched_domain should be a subset of the lowest
+> NUMA sched_domain, so the BUG info is printed.
+> >>
+> >> Right. I've mentioned this problem a couple of times.
+> >>
+> >> At at the moment, the spec isn't clear about how the proximity domain
+> >> is detected/located within the PPTT topology (a node with a 1:1
+> >> correspondence isn't even required). As you can see from this patch
+> >> set, we are making the general assumption that the proximity domains
+> >> are at the same level as the physical socket. This isn't ideal for
+> >> NUMA topologies, like the D05, that don't align with the physical
+socket.
+> >>
+> >> There are efforts underway to clarify and expand upon the
+> >> specification to deal with this general problem. The simple solution
+> >> is another flag (say PPTT_PROXIMITY_DOMAIN which would map to the D05
+> >> die) which could be used to find nodes with 1:1 correspondence. At
+> >> that point we could add a fairly trivial patch to correct just the
+> >> scheduler topology without affecting the rest of the system topology
+code.
+> >
+> > I think Morten asked already but isn't this the same end result we end
+> > up having if we remove the DIE level if NUMA-within-package is
+> > detected (instead of using the default_topology[]) and we create our
+> > own ARM64 domain hierarchy (with DIE level removed) through
+> > set_sched_topology() accordingly ?
+
+To overcome this, on x86 as well the DIE level is removed when
+NUMA-within-package is detected with this patch
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/ar
+ch/x86/kernel/smpboot.c?h=v4.16-rc2&id=8f37961cf22304fb286c7604d3a7f6104dcc1
+283
+
+Solving with PPTT would be clean approach instead of overriding
+default_topology[]
+
+> >
+> > Put it differently: do we really need to rely on another PPTT flag to
+> > collect this information ?
+> >
+> > I can't merge code that breaks a platform with legitimate firmware
+> > bindings.
+> 
+> I think we really need another PPTT flag, from which we can get
+information
+> about how to build a multi-core sched_domain. I think only cache-sharing
+> information is not enough to get information about how to build a
+multi-core
+> shced_domain.
+> 
+> How about this? We assume the upper layer of the lowest layer to be multi-
+> core layer.
+> After that flag is added into ACPI specs, we add another patch to adapt to
+the
+> change.
+> 
+> Thanks,
+> Xiongfeng
+> 
+> >
+> > Thanks,
+> > Lorenzo
+> >
+> >>
+> >>>
+> >>> If we modify the UEFI to make NUMA sched_domain start from the layer
+> >>> of package, then all the topology information within the package
+> >>> will be discarded. I think we need to build the multi-core
+sched_domain
+> using the cores within the cluster instead of the cores within the
+package. I
+> think that's what 'multi-core' means. Multi cores form a cluster. I guess.
+> >>> If we build the multi-core sched_domain using the cores within a
+> >>> cluster, I think we need to add fields in struct cpu_topology to
+record which
+> cores are in each cluster.
+> >>
+> >> The problem is that there isn't a generic way to identify which level
+> >> of cache sharing is the "correct" top layer MC domain. For one system
+> >> cluster might be appropriate, for another it might be the highest
+> >> caching level within a socket, for another is might be a something in
+> >> between or a group of clusters or LLCs..
+> >>
+> >> Hence the effort to standardize/guarantee a PPTT node that exactly
+> >> matches a SRAT domain. With that, each SOC/system provider has
+> >> clearly defined method for communicating where they want the proximity
+> domain information to begin.
+> >>
+> >> Thanks,
+> >>
+> >>>
+> >>>
+> >>> Thanks,
+> >>> Xiongfeng
+> >>>
+> >>> On 2018/1/13 8:59, Jeremy Linton wrote:
+> >>>> Propagate the topology information from the PPTT tree to the
+> >>>> cpu_topology array. We can get the thread id, core_id and
+> >>>> cluster_id by assuming certain levels of the PPTT tree correspond
+> >>>> to those concepts. The package_id is flagged in the tree and can be
+> >>>> found by calling find_acpi_cpu_topology_package() which terminates
+> >>>> its search when it finds an ACPI node flagged as the physical
+> >>>> package. If the tree doesn't contain enough levels to represent all
+> >>>> of the requested levels then the root node will be returned for all
+> >>>> subsequent levels.
+> >>>>
+> >>>> Cc: Juri Lelli <juri.lelli@arm.com>
+> >>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> >>>> ---
+> >>>>  arch/arm64/kernel/topology.c | 46
+> >>>> +++++++++++++++++++++++++++++++++++++++++++-
+> >>>>  1 file changed, 45 insertions(+), 1 deletion(-)
+> >>>>
+> >>>> diff --git a/arch/arm64/kernel/topology.c
+> >>>> b/arch/arm64/kernel/topology.c index 7b06e263fdd1..ce8ec7fd6b32
+> >>>> 100644
+> >>>> --- a/arch/arm64/kernel/topology.c
+> >>>> +++ b/arch/arm64/kernel/topology.c
+> >>>> @@ -11,6 +11,7 @@
+> >>>>   * for more details.
+> >>>>   */
+> >>>> +#include <linux/acpi.h>
+> >>>>  #include <linux/arch_topology.h>
+> >>>>  #include <linux/cpu.h>
+> >>>>  #include <linux/cpumask.h>
+> >>>> @@ -22,6 +23,7 @@
+> >>>>  #include <linux/sched.h>
+> >>>>  #include <linux/sched/topology.h>
+> >>>>  #include <linux/slab.h>
+> >>>> +#include <linux/smp.h>
+> >>>>  #include <linux/string.h>
+> >>>>  #include <asm/cpu.h>
+> >>>> @@ -300,6 +302,46 @@ static void __init reset_cpu_topology(void)
+> >>>>  	}
+> >>>>  }
+> >>>> +#ifdef CONFIG_ACPI
+> >>>> +/*
+> >>>> + * Propagate the topology information of the
+> >>>> +processor_topology_node tree to the
+> >>>> + * cpu_topology array.
+> >>>> + */
+> >>>> +static int __init parse_acpi_topology(void) {
+> >>>> +	bool is_threaded;
+> >>>> +	int cpu, topology_id;
+> >>>> +
+> >>>> +	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
+> >>>> +
+> >>>> +	for_each_possible_cpu(cpu) {
+> >>>> +		topology_id = find_acpi_cpu_topology(cpu, 0);
+> >>>> +		if (topology_id < 0)
+> >>>> +			return topology_id;
+> >>>> +
+> >>>> +		if (is_threaded) {
+> >>>> +			cpu_topology[cpu].thread_id = topology_id;
+> >>>> +			topology_id = find_acpi_cpu_topology(cpu,
+1);
+> >>>> +			cpu_topology[cpu].core_id   = topology_id;
+> >>>> +			topology_id =
+find_acpi_cpu_topology_package(cpu);
+> >>>> +			cpu_topology[cpu].package_id = topology_id;
+> >>>> +		} else {
+> >>>> +			cpu_topology[cpu].thread_id  = -1;
+> >>>> +			cpu_topology[cpu].core_id    = topology_id;
+> >>>> +			topology_id =
+find_acpi_cpu_topology_package(cpu);
+> >>>> +			cpu_topology[cpu].package_id = topology_id;
+> >>>> +		}
+> >>>> +	}
+> >>>> +
+> >>>> +	return 0;
+> >>>> +}
+> >>>> +
+> >>>> +#else
+> >>>> +static inline int __init parse_acpi_topology(void) {
+> >>>> +	return -EINVAL;
+> >>>> +}
+> >>>> +#endif
+> >>>>  void __init init_cpu_topology(void)  { @@ -309,6 +351,8 @@ void
+> >>>> __init init_cpu_topology(void)
+> >>>>  	 * Discard anything that was parsed if we hit an error so we
+> >>>>  	 * don't use partial information.
+> >>>>  	 */
+> >>>> -	if (of_have_populated_dt() && parse_dt_topology())
+> >>>> +	if ((!acpi_disabled) && parse_acpi_topology())
+> >>>> +		reset_cpu_topology();
+> >>>> +	else if (of_have_populated_dt() && parse_dt_topology())
+> >>>>  		reset_cpu_topology();
+> >>>>  }
+> >>>>
+> >>>
+> >>
+> >
+> > .
+> >
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
