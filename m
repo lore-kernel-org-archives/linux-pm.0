@@ -1,141 +1,128 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v7 07/15] clk: qcom: Add IPQ806X's HFPLLs
-Date: Mon, 26 Feb 2018 15:23:23 +0530
-Message-ID: <1519638811-17269-8-git-send-email-sricharan@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v7 14/15] cpufreq: Add module to register cpufreq on
+ Krait CPUs
+Date: Mon, 26 Feb 2018 15:34:25 +0530
+Message-ID: <20180226100425.GO26947@vireshk-i7>
 References: <1519638811-17269-1-git-send-email-sricharan@codeaurora.org>
+ <1519638811-17269-15-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1519638811-17269-1-git-send-email-sricharan@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org
-Cc: sricharan@codeaurora.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1519638811-17269-15-git-send-email-sricharan@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+On 26-02-18, 15:23, Sricharan R wrote:
+> From: Stephen Boyd <sboyd@codeaurora.org>
 
-Describe the HFPLLs present on IPQ806X devices.
+Is this email id still valid ?
 
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/clk/qcom/gcc-ipq806x.c | 82 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 82 insertions(+)
+> +static int __init qcom_cpufreq_populate_opps(struct nvmem_cell *pvs_nvmem,
+> +					     struct opp_table **tbl)
+> +{
+> +	int speed = 0, pvs = 0, pvs_ver = 0, cpu;
+> +	struct device *cpu_dev;
+> +	u8 *buf;
+> +	size_t len;
+> +	char pvs_name[] = "speedXX-pvsXX-vXX";
+> +
+> +	buf = nvmem_cell_read(pvs_nvmem, &len);
+> +	if (len == 4)
+> +		get_krait_bin_format_a(&speed, &pvs, &pvs_ver, pvs_nvmem, buf);
+> +	else if (len == 8)
+> +		get_krait_bin_format_b(&speed, &pvs, &pvs_ver, pvs_nvmem, buf);
+> +	else
+> +		pr_warn("Unable to read nvmem data. Defaulting to 0!\n");
+> +
+> +	snprintf(pvs_name, sizeof(pvs_name), "speed%d-pvs%d-v%d",
+> +		 speed, pvs, pvs_ver);
+> +
+> +	for (cpu = 0; cpu < num_possible_cpus(); cpu++) {
+> +		cpu_dev = get_cpu_device(cpu);
+> +		if (!cpu_dev)
+> +			return -ENODEV;
+> +
+> +		tbl[cpu] = dev_pm_opp_set_prop_name(cpu_dev, pvs_name);
+> +
+> +		if (IS_ERR(tbl[cpu])) {
+> +			tbl[cpu] = 0;
+> +			pr_warn("failed to add OPP name %s\n", pvs_name);
+> +			return PTR_ERR(tbl[cpu]);
 
-diff --git a/drivers/clk/qcom/gcc-ipq806x.c b/drivers/clk/qcom/gcc-ipq806x.c
-index 28eb200..d571cf8 100644
---- a/drivers/clk/qcom/gcc-ipq806x.c
-+++ b/drivers/clk/qcom/gcc-ipq806x.c
-@@ -30,6 +30,7 @@
- #include "clk-pll.h"
- #include "clk-rcg.h"
- #include "clk-branch.h"
-+#include "clk-hfpll.h"
- #include "reset.h"
- 
- static struct clk_pll pll0 = {
-@@ -113,6 +114,84 @@
- 	},
- };
- 
-+static struct hfpll_data hfpll0_data = {
-+	.mode_reg = 0x3200,
-+	.l_reg = 0x3208,
-+	.m_reg = 0x320c,
-+	.n_reg = 0x3210,
-+	.config_reg = 0x3204,
-+	.status_reg = 0x321c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3214,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll0 = {
-+	.d = &hfpll0_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll0",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll0.lock),
-+};
-+
-+static struct hfpll_data hfpll1_data = {
-+	.mode_reg = 0x3240,
-+	.l_reg = 0x3248,
-+	.m_reg = 0x324c,
-+	.n_reg = 0x3250,
-+	.config_reg = 0x3244,
-+	.status_reg = 0x325c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3314,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll1 = {
-+	.d = &hfpll1_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll1",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll1.lock),
-+};
-+
-+static struct hfpll_data hfpll_l2_data = {
-+	.mode_reg = 0x3300,
-+	.l_reg = 0x3308,
-+	.m_reg = 0x330c,
-+	.n_reg = 0x3310,
-+	.config_reg = 0x3304,
-+	.status_reg = 0x331c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3314,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll_l2 = {
-+	.d = &hfpll_l2_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll_l2",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll_l2.lock),
-+};
-+
- static struct clk_pll pll14 = {
- 	.l_reg = 0x31c4,
- 	.m_reg = 0x31c8,
-@@ -2800,6 +2879,9 @@ enum {
- 	[UBI32_CORE2_CLK_SRC] = &ubi32_core2_src_clk.clkr,
- 	[NSSTCM_CLK_SRC] = &nss_tcm_src.clkr,
- 	[NSSTCM_CLK] = &nss_tcm_clk.clkr,
-+	[PLL9] = &hfpll0.clkr,
-+	[PLL10] = &hfpll1.clkr,
-+	[PLL12] = &hfpll_l2.clkr,
- };
- 
- static const struct qcom_reset_map gcc_ipq806x_resets[] = {
+You just set tbl[cpu] to 0 :)
+
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int __init qcom_cpufreq_driver_init(void)
+> +{
+> +	struct platform_device *pdev;
+> +	struct device *cpu_dev;
+> +	struct device_node *np;
+> +	struct nvmem_cell *pvs_nvmem;
+> +	struct opp_table *tbl[NR_CPUS] = { NULL };
+> +	int ret, cpu = 0;
+> +
+> +	cpu_dev = get_cpu_device(0);
+> +	if (!cpu_dev)
+> +		return -ENODEV;
+> +
+> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
+> +	if (!np)
+> +		return -ENOENT;
+> +
+> +	if (!of_device_is_compatible(np, "operating-points-v2-krait-cpu")) {
+> +		ret = -ENOENT;
+> +		goto free_np;
+> +	}
+> +
+> +	pvs_nvmem = of_nvmem_cell_get(np, NULL);
+> +	if (IS_ERR(pvs_nvmem)) {
+> +		dev_err(cpu_dev, "Could not get nvmem cell\n");
+> +		ret = PTR_ERR(pvs_nvmem);
+> +		goto free_np;
+> +	}
+> +
+> +	ret = qcom_cpufreq_populate_opps(pvs_nvmem, tbl);
+> +	if (ret)
+> +		goto free_opp_name;
+> +
+> +	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> +	if (IS_ERR(pdev)) {
+> +		ret = PTR_ERR(pdev);
+> +		goto free_opp_name;
+> +	}
+> +
+> +	of_node_put(np);
+> +
+> +	return 0;
+> +
+> +free_opp_name:
+> +	while (tbl[cpu]) {
+> +		dev_pm_opp_put_prop_name(tbl[cpu]);
+> +		cpu++;
+> +	}
+> +
+> +free_np:
+> +	of_node_put(np);
+> +
+> +	return ret;
+> +}
+> +late_initcall(qcom_cpufreq_driver_init);
+> +
+> +MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
+> +MODULE_AUTHOR("Stephen Boyd <sboyd@codeaurora.org>");
+> +MODULE_LICENSE("GPL v2");
+
+Everything else is fine. Fix above issue and you can add
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+viresh
