@@ -1,89 +1,68 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCIe bridge deferred probe breaks suspend resume
-Date: Mon, 26 Feb 2018 10:38:04 +0100
-Message-ID: <CAJZ5v0h07kYMyOtjMA1ezUVnFQW_ixtMUDHUPAQXMhmTjcawPg@mail.gmail.com>
-References: <1519433209-14581-1-git-send-email-fkan@apm.com>
- <CAJZ5v0hDM=DtBZA1awz7ao62cpe4CAhUz1L7KkLTv=G3YQhuEw@mail.gmail.com>
- <CAJZ5v0jJMODOsZV41Jn18LCtttMemFQyXonJxZnUgXday8_4iw@mail.gmail.com>
- <20180224135946.GA1735@wunner.de>
- <CAJZ5v0gDDUKy_vzjBiBiBLThsaeZxwpi7t9se0VKPsB1eo778Q@mail.gmail.com>
- <CAL85gmCQjVb4i6+LUBKXsqM1cRTt_YWLvWxz+U4e_ahE+8dE1w@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by cpufreq_table_find_index_dl()
+Date: Mon, 26 Feb 2018 10:48:19 +0100
+Message-ID: <CAJZ5v0gw1_xDRW+QuxXC4GO93A4v+Hw6T7NObd45qK6J+n6hMg@mail.gmail.com>
+References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180212102900.GU28462@vireshk-i7> <14e2fe70-7628-4377-664d-3c4b0071e08d@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAL85gmCQjVb4i6+LUBKXsqM1cRTt_YWLvWxz+U4e_ahE+8dE1w@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Feng Kan <fkan@apm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <14e2fe70-7628-4377-664d-3c4b0071e08d@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 25, 2018 at 5:28 PM, Feng Kan <fkan@apm.com> wrote:
-> On Sun, Feb 25, 2018 at 1:29 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Sat, Feb 24, 2018 at 2:59 PM, Lukas Wunner <lukas@wunner.de> wrote:
->>> On Sat, Feb 24, 2018 at 10:47:26AM +0100, Rafael J. Wysocki wrote:
->>>> On Sat, Feb 24, 2018 at 10:35 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>> > On Sat, Feb 24, 2018 at 1:46 AM, Feng Kan <fkan@apm.com> wrote:
->>>> >> This is not a patch, but rather a question regarding the deferred
->>>> >> probe's effect on PCIe PM ordering. This happens on our system
->>>> >> which defer the probing of root bridge due to  the IOMMU not being
->>>> >> ready. Because of the deferred action, the bridge is moved to the
->>>> >> end of the dpm_list which results in incorrect suspend and resume
->>>> >> sequence.
->>>> >>
->>>> >> In the cases I have seen, the bridge is always reordered because of
->>>> >> startup sequence. They are always place after the endpoint. If that
->>>> >> is the case the following code should be able to prevent such cases.
->>>> >> However, is there some cases here that would violate such situation?
->>>> >
->>>> > The code in dd.c assumes that the device being probed has no children
->>>> > (or consumers, for that matter) and so it is safe to move it to the
->>>> > end of the list.
->>>> >
->>>> > If the device has children (or consumers), moving it to the end of the
->>>> > list by itself doesn't work, which is the case for you.
->>>> >
->>>> > You can try to replace the device_pm_move_last(dev) in
->>>> > deferred_probe_work_func(struct() with device_reorder_to_tail(), but
->>>> > that has to be called under device_links_read_lock/unloc () and
->>>> > device_pm_lock/unloc() (in the right order).
->>>>
->>>> Alternatively, you can replace your !dev_is_pci(dev) check with a
->>>> check for the presence of children or consumers and only move the
->>>> device to the end of the PM list if there are not any.  That would
->>>> kind of make sense, but it may break other assumptions in the deferred
->>>> probing mechanism which I don't recall ATM.
->>>>
->>>> Or avoid deferred probing of the host bridge driver entirely.  I guess
->>>> you can use it with limited functionality until the IOMMU driver is
->>>> ready and switch over to the fully functional operation mode when that
->>>> happens, but that would need to hook into the IOMMU code somehow.
+On Mon, Feb 12, 2018 at 11:33 AM, Shilpasri G Bhat
+<shilpa.bhat@linux.vnet.ibm.com> wrote:
+> Hi,
+>
+> On 02/12/2018 03:59 PM, Viresh Kumar wrote:
+>> On 12-02-18, 15:51, Shilpasri G Bhat wrote:
+>>> This patch fixes the below Coverity warning:
 >>>
->>> Or model the root bridge's dependency on the iommu using a device link:
->>> https://www.kernel.org/doc/html/latest/driver-api/device_link.html
+>>> *** CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>>> /drivers/cpufreq/powernv-cpufreq.c: 1008 in powernv_fast_switch()
+>>> 1002                                         unsigned int target_freq)
+>>> 1003     {
+>>> 1004         int index;
+>>> 1005         struct powernv_smp_call_data freq_data;
+>>> 1006
+>>> 1007         index = cpufreq_table_find_index_dl(policy, target_freq);
+>>>>>>     CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>>>>>>     Using variable "index" as an index to array "powernv_freqs".
+>>> 1008         freq_data.pstate_id = powernv_freqs[index].driver_data;
+>>> 1009         freq_data.gpstate_id = powernv_freqs[index].driver_data;
+>>> 1010         set_pstate(&freq_data);
+>>> 1011
+>>> 1012         return powernv_freqs[index].frequency;
+>>> 1013     }
+>>>
+>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>>> ---
+>>>  drivers/cpufreq/powernv-cpufreq.c | 3 +++
+>>>  1 file changed, 3 insertions(+)
+>>>
+>>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>>> index 29cdec1..69edfe9 100644
+>>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>>> @@ -1005,6 +1005,9 @@ static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
+>>>      struct powernv_smp_call_data freq_data;
+>>>
+>>>      index = cpufreq_table_find_index_dl(policy, target_freq);
+>>> +    if (unlikely(index < 0))
+>>> +            index = get_nominal_index();
+>>> +
 >>
->> Apparently, there are children registered under the bridge device
->> before the driver for it is probed.
+>> AFAICT, you will get -1 here only if the freq table had no valid
+>> frequencies (or the freq table is empty). Why would that happen ?
 >
-> Yes, so the order seems to be like this:
-> 1. root port and endporint is enumerated and added to dpm_list
-> 2. root port probed and deferred
-> 3. iommu probed and successful
-> 4. root port probed again and successful -> moved to last in dpm_list
-> 5. endpoint probed and successful
->
-> I guess another approach would be to prevent 1 from happening by not
-> adding to dpm_list until the probe is successful.
+> I agree too. There is no way we can get -1 with initialized cpu frequency table.
+> We don't initialize powernv-cpufreq if we don't have valid CPU frequency
+> entries. Is there any other way to suppress the Coverity tool warning apart from
+> ignoring it?
 
-No, system-wide suspend/resume of PCIe devices is handled by the PCI
-bus type layer in part, so they have to be in dpm_list from the
-outset.  Root ports, as their parents, need to be there before the
-endpoints.
+In principle you could use BUG_ON(something_impossible) to annotate
+that kind of thing to the static analysis tools, but that would
+generate extra code.
