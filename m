@@ -1,73 +1,34 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] thermal: imx: Fix race condition in imx_thermal_probe()
-Date: Mon, 26 Feb 2018 15:56:59 -0300
-Message-ID: <CAOMZO5A7vqGffkj0qHUQo7MXVQMfy5Om7yw1YCs6ZR_0aOE37A@mail.gmail.com>
-References: <1517595466-23465-1-git-send-email-festevam@gmail.com> <CAOMZO5D5rRask0pGQBFf+47sG0XURj17=pO4hMiAh4MZa4nkJQ@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 11/12] PM / AVS: SmartReflex: Prepare to use device tree
+ based probing
+Date: Mon, 26 Feb 2018 13:34:11 -0800
+Message-ID: <20180226213411.GD16043@atomide.com>
+References: <20180223210100.86732-1-tony@atomide.com>
+ <20180223210100.86732-12-tony@atomide.com>
+ <5d37e6ff-9b89-b677-859e-6eeae5527276@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <CAOMZO5D5rRask0pGQBFf+47sG0XURj17=pO4hMiAh4MZa4nkJQ@mail.gmail.com>
-Sender: stable-owner@vger.kernel.org
-To: "rui.zhang" <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Mikhail Lappo <mikhail.lappo@esrlabs.com>, linux-pm@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, stable <stable@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5d37e6ff-9b89-b677-859e-6eeae5527276@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linux-omap@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, Suman Anna <s-anna@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rui,
+* Rafael J. Wysocki <rafael.j.wysocki@intel.com> [180226 10:38]:
+> On 2/23/2018 10:00 PM, Tony Lindgren wrote:
+> > We are currently probing smartreflex with omap_device while we are
+> > already probing smartreflex related interconnect target module with
+> > ti-sysc driver and dts data.
+...
+> You need an ACK from Kevin Hilman on this anyway and if you receive one,
+> please feel free to route it whatever way is convenient for you.
 
-Any comments, please?
+Oops sorry about that Kevin. I did the Cc list from memory and
+totally forgot about the MAINTAINERS entry for AVS drivers. I'll
+also bounce the original email to Kevin for easier reading.
 
-On Wed, Feb 14, 2018 at 1:23 AM, Fabio Estevam <festevam@gmail.com> wrote:
-> Hi Eduardo and Rui,
->
-> On Fri, Feb 2, 2018 at 4:17 PM, Fabio Estevam <festevam@gmail.com> wrote:
->> From: Mikhail Lappo <mikhail.lappo@esrlabs.com>
->>
->> When device boots with T > T_trip_1 and requests interrupt,
->> the race condition takes place. The interrupt comes before
->> THERMAL_DEVICE_ENABLED is set. This leads to an attempt to
->> reading sensor value from irq and disabling the sensor, based on
->> the data->mode field, which expected to be THERMAL_DEVICE_ENABLED,
->> but still stays as THERMAL_DEVICE_DISABLED. Afher this issue
->> sensor is never re-enabled, as the driver state is wrong.
->>
->> Fix this problem by setting the 'data' members prior to
->> requesting the interrupts.
->>
->> Fixes: 37713a1e8e4c ("thermal: imx: implement thermal alarm interrupt handling")
->> Cc: <stable@vger.kernel.org>
->> Signed-off-by: Mikhail Lappo <mikhail.lappo@esrlabs.com>
->> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
->
-> A gentle ping on this patch.
->
->> ---
->>  drivers/thermal/imx_thermal.c | 6 +++---
->>  1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
->> index a67781b..ee3a215 100644
->> --- a/drivers/thermal/imx_thermal.c
->> +++ b/drivers/thermal/imx_thermal.c
->> @@ -637,6 +637,9 @@ static int imx_thermal_probe(struct platform_device *pdev)
->>         regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
->>         regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
->>
->> +       data->irq_enabled = true;
->> +       data->mode = THERMAL_DEVICE_ENABLED;
->> +
->>         ret = devm_request_threaded_irq(&pdev->dev, data->irq,
->>                         imx_thermal_alarm_irq, imx_thermal_alarm_irq_thread,
->>                         0, "imx_thermal", data);
->> @@ -649,9 +652,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
->>                 return ret;
->>         }
->>
->> -       data->irq_enabled = true;
->> -       data->mode = THERMAL_DEVICE_ENABLED;
->> -
->>         return 0;
->>  }
->>
->> --
->> 2.7.4
->>
+Regards,
+
+Tony
