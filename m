@@ -1,29 +1,72 @@
-From: Mike Lothian <mike@fireburn.co.uk>
-Subject: Re: [PATCH 0/7] Modernize vga_switcheroo by using device link for HDA
-Date: Sun, 25 Feb 2018 23:24:57 +0000
-Message-ID: <CAHbf0-FnF=h9xoPCRS5k81D3o6cJbd1Y37QpdrRse_6AALFCJQ@mail.gmail.com>
-References: <cover.1518941072.git.lukas@wunner.de>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v3] power: reset: Add Spreadtrum SC27xx PMIC power off support
+Date: Mon, 26 Feb 2018 09:42:43 +0800
+Message-ID: <CAMz4kuJpMC=S0onkH2FE_bbA3SF5v5Ka6bj4P7QyODKh-MMqxw@mail.gmail.com>
+References: <b0c82288ac8594b501191dfc5b5b320c04079725.1519356443.git.baolin.wang@linaro.org>
+ <201802242125.tZtjoLkn%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <cover.1518941072.git.lukas@wunner.de>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Lukas Wunner <lukas@wunner.de>
-Cc: alsa-devel@alsa-project.org, Linux PM list <linux-pm@vger.kernel.org>, nouveau@lists.freedesktop.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Takashi Iwai <tiwai@suse.com>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Jaroslav Kysela <perex@perex.cz>, Hans de Goede <hdegoede@redhat.com>, Peter Wu <peter@lekensteyn.nl>, Bastien Nocera <hadess@hadess.net>, linux-pci@vger.kernel.org, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Ben Skeggs <bskeggs@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201802242125.tZtjoLkn%fengguang.wu@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkKCkkndmUgbm90IHNlZW4gYW55dGhpbmcgdW50b3dhcmQgd2l0aCB0aGVzZSBwYXRjaGVzIHdp
-dGggbXkgQU1EIFBSSU1FIHN5c3RlbSBoZXJlCgpUZXN0ZWQtYnk6IE1pa2UgTG90aGlhbiA8bWlr
-ZUBmaXJlYnVybi5jby51az4KCkNoZWVycwoKTWlrZQpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBs
-aXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
-bi9saXN0aW5mby9kcmktZGV2ZWwK
+Hi,
+
+On 24 February 2018 at 21:06, kbuild test robot <lkp@intel.com> wrote:
+> Hi Baolin,
+>
+> Thank you for the patch! Yet something to improve:
+>
+> [auto build test ERROR on power-supply/for-next]
+> [also build test ERROR on v4.16-rc2 next-20180223]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Baolin-Wang/power-reset-Add-Spreadtrum-SC27xx-PMIC-power-off-support/20180224-195742
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
+> config: tile-allmodconfig (attached as .config)
+> compiler: tilegx-linux-gcc (GCC) 7.2.0
+> reproduce:
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=tile
+>
+> All errors (new ones prefixed by >>):
+>
+>    drivers/power/reset/sc27xx-poweroff.c: In function 'sc27xx_poweroff_shutdown':
+>>> drivers/power/reset/sc27xx-poweroff.c:32:2: error: implicit declaration of function 'freeze_secondary_cpus'; did you mean 'online_secondary'? [-Werror=implicit-function-declaration]
+>      freeze_secondary_cpus(cpu);
+>      ^~~~~~~~~~~~~~~~~~~~~
+>      online_secondary
+>    cc1: some warnings being treated as errors
+>
+> vim +32 drivers/power/reset/sc27xx-poweroff.c
+>
+>     18
+>     19  /*
+>     20   * On Spreadtrum platform, we need power off system through external SC27xx
+>     21   * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
+>     22   * which is not fast io access.
+>     23   *
+>     24   * So before stopping other cores, we need release other cores' resource by
+>     25   * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
+>     26   * system through PMIC.
+>     27   */
+>     28  void sc27xx_poweroff_shutdown(void)
+>     29  {
+>     30          int cpu = smp_processor_id();
+>     31
+>   > 32          freeze_secondary_cpus(cpu);
+>     33  }
+
+Sorry, I understood the issue now, since the freeze_secondary_cpus()
+is under CONFIG_PM_SLEEP_SMP macro. So I think I should add
+CONFIG_PM_SLEEP_SMP macro in sc27xx_poweroff_shutdown() in next
+version. Thanks.
+
+-- 
+Baolin.wang
+Best Regards
