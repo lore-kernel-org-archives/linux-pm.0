@@ -1,135 +1,98 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v4] power: reset: Add Spreadtrum SC27xx PMIC power off support
-Date: Mon, 26 Feb 2018 10:23:14 +0800
-Message-ID: <e3284d38862fe26f2414850734c0985f07c4b970.1519611418.git.baolin.wang@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 3/4] sched/cpufreq_schedutil: use util_est for OPP
+ selection
+Date: Mon, 26 Feb 2018 09:34:39 +0530
+Message-ID: <20180226040439.GH26947@vireshk-i7>
+References: <20180222170153.673-1-patrick.bellasi@arm.com>
+ <20180222170153.673-4-patrick.bellasi@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180222170153.673-4-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: broonie@kernel.org, baolin.wang@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Spreadtrum platform, we need power off system through external SC27xx
-series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 chips.
-Thus this patch adds SC27xx series PMICs power-off support.
+On 22-02-18, 17:01, Patrick Bellasi wrote:
+> When schedutil looks at the CPU utilization, the current PELT value for
+> that CPU is returned straight away. In certain scenarios this can have
+> undesired side effects and delays on frequency selection.
+> 
+> For example, since the task utilization is decayed at wakeup time, a
+> long sleeping big task newly enqueued does not add immediately a
+> significant contribution to the target CPU. This introduces some latency
+> before schedutil will be able to detect the best frequency required by
+> that task.
+> 
+> Moreover, the PELT signal build-up time is a function of the current
+> frequency, because of the scale invariant load tracking support. Thus,
+> starting from a lower frequency, the utilization build-up time will
+> increase even more and further delays the selection of the actual
+> frequency which better serves the task requirements.
+> 
+> In order to reduce this kind of latencies, we integrate the usage
+> of the CPU's estimated utilization in the sugov_get_util function.
+> This allows to properly consider the expected utilization of a CPU which,
+> for example, has just got a big task running after a long sleep period.
+> Ultimately this allows to select the best frequency to run a task
+> right after its wake-up.
+> 
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Paul Turner <pjt@google.com>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> 
+> ---
+> Changes in v5:
+>  - add missing READ_ONCE() barrieres
+>  - add acked-by Rafael tag
+> 
+> Changes in v4:
+>  - rebased on today's tip/sched/core (commit 460e8c3340a2)
+>  - use util_est.enqueued for cfs_rq's util_est (Joel)
+>  - simplify cpu_util_cfs() integration (Dietmar)
+> 
+> Changes in v3:
+>  - rebase on today's tip/sched/core (commit 07881166a892)
+>  - moved into Juri's cpu_util_cfs(), which should also
+>    address Rafael's suggestion to use a local variable.
+> 
+> Changes in v2:
+>  - rebase on top of v4.15-rc2
+>  - tested that overhauled PELT code does not affect the util_est
+> ---
+>  kernel/sched/sched.h | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index dc6c8b5a24ad..ce33a5649bf2 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -2122,7 +2122,12 @@ static inline unsigned long cpu_util_dl(struct rq *rq)
+>  
+>  static inline unsigned long cpu_util_cfs(struct rq *rq)
+>  {
+> -	return rq->cfs.avg.util_avg;
+> +	if (!sched_feat(UTIL_EST))
+> +		return READ_ONCE(rq->cfs.avg.util_avg);
+> +
+> +	return max_t(unsigned long,
+> +		     READ_ONCE(rq->cfs.avg.util_avg),
+> +		     READ_ONCE(rq->cfs.avg.util_est.enqueued));
+>  }
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
-Changes since v3:
- - Add CONFIG_PM_SLEEP_SMP macro to avoid building error.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Changes since v2:
- - Change to build-in this driver.
-
-Changes since v1:
- - Add remove interface.
- - Add regmap checking when probing the driver.
- - Add MODULE_ALIAS()
----
- drivers/power/reset/Kconfig           |    9 +++++
- drivers/power/reset/Makefile          |    1 +
- drivers/power/reset/sc27xx-poweroff.c |   66 +++++++++++++++++++++++++++++++++
- 3 files changed, 76 insertions(+)
- create mode 100644 drivers/power/reset/sc27xx-poweroff.c
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index ca0de1a..01543f5 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -227,5 +227,14 @@ config SYSCON_REBOOT_MODE
- 	  register, then the bootloader can read it to take different
- 	  action according to the mode.
- 
-+config POWER_RESET_SC27XX
-+	bool "Spreadtrum SC27xx PMIC power-off driver"
-+	depends on MFD_SC27XX_PMIC || COMPILE_TEST
-+	help
-+	  This driver supports powering off a system through
-+	  Spreadtrum SC27xx series PMICs. The SC27xx series
-+	  PMICs includes the SC2720, SC2721, SC2723, SC2730
-+	  and SC2731 chips.
-+
- endif
- 
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index aeb65ed..225d645 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -27,3 +27,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
- obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
- obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
- obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
-+obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
-diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
-new file mode 100644
-index 0000000..65c477e
---- /dev/null
-+++ b/drivers/power/reset/sc27xx-poweroff.c
-@@ -0,0 +1,66 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2018 Spreadtrum Communications Inc.
-+ * Copyright (C) 2018 Linaro Ltd.
-+ */
-+
-+#include <linux/cpu.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm.h>
-+#include <linux/regmap.h>
-+#include <linux/syscore_ops.h>
-+
-+#define SC27XX_PWR_PD_HW	0xc2c
-+#define SC27XX_PWR_OFF_EN	BIT(0)
-+
-+static struct regmap *regmap;
-+
-+/*
-+ * On Spreadtrum platform, we need power off system through external SC27xx
-+ * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
-+ * which is not fast io access.
-+ *
-+ * So before stopping other cores, we need release other cores' resource by
-+ * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
-+ * system through PMIC.
-+ */
-+void sc27xx_poweroff_shutdown(void)
-+{
-+#ifdef CONFIG_PM_SLEEP_SMP
-+	int cpu = smp_processor_id();
-+
-+	freeze_secondary_cpus(cpu);
-+#endif
-+}
-+
-+static struct syscore_ops poweroff_syscore_ops = {
-+	.shutdown = sc27xx_poweroff_shutdown,
-+};
-+
-+static void sc27xx_poweroff_do_poweroff(void)
-+{
-+	regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
-+}
-+
-+static int sc27xx_poweroff_probe(struct platform_device *pdev)
-+{
-+	if (regmap)
-+		return -EINVAL;
-+
-+	regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!regmap)
-+		return -ENODEV;
-+
-+	pm_power_off = sc27xx_poweroff_do_poweroff;
-+	register_syscore_ops(&poweroff_syscore_ops);
-+	return 0;
-+}
-+
-+static struct platform_driver sc27xx_poweroff_driver = {
-+	.probe = sc27xx_poweroff_probe,
-+	.driver = {
-+		.name = "sc27xx-poweroff",
-+	},
-+};
-+builtin_platform_driver(sc27xx_poweroff_driver);
 -- 
-1.7.9.5
+viresh
