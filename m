@@ -1,80 +1,38 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency
- table twice
-Date: Mon, 26 Feb 2018 22:53:44 +1100
-Message-ID: <871sh89dbr.fsf@concordia.ellerman.id.au>
-References: <cover.1519620578.git.viresh.kumar@linaro.org>
- <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v1 2/2] PCI: Allow user to request power management of
+ conventional and hotplug bridges
+Date: Mon, 26 Feb 2018 14:05:34 +0200
+Message-ID: <20180226120534.GO27191@lahna.fi.intel.com>
+References: <151908155159.37696.9710083237704994886.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <151908204614.37696.12828004282495415825.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <CAJZ5v0irpPi4PXPHWaSpa3=MpUY4Sg3C-iHd0LPQN+FN-VTRpQ@mail.gmail.com>
+ <20180220181554.GA32228@bhelgaas-glaptop.roam.corp.google.com>
+ <20180222131834.GA5527@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180222131834.GA5527@wunner.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, Mathias Nyman <mathias.nyman@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Wu <peter@lekensteyn.nl>, Qipeng Zha <qipeng.zha@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, Dave Airlie <airlied@gmail.com>, Qi Zheng <qi.zheng@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
-> Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency table twice
-                                           ^
-                                      powernv
+On Thu, Feb 22, 2018 at 02:18:34PM +0100, Lukas Wunner wrote:
+> We do need runtime PM on hotplug ports to power off Thunderbolt
+> controllers when nothing is plugged in.  That saves 1.5 W, so a
+> noticeable amount of power.  I was going to respin the series one
+> of these days, I think the best I can do is continue to forbid
+> runtime PM on hotplug ports by default, but whitelist it for
+> Thunderbolt and allow manually enabling it on other platforms via
+> the command line.  That way, vendors are put in a position to
+> validate their platforms for runtime PM of hotplug ports, and
+> perhaps someday we can enable it for all platforms by default,
+> but with a BIOS cut-off date.
 
-> The cpufreq core is already validating the CPU frequency table after
-> calling the ->init() callback of the cpufreq drivers and the drivers
-> don't need to do the same anymore. Though they need to set the
-> policy->freq_table field directly from the ->init() callback now.
->
-> Stop validating the frequency table from powerenv driver.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 29cdec198657..0591874856d3 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -812,7 +812,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  {
-> -	int base, i, ret;
-> +	int base, i;
->  	struct kernfs_node *kn;
->  	struct global_pstate_info *gpstates;
-
-Confusingly this function has two variables called ret, but the other
-one is declared inside an if block below in context not shown.
-
-So this hunk is correct.
-
-> @@ -848,15 +848,10 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	gpstates->timer.expires = jiffies +
->  				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
->  	spin_lock_init(&gpstates->gpstate_lock);
-> -	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
-> -
-> -	if (ret < 0) {
-> -		kfree(policy->driver_data);
-> -		return ret;
-> -	}
->  
-> +	policy->freq_table = powernv_freqs;
->  	policy->fast_switch_possible = true;
-> -	return ret;
-> +	return 0;
->  }
-
-LGTM.
-
-cheers
+AFAIK Windows started to enable runtime PM (RTD3) for native PCIe
+hotplug ports with the latest release (I guess it's the RS3 release) but
+only when there is a special ACPI _DSD property ("HotPlugSupportInD3")
+associated with the root port. I think we can take advantage of that in
+Linux as well and I already have a patch series to enable runtime PM for
+such ports but I haven't been able to test it properly yet.
