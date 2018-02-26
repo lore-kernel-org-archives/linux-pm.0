@@ -1,38 +1,89 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: scpi: invoke frequency-invariance setter function
-Date: Mon, 26 Feb 2018 10:32:14 +0100
-Message-ID: <CAJZ5v0iYdR84O-z99yNBeK3kd7fE7AZYDKWH+oDFN77Ai_a6xw@mail.gmail.com>
-References: <20180220111057.14756-1-dietmar.eggemann@arm.com>
- <CAJZ5v0hB+Uk8SNVqUH3fr1y0SXbY1Rd26b84P-8PPV8FiPbnWw@mail.gmail.com> <23dba70b-aa83-4a21-a33d-733bec215264@arm.com>
+Subject: Re: [PATCH] PCIe bridge deferred probe breaks suspend resume
+Date: Mon, 26 Feb 2018 10:38:04 +0100
+Message-ID: <CAJZ5v0h07kYMyOtjMA1ezUVnFQW_ixtMUDHUPAQXMhmTjcawPg@mail.gmail.com>
+References: <1519433209-14581-1-git-send-email-fkan@apm.com>
+ <CAJZ5v0hDM=DtBZA1awz7ao62cpe4CAhUz1L7KkLTv=G3YQhuEw@mail.gmail.com>
+ <CAJZ5v0jJMODOsZV41Jn18LCtttMemFQyXonJxZnUgXday8_4iw@mail.gmail.com>
+ <20180224135946.GA1735@wunner.de>
+ <CAJZ5v0gDDUKy_vzjBiBiBLThsaeZxwpi7t9se0VKPsB1eo778Q@mail.gmail.com>
+ <CAL85gmCQjVb4i6+LUBKXsqM1cRTt_YWLvWxz+U4e_ahE+8dE1w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <23dba70b-aa83-4a21-a33d-733bec215264@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAL85gmCQjVb4i6+LUBKXsqM1cRTt_YWLvWxz+U4e_ahE+8dE1w@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Feng Kan <fkan@apm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 26, 2018 at 8:49 AM, Dietmar Eggemann
-<dietmar.eggemann@arm.com> wrote:
-> On 02/22/2018 11:27 PM, Rafael J. Wysocki wrote:
->> On Tue, Feb 20, 2018 at 12:10 PM, Dietmar Eggemann
->> <dietmar.eggemann@arm.com> wrote:
->
-> [...]
->
->>> Fixes: 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
->>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>> Cc: Sudeep Holla <sudeep.holla@arm.com>
->>> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
->>> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+On Sun, Feb 25, 2018 at 5:28 PM, Feng Kan <fkan@apm.com> wrote:
+> On Sun, Feb 25, 2018 at 1:29 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Sat, Feb 24, 2018 at 2:59 PM, Lukas Wunner <lukas@wunner.de> wrote:
+>>> On Sat, Feb 24, 2018 at 10:47:26AM +0100, Rafael J. Wysocki wrote:
+>>>> On Sat, Feb 24, 2018 at 10:35 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>> > On Sat, Feb 24, 2018 at 1:46 AM, Feng Kan <fkan@apm.com> wrote:
+>>>> >> This is not a patch, but rather a question regarding the deferred
+>>>> >> probe's effect on PCIe PM ordering. This happens on our system
+>>>> >> which defer the probing of root bridge due to  the IOMMU not being
+>>>> >> ready. Because of the deferred action, the bridge is moved to the
+>>>> >> end of the dpm_list which results in incorrect suspend and resume
+>>>> >> sequence.
+>>>> >>
+>>>> >> In the cases I have seen, the bridge is always reordered because of
+>>>> >> startup sequence. They are always place after the endpoint. If that
+>>>> >> is the case the following code should be able to prevent such cases.
+>>>> >> However, is there some cases here that would violate such situation?
+>>>> >
+>>>> > The code in dd.c assumes that the device being probed has no children
+>>>> > (or consumers, for that matter) and so it is safe to move it to the
+>>>> > end of the list.
+>>>> >
+>>>> > If the device has children (or consumers), moving it to the end of the
+>>>> > list by itself doesn't work, which is the case for you.
+>>>> >
+>>>> > You can try to replace the device_pm_move_last(dev) in
+>>>> > deferred_probe_work_func(struct() with device_reorder_to_tail(), but
+>>>> > that has to be called under device_links_read_lock/unloc () and
+>>>> > device_pm_lock/unloc() (in the right order).
+>>>>
+>>>> Alternatively, you can replace your !dev_is_pci(dev) check with a
+>>>> check for the presence of children or consumers and only move the
+>>>> device to the end of the PM list if there are not any.  That would
+>>>> kind of make sense, but it may break other assumptions in the deferred
+>>>> probing mechanism which I don't recall ATM.
+>>>>
+>>>> Or avoid deferred probing of the host bridge driver entirely.  I guess
+>>>> you can use it with limited functionality until the IOMMU driver is
+>>>> ready and switch over to the fully functional operation mode when that
+>>>> happens, but that would need to hook into the IOMMU code somehow.
+>>>
+>>> Or model the root bridge's dependency on the iommu using a device link:
+>>> https://www.kernel.org/doc/html/latest/driver-api/device_link.html
 >>
->> This is really minor, but I would reorder this slightly.
+>> Apparently, there are children registered under the bridge device
+>> before the driver for it is probed.
 >
-> Tried to figure out what would be the better order. Not sure since I saw
-> different examples. Can you tell what would be the best tag order?
+> Yes, so the order seems to be like this:
+> 1. root port and endporint is enumerated and added to dpm_list
+> 2. root port probed and deferred
+> 3. iommu probed and successful
+> 4. root port probed again and successful -> moved to last in dpm_list
+> 5. endpoint probed and successful
+>
+> I guess another approach would be to prevent 1 from happening by not
+> adding to dpm_list until the probe is successful.
 
-I was talking about the patch, not about tags, sorry for the confusion.
-
-Frankly, I don't care about the ordering of the tags. :-)
+No, system-wide suspend/resume of PCIe devices is handled by the PCI
+bus type layer in part, so they have to be in dpm_list from the
+outset.  Root ports, as their parents, need to be there before the
+endpoints.
