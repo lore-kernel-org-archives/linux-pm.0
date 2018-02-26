@@ -1,69 +1,116 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency table
- twice
-Date: Mon, 26 Feb 2018 10:38:58 +0530
-Message-ID: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
-References: <cover.1519620578.git.viresh.kumar@linaro.org>
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <cover.1519620578.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1519620578.git.viresh.kumar@linaro.org>
-References: <cover.1519620578.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH] cpufreq: scpi: invoke frequency-invariance setter
+ function
+Date: Mon, 26 Feb 2018 08:49:10 +0100
+Message-ID: <23dba70b-aa83-4a21-a33d-733bec215264@arm.com>
+References: <20180220111057.14756-1-dietmar.eggemann@arm.com>
+ <CAJZ5v0hB+Uk8SNVqUH3fr1y0SXbY1Rd26b84P-8PPV8FiPbnWw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hB+Uk8SNVqUH3fr1y0SXbY1Rd26b84P-8PPV8FiPbnWw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq core is already validating the CPU frequency table after
-calling the ->init() callback of the cpufreq drivers and the drivers
-don't need to do the same anymore. Though they need to set the
-policy->freq_table field directly from the ->init() callback now.
+On 02/22/2018 11:27 PM, Rafael J. Wysocki wrote:
+> On Tue, Feb 20, 2018 at 12:10 PM, Dietmar Eggemann
+> <dietmar.eggemann@arm.com> wrote:
 
-Stop validating the frequency table from powerenv driver.
+[...]
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/powernv-cpufreq.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+>> Fixes: 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: Sudeep Holla <sudeep.holla@arm.com>
+>> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+>> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+> 
+> This is really minor, but I would reorder this slightly.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 29cdec198657..0591874856d3 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -812,7 +812,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+Tried to figure out what would be the better order. Not sure since I saw
+different examples. Can you tell what would be the best tag order?
+
+[...]
+
+>> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+>> index c32a833e1b00..3101d4e9c2de 100644
+>> --- a/drivers/cpufreq/scpi-cpufreq.c
+>> +++ b/drivers/cpufreq/scpi-cpufreq.c
+>> @@ -51,13 +51,19 @@ static unsigned int scpi_cpufreq_get_rate(unsigned int cpu)
+>>   static int
+>>   scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+>>   {
+>> +       unsigned long freq = policy->freq_table[index].frequency;
+>>          struct scpi_data *priv = policy->driver_data;
+>> -       u64 rate = policy->freq_table[index].frequency * 1000;
+>> +       u64 rate = freq * 1000;
+>>          int ret;
+>>
+>>          ret = clk_set_rate(priv->clk, rate);
+>> -       if (!ret && (clk_get_rate(priv->clk) != rate))
+>> -               ret = -EIO;
+>> +       if (!ret) {
+> 
+> I would do:
+> 
+> if (ret)
+>          return ret;
+> 
+> arch_set_freq_scale(policy->related_cpus, freq, policy->cpuinfo.max_freq);
+> 
+> if (clk_get_rate(priv->clk) != rate)
+>          return -EIO;
+> 
+> return 0;
+> 
+> That's somewhat easier to follow for me.
+
+Yes I can change this.
+
+> 
+>> +               if (clk_get_rate(priv->clk) != rate)
+>> +                       ret = -EIO;
+>> +
+>> +               arch_set_freq_scale(policy->related_cpus, freq,
+>> +                                   policy->cpuinfo.max_freq);
+>> +       }
+>>
+>>          return ret;
+>>   }
+>> --
+> 
+> I also am not sure why you want to call arch_set_freq_scale() even if
+> the new clock rate didn't stick.
+
+Right, this is much better.
+
+ static int
+ scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
  {
--	int base, i, ret;
-+	int base, i;
- 	struct kernfs_node *kn;
- 	struct global_pstate_info *gpstates;
++       unsigned long freq = policy->freq_table[index].frequency;
+        struct scpi_data *priv = policy->driver_data;
+-       u64 rate = policy->freq_table[index].frequency * 1000;
++       u64 rate = freq * 1000;
+        int ret;
  
-@@ -848,15 +848,10 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	gpstates->timer.expires = jiffies +
- 				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
- 	spin_lock_init(&gpstates->gpstate_lock);
--	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
--
--	if (ret < 0) {
--		kfree(policy->driver_data);
--		return ret;
--	}
+        ret = clk_set_rate(priv->clk, rate);
+-       if (!ret && (clk_get_rate(priv->clk) != rate))
+-               ret = -EIO;
  
-+	policy->freq_table = powernv_freqs;
- 	policy->fast_switch_possible = true;
--	return ret;
-+	return 0;
- }
- 
- static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
--- 
-2.15.0.194.g9af6a3dea062
+-       return ret;
++       if (ret)
++               return ret;
++
++       if (clk_get_rate(priv->clk) != rate)
++               return -EIO;
++
++       arch_set_freq_scale(policy->related_cpus, freq,
++                           policy->cpuinfo.max_freq);
++
++       return 0;
+
+Will send out a v2 as soon as I know the preferred tag order.
