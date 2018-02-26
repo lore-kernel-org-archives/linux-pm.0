@@ -1,153 +1,112 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
- idle cooling driver
-Date: Mon, 26 Feb 2018 10:00:21 +0530
-Message-ID: <20180226043021.GK26947@vireshk-i7>
-References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
- <20180223073432.GF26947@vireshk-i7>
- <faaf027c-e01c-6801-9a0c-ab7e0ba669a1@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 00/27] cpufreq: Stop validating cpufreq table in drivers
+Date: Mon, 26 Feb 2018 10:38:43 +0530
+Message-ID: <cover.1519620578.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <faaf027c-e01c-6801-9a0c-ab7e0ba669a1@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Ellerman <mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23-02-18, 12:28, Daniel Lezcano wrote:
-> On 23/02/2018 08:34, Viresh Kumar wrote:
-> > On 21-02-18, 16:29, Daniel Lezcano wrote:
-> >> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> >> index 5c219dc..9340216 100644
-> >> --- a/drivers/thermal/cpu_cooling.c
-> >> +++ b/drivers/thermal/cpu_cooling.c
-> >> @@ -10,18 +10,32 @@
-> >>   *		Viresh Kumar <viresh.kumar@linaro.org>
-> >>   *
-> >>   */
-> >> +#undef DEBUG
-> > 
-> > Why is this required ?
-> 
-> It is usually added, so if you set the -DDEBUG flag when compiling, you
-> don't get all the pr_debug traces for all files, but the just the ones
-> where you commented the #undef above. pr_debug is a no-op otherwise.
+Hi,
 
-Yeah, but this is a mess as you need to go edit the files before
-enabling debug with it. Everyone prefers the dynamic debug thing now,
-where we don't need such stuff. Just drop it.
+A patchset [1] sent last week already updated the cpufreq core to start
+validating cpufreq table if the policy contains a valid
+"policy->freq_table" pointer.
 
-> >> +#define pr_fmt(fmt) "CPU cooling: " fmt
-> > 
-> > I think you can use the dev_***() routines instead, as you can
-> > directly the CPU device from anywhere.
-> 
-> Can we postpone this change for later ? All the file is using pr_*
-> (cpufreq_cooling included). There is only one place where dev_err is
-> used but it is removed by the patch 3/7.
+This series updates all such drivers to stop validating the cpufreq
+table directly and let only the core handle it.
 
-okay.
+It depends on the previous series [1] and two cleanup patches [2][3] and
+is rebased over 4.16-rc3.
 
-> >> +	while (1) {
-> >> +		s64 next_wakeup;
-> >> +
-> >> +		prepare_to_wait(&cct->waitq, &wait, TASK_INTERRUPTIBLE);
-> >> +
-> >> +		schedule();
-> >> +
-> >> +		atomic_inc(&idle_cdev->count);
-> >> +
-> >> +		play_idle(idle_cdev->idle_cycle / USEC_PER_MSEC);
-> >> +
-> >> +		/*
-> >> +		 * The last CPU waking up is in charge of setting the
-> >> +		 * timer. If the CPU is hotplugged, the timer will
-> >> +		 * move to another CPU (which may not belong to the
-> >> +		 * same cluster) but that is not a problem as the
-> >> +		 * timer will be set again by another CPU belonging to
-> >> +		 * the cluster, so this mechanism is self adaptive and
-> >> +		 * does not require any hotplugging dance.
-> >> +		 */
-> > 
-> > Well this depends on how CPU hotplug really happens. What happens to
-> > the per-cpu-tasks which are in the middle of something when hotplug
-> > happens?  Does hotplug wait for those per-cpu-tasks to finish ?
+It is already tested by the 0-day testing infrastructure and no issues
+were reported.
 
-Missed this one ?
+--
+viresh
 
-> >> +int cpuidle_cooling_register(void)
-> >> +{
-> >> +	struct cpuidle_cooling_device *idle_cdev = NULL;
-> >> +	struct thermal_cooling_device *cdev;
-> >> +	struct cpuidle_cooling_tsk *cct;
-> >> +	struct task_struct *tsk;
-> >> +	struct device_node *np;
-> >> +	cpumask_t *cpumask;
-> >> +	char dev_name[THERMAL_NAME_LENGTH];
-> >> +	int ret = -ENOMEM, cpu;
-> >> +	int index = 0;
-> >> +
-> >> +	for_each_possible_cpu(cpu) {
-> >> +		cpumask = topology_core_cpumask(cpu);
-> >> +
-> >> +		cct = per_cpu_ptr(&cpuidle_cooling_tsk, cpu);
-> >> +
-> >> +		/*
-> >> +		 * This condition makes the first cpu belonging to the
-> >> +		 * cluster to create a cooling device and allocates
-> >> +		 * the structure. Others CPUs belonging to the same
-> >> +		 * cluster will just increment the refcount on the
-> >> +		 * cooling device structure and initialize it.
-> >> +		 */
-> >> +		if (cpu == cpumask_first(cpumask)) {
-> > 
-> > Your function still have few assumptions of cpu numbering and it will
-> > break in few cases. What if the CPUs on a big Little system (4x4) are
-> > present in this order: B L L L L B B B  ??
-> > 
-> > This configuration can happen if CPUs in DT are marked as: 0-3 LITTLE,
-> > 4-7 big and a big CPU is used by the boot loader to bring up Linux.
-> 
-> Ok, how can I sort it out ?
+[1] https://lkml.kernel.org/r/bd8c6133ad0bdd56c936802bcf26878d7cbdb679.1519279148.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+[2] https://lkml.kernel.org/r/77d470741dab32c2076a35253b9c0c2f0136583b.1519293292.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+[3] https://lkml.kernel.org/r/6b737a9c285840b4b2036fa51b692ee835664ec8.1519358505.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 
-I would do something like this:
+Viresh Kumar (27):
+  cpufreq: imx6q: Find max freq from frequency table itself
+  cpufreq: Don't validate cpufreq table from cpufreq_generic_init()
+  cpufreq: acpi: Don't validate the frequency table twice
+  cpufreq: arm_big_little: Don't validate the frequency table twice
+  cpufreq: blackfin: Don't validate the frequency table twice
+  cpufreq: brcmstb: Don't validate the frequency table twice
+  cpufreq: cpufreq-dt: Don't validate the frequency table twice
+  cpufreq: e_powersaver: Don't validate the frequency table twice
+  cpufreq: elanfreq: Don't validate the frequency table twice
+  cpufreq: ia64-acpi: Don't validate the frequency table twice
+  cpufreq: longhaul: Don't validate the frequency table twice
+  cpufreq: mediatek: Don't validate the frequency table twice
+  cpufreq: p4-clockmod: Don't validate the frequency table twice
+  cpufreq: powernow: Don't validate the frequency table twice
+  cpufreq: powerenv: Don't validate the frequency table twice
+  cpufreq: ppc_cbe: Don't validate the frequency table twice
+  cpufreq: pxa: Don't validate the frequency table twice
+  cpufreq: qoirq: Don't validate the frequency table twice
+  cpufreq: s3c24xx: Don't validate the frequency table twice
+  cpufreq: sc520: Don't validate the frequency table twice
+  cpufreq: scpi: Don't validate the frequency table twice
+  cpufreq: sfi: Don't validate the frequency table twice
+  cpufreq: sh: Don't validate the frequency table twice
+  cpufreq: sparc: Don't validate the frequency table twice
+  cpufreq: speedstep: Don't validate the frequency table twice
+  cpufreq: tegra186: Don't validate the frequency table twice
+  cpufreq: Drop cpufreq_table_validate_and_show()
 
-        cpumask_copy(possible, cpu_possible_mask);
-        
-        while (!cpumask_empty(possible)) {
-                first = cpumask_first(possible);
-                cpumask = topology_core_cpumask(first);
-                cpumask_andnot(possible, possible, cpumask);
-        
-                allocate_cooling_dev(first); //This is most of this function in your patch.
-        
-                while (!cpumask_empty(cpumask)) {
-                        temp = cpumask_first(possible);
-                        //rest init "temp"
-                        cpumask_clear_cpu(temp, cpumask);
-                }
-        
-                //Everything done, register cooling device for cpumask.
-        }
-
-> >> +			np = of_cpu_device_node_get(cpu);
-> >> +
-> >> +			idle_cdev = kzalloc(sizeof(*idle_cdev), GFP_KERNEL);
-> >> +			if (!idle_cdev)
-> >> +				goto out_fail;
-> >> +
-> >> +			idle_cdev->idle_cycle = DEFAULT_IDLE_TIME_US;
-> >> +
-> >> +			atomic_set(&idle_cdev->count, 0);
-> > 
-> > This should already be 0, isn't it ?
-> 
-> Yes.
-
-I read it as, "I will drop it" :)
+ Documentation/cpu-freq/core.txt        | 12 +++++-------
+ Documentation/cpu-freq/cpu-drivers.txt |  6 ++----
+ drivers/cpufreq/acpi-cpufreq.c         | 20 +++++++++++---------
+ drivers/cpufreq/arm_big_little.c       |  9 +--------
+ drivers/cpufreq/blackfin-cpufreq.c     |  3 ++-
+ drivers/cpufreq/brcmstb-avs-cpufreq.c  |  6 +-----
+ drivers/cpufreq/cpufreq-dt.c           |  8 +-------
+ drivers/cpufreq/cpufreq.c              |  9 +--------
+ drivers/cpufreq/e_powersaver.c         |  8 +-------
+ drivers/cpufreq/elanfreq.c             |  3 ++-
+ drivers/cpufreq/freq_table.c           | 14 --------------
+ drivers/cpufreq/ia64-acpi-cpufreq.c    |  7 +------
+ drivers/cpufreq/imx6q-cpufreq.c        |  7 ++++---
+ drivers/cpufreq/longhaul.c             |  3 ++-
+ drivers/cpufreq/mediatek-cpufreq.c     | 11 +----------
+ drivers/cpufreq/p4-clockmod.c          |  3 ++-
+ drivers/cpufreq/powernow-k6.c          |  3 ++-
+ drivers/cpufreq/powernow-k7.c          |  3 ++-
+ drivers/cpufreq/powernow-k8.c          | 10 +---------
+ drivers/cpufreq/powernv-cpufreq.c      | 11 +++--------
+ drivers/cpufreq/ppc_cbe_cpufreq.c      |  5 ++---
+ drivers/cpufreq/pxa2xx-cpufreq.c       |  4 ++--
+ drivers/cpufreq/pxa3xx-cpufreq.c       |  4 +++-
+ drivers/cpufreq/qoriq-cpufreq.c        | 13 ++-----------
+ drivers/cpufreq/s3c24xx-cpufreq.c      |  5 +----
+ drivers/cpufreq/sc520_freq.c           |  3 ++-
+ drivers/cpufreq/scpi-cpufreq.c         | 10 +---------
+ drivers/cpufreq/sfi-cpufreq.c          |  3 ++-
+ drivers/cpufreq/sh-cpufreq.c           | 22 ++++++++++++----------
+ drivers/cpufreq/sparc-us2e-cpufreq.c   |  3 ++-
+ drivers/cpufreq/sparc-us3-cpufreq.c    |  3 ++-
+ drivers/cpufreq/speedstep-centrino.c   |  4 ++--
+ drivers/cpufreq/speedstep-ich.c        |  4 +++-
+ drivers/cpufreq/speedstep-smi.c        |  4 +++-
+ drivers/cpufreq/tegra186-cpufreq.c     |  2 +-
+ include/linux/cpufreq.h                |  2 --
+ 36 files changed, 85 insertions(+), 162 deletions(-)
 
 -- 
-viresh
+2.15.0.194.g9af6a3dea062
