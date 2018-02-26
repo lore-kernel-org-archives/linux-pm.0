@@ -1,72 +1,135 @@
 From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v3] power: reset: Add Spreadtrum SC27xx PMIC power off support
-Date: Mon, 26 Feb 2018 09:42:43 +0800
-Message-ID: <CAMz4kuJpMC=S0onkH2FE_bbA3SF5v5Ka6bj4P7QyODKh-MMqxw@mail.gmail.com>
-References: <b0c82288ac8594b501191dfc5b5b320c04079725.1519356443.git.baolin.wang@linaro.org>
- <201802242125.tZtjoLkn%fengguang.wu@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Subject: [PATCH v4] power: reset: Add Spreadtrum SC27xx PMIC power off support
+Date: Mon, 26 Feb 2018 10:23:14 +0800
+Message-ID: <e3284d38862fe26f2414850734c0985f07c4b970.1519611418.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201802242125.tZtjoLkn%fengguang.wu@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: sre@kernel.org
+Cc: broonie@kernel.org, baolin.wang@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Spreadtrum platform, we need power off system through external SC27xx
+series PMICs including the SC2720, SC2721, SC2723, SC2730 and SC2731 chips.
+Thus this patch adds SC27xx series PMICs power-off support.
 
-On 24 February 2018 at 21:06, kbuild test robot <lkp@intel.com> wrote:
-> Hi Baolin,
->
-> Thank you for the patch! Yet something to improve:
->
-> [auto build test ERROR on power-supply/for-next]
-> [also build test ERROR on v4.16-rc2 next-20180223]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Baolin-Wang/power-reset-Add-Spreadtrum-SC27xx-PMIC-power-off-support/20180224-195742
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
-> config: tile-allmodconfig (attached as .config)
-> compiler: tilegx-linux-gcc (GCC) 7.2.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=tile
->
-> All errors (new ones prefixed by >>):
->
->    drivers/power/reset/sc27xx-poweroff.c: In function 'sc27xx_poweroff_shutdown':
->>> drivers/power/reset/sc27xx-poweroff.c:32:2: error: implicit declaration of function 'freeze_secondary_cpus'; did you mean 'online_secondary'? [-Werror=implicit-function-declaration]
->      freeze_secondary_cpus(cpu);
->      ^~~~~~~~~~~~~~~~~~~~~
->      online_secondary
->    cc1: some warnings being treated as errors
->
-> vim +32 drivers/power/reset/sc27xx-poweroff.c
->
->     18
->     19  /*
->     20   * On Spreadtrum platform, we need power off system through external SC27xx
->     21   * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
->     22   * which is not fast io access.
->     23   *
->     24   * So before stopping other cores, we need release other cores' resource by
->     25   * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
->     26   * system through PMIC.
->     27   */
->     28  void sc27xx_poweroff_shutdown(void)
->     29  {
->     30          int cpu = smp_processor_id();
->     31
->   > 32          freeze_secondary_cpus(cpu);
->     33  }
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+Changes since v3:
+ - Add CONFIG_PM_SLEEP_SMP macro to avoid building error.
 
-Sorry, I understood the issue now, since the freeze_secondary_cpus()
-is under CONFIG_PM_SLEEP_SMP macro. So I think I should add
-CONFIG_PM_SLEEP_SMP macro in sc27xx_poweroff_shutdown() in next
-version. Thanks.
+Changes since v2:
+ - Change to build-in this driver.
 
+Changes since v1:
+ - Add remove interface.
+ - Add regmap checking when probing the driver.
+ - Add MODULE_ALIAS()
+---
+ drivers/power/reset/Kconfig           |    9 +++++
+ drivers/power/reset/Makefile          |    1 +
+ drivers/power/reset/sc27xx-poweroff.c |   66 +++++++++++++++++++++++++++++++++
+ 3 files changed, 76 insertions(+)
+ create mode 100644 drivers/power/reset/sc27xx-poweroff.c
+
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index ca0de1a..01543f5 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -227,5 +227,14 @@ config SYSCON_REBOOT_MODE
+ 	  register, then the bootloader can read it to take different
+ 	  action according to the mode.
+ 
++config POWER_RESET_SC27XX
++	bool "Spreadtrum SC27xx PMIC power-off driver"
++	depends on MFD_SC27XX_PMIC || COMPILE_TEST
++	help
++	  This driver supports powering off a system through
++	  Spreadtrum SC27xx series PMICs. The SC27xx series
++	  PMICs includes the SC2720, SC2721, SC2723, SC2730
++	  and SC2731 chips.
++
+ endif
+ 
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index aeb65ed..225d645 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -27,3 +27,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
+ obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
+ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
+ obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
++obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
+diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
+new file mode 100644
+index 0000000..65c477e
+--- /dev/null
++++ b/drivers/power/reset/sc27xx-poweroff.c
+@@ -0,0 +1,66 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2018 Spreadtrum Communications Inc.
++ * Copyright (C) 2018 Linaro Ltd.
++ */
++
++#include <linux/cpu.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/pm.h>
++#include <linux/regmap.h>
++#include <linux/syscore_ops.h>
++
++#define SC27XX_PWR_PD_HW	0xc2c
++#define SC27XX_PWR_OFF_EN	BIT(0)
++
++static struct regmap *regmap;
++
++/*
++ * On Spreadtrum platform, we need power off system through external SC27xx
++ * series PMICs, and it is one similar SPI bus mapped by regmap to access PMIC,
++ * which is not fast io access.
++ *
++ * So before stopping other cores, we need release other cores' resource by
++ * taking cpus down to avoid racing regmap or spi mutex lock when poweroff
++ * system through PMIC.
++ */
++void sc27xx_poweroff_shutdown(void)
++{
++#ifdef CONFIG_PM_SLEEP_SMP
++	int cpu = smp_processor_id();
++
++	freeze_secondary_cpus(cpu);
++#endif
++}
++
++static struct syscore_ops poweroff_syscore_ops = {
++	.shutdown = sc27xx_poweroff_shutdown,
++};
++
++static void sc27xx_poweroff_do_poweroff(void)
++{
++	regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
++}
++
++static int sc27xx_poweroff_probe(struct platform_device *pdev)
++{
++	if (regmap)
++		return -EINVAL;
++
++	regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!regmap)
++		return -ENODEV;
++
++	pm_power_off = sc27xx_poweroff_do_poweroff;
++	register_syscore_ops(&poweroff_syscore_ops);
++	return 0;
++}
++
++static struct platform_driver sc27xx_poweroff_driver = {
++	.probe = sc27xx_poweroff_probe,
++	.driver = {
++		.name = "sc27xx-poweroff",
++	},
++};
++builtin_platform_driver(sc27xx_poweroff_driver);
 -- 
-Baolin.wang
-Best Regards
+1.7.9.5
