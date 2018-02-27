@@ -1,7 +1,7 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v8 06/15] clk: qcom: Add MSM8960/APQ8064's HFPLLs
-Date: Tue, 27 Feb 2018 19:36:53 +0530
-Message-ID: <1519740422-3835-7-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v8 07/15] clk: qcom: Add IPQ806X's HFPLLs
+Date: Tue, 27 Feb 2018 19:36:54 +0530
+Message-ID: <1519740422-3835-8-git-send-email-sricharan@codeaurora.org>
 References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
@@ -11,19 +11,17 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Stephen Boyd <sboyd@codeaurora.org>
 
-Describe the HFPLLs present on MSM8960 and APQ8064 devices.
+Describe the HFPLLs present on IPQ806X devices.
 
-Acked-by: Rob Herring <robh@kernel.org> (bindings)
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/qcom/gcc-msm8960.c               | 172 +++++++++++++++++++++++++++
- include/dt-bindings/clock/qcom,gcc-msm8960.h |   2 +
- 2 files changed, 174 insertions(+)
+ drivers/clk/qcom/gcc-ipq806x.c | 82 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 82 insertions(+)
 
-diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
-index eb551c7..809f16a 100644
---- a/drivers/clk/qcom/gcc-msm8960.c
-+++ b/drivers/clk/qcom/gcc-msm8960.c
+diff --git a/drivers/clk/qcom/gcc-ipq806x.c b/drivers/clk/qcom/gcc-ipq806x.c
+index 28eb200..d571cf8 100644
+--- a/drivers/clk/qcom/gcc-ipq806x.c
++++ b/drivers/clk/qcom/gcc-ipq806x.c
 @@ -30,6 +30,7 @@
  #include "clk-pll.h"
  #include "clk-rcg.h"
@@ -31,8 +29,8 @@ index eb551c7..809f16a 100644
 +#include "clk-hfpll.h"
  #include "reset.h"
  
- static struct clk_pll pll3 = {
-@@ -86,6 +87,164 @@
+ static struct clk_pll pll0 = {
+@@ -113,6 +114,84 @@
  	},
  };
  
@@ -62,27 +60,13 @@ index eb551c7..809f16a 100644
 +	.lock = __SPIN_LOCK_UNLOCKED(hfpll0.lock),
 +};
 +
-+static struct hfpll_data hfpll1_8064_data = {
++static struct hfpll_data hfpll1_data = {
 +	.mode_reg = 0x3240,
 +	.l_reg = 0x3248,
 +	.m_reg = 0x324c,
 +	.n_reg = 0x3250,
 +	.config_reg = 0x3244,
 +	.status_reg = 0x325c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3254,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct hfpll_data hfpll1_data = {
-+	.mode_reg = 0x3300,
-+	.l_reg = 0x3308,
-+	.m_reg = 0x330c,
-+	.n_reg = 0x3310,
-+	.config_reg = 0x3304,
-+	.status_reg = 0x331c,
 +	.config_val = 0x7845c665,
 +	.droop_reg = 0x3314,
 +	.droop_val = 0x0108c000,
@@ -102,59 +86,7 @@ index eb551c7..809f16a 100644
 +	.lock = __SPIN_LOCK_UNLOCKED(hfpll1.lock),
 +};
 +
-+static struct hfpll_data hfpll2_data = {
-+	.mode_reg = 0x3280,
-+	.l_reg = 0x3288,
-+	.m_reg = 0x328c,
-+	.n_reg = 0x3290,
-+	.config_reg = 0x3284,
-+	.status_reg = 0x329c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3294,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll2 = {
-+	.d = &hfpll2_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll2",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll2.lock),
-+};
-+
-+static struct hfpll_data hfpll3_data = {
-+	.mode_reg = 0x32c0,
-+	.l_reg = 0x32c8,
-+	.m_reg = 0x32cc,
-+	.n_reg = 0x32d0,
-+	.config_reg = 0x32c4,
-+	.status_reg = 0x32dc,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x32d4,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll3 = {
-+	.d = &hfpll3_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll3",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll3.lock),
-+};
-+
-+static struct hfpll_data hfpll_l2_8064_data = {
++static struct hfpll_data hfpll_l2_data = {
 +	.mode_reg = 0x3300,
 +	.l_reg = 0x3308,
 +	.m_reg = 0x330c,
@@ -163,20 +95,6 @@ index eb551c7..809f16a 100644
 +	.status_reg = 0x331c,
 +	.config_val = 0x7845c665,
 +	.droop_reg = 0x3314,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct hfpll_data hfpll_l2_data = {
-+	.mode_reg = 0x3400,
-+	.l_reg = 0x3408,
-+	.m_reg = 0x340c,
-+	.n_reg = 0x3410,
-+	.config_reg = 0x3404,
-+	.status_reg = 0x341c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3414,
 +	.droop_val = 0x0108c000,
 +	.min_rate = 600000000UL,
 +	.max_rate = 1800000000UL,
@@ -197,51 +115,15 @@ index eb551c7..809f16a 100644
  static struct clk_pll pll14 = {
  	.l_reg = 0x31c4,
  	.m_reg = 0x31c8,
-@@ -3112,6 +3271,9 @@ enum {
- 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
- 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
- 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
+@@ -2800,6 +2879,9 @@ enum {
+ 	[UBI32_CORE2_CLK_SRC] = &ubi32_core2_src_clk.clkr,
+ 	[NSSTCM_CLK_SRC] = &nss_tcm_src.clkr,
+ 	[NSSTCM_CLK] = &nss_tcm_clk.clkr,
 +	[PLL9] = &hfpll0.clkr,
 +	[PLL10] = &hfpll1.clkr,
 +	[PLL12] = &hfpll_l2.clkr,
  };
  
- static const struct qcom_reset_map gcc_msm8960_resets[] = {
-@@ -3323,6 +3485,11 @@ enum {
- 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
- 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
- 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
-+	[PLL9] = &hfpll0.clkr,
-+	[PLL10] = &hfpll1.clkr,
-+	[PLL12] = &hfpll_l2.clkr,
-+	[PLL16] = &hfpll2.clkr,
-+	[PLL17] = &hfpll3.clkr,
- };
- 
- static const struct qcom_reset_map gcc_apq8064_resets[] = {
-@@ -3482,6 +3649,11 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	if (match->data == &gcc_apq8064_desc) {
-+		hfpll1.d = &hfpll1_8064_data;
-+		hfpll_l2.d = &hfpll_l2_8064_data;
-+	}
-+
- 	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
- 					      NULL, 0);
- 	if (IS_ERR(tsens))
-diff --git a/include/dt-bindings/clock/qcom,gcc-msm8960.h b/include/dt-bindings/clock/qcom,gcc-msm8960.h
-index 7d20eed..e02742f 100644
---- a/include/dt-bindings/clock/qcom,gcc-msm8960.h
-+++ b/include/dt-bindings/clock/qcom,gcc-msm8960.h
-@@ -319,5 +319,7 @@
- #define CE3_SRC					303
- #define CE3_CORE_CLK				304
- #define CE3_H_CLK				305
-+#define PLL16					306
-+#define PLL17					307
- 
- #endif
+ static const struct qcom_reset_map gcc_ipq806x_resets[] = {
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
