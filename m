@@ -1,71 +1,83 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v3] thermal: exynos: Reading temperature makes sense only
- when TMU is turned on
-Date: Tue, 27 Feb 2018 15:23:11 +0100
-Message-ID: <20180227142311.32538-1-m.szyprowski@samsung.com>
-References: <CGME20180227142315eucas1p250e3fc053bd1e8e8085aebea32dc5a07@eucas1p2.samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: stable@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: Re: [PATCH v8 14/15] cpufreq: Add module to register cpufreq on Krait CPUs
+Date: Tue, 27 Feb 2018 15:58:47 +0100
+Message-ID: <87zi3ujx7c.fsf@bootlin.com>
+References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
+        <1519740422-3835-15-git-send-email-sricharan@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1519740422-3835-15-git-send-email-sricharan@codeaurora.org>
+        (Sricharan R.'s message of "Tue, 27 Feb 2018 19:37:01 +0530")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-When thermal sensor is not yet enabled, reading temperature might return
-random value. This might even result in stopping system booting when such
-temperature is higher than the critical value. Fix this by checking if TMU
-has been actually enabled before reading the temperature.
-
-This change fixes booting of Exynos4210-based board with TMU enabled (for
-example Samsung Trats board), which was broken since v4.4 kernel release.
-
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Fixes: 9e4249b40340 ("thermal: exynos: Fix first temperature read after registering sensor")
-CC: stable@vger.kernel.org # v4.6+
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
-This issue is there since commit 9e4249b40340 ("thermal: exynos: Fix
-first temperature read after registering sensor"), but this patch applies
-cleanly only to v4.6+ kernels.
----
- drivers/thermal/samsung/exynos_tmu.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index ed805c7c5ace..986cbd01aaaa 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -185,6 +185,7 @@
-  * @regulator: pointer to the TMU regulator structure.
-  * @reg_conf: pointer to structure to register with core thermal.
-  * @ntrip: number of supported trip points.
-+ * @enabled: current status of TMU device
-  * @tmu_initialize: SoC specific TMU initialization method
-  * @tmu_control: SoC specific TMU control method
-  * @tmu_read: SoC specific TMU temperature read method
-@@ -205,6 +206,7 @@ struct exynos_tmu_data {
- 	struct regulator *regulator;
- 	struct thermal_zone_device *tzd;
- 	unsigned int ntrip;
-+	bool enabled;
+Hi Sricharan,
  
- 	int (*tmu_initialize)(struct platform_device *pdev);
- 	void (*tmu_control)(struct platform_device *pdev, bool on);
-@@ -398,6 +400,7 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
- 	mutex_lock(&data->lock);
- 	clk_enable(data->clk);
- 	data->tmu_control(pdev, on);
-+	data->enabled = on;
- 	clk_disable(data->clk);
- 	mutex_unlock(&data->lock);
- }
-@@ -890,7 +893,7 @@ static int exynos_get_temp(void *p, int *temp)
- {
- 	struct exynos_tmu_data *data = p;
- 
--	if (!data || !data->tmu_read)
-+	if (!data || !data->tmu_read || !data->enabled)
- 		return -EINVAL;
- 
- 	mutex_lock(&data->lock);
+ On mar., févr. 27 2018, Sricharan R <sricharan@codeaurora.org> wrote:
+
+> From: Stephen Boyd <sboyd@codeaurora.org>
+>
+> Register a cpufreq-generic device whenever we detect that a
+> "qcom,krait" compatible CPU is present in DT.
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> [Sricharan: updated to use dev_pm_opp_set_prop_name and
+> 	    nvmem apis]
+> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm          |  10 ++
+>  drivers/cpufreq/Makefile             |   3 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c |   5 +
+>  drivers/cpufreq/qcom-cpufreq.c       | 183 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 201 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+>
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 3a88e33..826f9e7 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -133,6 +133,16 @@ config ARM_OMAP2PLUS_CPUFREQ
+>  	depends on ARCH_OMAP2PLUS
+>  	default ARCH_OMAP2PLUS
+>  
+> +config ARM_QCOM_CPUFREQ
+> +	bool "CPUfreq driver for the QCOM SoCs with KRAIT processors"
+> +	depends on ARCH_QCOM
+> +	select PM_OPP
+> +	help
+> +	  This enables the CPUFreq driver for Qualcomm SoCs with
+> +	  KRAIT processors.
+> +
+> +	  If in doubt, say N.
+> +
+>  config ARM_S3C_CPUFREQ
+>  	bool
+>  	help
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index c60c1e1..21894f6 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -65,6 +65,9 @@ obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+>  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+>  obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+> +obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
+
+These 2 following lines don't seem related to the commit log:
+> +obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
+> +obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
+
+Gregory
+
+>  obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+>  obj-$(CONFIG_ARM_S3C2412_CPUFREQ)	+= s3c2412-cpufreq.o
+>  obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
 -- 
-2.15.0
+Gregory Clement, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+http://bootlin.com
