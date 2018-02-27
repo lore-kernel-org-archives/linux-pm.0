@@ -1,37 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCHv2] PM / wakeirq: Add wakeup name to dedicated wake irqs
-Date: Mon, 26 Feb 2018 23:01:18 +0100
-Message-ID: <CAJZ5v0i=GShDnTSSNzo8kB0E=8exLCLFmbq42RsT8=No+AP9cQ@mail.gmail.com>
-References: <20180223220612.35181-1-tony@atomide.com> <1519565632.10722.150.camel@linux.intel.com>
- <20180226215102.GG16043@atomide.com> <1519682116.10722.206.camel@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency
+ table twice
+Date: Tue, 27 Feb 2018 09:15:27 +0530
+Message-ID: <20180227034527.GQ26947@vireshk-i7>
+References: <cover.1519620578.git.viresh.kumar@linaro.org>
+ <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
+ <871sh89dbr.fsf@concordia.ellerman.id.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1519682116.10722.206.camel@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tony Lindgren <tony@atomide.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <871sh89dbr.fsf@concordia.ellerman.id.au>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 26, 2018 at 10:55 PM, Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
-> On Mon, 2018-02-26 at 13:51 -0800, Tony Lindgren wrote:
->> * Andy Shevchenko <andriy.shevchenko@linux.intel.com> [180225 13:37]:
->> > On Fri, 2018-02-23 at 14:06 -0800, Tony Lindgren wrote:
->> > >
->
->
->> +     wirq->name = kasprintf(GFP_KERNEL, "%s:wakeup",
->> +                            dev_name(dev));
->
-> Can it make one line?
+On 26-02-18, 22:53, Michael Ellerman wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+> > Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency table twice
+>                                            ^
+>                                       powernv
+> 
+> > The cpufreq core is already validating the CPU frequency table after
+> > calling the ->init() callback of the cpufreq drivers and the drivers
+> > don't need to do the same anymore. Though they need to set the
+> > policy->freq_table field directly from the ->init() callback now.
+> >
+> > Stop validating the frequency table from powerenv driver.
 
-I can fix this up.
+                                             powernv :)
 
->
-> In any case,
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Will fix both of them.
 
-I'll queue up the patch for 4.17 shortly.
-
-Thanks!
+-- 
+viresh
