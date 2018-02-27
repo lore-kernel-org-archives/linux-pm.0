@@ -1,7 +1,7 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v8 15/15] dt-bindings: cpufreq: Document operating-points-v2-krait-cpu
-Date: Tue, 27 Feb 2018 19:37:02 +0530
-Message-ID: <1519740422-3835-16-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v8 11/15] clk: qcom: Add Krait clock controller driver
+Date: Tue, 27 Feb 2018 19:36:58 +0530
+Message-ID: <1519740422-3835-12-git-send-email-sricharan@codeaurora.org>
 References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
@@ -9,389 +9,397 @@ Sender: linux-kernel-owner@vger.kernel.org
 To: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org, sricharan@codeaurora.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
-that has KRAIT processors the voltage/current value of each OPP
-varies based on the silicon variant in use.
-operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
-and the operating-points-v2 table for each opp. The qcom-cpufreq driver
-reads the efuse value from the SoC to provide the required information
-that is used to determine the voltage and current value for each OPP of
-operating-points-v2 table when it is parsed by the OPP framework.
+From: Stephen Boyd <sboyd@codeaurora.org>
 
-Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+The Krait CPU clocks are made up of a primary mux and secondary
+mux for each CPU and the L2, controlled via cp15 accessors. For
+Kraits within KPSSv1 each secondary mux accepts a different aux
+source, but on KPSSv2 each secondary mux accepts the same aux
+source.
+
+Cc: <devicetree@vger.kernel.org>
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
- 1 file changed, 363 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+ drivers/clk/qcom/Kconfig    |   8 ++
+ drivers/clk/qcom/Makefile   |   1 +
+ drivers/clk/qcom/krait-cc.c | 341 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 350 insertions(+)
+ create mode 100644 drivers/clk/qcom/krait-cc.c
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+index 8fca65d..73cb840 100644
+--- a/drivers/clk/qcom/Kconfig
++++ b/drivers/clk/qcom/Kconfig
+@@ -243,6 +243,14 @@ config KPSS_XCC
+ 	  if you want to support CPU frequency scaling on devices such
+ 	  as MSM8960, APQ8064, etc.
+ 
++config KRAITCC
++	tristate "Krait Clock Controller"
++	depends on COMMON_CLK_QCOM && ARM
++	select KRAIT_CLOCKS
++	help
++	  Support for the Krait CPU clocks on Qualcomm devices.
++	  Say Y if you want to support CPU frequency scaling.
++
+ config KRAIT_CLOCKS
+ 	bool
+ 	select KRAIT_L2_ACCESSORS
+diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
+index 24e598a..cd99c7b 100644
+--- a/drivers/clk/qcom/Makefile
++++ b/drivers/clk/qcom/Makefile
+@@ -42,3 +42,4 @@ obj-$(CONFIG_QCOM_CLK_SMD_RPM) += clk-smd-rpm.o
+ obj-$(CONFIG_SPMI_PMIC_CLKDIV) += clk-spmi-pmic-div.o
+ obj-$(CONFIG_KPSS_XCC) += kpss-xcc.o
+ obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
++obj-$(CONFIG_KRAITCC) += krait-cc.o
+diff --git a/drivers/clk/qcom/krait-cc.c b/drivers/clk/qcom/krait-cc.c
 new file mode 100644
-index 0000000..7b083c7
+index 0000000..7c9dfb0
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
-@@ -0,0 +1,363 @@
-+QCOM KRAIT CPUFreq and OPP bindings
-+===================================
++++ b/drivers/clk/qcom/krait-cc.c
+@@ -0,0 +1,341 @@
++// SPDX-License-Identifier: GPL-2.0
++// Copyright (c) 2018, The Linux Foundation. All rights reserved.
 +
-+In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
-+that has KRAIT processors the voltage value of each OPP varies
-+based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
-+defines the voltage and current value based on the speed/pvs/version
-+combination blown in the efuse. The qcom-cpufreq driver reads the efuse
-+value from the SoC to provide the OPP framework with required information.
-+This is used to determine the voltage and current value for each OPP of
-+operating-points-v2 table when it is parsed by the OPP framework.
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/clk.h>
++#include <linux/clk-provider.h>
++#include <linux/slab.h>
 +
-+Required properties:
-+--------------------
-+In 'cpus' nodes:
-+- operating-points-v2: Phandle to the operating-points-v2 table to use.
++#include "clk-krait.h"
 +
-+In 'operating-points-v2' table:
-+- compatible: Should be
-+	- 'operating-points-v2-krait-cpu' for ipq8064, apq8064, msm8960,
-+					      msm8974.
-+- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-+		efuse registers that has information about the
-+		speedbin/pvs/version that is used to select the right
-+		voltage/current value pair. Note that the length field of the
-+		nvmem-cell is used to differentiate between format 'A' or 'B'
-+		efuse settings. len of '4' bytes is for format 'A' and '8'
-+		bytes for format 'B'. Please refer the for nvmem-cells
-+		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
-+		and also examples below for both the cases.
-+Example 1:
-+---------
-+
-+/* For arch/arm/boot/dts/apq8064.dtsi --> format 'A' */
-+cpus {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	CPU0: cpu@0 {
-+		compatible = "qcom,krait";
-+		enable-method = "qcom,kpss-acc-v1";
-+		device_type = "cpu";
-+		reg = <0>;
-+		next-level-cache = <&L2>;
-+		qcom,acc = <&acc0>;
-+		qcom,saw = <&saw0>;
-+		cpu-idle-states = <&CPU_SPC>;
-+		operating-points-v2 = <&cpu_opp_table>;
-+	};
++static unsigned int sec_mux_map[] = {
++	2,
++	0,
 +};
 +
-+qfprom: qfprom@700000 {
-+	compatible      = "qcom,qfprom";
-+	reg	      = <0x00700000 0x1000>;
-+	#address-cells  = <1>;
-+	#size-cells     = <1>;
-+	ranges;
-+	pvs_efuse: pvs {
-+		reg = <0xc0 0x4>;
-+	};
++static unsigned int pri_mux_map[] = {
++	1,
++	2,
++	0,
 +};
 +
-+cpu_opp_table: opp-table {
-+	compatible = "operating-points-v2-krait-cpu";
-+	nvmem-cells = <&pvs_efuse>;
-+
-+		/*
-+		 * Missing opp-shared property means CPUs switch DVFS states
-+		 * independently.
-+		 */
-+
-+		opp-918000000 {
-+			opp-hz = /bits/ 64 <918000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1100000>;
-+			opp-microvolt-speed0-pvs1-v0 = <1050000>;
-+			opp-microvolt-speed0-pvs3-v0 = <1000000>;
-+			opp-microvolt-speed0-pvs4-v0 = <975000>;
-+			opp-microvolt-speed1-pvs0-v0 = <1025000>;
-+			opp-microvolt-speed1-pvs1-v0 = <1000000>;
-+			opp-microvolt-speed1-pvs2-v0 = <950000>;
-+			opp-microvolt-speed1-pvs3-v0 = <925000>;
-+			opp-microvolt-speed1-pvs4-v0 = <900000>;
-+			opp-microvolt-speed1-pvs5-v0 = <900000>;
-+			opp-microvolt-speed1-pvs6-v0 = <900000>;
-+			opp-microvolt-speed2-pvs0-v0 = <975000>;
-+			opp-microvolt-speed2-pvs1-v0 = <950000>;
-+			opp-microvolt-speed2-pvs2-v0 = <925000>;
-+			opp-microvolt-speed2-pvs3-v0 = <912500>;
-+			opp-microvolt-speed2-pvs4-v0 = <900000>;
-+			opp-microvolt-speed2-pvs5-v0 = <900000>;
-+			opp-microvolt-speed2-pvs6-v0 = <900000>;
-+			opp-microvolt-speed14-pvs0-v0 = <1025000>;
-+			opp-microvolt-speed14-pvs1-v0 = <1000000>;
-+			opp-microvolt-speed14-pvs2-v0 = <950000>;
-+			opp-microvolt-speed14-pvs3-v0 = <925000>;
-+			opp-microvolt-speed14-pvs4-v0 = <900000>;
-+			opp-microvolt-speed14-pvs5-v0 = <900000>;
-+			opp-microvolt-speed14-pvs6-v0 = <900000>;
-+		};
-+
-+		opp-810000000 {
-+			opp-hz = /bits/ 64 <810000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1075000>;
-+			opp-microvolt-speed0-pvs1-v0 = <1025000>;
-+			opp-microvolt-speed0-pvs3-v0 = <975000>;
-+			opp-microvolt-speed0-pvs3-v0 = <962500>;
-+			opp-microvolt-speed1-pvs0-v0 = <1000000>;
-+			opp-microvolt-speed1-pvs1-v0 = <975000>;
-+			opp-microvolt-speed1-pvs2-v0 = <937500>;
-+			opp-microvolt-speed1-pvs3-v0 = <900000>;
-+			opp-microvolt-speed1-pvs4-v0 = <887500>;
-+			opp-microvolt-speed1-pvs5-v0 = <887500>;
-+			opp-microvolt-speed1-pvs6-v0 = <887500>;
-+			opp-microvolt-speed2-pvs0-v0 = <962500>;
-+			opp-microvolt-speed2-pvs1-v0 = <937500>;
-+			opp-microvolt-speed2-pvs2-v0 = <912500>;
-+			opp-microvolt-speed2-pvs3-v0 = <900000>;
-+			opp-microvolt-speed2-pvs4-v0 = <887500>;
-+			opp-microvolt-speed2-pvs5-v0 = <887500>;
-+			opp-microvolt-speed2-pvs6-v0 = <887500>;
-+			opp-microvolt-speed14-pvs0-v0 = <1000000>;
-+			opp-microvolt-speed14-pvs1-v0 = <975000>;
-+			opp-microvolt-speed14-pvs2-v0 = <937500>;
-+			opp-microvolt-speed14-pvs3-v0 = <900000>;
-+			opp-microvolt-speed14-pvs4-v0 = <887500>;
-+			opp-microvolt-speed14-pvs5-v0 = <887500>;
-+			opp-microvolt-speed14-pvs6-v0 = <887500>;
-+		};
-+
-+		opp-702000000 {
-+			opp-hz = /bits/ 64 <702000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1025000>;
-+			opp-microvolt-speed0-pvs1-v0 = <975000>;
-+			opp-microvolt-speed0-pvs3-v0 = <925000>;
-+			opp-microvolt-speed0-pvs3-v0 = <925000>;
-+			opp-microvolt-speed1-pvs0-v0 = <962500>;
-+			opp-microvolt-speed1-pvs1-v0 = <962500>;
-+			opp-microvolt-speed1-pvs2-v0 = <925000>;
-+			opp-microvolt-speed1-pvs3-v0 = <900000>;
-+			opp-microvolt-speed1-pvs4-v0 = <875000>;
-+			opp-microvolt-speed1-pvs5-v0 = <875000>;
-+			opp-microvolt-speed1-pvs6-v0 = <875000>;
-+			opp-microvolt-speed2-pvs0-v0 = <950000>;
-+			opp-microvolt-speed2-pvs1-v0 = <925000>;
-+			opp-microvolt-speed2-pvs2-v0 = <900000>;
-+			opp-microvolt-speed2-pvs3-v0 = 900000>;
-+			opp-microvolt-speed2-pvs4-v0 = <875000>;
-+			opp-microvolt-speed2-pvs5-v0 = <875000>;
-+			opp-microvolt-speed2-pvs6-v0 = <875000>;
-+			opp-microvolt-speed14-pvs0-v0 = <962500>;
-+			opp-microvolt-speed14-pvs1-v0 = <962500>;
-+			opp-microvolt-speed14-pvs2-v0 = <925000>;
-+			opp-microvolt-speed14-pvs3-v0 = <900000>;
-+			opp-microvolt-speed14-pvs4-v0 = <875000>;
-+			opp-microvolt-speed14-pvs5-v0 = <875000>;
-+			opp-microvolt-speed14-pvs6-v0 = <875000>;
-+		};
-+
-+		opp-594000000 {
-+			opp-hz = /bits/ 64 <594000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1000000>;
-+			opp-microvolt-speed0-pvs1-v0 = <950000>;
-+			opp-microvolt-speed0-pvs3-v0 = <900000>;
-+			opp-microvolt-speed0-pvs3-v0 = <900000>;
-+			opp-microvolt-speed1-pvs0-v0 = <950000>;
-+			opp-microvolt-speed1-pvs1-v0 = <950000>;
-+			opp-microvolt-speed1-pvs2-v0 = <925000>;
-+			opp-microvolt-speed1-pvs3-v0 = <900000>;
-+			opp-microvolt-speed1-pvs4-v0 = <875000>;
-+			opp-microvolt-speed1-pvs5-v0 = <875000>;
-+			opp-microvolt-speed1-pvs6-v0 = <875000>;
-+			opp-microvolt-speed2-pvs0-v0 = <950000>;
-+			opp-microvolt-speed2-pvs1-v0 = <925000>;
-+			opp-microvolt-speed2-pvs2-v0 = <900000>;
-+			opp-microvolt-speed2-pvs3-v0 = <900000>;
-+			opp-microvolt-speed2-pvs4-v0 = <875000>;
-+			opp-microvolt-speed2-pvs5-v0 = <875000>;
-+			opp-microvolt-speed2-pvs6-v0 = <875000>;
-+			opp-microvolt-speed14-pvs0-v0 = <950000>;
-+			opp-microvolt-speed14-pvs1-v0 = <950000>;
-+			opp-microvolt-speed14-pvs2-v0 = <925000>;
-+			opp-microvolt-speed14-pvs3-v0 = <900000>;
-+			opp-microvolt-speed14-pvs4-v0 = <875000>;
-+			opp-microvolt-speed14-pvs5-v0 = <875000>;
-+			opp-microvolt-speed14-pvs6-v0 = <875000>;
-+		};
-+
-+		opp-486000000 {
-+			opp-hz = /bits/ 64 <486000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <975000>;
-+			opp-microvolt-speed0-pvs1-v0 = <925000>;
-+			opp-microvolt-speed0-pvs3-v0 = <875000>;
-+			opp-microvolt-speed0-pvs3-v0 = <875000>;
-+			opp-microvolt-speed1-pvs0-v0 = <950000>;
-+			opp-microvolt-speed1-pvs1-v0 = <950000>;
-+			opp-microvolt-speed1-pvs2-v0 = <925000>;
-+			opp-microvolt-speed1-pvs3-v0 = <900000>;
-+			opp-microvolt-speed1-pvs4-v0 = <875000>;
-+			opp-microvolt-speed1-pvs5-v0 = <875000>;
-+			opp-microvolt-speed1-pvs6-v0 = <875000>;
-+			opp-microvolt-speed2-pvs0-v0 = <950000>;
-+			opp-microvolt-speed2-pvs1-v0 = <925000>;
-+			opp-microvolt-speed2-pvs2-v0 = <900000>;
-+			opp-microvolt-speed2-pvs3-v0 = <900000>;
-+			opp-microvolt-speed2-pvs4-v0 = <875000>;
-+			opp-microvolt-speed2-pvs5-v0 = <875000>;
-+			opp-microvolt-speed2-pvs6-v0 = <875000>;
-+			opp-microvolt-speed14-pvs0-v0 = <950000>;
-+			opp-microvolt-speed14-pvs1-v0 = <950000>;
-+			opp-microvolt-speed14-pvs2-v0 = <925000>;
-+			opp-microvolt-speed14-pvs3-v0 = <900000>;
-+			opp-microvolt-speed14-pvs4-v0 = <875000>;
-+			opp-microvolt-speed14-pvs5-v0 = <875000>;
-+			opp-microvolt-speed14-pvs6-v0 = <875000>;
-+		};
-+
-+		opp-384000000 {
-+			opp-hz = /bits/ 64 <384000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <950000>;
-+			opp-microvolt-speed0-pvs1-v0 = <900000>;
-+			opp-microvolt-speed0-pvs3-v0 = <850000>;
-+			opp-microvolt-speed0-pvs3-v0 = <850000>;
-+			opp-microvolt-speed1-pvs0-v0 = <950000>;
-+			opp-microvolt-speed1-pvs1-v0 = <950000>;
-+			opp-microvolt-speed1-pvs2-v0 = <925000>;
-+			opp-microvolt-speed1-pvs3-v0 = <900000>;
-+			opp-microvolt-speed1-pvs4-v0 = <875000>;
-+			opp-microvolt-speed1-pvs5-v0 = <875000>;
-+			opp-microvolt-speed1-pvs6-v0 = <875000>;
-+			opp-microvolt-speed2-pvs0-v0 = <950000>;
-+			opp-microvolt-speed2-pvs1-v0 = <925000>;
-+			opp-microvolt-speed2-pvs2-v0 = <900000>;
-+			opp-microvolt-speed2-pvs3-v0 = <900000>;
-+			opp-microvolt-speed2-pvs4-v0 = <875000>;
-+			opp-microvolt-speed2-pvs5-v0 = <875000>;
-+			opp-microvolt-speed2-pvs6-v0 = <875000>;
-+			opp-microvolt-speed14-pvs0-v0 = <950000>;
-+			opp-microvolt-speed14-pvs1-v0 = <950000>;
-+			opp-microvolt-speed14-pvs2-v0 = <925000>;
-+			opp-microvolt-speed14-pvs3-v0 = <900000>;
-+			opp-microvolt-speed14-pvs4-v0 = <875000>;
-+			opp-microvolt-speed14-pvs5-v0 = <875000>;
-+			opp-microvolt-speed14-pvs6-v0 = <875000>;
-+		};
-+};
-+
-+EXAMPLE 2:
-+---------
-+/* For arch/arm/boot/dts/qcom-msm8974.dtsi--> format 'B' */
-+
-+qfprom: qfprom@700000 {
-+	compatible      = "qcom,qfprom";
-+	reg		= <0x00700000 0x1000>;
-+	#address-cells	= <1>;
-+	#size-cells	= <1>;
-+	ranges;
-+	pvs_efuse: pvs {
-+		reg = <0xc0 0x8>;
++static int
++krait_add_div(struct device *dev, int id, const char *s, unsigned int offset)
++{
++	struct krait_div2_clk *div;
++	struct clk_init_data init = {
++		.num_parents = 1,
++		.ops = &krait_div2_clk_ops,
++		.flags = CLK_SET_RATE_PARENT,
 +	};
-+};
++	const char *p_names[1];
++	struct clk *clk;
 +
-+cpu_opp_table: opp-table {
-+	compatible = "operating-points-v2-krait-cpu";
-+	nvmem-cells = <&pvs_efuse>;
++	div = devm_kzalloc(dev, sizeof(*div), GFP_KERNEL);
++	if (!div)
++		return -ENOMEM;
 +
-+		/*
-+		 * Missing opp-shared property means CPUs switch DVFS states
-+		 * independently.
-+		 */
-+	opp-960000000 {
-+		opp-hz = /bits/ 64 <960000000>;
-+		opp-microvolt-speed0-pvs0-v0 = <915000>;
-+		opp-microvolt-speed0-pvs1-v0 = <895000>;
-+		opp-microvolt-speed0-pvs2-v0 = <875000>;
-+		opp-microvolt-speed0-pvs3-v0 = <860000>;
-+		opp-microvolt-speed0-pvs4-v0 = <850000>;
-+		opp-microvolt-speed0-pvs5-v0 = <840000>;
-+		opp-microvolt-speed0-pvs6-v0 = <830000>;
-+		opp-microvolt-speed2-pvs0-v0 = <875000>;
-+		opp-microvolt-speed2-pvs1-v0 = <860000>;
-+		opp-microvolt-speed2-pvs2-v0 = <845000>;
-+		opp-microvolt-speed2-pvs3-v0 = <830000>;
-+		opp-microvolt-speed2-pvs4-v0 = <820000>;
-+		opp-microvolt-speed2-pvs5-v0 = <810000>;
-+		opp-microvolt-speed2-pvs6-v0 = <800000>;
-+		opp-microvolt-speed1-pvs0-v0 = <840000>;
-+		opp-microvolt-speed1-pvs1-v0 = <825000>;
-+		opp-microvolt-speed1-pvs2-v0 = <810000>;
-+		opp-microvolt-speed1-pvs3-v0 = <795000>;
-+		opp-microvolt-speed1-pvs4-v0 = <785000>;
-+		opp-microvolt-speed1-pvs5-v0 = <775000>;
-+		opp-microvolt-speed1-pvs6-v0 = <765000>;
++	div->width = 2;
++	div->shift = 6;
++	div->lpl = id >= 0;
++	div->offset = offset;
++	div->hw.init = &init;
 +
-+		opp-microamp-speed0-pvs0-v0 = <252>;
-+		opp-microamp-speed0-pvs1-v0 = <252>;
-+		opp-microamp-speed0-pvs2-v0 = <252>;
-+		opp-microamp-speed0-pvs3-v0 = <252>;
-+		opp-microamp-speed0-pvs4-v0 = <252>;
-+		opp-microamp-speed0-pvs5-v0 = <252>;
-+		opp-microamp-speed0-pvs6-v0 = <252>;
-+		opp-microamp-speed2-pvs0-v0 = <245>;
-+		opp-microamp-speed2-pvs1-v0 = <245>;
-+		opp-microamp-speed2-pvs2-v0 = <245>;
-+		opp-microamp-speed2-pvs3-v0 = <245>;
-+		opp-microamp-speed2-pvs4-v0 = <245>;
-+		opp-microamp-speed2-pvs5-v0 = <245>;
-+		opp-microamp-speed2-pvs6-v0 = <245>;
-+		opp-microamp-speed1-pvs0-v0 = <242>;
-+		opp-microamp-speed1-pvs1-v0 = <242>;
-+		opp-microamp-speed1-pvs2-v0 = <242>;
-+		opp-microamp-speed1-pvs3-v0 = <242>;
-+		opp-microamp-speed1-pvs4-v0 = <242>;
-+		opp-microamp-speed1-pvs5-v0 = <242>;
-+		opp-microamp-speed1-pvs6-v0 = <242>;
++	init.name = kasprintf(GFP_KERNEL, "hfpll%s_div", s);
++	if (!init.name)
++		return -ENOMEM;
++
++	init.parent_names = p_names;
++	p_names[0] = kasprintf(GFP_KERNEL, "hfpll%s", s);
++	if (!p_names[0]) {
++		kfree(init.name);
++		return -ENOMEM;
++	}
++
++	clk = devm_clk_register(dev, &div->hw);
++	kfree(p_names[0]);
++	kfree(init.name);
++
++	return PTR_ERR_OR_ZERO(clk);
++}
++
++static int
++krait_add_sec_mux(struct device *dev, int id, const char *s,
++		  unsigned int offset, bool unique_aux)
++{
++	struct krait_mux_clk *mux;
++	static const char *sec_mux_list[] = {
++		"acpu_aux",
++		"qsb",
 +	};
-+
-+	opp-883200000 {
-+		opp-hz = /bits/ 64 <883200000>;
-+		opp-microvolt-speed0-pvs0-v0 = <900000>;
-+		opp-microvolt-speed0-pvs1-v0 = <885000>;
-+		opp-microvolt-speed0-pvs2-v0 = <865000>;
-+		opp-microvolt-speed0-pvs3-v0 = <850000>;
-+		opp-microvolt-speed0-pvs4-v0 = <840000>;
-+		opp-microvolt-speed0-pvs5-v0 = <830000>;
-+		opp-microvolt-speed0-pvs6-v0 = <820000>;
-+		opp-microvolt-speed2-pvs0-v0 = <865000>;
-+		opp-microvolt-speed2-pvs1-v0 = <850000>;
-+		opp-microvolt-speed2-pvs2-v0 = <835000>;
-+		opp-microvolt-speed2-pvs3-v0 = <820000>;
-+		opp-microvolt-speed2-pvs4-v0 = <810000>;
-+		opp-microvolt-speed2-pvs5-v0 = <800000>;
-+		opp-microvolt-speed2-pvs6-v0 = <790000>;
-+		opp-microvolt-speed1-pvs0-v0 = <830000>;
-+		opp-microvolt-speed1-pvs1-v0 = <815000>;
-+		opp-microvolt-speed1-pvs2-v0 = <800000>;
-+		opp-microvolt-speed1-pvs3-v0 = <785000>;
-+		opp-microvolt-speed1-pvs4-v0 = <775000>;
-+		opp-microvolt-speed1-pvs5-v0 = <765000>;
-+		opp-microvolt-speed1-pvs6-v0 = <755000>;
-+
-+		opp-microamp-speed0-pvs0-v0 = <229>;
-+		opp-microamp-speed0-pvs1-v0 = <229>;
-+		opp-microamp-speed0-pvs2-v0 = <229>;
-+		opp-microamp-speed0-pvs3-v0 = <229>;
-+		opp-microamp-speed0-pvs4-v0 = <229>;
-+		opp-microamp-speed0-pvs5-v0 = <229>;
-+		opp-microamp-speed0-pvs6-v0 = <229>;
-+		opp-microamp-speed2-pvs0-v0 = <223>;
-+		opp-microamp-speed2-pvs1-v0 = <223>;
-+		opp-microamp-speed2-pvs2-v0 = <223>;
-+		opp-microamp-speed2-pvs3-v0 = <223>;
-+		opp-microamp-speed2-pvs4-v0 = <223>;
-+		opp-microamp-speed2-pvs5-v0 = <223>;
-+		opp-microamp-speed2-pvs6-v0 = <223>;
-+		opp-microamp-speed1-pvs0-v0 = <221>;
-+		opp-microamp-speed1-pvs1-v0 = <221>;
-+		opp-microamp-speed1-pvs2-v0 = <221>;
-+		opp-microamp-speed1-pvs3-v0 = <221>;
-+		opp-microamp-speed1-pvs4-v0 = <221>;
-+		opp-microamp-speed1-pvs5-v0 = <221>;
-+		opp-microamp-speed1-pvs6-v0 = <221>;
++	struct clk_init_data init = {
++		.parent_names = sec_mux_list,
++		.num_parents = ARRAY_SIZE(sec_mux_list),
++		.ops = &krait_mux_clk_ops,
++		.flags = CLK_SET_RATE_PARENT,
 +	};
++	struct clk *clk;
++
++	mux = devm_kzalloc(dev, sizeof(*mux), GFP_KERNEL);
++	if (!mux)
++		return -ENOMEM;
++
++	mux->offset = offset;
++	mux->lpl = id >= 0;
++	mux->mask = 0x3;
++	mux->shift = 2;
++	mux->parent_map = sec_mux_map;
++	mux->hw.init = &init;
++
++	init.name = kasprintf(GFP_KERNEL, "krait%s_sec_mux", s);
++	if (!init.name)
++		return -ENOMEM;
++
++	if (unique_aux) {
++		sec_mux_list[0] = kasprintf(GFP_KERNEL, "acpu%s_aux", s);
++		if (!sec_mux_list[0]) {
++			clk = ERR_PTR(-ENOMEM);
++			goto err_aux;
++		}
++	}
++
++	clk = devm_clk_register(dev, &mux->hw);
++
++	if (unique_aux)
++		kfree(sec_mux_list[0]);
++err_aux:
++	kfree(init.name);
++	return PTR_ERR_OR_ZERO(clk);
++}
++
++static struct clk *
++krait_add_pri_mux(struct device *dev, int id, const char *s,
++		  unsigned int offset)
++{
++	struct krait_mux_clk *mux;
++	const char *p_names[3];
++	struct clk_init_data init = {
++		.parent_names = p_names,
++		.num_parents = ARRAY_SIZE(p_names),
++		.ops = &krait_mux_clk_ops,
++		.flags = CLK_SET_RATE_PARENT,
++	};
++	struct clk *clk;
++
++	mux = devm_kzalloc(dev, sizeof(*mux), GFP_KERNEL);
++	if (!mux)
++		return ERR_PTR(-ENOMEM);
++
++	mux->mask = 0x3;
++	mux->shift = 0;
++	mux->offset = offset;
++	mux->lpl = id >= 0;
++	mux->parent_map = pri_mux_map;
++	mux->hw.init = &init;
++
++	init.name = kasprintf(GFP_KERNEL, "krait%s_pri_mux", s);
++	if (!init.name)
++		return ERR_PTR(-ENOMEM);
++
++	p_names[0] = kasprintf(GFP_KERNEL, "hfpll%s", s);
++	if (!p_names[0]) {
++		clk = ERR_PTR(-ENOMEM);
++		goto err_p0;
++	}
++
++	p_names[1] = kasprintf(GFP_KERNEL, "hfpll%s_div", s);
++	if (!p_names[1]) {
++		clk = ERR_PTR(-ENOMEM);
++		goto err_p1;
++	}
++
++	p_names[2] = kasprintf(GFP_KERNEL, "krait%s_sec_mux", s);
++	if (!p_names[2]) {
++		clk = ERR_PTR(-ENOMEM);
++		goto err_p2;
++	}
++
++	clk = devm_clk_register(dev, &mux->hw);
++
++	kfree(p_names[2]);
++err_p2:
++	kfree(p_names[1]);
++err_p1:
++	kfree(p_names[0]);
++err_p0:
++	kfree(init.name);
++	return clk;
++}
++
++/* id < 0 for L2, otherwise id == physical CPU number */
++static struct clk *krait_add_clks(struct device *dev, int id, bool unique_aux)
++{
++	int ret;
++	unsigned int offset;
++	void *p = NULL;
++	const char *s;
++	struct clk *clk;
++
++	if (id >= 0) {
++		offset = 0x4501 + (0x1000 * id);
++		s = p = kasprintf(GFP_KERNEL, "%d", id);
++		if (!s)
++			return ERR_PTR(-ENOMEM);
++	} else {
++		offset = 0x500;
++		s = "_l2";
++	}
++
++	ret = krait_add_div(dev, id, s, offset);
++	if (ret) {
++		clk = ERR_PTR(ret);
++		goto err;
++	}
++
++	ret = krait_add_sec_mux(dev, id, s, offset, unique_aux);
++	if (ret) {
++		clk = ERR_PTR(ret);
++		goto err;
++	}
++
++	clk = krait_add_pri_mux(dev, id, s, offset);
++err:
++	kfree(p);
++	return clk;
++}
++
++static struct clk *krait_of_get(struct of_phandle_args *clkspec, void *data)
++{
++	unsigned int idx = clkspec->args[0];
++	struct clk **clks = data;
++
++	if (idx >= 5) {
++		pr_err("%s: invalid clock index %d\n", __func__, idx);
++		return ERR_PTR(-EINVAL);
++	}
++
++	return clks[idx] ? : ERR_PTR(-ENODEV);
++}
++
++static const struct of_device_id krait_cc_match_table[] = {
++	{ .compatible = "qcom,krait-cc-v1", (void *)1UL },
++	{ .compatible = "qcom,krait-cc-v2" },
++	{}
 +};
++MODULE_DEVICE_TABLE(of, krait_cc_match_table);
++
++static int krait_cc_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	const struct of_device_id *id;
++	unsigned long cur_rate, aux_rate;
++	int cpu;
++	struct clk *clk;
++	struct clk **clks;
++	struct clk *l2_pri_mux_clk;
++
++	id = of_match_device(krait_cc_match_table, dev);
++	if (!id)
++		return -ENODEV;
++
++	/* Rate is 1 because 0 causes problems for __clk_mux_determine_rate */
++	clk = clk_register_fixed_rate(dev, "qsb", NULL, 0, 1);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
++
++	if (!id->data) {
++		clk = clk_register_fixed_factor(dev, "acpu_aux",
++						"gpll0_vote", 0, 1, 2);
++		if (IS_ERR(clk))
++			return PTR_ERR(clk);
++	}
++
++	/* Krait configurations have at most 4 CPUs and one L2 */
++	clks = devm_kcalloc(dev, 5, sizeof(*clks), GFP_KERNEL);
++	if (!clks)
++		return -ENOMEM;
++
++	for_each_possible_cpu(cpu) {
++		clk = krait_add_clks(dev, cpu, id->data);
++		if (IS_ERR(clk))
++			return PTR_ERR(clk);
++		clks[cpu] = clk;
++	}
++
++	l2_pri_mux_clk = krait_add_clks(dev, -1, id->data);
++	if (IS_ERR(l2_pri_mux_clk))
++		return PTR_ERR(l2_pri_mux_clk);
++	clks[4] = l2_pri_mux_clk;
++
++	/*
++	 * We don't want the CPU or L2 clocks to be turned off at late init
++	 * if CPUFREQ or HOTPLUG configs are disabled. So, bump up the
++	 * refcount of these clocks. Any cpufreq/hotplug manager can assume
++	 * that the clocks have already been prepared and enabled by the time
++	 * they take over.
++	 */
++	for_each_online_cpu(cpu) {
++		clk_prepare_enable(l2_pri_mux_clk);
++		WARN(clk_prepare_enable(clks[cpu]),
++		     "Unable to turn on CPU%d clock", cpu);
++	}
++
++	/*
++	 * Force reinit of HFPLLs and muxes to overwrite any potential
++	 * incorrect configuration of HFPLLs and muxes by the bootloader.
++	 * While at it, also make sure the cores are running at known rates
++	 * and print the current rate.
++	 *
++	 * The clocks are set to aux clock rate first to make sure the
++	 * secondary mux is not sourcing off of QSB. The rate is then set to
++	 * two different rates to force a HFPLL reinit under all
++	 * circumstances.
++	 */
++	cur_rate = clk_get_rate(l2_pri_mux_clk);
++	aux_rate = 384000000;
++	if (cur_rate == 1) {
++		pr_info("L2 @ QSB rate. Forcing new rate.\n");
++		cur_rate = aux_rate;
++	}
++	clk_set_rate(l2_pri_mux_clk, aux_rate);
++	clk_set_rate(l2_pri_mux_clk, 2);
++	clk_set_rate(l2_pri_mux_clk, cur_rate);
++	pr_info("L2 @ %lu KHz\n", clk_get_rate(l2_pri_mux_clk) / 1000);
++	for_each_possible_cpu(cpu) {
++		clk = clks[cpu];
++		cur_rate = clk_get_rate(clk);
++		if (cur_rate == 1) {
++			pr_info("CPU%d @ QSB rate. Forcing new rate.\n", cpu);
++			cur_rate = aux_rate;
++		}
++
++		clk_set_rate(clk, aux_rate);
++		clk_set_rate(clk, 2);
++		clk_set_rate(clk, cur_rate);
++		pr_info("CPU%d @ %lu KHz\n", cpu, clk_get_rate(clk) / 1000);
++	}
++
++	of_clk_add_provider(dev->of_node, krait_of_get, clks);
++
++	return 0;
++}
++
++static struct platform_driver krait_cc_driver = {
++	.probe = krait_cc_probe,
++	.driver = {
++		.name = "krait-cc",
++		.of_match_table = krait_cc_match_table,
++	},
++};
++module_platform_driver(krait_cc_driver);
++
++MODULE_DESCRIPTION("Krait CPU Clock Driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:krait-cc");
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
