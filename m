@@ -1,45 +1,26 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] thermal: exynos: Propagate error value from tmu_read()
-Date: Tue, 27 Feb 2018 16:25:02 +0100
-Message-ID: <1635777.KPLQ7M4AcC@amdc3058>
-References: <CGME20180227151408eucas1p20dc5f0974dda96b4ebaff7948eda766a@eucas1p2.samsung.com>
-        <20180227151405.9618-1-m.szyprowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <20180227151405.9618-1-m.szyprowski@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+From: Merlijn Wajer <merlijn@wizzup.org>
+Subject: [RFC PATCH 0/1] power: supply: bq27xxx: Call power_supply_changed on status change
+Date: Wed, 28 Feb 2018 02:04:43 +0100
+Message-ID: <20180228010452.1713-1-merlijn@wizzup.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-omap@vger.kernel.org
+Cc: merlijn@wizzup.org, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt.ranostay@konsulko.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 27, 2018 04:14:05 PM Marek Szyprowski wrote:
-> tmu_read() in case of Exynos4210 might return error for out of bound
-> values. Current code ignores such value, what leads to reporting critical
-> temperature value. Add proper error code propagation to exynos_get_temp()
-> function.
-> 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> CC: stable@vger.kernel.org # v4.6+
+Hi,
 
-Thanks for fixing this.
+It seems that bq27xxx_battery_update does not call power_supply_changed when the
+charging status changes, and instead only when the capacity changes.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+This can cause considerable delays in reporting charging status changes to
+userspace. This patch turns the battery status reading function into one that
+returns the value directly (as other *_read functions), adds the status to the
+cache, uses the cache when reporting the values and finally will trigger
+power_supply_changed when the charging status changes.
 
-> ---
-> This patch is prepared on top of "thermal: exynos: Reading temperature
-> makes sense only when TMU is turned on" patch. Both are required
-> to finally fix thermal support on Exynos4210 based boards.
-> 
-> This patch only applies cleanly together with the mentioned "thermal:
-> exynos: Reading temperature makes sense only when TMU is turned on"
-> patch on v4.6+ kernels.
+There is still a noticable delay in detecting charger status, but that seems to
+have a different cause.
 
-You may also add:
-
-Fixes: 3b6a1a805f34 ("thermal: samsung: core: Exynos TMU rework to use device tree for configuration")
-
-to the patch description.
-
-Best regards,
+Cheers,
+Merlijn
