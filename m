@@ -1,46 +1,64 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH V4 2/2] thermal: imx: add i.MX7 thermal sensor support
-Date: Wed, 28 Feb 2018 19:25:31 +0200
-Message-ID: <1519838731.16494.8.camel@nxp.com>
-References: <1519459369-29083-1-git-send-email-Anson.Huang@nxp.com>
-         <1519459369-29083-2-git-send-email-Anson.Huang@nxp.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PM / core: move device and its children to end of dpm list
+Date: Wed, 28 Feb 2018 13:56:41 -0600
+Message-ID: <20180228195641.GI127842@bhelgaas-glaptop.roam.corp.google.com>
+References: <1519843555-982-1-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1519459369-29083-2-git-send-email-Anson.Huang@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <Anson.Huang@nxp.com>, rui.zhang@intel.com, edubezval@gmail.com, shawnguo@kernel.org
-Cc: Linux-imx@nxp.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, fabio.estevam@nxp.com, linux@armlinux.org.uk, kernel@pengutronix.de, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1519843555-982-1-git-send-email-fkan@apm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Feng Kan <fkan@apm.com>
+Cc: lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2018-02-24 at 16:02 +0800, Anson Huang wrote:
-> This patch adds i.MX7 thermal sensor support, most
-> of the i.MX7 thermal sensor functions are same with
-> i.MX6 except the registers offset/layout, so we move
-> those registers offset/layout definitions to soc data
-> structure.
+On Wed, Feb 28, 2018 at 10:45:55AM -0800, Feng Kan wrote:
+> When bridge and its endpoint is enumated the devices are added to the
+> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
+> This causes the bridge to be moved to the end of the dpm list when deferred
+> probe kicks in. The order of the dpm list for bridge and endpoint is
+> reversed.
 > 
-> i.MX7 uses single calibration data @25C, the calibration
-> data is located at OCOTP offset 0x4F0, bit[17:9], the
-> formula is as below:
+> Add reordering code to re-position the bridge and its children so the order
+> for suspend and resume is not altered.
 > 
-> Tmeas = (Nmeas - n1) + 25; n1 is the fuse value for 25C.
+> Signed-off-by: Feng Kan <fkan@apm.com>
+> Signed-off-by: Toan Le <toanle@apm.com>
+
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 9d32000..1ec12d5 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -1272,6 +1272,9 @@ extern void devm_device_remove_group(struct device *dev,
+>  /* debugging and troubleshooting/diagnostic helpers. */
+>  extern const char *dev_driver_string(const struct device *dev);
+>  
+> +/* reorder device and its children to end of dpm list */
+> +void device_pm_reorder(struct device *dev);
+
+Do you expect drivers to use this, or only the driver core in
+drivers/base/?  There is a drivers/base/base.h; maybe this would fit
+there rather than being exposed to the rest of the kernel via
+include/linux/device.h?
+
+>  /* Device links interface. */
+>  struct device_link *device_link_add(struct device *consumer,
+>  				    struct device *supplier, u32 flags);
+> -- 
+> 1.8.3.1
 > 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> Signed-off-by: Bai Ping <ping.bai@nxp.com>
-
-On imx7d (also 6sx and 6ul) OCOTP read will hang silently if the ocotp
-clk is not enabled. For example this can happen if imx_thermal is built
-as a module or probes after unused clocks are disabled.
-
-This driver has support for reading ocotp values through the ocotp
-nvmem driver (which handles clks properly). Since imx7d is a new
-compatible string for upstream maybe you could just make new-style
-bindings mandatory and drop the changes to imx_init_from_tempmon_data?
-
-See commit 2067b757e972 ("ARM: dts: imx6ul: Add imx6ul-tempmon")
-
---
-Regards,
-Leonard
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
