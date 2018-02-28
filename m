@@ -1,40 +1,67 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: Timekeeping warning during resume from suspend to disk
-Date: Tue, 20 Feb 2018 08:54:25 +0100
-Message-ID: <20180220075425.GA13048@kroah.com>
-References: <CABXF_AAQVJ7eMt4gFhiEcgZTD7Y4R66-9ELZ1OJ2gAmKPeLMAw@mail.gmail.com>
+From: Anson Huang <Anson.Huang@nxp.com>
+Subject: [PATCH V5 1/2] ARM: dts: imx7s: add temperature monitor support
+Date: Thu, 1 Mar 2018 07:09:39 +0800
+Message-ID: <1519859380-15878-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <kernelnewbies-bounces@kernelnewbies.org>
-Content-Disposition: inline
-In-Reply-To: <CABXF_AAQVJ7eMt4gFhiEcgZTD7Y4R66-9ELZ1OJ2gAmKPeLMAw@mail.gmail.com>
-List-Unsubscribe: <https://lists.kernelnewbies.org/mailman/options/kernelnewbies>,
- <mailto:kernelnewbies-request@kernelnewbies.org?subject=unsubscribe>
-List-Archive: <http://lists.kernelnewbies.org/pipermail/kernelnewbies/>
-List-Post: <mailto:kernelnewbies@kernelnewbies.org>
-List-Help: <mailto:kernelnewbies-request@kernelnewbies.org?subject=help>
-List-Subscribe: <https://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies>,
- <mailto:kernelnewbies-request@kernelnewbies.org?subject=subscribe>
-Errors-To: kernelnewbies-bounces@kernelnewbies.org
-To: Ivid Suvarna <ivid.suvarna@gmail.com>
-Cc: Linux-pm@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, kernelnewbies@kernelnewbies.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: leonard.crestez@nxp.com, rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, linux@armlinux.org.uk
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Linux-imx@nxp.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 20, 2018 at 12:53:26PM +0530, Ivid Suvarna wrote:
-> Hi All,
-> 
-> Facing below warning backtrace during resume from suspend to disk. I
-> am using 4.1.15 freescale kernel.
+Add i.MX7 temperature monitor support.
 
-4.1.15 is a kernel that is very old and obsolete (released almost 3
-years ago, and tens of thousands of changes old.)  Please try something
-newer and more modern like 4.15.  If the issue is still there, the
-community will be glad to help you out.
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
+Acked-by: Shawn Guo <shawnguo@kernel.org>
+---
+	No changes since V4.
+ arch/arm/boot/dts/imx7s.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-If you are stuck at that old kernel version for some odd reason, please
-get support from the company that is forcing you to use it.
-
-good luck!
-
-greg k-h
+diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
+index 9aa2bb9..6a5c1bf 100644
+--- a/arch/arm/boot/dts/imx7s.dtsi
++++ b/arch/arm/boot/dts/imx7s.dtsi
+@@ -511,9 +511,29 @@
+ 			};
+ 
+ 			ocotp: ocotp-ctrl@30350000 {
++				#address-cells = <1>;
++				#size-cells = <1>;
+ 				compatible = "fsl,imx7d-ocotp", "syscon";
+ 				reg = <0x30350000 0x10000>;
+ 				clocks = <&clks IMX7D_OCOTP_CLK>;
++
++				tempmon_calib: calib@3c {
++					reg = <0x3c 0x4>;
++				};
++
++				tempmon_temp_grade: temp-grade@10 {
++					reg = <0x10 0x4>;
++				};
++			};
++
++			tempmon: tempmon {
++				compatible = "fsl,imx7d-tempmon";
++				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
++				fsl,tempmon =<&anatop>;
++				nvmem-cells = <&tempmon_calib>,
++					<&tempmon_temp_grade>;
++				nvmem-cell-names = "calib", "temp_grade";
++				clocks = <&clks IMX7D_PLL_SYS_MAIN_CLK>;
+ 			};
+ 
+ 			anatop: anatop@30360000 {
+-- 
+2.7.4
