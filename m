@@ -1,97 +1,86 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: imx: Fix race condition in imx_thermal_probe()
-Date: Wed, 28 Feb 2018 12:42:43 +0800
-Message-ID: <1519792963.2797.20.camel@intel.com>
-References: <1517595466-23465-1-git-send-email-festevam@gmail.com>
-         <CAOMZO5D5rRask0pGQBFf+47sG0XURj17=pO4hMiAh4MZa4nkJQ@mail.gmail.com>
-         <CAOMZO5A7vqGffkj0qHUQo7MXVQMfy5Om7yw1YCs6ZR_0aOE37A@mail.gmail.com>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v8 14/15] cpufreq: Add module to register cpufreq on Krait
+ CPUs
+Date: Wed, 28 Feb 2018 11:04:26 +0530
+Message-ID: <95e134a6-7992-e16f-dc55-df7af96b31b9@codeaurora.org>
+References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
+ <1519740422-3835-15-git-send-email-sricharan@codeaurora.org>
+ <87zi3ujx7c.fsf@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <CAOMZO5A7vqGffkj0qHUQo7MXVQMfy5Om7yw1YCs6ZR_0aOE37A@mail.gmail.com>
-Sender: stable-owner@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Mikhail Lappo <mikhail.lappo@esrlabs.com>, linux-pm@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, stable <stable@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <87zi3ujx7c.fsf@bootlin.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@bootlin.com>
+Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-02-26 at 15:56 -0300, Fabio Estevam wrote:
-> Rui,
-> 
-> Any comments, please?
-> 
-interesting, this problem should be covered by this patch https://patch
-work.kernel.org/patch/10242483/, together with some driver code change.
+Hi Gregory,
 
-anyway, as that is not a complete solution yet, I will apply this patch
-as a quick solution.
+On 2/27/2018 8:28 PM, Gregory CLEMENT wrote:
+> Hi Sricharan,
+>  
+>  On mar., févr. 27 2018, Sricharan R <sricharan@codeaurora.org> wrote:
+> 
+>> From: Stephen Boyd <sboyd@codeaurora.org>
+>>
+>> Register a cpufreq-generic device whenever we detect that a
+>> "qcom,krait" compatible CPU is present in DT.
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> [Sricharan: updated to use dev_pm_opp_set_prop_name and
+>> 	    nvmem apis]
+>> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+>> ---
+>>  drivers/cpufreq/Kconfig.arm          |  10 ++
+>>  drivers/cpufreq/Makefile             |   3 +
+>>  drivers/cpufreq/cpufreq-dt-platdev.c |   5 +
+>>  drivers/cpufreq/qcom-cpufreq.c       | 183 +++++++++++++++++++++++++++++++++++
+>>  4 files changed, 201 insertions(+)
+>>  create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+>>
+>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>> index 3a88e33..826f9e7 100644
+>> --- a/drivers/cpufreq/Kconfig.arm
+>> +++ b/drivers/cpufreq/Kconfig.arm
+>> @@ -133,6 +133,16 @@ config ARM_OMAP2PLUS_CPUFREQ
+>>  	depends on ARCH_OMAP2PLUS
+>>  	default ARCH_OMAP2PLUS
+>>  
+>> +config ARM_QCOM_CPUFREQ
+>> +	bool "CPUfreq driver for the QCOM SoCs with KRAIT processors"
+>> +	depends on ARCH_QCOM
+>> +	select PM_OPP
+>> +	help
+>> +	  This enables the CPUFreq driver for Qualcomm SoCs with
+>> +	  KRAIT processors.
+>> +
+>> +	  If in doubt, say N.
+>> +
+>>  config ARM_S3C_CPUFREQ
+>>  	bool
+>>  	help
+>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+>> index c60c1e1..21894f6 100644
+>> --- a/drivers/cpufreq/Makefile
+>> +++ b/drivers/cpufreq/Makefile
+>> @@ -65,6 +65,9 @@ obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+>>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+>>  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+>>  obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+>> +obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
+> 
+> These 2 following lines don't seem related to the commit log:
+>> +obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
+>> +obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
+> 
 
-thanks,
-rui
-> On Wed, Feb 14, 2018 at 1:23 AM, Fabio Estevam <festevam@gmail.com>
-> wrote:
-> > 
-> > Hi Eduardo and Rui,
-> > 
-> > On Fri, Feb 2, 2018 at 4:17 PM, Fabio Estevam <festevam@gmail.com>
-> > wrote:
-> > > 
-> > > From: Mikhail Lappo <mikhail.lappo@esrlabs.com>
-> > > 
-> > > When device boots with T > T_trip_1 and requests interrupt,
-> > > the race condition takes place. The interrupt comes before
-> > > THERMAL_DEVICE_ENABLED is set. This leads to an attempt to
-> > > reading sensor value from irq and disabling the sensor, based on
-> > > the data->mode field, which expected to be
-> > > THERMAL_DEVICE_ENABLED,
-> > > but still stays as THERMAL_DEVICE_DISABLED. Afher this issue
-> > > sensor is never re-enabled, as the driver state is wrong.
-> > > 
-> > > Fix this problem by setting the 'data' members prior to
-> > > requesting the interrupts.
-> > > 
-> > > Fixes: 37713a1e8e4c ("thermal: imx: implement thermal alarm
-> > > interrupt handling")
-> > > Cc: <stable@vger.kernel.org>
-> > > Signed-off-by: Mikhail Lappo <mikhail.lappo@esrlabs.com>
-> > > Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
-> > A gentle ping on this patch.
-> > 
-> > > 
-> > > ---
-> > >  drivers/thermal/imx_thermal.c | 6 +++---
-> > >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > 
-> > > diff --git a/drivers/thermal/imx_thermal.c
-> > > b/drivers/thermal/imx_thermal.c
-> > > index a67781b..ee3a215 100644
-> > > --- a/drivers/thermal/imx_thermal.c
-> > > +++ b/drivers/thermal/imx_thermal.c
-> > > @@ -637,6 +637,9 @@ static int imx_thermal_probe(struct
-> > > platform_device *pdev)
-> > >         regmap_write(map, TEMPSENSE0 + REG_CLR,
-> > > TEMPSENSE0_POWER_DOWN);
-> > >         regmap_write(map, TEMPSENSE0 + REG_SET,
-> > > TEMPSENSE0_MEASURE_TEMP);
-> > > 
-> > > +       data->irq_enabled = true;
-> > > +       data->mode = THERMAL_DEVICE_ENABLED;
-> > > +
-> > >         ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-> > >                         imx_thermal_alarm_irq,
-> > > imx_thermal_alarm_irq_thread,
-> > >                         0, "imx_thermal", data);
-> > > @@ -649,9 +652,6 @@ static int imx_thermal_probe(struct
-> > > platform_device *pdev)
-> > >                 return ret;
-> > >         }
-> > > 
-> > > -       data->irq_enabled = true;
-> > > -       data->mode = THERMAL_DEVICE_ENABLED;
-> > > -
-> > >         return 0;
-> > >  }
-> > > 
-> > > --
-> > > 2.7.4
-> > > 
+ oops. Will remove. Rebase mistake. Thanks.
+
+Regards,
+ Sricharan-- 
+
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
