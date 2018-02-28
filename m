@@ -1,86 +1,149 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v8 14/15] cpufreq: Add module to register cpufreq on Krait
- CPUs
-Date: Wed, 28 Feb 2018 11:04:26 +0530
-Message-ID: <95e134a6-7992-e16f-dc55-df7af96b31b9@codeaurora.org>
-References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
- <1519740422-3835-15-git-send-email-sricharan@codeaurora.org>
- <87zi3ujx7c.fsf@bootlin.com>
+From: Matt Ranostay <matt.ranostay@konsulko.com>
+Subject: Re: [RFC PATCH 1/1] power: supply: bq27xxx: Call power_supply_changed
+ on status change
+Date: Tue, 27 Feb 2018 21:58:12 -0800
+Message-ID: <CAJCx=gk5vw1R3HuxVdrKxHW9EY7hc01RDrhCxNWTeiT8TtpTHA@mail.gmail.com>
+References: <20180228010452.1713-1-merlijn@wizzup.org> <20180228010452.1713-2-merlijn@wizzup.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87zi3ujx7c.fsf@bootlin.com>
-Content-Language: en-US
+In-Reply-To: <20180228010452.1713-2-merlijn@wizzup.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, robh@kernel.org, linux@arm.linux.org.uk
+To: Merlijn Wajer <merlijn@wizzup.org>
+Cc: linux-omap@vger.kernel.org, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, Thomas Gleixner <tglx@linutronix.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Gregory,
+Commit message please :)
 
-On 2/27/2018 8:28 PM, Gregory CLEMENT wrote:
-> Hi Sricharan,
->  
->  On mar., févr. 27 2018, Sricharan R <sricharan@codeaurora.org> wrote:
-> 
->> From: Stephen Boyd <sboyd@codeaurora.org>
->>
->> Register a cpufreq-generic device whenever we detect that a
->> "qcom,krait" compatible CPU is present in DT.
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> [Sricharan: updated to use dev_pm_opp_set_prop_name and
->> 	    nvmem apis]
->> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
->> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->> ---
->>  drivers/cpufreq/Kconfig.arm          |  10 ++
->>  drivers/cpufreq/Makefile             |   3 +
->>  drivers/cpufreq/cpufreq-dt-platdev.c |   5 +
->>  drivers/cpufreq/qcom-cpufreq.c       | 183 +++++++++++++++++++++++++++++++++++
->>  4 files changed, 201 insertions(+)
->>  create mode 100644 drivers/cpufreq/qcom-cpufreq.c
->>
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->> index 3a88e33..826f9e7 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -133,6 +133,16 @@ config ARM_OMAP2PLUS_CPUFREQ
->>  	depends on ARCH_OMAP2PLUS
->>  	default ARCH_OMAP2PLUS
->>  
->> +config ARM_QCOM_CPUFREQ
->> +	bool "CPUfreq driver for the QCOM SoCs with KRAIT processors"
->> +	depends on ARCH_QCOM
->> +	select PM_OPP
->> +	help
->> +	  This enables the CPUFreq driver for Qualcomm SoCs with
->> +	  KRAIT processors.
->> +
->> +	  If in doubt, say N.
->> +
->>  config ARM_S3C_CPUFREQ
->>  	bool
->>  	help
->> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->> index c60c1e1..21894f6 100644
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->> @@ -65,6 +65,9 @@ obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
->>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
->>  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
->>  obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
->> +obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
-> 
-> These 2 following lines don't seem related to the commit log:
->> +obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
->> +obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
-> 
+On Tue, Feb 27, 2018 at 5:04 PM, Merlijn Wajer <merlijn@wizzup.org> wrote:
+> Signed-off-by: Merlijn Wajer <merlijn@wizzup.org>
+> ---
 
- oops. Will remove. Rebase mistake. Thanks.
+Single patch changes usually don't have a cover letter. you put more
+detail here in the cutoff section (aka after --- above)
 
-Regards,
- Sricharan-- 
 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+>  drivers/power/supply/bq27xxx_battery.c | 59 +++++++++++++++++-----------------
+>  include/linux/power/bq27xxx_battery.h  |  1 +
+>  2 files changed, 30 insertions(+), 30 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 0a203672744c..218d153fb431 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -1527,6 +1527,31 @@ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
+>         return POWER_SUPPLY_HEALTH_GOOD;
+>  }
+>
+> +static int bq27xxx_battery_read_status(struct bq27xxx_device_info *di)
+> +{
+> +       int status;
+> +
+> +       if (di->opts & BQ27XXX_O_ZERO) {
+> +               if (di->cache.flags & BQ27000_FLAG_FC)
+> +                       status = POWER_SUPPLY_STATUS_FULL;
+> +               else if (di->cache.flags & BQ27000_FLAG_CHGS)
+> +                       status = POWER_SUPPLY_STATUS_CHARGING;
+> +               else if (power_supply_am_i_supplied(di->bat) > 0)
+> +                       status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> +               else
+> +                       status = POWER_SUPPLY_STATUS_DISCHARGING;
+> +       } else {
+> +               if (di->cache.flags & BQ27XXX_FLAG_FC)
+> +                       status = POWER_SUPPLY_STATUS_FULL;
+> +               else if (di->cache.flags & BQ27XXX_FLAG_DSC)
+> +                       status = POWER_SUPPLY_STATUS_DISCHARGING;
+> +               else
+> +                       status = POWER_SUPPLY_STATUS_CHARGING;
+> +       }
+> +
+> +       return status;
+> +}
+> +
+>  void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>  {
+>         struct bq27xxx_reg_cache cache = {0, };
+> @@ -1547,6 +1572,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>                         cache.time_to_full = -ENODATA;
+>                         cache.charge_full = -ENODATA;
+>                         cache.health = -ENODATA;
+> +                       cache.status = bq27xxx_battery_read_status(di);
+>                 } else {
+>                         if (di->regs[BQ27XXX_REG_TTE] != INVALID_REG_ADDR)
+>                                 cache.time_to_empty = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTE);
+> @@ -1559,6 +1585,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>                         if (di->regs[BQ27XXX_REG_AE] != INVALID_REG_ADDR)
+>                                 cache.energy = bq27xxx_battery_read_energy(di);
+>                         cache.health = bq27xxx_battery_read_health(di);
+> +                       cache.status = bq27xxx_battery_read_status(di);
+>                 }
+>                 if (di->regs[BQ27XXX_REG_CYCT] != INVALID_REG_ADDR)
+>                         cache.cycle_count = bq27xxx_battery_read_cyct(di);
+> @@ -1570,7 +1597,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>                         di->charge_design_full = bq27xxx_battery_read_dcap(di);
+>         }
+>
+> -       if (di->cache.capacity != cache.capacity)
+> +       if ((di->cache.capacity != cache.capacity) || (di->cache.status != cache.status))
+>                 power_supply_changed(di->bat);
+>
+>         if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
+> @@ -1625,34 +1652,6 @@ static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
+>         return 0;
+>  }
+>
+> -static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
+> -                                 union power_supply_propval *val)
+> -{
+> -       int status;
+> -
+> -       if (di->opts & BQ27XXX_O_ZERO) {
+> -               if (di->cache.flags & BQ27000_FLAG_FC)
+> -                       status = POWER_SUPPLY_STATUS_FULL;
+> -               else if (di->cache.flags & BQ27000_FLAG_CHGS)
+> -                       status = POWER_SUPPLY_STATUS_CHARGING;
+> -               else if (power_supply_am_i_supplied(di->bat) > 0)
+> -                       status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> -               else
+> -                       status = POWER_SUPPLY_STATUS_DISCHARGING;
+> -       } else {
+> -               if (di->cache.flags & BQ27XXX_FLAG_FC)
+> -                       status = POWER_SUPPLY_STATUS_FULL;
+> -               else if (di->cache.flags & BQ27XXX_FLAG_DSC)
+> -                       status = POWER_SUPPLY_STATUS_DISCHARGING;
+> -               else
+> -                       status = POWER_SUPPLY_STATUS_CHARGING;
+> -       }
+> -
+> -       val->intval = status;
+> -
+> -       return 0;
+> -}
+> -
+>  static int bq27xxx_battery_capacity_level(struct bq27xxx_device_info *di,
+>                                           union power_supply_propval *val)
+>  {
+> @@ -1733,7 +1732,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>
+>         switch (psp) {
+>         case POWER_SUPPLY_PROP_STATUS:
+> -               ret = bq27xxx_battery_status(di, val);
+> +               ret = bq27xxx_simple_value(di->cache.status, val);
+>                 break;
+>         case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+>                 ret = bq27xxx_battery_voltage(di, val);
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+> index e6187f524f2c..4f27656045fd 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -49,6 +49,7 @@ struct bq27xxx_reg_cache {
+>         int flags;
+>         int power_avg;
+>         int health;
+> +       int status;
+>  };
+>
+>  struct bq27xxx_device_info {
+> --
+> 2.16.2
+>
