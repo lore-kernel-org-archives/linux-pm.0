@@ -1,49 +1,48 @@
-From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v5 6/6] mfd: axp20x: add battery power supply
- cell for AXP813
-Date: Wed, 28 Feb 2018 11:36:01 +0100
-Message-ID: <dc220101006c4df198b2d410121334a2ae98ad22.1519813976.git-series.quentin.schulz@bootlin.com>
-References: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz@bootlin.com>
-Reply-To: quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency
+ table twice
+Date: Wed, 28 Feb 2018 21:45:45 +1100
+Message-ID: <871sh54ckm.fsf@concordia.ellerman.id.au>
+References: <cover.1519620578.git.viresh.kumar@linaro.org>
+ <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
+ <871sh89dbr.fsf@concordia.ellerman.id.au> <20180227034527.GQ26947@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBSUM3LKAKGQEXA5E6UY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-In-Reply-To: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-References: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org
-Cc: maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas.petazzoni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20180227034527.GQ26947@vireshk-i7>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-As axp20x-battery-power-supply now supports AXP813, add a cell for it.
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Reviewed-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
----
- drivers/mfd/axp20x.c | 3 +++
- 1 file changed, 3 insertions(+)
+> On 26-02-18, 22:53, Michael Ellerman wrote:
+>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>> > Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency table twice
+>>                                            ^
+>>                                       powernv
+>> 
+>> > The cpufreq core is already validating the CPU frequency table after
+>> > calling the ->init() callback of the cpufreq drivers and the drivers
+>> > don't need to do the same anymore. Though they need to set the
+>> > policy->freq_table field directly from the ->init() callback now.
+>> >
+>> > Stop validating the frequency table from powerenv driver.
+>
+>                                              powernv :)
+>
+> Will fix both of them.
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index e5516aa..aaf2acb 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -888,6 +888,9 @@ static struct mfd_cell axp813_cells[] = {
- 	}, {
- 		.name			= "axp813-adc",
- 		.of_compatible		= "x-powers,axp813-adc",
-+	}, {
-+		.name		= "axp20x-battery-power-supply",
-+		.of_compatible	= "x-powers,axp813-battery-power-supply",
- 	},
- };
- 
--- 
-git-series 0.9.1
+Thanks :)
+
+cheers
