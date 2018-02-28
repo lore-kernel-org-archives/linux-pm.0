@@ -1,137 +1,87 @@
-From: Merlijn Wajer <merlijn@wizzup.org>
-Subject: [RFC PATCH 1/1] power: supply: bq27xxx: Call power_supply_changed on status change
-Date: Wed, 28 Feb 2018 02:04:44 +0100
-Message-ID: <20180228010452.1713-2-merlijn@wizzup.org>
-References: <20180228010452.1713-1-merlijn@wizzup.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180228010452.1713-1-merlijn@wizzup.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-omap@vger.kernel.org
-Cc: merlijn@wizzup.org, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt.ranostay@konsulko.com>, Thomas Gleixner <tglx@linutronix.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH] thermal: imx: Fix race condition in imx_thermal_probe()
+Date: Wed, 28 Feb 2018 02:16:41 +0000
+Message-ID: <AM3PR04MB3060F3219741769E5CA64DB80C70@AM3PR04MB306.eurprd04.prod.outlook.com>
+References: <1517595466-23465-1-git-send-email-festevam@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1517595466-23465-1-git-send-email-festevam@gmail.com>
+Content-Language: en-US
+Sender: stable-owner@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "mikhail.lappo@esrlabs.com" <mikhail.lappo@esrlabs.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Merlijn Wajer <merlijn@wizzup.org>
----
- drivers/power/supply/bq27xxx_battery.c | 59 +++++++++++++++++-----------------
- include/linux/power/bq27xxx_battery.h  |  1 +
- 2 files changed, 30 insertions(+), 30 deletions(-)
+> -----Original Message-----
+> From: Fabio Estevam [mailto:festevam@gmail.com]
+> Sent: Saturday, February 3, 2018 2:18 AM
+> To: rui.zhang@intel.com
+> Cc: edubezval@gmail.com; mikhail.lappo@esrlabs.com; linux-
+> pm@vger.kernel.org; dl-linux-imx <linux-imx@nxp.com>;
+> p.zabel@pengutronix.de; shawnguo@kernel.org; stable@vger.kernel.org;
+> Fabio Estevam <fabio.estevam@nxp.com>
+> Subject: [PATCH] thermal: imx: Fix race condition in imx_thermal_probe()
+>=20
+> From: Mikhail Lappo <mikhail.lappo@esrlabs.com>
+>=20
+> When device boots with T > T_trip_1 and requests interrupt, the race
+> condition takes place. The interrupt comes before
+> THERMAL_DEVICE_ENABLED is set. This leads to an attempt to reading
+> sensor value from irq and disabling the sensor, based on the data->mode
+> field, which expected to be THERMAL_DEVICE_ENABLED, but still stays as
+> THERMAL_DEVICE_DISABLED. Afher this issue sensor is never re-enabled, as
+> the driver state is wrong.
+>=20
+> Fix this problem by setting the 'data' members prior to requesting the
+> interrupts.
+>=20
+> Fixes: 37713a1e8e4c ("thermal: imx: implement thermal alarm interrupt
+> handling")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Mikhail Lappo <mikhail.lappo@esrlabs.com>
+> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 0a203672744c..218d153fb431 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1527,6 +1527,31 @@ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
- 	return POWER_SUPPLY_HEALTH_GOOD;
- }
- 
-+static int bq27xxx_battery_read_status(struct bq27xxx_device_info *di)
-+{
-+	int status;
-+
-+	if (di->opts & BQ27XXX_O_ZERO) {
-+		if (di->cache.flags & BQ27000_FLAG_FC)
-+			status = POWER_SUPPLY_STATUS_FULL;
-+		else if (di->cache.flags & BQ27000_FLAG_CHGS)
-+			status = POWER_SUPPLY_STATUS_CHARGING;
-+		else if (power_supply_am_i_supplied(di->bat) > 0)
-+			status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		else
-+			status = POWER_SUPPLY_STATUS_DISCHARGING;
-+	} else {
-+		if (di->cache.flags & BQ27XXX_FLAG_FC)
-+			status = POWER_SUPPLY_STATUS_FULL;
-+		else if (di->cache.flags & BQ27XXX_FLAG_DSC)
-+			status = POWER_SUPPLY_STATUS_DISCHARGING;
-+		else
-+			status = POWER_SUPPLY_STATUS_CHARGING;
-+	}
-+
-+	return status;
-+}
-+
- void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- {
- 	struct bq27xxx_reg_cache cache = {0, };
-@@ -1547,6 +1572,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- 			cache.time_to_full = -ENODATA;
- 			cache.charge_full = -ENODATA;
- 			cache.health = -ENODATA;
-+			cache.status = bq27xxx_battery_read_status(di);
- 		} else {
- 			if (di->regs[BQ27XXX_REG_TTE] != INVALID_REG_ADDR)
- 				cache.time_to_empty = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTE);
-@@ -1559,6 +1585,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- 			if (di->regs[BQ27XXX_REG_AE] != INVALID_REG_ADDR)
- 				cache.energy = bq27xxx_battery_read_energy(di);
- 			cache.health = bq27xxx_battery_read_health(di);
-+			cache.status = bq27xxx_battery_read_status(di);
- 		}
- 		if (di->regs[BQ27XXX_REG_CYCT] != INVALID_REG_ADDR)
- 			cache.cycle_count = bq27xxx_battery_read_cyct(di);
-@@ -1570,7 +1597,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- 			di->charge_design_full = bq27xxx_battery_read_dcap(di);
- 	}
- 
--	if (di->cache.capacity != cache.capacity)
-+	if ((di->cache.capacity != cache.capacity) || (di->cache.status != cache.status))
- 		power_supply_changed(di->bat);
- 
- 	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
-@@ -1625,34 +1652,6 @@ static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
- 	return 0;
- }
- 
--static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
--				  union power_supply_propval *val)
--{
--	int status;
--
--	if (di->opts & BQ27XXX_O_ZERO) {
--		if (di->cache.flags & BQ27000_FLAG_FC)
--			status = POWER_SUPPLY_STATUS_FULL;
--		else if (di->cache.flags & BQ27000_FLAG_CHGS)
--			status = POWER_SUPPLY_STATUS_CHARGING;
--		else if (power_supply_am_i_supplied(di->bat) > 0)
--			status = POWER_SUPPLY_STATUS_NOT_CHARGING;
--		else
--			status = POWER_SUPPLY_STATUS_DISCHARGING;
--	} else {
--		if (di->cache.flags & BQ27XXX_FLAG_FC)
--			status = POWER_SUPPLY_STATUS_FULL;
--		else if (di->cache.flags & BQ27XXX_FLAG_DSC)
--			status = POWER_SUPPLY_STATUS_DISCHARGING;
--		else
--			status = POWER_SUPPLY_STATUS_CHARGING;
--	}
--
--	val->intval = status;
--
--	return 0;
--}
--
- static int bq27xxx_battery_capacity_level(struct bq27xxx_device_info *di,
- 					  union power_supply_propval *val)
- {
-@@ -1733,7 +1732,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
--		ret = bq27xxx_battery_status(di, val);
-+		ret = bq27xxx_simple_value(di->cache.status, val);
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 		ret = bq27xxx_battery_voltage(di, val);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index e6187f524f2c..4f27656045fd 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -49,6 +49,7 @@ struct bq27xxx_reg_cache {
- 	int flags;
- 	int power_avg;
- 	int health;
-+	int status;
- };
- 
- struct bq27xxx_device_info {
--- 
-2.16.2
+Looks reasonable to me.
+Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
+
+Regards
+Dong Aisheng
+
+> ---
+>  drivers/thermal/imx_thermal.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.=
+c
+> index a67781b..ee3a215 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -637,6 +637,9 @@ static int imx_thermal_probe(struct platform_device
+> *pdev)
+>  	regmap_write(map, TEMPSENSE0 + REG_CLR,
+> TEMPSENSE0_POWER_DOWN);
+>  	regmap_write(map, TEMPSENSE0 + REG_SET,
+> TEMPSENSE0_MEASURE_TEMP);
+>=20
+> +	data->irq_enabled =3D true;
+> +	data->mode =3D THERMAL_DEVICE_ENABLED;
+> +
+>  	ret =3D devm_request_threaded_irq(&pdev->dev, data->irq,
+>  			imx_thermal_alarm_irq,
+> imx_thermal_alarm_irq_thread,
+>  			0, "imx_thermal", data);
+> @@ -649,9 +652,6 @@ static int imx_thermal_probe(struct platform_device
+> *pdev)
+>  		return ret;
+>  	}
+>=20
+> -	data->irq_enabled =3D true;
+> -	data->mode =3D THERMAL_DEVICE_ENABLED;
+> -
+>  	return 0;
+>  }
+>=20
+> --
+> 2.7.4
