@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v5 4/6] dt-bindings: power: supply: axp20x: add
- AXP813 battery DT binding
-Date: Wed, 28 Feb 2018 11:35:59 +0100
-Message-ID: <002a5a7730f8c8ca9b75147cb139cdcea6bb62f1.1519813976.git-series.quentin.schulz@bootlin.com>
+Subject: [PATCH v5 6/6] mfd: axp20x: add battery power supply
+ cell for AXP813
+Date: Wed, 28 Feb 2018 11:36:01 +0100
+Message-ID: <dc220101006c4df198b2d410121334a2ae98ad22.1519813976.git-series.quentin.schulz@bootlin.com>
 References: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz@bootlin.com>
 Reply-To: quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBSMM3LKAKGQEYVZX2CI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBSUM3LKAKGQEXA5E6UY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 In-Reply-To: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
@@ -22,36 +22,28 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas.petazzoni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The AXP813 can have a battery as power supply, so let's add it to the
-list of compatibles.
+As axp20x-battery-power-supply now supports AXP813, add a cell for it.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Reviewed-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
- Documentation/devicetree/bindings/power/supply/axp20x_battery.txt | 8 +++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/mfd/axp20x.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-index c248866..41916f6 100644
---- a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-@@ -4,12 +4,12 @@ Required Properties:
-  - compatible, one of:
- 			"x-powers,axp209-battery-power-supply"
- 			"x-powers,axp221-battery-power-supply"
-+			"x-powers,axp813-battery-power-supply"
- 
--This node is a subnode of the axp20x/axp22x PMIC.
-+This node is a subnode of its respective PMIC DT node.
- 
--The AXP20X and AXP22X can read the battery voltage, charge and discharge
--currents of the battery by reading ADC channels from the AXP20X/AXP22X
--ADC.
-+The supported devices can read the battery voltage, charge and discharge
-+currents of the battery by reading ADC channels from the ADC.
- 
- Example:
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index e5516aa..aaf2acb 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -888,6 +888,9 @@ static struct mfd_cell axp813_cells[] = {
+ 	}, {
+ 		.name			= "axp813-adc",
+ 		.of_compatible		= "x-powers,axp813-adc",
++	}, {
++		.name		= "axp20x-battery-power-supply",
++		.of_compatible	= "x-powers,axp813-battery-power-supply",
+ 	},
+ };
  
 -- 
 git-series 0.9.1
