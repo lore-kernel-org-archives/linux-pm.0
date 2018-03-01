@@ -1,55 +1,52 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH V4 2/2] thermal: imx: add i.MX7 thermal sensor support
-Date: Wed, 28 Feb 2018 23:16:07 +0000
-Message-ID: <AM3PR04MB131547CE6052FAA9CC07CCADF5C70@AM3PR04MB1315.eurprd04.prod.outlook.com>
-References: <1519459369-29083-1-git-send-email-Anson.Huang@nxp.com>
-         <1519459369-29083-2-git-send-email-Anson.Huang@nxp.com>
- <1519838731.16494.8.camel@nxp.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 11/12] PM / AVS: SmartReflex: Prepare to use device tree based probing
+Date: Wed, 28 Feb 2018 19:07:19 -0800
+Message-ID: <7hr2p41ok8.fsf@baylibre.com>
+References: <20180223210100.86732-1-tony@atomide.com>
+        <20180223210100.86732-12-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1519838731.16494.8.camel@nxp.com>
-Content-Language: en-US
+In-Reply-To: <20180223210100.86732-12-tony@atomide.com> (Tony Lindgren's
+        message of "Fri, 23 Feb 2018 13:00:59 -0800")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
-Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fabio Estevam <fabio.estevam@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "kernel@pengutronix.de" <kernel@pengutronix.de>, =?utf-8?B?TG90aGFyIFdhw59tYW5u?= <LW@KARO-electronics.de>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, Suman Anna <s-anna@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCkFuc29uIEh1YW5nDQpCZXN0IFJlZ2FyZHMhDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
-Z2UtLS0tLQ0KPiBGcm9tOiBMZW9uYXJkIENyZXN0ZXogW21haWx0bzpsZW9uYXJkLmNyZXN0ZXpA
-bnhwLmNvbV0NCj4gU2VudDogVGh1cnNkYXksIE1hcmNoIDEsIDIwMTggMToyNiBBTQ0KPiBUbzog
-QW5zb24gSHVhbmcgPGFuc29uLmh1YW5nQG54cC5jb20+OyBydWkuemhhbmdAaW50ZWwuY29tOw0K
-PiBlZHViZXp2YWxAZ21haWwuY29tOyBzaGF3bmd1b0BrZXJuZWwub3JnDQo+IENjOiBkbC1saW51
-eC1pbXggPGxpbnV4LWlteEBueHAuY29tPjsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBk
-ZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsN
-Cj4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyByb2JoK2R0QGtlcm5lbC5v
-cmc7IE1hcmsgUnV0bGFuZA0KPiA8bWFyay5ydXRsYW5kQGFybS5jb20+OyBGYWJpbyBFc3RldmFt
-IDxmYWJpby5lc3RldmFtQG54cC5jb20+Ow0KPiBsaW51eEBhcm1saW51eC5vcmcudWs7IGtlcm5l
-bEBwZW5ndXRyb25peC5kZTsgTG90aGFyIFdhw59tYW5uDQo+IDxMV0BLQVJPLWVsZWN0cm9uaWNz
-LmRlPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY0IDIvMl0gdGhlcm1hbDogaW14OiBhZGQgaS5N
-WDcgdGhlcm1hbCBzZW5zb3Igc3VwcG9ydA0KPiANCj4gT24gU2F0LCAyMDE4LTAyLTI0IGF0IDE2
-OjAyICswODAwLCBBbnNvbiBIdWFuZyB3cm90ZToNCj4gPiBUaGlzIHBhdGNoIGFkZHMgaS5NWDcg
-dGhlcm1hbCBzZW5zb3Igc3VwcG9ydCwgbW9zdCBvZiB0aGUgaS5NWDcNCj4gPiB0aGVybWFsIHNl
-bnNvciBmdW5jdGlvbnMgYXJlIHNhbWUgd2l0aA0KPiA+IGkuTVg2IGV4Y2VwdCB0aGUgcmVnaXN0
-ZXJzIG9mZnNldC9sYXlvdXQsIHNvIHdlIG1vdmUgdGhvc2UgcmVnaXN0ZXJzDQo+ID4gb2Zmc2V0
-L2xheW91dCBkZWZpbml0aW9ucyB0byBzb2MgZGF0YSBzdHJ1Y3R1cmUuDQo+ID4NCj4gPiBpLk1Y
-NyB1c2VzIHNpbmdsZSBjYWxpYnJhdGlvbiBkYXRhIEAyNUMsIHRoZSBjYWxpYnJhdGlvbiBkYXRh
-IGlzDQo+ID4gbG9jYXRlZCBhdCBPQ09UUCBvZmZzZXQgMHg0RjAsIGJpdFsxNzo5XSwgdGhlIGZv
-cm11bGEgaXMgYXMgYmVsb3c6DQo+ID4NCj4gPiBUbWVhcyA9IChObWVhcyAtIG4xKSArIDI1OyBu
-MSBpcyB0aGUgZnVzZSB2YWx1ZSBmb3IgMjVDLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5z
-b24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogQmFpIFBp
-bmcgPHBpbmcuYmFpQG54cC5jb20+DQo+IA0KPiBPbiBpbXg3ZCAoYWxzbyA2c3ggYW5kIDZ1bCkg
-T0NPVFAgcmVhZCB3aWxsIGhhbmcgc2lsZW50bHkgaWYgdGhlIG9jb3RwIGNsayBpcyBub3QNCj4g
-ZW5hYmxlZC4gRm9yIGV4YW1wbGUgdGhpcyBjYW4gaGFwcGVuIGlmIGlteF90aGVybWFsIGlzIGJ1
-aWx0IGFzIGEgbW9kdWxlIG9yDQo+IHByb2JlcyBhZnRlciB1bnVzZWQgY2xvY2tzIGFyZSBkaXNh
-YmxlZC4NCj4gDQo+IFRoaXMgZHJpdmVyIGhhcyBzdXBwb3J0IGZvciByZWFkaW5nIG9jb3RwIHZh
-bHVlcyB0aHJvdWdoIHRoZSBvY290cCBudm1lbQ0KPiBkcml2ZXIgKHdoaWNoIGhhbmRsZXMgY2xr
-cyBwcm9wZXJseSkuIFNpbmNlIGlteDdkIGlzIGEgbmV3IGNvbXBhdGlibGUgc3RyaW5nIGZvcg0K
-PiB1cHN0cmVhbSBtYXliZSB5b3UgY291bGQganVzdCBtYWtlIG5ldy1zdHlsZSBiaW5kaW5ncyBt
-YW5kYXRvcnkgYW5kIGRyb3ANCj4gdGhlIGNoYW5nZXMgdG/CoGlteF9pbml0X2Zyb21fdGVtcG1v
-bl9kYXRhPw0KPiANCj4gU2VlwqBjb21taXQgMjA2N2I3NTdlOTcyICgiQVJNOiBkdHM6IGlteDZ1
-bDogQWRkIGlteDZ1bC10ZW1wbW9uIikNCg0KDQpJdCBtYWtlcyBzZW5zZSwgSSBzZW50IG91dCBW
-NSB0byBkcm9wIHRoZSBkaXJlY3QgT0NPVFAgcmVnaXN0ZXIgYWNjZXNzIHN1cHBvcnQsIGFsbCBP
-Q09UUCByZWFkaW5nIHdpbGwNCkJlIHRocm91Z2ggb2NvdHAgbnZtZW0gZHJpdmVyIG9uIGkuTVg3
-RC4NCg0KQW5zb24uDQoNCj4gDQo+IC0tDQo+IFJlZ2FyZHMsDQo+IExlb25hcmQNCg==
+Tony Lindgren <tony@atomide.com> writes:
+
+> We are currently probing smartreflex with omap_device while we are
+> already probing smartreflex related interconnect target module with
+> ti-sysc driver and dts data.
+>
+> Before we can flip things on for ti-sysc, we need to prepare the
+> smartreflex driver a bit:
+>
+> 1. The smartreflex clock is really for the whole interconnect target
+>    module. So it may be configured at the parent device level with
+>    ti-sysc
+>
+> 2. With ti-sysc, we have the child device manage interconnect target
+>    module directly if pm_runtime_irq_safe() is set and there is only
+>    one child. In that case nobody else is going to call pm_runtime_get
+>    and put, so we need to add these calls to idle smartreflex properly
+>    after probe if not fully configured
+>
+> 3. With ti-sysc, the parent driver may rebind. So we want to use
+>    platform_driver_register() and don't want probe to be __init
+>
+> Note that this patch depends on the related changes to ti-sysc driver
+> and omap_device probing to prevent both ti-sysc and omap_device to
+> try to probe smartreflex.
+>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+
+Acked-by: Kevin Hilman <khilman@baylibre.com>
+
+I don't have anything else queued for this driver, so feel free to take
+it along with the rest of the series.
+
+Kevin
