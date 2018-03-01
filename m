@@ -1,102 +1,40 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
- topology
-Date: Thu, 1 Mar 2018 14:19:03 +0000
-Message-ID: <20180301141903.GH4589@e105550-lin.cambridge.arm.com>
-References: <20180113005920.28658-1-jeremy.linton@arm.com>
- <20180113005920.28658-12-jeremy.linton@arm.com>
- <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
- <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
- <20180223110238.GB20461@e107981-ln.cambridge.arm.com>
- <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v3 3/3] gpio: rcar: Use wakeup_path i.s.o. explicit clock handling
+Date: Thu, 1 Mar 2018 17:06:47 +0100
+Message-ID: <CACRpkdbnJ7W4EPqXtMAM_z1aO5UpuKh=-CCCSQFEToca1LU2=A@mail.gmail.com>
+References: <1518443713-1835-1-git-send-email-geert+renesas@glider.be> <1518443713-1835-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
+In-Reply-To: <1518443713-1835-4-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, Juri Lelli <juri.lelli@arm.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 24, 2018 at 11:05:53AM +0800, Xiongfeng Wang wrote:
-> 
-> Hi,
-> On 2018/2/23 19:02, Lorenzo Pieralisi wrote:
-> > On Thu, Jan 25, 2018 at 09:56:30AM -0600, Jeremy Linton wrote:
-> >> Hi,
-> >>
-> >> On 01/25/2018 06:15 AM, Xiongfeng Wang wrote:
-> >>> Hi Jeremy,
-> >>>
-> >>> I have tested the patch with the newest UEFI. It prints the below error:
-> >>>
-> >>> [    4.017371] BUG: arch topology borken
-> >>> [    4.021069] BUG: arch topology borken
-> >>> [    4.024764] BUG: arch topology borken
-> >>> [    4.028460] BUG: arch topology borken
-> >>> [    4.032153] BUG: arch topology borken
-> >>> [    4.035849] BUG: arch topology borken
-> >>> [    4.039543] BUG: arch topology borken
-> >>> [    4.043239] BUG: arch topology borken
-> >>> [    4.046932] BUG: arch topology borken
-> >>> [    4.050629] BUG: arch topology borken
-> >>> [    4.054322] BUG: arch topology borken
-> >>>
-> >>> I checked the code and found that the newest UEFI set PPTT physical_package_flag on a physical package node and
-> >>> the NUMA domain (SRAT domains) starts from the layer of DIE. (The topology of our board is core->cluster->die->package).
-> >>
-> >> I commented about that on the EDK2 mailing list. While the current spec
-> >> doesn't explicitly ban having the flag set multiple times between the leaf
-> >> and the root I consider it a "bug" and there is an effort to clarify the
-> >> spec and the use of that flag.
-> >>>
-> >>> When the kernel starts to build sched_domain, the multi-core sched_domain contains all the cores within a package,
-> >>> and the lowest NUMA sched_domain contains all the cores within a die. But the kernel requires that the multi-core
-> >>> sched_domain should be a subset of the lowest NUMA sched_domain, so the BUG info is printed.
-> >>
-> >> Right. I've mentioned this problem a couple of times.
-> >>
-> >> At at the moment, the spec isn't clear about how the proximity domain is
-> >> detected/located within the PPTT topology (a node with a 1:1 correspondence
-> >> isn't even required). As you can see from this patch set, we are making the
-> >> general assumption that the proximity domains are at the same level as the
-> >> physical socket. This isn't ideal for NUMA topologies, like the D05, that
-> >> don't align with the physical socket.
-> >>
-> >> There are efforts underway to clarify and expand upon the specification to
-> >> deal with this general problem. The simple solution is another flag (say
-> >> PPTT_PROXIMITY_DOMAIN which would map to the D05 die) which could be used to
-> >> find nodes with 1:1 correspondence. At that point we could add a fairly
-> >> trivial patch to correct just the scheduler topology without affecting the
-> >> rest of the system topology code.
-> > 
-> > I think Morten asked already but isn't this the same end result we end
-> > up having if we remove the DIE level if NUMA-within-package is detected
-> > (instead of using the default_topology[]) and we create our own ARM64
-> > domain hierarchy (with DIE level removed) through set_sched_topology()
-> > accordingly ?
-> > 
-> > Put it differently: do we really need to rely on another PPTT flag to
-> > collect this information ?
-> > 
-> > I can't merge code that breaks a platform with legitimate firmware
-> > bindings.
-> 
-> I think we really need another PPTT flag, from which we can get information
-> about how to build a multi-core sched_domain. I think only cache-sharing information
-> is not enough to get information about how to build a multi-core shced_domain.
-> 
-> How about this? We assume the upper layer of the lowest layer to be multi-core layer.
-> After that flag is added into ACPI specs, we add another patch to adapt to the change.
+On Mon, Feb 12, 2018 at 2:55 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
 
-I'm not sure what you mean by upper layers of the lowest layer.
+> Since commit ab82fa7da4dce5c7 ("gpio: rcar: Prevent module clock disable
+> when wake-up is enabled"), when a GPIO is used for wakeup, the GPIO
+> block's module clock (if exists) is manually kept running during system
+> suspend, to make sure the device stays active.
+>
+> However, this explicit clock handling is merely a workaround for a
+> failure to properly communicate wakeup information to the device core.
+>
+> Instead, set the device's power.wakeup_path field, to indicate this
+> device is part of the wakeup path.  Depending on the PM Domain's
+> active_wakeup configuration, the genpd core code will keep the device
+> enabled (and the clock running) during system suspend when needed.
+> This allows for the removal of all explicit clock handling code from the
+> driver.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> v3:
 
-As I see it for non-numa-in-package system, the PPTT physical package
-flag should define the MC domains, any levels above should be
-represented in the DIE level, any level below should be ignored, except
-the lowest level if we have SMT. If have SMT the lowest level in PPTT
-should define the SMT domains.
+Patch applied for v4.16 fixes.
 
-For numa-in-package, the MC domains should be shrunk to match the NUMA
-nodes and DIE is ignored.
+Yours,
+Linus Walleij
