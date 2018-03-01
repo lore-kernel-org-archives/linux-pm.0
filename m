@@ -1,44 +1,110 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V5 2/2] thermal: imx: add i.MX7 thermal sensor support
-Date: Thu, 1 Mar 2018 15:22:53 -0600
-Message-ID: <20180301212253.fp4gxes57t2m2tg2@rob-hp-laptop>
-References: <1519859380-15878-1-git-send-email-Anson.Huang@nxp.com>
- <1519859380-15878-2-git-send-email-Anson.Huang@nxp.com>
+From: Feng Kan <fkan@apm.com>
+Subject: [PATCH V2] PM / core: fix deferred probe breaking suspend resume order
+Date: Thu,  1 Mar 2018 14:15:14 -0800
+Message-ID: <1519942514-3350-1-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1519859380-15878-2-git-send-email-Anson.Huang@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <Anson.Huang@nxp.com>
-Cc: leonard.crestez@nxp.com, rui.zhang@intel.com, edubezval@gmail.com, mark.rutland@arm.com, shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, linux@armlinux.org.uk, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Linux-imx@nxp.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rjw@rjwysocki.net, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org, bhelgaas@google.com
+Cc: Feng Kan <fkan@apm.com>, Toan Le <toanle@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 01, 2018 at 07:09:40AM +0800, Anson Huang wrote:
-> This patch adds i.MX7 thermal sensor support, most
-> of the i.MX7 thermal sensor functions are same with
-> i.MX6 except the registers offset/layout, so we move
-> those registers offset/layout definitions to soc data
-> structure.
-> 
-> i.MX7 uses single calibration data @25C, the calibration
-> data is located at OCOTP offset 0x4F0, bit[17:9], the
-> formula is as below:
-> 
-> Tmeas = (Nmeas - n1) + 25; n1 is the fuse value for 25C.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> Signed-off-by: Bai Ping <ping.bai@nxp.com>
-> Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
-> Acked-by: Shawn Guo <shawnguo@kernel.org>
-> ---
-> changes since V4:
-> 	drop direct OCOTP register access for i.mx7d since it is a new added platform,
-> 	only support reading ocotp values through the ocotp nvmem driver which handles clock.
->  .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
->  drivers/thermal/imx_thermal.c                      | 295 ++++++++++++++++-----
->  2 files changed, 239 insertions(+), 65 deletions(-)
+When bridge and its endpoint is enumerated the devices are added to the
+dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
+This causes the bridge to be moved to the end of the dpm list when
+deferred probe kicks in. The order of the dpm list for bridge and
+endpoint is reversed.
 
-Please add ack/reviewed-by's when posting new versions.
+Add reordering code to move the bridge and its children and consumers to
+the end of the pm list so the order for suspend and resume is not altered.
+The code also move device and its children and consumers to the tail of
+device_kset list if it is registered.
 
-Rob
+Signed-off-by: Feng Kan <fkan@apm.com>
+Signed-off-by: Toan Le <toanle@apm.com>
+---
+ V2:
+	1. change patch title from "move device and its children..."
+	2. move define based on Bjorn's comment
+	3. rename function name and comment content
+ drivers/base/base.h |  3 +++
+ drivers/base/core.c | 22 ++++++++++++++++++++++
+ drivers/base/dd.c   |  8 ++++----
+ 3 files changed, 29 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index d800de6..a75c302 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -161,3 +161,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
+ extern void device_links_no_driver(struct device *dev);
+ extern bool device_links_busy(struct device *dev);
+ extern void device_links_unbind_consumers(struct device *dev);
++
++/* device pm support */
++void device_pm_move_to_tail(struct device *dev);
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 110230d..0a0756b 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -148,6 +148,28 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
+ }
+ 
+ /**
++ * device_pm_move_to_tail - move device and its children and consumers to end of
++ *                          pm and device kset list
++ * @dev: current device pointer
++ *
++ * This is a lock held version of the device_reorder_to_tail. Function checks
++ * if the device is registered and moves it to the end of device_kset list. Also
++ * if the device is pm initialized, move the device to the end of the pm list.
++ * Then the function iterate through the children and device link consumers to
++ * do the same for each found.
++ */
++void device_pm_move_to_tail(struct device *dev)
++{
++	int idx;
++
++	idx = device_links_read_lock();
++	device_pm_lock();
++	device_reorder_to_tail(dev, NULL);
++	device_pm_unlock();
++	device_links_read_unlock(idx);
++}
++
++/**
+  * device_link_add - Create a link between two devices.
+  * @consumer: Consumer end of the link.
+  * @supplier: Supplier end of the link.
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 2c964f5..7e9d1ef 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -121,11 +121,11 @@ static void deferred_probe_work_func(struct work_struct *work)
+ 		 * Force the device to the end of the dpm_list since
+ 		 * the PM code assumes that the order we add things to
+ 		 * the list is a good order for suspend but deferred
+-		 * probe makes that very unsafe.
++		 * probe makes that very unsafe. Move any children and
++		 * consumers belong to the device to the end of the list.
++		 * This way the suspend resume order won't be corrupted.
+ 		 */
+-		device_pm_lock();
+-		device_pm_move_last(dev);
+-		device_pm_unlock();
++		device_pm_move_to_tail(dev);
+ 
+ 		dev_dbg(dev, "Retrying from deferred list\n");
+ 		if (initcall_debug && !initcalls_done)
+-- 
+1.8.3.1
