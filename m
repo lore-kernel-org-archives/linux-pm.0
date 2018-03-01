@@ -1,33 +1,45 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 11/12] PM / AVS: SmartReflex: Prepare to use device tree
- based probing
-Date: Wed, 28 Feb 2018 19:49:47 -0800
-Message-ID: <20180301034947.GE62820@atomide.com>
-References: <20180223210100.86732-1-tony@atomide.com>
- <20180223210100.86732-12-tony@atomide.com>
- <7hr2p41ok8.fsf@baylibre.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Derek Basehore <dbasehore@chromium.org>
+Subject: [PATCH v7 0/3] GICv3 Save and Restore
+Date: Wed, 28 Feb 2018 21:48:17 -0800
+Message-ID: <20180301054820.42847-1-dbasehore@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <7hr2p41ok8.fsf@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: linux-omap@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, Suman Anna <s-anna@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org, marc.zyngier@arm.com, Derek Basehore <dbasehore@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Kevin Hilman <khilman@baylibre.com> [180301 03:08]:
-> Tony Lindgren <tony@atomide.com> writes:
-> > We are currently probing smartreflex with omap_device while we are
-> > already probing smartreflex related interconnect target module with
-> > ti-sysc driver and dts data.
-...
+A lot of changes in v2. The distributor and redistributor saving and
+restoring is left to the PSCI/firmware implementation after
+discussions with ARM. This reduces the line changes by a lot and
+removes now unneeded patches.
 
-> Acked-by: Kevin Hilman <khilman@baylibre.com>
-> 
-> I don't have anything else queued for this driver, so feel free to take
-> it along with the rest of the series.
+Patches are verified on an RK3399 platform with pending patches in the
+ARM-Trusted-Firmware project.
 
-Thanks for looking, will do.
+Just a couple minor changes in v3 to formatting.
 
-Tony
+Fixed a false ITS wedged detection due to the cmd_write and creadr
+offsets not matching up on reset in v4. Also minor formatting changes.
+
+Got rid of additional device tree property with detecting if there are
+collections stored in the ITS in v5. Made other minor changes.
+
+v6: Fixed reinitialized collections to only happen when the collection
+is stored in the ITS. Changed error handling to avoid undefined
+behavior of the ITS.
+
+v7: Fixed pr_errs to print out the physical rather than virtual base
+address of the ITS and the error code. Updated the documentation.
+
+Derek Basehore (3):
+  irqchip/gic-v3-its: add ability to save/restore ITS state
+  DT/arm,gic-v3-its: add reset-on-suspend property
+  irqchip/gic-v3-its: add ability to resend MAPC on resume
+
+ .../interrupt-controller/arm,gic-v3.txt       |   5 +
+ drivers/irqchip/irq-gic-v3-its.c              | 193 ++++++++++++++----
+ include/linux/irqchip/arm-gic-v3.h            |   1 +
+ 3 files changed, 161 insertions(+), 38 deletions(-)
+
+-- 
+2.16.2.395.g2e18187dfd-goog
