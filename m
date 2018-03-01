@@ -1,176 +1,126 @@
-From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore ITS state
-Date: Wed, 28 Feb 2018 21:48:18 -0800
-Message-ID: <20180301054820.42847-2-dbasehore@chromium.org>
-References: <20180301054820.42847-1-dbasehore@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180301054820.42847-1-dbasehore@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org, marc.zyngier@arm.com, Derek Basehore <dbasehore@chromium.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / core: move device and its children to end of dpm list
+Date: Thu, 1 Mar 2018 10:59:48 +0100
+Message-ID: <CAJZ5v0jMOLSEzC9F67TJpgP6Z0JN1dr2uwjfrNfwDkTR8OVGyg@mail.gmail.com>
+References: <1519843555-982-1-git-send-email-fkan@apm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1519843555-982-1-git-send-email-fkan@apm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Feng Kan <fkan@apm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Some platforms power off GIC logic in suspend, so we need to
-save/restore state. The distributor and redistributor registers need
-to be handled in platform code due to access permissions on those
-registers, but the ITS registers can be restored in the kernel.
+On Wed, Feb 28, 2018 at 7:45 PM, Feng Kan <fkan@apm.com> wrote:
+> When bridge and its endpoint is enumated the devices are added to the
+> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
+> This causes the bridge to be moved to the end of the dpm list when deferred
+> probe kicks in. The order of the dpm list for bridge and endpoint is
+> reversed.
+>
+> Add reordering code to re-position the bridge and its children so the order
+> for suspend and resume is not altered.
+>
+> Signed-off-by: Feng Kan <fkan@apm.com>
+> Signed-off-by: Toan Le <toanle@apm.com>
+> ---
+>  drivers/base/core.c    | 20 ++++++++++++++++++++
+>  drivers/base/dd.c      |  8 ++++----
+>  include/linux/device.h |  3 +++
+>  3 files changed, 27 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 110230d..0b4ad99 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -148,6 +148,26 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
+>  }
+>
+>  /**
+> + * device_pm_reorder - reorder device and its children to end of dpm list
 
-Signed-off-by: Derek Basehore <dbasehore@chromium.org>
----
- drivers/irqchip/irq-gic-v3-its.c | 107 +++++++++++++++++++++++++++++++
- 1 file changed, 107 insertions(+)
+Not just the children and not just dpm_list.
 
-diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-index 1d3056f53747..926f76944a75 100644
---- a/drivers/irqchip/irq-gic-v3-its.c
-+++ b/drivers/irqchip/irq-gic-v3-its.c
-@@ -33,6 +33,7 @@
- #include <linux/of_platform.h>
- #include <linux/percpu.h>
- #include <linux/slab.h>
-+#include <linux/syscore_ops.h>
- 
- #include <linux/irqchip.h>
- #include <linux/irqchip/arm-gic-v3.h>
-@@ -46,6 +47,7 @@
- #define ITS_FLAGS_CMDQ_NEEDS_FLUSHING		(1ULL << 0)
- #define ITS_FLAGS_WORKAROUND_CAVIUM_22375	(1ULL << 1)
- #define ITS_FLAGS_WORKAROUND_CAVIUM_23144	(1ULL << 2)
-+#define ITS_FLAGS_SAVE_SUSPEND_STATE		(1ULL << 3)
- 
- #define RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING	(1 << 0)
- 
-@@ -101,6 +103,8 @@ struct its_node {
- 	struct its_collection	*collections;
- 	struct fwnode_handle	*fwnode_handle;
- 	u64			(*get_msi_base)(struct its_device *its_dev);
-+	u64			cbaser_save;
-+	u32			ctlr_save;
- 	struct list_head	its_device_list;
- 	u64			flags;
- 	unsigned long		list_nr;
-@@ -3042,6 +3046,104 @@ static void its_enable_quirks(struct its_node *its)
- 	gic_enable_quirks(iidr, its_quirks, its);
- }
- 
-+static int its_save_disable(void)
-+{
-+	struct its_node *its;
-+	int err = 0;
-+
-+	spin_lock(&its_lock);
-+	list_for_each_entry(its, &its_nodes, entry) {
-+		void __iomem *base;
-+
-+		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
-+			continue;
-+
-+		base = its->base;
-+		its->ctlr_save = readl_relaxed(base + GITS_CTLR);
-+		err = its_force_quiescent(base);
-+		if (err) {
-+			pr_err("ITS@%pa: failed to quiesce: %d\n",
-+			       &its->phys_base, err);
-+			writel_relaxed(its->ctlr_save, base + GITS_CTLR);
-+			goto err;
-+		}
-+
-+		its->cbaser_save = gits_read_cbaser(base + GITS_CBASER);
-+	}
-+
-+err:
-+	if (err) {
-+		list_for_each_entry_continue_reverse(its, &its_nodes, entry) {
-+			void __iomem *base;
-+
-+			if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
-+				continue;
-+
-+			base = its->base;
-+			writel_relaxed(its->ctlr_save, base + GITS_CTLR);
-+		}
-+	}
-+	spin_unlock(&its_lock);
-+
-+	return err;
-+}
-+
-+static void its_restore_enable(void)
-+{
-+	struct its_node *its;
-+	int ret;
-+
-+	spin_lock(&its_lock);
-+	list_for_each_entry(its, &its_nodes, entry) {
-+		void __iomem *base;
-+		int i;
-+
-+		if (!(its->flags & ITS_FLAGS_SAVE_SUSPEND_STATE))
-+			continue;
-+
-+		base = its->base;
-+
-+		/*
-+		 * Make sure that the ITS is disabled. If it fails to quiesce,
-+		 * don't restore it since writing to CBASER or BASER<n>
-+		 * registers is undefined according to the GIC v3 ITS
-+		 * Specification.
-+		 */
-+		ret = its_force_quiescent(base);
-+		if (ret) {
-+			pr_err("ITS@%pa: failed to quiesce on resume: %d\n",
-+			       &its->phys_base, ret);
-+			continue;
-+		}
-+
-+		gits_write_cbaser(its->cbaser_save, base + GITS_CBASER);
-+
-+		/*
-+		 * Writing CBASER resets CREADR to 0, so make CWRITER and
-+		 * cmd_write line up with it.
-+		 */
-+		its->cmd_write = its->cmd_base;
-+		gits_write_cwriter(0, base + GITS_CWRITER);
-+
-+		/* Restore GITS_BASER from the value cache. */
-+		for (i = 0; i < GITS_BASER_NR_REGS; i++) {
-+			struct its_baser *baser = &its->tables[i];
-+
-+			if (!(baser->val & GITS_BASER_VALID))
-+				continue;
-+
-+			its_write_baser(its, baser, baser->val);
-+		}
-+		writel_relaxed(its->ctlr_save, base + GITS_CTLR);
-+	}
-+	spin_unlock(&its_lock);
-+}
-+
-+static struct syscore_ops its_syscore_ops = {
-+	.suspend = its_save_disable,
-+	.resume = its_restore_enable,
-+};
-+
- static int its_init_domain(struct fwnode_handle *handle, struct its_node *its)
- {
- 	struct irq_domain *inner_domain;
-@@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
- 		ctlr |= GITS_CTLR_ImDe;
- 	writel_relaxed(ctlr, its->base + GITS_CTLR);
- 
-+	if (fwnode_property_present(handle, "reset-on-suspend"))
-+		its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
-+
- 	err = its_init_domain(handle, its);
- 	if (err)
- 		goto out_free_tables;
-@@ -3517,5 +3622,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
- 		}
- 	}
- 
-+	register_syscore_ops(&its_syscore_ops);
-+
- 	return 0;
- }
--- 
-2.16.2.395.g2e18187dfd-goog
+> + * @dev: current device pointer
+> + *
+> + * This is a lock held version of reordering the device to dpm list tail.
+> + * This will move the device to the end of the dpm list if it not registered.
+> + * Afterward, it will iterate through its children and do the same for them.
+
+This isn't entirely accurate as device_reorder_to_tail() does more than that.
+
+> + */
+> +void device_pm_reorder(struct device *dev)
+
+I'd call it device_pm_move_to_tail() as that's what it does.
+
+"Reorder" is sort of overly generic IMO.
+
+> +{
+> +       int idx;
+> +
+> +       idx = device_links_read_lock();
+> +       device_pm_lock();
+> +       device_reorder_to_tail(dev, NULL);
+> +       device_pm_unlock();
+> +       device_links_read_unlock(idx);
+> +}
+> +EXPORT_SYMBOL_GPL(device_pm_reorder);
+
+It is not necessary to export this symbol.
+
+> +
+> +/**
+>   * device_link_add - Create a link between two devices.
+>   * @consumer: Consumer end of the link.
+>   * @supplier: Supplier end of the link.
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 2c964f5..3223a30 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -121,11 +121,11 @@ static void deferred_probe_work_func(struct work_struct *work)
+>                  * Force the device to the end of the dpm_list since
+>                  * the PM code assumes that the order we add things to
+>                  * the list is a good order for suspend but deferred
+> -                * probe makes that very unsafe.
+> +                * probe makes that very unsafe. Also move any children
+> +                * belong to the device to the end of the list as well.
+> +                * This way the suspend resume order won't be corrupted.
+>                  */
+> -               device_pm_lock();
+> -               device_pm_move_last(dev);
+> -               device_pm_unlock();
+> +               device_pm_reorder(dev);
+>
+>                 dev_dbg(dev, "Retrying from deferred list\n");
+>                 if (initcall_debug && !initcalls_done)
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 9d32000..1ec12d5 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -1272,6 +1272,9 @@ extern void devm_device_remove_group(struct device *dev,
+>  /* debugging and troubleshooting/diagnostic helpers. */
+>  extern const char *dev_driver_string(const struct device *dev);
+>
+> +/* reorder device and its children to end of dpm list */
+> +void device_pm_reorder(struct device *dev);
+
+And this header can go into drivers/base/base.h as Bjorn said.
+
+> +
+>  /* Device links interface. */
+>  struct device_link *device_link_add(struct device *consumer,
+>                                     struct device *supplier, u32 flags);
+> --
+> 1.8.3.1
+>
