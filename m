@@ -1,35 +1,102 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v8 00/15] Krait clocks + Krait CPUfreq
-Date: Thu, 1 Mar 2018 14:28:30 +0100
-Message-ID: <CACRpkdbu9Kxvuwr-nLHxyEYiTeGK38o7MKCFf-MMjYxwgcJPPA@mail.gmail.com>
-References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [PATCH v6 11/12] arm64: topology: enable ACPI/PPTT based CPU
+ topology
+Date: Thu, 1 Mar 2018 14:19:03 +0000
+Message-ID: <20180301141903.GH4589@e105550-lin.cambridge.arm.com>
+References: <20180113005920.28658-1-jeremy.linton@arm.com>
+ <20180113005920.28658-12-jeremy.linton@arm.com>
+ <928cb0c9-1d7a-3d0c-0538-a8bb0e2a86b1@huawei.com>
+ <b4060cb0-6eed-f34a-00d5-4c2f55f20220@arm.com>
+ <20180223110238.GB20461@e107981-ln.cambridge.arm.com>
+ <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <2d248f08-79b6-d5e2-7e34-31a21efcdc07@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sricharan R <sricharan@codeaurora.org>
-Cc: viresh kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>Russell
+To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, vkilari@codeaurora.org, Juri Lelli <juri.lelli@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sricharan,
+On Sat, Feb 24, 2018 at 11:05:53AM +0800, Xiongfeng Wang wrote:
+> 
+> Hi,
+> On 2018/2/23 19:02, Lorenzo Pieralisi wrote:
+> > On Thu, Jan 25, 2018 at 09:56:30AM -0600, Jeremy Linton wrote:
+> >> Hi,
+> >>
+> >> On 01/25/2018 06:15 AM, Xiongfeng Wang wrote:
+> >>> Hi Jeremy,
+> >>>
+> >>> I have tested the patch with the newest UEFI. It prints the below error:
+> >>>
+> >>> [    4.017371] BUG: arch topology borken
+> >>> [    4.021069] BUG: arch topology borken
+> >>> [    4.024764] BUG: arch topology borken
+> >>> [    4.028460] BUG: arch topology borken
+> >>> [    4.032153] BUG: arch topology borken
+> >>> [    4.035849] BUG: arch topology borken
+> >>> [    4.039543] BUG: arch topology borken
+> >>> [    4.043239] BUG: arch topology borken
+> >>> [    4.046932] BUG: arch topology borken
+> >>> [    4.050629] BUG: arch topology borken
+> >>> [    4.054322] BUG: arch topology borken
+> >>>
+> >>> I checked the code and found that the newest UEFI set PPTT physical_package_flag on a physical package node and
+> >>> the NUMA domain (SRAT domains) starts from the layer of DIE. (The topology of our board is core->cluster->die->package).
+> >>
+> >> I commented about that on the EDK2 mailing list. While the current spec
+> >> doesn't explicitly ban having the flag set multiple times between the leaf
+> >> and the root I consider it a "bug" and there is an effort to clarify the
+> >> spec and the use of that flag.
+> >>>
+> >>> When the kernel starts to build sched_domain, the multi-core sched_domain contains all the cores within a package,
+> >>> and the lowest NUMA sched_domain contains all the cores within a die. But the kernel requires that the multi-core
+> >>> sched_domain should be a subset of the lowest NUMA sched_domain, so the BUG info is printed.
+> >>
+> >> Right. I've mentioned this problem a couple of times.
+> >>
+> >> At at the moment, the spec isn't clear about how the proximity domain is
+> >> detected/located within the PPTT topology (a node with a 1:1 correspondence
+> >> isn't even required). As you can see from this patch set, we are making the
+> >> general assumption that the proximity domains are at the same level as the
+> >> physical socket. This isn't ideal for NUMA topologies, like the D05, that
+> >> don't align with the physical socket.
+> >>
+> >> There are efforts underway to clarify and expand upon the specification to
+> >> deal with this general problem. The simple solution is another flag (say
+> >> PPTT_PROXIMITY_DOMAIN which would map to the D05 die) which could be used to
+> >> find nodes with 1:1 correspondence. At that point we could add a fairly
+> >> trivial patch to correct just the scheduler topology without affecting the
+> >> rest of the system topology code.
+> > 
+> > I think Morten asked already but isn't this the same end result we end
+> > up having if we remove the DIE level if NUMA-within-package is detected
+> > (instead of using the default_topology[]) and we create our own ARM64
+> > domain hierarchy (with DIE level removed) through set_sched_topology()
+> > accordingly ?
+> > 
+> > Put it differently: do we really need to rely on another PPTT flag to
+> > collect this information ?
+> > 
+> > I can't merge code that breaks a platform with legitimate firmware
+> > bindings.
+> 
+> I think we really need another PPTT flag, from which we can get information
+> about how to build a multi-core sched_domain. I think only cache-sharing information
+> is not enough to get information about how to build a multi-core shced_domain.
+> 
+> How about this? We assume the upper layer of the lowest layer to be multi-core layer.
+> After that flag is added into ACPI specs, we add another patch to adapt to the change.
 
-thanks for picking up Stephen's patch set and working on this
-clocking business!
+I'm not sure what you mean by upper layers of the lowest layer.
 
-Would you happen to know if the MSM8660/APQ8060 that
-I'm using a bit has the same Krait clocking so I need to augment
-that SoC to use this too (on top of this, naturally, this is a good first
-step)?
+As I see it for non-numa-in-package system, the PPTT physical package
+flag should define the MC domains, any levels above should be
+represented in the DIE level, any level below should be ignored, except
+the lowest level if we have SMT. If have SMT the lowest level in PPTT
+should define the SMT domains.
 
-On Tue, Feb 27, 2018 at 3:06 PM, Sricharan R <sricharan@codeaurora.org> wrote:
-
->   * Dropped the DT update from the series. Will send separately
-
-Are these available somewhere so I can test the sum total on
-the Nexus 7 and see if I get some graphics? I've been sticking a
-patch from Stephen's series in for some time and it makes the
-MDP graphics works on the 2013 Nexus 7.
-
-Yours,
-Linus Walleij
+For numa-in-package, the MC domains should be shrunk to match the NUMA
+nodes and DIE is ignored.
