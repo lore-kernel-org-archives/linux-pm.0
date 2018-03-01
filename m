@@ -1,75 +1,35 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore
- ITS state
-Date: Thu, 1 Mar 2018 12:29:58 +0000
-Message-ID: <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com>
-References: <20180301054820.42847-1-dbasehore@chromium.org>
- <20180301054820.42847-2-dbasehore@chromium.org>
- <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v8 00/15] Krait clocks + Krait CPUfreq
+Date: Thu, 1 Mar 2018 14:28:30 +0100
+Message-ID: <CACRpkdbu9Kxvuwr-nLHxyEYiTeGK38o7MKCFf-MMjYxwgcJPPA@mail.gmail.com>
+References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
-Content-Language: en-GB
+In-Reply-To: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>, Derek Basehore <dbasehore@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: viresh kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>Russell
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mark,
+Hi Sricharan,
 
-On 01/03/18 11:41, Mark Rutland wrote:
-> On Wed, Feb 28, 2018 at 09:48:18PM -0800, Derek Basehore wrote:
->> Some platforms power off GIC logic in suspend, so we need to
->> save/restore state. The distributor and redistributor registers need
->> to be handled in platform code due to access permissions on those
->> registers, but the ITS registers can be restored in the kernel.
->>
->> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
-> 
-> How much state do we have to save/restore?
-> 
-> Given we can apparently read all this state, couldn't we *always* save
-> the state, then upon resume detect if the state has been lost, restoring
-> it if so?
-> 
-> That way, we don't need a property in FW tables for DT or ACPI.
+thanks for picking up Stephen's patch set and working on this
+clocking business!
 
-That's a good point. I guess that we could just compare the saved
-GITS_CTLR register and restore the full state only if the ITS comes back
-as disabled.
+Would you happen to know if the MSM8660/APQ8060 that
+I'm using a bit has the same Krait clocking so I need to augment
+that SoC to use this too (on top of this, naturally, this is a good first
+step)?
 
-I'm just a bit worried that it makes it an implicit convention between
-kernel an FW, which could change in funny ways. Importantly, the PSCI
-spec says states FW should restore *the whole state*. Obviously, it
-cannot to that on HW that doesn't allow you to read out the state, hence
-the DT flag that outlines the departure from the expected behaviour.
+On Tue, Feb 27, 2018 at 3:06 PM, Sricharan R <sricharan@codeaurora.org> wrote:
 
-I'm happy to go either way, but then I have the feeling that we should
-go back to quirking it on the actual implementation (GIC500 in this
-case) if we're to from the property.
+>   * Dropped the DT update from the series. Will send separately
 
-> 
-> [...]
-> 
->> @@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
->>  		ctlr |= GITS_CTLR_ImDe;
->>  	writel_relaxed(ctlr, its->base + GITS_CTLR);
->>  
->> +	if (fwnode_property_present(handle, "reset-on-suspend"))
->> +		its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
-> 
-> Does this allow this property on an ACPI system?
-> 
-> If we need this on ACPI, we need a spec update to handle this properly,
-> and shouldn't use device properties like this.
+Are these available somewhere so I can test the sum total on
+the Nexus 7 and see if I get some graphics? I've been sticking a
+patch from Stephen's series in for some time and it makes the
+MDP graphics works on the 2013 Nexus 7.
 
-Well spotted. I guess that dropping the property would fix that
-altogether, assuming we feel that the above is safe enough.
-
-Thoughts?
-
-	M.
--- 
-Jazz is not dead. It just smells funny...
+Yours,
+Linus Walleij
