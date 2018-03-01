@@ -1,56 +1,75 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] soc: rockchip: power-domain: remove PM clocks
-Date: Thu, 1 Mar 2018 12:54:46 +0100
-Message-ID: <CAMuHMdVXWj8GCAFy66usSj-z_zeWgY3SyxvpenUKf9cc-ZWK5w@mail.gmail.com>
-References: <20180228111113.13639-1-jeffy.chen@rock-chips.com>
- <CAMuHMdWLL9CxmxSLsqs1QX0dDHVhp4NrW4Me2EZaZE_bJ330bA@mail.gmail.com>
- <CAAFQd5CLXUwH6jTq9ZOpbYt9-Xx-+Kgj-Nk+KujS=Y=qLByc9Q@mail.gmail.com>
- <CAMuHMdWdVdregCRh17Jfa92csBruZvLzAK+M8uajif0BSJTcaw@mail.gmail.com>
- <CAAFQd5CpA_M821cMDtiEiWxw_rL--hQy6T6imz_c+fSi3gH9zw@mail.gmail.com>
- <CAMuHMdVVDiuv7bpdC0X95Xy9dSK_TfjW5RvSekVym9Q02798Fg@mail.gmail.com>
- <CAAFQd5C0GZ9C-pAqAdpuyxaF2xthLPY62a921nmABTbbmYtBmQ@mail.gmail.com>
- <5A977638.8010506@rock-chips.com> <CAMuHMdU9PFAXwo+1Z7Baw1fanst9yFKZ3ohoSTiQiMKTaYMVVw@mail.gmail.com>
- <CAPDyKFq_hwao0hZCYmO-VrsW3vDJJboa1RG-TMLRQRgbt+YhpQ@mail.gmail.com>
- <CAMuHMdWg1y3Ragb9nYY12whZhUn8w0a4aOOR31LSNXa37NbfXg@mail.gmail.com> <CAPDyKFrN0t6Jr-gAuU4_OHEvYap2fRiaUbZC5E7sAGAQOUQjjw@mail.gmail.com>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Thu, 1 Mar 2018 12:29:58 +0000
+Message-ID: <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com>
+References: <20180301054820.42847-1-dbasehore@chromium.org>
+ <20180301054820.42847-2-dbasehore@chromium.org>
+ <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrN0t6Jr-gAuU4_OHEvYap2fRiaUbZC5E7sAGAQOUQjjw@mail.gmail.com>
+In-Reply-To: <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: JeffyChen <jeffy.chen@rock-chips.com>, Tomasz Figa <tfiga@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Robin Murphy <robin.murphy@arm.com>, Heiko Stuebner <heiko@sntech.de>, Caesar Wang <wxt@rock-chips.com>, Elaine Zhang <zhangqing@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Mark Rutland <mark.rutland@arm.com>, Derek Basehore <dbasehore@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Soby.Mathew@arm.com, sudeep.holla@arm.com, devicetree@vger.kernel.org, robh+dt@kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, briannorris@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
+Hi Mark,
 
-On Thu, Mar 1, 2018 at 12:22 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 1 March 2018 at 11:37, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Thu, Mar 1, 2018 at 11:18 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> Another problem with the PM clk is, more exactly with
->>> pm_clk_suspend|resume(), that those invokes only clk_enable|disable().
->>> pm_clk_suspend|resume() can't call clk_prepare|unprepare(), because we
->>> don't know if we running in atomic context when those are executed.
->>> Potentially this means leaving the clocks ungated - all the time.
->>>
->>> I have though about how to fix the above, several times, but I always
->>> ends up with thinking that's it more easy, to let the driver deal with
->>> the clocks, as then the problem goes away.
+On 01/03/18 11:41, Mark Rutland wrote:
+> On Wed, Feb 28, 2018 at 09:48:18PM -0800, Derek Basehore wrote:
+>> Some platforms power off GIC logic in suspend, so we need to
+>> save/restore state. The distributor and redistributor registers need
+>> to be handled in platform code due to access permissions on those
+>> registers, but the ITS registers can be restored in the kernel.
 >>
->> There's a similar issue with powering on/off power areas.
->
-> I don't follow. Can you elaborate?
+>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> 
+> How much state do we have to save/restore?
+> 
+> Given we can apparently read all this state, couldn't we *always* save
+> the state, then upon resume detect if the state has been lost, restoring
+> it if so?
+> 
+> That way, we don't need a property in FW tables for DT or ACPI.
 
-I intended to comment on the atomic context (or not).
-But I think I was wrong, and PM domain drivers do busy loops instead
-of sleeps.
+That's a good point. I guess that we could just compare the saved
+GITS_CTLR register and restore the full state only if the ITS comes back
+as disabled.
 
-Gr{oetje,eeting}s,
+I'm just a bit worried that it makes it an implicit convention between
+kernel an FW, which could change in funny ways. Importantly, the PSCI
+spec says states FW should restore *the whole state*. Obviously, it
+cannot to that on HW that doesn't allow you to read out the state, hence
+the DT flag that outlines the departure from the expected behaviour.
 
-                        Geert
+I'm happy to go either way, but then I have the feeling that we should
+go back to quirking it on the actual implementation (GIC500 in this
+case) if we're to from the property.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> [...]
+> 
+>> @@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
+>>  		ctlr |= GITS_CTLR_ImDe;
+>>  	writel_relaxed(ctlr, its->base + GITS_CTLR);
+>>  
+>> +	if (fwnode_property_present(handle, "reset-on-suspend"))
+>> +		its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+> 
+> Does this allow this property on an ACPI system?
+> 
+> If we need this on ACPI, we need a spec update to handle this properly,
+> and shouldn't use device properties like this.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Well spotted. I guess that dropping the property would fix that
+altogether, assuming we feel that the above is safe enough.
+
+Thoughts?
+
+	M.
+-- 
+Jazz is not dead. It just smells funny...
