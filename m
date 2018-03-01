@@ -1,126 +1,126 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / core: move device and its children to end of dpm list
-Date: Thu, 1 Mar 2018 10:59:48 +0100
-Message-ID: <CAJZ5v0jMOLSEzC9F67TJpgP6Z0JN1dr2uwjfrNfwDkTR8OVGyg@mail.gmail.com>
-References: <1519843555-982-1-git-send-email-fkan@apm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] soc: rockchip: power-domain: remove PM clocks
+Date: Thu, 1 Mar 2018 11:18:10 +0100
+Message-ID: <CAPDyKFq_hwao0hZCYmO-VrsW3vDJJboa1RG-TMLRQRgbt+YhpQ@mail.gmail.com>
+References: <20180228111113.13639-1-jeffy.chen@rock-chips.com>
+ <CAMuHMdWLL9CxmxSLsqs1QX0dDHVhp4NrW4Me2EZaZE_bJ330bA@mail.gmail.com>
+ <CAAFQd5CLXUwH6jTq9ZOpbYt9-Xx-+Kgj-Nk+KujS=Y=qLByc9Q@mail.gmail.com>
+ <CAMuHMdWdVdregCRh17Jfa92csBruZvLzAK+M8uajif0BSJTcaw@mail.gmail.com>
+ <CAAFQd5CpA_M821cMDtiEiWxw_rL--hQy6T6imz_c+fSi3gH9zw@mail.gmail.com>
+ <CAMuHMdVVDiuv7bpdC0X95Xy9dSK_TfjW5RvSekVym9Q02798Fg@mail.gmail.com>
+ <CAAFQd5C0GZ9C-pAqAdpuyxaF2xthLPY62a921nmABTbbmYtBmQ@mail.gmail.com>
+ <5A977638.8010506@rock-chips.com> <CAMuHMdU9PFAXwo+1Z7Baw1fanst9yFKZ3ohoSTiQiMKTaYMVVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1519843555-982-1-git-send-email-fkan@apm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Feng Kan <fkan@apm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdU9PFAXwo+1Z7Baw1fanst9yFKZ3ohoSTiQiMKTaYMVVw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, JeffyChen <jeffy.chen@rock-chips.com>, Tomasz Figa <tfiga@chromium.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Robin Murphy <robin.murphy@arm.com>, Heiko Stuebner <heiko@sntech.de>, Caesar Wang <wxt@rock-chips.com>, Elaine Zhang <zhangqing@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 28, 2018 at 7:45 PM, Feng Kan <fkan@apm.com> wrote:
-> When bridge and its endpoint is enumated the devices are added to the
-> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
-> This causes the bridge to be moved to the end of the dpm list when deferred
-> probe kicks in. The order of the dpm list for bridge and endpoint is
-> reversed.
++linux-pm
+
+Geert, Jeffry, Tomasz,
+
+Apologize for side-tracking the discussion. Just wanted to add a few
+comments, whatever it's worth to you.
+
+On 1 March 2018 at 09:33, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Jeffy,
 >
-> Add reordering code to re-position the bridge and its children so the order
-> for suspend and resume is not altered.
+> On Thu, Mar 1, 2018 at 4:40 AM, JeffyChen <jeffy.chen@rock-chips.com> wrote:
+>> if i'm reading the code right, the PM clk means:
+>> 1/ the clocks which would be enabled while power on
+>> 2/ these clocks are optional, it's ok if anything wrong with them
+>> 3/ controlled by pm_domain(or USE_PM_CLK_RUNTIME_OPS & pm_clk_add_notifier)
+>>
+>> and currently we're adding all clocks of the attached device as PM clk in
+>> rockchip PM domain driver, which seems wrong. because we might have these
+>> kinds of clocks:
+>> 1/ critical, should block power on if anything wrong with it(failed to get/
+>> prepare/ enable)
+>> 2/ optional, could ignore it if anything wrong
+>> 3/ only required in some special cases, for example register r/w, and
+>> doesn't need to stay enabled while power on
+>>
+>> so maybe we can:
+>> 1/ let the device(dts) or driver decide which clock is PM clk, and add it
+>> using *pm_clk_add* APIs (even of_pm_clk_add_clks() if all clocks are pm clk)
+
+We have already tried adding DT binding for this. Those got correctly
+nacked, as this seems like a SW config and not HW config, at least in
+my opinion.
+
+>>
+>> 2/ add support for critical PM clk, which would return error to the driver
+>> if anything wrong
+>>
+>> 3/ make sure PM clk always be controlled(otherwise it might be unexpected
+>> disabled by other clocks under the same clk parent?):
+>>  a) make sure Runtime PM is always enabled. and as discussed, we can select
+>> PM in ARCH_ROCKCHIP
+
+I am fine enabling PM for ARCH_ROCKCHIP, if needed.
+
+However, what I don't agree with in general, is to make a generic
+driver to rely on having CONFIG_PM to be set to be functional. That's
+to me, bad practice.
+
+I understand, this approach exists in drivers today. I assume it
+works, because those drivers are being used on SoCs which always has
+CONFIG_PM set.
+
 >
-> Signed-off-by: Feng Kan <fkan@apm.com>
-> Signed-off-by: Toan Le <toanle@apm.com>
-> ---
->  drivers/base/core.c    | 20 ++++++++++++++++++++
->  drivers/base/dd.c      |  8 ++++----
->  include/linux/device.h |  3 +++
->  3 files changed, 27 insertions(+), 4 deletions(-)
+> On Renesas SoCs, we only add the device's module clock with pm_clk_add().
+> Drivers that don't care about properties of the module clock just call
+> pm_runtime_*(). That way the same driver works on different SoCs using
+> the same device, with and without power and/or clock domains.
+
+I understand your point and I accept your view.
+
+However, I think this is more a mindset of which way one want
+implement things. This has been discussed several times in the mailing
+list as well.
+
+Surely we can cope with SoC specific constraints in drivers as well,
+we already do that.
+
+In principle I think this boils done to comparing a centralized
+method, where the PM domain deals with clocks vs a decentralized
+method, where the driver deals with clocks. Both works, both have
+positive and negative consequences.
+
+In my experience for ARM SoCs, I have found that centralized method
+doesn't work well, when one need flexibility. For example, if there
+are strict constraints on the order of how to put device's PM
+resources (clocks, pinctrl, etc) in low power states. For example, to
+avoid clock glitches.
+
+Another problem with the PM clk is, more exactly with
+pm_clk_suspend|resume(), that those invokes only clk_enable|disable().
+pm_clk_suspend|resume() can't call clk_prepare|unprepare(), because we
+don't know if we running in atomic context when those are executed.
+Potentially this means leaving the clocks ungated - all the time.
+
+I have though about how to fix the above, several times, but I always
+ends up with thinking that's it more easy, to let the driver deal with
+the clocks, as then the problem goes away.
+
 >
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 110230d..0b4ad99 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -148,6 +148,26 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
->  }
->
->  /**
-> + * device_pm_reorder - reorder device and its children to end of dpm list
+> Drivers that care about properties of the module clock (mainly frequency)
+> can still use the clk_*() API for that. Other (optional) clocks must be
+> handled by the device driver itself.
 
-Not just the children and not just dpm_list.
+A comment on that;
 
-> + * @dev: current device pointer
-> + *
-> + * This is a lock held version of reordering the device to dpm list tail.
-> + * This will move the device to the end of the dpm list if it not registered.
-> + * Afterward, it will iterate through its children and do the same for them.
+Before we the PM clk was introduced, we didn't have the clk_bulk_*()
+interface. To me, using clk_bulk_*() in drivers could help to simplify
+the code in regards to manage clocks (including SoC specific clocks)
+during runtime PM.
 
-This isn't entirely accurate as device_reorder_to_tail() does more than that.
+Perhaps this could be an option to using PM clk, as it provides both
+flexibility and could manage SoC specific clocks.
 
-> + */
-> +void device_pm_reorder(struct device *dev)
-
-I'd call it device_pm_move_to_tail() as that's what it does.
-
-"Reorder" is sort of overly generic IMO.
-
-> +{
-> +       int idx;
-> +
-> +       idx = device_links_read_lock();
-> +       device_pm_lock();
-> +       device_reorder_to_tail(dev, NULL);
-> +       device_pm_unlock();
-> +       device_links_read_unlock(idx);
-> +}
-> +EXPORT_SYMBOL_GPL(device_pm_reorder);
-
-It is not necessary to export this symbol.
-
-> +
-> +/**
->   * device_link_add - Create a link between two devices.
->   * @consumer: Consumer end of the link.
->   * @supplier: Supplier end of the link.
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 2c964f5..3223a30 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -121,11 +121,11 @@ static void deferred_probe_work_func(struct work_struct *work)
->                  * Force the device to the end of the dpm_list since
->                  * the PM code assumes that the order we add things to
->                  * the list is a good order for suspend but deferred
-> -                * probe makes that very unsafe.
-> +                * probe makes that very unsafe. Also move any children
-> +                * belong to the device to the end of the list as well.
-> +                * This way the suspend resume order won't be corrupted.
->                  */
-> -               device_pm_lock();
-> -               device_pm_move_last(dev);
-> -               device_pm_unlock();
-> +               device_pm_reorder(dev);
->
->                 dev_dbg(dev, "Retrying from deferred list\n");
->                 if (initcall_debug && !initcalls_done)
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 9d32000..1ec12d5 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -1272,6 +1272,9 @@ extern void devm_device_remove_group(struct device *dev,
->  /* debugging and troubleshooting/diagnostic helpers. */
->  extern const char *dev_driver_string(const struct device *dev);
->
-> +/* reorder device and its children to end of dpm list */
-> +void device_pm_reorder(struct device *dev);
-
-And this header can go into drivers/base/base.h as Bjorn said.
-
-> +
->  /* Device links interface. */
->  struct device_link *device_link_add(struct device *consumer,
->                                     struct device *supplier, u32 flags);
-> --
-> 1.8.3.1
->
+Kind regards
+Uffe
