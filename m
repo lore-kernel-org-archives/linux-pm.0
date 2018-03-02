@@ -1,130 +1,68 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH V2] PM / core: fix deferred probe breaking suspend resume
- order
-Date: Fri, 2 Mar 2018 13:21:10 -0600
-Message-ID: <20180302192110.GA202062@bhelgaas-glaptop.roam.corp.google.com>
-References: <1519942514-3350-1-git-send-email-fkan@apm.com>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [v3 PATCH 0/3] Add support for Adreno a6xx
+Date: Fri,  2 Mar 2018 14:43:26 -0700
+Message-ID: <20180302214329.1086-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1519942514-3350-1-git-send-email-fkan@apm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Feng Kan <fkan@apm.com>
-Cc: lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: nm-l0cyMroinI0@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 01, 2018 at 02:15:14PM -0800, Feng Kan wrote:
-> When bridge and its endpoint is enumerated the devices are added to the
-> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
-> This causes the bridge to be moved to the end of the dpm list when
-> deferred probe kicks in. The order of the dpm list for bridge and
-> endpoint is reversed.
-
-I'm not very familiar with PM, so can you connect some of the dots
-here for me?
-
-When you say "the bridge defers probe when IOMMU is not ready", are
-you talking about pcie_portdrv_probe() claiming a PCIe port?
-
-How does this connect with the IOMMU?  Where do we figure out that the
-IOMMU is not ready?
-
-> Add reordering code to move the bridge and its children and consumers to
-> the end of the pm list so the order for suspend and resume is not altered.
-> The code also move device and its children and consumers to the tail of
-> device_kset list if it is registered.
-> 
-> Signed-off-by: Feng Kan <fkan@apm.com>
-> Signed-off-by: Toan Le <toanle@apm.com>
-> ---
->  V2:
-> 	1. change patch title from "move device and its children..."
-> 	2. move define based on Bjorn's comment
-> 	3. rename function name and comment content
->  drivers/base/base.h |  3 +++
->  drivers/base/core.c | 22 ++++++++++++++++++++++
->  drivers/base/dd.c   |  8 ++++----
->  3 files changed, 29 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/base/base.h b/drivers/base/base.h
-> index d800de6..a75c302 100644
-> --- a/drivers/base/base.h
-> +++ b/drivers/base/base.h
-> @@ -161,3 +161,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
->  extern void device_links_no_driver(struct device *dev);
->  extern bool device_links_busy(struct device *dev);
->  extern void device_links_unbind_consumers(struct device *dev);
-> +
-> +/* device pm support */
-> +void device_pm_move_to_tail(struct device *dev);
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 110230d..0a0756b 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -148,6 +148,28 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
->  }
->  
->  /**
-> + * device_pm_move_to_tail - move device and its children and consumers to end of
-> + *                          pm and device kset list
-> + * @dev: current device pointer
-> + *
-> + * This is a lock held version of the device_reorder_to_tail. Function checks
-> + * if the device is registered and moves it to the end of device_kset list. Also
-> + * if the device is pm initialized, move the device to the end of the pm list.
-> + * Then the function iterate through the children and device link consumers to
-> + * do the same for each found.
-> + */
-> +void device_pm_move_to_tail(struct device *dev)
-> +{
-> +	int idx;
-> +
-> +	idx = device_links_read_lock();
-> +	device_pm_lock();
-> +	device_reorder_to_tail(dev, NULL);
-> +	device_pm_unlock();
-> +	device_links_read_unlock(idx);
-> +}
-> +
-> +/**
->   * device_link_add - Create a link between two devices.
->   * @consumer: Consumer end of the link.
->   * @supplier: Supplier end of the link.
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 2c964f5..7e9d1ef 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -121,11 +121,11 @@ static void deferred_probe_work_func(struct work_struct *work)
->  		 * Force the device to the end of the dpm_list since
->  		 * the PM code assumes that the order we add things to
->  		 * the list is a good order for suspend but deferred
-> -		 * probe makes that very unsafe.
-> +		 * probe makes that very unsafe. Move any children and
-> +		 * consumers belong to the device to the end of the list.
-> +		 * This way the suspend resume order won't be corrupted.
->  		 */
-> -		device_pm_lock();
-> -		device_pm_move_last(dev);
-> -		device_pm_unlock();
-> +		device_pm_move_to_tail(dev);
->  
->  		dev_dbg(dev, "Retrying from deferred list\n");
->  		if (initcall_debug && !initcalls_done)
-> -- 
-> 1.8.3.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+YTZ4eCBHUFUgc3VwcG9ydCBmb3IgZHJtL21zbSAtIGZvbGxvdyBhbG9uZyBoZXJlOgpodHRwczov
+L3BhdGNod29yay5mcmVlZGVza3RvcC5vcmcvc2VyaWVzLzM3NDI4LwoKUGVyIHN1Z2dlc3Rpb25z
+IGZyb20gdmFyaW91cyBmb2xrcyBmb3IgdGhlIGFzc29jaWF0ZWQgZGV2aWNlIHRyZWUgY2hhbmdl
+cyBmb3IKdGhlIHNkbTg0NSBHUFUgKGNvbWluZyBpbW1lZGlhdGVseSBhZnRlciB0aGlzKSBhZGQg
+YSBuZXcgb3BwIGZ1bmN0aW9uIHRvIHF1ZXJ5CnRoZSBkZXZpY2UgdHJlZSBub2RlIGZvciBhIHNw
+ZWNpZmljIG9wcCBzbyB0aGF0IHdlIGNhbiBwYXJzZSBvdXQgcGxhdGZvcm0Kc3BlY2lmaWMgcHJv
+cGVydGllcy4gRm9yIHRoZSBHUFUvR01VIHRoZSBkZXZpY2Ugc3BlY2lmaWMgcHJvcGVydHkgaXMK
+cWNvbSxhcmMtbGV2ZWwgd2hpY2ggaXMgYSBsb29rdXAgdmFsdWUgZm9yIHRoZSBjbWQtZGIgdGFi
+bGUuIFRoYW5rcyBTdGVwaGVuCkJveWQgZm9yIHRoZSBzdWdnZXN0aW9uLgoKW3YzOiBBZGQgZGV2
+X3BtX29wcF9ucCgpIGFuZCB1c2UgaXQgdG8gZ2V0IHRoZSBwZXItb3BwIHJwbWggaW5kZXguIENo
+YW5nZSB0aGUKcmVnLW5hbWVzIGFuZCBpbnRlcnJ1cHQtbmFtZXMgdG8gcmVmbGVjdCBjdXJyZW50
+IHN0YW5kYXJkcyB3aXRob3V0IHRoZSAicmVnIiBvcgoiaXJxIiBzdWZmaXguICBGaXggYWRkaXRp
+b25hbCBidWdzIGluIHRoZSBjb2RlIHRoYXQgY29uc3RydWN0cyB0aGUgcnBtaCB2b3Rlcwpmb3Ig
+dGhlIEdNVV0KClt2MjogQWRkcmVzc2VkIGNvbW1lbnRzIGZyb20gTHVjYXMgU3RhY2gsIGFkZGVk
+IHBtX3J1bnRpbWVfZ2V0X3N1cHBsaWVyIGNhbGxzCmZvciBhY2Nlc3NlcyB0byB0aGUgR01VIElP
+TU1VLCBtb3ZlZCB0byBTUERYIGhlYWRlcnMgZm9yIHRoZSBuZXcgZmlsZXNdCgpKb3JkYW4gQ3Jv
+dXNlICgyKToKICBQTSAvIE9QUDogQWRkIGRldl9wbV9vcHBfZ2V0X25wKCkKICBkcm0vbXNtOiBB
+ZGQgQTZYWCBkZXZpY2Ugc3VwcG9ydAoKU2hhcmF0IE1hc2V0dHkgKDEpOgogIGRybS9tc206IEFk
+ZCBnZW5lcmF0ZWQgaGVhZGVycyBmb3IgQTZYWAoKIGRyaXZlcnMvZ3B1L2RybS9tc20vTWFrZWZp
+bGUgICAgICAgICAgICAgICB8ICAgIDMgKwogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4
+eC54bWwuaCAgICAgIHwgMTYwMCArKysrKysrKysrKysrKysrKysrKysrKysrKysrCiBkcml2ZXJz
+L2dwdS9kcm0vbXNtL2FkcmVuby9hNnh4X2dtdS5jICAgICAgfCAxMjI2ICsrKysrKysrKysrKysr
+KysrKysrKwogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9nbXUuaCAgICAgIHwgIDE2
+MiArKysKIGRyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2E2eHhfZ211LnhtbC5oICB8ICAzODIg
+KysrKysrKwogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9ncHUuYyAgICAgIHwgIDgw
+OSArKysrKysrKysrKysrKwogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9ncHUuaCAg
+ICAgIHwgICA2MCArKwogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9oZmkuYyAgICAg
+IHwgIDQzNSArKysrKysrKwogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9oZmkuaCAg
+ICAgIHwgIDEyNyArKysKIGRyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2FkcmVub19kZXZpY2Uu
+YyB8ICAgMTIgKwogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYWRyZW5vX2dwdS5jICAgIHwg
+ICAgMiArLQogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYWRyZW5vX2dwdS5oICAgIHwgICAg
+NSArLQogZHJpdmVycy9ncHUvZHJtL21zbS9tc21fZ3B1LmMgICAgICAgICAgICAgIHwgICAgMiAr
+LQogZHJpdmVycy9vcHAvb2YuYyAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAyMCArCiBp
+bmNsdWRlL2xpbnV4L3BtX29wcC5oICAgICAgICAgICAgICAgICAgICAgfCAgICA2ICsKIDE1IGZp
+bGVzIGNoYW5nZWQsIDQ4NDggaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKIGNyZWF0ZSBt
+b2RlIDEwMDY0NCBkcml2ZXJzL2dwdS9kcm0vbXNtL2FkcmVuby9hNnh4LnhtbC5oCiBjcmVhdGUg
+bW9kZSAxMDA2NDQgZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9nbXUuYwogY3JlYXRl
+IG1vZGUgMTAwNjQ0IGRyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2E2eHhfZ211LmgKIGNyZWF0
+ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2dwdS9kcm0vbXNtL2FkcmVuby9hNnh4X2dtdS54bWwuaAog
+Y3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2E2eHhfZ3B1LmMK
+IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2dwdS9kcm0vbXNtL2FkcmVuby9hNnh4X2dwdS5o
+CiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9oZmku
+YwogY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2E2eHhfaGZp
+LmgKCi0tIAoyLjE2LjEKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9w
+Lm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVk
+cmVubwo=
