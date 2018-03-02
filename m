@@ -1,36 +1,55 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v1 02/19] dt-bindings: cpufreq: mediatek: use - instead
- of _ in examples
-Date: Fri, 2 Mar 2018 09:53:19 -0600
-Message-ID: <20180302155319.xvp2awguosm7kyyo@rob-hp-laptop>
-References: <cover.1519378871.git.sean.wang@mediatek.com>
- <fd1fc4c6760ab8fcbf7518df1cecf3837ab18d2c.1519378871.git.sean.wang@mediatek.com>
+From: Wei Xu <xuwei5@hisilicon.com>
+Subject: Re: [PATCH 05/10] ARM64: dts: hi6220: Remove
+ "cooling-{min|max}-level" for CPU nodes
+Date: Fri, 2 Mar 2018 16:03:54 +0000
+Message-ID: <5A9975EA.3010306@hisilicon.com>
+References: <cover.1518166039.git.viresh.kumar@linaro.org>
+ <68740229a7397336ae92bad65f69a58c91819c37.1518166039.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <fd1fc4c6760ab8fcbf7518df1cecf3837ab18d2c.1519378871.git.sean.wang@mediatek.com>
+In-Reply-To: <68740229a7397336ae92bad65f69a58c91819c37.1518166039.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: matthias.bgg@gmail.com, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 23, 2018 at 06:16:22PM +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> It should be good that no use "_" is in examples. Consequently,
-> those nodes in certain files which have an inappropriate name containing
-> "_" are all being replaced with "-".
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: devicetree@vger.kernel.org
-> ---
->  Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+Hi Viresh,
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+On 2018/2/9 8:58, Viresh Kumar wrote:
+> The "cooling-min-level" and "cooling-max-level" properties are not
+> parsed by any part of the kernel currently and the max cooling state of
+> a CPU cooling device is found by referring to the cpufreq table instead.
+> 
+> Moreover, the entries are incorrect here as min level is 4 and the max
+> level is 0.
+> 
+> Remove the unused properties from the CPU nodes.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+
+Applied into hisilicon dt tree.
+Thanks!
+
+BR,
+Wei
+
+>  arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+> index 6a180d1926e8..fca8e4ee98e7 100644
+> --- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+> +++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+> @@ -88,8 +88,6 @@
+>  			next-level-cache = <&CLUSTER0_L2>;
+>  			clocks = <&stub_clock 0>;
+>  			operating-points-v2 = <&cpu_opp_table>;
+> -			cooling-min-level = <4>;
+> -			cooling-max-level = <0>;
+>  			#cooling-cells = <2>; /* min followed by max */
+>  			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
+>  			dynamic-power-coefficient = <311>;
+> 
