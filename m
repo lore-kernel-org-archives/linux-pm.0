@@ -1,60 +1,56 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / wakeup: use seq_open() to show wakeup stats
-Date: Fri, 2 Mar 2018 10:15:45 +0100
-Message-ID: <CAJZ5v0i4nkg2mQ+8AejNavJmGVYZn3cbif3D5LW8VYpffvW73A@mail.gmail.com>
-References: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com> <CAJZ5v0hmj873=2qXtV_PzGEv-dRp-1KVuoC0mYO0AcOVt0e3hg@mail.gmail.com>
+Subject: Re: [PATCH v2] tracing/power: Polish the tracepoints cpu_idle and cpu_frequency
+Date: Fri, 2 Mar 2018 10:24:45 +0100
+Message-ID: <CAJZ5v0j8GsaK7kJ4hyvyQYOpa6QmoP2Pc69egg0hb=tb2EwpuA@mail.gmail.com>
+References: <1519809638-24248-1-git-send-email-changbin.du@intel.com>
+ <CAJZ5v0jqG0pcqOuvAVoP7sNKoOe+3ByMk4X5AZASp84OPcrgPg@mail.gmail.com> <20180301022719.xyfcu5tpmadjxbut@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hmj873=2qXtV_PzGEv-dRp-1KVuoC0mYO0AcOVt0e3hg@mail.gmail.com>
+In-Reply-To: <20180301022719.xyfcu5tpmadjxbut@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Du, Changbin" <changbin.du@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 2, 2018 at 9:58 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Mar 2, 2018 at 6:01 AM, Ganesh Mahendran
-> <opensource.ganesh@gmail.com> wrote:
->> single_open() interface requires that the whole output must
->> fit into a single buffer. This will lead to timeout when
->> system memory is not in a good situation.
->
-> Did you actually see this problem with this particular file or is it
-> theoretical?
->
->> This patch use seq_open() to show wakeup stats. This method
->> need only one page, so timeout will not be observed.
->>
->> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
->> ---
->>  drivers/base/power/wakeup.c | 71 +++++++++++++++++++++++++++++++++++----------
->>  1 file changed, 56 insertions(+), 15 deletions(-)
->>
->> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
->> index ea01621..c64609a 100644
->> --- a/drivers/base/power/wakeup.c
->> +++ b/drivers/base/power/wakeup.c
->> @@ -1029,32 +1029,73 @@ static int print_wakeup_source_stats(struct seq_file *m,
->>         return 0;
->>  }
->>
->> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
->> +                                       loff_t *pos)
->> +{
->> +       struct wakeup_source *ws;
->> +       loff_t n = *pos;
->> +
->> +       if (n == 0) {
->> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
->> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
->> +                       "last_change\tprevent_suspend_time\n");
->> +       }
->> +
->> +       rcu_read_lock();
->
-> The code running after this cannot sleep.  Use
-> srcu_read_lock(&wakeup_srcu) instead.
+[Fix up LKML address.]
 
-But generally, as Pavel points it out, even under srcu_read_lock()
-things cannot be delayed indefinitely (at least for actions other than
-freeing up more memory), so the entire approach appears to be flawed.
+On Thu, Mar 1, 2018 at 3:27 AM, Du, Changbin <changbin.du@intel.com> wrote:
+> Hi,
+> On Wed, Feb 28, 2018 at 11:27:09AM +0100, Rafael J. Wysocki wrote:
+>> On Wed, Feb 28, 2018 at 10:20 AM,  <changbin.du@intel.com> wrote:
+>> > From: Changbin Du <changbin.du@intel.com>
+>> >
+>> > The type of state is signed int, convert it to unsigned int looks weird.
+>> > (-1 become 4294967295)
+>> >    932.123 power:cpu_idle:state=1 cpu_id=0)
+>> >    932.125 power:cpu_idle:state=4294967295 cpu_id=0)
+>> >    932.132 power:cpu_idle:state=1 cpu_id=0)
+>> >    932.133 power:cpu_idle:state=4294967295 cpu_id=0)
+>> >
+>> > Similarly for cpu_frequency as "state=%lu cpu_id=%lu". User need to read
+>> > the code to understand what 'state' means.
+>> >
+>> > No functional change in this patch.
+>>
+>> That rather isn't the case if negative values are ever passed to the
+>> tracepoint, right?
+>>
+> yes.
+>> Which seems to be the reason why you want to make this change, isn't it?
+>>
+> yes, to improve readability.
+>
+>> So maybe fix the code using the tracepoint(s) to avoid passing
+>> negative values to it(them)?
+> For cpu_idle event, [0, CPUIDLE_STATE_MAX) are used to index the idle state arrary,
+> so I think a appropriate value for PWR_EVENT_EXIT is -1 (defined in include/trace/events/power.h).
+> Or do you have a better idea? Thanks!
+
+Sorry, I'm not sure what you mean.
+
+I'm saying that the code using the CPU PM tracepoints is not expected
+to pass -1 as the CPU number to them.  IOW, neither -1 nor its UL
+representation should ever appear in the output of these tracepoints.
+If that happens, it is a problem with the code using the tracepoints
+which needs to be fixed.  Users should not see any of these values.
