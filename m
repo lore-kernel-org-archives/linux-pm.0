@@ -1,58 +1,155 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Delete some unusefull operations for centaur CPU/platform
-Date: Fri, 02 Mar 2018 12:31:34 +0100
-Message-ID: <1983196.2xaV79s388@aspire.rjw.lan>
-References: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com>
+From: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Subject: Re: [PATCH] PM / wakeup: use seq_open() to show wakeup stats
+Date: Fri, 2 Mar 2018 19:34:36 +0800
+Message-ID: <CADAEsF-HzNxrCHMrGm_QR=9grUM3HJbycorsiBuggOh-hYjx-g@mail.gmail.com>
+References: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com> <CAJZ5v0hmj873=2qXtV_PzGEv-dRp-1KVuoC0mYO0AcOVt0e3hg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com>
+In-Reply-To: <CAJZ5v0hmj873=2qXtV_PzGEv-dRp-1KVuoC0mYO0AcOVt0e3hg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Wang <davidwang@zhaoxin.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@kernel.org, linux-kernel@vger.kernel.org, brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, lukelin@viacpu.com, timguo@zhaoxin.com, cobechen@zhaoxin.com, jiangbowang@zhaoxin.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 2, 2018 5:11:48 AM CET David Wang wrote:
-> For Centaur CPU, the ucode will make sure that each CPU core can keep cache
-> coherency with each other when the CPU core entering to any C state. So the
-> cache flush operations when enter C3 is not necessary and will cause large
-> C3 enter/exit latency.
-> And the bus master disable operation when CPU core entering C3 state is not
-> needed too. Because the chipset will automatically do this operation.
-> 
-> Signed-off-by: David Wang <davidwang@zhaoxin.com>
+Hi, Rafael:
 
-I've queued up the previous version of your patch with some changes to
-comments/subject/changelog made by me for v4.17.
+2018-03-02 16:58 GMT+08:00 Rafael J. Wysocki <rafael@kernel.org>:
+> On Fri, Mar 2, 2018 at 6:01 AM, Ganesh Mahendran
+> <opensource.ganesh@gmail.com> wrote:
+>> single_open() interface requires that the whole output must
+>> fit into a single buffer. This will lead to timeout when
+>> system memory is not in a good situation.
+>
+> Did you actually see this problem with this particular file or is it
+> theoretical?
 
-Please see linux-next.
+We got report of android watchdog timeout when memory situation
+is bad.
 
-> ---
->  arch/x86/kernel/acpi/cstate.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-> index dde437f..1cd357b 100644
-> --- a/arch/x86/kernel/acpi/cstate.c
-> +++ b/arch/x86/kernel/acpi/cstate.c
-> @@ -51,6 +51,18 @@ void acpi_processor_power_init_bm_check(struct acpi_processor_flags *flags,
->  	if (c->x86_vendor == X86_VENDOR_INTEL &&
->  	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
->  			flags->bm_control = 0;
-> +
-> +        if (c->x86_vendor == X86_VENDOR_CENTAUR) {
-> +		/*
-> +		 * on all centaur CPUs, sw need not execute cache flush operation
-> +		 * when entering C3 type State.
-> +		 *
-> +		 * On all Centaur platforms, sw need not execute ARB_DISABLE while
-> +		 * entering C3 type state.
-> +		 */
-> +		flags->bm_check = 1;
-> +		flags->bm_control = 0;
-> +	}
->  }
->  EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
->  
-> 
+>
+>> This patch use seq_open() to show wakeup stats. This method
+>> need only one page, so timeout will not be observed.
+>>
+>> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+>> ---
+>>  drivers/base/power/wakeup.c | 71 +++++++++++++++++++++++++++++++++++----------
+>>  1 file changed, 56 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+>> index ea01621..c64609a 100644
+>> --- a/drivers/base/power/wakeup.c
+>> +++ b/drivers/base/power/wakeup.c
+>> @@ -1029,32 +1029,73 @@ static int print_wakeup_source_stats(struct seq_file *m,
+>>         return 0;
+>>  }
+>>
+>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
+>> +                                       loff_t *pos)
+>> +{
+>> +       struct wakeup_source *ws;
+>> +       loff_t n = *pos;
+>> +
+>> +       if (n == 0) {
+>> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+>> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
+>> +                       "last_change\tprevent_suspend_time\n");
+>> +       }
+>> +
+>> +       rcu_read_lock();
+>
+> The code running after this cannot sleep.  Use
+> srcu_read_lock(&wakeup_srcu) instead.
+
+wakeup_sources_stats_seq_[start | end] are called in seq_read().
+So rcu_read_unlock() will soon be called  in seq_read().
+
+I am not familar with rcu. I refered to kmemleak.c which use seq_open()
+to show the stats.
+
+Thanks for your review.
+
+>
+>> +       list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+>> +               if (n-- > 0)
+>> +                       continue;
+>> +               goto out;
+>> +       }
+>> +       ws = NULL;
+>> +out:
+>> +       return ws;
+>> +}
+>> +
+>> +static void *wakeup_sources_stats_seq_next(struct seq_file *m,
+>> +                                       void *v, loff_t *pos)
+>> +{
+>> +       struct wakeup_source *ws = v;
+>> +       struct wakeup_source *next_ws = NULL;
+>> +
+>> +       ++(*pos);
+>> +
+>> +       list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
+>> +               next_ws = ws;
+>> +               break;
+>> +       }
+>> +
+>> +       return next_ws;
+>> +}
+>> +
+>> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
+>> +{
+>> +       rcu_read_unlock();
+>> +}
+>> +
+>>  /**
+>>   * wakeup_sources_stats_show - Print wakeup sources statistics information.
+>>   * @m: seq_file to print the statistics into.
+>>   */
+>> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+>> +static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
+>>  {
+>> -       struct wakeup_source *ws;
+>> -       int srcuidx;
+>> +       struct wakeup_source *ws = v;
+>>
+>> -       seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+>> -               "expire_count\tactive_since\ttotal_time\tmax_time\t"
+>> -               "last_change\tprevent_suspend_time\n");
+>> -
+>> -       srcuidx = srcu_read_lock(&wakeup_srcu);
+>> -       list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+>> -               print_wakeup_source_stats(m, ws);
+>> -       srcu_read_unlock(&wakeup_srcu, srcuidx);
+>> -
+>> -       print_wakeup_source_stats(m, &deleted_ws);
+>> +       print_wakeup_source_stats(m, ws);
+>>
+>>         return 0;
+>>  }
+>>
+>> +static const struct seq_operations wakeup_sources_stats_seq_ops = {
+>> +       .start = wakeup_sources_stats_seq_start,
+>> +       .next  = wakeup_sources_stats_seq_next,
+>> +       .stop  = wakeup_sources_stats_seq_stop,
+>> +       .show  = wakeup_sources_stats_seq_show,
+>> +};
+>> +
+>>  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+>>  {
+>> -       return single_open(file, wakeup_sources_stats_show, NULL);
+>> +       return seq_open(file, &wakeup_sources_stats_seq_ops);
+>>  }
+>>
+>>  static const struct file_operations wakeup_sources_stats_fops = {
+>> @@ -1062,7 +1103,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+>>         .open = wakeup_sources_stats_open,
+>>         .read = seq_read,
+>>         .llseek = seq_lseek,
+>> -       .release = single_release,
+>> +       .release = seq_release,
+>>  };
+>>
+>>  static int __init wakeup_sources_debugfs_init(void)
+>> --
+>> 1.9.1
+>>
