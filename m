@@ -1,139 +1,47 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / wakeup: use seq_open() to show wakeup stats
-Date: Fri, 2 Mar 2018 09:58:22 +0100
-Message-ID: <CAJZ5v0hmj873=2qXtV_PzGEv-dRp-1KVuoC0mYO0AcOVt0e3hg@mail.gmail.com>
-References: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com>
+Subject: Re: [PATCH v2] tracing/power: Polish the tracepoints cpu_idle and cpu_frequency
+Date: Fri, 2 Mar 2018 11:18:10 +0100
+Message-ID: <CAJZ5v0jcTfjBsyR1NN-JjAN86xPm0rA0qr4mnOpJwiv6PSdy6Q@mail.gmail.com>
+References: <1519809638-24248-1-git-send-email-changbin.du@intel.com>
+ <CAJZ5v0jqG0pcqOuvAVoP7sNKoOe+3ByMk4X5AZASp84OPcrgPg@mail.gmail.com>
+ <20180301022719.xyfcu5tpmadjxbut@intel.com> <CAJZ5v0j8GsaK7kJ4hyvyQYOpa6QmoP2Pc69egg0hb=tb2EwpuA@mail.gmail.com>
+ <20180302094140.ncypewkdg6g6rs2g@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com>
+In-Reply-To: <20180302094140.ncypewkdg6g6rs2g@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Du, Changbin" <changbin.du@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 2, 2018 at 6:01 AM, Ganesh Mahendran
-<opensource.ganesh@gmail.com> wrote:
-> single_open() interface requires that the whole output must
-> fit into a single buffer. This will lead to timeout when
-> system memory is not in a good situation.
+On Fri, Mar 2, 2018 at 10:41 AM, Du, Changbin <changbin.du@intel.com> wrote:
+>> >> That rather isn't the case if negative values are ever passed to the
+>> >> tracepoint, right?
+>> >>
+>> > yes.
+>> >> Which seems to be the reason why you want to make this change, isn't it?
+>> >>
+>> > yes, to improve readability.
+>> >
+>> >> So maybe fix the code using the tracepoint(s) to avoid passing
+>> >> negative values to it(them)?
+>> > For cpu_idle event, [0, CPUIDLE_STATE_MAX) are used to index the idle state arrary,
+>> > so I think a appropriate value for PWR_EVENT_EXIT is -1 (defined in include/trace/events/power.h).
+>> > Or do you have a better idea? Thanks!
+>>
+>> Sorry, I'm not sure what you mean.
+>>
+>> I'm saying that the code using the CPU PM tracepoints is not expected
+>> to pass -1 as the CPU number to them.  IOW, neither -1 nor its UL
+>> representation should ever appear in the output of these tracepoints.
+>> If that happens, it is a problem with the code using the tracepoints
+>> which needs to be fixed.  Users should not see any of these values.
+>
+> This patch only changed 'state' field but cpuid. For cpu_idle event, 'state' is
+> singned value, but for cpu_frequency it is unsinged.
+> The cpuid is always unsinged value. So no one passes -1 as CPU number.
 
-Did you actually see this problem with this particular file or is it
-theoretical?
+You are right, 'state' not 'cpuid', sorry.
 
-> This patch use seq_open() to show wakeup stats. This method
-> need only one page, so timeout will not be observed.
->
-> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
-> ---
->  drivers/base/power/wakeup.c | 71 +++++++++++++++++++++++++++++++++++----------
->  1 file changed, 56 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index ea01621..c64609a 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -1029,32 +1029,73 @@ static int print_wakeup_source_stats(struct seq_file *m,
->         return 0;
->  }
->
-> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
-> +                                       loff_t *pos)
-> +{
-> +       struct wakeup_source *ws;
-> +       loff_t n = *pos;
-> +
-> +       if (n == 0) {
-> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
-> +                       "last_change\tprevent_suspend_time\n");
-> +       }
-> +
-> +       rcu_read_lock();
-
-The code running after this cannot sleep.  Use
-srcu_read_lock(&wakeup_srcu) instead.
-
-> +       list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> +               if (n-- > 0)
-> +                       continue;
-> +               goto out;
-> +       }
-> +       ws = NULL;
-> +out:
-> +       return ws;
-> +}
-> +
-> +static void *wakeup_sources_stats_seq_next(struct seq_file *m,
-> +                                       void *v, loff_t *pos)
-> +{
-> +       struct wakeup_source *ws = v;
-> +       struct wakeup_source *next_ws = NULL;
-> +
-> +       ++(*pos);
-> +
-> +       list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
-> +               next_ws = ws;
-> +               break;
-> +       }
-> +
-> +       return next_ws;
-> +}
-> +
-> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
-> +{
-> +       rcu_read_unlock();
-> +}
-> +
->  /**
->   * wakeup_sources_stats_show - Print wakeup sources statistics information.
->   * @m: seq_file to print the statistics into.
->   */
-> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
-> +static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
->  {
-> -       struct wakeup_source *ws;
-> -       int srcuidx;
-> +       struct wakeup_source *ws = v;
->
-> -       seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> -               "expire_count\tactive_since\ttotal_time\tmax_time\t"
-> -               "last_change\tprevent_suspend_time\n");
-> -
-> -       srcuidx = srcu_read_lock(&wakeup_srcu);
-> -       list_for_each_entry_rcu(ws, &wakeup_sources, entry)
-> -               print_wakeup_source_stats(m, ws);
-> -       srcu_read_unlock(&wakeup_srcu, srcuidx);
-> -
-> -       print_wakeup_source_stats(m, &deleted_ws);
-> +       print_wakeup_source_stats(m, ws);
->
->         return 0;
->  }
->
-> +static const struct seq_operations wakeup_sources_stats_seq_ops = {
-> +       .start = wakeup_sources_stats_seq_start,
-> +       .next  = wakeup_sources_stats_seq_next,
-> +       .stop  = wakeup_sources_stats_seq_stop,
-> +       .show  = wakeup_sources_stats_seq_show,
-> +};
-> +
->  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->  {
-> -       return single_open(file, wakeup_sources_stats_show, NULL);
-> +       return seq_open(file, &wakeup_sources_stats_seq_ops);
->  }
->
->  static const struct file_operations wakeup_sources_stats_fops = {
-> @@ -1062,7 +1103,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->         .open = wakeup_sources_stats_open,
->         .read = seq_read,
->         .llseek = seq_lseek,
-> -       .release = single_release,
-> +       .release = seq_release,
->  };
->
->  static int __init wakeup_sources_debugfs_init(void)
-> --
-> 1.9.1
->
+Negative 'state' should not be passed to these tracepoints too, though.
