@@ -1,64 +1,85 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.16-rc4
-Date: Fri, 2 Mar 2018 12:36:40 +0100
-Message-ID: <CAJZ5v0hD3MDOzNNWu4XNOXWTX2PcP2+PgfKFk1TJ7_Yd+JHncw@mail.gmail.com>
+Subject: Re: [PATCH] PM / wakeup: use seq_open() to show wakeup stats
+Date: Fri, 2 Mar 2018 12:48:08 +0100
+Message-ID: <CAJZ5v0jiR_T5=R6M3YKtOVQaxbJnp=6wsqu5NT+fjypNB6G-yg@mail.gmail.com>
+References: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com>
+ <CAJZ5v0hmj873=2qXtV_PzGEv-dRp-1KVuoC0mYO0AcOVt0e3hg@mail.gmail.com> <CADAEsF-HzNxrCHMrGm_QR=9grUM3HJbycorsiBuggOh-hYjx-g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CADAEsF-HzNxrCHMrGm_QR=9grUM3HJbycorsiBuggOh-hYjx-g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Fri, Mar 2, 2018 at 12:34 PM, Ganesh Mahendran
+<opensource.ganesh@gmail.com> wrote:
+> Hi, Rafael:
+>
+> 2018-03-02 16:58 GMT+08:00 Rafael J. Wysocki <rafael@kernel.org>:
+>> On Fri, Mar 2, 2018 at 6:01 AM, Ganesh Mahendran
+>> <opensource.ganesh@gmail.com> wrote:
+>>> single_open() interface requires that the whole output must
+>>> fit into a single buffer. This will lead to timeout when
+>>> system memory is not in a good situation.
+>>
+>> Did you actually see this problem with this particular file or is it
+>> theoretical?
+>
+> We got report of android watchdog timeout when memory situation
+> is bad.
 
-Please pull from the tag
+I see.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.16-rc4
+>>
+>>> This patch use seq_open() to show wakeup stats. This method
+>>> need only one page, so timeout will not be observed.
+>>>
+>>> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+>>> ---
+>>>  drivers/base/power/wakeup.c | 71 +++++++++++++++++++++++++++++++++++----------
+>>>  1 file changed, 56 insertions(+), 15 deletions(-)
+>>>
+>>> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+>>> index ea01621..c64609a 100644
+>>> --- a/drivers/base/power/wakeup.c
+>>> +++ b/drivers/base/power/wakeup.c
+>>> @@ -1029,32 +1029,73 @@ static int print_wakeup_source_stats(struct seq_file *m,
+>>>         return 0;
+>>>  }
+>>>
+>>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
+>>> +                                       loff_t *pos)
+>>> +{
+>>> +       struct wakeup_source *ws;
+>>> +       loff_t n = *pos;
+>>> +
+>>> +       if (n == 0) {
+>>> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+>>> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
+>>> +                       "last_change\tprevent_suspend_time\n");
+>>> +       }
+>>> +
+>>> +       rcu_read_lock();
+>>
+>> The code running after this cannot sleep.  Use
+>> srcu_read_lock(&wakeup_srcu) instead.
+>
+> wakeup_sources_stats_seq_[start | end] are called in seq_read().
+> So rcu_read_unlock() will soon be called  in seq_read().
 
-with top-most commit b61e0703053321d2cdf397c438ce8d21c7317f7a
+But you have to guarantee that the code between rcu_read_lock() and
+rcu_read_unlock() will *never* sleep.
 
- Merge branch 'cpufreq-scpi'
+> I am not familar with rcu.
 
-on top of commit 4a3928c6f8a53fa1aed28ccba227742486e8ddcb
+So you need to get familiar with it to make changes involving it.
+Otherwise you may fall a victim of the Wizard's Second Rule.
 
- Linux 4.16-rc3
+> I refered to kmemleak.c which use seq_open()
+> to show the stats.
 
-to receive power management fixes for 4.16-rc4.
+I see.
 
-These fix three issues in cpufreq drivers: one recent regression, one
-leftover Kconfig dependency and one old but "stable" material.
-
-Specifics:
-
- - Make the task scheduler load and utilization signals be
-   frequency-invariant again after recent changes in the SCPI
-   cpufreq driver (Dietmar Eggemann).
-
- - Drop an unnecessary leftover Kconfig dependency from the SCPI
-   cpufreq driver (Sudeep Holla).
-
- - Fix the initialization of the s3c24xx cpufreq driver (Viresh
-   Kumar).
-
-Thanks!
-
-
----------------
-
-Dietmar Eggemann (1):
-      cpufreq: scpi: invoke frequency-invariance setter function
-
-Sudeep Holla (1):
-      cpufreq: scpi: Fix incorrect arm_big_little config dependency
-
-Viresh Kumar (1):
-      cpufreq: s3c24xx: Fix broken s3c_cpufreq_init()
-
----------------
-
- drivers/cpufreq/Kconfig.arm       |  6 +++---
- drivers/cpufreq/s3c24xx-cpufreq.c |  8 +++++++-
- drivers/cpufreq/scpi-cpufreq.c    | 16 ++++++++++++----
- 3 files changed, 22 insertions(+), 8 deletions(-)
+You need to use srcu_read_lock(&wakeup_srcu) in this file anyway.
