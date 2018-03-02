@@ -1,125 +1,60 @@
-From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Subject: [PATCH] PM / wakeup: use seq_open() to show wakeup stats
-Date: Fri,  2 Mar 2018 13:01:00 +0800
-Message-ID: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 3/3] gpio: rcar: Use wakeup_path i.s.o. explicit clock handling
+Date: Fri, 2 Mar 2018 09:20:45 +0100
+Message-ID: <CAMuHMdUGga9j6FKwKt+jO=kGvJ2+_znkFmfgmYx-_h5oTTs3pw@mail.gmail.com>
+References: <1518443713-1835-1-git-send-email-geert+renesas@glider.be>
+ <1518443713-1835-4-git-send-email-geert+renesas@glider.be> <CACRpkdbnJ7W4EPqXtMAM_z1aO5UpuKh=-CCCSQFEToca1LU2=A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CACRpkdbnJ7W4EPqXtMAM_z1aO5UpuKh=-CCCSQFEToca1LU2=A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ganesh Mahendran <opensource.ganesh@gmail.com>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-single_open() interface requires that the whole output must
-fit into a single buffer. This will lead to timeout when
-system memory is not in a good situation.
+Hi Linus,
 
-This patch use seq_open() to show wakeup stats. This method
-need only one page, so timeout will not be observed.
+On Thu, Mar 1, 2018 at 5:06 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Mon, Feb 12, 2018 at 2:55 PM, Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+>
+>> Since commit ab82fa7da4dce5c7 ("gpio: rcar: Prevent module clock disable
+>> when wake-up is enabled"), when a GPIO is used for wakeup, the GPIO
+>> block's module clock (if exists) is manually kept running during system
+>> suspend, to make sure the device stays active.
+>>
+>> However, this explicit clock handling is merely a workaround for a
+>> failure to properly communicate wakeup information to the device core.
+>>
+>> Instead, set the device's power.wakeup_path field, to indicate this
+>> device is part of the wakeup path.  Depending on the PM Domain's
+>> active_wakeup configuration, the genpd core code will keep the device
+>> enabled (and the clock running) during system suspend when needed.
+>> This allows for the removal of all explicit clock handling code from the
+>> driver.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> ---
+>> v3:
+>
+> Patch applied for v4.16 fixes.
 
-Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
----
- drivers/base/power/wakeup.c | 71 +++++++++++++++++++++++++++++++++++----------
- 1 file changed, 56 insertions(+), 15 deletions(-)
+Are you aware this conflicts with commit 51750fb167a05468 ("gpio: gpio-rcar:
+Support S2RAM") in gpio/for-next?
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index ea01621..c64609a 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -1029,32 +1029,73 @@ static int print_wakeup_source_stats(struct seq_file *m,
- 	return 0;
- }
- 
-+static void *wakeup_sources_stats_seq_start(struct seq_file *m,
-+					loff_t *pos)
-+{
-+	struct wakeup_source *ws;
-+	loff_t n = *pos;
-+
-+	if (n == 0) {
-+		seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-+			"expire_count\tactive_since\ttotal_time\tmax_time\t"
-+			"last_change\tprevent_suspend_time\n");
-+	}
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-+		if (n-- > 0)
-+			continue;
-+		goto out;
-+	}
-+	ws = NULL;
-+out:
-+	return ws;
-+}
-+
-+static void *wakeup_sources_stats_seq_next(struct seq_file *m,
-+					void *v, loff_t *pos)
-+{
-+	struct wakeup_source *ws = v;
-+	struct wakeup_source *next_ws = NULL;
-+
-+	++(*pos);
-+
-+	list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
-+		next_ws = ws;
-+		break;
-+	}
-+
-+	return next_ws;
-+}
-+
-+static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
-+{
-+	rcu_read_unlock();
-+}
-+
- /**
-  * wakeup_sources_stats_show - Print wakeup sources statistics information.
-  * @m: seq_file to print the statistics into.
-  */
--static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
-+static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
- {
--	struct wakeup_source *ws;
--	int srcuidx;
-+	struct wakeup_source *ws = v;
- 
--	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
--		"expire_count\tactive_since\ttotal_time\tmax_time\t"
--		"last_change\tprevent_suspend_time\n");
--
--	srcuidx = srcu_read_lock(&wakeup_srcu);
--	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
--		print_wakeup_source_stats(m, ws);
--	srcu_read_unlock(&wakeup_srcu, srcuidx);
--
--	print_wakeup_source_stats(m, &deleted_ws);
-+	print_wakeup_source_stats(m, ws);
- 
- 	return 0;
- }
- 
-+static const struct seq_operations wakeup_sources_stats_seq_ops = {
-+	.start = wakeup_sources_stats_seq_start,
-+	.next  = wakeup_sources_stats_seq_next,
-+	.stop  = wakeup_sources_stats_seq_stop,
-+	.show  = wakeup_sources_stats_seq_show,
-+};
-+
- static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
- {
--	return single_open(file, wakeup_sources_stats_show, NULL);
-+	return seq_open(file, &wakeup_sources_stats_seq_ops);
- }
- 
- static const struct file_operations wakeup_sources_stats_fops = {
-@@ -1062,7 +1103,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
- 	.open = wakeup_sources_stats_open,
- 	.read = seq_read,
- 	.llseek = seq_lseek,
--	.release = single_release,
-+	.release = seq_release,
- };
- 
- static int __init wakeup_sources_debugfs_init(void)
--- 
-1.9.1
+You can find the resolution in
+https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git/tree/drivers/gpio/gpio-rcar.c?h=renesas-drivers-2018-02-28-v4.16-rc3
+
+If there's anything else I can do, just ask!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
