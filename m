@@ -1,85 +1,63 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / wakeup: use seq_open() to show wakeup stats
-Date: Fri, 2 Mar 2018 12:48:08 +0100
-Message-ID: <CAJZ5v0jiR_T5=R6M3YKtOVQaxbJnp=6wsqu5NT+fjypNB6G-yg@mail.gmail.com>
-References: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com>
- <CAJZ5v0hmj873=2qXtV_PzGEv-dRp-1KVuoC0mYO0AcOVt0e3hg@mail.gmail.com> <CADAEsF-HzNxrCHMrGm_QR=9grUM3HJbycorsiBuggOh-hYjx-g@mail.gmail.com>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v8 00/15] Krait clocks + Krait CPUfreq
+Date: Fri, 2 Mar 2018 19:42:41 +0530
+Message-ID: <e133630b-36b2-ed0e-3052-3e2e1c958405@codeaurora.org>
+References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
+ <CACRpkdbu9Kxvuwr-nLHxyEYiTeGK38o7MKCFf-MMjYxwgcJPPA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CADAEsF-HzNxrCHMrGm_QR=9grUM3HJbycorsiBuggOh-hYjx-g@mail.gmail.com>
+In-Reply-To: <CACRpkdbu9Kxvuwr-nLHxyEYiTeGK38o7MKCFf-MMjYxwgcJPPA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh@kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, viresh kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-msm@vger.kernel.org, Andy Gross <andy.gross@linaro.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux ARM <linux-arm-kernel>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 2, 2018 at 12:34 PM, Ganesh Mahendran
-<opensource.ganesh@gmail.com> wrote:
-> Hi, Rafael:
->
-> 2018-03-02 16:58 GMT+08:00 Rafael J. Wysocki <rafael@kernel.org>:
->> On Fri, Mar 2, 2018 at 6:01 AM, Ganesh Mahendran
->> <opensource.ganesh@gmail.com> wrote:
->>> single_open() interface requires that the whole output must
->>> fit into a single buffer. This will lead to timeout when
->>> system memory is not in a good situation.
->>
->> Did you actually see this problem with this particular file or is it
->> theoretical?
->
-> We got report of android watchdog timeout when memory situation
-> is bad.
+Hi Linus,
 
-I see.
+On 3/1/2018 6:58 PM, Linus Walleij wrote:
+> Hi Sricharan,
+> 
+> thanks for picking up Stephen's patch set and working on this
+> clocking business!
+> 
+> Would you happen to know if the MSM8660/APQ8060 that
+> I'm using a bit has the same Krait clocking so I need to augment
+> that SoC to use this too (on top of this, naturally, this is a good first
+> step)?
+> 
 
->>
->>> This patch use seq_open() to show wakeup stats. This method
->>> need only one page, so timeout will not be observed.
->>>
->>> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
->>> ---
->>>  drivers/base/power/wakeup.c | 71 +++++++++++++++++++++++++++++++++++----------
->>>  1 file changed, 56 insertions(+), 15 deletions(-)
->>>
->>> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
->>> index ea01621..c64609a 100644
->>> --- a/drivers/base/power/wakeup.c
->>> +++ b/drivers/base/power/wakeup.c
->>> @@ -1029,32 +1029,73 @@ static int print_wakeup_source_stats(struct seq_file *m,
->>>         return 0;
->>>  }
->>>
->>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
->>> +                                       loff_t *pos)
->>> +{
->>> +       struct wakeup_source *ws;
->>> +       loff_t n = *pos;
->>> +
->>> +       if (n == 0) {
->>> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
->>> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
->>> +                       "last_change\tprevent_suspend_time\n");
->>> +       }
->>> +
->>> +       rcu_read_lock();
->>
->> The code running after this cannot sleep.  Use
->> srcu_read_lock(&wakeup_srcu) instead.
->
-> wakeup_sources_stats_seq_[start | end] are called in seq_read().
-> So rcu_read_unlock() will soon be called  in seq_read().
+After digging a bit for data, looks like the clock controller in msm8660
+is called the acpuclk/scplls [1] . So the support for these clocks have
+to be added. rpm_pm8901_regulators is in place.
 
-But you have to guarantee that the code between rcu_read_lock() and
-rcu_read_unlock() will *never* sleep.
+Looks like it is using the same PVS cpufreq table as in Krait. so once
+the support for clks is added, the krait cpufreq bindings can be used.
+ 
+[1] https://bitbucket.org/carvsdriver/android_kernel_samsung_msm8660-common/src/0a8b2f30db72e00d6e0b9ad1b9630fe33099ccd0/arch/arm/mach-msm/acpuclock-8x60.c?at=moretz&fileviewer=file-view-default 
 
-> I am not familar with rcu.
+> On Tue, Feb 27, 2018 at 3:06 PM, Sricharan R <sricharan@codeaurora.org> wrote:
+> 
+>>   * Dropped the DT update from the series. Will send separatelyssbi
+> 
+> Are these available somewhere so I can test the sum total on
+> the Nexus 7 and see if I get some graphics? I've been sticking a
+> patch from Stephen's series in for some time and it makes the
+> MDP graphics works on the 2013 Nexus 7.
+> 
 
-So you need to get familiar with it to make changes involving it.
-Otherwise you may fall a victim of the Wizard's Second Rule.
+ok, Nexus 7 -> apq8064 right ?
 
-> I refered to kmemleak.c which use seq_open()
-> to show the stats.
+Just pushed the data for apq8064 as per latest bindings for reference [1].
+Don't have an board to test that data. Also have not added the cpu-supply
+as well.
 
-I see.
+[1] https://github.com/sricharanaz/kernel/commit/464aa4fd5fc642a6b296d5ad438211042496dabb
 
-You need to use srcu_read_lock(&wakeup_srcu) in this file anyway.
+Regards,
+ Sricharan
+
+-- 
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
