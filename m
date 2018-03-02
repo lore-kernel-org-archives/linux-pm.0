@@ -1,57 +1,53 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v3 3/3] gpio: rcar: Use wakeup_path i.s.o. explicit clock handling
-Date: Fri, 2 Mar 2018 09:44:46 +0100
-Message-ID: <CACRpkdapq0i1uJwXknHKWsWoobXev885R2JeMZRoXi7ucoTMjA@mail.gmail.com>
-References: <1518443713-1835-1-git-send-email-geert+renesas@glider.be>
- <1518443713-1835-4-git-send-email-geert+renesas@glider.be>
- <CACRpkdbnJ7W4EPqXtMAM_z1aO5UpuKh=-CCCSQFEToca1LU2=A@mail.gmail.com> <CAMuHMdUGga9j6FKwKt+jO=kGvJ2+_znkFmfgmYx-_h5oTTs3pw@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / wakeup: use seq_open() to show wakeup stats
+Date: Fri, 2 Mar 2018 10:05:46 +0100
+Message-ID: <20180302090546.GB30267@amd>
+References: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="f2QGlHpHGjS2mn6Y"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUGga9j6FKwKt+jO=kGvJ2+_znkFmfgmYx-_h5oTTs3pw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1519966860-32519-1-git-send-email-opensource.ganesh@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 2, 2018 at 9:20 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> On Thu, Mar 1, 2018 at 5:06 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
->> On Mon, Feb 12, 2018 at 2:55 PM, Geert Uytterhoeven
->> <geert+renesas@glider.be> wrote:
->>
->>> Since commit ab82fa7da4dce5c7 ("gpio: rcar: Prevent module clock disable
->>> when wake-up is enabled"), when a GPIO is used for wakeup, the GPIO
->>> block's module clock (if exists) is manually kept running during system
->>> suspend, to make sure the device stays active.
->>>
->>> However, this explicit clock handling is merely a workaround for a
->>> failure to properly communicate wakeup information to the device core.
->>>
->>> Instead, set the device's power.wakeup_path field, to indicate this
->>> device is part of the wakeup path.  Depending on the PM Domain's
->>> active_wakeup configuration, the genpd core code will keep the device
->>> enabled (and the clock running) during system suspend when needed.
->>> This allows for the removal of all explicit clock handling code from the
->>> driver.
->>>
->>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->>> ---
->>> v3:
->>
->> Patch applied for v4.16 fixes.
->
-> Are you aware this conflicts with commit 51750fb167a05468 ("gpio: gpio-rcar:
-> Support S2RAM") in gpio/for-next?
 
-No but I guess I will become aware.
+--f2QGlHpHGjS2mn6Y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have not yet mixed the fixes and devel branches for next.
+On Fri 2018-03-02 13:01:00, Ganesh Mahendran wrote:
+> single_open() interface requires that the whole output must
+> fit into a single buffer. This will lead to timeout when
+> system memory is not in a good situation.
+>=20
+> This patch use seq_open() to show wakeup stats. This method
+> need only one page, so timeout will not be observed.
 
-> You can find the resolution in
-> https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git/tree/drivers/gpio/gpio-rcar.c?h=renesas-drivers-2018-02-28-v4.16-rc3
+Can the rcu_read_unlock be delayed arbitrarily by userland code?
 
-Thanks!
+Is that ok with RCU?
+								Pavel
+							=09
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-Yours,
-Linus Walleij
+--f2QGlHpHGjS2mn6Y
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlqZE+oACgkQMOfwapXb+vJ5bgCeM/co3MWj3kAQshb7/8RKlNG+
+0tAAoJfEsFTH1kDbQDRBU/h31TIf6CQu
+=Ts+6
+-----END PGP SIGNATURE-----
+
+--f2QGlHpHGjS2mn6Y--
