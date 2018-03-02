@@ -1,69 +1,82 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH V5 2/2] thermal: imx: add i.MX7 thermal sensor support
-Date: Fri, 2 Mar 2018 02:03:05 +0000
-Message-ID: <AM3PR04MB1315478E79B0BFEF5A22DE80F5C50@AM3PR04MB1315.eurprd04.prod.outlook.com>
-References: <1519859380-15878-1-git-send-email-Anson.Huang@nxp.com>
- <1519859380-15878-2-git-send-email-Anson.Huang@nxp.com>
- <20180301212253.fp4gxes57t2m2tg2@rob-hp-laptop>
+From: "dbasehore ." <dbasehore@chromium.org>
+Subject: Re: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Thu, 1 Mar 2018 18:08:31 -0800
+Message-ID: <CAGAzgsqLgujex--HCo3dRGvOPXG0zu-RwkbuGhgNhBTc3sURJA@mail.gmail.com>
+References: <20180301054820.42847-1-dbasehore@chromium.org>
+ <20180301054820.42847-2-dbasehore@chromium.org> <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
+ <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180301212253.fp4gxes57t2m2tg2@rob-hp-laptop>
-Content-Language: en-US
+In-Reply-To: <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Mar 1, 2018 at 4:29 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> Hi Mark,
+>
+> On 01/03/18 11:41, Mark Rutland wrote:
+>> On Wed, Feb 28, 2018 at 09:48:18PM -0800, Derek Basehore wrote:
+>>> Some platforms power off GIC logic in suspend, so we need to
+>>> save/restore state. The distributor and redistributor registers need
+>>> to be handled in platform code due to access permissions on those
+>>> registers, but the ITS registers can be restored in the kernel.
+>>>
+>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+>>
+>> How much state do we have to save/restore?
+>>
+>> Given we can apparently read all this state, couldn't we *always* save
+>> the state, then upon resume detect if the state has been lost, restoring
+>> it if so?
+>>
+>> That way, we don't need a property in FW tables for DT or ACPI.
+>
+> That's a good point. I guess that we could just compare the saved
+> GITS_CTLR register and restore the full state only if the ITS comes back
+> as disabled.
+>
+> I'm just a bit worried that it makes it an implicit convention between
+> kernel an FW, which could change in funny ways. Importantly, the PSCI
+> spec says states FW should restore *the whole state*. Obviously, it
+> cannot to that on HW that doesn't allow you to read out the state, hence
+> the DT flag that outlines the departure from the expected behaviour.
+>
+> I'm happy to go either way, but then I have the feeling that we should
+> go back to quirking it on the actual implementation (GIC500 in this
+> case) if we're to from the property.
+>
+>>
+>> [...]
+>>
+>>> @@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
+>>>              ctlr |= GITS_CTLR_ImDe;
+>>>      writel_relaxed(ctlr, its->base + GITS_CTLR);
+>>>
+>>> +    if (fwnode_property_present(handle, "reset-on-suspend"))
+>>> +            its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+>>
+>> Does this allow this property on an ACPI system?
+>>
+>> If we need this on ACPI, we need a spec update to handle this properly,
+>> and shouldn't use device properties like this.
+>
+> Well spotted. I guess that dropping the property would fix that
+> altogether, assuming we feel that the above is safe enough.
+>
+> Thoughts?
 
+I'm fine changing it to get rid of the devicetree property.
 
-Anson Huang
-Best Regards!
+What's the reason for quirking the behavior though? It's not that much
+code + data and nothing else relies on the state of the ITS getting
+disabled across suspend/resume. Even if something did, we'd have to
+resolve it with this feature anyways.
 
-
-> -----Original Message-----
-> From: Rob Herring [mailto:robh@kernel.org]
-> Sent: Friday, March 2, 2018 5:23 AM
-> To: Anson Huang <anson.huang@nxp.com>
-> Cc: Leonard Crestez <leonard.crestez@nxp.com>; rui.zhang@intel.com;
-> edubezval@gmail.com; mark.rutland@arm.com; shawnguo@kernel.org;
-> kernel@pengutronix.de; Fabio Estevam <fabio.estevam@nxp.com>;
-> linux@armlinux.org.uk; linux-arm-kernel@lists.infradead.org;
-> devicetree@vger.kernel.org; dl-linux-imx <linux-imx@nxp.com>;
-> linux-kernel@vger.kernel.org; linux-pm@vger.kernel.org
-> Subject: Re: [PATCH V5 2/2] thermal: imx: add i.MX7 thermal sensor suppor=
-t
->=20
-> On Thu, Mar 01, 2018 at 07:09:40AM +0800, Anson Huang wrote:
-> > This patch adds i.MX7 thermal sensor support, most of the i.MX7
-> > thermal sensor functions are same with
-> > i.MX6 except the registers offset/layout, so we move those registers
-> > offset/layout definitions to soc data structure.
-> >
-> > i.MX7 uses single calibration data @25C, the calibration data is
-> > located at OCOTP offset 0x4F0, bit[17:9], the formula is as below:
-> >
-> > Tmeas =3D (Nmeas - n1) + 25; n1 is the fuse value for 25C.
-> >
-> > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> > Signed-off-by: Bai Ping <ping.bai@nxp.com>
-> > Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
-> > Acked-by: Shawn Guo <shawnguo@kernel.org>
-> > ---
-> > changes since V4:
-> > 	drop direct OCOTP register access for i.mx7d since it is a new added
-> platform,
-> > 	only support reading ocotp values through the ocotp nvmem driver which
-> handles clock.
-> >  .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
-> >  drivers/thermal/imx_thermal.c                      | 295
-> ++++++++++++++++-----
-> >  2 files changed, 239 insertions(+), 65 deletions(-)
->=20
-> Please add ack/reviewed-by's when posting new versions.
->=20
-> Rob
-Sorry for missing it, I just sent out a V6 adding Reviewed-by, thanks.
-
-Anson.=20
+>
+>         M.
+> --
+> Jazz is not dead. It just smells funny...
