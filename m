@@ -1,14 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: 4.16-rc3 fails to resume on MacBookPro10,1 -
-Date: Sat, 3 Mar 2018 11:26:12 +0100
-Message-ID: <20180303102612.GA1817@amd>
+Date: Sat, 3 Mar 2018 21:45:12 +0100
+Message-ID: <20180303204512.GA9259@amd>
 References: <CA+Y=x3=U_zheHBxeNSzL9nSdXOZB7rs-JDNr36323uJ9Uhx0Hg@mail.gmail.com>
  <CA+Y=x3=+kPXJRNYo91i4yJiqqVHDsMhn2pAwkmAH2LV3usd7Hg@mail.gmail.com>
  <20180303092417.GA30917@amd>
  <CAJZ5v0iVmE0jwRW1f6hnohSVzKsZbLr0axi+VKoR+FQcHM+_7w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+        protocol="application/pgp-signature"; boundary="IJpNTDwzlM2Ie8A6"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
 In-Reply-To: <CAJZ5v0iVmE0jwRW1f6hnohSVzKsZbLr0axi+VKoR+FQcHM+_7w@mail.gmail.com>
@@ -18,7 +18,7 @@ Cc: Andrew Worsley <amworsley@gmail.com>, kernel list <linux-kernel@vger.kernel.
 List-Id: linux-pm@vger.kernel.org
 
 
---Q68bSM7Ycu6FN28Q
+--IJpNTDwzlM2Ie8A6
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -56,10 +56,7 @@ el.
 > > 2) try v4.15.
 >=20
 > That one works for me FWIW.
-
-Aha, good. I assume x86-64? Do you have kpti enabled?
-
-
+>=20
 > > 3) try without KPTI enabled. Probably noone knows how it interacts
 > > with that...
 > >
@@ -68,26 +65,30 @@ ion).
 >=20
 > I do that, but the period is not particularly short ...
 
-Well, testing -rc1 once in 3 months should be plenty enough...
+Ok, I've just tested linux-next, and it works ok for me on thinkpad
+x60. (But that's probably rather different configuration from the
+macbook).
 
-Best regards,
+Unfortunately, I could not deduce anything useful from the
+backtraces. Andrew, could you try v4.15 with KPTI disabled ?
+
+Thanks,
 									Pavel
-
 --=20
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
 g.html
 
---Q68bSM7Ycu6FN28Q
+--IJpNTDwzlM2Ie8A6
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iEYEARECAAYFAlqaeEQACgkQMOfwapXb+vI8+ACaAoP6bYiiQQXdcb2t+AbVAEO9
-NbMAniSw2+0qNAoWA0VRSNQH180UOwAX
-=2qOI
+iEYEARECAAYFAlqbCVgACgkQMOfwapXb+vJ1hQCdEwz17vI/YD41sSxJxB4vYgng
+VmoAoISdv9kN5zVqgS+f3sjOXtUqr+Im
+=re5M
 -----END PGP SIGNATURE-----
 
---Q68bSM7Ycu6FN28Q--
+--IJpNTDwzlM2Ie8A6--
