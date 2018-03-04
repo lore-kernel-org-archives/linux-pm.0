@@ -1,100 +1,83 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] Delete some unusefull operations for centaur CPU/platform
-Date: Sun, 4 Mar 2018 10:31:46 +0100
-Message-ID: <20180304093146.rujp4f62fv6xotb7@gmail.com>
-References: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com>
+From: Woody Suwalski <terraluna977@gmail.com>
+Subject: Re: Fwd: Re: Hibernation on i386 failure...
+Date: Sun, 4 Mar 2018 06:09:11 -0500
+Message-ID: <c5c17099-7f23-aa5e-831e-4bfed4782478@gmail.com>
+References: <1cd7fdbb-3b3e-02b5-743b-2cc8c4d755b5@intel.com>
+ <92900026-5110-bde7-fba2-89d545bca29a@gmail.com> <20180109223047.GA26431@amd>
+ <cf0cf715-a8bb-9bc9-e308-223712498f31@gmail.com> <20180303210617.GA22392@amd>
+ <f840d714-2a84-505f-35c4-3bf22c95e907@gmail.com> <20180304082547.GA7931@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com>
+In-Reply-To: <20180304082547.GA7931@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Wang <davidwang@zhaoxin.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@kernel.org, linux-kernel@vger.kernel.org, brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, lukelin@viacpu.com, timguo@zhaoxin.com, cobechen@zhaoxin.com, jiangbowang@zhaoxin.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-pm mailing list <linux-pm@vger.kernel.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-* David Wang <davidwang@zhaoxin.com> wrote:
+Pavel Machek wrote:
+> On Sat 2018-03-03 19:03:48, Woody Suwalski wrote:
+>> Pavel Machek wrote:
+>>> Hi!
+>>>
+>>>>> On Tue 2018-01-09 16:54:51, Woody Suwalski wrote:
+>>>>>> Hey Pavel, so you have found that issue earlier... Do you have a patch to
+>>>>>> try?
+>>>>> Did I? I do not remember clearly.
+>>>>>
+>>>>> Anyway, here are my hibernation-related patches... Absolutely no
+>>>>> guarantees.
+>>>> Pavel, here is my attempt to convert your patch to 4.15 git, it builds
+>>>> cleanly, and it does not work. If you have a moment to spare - could you
+>>>> check if it is a classic case "everything is good, just does not
+>>>> work"?
+>>> Sorry for the delay.
+>>>
+>>> I've tested today's linux-next, and hibernation works for me, no
+>>> patches needed.
+>>>
+>>> Best regards,
+>>> 									Pavel
+>> My January tests have showed that hibernation does work if I turn off the
+>> CONFIG_RELOCATABLE option.
+>> So can you confirm that you have it enabled and it works again? I will try
+>> it on 4.16-rc4 tomorrow...
+> I was actually testing with linux-next:
+>
+> commit 80253003d5da3b82d6bebfb755a04c24011e90e2
+> Author: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date:   Fri Mar 2 14:17:11 2018 +1100
+>
+>      Add linux-next specific files for 20180302
+>
+> # git clone
+>    git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+>    # git fetch linux-next
+>    # git fetch --tags linux-next
+>    git remote update
+>    # then: git checkout next-20170201
+>
+> And yes, I do have CONFIG_RELOCATABLE on:
+>
+> CONFIG_RELOCATABLE=y
+> # CONFIG_RANDOMIZE_BASE is not set
+> CONFIG_X86_NEED_RELOCS=y
+>
+> Best regards,
+> 									Pavel
+Almost there. Yes I have noticed the linux-next, but I wanted to see 
+first if the same does not work in the mainline - then it would have 
+pointed to the difference between the branches.
 
-> For Centaur CPU, the ucode will make sure that each CPU core can keep cache
-> coherency with each other when the CPU core entering to any C state. So the
-> cache flush operations when enter C3 is not necessary and will cause large
-> C3 enter/exit latency.
-> And the bus master disable operation when CPU core entering C3 state is not
-> needed too. Because the chipset will automatically do this operation.
-> 
-> Signed-off-by: David Wang <davidwang@zhaoxin.com>
-> ---
->  arch/x86/kernel/acpi/cstate.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-> index dde437f..1cd357b 100644
-> --- a/arch/x86/kernel/acpi/cstate.c
-> +++ b/arch/x86/kernel/acpi/cstate.c
-> @@ -51,6 +51,18 @@ void acpi_processor_power_init_bm_check(struct acpi_processor_flags *flags,
->  	if (c->x86_vendor == X86_VENDOR_INTEL &&
->  	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
->  			flags->bm_control = 0;
-> +
-> +        if (c->x86_vendor == X86_VENDOR_CENTAUR) {
-> +		/*
-> +		 * on all centaur CPUs, sw need not execute cache flush operation
-> +		 * when entering C3 type State.
-> +		 *
-> +		 * On all Centaur platforms, sw need not execute ARB_DISABLE while
-> +		 * entering C3 type state.
-> +		 */
-> +		flags->bm_check = 1;
-> +		flags->bm_control = 0;
-> +	}
+However the important part is your "CONFIG_RANDOMIZE_BASE is not set". 
+Try to turn it on and check hibernation. I have used the 
+CONFIG_RELOCATABLE entry, because it turns off the randomized 
+automatically, and on its own it I had no use for it. BTW. turning the 
+relocatable field on by default also brings randomization on, so you 
+must have specifically disable it. Why?
 
-Please clean up capitalization and spelling of the comment, and please also 
-explain the ACPI-idle settings a bit better, i.e. something like:
+So the real issue is: can the 32-bit kernel use randomization, _and_ 
+hibernate on linux-next???
 
-		/*
-		 * On all Centaur CPUs the kernel does not have to 
-		 * execute a cache flush operation (WBINVD) when
-		 * entering C3 state.
-		 *
-		 * On all Centaur platforms the kernel does not have to
-		 * disable bus-master arbitration (ARB_DISABLE) when
-		 * entering C3 state.
-		 */
-
-Also, two questions:
-
-1)
-
-I'm wondering about this logic in acpi_processor_power_verify_c3():
-
-        if (pr->flags.bm_check) {
-                if (!pr->flags.bm_control) {
-                        if (pr->flags.has_cst != 1) {
-                                /* bus mastering control is necessary */
-                                ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-                                        "C3 support requires BM control\n"));
-                                return;
-
-So ->has_cst is set on Centaur CPUs?
-
-2)
-
-There's this comment in acpi_idle_enter_bm():
-
-        /*
-         * disable bus master
-         * bm_check implies we need ARB_DIS
-         * bm_control implies whether we can do ARB_DIS
-         *
-         * That leaves a case where bm_check is set and bm_control is
-         * not set. In that case we cannot do much, we enter C3
-         * without doing anything.
-         */
-        if (pr->flags.bm_control) {
-
-It says 'bm_check == 1 implies we need ARB_DIS' - but we do the opposite in the 
-Centaur case? It it me who is confused or the comment?
-
-Thanks,
-
-	Ingo
+Thanks, Woody
