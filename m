@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH 3/7] sched: idle: Do not stop the tick before cpuidle_idle_call()
-Date: Sun, 04 Mar 2018 23:24:59 +0100
-Message-ID: <2758947.CLJWixMePE@aspire.rjw.lan>
+Subject: [RFC/RFT][PATCH 4/7] cpuidle: menu: Split idle duration prediction from state selection
+Date: Sun, 04 Mar 2018 23:26:24 +0100
+Message-ID: <2332986.m9oRvTSu8E@aspire.rjw.lan>
 References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,78 +15,150 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make cpuidle_idle_call() decide whether or not to stop the tick.
+In order to address the issue with short idle duration predictions
+by the idle governor after the tick has been stopped, prepare the
+menu governor code for reordering with respect to the timekeeping
+code that stops the tick.
 
-First, there are code paths in cpuidle_idle_call() that don't need
-the tick to be stopped.  In particular, the cpuidle_enter_s2idle()
-path deals with the tick (and with the entire timekeeping for that
-matter) by itself and it doesn't need the tick to be stopped
-beforehand.
+Use the observation that menu_select() can be split into two
+functions, one predicting the idle duration and one selecting the
+idle state, and rework it accordingly.
 
-Second, to address the issue with short idle duration predictions
-by the idle governor after the tick has been stopped, it will be
-necessary to change the ordering of some governor code with respect
-to some code in tick_nohz_idle_go_idle().  For this purpose, call
-tick_nohz_idle_go_idle() in the same branch as cpuidle_select().
+Introduce menu_predict() to predict the idle duration and (for now)
+call it from menu_select().  The next set of changes will use
+menu_predict() as a new governor callback.
+
+This change is not expected to alter the functionality of the code.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/sched/idle.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/menu.c |   68 +++++++++++++++++++++------------------
+ 1 file changed, 38 insertions(+), 30 deletions(-)
 
-Index: linux-pm/kernel/sched/idle.c
+Index: linux-pm/drivers/cpuidle/governors/menu.c
 ===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -146,13 +146,14 @@ static void cpuidle_idle_call(void)
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -130,6 +130,7 @@ struct menu_device {
+ 	unsigned int	correction_factor[BUCKETS];
+ 	unsigned int	intervals[INTERVALS];
+ 	int		interval_ptr;
++	int		latency_req;
+ };
+ 
+ 
+@@ -275,36 +276,30 @@ again:
+ 	goto again;
+ }
+ 
+-/**
+- * menu_select - selects the next idle state to enter
+- * @drv: cpuidle driver containing state data
+- * @dev: the CPU
+- */
+-static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++static void menu_predict(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	struct device *device = get_cpu_device(dev->cpu);
+-	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+-	int i;
+-	int first_idx;
+-	int idx;
++	int resume_latency = dev_pm_qos_raw_read_value(device);
+ 	unsigned int interactivity_req;
+ 	unsigned int expected_interval;
+ 	unsigned long nr_iowaiters, cpu_load;
+-	int resume_latency = dev_pm_qos_raw_read_value(device);
+ 
+ 	if (data->needs_update) {
+ 		menu_update(drv, dev);
+ 		data->needs_update = 0;
+ 	}
+ 
+-	if (resume_latency < latency_req &&
++	data->latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
++	if (resume_latency < data->latency_req &&
+ 	    resume_latency != PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
+-		latency_req = resume_latency;
++		data->latency_req = resume_latency;
+ 
+ 	/* Special case when user has set very strict latency requirement */
+-	if (unlikely(latency_req == 0))
+-		return 0;
++	if (unlikely(data->latency_req == 0)) {
++		data->predicted_us = 0;
++		return;
++	}
+ 
+ 	/* determine the expected residency time, round up */
+ 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
+@@ -324,6 +319,32 @@ static int menu_select(struct cpuidle_dr
+ 	expected_interval = get_typical_interval(data);
+ 	expected_interval = min(expected_interval, data->next_timer_us);
+ 
++	/*
++	 * Use the lowest expected idle interval to pick the idle state.
++	 */
++	data->predicted_us = min(data->predicted_us, expected_interval);
++
++	/*
++	 * Use the performance multiplier and the user-configurable
++	 * latency_req to determine the maximum exit latency.
++	 */
++	interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
++	if (data->latency_req > interactivity_req)
++		data->latency_req = interactivity_req;
++}
++
++/**
++ * menu_select - selects the next idle state to enter
++ * @drv: cpuidle driver containing state data
++ * @dev: the CPU
++ */
++static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++{
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
++	int first_idx, idx, i;
++
++	menu_predict(drv, dev);
++
+ 	first_idx = 0;
+ 	if (drv->states[0].flags & CPUIDLE_FLAG_POLLING) {
+ 		struct cpuidle_state *s = &drv->states[1];
+@@ -336,25 +357,12 @@ static int menu_select(struct cpuidle_dr
+ 		 */
+ 		polling_threshold = max_t(unsigned int, 20, s->target_residency);
+ 		if (data->next_timer_us > polling_threshold &&
+-		    latency_req > s->exit_latency && !s->disabled &&
++		    data->latency_req > s->exit_latency && !s->disabled &&
+ 		    !dev->states_usage[1].disable)
+ 			first_idx = 1;
  	}
  
  	/*
--	 * Tell the RCU framework we are entering an idle section,
--	 * so no more rcu read side critical sections and one more
-+	 * The RCU framework needs to be told that we are entering an idle
-+	 * section, so no more rcu read side critical sections and one more
- 	 * step to the grace period
+-	 * Use the lowest expected idle interval to pick the idle state.
+-	 */
+-	data->predicted_us = min(data->predicted_us, expected_interval);
+-
+-	/*
+-	 * Use the performance multiplier and the user-configurable
+-	 * latency_req to determine the maximum exit latency.
+-	 */
+-	interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
+-	if (latency_req > interactivity_req)
+-		latency_req = interactivity_req;
+-
+-	/*
+ 	 * Find the idle state with the lowest power while satisfying
+ 	 * our constraints.
  	 */
--	rcu_idle_enter();
+@@ -369,7 +377,7 @@ static int menu_select(struct cpuidle_dr
+ 			idx = i; /* first enabled state */
+ 		if (s->target_residency > data->predicted_us)
+ 			break;
+-		if (s->exit_latency > latency_req)
++		if (s->exit_latency > data->latency_req)
+ 			break;
  
- 	if (cpuidle_not_available(drv, dev)) {
-+		tick_nohz_idle_go_idle(false);
-+		rcu_idle_enter();
- 		default_idle_call();
- 		goto exit_idle;
- 	}
-@@ -169,6 +170,9 @@ static void cpuidle_idle_call(void)
- 
- 	if (idle_should_enter_s2idle() || dev->use_deepest_state) {
- 		if (idle_should_enter_s2idle()) {
-+			tick_nohz_idle_go_idle(false);
-+			rcu_idle_enter();
-+
- 			entered_state = cpuidle_enter_s2idle(drv, dev);
- 			if (entered_state > 0) {
- 				local_irq_enable();
-@@ -176,9 +180,15 @@ static void cpuidle_idle_call(void)
- 			}
- 		}
- 
-+		tick_nohz_idle_go_idle(true);
-+		rcu_idle_enter();
-+
- 		next_state = cpuidle_find_deepest_state(drv, dev);
- 		call_cpuidle(drv, dev, next_state);
- 	} else {
-+		tick_nohz_idle_go_idle(true);
-+		rcu_idle_enter();
-+
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
-@@ -248,7 +258,6 @@ static void do_idle(void)
- 			tick_nohz_idle_go_idle(false);
- 			cpu_idle_poll();
- 		} else {
--			tick_nohz_idle_go_idle(true);
- 			cpuidle_idle_call();
- 		}
- 		arch_cpu_idle_exit();
+ 		idx = i;
