@@ -1,96 +1,72 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH 2/7] sched: idle: Do not stop the tick upfront in the idle loop
-Date: Sun, 04 Mar 2018 23:24:14 +0100
-Message-ID: <4940679.SXdkBYNTAE@aspire.rjw.lan>
-References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
+Subject: [RFC/RFT][PATCH 0/7] sched/cpuidle: Idle loop rework
+Date: Sun, 04 Mar 2018 23:21:30 +0100
+Message-ID: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Push the decision whether or not to stop the tick somewhat deeper
-into the idle loop.
+The problem is that if we stop the sched tick in
+tick_nohz_idle_enter() and then the idle governor predicts short idle
+duration, we lose regardless of whether or not it is right.
 
-Stopping the tick upfront leads to unpleasant outcomes in case the
-idle governor doesn't agree with the timekeeping code on the duration
-of the upcoming idle period.  Specifically, if the tick has been
-stopped and the idle governor predicts short idle, the situation is
-bad regardless of whether or not the prediction is accurate.  If it
-is accurate, the tick has been stopped unnecessarily which means
-excessive overhead.  If it is not accurate, the CPU is likely to
-spend too much time in the (shallow, because short idle has been
-predicted) idle state selected by the governor [1].
+If it is right, we've lost already, because we stopped the tick
+unnecessarily.  If it is not right, we'll lose going forward, because
+the idle state selected by the governor is going to be too shallow and
+we'll draw too much power (that has been reported recently to actually
+happen often enough for people to care).
 
-As the first step towards addressing this problem, change the code
-to make the tick stopping decision inside of the loop in do_idle().
-In particular, do not stop the tick in the cpu_idle_poll() code path.
-Also don't do that in tick_nohz_irq_exit() which doesn't really have
-information to whether or not to stop the tick.
+This patch series is an attempt to improve the situation and the idea
+here is to make the decision whether or not to stop the tick deeper in
+the idle loop and in particular after running the idle state selection
+in the path where the idle governor is invoked.  This way the problem
+can be avoided, because the idle duration predicted by the idle governor
+can be used to decide whether or not to stop the tick so that the tick
+is only stopped if that value is large enough (and, consequently, the
+idle state selected by the governor is deep enough).
 
-Link: https://marc.info/?l=linux-pm&m=150116085925208&w=2 # [1]
-Link: https://tu-dresden.de/zih/forschung/ressourcen/dateien/projekte/haec/powernightmares.pdf
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/sched/idle.c      |   13 ++++++++++---
- kernel/time/tick-sched.c |    2 +-
- 2 files changed, 11 insertions(+), 4 deletions(-)
+The series tires to avoid adding too much new code, rather reorder the
+existing code and make it more fine-grained.
 
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -220,13 +220,17 @@ static void do_idle(void)
- 	 */
- 
- 	__current_set_polling();
--	tick_nohz_idle_enter();
-+	tick_nohz_idle_prepare();
- 
- 	while (!need_resched()) {
- 		check_pgt_cache();
- 		rmb();
- 
- 		if (cpu_is_offline(cpu)) {
-+			local_irq_disable();
-+			tick_nohz_idle_go_idle(true);
-+			local_irq_enable();
-+
- 			cpuhp_report_idle_dead();
- 			arch_cpu_idle_dead();
- 		}
-@@ -240,10 +244,13 @@ static void do_idle(void)
- 		 * broadcast device expired for us, we don't want to go deep
- 		 * idle as we know that the IPI is going to arrive right away.
- 		 */
--		if (cpu_idle_force_poll || tick_check_broadcast_expired())
-+		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
-+			tick_nohz_idle_go_idle(false);
- 			cpu_idle_poll();
--		else
-+		} else {
-+			tick_nohz_idle_go_idle(true);
- 			cpuidle_idle_call();
-+		}
- 		arch_cpu_idle_exit();
- 	}
- 
-Index: linux-pm/kernel/time/tick-sched.c
-===================================================================
---- linux-pm.orig/kernel/time/tick-sched.c
-+++ linux-pm/kernel/time/tick-sched.c
-@@ -1000,7 +1000,7 @@ void tick_nohz_irq_exit(void)
- 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
- 
- 	if (ts->inidle)
--		__tick_nohz_idle_enter(ts, true);
-+		__tick_nohz_idle_enter(ts, false);
- 	else
- 		tick_nohz_full_update_tick(ts);
- }
+Patch 1 prepares the tick-sched code for the subsequent modifications and it
+doesn't change the code's functionality (at least not intentionally).
+
+Patch 2 starts pushing the tick stopping decision deeper into the idle
+loop, but it is limited to do_idle() and tick_nohz_irq_exit().
+
+Patch 3 makes cpuidle_idle_call() decide whether or not to stop the tick
+and sets the stage for the changes in patch 6.
+
+Patch 4 splits menu_select() into idle duration prediction and idle state
+selection parts.
+
+Patch 5 adds the ->predict callback to struct cpuidle_governor and hooks
+it up to the menu governor's idle duration prediction routine introduced
+by patch 4.  It also changes cpuidle_select() to return the expected idle
+duration in addition to the target state index.
+
+Patch 6 reorders idle duration prediction by the governor and idle state
+selection with respect to the stopping of the tick and causes the predicted
+idle duration to be used for deciding whether or not to stop the tick.
+
+Patch 7 cleans up the code to avoid running one piece of it twice in a row
+in some cases.
+
+I have tested these patches on a couple of machines, including the very laptop
+I'm sending them from, without any obvious issues, but please give them a go
+if you can, especially if you have an easy way to reproduce the problem they
+are targeting.  The patches are on top of 4.16-rc3 (if you need a git branch
+with them for easier testing, please let me know).
+
+The above said, this is just RFC, so no pets close to the machines running it,
+please, and I'm kind of expecting Peter and Thomas to tear it into pieces. :-)
+
+Thanks,
+Rafael
