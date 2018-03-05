@@ -1,42 +1,50 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/RFT][PATCH 4/7] cpuidle: menu: Split idle duration
- prediction from state selection
-Date: Mon, 5 Mar 2018 12:38:03 +0100
-Message-ID: <20180305113803.GO25201@hirez.programming.kicks-ass.net>
+Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before
+ stopping the tick
+Date: Mon, 5 Mar 2018 12:45:42 +0100
+Message-ID: <20180305114542.GP25201@hirez.programming.kicks-ass.net>
 References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
- <2332986.m9oRvTSu8E@aspire.rjw.lan>
+ <2048240.1dZKXsSxFh@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2332986.m9oRvTSu8E@aspire.rjw.lan>
+In-Reply-To: <2048240.1dZKXsSxFh@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Mar 04, 2018 at 11:26:24PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> In order to address the issue with short idle duration predictions
-> by the idle governor after the tick has been stopped, prepare the
-> menu governor code for reordering with respect to the timekeeping
-> code that stops the tick.
-> 
-> Use the observation that menu_select() can be split into two
-> functions, one predicting the idle duration and one selecting the
-> idle state, and rework it accordingly.
+On Sun, Mar 04, 2018 at 11:28:56PM +0100, Rafael J. Wysocki wrote:
+> Index: linux-pm/kernel/sched/idle.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/idle.c
+> +++ linux-pm/kernel/sched/idle.c
+> @@ -188,13 +188,14 @@ static void cpuidle_idle_call(void)
+>  	} else {
+>  		unsigned int duration_us;
+>  
+> -		tick_nohz_idle_go_idle(true);
+> -		rcu_idle_enter();
+> -
+>  		/*
+>  		 * Ask the cpuidle framework to choose a convenient idle state.
+>  		 */
+>  		next_state = cpuidle_select(drv, dev, &duration_us);
+> +
+> +		tick_nohz_idle_go_idle(duration_us > USEC_PER_SEC / HZ);
+> +		rcu_idle_enter();
+> +
+>  		entered_state = call_cpuidle(drv, dev, next_state);
+>  		/*
+>  		 * Give the governor an opportunity to reflect on the outcome
 
-I actually think this is the wrong way around.
+So I think this is entirely wrong, I would much rather see something
+like:
 
-We really should be predicting state not duration. Yes the duration
-thing is an intermediate value, but I don't think it makes any sense
-what so ever to preserve that in the predictor. The end result is the
-idle state, we should aim for that.
+	tick_nohz_idle_go_idle(next_state->nohz);
 
-As per:
+Where the selected state itself has the nohz property or not.
 
-  https://lkml.org/lkml/2017/7/18/615
-
-there are definite advantages to _not_ preserving duration information
-beyond the state boundaries.
+We can always insert an extra state at whatever the right boundary point
+is for nohz if it doesn't line up with an existing point.
