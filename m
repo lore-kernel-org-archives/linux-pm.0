@@ -1,59 +1,77 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Mon, 5 Mar 2018 10:12:21 +0530
-Message-ID: <20180305044221.GC23018@vireshk-i7>
-References: <20180302215638.6145-1-jcrouse@codeaurora.org>
- <20180302215638.6145-3-jcrouse@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+Date: Mon, 5 Mar 2018 11:43:49 +0530
+Message-ID: <20180305061349.GF23018@vireshk-i7>
+References: <1519815970-5686-1-git-send-email-claudio@evidence.eu.com>
+ <CAJZ5v0g5SS7A6xNQo=GNaMudRgFC8BL9wP1C4Nh8T-+NygYS+A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180302215638.6145-3-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <CAJZ5v0g5SS7A6xNQo=GNaMudRgFC8BL9wP1C4Nh8T-+NygYS+A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Claudio Scordino <claudio@evidence.eu.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDItMDMtMTgsIDE0OjU2LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IEFkZCB0aGUgbm9kZXMg
-YW5kIG90aGVyIGJpdHMgdG8gZGVzY3JpYmUgdGhlIEFkcmVubyBHUFUgYW5kIEdNVQo+IGRldmlj
-ZXMuCj4gCj4gQ2hhbmdlLUlkOiBJYmY0ZGMwZWJiMGFjMDNkOGI2YjhlNjU3NDdlMTQyYzQ0MGU3
-MGIwYQoKUmVtb3ZlIGl0ID8KCj4gU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3VzZSA8amNyb3Vz
-ZUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgYXJjaC9hcm02NC9ib290L2R0cy9xY29tL3NkbTg0
-NS5kdHNpIHwgMTIwICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4gIDEgZmls
-ZSBjaGFuZ2VkLCAxMjAgaW5zZXJ0aW9ucygrKQo+IAo+IGRpZmYgLS1naXQgYS9hcmNoL2FybTY0
-L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kgYi9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2Rt
-ODQ1LmR0c2kKPiBpbmRleCA3YjVjMTZlYjYzYjcuLmNjNmQzNjdlZTU1ZSAxMDA2NDQKPiAtLS0g
-YS9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiArKysgYi9hcmNoL2FybTY0
-L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiBAQCAtMzEyLDUgKzMxMiwxMjUgQEAKPiAgCQkJ
-CXN0YXR1cyA9ICJkaXNhYmxlZCI7Cj4gIAkJCX07Cj4gIAkJfTsKPiArCj4gKwkJYWRyZW5vX3Nt
-bXU6IGFybSxzbW11LWFkcmVub0A1MDQwMDAwIHsKPiArCQkJY29tcGF0aWJsZSA9ICJxY29tLG1z
-bTg5OTYtc21tdS12MiI7Cj4gKwkJCXJlZyA9IDwweDUwNDAwMDAgMHgxMDAwMD47Cj4gKwkJCSNp
-b21tdS1jZWxscyA9IDwxPjsKPiArCQkJI2dsb2JhbC1pbnRlcnJ1cHRzID0gPDI+Owo+ICsJCQlp
-bnRlcnJ1cHRzID0gPEdJQ19TUEkgMjI5IElSUV9UWVBFX0xFVkVMX0hJR0g+LAo+ICsJCQkJICAg
-ICA8R0lDX1NQSSAyMzEgSVJRX1RZUEVfTEVWRUxfSElHSD4sCj4gKwkJCQkgICAgIDxHSUNfU1BJ
-IDM2NCBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKwkJCQkgICAgIDxHSUNfU1BJIDM2NSBJUlFf
-VFlQRV9FREdFX1JJU0lORz4sCj4gKwkJCQkgICAgIDxHSUNfU1BJIDM2NiBJUlFfVFlQRV9FREdF
-X1JJU0lORz4sCj4gKwkJCQkgICAgIDxHSUNfU1BJIDM2NyBJUlFfVFlQRV9FREdFX1JJU0lORz4s
-Cj4gKwkJCQkgICAgIDxHSUNfU1BJIDM2OCBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKwkJCQkg
-ICAgIDxHSUNfU1BJIDM2OSBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKwkJCQkgICAgIDxHSUNf
-U1BJIDM3MCBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKwkJCQkgICAgIDxHSUNfU1BJIDM3MSBJ
-UlFfVFlQRV9FREdFX1JJU0lORz47Cj4gKwkJCWNsb2NrcyA9IDwmY2xvY2tfZ2NjIEdDQ19HUFVf
-TUVNTk9DX0dGWF9DTEs+LAo+ICsJCQkJIDwmY2xvY2tfZ2NjIEdDQ19HUFVfQ0ZHX0FIQl9DTEs+
-Owo+ICsJCQljbG9jay1uYW1lcyA9ICJidXMiLCAiaWZhY2UiOwo+ICsKPiArCQkJcG93ZXItZG9t
-YWlucyA9IDwmY2xvY2tfZ3B1Y2MgR1BVX0NYX0dEU0M+Owo+ICsJCX07Cj4gKwo+ICsJCWdwdV9v
-cHBfdGFibGU6IGFkcmVuby1vcHAtdGFibGUgewo+ICsJCQljb21wYXRpYmxlID0gIm9wZXJhdGlu
-Zy1wb2ludHMtdjIiOwo+ICsKPiArCQkJb3BwLTcxMDAwMDAwMCB7Cj4gKwkJCQlvcHAtaHogPSAv
-Yml0cy8gNjQgPDcxMDAwMDAwMD47Cj4gKwkJCQlxY29tLGFyYy1sZXZlbCA9IDw0MTY+OwoKSSBh
-bSBub3Qgc3VyZSBpZiBJIHNhdyB3aGVyZSB0aGlzIGlzIGRlZmluZWQgPwoKCi0tIAp2aXJlc2gK
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5v
-IG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+On 28-02-18, 12:22, Rafael J. Wysocki wrote:
+> On Wed, Feb 28, 2018 at 12:06 PM, Claudio Scordino
+> <claudio@evidence.eu.com> wrote:
+> > When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+> > we should not wait for the rate limit, otherwise we may miss some
+> > deadline.
+> >
+> > Tests using rt-app on Exynos5422 with up to 10 SCHED_DEADLINE tasks have
+> > shown reductions of even 10% of deadline misses with a negligible
+> > increase of energy consumption (measured through Baylibre Cape).
+> >
+> > Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+> > CC: Ingo Molnar <mingo@redhat.com>
+> > CC: Patrick Bellasi <patrick.bellasi@arm.com>
+> > CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > CC: Morten Rasmussen <morten.rasmussen@arm.com>
+> > CC: Juri Lelli <juri.lelli@redhat.com>
+> > CC: Viresh Kumar <viresh.kumar@linaro.org>
+> > CC: Vincent Guittot <vincent.guittot@linaro.org>
+> > CC: Todd Kjos <tkjos@android.com>
+> > CC: Joel Fernandes <joelaf@google.com>
+> > CC: linux-pm@vger.kernel.org
+> > CC: linux-kernel@vger.kernel.org
+> > ---
+> > Changes from v1:
+> >  - Logic moved from sugov_should_update_freq() to
+> >    sugov_update_single()/_shared() to not duplicate data structures
+> >  - Rate limit not ignored in case of "fast switch"
+> 
+> I'm not sure about this last bit.
+> 
+> IMO you can set sg_policy->need_freq_update even in the "fast switch"
+> case to start with and special case it in the future if that turns out
+> to be problematic.  That is, unless you have data indicating that it
+> already is problematic, of course. :-)
+> 
+> > ---
+> >  kernel/sched/cpufreq_schedutil.c | 16 ++++++++++++++++
+> >  1 file changed, 16 insertions(+)
+> >
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 7936f54..ca6ce72 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -273,6 +273,14 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >         sugov_set_iowait_boost(sg_cpu, time);
+> >         sg_cpu->last_update = time;
+> >
+> > +       /*
+> > +        * Make sugov_should_update_freq() ignore the rate limit when DL
+> > +        * has increased the utilization.
+> > +        */
+> > +       if ((cpu_util_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->util_dl) &&
+> > +                       !(sg_policy->policy->fast_switch_enabled))
+> > +               sg_policy->need_freq_update = true;
+> > +
+
+And a new routine for this block would be good as well.
+
+-- 
+viresh
