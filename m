@@ -1,65 +1,110 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT][PATCH 4/7] cpuidle: menu: Split idle duration
- prediction from state selection
-Date: Mon, 5 Mar 2018 14:05:10 +0100
-Message-ID: <CAJZ5v0g5x9EWh0MH7wUh4sem9aYB-JuWb_Pn96qNwj=XefOcHg@mail.gmail.com>
-References: <1657351.s4RTvEoqBQ@aspire.rjw.lan> <2332986.m9oRvTSu8E@aspire.rjw.lan>
- <20180305113803.GO25201@hirez.programming.kicks-ass.net> <CAJZ5v0gdsSXOLL=nJW801L0LzE0CeyPCCrgq4_0tyi40wNLa+w@mail.gmail.com>
- <20180305125012.GA25181@hirez.programming.kicks-ass.net>
+From: Rik van Riel <riel@surriel.com>
+Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before
+ stopping the tick
+Date: Mon, 05 Mar 2018 08:19:15 -0500
+Message-ID: <1520255955.6857.18.camel@surriel.com>
+References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
+         <2048240.1dZKXsSxFh@aspire.rjw.lan>
+         <20180305123552.GY25181@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-0b09lUM/l59o8UkYIN1K"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180305125012.GA25181@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180305123552.GY25181@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 5, 2018 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, Mar 05, 2018 at 12:47:23PM +0100, Rafael J. Wysocki wrote:
->> On Mon, Mar 5, 2018 at 12:38 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> > We really should be predicting state not duration. Yes the duration
->> > thing is an intermediate value, but I don't think it makes any sense
->> > what so ever to preserve that in the predictor. The end result is the
->> > idle state, we should aim for that.
->> >
->> > As per:
->> >
->> >   https://lkml.org/lkml/2017/7/18/615
->> >
->> > there are definite advantages to _not_ preserving duration information
->> > beyond the state boundaries.
->>
->> Well, OK
->>
->> The reason why I need the predicted idle duration is because the
->> target residency of the selected state may be below the tick period
->> duration and if this is the deepest state available, we still want to
->> stop the tick if the predicted idle duration is long.
->
-> Right, so in that case we'd split the deepest state and mark the
-> resulting smaller state as not disabling the tick and the resulting
-> larger state as disabling the tick.
->
-> So suppose your deepest state is < TICK_USEC, then we introduce a copy
-> of that state, modify the boundary to be TICK_USEC and set the 'disable
-> tick for this state' thing to true.
->
->> IOW, the target residency of the selected state doesn't tell you how
->> much time you should expect to be idle in general.
->
-> Right, but I think that measure isn't of primary relevance. What we want
-> to know is: 'should I stop the tick' and 'what C state do I go to'.
->
-> In order to answer those questions we need durations as input, but I
-> don't think we should preserve durations throughout. The scheme from the
-> above link reduces to N states in order to deal with arbitrary
-> distributions, only the actual states -- ie boundaries where our answers
-> changes -- are relevant, anything inside those boundaries would lead to
-> the exact same answer anyway.
 
-I generally agree here, but I'm not convinced about flagging the
-states, splitting them and so on.
+--=-0b09lUM/l59o8UkYIN1K
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Maybe just return a "nohz" indicator from cpuidle_select() in addition
-to the state index and make the decision in the governor?
+On Mon, 2018-03-05 at 13:35 +0100, Peter Zijlstra wrote:
+> On Sun, Mar 04, 2018 at 11:28:56PM +0100, Rafael J. Wysocki wrote:
+> > Index: linux-pm/kernel/sched/idle.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-pm.orig/kernel/sched/idle.c
+> > +++ linux-pm/kernel/sched/idle.c
+> > @@ -188,13 +188,14 @@ static void cpuidle_idle_call(void)
+> >  	} else {
+> >  		unsigned int duration_us;
+> > =20
+> > -		tick_nohz_idle_go_idle(true);
+> > -		rcu_idle_enter();
+> > -
+> >  		/*
+> >  		 * Ask the cpuidle framework to choose a
+> > convenient idle state.
+> >  		 */
+> >  		next_state =3D cpuidle_select(drv, dev,
+> > &duration_us);
+> > +
+> > +		tick_nohz_idle_go_idle(duration_us > USEC_PER_SEC
+> > / HZ);
+>=20
+> (FWIW we have TICK_USEC for this)
+>=20
+> > +		rcu_idle_enter();
+> > +
+> >  		entered_state =3D call_cpuidle(drv, dev,
+> > next_state);
+> >  		/*
+> >  		 * Give the governor an opportunity to reflect on
+> > the outcome
+>=20
+> Also, I think that at this point you've introduced a problem; by not
+> disabling the tick unconditionally, we'll have extra wakeups due to
+> the
+> (now still running) tick, which will bias the estimation, as per
+> reflect(), downwards.
+>=20
+> We should effectively discard tick wakeups when we could have entered
+> nohz but didn't, accumulating the idle period in reflect and only
+> commit
+> once we get a !tick wakeup.
+
+How much of a problem would that actually be?
+
+Don't all but the very deepest C-states have
+target residencies that are orders of magnitude
+smaller than the tick period?
+
+In other words, if our sleeps end up getting
+"cut short" to 600us, we will still select C6,
+and it will not result in picking C3 by mistake.
+
+This only seems to affect C7 states and deeper.
+
+It may be worth fixing in the long run, but that
+would require keeping track of whether anything
+non-idle was done in-between two invocations of
+do_idle(), and then checking that there.
+
+That would include not just seeing whether there
+have been any context switches on the CPU (easy?),
+but also whether any non-timer interrupts were run.
+
+--=20
+All Rights Reversed.
+--=-0b09lUM/l59o8UkYIN1K
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEKR73pCCtJ5Xj3yADznnekoTE3oMFAlqdQ9MACgkQznnekoTE
+3oNafQf/Yt7n0V/5BZ4LJZJKtPO546aCYpBcCMq1D3Z0U49BJ7sjZtmAbd/ZQqe7
+6AuIfQaYmUge3MhtFVHP/TOBj2Bna/dOgvyta+TbFqDH0YYvTqmwcj36NFf5/2uL
+g70VLT6mjxztU5hpeW3KeXk5zr6KypoA2yZsMiH/+Jw4hdjp3KASuzZ+F9gImJNw
+jNcWsBCo8JyPCP9lDtgAJ1V4E3JOcRrHxm6qfg+eaLcfwt0kQOzhuTOEc9a0ePDv
+gSEJOZg4vWwTOhU+dDnWZD2nPnOBwj+zBho3QzTJSC8mTKjt51cDj6ixeLWqznYf
+5m7EU49GMlsIAuICqrpBhlIjdX4iAA==
+=9r5u
+-----END PGP SIGNATURE-----
+
+--=-0b09lUM/l59o8UkYIN1K--
