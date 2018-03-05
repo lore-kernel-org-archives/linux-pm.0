@@ -1,77 +1,132 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Mon, 5 Mar 2018 11:43:49 +0530
-Message-ID: <20180305061349.GF23018@vireshk-i7>
-References: <1519815970-5686-1-git-send-email-claudio@evidence.eu.com>
- <CAJZ5v0g5SS7A6xNQo=GNaMudRgFC8BL9wP1C4Nh8T-+NygYS+A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Subject: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
+Date: Mon,  5 Mar 2018 16:47:46 +0800
+Message-ID: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g5SS7A6xNQo=GNaMudRgFC8BL9wP1C4Nh8T-+NygYS+A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Claudio Scordino <claudio@evidence.eu.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, rafael@kernel.org, gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ganesh Mahendran <opensource.ganesh@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 28-02-18, 12:22, Rafael J. Wysocki wrote:
-> On Wed, Feb 28, 2018 at 12:06 PM, Claudio Scordino
-> <claudio@evidence.eu.com> wrote:
-> > When the SCHED_DEADLINE scheduling class increases the CPU utilization,
-> > we should not wait for the rate limit, otherwise we may miss some
-> > deadline.
-> >
-> > Tests using rt-app on Exynos5422 with up to 10 SCHED_DEADLINE tasks have
-> > shown reductions of even 10% of deadline misses with a negligible
-> > increase of energy consumption (measured through Baylibre Cape).
-> >
-> > Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-> > CC: Ingo Molnar <mingo@redhat.com>
-> > CC: Patrick Bellasi <patrick.bellasi@arm.com>
-> > CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > CC: Morten Rasmussen <morten.rasmussen@arm.com>
-> > CC: Juri Lelli <juri.lelli@redhat.com>
-> > CC: Viresh Kumar <viresh.kumar@linaro.org>
-> > CC: Vincent Guittot <vincent.guittot@linaro.org>
-> > CC: Todd Kjos <tkjos@android.com>
-> > CC: Joel Fernandes <joelaf@google.com>
-> > CC: linux-pm@vger.kernel.org
-> > CC: linux-kernel@vger.kernel.org
-> > ---
-> > Changes from v1:
-> >  - Logic moved from sugov_should_update_freq() to
-> >    sugov_update_single()/_shared() to not duplicate data structures
-> >  - Rate limit not ignored in case of "fast switch"
-> 
-> I'm not sure about this last bit.
-> 
-> IMO you can set sg_policy->need_freq_update even in the "fast switch"
-> case to start with and special case it in the future if that turns out
-> to be problematic.  That is, unless you have data indicating that it
-> already is problematic, of course. :-)
-> 
-> > ---
-> >  kernel/sched/cpufreq_schedutil.c | 16 ++++++++++++++++
-> >  1 file changed, 16 insertions(+)
-> >
-> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > index 7936f54..ca6ce72 100644
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -273,6 +273,14 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> >         sugov_set_iowait_boost(sg_cpu, time);
-> >         sg_cpu->last_update = time;
-> >
-> > +       /*
-> > +        * Make sugov_should_update_freq() ignore the rate limit when DL
-> > +        * has increased the utilization.
-> > +        */
-> > +       if ((cpu_util_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->util_dl) &&
-> > +                       !(sg_policy->policy->fast_switch_enabled))
-> > +               sg_policy->need_freq_update = true;
-> > +
+single_open() interface requires that the whole output must
+fit into a single buffer. This will lead to timeout when
+system memory is not in a good situation.
 
-And a new routine for this block would be good as well.
+This patch use seq_open() to show wakeup stats. This method
+need only one page, so timeout will not be observed.
 
+Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+----
+v2: use srcu_read_lock instead of rcu_read_lock
+---
+ drivers/base/power/wakeup.c | 77 +++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 61 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index ea01621..3bcab7d 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
+ 	return 0;
+ }
+ 
+-/**
+- * wakeup_sources_stats_show - Print wakeup sources statistics information.
+- * @m: seq_file to print the statistics into.
+- */
+-static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
++static void *wakeup_sources_stats_seq_start(struct seq_file *m,
++					loff_t *pos)
+ {
+ 	struct wakeup_source *ws;
+-	int srcuidx;
++	loff_t n = *pos;
++	int *srcuidx = m->private;
+ 
+-	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+-		"expire_count\tactive_since\ttotal_time\tmax_time\t"
+-		"last_change\tprevent_suspend_time\n");
++	if (n == 0) {
++		seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
++			"expire_count\tactive_since\ttotal_time\tmax_time\t"
++			"last_change\tprevent_suspend_time\n");
++	}
+ 
+-	srcuidx = srcu_read_lock(&wakeup_srcu);
+-	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+-		print_wakeup_source_stats(m, ws);
+-	srcu_read_unlock(&wakeup_srcu, srcuidx);
++	*srcuidx = srcu_read_lock(&wakeup_srcu);
++	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
++		if (n-- > 0)
++			continue;
++		goto out;
++	}
++	ws = NULL;
++out:
++	return ws;
++}
++
++static void *wakeup_sources_stats_seq_next(struct seq_file *m,
++					void *v, loff_t *pos)
++{
++	struct wakeup_source *ws = v;
++	struct wakeup_source *next_ws = NULL;
++
++	++(*pos);
+ 
+-	print_wakeup_source_stats(m, &deleted_ws);
++	list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
++		next_ws = ws;
++		break;
++	}
++
++	return next_ws;
++}
++
++static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
++{
++	int *srcuidx = m->private;
++
++	srcu_read_unlock(&wakeup_srcu, *srcuidx);
++}
++
++/**
++ * wakeup_sources_stats_seq_show - Print wakeup sources statistics information.
++ * @m: seq_file to print the statistics into.
++ * @v: wakeup_source of each iteration
++ */
++static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
++{
++	struct wakeup_source *ws = v;
++
++	print_wakeup_source_stats(m, ws);
+ 
+ 	return 0;
+ }
+ 
++static const struct seq_operations wakeup_sources_stats_seq_ops = {
++	.start = wakeup_sources_stats_seq_start,
++	.next  = wakeup_sources_stats_seq_next,
++	.stop  = wakeup_sources_stats_seq_stop,
++	.show  = wakeup_sources_stats_seq_show,
++};
++
+ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+ {
+-	return single_open(file, wakeup_sources_stats_show, NULL);
++	return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
+ }
+ 
+ static const struct file_operations wakeup_sources_stats_fops = {
+@@ -1062,7 +1107,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+ 	.open = wakeup_sources_stats_open,
+ 	.read = seq_read,
+ 	.llseek = seq_lseek,
+-	.release = single_release,
++	.release = seq_release_private,
+ };
+ 
+ static int __init wakeup_sources_debugfs_init(void)
 -- 
-viresh
+1.9.1
