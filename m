@@ -1,48 +1,86 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/RFT][PATCH 4/7] cpuidle: menu: Split idle duration
- prediction from state selection
-Date: Mon, 5 Mar 2018 14:53:22 +0100
-Message-ID: <20180305135322.GV25201@hirez.programming.kicks-ass.net>
-References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
- <2332986.m9oRvTSu8E@aspire.rjw.lan>
- <20180305113803.GO25201@hirez.programming.kicks-ass.net>
- <CAJZ5v0gdsSXOLL=nJW801L0LzE0CeyPCCrgq4_0tyi40wNLa+w@mail.gmail.com>
- <20180305125012.GA25181@hirez.programming.kicks-ass.net>
- <CAJZ5v0g5x9EWh0MH7wUh4sem9aYB-JuWb_Pn96qNwj=XefOcHg@mail.gmail.com>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 1/3] PM / OPP: Add dev_pm_opp_get_np()
+Date: Mon, 5 Mar 2018 08:25:40 -0700
+Message-ID: <20180305152540.GA15200@jcrouse-lnx.qualcomm.com>
+References: <20180302214329.1086-1-jcrouse@codeaurora.org>
+ <20180302214329.1086-2-jcrouse@codeaurora.org>
+ <20180305043708.GA23018@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g5x9EWh0MH7wUh4sem9aYB-JuWb_Pn96qNwj=XefOcHg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+In-Reply-To: <20180305043708.GA23018@vireshk-i7>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 05, 2018 at 02:05:10PM +0100, Rafael J. Wysocki wrote:
-> On Mon, Mar 5, 2018 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Mon, Mar 05, 2018 at 12:47:23PM +0100, Rafael J. Wysocki wrote:
-
-> >> IOW, the target residency of the selected state doesn't tell you how
-> >> much time you should expect to be idle in general.
-> >
-> > Right, but I think that measure isn't of primary relevance. What we want
-> > to know is: 'should I stop the tick' and 'what C state do I go to'.
-> >
-> > In order to answer those questions we need durations as input, but I
-> > don't think we should preserve durations throughout. The scheme from the
-> > above link reduces to N states in order to deal with arbitrary
-> > distributions, only the actual states -- ie boundaries where our answers
-> > changes -- are relevant, anything inside those boundaries would lead to
-> > the exact same answer anyway.
-> 
-> I generally agree here, but I'm not convinced about flagging the
-> states, splitting them and so on.
-
-I think linking them like that makes sense, but I can see room for
-discussion...
-
-> Maybe just return a "nohz" indicator from cpuidle_select() in addition
-> to the state index and make the decision in the governor?
-
-Much better option than returning a duration :-)
+T24gTW9uLCBNYXIgMDUsIDIwMTggYXQgMTA6MDc6MDhBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
+b3RlOgo+IE9uIDAyLTAzLTE4LCAxNDo0MywgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IEFkZCBh
+IGZ1bmN0aW9uIHRvIHJldHVybiB0aGUgZGV2aWNlIG5vZGUgYXNzb2NpYXRlZCB3aXRoIGEKPiA+
+IHNwZWNpZmljIG9wcCB3aGljaCB3aWxsIGZhY2lsaXRhdGUgZGV0YWlsaW5nIHdpdGggY3VzdG9t
+Cj4gPiBwcm9wZXJ0aWVzIGluIGNsaWVudCBkcml2ZXJzLgo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5
+OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgo+ID4gLS0tCj4gPiAgZHJp
+dmVycy9vcHAvb2YuYyAgICAgICB8IDIwICsrKysrKysrKysrKysrKysrKysrCj4gPiAgaW5jbHVk
+ZS9saW51eC9wbV9vcHAuaCB8ICA2ICsrKysrKwo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMjYgaW5z
+ZXJ0aW9ucygrKQo+IAo+IEkgd2FzIHVzaW5nIGEgcGF0Y2ggZm9yIHRoaXMgZm9yIHF1aXRlIHNv
+bWV0aW1lIG5vdywgYnV0IG5ldmVyIHBvc3RlZCBpdC4gU28gaXRzCj4geW91ciBwYXRjaCB3aGlj
+aCBzaG91bGQgZ2V0IG1lcmdlZCBub3cuIEJ1dCB0aGVyZSBhcmUgZmV3IHRoaW5ncyB0aGF0IHlv
+dSBuZWVkCj4gdG8gY2hhbmdlL2ZpeC4gUGxlYXNlIHVwZGF0ZSB5b3VyIHBhdGNoIGJhc2VkIG9u
+IG1pbmUgKHBhc3RlZCBiZWxvdykgYW5kIHJlcG9zdAo+IGhlcmUuCgpUaGFua3MgLSBJJ2xsIG1h
+a2UgdGhlIGNoYW5nZXMuCgo+IEFuZCBJIGFtIG5vdCByZWFsbHkgc3VyZSBob3cgc2hvdWxkIHRo
+aXMgcGF0Y2ggZ2V0IG1lcmdlZC4gTWF5YmUgSSB3aWxsIGFwcGx5Cj4gdGhlIHBhdGNoIGFuZCBz
+aGFyZSBhIGJyYW5jaCAod2hpY2ggSSB3b3VsZG4ndCByZWJhc2UpIGFuZCB5b3UgY2FuIHVzZSB0
+aGF0ID8KCllvdSBjYW4gZ28gYWhlYWQgYW5kIHN1Ym1pdCBpdCB0aHJvdWdoIHlvdXIgbm9ybWFs
+IHByb2Nlc3MuIFRoZSBhNnh4IGNvZGUgd29uJ3QKYmUgbWVyZ2VkIHdpdGggTGludXMgdW50aWwg
+dGhlcmUgaXMgYSBvcGVuIHNvdXJjZSB1c2VyLW1vZGUgZHJpdmVyIGNvbXBvbmVudAphdmFpbGFi
+bGUuIFVudGlsIHRoZW4gaXQgd2lsbCBoYW5nIG91dCBpbiB0aGUgdmFyaW91cyBpbnRlZ3JhdGlv
+biBrZXJuZWxzIGFuZAp0aGUgbWFpbnRhaW5lcnMgd2lsbCBiZSByZW1pbmRlZCB0byB0YWtlIHRo
+aXMgcGF0Y2ggZnJvbSB5b3VyIHJlcG8uCgpUaGFua3MgZm9yIHRoZSByZXZpZXcsCkpvcmRhbgoK
+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9vcHAvb2YuYyBiL2RyaXZlcnMvb3BwL29mLmMKPiBpbmRl
+eCAyMTI2NWFmNTUxMTcuLmIxNzcxNWJjM2MwYSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL29wcC9v
+Zi5jCj4gKysrIGIvZHJpdmVycy9vcHAvb2YuYwo+IEBAIC03MzYsMyArNzM2LDIyIEBAIHN0cnVj
+dCBkZXZfcG1fb3BwICpvZl9kZXZfcG1fb3BwX2ZpbmRfcmVxdWlyZWRfb3BwKHN0cnVjdCBkZXZp
+Y2UgKmRldiwKPiAgCXJldHVybiBvcHA7Cj4gIH0KPiAgRVhQT1JUX1NZTUJPTF9HUEwob2ZfZGV2
+X3BtX29wcF9maW5kX3JlcXVpcmVkX29wcCk7Cj4gKwo+ICsvKioKPiArICogZGV2X3BtX29wcF9n
+ZXRfb2Zfbm9kZSgpIC0gR2V0cyB0aGUgRFQgbm9kZSBjb3JyZXNwb25kaW5nIHRvIGFuIG9wcAo+
+ICsgKiBAb3BwOglvcHAgZm9yIHdoaWNoIERUIG5vZGUgaGFzIHRvIGJlIHJldHVybmVkIGZvcgo+
+ICsgKgo+ICsgKiBSZXR1cm46IERUIG5vZGUgY29ycmVzcG9uZGluZyB0byB0aGUgb3BwLCBlbHNl
+IDAgb24gc3VjY2Vzcy4KPiArICoKPiArICogVGhlIGNhbGxlciBuZWVkcyB0byBwdXQgdGhlIG5v
+ZGUgb2Zfbm9kZV9wdXQoKSBhZnRlciB1c2luZyBpdC4KPiArICovCj4gK3N0cnVjdCBkZXZpY2Vf
+bm9kZSAqZGV2X3BtX29wcF9nZXRfb2Zfbm9kZShzdHJ1Y3QgZGV2X3BtX29wcCAqb3BwKQo+ICt7
+Cj4gKwlpZiAoSVNfRVJSX09SX05VTEwob3BwKSkgewo+ICsJCXByX2VycigiJXM6IEludmFsaWQg
+cGFyYW1ldGVyc1xuIiwgX19mdW5jX18pOwo+ICsJCXJldHVybiBOVUxMOwo+ICsJfQo+ICsKPiAr
+CXJldHVybiBvZl9ub2RlX2dldChvcHAtPm5wKTsKPiArfQo+ICtFWFBPUlRfU1lNQk9MX0dQTChk
+ZXZfcG1fb3BwX2dldF9vZl9ub2RlKTsKPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wbV9v
+cHAuaCBiL2luY2x1ZGUvbGludXgvcG1fb3BwLmgKPiBpbmRleCA1MjhhN2Q5Y2YyZWYuLjA5OWIz
+MTk2MGRlYyAxMDA2NDQKPiAtLS0gYS9pbmNsdWRlL2xpbnV4L3BtX29wcC5oCj4gKysrIGIvaW5j
+bHVkZS9saW51eC9wbV9vcHAuaAo+IEBAIC0zMDAsNiArMzAwLDcgQEAgdm9pZCBkZXZfcG1fb3Bw
+X29mX2NwdW1hc2tfcmVtb3ZlX3RhYmxlKGNvbnN0IHN0cnVjdCBjcHVtYXNrICpjcHVtYXNrKTsK
+PiAgaW50IGRldl9wbV9vcHBfb2ZfZ2V0X3NoYXJpbmdfY3B1cyhzdHJ1Y3QgZGV2aWNlICpjcHVf
+ZGV2LCBzdHJ1Y3QgY3B1bWFzayAqY3B1bWFzayk7Cj4gIHN0cnVjdCBkZXZpY2Vfbm9kZSAqZGV2
+X3BtX29wcF9vZl9nZXRfb3BwX2Rlc2Nfbm9kZShzdHJ1Y3QgZGV2aWNlICpkZXYpOwo+ICBzdHJ1
+Y3QgZGV2X3BtX29wcCAqb2ZfZGV2X3BtX29wcF9maW5kX3JlcXVpcmVkX29wcChzdHJ1Y3QgZGV2
+aWNlICpkZXYsIHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnApOwo+ICtzdHJ1Y3QgZGV2aWNlX25vZGUg
+KmRldl9wbV9vcHBfZ2V0X29mX25vZGUoc3RydWN0IGRldl9wbV9vcHAgKm9wcCk7Cj4gICNlbHNl
+Cj4gIHN0YXRpYyBpbmxpbmUgaW50IGRldl9wbV9vcHBfb2ZfYWRkX3RhYmxlKHN0cnVjdCBkZXZp
+Y2UgKmRldikKPiAgewo+IEBAIC0zMzgsNiArMzM5LDEwIEBAIHN0YXRpYyBpbmxpbmUgc3RydWN0
+IGRldl9wbV9vcHAgKm9mX2Rldl9wbV9vcHBfZmluZF9yZXF1aXJlZF9vcHAoc3RydWN0IGRldmlj
+ZSAqCj4gIHsKPiAgCXJldHVybiBOVUxMOwo+ICB9Cj4gK3N0YXRpYyBpbmxpbmUgc3RydWN0IGRl
+dmljZV9ub2RlICpkZXZfcG1fb3BwX2dldF9vZl9ub2RlKHN0cnVjdCBkZXZfcG1fb3BwICpvcHAp
+Cj4gK3sKPiArCXJldHVybiBOVUxMOwo+ICt9Cj4gICNlbmRpZgo+ICAKPiAgI2VuZGlmCQkvKiBf
+X0xJTlVYX09QUF9IX18gKi8KPiAKPiAtLSAKPiB2aXJlc2gKCi0tIApUaGUgUXVhbGNvbW0gSW5u
+b3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEg
+TGludXggRm91bmRhdGlvbiBDb2xsYWJvcmF0aXZlIFByb2plY3QKX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVl
+ZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+L21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
