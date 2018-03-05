@@ -1,67 +1,57 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH V2] PM / core: fix deferred probe breaking suspend resume
- order
-Date: Mon, 5 Mar 2018 13:54:27 -0600
-Message-ID: <d24a66fa-de5c-ba02-dafb-ee554a3032a8@ti.com>
-References: <1519942514-3350-1-git-send-email-fkan@apm.com>
- <CAJZ5v0gncVMpQCc=kvuSdyy-+zPrdYOiA=pA54d538zTDz6rEA@mail.gmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
+Date: Mon, 5 Mar 2018 14:08:04 -0600
+Message-ID: <CAL_JsqKGXGBQSh3OeG_-bBSgv+uoANxB1CYU8RS0O6FrtaKaJQ@mail.gmail.com>
+References: <cover.1520274879.git.amit.kucheria@linaro.org> <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJZ5v0gncVMpQCc=kvuSdyy-+zPrdYOiA=pA54d538zTDz6rEA@mail.gmail.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Feng Kan <fkan@apm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J.
- Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: devicetree@vger.kernel.org, Ram Chandrasekar <rkumbako@codeaurora.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Mar 5, 2018 at 12:36 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+>
+> There is currently no way for the governor to be selected for each thermal
+> zone in devicetree. This results in the default governor being used for all
+> thermal zones even though no such restriction exists in the core code.
+>
+> Add support for specifying the thermal governor to be used for a thermal
+> zone in the devicetree. The devicetree config should specify the governor
+> name as a string that matches any available governors. If not specified, we
+> maintain the current behaviour of using the default governor.
+>
+> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/thermal/thermal.txt | 8 ++++++++
+>  drivers/thermal/of-thermal.c                          | 6 ++++++
+>  2 files changed, 14 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+> index 1719d47..fced9d3 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> @@ -168,6 +168,14 @@ Optional property:
+>                         by means of sensor ID. Additional coefficients are
+>                         interpreted as constant offset.
+>
+> +- thermal-governor:     Thermal governor to be used for this thermal zone.
+> +                       Expected values are:
+> +                       "step_wise": Use step wise governor.
+> +                       "fair_share": Use fair share governor.
+> +                       "user_space": Use user space governor.
+> +                       "power_allocator": Use power allocator governor.
 
+This looks pretty Linux specific. Not that we can't have Linux
+specific properties, but we try to avoid them.
 
-On 03/02/2018 03:11 AM, Rafael J. Wysocki wrote:
-> [+Greg]
-> 
-> On Thu, Mar 1, 2018 at 11:15 PM, Feng Kan <fkan@apm.com> wrote:
->> When bridge and its endpoint is enumerated the devices are added to the
->> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
->> This causes the bridge to be moved to the end of the dpm list when
->> deferred probe kicks in. The order of the dpm list for bridge and
->> endpoint is reversed.
->>
->> Add reordering code to move the bridge and its children and consumers to
->> the end of the pm list so the order for suspend and resume is not altered.
->> The code also move device and its children and consumers to the tail of
->> device_kset list if it is registered.
-> 
-> I assume that this has been tested and works as expected.
+What determines the selection? I'd imagine only certain governors make
+sense for certain devices. We should perhaps describe those
+characteristics which can then infer the best governor. Not really
+sure though...
 
-isn't it the same as https://lkml.org/lkml/2015/9/10/248? (in general)
-
-And wouldn't device links solve the issue?
-
-commit 9ed9895370aedd6032af2a9181c62c394d08223b
-Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Date:   Sun Oct 30 17:32:16 2016 +0100
-
-    driver core: Functional dependencies tracking support
-
-    Currently, there is a problem with taking functional dependencies
-    between devices into account.
-
-My understanding of device links is that they were introduced exactly to fix
-such kind of issues and explicitly define dependencies between devices in code.
-
-But, I could be missing smth... sry if this is the case.
-
--- 
-regards,
--grygorii
+Rob
