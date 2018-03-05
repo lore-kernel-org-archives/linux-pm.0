@@ -1,55 +1,48 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before
- stopping the tick
-Date: Mon, 5 Mar 2018 14:46:09 +0100
-Message-ID: <20180305134609.GX25235@hirez.programming.kicks-ass.net>
+Subject: Re: [RFC/RFT][PATCH 4/7] cpuidle: menu: Split idle duration
+ prediction from state selection
+Date: Mon, 5 Mar 2018 14:53:22 +0100
+Message-ID: <20180305135322.GV25201@hirez.programming.kicks-ass.net>
 References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
- <2048240.1dZKXsSxFh@aspire.rjw.lan>
- <20180305123552.GY25181@hirez.programming.kicks-ass.net>
- <1520255955.6857.18.camel@surriel.com>
- <20180305133725.GU25201@hirez.programming.kicks-ass.net>
+ <2332986.m9oRvTSu8E@aspire.rjw.lan>
+ <20180305113803.GO25201@hirez.programming.kicks-ass.net>
+ <CAJZ5v0gdsSXOLL=nJW801L0LzE0CeyPCCrgq4_0tyi40wNLa+w@mail.gmail.com>
+ <20180305125012.GA25181@hirez.programming.kicks-ass.net>
+ <CAJZ5v0g5x9EWh0MH7wUh4sem9aYB-JuWb_Pn96qNwj=XefOcHg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180305133725.GU25201@hirez.programming.kicks-ass.net>
+In-Reply-To: <CAJZ5v0g5x9EWh0MH7wUh4sem9aYB-JuWb_Pn96qNwj=XefOcHg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rik van Riel <riel@surriel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 05, 2018 at 02:37:25PM +0100, Peter Zijlstra wrote:
-> On Mon, Mar 05, 2018 at 08:19:15AM -0500, Rik van Riel wrote:
+On Mon, Mar 05, 2018 at 02:05:10PM +0100, Rafael J. Wysocki wrote:
+> On Mon, Mar 5, 2018 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Mon, Mar 05, 2018 at 12:47:23PM +0100, Rafael J. Wysocki wrote:
 
-> > > Also, I think that at this point you've introduced a problem; by not
-> > > disabling the tick unconditionally, we'll have extra wakeups due to
-> > > the (now still running) tick, which will bias the estimation, as per
-> > > reflect(), downwards.
-> > > 
-> > > We should effectively discard tick wakeups when we could have
-> > > entered nohz but didn't, accumulating the idle period in reflect and
-> > > only commit once we get a !tick wakeup.
-> > 
-> > How much of a problem would that actually be?
-> > 
-> > Don't all but the very deepest C-states have
-> > target residencies that are orders of magnitude
-> > smaller than the tick period?
-> > 
-> > In other words, if our sleeps end up getting
-> > "cut short" to 600us, we will still select C6,
-> > and it will not result in picking C3 by mistake.
-> > 
-> > This only seems to affect C7 states and deeper.
+> >> IOW, the target residency of the selected state doesn't tell you how
+> >> much time you should expect to be idle in general.
+> >
+> > Right, but I think that measure isn't of primary relevance. What we want
+> > to know is: 'should I stop the tick' and 'what C state do I go to'.
+> >
+> > In order to answer those questions we need durations as input, but I
+> > don't think we should preserve durations throughout. The scheme from the
+> > above link reduces to N states in order to deal with arbitrary
+> > distributions, only the actual states -- ie boundaries where our answers
+> > changes -- are relevant, anything inside those boundaries would lead to
+> > the exact same answer anyway.
 > 
-> On modern Intel, what about other platforms? This is something that
-> should work across the board.
+> I generally agree here, but I'm not convinced about flagging the
+> states, splitting them and so on.
 
-Look at this for example:
+I think linking them like that makes sense, but I can see room for
+discussion...
 
-arch/arm64/boot/dts/hisilicon/hi3660.dtsi:                              min-residency-us = <20000>;
+> Maybe just return a "nohz" indicator from cpuidle_select() in addition
+> to the state index and make the decision in the governor?
 
-That's 20ms right there..
-
-But on average, considering ARM64 defaults to HZ=250, most of them are
-<TICK_USEC.
+Much better option than returning a duration :-)
