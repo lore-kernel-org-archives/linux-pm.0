@@ -1,106 +1,75 @@
-From: Feng Kan <fkan@apm.com>
-Subject: [PATCH V3] PM / core: fix deferred probe breaking suspend resume order
-Date: Mon,  5 Mar 2018 10:29:39 -0800
-Message-ID: <1520274579-30492-1-git-send-email-fkan@apm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rjw@rjwysocki.net, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org, bhelgaas@google.com, gregkh@linuxfoundation.org
-Cc: Feng Kan <fkan@apm.com>, Toan Le <toanle@apm.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH] thermal: of: Allow selection of thermal governor in DT
+Date: Tue,  6 Mar 2018 00:06:45 +0530
+Message-ID: <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+References: <cover.1520274879.git.amit.kucheria@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1520274879.git.amit.kucheria@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: devicetree@vger.kernel.org
+Cc: Ram Chandrasekar <rkumbako@codeaurora.org>, ilina@codeaurora.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When bridge and its endpoint is enumerated the devices are added to the
-dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
-This causes the bridge to be moved to the end of the dpm list when
-deferred probe kicks in. The order of the dpm list for bridge and
-endpoint is reversed.
+From: Ram Chandrasekar <rkumbako@codeaurora.org>
 
-Add reordering code to move the bridge and its children and consumers to
-the end of the pm list so the order for suspend and resume is not altered.
-The code also move device and its children and consumers to the tail of
-device_kset list if it is registered.
+There is currently no way for the governor to be selected for each thermal
+zone in devicetree. This results in the default governor being used for all
+thermal zones even though no such restriction exists in the core code.
 
-Signed-off-by: Feng Kan <fkan@apm.com>
-Signed-off-by: Toan Le <toanle@apm.com>
+Add support for specifying the thermal governor to be used for a thermal
+zone in the devicetree. The devicetree config should specify the governor
+name as a string that matches any available governors. If not specified, we
+maintain the current behaviour of using the default governor.
+
+Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- V3:
-	1. additional code comment changes
- V2:
-        1. change patch title from "move device and its children..."
-        2. move define based on Bjorn's comment
-        3. rename function name and comment content
+ Documentation/devicetree/bindings/thermal/thermal.txt | 8 ++++++++
+ drivers/thermal/of-thermal.c                          | 6 ++++++
+ 2 files changed, 14 insertions(+)
 
- drivers/base/base.h |  3 +++
- drivers/base/core.c | 20 ++++++++++++++++++++
- drivers/base/dd.c   |  4 +---
- 3 files changed, 24 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index d800de6..a75c302 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -161,3 +161,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
- extern void device_links_no_driver(struct device *dev);
- extern bool device_links_busy(struct device *dev);
- extern void device_links_unbind_consumers(struct device *dev);
-+
-+/* device pm support */
-+void device_pm_move_to_tail(struct device *dev);
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 110230d..3b37906 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -148,6 +148,26 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
- }
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+index 1719d47..fced9d3 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -168,6 +168,14 @@ Optional property:
+ 			by means of sensor ID. Additional coefficients are
+ 			interpreted as constant offset.
  
- /**
-+ * device_pm_move_to_tail - Move set of devices to the end of device lists
-+ * @dev: current device pointer
-+ *
-+ * This is a device_reorder_to_tail() wrapper taking the requisite locks.
-+ *
-+ * It moves the device along with all of its children and all of its consumers
-+ * to the ends of the device_kset and dpm_list, recursively.
-+ */
-+void device_pm_move_to_tail(struct device *dev)
-+{
-+	int idx;
++- thermal-governor:     Thermal governor to be used for this thermal zone.
++			Expected values are:
++			"step_wise": Use step wise governor.
++			"fair_share": Use fair share governor.
++			"user_space": Use user space governor.
++			"power_allocator": Use power allocator governor.
++  Type: string
 +
-+	idx = device_links_read_lock();
-+	device_pm_lock();
-+	device_reorder_to_tail(dev, NULL);
-+	device_pm_unlock();
-+	device_links_read_unlock(idx);
-+}
-+
-+/**
-  * device_link_add - Create a link between two devices.
-  * @consumer: Consumer end of the link.
-  * @supplier: Supplier end of the link.
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 2c964f5..96fab29 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -123,9 +123,7 @@ static void deferred_probe_work_func(struct work_struct *work)
- 		 * the list is a good order for suspend but deferred
- 		 * probe makes that very unsafe.
- 		 */
--		device_pm_lock();
--		device_pm_move_last(dev);
--		device_pm_unlock();
-+		device_pm_move_to_tail(dev);
+ - sustainable-power:	An estimate of the sustainable power (in mW) that the
+   Type: unsigned	thermal zone can dissipate at the desired
+   Size: one cell	control temperature.  For reference, the
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index e09f035..a884b01 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -974,6 +974,7 @@ int __init of_parse_thermal_zones(void)
+ 		struct thermal_zone_params *tzp;
+ 		int i, mask = 0;
+ 		u32 prop;
++		const char *governor_name;
  
- 		dev_dbg(dev, "Retrying from deferred list\n");
- 		if (initcall_debug && !initcalls_done)
+ 		tz = thermal_of_build_thermal_zone(child);
+ 		if (IS_ERR(tz)) {
+@@ -996,6 +997,11 @@ int __init of_parse_thermal_zones(void)
+ 		/* No hwmon because there might be hwmon drivers registering */
+ 		tzp->no_hwmon = true;
+ 
++		if (!of_property_read_string(child, "thermal-governor",
++						&governor_name))
++			strlcpy(tzp->governor_name, governor_name,
++					THERMAL_NAME_LENGTH);
++
+ 		if (!of_property_read_u32(child, "sustainable-power", &prop))
+ 			tzp->sustainable_power = prop;
+ 
 -- 
-1.8.3.1
+2.7.4
