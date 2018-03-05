@@ -1,34 +1,71 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v8 15/15] dt-bindings: cpufreq: Document
- operating-points-v2-krait-cpu
-Date: Mon, 5 Mar 2018 16:19:36 -0600
-Message-ID: <20180305221936.yu2mlcjodlcumedx@rob-hp-laptop>
-References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
- <1519740422-3835-16-git-send-email-sricharan@codeaurora.org>
+From: Rik van Riel <riel@surriel.com>
+Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before
+ stopping the tick
+Date: Mon, 05 Mar 2018 18:27:01 -0500
+Message-ID: <1520292421.6857.22.camel@surriel.com>
+References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
+         <2048240.1dZKXsSxFh@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-ntQ751av5UwqXDAdVQ+Q"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1519740422-3835-16-git-send-email-sricharan@codeaurora.org>
+In-Reply-To: <2048240.1dZKXsSxFh@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sricharan R <sricharan@codeaurora.org>
-Cc: viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 27, 2018 at 07:37:02PM +0530, Sricharan R wrote:
-> In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
-> that has KRAIT processors the voltage/current value of each OPP
-> varies based on the silicon variant in use.
-> operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
-> and the operating-points-v2 table for each opp. The qcom-cpufreq driver
-> reads the efuse value from the SoC to provide the required information
-> that is used to determine the voltage and current value for each OPP of
-> operating-points-v2 table when it is parsed by the OPP framework.
-> 
-> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
-> ---
->  .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
->  1 file changed, 363 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+--=-ntQ751av5UwqXDAdVQ+Q
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Sun, 2018-03-04 at 23:28 +0100, Rafael J. Wysocki wrote:
+>=20
+> +++ linux-pm/kernel/sched/idle.c
+> @@ -188,13 +188,14 @@ static void cpuidle_idle_call(void)
+>  	} else {
+>  		unsigned int duration_us;
+> =20
+> -		tick_nohz_idle_go_idle(true);
+> -		rcu_idle_enter();
+> -
+>  		/*
+>  		 * Ask the cpuidle framework to choose a convenient
+> idle state.
+>  		 */
+>  		next_state =3D cpuidle_select(drv, dev, &duration_us);
+> +
+> +		tick_nohz_idle_go_idle(duration_us > USEC_PER_SEC /
+> HZ);
+> +		rcu_idle_enter();
+> +
+>  		entered_state =3D call_cpuidle(drv, dev, next_state);
+
+When the expected idle period is short enough
+that the timer is not stopped, does it make
+sense to still call rcu_idle_enter?
+
+Should rcu_idle_enter also be conditional on
+the expected idle period?
+
+--=20
+All Rights Reversed.
+--=-ntQ751av5UwqXDAdVQ+Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEKR73pCCtJ5Xj3yADznnekoTE3oMFAlqd0kUACgkQznnekoTE
+3oMX/wf/ZHGboeDGsR+H3JXX2WfdaH2aP/pz85X5CT06+5APrBQRwD+xqU8judhU
+iicFAAkX8ZTYiq7BNSd7Ak7tu+fYKsmPuIBg4e4a4pRH2BJMh87fweneM7Fi4IoF
+xAzdPNcBsXdgGQmrRmY9a2bpGiG3raYl36vSAV5re5eu69UZmDkNPYXphVRfwavs
+pPILQV7uPHoLGg4blxzEP/sccJI8PpMLFlyewWGWMUEHQ0g0UeRvOyKQ1emd3ol6
+OwBa4OKdUostc2O04eepAE7ItADlILIT2yJVuXaU3hWSScBm5ia1fCC6WXcfh/f6
+wJi+DxxAxhBDajP508vIDVLeeObXbw==
+=Qnmi
+-----END PGP SIGNATURE-----
+
+--=-ntQ751av5UwqXDAdVQ+Q--
