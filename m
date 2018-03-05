@@ -1,71 +1,75 @@
-From: Jordan Crouse <jcrouse@codeaurora.org>
-Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Mon, 5 Mar 2018 08:28:18 -0700
-Message-ID: <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
-References: <20180302215638.6145-1-jcrouse@codeaurora.org>
- <20180302215638.6145-3-jcrouse@codeaurora.org>
- <20180305044221.GC23018@vireshk-i7>
+From: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
+Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before
+ stopping the tick
+Date: Mon, 5 Mar 2018 16:36:20 +0100
+Message-ID: <3c051023-312b-d2bc-34b5-40e8c13ca796@tu-dresden.de>
+References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
+ <2048240.1dZKXsSxFh@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20180305044221.GC23018@vireshk-i7>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: nm@ti.com, devicetree@vger.kernel.org, rnayak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, dianders@chromium.org, dri-devel@lists.freedesktop.org, vireshk@kernel.org, freedreno@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2048240.1dZKXsSxFh@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBNYXIgMDUsIDIwMTggYXQgMTA6MTI6MjFBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
-b3RlOgo+IE9uIDAyLTAzLTE4LCAxNDo1NiwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IEFkZCB0
-aGUgbm9kZXMgYW5kIG90aGVyIGJpdHMgdG8gZGVzY3JpYmUgdGhlIEFkcmVubyBHUFUgYW5kIEdN
-VQo+ID4gZGV2aWNlcy4KPiA+IAo+ID4gQ2hhbmdlLUlkOiBJYmY0ZGMwZWJiMGFjMDNkOGI2Yjhl
-NjU3NDdlMTQyYzQ0MGU3MGIwYQo+IAo+IFJlbW92ZSBpdCA/CgoqIFNoYWtlcyBmaXN0IGF0IEdl
-cnJpdCAqCgo+ID4gU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3VzZSA8amNyb3VzZUBjb2RlYXVy
-b3JhLm9yZz4KPiA+IC0tLQo+ID4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRz
-aSB8IDEyMCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4gIDEgZmlsZSBj
-aGFuZ2VkLCAxMjAgaW5zZXJ0aW9ucygrKQo+ID4gCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02
-NC9ib290L2R0cy9xY29tL3NkbTg0NS5kdHNpIGIvYXJjaC9hcm02NC9ib290L2R0cy9xY29tL3Nk
-bTg0NS5kdHNpCj4gPiBpbmRleCA3YjVjMTZlYjYzYjcuLmNjNmQzNjdlZTU1ZSAxMDA2NDQKPiA+
-IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQo+ID4gKysrIGIvYXJj
-aC9hcm02NC9ib290L2R0cy9xY29tL3NkbTg0NS5kdHNpCj4gPiBAQCAtMzEyLDUgKzMxMiwxMjUg
-QEAKPiA+ICAJCQkJc3RhdHVzID0gImRpc2FibGVkIjsKPiA+ICAJCQl9Owo+ID4gIAkJfTsKPiA+
-ICsKPiA+ICsJCWFkcmVub19zbW11OiBhcm0sc21tdS1hZHJlbm9ANTA0MDAwMCB7Cj4gPiArCQkJ
-Y29tcGF0aWJsZSA9ICJxY29tLG1zbTg5OTYtc21tdS12MiI7Cj4gPiArCQkJcmVnID0gPDB4NTA0
-MDAwMCAweDEwMDAwPjsKPiA+ICsJCQkjaW9tbXUtY2VsbHMgPSA8MT47Cj4gPiArCQkJI2dsb2Jh
-bC1pbnRlcnJ1cHRzID0gPDI+Owo+ID4gKwkJCWludGVycnVwdHMgPSA8R0lDX1NQSSAyMjkgSVJR
-X1RZUEVfTEVWRUxfSElHSD4sCj4gPiArCQkJCSAgICAgPEdJQ19TUEkgMjMxIElSUV9UWVBFX0xF
-VkVMX0hJR0g+LAo+ID4gKwkJCQkgICAgIDxHSUNfU1BJIDM2NCBJUlFfVFlQRV9FREdFX1JJU0lO
-Rz4sCj4gPiArCQkJCSAgICAgPEdJQ19TUEkgMzY1IElSUV9UWVBFX0VER0VfUklTSU5HPiwKPiA+
-ICsJCQkJICAgICA8R0lDX1NQSSAzNjYgSVJRX1RZUEVfRURHRV9SSVNJTkc+LAo+ID4gKwkJCQkg
-ICAgIDxHSUNfU1BJIDM2NyBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gPiArCQkJCSAgICAgPEdJ
-Q19TUEkgMzY4IElSUV9UWVBFX0VER0VfUklTSU5HPiwKPiA+ICsJCQkJICAgICA8R0lDX1NQSSAz
-NjkgSVJRX1RZUEVfRURHRV9SSVNJTkc+LAo+ID4gKwkJCQkgICAgIDxHSUNfU1BJIDM3MCBJUlFf
-VFlQRV9FREdFX1JJU0lORz4sCj4gPiArCQkJCSAgICAgPEdJQ19TUEkgMzcxIElSUV9UWVBFX0VE
-R0VfUklTSU5HPjsKPiA+ICsJCQljbG9ja3MgPSA8JmNsb2NrX2djYyBHQ0NfR1BVX01FTU5PQ19H
-RlhfQ0xLPiwKPiA+ICsJCQkJIDwmY2xvY2tfZ2NjIEdDQ19HUFVfQ0ZHX0FIQl9DTEs+Owo+ID4g
-KwkJCWNsb2NrLW5hbWVzID0gImJ1cyIsICJpZmFjZSI7Cj4gPiArCj4gPiArCQkJcG93ZXItZG9t
-YWlucyA9IDwmY2xvY2tfZ3B1Y2MgR1BVX0NYX0dEU0M+Owo+ID4gKwkJfTsKPiA+ICsKPiA+ICsJ
-CWdwdV9vcHBfdGFibGU6IGFkcmVuby1vcHAtdGFibGUgewo+ID4gKwkJCWNvbXBhdGlibGUgPSAi
-b3BlcmF0aW5nLXBvaW50cy12MiI7Cj4gPiArCj4gPiArCQkJb3BwLTcxMDAwMDAwMCB7Cj4gPiAr
-CQkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8NzEwMDAwMDAwPjsKPiA+ICsJCQkJcWNvbSxhcmMtbGV2
-ZWwgPSA8NDE2PjsKPiAKPiBJIGFtIG5vdCBzdXJlIGlmIEkgc2F3IHdoZXJlIHRoaXMgaXMgZGVm
-aW5lZCA/CgpJJ20gZ2xhZCB5b3UgYnJvdWdodCB0aGlzIHVwIC0gSSB3YXMgdHJ5aW5nIHRvIGZp
-bmQgYSBwbGFjZSBpbiB0aGUgZG9jdW1lbnRhdGlvbgp0byBwdXQgaXQsIGJ1dCBzaW5jZSB0YXJn
-ZXQgc3BlY2lmaWMgbm9kZXMgd291bGQgYmUgYSBuZXcgdHJpY2sgZm9yIE9QUCBJIGRpZG4ndApx
-dWl0ZSBrbm93IGhvdyB0byBnbyBhYm91dCBkb2luZyBpdC4gRG8gd2UganVzdCBsaXN0IHRoZW0g
-YXMgT3B0aW9uYWw6IG9yCnNob3VsZCB3ZSBhZGQgYSB0YXJnZXQgc3BlY2lmaWMgc2VjdGlvbiB0
-byB0aGUgZG9jdW1lbnRhdGlvbiBhbmQgbGlzdCB0aGVtIG91dAp0aGVyZSBpbnN0ZWFkPwoKSm9y
-ZGFuCgotLSAKVGhlIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVy
-IG9mIENvZGUgQXVyb3JhIEZvcnVtLAphIExpbnV4IEZvdW5kYXRpb24gQ29sbGFib3JhdGl2ZSBQ
-cm9qZWN0Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRy
-aS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRw
-czovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On 2018-03-04 23:28, Rafael J. Wysocki wrote:
+> use the expected idle period
+> duration returned by cpuidle_select() to tell tick_nohz_idle_go_idle()
+> whether or not to stop the tick.
+
+I assume that at the point of going idle, the actual next scheduling
+tick may happen anywhere between now and 1/HZ. If there is a mechanism
+that somehow ensures that the next scheduling tick always happens 1/HZ
+after going idle, then some of my arguments are invalid.
+
+Ideally, the decision whether to disable the sched tick should
+primarily depend on the order of tree upcoming events: the the sched
+tick, the next non-sched timer, and the heuristic prediction:
+
+   https://marc.info/?l=linux-pm&m=151384941425947&w=2
+
+If I read the code correctly, there is already logic deep within
+__tick_nohz_idle_enter that prevents disabling the sched tick when
+it is scheduled to happen after another timer, which is a good primary
+condition for not stopping the sched tick. However the newly added
+condition prevents stopping the sched tick in more cases where it is
+undesirable.
+Assume duration_us is slightly less than USEC_PER_SEC / HZ.
+and next sched tick will happen in 0.1 * USEC_PER_SEC / HZ
+If the prediction was accurate, the cpu will be woken up way too soon
+by the not-disabled sched tick.
+
+I fear that might even create positive feedback loops on the
+heuristic, which will take into account the sleep durations for
+sched tick wakeups in sort of a self fulfilling prophecy:
+1) The heuristic predicts to wake up in less than a full sched period,
+2) The sched tick is kept enabled
+3) The sched tick wakes up the system in less than a full sched period
+4) Repeat
+
+Even when sleeping for longer than target_residency of the deepest
+sleep state, you can still improve energy consumption by sleeping
+longer whenever possible.
+
+On the opposite side - undesirable shallow sleeps - the proposed patch
+will basically always keep the tick enabled if there is a higher sleep
+state with a target_residency <= 1/HZ. On systems with relatively low
+target_residencies, such as the ones that I am primarily
+investigating, this should effectively prevent long shallow sleeps.
+However, on mobile systems with C10 states > 5 ms the sched tick is
+not a suitable fallback timer for preventing these issues. Well, maybe
+the timer itself could be used, but with a larger expiry.
+
+So IMHO
+- the precise timer and vague heuristic should not be mixed
+- decisions should preferably use actual time points rather than the
+   generic tick duration and residency time.
+- for some cases the sched tick as is may not be sufficient as fallback
+
+Question: Does disabling a timer on a cpu guarantee that this cpu will
+wake-up or is there a scenario where a timer is deleted or moved
+externally without the cpu having a chance to change it's idle state?
