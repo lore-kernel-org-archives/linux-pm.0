@@ -1,45 +1,34 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
-Date: Mon, 5 Mar 2018 22:11:12 +0100
-Message-ID: <e6c78c81-f18d-c811-925d-5b1dd427fb65@linaro.org>
-References: <cover.1520274879.git.amit.kucheria@linaro.org>
- <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v8 15/15] dt-bindings: cpufreq: Document
+ operating-points-v2-krait-cpu
+Date: Mon, 5 Mar 2018 16:19:36 -0600
+Message-ID: <20180305221936.yu2mlcjodlcumedx@rob-hp-laptop>
+References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
+ <1519740422-3835-16-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1519740422-3835-16-git-send-email-sricharan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>, devicetree@vger.kernel.org
-Cc: Ram Chandrasekar <rkumbako@codeaurora.org>, ilina@codeaurora.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On 05/03/2018 19:36, Amit Kucheria wrote:
-> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+On Tue, Feb 27, 2018 at 07:37:02PM +0530, Sricharan R wrote:
+> In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
+> that has KRAIT processors the voltage/current value of each OPP
+> varies based on the silicon variant in use.
+> operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
+> and the operating-points-v2 table for each opp. The qcom-cpufreq driver
+> reads the efuse value from the SoC to provide the required information
+> that is used to determine the voltage and current value for each OPP of
+> operating-points-v2 table when it is parsed by the OPP framework.
 > 
-> There is currently no way for the governor to be selected for each thermal
-> zone in devicetree. This results in the default governor being used for all
-> thermal zones even though no such restriction exists in the core code.
-> 
-> Add support for specifying the thermal governor to be used for a thermal
-> zone in the devicetree. The devicetree config should specify the governor
-> name as a string that matches any available governors. If not specified, we
-> maintain the current behaviour of using the default governor.
-> 
-> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> ---
+>  .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
+>  1 file changed, 363 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
 
-Why not create a kernel parameter (eg. thermal.governor=) ? So everyone
-can gain benefit of this feature. And in order to specify that from the
-DT, add the 'chosen' node and bootargs with the desired kernel parameter?
-
-
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Reviewed-by: Rob Herring <robh@kernel.org>
