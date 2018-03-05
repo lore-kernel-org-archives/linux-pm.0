@@ -1,70 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 15/27] cpufreq: powernv: Don't validate the frequency table
- twice
-Date: Mon,  5 Mar 2018 09:49:32 +0530
-Message-ID: <fd8651e59a1b5c539e0a9589f2d0648afd42cce1.1520223512.git.viresh.kumar@linaro.org>
-References: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/3] PM / OPP: Add dev_pm_opp_get_np()
+Date: Mon, 5 Mar 2018 10:07:08 +0530
+Message-ID: <20180305043708.GA23018@vireshk-i7>
+References: <20180302214329.1086-1-jcrouse@codeaurora.org>
+ <20180302214329.1086-2-jcrouse@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180302214329.1086-2-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq core is already validating the CPU frequency table after
-calling the ->init() callback of the cpufreq drivers and the drivers
-don't need to do the same anymore. Though they need to set the
-policy->freq_table field directly from the ->init() callback now.
-
-Stop validating the frequency table from powernv driver.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2:
-- s/powerenv/powernv/
-
- drivers/cpufreq/powernv-cpufreq.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 29cdec198657..0591874856d3 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -812,7 +812,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	int base, i, ret;
-+	int base, i;
- 	struct kernfs_node *kn;
- 	struct global_pstate_info *gpstates;
- 
-@@ -848,15 +848,10 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	gpstates->timer.expires = jiffies +
- 				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
- 	spin_lock_init(&gpstates->gpstate_lock);
--	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
--
--	if (ret < 0) {
--		kfree(policy->driver_data);
--		return ret;
--	}
- 
-+	policy->freq_table = powernv_freqs;
- 	policy->fast_switch_possible = true;
--	return ret;
-+	return 0;
- }
- 
- static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
--- 
-2.15.0.194.g9af6a3dea062
+T24gMDItMDMtMTgsIDE0OjQzLCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IEFkZCBhIGZ1bmN0aW9u
+IHRvIHJldHVybiB0aGUgZGV2aWNlIG5vZGUgYXNzb2NpYXRlZCB3aXRoIGEKPiBzcGVjaWZpYyBv
+cHAgd2hpY2ggd2lsbCBmYWNpbGl0YXRlIGRldGFpbGluZyB3aXRoIGN1c3RvbQo+IHByb3BlcnRp
+ZXMgaW4gY2xpZW50IGRyaXZlcnMuCj4gCj4gU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3VzZSA8
+amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgZHJpdmVycy9vcHAvb2YuYyAgICAgICB8
+IDIwICsrKysrKysrKysrKysrKysrKysrCj4gIGluY2x1ZGUvbGludXgvcG1fb3BwLmggfCAgNiAr
+KysrKysKPiAgMiBmaWxlcyBjaGFuZ2VkLCAyNiBpbnNlcnRpb25zKCspCgpJIHdhcyB1c2luZyBh
+IHBhdGNoIGZvciB0aGlzIGZvciBxdWl0ZSBzb21ldGltZSBub3csIGJ1dCBuZXZlciBwb3N0ZWQg
+aXQuIFNvIGl0cwp5b3VyIHBhdGNoIHdoaWNoIHNob3VsZCBnZXQgbWVyZ2VkIG5vdy4gQnV0IHRo
+ZXJlIGFyZSBmZXcgdGhpbmdzIHRoYXQgeW91IG5lZWQKdG8gY2hhbmdlL2ZpeC4gUGxlYXNlIHVw
+ZGF0ZSB5b3VyIHBhdGNoIGJhc2VkIG9uIG1pbmUgKHBhc3RlZCBiZWxvdykgYW5kIHJlcG9zdApo
+ZXJlLgoKQW5kIEkgYW0gbm90IHJlYWxseSBzdXJlIGhvdyBzaG91bGQgdGhpcyBwYXRjaCBnZXQg
+bWVyZ2VkLiBNYXliZSBJIHdpbGwgYXBwbHkKdGhlIHBhdGNoIGFuZCBzaGFyZSBhIGJyYW5jaCAo
+d2hpY2ggSSB3b3VsZG4ndCByZWJhc2UpIGFuZCB5b3UgY2FuIHVzZSB0aGF0ID8KCmRpZmYgLS1n
+aXQgYS9kcml2ZXJzL29wcC9vZi5jIGIvZHJpdmVycy9vcHAvb2YuYwppbmRleCAyMTI2NWFmNTUx
+MTcuLmIxNzcxNWJjM2MwYSAxMDA2NDQKLS0tIGEvZHJpdmVycy9vcHAvb2YuYworKysgYi9kcml2
+ZXJzL29wcC9vZi5jCkBAIC03MzYsMyArNzM2LDIyIEBAIHN0cnVjdCBkZXZfcG1fb3BwICpvZl9k
+ZXZfcG1fb3BwX2ZpbmRfcmVxdWlyZWRfb3BwKHN0cnVjdCBkZXZpY2UgKmRldiwKIAlyZXR1cm4g
+b3BwOwogfQogRVhQT1JUX1NZTUJPTF9HUEwob2ZfZGV2X3BtX29wcF9maW5kX3JlcXVpcmVkX29w
+cCk7CisKKy8qKgorICogZGV2X3BtX29wcF9nZXRfb2Zfbm9kZSgpIC0gR2V0cyB0aGUgRFQgbm9k
+ZSBjb3JyZXNwb25kaW5nIHRvIGFuIG9wcAorICogQG9wcDoJb3BwIGZvciB3aGljaCBEVCBub2Rl
+IGhhcyB0byBiZSByZXR1cm5lZCBmb3IKKyAqCisgKiBSZXR1cm46IERUIG5vZGUgY29ycmVzcG9u
+ZGluZyB0byB0aGUgb3BwLCBlbHNlIDAgb24gc3VjY2Vzcy4KKyAqCisgKiBUaGUgY2FsbGVyIG5l
+ZWRzIHRvIHB1dCB0aGUgbm9kZSBvZl9ub2RlX3B1dCgpIGFmdGVyIHVzaW5nIGl0LgorICovCitz
+dHJ1Y3QgZGV2aWNlX25vZGUgKmRldl9wbV9vcHBfZ2V0X29mX25vZGUoc3RydWN0IGRldl9wbV9v
+cHAgKm9wcCkKK3sKKwlpZiAoSVNfRVJSX09SX05VTEwob3BwKSkgeworCQlwcl9lcnIoIiVzOiBJ
+bnZhbGlkIHBhcmFtZXRlcnNcbiIsIF9fZnVuY19fKTsKKwkJcmV0dXJuIE5VTEw7CisJfQorCisJ
+cmV0dXJuIG9mX25vZGVfZ2V0KG9wcC0+bnApOworfQorRVhQT1JUX1NZTUJPTF9HUEwoZGV2X3Bt
+X29wcF9nZXRfb2Zfbm9kZSk7CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3BtX29wcC5oIGIv
+aW5jbHVkZS9saW51eC9wbV9vcHAuaAppbmRleCA1MjhhN2Q5Y2YyZWYuLjA5OWIzMTk2MGRlYyAx
+MDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9wbV9vcHAuaAorKysgYi9pbmNsdWRlL2xpbnV4L3Bt
+X29wcC5oCkBAIC0zMDAsNiArMzAwLDcgQEAgdm9pZCBkZXZfcG1fb3BwX29mX2NwdW1hc2tfcmVt
+b3ZlX3RhYmxlKGNvbnN0IHN0cnVjdCBjcHVtYXNrICpjcHVtYXNrKTsKIGludCBkZXZfcG1fb3Bw
+X29mX2dldF9zaGFyaW5nX2NwdXMoc3RydWN0IGRldmljZSAqY3B1X2Rldiwgc3RydWN0IGNwdW1h
+c2sgKmNwdW1hc2spOwogc3RydWN0IGRldmljZV9ub2RlICpkZXZfcG1fb3BwX29mX2dldF9vcHBf
+ZGVzY19ub2RlKHN0cnVjdCBkZXZpY2UgKmRldik7CiBzdHJ1Y3QgZGV2X3BtX29wcCAqb2ZfZGV2
+X3BtX29wcF9maW5kX3JlcXVpcmVkX29wcChzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBkZXZp
+Y2Vfbm9kZSAqbnApOworc3RydWN0IGRldmljZV9ub2RlICpkZXZfcG1fb3BwX2dldF9vZl9ub2Rl
+KHN0cnVjdCBkZXZfcG1fb3BwICpvcHApOwogI2Vsc2UKIHN0YXRpYyBpbmxpbmUgaW50IGRldl9w
+bV9vcHBfb2ZfYWRkX3RhYmxlKHN0cnVjdCBkZXZpY2UgKmRldikKIHsKQEAgLTMzOCw2ICszMzks
+MTAgQEAgc3RhdGljIGlubGluZSBzdHJ1Y3QgZGV2X3BtX29wcCAqb2ZfZGV2X3BtX29wcF9maW5k
+X3JlcXVpcmVkX29wcChzdHJ1Y3QgZGV2aWNlICoKIHsKIAlyZXR1cm4gTlVMTDsKIH0KK3N0YXRp
+YyBpbmxpbmUgc3RydWN0IGRldmljZV9ub2RlICpkZXZfcG1fb3BwX2dldF9vZl9ub2RlKHN0cnVj
+dCBkZXZfcG1fb3BwICpvcHApCit7CisJcmV0dXJuIE5VTEw7Cit9CiAjZW5kaWYKIAogI2VuZGlm
+CQkvKiBfX0xJTlVYX09QUF9IX18gKi8KCi0tIAp2aXJlc2gKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJl
+bm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21h
+aWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
