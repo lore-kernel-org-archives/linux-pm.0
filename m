@@ -1,41 +1,106 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before
- stopping the tick
-Date: Mon, 5 Mar 2018 17:50:52 +0100
-Message-ID: <20180305165052.GE25181@hirez.programming.kicks-ass.net>
-References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
- <2048240.1dZKXsSxFh@aspire.rjw.lan>
- <3c051023-312b-d2bc-34b5-40e8c13ca796@tu-dresden.de>
+From: Feng Kan <fkan@apm.com>
+Subject: [PATCH V3] PM / core: fix deferred probe breaking suspend resume order
+Date: Mon,  5 Mar 2018 10:29:39 -0800
+Message-ID: <1520274579-30492-1-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3c051023-312b-d2bc-34b5-40e8c13ca796@tu-dresden.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rjw@rjwysocki.net, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org, bhelgaas@google.com, gregkh@linuxfoundation.org
+Cc: Feng Kan <fkan@apm.com>, Toan Le <toanle@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 05, 2018 at 04:36:20PM +0100, Thomas Ilsche wrote:
-> I fear that might even create positive feedback loops on the
-> heuristic, which will take into account the sleep durations for
-> sched tick wakeups in sort of a self fulfilling prophecy:
-> 1) The heuristic predicts to wake up in less than a full sched period,
-> 2) The sched tick is kept enabled
-> 3) The sched tick wakes up the system in less than a full sched period
-> 4) Repeat
+When bridge and its endpoint is enumerated the devices are added to the
+dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
+This causes the bridge to be moved to the end of the dpm list when
+deferred probe kicks in. The order of the dpm list for bridge and
+endpoint is reversed.
 
-Right, I pointed out this same issue. We should ignore 'ticks' for the
-purpose of measuring sleep duration.
+Add reordering code to move the bridge and its children and consumers to
+the end of the pm list so the order for suspend and resume is not altered.
+The code also move device and its children and consumers to the tail of
+device_kset list if it is registered.
 
-That's slightly tricky to actually do though :/
+Signed-off-by: Feng Kan <fkan@apm.com>
+Signed-off-by: Toan Le <toanle@apm.com>
+---
+ V3:
+	1. additional code comment changes
+ V2:
+        1. change patch title from "move device and its children..."
+        2. move define based on Bjorn's comment
+        3. rename function name and comment content
 
-> Question: Does disabling a timer on a cpu guarantee that this cpu will
-> wake-up or is there a scenario where a timer is deleted or moved
-> externally without the cpu having a chance to change it's idle state?
+ drivers/base/base.h |  3 +++
+ drivers/base/core.c | 20 ++++++++++++++++++++
+ drivers/base/dd.c   |  4 +---
+ 3 files changed, 24 insertions(+), 3 deletions(-)
 
-I think we let them sleep and don't modify any hardware timers,
-resulting in them waking up at the predetermined time, not find anything
-to do, recompute the next timer and go back to sleep.
-
-Waking them up to reprogram the timer hardware is far more expensive.
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index d800de6..a75c302 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -161,3 +161,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
+ extern void device_links_no_driver(struct device *dev);
+ extern bool device_links_busy(struct device *dev);
+ extern void device_links_unbind_consumers(struct device *dev);
++
++/* device pm support */
++void device_pm_move_to_tail(struct device *dev);
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 110230d..3b37906 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -148,6 +148,26 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
+ }
+ 
+ /**
++ * device_pm_move_to_tail - Move set of devices to the end of device lists
++ * @dev: current device pointer
++ *
++ * This is a device_reorder_to_tail() wrapper taking the requisite locks.
++ *
++ * It moves the device along with all of its children and all of its consumers
++ * to the ends of the device_kset and dpm_list, recursively.
++ */
++void device_pm_move_to_tail(struct device *dev)
++{
++	int idx;
++
++	idx = device_links_read_lock();
++	device_pm_lock();
++	device_reorder_to_tail(dev, NULL);
++	device_pm_unlock();
++	device_links_read_unlock(idx);
++}
++
++/**
+  * device_link_add - Create a link between two devices.
+  * @consumer: Consumer end of the link.
+  * @supplier: Supplier end of the link.
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 2c964f5..96fab29 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -123,9 +123,7 @@ static void deferred_probe_work_func(struct work_struct *work)
+ 		 * the list is a good order for suspend but deferred
+ 		 * probe makes that very unsafe.
+ 		 */
+-		device_pm_lock();
+-		device_pm_move_last(dev);
+-		device_pm_unlock();
++		device_pm_move_to_tail(dev);
+ 
+ 		dev_dbg(dev, "Retrying from deferred list\n");
+ 		if (initcall_debug && !initcalls_done)
+-- 
+1.8.3.1
