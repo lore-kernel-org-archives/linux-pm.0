@@ -1,10 +1,10 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 02/12] thermal: exynos: remove parsing of
- samsung,tmu_default_temp_offset property
-Date: Tue, 06 Mar 2018 15:43:45 +0100
-Message-ID: <1520347435-22970-3-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 06/12] thermal: exynos: remove parsing of
+ samsung,tmu_reference_voltage property
+Date: Tue, 06 Mar 2018 15:43:49 +0100
+Message-ID: <1520347435-22970-7-git-send-email-b.zolnierkie@samsung.com>
 References: <1520347435-22970-1-git-send-email-b.zolnierkie@samsung.com>
- <CGME20180306144436epcas2p2f26ee2297cbd0e654930e8bb85512fe6@epcas2p2.samsung.com>
+ <CGME20180306144453epcas2p2d440c954c21c800e21f121418d7e5ec8@epcas2p2.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -23,70 +23,128 @@ To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Krz
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, Russell King <linux@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Trimming (one point based or two points based) is always used for
-the temperature calibration and the default non-trimming code should
-never be reached.
-
-Modify temp_to_code() and code_to_temp() accordingly (WARN_ON(1)
-in the default cases) and then remove no longer needed parsing of
-samsung,tmu_default_temp_offset property.
+Since pdata reference_voltage values are SoC (not platform) specific
+just move it from platform data to struct exynos_tmu_data instance.
+Then remove parsing of samsung,tmu_reference_voltage property.
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 6 ++----
- drivers/thermal/samsung/exynos_tmu.h | 2 --
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 18 +++++++++++++++---
+ drivers/thermal/samsung/exynos_tmu.h |  4 ----
+ 2 files changed, 15 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index ed805c7..e42a08b 100644
+index 02d34cf..12bbf79 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -260,7 +260,7 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
- 		temp_code = temp + data->temp_error1 - pdata->first_point_trim;
- 		break;
- 	default:
--		temp_code = temp + pdata->default_temp_offset;
-+		WARN_ON(1);
- 		break;
- 	}
+@@ -123,6 +123,8 @@
  
-@@ -287,7 +287,7 @@ static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
- 		temp = temp_code - data->temp_error1 + pdata->first_point_trim;
- 		break;
- 	default:
--		temp = temp_code - pdata->default_temp_offset;
-+		WARN_ON(1);
- 		break;
- 	}
+ #define EXYNOS5433_PD_DET_EN			1
  
-@@ -1164,8 +1164,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
- 	pdata->first_point_trim = (u8)value;
- 	of_property_read_u32(np, "samsung,tmu_second_point_trim", &value);
- 	pdata->second_point_trim = (u8)value;
--	of_property_read_u32(np, "samsung,tmu_default_temp_offset", &value);
--	pdata->default_temp_offset = (u8)value;
++#define EXYNOS5433_G3D_BASE			0x10070000
++
+ /*exynos5440 specific registers*/
+ #define EXYNOS5440_TMU_S0_7_TRIM		0x000
+ #define EXYNOS5440_TMU_S0_7_CTRL		0x020
+@@ -190,6 +192,9 @@
+  * @max_efuse_value: maximum valid trimming data
+  * @temp_error1: fused value of the first point trim.
+  * @temp_error2: fused value of the second point trim.
++ * @reference_voltage: reference voltage of amplifier
++ *	in the positive-TC generator block
++ *	0 < reference_voltage <= 31
+  * @regulator: pointer to the TMU regulator structure.
+  * @reg_conf: pointer to structure to register with core thermal.
+  * @ntrip: number of supported trip points.
+@@ -213,6 +218,7 @@ struct exynos_tmu_data {
+ 	u32 min_efuse_value;
+ 	u32 max_efuse_value;
+ 	u16 temp_error1, temp_error2;
++	u8 reference_voltage;
+ 	struct regulator *regulator;
+ 	struct thermal_zone_device *tzd;
+ 	unsigned int ntrip;
+@@ -387,7 +393,7 @@ static u32 get_con_reg(struct exynos_tmu_data *data, u32 con)
+ 		con |= (EXYNOS4412_MUX_ADDR_VALUE << EXYNOS4412_MUX_ADDR_SHIFT);
+ 
+ 	con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK << EXYNOS_TMU_REF_VOLTAGE_SHIFT);
+-	con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
++	con |= data->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
+ 
+ 	con &= ~(EXYNOS_TMU_BUF_SLOPE_SEL_MASK << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
+ 	con |= (pdata->gain << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
+@@ -1154,8 +1160,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
+ 
+ 	ret = of_property_read_u32(np, "samsung,tmu_gain", &value);
+ 	pdata->gain = (u8)value;
+-	of_property_read_u32(np, "samsung,tmu_reference_voltage", &value);
+-	pdata->reference_voltage = (u8)value;
  
  	of_property_read_u32(np, "samsung,tmu_cal_type", &pdata->cal_type);
  
+@@ -1210,6 +1214,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_read = exynos4210_tmu_read;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 4;
++		data->reference_voltage = 7;
+ 		data->efuse_value = 55;
+ 		data->min_efuse_value = 40;
+ 		data->max_efuse_value = 100;
+@@ -1226,6 +1231,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 4;
++		data->reference_voltage = 16;
+ 		data->efuse_value = 55;
+ 		if (data->soc != SOC_ARCH_EXYNOS5420 &&
+ 		    data->soc != SOC_ARCH_EXYNOS5420_TRIMINFO)
+@@ -1241,6 +1247,10 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 8;
++		if (res.start == EXYNOS5433_G3D_BASE)
++			data->reference_voltage = 23;
++		else
++			data->reference_voltage = 16;
+ 		data->efuse_value = 75;
+ 		data->min_efuse_value = 40;
+ 		data->max_efuse_value = 150;
+@@ -1252,6 +1262,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
+ 		data->ntrip = 4;
++		data->reference_voltage = 16;
+ 		data->efuse_value = 0x5d2d;
+ 		data->min_efuse_value = 16;
+ 		data->max_efuse_value = 76;
+@@ -1263,6 +1274,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 8;
++		data->reference_voltage = 17;
+ 		data->efuse_value = 75;
+ 		data->min_efuse_value = 15;
+ 		data->max_efuse_value = 100;
 diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 8c468b6..a7e81b4 100644
+index 4c49312..9f4318c 100644
 --- a/drivers/thermal/samsung/exynos_tmu.h
 +++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -50,7 +50,6 @@ enum soc_type {
-  * @efuse_value: platform defined fuse value
-  * @min_efuse_value: minimum valid trimming data
-  * @max_efuse_value: maximum valid trimming data
-- * @default_temp_offset: default temperature offset in case of no trimming
+@@ -42,16 +42,12 @@ enum soc_type {
+  * struct exynos_tmu_platform_data
+  * @gain: gain of amplifier in the positive-TC generator block
+  *	0 < gain <= 15
+- * @reference_voltage: reference voltage of amplifier
+- *	in the positive-TC generator block
+- *	0 < reference_voltage <= 31
   * @cal_type: calibration type for temperature
   *
   * This structure is required for configuration of exynos_tmu driver.
-@@ -65,7 +64,6 @@ struct exynos_tmu_platform_data {
- 	u32 max_efuse_value;
- 	u8 first_point_trim;
- 	u8 second_point_trim;
--	u8 default_temp_offset;
+  */
+ struct exynos_tmu_platform_data {
+ 	u8 gain;
+-	u8 reference_voltage;
  
  	u32 cal_type;
  };
