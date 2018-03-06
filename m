@@ -1,84 +1,45 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 00/12] thermal: exynos: sanitize DeviceTree support
-Date: Tue, 06 Mar 2018 15:43:43 +0100
-Message-ID: <1520347435-22970-1-git-send-email-b.zolnierkie@samsung.com>
-References: <CGME20180306144427epcas1p3bd260e382c61ab5176a50aa95084b542@epcas1p3.samsung.com>
+Subject: [PATCH 01/12] thermal: exynos: remove unused "type" field from
+ struct exynos_tmu_platform_data
+Date: Tue, 06 Mar 2018 15:43:44 +0100
+Message-ID: <1520347435-22970-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1520347435-22970-1-git-send-email-b.zolnierkie@samsung.com>
+        <CGME20180306144431epcas2p1fef7b2d8130decb08e023b4ff329e9ff@epcas2p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1520347435-22970-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>
 Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Remove unused "type" field from struct exynos_tmu_platform_data.
 
-Values passed through DT properties specific to Exynos thermal
-driver ("samsung,*") are SoC (not platform) specific so just
-define them in struct exynos_tmu_data instance (or just use
-constants where values are identical for all SoCs) and remove
-"samsung," DT properties altogether.
+There should be no functional changes caused by this patch.
 
-The patchset should not cause any functionality changes.  This
-means that unless there are some bugs in the patches itself there
-should be no behavior changes for the driver (this also includes
-lack of changes in the way hardware is accessed by the driver).
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-Tested on Exynos5422 based Odroid-XU3 Lite board.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (12):
-  thermal: exynos: remove unused type field from struct
-    exynos_tmu_platform_data
-  thermal: exynos: remove parsing of samsung,tmu_default_temp_offset
-    property
-  thermal: exynos: remove parsing of
-    samsung,tmu_[first,second]_point_trim properties
-  thermal: exynos: remove parsing of samsung,tmu_noise_cancel_mode
-    property
-  thermal: exynos: remove parsing of samsung,tmu[_min,_max]_efuse_value
-    properties
-  thermal: exynos: remove parsing of samsung,tmu_reference_voltage
-    property
-  thermal: exynos: remove parsing of samsung,tmu_gain property
-  thermal: exynos: remove parsing of samsung,tmu_cal_type property
-  thermal: exynos: remove separate exynos_tmu.h header file
-  ARM: dts: remove no longer needed samsung thermal properties
-  dt-bindings: thermal: remove no longer needed samsung thermal
-    properties
-  thermal: exynos: remove separate thermal_exynos.h header file
-
- .../devicetree/bindings/thermal/exynos-thermal.txt |  23 +--
- arch/arm/boot/dts/exynos3250.dtsi                  |   2 +-
- arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
- arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  20 ---
- arch/arm/boot/dts/exynos5250.dtsi                  |   2 +-
- arch/arm/boot/dts/exynos5410.dtsi                  |   8 +-
- arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi  |  21 ---
- arch/arm/boot/dts/exynos5420.dtsi                  |  10 +-
- arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  20 ---
- arch/arm/boot/dts/exynos5440.dtsi                  |   6 +-
- .../dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi |  20 ---
- .../dts/exynos/exynos5433-tmu-sensor-conf.dtsi     |  19 ---
- arch/arm64/boot/dts/exynos/exynos5433.dtsi         |  10 +-
- .../boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi   |  21 ---
- arch/arm64/boot/dts/exynos/exynos7.dtsi            |   2 +-
- drivers/thermal/samsung/exynos_tmu.c               | 181 +++++++++++----------
- drivers/thermal/samsung/exynos_tmu.h               |  75 ---------
- include/dt-bindings/thermal/thermal_exynos.h       |  28 ----
- 18 files changed, 124 insertions(+), 346 deletions(-)
- delete mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi
- delete mode 100644 drivers/thermal/samsung/exynos_tmu.h
- delete mode 100644 include/dt-bindings/thermal/thermal_exynos.h
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+index 5149c2a..8c468b6 100644
+--- a/drivers/thermal/samsung/exynos_tmu.h
++++ b/drivers/thermal/samsung/exynos_tmu.h
+@@ -47,7 +47,6 @@ enum soc_type {
+  *	0 < reference_voltage <= 31
+  * @noise_cancel_mode: noise cancellation mode
+  *	000, 100, 101, 110 and 111 can be different modes
+- * @type: determines the type of SOC
+  * @efuse_value: platform defined fuse value
+  * @min_efuse_value: minimum valid trimming data
+  * @max_efuse_value: maximum valid trimming data
+@@ -68,7 +67,6 @@ struct exynos_tmu_platform_data {
+ 	u8 second_point_trim;
+ 	u8 default_temp_offset;
+ 
+-	enum soc_type type;
+ 	u32 cal_type;
+ };
+ 
 -- 
 1.9.1
