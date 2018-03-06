@@ -1,7 +1,7 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v5 1/4] sched/fair: add util_est on top of PELT
-Date: Tue, 6 Mar 2018 19:58:51 +0100
-Message-ID: <20180306185851.GG25201@hirez.programming.kicks-ass.net>
+Date: Tue, 6 Mar 2018 20:02:41 +0100
+Message-ID: <20180306190241.GH25201@hirez.programming.kicks-ass.net>
 References: <20180222170153.673-1-patrick.bellasi@arm.com>
  <20180222170153.673-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
@@ -15,46 +15,20 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@r
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, Feb 22, 2018 at 05:01:50PM +0000, Patrick Bellasi wrote:
-> +static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-> +				    struct task_struct *p)
-> +{
-> +	unsigned int enqueued;
-> +
-> +	if (!sched_feat(UTIL_EST))
-> +		return;
-> +
-> +	/* Update root cfs_rq's estimated utilization */
-> +	enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-> +	enqueued += _task_util_est(p);
-> +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
-> +}
+> +struct util_est {
+> +	unsigned int			enqueued;
+> +	unsigned int			ewma;
+> +#define UTIL_EST_WEIGHT_SHIFT		2
+> +};
 
-> +static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
-> +				    struct task_struct *p,
-> +				    bool task_sleep)
-> +{
-> +	long last_ewma_diff;
-> +	struct util_est ue;
-> +
-> +	if (!sched_feat(UTIL_EST))
-> +		return;
-> +
-> +	/*
-> +	 * Update root cfs_rq's estimated utilization
-> +	 *
-> +	 * If *p is the last task then the root cfs_rq's estimated utilization
-> +	 * of a CPU is 0 by definition.
-> +	 */
-> +	ue.enqueued = 0;
-> +	if (cfs_rq->nr_running) {
-> +		ue.enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-> +		ue.enqueued -= min_t(unsigned int, ue.enqueued,
-> +				     _task_util_est(p));
-> +	}
-> +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, ue.enqueued);
+> +	ue = READ_ONCE(p->se.avg.util_est);
 
-It appears to me this isn't a stable situation and completely relies on
-the !nr_running case to recalibrate. If we ensure that doesn't happen
-for a significant while the sum can run-away, right?
+> +	WRITE_ONCE(p->se.avg.util_est, ue);
 
-Should we put a max in enqueue to avoid this?
+That is actually quite dodgy... and relies on the fact that we have the
+8 byte case in __write_once_size() and __read_once_size()
+unconditionally. It then further relies on the compiler DTRT for 32bit
+platforms, which is generating 2 32bit loads/stores.
+
+The advantage is of course that it will use single u64 loads/stores
+where available.
