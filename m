@@ -1,92 +1,94 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 11/12] dt-bindings: thermal: remove no longer needed samsung
- thermal properties
-Date: Tue, 06 Mar 2018 15:43:54 +0100
-Message-ID: <1520347435-22970-12-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 02/12] thermal: exynos: remove parsing of
+ samsung,tmu_default_temp_offset property
+Date: Tue, 06 Mar 2018 15:43:45 +0100
+Message-ID: <1520347435-22970-3-git-send-email-b.zolnierkie@samsung.com>
 References: <1520347435-22970-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180306144516epcas1p3e951e15e666779c870ad091d65041409@epcas1p3.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+ <CGME20180306144436epcas2p2f26ee2297cbd0e654930e8bb85512fe6@epcas2p2.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1520347435-22970-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, Russell King <linux@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Remove documentation for longer needed samsung thermal properties.
+Trimming (one point based or two points based) is always used for
+the temperature calibration and the default non-trimming code should
+never be reached.
+
+Modify temp_to_code() and code_to_temp() accordingly (WARN_ON(1)
+in the default cases) and then remove no longer needed parsing of
+samsung,tmu_default_temp_offset property.
+
+There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- .../devicetree/bindings/thermal/exynos-thermal.txt | 23 +++++-----------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 6 ++----
+ drivers/thermal/samsung/exynos_tmu.h | 2 --
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-index 1b596fd..b957acf 100644
---- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-@@ -49,19 +49,6 @@ on the SoC (only first trip points defined in DT will be configured):
-  - samsung,exynos5433-tmu: 8
-  - samsung,exynos7-tmu: 8
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index ed805c7..e42a08b 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -260,7 +260,7 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
+ 		temp_code = temp + data->temp_error1 - pdata->first_point_trim;
+ 		break;
+ 	default:
+-		temp_code = temp + pdata->default_temp_offset;
++		WARN_ON(1);
+ 		break;
+ 	}
  
--Following properties are mandatory (depending on SoC):
--- samsung,tmu_gain: Gain value for internal TMU operation.
--- samsung,tmu_reference_voltage: Value of TMU IP block's reference voltage
--- samsung,tmu_noise_cancel_mode: Mode for noise cancellation
--- samsung,tmu_efuse_value: Default level of temperature - it is needed when
--			   in factory fusing produced wrong value
--- samsung,tmu_min_efuse_value: Minimum temperature fused value
--- samsung,tmu_max_efuse_value: Maximum temperature fused value
--- samsung,tmu_first_point_trim: First point trimming value
--- samsung,tmu_second_point_trim: Second point trimming value
--- samsung,tmu_default_temp_offset: Default temperature offset
--- samsung,tmu_cal_type: Callibration type
--
- ** Optional properties:
+@@ -287,7 +287,7 @@ static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
+ 		temp = temp_code - data->temp_error1 + pdata->first_point_trim;
+ 		break;
+ 	default:
+-		temp = temp_code - pdata->default_temp_offset;
++		WARN_ON(1);
+ 		break;
+ 	}
  
- - vtmu-supply: This entry is optional and provides the regulator node supplying
-@@ -78,7 +65,7 @@ Example 1):
- 		clocks = <&clock 383>;
- 		clock-names = "tmu_apbif";
- 		vtmu-supply = <&tmu_regulator_node>;
--		#include "exynos4412-tmu-sensor-conf.dtsi"
-+		#thermal-sensor-cells = <0>;
- 	};
+@@ -1164,8 +1164,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
+ 	pdata->first_point_trim = (u8)value;
+ 	of_property_read_u32(np, "samsung,tmu_second_point_trim", &value);
+ 	pdata->second_point_trim = (u8)value;
+-	of_property_read_u32(np, "samsung,tmu_default_temp_offset", &value);
+-	pdata->default_temp_offset = (u8)value;
  
- Example 2):
-@@ -89,7 +76,7 @@ Example 2):
- 		interrupts = <0 58 0>;
- 		clocks = <&clock 21>;
- 		clock-names = "tmu_apbif";
--		#include "exynos5440-tmu-sensor-conf.dtsi"
-+		#thermal-sensor-cells = <0>;
- 	};
+ 	of_property_read_u32(np, "samsung,tmu_cal_type", &pdata->cal_type);
  
- Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
-@@ -99,7 +86,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
- 		interrupts = <0 184 0>;
- 		clocks = <&clock 318>, <&clock 318>;
- 		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
--		#include "exynos4412-tmu-sensor-conf.dtsi"
-+		#thermal-sensor-cells = <0>;
- 	};
+diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+index 8c468b6..a7e81b4 100644
+--- a/drivers/thermal/samsung/exynos_tmu.h
++++ b/drivers/thermal/samsung/exynos_tmu.h
+@@ -50,7 +50,6 @@ enum soc_type {
+  * @efuse_value: platform defined fuse value
+  * @min_efuse_value: minimum valid trimming data
+  * @max_efuse_value: maximum valid trimming data
+- * @default_temp_offset: default temperature offset in case of no trimming
+  * @cal_type: calibration type for temperature
+  *
+  * This structure is required for configuration of exynos_tmu driver.
+@@ -65,7 +64,6 @@ struct exynos_tmu_platform_data {
+ 	u32 max_efuse_value;
+ 	u8 first_point_trim;
+ 	u8 second_point_trim;
+-	u8 default_temp_offset;
  
- 	tmu_cpu3: tmu@1006c000 {
-@@ -108,7 +95,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
- 		interrupts = <0 185 0>;
- 		clocks = <&clock 318>, <&clock 319>;
- 		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
--		#include "exynos4412-tmu-sensor-conf.dtsi"
-+		#thermal-sensor-cells = <0>;
- 	};
- 
- 	tmu_gpu: tmu@100a0000 {
-@@ -117,7 +104,7 @@ Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
- 		interrupts = <0 215 0>;
- 		clocks = <&clock 319>, <&clock 318>;
- 		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
--		#include "exynos4412-tmu-sensor-conf.dtsi"
-+		#thermal-sensor-cells = <0>;
- 	};
- 
- Note: For multi-instance tmu each instance should have an alias correctly
+ 	u32 cal_type;
+ };
 -- 
 1.9.1
