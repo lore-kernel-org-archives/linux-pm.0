@@ -1,71 +1,176 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC/RFT][PATCH 4/7] cpuidle: menu: Split idle duration
- prediction from state selection
-Date: Tue, 6 Mar 2018 22:07:01 +0800
-Message-ID: <73d0ffca-7496-12f3-e1b7-a96494507817@linux.intel.com>
-References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
- <2332986.m9oRvTSu8E@aspire.rjw.lan>
- <20180305113803.GO25201@hirez.programming.kicks-ass.net>
- <CAJZ5v0gdsSXOLL=nJW801L0LzE0CeyPCCrgq4_0tyi40wNLa+w@mail.gmail.com>
- <20180305125012.GA25181@hirez.programming.kicks-ass.net>
- <CAJZ5v0g5x9EWh0MH7wUh4sem9aYB-JuWb_Pn96qNwj=XefOcHg@mail.gmail.com>
- <20180305135322.GV25201@hirez.programming.kicks-ass.net>
- <43825f88-762e-11e5-d70a-45152b95599d@linux.intel.com>
- <20180306084536.GZ25201@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: [PATCH v9 00/15] Krait clocks + Krait CPUfreq
+Date: Tue,  6 Mar 2018 20:08:53 +0530
+Message-ID: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180306084536.GZ25201@hirez.programming.kicks-ass.net>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018/3/6 16:45, Peter Zijlstra wrote:
-> On Tue, Mar 06, 2018 at 10:15:10AM +0800, Li, Aubrey wrote:
->> On 2018/3/5 21:53, Peter Zijlstra wrote:
->>> On Mon, Mar 05, 2018 at 02:05:10PM +0100, Rafael J. Wysocki wrote:
->>>> On Mon, Mar 5, 2018 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->>>>> On Mon, Mar 05, 2018 at 12:47:23PM +0100, Rafael J. Wysocki wrote:
->>>
->>>>>> IOW, the target residency of the selected state doesn't tell you how
->>>>>> much time you should expect to be idle in general.
->>>>>
->>>>> Right, but I think that measure isn't of primary relevance. What we want
->>>>> to know is: 'should I stop the tick' and 'what C state do I go to'.
->>
->> I understood the benefit of mapping duration to state number, is duration <->
->> state number mapping a generic solution to all arches?
-> 
-> Yes, all platforms have a limited set of possible idle states.
-> 
->> Back to the user's concern is, "I'm running a latency sensitive application, and
->> I want idle switching ASAP". So I think the user may not care about what C state
->> to go into, that is, even if a deeper state has chance to go, the user striving
->> for a higher workload score may still not want it?
-> 
-> The user caring about performance very much cares about the actual idle
-> state too, exit latency for deeper states is horrific and will screw
-> them up just as much as the whole nohz timer reprogramming does.
-> 
-> We can basically view the whole nohz thing as an additional entry/exit
-> latency for the idle state, which is why I don't think its weird to
-> couple them.
+[v9]
+  * Fixed a rebase issue in Makefile and added Tag from Robh.
 
-okay, I see your point now. Thanks!
+[v8]
+  * Fixed a bug in path#14 pointed out by Viresh and also added tags.
+    No change in any other patch.
 
-> 
->>>> Maybe just return a "nohz" indicator from cpuidle_select() in addition
->>>> to the state index and make the decision in the governor?
->>>
->>> Much better option than returning a duration :-)
->>>
->> So what does "nohz = disable and state index = deepest" mean? This combination
->> does not make sense for performance only purpose?
-> 
-> I tend to agree with you that the state space allowed by a separate
-> variable is larger than required, but it's significantly smaller than
-> preserving 'time' so I can live with it.
-> 
+[v7]
+  * Fixed comments from Viresh for cleaning up the error handling
+    in qcom-cpufreq.c. Also changed the init function to lateinit
+    call. This is required because nvmem which gets initialised with
+    module_init needs to go first.
+  * Fixed Rob's comments for bindings documentation
+  * Fixed kbuild build issue in clk-lpc32xx.c
+  * Rebased on top of clk-next
+
+[v6]
+  * Adrressed comments from Viresh for patch #14 in v5 [5]
+  * Introduced a new binding operating-points-v2-krait-cpu
+    as per discussion with Rob
+  * Added Review tags
+
+[v5]
+  * Addressed comments from Rob for bindings
+  * Addressed comments from Viresh to use dev_pm_opp_set_prop_name, accordingly
+    dropped patch #12 and corrected patch #11 from previous patch set in [4]
+  * Converted to use #spdx tags for newly introduced files
+
+Mostly a resend of the v3 posted by Stephen quite some time back [1]
+except for few changes.
+  Based on reading some feedback from list,
+  * Dropped the patch "clk: Add safe switch hook" from v3 [2].
+    Now this is taken care by patch#10 in this series only for Krait.
+  * Dropped the path "clk: Avoid sending high rates to downstream
+		      clocks during set_rate" from v3 [3].
+  * Rebased on top of clk-next.
+  * Dropped the DT update from the series. Will send separately
+  * Now with cpufreq-dt+opp supporting voltage scaling, registering the
+    krait cpu supplies in DT should be sufficient. But one issue is,
+    the qcom-cpufreq drivers reads the efuse and based on that registers
+    the opp data and then registers the cpufreq-dt device. So when
+    cpufreq-dt driver probes and registers the regulator to the OPP framework,
+    it expects that the opp data for the device should not be registered before
+    the regulator. Will send a RFC patch removing that check, to find out the
+    right way of doing it.
+
+These patches provide cpufreq scaling on devices with Krait CPUs.
+In Krait CPU designs there's one PLL and two muxes per CPU, allowing
+us to switch CPU frequencies independently.
+
+				 secondary
+	 +-----+                    +
+	 | QSB |-------+------------|\
+	 +-----+       |            | |-+
+		       |    +-------|/  |
+		       |    |       +   |
+	 +-----+       |    |           |
+	 | PLL |----+-------+           |   primary
+	 +-----+    |  |                |     +
+		    |  |                +-----|\       +------+
+	 +-------+  |  |                      | \      |      |
+	 | HFPLL |----------+-----------------|  |-----| CPU0 |
+	 +-------+  |  |    |                 |  |     |      |
+		    |  |    | +-----+         | /      +------+
+		    |  |    +-| / 2 |---------|/
+		    |  |      +-----+         +
+		    |  |         secondary
+		    |  |            +
+		    |  +------------|\
+		    |               | |-+
+		    +---------------|/  |   primary
+				    +   |     +
+					+-----|\       +------+
+	 +-------+                            | \      |      |
+	 | HFPLL |----------------------------|  |-----| CPU1 |
+	 +-------+          |                 |  |     |      |
+			    | +-----+         | /      +------+
+			    +-| / 2 |---------|/
+			      +-----+         +
+
+To support this in the common clock framework we model the muxes,
+dividers, and PLLs as different clocks. CPUfreq only interacts
+with the primary mux (farthest right in the diagram). When CPUfreq
+sets a rate, the mux code finds the best parent that can provide the rate.
+Due to the design, QSB and the top PLL are always a fixed rate and thus
+only support one frequency each. These sources provide the lowest
+frequencies for the CPUs. The HFPLLs are where we can make the CPU go
+faster (GHz range). Sometimes we need to run the HFPLL twice as
+fast and divide it by two to get a particular frequency.
+
+When switching rates we can't leave the CPU clocked by the HFPLL because
+we need to turn off the output of the PLL when changing its frequency.
+This means we have to switch over to the secondary mux and use one of the
+fixed sources. This is why we need something like the safe parent patch.
+
+[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332607.html
+[2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332615.html
+[3] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332608.html
+[4] https://lwn.net/Articles/740994/ 
+[5] https://lkml.org/lkml/2017/12/19/537
+
+Sricharan R (2):
+  clk: qcom: Add safe switch hook for krait mux clocks
+  dt-bindings: cpufreq: Document operating-points-v2-krait-cpu
+
+Stephen Boyd (13):
+  ARM: Add Krait L2 register accessor functions
+  clk: mux: Split out register accessors for reuse
+  clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
+  clk: qcom: Add HFPLL driver
+  dt-bindings: clock: Document qcom,hfpll
+  clk: qcom: Add MSM8960/APQ8064's HFPLLs
+  clk: qcom: Add IPQ806X's HFPLLs
+  clk: qcom: Add support for Krait clocks
+  clk: qcom: Add KPSS ACC/GCC driver
+  dt-bindings: arm: Document qcom,kpss-gcc
+  clk: qcom: Add Krait clock controller driver
+  dt-bindings: clock: Document qcom,krait-cc
+  cpufreq: Add module to register cpufreq on Krait CPUs
+
+ .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |   7 +
+ .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  |  32 ++
+ .../devicetree/bindings/clock/qcom,hfpll.txt       |  46 +++
+ .../devicetree/bindings/clock/qcom,krait-cc.txt    |  22 ++
+ .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++
+ arch/arm/common/Kconfig                            |   3 +
+ arch/arm/common/Makefile                           |   1 +
+ arch/arm/common/krait-l2-accessors.c               |  48 +++
+ arch/arm/include/asm/krait-l2-accessors.h          |  10 +
+ drivers/clk/clk-mux.c                              |  74 ++--
+ drivers/clk/nxp/clk-lpc32xx.c                      |  21 +-
+ drivers/clk/qcom/Kconfig                           |  28 ++
+ drivers/clk/qcom/Makefile                          |   5 +
+ drivers/clk/qcom/clk-hfpll.c                       | 244 +++++++++++++
+ drivers/clk/qcom/clk-hfpll.h                       |  45 +++
+ drivers/clk/qcom/clk-krait.c                       | 126 +++++++
+ drivers/clk/qcom/clk-krait.h                       |  41 +++
+ drivers/clk/qcom/gcc-ipq806x.c                     |  82 +++++
+ drivers/clk/qcom/gcc-msm8960.c                     | 172 +++++++++
+ drivers/clk/qcom/hfpll.c                           |  96 +++++
+ drivers/clk/qcom/kpss-xcc.c                        |  87 +++++
+ drivers/clk/qcom/krait-cc.c                        | 397 +++++++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   5 +
+ drivers/cpufreq/qcom-cpufreq.c                     | 181 ++++++++++
+ include/dt-bindings/clock/qcom,gcc-msm8960.h       |   2 +
+ include/linux/clk-provider.h                       |   6 +
+ 28 files changed, 2111 insertions(+), 44 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
+ create mode 100644 arch/arm/common/krait-l2-accessors.c
+ create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
+ create mode 100644 drivers/clk/qcom/clk-hfpll.c
+ create mode 100644 drivers/clk/qcom/clk-hfpll.h
+ create mode 100644 drivers/clk/qcom/clk-krait.c
+ create mode 100644 drivers/clk/qcom/clk-krait.h
+ create mode 100644 drivers/clk/qcom/hfpll.c
+ create mode 100644 drivers/clk/qcom/kpss-xcc.c
+ create mode 100644 drivers/clk/qcom/krait-cc.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
