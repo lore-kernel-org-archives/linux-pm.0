@@ -1,54 +1,58 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 10/12] ARM: dts: remove no longer needed samsung thermal properties
-Date: Tue, 6 Mar 2018 16:23:47 +0100
-Message-ID: <CAJKOXPfdQo=wCixbREyOriEUZPRGOT35sT3ojcoeXRt0UsBwqQ@mail.gmail.com>
-References: <CGME20180306144511epcas2p1c1c00d0bdea1e329d2d3d5583f135437@epcas2p1.samsung.com>
- <1520347435-22970-1-git-send-email-b.zolnierkie@samsung.com> <1520347435-22970-11-git-send-email-b.zolnierkie@samsung.com>
+From: Jordan Crouse <jcrouse@codeaurora.org>
+Subject: Re: [Freedreno] [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
+Date: Tue, 6 Mar 2018 08:37:57 -0700
+Message-ID: <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
+References: <20180302215638.6145-1-jcrouse@codeaurora.org>
+ <20180302215638.6145-3-jcrouse@codeaurora.org>
+ <20180305044221.GC23018@vireshk-i7>
+ <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
+ <20180306042656.GJ23018@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1520347435-22970-11-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Disposition: inline
+In-Reply-To: <20180306042656.GJ23018@vireshk-i7>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: nm@ti.com, devicetree@vger.kernel.org, rnayak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, dianders@chromium.org, dri-devel@lists.freedesktop.org, vireshk@kernel.org, freedreno@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 6, 2018 at 3:43 PM, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
-> Remove no longer needed samsung thermal properties.
->
-> There should be no functional changes caused by this patch.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  arch/arm/boot/dts/exynos3250.dtsi                   |  2 +-
->  arch/arm/boot/dts/exynos4.dtsi                      |  2 +-
->  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi   | 20 --------------------
->  arch/arm/boot/dts/exynos5250.dtsi                   |  2 +-
->  arch/arm/boot/dts/exynos5410.dtsi                   |  8 ++++----
->  arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi   | 21 ---------------------
->  arch/arm/boot/dts/exynos5420.dtsi                   | 10 +++++-----
->  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi   | 20 --------------------
->  arch/arm/boot/dts/exynos5440.dtsi                   |  6 +++---
->  .../dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi  | 20 --------------------
->  .../boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi | 19 -------------------
->  arch/arm64/boot/dts/exynos/exynos5433.dtsi          | 10 +++++-----
->  .../boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi    | 21 ---------------------
->  arch/arm64/boot/dts/exynos/exynos7.dtsi             |  2 +-
->  14 files changed, 21 insertions(+), 142 deletions(-)
->  delete mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
->  delete mode 100644 arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi
->  delete mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
->  delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi
->  delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi
->  delete mode 100644 arch/arm64/boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi
-
-Hi,
-
-Please split the arm64 to separate patchset.
-
-It is a cleanup patch and it depends on your driver changes so it will
-have to wait till your driver patches hit mainline.
-
-Best regards,
-Krzysztof
+T24gVHVlLCBNYXIgMDYsIDIwMTggYXQgMDk6NTY6NTZBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
+b3RlOgo+IE9uIDA1LTAzLTE4LCAwODoyOCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IEknbSBn
+bGFkIHlvdSBicm91Z2h0IHRoaXMgdXAgLSBJIHdhcyB0cnlpbmcgdG8gZmluZCBhIHBsYWNlIGlu
+IHRoZSBkb2N1bWVudGF0aW9uCj4gPiB0byBwdXQgaXQsIGJ1dCBzaW5jZSB0YXJnZXQgc3BlY2lm
+aWMgbm9kZXMgd291bGQgYmUgYSBuZXcgdHJpY2sgZm9yIE9QUCBJIGRpZG4ndAo+ID4gcXVpdGUg
+a25vdyBob3cgdG8gZ28gYWJvdXQgZG9pbmcgaXQuIERvIHdlIGp1c3QgbGlzdCB0aGVtIGFzIE9w
+dGlvbmFsOiBvcgo+ID4gc2hvdWxkIHdlIGFkZCBhIHRhcmdldCBzcGVjaWZpYyBzZWN0aW9uIHRv
+IHRoZSBkb2N1bWVudGF0aW9uIGFuZCBsaXN0IHRoZW0gb3V0Cj4gPiB0aGVyZSBpbnN0ZWFkPwo+
+IAo+IFNvbWV0aGluZyBsaWtlIHRoaXMgYW5kIHlvdSBuZWVkIHRvIGhhdmUgeW91ciBvd24gY29t
+cGF0aWJsZSBzdHJpbmcgYXMKPiB3ZWxsOgo+IAo+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9vcHAvdGktb21hcDUtb3BwLXN1cHBseS50eHQKPiAKPiBCdXQgZmlyc3QsIHdoYXQn
+cyB0aGUgcHVycG9zZSBvZiB0aGlzIGZpZWxkPyBKdXN0IHRvIGNoZWNrIGlmIGl0IGNhbgo+IGJl
+IGhhbmRsZWQgYnkgY3VycmVudCBiaW5kaW5ncy4KCkknbGwgdHJ5IHRvIGV4cGxhaW4gYnV0IEkg
+bWlnaHQgbmVlZCBTdGVwaGVuIG9yIHNvbWUgb2YgdGhlIG90aGVyIGZvbGtzIHRvIGp1bXAKaW4g
+YW5kIHNhdmUgbWUuCgpPbiBzZG04NDUgdGhlcmUgYXJlIHNoYXJlZCBwb3dlciByZXNvdXJjZXMg
+Y29udHJvbGxlZCBieSB0aGUgUlBNaCB3aGljaCBpcwpwcm9ncmFtZWQgYnkgYSBzZXJpZXMgb2Yg
+Y29tbWFuZHMgZnJvbSB0aGUgcmVndWxhdG9yIGRyaXZlcjsgYnV0IGluIHRoZSBjYXNlCm9mIHRo
+ZSBHUFUgdGhlIHZvdGVzIGFyZSBwYXNzZWQgdG8gdGhlIEdNVSAoZ3JhcGhpY3MgbWFuYWdlbWVu
+dCB1bml0KSB3aGljaApjb21tdW5pY2F0ZXMgd2l0aCB0aGUgUlBNaCBvbiBiZWhhbGYgb2YgdGhl
+IEdQVS4KCkluIG9yZGVyIHRvIGNvbnN0cnVjdCB0aGUgUlBNaCB2b3RlIHdlIG5lZWQgZmlyc3Qg
+bmVlZCBhIHZvbHRhZ2UgbGV2ZWwgdGhhdCB3ZQpjYW4gbG9vayB1cCBpbiBhIGRhdGFiYXNlLiBx
+Y29tLGFyYy1sZXZlbCBpcyB0aGUgdm9sdGFnZSBsZXZlbCBhc3NvY2lhdGVkIHdpdGgKYSBzcGVj
+aWZpYyBPUFAuCgpJIGhhZCBwcmV2aW91c2x5IGJlZW4gYWJ1c2luZyB0aGlzIHdpdGggb3BwLW1p
+Y3Jvdm9sdCBidXQgdGhhdCB3YXMgd3JvbmcgZm9yCm9idmlvdXMgcmVhc29ucyBhbmQgdGhlbiBT
+dGVwaGVuIHBvaW50ZWQgb3V0IHRoYXQgdGhpcyB3b3VsZCBiZSBhIGJldHRlciB3YXkuCgpKb3Jk
+YW4KCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIg
+b2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBDb2xsYWJvcmF0aXZlIFBy
+b2plY3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJp
+LWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBz
+Oi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
