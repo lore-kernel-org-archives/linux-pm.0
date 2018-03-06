@@ -1,58 +1,59 @@
-From: Jordan Crouse <jcrouse@codeaurora.org>
-Subject: Re: [Freedreno] [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Tue, 6 Mar 2018 08:37:57 -0700
-Message-ID: <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
-References: <20180302215638.6145-1-jcrouse@codeaurora.org>
- <20180302215638.6145-3-jcrouse@codeaurora.org>
- <20180305044221.GC23018@vireshk-i7>
- <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
- <20180306042656.GJ23018@vireshk-i7>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
+Date: Tue, 6 Mar 2018 16:43:04 +0100
+Message-ID: <4e3cc8a6-4b4b-4b09-5c04-b7b331158339@linaro.org>
+References: <cover.1520274879.git.amit.kucheria@linaro.org>
+ <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+ <e6c78c81-f18d-c811-925d-5b1dd427fb65@linaro.org>
+ <CAP245DWvBjcS73YhPxwh2OKW_PYvBLTe-ay6XD8VrSWpukQ3CQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20180306042656.GJ23018@vireshk-i7>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: nm@ti.com, devicetree@vger.kernel.org, rnayak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, dianders@chromium.org, dri-devel@lists.freedesktop.org, vireshk@kernel.org, freedreno@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAP245DWvBjcS73YhPxwh2OKW_PYvBLTe-ay6XD8VrSWpukQ3CQ@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: DTML <devicetree@vger.kernel.org>, Ram Chandrasekar <rkumbako@codeaurora.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBNYXIgMDYsIDIwMTggYXQgMDk6NTY6NTZBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
-b3RlOgo+IE9uIDA1LTAzLTE4LCAwODoyOCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IEknbSBn
-bGFkIHlvdSBicm91Z2h0IHRoaXMgdXAgLSBJIHdhcyB0cnlpbmcgdG8gZmluZCBhIHBsYWNlIGlu
-IHRoZSBkb2N1bWVudGF0aW9uCj4gPiB0byBwdXQgaXQsIGJ1dCBzaW5jZSB0YXJnZXQgc3BlY2lm
-aWMgbm9kZXMgd291bGQgYmUgYSBuZXcgdHJpY2sgZm9yIE9QUCBJIGRpZG4ndAo+ID4gcXVpdGUg
-a25vdyBob3cgdG8gZ28gYWJvdXQgZG9pbmcgaXQuIERvIHdlIGp1c3QgbGlzdCB0aGVtIGFzIE9w
-dGlvbmFsOiBvcgo+ID4gc2hvdWxkIHdlIGFkZCBhIHRhcmdldCBzcGVjaWZpYyBzZWN0aW9uIHRv
-IHRoZSBkb2N1bWVudGF0aW9uIGFuZCBsaXN0IHRoZW0gb3V0Cj4gPiB0aGVyZSBpbnN0ZWFkPwo+
-IAo+IFNvbWV0aGluZyBsaWtlIHRoaXMgYW5kIHlvdSBuZWVkIHRvIGhhdmUgeW91ciBvd24gY29t
-cGF0aWJsZSBzdHJpbmcgYXMKPiB3ZWxsOgo+IAo+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9vcHAvdGktb21hcDUtb3BwLXN1cHBseS50eHQKPiAKPiBCdXQgZmlyc3QsIHdoYXQn
-cyB0aGUgcHVycG9zZSBvZiB0aGlzIGZpZWxkPyBKdXN0IHRvIGNoZWNrIGlmIGl0IGNhbgo+IGJl
-IGhhbmRsZWQgYnkgY3VycmVudCBiaW5kaW5ncy4KCkknbGwgdHJ5IHRvIGV4cGxhaW4gYnV0IEkg
-bWlnaHQgbmVlZCBTdGVwaGVuIG9yIHNvbWUgb2YgdGhlIG90aGVyIGZvbGtzIHRvIGp1bXAKaW4g
-YW5kIHNhdmUgbWUuCgpPbiBzZG04NDUgdGhlcmUgYXJlIHNoYXJlZCBwb3dlciByZXNvdXJjZXMg
-Y29udHJvbGxlZCBieSB0aGUgUlBNaCB3aGljaCBpcwpwcm9ncmFtZWQgYnkgYSBzZXJpZXMgb2Yg
-Y29tbWFuZHMgZnJvbSB0aGUgcmVndWxhdG9yIGRyaXZlcjsgYnV0IGluIHRoZSBjYXNlCm9mIHRo
-ZSBHUFUgdGhlIHZvdGVzIGFyZSBwYXNzZWQgdG8gdGhlIEdNVSAoZ3JhcGhpY3MgbWFuYWdlbWVu
-dCB1bml0KSB3aGljaApjb21tdW5pY2F0ZXMgd2l0aCB0aGUgUlBNaCBvbiBiZWhhbGYgb2YgdGhl
-IEdQVS4KCkluIG9yZGVyIHRvIGNvbnN0cnVjdCB0aGUgUlBNaCB2b3RlIHdlIG5lZWQgZmlyc3Qg
-bmVlZCBhIHZvbHRhZ2UgbGV2ZWwgdGhhdCB3ZQpjYW4gbG9vayB1cCBpbiBhIGRhdGFiYXNlLiBx
-Y29tLGFyYy1sZXZlbCBpcyB0aGUgdm9sdGFnZSBsZXZlbCBhc3NvY2lhdGVkIHdpdGgKYSBzcGVj
-aWZpYyBPUFAuCgpJIGhhZCBwcmV2aW91c2x5IGJlZW4gYWJ1c2luZyB0aGlzIHdpdGggb3BwLW1p
-Y3Jvdm9sdCBidXQgdGhhdCB3YXMgd3JvbmcgZm9yCm9idmlvdXMgcmVhc29ucyBhbmQgdGhlbiBT
-dGVwaGVuIHBvaW50ZWQgb3V0IHRoYXQgdGhpcyB3b3VsZCBiZSBhIGJldHRlciB3YXkuCgpKb3Jk
-YW4KCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIg
-b2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBDb2xsYWJvcmF0aXZlIFBy
-b2plY3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJp
-LWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBz
-Oi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+On 06/03/2018 06:48, Amit Kucheria wrote:
+> On Tue, Mar 6, 2018 at 2:41 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>> On 05/03/2018 19:36, Amit Kucheria wrote:
+>>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+>>>
+>>> There is currently no way for the governor to be selected for each thermal
+>>> zone in devicetree. This results in the default governor being used for all
+>>> thermal zones even though no such restriction exists in the core code.
+>>>
+>>> Add support for specifying the thermal governor to be used for a thermal
+>>> zone in the devicetree. The devicetree config should specify the governor
+>>> name as a string that matches any available governors. If not specified, we
+>>> maintain the current behaviour of using the default governor.
+>>>
+>>> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
+>>> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+>>
+>> Why not create a kernel parameter (eg. thermal.governor=) ? So everyone
+>> can gain benefit of this feature. And in order to specify that from the
+>> DT, add the 'chosen' node and bootargs with the desired kernel parameter?
+>>
+> 
+> This is supposed to be a per-thermal zone property. So specifying it
+> on the command-line, while possible, might be a little cumbersome. I'm
+> not even sure if kernel parameters can have a variable number of
+> arguments. IOW, thermal.tz0.governor=userspace,
+> thermal.tz1.governor=step_wise, thermal.tz2.governor=userspace, .....
+> 
+> I'm already seeing SoCs defining 8 or more thermal zones.
+
+Ah yes indeed.
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
