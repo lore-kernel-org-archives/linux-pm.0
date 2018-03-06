@@ -1,48 +1,78 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v8 15/15] dt-bindings: cpufreq: Document
- operating-points-v2-krait-cpu
-Date: Tue, 6 Mar 2018 10:45:04 +0530
-Message-ID: <a8d40af2-8a9e-8868-93fa-dbdec20a437e@codeaurora.org>
-References: <1519740422-3835-1-git-send-email-sricharan@codeaurora.org>
- <1519740422-3835-16-git-send-email-sricharan@codeaurora.org>
- <20180305221936.yu2mlcjodlcumedx@rob-hp-laptop>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
+Date: Tue, 6 Mar 2018 11:08:18 +0530
+Message-ID: <CAP245DUMi0HREPbS=bMkWXy3=PwXYhLVLNCY7xcfd5sDDU7+OQ@mail.gmail.com>
+References: <cover.1520274879.git.amit.kucheria@linaro.org>
+ <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+ <CAL_JsqKGXGBQSh3OeG_-bBSgv+uoANxB1CYU8RS0O6FrtaKaJQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180305221936.yu2mlcjodlcumedx@rob-hp-laptop>
-Content-Language: en-US
+In-Reply-To: <CAL_JsqKGXGBQSh3OeG_-bBSgv+uoANxB1CYU8RS0O6FrtaKaJQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+To: Rob Herring <robh+dt@kernel.org>
+Cc: DTML <devicetree@vger.kernel.org>, Ram Chandrasekar <rkumbako@codeaurora.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 3/6/2018 3:49 AM, Rob Herring wrote:
-> On Tue, Feb 27, 2018 at 07:37:02PM +0530, Sricharan R wrote:
->> In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
->> that has KRAIT processors the voltage/current value of each OPP
->> varies based on the silicon variant in use.
->> operating-points-v2-krait-cpu specifies the phandle to nvmem efuse cells
->> and the operating-points-v2 table for each opp. The qcom-cpufreq driver
->> reads the efuse value from the SoC to provide the required information
->> that is used to determine the voltage and current value for each OPP of
->> operating-points-v2 table when it is parsed by the OPP framework.
+On Tue, Mar 6, 2018 at 1:38 AM, Rob Herring <robh+dt@kernel.org> wrote:
+> On Mon, Mar 5, 2018 at 12:36 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
 >>
->> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+>> There is currently no way for the governor to be selected for each thermal
+>> zone in devicetree. This results in the default governor being used for all
+>> thermal zones even though no such restriction exists in the core code.
+>>
+>> Add support for specifying the thermal governor to be used for a thermal
+>> zone in the devicetree. The devicetree config should specify the governor
+>> name as a string that matches any available governors. If not specified, we
+>> maintain the current behaviour of using the default governor.
+>>
+>> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
+>> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 >> ---
->>  .../devicetree/bindings/cpufreq/krait-cpufreq.txt  | 363 +++++++++++++++++++++
->>  1 file changed, 363 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cpufreq.txt
-> 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+>>  Documentation/devicetree/bindings/thermal/thermal.txt | 8 ++++++++
+>>  drivers/thermal/of-thermal.c                          | 6 ++++++
+>>  2 files changed, 14 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> index 1719d47..fced9d3 100644
+>> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> @@ -168,6 +168,14 @@ Optional property:
+>>                         by means of sensor ID. Additional coefficients are
+>>                         interpreted as constant offset.
+>>
+>> +- thermal-governor:     Thermal governor to be used for this thermal zone.
+>> +                       Expected values are:
+>> +                       "step_wise": Use step wise governor.
+>> +                       "fair_share": Use fair share governor.
+>> +                       "user_space": Use user space governor.
+>> +                       "power_allocator": Use power allocator governor.
+>
+> This looks pretty Linux specific. Not that we can't have Linux
+> specific properties, but we try to avoid them.
+>
+> What determines the selection? I'd imagine only certain governors make
+> sense for certain devices. We should perhaps describe those
+> characteristics which can then infer the best governor. Not really
+> sure though...
 
-Thanks Rob !!
-Will post with all tags and the Makefile corrected.
+I'm not sure if it would be easy to assign preferred governors to
+device classes. It is dependent on what devices are present on the
+system, what throttling knobs they expose and how the system designer
+decided to integrate it all. e.g. A GPU driver might be controlled in
+kernel or userspace depending on whether it exposes a devfreq knob or
+some more esoteric statistics to userspace.
+
+Bang Bang governor seems to be designed for Fans with a simple ON/OFF iterface.
+Userspace governor is designed to move thermal policy to userspace
+(e.g. through thermald). So backlight brightness, battery charging,
+GPU scaling, even cpu frequency scaling can be offloaded to userspace.
+On embedded platforms, modem control typically happens in userspace
+Power allocator governor is designed for a closed-loop system to keep
+the total TDP of the platform under control while allowing various
+devices (cpu, gpu, modem, etc.) to dynamically increase or decrease
+their individual budget depending on the usecase.
 
 Regards,
- Sricharan
-
--- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+Amit
