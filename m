@@ -1,162 +1,80 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH v2 1/6] time: tick-sched: Reorganize idle tick management code
-Date: Tue, 06 Mar 2018 10:02:01 +0100
-Message-ID: <4136227.b9g9WnMbNJ@aspire.rjw.lan>
-References: <2067762.1uWBf5RSRc@aspire.rjw.lan>
+Subject: [RFC/RFT][PATCH v2 0/6] sched/cpuidle: Idle loop rework
+Date: Tue, 06 Mar 2018 09:57:16 +0100
+Message-ID: <2067762.1uWBf5RSRc@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2067762.1uWBf5RSRc@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Prepare two pieces of code in tick_nohz_idle_enter() for being
-called separately from each other.
+Thanks a lot for the discussion so far!
 
-First, make it possible to call the initial preparatory part of
-tick_nohz_idle_enter() without the tick-stopping part following
-it and introduce the tick_nohz_idle_prepare() wrapper for that
-(that will be used in the next set of changes).
+Here's a new version of the series addressing some comments from the
+discussion and (most importantly) replacing patches 4 and 5 with another
+(simpler) patch.
 
-Second, add a new stop_tick argument to __tick_nohz_idle_enter()
-tell it whether or not to stop the tick (that is always set for
-now) and add a wrapper allowing this function to be called from
-the outside of tick-sched.c.
+The summary below still applies:
 
-Just the code reorganization and two new wrapper functions, no
-intended functional changes.
+On Sunday, March 4, 2018 11:21:30 PM CET Rafael J. Wysocki wrote:
+> 
+> The problem is that if we stop the sched tick in
+> tick_nohz_idle_enter() and then the idle governor predicts short idle
+> duration, we lose regardless of whether or not it is right.
+> 
+> If it is right, we've lost already, because we stopped the tick
+> unnecessarily.  If it is not right, we'll lose going forward, because
+> the idle state selected by the governor is going to be too shallow and
+> we'll draw too much power (that has been reported recently to actually
+> happen often enough for people to care).
+> 
+> This patch series is an attempt to improve the situation and the idea
+> here is to make the decision whether or not to stop the tick deeper in
+> the idle loop and in particular after running the idle state selection
+> in the path where the idle governor is invoked.  This way the problem
+> can be avoided, because the idle duration predicted by the idle governor
+> can be used to decide whether or not to stop the tick so that the tick
+> is only stopped if that value is large enough (and, consequently, the
+> idle state selected by the governor is deep enough).
+> 
+> The series tires to avoid adding too much new code, rather reorder the
+> existing code and make it more fine-grained.
+> 
+> Patch 1 prepares the tick-sched code for the subsequent modifications and it
+> doesn't change the code's functionality (at least not intentionally).
+> 
+> Patch 2 starts pushing the tick stopping decision deeper into the idle
+> loop, but it is limited to do_idle() and tick_nohz_irq_exit().
+> 
+> Patch 3 makes cpuidle_idle_call() decide whether or not to stop the tick
+> and sets the stage for the changes in patch 6.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Patch 4 adds a bool pointer argument to cpuidle_select() and the ->select
+governor callback allowing them to return a "nohz" hint on whether or not to
+stop the tick to the caller.
 
--> v2: Eliminate assumetry in enabling/disabling interrupts.
+Patch 5 reorders the idle state selection with respect to the stopping of the
+tick and causes the additional "nohz" hint from cpuidle_select() to be used
+for deciding whether or not to stop the tick.
 
----
- include/linux/tick.h     |    2 +
- kernel/time/tick-sched.c |   62 ++++++++++++++++++++++++++++++++---------------
- 2 files changed, 45 insertions(+), 19 deletions(-)
+Patch 6 cleans up the code to avoid running one piece of it twice in a row
+in some cases.
 
-Index: linux-pm/include/linux/tick.h
-===================================================================
---- linux-pm.orig/include/linux/tick.h
-+++ linux-pm/include/linux/tick.h
-@@ -114,6 +114,8 @@ enum tick_dep_bits {
- #ifdef CONFIG_NO_HZ_COMMON
- extern bool tick_nohz_enabled;
- extern int tick_nohz_tick_stopped(void);
-+extern void tick_nohz_idle_prepare(void);
-+extern void tick_nohz_idle_go_idle(bool stop_tick);
- extern void tick_nohz_idle_enter(void);
- extern void tick_nohz_idle_exit(void);
- extern void tick_nohz_irq_exit(void);
-Index: linux-pm/kernel/time/tick-sched.c
-===================================================================
---- linux-pm.orig/kernel/time/tick-sched.c
-+++ linux-pm/kernel/time/tick-sched.c
-@@ -911,14 +911,14 @@ static bool can_stop_idle_tick(int cpu,
- 	return true;
- }
- 
--static void __tick_nohz_idle_enter(struct tick_sched *ts)
-+static void __tick_nohz_idle_enter(struct tick_sched *ts, bool stop_tick)
- {
- 	ktime_t now, expires;
- 	int cpu = smp_processor_id();
- 
- 	now = tick_nohz_start_idle(ts);
- 
--	if (can_stop_idle_tick(cpu, ts)) {
-+	if (can_stop_idle_tick(cpu, ts) && stop_tick) {
- 		int was_stopped = ts->tick_stopped;
- 
- 		ts->idle_calls++;
-@@ -936,22 +936,8 @@ static void __tick_nohz_idle_enter(struc
- 	}
- }
- 
--/**
-- * tick_nohz_idle_enter - stop the idle tick from the idle task
-- *
-- * When the next event is more than a tick into the future, stop the idle tick
-- * Called when we start the idle loop.
-- *
-- * The arch is responsible of calling:
-- *
-- * - rcu_idle_enter() after its last use of RCU before the CPU is put
-- *  to sleep.
-- * - rcu_idle_exit() before the first use of RCU after the CPU is woken up.
-- */
--void tick_nohz_idle_enter(void)
-+void __tick_nohz_idle_prepare(void)
- {
--	struct tick_sched *ts;
--
- 	lockdep_assert_irqs_enabled();
- 	/*
- 	 * Update the idle state in the scheduler domain hierarchy
-@@ -960,12 +946,50 @@ void tick_nohz_idle_enter(void)
- 	 * exiting idle.
- 	 */
- 	set_cpu_sd_state_idle();
-+}
-+
-+/**
-+ * tick_nohz_idle_prepare - prepare for entering idle on the current CPU.
-+ *
-+ * Called when we start the idle loop.
-+ */
-+void tick_nohz_idle_prepare(void)
-+{
-+	struct tick_sched *ts;
-+
-+	__tick_nohz_idle_prepare();
-+
-+	local_irq_disable();
-+
-+	ts = this_cpu_ptr(&tick_cpu_sched);
-+	ts->inidle = 1;
-+
-+	local_irq_enable();
-+}
-+
-+/**
-+ * tick_nohz_idle_go_idle - start idle period on the current CPU.
-+ * @stop_tick: Whether or not to stop the idle tick.
-+ *
-+ * When @stop_tick is set and the next event is more than a tick into the
-+ * future, stop the idle tick.
-+ */
-+void tick_nohz_idle_go_idle(bool stop_tick)
-+{
-+	__tick_nohz_idle_enter(this_cpu_ptr(&tick_cpu_sched), stop_tick);
-+}
-+
-+void tick_nohz_idle_enter(void)
-+{
-+	struct tick_sched *ts;
-+
-+	__tick_nohz_idle_prepare();
- 
- 	local_irq_disable();
- 
- 	ts = this_cpu_ptr(&tick_cpu_sched);
- 	ts->inidle = 1;
--	__tick_nohz_idle_enter(ts);
-+	__tick_nohz_idle_enter(ts, true);
- 
- 	local_irq_enable();
- }
-@@ -983,7 +1007,7 @@ void tick_nohz_irq_exit(void)
- 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
- 
- 	if (ts->inidle)
--		__tick_nohz_idle_enter(ts);
-+		__tick_nohz_idle_enter(ts, true);
- 	else
- 		tick_nohz_full_update_tick(ts);
- }
+And the two paragraphs below still apply:
+
+> I have tested these patches on a couple of machines, including the very laptop
+> I'm sending them from, without any obvious issues, but please give them a go
+> if you can, especially if you have an easy way to reproduce the problem they
+> are targeting.  The patches are on top of 4.16-rc3 (if you need a git branch
+> with them for easier testing, please let me know).
+> 
+> The above said, this is just RFC, so no pets close to the machines running it,
+> please, and I'm kind of expecting Peter and Thomas to tear it into pieces. :-)
+
+Thanks,
+Rafael
