@@ -1,46 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before stopping the tick
-Date: Tue, 06 Mar 2018 09:18:04 +0100
-Message-ID: <2173697.qZXBTo6fPi@aspire.rjw.lan>
-References: <1657351.s4RTvEoqBQ@aspire.rjw.lan> <2048240.1dZKXsSxFh@aspire.rjw.lan> <1520292421.6857.22.camel@surriel.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC/RFT][PATCH 4/7] cpuidle: menu: Split idle duration
+ prediction from state selection
+Date: Tue, 6 Mar 2018 09:45:36 +0100
+Message-ID: <20180306084536.GZ25201@hirez.programming.kicks-ass.net>
+References: <1657351.s4RTvEoqBQ@aspire.rjw.lan>
+ <2332986.m9oRvTSu8E@aspire.rjw.lan>
+ <20180305113803.GO25201@hirez.programming.kicks-ass.net>
+ <CAJZ5v0gdsSXOLL=nJW801L0LzE0CeyPCCrgq4_0tyi40wNLa+w@mail.gmail.com>
+ <20180305125012.GA25181@hirez.programming.kicks-ass.net>
+ <CAJZ5v0g5x9EWh0MH7wUh4sem9aYB-JuWb_Pn96qNwj=XefOcHg@mail.gmail.com>
+ <20180305135322.GV25201@hirez.programming.kicks-ass.net>
+ <43825f88-762e-11e5-d70a-45152b95599d@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1520292421.6857.22.camel@surriel.com>
+Content-Disposition: inline
+In-Reply-To: <43825f88-762e-11e5-d70a-45152b95599d@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rik van Riel <riel@surriel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, March 6, 2018 12:27:01 AM CET Rik van Riel wrote:
-> On Sun, 2018-03-04 at 23:28 +0100, Rafael J. Wysocki wrote:
+On Tue, Mar 06, 2018 at 10:15:10AM +0800, Li, Aubrey wrote:
+> On 2018/3/5 21:53, Peter Zijlstra wrote:
+> > On Mon, Mar 05, 2018 at 02:05:10PM +0100, Rafael J. Wysocki wrote:
+> >> On Mon, Mar 5, 2018 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> >>> On Mon, Mar 05, 2018 at 12:47:23PM +0100, Rafael J. Wysocki wrote:
 > > 
-> > +++ linux-pm/kernel/sched/idle.c
-> > @@ -188,13 +188,14 @@ static void cpuidle_idle_call(void)
-> >  	} else {
-> >  		unsigned int duration_us;
-> >  
-> > -		tick_nohz_idle_go_idle(true);
-> > -		rcu_idle_enter();
-> > -
-> >  		/*
-> >  		 * Ask the cpuidle framework to choose a convenient
-> > idle state.
-> >  		 */
-> >  		next_state = cpuidle_select(drv, dev, &duration_us);
-> > +
-> > +		tick_nohz_idle_go_idle(duration_us > USEC_PER_SEC /
-> > HZ);
-> > +		rcu_idle_enter();
-> > +
-> >  		entered_state = call_cpuidle(drv, dev, next_state);
+> >>>> IOW, the target residency of the selected state doesn't tell you how
+> >>>> much time you should expect to be idle in general.
+> >>>
+> >>> Right, but I think that measure isn't of primary relevance. What we want
+> >>> to know is: 'should I stop the tick' and 'what C state do I go to'.
 > 
-> When the expected idle period is short enough
-> that the timer is not stopped, does it make
-> sense to still call rcu_idle_enter?
-> 
-> Should rcu_idle_enter also be conditional on
-> the expected idle period?
+> I understood the benefit of mapping duration to state number, is duration <->
+> state number mapping a generic solution to all arches?
 
-Well, that would be the next step. :-)
+Yes, all platforms have a limited set of possible idle states.
+
+> Back to the user's concern is, "I'm running a latency sensitive application, and
+> I want idle switching ASAP". So I think the user may not care about what C state
+> to go into, that is, even if a deeper state has chance to go, the user striving
+> for a higher workload score may still not want it?
+
+The user caring about performance very much cares about the actual idle
+state too, exit latency for deeper states is horrific and will screw
+them up just as much as the whole nohz timer reprogramming does.
+
+We can basically view the whole nohz thing as an additional entry/exit
+latency for the idle state, which is why I don't think its weird to
+couple them.
+
+> >> Maybe just return a "nohz" indicator from cpuidle_select() in addition
+> >> to the state index and make the decision in the governor?
+> > 
+> > Much better option than returning a duration :-)
+> >
+> So what does "nohz = disable and state index = deepest" mean? This combination
+> does not make sense for performance only purpose?
+
+I tend to agree with you that the state space allowed by a separate
+variable is larger than required, but it's significantly smaller than
+preserving 'time' so I can live with it.
