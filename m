@@ -1,45 +1,46 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
-Date: Tue, 6 Mar 2018 11:18:15 +0530
-Message-ID: <CAP245DWvBjcS73YhPxwh2OKW_PYvBLTe-ay6XD8VrSWpukQ3CQ@mail.gmail.com>
-References: <cover.1520274879.git.amit.kucheria@linaro.org>
- <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
- <e6c78c81-f18d-c811-925d-5b1dd427fb65@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT][PATCH 6/7] sched: idle: Predict idle duration before stopping the tick
+Date: Tue, 06 Mar 2018 09:18:04 +0100
+Message-ID: <2173697.qZXBTo6fPi@aspire.rjw.lan>
+References: <1657351.s4RTvEoqBQ@aspire.rjw.lan> <2048240.1dZKXsSxFh@aspire.rjw.lan> <1520292421.6857.22.camel@surriel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e6c78c81-f18d-c811-925d-5b1dd427fb65@linaro.org>
+In-Reply-To: <1520292421.6857.22.camel@surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: DTML <devicetree@vger.kernel.org>, Ram Chandrasekar <rkumbako@codeaurora.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Rik van Riel <riel@surriel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 6, 2018 at 2:41 AM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> On 05/03/2018 19:36, Amit Kucheria wrote:
->> From: Ram Chandrasekar <rkumbako@codeaurora.org>
->>
->> There is currently no way for the governor to be selected for each thermal
->> zone in devicetree. This results in the default governor being used for all
->> thermal zones even though no such restriction exists in the core code.
->>
->> Add support for specifying the thermal governor to be used for a thermal
->> zone in the devicetree. The devicetree config should specify the governor
->> name as a string that matches any available governors. If not specified, we
->> maintain the current behaviour of using the default governor.
->>
->> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
->> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
->
-> Why not create a kernel parameter (eg. thermal.governor=) ? So everyone
-> can gain benefit of this feature. And in order to specify that from the
-> DT, add the 'chosen' node and bootargs with the desired kernel parameter?
->
+On Tuesday, March 6, 2018 12:27:01 AM CET Rik van Riel wrote:
+> On Sun, 2018-03-04 at 23:28 +0100, Rafael J. Wysocki wrote:
+> > 
+> > +++ linux-pm/kernel/sched/idle.c
+> > @@ -188,13 +188,14 @@ static void cpuidle_idle_call(void)
+> >  	} else {
+> >  		unsigned int duration_us;
+> >  
+> > -		tick_nohz_idle_go_idle(true);
+> > -		rcu_idle_enter();
+> > -
+> >  		/*
+> >  		 * Ask the cpuidle framework to choose a convenient
+> > idle state.
+> >  		 */
+> >  		next_state = cpuidle_select(drv, dev, &duration_us);
+> > +
+> > +		tick_nohz_idle_go_idle(duration_us > USEC_PER_SEC /
+> > HZ);
+> > +		rcu_idle_enter();
+> > +
+> >  		entered_state = call_cpuidle(drv, dev, next_state);
+> 
+> When the expected idle period is short enough
+> that the timer is not stopped, does it make
+> sense to still call rcu_idle_enter?
+> 
+> Should rcu_idle_enter also be conditional on
+> the expected idle period?
 
-This is supposed to be a per-thermal zone property. So specifying it
-on the command-line, while possible, might be a little cumbersome. I'm
-not even sure if kernel parameters can have a variable number of
-arguments. IOW, thermal.tz0.governor=userspace,
-thermal.tz1.governor=step_wise, thermal.tz2.governor=userspace, .....
-
-I'm already seeing SoCs defining 8 or more thermal zones.
+Well, that would be the next step. :-)
