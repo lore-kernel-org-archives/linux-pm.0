@@ -1,7 +1,7 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v5 1/4] sched/fair: add util_est on top of PELT
-Date: Tue, 6 Mar 2018 19:56:14 +0100
-Message-ID: <20180306185614.GF25201@hirez.programming.kicks-ass.net>
+Date: Tue, 6 Mar 2018 19:58:51 +0100
+Message-ID: <20180306185851.GG25201@hirez.programming.kicks-ass.net>
 References: <20180222170153.673-1-patrick.bellasi@arm.com>
  <20180222170153.673-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
@@ -15,28 +15,46 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@r
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, Feb 22, 2018 at 05:01:50PM +0000, Patrick Bellasi wrote:
-> +/**
-> + * Estimation Utilization for FAIR tasks.
-> + *
-> + * Support data structure to track an Exponential Weighted Moving Average
-> + * (EWMA) of a FAIR task's utilization. New samples are added to the moving
-> + * average each time a task completes an activation. Sample's weight is
-> + * chosen so that the EWMA will be relatively insensitive to transient changes
-> + * to the task's workload.
-> + *
-> + * @enqueued: instantaneous estimated utilization of a task/cpu
-> + *      task: the task's util_avg at last task dequeue time
-> + *    cfs_rq: the sum of util_est.enqueued for each RUNNABLE task on that CPU
-> + *
-> + *  Thus, the util_est.enqueued of a task represents the contribution on the
-> + *  estimated utilization of the CPU where that task is currently enqueued.
-> + *
-> + * @ewma: the Exponential Weighted Moving Average (EWMA) utilization of a task
-> + *  Only for tasks we track a moving average of the past instantaneous
-> + *  estimated utilization. This allows to absorb sporadic drops in
-> + *  utilization of an otherwise almost periodic task.
-> + *
-> + */
+> +static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
+> +				    struct task_struct *p)
+> +{
+> +	unsigned int enqueued;
+> +
+> +	if (!sched_feat(UTIL_EST))
+> +		return;
+> +
+> +	/* Update root cfs_rq's estimated utilization */
+> +	enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> +	enqueued += _task_util_est(p);
+> +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
+> +}
 
-The above comment appears to have whitespace issues, the paragraph
-starting with "Thus" looks indented by one character for exmaple.
+> +static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
+> +				    struct task_struct *p,
+> +				    bool task_sleep)
+> +{
+> +	long last_ewma_diff;
+> +	struct util_est ue;
+> +
+> +	if (!sched_feat(UTIL_EST))
+> +		return;
+> +
+> +	/*
+> +	 * Update root cfs_rq's estimated utilization
+> +	 *
+> +	 * If *p is the last task then the root cfs_rq's estimated utilization
+> +	 * of a CPU is 0 by definition.
+> +	 */
+> +	ue.enqueued = 0;
+> +	if (cfs_rq->nr_running) {
+> +		ue.enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> +		ue.enqueued -= min_t(unsigned int, ue.enqueued,
+> +				     _task_util_est(p));
+> +	}
+> +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, ue.enqueued);
+
+It appears to me this isn't a stable situation and completely relies on
+the !nr_running case to recalibrate. If we ensure that doesn't happen
+for a significant while the sum can run-away, right?
+
+Should we put a max in enqueue to avoid this?
