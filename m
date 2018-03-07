@@ -1,122 +1,99 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v5 4/4] sched/fair: update util_est only on util_avg
- updates
-Date: Wed, 7 Mar 2018 11:38:52 +0100
-Message-ID: <20180307103852.GJ25201@hirez.programming.kicks-ass.net>
-References: <20180222170153.673-1-patrick.bellasi@arm.com>
- <20180222170153.673-5-patrick.bellasi@arm.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
+Date: Wed, 7 Mar 2018 16:29:38 +0530
+Message-ID: <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
+References: <cover.1520274879.git.amit.kucheria@linaro.org>
+ <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+ <6d5aeab8-aafe-fa3b-585e-953a34864e7d@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180222170153.673-5-patrick.bellasi@arm.com>
+In-Reply-To: <6d5aeab8-aafe-fa3b-585e-953a34864e7d@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Ram Chandrasekar <rkumbako@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 22, 2018 at 05:01:53PM +0000, Patrick Bellasi wrote:
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 8364771f7301..1bf9a86ebc39 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -3047,6 +3047,29 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
->  	}
->  }
->  
-> +/*
-> + * When a task is dequeued, its estimated utilization should not be update if
-> + * its util_avg has not been updated at least once.
-> + * This flag is used to synchronize util_avg updates with util_est updates.
-> + * We map this information into the LSB bit of the utilization saved at
-> + * dequeue time (i.e. util_est.dequeued).
-> + */
-> +#define UTIL_EST_NEED_UPDATE_FLAG 0x1
-> +
-> +static inline void cfs_se_util_change(struct sched_avg *avg)
-> +{
-	if (!sched_feat(UTIL_EST))
-		return;
+On Tue, Mar 6, 2018 at 6:02 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+>
+> On 05/03/18 18:36, Amit Kucheria wrote:
+>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+>>
+>> There is currently no way for the governor to be selected for each thermal
+>> zone in devicetree.
+>
+> How is that any different from cpufreq, cpuidle or devfreq subsystems ?
 
-> +	if (sched_feat(UTIL_EST)) {
-> +		struct util_est ue = READ_ONCE(avg->util_est);
-> +
-> +		if (!(ue.enqueued & UTIL_EST_NEED_UPDATE_FLAG))
-> +			return;
-> +
-> +		/* Reset flag to report util_avg has been updated */
-> +		ue.enqueued &= ~UTIL_EST_NEED_UPDATE_FLAG;
-> +		WRITE_ONCE(avg->util_est, ue);
-> +	}
+Cpufreq/cpuidle are designed to control a single parameter while
+thermal framework is trying to mitigate heat from several disparate
+sources that are throttled in different ways. Besides, cpufreq/cpuidle
+have somewhat mature governors. Cpuidle has only one governor (for
+tickless) - menu governor, cpufreq has ondemand in mainline, replaced
+by interactive in android and hopefully soon both will be replaced by
+schedutil.
 
-and loose the indent. Also, since we only update the enqueued value, we
-don't need to load/store the entire util_est thing here.
+Badly configured cpufreq/cpuidle/devfreq only leads to wasted power,
+while badly configured thermal zone leads to the loss of operation
+e.g. reboots, too hot to touch, etc.
 
-> +}
-> +
->  #ifdef CONFIG_SMP
->  /*
->   * Approximate:
-> @@ -3308,6 +3331,7 @@ __update_load_avg_se(u64 now, int cpu, struct cfs_rq *cfs_rq, struct sched_entit
->  				cfs_rq->curr == se)) {
->  
->  		___update_load_avg(&se->avg, se_weight(se), se_runnable(se));
-> +		cfs_se_util_change(&se->avg);
->  		return 1;
->  	}
->  
+>> This results in the default governor being used for all
+>> thermal zones even though no such restriction exists in the core code.
+>>
+>
+> What restrictions ?
 
-So we only clear the bit for @se updates.
+I said "no such restriction exists". IOW, the core code does allow the
+governor to be changed.
 
-> @@ -5218,7 +5242,7 @@ static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
->  
->  	/* Update root cfs_rq's estimated utilization */
->  	enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-> -	enqueued += _task_util_est(p);
-> +	enqueued += (_task_util_est(p) | 0x1);
+>> Add support for specifying the thermal governor to be used for a thermal
+>> zone in the devicetree.
+>
+> Then what prevents us from doing the same for other subsystems with so
+> called /inefficient default/ governors ?
 
-UTIL_EST_NEED_UPDATE_FLAG, although I do agree that 0x1 is much easier
-to type ;-)
+Nothing? :-)
 
-But you set it for the cfs_rq value ?! That doesn't seem right.
+It depends on how closely we want the board DT to represent a
+production-ready setup. If a platform maintainer wants to ship a
+well-tested configuration in DT, is that really a problem?
 
->  	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
->  }
->  
-> @@ -5310,7 +5334,7 @@ static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
->  	if (cfs_rq->nr_running) {
->  		ue.enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
->  		ue.enqueued -= min_t(unsigned int, ue.enqueued,
-> -				     _task_util_est(p));
-> +				     (_task_util_est(p) | UTIL_EST_NEED_UPDATE_FLAG));
->  	}
->  	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, ue.enqueued);
->  
+If however, you are requiring them to ship magic runes for userspace
+daemons (e.g. per-board thermald config) to tweak the various
+governors in sysfs, it takes a bit more work to get to a
+production-ready setup.
 
-Would it be really horrible if you separate the value and flag using a
-bitfield/shifts?
+We should of course continue to improve our govenors to arrive at the
+one true governor, but that'll take some time and might never even
+happen in the case of thermal IMHO.
 
-> @@ -5321,12 +5345,19 @@ static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
->  	if (!task_sleep)
->  		return;
->  
-> +	/*
-> +	 * Skip update of task's estimated utilization if the PELT signal has
-> +	 * never been updated (at least once) since last enqueue time.
-> +	 */
-> +	ue = READ_ONCE(p->se.avg.util_est);
-> +	if (ue.enqueued & UTIL_EST_NEED_UPDATE_FLAG)
-> +		return;
-> +
->  	/*
->  	 * Skip update of task's estimated utilization when its EWMA is
->  	 * already ~1% close to its last activation value.
->  	 */
-> +	ue.enqueued = (task_util(p) | UTIL_EST_NEED_UPDATE_FLAG);
->  	last_ewma_diff = ue.enqueued - ue.ewma;
->  	if (within_margin(last_ewma_diff, (SCHED_CAPACITY_SCALE / 100)))
->  		return;
+>> The devicetree config should specify the governor
+>> name as a string that matches any available governors. If not specified, we
+>> maintain the current behaviour of using the default governor.
+>
+> If one is specified, can the user change it from sysfs ? If
+> yes, then why do we need this binding at all ? If no, we are basically
+> restricting, then what would happen if the DT was shipped with wrong
+> governor specified because the firmware author didn't know about any
+> other governor ?
 
+The governor can be changed from sysfs today. So it is all override-able.
 
-I see what you do, but Yuck! that's really nasty. Then again, I've not
-actually got a better suggestion.
+I guess your main worry is an unmodifiable DT with this option being
+shipped in firmware, right? That is a fair point, though that could be
+worked around from sysfs.
+
+> IMO, having this in DT is bad idea as it may cause more issues than
+> gain. We already have sysfs support like other PM subsystems and
+> userspace can deal with it.
+
+As mentioned above, I think thermal is a bit special because bad
+configuration may lead to loss of operation. But iff we're strictly
+enforcing the rule about no policy in board DTs, then I concede.
+
+Personally, I'd like mainline board DTs to have enough policy to
+provide a stable system so I don't have to futz around with userspace
+to set it all up correctly (in 3 different distros).
+
+Regards,
+Amit
