@@ -1,50 +1,50 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH] soc: mediatek: fix the mistaken pointer accessed when
- subdomains are added
-Date: Wed, 7 Mar 2018 17:21:39 +0800
-Message-ID: <1520414499.677.5.camel@mtkswgap22>
-References: <9d9d75250bf62b491294a0c550c35ab7aba05eef.1518113047.git.sean.wang@mediatek.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v5 1/4] sched/fair: add util_est on top of PELT
+Date: Wed, 7 Mar 2018 10:39:37 +0100
+Message-ID: <20180307093937.GZ25235@hirez.programming.kicks-ass.net>
+References: <20180222170153.673-1-patrick.bellasi@arm.com>
+ <20180222170153.673-2-patrick.bellasi@arm.com>
+ <20180306185851.GG25201@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <9d9d75250bf62b491294a0c550c35ab7aba05eef.1518113047.git.sean.wang@mediatek.com>
-Sender: stable-owner@vger.kernel.org
-To: matthias.bgg@gmail.com
-Cc: rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180306185851.GG25201@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Matthis
-	
-also a gentle ping for the patch
-	
-	Sean
+On Tue, Mar 06, 2018 at 07:58:51PM +0100, Peter Zijlstra wrote:
+> On Thu, Feb 22, 2018 at 05:01:50PM +0000, Patrick Bellasi wrote:
+> > +static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
+> > +				    struct task_struct *p)
+> > +{
+> > +	unsigned int enqueued;
+> > +
+> > +	if (!sched_feat(UTIL_EST))
+> > +		return;
+> > +
+> > +	/* Update root cfs_rq's estimated utilization */
+> > +	enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> > +	enqueued += _task_util_est(p);
+> > +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
+> > +}
 
-On Fri, 2018-02-09 at 02:07 +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
+> It appears to me this isn't a stable situation and completely relies on
+> the !nr_running case to recalibrate. If we ensure that doesn't happen
+> for a significant while the sum can run-away, right?
 > 
-> Fix the pointer to struct scp_subdomian not being moved forward
-> when each sub-domain is expected to be iteratively added through
-> pm_genpd_add_subdomain call.
-> 
-> Cc: stable@vger.kernel.org
-> Fixes: 53fddb1a66dd ("soc: mediatek: reduce code duplication of scpsys_probe across all SoCs")
-> Reported-by: Weiyi Lu <weiyi.lu@mediatek.com>
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  drivers/soc/mediatek/mtk-scpsys.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/soc/mediatek/mtk-scpsys.c b/drivers/soc/mediatek/mtk-scpsys.c
-> index fc55faa..9de801e 100644
-> --- a/drivers/soc/mediatek/mtk-scpsys.c
-> +++ b/drivers/soc/mediatek/mtk-scpsys.c
-> @@ -1048,7 +1048,7 @@ static int scpsys_probe(struct platform_device *pdev)
->  
->  	pd_data = &scp->pd_data;
->  
-> -	for (i = 0, sd = soc->subdomains ; i < soc->num_subdomains ; i++) {
-> +	for (i = 0, sd = soc->subdomains; i < soc->num_subdomains; i++, sd++) {
->  		ret = pm_genpd_add_subdomain(pd_data->domains[sd->origin],
->  					     pd_data->domains[sd->subdomain]);
->  		if (ret && IS_ENABLED(CONFIG_PM))
+> Should we put a max in enqueue to avoid this?
+
+Thinking about this a bit more; would it make sense to adjust the
+running sum/avg on migration? Something along the lines of:
+
+  util_avg = se->load_avg / (cfs_rq->load_avg + se->load_avg);
+
+(which disregards cgroups), because that should more or less be the time
+it ends up running, given the WFQ rule.
+
+That way the disparity between tasks migrating into the CPU at u=1 and
+them going to sleep at u<1 is much smaller and the above sum doesn't run
+away nearly as wild (it still needs some upper bound though).
