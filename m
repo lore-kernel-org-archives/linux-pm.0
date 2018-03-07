@@ -1,78 +1,127 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v2 0/6] sched/cpuidle: Idle loop rework
-Date: Wed, 7 Mar 2018 09:04:18 -0800
-Message-ID: <000a01d3b636$57b75c00$07261400$@net>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
+Date: Wed, 7 Mar 2018 09:09:25 -0800
+Message-ID: <20180307170923.GA6543@localhost.localdomain>
+References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-References: t8eAehXAKpApst8eFeMNAX
-In-Reply-To: t8eAehXAKpApst8eFeMNAX
-Content-Language: en-ca
+Content-Disposition: inline
+In-Reply-To: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Thomas Gleixner' <tglx@linutronix.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.06 12:57 Rafael J. Wysocki wrote:
+Hello Daniel,
 
-...[snip]...
+On Wed, Feb 21, 2018 at 04:29:21PM +0100, Daniel Lezcano wrote:
+> Changelog:
+>   V2:
+>      - Dropped the cpu combo cooling device
+>      - Added the acked-by tags
+>      - Replaced task array by a percpu structure
+>      - Fixed the copyright dates
+>      - Fixed the extra lines
+>      - Fixed the compilation macros to be reused
+>      - Fixed the list node removal
+>      - Massaged a couple of function names
+>=20
+>=20
+> The following series provides a new way to cool down a SoC by reducing
+> the dissipated power on the CPUs. Based on the initial work from Kevin
+> Wangtao, the series implements a CPU cooling device based on idle
+> injection, relying on the cpuidle framework.
 
-> And the two paragraphs below still apply:
+Nice! Glad to see that Linaro took this work again. I have a few
+questions, as follows.
 
->> I have tested these patches on a couple of machines, including the very laptop
->> I'm sending them from, without any obvious issues, but please give them a go
->> if you can, especially if you have an easy way to reproduce the problem they
->> are targeting.  The patches are on top of 4.16-rc3 (if you need a git branch
->> with them for easier testing, please let me know).
+>=20
+> The patchset is designed to have the current DT binding for the
+> cpufreq cooling device to be compatible with the new cooling devices.
+>=20
+> Different cpu cooling devices can not co-exist on the system, the cpu
+> cooling device is enabled or not, and one cooling strategy is selected
+> (cpufreq or cpuidle). It is not possible to have all of them available
+> at the same time. However, the goal is to enable them all and be able
+> to switch from one to another at runtime but that needs a rework of the
+> thermal framework which is orthogonal to the feature we are providing.
+>=20
 
-Hi,
+Can you please elaborate on the limitations you found? Please be more
+specific.
 
-I am still having some boot troubles with V2. However, and because my system
-did eventually boot, seemingly O.K., I didn't re-boot a bunch of times for
-further testing.
+> This series is divided into two parts.
+>=20
+> The first part just provides trivial changes for the copyright and
+> removes an unused field in the cpu freq cooling device structure.
+>=20
 
-I ran my 100% load on one CPU test, which is for idle state 0 issues, on
-my otherwise extremely idle test server. I never did have very good ways
-to test issues with the other idle states (Thomas Ilsche's specialty).
+Ok..
 
-During the test I got some messages (I also got some with the V1 patch set):
+> The second part provides the idle injection cooling device, allowing a SoC
+> without a cpufreq driver to use this cooling device as an alternative.
+>=20
 
-[16246.655148] rcu_preempt kthread starved for 60005 jiffies! g10557 c10556
-			f0x0 RCU_GP_WAIT_FQS(3) ->state=0x0 ->cpu=5
-[19556.565007] rcu_preempt kthread starved for 60003 jiffies! g12126 c12125
-			f0x2 RCU_GP_WAIT_FQS(3) ->state=0x0 ->cpu=5
-[20223.066251] clocksource: timekeeping watchdog on CPU4: Marking clocksource
-			'tsc' as unstable because the skew is too large:
-[20223.066260] clocksource:                       'hpet' wd_now: 6b02e6a0
-			wd_last: c70685ef mask: ffffffff
-[20223.066262] clocksource:                       'tsc' cs_now: 3ed0d6f109f5
-			cs_last: 3e383b5c058d mask: ffffffffffffffff
-[20223.066264] tsc: Marking TSC unstable due to clocksource watchdog
-[26720.509156] rcu_preempt kthread starved for 60003 jiffies! g16640
-			c16639 f0x2 RCU_GP_WAIT_FQS(3) ->state=0x0 ->cpu=5
-[29058.215330] rcu_preempt kthread starved for 60004 jiffies! g17522
-			c17521 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x402 ->cpu=4
-...
+which is awesome!
 
-The other observation is sometimes the number of irqs (turbostat) jumps
-a lot. This did not occur with the V1 patch set. An increase in irqs is
-expected, but I don't think that much.
-Note: I am unable to show a correlation between the above log entries
-and the jumps in irqs.
 
-Test results (some previous restated):
-Observe 24.44 average processor package watts. 100% load on CPU 7.
-Test Duration 10 hours and 9 minutes. Peak power 26.88 Watts
-Reference: K4.16-rc3 + rjw V1 patchset: 24.77 Watts. Peak power 32.8 watts
-Reference: K4.16-rc3: 26.41 Watts (short test, 3.53 hours)
-Reference: K4.15-rc1: 27.34 Watts
-Reference: K4.15-rc1, idle states 0-3 disabled: 23.92 Watts
-Reference: K4.16-rc3 + rjw v1 patch set, idle states 0-3 disabled: ~23.65 Watts
+> The preliminary benchmarks show the following changes:
+>=20
+> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
+> increase of the latency of 16% while sysbench shows a latency increase
+> of 5%.
 
-References (Graphs):
-http://fast.smythies.com/rjw416rc3v2_irq.png
-http://fast.smythies.com/rjw416rc3v2_pwr.png
+I don't follow these numbers. Throughput increase while injecting idle?
+compared to what? percentages of what? Please be more specific to better
+describer your work..
 
-... Doug
+>=20
+> Initially, the first version provided also the cpuidle + cpufreq combo
+> cooling device but regarding the latest comments, there is a misfit with
+> how the cpufreq cooling device and suspend/resume/cpu hotplug/module
+> loading|unloading behave together while the combo cooling device was
+> designed assuming the cpufreq cooling device was always there. This
+> dynamic is investigated and the combo cooling device will be posted
+> separetely after this series gets merged.
+
+Yeah, this is one of the confusing parts. Could you please
+remind us of the limitations here? Why can't we enable CPUfreq
+on higher trip points and CPUidle on lower trip points, for example?
+Specially from a system design point of view, the system engineer
+typically would benefit of idle injections to achieve overall
+average CPU frequencies in a more granular fashion, for example,
+achieving performance vs. cooling between available real
+frequencies, avoiding real switches.
+
+Also, there is a major design question here. After Linaro's attempt
+to send a cpufreq+cpuidle cooling device(s), there was an attempt
+to generalize and extend intel powerclamp driver. Do you mind
+explaining why refactoring intel powerclamp is not possible? Basic
+idea is the same, no?
+
+
+
+>=20
+> Daniel Lezcano (7):
+>   thermal/drivers/cpu_cooling: Fixup the header and copyright
+>   thermal/drivers/cpu_cooling: Add Software Package Data Exchange (SPDX)
+>   thermal/drivers/cpu_cooling: Remove pointless field
+>   thermal/drivers/Kconfig: Convert the CPU cooling device to a choice
+>   thermal/drivers/cpu_cooling: Add idle cooling device documentation
+>   thermal/drivers/cpu_cooling: Introduce the cpu idle cooling driver
+>   cpuidle/drivers/cpuidle-arm: Register the cooling device
+>=20
+>  Documentation/thermal/cpu-idle-cooling.txt | 165 ++++++++++
+>  drivers/cpuidle/cpuidle-arm.c              |   5 +
+>  drivers/thermal/Kconfig                    |  30 +-
+>  drivers/thermal/cpu_cooling.c              | 480 +++++++++++++++++++++++=
+++++--
+>  include/linux/cpu_cooling.h                |  15 +-
+>  5 files changed, 668 insertions(+), 27 deletions(-)
+>  create mode 100644 Documentation/thermal/cpu-idle-cooling.txt
+>=20
+> --=20
+> 2.7.4
+>=20
