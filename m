@@ -1,84 +1,51 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v5 1/4] sched/fair: add util_est on top of PELT
-Date: Wed, 7 Mar 2018 15:37:32 +0000
-Message-ID: <20180307153732.GF2211@e110439-lin>
-References: <20180222170153.673-1-patrick.bellasi@arm.com>
- <20180222170153.673-2-patrick.bellasi@arm.com>
- <20180306185851.GG25201@hirez.programming.kicks-ass.net>
- <20180307093937.GZ25235@hirez.programming.kicks-ass.net>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v5 1/6] mfd: axp20x: make AXP209/22x cells
+ probe their ADC via DT
+Date: Wed, 7 Mar 2018 16:11:56 +0000
+Message-ID: <20180307161156.2ahecezje5u2qlp3@dell>
+References: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz@bootlin.com>
+ <6652613fb10bcc8f21880af114c3b49ca267c108.1519813976.git-series.quentin.schulz@bootlin.com>
+Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBUE6QDKQKGQE53T4O4A-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Content-Disposition: inline
-In-Reply-To: <20180307093937.GZ25235@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+In-Reply-To: <6652613fb10bcc8f21880af114c3b49ca267c108.1519813976.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas.petazzoni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07-Mar 10:39, Peter Zijlstra wrote:
-> On Tue, Mar 06, 2018 at 07:58:51PM +0100, Peter Zijlstra wrote:
-> > On Thu, Feb 22, 2018 at 05:01:50PM +0000, Patrick Bellasi wrote:
-> > > +static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-> > > +				    struct task_struct *p)
-> > > +{
-> > > +	unsigned int enqueued;
-> > > +
-> > > +	if (!sched_feat(UTIL_EST))
-> > > +		return;
-> > > +
-> > > +	/* Update root cfs_rq's estimated utilization */
-> > > +	enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-> > > +	enqueued += _task_util_est(p);
-> > > +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
-> > > +}
-> 
-> > It appears to me this isn't a stable situation and completely relies on
-> > the !nr_running case to recalibrate. If we ensure that doesn't happen
-> > for a significant while the sum can run-away, right?
-> > 
-> > Should we put a max in enqueue to avoid this?
-> 
-> Thinking about this a bit more; would it make sense to adjust the
-> running sum/avg on migration? Something along the lines of:
-> 
->   util_avg = se->load_avg / (cfs_rq->load_avg + se->load_avg);
-> 
-> (which disregards cgroups), because that should more or less be the time
-> it ends up running, given the WFQ rule.
+On Wed, 28 Feb 2018, Quentin Schulz wrote:
 
-I would say it makes sense from a purely mechanism stanpoing, but I'm
-not entirely convinced it can be useful from a practical stanpoint.
+> This makes AXP209 and AXP22x ADCs probe first via DT and then by
+> fallback via platform.
+>=20
+> Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+> Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> ---
+>  drivers/mfd/axp20x.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
-First of all, that should be applied only when we migrate to a more
-saturated CPU. Otherwise, when migrating on an empty CPU we would set
-util_avg = 100%
+Applied, thanks.
 
-Secondly, when we migrate to a saturated CPU, this adjustment will
-contribute to under-estimate the task utilization.
-Let say the task was running on a completely empty CPU, and thus we
-was able to ramp up without being preempted. This value represents a
-good estimation of the (most recent) task CPU demands.
+--=20
+Lee Jones
+Linaro Services Technical Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
 
-Now, if on a following activation, we wakeup the task on an IDLE CPU
-with a lot of blocked load, then we will scale down its util_avg
-and assume the task will be smaller.
-But:
-
-a) if the blocked load does not turns into some task waking up again,
-   underestimated the task introduces only further ramp-up latencies
-
-b) if the load it due to really active tasks, the task will be
-   preempted and it's utilization smaller... but we are already in a
-   domain where utilization does not tell us anything useful for a
-   task... and thus, why bothering to make it converging sooner?
-
-
-> That way the disparity between tasks migrating into the CPU at u=1 and
-> them going to sleep at u<1 is much smaller and the above sum doesn't run
-> away nearly as wild (it still needs some upper bound though).
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
