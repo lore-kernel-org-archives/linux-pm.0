@@ -1,51 +1,40 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Wed, 7 Mar 2018 10:36:24 +0530
-Message-ID: <20180307050624.GR23018@vireshk-i7>
-References: <20180302215638.6145-1-jcrouse@codeaurora.org>
- <20180302215638.6145-3-jcrouse@codeaurora.org>
- <20180305044221.GC23018@vireshk-i7>
- <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
- <20180306042656.GJ23018@vireshk-i7>
- <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v9 14/15] cpufreq: Add module to register cpufreq on
+ Krait CPUs
+Date: Wed, 7 Mar 2018 10:39:56 +0530
+Message-ID: <20180307050956.GA6842@vireshk-i7>
+References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
+ <1520347148-27852-15-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180306153757.GD15200-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+In-Reply-To: <1520347148-27852-15-git-send-email-sricharan@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: robh@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDYtMDMtMTgsIDA4OjM3LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IEknbGwgdHJ5IHRvIGV4
-cGxhaW4gYnV0IEkgbWlnaHQgbmVlZCBTdGVwaGVuIG9yIHNvbWUgb2YgdGhlIG90aGVyIGZvbGtz
-IHRvIGp1bXAKPiBpbiBhbmQgc2F2ZSBtZS4KCk1heWJlIHlvdSBzaG91bGQgc3RhcnQgdXNpbmcg
-aGlzIGtlcm5lbC5vcmcgYWRkcmVzcyB0aGVuID8gOikKCj4gT24gc2RtODQ1IHRoZXJlIGFyZSBz
-aGFyZWQgcG93ZXIgcmVzb3VyY2VzIGNvbnRyb2xsZWQgYnkgdGhlIFJQTWggd2hpY2ggaXMKPiBw
-cm9ncmFtZWQgYnkgYSBzZXJpZXMgb2YgY29tbWFuZHMgZnJvbSB0aGUgcmVndWxhdG9yIGRyaXZl
-cjsgYnV0IGluIHRoZSBjYXNlCj4gb2YgdGhlIEdQVSB0aGUgdm90ZXMgYXJlIHBhc3NlZCB0byB0
-aGUgR01VIChncmFwaGljcyBtYW5hZ2VtZW50IHVuaXQpIHdoaWNoCj4gY29tbXVuaWNhdGVzIHdp
-dGggdGhlIFJQTWggb24gYmVoYWxmIG9mIHRoZSBHUFUuCj4gCj4gSW4gb3JkZXIgdG8gY29uc3Ry
-dWN0IHRoZSBSUE1oIHZvdGUgd2UgbmVlZCBmaXJzdCBuZWVkIGEgdm9sdGFnZSBsZXZlbCB0aGF0
-IHdlCj4gY2FuIGxvb2sgdXAgaW4gYSBkYXRhYmFzZS4gcWNvbSxhcmMtbGV2ZWwgaXMgdGhlIHZv
-bHRhZ2UgbGV2ZWwgYXNzb2NpYXRlZCB3aXRoCj4gYSBzcGVjaWZpYyBPUFAuCj4gCj4gSSBoYWQg
-cHJldmlvdXNseSBiZWVuIGFidXNpbmcgdGhpcyB3aXRoIG9wcC1taWNyb3ZvbHQgYnV0IHRoYXQg
-d2FzIHdyb25nIGZvcgo+IG9idmlvdXMgcmVhc29ucyBhbmQgdGhlbiBTdGVwaGVuIHBvaW50ZWQg
-b3V0IHRoYXQgdGhpcyB3b3VsZCBiZSBhIGJldHRlciB3YXkuCgpHbGFkIHRoYXQgeW91IHNoYXJl
-ZCB0aGF0IDopCgpBIHNvbHV0aW9uIGlzIGFscmVhZHkgaW4gcHJvZ3Jlc3MgZm9yIHRoYXQgYW5k
-IGlzIHBhcnRpYWxseSBtZXJnZWQgYXMKd2VsbC4KCkxvb2sgZm9yICJwZXJmb3JtYW5jZV9zdGF0
-ZSIgaW4gZ2VucGQgYW5kIE9QUCBjb3JlcyAoYWxyZWFkeSBtZXJnZWQpLApmb2xsb3dlZCBieSB0
-aGlzIHNlcmllcyBoZXJlOgoKaHR0cHM6Ly9sa21sLmtlcm5lbC5vcmcvci9jb3Zlci4xNTEzOTI2
-MDMzLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZwoKLS0gCnZpcmVzaApfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0
-CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3Rv
-cC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+On 06-03-18, 20:09, Sricharan R wrote:
+> From: Stephen Boyd <sboyd@codeaurora.org>
+> 
+> Register a cpufreq-generic device whenever we detect that a
+> "qcom,krait" compatible CPU is present in DT.
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> [Sricharan: updated to use dev_pm_opp_set_prop_name and
+> 	    nvmem apis]
+> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm          |  10 ++
+>  drivers/cpufreq/Makefile             |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c |   5 +
+>  drivers/cpufreq/qcom-cpufreq.c       | 183 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 199 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
