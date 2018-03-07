@@ -1,138 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v1 9/9] PCI/portdrv: Remove "pcie_hp=nomsi" kernel parameter
-Date: Wed, 07 Mar 2018 12:13:47 +0100
-Message-ID: <1605705.SjLI87HLIV@aspire.rjw.lan>
-References: <152040297576.240786.1532465558381209070.stgit@bhelgaas-glaptop.roam.corp.google.com> <152040325332.240786.929303502030362231.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v5 1/4] sched/fair: add util_est on top of PELT
+Date: Wed, 7 Mar 2018 11:31:49 +0000
+Message-ID: <20180307113149.GA2211@e110439-lin>
+References: <20180222170153.673-1-patrick.bellasi@arm.com>
+ <20180222170153.673-2-patrick.bellasi@arm.com>
+ <20180306185851.GG25201@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <152040325332.240786.929303502030362231.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Content-Disposition: inline
+In-Reply-To: <20180306185851.GG25201@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Lukas Wunner <lukas@wunner.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 7, 2018 7:14:13 AM CET Bjorn Helgaas wrote:
-> From: Bjorn Helgaas <bhelgaas@google.com>
+On 06-Mar 19:58, Peter Zijlstra wrote:
+> On Thu, Feb 22, 2018 at 05:01:50PM +0000, Patrick Bellasi wrote:
+> > +static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
+> > +				    struct task_struct *p)
+> > +{
+> > +	unsigned int enqueued;
+> > +
+> > +	if (!sched_feat(UTIL_EST))
+> > +		return;
+> > +
+> > +	/* Update root cfs_rq's estimated utilization */
+> > +	enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> > +	enqueued += _task_util_est(p);
+> > +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
+> > +}
 > 
-> 7570a333d8b0 ("PCI: Add pcie_hp=nomsi to disable MSI/MSI-X for pciehp
-> driver") added the "pcie_hp=nomsi" kernel parameter to work around this
-> error on shutdown:
+> > +static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
+> > +				    struct task_struct *p,
+> > +				    bool task_sleep)
+> > +{
+> > +	long last_ewma_diff;
+> > +	struct util_est ue;
+> > +
+> > +	if (!sched_feat(UTIL_EST))
+> > +		return;
+> > +
+> > +	/*
+> > +	 * Update root cfs_rq's estimated utilization
+> > +	 *
+> > +	 * If *p is the last task then the root cfs_rq's estimated utilization
+> > +	 * of a CPU is 0 by definition.
+> > +	 */
+> > +	ue.enqueued = 0;
+> > +	if (cfs_rq->nr_running) {
+> > +		ue.enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> > +		ue.enqueued -= min_t(unsigned int, ue.enqueued,
+> > +				     _task_util_est(p));
+> > +	}
+> > +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, ue.enqueued);
 > 
->   irq 16: nobody cared (try booting with the "irqpoll" option)
->   Pid: 1081, comm: reboot Not tainted 3.2.0 #1
->   ...
->   Disabling IRQ #16
-> 
-> This happened on an unspecified system (possibly involving the Integrated
-> Device Technology, Inc. Device 807f bridge) where "an un-wanted interrupt
-> is generated when PCI driver switches from MSI/MSI-X to INTx while shutting
-> down the device."
-> 
-> The implication was that the device was buggy, but it is normal for a
-> device to use INTx after MSI/MSI-X have been disabled.  The only problem
-> was that the driver was still attached and it wasn't prepared for INTx
-> interrupts.  Prarit Bhargava fixed this issue with fda78d7a0ead ("PCI/MSI:
-> Stop disabling MSI/MSI-X in pci_device_shutdown()").
-> 
-> There is no automated way to set this parameter, so it's not very useful
-> for distributions or end users.  It's really only useful for debugging, and
-> we have "pci=nomsi" for that purpose.
-> 
-> Revert 7570a333d8b0 to remove the "pcie_hp=nomsi" parameter.
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> CC: MUNEDA Takahiro <muneda.takahiro@jp.fujitsu.com>
-> CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> CC: Prarit Bhargava <prarit@redhat.com>
-> ---
->  Documentation/admin-guide/kernel-parameters.txt |    4 ----
->  drivers/pci/pcie/portdrv.h                      |   12 ------------
->  drivers/pci/pcie/portdrv_core.c                 |   20 +++-----------------
->  3 files changed, 3 insertions(+), 33 deletions(-)
-> 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index 1d1d53f85ddd..761749562165 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -3130,10 +3130,6 @@
->  		force	Enable ASPM even on devices that claim not to support it.
->  			WARNING: Forcing ASPM on may cause system lockups.
->  
-> -	pcie_hp=	[PCIE] PCI Express Hotplug driver options:
-> -		nomsi	Do not use MSI for PCI Express Native Hotplug (this
-> -			makes all PCIe ports use INTx for hotplug services).
-> -
->  	pcie_ports=	[PCIE] PCIe ports handling:
->  		auto	Ask the BIOS whether or not to use native PCIe services
->  			associated with PCIe ports (PME, hot-plug, AER).  Use
-> diff --git a/drivers/pci/pcie/portdrv.h b/drivers/pci/pcie/portdrv.h
-> index 2c19cf9ffea2..87a87cb9f42d 100644
-> --- a/drivers/pci/pcie/portdrv.h
-> +++ b/drivers/pci/pcie/portdrv.h
-> @@ -34,18 +34,6 @@ void pcie_port_bus_unregister(void);
->  
->  struct pci_dev;
->  
-> -#ifdef CONFIG_HOTPLUG_PCI_PCIE
-> -extern bool pciehp_msi_disabled;
-> -
-> -static inline bool pciehp_no_msi(void)
-> -{
-> -	return pciehp_msi_disabled;
-> -}
-> -
-> -#else  /* !CONFIG_HOTPLUG_PCI_PCIE */
-> -static inline bool pciehp_no_msi(void) { return false; }
-> -#endif /* !CONFIG_HOTPLUG_PCI_PCIE */
-> -
->  #ifdef CONFIG_PCIE_PME
->  extern bool pcie_pme_msi_disabled;
->  
-> diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-> index 29210e9bfbd3..bf9c5c885957 100644
-> --- a/drivers/pci/pcie/portdrv_core.c
-> +++ b/drivers/pci/pcie/portdrv_core.c
-> @@ -21,17 +21,6 @@
->  #include "../pci.h"
->  #include "portdrv.h"
->  
-> -bool pciehp_msi_disabled;
-> -
-> -static int __init pciehp_setup(char *str)
-> -{
-> -	if (!strncmp(str, "nomsi", 5))
-> -		pciehp_msi_disabled = true;
-> -
-> -	return 1;
-> -}
-> -__setup("pcie_hp=", pciehp_setup);
-> -
->  /**
->   * release_pcie_device - free PCI Express port service device structure
->   * @dev: Port service device to release
-> @@ -169,16 +158,13 @@ static int pcie_init_service_irqs(struct pci_dev *dev, int *irqs, int mask)
->  		irqs[i] = -1;
->  
->  	/*
-> -	 * If we support PME or hotplug, but we can't use MSI/MSI-X for
-> -	 * them, we have to fall back to INTx or other interrupts, e.g., a
-> -	 * system shared interrupt.
-> +	 * If we support PME but can't use MSI/MSI-X for it, we have to
-> +	 * fall back to INTx or other interrupts, e.g., a system shared
-> +	 * interrupt.
->  	 */
->  	if ((mask & PCIE_PORT_SERVICE_PME) && pcie_pme_no_msi())
->  		goto legacy_irq;
->  
-> -	if ((mask & PCIE_PORT_SERVICE_HP) && pciehp_no_msi())
-> -		goto legacy_irq;
-> -
->  	/* Try to use MSI-X or MSI if supported */
->  	if (pcie_port_enable_irq_vec(dev, irqs, mask) == 0)
->  		return 0;
-> 
-> 
+> It appears to me this isn't a stable situation and completely relies on
+> the !nr_running case to recalibrate. If we ensure that doesn't happen
+> for a significant while the sum can run-away, right?
 
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+By away you mean go over 1024 or overflow the unsigned int storage?
+
+In the first case, I think we don't care about exceeding 1024 since:
+- we cap to capacity_orig_of in cpu_util_est
+- by directly reading the cfs_rq->avg.util_est.enqueued we can
+  actually detect conditions in which a CPU is over-saturated.
+
+In the second case, with an unsigned int we can enqueue up to few
+millions of 100% tasks on a single CPU without overflowing.
+
+> Should we put a max in enqueue to avoid this?
+
+IMO the capping from the cpu_util_est getter should be enough...
+
+Maybe I'm missing your point here?
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
