@@ -1,44 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
-Date: Thu, 8 Mar 2018 10:19:56 +0530
-Message-ID: <CAOh2x=njFxcwDfQs1g3-Estrun5j=fSYVnG-EaVw0UcRaDKsSg@mail.gmail.com>
-References: <cover.1520274879.git.amit.kucheria@linaro.org>
- <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
- <6d5aeab8-aafe-fa3b-585e-953a34864e7d@arm.com> <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [RFC/RFT][PATCH v2 1/6] time: tick-sched: Reorganize idle tick
+ management code
+Date: Thu, 8 Mar 2018 00:18:29 +0100
+Message-ID: <20180307231827.GA9367@lerouge>
+References: <2067762.1uWBf5RSRc@aspire.rjw.lan>
+ <4136227.b9g9WnMbNJ@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <4136227.b9g9WnMbNJ@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Ram Chandrasekar <rkumbako@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 7, 2018 at 4:29 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> Cpufreq/cpuidle are designed to control a single parameter while
-> thermal framework is trying to mitigate heat from several disparate
-> sources that are throttled in different ways. Besides, cpufreq/cpuidle
-> have somewhat mature governors. Cpuidle has only one governor (for
-> tickless) - menu governor, cpufreq has ondemand in mainline, replaced
-> by interactive in android and hopefully soon both will be replaced by
+On Tue, Mar 06, 2018 at 10:02:01AM +0100, Rafael J. Wysocki wrote:
+> Index: linux-pm/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-sched.c
+> +++ linux-pm/kernel/time/tick-sched.c
+> +
+> +/**
+> + * tick_nohz_idle_prepare - prepare for entering idle on the current CPU.
+> + *
+> + * Called when we start the idle loop.
+> + */
+> +void tick_nohz_idle_prepare(void)
+> +{
+> +	struct tick_sched *ts;
+> +
+> +	__tick_nohz_idle_prepare();
+> +
+> +	local_irq_disable();
+> +
+> +	ts = this_cpu_ptr(&tick_cpu_sched);
+> +	ts->inidle = 1;
+> +
+> +	local_irq_enable();
+> +}
 
-Interactive and schedfreq are already removed from Android 4.4 and 4.9.
-It used schedutil now.
+Why not calling tick_nohz_start_idle() from there? This is going to
+simplify the rest, you won't need to call tick_nohz_idle_go_idle()
+from places that don't want to stop the tick and you can then remove
+the stop_tick argument.
 
-> schedutil.
->
-> Badly configured cpufreq/cpuidle/devfreq only leads to wasted power,
-> while badly configured thermal zone leads to the loss of operation
-> e.g. reboots, too hot to touch, etc.
+> +
+> +/**
+> + * tick_nohz_idle_go_idle - start idle period on the current CPU.
+> + * @stop_tick: Whether or not to stop the idle tick.
+> + *
+> + * When @stop_tick is set and the next event is more than a tick into the
+> + * future, stop the idle tick.
+> + */
+> +void tick_nohz_idle_go_idle(bool stop_tick)
+> +{
+> +	__tick_nohz_idle_enter(this_cpu_ptr(&tick_cpu_sched), stop_tick);
+> +}
+> +
+> +void tick_nohz_idle_enter(void)
+> +{
+> +	struct tick_sched *ts;
+> +
+> +	__tick_nohz_idle_prepare();
+>  
+>  	local_irq_disable();
+>  
+>  	ts = this_cpu_ptr(&tick_cpu_sched);
+>  	ts->inidle = 1;
+> -	__tick_nohz_idle_enter(ts);
+> +	__tick_nohz_idle_enter(ts, true);
+>  
+>  	local_irq_enable();
+>  }
 
-I don't think such heat-ups will happen right during boot, where some
-init.rc should
-come up and change the governor.
+Ah I see you're keeping tick_nohz_idle_enter() around because of the callsite
+in xen. It looks like a hack (from the xen part), I'll need to have a look at
+it, just a note for myself...
 
-Over that if we are worried about production images only, then what prevents us
-to select the right default governor in the defconfig ? We shouldn't
-be worried about
-multi-platform kernels for production images.
-
---
-viresh
+Thanks.
