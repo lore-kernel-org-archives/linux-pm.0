@@ -1,127 +1,27 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
-Date: Wed, 7 Mar 2018 09:09:25 -0800
-Message-ID: <20180307170923.GA6543@localhost.localdomain>
-References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v5 1/4] sched/fair: add util_est on top of PELT
+Date: Wed, 7 Mar 2018 18:35:04 +0100
+Message-ID: <20180307173504.GP25181@hirez.programming.kicks-ass.net>
+References: <20180222170153.673-1-patrick.bellasi@arm.com>
+ <20180222170153.673-2-patrick.bellasi@arm.com>
+ <20180306185851.GG25201@hirez.programming.kicks-ass.net>
+ <20180307113149.GA2211@e110439-lin>
+ <20180307122437.GM25181@hirez.programming.kicks-ass.net>
+ <20180307152458.GE2211@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <20180307152458.GE2211@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Daniel,
+On Wed, Mar 07, 2018 at 03:24:58PM +0000, Patrick Bellasi wrote:
 
-On Wed, Feb 21, 2018 at 04:29:21PM +0100, Daniel Lezcano wrote:
-> Changelog:
->   V2:
->      - Dropped the cpu combo cooling device
->      - Added the acked-by tags
->      - Replaced task array by a percpu structure
->      - Fixed the copyright dates
->      - Fixed the extra lines
->      - Fixed the compilation macros to be reused
->      - Fixed the list node removal
->      - Massaged a couple of function names
->=20
->=20
-> The following series provides a new way to cool down a SoC by reducing
-> the dissipated power on the CPUs. Based on the initial work from Kevin
-> Wangtao, the series implements a CPU cooling device based on idle
-> injection, relying on the cpuidle framework.
+> Maybe that's the tricky bit: we remove the value we enqueued, _not_
+> the current util_avg. Notice we use _task_util_est(p)... with the
+> leading "_".
 
-Nice! Glad to see that Linaro took this work again. I have a few
-questions, as follows.
-
->=20
-> The patchset is designed to have the current DT binding for the
-> cpufreq cooling device to be compatible with the new cooling devices.
->=20
-> Different cpu cooling devices can not co-exist on the system, the cpu
-> cooling device is enabled or not, and one cooling strategy is selected
-> (cpufreq or cpuidle). It is not possible to have all of them available
-> at the same time. However, the goal is to enable them all and be able
-> to switch from one to another at runtime but that needs a rework of the
-> thermal framework which is orthogonal to the feature we are providing.
->=20
-
-Can you please elaborate on the limitations you found? Please be more
-specific.
-
-> This series is divided into two parts.
->=20
-> The first part just provides trivial changes for the copyright and
-> removes an unused field in the cpu freq cooling device structure.
->=20
-
-Ok..
-
-> The second part provides the idle injection cooling device, allowing a SoC
-> without a cpufreq driver to use this cooling device as an alternative.
->=20
-
-which is awesome!
-
-
-> The preliminary benchmarks show the following changes:
->=20
-> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
-> increase of the latency of 16% while sysbench shows a latency increase
-> of 5%.
-
-I don't follow these numbers. Throughput increase while injecting idle?
-compared to what? percentages of what? Please be more specific to better
-describer your work..
-
->=20
-> Initially, the first version provided also the cpuidle + cpufreq combo
-> cooling device but regarding the latest comments, there is a misfit with
-> how the cpufreq cooling device and suspend/resume/cpu hotplug/module
-> loading|unloading behave together while the combo cooling device was
-> designed assuming the cpufreq cooling device was always there. This
-> dynamic is investigated and the combo cooling device will be posted
-> separetely after this series gets merged.
-
-Yeah, this is one of the confusing parts. Could you please
-remind us of the limitations here? Why can't we enable CPUfreq
-on higher trip points and CPUidle on lower trip points, for example?
-Specially from a system design point of view, the system engineer
-typically would benefit of idle injections to achieve overall
-average CPU frequencies in a more granular fashion, for example,
-achieving performance vs. cooling between available real
-frequencies, avoiding real switches.
-
-Also, there is a major design question here. After Linaro's attempt
-to send a cpufreq+cpuidle cooling device(s), there was an attempt
-to generalize and extend intel powerclamp driver. Do you mind
-explaining why refactoring intel powerclamp is not possible? Basic
-idea is the same, no?
-
-
-
->=20
-> Daniel Lezcano (7):
->   thermal/drivers/cpu_cooling: Fixup the header and copyright
->   thermal/drivers/cpu_cooling: Add Software Package Data Exchange (SPDX)
->   thermal/drivers/cpu_cooling: Remove pointless field
->   thermal/drivers/Kconfig: Convert the CPU cooling device to a choice
->   thermal/drivers/cpu_cooling: Add idle cooling device documentation
->   thermal/drivers/cpu_cooling: Introduce the cpu idle cooling driver
->   cpuidle/drivers/cpuidle-arm: Register the cooling device
->=20
->  Documentation/thermal/cpu-idle-cooling.txt | 165 ++++++++++
->  drivers/cpuidle/cpuidle-arm.c              |   5 +
->  drivers/thermal/Kconfig                    |  30 +-
->  drivers/thermal/cpu_cooling.c              | 480 +++++++++++++++++++++++=
-++++--
->  include/linux/cpu_cooling.h                |  15 +-
->  5 files changed, 668 insertions(+), 27 deletions(-)
->  create mode 100644 Documentation/thermal/cpu-idle-cooling.txt
->=20
-> --=20
-> 2.7.4
->=20
+ARGH, ok let me try that again ;-)
