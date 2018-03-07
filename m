@@ -1,50 +1,41 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v5 1/4] sched/fair: add util_est on top of PELT
-Date: Wed, 7 Mar 2018 10:39:37 +0100
-Message-ID: <20180307093937.GZ25235@hirez.programming.kicks-ass.net>
+Subject: Re: [PATCH v5 3/4] sched/cpufreq_schedutil: use util_est for OPP
+ selection
+Date: Wed, 7 Mar 2018 11:12:14 +0100
+Message-ID: <20180307101214.GI25201@hirez.programming.kicks-ass.net>
 References: <20180222170153.673-1-patrick.bellasi@arm.com>
- <20180222170153.673-2-patrick.bellasi@arm.com>
- <20180306185851.GG25201@hirez.programming.kicks-ass.net>
+ <20180222170153.673-4-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180306185851.GG25201@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180222170153.673-4-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 06, 2018 at 07:58:51PM +0100, Peter Zijlstra wrote:
-> On Thu, Feb 22, 2018 at 05:01:50PM +0000, Patrick Bellasi wrote:
-> > +static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-> > +				    struct task_struct *p)
-> > +{
-> > +	unsigned int enqueued;
-> > +
-> > +	if (!sched_feat(UTIL_EST))
-> > +		return;
-> > +
-> > +	/* Update root cfs_rq's estimated utilization */
-> > +	enqueued  = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-> > +	enqueued += _task_util_est(p);
-> > +	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
-> > +}
+On Thu, Feb 22, 2018 at 05:01:52PM +0000, Patrick Bellasi wrote:
+>  static inline unsigned long cpu_util_cfs(struct rq *rq)
+>  {
+> +	if (!sched_feat(UTIL_EST))
+> +		return READ_ONCE(rq->cfs.avg.util_avg);
+> +
+> +	return max_t(unsigned long,
+> +		     READ_ONCE(rq->cfs.avg.util_avg),
+> +		     READ_ONCE(rq->cfs.avg.util_est.enqueued));
+>  }
 
-> It appears to me this isn't a stable situation and completely relies on
-> the !nr_running case to recalibrate. If we ensure that doesn't happen
-> for a significant while the sum can run-away, right?
-> 
-> Should we put a max in enqueue to avoid this?
+static inline unsigned long cpu_util_cfs(struct rq *rq)
+{
+	unsigned long util = READ_ONCE(rq->cfs.avg.util_avg);
 
-Thinking about this a bit more; would it make sense to adjust the
-running sum/avg on migration? Something along the lines of:
+	if (sched_feat(UTIL_EST)) {
+		util = max_t(unsigned long, util,
+			     READ_ONCE(rq->cfs.avg.util_est.enqueued));
+	}
 
-  util_avg = se->load_avg / (cfs_rq->load_avg + se->load_avg);
+	return util;
+}
 
-(which disregards cgroups), because that should more or less be the time
-it ends up running, given the WFQ rule.
-
-That way the disparity between tasks migrating into the CPU at u=1 and
-them going to sleep at u<1 is much smaller and the above sum doesn't run
-away nearly as wild (it still needs some upper bound though).
+Seems like a more readable variant.
