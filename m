@@ -1,145 +1,59 @@
-From: Sasha Levin <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL for 4.4 019/101] cpufreq/sh: Replace racy task
- affinity logic
-Date: Thu, 8 Mar 2018 05:01:31 +0000
-Message-ID: <20180308050023.8548-19-alexander.levin@microsoft.com>
-References: <20180308050023.8548-1-alexander.levin@microsoft.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
+Date: Thu, 8 Mar 2018 11:05:55 +0530
+Message-ID: <CAP245DWAnYqbKJ_+NMqYvP9suwgmmkZ6twSBfAD64FxqztgnuA@mail.gmail.com>
+References: <cover.1520274879.git.amit.kucheria@linaro.org>
+ <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+ <6d5aeab8-aafe-fa3b-585e-953a34864e7d@arm.com> <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
+ <CAOh2x=njFxcwDfQs1g3-Estrun5j=fSYVnG-EaVw0UcRaDKsSg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180308050023.8548-1-alexander.levin@microsoft.com>
-Content-Language: en-US
+In-Reply-To: <CAOh2x=njFxcwDfQs1g3-Estrun5j=fSYVnG-EaVw0UcRaDKsSg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sebastian Siewior <bigeasy@linutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Tejun Heo <tj@kernel.org>, "David S. Miller" <davem@davemloft.net>, Len Brown <lenb@kernel.org>, Sasha Levin <Alexander.Levin@microsoft.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Ram Chandrasekar <rkumbako@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On Thu, Mar 8, 2018 at 10:19 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On Wed, Mar 7, 2018 at 4:29 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>> Cpufreq/cpuidle are designed to control a single parameter while
+>> thermal framework is trying to mitigate heat from several disparate
+>> sources that are throttled in different ways. Besides, cpufreq/cpuidle
+>> have somewhat mature governors. Cpuidle has only one governor (for
+>> tickless) - menu governor, cpufreq has ondemand in mainline, replaced
+>> by interactive in android and hopefully soon both will be replaced by
+>
+> Interactive and schedfreq are already removed from Android 4.4 and 4.9.
+> It used schedutil now.
 
-[ Upstream commit 205dcc1ecbc566cbc20acf246e68de3b080b3ecf ]
+Good to hear.
 
-The target() callback must run on the affected cpu. This is achieved by
-temporarily setting the affinity of the calling thread to the requested CPU
-and reset it to the original affinity afterwards.
+>> schedutil.
+>>
+>> Badly configured cpufreq/cpuidle/devfreq only leads to wasted power,
+>> while badly configured thermal zone leads to the loss of operation
+>> e.g. reboots, too hot to touch, etc.
+>
+> I don't think such heat-ups will happen right during boot, where some
+> init.rc should
+> come up and change the governor.
 
-That's racy vs. concurrent affinity settings for that thread resulting in
-code executing on the wrong CPU.
+Interestingly enough, there are some patches that make the thermal
+framework start earlier to deal with boot-time thermal issues. I
+expect to post them soon. :-) These are required, for example, if the
+device goes into a reboot loop - the device might not even make it to
+the point in userspace where the governors are setup. In such a loop,
+the temperature constantly keeps increasing.
 
-Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
-already protected against CPU hotplug.
+> Over that if we are worried about production images only, then what prevents us
+> to select the right default governor in the defconfig ? We shouldn't
+> be worried about
+> multi-platform kernels for production images.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sebastian Siewior <bigeasy@linutronix.de>
-Cc: linux-pm@vger.kernel.org
-Cc: Lai Jiangshan <jiangshanlai@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Len Brown <lenb@kernel.org>
-Link: http://lkml.kernel.org/r/20170412201042.958216363@linutronix.de
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
----
- drivers/cpufreq/sh-cpufreq.c | 45 ++++++++++++++++++++++++++--------------=
-----
- 1 file changed, 27 insertions(+), 18 deletions(-)
+I was refering to the 'make defconfig' out-of-box experience that
+makes the majority of developer boards/devices out there stable to
+work on. I can't do that today.
 
-diff --git a/drivers/cpufreq/sh-cpufreq.c b/drivers/cpufreq/sh-cpufreq.c
-index 86628e22b2a3..719c3d9f07fb 100644
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -30,54 +30,63 @@
-=20
- static DEFINE_PER_CPU(struct clk, sh_cpuclk);
-=20
-+struct cpufreq_target {
-+	struct cpufreq_policy	*policy;
-+	unsigned int		freq;
-+};
-+
- static unsigned int sh_cpufreq_get(unsigned int cpu)
- {
- 	return (clk_get_rate(&per_cpu(sh_cpuclk, cpu)) + 500) / 1000;
- }
-=20
--/*
-- * Here we notify other drivers of the proposed change and the final chang=
-e.
-- */
--static int sh_cpufreq_target(struct cpufreq_policy *policy,
--			     unsigned int target_freq,
--			     unsigned int relation)
-+static long __sh_cpufreq_target(void *arg)
- {
--	unsigned int cpu =3D policy->cpu;
-+	struct cpufreq_target *target =3D arg;
-+	struct cpufreq_policy *policy =3D target->policy;
-+	int cpu =3D policy->cpu;
- 	struct clk *cpuclk =3D &per_cpu(sh_cpuclk, cpu);
--	cpumask_t cpus_allowed;
- 	struct cpufreq_freqs freqs;
- 	struct device *dev;
- 	long freq;
-=20
--	cpus_allowed =3D current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of(cpu));
--
--	BUG_ON(smp_processor_id() !=3D cpu);
-+	if (smp_processor_id() !=3D cpu)
-+		return -ENODEV;
-=20
- 	dev =3D get_cpu_device(cpu);
-=20
- 	/* Convert target_freq from kHz to Hz */
--	freq =3D clk_round_rate(cpuclk, target_freq * 1000);
-+	freq =3D clk_round_rate(cpuclk, target->freq * 1000);
-=20
- 	if (freq < (policy->min * 1000) || freq > (policy->max * 1000))
- 		return -EINVAL;
-=20
--	dev_dbg(dev, "requested frequency %u Hz\n", target_freq * 1000);
-+	dev_dbg(dev, "requested frequency %u Hz\n", target->freq * 1000);
-=20
- 	freqs.old	=3D sh_cpufreq_get(cpu);
- 	freqs.new	=3D (freq + 500) / 1000;
- 	freqs.flags	=3D 0;
-=20
--	cpufreq_freq_transition_begin(policy, &freqs);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	cpufreq_freq_transition_begin(target->policy, &freqs);
- 	clk_set_rate(cpuclk, freq);
--	cpufreq_freq_transition_end(policy, &freqs, 0);
-+	cpufreq_freq_transition_end(target->policy, &freqs, 0);
-=20
- 	dev_dbg(dev, "set frequency %lu Hz\n", freq);
--
- 	return 0;
- }
-=20
-+/*
-+ * Here we notify other drivers of the proposed change and the final chang=
-e.
-+ */
-+static int sh_cpufreq_target(struct cpufreq_policy *policy,
-+			     unsigned int target_freq,
-+			     unsigned int relation)
-+{
-+	struct cpufreq_target data =3D { .policy =3D policy, .freq =3D target_fre=
-q };
-+
-+	return work_on_cpu(policy->cpu, __sh_cpufreq_target, &data);
-+}
-+
- static int sh_cpufreq_verify(struct cpufreq_policy *policy)
- {
- 	struct clk *cpuclk =3D &per_cpu(sh_cpuclk, policy->cpu);
---=20
-2.14.1
+Regards,
+Amit
