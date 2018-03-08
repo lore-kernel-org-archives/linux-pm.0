@@ -1,27 +1,58 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] thermal: imx: Fix race condition in imx_thermal_probe()
-Date: Wed, 7 Mar 2018 16:55:16 -0300
-Message-ID: <CAOMZO5CZ5bMKFLuZYcwqwSgL2yLzUL_Dv1xD8_F2sBCGBOLPsw@mail.gmail.com>
-References: <1517595466-23465-1-git-send-email-festevam@gmail.com>
- <CAOMZO5D5rRask0pGQBFf+47sG0XURj17=pO4hMiAh4MZa4nkJQ@mail.gmail.com>
- <CAOMZO5A7vqGffkj0qHUQo7MXVQMfy5Om7yw1YCs6ZR_0aOE37A@mail.gmail.com> <1519792963.2797.20.camel@intel.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v5 4/4] sched/fair: update util_est only on util_avg
+ updates
+Date: Thu, 8 Mar 2018 10:37:03 +0000
+Message-ID: <20180308103703.GG2211@e110439-lin>
+References: <20180222170153.673-1-patrick.bellasi@arm.com>
+ <20180222170153.673-5-patrick.bellasi@arm.com>
+ <20180308094830.GK25201@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1519792963.2797.20.camel@intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Mikhail Lappo <mikhail.lappo@esrlabs.com>, linux-pm@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, stable <stable@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180308094830.GK25201@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rui,
+On 08-Mar 10:48, Peter Zijlstra wrote:
+> On Thu, Feb 22, 2018 at 05:01:53PM +0000, Patrick Bellasi wrote:
+> > +#define UTIL_EST_NEED_UPDATE_FLAG 0x1
+> 
+> > @@ -5321,12 +5345,19 @@ static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
+> >  	if (!task_sleep)
+> >  		return;
+> >  
+> > +	/*
+> > +	 * Skip update of task's estimated utilization if the PELT signal has
+> > +	 * never been updated (at least once) since last enqueue time.
+> > +	 */
+> > +	ue = READ_ONCE(p->se.avg.util_est);
+> > +	if (ue.enqueued & UTIL_EST_NEED_UPDATE_FLAG)
+> > +		return;
+> 
+> The name and function seem inverted, if the flag is set, we do _NOT_
+> update util_est.
 
-On Wed, Feb 28, 2018 at 1:42 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+My reading was along the line "when the flag is set we need an
+update of util_avg to collect a new util_est sample"...
 
-> interesting, this problem should be covered by this patch https://patch
-> work.kernel.org/patch/10242483/, together with some driver code change.
->
-> anyway, as that is not a complete solution yet, I will apply this patch
-> as a quick solution.
+... but I agree that's confusing... and unnecessary long.
 
-Thanks, but I still don't see this one in your tree.
+> How about something like UTIL_EST_UNCHANGED ? That would give:
+
+I would prefer UTIL_AVG_UNCHANGED, since the flags is reset when we
+have a change in util_avg, thus enabling util_est updates.
+
+> 	/*
+> 	 * If the PELT values haven't changed since enqueue time,
+> 	 * skip the util_est update.
+> 	 */
+> 	if (enqueue & UTIL_EST_UNCHANGED)
+> 		return;
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
