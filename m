@@ -1,85 +1,66 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [RFC/RFT][PATCH v2 1/6] time: tick-sched: Reorganize idle tick
- management code
-Date: Thu, 8 Mar 2018 18:00:20 +0100
-Message-ID: <20180308170018.GB11118@lerouge>
-References: <2067762.1uWBf5RSRc@aspire.rjw.lan>
- <4136227.b9g9WnMbNJ@aspire.rjw.lan>
- <20180307231827.GA9367@lerouge>
- <1938066.lrFpnYERYl@aspire.rjw.lan>
- <20180308151407.GA11118@lerouge>
- <CAJZ5v0gGzBY2YGLeY-jqRghoDJ_Ao+HxhZkttC-_hS6atrwC1Q@mail.gmail.com>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
+Date: Thu, 8 Mar 2018 13:14:38 -0700
+Message-ID: <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
+References: <20180302215638.6145-1-jcrouse@codeaurora.org>
+ <20180302215638.6145-3-jcrouse@codeaurora.org>
+ <20180305044221.GC23018@vireshk-i7>
+ <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
+ <20180306042656.GJ23018@vireshk-i7>
+ <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
+ <20180307050624.GR23018@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gGzBY2YGLeY-jqRghoDJ_Ao+HxhZkttC-_hS6atrwC1Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20180307050624.GR23018@vireshk-i7>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 08, 2018 at 05:34:20PM +0100, Rafael J. Wysocki wrote:
-> On Thu, Mar 8, 2018 at 4:14 PM, Frederic Weisbecker <frederic@kernel.org> wrote:
-> > On Thu, Mar 08, 2018 at 10:22:26AM +0100, Rafael J. Wysocki wrote:
-> >> On Thursday, March 8, 2018 12:18:29 AM CET Frederic Weisbecker wrote:
-> >> > On Tue, Mar 06, 2018 at 10:02:01AM +0100, Rafael J. Wysocki wrote:
-> >> > > Index: linux-pm/kernel/time/tick-sched.c
-> >> > > ===================================================================
-> >> > > --- linux-pm.orig/kernel/time/tick-sched.c
-> >> > > +++ linux-pm/kernel/time/tick-sched.c
-> >> > > +
-> >> > > +/**
-> >> > > + * tick_nohz_idle_prepare - prepare for entering idle on the current CPU.
-> >> > > + *
-> >> > > + * Called when we start the idle loop.
-> >> > > + */
-> >> > > +void tick_nohz_idle_prepare(void)
-> >> > > +{
-> >> > > + struct tick_sched *ts;
-> >> > > +
-> >> > > + __tick_nohz_idle_prepare();
-> >> > > +
-> >> > > + local_irq_disable();
-> >> > > +
-> >> > > + ts = this_cpu_ptr(&tick_cpu_sched);
-> >> > > + ts->inidle = 1;
-> >> > > +
-> >> > > + local_irq_enable();
-> >> > > +}
-> >> >
-> >> > Why not calling tick_nohz_start_idle() from there? This is going to
-> >> > simplify the rest, you won't need to call tick_nohz_idle_go_idle()
-> >> > from places that don't want to stop the tick and you can then remove
-> >> > the stop_tick argument.
-> >>
-> >> So I guess I would then use ts->idle_entrytime as "now" in the
-> >> tick_nohz_get_sleep_length() computation, right?
-> >
-> > Ah right, I missed the need for ktime_get().
-> >
-> > You can't use ts->idle_entrytime in tick_nohz_get_sleep_length() because
-> > full dynticks doesn't rely on it.
-> >
-> > But I think you can just do the following, with a comment explaining that
-> > idle_entrytime is expected to be fresh enough at this point:
-> >
-> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > index 57b3de4..8e61796 100644
-> > --- a/kernel/time/tick-sched.c
-> > +++ b/kernel/time/tick-sched.c
-> > @@ -923,7 +923,7 @@ static void __tick_nohz_idle_enter(struct tick_sched *ts, bool stop_tick)
-> >
-> >                 ts->idle_calls++;
-> >
-> > -               expires = tick_nohz_stop_sched_tick(ts, now, cpu);
-> > +               expires = tick_nohz_stop_sched_tick(ts, ts->idle_entrytime, cpu);
-> >                 if (expires > 0LL) {
-> >                         ts->idle_sleeps++;
-> >                         ts->idle_expires = expires;
-> >
-> 
-> That's what I was thinking about, but ktime_get() seems to be working too.
-
-Well, ktime_get() has its share of overhead, so if we can avoid a call and use
-a cache...
+T24gV2VkLCBNYXIgMDcsIDIwMTggYXQgMTA6MzY6MjRBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
+b3RlOgo+IE9uIDA2LTAzLTE4LCAwODozNywgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IEknbGwg
+dHJ5IHRvIGV4cGxhaW4gYnV0IEkgbWlnaHQgbmVlZCBTdGVwaGVuIG9yIHNvbWUgb2YgdGhlIG90
+aGVyIGZvbGtzIHRvIGp1bXAKPiA+IGluIGFuZCBzYXZlIG1lLgo+IAo+IE1heWJlIHlvdSBzaG91
+bGQgc3RhcnQgdXNpbmcgaGlzIGtlcm5lbC5vcmcgYWRkcmVzcyB0aGVuID8gOikKPiAKPiA+IE9u
+IHNkbTg0NSB0aGVyZSBhcmUgc2hhcmVkIHBvd2VyIHJlc291cmNlcyBjb250cm9sbGVkIGJ5IHRo
+ZSBSUE1oIHdoaWNoIGlzCj4gPiBwcm9ncmFtZWQgYnkgYSBzZXJpZXMgb2YgY29tbWFuZHMgZnJv
+bSB0aGUgcmVndWxhdG9yIGRyaXZlcjsgYnV0IGluIHRoZSBjYXNlCj4gPiBvZiB0aGUgR1BVIHRo
+ZSB2b3RlcyBhcmUgcGFzc2VkIHRvIHRoZSBHTVUgKGdyYXBoaWNzIG1hbmFnZW1lbnQgdW5pdCkg
+d2hpY2gKPiA+IGNvbW11bmljYXRlcyB3aXRoIHRoZSBSUE1oIG9uIGJlaGFsZiBvZiB0aGUgR1BV
+Lgo+ID4gCj4gPiBJbiBvcmRlciB0byBjb25zdHJ1Y3QgdGhlIFJQTWggdm90ZSB3ZSBuZWVkIGZp
+cnN0IG5lZWQgYSB2b2x0YWdlIGxldmVsIHRoYXQgd2UKPiA+IGNhbiBsb29rIHVwIGluIGEgZGF0
+YWJhc2UuIHFjb20sYXJjLWxldmVsIGlzIHRoZSB2b2x0YWdlIGxldmVsIGFzc29jaWF0ZWQgd2l0
+aAo+ID4gYSBzcGVjaWZpYyBPUFAuCj4gPiAKPiA+IEkgaGFkIHByZXZpb3VzbHkgYmVlbiBhYnVz
+aW5nIHRoaXMgd2l0aCBvcHAtbWljcm92b2x0IGJ1dCB0aGF0IHdhcyB3cm9uZyBmb3IKPiA+IG9i
+dmlvdXMgcmVhc29ucyBhbmQgdGhlbiBTdGVwaGVuIHBvaW50ZWQgb3V0IHRoYXQgdGhpcyB3b3Vs
+ZCBiZSBhIGJldHRlciB3YXkuCj4gCj4gR2xhZCB0aGF0IHlvdSBzaGFyZWQgdGhhdCA6KQo+IAo+
+IEEgc29sdXRpb24gaXMgYWxyZWFkeSBpbiBwcm9ncmVzcyBmb3IgdGhhdCBhbmQgaXMgcGFydGlh
+bGx5IG1lcmdlZCBhcwo+IHdlbGwuCj4gCj4gTG9vayBmb3IgInBlcmZvcm1hbmNlX3N0YXRlIiBp
+biBnZW5wZCBhbmQgT1BQIGNvcmVzIChhbHJlYWR5IG1lcmdlZCksCj4gZm9sbG93ZWQgYnkgdGhp
+cyBzZXJpZXMgaGVyZToKPiAKPiBodHRwczovL2xrbWwua2VybmVsLm9yZy9yL2NvdmVyLjE1MTM5
+MjYwMzMuZ2l0LnZpcmVzaC5rdW1hckBsaW5hcm8ub3JnCgpJdCBzZWVtcyB0byBtZSB0aGF0IHBl
+cmZvcm1hbmNlX3N0YXRlIGhhcyBhIGRpcmVjdCByZWxhdGlvbnNoaXAgd2l0aCBnZW5wZAp3aGlj
+aCBpcyBnb29kIGZvciBDUFUgdm90ZXMgYnV0IGluIHRoaXMgY2FzZSwgd2UncmUganVzdCBwYXNz
+aW5nIGFsb25nIHJhdyBkYXRhCnRvIGFuIGluZGVwZW5kZW50IG1pY3JvY29udHJvbGxlci4gVGhl
+ICdxY29tLGFyYy1sZXZlbCcgaXMgdXNlZCB0byBjb25zdHJ1Y3QKdGhlIGFjdHVhbCB2YWx1ZXMg
+dGhhdCB0aGUgR01VIHdpbGwgcHJvZ3JhbSBpbnRvIHRoZSBSUE1oLiBTaW5jZSB0aGVzZSBhcmUK
+aW5mb3JtYXRpb25hbCAoZnJvbSB0aGUgQ1BVIHBlcnNwZWN0aXZlKSByYXRoZXIgdGhhbiBmdW5j
+dGlvbmFsIEkgZmVlbCBsaWtlCnRoYXQgdXNpbmcgcGVyZm9ybWFuY2Vfc3RhdGUgZm9yIHRoaXMg
+d291bGQgYmUgYXMgaGFja3kgYXMgdXNpbmcgb3BwLW1pY3Jvdm9sdApvciBzb21ldGhpbmcgZWxz
+ZS4KCkpvcmRhbgoKLS0gClRoZSBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBh
+IG1lbWJlciBvZiBDb2RlIEF1cm9yYSBGb3J1bSwKYSBMaW51eCBGb3VuZGF0aW9uIENvbGxhYm9y
+YXRpdmUgUHJvamVjdApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5v
+cmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJl
+bm8K
