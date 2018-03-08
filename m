@@ -1,126 +1,166 @@
 From: Daniel Thompson <daniel.thompson@linaro.org>
-Subject: Re: [PATCH V2 5/7] thermal/drivers/cpu_cooling: Add idle cooling
- device documentation
-Date: Thu, 8 Mar 2018 11:54:41 +0000
-Message-ID: <20180308115441.edb4jtpodj2qut2n@oak.lan>
+Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
+Date: Thu, 8 Mar 2018 12:03:52 +0000
+Message-ID: <20180308120352.mko2b775ppquverb@oak.lan>
 References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <1519226968-19821-6-git-send-email-daniel.lezcano@linaro.org>
- <20180306231906.GB28911@amd>
- <84fa8a3c-28bf-41ae-8ed7-9dd348b1cde9@linaro.org>
- <20180308085949.GB17761@amd>
+ <20180307170923.GA6543@localhost.localdomain>
+ <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180308085949.GB17761@amd>
+In-Reply-To: <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 08, 2018 at 09:59:49AM +0100, Pavel Machek wrote:
-> Hi!
+On Wed, Mar 07, 2018 at 07:57:17PM +0100, Daniel Lezcano wrote:
+> >> The preliminary benchmarks show the following changes:
+> >>
+> >> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
+> >> increase of the latency of 16% while sysbench shows a latency increase
+> >> of 5%.
+> > 
+> > I don't follow these numbers. Throughput increase while injecting idle?
+> > compared to what? percentages of what? Please be more specific to better
+> > describer your work..
 > 
-> > >> +Under certain circumstances, the SoC reaches a temperature exceeding
-> > >> +the allocated power budget or the maximum temperature limit. The
-> > > 
-> > > I don't understand. Power budget is in W, temperature is in
-> > > kelvin. Temperature can't exceed power budget AFAICT.
-> > 
-> > Yes, it is badly worded. Is the following better ?
-> > 
-> > "
-> > Under certain circumstances a SoC can reach the maximum temperature
-> > limit or is unable to stabilize the temperature around a temperature
-> > control.
-> > 
-> > When the SoC has to stabilize the temperature, the kernel can act on a
-> > cooling device to mitigate the dissipated power.
-> > 
-> > When the maximum temperature is reached and to prevent a catastrophic
-> > situation a radical decision must be taken to reduce the temperature
-> > under the critical threshold, that impacts the performance.
-> > 
-> > "
+> The dhrystone throughput is based on the virtual timer, when we are
+> running, it is at max opp, so the throughput increases. But regarding
+> the real time, it takes obviously more time to achieve as we are
+> artificially inserting idle cycles. With the cpufreq governor, we run at
+> a lower opp, so the throughput is less for dhrystone but it takes less
+> time to achieve.
 > 
-> Actually... if hardware is expected to protect itself, I'd tone it
-> down. No need to be all catastrophic and critical... But yes, better.
+> Percentages are comparing cpufreq vs cpuidle cooling devices. I will
+> take care of presenting the results in a more clear way in the next version.
 
-Makes sense. For a thermally overcommitted but passively cooled device 
-work close to max operating temperature it is not a critical situation 
-requiring a radical reaction, it is normal operation.
+I think we should also note that the current hikey settings for cpufreq
+are very badly tuned for this platform. It has a single temp threshold
+and it jumps from max freq to min freq.
 
-Put another way, it would severely bogus to attach KERN_CRITICAL 
-messages to reaching the cooling threshold.
+IIRC Leo's work on Hikey thermals correctly it would be much better if 
+it used the power-allocator thermal governor or if if copied some of 
+the Samsung 32-bit platform by configuring the step governor with a 
+graduated with a slightly lower threshold that moves two stops back in 
+the OPP table (which is still fairly high clock speed... but it
+thermally sustainable).
 
 
 Daniel.
 
 
-> > > Critical here, critical there. I have trouble following
-> > > it. Theoretically hardware should protect itself, because you don't
-> > > want kernel bug to damage your CPU?
+> >> Initially, the first version provided also the cpuidle + cpufreq combo
+> >> cooling device but regarding the latest comments, there is a misfit with
+> >> how the cpufreq cooling device and suspend/resume/cpu hotplug/module
+> >> loading|unloading behave together while the combo cooling device was
+> >> designed assuming the cpufreq cooling device was always there. This
+> >> dynamic is investigated and the combo cooling device will be posted
+> >> separetely after this series gets merged.
 > > 
-> > There are several levels of protection. The first level is mitigating
-> > the temperature from the kernel, then in the temperature sensor a reset
-> > line will trigger the reboot of the CPUs. Usually it is a register where
-> > you write the maximum temperature, from the driver itself. I never tried
-> > to write 1000�C in this register and see if I can burn the board.
-> > 
-> > I know some boards have another level of thermal protection in the
-> > hardware itself and some other don't.
-> > 
-> > In any case, from a kernel point of view, it is a critical situation as
-> > we are about to hard reboot the system and in this case it is preferable
-> > to drop drastically the performance but give the opportunity to the
-> > system to run in a degraded mode.
+> > Yeah, this is one of the confusing parts. Could you please
+> > remind us of the limitations here? Why can't we enable CPUfreq
+> > on higher trip points and CPUidle on lower trip points, for example?
 > 
-> Agreed you want to keep going. In ACPI world, we shutdown when
-> critical trip point is reached, so this is somehow confusing.
+> Sorry, I'm not getting the question. We don't want to enable cpuidle or
+> cpufreq at certain point but combine the cooling effect of both in order
+> to get the best tradeoff power / performance.
 > 
-> > >> +Solutions:
-> > >> +----------
-> > >> +
-> > >> +If we can remove the static and the dynamic leakage for a specific
-> > >> +duration in a controlled period, the SoC temperature will
-> > >> +decrease. Acting at the idle state duration or the idle cycle
-> > > 
-> > > "should" decrease? If you are in bad environment..
-> > 
-> > No, it will decrease in any case because of the static leakage drop. The
-> > bad environment will impact the speed of this decrease.
+> Let me give an example with a simple SoC - one core.
 > 
-> I meant... if ambient temperature is 105C, there's not much you can do
-> to cool system down :-).
+> Let's say we have 4 OPPs and a core-sleep idle state. Respectively, the
+> OPPs consume 100mW, 500mW, 2W, 4W. Now the CPU is in an intensive work
+> running at the highest OPP, thus consuming 4W. The temperature increases
+> and reaches 75°C which is the mitigation point and where the sustainable
+> power is 1.7W.
 > 
-> > >> +Idle Injection:
-> > >> +---------------
-> > >> +
-> > >> +The base concept of the idle injection is to force the CPU to go to an
-> > >> +idle state for a specified time each control cycle, it provides
-> > >> +another way to control CPU power and heat in addition to
-> > >> +cpufreq. Ideally, if all CPUs of a cluster inject idle synchronously,
-> > >> +this cluster can get into the deepest idle state and achieve minimum
-> > >> +power consumption, but that will also increase system response latency
-> > >> +if we inject less than cpuidle latency.
-> > > 
-> > > I don't understand last sentence.
-> > 
-> > Is it better ?
-> > 
-> > "Ideally, if all CPUs, belonging to the same cluster, inject their idle
-> > cycle synchronously, the cluster can reach its power down state with a
-> > minimum power consumption and static leakage drop. However, these idle
-> > cycles injection will add extra latencies as the CPUs will have to
-> > wakeup from a deep sleep state."
+>  - With the cpufreq cooling device, we can't have 4W, so we go back and
+> forth between 2W and 500mW.
 > 
-> Extra comma "CPUs , belonging". But yes, better.
+>  - With the cpuidle cooling device, we are at the highest OPP (there is
+> no cpufreq driver) and we insert 47.5% of idle duration
 > 
-> > Thanks!
+>  - With the combo cooling device, we compute the round-up OPP (here 2W)
+> and we insert idle cycles for the remaining power to reach the
+> sustainable power, so 15%.
 > 
-> You are welcome. Best regards,
-> 									Pavel
+> With the combo, we increase the performances for the same requested
+> power. There is no yet the state2power callbacks but we expect the
+> combination of dropping the static leakage and the higher OPP to give
+> better results in terms of performance and mitigation on energy eager
+> CPUs like the recent big ARM cpus with the IPA governor.
+> 
+> Going straight to the point of your question above, we can see the
+> cpufreq cooling device and the cpuidle cooling device have to
+> collaborate. If we unregister the cpufreq device, we have to do the math
+> for the power again in the combo cooling device. It is not a problem by
+> itself but needs an extra reflexion in the current code.
+> 
+> > Specially from a system design point of view, the system engineer
+> > typically would benefit of idle injections to achieve overall
+> > average CPU frequencies in a more granular fashion, for example,
+> > achieving performance vs. cooling between available real
+> > frequencies, avoiding real switches.
+> >
+> > Also, there is a major design question here. After Linaro's attempt
+> > to send a cpufreq+cpuidle cooling device(s), there was an attempt
+> > to generalize and extend intel powerclamp driver. 
+> 
+> I'm not aware of such attempt.
+> 
+> > Do you mind
+> > explaining why refactoring intel powerclamp is not possible? Basic
+> > idea is the same, no?
+> 
+> Basically the idea is the same: run synchronized idle thread and call
+> play_idle(). That is all. Putting apart the intel_powerclamp is very x86
+> centric and contains a plethora of code not fitting our purpose, it
+> increases the idle duration while we are increasing the number of idle
+> cycles but keep the idle duration constant in order to have a control on
+> the latency for the user interactivity. If you compare the idle
+> injection threads codes (powerclamp and cpuidle cooling device), you
+> will also notice they are very different in terms of implementation.
+> 
+> The combo cooling device collaborates with the cpufreq cooling device
+> and reuses the DT binding, and finally it uses the power information
+> provided in the DT. The idle injection is a brick to the combo cooling
+> device.
+> 
+> Initially I thought we should refactor the intel_powerclamp but it
+> appears the combo cooling device reuses the cpufreq and cpuidle cooling
+> device, making sense to have them all in a single file and evolving to a
+> single cooling device with different strategies.
+> 
+> 
+> 
+> >> Daniel Lezcano (7):
+> >>   thermal/drivers/cpu_cooling: Fixup the header and copyright
+> >>   thermal/drivers/cpu_cooling: Add Software Package Data Exchange (SPDX)
+> >>   thermal/drivers/cpu_cooling: Remove pointless field
+> >>   thermal/drivers/Kconfig: Convert the CPU cooling device to a choice
+> >>   thermal/drivers/cpu_cooling: Add idle cooling device documentation
+> >>   thermal/drivers/cpu_cooling: Introduce the cpu idle cooling driver
+> >>   cpuidle/drivers/cpuidle-arm: Register the cooling device
+> >>
+> >>  Documentation/thermal/cpu-idle-cooling.txt | 165 ++++++++++
+> >>  drivers/cpuidle/cpuidle-arm.c              |   5 +
+> >>  drivers/thermal/Kconfig                    |  30 +-
+> >>  drivers/thermal/cpu_cooling.c              | 480 +++++++++++++++++++++++++++--
+> >>  include/linux/cpu_cooling.h                |  15 +-
+> >>  5 files changed, 668 insertions(+), 27 deletions(-)
+> >>  create mode 100644 Documentation/thermal/cpu-idle-cooling.txt
+> >>
+> >> -- 
+> >> 2.7.4
+> >>
+> 
+> 
 > -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+> 
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+> 
