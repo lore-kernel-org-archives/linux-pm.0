@@ -1,75 +1,91 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v2 0/6] sched/cpuidle: Idle loop rework
-Date: Wed, 7 Mar 2018 17:28:34 -0800
-Message-ID: <001101d3b67c$c8eb2550$5ac16ff0$@net>
-References: <000a01d3b636$57b75c00$07261400$@net> thHZenCOVQdbpthHaeaJ1a
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v1 2/9] PCI/PM: Clear PCIe PME Status bit in core, not PCIe port driver
+Date: Thu, 08 Mar 2018 10:13:39 +0100
+Message-ID: <8601339.xFspzpXtrk@aspire.rjw.lan>
+References: <152040297576.240786.1532465558381209070.stgit@bhelgaas-glaptop.roam.corp.google.com> <152040321483.240786.16597888035806933750.stgit@bhelgaas-glaptop.roam.corp.google.com> <20180308080331.GA5671@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: thHZenCOVQdbpthHaeaJ1a
-Content-Language: en-ca
+In-Reply-To: <20180308080331.GA5671@wunner.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, Doug Smythies <dsmythies@telus.net>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.07 14:12 Rafael J. Wysocki wrote:
-> On Wed, Mar 7, 2018 at 6:04 PM, Doug Smythies <dsmythies@telus.net> wrote:
->> On 2018.03.06 12:57 Rafael J. Wysocki wrote:
->
->> During the test I got some messages (I also got some with the V1 patch set):
+On Thursday, March 8, 2018 9:03:31 AM CET Lukas Wunner wrote:
+> On Wed, Mar 07, 2018 at 12:13:34AM -0600, Bjorn Helgaas wrote:
+> > From: Bjorn Helgaas <bhelgaas@google.com>
+> > 
+> > fe31e69740ed ("PCI/PCIe: Clear Root PME Status bits early during system
+> > resume") added a .resume_noirq() callback to the PCIe port driver to clear
+> > the PME Status bit during resume to work around a BIOS issue.
+> > 
+> > The BIOS evidently enabled PME interrupts for ACPI-based runtime wakeups
+> > but did not clear the PME Status bit during resume, which meant PMEs after
+> > resume did not trigger interrupts because PME Status did not transition
+> > from cleared to set.
+> > 
+> > The fix was in the PCIe port driver, so it worked when CONFIG_PCIEPORTBUS
+> > was set.  But I think we *always* want the fix because the platform may use
+> > PME interrupts even if Linux is built without the PCIe port driver.
+> > 
+> > Move the fix from the port driver to the PCI core so we can work around
+> > this "PME doesn't work after waking from a sleep state" issue regardless of
+> > CONFIG_PCIEPORTBUS.
+> > 
+> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> > ---
+> >  drivers/pci/pci-driver.c       |   14 ++++++++++++++
+> >  drivers/pci/pcie/portdrv_pci.c |   15 ---------------
+> >  2 files changed, 14 insertions(+), 15 deletions(-)
+> > 
+> > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> > index 3bed6beda051..bf0704b75f79 100644
+> > --- a/drivers/pci/pci-driver.c
+> > +++ b/drivers/pci/pci-driver.c
+> > @@ -525,6 +525,18 @@ static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
+> >  	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+> >  }
+> >  
+> > +static void pcie_resume_early(struct pci_dev *pci_dev)
+> > +{
+> > +	/*
+> > +	 * Some BIOSes forget to clear Root PME Status bits after system wakeup
+> > +	 * which breaks ACPI-based runtime wakeup on PCI Express, so clear those
+> > +	 * bits now just in case (shouldn't hurt).
+> > +	 */
+> > +	if (pci_is_pcie(pci_dev) &&
+> > +	    pci_pcie_type(pci_dev) == PCI_EXP_TYPE_ROOT_PORT)
+> > +		pcie_clear_root_pme_status(pci_dev);
+> > +}
+> > +
+> >  /*
+> >   * Default "suspend" method for devices that have no driver provided suspend,
+> >   * or not even a driver at all (second part).
+> > @@ -873,6 +885,8 @@ static int pci_pm_resume_noirq(struct device *dev)
+> >  	if (pci_has_legacy_pm_support(pci_dev))
+> >  		return pci_legacy_resume_early(dev);
+> >  
+> > +	pcie_resume_early(pci_dev);
+> 
+> I'm wondering if it would be better to implement this as a PCI quirk:
+> 
+> DECLARE_PCI_FIXUP_CLASS_RESUME_EARLY(PCI_ANY_ID, PCI_ANY_ID,
+> 				     PCI_CLASS_BRIDGE_PCI, 8, ...)
+> 
+> Then it would also be executed for the ->restore_noirq phase, not only
+> ->resume_noirq.  And it could be constrained to only the affected PCI
+> or DMI IDs.
+> 
+> However it would then also be executed on ->runtime_resume, I'm not
+> sure if that's a problem or not.
 
-> Can you please check if that's reporoducible with just the first three
-> patches in the series applied?
+While that may not be a problem strictly speaking (the root port resume
+only takes place when the port itself has been suspended, so this should
+not interfere with PME handling for the devices under it), but it also is
+not necessary in that case, because the platform firmware doesn't mess up
+with the root port's PM registers then.
 
-I will.
-
->> The other observation is sometimes the number of irqs (turbostat) jumps
->> a lot. This did not occur with the V1 patch set. An increase in irqs is
->> expected, but I don't think that much.
-
-> Right.
-
-I did a trace for 1 hour, and got about 12 occurrence of very high IRQs.
-I was able to correlate trace results with high IRQs per turbostat sampling
-time (1 minute).
-
-The extreme jumps in IRQs is due to CPUs wanting to be in idle state 4
-(the deepest for my older i7 processor, C6), but the tick is not stopping,
-(or so I am guessing) thus they exit idle state 4 every millisecond
-(I am using a 1000 Hz kernel), and then pretty much immediately to go
-back into idle state 4.
-When this occurs, it seems to occur for a very long time, but it does
-seem to eventually sort itself out. 
-
-Example:
-       5   2.0 [006] d..1   780.447005: cpu_idle: state=4 cpu_id=6
-     993   2.0 [006] d..1   780.447999: cpu_idle: state=4294967295 cpu_id=6
-       6   2.0 [006] d..1   780.448006: cpu_idle: state=4 cpu_id=6
-     992   2.0 [006] d..1   780.448999: cpu_idle: state=4294967295 cpu_id=6
-       6   2.0 [006] d..1   780.449005: cpu_idle: state=4 cpu_id=6
-
-Where:
-column 1 is the time difference in microseconds from the previous sample.
-column 2 is the elapsed time of the test in minutes (for ease of correlating
-	with the other once per minute data.
-Other columns are unmodified from the raw trace data, but this file is
-only CPU 6 and only idle entry/exit.
-
-And the same area from the raw trace file:
-
-<idle>-0     [006] d..1   780.447005: cpu_idle: state=4 cpu_id=6
- test1-2664  [007] d.h.   780.447999: local_timer_entry: vector=237
-<idle>-0     [006] d..1   780.447999: cpu_idle: state=4294967295 cpu_id=6
- test1-2664  [007] d.h.   780.447999: hrtimer_expire_entry: hrtimer=00000000ea612c0e function=tick_sched_timer now=780435000915
-<idle>-0     [006] d.h1   780.448000: local_timer_entry: vector=237
-<idle>-0     [006] d.h1   780.448001: hrtimer_expire_entry: hrtimer=000000004b84020f function=tick_sched_timer now=780435002540
-<idle>-0     [006] d.h1   780.448002: hrtimer_expire_exit: hrtimer=000000004b84020f
- test1-2664  [007] d.h.   780.448003: hrtimer_expire_exit: hrtimer=00000000ea612c0e
-<idle>-0     [006] d.h1   780.448003: local_timer_exit: vector=237
- test1-2664  [007] d.h.   780.448003: local_timer_exit: vector=237
-<idle>-0     [006] d..1   780.448006: cpu_idle: state=4 cpu_id=6
-
-... Doug
+Or if it does, the whole PCIe PM is managed by AML/SMM and we should not
+even touch this register at all.
