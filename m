@@ -1,166 +1,148 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
-Date: Thu, 8 Mar 2018 12:03:52 +0000
-Message-ID: <20180308120352.mko2b775ppquverb@oak.lan>
-References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <20180307170923.GA6543@localhost.localdomain>
- <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
+Date: Thu, 8 Mar 2018 12:41:19 +0000
+Message-ID: <c80c25a0-46df-7cda-ad77-6a25642a641d@arm.com>
+References: <cover.1520274879.git.amit.kucheria@linaro.org>
+ <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
+ <6d5aeab8-aafe-fa3b-585e-953a34864e7d@arm.com>
+ <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
+In-Reply-To: <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Ram Chandrasekar <rkumbako@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 07, 2018 at 07:57:17PM +0100, Daniel Lezcano wrote:
-> >> The preliminary benchmarks show the following changes:
-> >>
-> >> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
-> >> increase of the latency of 16% while sysbench shows a latency increase
-> >> of 5%.
-> > 
-> > I don't follow these numbers. Throughput increase while injecting idle?
-> > compared to what? percentages of what? Please be more specific to better
-> > describer your work..
-> 
-> The dhrystone throughput is based on the virtual timer, when we are
-> running, it is at max opp, so the throughput increases. But regarding
-> the real time, it takes obviously more time to achieve as we are
-> artificially inserting idle cycles. With the cpufreq governor, we run at
-> a lower opp, so the throughput is less for dhrystone but it takes less
-> time to achieve.
-> 
-> Percentages are comparing cpufreq vs cpuidle cooling devices. I will
-> take care of presenting the results in a more clear way in the next version.
-
-I think we should also note that the current hikey settings for cpufreq
-are very badly tuned for this platform. It has a single temp threshold
-and it jumps from max freq to min freq.
-
-IIRC Leo's work on Hikey thermals correctly it would be much better if 
-it used the power-allocator thermal governor or if if copied some of 
-the Samsung 32-bit platform by configuring the step governor with a 
-graduated with a slightly lower threshold that moves two stops back in 
-the OPP table (which is still fairly high clock speed... but it
-thermally sustainable).
 
 
-Daniel.
+On 07/03/18 10:59, Amit Kucheria wrote:
+> On Tue, Mar 6, 2018 at 6:02 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>
+>>
+>> On 05/03/18 18:36, Amit Kucheria wrote:
+>>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+>>>
+>>> There is currently no way for the governor to be selected for each thermal
+>>> zone in devicetree.
+>>
+>> How is that any different from cpufreq, cpuidle or devfreq subsystems ?
+> 
+> Cpufreq/cpuidle are designed to control a single parameter while
+> thermal framework is trying to mitigate heat from several disparate
+> sources that are throttled in different ways. Besides, cpufreq/cpuidle
+> have somewhat mature governors. Cpuidle has only one governor (for
+> tickless) - menu governor, cpufreq has ondemand in mainline, replaced
+> by interactive in android and hopefully soon both will be replaced by
+> schedutil.
+> 
 
+While I agree on the facts, I don't think adding this information to DT
+because thermal governors are not so mature compared to cpufreq/idle is
+acceptable. It's give more reason not to add as new governors may get
+added as things mature.
 
-> >> Initially, the first version provided also the cpuidle + cpufreq combo
-> >> cooling device but regarding the latest comments, there is a misfit with
-> >> how the cpufreq cooling device and suspend/resume/cpu hotplug/module
-> >> loading|unloading behave together while the combo cooling device was
-> >> designed assuming the cpufreq cooling device was always there. This
-> >> dynamic is investigated and the combo cooling device will be posted
-> >> separetely after this series gets merged.
-> > 
-> > Yeah, this is one of the confusing parts. Could you please
-> > remind us of the limitations here? Why can't we enable CPUfreq
-> > on higher trip points and CPUidle on lower trip points, for example?
+> Badly configured cpufreq/cpuidle/devfreq only leads to wasted power,
+> while badly configured thermal zone leads to the loss of operation
+> e.g. reboots, too hot to touch, etc.
 > 
-> Sorry, I'm not getting the question. We don't want to enable cpuidle or
-> cpufreq at certain point but combine the cooling effect of both in order
-> to get the best tradeoff power / performance.
+
+As Viresh pointed out, if the default hardware or firmware configuration
+causes that then it's no good platform to use. If adding more
+functionality in Linux(like cpufreq and others) causes this then Linux
+needs to deal with it. If default thermal can't help in preventing such
+damage then it shouldn't be default.
+
+>>> This results in the default governor being used for all
+>>> thermal zones even though no such restriction exists in the core code.
+>>>
+>>
+>> What restrictions ?
 > 
-> Let me give an example with a simple SoC - one core.
+> I said "no such restriction exists". IOW, the core code does allow the
+> governor to be changed.
 > 
-> Let's say we have 4 OPPs and a core-sleep idle state. Respectively, the
-> OPPs consume 100mW, 500mW, 2W, 4W. Now the CPU is in an intensive work
-> running at the highest OPP, thus consuming 4W. The temperature increases
-> and reaches 75°C which is the mitigation point and where the sustainable
-> power is 1.7W.
+
+Ah ok.
+
+>>> Add support for specifying the thermal governor to be used for a thermal
+>>> zone in the devicetree.
+>>
+>> Then what prevents us from doing the same for other subsystems with so
+>> called /inefficient default/ governors ?
 > 
->  - With the cpufreq cooling device, we can't have 4W, so we go back and
-> forth between 2W and 500mW.
+> Nothing? :-)
 > 
->  - With the cpuidle cooling device, we are at the highest OPP (there is
-> no cpufreq driver) and we insert 47.5% of idle duration
+
+Cool problem solved, just kidding.
+
+> It depends on how closely we want the board DT to represent a
+> production-ready setup. If a platform maintainer wants to ship a
+> well-tested configuration in DT, is that really a problem?
+>
+
+You mean configuration + policy ? Then yes policy in DT is no-no.
+
+> If however, you are requiring them to ship magic runes for userspace
+> daemons (e.g. per-board thermald config) to tweak the various
+> governors in sysfs, it takes a bit more work to get to a
+> production-ready setup.
 > 
->  - With the combo cooling device, we compute the round-up OPP (here 2W)
-> and we insert idle cycles for the remaining power to reach the
-> sustainable power, so 15%.
+
+Fair enough.
+
+> We should of course continue to improve our govenors to arrive at the
+> one true governor, but that'll take some time and might never even
+> happen in the case of thermal IMHO.
 > 
-> With the combo, we increase the performances for the same requested
-> power. There is no yet the state2power callbacks but we expect the
-> combination of dropping the static leakage and the higher OPP to give
-> better results in terms of performance and mitigation on energy eager
-> CPUs like the recent big ARM cpus with the IPA governor.
+
+I am not sure about "one true governor" as different users have
+different needs.
+
+>>> The devicetree config should specify the governor
+>>> name as a string that matches any available governors. If not specified, we
+>>> maintain the current behaviour of using the default governor.
+>>
+>> If one is specified, can the user change it from sysfs ? If
+>> yes, then why do we need this binding at all ? If no, we are basically
+>> restricting, then what would happen if the DT was shipped with wrong
+>> governor specified because the firmware author didn't know about any
+>> other governor ?
 > 
-> Going straight to the point of your question above, we can see the
-> cpufreq cooling device and the cpuidle cooling device have to
-> collaborate. If we unregister the cpufreq device, we have to do the math
-> for the power again in the combo cooling device. It is not a problem by
-> itself but needs an extra reflexion in the current code.
+> The governor can be changed from sysfs today. So it is all override-able.
 > 
-> > Specially from a system design point of view, the system engineer
-> > typically would benefit of idle injections to achieve overall
-> > average CPU frequencies in a more granular fashion, for example,
-> > achieving performance vs. cooling between available real
-> > frequencies, avoiding real switches.
-> >
-> > Also, there is a major design question here. After Linaro's attempt
-> > to send a cpufreq+cpuidle cooling device(s), there was an attempt
-> > to generalize and extend intel powerclamp driver. 
+> I guess your main worry is an unmodifiable DT with this option being
+> shipped in firmware, right? That is a fair point, though that could be
+> worked around from sysfs.
 > 
-> I'm not aware of such attempt.
+
+Yes, and Viresh's point triggered more question to me. If DT has some
+governor like interactive which will not in mainline or not configure in
+the default build what will be done. If in such case default governor is
+good enough to boot without burning or any other issues, why not always?
+
+>> IMO, having this in DT is bad idea as it may cause more issues than
+>> gain. We already have sysfs support like other PM subsystems and
+>> userspace can deal with it.
 > 
-> > Do you mind
-> > explaining why refactoring intel powerclamp is not possible? Basic
-> > idea is the same, no?
+> As mentioned above, I think thermal is a bit special because bad
+> configuration may lead to loss of operation. But iff we're strictly
+> enforcing the rule about no policy in board DTs, then I concede.
 > 
-> Basically the idea is the same: run synchronized idle thread and call
-> play_idle(). That is all. Putting apart the intel_powerclamp is very x86
-> centric and contains a plethora of code not fitting our purpose, it
-> increases the idle duration while we are increasing the number of idle
-> cycles but keep the idle duration constant in order to have a control on
-> the latency for the user interactivity. If you compare the idle
-> injection threads codes (powerclamp and cpuidle cooling device), you
-> will also notice they are very different in terms of implementation.
+
+As I said IMO I see more issues with that, so I don't like it.
+
+> Personally, I'd like mainline board DTs to have enough policy to
+> provide a stable system so I don't have to futz around with userspace
+> to set it all up correctly (in 3 different distros).
 > 
-> The combo cooling device collaborates with the cpufreq cooling device
-> and reuses the DT binding, and finally it uses the power information
-> provided in the DT. The idle injection is a brick to the combo cooling
-> device.
-> 
-> Initially I thought we should refactor the intel_powerclamp but it
-> appears the combo cooling device reuses the cpufreq and cpuidle cooling
-> device, making sense to have them all in a single file and evolving to a
-> single cooling device with different strategies.
-> 
-> 
-> 
-> >> Daniel Lezcano (7):
-> >>   thermal/drivers/cpu_cooling: Fixup the header and copyright
-> >>   thermal/drivers/cpu_cooling: Add Software Package Data Exchange (SPDX)
-> >>   thermal/drivers/cpu_cooling: Remove pointless field
-> >>   thermal/drivers/Kconfig: Convert the CPU cooling device to a choice
-> >>   thermal/drivers/cpu_cooling: Add idle cooling device documentation
-> >>   thermal/drivers/cpu_cooling: Introduce the cpu idle cooling driver
-> >>   cpuidle/drivers/cpuidle-arm: Register the cooling device
-> >>
-> >>  Documentation/thermal/cpu-idle-cooling.txt | 165 ++++++++++
-> >>  drivers/cpuidle/cpuidle-arm.c              |   5 +
-> >>  drivers/thermal/Kconfig                    |  30 +-
-> >>  drivers/thermal/cpu_cooling.c              | 480 +++++++++++++++++++++++++++--
-> >>  include/linux/cpu_cooling.h                |  15 +-
-> >>  5 files changed, 668 insertions(+), 27 deletions(-)
-> >>  create mode 100644 Documentation/thermal/cpu-idle-cooling.txt
-> >>
-> >> -- 
-> >> 2.7.4
-> >>
-> 
-> 
-> -- 
->  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-> 
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
-> 
+
+Sysfs is more flexible than DT and requires some fuzzing to get the best
+out of the platform if you need.
+
+-- 
+Regards,
+Sudeep
