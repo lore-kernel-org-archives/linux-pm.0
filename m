@@ -1,148 +1,54 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
-Date: Thu, 8 Mar 2018 12:41:19 +0000
-Message-ID: <c80c25a0-46df-7cda-ad77-6a25642a641d@arm.com>
-References: <cover.1520274879.git.amit.kucheria@linaro.org>
- <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
- <6d5aeab8-aafe-fa3b-585e-953a34864e7d@arm.com>
- <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
+From: Mike Galbraith <mgalbraith@suse.de>
+Subject: Re: [RFC/RFT][PATCH v2 0/6] sched/cpuidle: Idle loop rework
+Date: Thu, 08 Mar 2018 14:40:17 +0100
+Message-ID: <1520516417.7807.88.camel@suse.de>
+References: <2067762.1uWBf5RSRc@aspire.rjw.lan>
+         <1520505099.7807.60.camel@suse.de>
+         <CAJZ5v0gCi7bLL_r45qmoOKwh_dWF_RVs0U5UPe3qY45GbvtK9w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <CAJZ5v0gCi7bLL_r45qmoOKwh_dWF_RVs0U5UPe3qY45GbvtK9w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Ram Chandrasekar <rkumbako@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 07/03/18 10:59, Amit Kucheria wrote:
-> On Tue, Mar 6, 2018 at 6:02 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>
->>
->> On 05/03/18 18:36, Amit Kucheria wrote:
->>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
->>>
->>> There is currently no way for the governor to be selected for each thermal
->>> zone in devicetree.
->>
->> How is that any different from cpufreq, cpuidle or devfreq subsystems ?
+On Thu, 2018-03-08 at 12:10 +0100, Rafael J. Wysocki wrote:
+> On Thu, Mar 8, 2018 at 11:31 AM, Mike Galbraith <mgalbraith@suse.de> wrote:
+>                               1     2     3
+> > 4.16.0.g1b88acc-master     6.95  7.03  6.91 (virgin)
+> > 4.16.0.g1b88acc-master     7.20  7.25  7.26 (+v2)
+> > 4.16.0.g1b88acc-master     6.90  7.06  6.95 (+local)
+> >
+> > Why would v2 charge the light firefox load a small but consistent fee?
 > 
-> Cpufreq/cpuidle are designed to control a single parameter while
-> thermal framework is trying to mitigate heat from several disparate
-> sources that are throttled in different ways. Besides, cpufreq/cpuidle
-> have somewhat mature governors. Cpuidle has only one governor (for
-> tickless) - menu governor, cpufreq has ondemand in mainline, replaced
-> by interactive in android and hopefully soon both will be replaced by
-> schedutil.
+> Two effects may come into play here I think.
 > 
+> One is that allowing the tick to run biases the menu governor's
+> predictions towards the lower end, so we may use shallow states more
+> as a result then (Peter was talking about that).
 
-While I agree on the facts, I don't think adding this information to DT
-because thermal governors are not so mature compared to cpufreq/idle is
-acceptable. It's give more reason not to add as new governors may get
-added as things mature.
+Hm, I'd expect that to show up in +local as well then, as it keeps the
+tick running when avg_idle < sched_migration_cost (convenient magic
+number), but the firefox load runs at the same wattage as virgin.  I'm
+also doing this...
 
-> Badly configured cpufreq/cpuidle/devfreq only leads to wasted power,
-> while badly configured thermal zone leads to the loss of operation
-> e.g. reboots, too hot to touch, etc.
-> 
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -335,7 +335,7 @@ static int menu_select(struct cpuidle_dr
+                 * C1's exit latency exceeds the user configured limit.
+                 */
+                polling_threshold = max_t(unsigned int, 20, s->target_residency);
+-               if (data->next_timer_us > polling_threshold &&
++               if (expected_interval > polling_threshold &&
+                    latency_req > s->exit_latency && !s->disabled &&
+                    !dev->states_usage[1].disable)
+                        first_idx = 1;
 
-As Viresh pointed out, if the default hardware or firmware configuration
-causes that then it's no good platform to use. If adding more
-functionality in Linux(like cpufreq and others) causes this then Linux
-needs to deal with it. If default thermal can't help in preventing such
-damage then it shouldn't be default.
+...to help out high frequency cross core throughput, but the firefox
+load apparently doesn't tickle that, as significant polling would
+surely show in the wattage.
 
->>> This results in the default governor being used for all
->>> thermal zones even though no such restriction exists in the core code.
->>>
->>
->> What restrictions ?
-> 
-> I said "no such restriction exists". IOW, the core code does allow the
-> governor to be changed.
-> 
-
-Ah ok.
-
->>> Add support for specifying the thermal governor to be used for a thermal
->>> zone in the devicetree.
->>
->> Then what prevents us from doing the same for other subsystems with so
->> called /inefficient default/ governors ?
-> 
-> Nothing? :-)
-> 
-
-Cool problem solved, just kidding.
-
-> It depends on how closely we want the board DT to represent a
-> production-ready setup. If a platform maintainer wants to ship a
-> well-tested configuration in DT, is that really a problem?
->
-
-You mean configuration + policy ? Then yes policy in DT is no-no.
-
-> If however, you are requiring them to ship magic runes for userspace
-> daemons (e.g. per-board thermald config) to tweak the various
-> governors in sysfs, it takes a bit more work to get to a
-> production-ready setup.
-> 
-
-Fair enough.
-
-> We should of course continue to improve our govenors to arrive at the
-> one true governor, but that'll take some time and might never even
-> happen in the case of thermal IMHO.
-> 
-
-I am not sure about "one true governor" as different users have
-different needs.
-
->>> The devicetree config should specify the governor
->>> name as a string that matches any available governors. If not specified, we
->>> maintain the current behaviour of using the default governor.
->>
->> If one is specified, can the user change it from sysfs ? If
->> yes, then why do we need this binding at all ? If no, we are basically
->> restricting, then what would happen if the DT was shipped with wrong
->> governor specified because the firmware author didn't know about any
->> other governor ?
-> 
-> The governor can be changed from sysfs today. So it is all override-able.
-> 
-> I guess your main worry is an unmodifiable DT with this option being
-> shipped in firmware, right? That is a fair point, though that could be
-> worked around from sysfs.
-> 
-
-Yes, and Viresh's point triggered more question to me. If DT has some
-governor like interactive which will not in mainline or not configure in
-the default build what will be done. If in such case default governor is
-good enough to boot without burning or any other issues, why not always?
-
->> IMO, having this in DT is bad idea as it may cause more issues than
->> gain. We already have sysfs support like other PM subsystems and
->> userspace can deal with it.
-> 
-> As mentioned above, I think thermal is a bit special because bad
-> configuration may lead to loss of operation. But iff we're strictly
-> enforcing the rule about no policy in board DTs, then I concede.
-> 
-
-As I said IMO I see more issues with that, so I don't like it.
-
-> Personally, I'd like mainline board DTs to have enough policy to
-> provide a stable system so I don't have to futz around with userspace
-> to set it all up correctly (in 3 different distros).
-> 
-
-Sysfs is more flexible than DT and requires some fuzzing to get the best
-out of the platform if you need.
-
--- 
-Regards,
-Sudeep
+	-Mike
