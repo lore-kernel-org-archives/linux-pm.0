@@ -1,59 +1,100 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] thermal: of: Allow selection of thermal governor in DT
-Date: Thu, 8 Mar 2018 11:05:55 +0530
-Message-ID: <CAP245DWAnYqbKJ_+NMqYvP9suwgmmkZ6twSBfAD64FxqztgnuA@mail.gmail.com>
-References: <cover.1520274879.git.amit.kucheria@linaro.org>
- <3b80853abb45a9e067cf7a16754b07bb67712457.1520274879.git.amit.kucheria@linaro.org>
- <6d5aeab8-aafe-fa3b-585e-953a34864e7d@arm.com> <CAP245DVwaY84+fZrbne1RLK9gKsfSTE2TELDAC0RkZGMzFkpWg@mail.gmail.com>
- <CAOh2x=njFxcwDfQs1g3-Estrun5j=fSYVnG-EaVw0UcRaDKsSg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+Date: Thu, 8 Mar 2018 12:13:01 +0100
+Message-ID: <CAJZ5v0iVvbhJGXV-mC2tv9iEiQB05GrtJjsDnQ5Hj0N9f43U2A@mail.gmail.com>
+References: <1520504950-8544-1-git-send-email-claudio@evidence.eu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=njFxcwDfQs1g3-Estrun5j=fSYVnG-EaVw0UcRaDKsSg@mail.gmail.com>
+In-Reply-To: <1520504950-8544-1-git-send-email-claudio@evidence.eu.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Ram Chandrasekar <rkumbako@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Lina Iyer <ilina@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 8, 2018 at 10:19 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On Wed, Mar 7, 2018 at 4:29 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
->> Cpufreq/cpuidle are designed to control a single parameter while
->> thermal framework is trying to mitigate heat from several disparate
->> sources that are throttled in different ways. Besides, cpufreq/cpuidle
->> have somewhat mature governors. Cpuidle has only one governor (for
->> tickless) - menu governor, cpufreq has ondemand in mainline, replaced
->> by interactive in android and hopefully soon both will be replaced by
+On Thu, Mar 8, 2018 at 11:29 AM, Claudio Scordino
+<claudio@evidence.eu.com> wrote:
+> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+> we should not wait for the rate limit, otherwise we may miss some
+> deadline.
 >
-> Interactive and schedfreq are already removed from Android 4.4 and 4.9.
-> It used schedutil now.
-
-Good to hear.
-
->> schedutil.
->>
->> Badly configured cpufreq/cpuidle/devfreq only leads to wasted power,
->> while badly configured thermal zone leads to the loss of operation
->> e.g. reboots, too hot to touch, etc.
+> Tests using rt-app on Exynos5422 with up to 10 SCHED_DEADLINE tasks have
+> shown reductions of even 10% of deadline misses with a negligible
+> increase of energy consumption (measured through Baylibre Cape).
 >
-> I don't think such heat-ups will happen right during boot, where some
-> init.rc should
-> come up and change the governor.
+> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+> CC: Ingo Molnar <mingo@redhat.com>
+> CC: Patrick Bellasi <patrick.bellasi@arm.com>
+> CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> CC: Morten Rasmussen <morten.rasmussen@arm.com>
+> CC: Juri Lelli <juri.lelli@redhat.com>
+> CC: Viresh Kumar <viresh.kumar@linaro.org>
+> CC: Vincent Guittot <vincent.guittot@linaro.org>
+> CC: Todd Kjos <tkjos@android.com>
+> CC: Joel Fernandes <joelaf@google.com>
+> CC: linux-pm@vger.kernel.org
+> CC: linux-kernel@vger.kernel.org
+> ---
+> Changes from v2:
+>  - Rate limit ignored also in case of "fast switch"
+>  - Specific routine added
+> ---
+> Changes from v1:
+>  - Logic moved from sugov_should_update_freq() to
+>    sugov_update_single()/_shared() to not duplicate data structures
+>  - Rate limit not ignored in case of "fast switch"
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 7936f54..13f9cce 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -260,6 +260,17 @@ static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
+>  static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
+>  #endif /* CONFIG_NO_HZ_COMMON */
+>
+> +/*
+> + * Make sugov_should_update_freq() ignore the rate limit when DL
+> + * has increased the utilization.
+> + */
+> +static inline
 
-Interestingly enough, there are some patches that make the thermal
-framework start earlier to deal with boot-time thermal issues. I
-expect to post them soon. :-) These are required, for example, if the
-device goes into a reboot loop - the device might not even make it to
-the point in userspace where the governors are setup. In such a loop,
-the temperature constantly keeps increasing.
+I wouldn't break the line here
 
-> Over that if we are worried about production images only, then what prevents us
-> to select the right default governor in the defconfig ? We shouldn't
-> be worried about
-> multi-platform kernels for production images.
+> +void set_dl_rate_limit(struct sugov_cpu *sg_cpu, struct sugov_policy *sg_policy)
 
-I was refering to the 'make defconfig' out-of-box experience that
-makes the majority of developer boards/devices out there stable to
-work on. I can't do that today.
+and the name might be better as Viresh said, but overall
 
-Regards,
-Amit
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+> +{
+> +       if (cpu_util_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->util_dl)
+> +               sg_policy->need_freq_update = true;
+> +}
+> +
+>  static void sugov_update_single(struct update_util_data *hook, u64 time,
+>                                 unsigned int flags)
+>  {
+> @@ -273,6 +284,8 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>         sugov_set_iowait_boost(sg_cpu, time);
+>         sg_cpu->last_update = time;
+>
+> +       set_dl_rate_limit(sg_cpu, sg_policy);
+> +
+>         if (!sugov_should_update_freq(sg_policy, time))
+>                 return;
+>
+> @@ -354,6 +367,8 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>
+>         raw_spin_lock(&sg_policy->update_lock);
+>
+> +       set_dl_rate_limit(sg_cpu, sg_policy);
+> +
+>         sugov_get_util(sg_cpu);
+>         sg_cpu->flags = flags;
+>
+> --
+> 2.7.4
+>
