@@ -1,58 +1,71 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v5 4/4] sched/fair: update util_est only on util_avg
- updates
-Date: Thu, 8 Mar 2018 10:37:03 +0000
-Message-ID: <20180308103703.GG2211@e110439-lin>
-References: <20180222170153.673-1-patrick.bellasi@arm.com>
- <20180222170153.673-5-patrick.bellasi@arm.com>
- <20180308094830.GK25201@hirez.programming.kicks-ass.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3] cpufreq: schedutil: rate limits for SCHED_DEADLINE
+Date: Thu, 8 Mar 2018 16:03:05 +0530
+Message-ID: <20180308103305.GK6842@vireshk-i7>
+References: <1520504950-8544-1-git-send-email-claudio@evidence.eu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180308094830.GK25201@hirez.programming.kicks-ass.net>
+In-Reply-To: <1520504950-8544-1-git-send-email-claudio@evidence.eu.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08-Mar 10:48, Peter Zijlstra wrote:
-> On Thu, Feb 22, 2018 at 05:01:53PM +0000, Patrick Bellasi wrote:
-> > +#define UTIL_EST_NEED_UPDATE_FLAG 0x1
+On 08-03-18, 11:29, Claudio Scordino wrote:
+> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
+> we should not wait for the rate limit, otherwise we may miss some
+> deadline.
 > 
-> > @@ -5321,12 +5345,19 @@ static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
-> >  	if (!task_sleep)
-> >  		return;
-> >  
-> > +	/*
-> > +	 * Skip update of task's estimated utilization if the PELT signal has
-> > +	 * never been updated (at least once) since last enqueue time.
-> > +	 */
-> > +	ue = READ_ONCE(p->se.avg.util_est);
-> > +	if (ue.enqueued & UTIL_EST_NEED_UPDATE_FLAG)
-> > +		return;
+> Tests using rt-app on Exynos5422 with up to 10 SCHED_DEADLINE tasks have
+> shown reductions of even 10% of deadline misses with a negligible
+> increase of energy consumption (measured through Baylibre Cape).
 > 
-> The name and function seem inverted, if the flag is set, we do _NOT_
-> update util_est.
+> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+> CC: Ingo Molnar <mingo@redhat.com>
+> CC: Patrick Bellasi <patrick.bellasi@arm.com>
+> CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> CC: Morten Rasmussen <morten.rasmussen@arm.com>
+> CC: Juri Lelli <juri.lelli@redhat.com>
+> CC: Viresh Kumar <viresh.kumar@linaro.org>
+> CC: Vincent Guittot <vincent.guittot@linaro.org>
+> CC: Todd Kjos <tkjos@android.com>
+> CC: Joel Fernandes <joelaf@google.com>
+> CC: linux-pm@vger.kernel.org
+> CC: linux-kernel@vger.kernel.org
+> ---
+> Changes from v2:
+>  - Rate limit ignored also in case of "fast switch"
+>  - Specific routine added
+> ---
+> Changes from v1:
+>  - Logic moved from sugov_should_update_freq() to
+>    sugov_update_single()/_shared() to not duplicate data structures
+>  - Rate limit not ignored in case of "fast switch"
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 7936f54..13f9cce 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -260,6 +260,17 @@ static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
+>  static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
+>  #endif /* CONFIG_NO_HZ_COMMON */
+>  
+> +/*
+> + * Make sugov_should_update_freq() ignore the rate limit when DL
+> + * has increased the utilization.
+> + */
+> +static inline
+> +void set_dl_rate_limit(struct sugov_cpu *sg_cpu, struct sugov_policy *sg_policy)
 
-My reading was along the line "when the flag is set we need an
-update of util_avg to collect a new util_est sample"...
+Maybe it could be renamed as ignore_dl_rate_limit() ? Lets see what others have
+to say. But looks fine otherwise.
 
-... but I agree that's confusing... and unnecessary long.
-
-> How about something like UTIL_EST_UNCHANGED ? That would give:
-
-I would prefer UTIL_AVG_UNCHANGED, since the flags is reset when we
-have a change in util_avg, thus enabling util_est updates.
-
-> 	/*
-> 	 * If the PELT values haven't changed since enqueue time,
-> 	 * skip the util_est update.
-> 	 */
-> 	if (enqueue & UTIL_EST_UNCHANGED)
-> 		return;
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+viresh
