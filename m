@@ -1,59 +1,79 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Subject: [PATCH v2] power: supply: da9150-fg: remove VLA usage
-Date: Fri, 9 Mar 2018 12:27:08 -0600
-Message-ID: <20180309182708.GA18542@embeddedgus>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: [PATCH v2 00/13] PCI: Simplify PCIe port driver
+Date: Fri, 09 Mar 2018 12:59:49 -0600
+Message-ID: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Support Opensource <support.opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-hardening@lists.openwall.com, Kees Cook <keescook@chromium.org>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: linux-pci@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Lukas Wunner <lukas@wunner.de>, Frederick Lawler <fred@fredlawl.com>
 List-Id: linux-pm@vger.kernel.org
 
-In preparation to enabling -Wvla, remove VLA usage and replace it
-with fixed-length arrays.
+This is an attempt to move a few things out of the port driver.
 
-DA9150_QIF_LONG_SIZE (4 bytes) is the biggest size of an attribute which can
-be accessed [1].
+I added these new patches since v1:
 
-Fixed as part of the directive to remove all VLAs from
-the kernel: https://lkml.org/lkml/2018/3/7/621
+  Merge pcieport_if.h into portdrv.h
+    Merge pcieport_if.h and portdrv.h to reduce clutter
 
-[1] https://marc.info/?l=kernel-hardening&m=152059600524753&w=2
+  Remove unnecessary "pcie_ports=auto" parameter
+    This is the default setting anyway, so specifying the parameter doesn't
+    do anything.
 
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+  Encapsulate pcie_ports_auto inside the port driver
+    "pcie_ports_auto" was declared in linux/pci.h even though nobody
+    outside the port driver used it.
+
+  Rename and reverse sense of pcie_ports_auto
+    "pcie_ports_auto" is connected with the "pcie_ports=native" parameter,
+    so rename it to match.
+
+Other changes since v1:
+  - Rebase onto my pci/portdrv branch.
+  - Rename pcie_resume_early() to pcie_pme_root_status_cleanup() as
+    suggested by Rafael.
+  - Add Rafael's Reviewed-by tags.
+
+v1: https://lkml.kernel.org/r/152040297576.240786.1532465558381209070.stgit@bhelgaas-glaptop.roam.corp.google.com
+
 ---
-Changes in v2:
- - Use DA9150_QIF_LONG_SIZE instead of DA9150_QIF_BYTE_SIZE as the
-   maximum size for array 'buf'. Thanks to Adam Thomson for the
-   feedback on this.
- - Update changelog based on Adam's comments.
 
- drivers/power/supply/da9150-fg.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Bjorn Helgaas (13):
+      PCI/portdrv: Merge pcieport_if.h into portdrv.h
+      PCI/PM: Move pcie_clear_root_pme_status() to core
+      PCI/PM: Clear PCIe PME Status bit in core, not PCIe port driver
+      PCI/PM: Clear PCIe PME Status bit for Root Complex Event Collectors
+      PCI/portdrv: Disable port driver in compat mode
+      PCI/portdrv: Remove pcie_port_bus_type link order dependency
+      PCI/portdrv: Remove unused PCIE_PORT_SERVICE_VC
+      PCI/portdrv: Simplify PCIe feature permission checking
+      PCI/portdrv: Remove unnecessary include of <linux/pci-aspm.h>
+      PCI/portdrv: Remove "pcie_hp=nomsi" kernel parameter
+      PCI/portdrv: Remove unnecessary "pcie_ports=auto" parameter
+      PCI/portdrv: Encapsulate pcie_ports_auto inside the port driver
+      PCI/portdrv: Rename and reverse sense of pcie_ports_auto
 
-diff --git a/drivers/power/supply/da9150-fg.c b/drivers/power/supply/da9150-fg.c
-index 8b8ce97..7ea2188 100644
---- a/drivers/power/supply/da9150-fg.c
-+++ b/drivers/power/supply/da9150-fg.c
-@@ -92,7 +92,7 @@ struct da9150_fg {
- static u32 da9150_fg_read_attr(struct da9150_fg *fg, u8 code, u8 size)
- 
- {
--	u8 buf[size];
-+	u8 buf[DA9150_QIF_LONG_SIZE];
- 	u8 read_addr;
- 	u32 res = 0;
- 	int i;
-@@ -111,7 +111,7 @@ static void da9150_fg_write_attr(struct da9150_fg *fg, u8 code, u8 size,
- 				 u32 val)
- 
- {
--	u8 buf[size];
-+	u8 buf[DA9150_QIF_LONG_SIZE];
- 	u8 write_addr;
- 	int i;
- 
--- 
-2.7.4
+
+ Documentation/admin-guide/kernel-parameters.txt |   19 ++---
+ drivers/acpi/pci_root.c                         |   13 +++
+ drivers/pci/hotplug/pciehp.h                    |    2 -
+ drivers/pci/pci-driver.c                        |   59 +++++++++++++++
+ drivers/pci/pci.c                               |    9 ++
+ drivers/pci/pci.h                               |    1 
+ drivers/pci/pcie/Makefile                       |    3 -
+ drivers/pci/pcie/aer/aerdrv.h                   |    2 -
+ drivers/pci/pcie/pcie-dpc.c                     |    2 -
+ drivers/pci/pcie/pcieport_if.h                  |   71 -------------------
+ drivers/pci/pcie/pme.c                          |    1 
+ drivers/pci/pcie/portdrv.h                      |   88 ++++++++++++++++-------
+ drivers/pci/pcie/portdrv_acpi.c                 |    3 -
+ drivers/pci/pcie/portdrv_bus.c                  |   56 ---------------
+ drivers/pci/pcie/portdrv_core.c                 |   73 +++++++------------
+ drivers/pci/pcie/portdrv_pci.c                  |   54 ++------------
+ drivers/pci/probe.c                             |   10 +++
+ include/linux/pci.h                             |    5 +
+ 18 files changed, 198 insertions(+), 273 deletions(-)
+ delete mode 100644 drivers/pci/pcie/pcieport_if.h
+ delete mode 100644 drivers/pci/pcie/portdrv_bus.c
