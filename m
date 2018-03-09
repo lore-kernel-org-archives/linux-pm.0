@@ -1,210 +1,166 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: [PATCH v2 06/13] PCI/portdrv: Remove pcie_port_bus_type link order
- dependency
-Date: Fri, 09 Mar 2018 13:00:22 -0600
-Message-ID: <152062202196.77693.13201322126291517429.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH v4 0/7] Introduce on-chip interconnect API
+Date: Fri,  9 Mar 2018 23:09:51 +0200
+Message-ID: <20180309210958.16672-1-georgi.djakov@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pci@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Lukas Wunner <lukas@wunner.de>, Frederick Lawler <fred@fredlawl.com>
+To: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+graphics, modem). These cores are talking to each other and can generate a lot
+of data flowing through the on-chip interconnects. These interconnect buses
+could form different topologies such as crossbar, point to point buses,
+hierarchical buses or use the network-on-chip concept.
 
-The pcie_port_bus_type must be registered before drivers that depend on it
-can be registered.  Those drivers include:
+These buses have been sized usually to handle use cases with high data
+throughput but it is not necessary all the time and consume a lot of power.
+Furthermore, the priority between masters can vary depending on the running
+use case like video playback or cpu intensive tasks.
 
-  pcied_init()                # PCIe native hotplug driver
-  aer_service_init()          # AER driver
-  dpc_service_init()          # DPC driver
-  pcie_pme_service_init()     # PME driver
+Having an API to control the requirement of the system in term of bandwidth
+and QoS, so we can adapt the interconnect configuration to match those by
+scaling the frequencies, setting link priority and tuning QoS parameters.
+This configuration can be a static, one-time operation done at boot for some
+platforms or a dynamic set of operations that happen at run-time.
 
-Previously we registered pcie_port_bus_type from pcie_portdrv_init(), a
-device_initcall.  The callers of pcie_port_service_register() (above) are
-also device_initcalls.  This is fragile because the device_initcall
-ordering depends on link order, which is not explicit.
+This patchset introduce a new API to get the requirement and configure the
+interconnect buses across the entire chipset to fit with the current demand.
+The API is NOT for changing the performance of the endpoint devices, but only
+the interconnect path in between them.
 
-Register pcie_port_bus_type from pci_driver_init() along with pci_bus_type.
-This removes the link order dependency between portdrv and the pciehp, AER,
-DPC, and PCIe PME drivers.
+The API is using a consumer/provider-based model, where the providers are
+the interconnect buses and the consumers could be various drivers.
+The consumers request interconnect resources (path) to an endpoint and set
+the desired constraints on this data flow path. The provider(s) receive
+requests from consumers and aggregate these requests for all master-slave
+pairs on that path. Then the providers configure each participating in the
+topology node according to the requested data flow path, physical links and
+constraints. The topology could be complicated and multi-tiered and is SoC
+specific.
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pci/pci-driver.c       |   44 +++++++++++++++++++++++++++++++-
- drivers/pci/pcie/Makefile      |    2 +
- drivers/pci/pcie/portdrv_bus.c |   55 ----------------------------------------
- drivers/pci/pcie/portdrv_pci.c |   13 +--------
- 4 files changed, 45 insertions(+), 69 deletions(-)
- delete mode 100644 drivers/pci/pcie/portdrv_bus.c
+Below is a simplified diagram of a real-world SoC topology. The interconnect
+providers are the NoCs.
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 204d2b54c2a4..02ecbdafe38b 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -19,6 +19,7 @@
- #include <linux/suspend.h>
- #include <linux/kexec.h>
- #include "pci.h"
-+#include "pcie/portdrv.h"
- 
- struct pci_dynid {
- 	struct list_head node;
-@@ -1553,8 +1554,49 @@ struct bus_type pci_bus_type = {
- };
- EXPORT_SYMBOL(pci_bus_type);
- 
-+#ifdef CONFIG_PCIEPORTBUS
-+static int pcie_port_bus_match(struct device *dev, struct device_driver *drv)
-+{
-+	struct pcie_device *pciedev;
-+	struct pcie_port_service_driver *driver;
-+
-+	if (drv->bus != &pcie_port_bus_type || dev->bus != &pcie_port_bus_type)
-+		return 0;
-+
-+	pciedev = to_pcie_device(dev);
-+	driver = to_service_driver(drv);
-+
-+	if (driver->service != pciedev->service)
-+		return 0;
-+
-+	if ((driver->port_type != PCIE_ANY_PORT) &&
-+	    (driver->port_type != pci_pcie_type(pciedev->port)))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+struct bus_type pcie_port_bus_type = {
-+	.name		= "pci_express",
-+	.match		= pcie_port_bus_match,
-+};
-+EXPORT_SYMBOL_GPL(pcie_port_bus_type);
-+#endif
-+
- static int __init pci_driver_init(void)
- {
--	return bus_register(&pci_bus_type);
-+	int ret;
-+
-+	ret = bus_register(&pci_bus_type);
-+	if (ret)
-+		return ret;
-+
-+#ifdef CONFIG_PCIEPORTBUS
-+	ret = bus_register(&pcie_port_bus_type);
-+	if (ret)
-+		return ret;
-+#endif
-+
-+	return 0;
- }
- postcore_initcall(pci_driver_init);
-diff --git a/drivers/pci/pcie/Makefile b/drivers/pci/pcie/Makefile
-index 223e4c34c29a..e01c10c97b95 100644
---- a/drivers/pci/pcie/Makefile
-+++ b/drivers/pci/pcie/Makefile
-@@ -6,7 +6,7 @@
- # Build PCI Express ASPM if needed
- obj-$(CONFIG_PCIEASPM)		+= aspm.o
- 
--pcieportdrv-y			:= portdrv_core.o portdrv_pci.o portdrv_bus.o
-+pcieportdrv-y			:= portdrv_core.o portdrv_pci.o
- pcieportdrv-$(CONFIG_ACPI)	+= portdrv_acpi.o
- 
- obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
-diff --git a/drivers/pci/pcie/portdrv_bus.c b/drivers/pci/pcie/portdrv_bus.c
-deleted file mode 100644
-index 4969ccf6b214..000000000000
---- a/drivers/pci/pcie/portdrv_bus.c
-+++ /dev/null
-@@ -1,55 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * File:	portdrv_bus.c
-- * Purpose:	PCI Express Port Bus Driver's Bus Overloading Functions
-- *
-- * Copyright (C) 2004 Intel
-- * Copyright (C) Tom Long Nguyen (tom.l.nguyen@intel.com)
-- */
--
--#include <linux/module.h>
--#include <linux/pci.h>
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/pm.h>
--
--#include "portdrv.h"
--
--static int pcie_port_bus_match(struct device *dev, struct device_driver *drv);
--
--struct bus_type pcie_port_bus_type = {
--	.name		= "pci_express",
--	.match		= pcie_port_bus_match,
--};
--EXPORT_SYMBOL_GPL(pcie_port_bus_type);
--
--static int pcie_port_bus_match(struct device *dev, struct device_driver *drv)
--{
--	struct pcie_device *pciedev;
--	struct pcie_port_service_driver *driver;
--
--	if (drv->bus != &pcie_port_bus_type || dev->bus != &pcie_port_bus_type)
--		return 0;
--
--	pciedev = to_pcie_device(dev);
--	driver = to_service_driver(drv);
--
--	if (driver->service != pciedev->service)
--		return 0;
--
--	if ((driver->port_type != PCIE_ANY_PORT) &&
--	    (driver->port_type != pci_pcie_type(pciedev->port)))
--		return 0;
--
--	return 1;
--}
--
--int pcie_port_bus_register(void)
--{
--	return bus_register(&pcie_port_bus_type);
--}
--
--void pcie_port_bus_unregister(void)
--{
--	bus_unregister(&pcie_port_bus_type);
--}
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index 5d9d5305ebef..127321e17184 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -258,22 +258,11 @@ static const struct dmi_system_id pcie_portdrv_dmi_table[] __initconst = {
- 
- static int __init pcie_portdrv_init(void)
- {
--	int retval;
--
- 	if (pcie_ports_disabled)
- 		return -EACCES;
- 
- 	dmi_check_system(pcie_portdrv_dmi_table);
- 
--	retval = pcie_port_bus_register();
--	if (retval) {
--		printk(KERN_WARNING "PCIE: bus_register error: %d\n", retval);
--		goto out;
--	}
--	retval = pci_register_driver(&pcie_portdriver);
--	if (retval)
--		pcie_port_bus_unregister();
-- out:
--	return retval;
-+	return pci_register_driver(&pcie_portdriver);
- }
- device_initcall(pcie_portdrv_init);
+ +----------------+    +----------------+
+ | HW Accelerator |--->|      M NoC     |<---------------+
+ +----------------+    +----------------+                |
+                         |      |                    +------------+
+  +-----+  +-------------+      V       +------+     |            |
+  | DDR |  |                +--------+  | PCIe |     |            |
+  +-----+  |                | Slaves |  +------+     |            |
+    ^ ^    |                +--------+     |         |   C NoC    |
+    | |    V                               V         |            |
+ +------------------+   +------------------------+   |            |   +-----+
+ |                  |-->|                        |-->|            |-->| CPU |
+ |                  |-->|                        |<--|            |   +-----+
+ |     Mem NoC      |   |         S NoC          |   +------------+
+ |                  |<--|                        |---------+    |
+ |                  |<--|                        |<------+ |    |   +--------+
+ +------------------+   +------------------------+       | |    +-->| Slaves |
+   ^  ^    ^    ^          ^                             | |        +--------+
+   |  |    |    |          |                             | V
+ +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+ | CPUs |  |  | GPU |   | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
+ +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+           |
+       +-------+
+       | Modem |
+       +-------+
+
+TODO:
+ * Create icc_set_extended() to handle parameters such as latency and other QoS
+   values.
+ * Convert from using global node identifiers to local per provider identifiers.
+ * Cache the path between the nodes instead of walking the graph on each get().
+ * Sync interconnect requests with the idle state of the device.
+
+Changes since patchset v3 (https://lkml.org/lkml/2017/9/8/544)
+* Refactored the constraints aggregation.
+* Use the IDR API.
+* Split the provider and consumer bindings into separate patches and propose
+  new bindings for consumers, which allows to specify the local source port.
+* Adopted the icc_ prefix for API functions.
+* Introduced separate API functions for creating interconnect nodes and links.
+* Added DT lookup support in addition to platform data.
+* Dropped the event tracing patch for now.
+* Added a patch to provide summary via debugfs. 
+* Use macro for the list of topology definitions in the platform driver.
+* Various minor changes.
+
+Changes since patchset v2 (https://lkml.org/lkml/2017/7/20/825)
+* Split the aggregation into per node and per provider. Cache the
+  aggregated values.
+* Various small refactorings and cleanups in the framework.
+* Added a patch introducing basic tracepoint support for monitoring
+  the time required to update the interconnect nodes.
+
+Changes since patchset v1 (https://lkml.org/lkml/2017/6/27/890)
+* Updates in the documentation.
+* Changes in request aggregation, locking.
+* Dropped the aggregate() callback and use the default as it currently
+  sufficient for the single vendor driver. Will add it later when needed.
+* Dropped the dt-bindings draft patch for now.
+
+Changes since RFC v2 (https://lkml.org/lkml/2017/6/12/316)
+* Converted documentation to rst format.
+* Fixed an incorrect call to mutex_lock. Renamed max_bw to peak_bw.
+
+Changes since RFC v1 (https://lkml.org/lkml/2017/5/15/605)
+* Refactored code into shorter functions.
+* Added a new aggregate() API function.
+* Rearranged some structs to reduce padding bytes.
+
+Changes since RFC v0 (https://lkml.org/lkml/2017/3/1/599)
+* Removed DT support and added optional Patch 3 with new bindings proposal.
+* Converted the topology into internal driver data.
+* Made the framework modular.
+* interconnect_get() now takes (src and dst ports as arguments).
+* Removed public declarations of some structs.
+* Now passing prev/next nodes to the vendor driver.
+* Properly remove requests on _put().
+* Added refcounting.
+* Updated documentation.
+* Changed struct interconnect_path to use array instead of linked list.
+
+Georgi Djakov (7):
+  interconnect: Add generic on-chip interconnect API
+  dt-bindings: Introduce interconnect provider bindings
+  interconnect: Add debugfs support
+  interconnect: qcom: Add RPM communication
+  interconnect: qcom: Add msm8916 interconnect provider driver
+  dt-bindings: Introduce interconnect consumers bindings
+  interconnect: Allow endpoints translation via DT
+
+ .../bindings/interconnect/interconnect.txt         |  70 +++
+ .../devicetree/bindings/interconnect/qcom-smd.txt  |  31 ++
+ Documentation/interconnect/interconnect.rst        |  96 ++++
+ drivers/Kconfig                                    |   2 +
+ drivers/Makefile                                   |   1 +
+ drivers/interconnect/Kconfig                       |  15 +
+ drivers/interconnect/Makefile                      |   2 +
+ drivers/interconnect/core.c                        | 597 +++++++++++++++++++++
+ drivers/interconnect/qcom/Kconfig                  |  11 +
+ drivers/interconnect/qcom/Makefile                 |   3 +
+ drivers/interconnect/qcom/msm8916.c                | 482 +++++++++++++++++
+ drivers/interconnect/qcom/smd-rpm.c                |  90 ++++
+ drivers/interconnect/qcom/smd-rpm.h                |  15 +
+ include/linux/interconnect-provider.h              | 109 ++++
+ include/linux/interconnect.h                       |  46 ++
+ include/linux/interconnect/qcom.h                  | 350 ++++++++++++
+ 16 files changed, 1920 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+ create mode 100644 Documentation/interconnect/interconnect.rst
+ create mode 100644 drivers/interconnect/Kconfig
+ create mode 100644 drivers/interconnect/Makefile
+ create mode 100644 drivers/interconnect/core.c
+ create mode 100644 drivers/interconnect/qcom/Kconfig
+ create mode 100644 drivers/interconnect/qcom/Makefile
+ create mode 100644 drivers/interconnect/qcom/msm8916.c
+ create mode 100644 drivers/interconnect/qcom/smd-rpm.c
+ create mode 100644 drivers/interconnect/qcom/smd-rpm.h
+ create mode 100644 include/linux/interconnect-provider.h
+ create mode 100644 include/linux/interconnect.h
+ create mode 100644 include/linux/interconnect/qcom.h
