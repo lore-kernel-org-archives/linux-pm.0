@@ -1,87 +1,35 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [Freedreno] [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Fri, 09 Mar 2018 09:18:41 -0800
-Message-ID: <152061592175.13890.6455929815877326231@swboyd.mtv.corp.google.com>
-References: <20180302215638.6145-1-jcrouse@codeaurora.org>
- <20180302215638.6145-3-jcrouse@codeaurora.org>
- <20180305044221.GC23018@vireshk-i7>
- <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
- <20180306042656.GJ23018@vireshk-i7>
- <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
- <20180307050624.GR23018@vireshk-i7>
- <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
- <20180309034332.GO6842@vireshk-i7>
- <20180309160355.GC10589@jcrouse-lnx.qualcomm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
+Date: Fri, 9 Mar 2018 09:33:39 -0800
+Message-ID: <20180309173339.GA9837@kroah.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20180309160355.GC10589@jcrouse-lnx.qualcomm.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Jordan Crouse <jcrouse@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: nm@ti.com, devicetree@vger.kernel.org, rnayak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, dianders@chromium.org, dri-devel@lists.freedesktop.org, vireshk@kernel.org, freedreno@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-KEkgd3JvdGUgYW4gZW1haWwgdGhhdCBzZWVtcyB0byBoYXZlIGJlZW4gbG9zdCkKClF1b3Rpbmcg
-Sm9yZGFuIENyb3VzZSAoMjAxOC0wMy0wOSAwODowMzo1NSkKPiBPbiBGcmksIE1hciAwOSwgMjAx
-OCBhdCAwOToxMzozMkFNICswNTMwLCBWaXJlc2ggS3VtYXIgd3JvdGU6Cj4gPiBPbiAwOC0wMy0x
-OCwgMTM6MTQsIEpvcmRhbiBDcm91c2Ugd3JvdGU6Cj4gPiA+IEl0IHNlZW1zIHRvIG1lIHRoYXQg
-cGVyZm9ybWFuY2Vfc3RhdGUgaGFzIGEgZGlyZWN0IHJlbGF0aW9uc2hpcCB3aXRoIGdlbnBkCj4g
-PiA+IHdoaWNoIGlzIGdvb2QgZm9yIENQVSB2b3RlcyBidXQgaW4gdGhpcyBjYXNlLCB3ZSdyZSBq
-dXN0IHBhc3NpbmcgYWxvbmcgcmF3IGRhdGEKPiA+ID4gdG8gYW4gaW5kZXBlbmRlbnQgbWljcm9j
-b250cm9sbGVyLiBUaGUgJ3Fjb20sYXJjLWxldmVsJyBpcyB1c2VkIHRvIGNvbnN0cnVjdAo+ID4g
-PiB0aGUgYWN0dWFsIHZhbHVlcyB0aGF0IHRoZSBHTVUgd2lsbCBwcm9ncmFtIGludG8gdGhlIFJQ
-TWguIFNpbmNlIHRoZXNlIGFyZQo+ID4gCj4gPiBUaGUgImdlbnBkIiBoZXJlIGlzIGNyZWF0ZWQg
-c3BlY2lhbGx5IGZvciB0aGlzIFJQTS4gVGhlIHBlcmZvcm1hbmNlLXN0YXRlIHRoaW5nCj4gPiBp
-cyBkZXNpZ25lZCB0byBzb2x2ZSB0aGlzIHZlcnkgc3BlY2lmaWMgcHJvYmxlbSBvZiBxdWFsY29t
-bSBTb0NzIGFuZCB0aGVyZSBpcyBubwo+ID4gd2F5IHdlIGFyZSBnb2luZyB0byBhZGQgYW5vdGhl
-ciBwcm9wZXJ0eSBmb3IgdGhpcyBub3cuCj4gPiAKPiA+ID4gaW5mb3JtYXRpb25hbCAoZnJvbSB0
-aGUgQ1BVIHBlcnNwZWN0aXZlKSByYXRoZXIgdGhhbiBmdW5jdGlvbmFsIEkgZmVlbCBsaWtlCj4g
-PiA+IHRoYXQgdXNpbmcgcGVyZm9ybWFuY2Vfc3RhdGUgZm9yIHRoaXMgd291bGQgYmUgYXMgaGFj
-a3kgYXMgdXNpbmcgb3BwLW1pY3Jvdm9sdAo+ID4gPiBvciBzb21ldGhpbmcgZWxzZS4KPiA+IAo+
-ID4gVGhlcmUgaXMgc29tZSBXSVAgc3R1ZmYgaGVyZSBSYWplbmRyYSBpcyB0ZXN0aW5nIGN1cnJl
-bnRseS4KPiA+IAo+ID4gc3NoOi8vZ2l0QGdpdC5saW5hcm8ub3JnL3Blb3BsZS92aXJlc2gua3Vt
-YXIvbXlsaW51eC5naXQgb3BwL2dlbnBkL3Fjb20KPiA+IAo+ID4gUGxlYXNlIGhhdmUgYSB0YWxr
-IHdpdGggUmFqZW5kcmEgd2hvIGNhbiBoZWxwIHlvdSB1bmRlcnN0YW5kIG9uIGhvdyB0aGlzIGNh
-biBiZQo+ID4gdXNlZCBmb3IgR1BVcy4KPiAKPiBJIGRvbid0IHRoaW5rIHdlIGFyZSB1bmRlcnN0
-YW5kaW5nIGVhY2ggb3RoZXIuIFRoZSBHTVUgaXMgYSBzZXBhcmF0ZQo+IG1pY3JvY29udHJvbGxl
-ci4gSXQgaXMgZ2l2ZW4gYSBtYWdpYyBudW1iZXIgKGFjdHVhbGx5IGEgY29tYmluYXRpb24gb2Yg
-bWFnaWMKPiBudW1iZXJzKSB0aGF0IGl0IHRoZW4gdXNlcyB0byBkaXJlY3RseSBpbnRlcmFjdCB3
-aXRoIHRoZSBvdGhlciBoYXJkd2FyZSB0byBtYWtlCj4gdGhlIHZvdGUuIFRoZSBvbmx5IHJlc3Bv
-bnNpYmlsaXR5IHRoYXQgdGhlIENQVSBoYXMgaXMgdG8gY29uc3RydWN0IHRoYXQgbWFnaWMKPiBu
-dW1iZXIgKG9uY2UsIGF0IGluaXQpIGFuZCBzZW5kIGl0IGFjcm9zcyB3aGVuIGFza2VkLgo+IAo+
-IExvb2tpbmcgYXQgdGhlIHNkaGMgY29kZSBmcm9tIHRoZSB0ZXN0aW5nIHRyZWUgaXQgbWFrZXMg
-cGVyZmVjdCBzZW5zZQo+IHRoYXQgeW91IGhhdmUgYSBkZXZpY2UgdGhhdCBuZWVkcyB0byBldmVu
-dHVhbGx5IGRvIGEgUlBNaCB2b3RlIGZyb20gdGhlIENQVSBhbmQKPiBzbyB0aGUgJ3JlcXVpcmVk
-LW9wcCcgYW5kIHBlcmZvcm1hbmNlIHN0YXRlIGNvbWUgdG9nZXRoZXIgdG8gZG8gdGhlIHJpZ2h0
-IHRoaW5nLgo+IFRoaXMgaXMgZ29vZCBjb2RlLgo+IAo+IE5vbmUgb2YgdGhpcyBpcyB0cnVlIGZv
-ciB0aGUgR1BVLiBUaGUgQ1BVIG5ldmVyIHZvdGVzIGZvciB0aGUgR1BVIHNvIHRoZXJlIAo+IGlz
-bid0IGFueSBuZWVkIHRvIGNvbm5lY3QgaXQgdG8gdGhlIHBvd2VyIGRvbWFpbiBkcml2ZXJzLiBF
-dmVuIGlmIHlvdSBkaWQKPiB0aGVyZSBpc24ndCBhbnkgY3VycmVudCBtZWNoYW5pc20gZm9yIHRo
-ZSBycG1wZCBkcml2ZXIgdG8gcGFzcyB0aGUgcmlnaHQgbWFnaWMKPiBudW1iZXIgdG8gdGhlIEdQ
-VSBkcml2ZXIgd2hpY2ggaXMgd2hhdCBpdCByZWFsbHkgbmVlZHMuCj4gCj4gSSBzdXBwb3NlIHRo
-YXQgaW5zdGVhZCBvZiB1c2luZyAncWNvbSxhcmMtbGV2ZWwnIHdlIGNvdWxkIHVzZSAncWNvbS1j
-b3JuZXInIGJ1dAo+IHRoZW4gdGhhdHMganVzdCBhIG5hbWluZyBkaXNwdXRlLiBXZSBzdGlsbCBu
-ZWVkIGEgd2F5IGZvciB0aGUgR1BVIHRvIHF1ZXJ5IHRoZQo+IG1hZ2ljIHZhbHVlcy4KPiAKCkFn
-cmVlZC4gRm9yY2luZyBnZW5wZCBhbmQgc2V0X3BlcmZvcm1hbmNlX3N0YXRlIEFQSXMgb24gR01V
-IGRvZXNuJ3QgbWFrZQphbnkgc2Vuc2UgaWYgdGhlIEdNVSBpcyBkb2luZyBpdCBhbGwgaXRzZWxm
-LgoKVGhlIGJpbmRpbmcgc2hvdWxkIGJlIHRoZSBzYW1lIGJldHdlZW4gc2RoYyBhbmQgR01VIGlm
-IHRoZXkncmUgYWN0dWFsbHkKdGFsa2luZyBhYm91dCB0aGUgc2FtZSB0aGluZyB0aG91Z2guIEkg
-dGhpbmsgdGhleSBhcmUsIGJlY2F1c2UgSSBzdXNwZWN0CkdNVSBuZWVkcyB0byB0cmFuc2xhdGUg
-dGhlIGh1bWFuIHJlYXNvbmFibGUgdmFsdWUgb2YgcWNvbSxjb3JuZXIgaW50bwp0aGUgaGFyZHdh
-cmUgcWNvbSxhcmMtbGV2ZWwgdmFsdWUgdG8gd3JpdGUgaW50byBpdCdzIGhhcmR3YXJlIHNvIHRo
-ZSBHTVUKY2FuIGF1dG8tdHJhbnNpdGlvbiBwZXJmb3JtYW5jZSBzdGF0ZXMuIElmIEknbSB3cm9u
-ZywgdGhlbgpxY29tLGFyYy1sZXZlbCBuZWVkcyB0byBiZSBjcmVhdGVkIGFsb25nc2lkZSBvZiBx
-Y29tLGNvcm5lciBiZWNhdXNlCnRoZXkncmUgZGlmZmVyZW50IG51bWJlciBzcGFjZXMuCgpCVFcs
-IGl0J3MgcWNvbSxjb3JuZXIgYW5kIG5vdCBxY29tLWNvcm5lciByaWdodD8KX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlz
-dApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+On Tue, Jan 02, 2018 at 03:50:48PM +0000, Adam Thomson wrote:
+> This patch set adds sink side support for the PPS feature introduced in the
+> USB PD 3.0 specification.
+> 
+> The source PPS supply is represented using the Power Supply framework to provide
+> access and control APIs for dealing with it's operating voltage and current,
+> and switching between a standard PDO and PPS APDO operation. During standard PDO
+> operation the voltage and current is read-only, but for APDO PPS these are
+> writable as well to allow for control.
+> 
+> It should be noted that the keepalive for PPS is not handled within TCPM. The
+> expectation is that the external user will be required to ensure re-requests
+> occur regularly to ensure PPS remains and the source does not hard reset.
+
+I've applied the first 3 patches now.  Can you rebase and resend based
+on the feedback so far?
+
+thanks,
+
+greg k-h
