@@ -1,56 +1,71 @@
-From: Rik van Riel <riel@surriel.com>
-Subject: Re: [RFC/RFT][PATCH v3 0/6] sched/cpuidle: Idle loop rework
-Date: Fri, 09 Mar 2018 10:19:20 -0500
-Message-ID: <1520608760.4638.14.camel@surriel.com>
-References: <2450532.XN8DODrtDf@aspire.rjw.lan>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
+Date: Fri, 9 Mar 2018 08:47:12 -0700
+Message-ID: <20180309154711.GB10589@jcrouse-lnx.qualcomm.com>
+References: <20180302215638.6145-1-jcrouse@codeaurora.org>
+ <20180302215638.6145-3-jcrouse@codeaurora.org>
+ <20180305044221.GC23018@vireshk-i7>
+ <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
+ <20180306042656.GJ23018@vireshk-i7>
+ <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
+ <20180307050624.GR23018@vireshk-i7>
+ <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
+ <20180309034332.GO6842@vireshk-i7>
+ <4fd61bd2-757b-ef30-a07f-ed74af031ff5@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-kivsYyhsThfbxsTVQyQ+"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2450532.XN8DODrtDf@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <4fd61bd2-757b-ef30-a07f-ed74af031ff5-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-
---=-kivsYyhsThfbxsTVQyQ+
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2018-03-09 at 10:34 +0100, Rafael J. Wysocki wrote:
-> Hi All,
->=20
-> Thanks a lot for the discussion and testing so far!
->=20
-> This is a total respin of the whole series, so please look at it
-> afresh.
-> Patches 2 and 3 are the most similar to their previous versions, but
-> still they are different enough.
-
-This series gives no RCU errors on startup,
-and no CPUs seem to be getting stuck any more.
-
-I will run some performance tests with these
-patches.
-
---=20
-All Rights Reversed.
---=-kivsYyhsThfbxsTVQyQ+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEKR73pCCtJ5Xj3yADznnekoTE3oMFAlqipfgACgkQznnekoTE
-3oPL3Qf9Ft0ww8bRf9/uOXj457aBHCKjX53DXAYmZRAAwyutPzaMUxHSadRoc5Db
-vJZJ5bu3pPYbgCu7b7+rJMxoF86A0M8cHrr4YTJsGwsmUDTXQzsm14VJGamELqOI
-aiOpc4zg/hEISdx/4bpSCvwBmXxwptnUnrnwcO1lJXfiBB/H+jIGaR69rBekARx7
-juIQa02Ahb6bTes2tR2jGUFofWDs+dle+9xa8HRs2t5fU4Z3nKmxu7L1G3gaEt5f
-3SCfDE81CdWrhtJG7DIW8P5Y94Xh34x/VV4dGN+mLoHs6Gc2Pi8oxKliZAjVc7WN
-n1Xh2e7WkBcbE1Z+phvZ2BBOY7pj8Q==
-=6ZIb
------END PGP SIGNATURE-----
-
---=-kivsYyhsThfbxsTVQyQ+--
+T24gRnJpLCBNYXIgMDksIDIwMTggYXQgMDM6NDk6MDBQTSArMDUzMCwgUmFqZW5kcmEgTmF5YWsg
+d3JvdGU6Cj4gSGV5IEpvcmRhbi9WaXJlc2gsCj4gCj4gT24gMDMvMDkvMjAxOCAwOToxMyBBTSwg
+VmlyZXNoIEt1bWFyIHdyb3RlOgo+ID4gT24gMDgtMDMtMTgsIDEzOjE0LCBKb3JkYW4gQ3JvdXNl
+IHdyb3RlOgo+ID4+IEl0IHNlZW1zIHRvIG1lIHRoYXQgcGVyZm9ybWFuY2Vfc3RhdGUgaGFzIGEg
+ZGlyZWN0IHJlbGF0aW9uc2hpcCB3aXRoIGdlbnBkCj4gPj4gd2hpY2ggaXMgZ29vZCBmb3IgQ1BV
+IHZvdGVzIGJ1dCBpbiB0aGlzIGNhc2UsIHdlJ3JlIGp1c3QgcGFzc2luZyBhbG9uZyByYXcgZGF0
+YQo+ID4+IHRvIGFuIGluZGVwZW5kZW50IG1pY3JvY29udHJvbGxlci4gVGhlICdxY29tLGFyYy1s
+ZXZlbCcgaXMgdXNlZCB0byBjb25zdHJ1Y3QKPiA+PiB0aGUgYWN0dWFsIHZhbHVlcyB0aGF0IHRo
+ZSBHTVUgd2lsbCBwcm9ncmFtIGludG8gdGhlIFJQTWguIFNpbmNlIHRoZXNlIGFyZQo+ID4gCj4g
+PiBUaGUgImdlbnBkIiBoZXJlIGlzIGNyZWF0ZWQgc3BlY2lhbGx5IGZvciB0aGlzIFJQTS4gVGhl
+IHBlcmZvcm1hbmNlLXN0YXRlIHRoaW5nCj4gPiBpcyBkZXNpZ25lZCB0byBzb2x2ZSB0aGlzIHZl
+cnkgc3BlY2lmaWMgcHJvYmxlbSBvZiBxdWFsY29tbSBTb0NzIGFuZCB0aGVyZSBpcyBubwo+ID4g
+d2F5IHdlIGFyZSBnb2luZyB0byBhZGQgYW5vdGhlciBwcm9wZXJ0eSBmb3IgdGhpcyBub3cuCj4g
+PiAKPiA+PiBpbmZvcm1hdGlvbmFsIChmcm9tIHRoZSBDUFUgcGVyc3BlY3RpdmUpIHJhdGhlciB0
+aGFuIGZ1bmN0aW9uYWwgSSBmZWVsIGxpa2UKPiA+PiB0aGF0IHVzaW5nIHBlcmZvcm1hbmNlX3N0
+YXRlIGZvciB0aGlzIHdvdWxkIGJlIGFzIGhhY2t5IGFzIHVzaW5nIG9wcC1taWNyb3ZvbHQKPiA+
+PiBvciBzb21ldGhpbmcgZWxzZS4KPiA+IAo+ID4gVGhlcmUgaXMgc29tZSBXSVAgc3R1ZmYgaGVy
+ZSBSYWplbmRyYSBpcyB0ZXN0aW5nIGN1cnJlbnRseS4KPiAKPiBXaGF0IEkgYW0gZG9pbmcgaXMg
+YSBwb3dlcmRvbWFpbiBkcml2ZXIgdG8gY29tbXVuaWNhdGUgbWFnaWMgdmFsdWVzIGZyb20KPiBD
+UFUgdG8gcnBtaCwgbG9va3MgbGlrZSB3ZSBuZWVkIGFub3RoZXIgb25lIHRvIGNvbW11bmljYXRl
+IGZyb20gQ1BVIHRvCj4gR01VIG5vdyA6KQo+IAo+IEEgZmV3IHRoaW5ncywKPiAqIHNvbWVvbmUg
+d2lsbCBuZWVkIHRvIG1hcCB0aGVzZSBsYXJnZXIgbWFnaWMgdmFsdWVzIGludG8gc29tZXRoaW5n
+IHRoYXQKPiBycG1oIHdvdWxkIHVuZGVyc3RhbmQgKGJldHdlZW4gMCB0byAxNSBvbiB0aGUgc2Rt
+ODQ1KSwgdGhhdHMgZG9uZSBieQo+IHJlYWRpbmcgdGhlIGNvbW1hbmQgZGIgbGV2ZWwgbWFwcy4g
+SXMgdGhpcyBkb25lIGJ5IEdNVT8KCkl0IGlzIGRvbmUgYnkgdGhlIEdQVSAtIHdlIHRha2UgdGhl
+IG1hZ2ljIHZhbHVlcywgY29uc3RydWN0IHRoZW0gaW50byBvdGhlcgptYWdpYyB2YWx1ZXMgYW5k
+IHNlbmQgdGhlbSB0byB0aGUgR01VLiBBcyBmYXIgYXMgSSBrbm93IHdlIGFyZSB0aGUgb25seSBv
+dGhlcgppbi1rZXJuZWwgY2xpZW50IG9mIGNtZC1kYiBvdGhlciB0aGFuIHRoZSByZWd1bGF0b3Io
+cykuCgo+ICogYXJlIHRoZXNlIGNvbW11bmljYXRlZCBqdXN0IG9uY2UgZm9yIGV2ZXJ5IE9QUCBh
+dCBpbml0L2Jvb3QsIG9yIGZvcgo+IGV2ZXJ5IE9QUCBzd2l0Y2g/CgpKdXN0IG9uY2UgYXQgaW5p
+dC4KCj4gKiB3aGF0cyB0aGUgY29tbXVuaWNhdGlvbiBtZWNoYW5pc20gd2UgdXNlIGJldHdlZW4g
+Q1BVIGFuZCBHTVU/CgpTaGFyZWQgbWVtb3J5IHF1ZXVlcyBpbnNwaXJlZCBieSBWZW51cyBIRkku
+CgpKb3JkYW4KCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBt
+ZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBDb2xsYWJvcmF0
+aXZlIFByb2plY3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5v
+Cg==
