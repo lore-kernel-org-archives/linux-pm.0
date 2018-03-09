@@ -1,57 +1,48 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT][PATCH v2 0/6] sched/cpuidle: Idle loop rework
-Date: Fri, 9 Mar 2018 10:58:56 +0100
-Message-ID: <CAJZ5v0hWDA7T=xaNZ1uTEDL_BjRj9zeFZY45AhsUAK5FtRovjw@mail.gmail.com>
-References: <2067762.1uWBf5RSRc@aspire.rjw.lan> <1520505099.7807.60.camel@suse.de>
- <CAJZ5v0gCi7bLL_r45qmoOKwh_dWF_RVs0U5UPe3qY45GbvtK9w@mail.gmail.com> <1520516417.7807.88.camel@suse.de>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 00/27] cpufreq: Stop validating cpufreq table in drivers
+Date: Fri, 9 Mar 2018 15:30:26 +0530
+Message-ID: <20180309100026.GQ6842@vireshk-i7>
+References: <cover.1519620578.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1520516417.7807.88.camel@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Galbraith <mgalbraith@suse.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <cover.1519620578.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Ellerman <mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 8, 2018 at 2:40 PM, Mike Galbraith <mgalbraith@suse.de> wrote:
-> On Thu, 2018-03-08 at 12:10 +0100, Rafael J. Wysocki wrote:
->> On Thu, Mar 8, 2018 at 11:31 AM, Mike Galbraith <mgalbraith@suse.de> wrote:
->>                               1     2     3
->> > 4.16.0.g1b88acc-master     6.95  7.03  6.91 (virgin)
->> > 4.16.0.g1b88acc-master     7.20  7.25  7.26 (+v2)
->> > 4.16.0.g1b88acc-master     6.90  7.06  6.95 (+local)
->> >
->> > Why would v2 charge the light firefox load a small but consistent fee?
->>
->> Two effects may come into play here I think.
->>
->> One is that allowing the tick to run biases the menu governor's
->> predictions towards the lower end, so we may use shallow states more
->> as a result then (Peter was talking about that).
->
-> Hm, I'd expect that to show up in +local as well then, as it keeps the
-> tick running when avg_idle < sched_migration_cost (convenient magic
-> number), but the firefox load runs at the same wattage as virgin.  I'm
-> also doing this...
->
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -335,7 +335,7 @@ static int menu_select(struct cpuidle_dr
->                  * C1's exit latency exceeds the user configured limit.
->                  */
->                 polling_threshold = max_t(unsigned int, 20, s->target_residency);
-> -               if (data->next_timer_us > polling_threshold &&
-> +               if (expected_interval > polling_threshold &&
->                     latency_req > s->exit_latency && !s->disabled &&
->                     !dev->states_usage[1].disable)
->                         first_idx = 1;
->
-> ...to help out high frequency cross core throughput, but the firefox
-> load apparently doesn't tickle that, as significant polling would
-> surely show in the wattage.
+On 26-02-18, 10:38, Viresh Kumar wrote:
+> Hi,
+> 
+> A patchset [1] sent last week already updated the cpufreq core to start
+> validating cpufreq table if the policy contains a valid
+> "policy->freq_table" pointer.
+> 
+> This series updates all such drivers to stop validating the cpufreq
+> table directly and let only the core handle it.
+> 
+> It depends on the previous series [1] and two cleanup patches [2][3] and
+> is rebased over 4.16-rc3.
+> 
+> It is already tested by the 0-day testing infrastructure and no issues
+> were reported.
 
-OK, so the second reason sounds more likely to me.
+We will assume no objections or concerns if you (cc'd here and on the individual
+commits) don't respond and the series will then get merged into linux-next next
+week.
 
-Anyway, please retest with the v3 I've just posted.  The previous
-iteration had a rather serious issue that might very well influence
-the results (it was using stale values sometimes).
+Thanks.
+
+--
+viresh
