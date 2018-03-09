@@ -1,63 +1,32 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH] power: supply: da9150-fg: remove VLA usage
-Date: Fri, 9 Mar 2018 11:36:04 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1D771E@SW-EX-MBX01.diasemi.com>
-References: <20180309045813.GA11964@embeddedgus>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+From: Harry Pan <harry.pan@intel.com>
+Subject: [PATCH 1/3] powercap: intel_rapl: Add support for Cannon Lake
+Date: Fri,  9 Mar 2018 20:15:46 +0800
+Message-ID: <20180309121549.630-1-harry.pan@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180309045813.GA11964@embeddedgus>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Support Opensource <Support.Opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Kees Cook <keescook@chromium.org>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: gs0622@gmail.com, Harry Pan <harry.pan@intel.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09 March 2018 04:58, Gustavo A. R. Silva wrote:
+Cannon Lake microarchitecture is similar to Kaby Lake in terms of
+RAPL, this patch enables CNL RAPL support.
 
-> In preparation to enabling -Wvla, remove VLA usage and replace it
-> with fixed-length arrays.
-> 
-> It seems that the length of array 'buf' will not exceed
-> DA9150_QIF_SHORT_SIZE bytes (2 bytes). But a fixed length
-> of DA9150_QIF_BYTE_SIZE bytes (8 bytes) was chosen in case
-> this change in the future.
-> 
-> Fixed as part of the directive to remove all VLAs from
-> the kernel: https://lkml.org/lkml/2018/3/7/621
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> ---
->  drivers/power/supply/da9150-fg.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/power/supply/da9150-fg.c b/drivers/power/supply/da9150-fg.c
-> index 8b8ce97..96893be 100644
-> --- a/drivers/power/supply/da9150-fg.c
-> +++ b/drivers/power/supply/da9150-fg.c
-> @@ -92,7 +92,7 @@ struct da9150_fg {
->  static u32 da9150_fg_read_attr(struct da9150_fg *fg, u8 code, u8 size)
-> 
->  {
-> -	u8 buf[size];
-> +	u8 buf[DA9150_QIF_BYTE_SIZE];
+Signed-off-by: Harry Pan <harry.pan@intel.com>
+---
+ drivers/powercap/intel_rapl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-You can use DA9150_QIF_LONG_SIZE as that's the biggest size of an attribute
-which can be accessed. This will also save a little space.
-
->  	u8 read_addr;
->  	u32 res = 0;
->  	int i;
-> @@ -111,7 +111,7 @@ static void da9150_fg_write_attr(struct da9150_fg *fg, u8
-> code, u8 size,
->  				 u32 val)
-> 
->  {
-> -	u8 buf[size];
-> +	u8 buf[DA9150_QIF_BYTE_SIZE];
->  	u8 write_addr;
->  	int i;
-> 
-> --
-> 2.7.4
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 35636e1d8a3d..295d8dcba48c 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1162,6 +1162,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	RAPL_CPU(INTEL_FAM6_SKYLAKE_X,		rapl_defaults_hsw_server),
+ 	RAPL_CPU(INTEL_FAM6_KABYLAKE_MOBILE,	rapl_defaults_core),
+ 	RAPL_CPU(INTEL_FAM6_KABYLAKE_DESKTOP,	rapl_defaults_core),
++	RAPL_CPU(INTEL_FAM6_CANNONLAKE_MOBILE,	rapl_defaults_core),
+ 
+ 	RAPL_CPU(INTEL_FAM6_ATOM_SILVERMONT1,	rapl_defaults_byt),
+ 	RAPL_CPU(INTEL_FAM6_ATOM_AIRMONT,	rapl_defaults_cht),
+-- 
+2.13.5
