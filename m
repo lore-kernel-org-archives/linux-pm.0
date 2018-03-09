@@ -1,101 +1,109 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH v3 3/6] sched: idle: Do not stop the tick before cpuidle_idle_call()
-Date: Fri, 09 Mar 2018 10:39:27 +0100
-Message-ID: <1731836.ePJh9sqWU9@aspire.rjw.lan>
-References: <2450532.XN8DODrtDf@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v6 0/4] Utilization estimation (util_est) for FAIR tasks
+Date: Fri,  9 Mar 2018 09:52:41 +0000
+Message-ID: <20180309095245.11071-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2450532.XN8DODrtDf@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi, here is an update of [1], based on today's tip/sched/core [2], which mainly
+adds some code cleanups suggested by Peter as well as fixes compilation for
+!CONFIG_SMP systems.
 
-Make cpuidle_idle_call() decide whether or not to stop the tick.
+Most notably:
+a) The util_est's update flag has been renamed into UTIL_AVG_UNCHANGED, which
+   seems to better match its usages.
+b) The cpu_util_est() function has been removed to reduce cluttering by folding
+   its code directly into cpu_util(). This last function is thus now always
+   returning the estimated utilization of a CPU, unless this sched feature is
+   disabled.
+c) Not necessary READ_ONCE() have been removed from rq-lock protected code
+   paths. For util_est variable, that we read/modify/write only from rq-lock
+   protected, code we keep just the WRITE_ONCE() barriers, which are still
+   required for synchronization with lockless readers.
+   The READ_ONCE() have been instead maintained in all the getter functions,
+   like for example task_util() and cpu_util(), which can potentially be used
+   by lockless code. e.g. schedutil or load-balancer.
 
-First, the cpuidle_enter_s2idle() path deals with the tick (and with
-the entire timekeeping for that matter) by itself and it doesn't need
-the tick to be stopped beforehand.
+Results on both x86_64 and ARM (Android) targets, which have been collected and
+reported in previous postings [1,3], show negligible overheads, especially
+compared to the corresponding power/performance benefits on mobile platforms,
+where this feature helps to reduce the performance gap between PELT and another
+other out-of-tree load tracking solution.
 
-Second, to address the issue with short idle duration predictions
-by the idle governor after the tick has been stopped, it will be
-necessary to change the ordering of cpuidle_select() with respect
-to tick_nohz_idle_stop_tick().  To prepare for that, put a
-tick_nohz_idle_stop_tick() call in the same branch in which
-cpuidle_select() is called.
+Best,
+Patrick
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/sched/idle.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
 
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -146,13 +146,15 @@ static void cpuidle_idle_call(void)
- 	}
- 
- 	/*
--	 * Tell the RCU framework we are entering an idle section,
--	 * so no more rcu read side critical sections and one more
-+	 * The RCU framework needs to be told that we are entering an idle
-+	 * section, so no more rcu read side critical sections and one more
- 	 * step to the grace period
- 	 */
--	rcu_idle_enter();
- 
- 	if (cpuidle_not_available(drv, dev)) {
-+		tick_nohz_idle_stop_tick();
-+		rcu_idle_enter();
-+
- 		default_idle_call();
- 		goto exit_idle;
- 	}
-@@ -169,16 +171,26 @@ static void cpuidle_idle_call(void)
- 
- 	if (idle_should_enter_s2idle() || dev->use_deepest_state) {
- 		if (idle_should_enter_s2idle()) {
-+			rcu_idle_enter();
-+
- 			entered_state = cpuidle_enter_s2idle(drv, dev);
- 			if (entered_state > 0) {
- 				local_irq_enable();
- 				goto exit_idle;
- 			}
-+
-+			rcu_idle_exit();
- 		}
- 
-+		tick_nohz_idle_stop_tick();
-+		rcu_idle_enter();
-+
- 		next_state = cpuidle_find_deepest_state(drv, dev);
- 		call_cpuidle(drv, dev, next_state);
- 	} else {
-+		tick_nohz_idle_stop_tick();
-+		rcu_idle_enter();
-+
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
-@@ -241,12 +253,11 @@ static void do_idle(void)
- 		 * broadcast device expired for us, we don't want to go deep
- 		 * idle as we know that the IPI is going to arrive right away.
- 		 */
--		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
-+		if (cpu_idle_force_poll || tick_check_broadcast_expired())
- 			cpu_idle_poll();
--		} else {
--			tick_nohz_idle_stop_tick();
-+		else
- 			cpuidle_idle_call();
--		}
-+
- 		arch_cpu_idle_exit();
- 	}
- 
+.:: Changelog
+=============
+
+Changes in v6:
+ - remove READ_ONCE from rq-lock protected code paths
+ - folds cpu_util_est code into cpu_util and update its documentation
+ - change util_est's update flag name to better match its usage
+ - slightly clean up cpu_util_wake code
+ - add other small code cleanups as suggested by Peter
+ - fix compilation for !CONFIG_SMP systems
+ - fix documentation to match sphinx syntax
+ - update changelogs to better match code concepts
+
+Changes in v5:
+ - rebased on today's tip/sched/core (commit 083c6eeab2cc, based on v4.16-rc2)
+ - update util_est only on util_avg updates
+ - add documentation for "struct util_est"
+ - always use int instead of long whenever possible (Peter)
+ - pass cfs_rq to util_est_{en,de}queue (Peter)
+ - pass task_sleep to util_est_dequeue
+ - use singe WRITE_ONCE at dequeue time
+ - add some missing {READ,WRITE}_ONCE
+ - add task_util_est() for code consistency
+
+Changes in v4:
+ - rebased on today's tip/sched/core (commit 460e8c3340a2)
+ - renamed util_est's "last" into "enqueued"
+ - using util_est's "enqueued" for both se and cfs_rqs (Joel)
+ - update margin check to use more ASM friendly code (Peter)
+ - optimize EWMA updates (Peter)
+ - ensure cpu_util_wake() is cpu_capacity_orig()'s clamped (Pavan)
+ - simplify cpu_util_cfs() integration (Dietmar)
+
+Changes in v3:
+ - rebased on today's tip/sched/core (commit 07881166a892)
+ - moved util_est into sched_avg (Peter)
+ - use {READ,WRITE}_ONCE() for EWMA updates (Peter)
+ - using unsigned int to fit all sched_avg into a single 64B cache line
+ - schedutil integration using Juri's cpu_util_cfs()
+ - first patch dropped since it's already queued in tip/sched/core
+
+Changes in v2:
+ - rebased on top of v4.15-rc2
+ - tested that overhauled PELT code does not affect the util_est
+
+
+.:: References
+==============
+[1] https://lkml.org/lkml/2018/2/22/639
+    20180222170153.673-1-patrick.bellasi@arm.com
+[2] git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
+    sched/core (commit 083c6eeab2cc)
+[3] https://lkml.org/lkml/2018/1/23/645
+    20180123180847.4477-1-patrick.bellasi@arm.com
+
+Patrick Bellasi (4):
+  sched/fair: add util_est on top of PELT
+  sched/fair: use util_est in LB and WU paths
+  sched/cpufreq_schedutil: use util_est for OPP selection
+  sched/fair: update util_est only on util_avg updates
+
+ include/linux/sched.h   |  29 ++++++
+ kernel/sched/debug.c    |   4 +
+ kernel/sched/fair.c     | 237 ++++++++++++++++++++++++++++++++++++++++++++----
+ kernel/sched/features.h |   5 +
+ kernel/sched/sched.h    |   9 +-
+ 5 files changed, 264 insertions(+), 20 deletions(-)
+
+-- 
+2.15.1
