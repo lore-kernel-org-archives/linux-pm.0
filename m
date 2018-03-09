@@ -1,75 +1,263 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Fri, 9 Mar 2018 09:03:55 -0700
-Message-ID: <20180309160355.GC10589@jcrouse-lnx.qualcomm.com>
-References: <20180302215638.6145-1-jcrouse@codeaurora.org>
- <20180302215638.6145-3-jcrouse@codeaurora.org>
- <20180305044221.GC23018@vireshk-i7>
- <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
- <20180306042656.GJ23018@vireshk-i7>
- <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
- <20180307050624.GR23018@vireshk-i7>
- <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
- <20180309034332.GO6842@vireshk-i7>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v5 3/6] power: supply: axp20x_battery: use
+ data struct for variant specific code
+Date: Fri, 9 Mar 2018 17:08:25 +0100
+Message-ID: <20180309160825.fde2am6jo6qs6vp6@earth.universe>
+References: <cover.07d02d245f44e63775b331815e9bf584598d2e9f.1519813976.git-series.quentin.schulz@bootlin.com>
+ <c157320cf4c443e6904346c9072f46e713498161.1519813976.git-series.quentin.schulz@bootlin.com>
+Reply-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ph74mhtynjdkcjwp"
+Return-path: <linux-sunxi+bncBDXMLNOH5ANRB7PCRLKQKGQEUB7JUNA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Content-Disposition: inline
-In-Reply-To: <20180309034332.GO6842@vireshk-i7>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <c157320cf4c443e6904346c9072f46e713498161.1519813976.git-series.quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas.petazzoni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBNYXIgMDksIDIwMTggYXQgMDk6MTM6MzJBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
-b3RlOgo+IE9uIDA4LTAzLTE4LCAxMzoxNCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IEl0IHNl
-ZW1zIHRvIG1lIHRoYXQgcGVyZm9ybWFuY2Vfc3RhdGUgaGFzIGEgZGlyZWN0IHJlbGF0aW9uc2hp
-cCB3aXRoIGdlbnBkCj4gPiB3aGljaCBpcyBnb29kIGZvciBDUFUgdm90ZXMgYnV0IGluIHRoaXMg
-Y2FzZSwgd2UncmUganVzdCBwYXNzaW5nIGFsb25nIHJhdyBkYXRhCj4gPiB0byBhbiBpbmRlcGVu
-ZGVudCBtaWNyb2NvbnRyb2xsZXIuIFRoZSAncWNvbSxhcmMtbGV2ZWwnIGlzIHVzZWQgdG8gY29u
-c3RydWN0Cj4gPiB0aGUgYWN0dWFsIHZhbHVlcyB0aGF0IHRoZSBHTVUgd2lsbCBwcm9ncmFtIGlu
-dG8gdGhlIFJQTWguIFNpbmNlIHRoZXNlIGFyZQo+IAo+IFRoZSAiZ2VucGQiIGhlcmUgaXMgY3Jl
-YXRlZCBzcGVjaWFsbHkgZm9yIHRoaXMgUlBNLiBUaGUgcGVyZm9ybWFuY2Utc3RhdGUgdGhpbmcK
-PiBpcyBkZXNpZ25lZCB0byBzb2x2ZSB0aGlzIHZlcnkgc3BlY2lmaWMgcHJvYmxlbSBvZiBxdWFs
-Y29tbSBTb0NzIGFuZCB0aGVyZSBpcyBubwo+IHdheSB3ZSBhcmUgZ29pbmcgdG8gYWRkIGFub3Ro
-ZXIgcHJvcGVydHkgZm9yIHRoaXMgbm93Lgo+IAo+ID4gaW5mb3JtYXRpb25hbCAoZnJvbSB0aGUg
-Q1BVIHBlcnNwZWN0aXZlKSByYXRoZXIgdGhhbiBmdW5jdGlvbmFsIEkgZmVlbCBsaWtlCj4gPiB0
-aGF0IHVzaW5nIHBlcmZvcm1hbmNlX3N0YXRlIGZvciB0aGlzIHdvdWxkIGJlIGFzIGhhY2t5IGFz
-IHVzaW5nIG9wcC1taWNyb3ZvbHQKPiA+IG9yIHNvbWV0aGluZyBlbHNlLgo+IAo+IFRoZXJlIGlz
-IHNvbWUgV0lQIHN0dWZmIGhlcmUgUmFqZW5kcmEgaXMgdGVzdGluZyBjdXJyZW50bHkuCj4gCj4g
-c3NoOi8vZ2l0QGdpdC5saW5hcm8ub3JnL3Blb3BsZS92aXJlc2gua3VtYXIvbXlsaW51eC5naXQg
-b3BwL2dlbnBkL3Fjb20KPiAKPiBQbGVhc2UgaGF2ZSBhIHRhbGsgd2l0aCBSYWplbmRyYSB3aG8g
-Y2FuIGhlbHAgeW91IHVuZGVyc3RhbmQgb24gaG93IHRoaXMgY2FuIGJlCj4gdXNlZCBmb3IgR1BV
-cy4KCkkgZG9uJ3QgdGhpbmsgd2UgYXJlIHVuZGVyc3RhbmRpbmcgZWFjaCBvdGhlci4gVGhlIEdN
-VSBpcyBhIHNlcGFyYXRlCm1pY3JvY29udHJvbGxlci4gSXQgaXMgZ2l2ZW4gYSBtYWdpYyBudW1i
-ZXIgKGFjdHVhbGx5IGEgY29tYmluYXRpb24gb2YgbWFnaWMKbnVtYmVycykgdGhhdCBpdCB0aGVu
-IHVzZXMgdG8gZGlyZWN0bHkgaW50ZXJhY3Qgd2l0aCB0aGUgb3RoZXIgaGFyZHdhcmUgdG8gbWFr
-ZQp0aGUgdm90ZS4gVGhlIG9ubHkgcmVzcG9uc2liaWxpdHkgdGhhdCB0aGUgQ1BVIGhhcyBpcyB0
-byBjb25zdHJ1Y3QgdGhhdCBtYWdpYwpudW1iZXIgKG9uY2UsIGF0IGluaXQpIGFuZCBzZW5kIGl0
-IGFjcm9zcyB3aGVuIGFza2VkLgoKTG9va2luZyBhdCB0aGUgc2RoYyBjb2RlIGZyb20gdGhlIHRl
-c3RpbmcgdHJlZSBpdCBtYWtlcyBwZXJmZWN0IHNlbnNlCnRoYXQgeW91IGhhdmUgYSBkZXZpY2Ug
-dGhhdCBuZWVkcyB0byBldmVudHVhbGx5IGRvIGEgUlBNaCB2b3RlIGZyb20gdGhlIENQVSBhbmQK
-c28gdGhlICdyZXF1aXJlZC1vcHAnIGFuZCBwZXJmb3JtYW5jZSBzdGF0ZSBjb21lIHRvZ2V0aGVy
-IHRvIGRvIHRoZSByaWdodCB0aGluZy4KVGhpcyBpcyBnb29kIGNvZGUuCgpOb25lIG9mIHRoaXMg
-aXMgdHJ1ZSBmb3IgdGhlIEdQVS4gVGhlIENQVSBuZXZlciB2b3RlcyBmb3IgdGhlIEdQVSBzbyB0
-aGVyZSAKaXNuJ3QgYW55IG5lZWQgdG8gY29ubmVjdCBpdCB0byB0aGUgcG93ZXIgZG9tYWluIGRy
-aXZlcnMuIEV2ZW4gaWYgeW91IGRpZAp0aGVyZSBpc24ndCBhbnkgY3VycmVudCBtZWNoYW5pc20g
-Zm9yIHRoZSBycG1wZCBkcml2ZXIgdG8gcGFzcyB0aGUgcmlnaHQgbWFnaWMKbnVtYmVyIHRvIHRo
-ZSBHUFUgZHJpdmVyIHdoaWNoIGlzIHdoYXQgaXQgcmVhbGx5IG5lZWRzLgoKSSBzdXBwb3NlIHRo
-YXQgaW5zdGVhZCBvZiB1c2luZyAncWNvbSxhcmMtbGV2ZWwnIHdlIGNvdWxkIHVzZSAncWNvbS1j
-b3JuZXInIGJ1dAp0aGVuIHRoYXRzIGp1c3QgYSBuYW1pbmcgZGlzcHV0ZS4gV2Ugc3RpbGwgbmVl
-ZCBhIHdheSBmb3IgdGhlIEdQVSB0byBxdWVyeSB0aGUKbWFnaWMgdmFsdWVzLgoKSm9yZGFuCi0t
-IApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgQ29k
-ZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBDb2xsYWJvcmF0aXZlIFByb2plY3QK
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5v
-IG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+
+--ph74mhtynjdkcjwp
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+
+Hi Quentin,
+
+On Wed, Feb 28, 2018 at 11:35:58AM +0100, Quentin Schulz wrote:
+> We used to use IDs to select a function or a feature depending on the
+> variant. It's easier to maintain the code by adding data structure
+> storing the few differences between variants so that we don't add a pile
+> of if conditions.
+> 
+> Let's use this data structure and update the code to use it.
+> 
+> Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+> Reviewed-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> ---
+
+I applied this, but modified the patch slightly, so that
+it actually calls your new set_max_voltage() callback in
+axp20x_battery_set_prop(). Please check that the resulting
+patch looks correct to you:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/commit/?h=for-next&id=648badd797c762a713b48afc3b67d56abdd0073b
+
+-- Sebastian
+
+>  drivers/power/supply/axp20x_battery.c | 100 +++++++++++++++++----------
+>  1 file changed, 66 insertions(+), 34 deletions(-)
+> 
+> diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+> index 7494f0f..04a0d91 100644
+> --- a/drivers/power/supply/axp20x_battery.c
+> +++ b/drivers/power/supply/axp20x_battery.c
+> @@ -53,6 +53,16 @@
+>  
+>  #define AXP20X_V_OFF_MASK		GENMASK(2, 0)
+>  
+> +struct axp20x_batt_ps;
+> +
+> +struct axp_data {
+> +	int	ccc_scale;
+> +	int	ccc_offset;
+> +	bool	has_fg_valid;
+> +	int	(*get_max_voltage)(struct axp20x_batt_ps *batt, int *val);
+> +	int	(*set_max_voltage)(struct axp20x_batt_ps *batt, int val);
+> +};
+> +
+>  struct axp20x_batt_ps {
+>  	struct regmap *regmap;
+>  	struct power_supply *batt;
+> @@ -62,7 +72,7 @@ struct axp20x_batt_ps {
+>  	struct iio_channel *batt_v;
+>  	/* Maximum constant charge current */
+>  	unsigned int max_ccc;
+> -	u8 axp_id;
+> +	const struct axp_data	*data;
+>  };
+>  
+>  static int axp20x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+> @@ -123,22 +133,6 @@ static int axp22x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+>  	return 0;
+>  }
+>  
+> -static void raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val)
+> -{
+> -	if (axp->axp_id == AXP209_ID)
+> -		*val = *val * 100000 + 300000;
+> -	else
+> -		*val = *val * 150000 + 300000;
+> -}
+> -
+> -static void constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val)
+> -{
+> -	if (axp->axp_id == AXP209_ID)
+> -		*val = (*val - 300000) / 100000;
+> -	else
+> -		*val = (*val - 300000) / 150000;
+> -}
+> -
+>  static int axp20x_get_constant_charge_current(struct axp20x_batt_ps *axp,
+>  					      int *val)
+>  {
+> @@ -150,7 +144,7 @@ static int axp20x_get_constant_charge_current(struct axp20x_batt_ps *axp,
+>  
+>  	*val &= AXP20X_CHRG_CTRL1_TGT_CURR;
+>  
+> -	raw_to_constant_charge_current(axp, val);
+> +	*val = *val * axp->data->ccc_scale + axp->data->ccc_offset;
+>  
+>  	return 0;
+>  }
+> @@ -269,8 +263,7 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+>  		if (ret)
+>  			return ret;
+>  
+> -		if (axp20x_batt->axp_id == AXP221_ID &&
+> -		    !(reg & AXP22X_FG_VALID))
+> +		if (axp20x_batt->data->has_fg_valid && !(reg & AXP22X_FG_VALID))
+>  			return -EINVAL;
+>  
+>  		/*
+> @@ -281,11 +274,8 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+>  		break;
+>  
+>  	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+> -		if (axp20x_batt->axp_id == AXP209_ID)
+> -			return axp20x_battery_get_max_voltage(axp20x_batt,
+> -							      &val->intval);
+> -		return axp22x_battery_get_max_voltage(axp20x_batt,
+> -						      &val->intval);
+> +		return axp20x_batt->data->get_max_voltage(axp20x_batt,
+> +							  &val->intval);
+>
+>  	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>  		ret = regmap_read(axp20x_batt->regmap, AXP20X_V_OFF, &reg);
+> @@ -312,6 +302,32 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+>  	return 0;
+>  }
+>  
+> +static int axp22x_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+> +					  int val)
+> +{
+> +	switch (val) {
+> +	case 4100000:
+> +		val = AXP20X_CHRG_CTRL1_TGT_4_1V;
+> +		break;
+> +
+> +	case 4200000:
+> +		val = AXP20X_CHRG_CTRL1_TGT_4_2V;
+> +		break;
+> +
+> +	default:
+> +		/*
+> +		 * AXP20x max voltage can be set to 4.36V and AXP22X max voltage
+> +		 * can be set to 4.22V and 4.24V, but these voltages are too
+> +		 * high for Lithium based batteries (AXP PMICs are supposed to
+> +		 * be used with these kinds of battery).
+> +		 */
+> +		return -EINVAL;
+> +	}
+> +
+> +	return regmap_update_bits(axp20x_batt->regmap, AXP20X_CHRG_CTRL1,
+> +				  AXP20X_CHRG_CTRL1_TGT_VOLT, val);
+> +}
+> +
+>  static int axp20x_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+>  					  int val)
+>  {
+> @@ -321,9 +337,6 @@ static int axp20x_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+>  		break;
+>  
+>  	case 4150000:
+> -		if (axp20x_batt->axp_id == AXP221_ID)
+> -			return -EINVAL;
+> -
+>  		val = AXP20X_CHRG_CTRL1_TGT_4_15V;
+>  		break;
+>  
+> @@ -351,7 +364,8 @@ static int axp20x_set_constant_charge_current(struct axp20x_batt_ps *axp_batt,
+>  	if (charge_current > axp_batt->max_ccc)
+>  		return -EINVAL;
+>  
+> -	constant_charge_current_to_raw(axp_batt, &charge_current);
+> +	charge_current = (charge_current - axp_batt->data->ccc_offset) /
+> +		axp_batt->data->ccc_scale;
+>  
+>  	if (charge_current > AXP20X_CHRG_CTRL1_TGT_CURR || charge_current < 0)
+>  		return -EINVAL;
+> @@ -365,12 +379,14 @@ static int axp20x_set_max_constant_charge_current(struct axp20x_batt_ps *axp,
+>  {
+>  	bool lower_max = false;
+>  
+> -	constant_charge_current_to_raw(axp, &charge_current);
+> +	charge_current = (charge_current - axp->data->ccc_offset) /
+> +		axp->data->ccc_scale;
+>  
+>  	if (charge_current > AXP20X_CHRG_CTRL1_TGT_CURR || charge_current < 0)
+>  		return -EINVAL;
+>  
+> -	raw_to_constant_charge_current(axp, &charge_current);
+> +	charge_current = charge_current * axp->data->ccc_scale +
+> +		axp->data->ccc_offset;
+>  
+>  	if (charge_current > axp->max_ccc)
+>  		dev_warn(axp->dev,
+> @@ -460,13 +476,28 @@ static const struct power_supply_desc axp20x_batt_ps_desc = {
+>  	.set_property = axp20x_battery_set_prop,
+>  };
+>  
+> +static const struct axp_data axp209_data = {
+> +	.ccc_scale = 100000,
+> +	.ccc_offset = 300000,
+> +	.get_max_voltage = axp20x_battery_get_max_voltage,
+> +	.set_max_voltage = axp20x_battery_set_max_voltage,
+> +};
+> +
+> +static const struct axp_data axp221_data = {
+> +	.ccc_scale = 150000,
+> +	.ccc_offset = 300000,
+> +	.has_fg_valid = true,
+> +	.get_max_voltage = axp22x_battery_get_max_voltage,
+> +	.set_max_voltage = axp22x_battery_set_max_voltage,
+> +};
+> +
+>  static const struct of_device_id axp20x_battery_ps_id[] = {
+>  	{
+>  		.compatible = "x-powers,axp209-battery-power-supply",
+> -		.data = (void *)AXP209_ID,
+> +		.data = (void *)&axp209_data,
+>  	}, {
+>  		.compatible = "x-powers,axp221-battery-power-supply",
+> -		.data = (void *)AXP221_ID,
+> +		.data = (void *)&axp221_data,
+>  	}, { /* sentinel */ },
+>  };
+>  MODULE_DEVICE_TABLE(of, axp20x_battery_ps_id);
+> @@ -476,6 +507,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
+>  	struct axp20x_batt_ps *axp20x_batt;
+>  	struct power_supply_config psy_cfg = {};
+>  	struct power_supply_battery_info info;
+> +	struct device *dev = &pdev->dev;
+>  
+>  	if (!of_device_is_available(pdev->dev.of_node))
+>  		return -ENODEV;
+> @@ -516,7 +548,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
+>  	psy_cfg.drv_data = axp20x_batt;
+>  	psy_cfg.of_node = pdev->dev.of_node;
+>  
+> -	axp20x_batt->axp_id = (uintptr_t)of_device_get_match_data(&pdev->dev);
+> +	axp20x_batt->data = (struct axp_data *)of_device_get_match_data(dev);
+>  
+>  	axp20x_batt->batt = devm_power_supply_register(&pdev->dev,
+>  						       &axp20x_batt_ps_desc,
+> -- 
+> git-series 0.9.1
+--ph74mhtynjdkcjwp--
