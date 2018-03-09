@@ -1,65 +1,63 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [Freedreno] [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Fri, 9 Mar 2018 15:49:00 +0530
-Message-ID: <4fd61bd2-757b-ef30-a07f-ed74af031ff5@codeaurora.org>
-References: <20180302215638.6145-1-jcrouse@codeaurora.org>
- <20180302215638.6145-3-jcrouse@codeaurora.org>
- <20180305044221.GC23018@vireshk-i7>
- <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
- <20180306042656.GJ23018@vireshk-i7>
- <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
- <20180307050624.GR23018@vireshk-i7>
- <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
- <20180309034332.GO6842@vireshk-i7>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH] power: supply: da9150-fg: remove VLA usage
+Date: Fri, 9 Mar 2018 11:36:04 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1D771E@SW-EX-MBX01.diasemi.com>
+References: <20180309045813.GA11964@embeddedgus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20180309034332.GO6842@vireshk-i7>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180309045813.GA11964@embeddedgus>
 Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>, freedreno@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, dianders@chromium.org, linux-arm-kernel@lists.infradead.org, sboyd@kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Support Opensource <Support.Opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Kees Cook <keescook@chromium.org>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGV5IEpvcmRhbi9WaXJlc2gsCgpPbiAwMy8wOS8yMDE4IDA5OjEzIEFNLCBWaXJlc2ggS3VtYXIg
-d3JvdGU6Cj4gT24gMDgtMDMtMTgsIDEzOjE0LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+PiBJdCBz
-ZWVtcyB0byBtZSB0aGF0IHBlcmZvcm1hbmNlX3N0YXRlIGhhcyBhIGRpcmVjdCByZWxhdGlvbnNo
-aXAgd2l0aCBnZW5wZAo+PiB3aGljaCBpcyBnb29kIGZvciBDUFUgdm90ZXMgYnV0IGluIHRoaXMg
-Y2FzZSwgd2UncmUganVzdCBwYXNzaW5nIGFsb25nIHJhdyBkYXRhCj4+IHRvIGFuIGluZGVwZW5k
-ZW50IG1pY3JvY29udHJvbGxlci4gVGhlICdxY29tLGFyYy1sZXZlbCcgaXMgdXNlZCB0byBjb25z
-dHJ1Y3QKPj4gdGhlIGFjdHVhbCB2YWx1ZXMgdGhhdCB0aGUgR01VIHdpbGwgcHJvZ3JhbSBpbnRv
-IHRoZSBSUE1oLiBTaW5jZSB0aGVzZSBhcmUKPiAKPiBUaGUgImdlbnBkIiBoZXJlIGlzIGNyZWF0
-ZWQgc3BlY2lhbGx5IGZvciB0aGlzIFJQTS4gVGhlIHBlcmZvcm1hbmNlLXN0YXRlIHRoaW5nCj4g
-aXMgZGVzaWduZWQgdG8gc29sdmUgdGhpcyB2ZXJ5IHNwZWNpZmljIHByb2JsZW0gb2YgcXVhbGNv
-bW0gU29DcyBhbmQgdGhlcmUgaXMgbm8KPiB3YXkgd2UgYXJlIGdvaW5nIHRvIGFkZCBhbm90aGVy
-IHByb3BlcnR5IGZvciB0aGlzIG5vdy4KPiAKPj4gaW5mb3JtYXRpb25hbCAoZnJvbSB0aGUgQ1BV
-IHBlcnNwZWN0aXZlKSByYXRoZXIgdGhhbiBmdW5jdGlvbmFsIEkgZmVlbCBsaWtlCj4+IHRoYXQg
-dXNpbmcgcGVyZm9ybWFuY2Vfc3RhdGUgZm9yIHRoaXMgd291bGQgYmUgYXMgaGFja3kgYXMgdXNp
-bmcgb3BwLW1pY3Jvdm9sdAo+PiBvciBzb21ldGhpbmcgZWxzZS4KPiAKPiBUaGVyZSBpcyBzb21l
-IFdJUCBzdHVmZiBoZXJlIFJhamVuZHJhIGlzIHRlc3RpbmcgY3VycmVudGx5LgoKV2hhdCBJIGFt
-IGRvaW5nIGlzIGEgcG93ZXJkb21haW4gZHJpdmVyIHRvIGNvbW11bmljYXRlIG1hZ2ljIHZhbHVl
-cyBmcm9tCkNQVSB0byBycG1oLCBsb29rcyBsaWtlIHdlIG5lZWQgYW5vdGhlciBvbmUgdG8gY29t
-bXVuaWNhdGUgZnJvbSBDUFUgdG8KR01VIG5vdyA6KQoKQSBmZXcgdGhpbmdzLAoqIHNvbWVvbmUg
-d2lsbCBuZWVkIHRvIG1hcCB0aGVzZSBsYXJnZXIgbWFnaWMgdmFsdWVzIGludG8gc29tZXRoaW5n
-IHRoYXQKcnBtaCB3b3VsZCB1bmRlcnN0YW5kIChiZXR3ZWVuIDAgdG8gMTUgb24gdGhlIHNkbTg0
-NSksIHRoYXRzIGRvbmUgYnkKcmVhZGluZyB0aGUgY29tbWFuZCBkYiBsZXZlbCBtYXBzLiBJcyB0
-aGlzIGRvbmUgYnkgR01VPwoKKiBhcmUgdGhlc2UgY29tbXVuaWNhdGVkIGp1c3Qgb25jZSBmb3Ig
-ZXZlcnkgT1BQIGF0IGluaXQvYm9vdCwgb3IgZm9yCmV2ZXJ5IE9QUCBzd2l0Y2g/CgoqIHdoYXRz
-IHRoZSBjb21tdW5pY2F0aW9uIG1lY2hhbmlzbSB3ZSB1c2UgYmV0d2VlbiBDUFUgYW5kIEdNVT8g
-CgpyZWdhcmRzClJhamVuZHJhCgo+IAo+IHNzaDovL2dpdEBnaXQubGluYXJvLm9yZy9wZW9wbGUv
-dmlyZXNoLmt1bWFyL215bGludXguZ2l0IG9wcC9nZW5wZC9xY29tCj4gCj4gUGxlYXNlIGhhdmUg
-YSB0YWxrIHdpdGggUmFqZW5kcmEgd2hvIGNhbiBoZWxwIHlvdSB1bmRlcnN0YW5kIG9uIGhvdyB0
-aGlzIGNhbiBiZQo+IHVzZWQgZm9yIEdQVXMuCj4gCgotLSAKUXVhbGNvbW0gSW5ub3ZhdGlvbiBD
-ZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmhvc3RlZCBieSBU
-aGUgTGludXggRm91bmRhdGlvbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVz
-a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9k
-cmktZGV2ZWwK
+On 09 March 2018 04:58, Gustavo A. R. Silva wrote:
+
+> In preparation to enabling -Wvla, remove VLA usage and replace it
+> with fixed-length arrays.
+> 
+> It seems that the length of array 'buf' will not exceed
+> DA9150_QIF_SHORT_SIZE bytes (2 bytes). But a fixed length
+> of DA9150_QIF_BYTE_SIZE bytes (8 bytes) was chosen in case
+> this change in the future.
+> 
+> Fixed as part of the directive to remove all VLAs from
+> the kernel: https://lkml.org/lkml/2018/3/7/621
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> ---
+>  drivers/power/supply/da9150-fg.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/power/supply/da9150-fg.c b/drivers/power/supply/da9150-fg.c
+> index 8b8ce97..96893be 100644
+> --- a/drivers/power/supply/da9150-fg.c
+> +++ b/drivers/power/supply/da9150-fg.c
+> @@ -92,7 +92,7 @@ struct da9150_fg {
+>  static u32 da9150_fg_read_attr(struct da9150_fg *fg, u8 code, u8 size)
+> 
+>  {
+> -	u8 buf[size];
+> +	u8 buf[DA9150_QIF_BYTE_SIZE];
+
+You can use DA9150_QIF_LONG_SIZE as that's the biggest size of an attribute
+which can be accessed. This will also save a little space.
+
+>  	u8 read_addr;
+>  	u32 res = 0;
+>  	int i;
+> @@ -111,7 +111,7 @@ static void da9150_fg_write_attr(struct da9150_fg *fg, u8
+> code, u8 size,
+>  				 u32 val)
+> 
+>  {
+> -	u8 buf[size];
+> +	u8 buf[DA9150_QIF_BYTE_SIZE];
+>  	u8 write_addr;
+>  	int i;
+> 
+> --
+> 2.7.4
