@@ -1,48 +1,65 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 00/27] cpufreq: Stop validating cpufreq table in drivers
-Date: Fri, 9 Mar 2018 15:30:26 +0530
-Message-ID: <20180309100026.GQ6842@vireshk-i7>
-References: <cover.1519620578.git.viresh.kumar@linaro.org>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [Freedreno] [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
+Date: Fri, 9 Mar 2018 15:49:00 +0530
+Message-ID: <4fd61bd2-757b-ef30-a07f-ed74af031ff5@codeaurora.org>
+References: <20180302215638.6145-1-jcrouse@codeaurora.org>
+ <20180302215638.6145-3-jcrouse@codeaurora.org>
+ <20180305044221.GC23018@vireshk-i7>
+ <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
+ <20180306042656.GJ23018@vireshk-i7>
+ <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
+ <20180307050624.GR23018@vireshk-i7>
+ <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
+ <20180309034332.GO6842@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1519620578.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Ellerman <mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20180309034332.GO6842@vireshk-i7>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, freedreno@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, dianders@chromium.org, linux-arm-kernel@lists.infradead.org, sboyd@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26-02-18, 10:38, Viresh Kumar wrote:
-> Hi,
-> 
-> A patchset [1] sent last week already updated the cpufreq core to start
-> validating cpufreq table if the policy contains a valid
-> "policy->freq_table" pointer.
-> 
-> This series updates all such drivers to stop validating the cpufreq
-> table directly and let only the core handle it.
-> 
-> It depends on the previous series [1] and two cleanup patches [2][3] and
-> is rebased over 4.16-rc3.
-> 
-> It is already tested by the 0-day testing infrastructure and no issues
-> were reported.
-
-We will assume no objections or concerns if you (cc'd here and on the individual
-commits) don't respond and the series will then get merged into linux-next next
-week.
-
-Thanks.
-
---
-viresh
+SGV5IEpvcmRhbi9WaXJlc2gsCgpPbiAwMy8wOS8yMDE4IDA5OjEzIEFNLCBWaXJlc2ggS3VtYXIg
+d3JvdGU6Cj4gT24gMDgtMDMtMTgsIDEzOjE0LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+PiBJdCBz
+ZWVtcyB0byBtZSB0aGF0IHBlcmZvcm1hbmNlX3N0YXRlIGhhcyBhIGRpcmVjdCByZWxhdGlvbnNo
+aXAgd2l0aCBnZW5wZAo+PiB3aGljaCBpcyBnb29kIGZvciBDUFUgdm90ZXMgYnV0IGluIHRoaXMg
+Y2FzZSwgd2UncmUganVzdCBwYXNzaW5nIGFsb25nIHJhdyBkYXRhCj4+IHRvIGFuIGluZGVwZW5k
+ZW50IG1pY3JvY29udHJvbGxlci4gVGhlICdxY29tLGFyYy1sZXZlbCcgaXMgdXNlZCB0byBjb25z
+dHJ1Y3QKPj4gdGhlIGFjdHVhbCB2YWx1ZXMgdGhhdCB0aGUgR01VIHdpbGwgcHJvZ3JhbSBpbnRv
+IHRoZSBSUE1oLiBTaW5jZSB0aGVzZSBhcmUKPiAKPiBUaGUgImdlbnBkIiBoZXJlIGlzIGNyZWF0
+ZWQgc3BlY2lhbGx5IGZvciB0aGlzIFJQTS4gVGhlIHBlcmZvcm1hbmNlLXN0YXRlIHRoaW5nCj4g
+aXMgZGVzaWduZWQgdG8gc29sdmUgdGhpcyB2ZXJ5IHNwZWNpZmljIHByb2JsZW0gb2YgcXVhbGNv
+bW0gU29DcyBhbmQgdGhlcmUgaXMgbm8KPiB3YXkgd2UgYXJlIGdvaW5nIHRvIGFkZCBhbm90aGVy
+IHByb3BlcnR5IGZvciB0aGlzIG5vdy4KPiAKPj4gaW5mb3JtYXRpb25hbCAoZnJvbSB0aGUgQ1BV
+IHBlcnNwZWN0aXZlKSByYXRoZXIgdGhhbiBmdW5jdGlvbmFsIEkgZmVlbCBsaWtlCj4+IHRoYXQg
+dXNpbmcgcGVyZm9ybWFuY2Vfc3RhdGUgZm9yIHRoaXMgd291bGQgYmUgYXMgaGFja3kgYXMgdXNp
+bmcgb3BwLW1pY3Jvdm9sdAo+PiBvciBzb21ldGhpbmcgZWxzZS4KPiAKPiBUaGVyZSBpcyBzb21l
+IFdJUCBzdHVmZiBoZXJlIFJhamVuZHJhIGlzIHRlc3RpbmcgY3VycmVudGx5LgoKV2hhdCBJIGFt
+IGRvaW5nIGlzIGEgcG93ZXJkb21haW4gZHJpdmVyIHRvIGNvbW11bmljYXRlIG1hZ2ljIHZhbHVl
+cyBmcm9tCkNQVSB0byBycG1oLCBsb29rcyBsaWtlIHdlIG5lZWQgYW5vdGhlciBvbmUgdG8gY29t
+bXVuaWNhdGUgZnJvbSBDUFUgdG8KR01VIG5vdyA6KQoKQSBmZXcgdGhpbmdzLAoqIHNvbWVvbmUg
+d2lsbCBuZWVkIHRvIG1hcCB0aGVzZSBsYXJnZXIgbWFnaWMgdmFsdWVzIGludG8gc29tZXRoaW5n
+IHRoYXQKcnBtaCB3b3VsZCB1bmRlcnN0YW5kIChiZXR3ZWVuIDAgdG8gMTUgb24gdGhlIHNkbTg0
+NSksIHRoYXRzIGRvbmUgYnkKcmVhZGluZyB0aGUgY29tbWFuZCBkYiBsZXZlbCBtYXBzLiBJcyB0
+aGlzIGRvbmUgYnkgR01VPwoKKiBhcmUgdGhlc2UgY29tbXVuaWNhdGVkIGp1c3Qgb25jZSBmb3Ig
+ZXZlcnkgT1BQIGF0IGluaXQvYm9vdCwgb3IgZm9yCmV2ZXJ5IE9QUCBzd2l0Y2g/CgoqIHdoYXRz
+IHRoZSBjb21tdW5pY2F0aW9uIG1lY2hhbmlzbSB3ZSB1c2UgYmV0d2VlbiBDUFUgYW5kIEdNVT8g
+CgpyZWdhcmRzClJhamVuZHJhCgo+IAo+IHNzaDovL2dpdEBnaXQubGluYXJvLm9yZy9wZW9wbGUv
+dmlyZXNoLmt1bWFyL215bGludXguZ2l0IG9wcC9nZW5wZC9xY29tCj4gCj4gUGxlYXNlIGhhdmUg
+YSB0YWxrIHdpdGggUmFqZW5kcmEgd2hvIGNhbiBoZWxwIHlvdSB1bmRlcnN0YW5kIG9uIGhvdyB0
+aGlzIGNhbiBiZQo+IHVzZWQgZm9yIEdQVXMuCj4gCgotLSAKUXVhbGNvbW0gSW5ub3ZhdGlvbiBD
+ZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmhvc3RlZCBieSBU
+aGUgTGludXggRm91bmRhdGlvbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVz
+a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9k
+cmktZGV2ZWwK
