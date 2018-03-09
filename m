@@ -1,99 +1,58 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
-Date: Fri, 9 Mar 2018 10:42:47 -0700
-Message-ID: <20180309174246.GD10589@jcrouse-lnx.qualcomm.com>
-References: <20180302215638.6145-3-jcrouse@codeaurora.org>
- <20180305044221.GC23018@vireshk-i7>
- <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
- <20180306042656.GJ23018@vireshk-i7>
- <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
- <20180307050624.GR23018@vireshk-i7>
- <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
- <20180309034332.GO6842@vireshk-i7>
- <20180309160355.GC10589@jcrouse-lnx.qualcomm.com>
- <152061592175.13890.6455929815877326231@swboyd.mtv.corp.google.com>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Subject: Re: [PATCH] power: supply: da9150-fg: remove VLA usage
+Date: Fri, 9 Mar 2018 11:55:40 -0600
+Message-ID: <b657eeff-ba9d-c40c-24f3-b971c893b6c3@embeddedor.com>
+References: <20180309045813.GA11964@embeddedgus>
+ <2E89032DDAA8B9408CB92943514A0337014C1D771E@SW-EX-MBX01.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <152061592175.13890.6455929815877326231-n1Xw8LXHxjTHt/MElyovVYaSKrA+ACpX0E9HWUfgJXw@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, ilina-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1D771E@SW-EX-MBX01.diasemi.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Support Opensource <Support.Opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Kees Cook <keescook@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBNYXIgMDksIDIwMTggYXQgMDk6MTg6NDFBTSAtMDgwMCwgU3RlcGhlbiBCb3lkIHdy
-b3RlOgo+IChJIHdyb3RlIGFuIGVtYWlsIHRoYXQgc2VlbXMgdG8gaGF2ZSBiZWVuIGxvc3QpCj4g
-Cj4gUXVvdGluZyBKb3JkYW4gQ3JvdXNlICgyMDE4LTAzLTA5IDA4OjAzOjU1KQo+ID4gT24gRnJp
-LCBNYXIgMDksIDIwMTggYXQgMDk6MTM6MzJBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdyb3RlOgo+
-ID4gPiBPbiAwOC0wMy0xOCwgMTM6MTQsIEpvcmRhbiBDcm91c2Ugd3JvdGU6Cj4gPiA+ID4gSXQg
-c2VlbXMgdG8gbWUgdGhhdCBwZXJmb3JtYW5jZV9zdGF0ZSBoYXMgYSBkaXJlY3QgcmVsYXRpb25z
-aGlwIHdpdGggZ2VucGQKPiA+ID4gPiB3aGljaCBpcyBnb29kIGZvciBDUFUgdm90ZXMgYnV0IGlu
-IHRoaXMgY2FzZSwgd2UncmUganVzdCBwYXNzaW5nIGFsb25nIHJhdyBkYXRhCj4gPiA+ID4gdG8g
-YW4gaW5kZXBlbmRlbnQgbWljcm9jb250cm9sbGVyLiBUaGUgJ3Fjb20sYXJjLWxldmVsJyBpcyB1
-c2VkIHRvIGNvbnN0cnVjdAo+ID4gPiA+IHRoZSBhY3R1YWwgdmFsdWVzIHRoYXQgdGhlIEdNVSB3
-aWxsIHByb2dyYW0gaW50byB0aGUgUlBNaC4gU2luY2UgdGhlc2UgYXJlCj4gPiA+IAo+ID4gPiBU
-aGUgImdlbnBkIiBoZXJlIGlzIGNyZWF0ZWQgc3BlY2lhbGx5IGZvciB0aGlzIFJQTS4gVGhlIHBl
-cmZvcm1hbmNlLXN0YXRlIHRoaW5nCj4gPiA+IGlzIGRlc2lnbmVkIHRvIHNvbHZlIHRoaXMgdmVy
-eSBzcGVjaWZpYyBwcm9ibGVtIG9mIHF1YWxjb21tIFNvQ3MgYW5kIHRoZXJlIGlzIG5vCj4gPiA+
-IHdheSB3ZSBhcmUgZ29pbmcgdG8gYWRkIGFub3RoZXIgcHJvcGVydHkgZm9yIHRoaXMgbm93Lgo+
-ID4gPiAKPiA+ID4gPiBpbmZvcm1hdGlvbmFsIChmcm9tIHRoZSBDUFUgcGVyc3BlY3RpdmUpIHJh
-dGhlciB0aGFuIGZ1bmN0aW9uYWwgSSBmZWVsIGxpa2UKPiA+ID4gPiB0aGF0IHVzaW5nIHBlcmZv
-cm1hbmNlX3N0YXRlIGZvciB0aGlzIHdvdWxkIGJlIGFzIGhhY2t5IGFzIHVzaW5nIG9wcC1taWNy
-b3ZvbHQKPiA+ID4gPiBvciBzb21ldGhpbmcgZWxzZS4KPiA+ID4gCj4gPiA+IFRoZXJlIGlzIHNv
-bWUgV0lQIHN0dWZmIGhlcmUgUmFqZW5kcmEgaXMgdGVzdGluZyBjdXJyZW50bHkuCj4gPiA+IAo+
-ID4gPiBzc2g6Ly9naXRAZ2l0LmxpbmFyby5vcmcvcGVvcGxlL3ZpcmVzaC5rdW1hci9teWxpbnV4
-LmdpdCBvcHAvZ2VucGQvcWNvbQo+ID4gPiAKPiA+ID4gUGxlYXNlIGhhdmUgYSB0YWxrIHdpdGgg
-UmFqZW5kcmEgd2hvIGNhbiBoZWxwIHlvdSB1bmRlcnN0YW5kIG9uIGhvdyB0aGlzIGNhbiBiZQo+
-ID4gPiB1c2VkIGZvciBHUFVzLgo+ID4gCj4gPiBJIGRvbid0IHRoaW5rIHdlIGFyZSB1bmRlcnN0
-YW5kaW5nIGVhY2ggb3RoZXIuIFRoZSBHTVUgaXMgYSBzZXBhcmF0ZQo+ID4gbWljcm9jb250cm9s
-bGVyLiBJdCBpcyBnaXZlbiBhIG1hZ2ljIG51bWJlciAoYWN0dWFsbHkgYSBjb21iaW5hdGlvbiBv
-ZiBtYWdpYwo+ID4gbnVtYmVycykgdGhhdCBpdCB0aGVuIHVzZXMgdG8gZGlyZWN0bHkgaW50ZXJh
-Y3Qgd2l0aCB0aGUgb3RoZXIgaGFyZHdhcmUgdG8gbWFrZQo+ID4gdGhlIHZvdGUuIFRoZSBvbmx5
-IHJlc3BvbnNpYmlsaXR5IHRoYXQgdGhlIENQVSBoYXMgaXMgdG8gY29uc3RydWN0IHRoYXQgbWFn
-aWMKPiA+IG51bWJlciAob25jZSwgYXQgaW5pdCkgYW5kIHNlbmQgaXQgYWNyb3NzIHdoZW4gYXNr
-ZWQuCj4gPiAKPiA+IExvb2tpbmcgYXQgdGhlIHNkaGMgY29kZSBmcm9tIHRoZSB0ZXN0aW5nIHRy
-ZWUgaXQgbWFrZXMgcGVyZmVjdCBzZW5zZQo+ID4gdGhhdCB5b3UgaGF2ZSBhIGRldmljZSB0aGF0
-IG5lZWRzIHRvIGV2ZW50dWFsbHkgZG8gYSBSUE1oIHZvdGUgZnJvbSB0aGUgQ1BVIGFuZAo+ID4g
-c28gdGhlICdyZXF1aXJlZC1vcHAnIGFuZCBwZXJmb3JtYW5jZSBzdGF0ZSBjb21lIHRvZ2V0aGVy
-IHRvIGRvIHRoZSByaWdodCB0aGluZy4KPiA+IFRoaXMgaXMgZ29vZCBjb2RlLgo+ID4gCj4gPiBO
-b25lIG9mIHRoaXMgaXMgdHJ1ZSBmb3IgdGhlIEdQVS4gVGhlIENQVSBuZXZlciB2b3RlcyBmb3Ig
-dGhlIEdQVSBzbyB0aGVyZSAKPiA+IGlzbid0IGFueSBuZWVkIHRvIGNvbm5lY3QgaXQgdG8gdGhl
-IHBvd2VyIGRvbWFpbiBkcml2ZXJzLiBFdmVuIGlmIHlvdSBkaWQKPiA+IHRoZXJlIGlzbid0IGFu
-eSBjdXJyZW50IG1lY2hhbmlzbSBmb3IgdGhlIHJwbXBkIGRyaXZlciB0byBwYXNzIHRoZSByaWdo
-dCBtYWdpYwo+ID4gbnVtYmVyIHRvIHRoZSBHUFUgZHJpdmVyIHdoaWNoIGlzIHdoYXQgaXQgcmVh
-bGx5IG5lZWRzLgo+ID4gCj4gPiBJIHN1cHBvc2UgdGhhdCBpbnN0ZWFkIG9mIHVzaW5nICdxY29t
-LGFyYy1sZXZlbCcgd2UgY291bGQgdXNlICdxY29tLWNvcm5lcicgYnV0Cj4gPiB0aGVuIHRoYXRz
-IGp1c3QgYSBuYW1pbmcgZGlzcHV0ZS4gV2Ugc3RpbGwgbmVlZCBhIHdheSBmb3IgdGhlIEdQVSB0
-byBxdWVyeSB0aGUKPiA+IG1hZ2ljIHZhbHVlcy4KPiA+IAo+IAo+IEFncmVlZC4gRm9yY2luZyBn
-ZW5wZCBhbmQgc2V0X3BlcmZvcm1hbmNlX3N0YXRlIEFQSXMgb24gR01VIGRvZXNuJ3QgbWFrZQo+
-IGFueSBzZW5zZSBpZiB0aGUgR01VIGlzIGRvaW5nIGl0IGFsbCBpdHNlbGYuCj4gCj4gVGhlIGJp
-bmRpbmcgc2hvdWxkIGJlIHRoZSBzYW1lIGJldHdlZW4gc2RoYyBhbmQgR01VIGlmIHRoZXkncmUg
-YWN0dWFsbHkKPiB0YWxraW5nIGFib3V0IHRoZSBzYW1lIHRoaW5nIHRob3VnaC4gSSB0aGluayB0
-aGV5IGFyZSwgYmVjYXVzZSBJIHN1c3BlY3QKPiBHTVUgbmVlZHMgdG8gdHJhbnNsYXRlIHRoZSBo
-dW1hbiByZWFzb25hYmxlIHZhbHVlIG9mIHFjb20sY29ybmVyIGludG8KPiB0aGUgaGFyZHdhcmUg
-cWNvbSxhcmMtbGV2ZWwgdmFsdWUgdG8gd3JpdGUgaW50byBpdCdzIGhhcmR3YXJlIHNvIHRoZSBH
-TVUKPiBjYW4gYXV0by10cmFuc2l0aW9uIHBlcmZvcm1hbmNlIHN0YXRlcy4gSWYgSSdtIHdyb25n
-LCB0aGVuCj4gcWNvbSxhcmMtbGV2ZWwgbmVlZHMgdG8gYmUgY3JlYXRlZCBhbG9uZ3NpZGUgb2Yg
-cWNvbSxjb3JuZXIgYmVjYXVzZQo+IHRoZXkncmUgZGlmZmVyZW50IG51bWJlciBzcGFjZXMuCgpJ
-IHRoaW5rIHRoZSB2YWx1ZSB0aGF0IHdlJ3JlIGRpc2N1c3NpbmcgaGVyZSBpcyB0aGUgUlBNaCB2
-b2x0YWdlIGxldmVsIHdoaWNoIHdlCnRyYW5zbGF0ZSBpbnRvIHRoZSBxY29tLGFyYy1sZXZlbChz
-KS4gSSdtIG5vdCBzdXJlIGhvdyB0aGF0IG1hdGNoZXMgdXAgd2l0aApxY29tLGNvcm5lci4KCj4g
-QlRXLCBpdCdzIHFjb20sY29ybmVyIGFuZCBub3QgcWNvbS1jb3JuZXIgcmlnaHQ/CgpodHRwOi8v
-Z2l0LmxpbmFyby5vcmcvcGVvcGxlL3ZpcmVzaC5rdW1hci9teWxpbnV4LmdpdC9jb21taXQvP2g9
-b3BwL2dlbnBkL3Fjb20maWQ9NzU4NjYwMGIzYmYzZjhlNzljZTkxOTg5MjJmYWQ3ZDRhYTViM2Y4
-ZAoKKwkJCQkJcWNvbS1jb3JuZXIgPSA8MT47CgpzaHJ1Zz8KCkpvcmRhbgoKLS0gClRoZSBRdWFs
-Y29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlciBvZiBDb2RlIEF1cm9yYSBG
-b3J1bSwKYSBMaW51eCBGb3VuZGF0aW9uIENvbGxhYm9yYXRpdmUgUHJvamVjdApfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBs
-aXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVz
-a3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+
+
+On 03/09/2018 05:36 AM, Adam Thomson wrote:
+> On 09 March 2018 04:58, Gustavo A. R. Silva wrote:
+> 
+>> In preparation to enabling -Wvla, remove VLA usage and replace it
+>> with fixed-length arrays.
+>>
+>> It seems that the length of array 'buf' will not exceed
+>> DA9150_QIF_SHORT_SIZE bytes (2 bytes). But a fixed length
+>> of DA9150_QIF_BYTE_SIZE bytes (8 bytes) was chosen in case
+>> this change in the future.
+>>
+>> Fixed as part of the directive to remove all VLAs from
+>> the kernel: https://lkml.org/lkml/2018/3/7/621
+>>
+>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+>> ---
+>>   drivers/power/supply/da9150-fg.c | 4 ++--
+>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/da9150-fg.c b/drivers/power/supply/da9150-fg.c
+>> index 8b8ce97..96893be 100644
+>> --- a/drivers/power/supply/da9150-fg.c
+>> +++ b/drivers/power/supply/da9150-fg.c
+>> @@ -92,7 +92,7 @@ struct da9150_fg {
+>>   static u32 da9150_fg_read_attr(struct da9150_fg *fg, u8 code, u8 size)
+>>
+>>   {
+>> -	u8 buf[size];
+>> +	u8 buf[DA9150_QIF_BYTE_SIZE];
+> 
+> You can use DA9150_QIF_LONG_SIZE as that's the biggest size of an attribute
+> which can be accessed. This will also save a little space.
+> 
+
+I got it. I'll send v2 shortly.
+
+Thanks for the feedback, Adam.
+--
+Gustavo
