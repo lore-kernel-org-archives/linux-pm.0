@@ -1,43 +1,66 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v3 0/6] sched/cpuidle: Idle loop rework
-Date: Sat, 10 Mar 2018 23:43:02 -0800
-Message-ID: <001801d3b90c$99232600$cb697200$@net>
-References: <2450532.XN8DODrtDf@aspire.rjw.lan> <007c01d3b843$3d825e70$b8871b50$@net> <000701d3b889$eadd5340$c097f9c0$@net> uoK1eZIXBFfdwuoK6ezbfC
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Sun, 11 Mar 2018 11:15:49 +0100
+Message-ID: <6734090.QOs8nIFVJO@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: uoK1eZIXBFfdwuoK6ezbfC
-Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Rik van Riel' <riel@surriel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, Doug Smythies <dsmythies@telus.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.10 15:55 Rafael J. Wysocki wrote: 
->On Saturday, March 10, 2018 5:07:36 PM CET Doug Smythies wrote:
->> On 2018.03.10 01:00 Rafael J. Wysocki wrote:
->
-... [snip] ...
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> The information that they often spend more time than a tick
-> period in state 0 in one go *is* relevant, though.
->
->
-> That issue can be dealt with in a couple of ways and the patch below is a
-> rather straightforward attempt to do that.  The idea, basically, is to discard
-> the result of governor prediction if the tick has been stopped alread and
-> the predicted idle duration is within the tick range.
->
-> Please try it on top of the v3 and tell me if you see an improvement.
+If poll_idle() is allowed to spin until need_resched() returns 'true',
+it may actually spin for a much longer time than expected by the idle
+governor, since set_tsk_need_resched() is not always called by the
+timer interrupt handler.  If that happens, the CPU may spend much
+more time than anticipated in the "polling" state.
 
-It seems pretty good so far.
-See a new line added to the previous graph, "rjwv3plus".
+To prevent that from happening, limit the time of the spinning loop
+in poll_idle().
 
-http://fast.smythies.com/rjwv3plus_100.png
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/poll_state.c |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-I'll do another 100% load on one CPU test overnight, this time with
-a trace.
-
-... Doug
+Index: linux-pm/drivers/cpuidle/poll_state.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/poll_state.c
++++ linux-pm/drivers/cpuidle/poll_state.c
+@@ -5,16 +5,31 @@
+  */
+ 
+ #include <linux/cpuidle.h>
++#include <linux/ktime.h>
+ #include <linux/sched.h>
+ #include <linux/sched/idle.h>
+ 
++#define POLL_IDLE_TIME_CHECK_COUNT	10000
++#define POLL_IDLE_TIME_LIMIT		(TICK_NSEC / 16)
++
+ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+ 			       struct cpuidle_driver *drv, int index)
+ {
++	ktime_t start = ktime_get();
++
+ 	local_irq_enable();
+ 	if (!current_set_polling_and_test()) {
+-		while (!need_resched())
++		unsigned int time_check_counter = 0;
++
++		while (!need_resched()) {
+ 			cpu_relax();
++			if (time_check_counter++ < POLL_IDLE_TIME_CHECK_COUNT)
++				continue;
++
++			time_check_counter = 0;
++			if (ktime_sub(ktime_get(), start) > POLL_IDLE_TIME_LIMIT)
++				break;
++		}
+ 	}
+ 	current_clr_polling();
+ 
