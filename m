@@ -1,69 +1,73 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v3 0/6] sched/cpuidle: Idle loop rework
-Date: Sun, 11 Mar 2018 08:52:02 -0700
-Message-ID: <000701d3b950$e88e2bb0$b9aa8310$@net>
-References: <2450532.XN8DODrtDf@aspire.rjw.lan> <000701d3b889$eadd5340$c097f9c0$@net> <001801d3b90c$99232600$cb697200$@net> uy66ebKjsFfdwuy6Be0qnb
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v2 1/4] dt-bindings: soc: add SCPSYS binding for MT7623
+ and MT7623A SoC
+Date: Sun, 11 Mar 2018 23:44:39 +0100
+Message-ID: <25eceb5d-7f5e-8bac-0bfd-ad547520a9b5@gmail.com>
+References: <ecfc548fc3d22aa335b50e552ad2ad88427a0bb2.1517998367.git.sean.wang@mediatek.com>
+ <1520414224.677.2.camel@mtkswgap22>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: uy66ebKjsFfdwuy6Be0qnb
-Content-Language: en-ca
+In-Reply-To: <1520414224.677.2.camel@mtkswgap22>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Rik van Riel' <riel@surriel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, Doug Smythies <dsmythies@telus.net>
+To: Sean Wang <sean.wang@mediatek.com>, robh+dt@kernel.org
+Cc: rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.11 03:22 Rafael J. Wysocki wrote:
-> On Sunday, March 11, 2018 8:43:02 AM CET Doug Smythies wrote:
->> On 2018.03.10 15:55 Rafael J. Wysocki wrote: 
->>>On Saturday, March 10, 2018 5:07:36 PM CET Doug Smythies wrote:
->>>> On 2018.03.10 01:00 Rafael J. Wysocki wrote:
->>>
->> ... [snip] ...
->> 
->>> The information that they often spend more time than a tick
->>>> period in state 0 in one go *is* relevant, though.
->>>
->>>
->>> That issue can be dealt with in a couple of ways and the patch below is a
->>> rather straightforward attempt to do that.  The idea, basically, is to discard
->>> the result of governor prediction if the tick has been stopped alread and
->>> the predicted idle duration is within the tick range.
->>>
->>> Please try it on top of the v3 and tell me if you see an improvement.
->> 
->> It seems pretty good so far.
->> See a new line added to the previous graph, "rjwv3plus".
->> 
->> http://fast.smythies.com/rjwv3plus_100.png
->
-> OK, cool!
->
-> Below is a respin of the last patch which also prevents shallow states from
-> being chosen due to interactivity_req when the tick is stopped.
->
-> You may also add a poll_idle() fix I've just posted:
->
-> https://patchwork.kernel.org/patch/10274595/
->
-> on top of this.  It makes quite a bit of a difference for me. :-)
 
-I will add and test, but I already know from testing previous versions
-of this patch, from Rik van Riel and myself, that the results will be
-awesome.
 
->
->> I'll do another 100% load on one CPU test overnight, this time with
->> a trace.
+On 03/07/2018 10:17 AM, Sean Wang wrote:
+> Hi, Matthias
+> 
+> just a gentle ping to the four related patches
+> 
 
-The only thing I'll add from the 7 hour overnight test with trace is that
-there were 0 occurrences of excessive times spent in idle states above 0.
-The histograms show almost entirely those idle states being limited to
-one tick time (I am using a 1000 Hz kernel). Exceptions:
+All four pushed with Ulf's reviewed-by to v4.16-next/soc
 
-Idle State: 3  CPU: 0: 1 occurrence of 1790 uSec (which is O.K. anyhow)
-Idle State: 3  CPU: 6: 1 occurrence of 2372 uSec (which is O.K. anyhow)
+Thanks a lot!
 
-... Doug
+> 	Sean
+> 
+> On Wed, 2018-02-07 at 18:22 +0800, sean.wang@mediatek.com wrote:
+>> From: Sean Wang <sean.wang@mediatek.com>
+>>
+>> document the binding for enabling SCPSYS on MediaTek MT7623 and MT7623A
+>> SoC. Where MT7623 SoC has the same definition about power domains with
+>> MT2701, so it's fine to using MT2701 ones as MT7623's fallback.
+>>
+>> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+>> Reviewed-by: Rob Herring <robh@kernel.org>
+>> ---
+>>  Documentation/devicetree/bindings/soc/mediatek/scpsys.txt | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+>> index 76bf45b..d6fe16f 100644
+>> --- a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+>> +++ b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+>> @@ -21,6 +21,8 @@ Required properties:
+>>  	- "mediatek,mt2712-scpsys"
+>>  	- "mediatek,mt6797-scpsys"
+>>  	- "mediatek,mt7622-scpsys"
+>> +	- "mediatek,mt7623-scpsys", "mediatek,mt2701-scpsys": For MT7623 SoC
+>> +	- "mediatek,mt7623a-scpsys": For MT7623A SoC
+>>  	- "mediatek,mt8173-scpsys"
+>>  - #power-domain-cells: Must be 1
+>>  - reg: Address range of the SCPSYS unit
+>> @@ -28,10 +30,11 @@ Required properties:
+>>  - clock, clock-names: clocks according to the common clock binding.
+>>                        These are clocks which hardware needs to be
+>>                        enabled before enabling certain power domains.
+>> -	Required clocks for MT2701: "mm", "mfg", "ethif"
+>> +	Required clocks for MT2701 or MT7623: "mm", "mfg", "ethif"
+>>  	Required clocks for MT2712: "mm", "mfg", "venc", "jpgdec", "audio", "vdec"
+>>  	Required clocks for MT6797: "mm", "mfg", "vdec"
+>>  	Required clocks for MT7622: "hif_sel"
+>> +	Required clocks for MT7622A: "ethif"
+>>  	Required clocks for MT8173: "mm", "mfg", "venc", "venc_lt"
+>>  
+>>  Optional properties:
+> 
+> 
