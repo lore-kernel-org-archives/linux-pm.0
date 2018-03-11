@@ -1,193 +1,140 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v3 0/6] sched/cpuidle: Idle loop rework
-Date: Sun, 11 Mar 2018 00:55:19 +0100
-Message-ID: <2205735.WjUm7ivWkF@aspire.rjw.lan>
-References: <2450532.XN8DODrtDf@aspire.rjw.lan> <007c01d3b843$3d825e70$b8871b50$@net> <000701d3b889$eadd5340$c097f9c0$@net>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [RFC/RFT][PATCH v3 5/6] sched: idle: Select idle state before
+ stopping the tick
+Date: Sun, 11 Mar 2018 02:44:37 +0100
+Message-ID: <20180311014435.GA30062@lerouge>
+References: <2450532.XN8DODrtDf@aspire.rjw.lan>
+ <3333184.WFRNK4vEe0@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000701d3b889$eadd5340$c097f9c0$@net>
+Content-Disposition: inline
+In-Reply-To: <3333184.WFRNK4vEe0@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Rik van Riel' <riel@surriel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, March 10, 2018 5:07:36 PM CET Doug Smythies wrote:
-> On 2018.03.10 01:00 Rafael J. Wysocki wrote:
-> > On Saturday, March 10, 2018 8:41:39 AM CET Doug Smythies wrote:
-> >> 
-> >> With apologies to those that do not like the term "PowerNightmares",
-> >
-> > OK, and what exactly do you count as "PowerNightmares"?
-> 
-> I'll snip some below and then explain:
-> 
-> ...[snip]...
-> 
-> >> 
-> >> Kernel 4.16-rc4: Summary: Average processor package power 27.41 watts
-> >> 
-> >> Idle State 0: Total Entries: 9096 : PowerNightmares: 6540 : Not PN time (seconds): 0.051532 : PN time: 7886.309553 : Ratio:
-> 153037.133492
-> >> Idle State 1: Total Entries: 28731 : PowerNightmares: 215 : Not PN time (seconds): 0.211999 : PN time: 77.395467 : Ratio:
-> 365.074679
-> >> Idle State 2: Total Entries: 4474 : PowerNightmares: 97 : Not PN time (seconds): 1.959059 : PN time: 0.874112 : Ratio: 0.446190
-> >> Idle State 3: Total Entries: 2319 : PowerNightmares: 0 : Not PN time (seconds): 1.663376 : PN time: 0.000000 : Ratio: 0.000000
-> 
-> O.K. let's go deeper than the summary, and focus on idle state 0, which has been my area of interest in this saga.
-> 
-> Idle State 0:
-> CPU: 0: Entries: 2093 : PowerNightmares: 1136 : Not PN time (seconds): 0.024840 : PN time: 1874.417840 : Ratio: 75459.655439
-> CPU: 1: Entries: 1051 : PowerNightmares: 721 : Not PN time (seconds): 0.004668 : PN time: 198.845193 : Ratio: 42597.513425
-> CPU: 2: Entries: 759 : PowerNightmares: 583 : Not PN time (seconds): 0.003299 : PN time: 1099.069256 : Ratio: 333152.246028
-> CPU: 3: Entries: 1033 : PowerNightmares: 1008 : Not PN time (seconds): 0.000361 : PN time: 1930.340683 : Ratio: 5347203.995237
-> CPU: 4: Entries: 1310 : PowerNightmares: 1025 : Not PN time (seconds): 0.006214 : PN time: 1332.497114 : Ratio: 214434.682950
-> CPU: 5: Entries: 1097 : PowerNightmares: 848 : Not PN time (seconds): 0.005029 : PN time: 785.366864 : Ratio: 156167.601340
-> CPU: 6: Entries: 1753 : PowerNightmares: 1219 : Not PN time (seconds): 0.007121 : PN time: 665.772603 : Ratio: 93494.256958
-> 
-> Note: CPU 7 is busy and doesn't go into idle at all.
-> 
-> And also look at the histograms of the times spent in idle state 0:
-> CPU 3 might be the most interesting:
-> 
-> Idle State: 0  CPU: 3:
-> 4 1
-> 5 3
-> 7 2
-> 11 1
-> 12 1
-> 13 2
-> 14 3
-> 15 3
-> 17 4
-> 18 1
-> 19 2
-> 28 2
-> 7563 1
-> 8012 1
-> 9999 1006
-> 
-> Where:
-> Column 1 is the time in microseconds it was in that idle state
-> up to 9999 microseconds, which includes anything more.
-> Column 2 is the number of occurrences of that time.
-> 
-> Notice that 1008 times out of the 1033, it spent an excessive amount
-> of time in idle state 0, leading to excessive power consumption.
-> I adopted Thomas Ilsche's "Powernightmare" term for this several
-> months ago.
-> 
-> This CPU 3 example was pretty clear, but sometimes it is not so
-> obvious. I admit that my thresholds for is it a "powernigthmare" or
-> not are somewhat arbitrary, and I'll change them to whatever anybody
-> wants. Currently:
-> 
-> #define THRESHOLD_0 100       /* Idle state 0 PowerNightmare threshold in microseconds */
-> #define THRESHOLD_1 1000      /* Idle state 1 PowerNightmare threshold in microseconds */
-> #define THRESHOLD_2 2000      /* Idle state 2 PowerNightmare threshold in microseconds */
-> #define THRESHOLD_3 4000      /* Idle state 3 PowerNightmare threshold in microseconds */
+On Fri, Mar 09, 2018 at 10:46:55AM +0100, Rafael J. Wysocki wrote:
+> --- linux-pm.orig/kernel/time/tick-sched.h
+> +++ linux-pm/kernel/time/tick-sched.h
+> @@ -30,6 +30,7 @@ enum tick_nohz_mode {
+>   *			when the CPU returns from nohz sleep.
+>   * @next_tick:		Next tick to be fired when in dynticks mode.
+>   * @tick_stopped:	Indicator that the idle tick has been stopped
+> + * @tick_may_stop:	Indicator that the idle tick may be stopped shortly
 
-That's clear, thanks!
+Perhaps we can set timer_expires to 0 instead when we want to invalidate
+the last value?
 
-Well, the main reason why I have a problem with the "powernigthmare" term is
-because it is somewhat arbitrary overall.  After all, you ended up having to
-explain what you meant in detail even though you have used it in the
-previous message, so it doesn't appear all that useful to me. :-)
+>   * @idle_jiffies:	jiffies at the entry to idle for idle time accounting
+>   * @idle_calls:		Total number of idle calls
+>   * @idle_sleeps:	Number of idle calls, where the sched tick was stopped
+> @@ -38,7 +39,6 @@ enum tick_nohz_mode {
+>   * @idle_exittime:	Time when the idle state was left
+>   * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
+>   * @iowait_sleeptime:	Sum of the time slept in idle with sched tick stopped, with IO outstanding
+> - * @sleep_length:	Duration of the current idle sleep
+>   * @do_timer_lst:	CPU was the last one doing do_timer before going idle
+>   */
+>  struct tick_sched {
+> @@ -49,6 +49,7 @@ struct tick_sched {
+>  	ktime_t				next_tick;
+>  	int				inidle;
+>  	int				tick_stopped;
+> +	int				tick_may_stop;
+>  	unsigned long			idle_jiffies;
+>  	unsigned long			idle_calls;
+>  	unsigned long			idle_sleeps;
+> @@ -58,8 +59,9 @@ struct tick_sched {
+>  	ktime_t				idle_exittime;
+>  	ktime_t				idle_sleeptime;
+>  	ktime_t				iowait_sleeptime;
+> -	ktime_t				sleep_length;
+>  	unsigned long			last_jiffies;
+> +	u64				timer_expires;
+> +	u64				timer_expires_basemono;
 
-Also, the current work isn't even concerned about idle times below the
-length of the tick period, so the information that some CPUs spent over
-100 us in state 0 for a certain number of times during the test is not that
-relevant here.  The information that they often spend more time than a tick
-period in state 0 in one go *is* relevant, though.
+We may need documentation for the above fields too.
 
-The $subject patch series, on the one hand, is about adding a safety net for
-possible governor mispredictions using the existing tick infrastructure,
-along with avoiding unnecessary timer manipulation overhead related to the
-stopping and starting of the tick, on the other hand.  Of course, the safety
-net will not improve the accuracy of governor predictions anyway, it may only
-reduce their impact.
+> Index: linux-pm/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-sched.c
+> +++ linux-pm/kernel/time/tick-sched.c
+> @@ -652,13 +652,10 @@ static inline bool local_timer_softirq_p
+>  	return local_softirq_pending() & TIMER_SOFTIRQ;
+>  }
+>  
+> -static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
+> -					 ktime_t now, int cpu)
+> +static ktime_t __tick_nohz_next_event(struct tick_sched *ts, int cpu)
 
-That said, it doesn't catch one case which turns out to be quite significant
-and which is when the tick is stopped already and the governor predicts short
-idle.  That, again, may cause the CPU to spend a long time in a shallow idle
-state which then will qualify as a "powernightmare" I suppose.  If I'm reading
-your data correctly, that is the main reason for the majority of cases in which
-CPUs spend 9999 us and more in state 0 on your system.
+Since we don't seem to have a lower level version, can we remove the underscores?
 
-That issue can be dealt with in a couple of ways and the patch below is a
-rather straightforward attempt to do that.  The idea, basically, is to discard
-the result of governor prediction if the tick has been stopped alread and
-the predicted idle duration is within the tick range.
+>  {
+> -	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+>  	u64 basemono, next_tick, next_tmr, next_rcu, delta, expires;
+>  	unsigned long seq, basejiff;
+> -	ktime_t	tick;
+>  
+>  	/* Read jiffies and the time when jiffies were updated last */
+>  	do {
+[...]
 
-Please try it on top of the v3 and tell me if you see an improvement.
+
+> +static void __tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
+
+(Same comment here about the underscores).
+
+> +{
+> +	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+> +	u64 basemono = ts->timer_expires_basemono;
+> +	u64 expires = ts->timer_expires;
+> +	ktime_t tick = expires;
+> +
+> +	/* Make sure we won't be trying to stop it twice in a row. */
+> +	ts->tick_may_stop = 0;
+> +
+> +	/*
+> +	 * If this CPU is the one which updates jiffies, then give up
+> +	 * the assignment and let it be taken by the CPU which runs
+> +	 * the tick timer next, which might be this CPU as well. If we
+> +	 * don't drop this here the jiffies might be stale and
+> +	 * do_timer() never invoked. Keep track of the fact that it
+> +	 * was the one which had the do_timer() duty last.
+> +	 */
+> +	if (cpu == tick_do_timer_cpu) {
+> +		tick_do_timer_cpu = TICK_DO_TIMER_NONE;
+> +		ts->do_timer_last = 1;
+> +	}
+>  
+>  	/* Skip reprogram of event if its not changed */
+>  	if (ts->tick_stopped && (expires == ts->next_tick)) {
+>  		/* Sanity check: make sure clockevent is actually programmed */
+>  		if (tick == KTIME_MAX || ts->next_tick == hrtimer_get_expires(&ts->sched_timer))
+> -			goto out;
+> +			return;
+>  
+>  		WARN_ON_ONCE(1);
+>  		printk_once("basemono: %llu ts->next_tick: %llu dev->next_event: %llu timer->active: %d timer->expires: %llu\n",
+[...]
+> +void tick_nohz_idle_retain_tick(void)
+> +{
+> +	__this_cpu_write(tick_cpu_sched.tick_may_stop, 0);
+> +}
+> +
+
+So, I've become overly-paranoid about cached expiration on nohz code, we've run
+into bugs that took months to debug before. It seems that the cached version shouldn't
+leak in any way there, still can we have checks such as this in tick_nohz_idle_enter/exit()?
+
+     WARN_ON_ONCE(__this_cpu_read(tick_cpu_sched.tick_may_stop));
+
+Otherwise a leaking cached expiration may mislead further nohz tick stop and
+bypass calls to tick_nohz_next_event().
+
+Also let's make sure we never call tick_nohz_get_sleep_length() outside idle:
+
+     WARN_ON_ONCE(!__this_cpu_read(tick_cpu_sched.inidle));
 
 Thanks!
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpuidle: menu: Avoid selecting shallow states with stopped tick
-
-If the scheduler tick has been stopped already and the governor
-selects a shallow idle state, the CPU can spend a long time in that
-state if the selection is based on an inaccurate prediction of idle
-period duration.  That effect turns out to occur relatively often,
-so it needs to be mitigated.
-
-To that end, modify the menu governor to discard the result of the
-idle period duration prediction if it is less than the tick period
-duration and the tick is stopped, unless the tick timer is going to
-expire soon.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -297,6 +297,7 @@ static int menu_select(struct cpuidle_dr
- 	unsigned long nr_iowaiters, cpu_load;
- 	int resume_latency = dev_pm_qos_raw_read_value(device);
- 	ktime_t tick_time;
-+	unsigned int tick_us;
- 
- 	if (data->needs_update) {
- 		menu_update(drv, dev);
-@@ -315,6 +316,7 @@ static int menu_select(struct cpuidle_dr
- 
- 	/* determine the expected residency time, round up */
- 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&tick_time));
-+	tick_us = ktime_to_us(tick_time);
- 
- 	get_iowait_load(&nr_iowaiters, &cpu_load);
- 	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
-@@ -354,6 +356,17 @@ static int menu_select(struct cpuidle_dr
- 	data->predicted_us = min(data->predicted_us, expected_interval);
- 
- 	/*
-+	 * If the tick is already stopped, the cost of possible misprediction is
-+	 * much higher, because the CPU may be stuck in a shallow idle state for
-+	 * a long time as a result of it.  For this reason, if that happens say
-+	 * we might mispredict and try to force the CPU into a state for which
-+	 * we would have stopped the tick, unless the tick timer is going to
-+	 * expire really soon anyway.
-+	 */
-+	if (tick_nohz_tick_stopped() && data->predicted_us < TICK_USEC_HZ)
-+		data->predicted_us = min_t(unsigned int, TICK_USEC_HZ, tick_us);
-+
-+	/*
- 	 * Use the performance multiplier and the user-configurable
- 	 * latency_req to determine the maximum exit latency.
- 	 */
-@@ -403,8 +416,6 @@ static int menu_select(struct cpuidle_dr
- 		 */
- 		if (first_idx > idx &&
- 		    drv->states[first_idx].target_residency < TICK_USEC_HZ) {
--			unsigned int tick_us = ktime_to_us(tick_time);
--
- 			/*
- 			 * Find a state with target residency less than the
- 			 * time to the next timer event including the tick.
