@@ -1,55 +1,69 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH] soc: mediatek: fix the mistaken pointer accessed when
- subdomains are added
-Date: Sun, 11 Mar 2018 23:51:17 +0100
-Message-ID: <b3923ae4-3fb4-c107-e7df-cd9d3c5f0652@gmail.com>
-References: <9d9d75250bf62b491294a0c550c35ab7aba05eef.1518113047.git.sean.wang@mediatek.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT][PATCH v3 0/6] sched/cpuidle: Idle loop rework
+Date: Sun, 11 Mar 2018 16:02:14 -0700
+Message-ID: <000c01d3b98d$016eeb10$044cc130$@net>
+References: <2450532.XN8DODrtDf@aspire.rjw.lan> <000701d3b889$eadd5340$c097f9c0$@net> <001801d3b90c$99232600$cb697200$@net> uy66ebKjsFfdwuy6Be0qnb v2lnemfac1Konv3GbegAC4
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+        charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9d9d75250bf62b491294a0c550c35ab7aba05eef.1518113047.git.sean.wang@mediatek.com>
-Content-Language: en-US
+In-Reply-To: v2lnemfac1Konv3GbegAC4
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com, rjw@rjwysocki.net, khilman@baylibre.com
-Cc: ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Rik van Riel' <riel@surriel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Doug Smythies' <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
+On 2018.03.11 08:52 Doug Smythies wrote:
+> On 2018.03.11 03:22 Rafael J. Wysocki wrote:
+>> On Sunday, March 11, 2018 8:43:02 AM CET Doug Smythies wrote:
+>>> On 2018.03.10 15:55 Rafael J. Wysocki wrote: 
+>>>> On Saturday, March 10, 2018 5:07:36 PM CET Doug Smythies wrote:
+>>>>> On 2018.03.10 01:00 Rafael J. Wysocki wrote:
+>>>
+>>> ... [snip] ...
+>>> 
+>>>> The information that they often spend more time than a tick
+>>>> period in state 0 in one go *is* relevant, though.
+>>>>
+>>>>
+>>>> That issue can be dealt with in a couple of ways and the patch below is a
+>>>> rather straightforward attempt to do that.  The idea, basically, is to discard
+>>>> the result of governor prediction if the tick has been stopped alread and
+>>>> the predicted idle duration is within the tick range.
+>>>
+>>>> Please try it on top of the v3 and tell me if you see an improvement.
+>>> 
+>>> It seems pretty good so far.
+>>> See a new line added to the previous graph, "rjwv3plus".
+>>> 
+>>> http://fast.smythies.com/rjwv3plus_100.png
+>>
+>> OK, cool!
+>>
+>> Below is a respin of the last patch which also prevents shallow states from
+>> being chosen due to interactivity_req when the tick is stopped.
+>>
+>> You may also add a poll_idle() fix I've just posted:
+>>
+>> https://patchwork.kernel.org/patch/10274595/
+>>
+>> on top of this.  It makes quite a bit of a difference for me. :-)
+>
+> I will add and test, but I already know from testing previous versions
+> of this patch, from Rik van Riel and myself, that the results will be
+> awesome.
 
+And the results are indeed awesome.
 
-On 02/08/2018 07:07 PM, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> Fix the pointer to struct scp_subdomian not being moved forward
-> when each sub-domain is expected to be iteratively added through
-> pm_genpd_add_subdomain call.
-> 
-> Cc: stable@vger.kernel.org
-> Fixes: 53fddb1a66dd ("soc: mediatek: reduce code duplication of scpsys_probe across all SoCs")
-> Reported-by: Weiyi Lu <weiyi.lu@mediatek.com>
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+A four hour 100% load on one CPU test was run, with trace, however
+there is nothing to report, as everything is great.
 
-Pushed now to v4.16-next/soc
+The same graph as the last couple of days, with a new line added for
+V3 + the respin of patch 7 of 6 + the poll-idle fix, called rjwv3pp,
+is here:
 
-Thanks a lot
+http://fast.smythies.com/rjwv3pp_100.png
 
-@stable this would need to be applied since v4.13
-
-> ---
->  drivers/soc/mediatek/mtk-scpsys.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/soc/mediatek/mtk-scpsys.c b/drivers/soc/mediatek/mtk-scpsys.c
-> index fc55faa..9de801e 100644
-> --- a/drivers/soc/mediatek/mtk-scpsys.c
-> +++ b/drivers/soc/mediatek/mtk-scpsys.c
-> @@ -1048,7 +1048,7 @@ static int scpsys_probe(struct platform_device *pdev)
->  
->  	pd_data = &scp->pd_data;
->  
-> -	for (i = 0, sd = soc->subdomains ; i < soc->num_subdomains ; i++) {
-> +	for (i = 0, sd = soc->subdomains; i < soc->num_subdomains; i++, sd++) {
->  		ret = pm_genpd_add_subdomain(pd_data->domains[sd->origin],
->  					     pd_data->domains[sd->subdomain]);
->  		if (ret && IS_ENABLED(CONFIG_PM))
-> 
+... Doug
