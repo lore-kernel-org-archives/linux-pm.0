@@ -1,146 +1,60 @@
-From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
-Date: Mon, 12 Mar 2018 13:33:04 +0800
-Message-ID: <CADAEsF-KO52z1sby9uk+1NWNkDo+apCRV+1dpbFe2AwDmccjXA@mail.gmail.com>
-References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/2] arm64: dts: sdm845: Support GPU/GMU
+Date: Mon, 12 Mar 2018 11:22:54 +0530
+Message-ID: <20180312055254.GY6842@vireshk-i7>
+References: <20180302215638.6145-1-jcrouse@codeaurora.org>
+ <20180302215638.6145-3-jcrouse@codeaurora.org>
+ <20180305044221.GC23018@vireshk-i7>
+ <20180305152818.GC15200@jcrouse-lnx.qualcomm.com>
+ <20180306042656.GJ23018@vireshk-i7>
+ <20180306153757.GD15200@jcrouse-lnx.qualcomm.com>
+ <20180307050624.GR23018@vireshk-i7>
+ <20180308201438.GA10589@jcrouse-lnx.qualcomm.com>
+ <20180309034332.GO6842@vireshk-i7>
+ <20180309160355.GC10589@jcrouse-lnx.qualcomm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ganesh Mahendran <opensource.ganesh@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180309160355.GC10589-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Rafael:
-
-2018-03-05 16:47 GMT+08:00 Ganesh Mahendran <opensource.ganesh@gmail.com>:
-> single_open() interface requires that the whole output must
-> fit into a single buffer. This will lead to timeout when
-> system memory is not in a good situation.
->
-> This patch use seq_open() to show wakeup stats. This method
-> need only one page, so timeout will not be observed.
->
-> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
-> ----
-> v2: use srcu_read_lock instead of rcu_read_lock
-
-How about the V2 patch?
-If you have other concern, please let me know.
-
-Thanks.
-
-> ---
->  drivers/base/power/wakeup.c | 77 +++++++++++++++++++++++++++++++++++----------
->  1 file changed, 61 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index ea01621..3bcab7d 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
->         return 0;
->  }
->
-> -/**
-> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
-> - * @m: seq_file to print the statistics into.
-> - */
-> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
-> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
-> +                                       loff_t *pos)
->  {
->         struct wakeup_source *ws;
-> -       int srcuidx;
-> +       loff_t n = *pos;
-> +       int *srcuidx = m->private;
->
-> -       seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> -               "expire_count\tactive_since\ttotal_time\tmax_time\t"
-> -               "last_change\tprevent_suspend_time\n");
-> +       if (n == 0) {
-> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
-> +                       "last_change\tprevent_suspend_time\n");
-> +       }
->
-> -       srcuidx = srcu_read_lock(&wakeup_srcu);
-> -       list_for_each_entry_rcu(ws, &wakeup_sources, entry)
-> -               print_wakeup_source_stats(m, ws);
-> -       srcu_read_unlock(&wakeup_srcu, srcuidx);
-> +       *srcuidx = srcu_read_lock(&wakeup_srcu);
-> +       list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> +               if (n-- > 0)
-> +                       continue;
-> +               goto out;
-> +       }
-> +       ws = NULL;
-> +out:
-> +       return ws;
-> +}
-> +
-> +static void *wakeup_sources_stats_seq_next(struct seq_file *m,
-> +                                       void *v, loff_t *pos)
-> +{
-> +       struct wakeup_source *ws = v;
-> +       struct wakeup_source *next_ws = NULL;
-> +
-> +       ++(*pos);
->
-> -       print_wakeup_source_stats(m, &deleted_ws);
-> +       list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
-> +               next_ws = ws;
-> +               break;
-> +       }
-> +
-> +       return next_ws;
-> +}
-> +
-> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
-> +{
-> +       int *srcuidx = m->private;
-> +
-> +       srcu_read_unlock(&wakeup_srcu, *srcuidx);
-> +}
-> +
-> +/**
-> + * wakeup_sources_stats_seq_show - Print wakeup sources statistics information.
-> + * @m: seq_file to print the statistics into.
-> + * @v: wakeup_source of each iteration
-> + */
-> +static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
-> +{
-> +       struct wakeup_source *ws = v;
-> +
-> +       print_wakeup_source_stats(m, ws);
->
->         return 0;
->  }
->
-> +static const struct seq_operations wakeup_sources_stats_seq_ops = {
-> +       .start = wakeup_sources_stats_seq_start,
-> +       .next  = wakeup_sources_stats_seq_next,
-> +       .stop  = wakeup_sources_stats_seq_stop,
-> +       .show  = wakeup_sources_stats_seq_show,
-> +};
-> +
->  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->  {
-> -       return single_open(file, wakeup_sources_stats_show, NULL);
-> +       return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
->  }
->
->  static const struct file_operations wakeup_sources_stats_fops = {
-> @@ -1062,7 +1107,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->         .open = wakeup_sources_stats_open,
->         .read = seq_read,
->         .llseek = seq_lseek,
-> -       .release = single_release,
-> +       .release = seq_release_private,
->  };
->
->  static int __init wakeup_sources_debugfs_init(void)
-> --
-> 1.9.1
->
+T24gMDktMDMtMTgsIDA5OjAzLCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IEkgZG9uJ3QgdGhpbmsg
+d2UgYXJlIHVuZGVyc3RhbmRpbmcgZWFjaCBvdGhlci4gVGhlIEdNVSBpcyBhIHNlcGFyYXRlCj4g
+bWljcm9jb250cm9sbGVyLiBJdCBpcyBnaXZlbiBhIG1hZ2ljIG51bWJlciAoYWN0dWFsbHkgYSBj
+b21iaW5hdGlvbiBvZiBtYWdpYwo+IG51bWJlcnMpIHRoYXQgaXQgdGhlbiB1c2VzIHRvIGRpcmVj
+dGx5IGludGVyYWN0IHdpdGggdGhlIG90aGVyIGhhcmR3YXJlIHRvIG1ha2UKPiB0aGUgdm90ZS4g
+VGhlIG9ubHkgcmVzcG9uc2liaWxpdHkgdGhhdCB0aGUgQ1BVIGhhcyBpcyB0byBjb25zdHJ1Y3Qg
+dGhhdCBtYWdpYwo+IG51bWJlciAob25jZSwgYXQgaW5pdCkgYW5kIHNlbmQgaXQgYWNyb3NzIHdo
+ZW4gYXNrZWQuCj4gCj4gTG9va2luZyBhdCB0aGUgc2RoYyBjb2RlIGZyb20gdGhlIHRlc3Rpbmcg
+dHJlZSBpdCBtYWtlcyBwZXJmZWN0IHNlbnNlCj4gdGhhdCB5b3UgaGF2ZSBhIGRldmljZSB0aGF0
+IG5lZWRzIHRvIGV2ZW50dWFsbHkgZG8gYSBSUE1oIHZvdGUgZnJvbSB0aGUgQ1BVIGFuZAo+IHNv
+IHRoZSAncmVxdWlyZWQtb3BwJyBhbmQgcGVyZm9ybWFuY2Ugc3RhdGUgY29tZSB0b2dldGhlciB0
+byBkbyB0aGUgcmlnaHQgdGhpbmcuCj4gVGhpcyBpcyBnb29kIGNvZGUuCj4gCj4gTm9uZSBvZiB0
+aGlzIGlzIHRydWUgZm9yIHRoZSBHUFUuIFRoZSBDUFUgbmV2ZXIgdm90ZXMgZm9yIHRoZSBHUFUg
+c28gdGhlcmUgCj4gaXNuJ3QgYW55IG5lZWQgdG8gY29ubmVjdCBpdCB0byB0aGUgcG93ZXIgZG9t
+YWluIGRyaXZlcnMuIEV2ZW4gaWYgeW91IGRpZAo+IHRoZXJlIGlzbid0IGFueSBjdXJyZW50IG1l
+Y2hhbmlzbSBmb3IgdGhlIHJwbXBkIGRyaXZlciB0byBwYXNzIHRoZSByaWdodCBtYWdpYwo+IG51
+bWJlciB0byB0aGUgR1BVIGRyaXZlciB3aGljaCBpcyB3aGF0IGl0IHJlYWxseSBuZWVkcy4KPiAK
+PiBJIHN1cHBvc2UgdGhhdCBpbnN0ZWFkIG9mIHVzaW5nICdxY29tLGFyYy1sZXZlbCcgd2UgY291
+bGQgdXNlICdxY29tLWNvcm5lcicgYnV0Cj4gdGhlbiB0aGF0cyBqdXN0IGEgbmFtaW5nIGRpc3B1
+dGUuIFdlIHN0aWxsIG5lZWQgYSB3YXkgZm9yIHRoZSBHUFUgdG8gcXVlcnkgdGhlCj4gbWFnaWMg
+dmFsdWVzLgoKT2theSwgSSBnZXQgaXQuIFlvdSBjYW4ndCAoc2hvdWxkbid0KSB1c2UgZ2VucGQg
+c3R1ZmYgaGVyZS4gSSB3b3VsZCBzdGlsbCBsaWtlCnlvdSBndXlzIChZb3UvUmFqZW5kcmEvU3Rl
+cGhlbikgdG8gY29uY2x1ZGUgaWYgcWNvbS1jb3JuZXIgYW5kIHFjb20sYXJjLWxldmVsCmFyZSBl
+dmVudHVhbGx5IHNhbWUgdmFsdWVzIGFuZCB3ZSBzaG91bGQgdXNlIHNhbWUgcHJvcGVydHkgZm9y
+IHRoZW0uCgotLSAKdmlyZXNoCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNr
+dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Zy
+ZWVkcmVubwo=
