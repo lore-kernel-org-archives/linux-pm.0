@@ -1,101 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v4 3/7] sched: idle: Do not stop the tick before cpuidle_idle_call()
-Date: Mon, 12 Mar 2018 10:53:25 +0100
-Message-ID: <3550231.xNMJN5JcLx@aspire.rjw.lan>
-References: <2352117.3UUoYAu18A@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Anshuman Gupta <anshuman.gupta@intel.com>
+Subject: [PATCH] [sound] hdac-codec runtime suspended at PM:Suspend.
+Date: Mon, 12 Mar 2018 16:47:47 +0530
+Message-ID: <1520853467-31653-1-git-send-email-anshuman.gupta@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2352117.3UUoYAu18A@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, anshuman.gupta@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Keep hdac-codec to be in runtime suspended while entering to suspend.
+If hdac-codec is already in runtime suspend state skip its power down
+sequence in prepare, power up sequence in complete phase.
 
-Make cpuidle_idle_call() decide whether or not to stop the tick.
+Avoid resuming hdac controller PCI device 00:1f.3 from runtime suspend
+state in case  hdac-codec already in runtime-suspend state, this is
+unnecessary and block the direct complete even for hdac controller
+PCI device 00:1f.3.
 
-First, the cpuidle_enter_s2idle() path deals with the tick (and with
-the entire timekeeping for that matter) by itself and it doesn't need
-the tick to be stopped beforehand.
+This enabled direct complete path for hdac-codec and PCI device 00:1f.3.
 
-Second, to address the issue with short idle duration predictions
-by the idle governor after the tick has been stopped, it will be
-necessary to change the ordering of cpuidle_select() with respect
-to tick_nohz_idle_stop_tick().  To prepare for that, put a
-tick_nohz_idle_stop_tick() call in the same branch in which
-cpuidle_select() is called.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Anshuman Gupta <anshuman.gupta@intel.com>
 ---
- kernel/sched/idle.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
+ sound/soc/codecs/hdac_hdmi.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -146,13 +146,15 @@ static void cpuidle_idle_call(void)
- 	}
+diff --git a/sound/soc/codecs/hdac_hdmi.c b/sound/soc/codecs/hdac_hdmi.c
+index f3b4f4d..810a8a6 100644
+--- a/sound/soc/codecs/hdac_hdmi.c
++++ b/sound/soc/codecs/hdac_hdmi.c
+@@ -1852,6 +1852,8 @@ static int hdmi_codec_prepare(struct device *dev)
+ 	struct hdac_ext_device *edev = to_hda_ext_device(dev);
+ 	struct hdac_device *hdac = &edev->hdac;
+ 
++	if (pm_runtime_status_suspended(dev))
++		return 1;
+ 	pm_runtime_get_sync(&edev->hdac.dev);
  
  	/*
--	 * Tell the RCU framework we are entering an idle section,
--	 * so no more rcu read side critical sections and one more
-+	 * The RCU framework needs to be told that we are entering an idle
-+	 * section, so no more rcu read side critical sections and one more
- 	 * step to the grace period
- 	 */
--	rcu_idle_enter();
+@@ -1873,6 +1875,8 @@ static void hdmi_codec_complete(struct device *dev)
+ 	struct hdac_hdmi_priv *hdmi = edev->private_data;
+ 	struct hdac_device *hdac = &edev->hdac;
  
- 	if (cpuidle_not_available(drv, dev)) {
-+		tick_nohz_idle_stop_tick();
-+		rcu_idle_enter();
-+
- 		default_idle_call();
- 		goto exit_idle;
- 	}
-@@ -169,16 +171,26 @@ static void cpuidle_idle_call(void)
- 
- 	if (idle_should_enter_s2idle() || dev->use_deepest_state) {
- 		if (idle_should_enter_s2idle()) {
-+			rcu_idle_enter();
-+
- 			entered_state = cpuidle_enter_s2idle(drv, dev);
- 			if (entered_state > 0) {
- 				local_irq_enable();
- 				goto exit_idle;
- 			}
-+
-+			rcu_idle_exit();
- 		}
- 
-+		tick_nohz_idle_stop_tick();
-+		rcu_idle_enter();
-+
- 		next_state = cpuidle_find_deepest_state(drv, dev);
- 		call_cpuidle(drv, dev, next_state);
- 	} else {
-+		tick_nohz_idle_stop_tick();
-+		rcu_idle_enter();
-+
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
-@@ -241,12 +253,11 @@ static void do_idle(void)
- 		 * broadcast device expired for us, we don't want to go deep
- 		 * idle as we know that the IPI is going to arrive right away.
- 		 */
--		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
-+		if (cpu_idle_force_poll || tick_check_broadcast_expired())
- 			cpu_idle_poll();
--		} else {
--			tick_nohz_idle_stop_tick();
-+		else
- 			cpuidle_idle_call();
--		}
-+
- 		arch_cpu_idle_exit();
- 	}
- 
++	if (pm_runtime_status_suspended(dev))
++		return;
+ 	/* Power up afg */
+ 	snd_hdac_codec_read(hdac, hdac->afg, 0,	AC_VERB_SET_POWER_STATE,
+ 							AC_PWRST_D0);
+-- 
+2.7.4
