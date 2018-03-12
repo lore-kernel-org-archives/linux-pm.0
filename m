@@ -1,41 +1,34 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
-Date: Mon, 12 Mar 2018 08:32:55 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1D92FC@SW-EX-MBX01.diasemi.com>
-References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
- <20180309173339.GA9837@kroah.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: =?utf-8?B?562U5aSNOiBbUEFUQ0g=?= =?utf-8?Q?=5D?= Delete some
+ unusefull operations for centaur CPU/platform
+Date: Mon, 12 Mar 2018 09:40:33 +0100
+Message-ID: <20180312084033.lignixrpg4ruoxbq@gmail.com>
+References: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com>
+ <20180304093146.rujp4f62fv6xotb7@gmail.com>
+ <efc93496e4ba46958b7b09eff54c2ce2@zhaoxin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180309173339.GA9837@kroah.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <efc93496e4ba46958b7b09eff54c2ce2@zhaoxin.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: David Wang <DavidWang@zhaoxin.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@kernel.org" <linux-pm@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Bruce Chang (VAS)" <BruceChang@via-alliance.com>, "Cooper Yan(BJ-RD)" <CooperYan@zhaoxin.com>, "Qiyuan Wang(BJ-RD)" <QiyuanWang@zhaoxin.com>, Benjamin Pan <BenjaminPan@viatech.com>, Luke Lin <LukeLin@viacpu.com>, "Tim Guo(BJ-RD)" <TimGuo@zhaoxin.com>, "Cobe Chen(BJ-RD)" <CobeChen@zhaoxin.com>, "Jiangbo Wang(BJ-RD)" <JiangboWang@zhaoxin.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09 March 2018 17:34, Greg Kroah-Hartman wrote:
 
-> On Tue, Jan 02, 2018 at 03:50:48PM +0000, Adam Thomson wrote:
-> > This patch set adds sink side support for the PPS feature introduced in the
-> > USB PD 3.0 specification.
-> >
-> > The source PPS supply is represented using the Power Supply framework to provide
-> > access and control APIs for dealing with it's operating voltage and current,
-> > and switching between a standard PDO and PPS APDO operation. During standard
-> PDO
-> > operation the voltage and current is read-only, but for APDO PPS these are
-> > writable as well to allow for control.
-> >
-> > It should be noted that the keepalive for PPS is not handled within TCPM. The
-> > expectation is that the external user will be required to ensure re-requests
-> > occur regularly to ensure PPS remains and the source does not hard reset.
-> 
-> I've applied the first 3 patches now.  Can you rebase and resend based
-> on the feedback so far?
+* David Wang <DavidWang@zhaoxin.com> wrote:
 
-That's great. Thanks. Need to also rebase based on the patch
-'Revert "typec: tcpm: Only request matching pdos"' as this impacts the APDO
-selection logic. This is on my TODO list and will try and deal with it ASAP,
-hopefully this week.
+> [David] pr->flags.has_cst means BIOS define valid C state table.  And at lease 
+> define 2 entries. On all centaur platform which support C3, this condition is 
+> always true.
+
+> [David] Just as the following comment said, we need not execute WBINVD and 
+> ARB_DISABLE/ARB_ENABLE when entering C3 if bm_check=1 and bm_control=0.  This 
+> logic is valid for all platform not only for Centaur, I think.
+
+Ok, fair enough!
+
+Thanks,
+
+	Ingo
