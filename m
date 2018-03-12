@@ -1,68 +1,41 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v2] power: supply: da9150-fg: remove VLA usage
-Date: Mon, 12 Mar 2018 08:28:09 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1D92EF@SW-EX-MBX01.diasemi.com>
-References: <20180309182708.GA18542@embeddedgus>
+Subject: RE: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
+Date: Mon, 12 Mar 2018 08:32:55 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1D92FC@SW-EX-MBX01.diasemi.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180309173339.GA9837@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180309182708.GA18542@embeddedgus>
+In-Reply-To: <20180309173339.GA9837@kroah.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Support Opensource <Support.Opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Kees Cook <keescook@chromium.org>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09 March 2018 18:27, Gustavo A. R. Silva wrote:
+On 09 March 2018 17:34, Greg Kroah-Hartman wrote:
 
-> In preparation to enabling -Wvla, remove VLA usage and replace it
-> with fixed-length arrays.
+> On Tue, Jan 02, 2018 at 03:50:48PM +0000, Adam Thomson wrote:
+> > This patch set adds sink side support for the PPS feature introduced in the
+> > USB PD 3.0 specification.
+> >
+> > The source PPS supply is represented using the Power Supply framework to provide
+> > access and control APIs for dealing with it's operating voltage and current,
+> > and switching between a standard PDO and PPS APDO operation. During standard
+> PDO
+> > operation the voltage and current is read-only, but for APDO PPS these are
+> > writable as well to allow for control.
+> >
+> > It should be noted that the keepalive for PPS is not handled within TCPM. The
+> > expectation is that the external user will be required to ensure re-requests
+> > occur regularly to ensure PPS remains and the source does not hard reset.
 > 
-> DA9150_QIF_LONG_SIZE (4 bytes) is the biggest size of an attribute which can
-> be accessed [1].
-> 
-> Fixed as part of the directive to remove all VLAs from
-> the kernel: https://lkml.org/lkml/2018/3/7/621
-> 
-> [1] https://marc.info/?l=kernel-hardening&m=152059600524753&w=2
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> I've applied the first 3 patches now.  Can you rebase and resend based
+> on the feedback so far?
 
-Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-
-> ---
-> Changes in v2:
->  - Use DA9150_QIF_LONG_SIZE instead of DA9150_QIF_BYTE_SIZE as the
->    maximum size for array 'buf'. Thanks to Adam Thomson for the
->    feedback on this.
->  - Update changelog based on Adam's comments.
-> 
->  drivers/power/supply/da9150-fg.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/power/supply/da9150-fg.c b/drivers/power/supply/da9150-fg.c
-> index 8b8ce97..7ea2188 100644
-> --- a/drivers/power/supply/da9150-fg.c
-> +++ b/drivers/power/supply/da9150-fg.c
-> @@ -92,7 +92,7 @@ struct da9150_fg {
->  static u32 da9150_fg_read_attr(struct da9150_fg *fg, u8 code, u8 size)
-> 
->  {
-> -	u8 buf[size];
-> +	u8 buf[DA9150_QIF_LONG_SIZE];
->  	u8 read_addr;
->  	u32 res = 0;
->  	int i;
-> @@ -111,7 +111,7 @@ static void da9150_fg_write_attr(struct da9150_fg *fg, u8
-> code, u8 size,
->  				 u32 val)
-> 
->  {
-> -	u8 buf[size];
-> +	u8 buf[DA9150_QIF_LONG_SIZE];
->  	u8 write_addr;
->  	int i;
-> 
-> --
-> 2.7.4
+That's great. Thanks. Need to also rebase based on the patch
+'Revert "typec: tcpm: Only request matching pdos"' as this impacts the APDO
+selection logic. This is on my TODO list and will try and deal with it ASAP,
+hopefully this week.
