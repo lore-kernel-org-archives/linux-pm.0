@@ -1,34 +1,146 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 10/10] dt-bindings: thermal: Remove
- "cooling-{min|max}-level" properties
-Date: Mon, 12 Mar 2018 10:08:15 +0530
-Message-ID: <20180312043815.GW6842@vireshk-i7>
-References: <cover.1518166039.git.viresh.kumar@linaro.org>
- <0ec53640f1a09e6e0d7aa1a21d1a3266c3c209c7.1518166039.git.viresh.kumar@linaro.org>
+From: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
+Date: Mon, 12 Mar 2018 13:33:04 +0800
+Message-ID: <CADAEsF-KO52z1sby9uk+1NWNkDo+apCRV+1dpbFe2AwDmccjXA@mail.gmail.com>
+References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0ec53640f1a09e6e0d7aa1a21d1a3266c3c209c7.1518166039.git.viresh.kumar@linaro.org>
+In-Reply-To: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ganesh Mahendran <opensource.ganesh@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09-02-18, 14:28, Viresh Kumar wrote:
-> The "cooling-min-level" and "cooling-max-level" properties are not
-> parsed by any part of kernel currently and the max cooling state of a
-> CPU cooling device is found by referring to the cpufreq table instead.
-> 
-> Remove the unused bindings.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hello, Rafael:
+
+2018-03-05 16:47 GMT+08:00 Ganesh Mahendran <opensource.ganesh@gmail.com>:
+> single_open() interface requires that the whole output must
+> fit into a single buffer. This will lead to timeout when
+> system memory is not in a good situation.
+>
+> This patch use seq_open() to show wakeup stats. This method
+> need only one page, so timeout will not be observed.
+>
+> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+> ----
+> v2: use srcu_read_lock instead of rcu_read_lock
+
+How about the V2 patch?
+If you have other concern, please let me know.
+
+Thanks.
+
 > ---
->  Documentation/devicetree/bindings/thermal/thermal.txt | 16 +---------------
->  1 file changed, 1 insertion(+), 15 deletions(-)
-
-@Zhang/Eduardo: Can you please pick this patch (10/10) as almost everything else
-is already lined up for 4.17 ?
-
--- 
-viresh
+>  drivers/base/power/wakeup.c | 77 +++++++++++++++++++++++++++++++++++----------
+>  1 file changed, 61 insertions(+), 16 deletions(-)
+>
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index ea01621..3bcab7d 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
+>         return 0;
+>  }
+>
+> -/**
+> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
+> - * @m: seq_file to print the statistics into.
+> - */
+> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
+> +                                       loff_t *pos)
+>  {
+>         struct wakeup_source *ws;
+> -       int srcuidx;
+> +       loff_t n = *pos;
+> +       int *srcuidx = m->private;
+>
+> -       seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+> -               "expire_count\tactive_since\ttotal_time\tmax_time\t"
+> -               "last_change\tprevent_suspend_time\n");
+> +       if (n == 0) {
+> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
+> +                       "last_change\tprevent_suspend_time\n");
+> +       }
+>
+> -       srcuidx = srcu_read_lock(&wakeup_srcu);
+> -       list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+> -               print_wakeup_source_stats(m, ws);
+> -       srcu_read_unlock(&wakeup_srcu, srcuidx);
+> +       *srcuidx = srcu_read_lock(&wakeup_srcu);
+> +       list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+> +               if (n-- > 0)
+> +                       continue;
+> +               goto out;
+> +       }
+> +       ws = NULL;
+> +out:
+> +       return ws;
+> +}
+> +
+> +static void *wakeup_sources_stats_seq_next(struct seq_file *m,
+> +                                       void *v, loff_t *pos)
+> +{
+> +       struct wakeup_source *ws = v;
+> +       struct wakeup_source *next_ws = NULL;
+> +
+> +       ++(*pos);
+>
+> -       print_wakeup_source_stats(m, &deleted_ws);
+> +       list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
+> +               next_ws = ws;
+> +               break;
+> +       }
+> +
+> +       return next_ws;
+> +}
+> +
+> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
+> +{
+> +       int *srcuidx = m->private;
+> +
+> +       srcu_read_unlock(&wakeup_srcu, *srcuidx);
+> +}
+> +
+> +/**
+> + * wakeup_sources_stats_seq_show - Print wakeup sources statistics information.
+> + * @m: seq_file to print the statistics into.
+> + * @v: wakeup_source of each iteration
+> + */
+> +static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
+> +{
+> +       struct wakeup_source *ws = v;
+> +
+> +       print_wakeup_source_stats(m, ws);
+>
+>         return 0;
+>  }
+>
+> +static const struct seq_operations wakeup_sources_stats_seq_ops = {
+> +       .start = wakeup_sources_stats_seq_start,
+> +       .next  = wakeup_sources_stats_seq_next,
+> +       .stop  = wakeup_sources_stats_seq_stop,
+> +       .show  = wakeup_sources_stats_seq_show,
+> +};
+> +
+>  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+>  {
+> -       return single_open(file, wakeup_sources_stats_show, NULL);
+> +       return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
+>  }
+>
+>  static const struct file_operations wakeup_sources_stats_fops = {
+> @@ -1062,7 +1107,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+>         .open = wakeup_sources_stats_open,
+>         .read = seq_read,
+>         .llseek = seq_lseek,
+> -       .release = single_release,
+> +       .release = seq_release_private,
+>  };
+>
+>  static int __init wakeup_sources_debugfs_init(void)
+> --
+> 1.9.1
+>
