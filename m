@@ -1,35 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: =?UTF-8?B?562U5aSNOg==?= [PATCH] Delete some unusefull operations for centaur CPU/platform
-Date: Mon, 12 Mar 2018 10:27:18 +0100
-Message-ID: <1792259.nnz4czxE5K@aspire.rjw.lan>
-References: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com> <efc93496e4ba46958b7b09eff54c2ce2@zhaoxin.com> <20180312084033.lignixrpg4ruoxbq@gmail.com>
+Subject: Re: [RFC/RFT][PATCH v3 0/6] sched/cpuidle: Idle loop rework
+Date: Mon, 12 Mar 2018 10:28:35 +0100
+Message-ID: <6289621.2bafQveClD@aspire.rjw.lan>
+References: <2450532.XN8DODrtDf@aspire.rjw.lan> <001801d3b90c$99232600$cb697200$@net> <000c01d3b98d$016eeb10$044cc130$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180312084033.lignixrpg4ruoxbq@gmail.com>
+In-Reply-To: <000c01d3b98d$016eeb10$044cc130$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: David Wang <DavidWang@zhaoxin.com>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@kernel.org" <linux-pm@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Bruce Chang (VAS)" <BruceChang@via-alliance.com>, "Cooper Yan(BJ-RD)" <CooperYan@zhaoxin.com>, "Qiyuan Wang(BJ-RD)" <QiyuanWang@zhaoxin.com>, Benjamin Pan <BenjaminPan@viatech.com>, Luke Lin <LukeLin@viacpu.com>, "Tim Guo(BJ-RD)" <TimGuo@zhaoxin.com>, "Cobe Chen(BJ-RD)" <CobeChen@zhaoxin.com>, "Jiangbo Wang(BJ-RD)" <JiangboWang@zhaoxin.com>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Rik van Riel' <riel@surriel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 12, 2018 9:40:33 AM CET Ingo Molnar wrote:
+On Monday, March 12, 2018 12:02:14 AM CET Doug Smythies wrote:
+> On 2018.03.11 08:52 Doug Smythies wrote:
+> > On 2018.03.11 03:22 Rafael J. Wysocki wrote:
+> >> On Sunday, March 11, 2018 8:43:02 AM CET Doug Smythies wrote:
+> >>> On 2018.03.10 15:55 Rafael J. Wysocki wrote: 
+> >>>> On Saturday, March 10, 2018 5:07:36 PM CET Doug Smythies wrote:
+> >>>>> On 2018.03.10 01:00 Rafael J. Wysocki wrote:
+> >>>
+> >>> ... [snip] ...
+> >>> 
+> >>>> The information that they often spend more time than a tick
+> >>>> period in state 0 in one go *is* relevant, though.
+> >>>>
+> >>>>
+> >>>> That issue can be dealt with in a couple of ways and the patch below is a
+> >>>> rather straightforward attempt to do that.  The idea, basically, is to discard
+> >>>> the result of governor prediction if the tick has been stopped alread and
+> >>>> the predicted idle duration is within the tick range.
+> >>>
+> >>>> Please try it on top of the v3 and tell me if you see an improvement.
+> >>> 
+> >>> It seems pretty good so far.
+> >>> See a new line added to the previous graph, "rjwv3plus".
+> >>> 
+> >>> http://fast.smythies.com/rjwv3plus_100.png
+> >>
+> >> OK, cool!
+> >>
+> >> Below is a respin of the last patch which also prevents shallow states from
+> >> being chosen due to interactivity_req when the tick is stopped.
+> >>
+> >> You may also add a poll_idle() fix I've just posted:
+> >>
+> >> https://patchwork.kernel.org/patch/10274595/
+> >>
+> >> on top of this.  It makes quite a bit of a difference for me. :-)
+> >
+> > I will add and test, but I already know from testing previous versions
+> > of this patch, from Rik van Riel and myself, that the results will be
+> > awesome.
 > 
-> * David Wang <DavidWang@zhaoxin.com> wrote:
+> And the results are indeed awesome.
 > 
-> > [David] pr->flags.has_cst means BIOS define valid C state table.  And at lease 
-> > define 2 entries. On all centaur platform which support C3, this condition is 
-> > always true.
+> A four hour 100% load on one CPU test was run, with trace, however
+> there is nothing to report, as everything is great.
 > 
-> > [David] Just as the following comment said, we need not execute WBINVD and 
-> > ARB_DISABLE/ARB_ENABLE when entering C3 if bm_check=1 and bm_control=0.  This 
-> > logic is valid for all platform not only for Centaur, I think.
+> The same graph as the last couple of days, with a new line added for
+> V3 + the respin of patch 7 of 6 + the poll-idle fix, called rjwv3pp,
+> is here:
 > 
-> Ok, fair enough!
+> http://fast.smythies.com/rjwv3pp_100.png
 
-Well, I still have this one queued up as cpuidle material.
-
-I can drop it if you want to take it instead.
-
-Thanks,
-Rafael
+That looks great, thank you!
