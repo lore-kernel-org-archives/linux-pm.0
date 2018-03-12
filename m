@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v4 7/7] cpuidle: menu: Avoid selecting shallow states with stopped tick
-Date: Mon, 12 Mar 2018 11:07:45 +0100
-Message-ID: <1830879.SVjpsft0sO@aspire.rjw.lan>
+Subject: [RFT][PATCH v4 2/7] sched: idle: Do not stop the tick upfront in the idle loop
+Date: Mon, 12 Mar 2018 10:51:11 +0100
+Message-ID: <2177770.i4UbKDJpnI@aspire.rjw.lan>
 References: <2352117.3UUoYAu18A@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,78 +15,83 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-If the scheduler tick has been stopped already and the governor
-selects a shallow idle state, the CPU may spend a long time in that
-state if the selection is based on an inaccurate prediction of idle
-period duration.  That effect turns out to occur relatively often,
-so it needs to be mitigated.
+Push the decision whether or not to stop the tick somewhat deeper
+into the idle loop.
 
-To that end, modify the menu governor to discard the result of the
-idle period duration prediction if it is less than the tick period
-duration and the tick is stopped, unless the tick timer is going to
-expire soon.
+Stopping the tick upfront leads to unpleasant outcomes in case the
+idle governor doesn't agree with the timekeeping code on the duration
+of the upcoming idle period.  Specifically, if the tick has been
+stopped and the idle governor predicts short idle, the situation is
+bad regardless of whether or not the prediction is accurate.  If it
+is accurate, the tick has been stopped unnecessarily which means
+excessive overhead.  If it is not accurate, the CPU is likely to
+spend too much time in the (shallow, because short idle has been
+predicted) idle state selected by the governor [1].
 
+As the first step towards addressing this problem, change the code
+to make the tick stopping decision inside of the loop in do_idle().
+In particular, do not stop the tick in the cpu_idle_poll() code path.
+Also don't do that in tick_nohz_irq_exit() which doesn't really have
+enough information on whether or not to stop the tick.
+
+Link: https://marc.info/?l=linux-pm&m=150116085925208&w=2 # [1]
+Link: https://tu-dresden.de/zih/forschung/ressourcen/dateien/projekte/haec/powernightmares.pdf
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpuidle/governors/menu.c |   26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
+ kernel/sched/idle.c      |    8 +++++---
+ kernel/time/tick-sched.c |    6 ++----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
+Index: linux-pm/kernel/sched/idle.c
 ===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -297,6 +297,7 @@ static int menu_select(struct cpuidle_dr
- 	unsigned long nr_iowaiters, cpu_load;
- 	int resume_latency = dev_pm_qos_raw_read_value(device);
- 	ktime_t tick_time;
-+	unsigned int tick_us;
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -221,13 +221,13 @@ static void do_idle(void)
  
- 	if (data->needs_update) {
- 		menu_update(drv, dev);
-@@ -315,6 +316,7 @@ static int menu_select(struct cpuidle_dr
+ 	__current_set_polling();
+ 	tick_nohz_idle_enter();
+-	tick_nohz_idle_stop_tick_protected();
  
- 	/* determine the expected residency time, round up */
- 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&tick_time));
-+	tick_us = ktime_to_us(tick_time);
+ 	while (!need_resched()) {
+ 		check_pgt_cache();
+ 		rmb();
  
- 	get_iowait_load(&nr_iowaiters, &cpu_load);
- 	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
-@@ -354,12 +356,24 @@ static int menu_select(struct cpuidle_dr
- 	data->predicted_us = min(data->predicted_us, expected_interval);
- 
- 	/*
--	 * Use the performance multiplier and the user-configurable
--	 * latency_req to determine the maximum exit latency.
-+	 * If the tick is already stopped, the cost of possible misprediction is
-+	 * much higher, because the CPU may be stuck in a shallow idle state for
-+	 * a long time as a result of it.  For this reason, if that happens say
-+	 * we might mispredict and try to force the CPU into a state for which
-+	 * we would have stopped the tick, unless the tick timer is going to
-+	 * expire really soon anyway.
- 	 */
--	interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
--	if (latency_req > interactivity_req)
--		latency_req = interactivity_req;
-+	if (tick_nohz_tick_stopped() && data->predicted_us < TICK_USEC_HZ) {
-+		data->predicted_us = min_t(unsigned int, TICK_USEC_HZ, tick_us);
-+	} else {
-+		/*
-+		 * Use the performance multiplier and the user-configurable
-+		 * latency_req to determine the maximum exit latency.
-+		 */
-+		interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
-+		if (latency_req > interactivity_req)
-+			latency_req = interactivity_req;
-+	}
- 
- 	/*
- 	 * Find the idle state with the lowest power while satisfying
-@@ -403,8 +417,6 @@ static int menu_select(struct cpuidle_dr
+ 		if (cpu_is_offline(cpu)) {
++			tick_nohz_idle_stop_tick_protected();
+ 			cpuhp_report_idle_dead();
+ 			arch_cpu_idle_dead();
+ 		}
+@@ -241,10 +241,12 @@ static void do_idle(void)
+ 		 * broadcast device expired for us, we don't want to go deep
+ 		 * idle as we know that the IPI is going to arrive right away.
  		 */
- 		if (first_idx > idx &&
- 		    drv->states[first_idx].target_residency < TICK_USEC_HZ) {
--			unsigned int tick_us = ktime_to_us(tick_time);
--
- 			/*
- 			 * Find a state with target residency less than the
- 			 * time to the next timer event including the tick.
+-		if (cpu_idle_force_poll || tick_check_broadcast_expired())
++		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
+ 			cpu_idle_poll();
+-		else
++		} else {
++			tick_nohz_idle_stop_tick();
+ 			cpuidle_idle_call();
++		}
+ 		arch_cpu_idle_exit();
+ 	}
+ 
+Index: linux-pm/kernel/time/tick-sched.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-sched.c
++++ linux-pm/kernel/time/tick-sched.c
+@@ -984,12 +984,10 @@ void tick_nohz_irq_exit(void)
+ {
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+ 
+-	if (ts->inidle) {
++	if (ts->inidle)
+ 		tick_nohz_start_idle(ts);
+-		__tick_nohz_idle_stop_tick(ts);
+-	} else {
++	else
+ 		tick_nohz_full_update_tick(ts);
+-	}
+ }
+ 
+ /**
