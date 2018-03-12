@@ -1,70 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
-Date: Mon, 12 Mar 2018 10:36:27 +0100
-Message-ID: <4137867.C4jYrWdt8n@aspire.rjw.lan>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: =?utf-8?B?562U5aSNOiBbUEFUQ0g=?= =?utf-8?Q?=5D?= Delete some
+ unusefull operations for centaur CPU/platform
+Date: Mon, 12 Mar 2018 10:46:09 +0100
+Message-ID: <20180312094609.46sw3ojaa7sw3mee@gmail.com>
+References: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com>
+ <efc93496e4ba46958b7b09eff54c2ce2@zhaoxin.com>
+ <20180312084033.lignixrpg4ruoxbq@gmail.com>
+ <1792259.nnz4czxE5K@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1792259.nnz4czxE5K@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: David Wang <DavidWang@zhaoxin.com>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@kernel.org" <linux-pm@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Bruce Chang (VAS)" <BruceChang@via-alliance.com>, "Cooper Yan(BJ-RD)" <CooperYan@zhaoxin.com>, "Qiyuan Wang(BJ-RD)" <QiyuanWang@zhaoxin.com>, Benjamin Pan <BenjaminPan@viatech.com>, Luke Lin <LukeLin@viacpu.com>, "Tim Guo(BJ-RD)" <TimGuo@zhaoxin.com>, "Cobe Chen(BJ-RD)" <CobeChen@zhaoxin.com>, "Jiangbo Wang(BJ-RD)" <JiangboWang@zhaoxin.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-If poll_idle() is allowed to spin until need_resched() returns 'true',
-it may actually spin for a much longer time than expected by the idle
-governor, since set_tsk_need_resched() is not always called by the
-timer interrupt handler.  If that happens, the CPU may spend much
-more time than anticipated in the "polling" state.
+* Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
-To prevent that from happening, limit the time of the spinning loop
-in poll_idle().
+> On Monday, March 12, 2018 9:40:33 AM CET Ingo Molnar wrote:
+> > 
+> > * David Wang <DavidWang@zhaoxin.com> wrote:
+> > 
+> > > [David] pr->flags.has_cst means BIOS define valid C state table.  And at lease 
+> > > define 2 entries. On all centaur platform which support C3, this condition is 
+> > > always true.
+> > 
+> > > [David] Just as the following comment said, we need not execute WBINVD and 
+> > > ARB_DISABLE/ARB_ENABLE when entering C3 if bm_check=1 and bm_control=0.  This 
+> > > logic is valid for all platform not only for Centaur, I think.
+> > 
+> > Ok, fair enough!
+> 
+> Well, I still have this one queued up as cpuidle material.
+> 
+> I can drop it if you want to take it instead.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+No need to drop it, it looks good to me!
 
--> v2: After additional testing reduce POLL_IDLE_TIME_CHECK_COUNT to 1000.
+Thanks,
 
----
- drivers/cpuidle/poll_state.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/cpuidle/poll_state.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/poll_state.c
-+++ linux-pm/drivers/cpuidle/poll_state.c
-@@ -5,16 +5,31 @@
-  */
- 
- #include <linux/cpuidle.h>
-+#include <linux/ktime.h>
- #include <linux/sched.h>
- #include <linux/sched/idle.h>
- 
-+#define POLL_IDLE_TIME_CHECK_COUNT	1000
-+#define POLL_IDLE_TIME_LIMIT		(TICK_NSEC / 16)
-+
- static int __cpuidle poll_idle(struct cpuidle_device *dev,
- 			       struct cpuidle_driver *drv, int index)
- {
-+	ktime_t start = ktime_get();
-+
- 	local_irq_enable();
- 	if (!current_set_polling_and_test()) {
--		while (!need_resched())
-+		unsigned int time_check_counter = 0;
-+
-+		while (!need_resched()) {
- 			cpu_relax();
-+			if (time_check_counter++ < POLL_IDLE_TIME_CHECK_COUNT)
-+				continue;
-+
-+			time_check_counter = 0;
-+			if (ktime_sub(ktime_get(), start) > POLL_IDLE_TIME_LIMIT)
-+				break;
-+		}
- 	}
- 	current_clr_polling();
- 
+	Ingo
