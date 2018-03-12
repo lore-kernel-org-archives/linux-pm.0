@@ -1,30 +1,68 @@
-From: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH v2 08/13] PCI/portdrv: Simplify PCIe feature permission
- checking
-Date: Mon, 12 Mar 2018 01:04:02 -0700
-Message-ID: <20180312080402.GE10358@infradead.org>
-References: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <152062203293.77693.8159909590216160503.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v2] power: supply: da9150-fg: remove VLA usage
+Date: Mon, 12 Mar 2018 08:28:09 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1D92EF@SW-EX-MBX01.diasemi.com>
+References: <20180309182708.GA18542@embeddedgus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <152062203293.77693.8159909590216160503.stgit@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: <20180309182708.GA18542@embeddedgus>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Lukas Wunner <lukas@wunner.de>, Frederick Lawler <fred@fredlawl.com>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Support Opensource <Support.Opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Kees Cook <keescook@chromium.org>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 List-Id: linux-pm@vger.kernel.org
 
-> +	 * We assume we can manage these PCIe features.  Some systems may
-> +	 * reserve these for use by the platform itself, e.g., an ACPI BIOS
-> +	 * may implement its own AER handling and use _OSC to prevent the
-> +	 * OS from interfering.
-> +	 */
-> +	bridge->use_aer = 1;
-> +	bridge->use_hotplug = 1;
-> +	bridge->use_pme = 1;
+On 09 March 2018 18:27, Gustavo A. R. Silva wrote:
 
-If we start out with enabled maybe these should be disable_foo flags
-instead?
+> In preparation to enabling -Wvla, remove VLA usage and replace it
+> with fixed-length arrays.
+> 
+> DA9150_QIF_LONG_SIZE (4 bytes) is the biggest size of an attribute which can
+> be accessed [1].
+> 
+> Fixed as part of the directive to remove all VLAs from
+> the kernel: https://lkml.org/lkml/2018/3/7/621
+> 
+> [1] https://marc.info/?l=kernel-hardening&m=152059600524753&w=2
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
-Also please use bool (or a bitfield bool) for true/false values.
+Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+
+> ---
+> Changes in v2:
+>  - Use DA9150_QIF_LONG_SIZE instead of DA9150_QIF_BYTE_SIZE as the
+>    maximum size for array 'buf'. Thanks to Adam Thomson for the
+>    feedback on this.
+>  - Update changelog based on Adam's comments.
+> 
+>  drivers/power/supply/da9150-fg.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/power/supply/da9150-fg.c b/drivers/power/supply/da9150-fg.c
+> index 8b8ce97..7ea2188 100644
+> --- a/drivers/power/supply/da9150-fg.c
+> +++ b/drivers/power/supply/da9150-fg.c
+> @@ -92,7 +92,7 @@ struct da9150_fg {
+>  static u32 da9150_fg_read_attr(struct da9150_fg *fg, u8 code, u8 size)
+> 
+>  {
+> -	u8 buf[size];
+> +	u8 buf[DA9150_QIF_LONG_SIZE];
+>  	u8 read_addr;
+>  	u32 res = 0;
+>  	int i;
+> @@ -111,7 +111,7 @@ static void da9150_fg_write_attr(struct da9150_fg *fg, u8
+> code, u8 size,
+>  				 u32 val)
+> 
+>  {
+> -	u8 buf[size];
+> +	u8 buf[DA9150_QIF_LONG_SIZE];
+>  	u8 write_addr;
+>  	int i;
+> 
+> --
+> 2.7.4
