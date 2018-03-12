@@ -1,45 +1,432 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: =?utf-8?B?562U5aSNOiBbUEFUQ0g=?= =?utf-8?Q?=5D?= Delete some
- unusefull operations for centaur CPU/platform
-Date: Mon, 12 Mar 2018 10:46:09 +0100
-Message-ID: <20180312094609.46sw3ojaa7sw3mee@gmail.com>
-References: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com>
- <efc93496e4ba46958b7b09eff54c2ce2@zhaoxin.com>
- <20180312084033.lignixrpg4ruoxbq@gmail.com>
- <1792259.nnz4czxE5K@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFT][PATCH v4 5/7] sched: idle: Select idle state before stopping the tick
+Date: Mon, 12 Mar 2018 11:04:04 +0100
+Message-ID: <3369840.SvIhSyn8JL@aspire.rjw.lan>
+References: <2352117.3UUoYAu18A@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1792259.nnz4czxE5K@aspire.rjw.lan>
+In-Reply-To: <2352117.3UUoYAu18A@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: David Wang <DavidWang@zhaoxin.com>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@kernel.org" <linux-pm@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Bruce Chang (VAS)" <BruceChang@via-alliance.com>, "Cooper Yan(BJ-RD)" <CooperYan@zhaoxin.com>, "Qiyuan Wang(BJ-RD)" <QiyuanWang@zhaoxin.com>, Benjamin Pan <BenjaminPan@viatech.com>, Luke Lin <LukeLin@viacpu.com>, "Tim Guo(BJ-RD)" <TimGuo@zhaoxin.com>, "Cobe Chen(BJ-RD)" <CobeChen@zhaoxin.com>, "Jiangbo Wang(BJ-RD)" <JiangboWang@zhaoxin.com>
+To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-* Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+In order to address the issue with short idle duration predictions
+by the idle governor after the tick has been stopped, reorder the
+code in cpuidle_idle_call() so that the governor idle state selection
+runs before tick_nohz_idle_go_idle() and use the "nohz" hint returned
+by cpuidle_select() to decide whether or not to stop the tick.
 
-> On Monday, March 12, 2018 9:40:33 AM CET Ingo Molnar wrote:
-> > 
-> > * David Wang <DavidWang@zhaoxin.com> wrote:
-> > 
-> > > [David] pr->flags.has_cst means BIOS define valid C state table.  And at lease 
-> > > define 2 entries. On all centaur platform which support C3, this condition is 
-> > > always true.
-> > 
-> > > [David] Just as the following comment said, we need not execute WBINVD and 
-> > > ARB_DISABLE/ARB_ENABLE when entering C3 if bm_check=1 and bm_control=0.  This 
-> > > logic is valid for all platform not only for Centaur, I think.
-> > 
-> > Ok, fair enough!
-> 
-> Well, I still have this one queued up as cpuidle material.
-> 
-> I can drop it if you want to take it instead.
+This isn't straightforward, because menu_select() invokes
+tick_nohz_get_sleep_length() to get the time to the next timer
+event and the number returned by the latter comes from
+__tick_nohz_idle_enter().  Fortunately, however, it is possible
+to compute that number without actually stopping the tick and with
+the help of the existing code.
 
-No need to drop it, it looks good to me!
+Namely, notice that tick_nohz_stop_sched_tick() already computes the
+next timer event time to reprogram the scheduler tick hrtimer and
+that time can be used as a proxy for the actual next timer event
+time in the idle duration predicition.  Moreover, it is possible
+to split tick_nohz_stop_sched_tick() into two separate routines,
+one computing the time to the next timer event and the other
+simply stopping the tick when the time to the next timer event
+is known.
 
-Thanks,
+Accordingly, split tick_nohz_stop_sched_tick() into
+tick_nohz_next_event() and tick_nohz_stop_tick() and use the
+former in tick_nohz_get_sleep_length().  Add two new extra fields,
+timer_expires and timer_expires_base, to struct tick_sched for
+passing data between these two new functions and to indicate that
+tick_nohz_next_event() has run and tick_nohz_stop_tick() can be
+called now.  Also drop the now redundant sleep_length field from
+there.
 
-	Ingo
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v3 -> v4:
+ * Drop the somewhat redundant tick_may_stop flag.
+ * Rename timer_expires_basemono to timer_expires_base and use it as the
+   cached state validity indicator too instead of tick_may_stop.
+ * Document the new fields in struct tick_sched.
+ * Drop double underscores from the names of two new functions.
+ * Add WARN_ON_ONCE() to tick_nohz_idle_enter/exit() to catch leaks of the
+   cached state.
+ * Add WARN_ON_ONCE() to tick_nohz_get_sleep_length() to catch invocations
+   of it outside of idle.
+
+---
+ include/linux/tick.h     |    2 
+ kernel/sched/idle.c      |   11 ++-
+ kernel/time/tick-sched.c |  156 +++++++++++++++++++++++++++++++----------------
+ kernel/time/tick-sched.h |    6 +
+ 4 files changed, 120 insertions(+), 55 deletions(-)
+
+Index: linux-pm/kernel/time/tick-sched.h
+===================================================================
+--- linux-pm.orig/kernel/time/tick-sched.h
++++ linux-pm/kernel/time/tick-sched.h
+@@ -38,7 +38,8 @@ enum tick_nohz_mode {
+  * @idle_exittime:	Time when the idle state was left
+  * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
+  * @iowait_sleeptime:	Sum of the time slept in idle with sched tick stopped, with IO outstanding
+- * @sleep_length:	Duration of the current idle sleep
++ * @timer_expires:	Anticipated timer expiration time (in case sched tick is stopped)
++ * @timer_expires_base:	Base time clock monotonic for @timer_expires
+  * @do_timer_lst:	CPU was the last one doing do_timer before going idle
+  */
+ struct tick_sched {
+@@ -58,8 +59,9 @@ struct tick_sched {
+ 	ktime_t				idle_exittime;
+ 	ktime_t				idle_sleeptime;
+ 	ktime_t				iowait_sleeptime;
+-	ktime_t				sleep_length;
+ 	unsigned long			last_jiffies;
++	u64				timer_expires;
++	u64				timer_expires_base;
+ 	u64				next_timer;
+ 	ktime_t				idle_expires;
+ 	int				do_timer_last;
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -190,13 +190,18 @@ static void cpuidle_idle_call(void)
+ 	} else {
+ 		bool nohz = true;
+ 
+-		tick_nohz_idle_stop_tick();
+-		rcu_idle_enter();
+-
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+ 		next_state = cpuidle_select(drv, dev, &nohz);
++
++		if (nohz)
++			tick_nohz_idle_stop_tick();
++		else
++			tick_nohz_idle_retain_tick();
++
++		rcu_idle_enter();
++
+ 		entered_state = call_cpuidle(drv, dev, next_state);
+ 		/*
+ 		 * Give the governor an opportunity to reflect on the outcome
+Index: linux-pm/kernel/time/tick-sched.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-sched.c
++++ linux-pm/kernel/time/tick-sched.c
+@@ -652,13 +652,10 @@ static inline bool local_timer_softirq_p
+ 	return local_softirq_pending() & TIMER_SOFTIRQ;
+ }
+ 
+-static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
+-					 ktime_t now, int cpu)
++static ktime_t tick_nohz_next_event(struct tick_sched *ts, int cpu)
+ {
+-	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+ 	u64 basemono, next_tick, next_tmr, next_rcu, delta, expires;
+ 	unsigned long seq, basejiff;
+-	ktime_t	tick;
+ 
+ 	/* Read jiffies and the time when jiffies were updated last */
+ 	do {
+@@ -667,6 +664,7 @@ static ktime_t tick_nohz_stop_sched_tick
+ 		basejiff = jiffies;
+ 	} while (read_seqretry(&jiffies_lock, seq));
+ 	ts->last_jiffies = basejiff;
++	ts->timer_expires_base = basemono;
+ 
+ 	/*
+ 	 * Keep the periodic tick, when RCU, architecture or irq_work
+@@ -711,31 +709,24 @@ static ktime_t tick_nohz_stop_sched_tick
+ 		 * next period, so no point in stopping it either, bail.
+ 		 */
+ 		if (!ts->tick_stopped) {
+-			tick = 0;
++			ts->timer_expires = 0;
+ 			goto out;
+ 		}
+ 	}
+ 
+ 	/*
+-	 * If this CPU is the one which updates jiffies, then give up
+-	 * the assignment and let it be taken by the CPU which runs
+-	 * the tick timer next, which might be this CPU as well. If we
+-	 * don't drop this here the jiffies might be stale and
+-	 * do_timer() never invoked. Keep track of the fact that it
+-	 * was the one which had the do_timer() duty last. If this CPU
+-	 * is the one which had the do_timer() duty last, we limit the
+-	 * sleep time to the timekeeping max_deferment value.
++	 * If this CPU is the one which had the do_timer() duty last, we limit
++	 * the sleep time to the timekeeping max_deferment value.
+ 	 * Otherwise we can sleep as long as we want.
+ 	 */
+ 	delta = timekeeping_max_deferment();
+-	if (cpu == tick_do_timer_cpu) {
+-		tick_do_timer_cpu = TICK_DO_TIMER_NONE;
+-		ts->do_timer_last = 1;
+-	} else if (tick_do_timer_cpu != TICK_DO_TIMER_NONE) {
+-		delta = KTIME_MAX;
+-		ts->do_timer_last = 0;
+-	} else if (!ts->do_timer_last) {
+-		delta = KTIME_MAX;
++	if (cpu != tick_do_timer_cpu) {
++		if (tick_do_timer_cpu != TICK_DO_TIMER_NONE) {
++			delta = KTIME_MAX;
++			ts->do_timer_last = 0;
++		} else if (!ts->do_timer_last) {
++			delta = KTIME_MAX;
++		}
+ 	}
+ 
+ #ifdef CONFIG_NO_HZ_FULL
+@@ -750,14 +741,40 @@ static ktime_t tick_nohz_stop_sched_tick
+ 	else
+ 		expires = KTIME_MAX;
+ 
+-	expires = min_t(u64, expires, next_tick);
+-	tick = expires;
++	ts->timer_expires = min_t(u64, expires, next_tick);
++
++out:
++	return ts->timer_expires;
++}
++
++static void tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
++{
++	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
++	u64 basemono = ts->timer_expires_base;
++	u64 expires = ts->timer_expires;
++	ktime_t tick = expires;
++
++	/* Make sure we won't be trying to stop it twice in a row. */
++	ts->timer_expires_base = 0;
++
++	/*
++	 * If this CPU is the one which updates jiffies, then give up
++	 * the assignment and let it be taken by the CPU which runs
++	 * the tick timer next, which might be this CPU as well. If we
++	 * don't drop this here the jiffies might be stale and
++	 * do_timer() never invoked. Keep track of the fact that it
++	 * was the one which had the do_timer() duty last.
++	 */
++	if (cpu == tick_do_timer_cpu) {
++		tick_do_timer_cpu = TICK_DO_TIMER_NONE;
++		ts->do_timer_last = 1;
++	}
+ 
+ 	/* Skip reprogram of event if its not changed */
+ 	if (ts->tick_stopped && (expires == ts->next_tick)) {
+ 		/* Sanity check: make sure clockevent is actually programmed */
+ 		if (tick == KTIME_MAX || ts->next_tick == hrtimer_get_expires(&ts->sched_timer))
+-			goto out;
++			return;
+ 
+ 		WARN_ON_ONCE(1);
+ 		printk_once("basemono: %llu ts->next_tick: %llu dev->next_event: %llu timer->active: %d timer->expires: %llu\n",
+@@ -791,7 +808,7 @@ static ktime_t tick_nohz_stop_sched_tick
+ 	if (unlikely(expires == KTIME_MAX)) {
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+ 			hrtimer_cancel(&ts->sched_timer);
+-		goto out;
++		return;
+ 	}
+ 
+ 	hrtimer_set_expires(&ts->sched_timer, tick);
+@@ -800,15 +817,23 @@ static ktime_t tick_nohz_stop_sched_tick
+ 		hrtimer_start_expires(&ts->sched_timer, HRTIMER_MODE_ABS_PINNED);
+ 	else
+ 		tick_program_event(tick, 1);
+-out:
+-	/*
+-	 * Update the estimated sleep length until the next timer
+-	 * (not only the tick).
+-	 */
+-	ts->sleep_length = ktime_sub(dev->next_event, now);
+-	return tick;
+ }
+ 
++static void tick_nohz_retain_tick(struct tick_sched *ts)
++{
++	ts->timer_expires_base = 0;
++}
++
++#ifdef CONFIG_NO_HZ_FULL
++static void tick_nohz_stop_sched_tick(struct tick_sched *ts, int cpu)
++{
++	if (tick_nohz_next_event(ts, cpu))
++		tick_nohz_stop_tick(ts, cpu);
++	else
++		tick_nohz_retain_tick(ts);
++}
++#endif /* CONFIG_NO_HZ_FULL */
++
+ static void tick_nohz_restart_sched_tick(struct tick_sched *ts, ktime_t now)
+ {
+ 	/* Update jiffies first */
+@@ -844,7 +869,7 @@ static void tick_nohz_full_update_tick(s
+ 		return;
+ 
+ 	if (can_stop_full_tick(cpu, ts))
+-		tick_nohz_stop_sched_tick(ts, ktime_get(), cpu);
++		tick_nohz_stop_sched_tick(ts, cpu);
+ 	else if (ts->tick_stopped)
+ 		tick_nohz_restart_sched_tick(ts, ktime_get());
+ #endif
+@@ -870,10 +895,8 @@ static bool can_stop_idle_tick(int cpu,
+ 		return false;
+ 	}
+ 
+-	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE)) {
+-		ts->sleep_length = NSEC_PER_SEC / HZ;
++	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
+ 		return false;
+-	}
+ 
+ 	if (need_resched())
+ 		return false;
+@@ -913,25 +936,33 @@ static void __tick_nohz_idle_stop_tick(s
+ 	ktime_t expires;
+ 	int cpu = smp_processor_id();
+ 
+-	if (can_stop_idle_tick(cpu, ts)) {
++	/*
++	 * If tick_nohz_get_sleep_length() ran tick_nohz_next_event(), the
++	 * tick timer expiration time is known already.
++	 */
++	if (ts->timer_expires_base)
++		expires = ts->timer_expires;
++	else if (can_stop_idle_tick(cpu, ts))
++		expires = tick_nohz_next_event(ts, cpu);
++	else
++		return;
++
++	ts->idle_calls++;
++
++	if (expires > 0LL) {
+ 		int was_stopped = ts->tick_stopped;
+ 
+-		ts->idle_calls++;
++		tick_nohz_stop_tick(ts, cpu);
+ 
+-		/*
+-		 * The idle entry time should be a sufficient approximation of
+-		 * the current time at this point.
+-		 */
+-		expires = tick_nohz_stop_sched_tick(ts, ts->idle_entrytime, cpu);
+-		if (expires > 0LL) {
+-			ts->idle_sleeps++;
+-			ts->idle_expires = expires;
+-		}
++		ts->idle_sleeps++;
++		ts->idle_expires = expires;
+ 
+ 		if (!was_stopped && ts->tick_stopped) {
+ 			ts->idle_jiffies = ts->last_jiffies;
+ 			nohz_balance_enter_idle(cpu);
+ 		}
++	} else {
++		tick_nohz_retain_tick(ts);
+ 	}
+ }
+ 
+@@ -945,6 +976,11 @@ void tick_nohz_idle_stop_tick(void)
+ 	__tick_nohz_idle_stop_tick(this_cpu_ptr(&tick_cpu_sched));
+ }
+ 
++void tick_nohz_idle_retain_tick(void)
++{
++	tick_nohz_retain_tick(this_cpu_ptr(&tick_cpu_sched));
++}
++
+ /**
+  * tick_nohz_idle_enter - prepare for entering idle on the current CPU
+  *
+@@ -957,7 +993,7 @@ void tick_nohz_idle_enter(void)
+ 	lockdep_assert_irqs_enabled();
+ 	/*
+ 	 * Update the idle state in the scheduler domain hierarchy
+-	 * when tick_nohz_stop_sched_tick() is called from the idle loop.
++	 * when tick_nohz_stop_tick() is called from the idle loop.
+ 	 * State will be updated to busy during the first busy tick after
+ 	 * exiting idle.
+ 	 */
+@@ -966,6 +1002,9 @@ void tick_nohz_idle_enter(void)
+ 	local_irq_disable();
+ 
+ 	ts = this_cpu_ptr(&tick_cpu_sched);
++
++	WARN_ON_ONCE(ts->timer_expires_base);
++
+ 	ts->inidle = 1;
+ 	tick_nohz_start_idle(ts);
+ 
+@@ -991,15 +1030,31 @@ void tick_nohz_irq_exit(void)
+ }
+ 
+ /**
+- * tick_nohz_get_sleep_length - return the length of the current sleep
++ * tick_nohz_get_sleep_length - return the expected length of the current sleep
+  *
+  * Called from power state control code with interrupts disabled
+  */
+ ktime_t tick_nohz_get_sleep_length(void)
+ {
++	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
++	int cpu = smp_processor_id();
++	/*
++	 * The idle entry time is expected to be a sufficient approximation of
++	 * the current time at this point.
++	 */
++	ktime_t now = ts->idle_entrytime;
++
++	WARN_ON_ONCE(!ts->inidle);
++
++	if (can_stop_idle_tick(cpu, ts)) {
++		ktime_t next_event = tick_nohz_next_event(ts, cpu);
++
++		if (next_event)
++			return ktime_sub(next_event, now);
++	}
+ 
+-	return ts->sleep_length;
++	return ktime_sub(dev->next_event, now);
+ }
+ 
+ /**
+@@ -1063,6 +1118,7 @@ void tick_nohz_idle_exit(void)
+ 	local_irq_disable();
+ 
+ 	WARN_ON_ONCE(!ts->inidle);
++	WARN_ON_ONCE(ts->timer_expires_base);
+ 
+ 	ts->inidle = 0;
+ 
+Index: linux-pm/include/linux/tick.h
+===================================================================
+--- linux-pm.orig/include/linux/tick.h
++++ linux-pm/include/linux/tick.h
+@@ -115,6 +115,7 @@ enum tick_dep_bits {
+ extern bool tick_nohz_enabled;
+ extern int tick_nohz_tick_stopped(void);
+ extern void tick_nohz_idle_stop_tick(void);
++extern void tick_nohz_idle_retain_tick(void);
+ extern void tick_nohz_idle_enter(void);
+ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
+@@ -127,6 +128,7 @@ extern u64 get_cpu_iowait_time_us(int cp
+ #define tick_nohz_enabled (0)
+ static inline int tick_nohz_tick_stopped(void) { return 0; }
+ static inline void tick_nohz_idle_stop_tick(void) { }
++static inline void tick_nohz_idle_retain_tick(void) { }
+ static inline void tick_nohz_idle_enter(void) { }
+ static inline void tick_nohz_idle_exit(void) { }
+ 
