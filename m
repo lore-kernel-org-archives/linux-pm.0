@@ -1,40 +1,82 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
-Date: Tue, 13 Mar 2018 18:39:47 +0200
-Message-ID: <CAHp75VeNco97BovnVTcd=RH9zsK_gO=jmPALytP-sTFjK5Cq0Q@mail.gmail.com>
-References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] ACPI / PM: Reduce LPI constraints logging noise
+Date: Tue, 13 Mar 2018 10:47:17 -0700
+Message-ID: <1520963237.15766.216.camel@linux.intel.com>
+References: <2232544.VHtLQCEKNu@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
+In-Reply-To: <2232544.VHtLQCEKNu@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 5, 2018 at 10:47 AM, Ganesh Mahendran
-<opensource.ganesh@gmail.com> wrote:
-> single_open() interface requires that the whole output must
-> fit into a single buffer. This will lead to timeout when
-> system memory is not in a good situation.
->
-> This patch use seq_open() to show wakeup stats. This method
-> need only one page, so timeout will not be observed.
+On Tue, 2018-03-13 at 10:47 +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> If a device referred to by ACPI LPI constrains (coming from function
+> 1
+> of the Low Power S0 Idle _DSM interface) is not power-manageable via
+> ACPI (no _PS0 method and no power resources), the code generating
+> diagnostic information for the LPI constraints will print a message
+> about that to the kernel log on every system suspend-resume cycle
+> (possibly for multiple times).
+> 
+> That is not very useful and noisy, so modify that code to disregard
+> the LPI list entries corresponding to the devices that are not power-
+> manageable after printing that information for them once.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-> +       if (n == 0) {
-> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
-> +                       "last_change\tprevent_suspend_time\n");
-> +       }
-
-Can't you do this once at ->open() stage, for example?
-
->  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->  {
-> -       return single_open(file, wakeup_sources_stats_show, NULL);
-> +       return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
->  }
-
--- 
-With Best Regards,
-Andy Shevchenko
+> ---
+>  drivers/acpi/sleep.c |   15 +++++++++------
+>  1 file changed, 9 insertions(+), 6 deletions(-)
+> 
+> Index: linux-pm/drivers/acpi/sleep.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/sleep.c
+> +++ linux-pm/drivers/acpi/sleep.c
+> @@ -851,23 +852,25 @@ static void lpi_check_constraints(void)
+>  	int i;
+>  
+>  	for (i = 0; i < lpi_constraints_table_size; ++i) {
+> +		acpi_handle handle =
+> lpi_constraints_table[i].handle;
+>  		struct acpi_device *adev;
+>  
+> -		if
+> (acpi_bus_get_device(lpi_constraints_table[i].handle, &adev))
+> +		if (!handle || acpi_bus_get_device(handle, &adev))
+>  			continue;
+>  
+> -		acpi_handle_debug(adev->handle,
+> +		acpi_handle_debug(handle,
+>  			"LPI: required min power state:%s current
+> power state:%s\n",
+>  			acpi_power_state_string(lpi_constraints_tabl
+> e[i].min_dstate),
+>  			acpi_power_state_string(adev->power.state));
+>  
+>  		if (!adev->flags.power_manageable) {
+> -			acpi_handle_info(adev->handle, "LPI: Device
+> not power manageble\n");
+> +			acpi_handle_info(handle, "LPI: Device not
+> power manageable\n");
+> +			lpi_constraints_table[i].handle = NULL;
+>  			continue;
+>  		}
+>  
+>  		if (adev->power.state <
+> lpi_constraints_table[i].min_dstate)
+> -			acpi_handle_info(adev->handle,
+> +			acpi_handle_info(handle,
+>  				"LPI: Constraint not met; min power
+> state:%s current power state:%s\n",
+>  				acpi_power_state_string(lpi_constrai
+> nts_table[i].min_dstate),
+>  				acpi_power_state_string(adev-
+> >power.state));
+> 
