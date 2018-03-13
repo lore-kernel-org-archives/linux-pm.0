@@ -1,46 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Tue, 13 Mar 2018 16:45:06 +0530
-Message-ID: <20180313111506.GC15832@vireshk-i7>
-References: <1520937340-2755-1-git-send-email-claudio@evidence.eu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 1/2] cpufreq: scpi: add thermal dependency
+Date: Tue, 13 Mar 2018 12:45:40 +0100
+Message-ID: <20180313114607.2061209-1-arnd@arndb.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1520937340-2755-1-git-send-email-claudio@evidence.eu.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudio Scordino <claudio@evidence.eu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13-03-18, 11:35, Claudio Scordino wrote:
-> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
-> we should not wait for the rate limit, otherwise we may miss some
-> deadline.
-> 
-> Tests using rt-app on Exynos5422 with up to 10 SCHED_DEADLINE tasks have
-> shown reductions of even 10% of deadline misses with a negligible
-> increase of energy consumption (measured through Baylibre Cape).
-> 
-> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> CC: Viresh Kumar <viresh.kumar@linaro.org>
-> CC: Patrick Bellasi <patrick.bellasi@arm.com>
-> CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> CC: Morten Rasmussen <morten.rasmussen@arm.com>
-> CC: Juri Lelli <juri.lelli@redhat.com>
-> CC: Vincent Guittot <vincent.guittot@linaro.org>
-> CC: Todd Kjos <tkjos@android.com>
-> CC: Joel Fernandes <joelaf@google.com>
-> CC: linux-pm@vger.kernel.org
-> CC: linux-kernel@vger.kernel.org
-> ---
-> Changes from v3:
->  - Specific routine renamed as ignore_dl_rate_limit()
+A built-in scpi cpufreq driver cannot link against a modular
+thermal framework:
 
-LGTM. Thanks.
+drivers/cpufreq/scpi-cpufreq.o: In function `scpi_cpufreq_ready':
+scpi-cpufreq.c:(.text+0x4c): undefined reference to `of_cpufreq_cooling_register'
+drivers/cpufreq/scpi-cpufreq.o: In function `scpi_cpufreq_exit':
+scpi-cpufreq.c:(.text+0x9c): undefined reference to `cpufreq_cooling_unregister'
 
+This adds a Kconfig dependency that makes sure this configuration
+is not possible, while allowing all configurations that can work.
+Note that disabling CPU_THERMAL means we don't care about the
+THERMAL dependency.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/cpufreq/Kconfig.arm | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 9bbb5b39d18a..d9457d1e535c 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -45,6 +45,7 @@ config ARM_DT_BL_CPUFREQ
+ config ARM_SCPI_CPUFREQ
+ 	tristate "SCPI based CPUfreq driver"
+ 	depends on ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
++	depends on !CPU_THERMAL || THERMAL
+ 	help
+ 	  This adds the CPUfreq driver support for ARM platforms using SCPI
+ 	  protocol for CPU power management.
 -- 
-viresh
+2.9.0
