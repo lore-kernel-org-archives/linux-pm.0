@@ -1,37 +1,114 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFT][PATCH v4 1/7] time: tick-sched: Reorganize idle tick
- management code
-Date: Wed, 14 Mar 2018 18:20:16 +0100
-Message-ID: <20180314172016.GO4064@hirez.programming.kicks-ass.net>
-References: <2352117.3UUoYAu18A@aspire.rjw.lan>
- <2019498.YXfJVQUTuX@aspire.rjw.lan>
- <20180314154934.GA3635@lerouge>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v6 15/25] drivers: firmware: psci: Simplify error path of
+ psci_dt_init()
+Date: Wed, 14 Mar 2018 17:25:58 +0000
+Message-ID: <20180314172558.akbzw6c7cwnah3sb@lakrids.cambridge.arm.com>
+References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
+ <1521046715-30683-16-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180314154934.GA3635@lerouge>
+In-Reply-To: <1521046715-30683-16-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Frederic Weisbecker <frederic@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 14, 2018 at 04:49:39PM +0100, Frederic Weisbecker wrote:
-> On Mon, Mar 12, 2018 at 10:47:41AM +0100, Rafael J. Wysocki wrote:
-
-> > @@ -136,6 +138,13 @@ static inline u64 get_cpu_idle_time_us(i
-> >  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
-> >  #endif /* !CONFIG_NO_HZ_COMMON */
-> >  
-> > +static inline void tick_nohz_idle_stop_tick_protected(void)
-> > +{
-> > +	local_irq_disable();
-> > +	tick_nohz_idle_stop_tick();
-> > +	local_irq_enable();
-> > +}
+On Wed, Mar 14, 2018 at 05:58:25PM +0100, Ulf Hansson wrote:
+> Instead of having each psci init function taking care of the of_node_put(),
+> let's deal with that from psci_dt_init(), as this enables a bit simpler
+> error path for each psci init function.
 > 
-> It seems that even if we have CONFIG_NO_HZ_COMMON=n,
-> tick_nohz_idle_stop_tick_protected() will have overhead, right?
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-IIRC the only callsite of the _protected thing that remains at the end
-is in the hotplug path. So who cares ;-)
+Nice cleanup!
+
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+
+Mark.
+
+> ---
+>  drivers/firmware/psci.c | 23 ++++++++++-------------
+>  1 file changed, 10 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+> index 256b4ed..3888100 100644
+> --- a/drivers/firmware/psci.c
+> +++ b/drivers/firmware/psci.c
+> @@ -608,9 +608,9 @@ static int __init psci_0_2_init(struct device_node *np)
+>  	int err;
+>  
+>  	err = get_set_conduit_method(np);
+> -
+>  	if (err)
+> -		goto out_put_node;
+> +		return err;
+> +
+>  	/*
+>  	 * Starting with v0.2, the PSCI specification introduced a call
+>  	 * (PSCI_VERSION) that allows probing the firmware version, so
+> @@ -618,11 +618,7 @@ static int __init psci_0_2_init(struct device_node *np)
+>  	 * can be carried out according to the specific version reported
+>  	 * by firmware
+>  	 */
+> -	err = psci_probe();
+> -
+> -out_put_node:
+> -	of_node_put(np);
+> -	return err;
+> +	return psci_probe();
+>  }
+>  
+>  /*
+> @@ -634,9 +630,8 @@ static int __init psci_0_1_init(struct device_node *np)
+>  	int err;
+>  
+>  	err = get_set_conduit_method(np);
+> -
+>  	if (err)
+> -		goto out_put_node;
+> +		return err;
+>  
+>  	pr_info("Using PSCI v0.1 Function IDs from DT\n");
+>  
+> @@ -660,9 +655,7 @@ static int __init psci_0_1_init(struct device_node *np)
+>  		psci_ops.migrate = psci_migrate;
+>  	}
+>  
+> -out_put_node:
+> -	of_node_put(np);
+> -	return err;
+> +	return 0;
+>  }
+>  
+>  static const struct of_device_id psci_of_match[] __initconst = {
+> @@ -677,6 +670,7 @@ int __init psci_dt_init(void)
+>  	struct device_node *np;
+>  	const struct of_device_id *matched_np;
+>  	psci_initcall_t init_fn;
+> +	int ret;
+>  
+>  	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
+>  
+> @@ -684,7 +678,10 @@ int __init psci_dt_init(void)
+>  		return -ENODEV;
+>  
+>  	init_fn = (psci_initcall_t)matched_np->data;
+> -	return init_fn(np);
+> +	ret = init_fn(np);
+> +
+> +	of_node_put(np);
+> +	return ret;
+>  }
+>  
+>  #ifdef CONFIG_ACPI
+> -- 
+> 2.7.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
