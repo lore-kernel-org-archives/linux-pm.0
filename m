@@ -1,52 +1,80 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Wed, 14 Mar 2018 12:20:38 +0100
-Message-ID: <2122625.mgU2W7rFO1@aspire.rjw.lan>
-References: <1520937340-2755-1-git-send-email-claudio@evidence.eu.com> <20180313111506.GC15832@vireshk-i7> <CAJWu+orsBLQdjGJZKOnLP15M-aKboiDPVTQ2W+8tiHpgNLexMg@mail.gmail.com>
+Subject: Re: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Wed, 14 Mar 2018 12:24:32 +0100
+Message-ID: <12084659.o4ihbg2AZp@aspire.rjw.lan>
+References: <4137867.C4jYrWdt8n@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJWu+orsBLQdjGJZKOnLP15M-aKboiDPVTQ2W+8tiHpgNLexMg@mail.gmail.com>
+In-Reply-To: <4137867.C4jYrWdt8n@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 14, 2018 2:27:53 AM CET Joel Fernandes wrote:
-> On Tue, Mar 13, 2018 at 4:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 13-03-18, 11:35, Claudio Scordino wrote:
-> >> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
-> >> we should not wait for the rate limit, otherwise we may miss some
-> >> deadline.
-> >>
-> >> Tests using rt-app on Exynos5422 with up to 10 SCHED_DEADLINE tasks have
-> >> shown reductions of even 10% of deadline misses with a negligible
-> >> increase of energy consumption (measured through Baylibre Cape).
-> >>
-> >> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> CC: Viresh Kumar <viresh.kumar@linaro.org>
-> >> CC: Patrick Bellasi <patrick.bellasi@arm.com>
-> >> CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> >> CC: Morten Rasmussen <morten.rasmussen@arm.com>
-> >> CC: Juri Lelli <juri.lelli@redhat.com>
-> >> CC: Vincent Guittot <vincent.guittot@linaro.org>
-> >> CC: Todd Kjos <tkjos@android.com>
-> >> CC: Joel Fernandes <joelaf@google.com>
-> >> CC: linux-pm@vger.kernel.org
-> >> CC: linux-kernel@vger.kernel.org
-> >> ---
-> >> Changes from v3:
-> >>  - Specific routine renamed as ignore_dl_rate_limit()
-> >
-> > LGTM. Thanks.
+On Monday, March 12, 2018 10:36:27 AM CET Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Nice! Thanks.
+> If poll_idle() is allowed to spin until need_resched() returns 'true',
+> it may actually spin for a much longer time than expected by the idle
+> governor, since set_tsk_need_resched() is not always called by the
+> timer interrupt handler.  If that happens, the CPU may spend much
+> more time than anticipated in the "polling" state.
+> 
+> To prevent that from happening, limit the time of the spinning loop
+> in poll_idle().
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> -> v2: After additional testing reduce POLL_IDLE_TIME_CHECK_COUNT to 1000.
+> 
+> ---
+>  drivers/cpuidle/poll_state.c |   17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/cpuidle/poll_state.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/poll_state.c
+> +++ linux-pm/drivers/cpuidle/poll_state.c
+> @@ -5,16 +5,31 @@
+>   */
+>  
+>  #include <linux/cpuidle.h>
+> +#include <linux/ktime.h>
+>  #include <linux/sched.h>
+>  #include <linux/sched/idle.h>
+>  
+> +#define POLL_IDLE_TIME_CHECK_COUNT	1000
+> +#define POLL_IDLE_TIME_LIMIT		(TICK_NSEC / 16)
+> +
+>  static int __cpuidle poll_idle(struct cpuidle_device *dev,
+>  			       struct cpuidle_driver *drv, int index)
+>  {
+> +	ktime_t start = ktime_get();
+> +
+>  	local_irq_enable();
+>  	if (!current_set_polling_and_test()) {
+> -		while (!need_resched())
+> +		unsigned int time_check_counter = 0;
+> +
+> +		while (!need_resched()) {
+>  			cpu_relax();
+> +			if (time_check_counter++ < POLL_IDLE_TIME_CHECK_COUNT)
+> +				continue;
+> +
+> +			time_check_counter = 0;
+> +			if (ktime_sub(ktime_get(), start) > POLL_IDLE_TIME_LIMIT)
+> +				break;
+> +		}
+>  	}
+>  	current_clr_polling();
+>  
 
-OK, the patch doesn't seem to depend on anything in -tip, so I'm going to
-apply it.
+No comments, so I'm assuming no objections or concerns.
+
+I've seen reports telling me that this patch alone may reduce the CPU package
+power by as much as 30% sometimes.
 
 Thanks!
