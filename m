@@ -1,47 +1,50 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH v4] cpufreq: schedutil: rate limits for SCHED_DEADLINE
-Date: Tue, 13 Mar 2018 18:27:53 -0700
-Message-ID: <CAJWu+orsBLQdjGJZKOnLP15M-aKboiDPVTQ2W+8tiHpgNLexMg@mail.gmail.com>
-References: <1520937340-2755-1-git-send-email-claudio@evidence.eu.com> <20180313111506.GC15832@vireshk-i7>
+From: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
+Date: Wed, 14 Mar 2018 09:33:33 +0800
+Message-ID: <CADAEsF__v8b01DAC9d8B93oJk3GiqEyfieSgM6kj9CfetXMqaQ@mail.gmail.com>
+References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com> <CAHp75VeNco97BovnVTcd=RH9zsK_gO=jmPALytP-sTFjK5Cq0Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180313111506.GC15832@vireshk-i7>
+In-Reply-To: <CAHp75VeNco97BovnVTcd=RH9zsK_gO=jmPALytP-sTFjK5Cq0Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Claudio Scordino <claudio@evidence.eu.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@android.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 13, 2018 at 4:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 13-03-18, 11:35, Claudio Scordino wrote:
->> When the SCHED_DEADLINE scheduling class increases the CPU utilization,
->> we should not wait for the rate limit, otherwise we may miss some
->> deadline.
+Hi, Andy
+
+2018-03-14 0:39 GMT+08:00 Andy Shevchenko <andy.shevchenko@gmail.com>:
+> On Mon, Mar 5, 2018 at 10:47 AM, Ganesh Mahendran
+> <opensource.ganesh@gmail.com> wrote:
+>> single_open() interface requires that the whole output must
+>> fit into a single buffer. This will lead to timeout when
+>> system memory is not in a good situation.
 >>
->> Tests using rt-app on Exynos5422 with up to 10 SCHED_DEADLINE tasks have
->> shown reductions of even 10% of deadline misses with a negligible
->> increase of energy consumption (measured through Baylibre Cape).
->>
->> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> CC: Viresh Kumar <viresh.kumar@linaro.org>
->> CC: Patrick Bellasi <patrick.bellasi@arm.com>
->> CC: Dietmar Eggemann <dietmar.eggemann@arm.com>
->> CC: Morten Rasmussen <morten.rasmussen@arm.com>
->> CC: Juri Lelli <juri.lelli@redhat.com>
->> CC: Vincent Guittot <vincent.guittot@linaro.org>
->> CC: Todd Kjos <tkjos@android.com>
->> CC: Joel Fernandes <joelaf@google.com>
->> CC: linux-pm@vger.kernel.org
->> CC: linux-kernel@vger.kernel.org
->> ---
->> Changes from v3:
->>  - Specific routine renamed as ignore_dl_rate_limit()
+>> This patch use seq_open() to show wakeup stats. This method
+>> need only one page, so timeout will not be observed.
 >
-> LGTM. Thanks.
+>> +       if (n == 0) {
+>> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+>> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
+>> +                       "last_change\tprevent_suspend_time\n");
+>> +       }
+>
+> Can't you do this once at ->open() stage, for example?
 
-Nice! Thanks.
+We can not put this at ->open(). Because in seq_open(), the buffer is
+not ready,
+the seq buffer is allocated in seq_read().
 
-- Joel
+Thanks.
+
+>
+>>  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+>>  {
+>> -       return single_open(file, wakeup_sources_stats_show, NULL);
+>> +       return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
+>>  }
+>
+> --
+> With Best Regards,
+> Andy Shevchenko
