@@ -1,191 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM: cpuidle/suspend: Add s2idle usage and time state attributes
-Date: Wed, 14 Mar 2018 12:27:21 +0100
-Message-ID: <56347346.ABr7PmucuU@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 1/2] PM / wakeup: Add callback for wake-up change notification
+Date: Wed, 14 Mar 2018 12:26:24 +0100
+Message-ID: <1521026785-26456-2-git-send-email-geert+renesas@glider.be>
+References: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Add a callback to inform a device that his wake-up setting has been
+changed.  This allows a device to synchronize device configuration with
+an external user action.
 
-Add a new attribute group called "s2idle" under the sysfs directory
-of each cpuidle state that supports the ->enter_s2idle callback
-and put two new attributes, "usage" and "time", into that group to
-represent the number of times the given state was requested for
-suspend-to-idle and the total time spent in suspend-to-idle after
-requesting that state, respectively.
+E.g. on systems using a Rohm BD9571MWV PMIC and a toggle accessory power
+switch, the system suspend procedure is:
+  1. Configure PMIC for DDR backup mode, which changes the role of the
+     accessory power switch from a power to a wake-up switch,
+  2. Switch accessory power switch off, to prepare for system suspend,
+  3. Suspend system.
 
-That will allow diagnostic information related to suspend-to-idle
-to be collected without enabling advanced debug features and
-analyzing dmesg output.
+Hence step 1 cannot be done in the PMIC's suspend callback, but it can
+be done in the new callback, in response to the user writing "enabled"
+to the PMIC's wakeup virtual file in sysfs.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu |   25 +++++++++
- drivers/cpuidle/cpuidle.c                          |    9 +++
- drivers/cpuidle/sysfs.c                            |   54 +++++++++++++++++++++
- include/linux/cpuidle.h                            |    4 +
- 4 files changed, 92 insertions(+)
+Is there a better way to handle this?
+---
+ drivers/base/power/wakeup.c | 4 ++++
+ include/linux/pm.h          | 1 +
+ 2 files changed, 5 insertions(+)
 
-Index: linux-pm/drivers/cpuidle/sysfs.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/sysfs.c
-+++ linux-pm/drivers/cpuidle/sysfs.c
-@@ -330,6 +330,58 @@ struct cpuidle_state_kobj {
- 	struct kobject kobj;
- };
- 
-+#ifdef CONFIG_SUSPEND
-+#define define_show_state_s2idle_ull_function(_name) \
-+static ssize_t show_state_s2idle_##_name(struct cpuidle_state *state, \
-+					 struct cpuidle_state_usage *state_usage, \
-+					 char *buf)				\
-+{ \
-+	return sprintf(buf, "%llu\n", state_usage->s2idle_##_name);\
-+}
-+
-+define_show_state_s2idle_ull_function(usage);
-+define_show_state_s2idle_ull_function(time);
-+
-+#define define_one_state_s2idle_ro(_name, show) \
-+static struct cpuidle_state_attr attr_s2idle_##_name = \
-+	__ATTR(_name, 0444, show, NULL)
-+
-+define_one_state_s2idle_ro(usage, show_state_s2idle_usage);
-+define_one_state_s2idle_ro(time, show_state_s2idle_time);
-+
-+static struct attribute *cpuidle_state_s2idle_attrs[] = {
-+	&attr_s2idle_usage.attr,
-+	&attr_s2idle_time.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group cpuidle_state_s2idle_group = {
-+	.name	= "s2idle",
-+	.attrs	= cpuidle_state_s2idle_attrs,
-+};
-+
-+static void cpuidle_add_s2idle_attr_group(struct cpuidle_state_kobj *kobj)
-+{
-+	int ret;
-+
-+	if (!kobj->state->enter_s2idle)
-+		return;
-+
-+	ret = sysfs_create_group(&kobj->kobj, &cpuidle_state_s2idle_group);
-+	if (ret)
-+		pr_debug("%s: sysfs attribute group not created\n", __func__);
-+}
-+
-+static void cpuidle_remove_s2idle_attr_group(struct cpuidle_state_kobj *kobj)
-+{
-+	if (kobj->state->enter_s2idle)
-+		sysfs_remove_group(&kobj->kobj, &cpuidle_state_s2idle_group);
-+}
-+#else
-+static inline void cpuidle_add_s2idle_attr_group(struct cpuidle_state_kobj *kobj) { }
-+static inline void cpuidle_remove_s2idle_attr_group(struct cpuidle_state_kobj *kobj) { }
-+#endif /* CONFIG_SUSPEND */
-+
- #define kobj_to_state_obj(k) container_of(k, struct cpuidle_state_kobj, kobj)
- #define kobj_to_state(k) (kobj_to_state_obj(k)->state)
- #define kobj_to_state_usage(k) (kobj_to_state_obj(k)->state_usage)
-@@ -383,6 +435,7 @@ static struct kobj_type ktype_state_cpui
- 
- static inline void cpuidle_free_state_kobj(struct cpuidle_device *device, int i)
- {
-+	cpuidle_remove_s2idle_attr_group(device->kobjs[i]);
- 	kobject_put(&device->kobjs[i]->kobj);
- 	wait_for_completion(&device->kobjs[i]->kobj_unregister);
- 	kfree(device->kobjs[i]);
-@@ -417,6 +470,7 @@ static int cpuidle_add_state_sysfs(struc
- 			kfree(kobj);
- 			goto error_state;
- 		}
-+		cpuidle_add_s2idle_attr_group(kobj);
- 		kobject_uevent(&kobj->kobj, KOBJ_ADD);
- 		device->kobjs[i] = kobj;
- 	}
-Index: linux-pm/include/linux/cpuidle.h
-===================================================================
---- linux-pm.orig/include/linux/cpuidle.h
-+++ linux-pm/include/linux/cpuidle.h
-@@ -33,6 +33,10 @@ struct cpuidle_state_usage {
- 	unsigned long long	disable;
- 	unsigned long long	usage;
- 	unsigned long long	time; /* in US */
-+#ifdef CONFIG_SUSPEND
-+	unsigned long long	s2idle_usage;
-+	unsigned long long	s2idle_time; /* in US */
-+#endif
- };
- 
- struct cpuidle_state {
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -131,6 +131,10 @@ int cpuidle_find_deepest_state(struct cp
- static void enter_s2idle_proper(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev, int index)
- {
-+	ktime_t time_start, time_end;
-+
-+	time_start = ns_to_ktime(local_clock());
-+
- 	/*
- 	 * trace_suspend_resume() called by tick_freeze() for the last CPU
- 	 * executing it contains RCU usage regarded as invalid in the idle
-@@ -152,6 +156,11 @@ static void enter_s2idle_proper(struct c
- 	 */
- 	RCU_NONIDLE(tick_unfreeze());
- 	start_critical_timings();
-+
-+	time_end = ns_to_ktime(local_clock());
-+
-+	dev->states_usage[index].s2idle_time += ktime_us_delta(time_end, time_start);
-+	dev->states_usage[index].s2idle_usage++;
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index ea01621ed769ab26..40bda13d4dcd36f3 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -256,6 +256,8 @@ static int device_wakeup_attach(struct device *dev, struct wakeup_source *ws)
+ 	if (dev->power.wakeirq)
+ 		device_wakeup_attach_irq(dev, dev->power.wakeirq);
+ 	spin_unlock_irq(&dev->power.lock);
++	if (dev->power.wakeup_change_notify)
++		dev->power.wakeup_change_notify(dev, true);
+ 	return 0;
  }
  
- /**
-Index: linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
-===================================================================
---- linux-pm.orig/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -198,6 +198,31 @@ Description:
- 		time (in microseconds) this cpu should spend in this idle state
- 		to make the transition worth the effort.
+@@ -373,6 +375,8 @@ static struct wakeup_source *device_wakeup_detach(struct device *dev)
+ {
+ 	struct wakeup_source *ws;
  
-+What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/s2idle/
-+Date:		March 2018
-+KernelVersion:	v4.17
-+Contact:	Linux power management list <linux-pm@vger.kernel.org>
-+Description:
-+		Idle state usage statistics related to suspend-to-idle.
-+
-+		This attribute group is only present for states that can be
-+		used in suspend-to-idle with suspended timekeeping.
-+
-+What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/s2idle/time
-+Date:		March 2018
-+KernelVersion:	v4.17
-+Contact:	Linux power management list <linux-pm@vger.kernel.org>
-+Description:
-+		Total time spent by the CPU in suspend-to-idle (with scheduler
-+		tick suspended) after requesting this state.
-+
-+What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/s2idle/usage
-+Date:		March 2018
-+KernelVersion:	v4.17
-+Contact:	Linux power management list <linux-pm@vger.kernel.org>
-+Description:
-+		Total number of times this state has been requested by the CPU
-+		while entering suspend-to-idle.
- 
- What:		/sys/devices/system/cpu/cpu#/cpufreq/*
- Date:		pre-git history
++	if (dev->power.wakeup_change_notify)
++		dev->power.wakeup_change_notify(dev, false);
+ 	spin_lock_irq(&dev->power.lock);
+ 	ws = dev->power.wakeup;
+ 	dev->power.wakeup = NULL;
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index e723b78d835706f2..3dec274bffffc6f8 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -599,6 +599,7 @@ struct dev_pm_info {
+ 	struct list_head	entry;
+ 	struct completion	completion;
+ 	struct wakeup_source	*wakeup;
++	void (*wakeup_change_notify)(struct device *dev, bool enable);
+ 	bool			wakeup_path:1;
+ 	bool			syscore:1;
+ 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
+-- 
+2.7.4
