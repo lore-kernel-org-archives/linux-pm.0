@@ -1,43 +1,106 @@
-From: Paul Menzel <pmenzel+linux-pm@molgen.mpg.de>
-Subject: Re: int3403_driver_init needs over 330 ms to finish
-Date: Wed, 14 Mar 2018 09:19:38 +0100
-Message-ID: <6ce0b246-b2ba-c251-3506-df3e3b71da84@molgen.mpg.de>
-References: <b6cf267e-3042-1226-cb06-1b7fc26ed122@molgen.mpg.de>
- <1521012744.2087.13.camel@intel.com>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Wed, 14 Mar 2018 10:22:30 +0000
+Message-ID: <6a5b5723-85bb-e46f-f621-eab17a01f1f0@arm.com>
+References: <20180301054820.42847-1-dbasehore@chromium.org>
+ <20180301054820.42847-2-dbasehore@chromium.org>
+ <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
+ <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com>
+ <CAGAzgsqLgujex--HCo3dRGvOPXG0zu-RwkbuGhgNhBTc3sURJA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521012744.2087.13.camel@intel.com>
-Content-Language: en-US
+In-Reply-To: <CAGAzgsqLgujex--HCo3dRGvOPXG0zu-RwkbuGhgNhBTc3sURJA@mail.gmail.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Rui,
-
-
-On 03/14/2018 08:32 AM, Zhang Rui wrote:
-> On 二, 2018-03-13 at 20:39 +0100, Paul Menzel wrote:
-
->> Booting the Dell XPS 13 9370 with Linux 4.16-rc4+ and
->> `initcall_debug`,
->> shows it is shown that int3403_driver_init needs over 330 ms to run.
+On 02/03/18 02:08, dbasehore . wrote:
+> On Thu, Mar 1, 2018 at 4:29 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+>> Hi Mark,
 >>
->>       [    2.524839] initcall int3403_driver_init+0x0/0x1000
->> [int3403_thermal] returned 0 after 333972 usecs
+>> On 01/03/18 11:41, Mark Rutland wrote:
+>>> On Wed, Feb 28, 2018 at 09:48:18PM -0800, Derek Basehore wrote:
+>>>> Some platforms power off GIC logic in suspend, so we need to
+>>>> save/restore state. The distributor and redistributor registers need
+>>>> to be handled in platform code due to access permissions on those
+>>>> registers, but the ITS registers can be restored in the kernel.
+>>>>
+>>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+>>>
+>>> How much state do we have to save/restore?
+>>>
+>>> Given we can apparently read all this state, couldn't we *always* save
+>>> the state, then upon resume detect if the state has been lost, restoring
+>>> it if so?
+>>>
+>>> That way, we don't need a property in FW tables for DT or ACPI.
 >>
-> I guess most of the time are spent in evaluating ACPI ASL code.
-> But anyway, please create a bugzilla report and attach both dmesg and
-> acpidump there.
+>> That's a good point. I guess that we could just compare the saved
+>> GITS_CTLR register and restore the full state only if the ITS comes back
+>> as disabled.
+>>
+>> I'm just a bit worried that it makes it an implicit convention between
+>> kernel an FW, which could change in funny ways. Importantly, the PSCI
+>> spec says states FW should restore *the whole state*. Obviously, it
+>> cannot to that on HW that doesn't allow you to read out the state, hence
+>> the DT flag that outlines the departure from the expected behaviour.
+>>
+>> I'm happy to go either way, but then I have the feeling that we should
+>> go back to quirking it on the actual implementation (GIC500 in this
+>> case) if we're to from the property.
+>>
+>>>
+>>> [...]
+>>>
+>>>> @@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
+>>>>              ctlr |= GITS_CTLR_ImDe;
+>>>>      writel_relaxed(ctlr, its->base + GITS_CTLR);
+>>>>
+>>>> +    if (fwnode_property_present(handle, "reset-on-suspend"))
+>>>> +            its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+>>>
+>>> Does this allow this property on an ACPI system?
+>>>
+>>> If we need this on ACPI, we need a spec update to handle this properly,
+>>> and shouldn't use device properties like this.
+>>
+>> Well spotted. I guess that dropping the property would fix that
+>> altogether, assuming we feel that the above is safe enough.
+>>
+>> Thoughts?
+> 
+> I'm fine changing it to get rid of the devicetree property.
+> 
+> What's the reason for quirking the behavior though? It's not that much
+> code + data and nothing else relies on the state of the ITS getting
+> disabled across suspend/resume. Even if something did, we'd have to
+> resolve it with this feature anyways.
 
-I created bug report #199113 [1], and attached the requested files.
+The reason we do this is to cope with GIC500 having the collection state
+in registers instead of memory. If we didn't have this extraordinary
+misfeature, FW could do a full save/restore of the ITS, and we wouldn't
+have to do anything (which is what the driver currently expects).
 
+A middle ground approach is to limit the feature to systems where
+GITS_TYPER.HCC is non-zero instead of limiting it to GIC500. Pretty easy
+to fix. This should have the same effect, as GIC500 is the only
+implementation I'm aware of with HCC!=0.
 
-Kind regards,
+Given that we're already at -rc5 and that I'd like to queue things for
+4.17, I've made this change myself and queued patches 1 and 3 here[1].
 
-Paul
+Can you please have a look at let me know if that works for you?
 
+Thanks,
 
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=199113
+	M.
+
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/maz/arm-platforms.git
+irq/irqchip-next
+-- 
+Jazz is not dead. It just smells funny...
