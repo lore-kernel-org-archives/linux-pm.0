@@ -1,82 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4] thermal: Add cooling device's statistics in sysfs
-Date: Wed, 14 Mar 2018 13:44:26 +0530
-Message-ID: <20180314081426.GG15832@vireshk-i7>
-References: <6e557b90950723065d49c9a545146ce31d7dc6e1.1516096153.git.viresh.kumar@linaro.org>
- <1520924571.3766.8.camel@intel.com>
- <1521014472.2087.32.camel@intel.com>
+From: Paul Menzel <pmenzel+linux-pm@molgen.mpg.de>
+Subject: Re: int3403_driver_init needs over 330 ms to finish
+Date: Wed, 14 Mar 2018 09:19:38 +0100
+Message-ID: <6ce0b246-b2ba-c251-3506-df3e3b71da84@molgen.mpg.de>
+References: <b6cf267e-3042-1226-cb06-1b7fc26ed122@molgen.mpg.de>
+ <1521012744.2087.13.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1521014472.2087.32.camel@intel.com>
+In-Reply-To: <1521012744.2087.13.camel@intel.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14-03-18, 16:01, Zhang Rui wrote:
-> WARNING: please write a paragraph that describes the config symbol
-> fully
-> #147: FILE: drivers/thermal/Kconfig:18:
-> +config THERMAL_STATISTICS
-> 
-> WARNING: Consider renaming function(s)
-> 'thermal_cooling_device_total_trans_show' to 'total_trans_show'
-> #391: FILE: drivers/thermal/thermal_sysfs.c:901:
-> +}
-> 
-> WARNING: Consider renaming function(s)
-> 'thermal_cooling_device_time_in_state_show' to 'time_in_state_show'
-> #395: FILE: drivers/thermal/thermal_sysfs.c:905:
-> +static DEVICE_ATTR(time_in_state, 0444,
-> 
-> WARNING: Consider renaming function(s)
-> 'thermal_cooling_device_reset_store' to 'reset_store'
-> #397: FILE: drivers/thermal/thermal_sysfs.c:907:
-> +static DEVICE_ATTR(reset, 0200, NULL,
-> thermal_cooling_device_reset_store);
-> 
-> WARNING: Consider renaming function(s)
-> 'thermal_cooling_device_trans_table_show' to 'trans_table_show'
-> #398: FILE: drivers/thermal/thermal_sysfs.c:908:
-> +static DEVICE_ATTR(trans_table, 0444,
-> 
-> total: 0 errors, 5 warnings, 366 lines checked
-> 
-> 
-> I'm okay with the first one because the description does not have to be
-> larger than 3 lines.
+Dear Rui,
 
-Right.
 
-> the last 4 warnings makes sense to me. I think we should rename the
-> function and use DEVICE_ATTR_RO() and DEVICE_ATTR_WO() instead.
-> 
-> what do you think?
+On 03/14/2018 08:32 AM, Zhang Rui wrote:
+> On 二, 2018-03-13 at 20:39 +0100, Paul Menzel wrote:
 
-I got those warnings as well, and I quietly ignored them :)
+>> Booting the Dell XPS 13 9370 with Linux 4.16-rc4+ and
+>> `initcall_debug`,
+>> shows it is shown that int3403_driver_init needs over 330 ms to run.
+>>
+>>       [    2.524839] initcall int3403_driver_init+0x0/0x1000
+>> [int3403_thermal] returned 0 after 333972 usecs
+>>
+> I guess most of the time are spent in evaluating ACPI ASL code.
+> But anyway, please create a bugzilla report and attach both dmesg and
+> acpidump there.
 
-I ignored the renaming part for the sake of consistency. The other existing
-routines for similar purpose are named as:
+I created bug report #199113 [1], and attached the requested files.
 
-thermal_cooling_device_type_show
-thermal_cooling_device_max_state_show
-thermal_cooling_device_cur_state_show
-thermal_cooling_device_cur_state_store
 
-for me it made more sense to follow that naming convention. And I didn't use the
-_RO and _WO variants for the same reason.
+Kind regards,
 
-Now here is what I propose now:
+Paul
 
-- You apply this patch as-is and ignore the warning.
 
-- I will send few patches on top of that to do:
-  - renaming of all such routines to shorter versions.
-  - Use the _RO or _WO variants of the macro everywhere.
-
-What do you say ?
-
--- 
-viresh
+[1] https://bugzilla.kernel.org/show_bug.cgi?id=199113
