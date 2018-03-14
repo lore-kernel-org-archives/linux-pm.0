@@ -1,71 +1,93 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 1/2] PM / wakeup: Add callback for wake-up change notification
-Date: Wed, 14 Mar 2018 12:26:24 +0100
-Message-ID: <1521026785-26456-2-git-send-email-geert+renesas@glider.be>
-References: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Wed, 14 Mar 2018 13:04:50 +0100
+Message-ID: <20180314120450.GT4043@hirez.programming.kicks-ass.net>
+References: <4137867.C4jYrWdt8n@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
+Content-Disposition: inline
+In-Reply-To: <4137867.C4jYrWdt8n@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a callback to inform a device that his wake-up setting has been
-changed.  This allows a device to synchronize device configuration with
-an external user action.
+On Mon, Mar 12, 2018 at 10:36:27AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> If poll_idle() is allowed to spin until need_resched() returns 'true',
+> it may actually spin for a much longer time than expected by the idle
+> governor, since set_tsk_need_resched() is not always called by the
+> timer interrupt handler.  If that happens, the CPU may spend much
+> more time than anticipated in the "polling" state.
+> 
+> To prevent that from happening, limit the time of the spinning loop
+> in poll_idle().
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> -> v2: After additional testing reduce POLL_IDLE_TIME_CHECK_COUNT to 1000.
+> 
+> ---
+>  drivers/cpuidle/poll_state.c |   17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/cpuidle/poll_state.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/poll_state.c
+> +++ linux-pm/drivers/cpuidle/poll_state.c
+> @@ -5,16 +5,31 @@
+>   */
+>  
+>  #include <linux/cpuidle.h>
+> +#include <linux/ktime.h>
+>  #include <linux/sched.h>
+>  #include <linux/sched/idle.h>
+>  
+> +#define POLL_IDLE_TIME_CHECK_COUNT	1000
+> +#define POLL_IDLE_TIME_LIMIT		(TICK_NSEC / 16)
+> +
+>  static int __cpuidle poll_idle(struct cpuidle_device *dev,
+>  			       struct cpuidle_driver *drv, int index)
+>  {
+> +	ktime_t start = ktime_get();
 
-E.g. on systems using a Rohm BD9571MWV PMIC and a toggle accessory power
-switch, the system suspend procedure is:
-  1. Configure PMIC for DDR backup mode, which changes the role of the
-     accessory power switch from a power to a wake-up switch,
-  2. Switch accessory power switch off, to prepare for system suspend,
-  3. Suspend system.
+I would recoomend not using ktime_get(), imagine the 'joy' if that
+happens to be the HPET.
 
-Hence step 1 cannot be done in the PMIC's suspend callback, but it can
-be done in the new callback, in response to the user writing "enabled"
-to the PMIC's wakeup virtual file in sysfs.
+>  	local_irq_enable();
+>  	if (!current_set_polling_and_test()) {
+> +		unsigned int time_check_counter = 0;
+> +
+> +		while (!need_resched()) {
+>  			cpu_relax();
+> +			if (time_check_counter++ < POLL_IDLE_TIME_CHECK_COUNT)
+> +				continue;
+> +
+> +			time_check_counter = 0;
+> +			if (ktime_sub(ktime_get(), start) > POLL_IDLE_TIME_LIMIT)
+> +				break;
+> +		}
+>  	}
+>  	current_clr_polling();
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Is there a better way to handle this?
----
- drivers/base/power/wakeup.c | 4 ++++
- include/linux/pm.h          | 1 +
- 2 files changed, 5 insertions(+)
+Since the idle loop is strictly per-cpu, you can use regular
+sched_clock() here. Something like:
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index ea01621ed769ab26..40bda13d4dcd36f3 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -256,6 +256,8 @@ static int device_wakeup_attach(struct device *dev, struct wakeup_source *ws)
- 	if (dev->power.wakeirq)
- 		device_wakeup_attach_irq(dev, dev->power.wakeirq);
- 	spin_unlock_irq(&dev->power.lock);
-+	if (dev->power.wakeup_change_notify)
-+		dev->power.wakeup_change_notify(dev, true);
- 	return 0;
- }
- 
-@@ -373,6 +375,8 @@ static struct wakeup_source *device_wakeup_detach(struct device *dev)
- {
- 	struct wakeup_source *ws;
- 
-+	if (dev->power.wakeup_change_notify)
-+		dev->power.wakeup_change_notify(dev, false);
- 	spin_lock_irq(&dev->power.lock);
- 	ws = dev->power.wakeup;
- 	dev->power.wakeup = NULL;
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e723b78d835706f2..3dec274bffffc6f8 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -599,6 +599,7 @@ struct dev_pm_info {
- 	struct list_head	entry;
- 	struct completion	completion;
- 	struct wakeup_source	*wakeup;
-+	void (*wakeup_change_notify)(struct device *dev, bool enable);
- 	bool			wakeup_path:1;
- 	bool			syscore:1;
- 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
--- 
-2.7.4
+	u64 start = sched_clock();
+
+	local_irq_enable();
+	if (!current_set_polling_and_test()) {
+		while (!need_resched()) {
+			cpu_relax();
+
+			if (sched_clock() - start > POLL_IDLE_TIME_LIMIT)
+				break;
+		}
+	}
+	current_clr_polling();
+
+On x86 we don't have to use that time_check_counter thing, sched_clock()
+is really cheap, not sure if it makes sense on other platforms.
