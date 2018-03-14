@@ -1,50 +1,51 @@
-From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
-Date: Wed, 14 Mar 2018 09:33:33 +0800
-Message-ID: <CADAEsF__v8b01DAC9d8B93oJk3GiqEyfieSgM6kj9CfetXMqaQ@mail.gmail.com>
-References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com> <CAHp75VeNco97BovnVTcd=RH9zsK_gO=jmPALytP-sTFjK5Cq0Q@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: scpi: add thermal dependency
+Date: Wed, 14 Mar 2018 10:39:54 +0530
+Message-ID: <20180314050954.GE15832@vireshk-i7>
+References: <20180313114607.2061209-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHp75VeNco97BovnVTcd=RH9zsK_gO=jmPALytP-sTFjK5Cq0Q@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20180313114607.2061209-1-arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Andy
+On 13-03-18, 12:45, Arnd Bergmann wrote:
+> A built-in scpi cpufreq driver cannot link against a modular
+> thermal framework:
+> 
+> drivers/cpufreq/scpi-cpufreq.o: In function `scpi_cpufreq_ready':
+> scpi-cpufreq.c:(.text+0x4c): undefined reference to `of_cpufreq_cooling_register'
+> drivers/cpufreq/scpi-cpufreq.o: In function `scpi_cpufreq_exit':
+> scpi-cpufreq.c:(.text+0x9c): undefined reference to `cpufreq_cooling_unregister'
+> 
+> This adds a Kconfig dependency that makes sure this configuration
+> is not possible, while allowing all configurations that can work.
+> Note that disabling CPU_THERMAL means we don't care about the
+> THERMAL dependency.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/cpufreq/Kconfig.arm | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 9bbb5b39d18a..d9457d1e535c 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -45,6 +45,7 @@ config ARM_DT_BL_CPUFREQ
+>  config ARM_SCPI_CPUFREQ
+>  	tristate "SCPI based CPUfreq driver"
+>  	depends on ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
+> +	depends on !CPU_THERMAL || THERMAL
+>  	help
+>  	  This adds the CPUfreq driver support for ARM platforms using SCPI
+>  	  protocol for CPU power management.
 
-2018-03-14 0:39 GMT+08:00 Andy Shevchenko <andy.shevchenko@gmail.com>:
-> On Mon, Mar 5, 2018 at 10:47 AM, Ganesh Mahendran
-> <opensource.ganesh@gmail.com> wrote:
->> single_open() interface requires that the whole output must
->> fit into a single buffer. This will lead to timeout when
->> system memory is not in a good situation.
->>
->> This patch use seq_open() to show wakeup stats. This method
->> need only one page, so timeout will not be observed.
->
->> +       if (n == 0) {
->> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
->> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
->> +                       "last_change\tprevent_suspend_time\n");
->> +       }
->
-> Can't you do this once at ->open() stage, for example?
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-We can not put this at ->open(). Because in seq_open(), the buffer is
-not ready,
-the seq buffer is allocated in seq_read().
-
-Thanks.
-
->
->>  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->>  {
->> -       return single_open(file, wakeup_sources_stats_show, NULL);
->> +       return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
->>  }
->
-> --
-> With Best Regards,
-> Andy Shevchenko
+-- 
+viresh
