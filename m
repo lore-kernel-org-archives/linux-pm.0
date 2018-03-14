@@ -1,46 +1,111 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v6 23/25] MAINTAINERS: Update files for PSCI
-Date: Wed, 14 Mar 2018 17:40:04 +0000
-Message-ID: <20180314174003.zj34hqgxrldqqzqw@lakrids.cambridge.arm.com>
-References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
- <1521046715-30683-24-git-send-email-ulf.hansson@linaro.org>
+From: "dbasehore ." <dbasehore@chromium.org>
+Subject: Re: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore
+ ITS state
+Date: Wed, 14 Mar 2018 14:44:57 -0700
+Message-ID: <CAGAzgspNsybYfxwKOERJCU9oFvEjxOA41KT+4L5f6Zr=+WXO9w@mail.gmail.com>
+References: <20180301054820.42847-1-dbasehore@chromium.org>
+ <20180301054820.42847-2-dbasehore@chromium.org> <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
+ <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com> <CAGAzgsqLgujex--HCo3dRGvOPXG0zu-RwkbuGhgNhBTc3sURJA@mail.gmail.com>
+ <6a5b5723-85bb-e46f-f621-eab17a01f1f0@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1521046715-30683-24-git-send-email-ulf.hansson@linaro.org>
+In-Reply-To: <6a5b5723-85bb-e46f-f621-eab17a01f1f0@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 14, 2018 at 05:58:33PM +0100, Ulf Hansson wrote:
-> Some new files have been for the PSCI firmware driver, let's make the
-> expression more generic to cover them all.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 4623caf..dda16cf 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -11082,7 +11082,7 @@ M:	Mark Rutland <mark.rutland@arm.com>
->  M:	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->  L:	linux-arm-kernel@lists.infradead.org
->  S:	Maintained
-> -F:	drivers/firmware/psci*.c
-> +F:	drivers/firmware/psci*
->  F:	include/linux/psci.h
->  F:	include/uapi/linux/psci.h
+On Wed, Mar 14, 2018 at 3:22 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> On 02/03/18 02:08, dbasehore . wrote:
+>> On Thu, Mar 1, 2018 at 4:29 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+>>> Hi Mark,
+>>>
+>>> On 01/03/18 11:41, Mark Rutland wrote:
+>>>> On Wed, Feb 28, 2018 at 09:48:18PM -0800, Derek Basehore wrote:
+>>>>> Some platforms power off GIC logic in suspend, so we need to
+>>>>> save/restore state. The distributor and redistributor registers need
+>>>>> to be handled in platform code due to access permissions on those
+>>>>> registers, but the ITS registers can be restored in the kernel.
+>>>>>
+>>>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+>>>>
+>>>> How much state do we have to save/restore?
+>>>>
+>>>> Given we can apparently read all this state, couldn't we *always* save
+>>>> the state, then upon resume detect if the state has been lost, restoring
+>>>> it if so?
+>>>>
+>>>> That way, we don't need a property in FW tables for DT or ACPI.
+>>>
+>>> That's a good point. I guess that we could just compare the saved
+>>> GITS_CTLR register and restore the full state only if the ITS comes back
+>>> as disabled.
+>>>
+>>> I'm just a bit worried that it makes it an implicit convention between
+>>> kernel an FW, which could change in funny ways. Importantly, the PSCI
+>>> spec says states FW should restore *the whole state*. Obviously, it
+>>> cannot to that on HW that doesn't allow you to read out the state, hence
+>>> the DT flag that outlines the departure from the expected behaviour.
+>>>
+>>> I'm happy to go either way, but then I have the feeling that we should
+>>> go back to quirking it on the actual implementation (GIC500 in this
+>>> case) if we're to from the property.
+>>>
+>>>>
+>>>> [...]
+>>>>
+>>>>> @@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
+>>>>>              ctlr |= GITS_CTLR_ImDe;
+>>>>>      writel_relaxed(ctlr, its->base + GITS_CTLR);
+>>>>>
+>>>>> +    if (fwnode_property_present(handle, "reset-on-suspend"))
+>>>>> +            its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
+>>>>
+>>>> Does this allow this property on an ACPI system?
+>>>>
+>>>> If we need this on ACPI, we need a spec update to handle this properly,
+>>>> and shouldn't use device properties like this.
+>>>
+>>> Well spotted. I guess that dropping the property would fix that
+>>> altogether, assuming we feel that the above is safe enough.
+>>>
+>>> Thoughts?
+>>
+>> I'm fine changing it to get rid of the devicetree property.
+>>
+>> What's the reason for quirking the behavior though? It's not that much
+>> code + data and nothing else relies on the state of the ITS getting
+>> disabled across suspend/resume. Even if something did, we'd have to
+>> resolve it with this feature anyways.
+>
+> The reason we do this is to cope with GIC500 having the collection state
+> in registers instead of memory. If we didn't have this extraordinary
+> misfeature, FW could do a full save/restore of the ITS, and we wouldn't
+> have to do anything (which is what the driver currently expects).
+>
+> A middle ground approach is to limit the feature to systems where
+> GITS_TYPER.HCC is non-zero instead of limiting it to GIC500. Pretty easy
+> to fix. This should have the same effect, as GIC500 is the only
+> implementation I'm aware of with HCC!=0.
+>
+> Given that we're already at -rc5 and that I'd like to queue things for
+> 4.17, I've made this change myself and queued patches 1 and 3 here[1].
+>
+> Can you please have a look at let me know if that works for you?
+>
 
-As mentioned in my another reply, I suspect it's better to give
-ourselves a drivers/firmware/psci/ directory earlier in the series
-(updating MAINTAINERS at the same time).
+Assuming that your fine with only having the GIC500 implementations
+that have HCC as non-zero getting ITS registers restored in the
+kernel. As far as I can tell, this can happen in firmware for all
+implementations. It's only the code to resend that MAPC on resume that
+needs to be in the kernel.
 
-Otherwise, this looks fine to me.
-
-Thanks,
-Mark.
+> Thanks,
+>
+>         M.
+>
+> [1] git://git.kernel.org/pub/scm/linux/kernel/git/maz/arm-platforms.git
+> irq/irqchip-next
+> --
+> Jazz is not dead. It just smells funny...
