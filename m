@@ -1,106 +1,39 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore
- ITS state
-Date: Wed, 14 Mar 2018 10:22:30 +0000
-Message-ID: <6a5b5723-85bb-e46f-f621-eab17a01f1f0@arm.com>
-References: <20180301054820.42847-1-dbasehore@chromium.org>
- <20180301054820.42847-2-dbasehore@chromium.org>
- <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
- <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com>
- <CAGAzgsqLgujex--HCo3dRGvOPXG0zu-RwkbuGhgNhBTc3sURJA@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 06/27] x86/entry/64: Adapt assembly for PIE support
+Date: Wed, 14 Mar 2018 11:29:51 +0100
+Message-ID: <20180314102951.GQ4043@hirez.programming.kicks-ass.net>
+References: <20180313205945.245105-1-thgarnie@google.com>
+	<20180313205945.245105-7-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGAzgsqLgujex--HCo3dRGvOPXG0zu-RwkbuGhgNhBTc3sURJA@mail.gmail.com>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20180313205945.245105-7-thgarnie@google.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Michal Hocko <mhocko@suse.com>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, Len Brown <len.brown@intel.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>, linux-kernel@vger.kernel.org, Masahiro Yamada <yamada.masahiro@socionext.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, kernel-hardening@lists.openwall.com, Christoph Lameter <cl@linux.com>, Jiri Slaby <jslaby@suse.cz>, Alok Kataria <akataria@vmware.com>, linux-doc@vger.kernel.org, linux-arch@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, Baoquan He <bhe@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Joerg
 List-Id: linux-pm@vger.kernel.org
 
-On 02/03/18 02:08, dbasehore . wrote:
-> On Thu, Mar 1, 2018 at 4:29 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
->> Hi Mark,
->>
->> On 01/03/18 11:41, Mark Rutland wrote:
->>> On Wed, Feb 28, 2018 at 09:48:18PM -0800, Derek Basehore wrote:
->>>> Some platforms power off GIC logic in suspend, so we need to
->>>> save/restore state. The distributor and redistributor registers need
->>>> to be handled in platform code due to access permissions on those
->>>> registers, but the ITS registers can be restored in the kernel.
->>>>
->>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
->>>
->>> How much state do we have to save/restore?
->>>
->>> Given we can apparently read all this state, couldn't we *always* save
->>> the state, then upon resume detect if the state has been lost, restoring
->>> it if so?
->>>
->>> That way, we don't need a property in FW tables for DT or ACPI.
->>
->> That's a good point. I guess that we could just compare the saved
->> GITS_CTLR register and restore the full state only if the ITS comes back
->> as disabled.
->>
->> I'm just a bit worried that it makes it an implicit convention between
->> kernel an FW, which could change in funny ways. Importantly, the PSCI
->> spec says states FW should restore *the whole state*. Obviously, it
->> cannot to that on HW that doesn't allow you to read out the state, hence
->> the DT flag that outlines the departure from the expected behaviour.
->>
->> I'm happy to go either way, but then I have the feeling that we should
->> go back to quirking it on the actual implementation (GIC500 in this
->> case) if we're to from the property.
->>
->>>
->>> [...]
->>>
->>>> @@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
->>>>              ctlr |= GITS_CTLR_ImDe;
->>>>      writel_relaxed(ctlr, its->base + GITS_CTLR);
->>>>
->>>> +    if (fwnode_property_present(handle, "reset-on-suspend"))
->>>> +            its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
->>>
->>> Does this allow this property on an ACPI system?
->>>
->>> If we need this on ACPI, we need a spec update to handle this properly,
->>> and shouldn't use device properties like this.
->>
->> Well spotted. I guess that dropping the property would fix that
->> altogether, assuming we feel that the above is safe enough.
->>
->> Thoughts?
-> 
-> I'm fine changing it to get rid of the devicetree property.
-> 
-> What's the reason for quirking the behavior though? It's not that much
-> code + data and nothing else relies on the state of the ITS getting
-> disabled across suspend/resume. Even if something did, we'd have to
-> resolve it with this feature anyways.
+On Tue, Mar 13, 2018 at 01:59:24PM -0700, Thomas Garnier wrote:
+> @@ -1576,7 +1578,9 @@ first_nmi:
+>  	addq	$8, (%rsp)	/* Fix up RSP */
+>  	pushfq			/* RFLAGS */
+>  	pushq	$__KERNEL_CS	/* CS */
+> -	pushq	$1f		/* RIP */
+> +	pushq	%rax		/* Support Position Independent Code */
+> +	leaq	1f(%rip), %rax	/* RIP */
+> +	xchgq	%rax, (%rsp)	/* Restore RAX, put 1f */
+>  	iretq			/* continues at repeat_nmi below */
+>  	UNWIND_HINT_IRET_REGS
+>  1:
 
-The reason we do this is to cope with GIC500 having the collection state
-in registers instead of memory. If we didn't have this extraordinary
-misfeature, FW could do a full save/restore of the ITS, and we wouldn't
-have to do anything (which is what the driver currently expects).
-
-A middle ground approach is to limit the feature to systems where
-GITS_TYPER.HCC is non-zero instead of limiting it to GIC500. Pretty easy
-to fix. This should have the same effect, as GIC500 is the only
-implementation I'm aware of with HCC!=0.
-
-Given that we're already at -rc5 and that I'd like to queue things for
-4.17, I've made this change myself and queued patches 1 and 3 here[1].
-
-Can you please have a look at let me know if that works for you?
-
-Thanks,
-
-	M.
-
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/maz/arm-platforms.git
-irq/irqchip-next
--- 
-Jazz is not dead. It just smells funny...
+Urgh, xchg with a memop has an implicit LOCK prefix.
