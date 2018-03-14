@@ -1,86 +1,85 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [RFT][PATCH v4 1/7] time: tick-sched: Reorganize idle tick
- management code
-Date: Wed, 14 Mar 2018 16:49:39 +0100
-Message-ID: <20180314154934.GA3635@lerouge>
-References: <2352117.3UUoYAu18A@aspire.rjw.lan>
- <2019498.YXfJVQUTuX@aspire.rjw.lan>
+From: Christopher Lameter <cl@linux.com>
+Subject: Re: [PATCH v2 06/27] x86/entry/64: Adapt assembly for PIE support
+Date: Wed, 14 Mar 2018 10:54:58 -0500 (CDT)
+Message-ID: <alpine.DEB.2.20.1803141051210.14471@nuc-kabylake>
+References: <20180313205945.245105-1-thgarnie@google.com> <20180313205945.245105-7-thgarnie@google.com> <20180314102951.GQ4043@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2019498.YXfJVQUTuX@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <kernel-hardening-return-12603-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20180314102951.GQ4043@hirez.programming.kicks-ass.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>, Philippe Ombredanne <pombredanne@nexb.com>, Arnaldo Carvalho de Melo <acme@redhat.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Matthias Kaehlcke <mka@chromium.org>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>Borislav
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 12, 2018 at 10:47:41AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Prepare the scheduler tick code for reworking the idle loop to
-> avoid stopping the tick in some cases.
-> 
-> Move away the tick_nohz_start_idle() invocation from
-> __tick_nohz_idle_enter(), rename the latter to
-> __tick_nohz_idle_stop_tick() and define tick_nohz_idle_stop_tick()
-> as a wrapper around it for calling it from the outside.
-> 
-> Make tick_nohz_idle_enter() only call tick_nohz_start_idle() instead
-> of calling the entire __tick_nohz_idle_enter(), add another wrapper
-> disabling and enabling interrupts around tick_nohz_idle_stop_tick()
-> and make the current callers of tick_nohz_idle_enter() call it too
-> to retain their current functionality.
 
-Perhaps we should have a higher level description of what the patch does.
-After all the low level part is already described in the diff.
 
-Ie: we are splitting the nohz idle entry call to decouple the idle time
-stats accounting and preparatory work from the actual tick stop code, that
-in order to later be able to delay the tick stop once we reach more
-power-knowledgeable callers.
+On Wed, 14 Mar 2018, Peter Zijlstra wrote:
 
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  arch/x86/xen/smp_pv.c    |    1 +
->  include/linux/tick.h     |    9 +++++++++
->  kernel/sched/idle.c      |    1 +
->  kernel/time/tick-sched.c |   46 +++++++++++++++++++++++++---------------------
->  4 files changed, 36 insertions(+), 21 deletions(-)
-> 
-> Index: linux-pm/include/linux/tick.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/tick.h
-> +++ linux-pm/include/linux/tick.h
-> @@ -114,6 +114,7 @@ enum tick_dep_bits {
->  #ifdef CONFIG_NO_HZ_COMMON
->  extern bool tick_nohz_enabled;
->  extern int tick_nohz_tick_stopped(void);
-> +extern void tick_nohz_idle_stop_tick(void);
->  extern void tick_nohz_idle_enter(void);
->  extern void tick_nohz_idle_exit(void);
->  extern void tick_nohz_irq_exit(void);
-> @@ -125,6 +126,7 @@ extern u64 get_cpu_iowait_time_us(int cp
->  #else /* !CONFIG_NO_HZ_COMMON */
->  #define tick_nohz_enabled (0)
->  static inline int tick_nohz_tick_stopped(void) { return 0; }
-> +static inline void tick_nohz_idle_stop_tick(void) { }
->  static inline void tick_nohz_idle_enter(void) { }
->  static inline void tick_nohz_idle_exit(void) { }
->  
-> @@ -136,6 +138,13 @@ static inline u64 get_cpu_idle_time_us(i
->  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
->  #endif /* !CONFIG_NO_HZ_COMMON */
->  
-> +static inline void tick_nohz_idle_stop_tick_protected(void)
-> +{
-> +	local_irq_disable();
-> +	tick_nohz_idle_stop_tick();
-> +	local_irq_enable();
-> +}
+> On Tue, Mar 13, 2018 at 01:59:24PM -0700, Thomas Garnier wrote:
+> > @@ -1576,7 +1578,9 @@ first_nmi:
+> >  	addq	$8, (%rsp)	/* Fix up RSP */
+> >  	pushfq			/* RFLAGS */
+> >  	pushq	$__KERNEL_CS	/* CS */
+> > -	pushq	$1f		/* RIP */
+> > +	pushq	%rax		/* Support Position Independent Code */
+> > +	leaq	1f(%rip), %rax	/* RIP */
+> > +	xchgq	%rax, (%rsp)	/* Restore RAX, put 1f */
+> >  	iretq			/* continues at repeat_nmi below */
+> >  	UNWIND_HINT_IRET_REGS
+> >  1:
+>
+> Urgh, xchg with a memop has an implicit LOCK prefix.
 
-It seems that even if we have CONFIG_NO_HZ_COMMON=n, tick_nohz_idle_stop_tick_protected()
-will have overhead, right?
+this_cpu_xchg uses no lock cmpxchg as a replacement to reduce latency.
 
-Thanks.
+>From linux/arch/x86/include/asm/percpu.h
+
+/*
+ * xchg is implemented using cmpxchg without a lock prefix. xchg is
+ * expensive due to the implied lock prefix.  The processor cannot prefetch
+ * cachelines if xchg is used.
+ */
+#define percpu_xchg_op(var, nval)                                       \
+({                                                                      \
+        typeof(var) pxo_ret__;                                          \
+        typeof(var) pxo_new__ = (nval);                                 \
+        switch (sizeof(var)) {                                          \
+        case 1:                                                         \
+                asm("\n\tmov "__percpu_arg(1)",%%al"                    \
+                    "\n1:\tcmpxchgb %2, "__percpu_arg(1)                \
+                    "\n\tjnz 1b"                                        \
+                            : "=&a" (pxo_ret__), "+m" (var)             \
+                            : "q" (pxo_new__)                           \
+                            : "memory");                                \
+                break;                                                  \
+        case 2:                                                         \
+                asm("\n\tmov "__percpu_arg(1)",%%ax"                    \
+                    "\n1:\tcmpxchgw %2, "__percpu_arg(1)                \
+                    "\n\tjnz 1b"                                        \
+                            : "=&a" (pxo_ret__), "+m" (var)             \
+                            : "r" (pxo_new__)                           \
+                            : "memory");                                \
+                break;                                                  \
+        case 4:                                                         \
+                asm("\n\tmov "__percpu_arg(1)",%%eax"                   \
+                    "\n1:\tcmpxchgl %2, "__percpu_arg(1)                \
+                    "\n\tjnz 1b"                                        \
+                            : "=&a" (pxo_ret__), "+m" (var)             \
+                            : "r" (pxo_new__)                           \
+                            : "memory");                                \
+                break;                                                  \
+        case 8:                                                         \
+                asm("\n\tmov "__percpu_arg(1)",%%rax"                   \
+                    "\n1:\tcmpxchgq %2, "__percpu_arg(1)                \
+                    "\n\tjnz 1b"                                        \
+                            : "=&a" (pxo_ret__), "+m" (var)             \
+                            : "r" (pxo_new__)                           \
+                            : "memory");                                \
+                break;                                                  \
+        default: __bad_percpu_size();                                   \
+        }                                                               \
+        pxo_ret__;                                                      \
