@@ -1,54 +1,66 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFT][PATCH v4 4/7] cpuidle: Return nohz hint from
- cpuidle_select()
-Date: Wed, 14 Mar 2018 13:59:29 +0100
-Message-ID: <20180314125929.GU4043@hirez.programming.kicks-ass.net>
-References: <2352117.3UUoYAu18A@aspire.rjw.lan>
- <15847301.VVmNzm1RNz@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Wed, 14 Mar 2018 15:08:57 +0100
+Message-ID: <3111105.SmgpqUHPkp@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <15847301.VVmNzm1RNz@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 12, 2018 at 10:54:18AM +0100, Rafael J. Wysocki wrote:
-> @@ -378,6 +384,26 @@ static int menu_select(struct cpuidle_dr
->  	if (idx == -1)
->  		idx = 0; /* No states enabled. Must use 0. */
->  
-> +	if (drv->states[idx].flags & CPUIDLE_FLAG_POLLING) {
-> +		*nohz_ret = false;
-> +	} else if (drv->states[idx].target_residency < TICK_USEC_HZ) {
-> +		first_idx = idx;
-> +		for (i = idx + 1; i < drv->state_count; i++) {
-> +			if (!drv->states[i].disabled &&
-> +			    !dev->states_usage[i].disable) {
-> +				first_idx = i;
-> +				break;
-> +			}
-		}
-> +
-> +		/*
-> +		 * Do not stop the tick if there is at least one more state
-> +		 * within the tick period range that could be used if longer
-> +		 * idle duration was predicted.
-> +		 */
-> +		*nohz_ret = !(first_idx > idx &&
-> +			      drv->states[first_idx].target_residency < TICK_USEC_HZ);
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+If poll_idle() is allowed to spin until need_resched() returns 'true',
+it may actually spin for a much longer time than expected by the idle
+governor, since set_tsk_need_resched() is not always called by the
+timer interrupt handler.  If that happens, the CPU may spend much
+more time than anticipated in the "polling" state.
 
-Why though? That comment only states what it does, but gives no clue as
-to why we're doing this. What was wrong with disabling NOHZ if the
-selected state (@idx) has shorter target residency.
+To prevent that from happening, limit the time of the spinning loop
+in poll_idle().
 
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-> +	}
-> +
->  	data->last_state_idx = idx;
->  
->  	return data->last_state_idx;
-> 
+v2 -> v3: Use local_clock() for time measurements and drop the
+          counter, since that should be lightweight enough (as
+          suggested by Peter).
+
+---
+ drivers/cpuidle/poll_state.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/cpuidle/poll_state.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/poll_state.c
++++ linux-pm/drivers/cpuidle/poll_state.c
+@@ -6,15 +6,24 @@
+ 
+ #include <linux/cpuidle.h>
+ #include <linux/sched.h>
++#include <linux/sched/clock.h>
+ #include <linux/sched/idle.h>
+ 
++#define POLL_IDLE_TIME_LIMIT	(TICK_NSEC / 16)
++
+ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+ 			       struct cpuidle_driver *drv, int index)
+ {
++	u64 time_start = local_clock();
++
+ 	local_irq_enable();
+ 	if (!current_set_polling_and_test()) {
+-		while (!need_resched())
++		while (!need_resched()) {
+ 			cpu_relax();
++
++			if (local_clock() - time_start > POLL_IDLE_TIME_LIMIT)
++				break;
++		}
+ 	}
+ 	current_clr_polling();
+ 
