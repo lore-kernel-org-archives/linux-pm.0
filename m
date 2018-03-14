@@ -1,52 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: scmi: add thermal dependency
-Date: Wed, 14 Mar 2018 10:40:04 +0530
-Message-ID: <20180314051004.GF15832@vireshk-i7>
-References: <20180313114607.2061209-1-arnd@arndb.de>
- <20180313114607.2061209-2-arnd@arndb.de>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: int3403_driver_init needs over 330 ms to finish
+Date: Wed, 14 Mar 2018 15:32:24 +0800
+Message-ID: <1521012744.2087.13.camel@intel.com>
+References: <b6cf267e-3042-1226-cb06-1b7fc26ed122@molgen.mpg.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180313114607.2061209-2-arnd@arndb.de>
+In-Reply-To: <b6cf267e-3042-1226-cb06-1b7fc26ed122@molgen.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Paul Menzel <pmenzel+linux-pm@molgen.mpg.de>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13-03-18, 12:45, Arnd Bergmann wrote:
-> A built-in scmi cpufreq driver cannot link against a modular
-> thermal framework:
+On 二, 2018-03-13 at 20:39 +0100, Paul Menzel wrote:
+> Dear Linux folks,
 > 
-> drivers/cpufreq/scmi-cpufreq.o: In function `scmi_cpufreq_ready':
-> scmi-cpufreq.c:(.text+0x40): undefined reference to `of_cpufreq_cooling_register'
-> drivers/cpufreq/scmi-cpufreq.o: In function `scmi_cpufreq_exit':
-> scmi-cpufreq.c:(.text+0x88): undefined reference to `cpufreq_cooling_unregister'
 > 
-> This adds a Kconfig dependency that makes sure this configuration
-> is not possible, while allowing all configurations that can work.
-> Note that disabling CPU_THERMAL means we don't care about the
-> THERMAL dependency.
+> Booting the Dell XPS 13 9370 with Linux 4.16-rc4+ and
+> `initcall_debug`, 
+> shows it is shown that int3403_driver_init needs over 330 ms to run.
 > 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/cpufreq/Kconfig.arm | 1 +
->  1 file changed, 1 insertion(+)
+>      [    2.524839] initcall int3403_driver_init+0x0/0x1000 
+> [int3403_thermal] returned 0 after 333972 usecs
 > 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index d9457d1e535c..7f56fe5183f2 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -242,6 +242,7 @@ config ARM_SA1110_CPUFREQ
->  config ARM_SCMI_CPUFREQ
->  	tristate "SCMI based CPUfreq driver"
->  	depends on ARM_SCMI_PROTOCOL || COMPILE_TEST
-> +	depends on !CPU_THERMAL || THERMAL
->  	select PM_OPP
->  	help
->  	  This adds the CPUfreq driver support for ARM platforms using SCMI
+I guess most of the time are spent in evaluating ACPI ASL code.
+But anyway, please create a bugzilla report and attach both dmesg and
+acpidump there.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+thanks,
+rui
+> Please find all Linux messages attached.
+> 
+> Is there a way to reduce that time?
+> 
+> 
+> Kind regards,
+> 
+> Paul
