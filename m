@@ -1,40 +1,37 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v6 06/25] timer: Export next wakeup time of a CPU
-Date: Wed, 14 Mar 2018 17:19:51 +0000
-Message-ID: <20180314171950.yn5spehwzuc5nttu@lakrids.cambridge.arm.com>
-References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
- <1521046715-30683-7-git-send-email-ulf.hansson@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFT][PATCH v4 1/7] time: tick-sched: Reorganize idle tick
+ management code
+Date: Wed, 14 Mar 2018 18:20:16 +0100
+Message-ID: <20180314172016.GO4064@hirez.programming.kicks-ass.net>
+References: <2352117.3UUoYAu18A@aspire.rjw.lan>
+ <2019498.YXfJVQUTuX@aspire.rjw.lan>
+ <20180314154934.GA3635@lerouge>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1521046715-30683-7-git-send-email-ulf.hansson@linaro.org>
+In-Reply-To: <20180314154934.GA3635@lerouge>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Frederic Weisbecker <frederic@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 14, 2018 at 05:58:16PM +0100, Ulf Hansson wrote:
-> @@ -132,6 +133,15 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
->  {
->  	return NSEC_PER_SEC / HZ;
->  }
-> +
-> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	ktime_t len = NSEC_PER_SEC/HZ;
-> +
-> +	/* Next wake up is the tick period, assume it starts now */
-> +	return ktime_add(len, ktime_get());
-> +}
+On Wed, Mar 14, 2018 at 04:49:39PM +0100, Frederic Weisbecker wrote:
+> On Mon, Mar 12, 2018 at 10:47:41AM +0100, Rafael J. Wysocki wrote:
 
-Thsi could be marginally simpler as:
+> > @@ -136,6 +138,13 @@ static inline u64 get_cpu_idle_time_us(i
+> >  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+> >  #endif /* !CONFIG_NO_HZ_COMMON */
+> >  
+> > +static inline void tick_nohz_idle_stop_tick_protected(void)
+> > +{
+> > +	local_irq_disable();
+> > +	tick_nohz_idle_stop_tick();
+> > +	local_irq_enable();
+> > +}
+> 
+> It seems that even if we have CONFIG_NO_HZ_COMMON=n,
+> tick_nohz_idle_stop_tick_protected() will have overhead, right?
 
-static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-{
-	/* Next wake up is the tick period, assume it starts now */
-	return ktime_add(tick_nohz_get_sleep_length(), ktime_get());
-}
-
-Thanks,
-Mark.
+IIRC the only callsite of the _protected thing that remains at the end
+is in the hotplug path. So who cares ;-)
