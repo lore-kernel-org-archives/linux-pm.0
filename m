@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v6 02/25] PM / Domains: Deal with multiple states but no governor in genpd
-Date: Wed, 14 Mar 2018 17:58:12 +0100
-Message-ID: <1521046715-30683-3-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v6 06/25] timer: Export next wakeup time of a CPU
+Date: Wed, 14 Mar 2018 17:58:16 +0100
+Message-ID: <1521046715-30683-7-git-send-email-ulf.hansson@linaro.org>
 References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,44 +10,76 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-A caller of pm_genpd_init() that provides some states for the genpd via the
-->states pointer in the struct generic_pm_domain, should also provide a
-governor. This because it's the job of the governor to pick a state that
-satisfies the constraints.
+From: Lina Iyer <lina.iyer@linaro.org>
 
-Therefore, let's print a warning to inform the user about such bogus
-configuration and avoid to bail out, by instead picking the shallowest
-state before genpd invokes the ->power_off() callback.
+Knowing the sleep duration of CPUs, is known to be needed while selecting
+the most energy efficient idle state for a CPU or a group of CPUs.
 
+However, to be able to compute the sleep duration, we need to know at what
+time the next expected wakeup is for the CPU. Therefore, let's export this
+information via a new function, tick_nohz_get_next_wakeup(). Following
+changes make use of it.
+
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Lina Iyer <ilina@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ include/linux/tick.h     | 10 ++++++++++
+ kernel/time/tick-sched.c | 11 +++++++++++
+ 2 files changed, 21 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index c2ef944..9aff79d 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -466,6 +466,10 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 			return -EAGAIN;
- 	}
- 
-+	/* Default to shallowest state. */
-+	if (!genpd->gov)
-+		genpd->state_idx = 0;
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index 7cc3592..e51cf2c 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -120,6 +120,7 @@ extern void tick_nohz_irq_exit(void);
+ extern ktime_t tick_nohz_get_sleep_length(void);
+ extern unsigned long tick_nohz_get_idle_calls(void);
+ extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
++extern ktime_t tick_nohz_get_next_wakeup(int cpu);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+ extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+ #else /* !CONFIG_NO_HZ_COMMON */
+@@ -132,6 +133,15 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
+ {
+ 	return NSEC_PER_SEC / HZ;
+ }
 +
- 	if (genpd->power_off) {
- 		int ret;
++static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
++{
++	ktime_t len = NSEC_PER_SEC/HZ;
++
++	/* Next wake up is the tick period, assume it starts now */
++	return ktime_add(len, ktime_get());
++}
++
+ static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+ static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+ #endif /* !CONFIG_NO_HZ_COMMON */
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 29a5733..da1bff3 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -1025,6 +1025,17 @@ unsigned long tick_nohz_get_idle_calls(void)
+ 	return ts->idle_calls;
+ }
  
-@@ -1694,6 +1698,8 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 		ret = genpd_set_default_power_state(genpd);
- 		if (ret)
- 			return ret;
-+	} else if (!gov) {
-+		pr_warn("%s : no governor for states\n", genpd->name);
- 	}
- 
- 	mutex_lock(&gpd_list_lock);
++/**
++ * tick_nohz_get_next_wakeup - return the next wake up of the CPU
++ */
++ktime_t tick_nohz_get_next_wakeup(int cpu)
++{
++	struct clock_event_device *dev =
++			per_cpu(tick_cpu_device.evtdev, cpu);
++
++	return dev->next_event;
++}
++
+ static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+ {
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
 -- 
 2.7.4
