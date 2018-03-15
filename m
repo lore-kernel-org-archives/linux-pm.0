@@ -1,48 +1,66 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH v2 06/27] x86/entry/64: Adapt assembly for PIE support
-Date: Thu, 15 Mar 2018 11:18:19 +0100
-Message-ID: <6d14b321-debc-5bc8-8c1b-14150052f5b8@redhat.com>
-References: <20180313205945.245105-1-thgarnie@google.com>
-	<20180313205945.245105-7-thgarnie@google.com>
-	<20180314102951.GQ4043@hirez.programming.kicks-ass.net>
-	<alpine.DEB.2.20.1803141051210.14471@nuc-kabylake>
+From: "Subhransu S. Prusty" <subhransu.s.prusty@intel.com>
+Subject: Re: [PATCH] [sound] hdac-codec runtime suspended at PM:Suspend.
+Date: Thu, 15 Mar 2018 16:12:44 +0530
+Message-ID: <20180315104237.GB13659@subhransu-desktop>
+References: <1520853467-31653-1-git-send-email-anshuman.gupta@intel.com>
+ <CAJZ5v0hyk=jto8Wt0er==YmKEsgvfvZhO2wDbGOhxZaWWCNgBg@mail.gmail.com>
+ <5aa8fbe9.4251620a.c3daa.3711SMTPIN_ADDED_BROKEN@mx.google.com>
+ <CAJZ5v0jrKPNFhgpoL97Ac-k9jAmMa-vzgc-4PD+uuynSMqE2Fw@mail.gmail.com>
+ <20180314153714.GA11459@anshuman.gupta@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.20.1803141051210.14471@nuc-kabylake>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: Christopher Lameter <cl@linux.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Michal Hocko <mhocko@suse.com>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, Len Brown <len.brown@intel.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>, linux-kernel@vger.kernel.org, Masahiro Yamada <yamada.masahiro@socionext.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, kernel-hardening@lists.openwall.com, Jiri Slaby <jslaby@suse.cz>, Alok Kataria <akataria@vmware.com>, linux-doc@vger.kernel.org, linux-arch@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, Baoquan He <bhe@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Joerg Roedel <joro@8bytes.org>, =?UTF-8?B?UmF
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180314153714.GA11459@anshuman.gupta@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anshuman Gupta <anshuman.gupta@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 14/03/2018 16:54, Christopher Lameter wrote:
->>> +	pushq	%rax		/* Support Position Independent Code */
->>> +	leaq	1f(%rip), %rax	/* RIP */
->>> +	xchgq	%rax, (%rsp)	/* Restore RAX, put 1f */
->>>  	iretq			/* continues at repeat_nmi below */
->>>  	UNWIND_HINT_IRET_REGS
->>>  1:
->> Urgh, xchg with a memop has an implicit LOCK prefix.
-> this_cpu_xchg uses no lock cmpxchg as a replacement to reduce latency.
+On Wed, Mar 14, 2018 at 09:07:14PM +0530, Anshuman Gupta wrote:
+> On Wed, Mar 14, 2018 at 11:53:58AM +0100, Rafael J. Wysocki wrote:
+> > On Wed, Mar 14, 2018 at 11:38 AM, Anshuman Gupta
+> > <anshuman.gupta@intel.com> wrote:
+> > > On Mon, Mar 12, 2018 at 12:26:53PM +0100, Rafael J. Wysocki wrote:
+> > >> On Mon, Mar 12, 2018 at 12:17 PM, Anshuman Gupta
+> > >> <anshuman.gupta@intel.com> wrote:
+> > >> >
+> > >> > +       if (pm_runtime_status_suspended(dev))
+> > >> > +               return;
+> > >>
+> > >> That, again, is somewhat fragile from the concurrency perspective.
+> > >>
+> > 
+> > And here you want to avoid the below if the device is still suspended.
+>   Yes, if we do not avoid the code below, complete callback takes about 
+>   3 seconds due to snd_hdac_codec_read timed out because hdac controller 
+>   would be in runtime suspend state.	
+> > 
+> > Why is the below code located in the ->complete callback anyway?
+> > Shouldn't it be there in the ->resume one?
+> > 
+>   Yes even i am also having same doubt, why these power down and power up
+>   sequences are part of prepare and complete callback.
+>   Adding driver author "Subhransu S. Prusty" to provide more inputs on this.
 
-That requires using a second register, since %rax is used as the
-comparison source.  At this point it's easier to just push %rax twice:
+This driver needs a late resume as it receives a jack notification from the
+i915 driver and the skl controller driver resume may not have happened and
+in turn hda controller may not ready. This ensures a synchronization for
+jack event during resume from S3.
 
-	pushq %rax
-	pushq %rax
-	leaq 1f(%ip), %rax
-	movq %rax, 8(%rsp)
-	popq %rax
-	iretq
+I think this patch defeats the purpose.
 
-Paolo
+Regards,
+Subhransu
+
+> > >> >         /* Power up afg */
+> > >> >         snd_hdac_codec_read(hdac, hdac->afg, 0, AC_VERB_SET_POWER_STATE,
+> > >> >                                                         AC_PWRST_D0);
+> > >> > --
+> > >> > 2.7.4
+> 
+> -- 
+> Thanks,
+> Anshuman
+
+-- 
