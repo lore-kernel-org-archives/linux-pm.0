@@ -1,42 +1,49 @@
 From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [RFT][PATCH v4 1/7] time: tick-sched: Reorganize idle tick
- management code
-Date: Thu, 15 Mar 2018 18:26:47 +0100
-Message-ID: <20180315172643.GA14075@lerouge>
+Subject: Re: [RFT][PATCH v4 3/7] sched: idle: Do not stop the tick before
+ cpuidle_idle_call()
+Date: Thu, 15 Mar 2018 19:19:00 +0100
+Message-ID: <20180315181858.GA14983@lerouge>
 References: <2352117.3UUoYAu18A@aspire.rjw.lan>
- <2019498.YXfJVQUTuX@aspire.rjw.lan>
- <20180314154934.GA3635@lerouge>
- <20180314172016.GO4064@hirez.programming.kicks-ass.net>
+ <3550231.xNMJN5JcLx@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180314172016.GO4064@hirez.programming.kicks-ass.net>
+In-Reply-To: <3550231.xNMJN5JcLx@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 14, 2018 at 06:20:16PM +0100, Peter Zijlstra wrote:
-> On Wed, Mar 14, 2018 at 04:49:39PM +0100, Frederic Weisbecker wrote:
-> > On Mon, Mar 12, 2018 at 10:47:41AM +0100, Rafael J. Wysocki wrote:
+On Mon, Mar 12, 2018 at 10:53:25AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> > > @@ -136,6 +138,13 @@ static inline u64 get_cpu_idle_time_us(i
-> > >  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
-> > >  #endif /* !CONFIG_NO_HZ_COMMON */
-> > >  
-> > > +static inline void tick_nohz_idle_stop_tick_protected(void)
-> > > +{
-> > > +	local_irq_disable();
-> > > +	tick_nohz_idle_stop_tick();
-> > > +	local_irq_enable();
-> > > +}
-> > 
-> > It seems that even if we have CONFIG_NO_HZ_COMMON=n,
-> > tick_nohz_idle_stop_tick_protected() will have overhead, right?
+> Make cpuidle_idle_call() decide whether or not to stop the tick.
 > 
-> IIRC the only callsite of the _protected thing that remains at the end
-> is in the hotplug path. So who cares ;-)
+> First, the cpuidle_enter_s2idle() path deals with the tick (and with
+> the entire timekeeping for that matter) by itself and it doesn't need
+> the tick to be stopped beforehand.
 
-Hey, I see you trying to sneak in overhead out of hatred against the hotplug
-code ;-)
+Not sure you meant timekeeping either :)
+
+>  	if (idle_should_enter_s2idle() || dev->use_deepest_state) {
+>  		if (idle_should_enter_s2idle()) {
+> +			rcu_idle_enter();
+> +
+>  			entered_state = cpuidle_enter_s2idle(drv, dev);
+>  			if (entered_state > 0) {
+>  				local_irq_enable();
+>  				goto exit_idle;
+>  			}
+> +
+> +			rcu_idle_exit();
+>  		}
+
+I'm not sure how the tick is stopped on suspend to idle. Perhaps through
+hrtimer (tick_cancel_sched_timer()) or clockevents code.
+
+But we may have a similar problem than with idle_poll() called right after
+call_cpuidle(). Ie: we arrive in cpuidle_enter_s2idle() with a tick that
+should be reprogrammed while it is not. No idea if that can hurt somehow.
+
+I guess it depends what happens to the tick on s2idle, I'm not clear with that.
