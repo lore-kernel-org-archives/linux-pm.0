@@ -1,118 +1,102 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v7 1/3] irqchip/gic-v3-its: add ability to save/restore
- ITS state
-Date: Wed, 14 Mar 2018 20:04:55 -0700
-Message-ID: <CAGAzgsp+4eGOHfpH7Dq77cirz8MyqEVfHnRTtxxP1sSEMsdh6A@mail.gmail.com>
-References: <20180301054820.42847-1-dbasehore@chromium.org>
- <20180301054820.42847-2-dbasehore@chromium.org> <20180301114144.nmwu4qtslvj7ogj5@lakrids.cambridge.arm.com>
- <0a74f87a-027a-df7d-ca2d-fc164ec9cdf7@arm.com> <CAGAzgsqLgujex--HCo3dRGvOPXG0zu-RwkbuGhgNhBTc3sURJA@mail.gmail.com>
- <6a5b5723-85bb-e46f-f621-eab17a01f1f0@arm.com> <CAGAzgspNsybYfxwKOERJCU9oFvEjxOA41KT+4L5f6Zr=+WXO9w@mail.gmail.com>
+From: Boris Brezillon <boris.brezillon@bootlin.com>
+Subject: Re: [PATCH 00/47] arch-removal: device drivers
+Date: Thu, 15 Mar 2018 06:32:38 +0100
+Message-ID: <20180315063238.3303b8d1@bbrezillon>
+References: <20180314153603.3127932-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGAzgspNsybYfxwKOERJCU9oFvEjxOA41KT+4L5f6Zr=+WXO9w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marc Zyngier <marc.zyngier@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Soby Mathew <Soby.Mathew@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, robh+dt@kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org>
+In-Reply-To: <20180314153603.3127932-1-arnd@arndb.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mtd>,
+ <mailto:linux-mtd-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mtd/>
+List-Post: <mailto:linux-mtd@lists.infradead.org>
+List-Help: <mailto:linux-mtd-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mtd>,
+ <mailto:linux-mtd-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-mtd" <linux-mtd-bounces@lists.infradead.org>
+Errors-To: linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: ulf.hansson@linaro.org, linux-usb@vger.kernel.org, wsa@the-dreams.de, linux-iio@vger.kernel.org, viresh.kumar@linaro.org, linus.walleij@linaro.org, alexandre.belloni@bootlin.com, linux-ide@vger.kernel.org, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-rtc@vger.kernel.org, lars@metafoo.de, herbert@gondor.apana.org.au, corbet@lwn.net, linux-doc@vger.kernel.org, stern@rowland.harvard.edu, linux-serial@vger.kernel.org, jslaby@suse.com, linux-mmc@vger.kernel.org, shli@kernel.org, wg@grandegger.com, linux-crypto@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org, b.zolnierkie@samsung.com, linux-input@vger.kernel.org, linux-can@vger.kernel.org, linux-raid@vger.kernel.org, linux-gpio@vger.kernel.org, broonie@kernel.org, bp@alien8.de, linux-fbdev@vger.kernel.org, mchehab@kernel.orglin
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 14, 2018 at 2:44 PM, dbasehore . <dbasehore@chromium.org> wrote:
-> On Wed, Mar 14, 2018 at 3:22 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
->> On 02/03/18 02:08, dbasehore . wrote:
->>> On Thu, Mar 1, 2018 at 4:29 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
->>>> Hi Mark,
->>>>
->>>> On 01/03/18 11:41, Mark Rutland wrote:
->>>>> On Wed, Feb 28, 2018 at 09:48:18PM -0800, Derek Basehore wrote:
->>>>>> Some platforms power off GIC logic in suspend, so we need to
->>>>>> save/restore state. The distributor and redistributor registers need
->>>>>> to be handled in platform code due to access permissions on those
->>>>>> registers, but the ITS registers can be restored in the kernel.
->>>>>>
->>>>>> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
->>>>>
->>>>> How much state do we have to save/restore?
->>>>>
->>>>> Given we can apparently read all this state, couldn't we *always* save
->>>>> the state, then upon resume detect if the state has been lost, restoring
->>>>> it if so?
->>>>>
->>>>> That way, we don't need a property in FW tables for DT or ACPI.
->>>>
->>>> That's a good point. I guess that we could just compare the saved
->>>> GITS_CTLR register and restore the full state only if the ITS comes back
->>>> as disabled.
->>>>
->>>> I'm just a bit worried that it makes it an implicit convention between
->>>> kernel an FW, which could change in funny ways. Importantly, the PSCI
->>>> spec says states FW should restore *the whole state*. Obviously, it
->>>> cannot to that on HW that doesn't allow you to read out the state, hence
->>>> the DT flag that outlines the departure from the expected behaviour.
->>>>
->>>> I'm happy to go either way, but then I have the feeling that we should
->>>> go back to quirking it on the actual implementation (GIC500 in this
->>>> case) if we're to from the property.
->>>>
->>>>>
->>>>> [...]
->>>>>
->>>>>> @@ -3261,6 +3363,9 @@ static int __init its_probe_one(struct resource *res,
->>>>>>              ctlr |= GITS_CTLR_ImDe;
->>>>>>      writel_relaxed(ctlr, its->base + GITS_CTLR);
->>>>>>
->>>>>> +    if (fwnode_property_present(handle, "reset-on-suspend"))
->>>>>> +            its->flags |= ITS_FLAGS_SAVE_SUSPEND_STATE;
->>>>>
->>>>> Does this allow this property on an ACPI system?
->>>>>
->>>>> If we need this on ACPI, we need a spec update to handle this properly,
->>>>> and shouldn't use device properties like this.
->>>>
->>>> Well spotted. I guess that dropping the property would fix that
->>>> altogether, assuming we feel that the above is safe enough.
->>>>
->>>> Thoughts?
->>>
->>> I'm fine changing it to get rid of the devicetree property.
->>>
->>> What's the reason for quirking the behavior though? It's not that much
->>> code + data and nothing else relies on the state of the ITS getting
->>> disabled across suspend/resume. Even if something did, we'd have to
->>> resolve it with this feature anyways.
->>
->> The reason we do this is to cope with GIC500 having the collection state
->> in registers instead of memory. If we didn't have this extraordinary
->> misfeature, FW could do a full save/restore of the ITS, and we wouldn't
->> have to do anything (which is what the driver currently expects).
->>
->> A middle ground approach is to limit the feature to systems where
->> GITS_TYPER.HCC is non-zero instead of limiting it to GIC500. Pretty easy
->> to fix. This should have the same effect, as GIC500 is the only
->> implementation I'm aware of with HCC!=0.
->>
->> Given that we're already at -rc5 and that I'd like to queue things for
->> 4.17, I've made this change myself and queued patches 1 and 3 here[1].
->>
->> Can you please have a look at let me know if that works for you?
->>
->
-> Assuming that your fine with only having the GIC500 implementations
-> that have HCC as non-zero getting ITS registers restored in the
-> kernel. As far as I can tell, this can happen in firmware for all
-> implementations. It's only the code to resend that MAPC on resume that
-> needs to be in the kernel.
+Hi Arnd,
 
-Actually, I guess we can't tell if we need to resend MAPC on resume if
-the firmware restores the state. Assuming it's a problem to just
-resend MAPC all the time, only restoring the ITS registers in the
-kernel when HCC != 0 makes sense.
+On Wed, 14 Mar 2018 16:35:13 +0100
+Arnd Bergmann <arnd@arndb.de> wrote:
 
->
->> Thanks,
->>
->>         M.
->>
->> [1] git://git.kernel.org/pub/scm/linux/kernel/git/maz/arm-platforms.git
->> irq/irqchip-next
->> --
->> Jazz is not dead. It just smells funny...
+> Hi driver maintainers,
+> 
+> I just posted one series with the removal of eight architectures,
+> see https://lkml.org/lkml/2018/3/14/505 for details, or
+> https://lwn.net/Articles/748074/ for more background.
+> 
+> These are the device drivers that go along with them. I have already
+> picked up the drivers for arch/metag/ into my tree, they were reviewed
+> earlier.
+> 
+> Please let me know if you have any concerns with the patch, or if you
+> prefer to pick up the patches in your respective trees.  I created
+> the patches with 'git format-patch -D', so they will not apply without
+> manually removing those files.
+> 
+> For anything else, I'd keep the removal patches in my asm-generic tree
+> and will send a pull request for 4.17 along with the actual arch removal.
+> 
+>        Arnd
+> 
+> Arnd Bergmann
+>   edac: remove tile driver
+>   net: tile: remove ethernet drivers
+>   net: adi: remove blackfin ethernet drivers
+>   net: 8390: remove m32r specific bits
+>   net: remove cris etrax ethernet driver
+>   net: smsc: remove m32r specific smc91x configuration
+>   raid: remove tile specific raid6 implementation
+>   rtc: remove tile driver
+>   rtc: remove bfin driver
+>   char: remove obsolete ds1302 rtc driver
+>   char: remove tile-srom.c
+>   char: remove blackfin OTP driver
+>   pcmcia: remove m32r drivers
+>   pcmcia: remove blackfin driver
+>   ASoC: remove blackfin drivers
+>   video/logo: remove obsolete logo files
+>   fbdev: remove blackfin drivers
+>   fbdev: s1d13xxxfb: remove m32r specific hacks
+>   crypto: remove blackfin CRC driver
+>   media: platform: remove blackfin capture driver
+>   media: platform: remove m32r specific arv driver
+>   cpufreq: remove blackfin driver
+>   cpufreq: remove cris specific drivers
+>   gpio: remove etraxfs driver
+>   pinctrl: remove adi2/blackfin drivers
+>   ata: remove bf54x driver
+>   input: keyboard: remove bf54x driver
+>   input: misc: remove blackfin rotary driver
+>   mmc: remove bfin_sdh driver
+>   can: remove bfin_can driver
+>   watchdog: remove bfin_wdt driver
+>   mtd: maps: remove bfin-async-flash driver
+>   mtd: nand: remove bf5xx_nand driver
+
+If you don't mind, I'd like to take the mtd patches through the MTD
+tree. As you've probably noticed, nand code has been moved around and
+it's easier for me to carry those 2 simple changes in my tree than
+creating an immutable branch.
+
+Let me know if this is a problem.
+
+Regards,
+
+Boris
+
+-- 
+Boris Brezillon, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+______________________________________________________
+Linux MTD discussion mailing list
+http://lists.infradead.org/mailman/listinfo/linux-mtd/
