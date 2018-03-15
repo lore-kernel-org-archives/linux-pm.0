@@ -1,94 +1,42 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH v4 2/7] sched: idle: Do not stop the tick upfront in
- the idle loop
-Date: Thu, 15 Mar 2018 17:50:52 +0100
-Message-ID: <CAJZ5v0iVsby7J2dEApmFa0PfzRL+NV7iPoUcuiEudoJ-RRpk+w@mail.gmail.com>
-References: <2352117.3UUoYAu18A@aspire.rjw.lan> <2177770.i4UbKDJpnI@aspire.rjw.lan>
- <20180315161031.GA12313@lerouge>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [RFT][PATCH v4 1/7] time: tick-sched: Reorganize idle tick
+ management code
+Date: Thu, 15 Mar 2018 18:26:47 +0100
+Message-ID: <20180315172643.GA14075@lerouge>
+References: <2352117.3UUoYAu18A@aspire.rjw.lan>
+ <2019498.YXfJVQUTuX@aspire.rjw.lan>
+ <20180314154934.GA3635@lerouge>
+ <20180314172016.GO4064@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180315161031.GA12313@lerouge>
+Content-Disposition: inline
+In-Reply-To: <20180314172016.GO4064@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Frederic Weisbecker <frederic@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 15, 2018 at 5:10 PM, Frederic Weisbecker
-<frederic@kernel.org> wrote:
-> On Mon, Mar 12, 2018 at 10:51:11AM +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Push the decision whether or not to stop the tick somewhat deeper
->> into the idle loop.
->>
->> Stopping the tick upfront leads to unpleasant outcomes in case the
->> idle governor doesn't agree with the timekeeping code on the duration
->> of the upcoming idle period.
->
-> Looks like you meant "nohz" instead of "timekeeping"?
+On Wed, Mar 14, 2018 at 06:20:16PM +0100, Peter Zijlstra wrote:
+> On Wed, Mar 14, 2018 at 04:49:39PM +0100, Frederic Weisbecker wrote:
+> > On Mon, Mar 12, 2018 at 10:47:41AM +0100, Rafael J. Wysocki wrote:
+> 
+> > > @@ -136,6 +138,13 @@ static inline u64 get_cpu_idle_time_us(i
+> > >  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+> > >  #endif /* !CONFIG_NO_HZ_COMMON */
+> > >  
+> > > +static inline void tick_nohz_idle_stop_tick_protected(void)
+> > > +{
+> > > +	local_irq_disable();
+> > > +	tick_nohz_idle_stop_tick();
+> > > +	local_irq_enable();
+> > > +}
+> > 
+> > It seems that even if we have CONFIG_NO_HZ_COMMON=n,
+> > tick_nohz_idle_stop_tick_protected() will have overhead, right?
+> 
+> IIRC the only callsite of the _protected thing that remains at the end
+> is in the hotplug path. So who cares ;-)
 
-Yes, I did.
-
->> Specifically, if the tick has been
->> stopped and the idle governor predicts short idle, the situation is
->> bad regardless of whether or not the prediction is accurate.  If it
->> is accurate, the tick has been stopped unnecessarily which means
->> excessive overhead.  If it is not accurate, the CPU is likely to
->> spend too much time in the (shallow, because short idle has been
->> predicted) idle state selected by the governor [1].
->>
->> As the first step towards addressing this problem, change the code
->> to make the tick stopping decision inside of the loop in do_idle().
->> In particular, do not stop the tick in the cpu_idle_poll() code path.
->> Also don't do that in tick_nohz_irq_exit() which doesn't really have
->> enough information on whether or not to stop the tick.
->>
->> Link: https://marc.info/?l=linux-pm&m=150116085925208&w=2 # [1]
->> Link: https://tu-dresden.de/zih/forschung/ressourcen/dateien/projekte/haec/powernightmares.pdf
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>  kernel/sched/idle.c      |    8 +++++---
->>  kernel/time/tick-sched.c |    6 ++----
->>  2 files changed, 7 insertions(+), 7 deletions(-)
->>
->> Index: linux-pm/kernel/sched/idle.c
->> ===================================================================
->> --- linux-pm.orig/kernel/sched/idle.c
->> +++ linux-pm/kernel/sched/idle.c
->> @@ -241,10 +241,12 @@ static void do_idle(void)
->>                * broadcast device expired for us, we don't want to go deep
->>                * idle as we know that the IPI is going to arrive right away.
->>                */
->> -             if (cpu_idle_force_poll || tick_check_broadcast_expired())
->> +             if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
->>                       cpu_idle_poll();
->> -             else
->> +             } else {
->> +                     tick_nohz_idle_stop_tick();
->>                       cpuidle_idle_call();
->> +             }
->
-> I'm worried about one thing here. Say we enter cpuidle_idle_call() and the tick is stopped.
-> Later on, we get a tick, so we exit cpuidle_idle_call(), then we find cpu_idle_force_poll
-> or tick_check_broadcast_expired() to be true. So we poll but the tick hasn't been updated
-> to fire again.
->
-> I don't know if it can happen but cpu_idle_poll_ctrl() seem to be callable anytime.
-> It looks like it's only used on __init code or on power suspend/resume, not sure about
-> the implications on the latter, still there could be further misuse in the future.
->
-> Concerning tick_check_broadcast_expired(), it's hard to tell if it can be enabled
-> concurrently from another CPU or from interrupts.
->
-> Anyway perhaps we should have, out of paranoia:
->
-> +               if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
-> +                       tick_nohz_idle_restart_tick();
->                         cpu_idle_poll();
-> -               else
->
-
-Agreed, I'll update the patch accordingly.
-
-Thanks!
+Hey, I see you trying to sneak in overhead out of hatred against the hotplug
+code ;-)
