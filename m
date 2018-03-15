@@ -1,92 +1,129 @@
-From: Anshuman Gupta <anshuman.gupta@intel.com>
-Subject: Re: [PATCH] [sound] hdac-codec runtime suspended at
-	PM:Suspend.
-Date: Thu, 15 Mar 2018 21:02:30 +0530
-Message-ID: <10426.4098605656$1521127919@news.gmane.org>
-References: <1520853467-31653-1-git-send-email-anshuman.gupta@intel.com>
- <CAJZ5v0hyk=jto8Wt0er==YmKEsgvfvZhO2wDbGOhxZaWWCNgBg@mail.gmail.com>
- <5aa8fbe9.4251620a.c3daa.3711SMTPIN_ADDED_BROKEN@mx.google.com>
- <CAJZ5v0jrKPNFhgpoL97Ac-k9jAmMa-vzgc-4PD+uuynSMqE2Fw@mail.gmail.com>
- <20180314153714.GA11459@anshuman.gupta@intel.com>
- <20180315104237.GB13659@subhransu-desktop>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [RFT][PATCH v4 2/7] sched: idle: Do not stop the tick upfront in
+ the idle loop
+Date: Thu, 15 Mar 2018 17:10:36 +0100
+Message-ID: <20180315161031.GA12313@lerouge>
+References: <2352117.3UUoYAu18A@aspire.rjw.lan>
+ <2177770.i4UbKDJpnI@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <alsa-devel-bounces@alsa-project.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180315104237.GB13659@subhransu-desktop>
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: "Subhransu S. Prusty" <subhransu.s.prusty@intel.com>
-Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, Liam Girdwood <lgirdwood@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Takashi Iwai <tiwai@suse.com>, Mark Brown <broonie@kernel.org>
+In-Reply-To: <2177770.i4UbKDJpnI@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 15, 2018 at 04:12:44PM +0530, Subhransu S. Prusty wrote:
-> On Wed, Mar 14, 2018 at 09:07:14PM +0530, Anshuman Gupta wrote:
-> > On Wed, Mar 14, 2018 at 11:53:58AM +0100, Rafael J. Wysocki wrote:
-> > > On Wed, Mar 14, 2018 at 11:38 AM, Anshuman Gupta
-> > > <anshuman.gupta@intel.com> wrote:
-> > > > On Mon, Mar 12, 2018 at 12:26:53PM +0100, Rafael J. Wysocki wrote:
-> > > >> On Mon, Mar 12, 2018 at 12:17 PM, Anshuman Gupta
-> > > >> <anshuman.gupta@intel.com> wrote:
-> > > >> >
-> > > >> > +       if (pm_runtime_status_suspended(dev))
-> > > >> > +               return;
-> > > >>
-> > > >> That, again, is somewhat fragile from the concurrency perspective.
-> > > >>
-> > > 
-> > > And here you want to avoid the below if the device is still suspended.
-> >   Yes, if we do not avoid the code below, complete callback takes about 
-> >   3 seconds due to snd_hdac_codec_read timed out because hdac controller 
-> >   would be in runtime suspend state.	
-> > > 
-> > > Why is the below code located in the ->complete callback anyway?
-> > > Shouldn't it be there in the ->resume one?
-> > > 
-> >   Yes even i am also having same doubt, why these power down and power up
-> >   sequences are part of prepare and complete callback.
-> >   Adding driver author "Subhransu S. Prusty" to provide more inputs on this.
+On Mon, Mar 12, 2018 at 10:51:11AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> This driver needs a late resume as it receives a jack notification from the
-> i915 driver and the skl controller driver resume may not have happened and
-> in turn hda controller may not ready. This ensures a synchronization for
-> jack event during resume from S3.
-  Let me give you insight of the issue, this driver blocks the direct complete
-  of hda controller PCI 00:1f.3, sometimes it takes 280ms to resume hda controller
-  from S3 and s2idle. So it does not make sense to suspend/resume hda controller 
-  when it is already in runtime suspend.  
+> Push the decision whether or not to stop the tick somewhat deeper
+> into the idle loop.
 > 
-> I think this patch defeats the purpose.
-  Here in this case PCI driver may kick the direct complete for hda controller
-  https://elixir.bootlin.com/linux/latest/source/drivers/pci/pci-driver.c#L691
-  But hdac hdmi codec driver is blocking it.
-  So i think it will be ok to keep this codec and hda controller in runtime 
-  suspend while entering S3 or s2idle, both can resume by runtime PM as well,
-  will it brake any audio functionality? 
-> 
-> Regards,
-> Subhransu
-> 
-> > > >> >         /* Power up afg */
-> > > >> >         snd_hdac_codec_read(hdac, hdac->afg, 0, AC_VERB_SET_POWER_STATE,
-> > > >> >                                                         AC_PWRST_D0);
-> > > >> > --
-> > > >> > 2.7.4
-> > 
-> > -- 
-> > Thanks,
-> > Anshuman
-> 
-> -- 
+> Stopping the tick upfront leads to unpleasant outcomes in case the
+> idle governor doesn't agree with the timekeeping code on the duration
+> of the upcoming idle period.
 
--- 
-Thanks,
-Anshuman
+Looks like you meant "nohz" instead of "timekeeping"?
+
+
+> Specifically, if the tick has been
+> stopped and the idle governor predicts short idle, the situation is
+> bad regardless of whether or not the prediction is accurate.  If it
+> is accurate, the tick has been stopped unnecessarily which means
+> excessive overhead.  If it is not accurate, the CPU is likely to
+> spend too much time in the (shallow, because short idle has been
+> predicted) idle state selected by the governor [1].
+> 
+> As the first step towards addressing this problem, change the code
+> to make the tick stopping decision inside of the loop in do_idle().
+> In particular, do not stop the tick in the cpu_idle_poll() code path.
+> Also don't do that in tick_nohz_irq_exit() which doesn't really have
+> enough information on whether or not to stop the tick.
+> 
+> Link: https://marc.info/?l=linux-pm&m=150116085925208&w=2 # [1]
+> Link: https://tu-dresden.de/zih/forschung/ressourcen/dateien/projekte/haec/powernightmares.pdf
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  kernel/sched/idle.c      |    8 +++++---
+>  kernel/time/tick-sched.c |    6 ++----
+>  2 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> Index: linux-pm/kernel/sched/idle.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/idle.c
+> +++ linux-pm/kernel/sched/idle.c
+> @@ -241,10 +241,12 @@ static void do_idle(void)
+>  		 * broadcast device expired for us, we don't want to go deep
+>  		 * idle as we know that the IPI is going to arrive right away.
+>  		 */
+> -		if (cpu_idle_force_poll || tick_check_broadcast_expired())
+> +		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
+>  			cpu_idle_poll();
+> -		else
+> +		} else {
+> +			tick_nohz_idle_stop_tick();
+>  			cpuidle_idle_call();
+> +		}
+
+I'm worried about one thing here. Say we enter cpuidle_idle_call() and the tick is stopped.
+Later on, we get a tick, so we exit cpuidle_idle_call(), then we find cpu_idle_force_poll
+or tick_check_broadcast_expired() to be true. So we poll but the tick hasn't been updated
+to fire again.
+
+I don't know if it can happen but cpu_idle_poll_ctrl() seem to be callable anytime.
+It looks like it's only used on __init code or on power suspend/resume, not sure about
+the implications on the latter, still there could be further misuse in the future.
+
+Concerning tick_check_broadcast_expired(), it's hard to tell if it can be enabled
+concurrently from another CPU or from interrupts.
+
+Anyway perhaps we should have, out of paranoia:
+
++		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
++			tick_nohz_idle_restart_tick();
+  			cpu_idle_poll();
+-		else
+
+...where tick_nohz_idle_restart_tick() would be:
+
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 29a5733..9ae1ef5 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -1046,6 +1046,18 @@ static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+ #endif
+ }
+ 
++static void __tick_nohz_idle_restart_tick(struct tick_sched *ts, ktime_t now)
++{
++	tick_nohz_restart_sched_tick(ts, now);
++	tick_nohz_account_idle_ticks(ts);
++}
++
++void tick_nohz_idle_restart_tick(void)
++{
++	if (ts->tick_stopped)
++		__tick_nohz_idle_restart_tick(this_cpu_ptr(&tick_cpu_sched), ktime_get());
++}
++
+ /**
+  * tick_nohz_idle_exit - restart the idle tick from the idle task
+  *
+@@ -1070,10 +1082,8 @@ void tick_nohz_idle_exit(void)
+ 	if (ts->idle_active)
+ 		tick_nohz_stop_idle(ts, now);
+ 
+-	if (ts->tick_stopped) {
+-		tick_nohz_restart_sched_tick(ts, now);
+-		tick_nohz_account_idle_ticks(ts);
+-	}
++	if (ts->tick_stopped())
++		__tick_nohz_idle_restart_tick(ts, now)
+ 
+ 	local_irq_enable();
+ }
+
+
+Thanks.
