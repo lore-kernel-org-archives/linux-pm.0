@@ -1,49 +1,113 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [RFT][PATCH v4 3/7] sched: idle: Do not stop the tick before
- cpuidle_idle_call()
-Date: Thu, 15 Mar 2018 19:19:00 +0100
-Message-ID: <20180315181858.GA14983@lerouge>
-References: <2352117.3UUoYAu18A@aspire.rjw.lan>
- <3550231.xNMJN5JcLx@aspire.rjw.lan>
+From: Feng Kan <fkan@apm.com>
+Subject: Re: [PATCH V3] PM / core: fix deferred probe breaking suspend resume
+ order
+Date: Thu, 15 Mar 2018 11:41:33 -0700
+Message-ID: <CAL85gmAAVoCCXoLH+c0ROSBy4mS3z86tnbX+7Avh5oGT=fHcfA@mail.gmail.com>
+References: <1520274579-30492-1-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3550231.xNMJN5JcLx@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1520274579-30492-1-git-send-email-fkan@apm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Feng Kan <fkan@apm.com>, Toan Le <toanle@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 12, 2018 at 10:53:25AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Make cpuidle_idle_call() decide whether or not to stop the tick.
-> 
-> First, the cpuidle_enter_s2idle() path deals with the tick (and with
-> the entire timekeeping for that matter) by itself and it doesn't need
-> the tick to be stopped beforehand.
-
-Not sure you meant timekeeping either :)
-
->  	if (idle_should_enter_s2idle() || dev->use_deepest_state) {
->  		if (idle_should_enter_s2idle()) {
-> +			rcu_idle_enter();
+On Mon, Mar 5, 2018 at 10:29 AM, Feng Kan <fkan@apm.com> wrote:
+> When bridge and its endpoint is enumerated the devices are added to the
+> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
+> This causes the bridge to be moved to the end of the dpm list when
+> deferred probe kicks in. The order of the dpm list for bridge and
+> endpoint is reversed.
+>
+> Add reordering code to move the bridge and its children and consumers to
+> the end of the pm list so the order for suspend and resume is not altered.
+> The code also move device and its children and consumers to the tail of
+> device_kset list if it is registered.
+>
+> Signed-off-by: Feng Kan <fkan@apm.com>
+> Signed-off-by: Toan Le <toanle@apm.com>
+> ---
+>  V3:
+>         1. additional code comment changes
+>  V2:
+>         1. change patch title from "move device and its children..."
+>         2. move define based on Bjorn's comment
+>         3. rename function name and comment content
+>
+>  drivers/base/base.h |  3 +++
+>  drivers/base/core.c | 20 ++++++++++++++++++++
+>  drivers/base/dd.c   |  4 +---
+>  3 files changed, 24 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index d800de6..a75c302 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -161,3 +161,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
+>  extern void device_links_no_driver(struct device *dev);
+>  extern bool device_links_busy(struct device *dev);
+>  extern void device_links_unbind_consumers(struct device *dev);
 > +
->  			entered_state = cpuidle_enter_s2idle(drv, dev);
->  			if (entered_state > 0) {
->  				local_irq_enable();
->  				goto exit_idle;
->  			}
+> +/* device pm support */
+> +void device_pm_move_to_tail(struct device *dev);
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 110230d..3b37906 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -148,6 +148,26 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
+>  }
+>
+>  /**
+> + * device_pm_move_to_tail - Move set of devices to the end of device lists
+> + * @dev: current device pointer
+> + *
+> + * This is a device_reorder_to_tail() wrapper taking the requisite locks.
+> + *
+> + * It moves the device along with all of its children and all of its consumers
+> + * to the ends of the device_kset and dpm_list, recursively.
+> + */
+> +void device_pm_move_to_tail(struct device *dev)
+> +{
+> +       int idx;
 > +
-> +			rcu_idle_exit();
->  		}
-
-I'm not sure how the tick is stopped on suspend to idle. Perhaps through
-hrtimer (tick_cancel_sched_timer()) or clockevents code.
-
-But we may have a similar problem than with idle_poll() called right after
-call_cpuidle(). Ie: we arrive in cpuidle_enter_s2idle() with a tick that
-should be reprogrammed while it is not. No idea if that can hurt somehow.
-
-I guess it depends what happens to the tick on s2idle, I'm not clear with that.
+> +       idx = device_links_read_lock();
+> +       device_pm_lock();
+> +       device_reorder_to_tail(dev, NULL);
+> +       device_pm_unlock();
+> +       device_links_read_unlock(idx);
+> +}
+> +
+> +/**
+>   * device_link_add - Create a link between two devices.
+>   * @consumer: Consumer end of the link.
+>   * @supplier: Supplier end of the link.
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 2c964f5..96fab29 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -123,9 +123,7 @@ static void deferred_probe_work_func(struct work_struct *work)
+>                  * the list is a good order for suspend but deferred
+>                  * probe makes that very unsafe.
+>                  */
+> -               device_pm_lock();
+> -               device_pm_move_last(dev);
+> -               device_pm_unlock();
+> +               device_pm_move_to_tail(dev);
+>
+>                 dev_dbg(dev, "Retrying from deferred list\n");
+>                 if (initcall_debug && !initcalls_done)
+> --
+> 1.8.3.1
+>
+Hi, just wanted to check if there is anything else I need to change on
+this. Thanks.
