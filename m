@@ -1,45 +1,61 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [RFT][PATCH v4 3/7] sched: idle: Do not stop the tick before
- cpuidle_idle_call()
-Date: Fri, 16 Mar 2018 15:17:20 +0100
-Message-ID: <20180316141719.GB20981@lerouge>
-References: <2352117.3UUoYAu18A@aspire.rjw.lan>
- <3550231.xNMJN5JcLx@aspire.rjw.lan>
- <20180315181858.GA14983@lerouge>
- <CAJZ5v0jGi_ewnJXxwuY1-y6Ti64Y601A4DQuDhtMJ+riYPJpzA@mail.gmail.com>
- <CAJZ5v0hGsXV8HTKC8iS0pD6VLoe8pDutos7NhWPU+wid_q7Now@mail.gmail.com>
+From: Jordan Crouse <jcrouse@codeaurora.org>
+Subject: Re: [PATCH 1/2] dt-bindings: Document qcom,adreno-gmu
+Date: Fri, 16 Mar 2018 12:27:01 -0600
+Message-ID: <20180316182701.GC28808@jcrouse-lnx.qualcomm.com>
+References: <20180302215638.6145-1-jcrouse@codeaurora.org>
+ <20180302215638.6145-2-jcrouse@codeaurora.org>
+ <CAL_Jsq+OJ0jon2uFb6oMKjZuw4iPQxkxfBrbDyMN-BrNZfTRzA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hGsXV8HTKC8iS0pD6VLoe8pDutos7NhWPU+wid_q7Now@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <CAL_Jsq+OJ0jon2uFb6oMKjZuw4iPQxkxfBrbDyMN-BrNZfTRzA@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Doug Anderson <dianders@chromium.org>, dri-devel <dri-devel@lists.freedesktop.org>, Viresh Kumar <vireshk@kernel.org>, freedreno@lists.freedesktop.org, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 15, 2018 at 10:12:57PM +0100, Rafael J. Wysocki wrote:
-> On Thu, Mar 15, 2018 at 9:41 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Thu, Mar 15, 2018 at 7:19 PM, Frederic Weisbecker
-> > <frederic@kernel.org> wrote:
-> >> On Mon, Mar 12, 2018 at 10:53:25AM +0100, Rafael J. Wysocki wrote:
-> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>
-> >>> Make cpuidle_idle_call() decide whether or not to stop the tick.
-> >>>
-> >>> First, the cpuidle_enter_s2idle() path deals with the tick (and with
-> >>> the entire timekeeping for that matter) by itself and it doesn't need
-> >>> the tick to be stopped beforehand.
-> >>
-> >> Not sure you meant timekeeping either :)
-> >
-> > Yeah, I meant nohz.
-> 
-> Well, not really. :-)
-> 
-> It is the entire timekeeping this time, as it can be suspended
-> entirely in that code path.
-
-Fair point.
-
-Thanks!
+T24gTW9uLCBNYXIgMDUsIDIwMTggYXQgMDE6Mzg6NTlQTSAtMDYwMCwgUm9iIEhlcnJpbmcgd3Jv
+dGU6Cj4gT24gRnJpLCBNYXIgMiwgMjAxOCBhdCAzOjU2IFBNLCBKb3JkYW4gQ3JvdXNlIDxqY3Jv
+dXNlQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPiA+IERvY3VtZW50IHRoZSBkZXZpY2UgdHJlZSBi
+aW5kaW5ncyBmb3IgdGhlIEFkcmVubyBHTVUgZGV2aWNlCj4gPiBhdmFpbGFibGUgb24gQWRyZW5v
+IGE2eHggdGFyZ2V0cy4KPiA+Cj4gPiBDaGFuZ2UtSWQ6IEkzY2ZkNWZiMzVhYjAwNDVlMzk5MDVm
+ZjEyMzkzMDA2ZTYwZjFhMTI0Cj4gCj4gR2Vycml0IQo+IAo+ID4gU2lnbmVkLW9mZi1ieTogSm9y
+ZGFuIENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiA+IC0tLQo+ID4gIC4uLi9kZXZp
+Y2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dtdS50eHQgICAgICAgIHwgNTQgKysrKysrKysr
+KysrKysrKysrKysrKwo+ID4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dw
+dS50eHQgICAgICAgIHwgMTAgKysrLQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgNjIgaW5zZXJ0aW9u
+cygrKSwgMiBkZWxldGlvbnMoLSkKPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dtdS50eHQKPiA+Cj4gPiBkaWZmIC0t
+Z2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dtdS50
+eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4
+dAo+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQKPiA+IGluZGV4IDAwMDAwMDAwMDAwMC4uZjY1YmI0
+OWZmZjM2Cj4gPiAtLS0gL2Rldi9udWxsCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRy
+ZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dAo+ID4gQEAgLTAsMCArMSw1NCBAQAo+ID4g
+K1F1YWxjb21tIGFkcmVuby9zbmFwZHJhZ29uIEdNVSAoR3JhcGhpY3MgbWFuYWdlbWVudCB1bml0
+KQo+ID4gKwo+ID4gK1RoZSBHTVUgaXMgYSBwcm9ncmFtbWFibGUgcG93ZXIgY29udHJvbGxlciBm
+b3IgdGhlIEdQVS4gdGhlIENQVSBjb250cm9scyB0aGUKPiA+ICtHTVUgd2hpY2ggaW4gdHVybiBo
+YW5kbGVzIHBvd2VyIGNvbnRyb2xzIGZvciB0aGUgR1BVLgo+ID4gKwo+ID4gK1JlcXVpcmVkIHBy
+b3BlcnRpZXM6Cj4gPiArLSBjb21wYXRpYmxlOgo+ID4gKyAgKiAicWNvbSxhZHJlbm8tZ211Igo+
+IAo+IEtpbmQgb2YgZ2VuZXJpYy4gQWxsIHRoZSBmZWF0dXJlcyBhcmUgZGlzY292ZXJhYmxlPwoK
+SSB3YXMganVzdCBwcmVwcGluZyBhIG5ldyB2ZXJzaW9uIGFuZCBJIHJlYWxpemVkIEkgbmV2ZXIg
+cmVzcG9uZGVkIHRvIHRoaXMuClNvcnJ5LgoKWWVzLCBhbGwgdGhlIGZlYXR1cmVzIGFyZSBkaXNj
+b3ZlcmFibGUuIFNpbmNlIHRoZSBHTVUgaXMgb24gdGhlIHNhbWUgZGllIGFzIHRoZQpHUFUgd2Ug
+d291bGQgdXNlIHRoZSBHUFUgcmV2aXNpb24gYXMgdGhlIGNyaXRlcmlhIGZvciBhcHBseWluZyBo
+YXJkd2FyZQp3b3JrYXJvdW5kcyBhbmQgd2hhdG5vdC4gSSBjYW4ndCB0aGluayBvZiBhbnkgY3Vy
+cmVudCBzaXR1YXRpb24gdGhhdCB3b3VsZApyZXF1aXJlIHVzIHRvIHVuaXF1ZWx5IGlkZW50aWZ5
+IHRoZSBHTVUgZnJvbSBEVC4KCkpvcmRhbgoKLS0gClRoZSBRdWFsY29tbSBJbm5vdmF0aW9uIENl
+bnRlciwgSW5jLiBpcyBhIG1lbWJlciBvZiBDb2RlIEF1cm9yYSBGb3J1bSwKYSBMaW51eCBGb3Vu
+ZGF0aW9uIENvbGxhYm9yYXRpdmUgUHJvamVjdApfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0
+cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9kcmktZGV2ZWwK
