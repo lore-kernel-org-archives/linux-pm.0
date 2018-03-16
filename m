@@ -1,424 +1,675 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v5 5/7] sched: idle: Select idle state before stopping the tick
-Date: Thu, 15 Mar 2018 23:13:15 +0100
-Message-ID: <4246492.RxuDfGeZqJ@aspire.rjw.lan>
-References: <2142751.3U6XgWyF8u@aspire.rjw.lan>
+Subject: [PATCH] ACPI: Add Time and Alarm Device (TAD) driver
+Date: Fri, 16 Mar 2018 13:51:01 +0100
+Message-ID: <6419044.RXe4JATo1K@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2142751.3U6XgWyF8u@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In order to address the issue with short idle duration predictions
-by the idle governor after the tick has been stopped, reorder the
-code in cpuidle_idle_call() so that the governor idle state selection
-runs before tick_nohz_idle_go_idle() and use the "nohz" hint returned
-by cpuidle_select() to decide whether or not to stop the tick.
+Introduce a driver for the ACPI Time and Alarm Device (TAD) based on
+Section 9.18 of ACPI 6.2.
 
-This isn't straightforward, because menu_select() invokes
-tick_nohz_get_sleep_length() to get the time to the next timer
-event and the number returned by the latter comes from
-__tick_nohz_idle_enter().  Fortunately, however, it is possible
-to compute that number without actually stopping the tick and with
-the help of the existing code.
+This driver only supports the system wakeup capabilities of the TAD
+which are mandatory.  Support for the RTC capabilities of the TAD
+will be added to it in the future.
 
-Namely, notice that tick_nohz_stop_sched_tick() already computes the
-next timer event time to reprogram the scheduler tick hrtimer and
-that time can be used as a proxy for the actual next timer event
-time in the idle duration predicition.  Moreover, it is possible
-to split tick_nohz_stop_sched_tick() into two separate routines,
-one computing the time to the next timer event and the other
-simply stopping the tick when the time to the next timer event
-is known.
+This driver is entirely sysfs-based.  It provides attributes (under
+the TAD platform device) to allow user space to manage the AC and DC
+wakeup timers of the TAD: set and read their values, set and check
+their expire timer wake policies, check and clear their status and
+check the capabilities of the TAD reported by AML.  The DC timer
+attributes are only present if the TAD supports a separate DC alarm
+timer.
 
-Accordingly, split tick_nohz_stop_sched_tick() into
-tick_nohz_next_event() and tick_nohz_stop_tick() and use the
-former in tick_nohz_get_sleep_length().  Add two new extra fields,
-timer_expires and timer_expires_base, to struct tick_sched for
-passing data between these two new functions and to indicate that
-tick_nohz_next_event() has run and tick_nohz_stop_tick() can be
-called now.  Also drop the now redundant sleep_length field from
-there.
+The wakeup events handling and power management of the TAD is
+expected to be taken care of by the ACPI PM domain attached to its
+platform device.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ Documentation/ABI/testing/sysfs-devices-platform-ACPI-TAD |  113 +++
+ drivers/acpi/Kconfig                                      |   14 
+ drivers/acpi/Makefile                                     |    1 
+ drivers/acpi/acpi_tad.c                                   |  473 ++++++++++++++
+ 4 files changed, 601 insertions(+)
 
-v4 -> v5:
-  * Rebase on top of the new [1-4/7].
-
----
- include/linux/tick.h     |    2 
- kernel/sched/idle.c      |   11 ++-
- kernel/time/tick-sched.c |  156 +++++++++++++++++++++++++++++++----------------
- kernel/time/tick-sched.h |    6 +
- 4 files changed, 120 insertions(+), 55 deletions(-)
-
-Index: linux-pm/kernel/time/tick-sched.h
+Index: linux-pm/drivers/acpi/Kconfig
 ===================================================================
---- linux-pm.orig/kernel/time/tick-sched.h
-+++ linux-pm/kernel/time/tick-sched.h
-@@ -38,7 +38,8 @@ enum tick_nohz_mode {
-  * @idle_exittime:	Time when the idle state was left
-  * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
-  * @iowait_sleeptime:	Sum of the time slept in idle with sched tick stopped, with IO outstanding
-- * @sleep_length:	Duration of the current idle sleep
-+ * @timer_expires:	Anticipated timer expiration time (in case sched tick is stopped)
-+ * @timer_expires_base:	Base time clock monotonic for @timer_expires
-  * @do_timer_lst:	CPU was the last one doing do_timer before going idle
-  */
- struct tick_sched {
-@@ -58,8 +59,9 @@ struct tick_sched {
- 	ktime_t				idle_exittime;
- 	ktime_t				idle_sleeptime;
- 	ktime_t				iowait_sleeptime;
--	ktime_t				sleep_length;
- 	unsigned long			last_jiffies;
-+	u64				timer_expires;
-+	u64				timer_expires_base;
- 	u64				next_timer;
- 	ktime_t				idle_expires;
- 	int				do_timer_last;
-Index: linux-pm/kernel/sched/idle.c
+--- linux-pm.orig/drivers/acpi/Kconfig
++++ linux-pm/drivers/acpi/Kconfig
+@@ -217,6 +217,20 @@ config ACPI_FAN
+ 	  To compile this driver as a module, choose M here:
+ 	  the module will be called fan.
+ 
++config ACPI_TAD
++	tristate "ACPI Time and Alarm (TAD) Device Support"
++	depends on SYSFS && PM_SLEEP
++	default n
++	help
++	  The ACPI Time and Alarm (TAD) device is an alternative to the Real
++	  Time Clock (RTC).  Its wake timers allow the system to transition from
++	  the S3 (or optionally S4/S5) state to S0 state after a time period
++	  elapses.  In comparison with the RTC Alarm, the TAD provides a larger
++	  scale of flexibility in the wake timers.  The time capabilities of the
++	  TAD maintain the time of day information across platform power
++	  transitions, and keep track of time even when the platform is turned
++	  off.
++
+ config ACPI_DOCK
+ 	bool "Dock"
+ 	help
+Index: linux-pm/drivers/acpi/Makefile
 ===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -190,13 +190,18 @@ static void cpuidle_idle_call(void)
- 	} else {
- 		bool nohz = true;
- 
--		tick_nohz_idle_stop_tick();
--		rcu_idle_enter();
--
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
- 		next_state = cpuidle_select(drv, dev, &nohz);
-+
-+		if (nohz)
-+			tick_nohz_idle_stop_tick();
-+		else
-+			tick_nohz_idle_retain_tick();
-+
-+		rcu_idle_enter();
-+
- 		entered_state = call_cpuidle(drv, dev, next_state);
- 		/*
- 		 * Give the governor an opportunity to reflect on the outcome
-Index: linux-pm/kernel/time/tick-sched.c
+--- linux-pm.orig/drivers/acpi/Makefile
++++ linux-pm/drivers/acpi/Makefile
+@@ -70,6 +70,7 @@ obj-$(CONFIG_ACPI_AC) 		+= ac.o
+ obj-$(CONFIG_ACPI_BUTTON)	+= button.o
+ obj-$(CONFIG_ACPI_FAN)		+= fan.o
+ obj-$(CONFIG_ACPI_VIDEO)	+= video.o
++obj-$(CONFIG_ACPI_TAD)		+= acpi_tad.o
+ obj-$(CONFIG_ACPI_PCI_SLOT)	+= pci_slot.o
+ obj-$(CONFIG_ACPI_PROCESSOR)	+= processor.o
+ obj-$(CONFIG_ACPI)		+= container.o
+Index: linux-pm/drivers/acpi/acpi_tad.c
 ===================================================================
---- linux-pm.orig/kernel/time/tick-sched.c
-+++ linux-pm/kernel/time/tick-sched.c
-@@ -652,13 +652,10 @@ static inline bool local_timer_softirq_p
- 	return local_softirq_pending() & TIMER_SOFTIRQ;
- }
- 
--static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
--					 ktime_t now, int cpu)
-+static ktime_t tick_nohz_next_event(struct tick_sched *ts, int cpu)
- {
--	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
- 	u64 basemono, next_tick, next_tmr, next_rcu, delta, expires;
- 	unsigned long seq, basejiff;
--	ktime_t	tick;
- 
- 	/* Read jiffies and the time when jiffies were updated last */
- 	do {
-@@ -667,6 +664,7 @@ static ktime_t tick_nohz_stop_sched_tick
- 		basejiff = jiffies;
- 	} while (read_seqretry(&jiffies_lock, seq));
- 	ts->last_jiffies = basejiff;
-+	ts->timer_expires_base = basemono;
- 
- 	/*
- 	 * Keep the periodic tick, when RCU, architecture or irq_work
-@@ -711,31 +709,24 @@ static ktime_t tick_nohz_stop_sched_tick
- 		 * next period, so no point in stopping it either, bail.
- 		 */
- 		if (!ts->tick_stopped) {
--			tick = 0;
-+			ts->timer_expires = 0;
- 			goto out;
- 		}
- 	}
- 
- 	/*
--	 * If this CPU is the one which updates jiffies, then give up
--	 * the assignment and let it be taken by the CPU which runs
--	 * the tick timer next, which might be this CPU as well. If we
--	 * don't drop this here the jiffies might be stale and
--	 * do_timer() never invoked. Keep track of the fact that it
--	 * was the one which had the do_timer() duty last. If this CPU
--	 * is the one which had the do_timer() duty last, we limit the
--	 * sleep time to the timekeeping max_deferment value.
-+	 * If this CPU is the one which had the do_timer() duty last, we limit
-+	 * the sleep time to the timekeeping max_deferment value.
- 	 * Otherwise we can sleep as long as we want.
- 	 */
- 	delta = timekeeping_max_deferment();
--	if (cpu == tick_do_timer_cpu) {
--		tick_do_timer_cpu = TICK_DO_TIMER_NONE;
--		ts->do_timer_last = 1;
--	} else if (tick_do_timer_cpu != TICK_DO_TIMER_NONE) {
--		delta = KTIME_MAX;
--		ts->do_timer_last = 0;
--	} else if (!ts->do_timer_last) {
--		delta = KTIME_MAX;
-+	if (cpu != tick_do_timer_cpu) {
-+		if (tick_do_timer_cpu != TICK_DO_TIMER_NONE) {
-+			delta = KTIME_MAX;
-+			ts->do_timer_last = 0;
-+		} else if (!ts->do_timer_last) {
-+			delta = KTIME_MAX;
-+		}
- 	}
- 
- #ifdef CONFIG_NO_HZ_FULL
-@@ -750,14 +741,40 @@ static ktime_t tick_nohz_stop_sched_tick
- 	else
- 		expires = KTIME_MAX;
- 
--	expires = min_t(u64, expires, next_tick);
--	tick = expires;
-+	ts->timer_expires = min_t(u64, expires, next_tick);
+--- /dev/null
++++ linux-pm/drivers/acpi/acpi_tad.c
+@@ -0,0 +1,473 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ACPI Time and Alarm (TAD) Device Driver
++ *
++ * Copyright (C) 2018 Intel Corporation
++ * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++ *
++ * This driver is based on Section 9.18 of the ACPI 6.2 specification revision.
++ *
++ * It only supports the system wakeup capabilities of the TAD.
++ *
++ * Provided are sysfs attributes, available under the TAD platform device,
++ * allowing user space to manage the AC and DC wakeup timers of the TAD:
++ * set and read their values, set and check their expire timer wake policies,
++ * check and clear their status and check the capabilities of the TAD reported
++ * by AML.  The DC timer attributes are only present if the TAD supports a
++ * separate DC alarm timer.
++ *
++ * The wakeup events handling and power management of the TAD is expected to
++ * be taken care of by the ACPI PM domain attached to its platform device.
++ */
 +
-+out:
-+	return ts->timer_expires;
++#include <linux/acpi.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
++#include <linux/suspend.h>
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Rafael J. Wysocki");
++
++/* ACPI TAD capability flags (ACPI 6.2, Section 9.18.2) */
++#define ACPI_TAD_AC_WAKE	BIT(0)
++#define ACPI_TAD_DC_WAKE	BIT(1)
++#define ACPI_TAD_RT		BIT(2)
++#define ACPI_TAD_RT_IN_MS	BIT(3)
++#define ACPI_TAD_S4_S5__GWS	BIT(4)
++#define ACPI_TAD_AC_S4_WAKE	BIT(5)
++#define ACPI_TAD_AC_S5_WAKE	BIT(6)
++#define ACPI_TAD_DC_S4_WAKE	BIT(7)
++#define ACPI_TAD_DC_S5_WAKE	BIT(8)
++
++/* ACPI TAD alarm timer selection */
++#define ACPI_TAD_AC_TIMER	(u32)0
++#define ACPI_TAD_DC_TIMER	(u32)1
++
++/* Special value for disabled timer or expired timer wake policy. */
++#define ACPI_TAD_WAKE_DISABLED	(~(u32)0)
++
++struct acpi_tad_driver_data {
++	u32 capabilities;
++};
++
++static int acpi_tad_wake_set(struct device *dev, char *method, u32 timer_id,
++			     u32 value)
++{
++	acpi_handle handle = ACPI_HANDLE(dev);
++	union acpi_object args[] = {
++		{ .type = ACPI_TYPE_INTEGER, },
++		{ .type = ACPI_TYPE_INTEGER, },
++	};
++	struct acpi_object_list arg_list = {
++		.pointer = args,
++		.count = ARRAY_SIZE(args),
++	};
++	unsigned long long retval;
++	acpi_status status;
++
++	args[0].integer.value = timer_id;
++	args[1].integer.value = value;
++
++	pm_runtime_get_sync(dev);
++
++	status = acpi_evaluate_integer(handle, method, &arg_list, &retval);
++
++	pm_runtime_put_sync(dev);
++
++	if (ACPI_FAILURE(status) || retval)
++		return -EIO;
++
++	return 0;
 +}
 +
-+static void tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
++static int acpi_tad_wake_write(struct device *dev, const char *buf, char *method,
++			       u32 timer_id, const char *specval)
 +{
-+	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
-+	u64 basemono = ts->timer_expires_base;
-+	u64 expires = ts->timer_expires;
-+	ktime_t tick = expires;
++	u32 value;
 +
-+	/* Make sure we won't be trying to stop it twice in a row. */
-+	ts->timer_expires_base = 0;
-+
-+	/*
-+	 * If this CPU is the one which updates jiffies, then give up
-+	 * the assignment and let it be taken by the CPU which runs
-+	 * the tick timer next, which might be this CPU as well. If we
-+	 * don't drop this here the jiffies might be stale and
-+	 * do_timer() never invoked. Keep track of the fact that it
-+	 * was the one which had the do_timer() duty last.
-+	 */
-+	if (cpu == tick_do_timer_cpu) {
-+		tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-+		ts->do_timer_last = 1;
-+	}
- 
- 	/* Skip reprogram of event if its not changed */
- 	if (ts->tick_stopped && (expires == ts->next_tick)) {
- 		/* Sanity check: make sure clockevent is actually programmed */
- 		if (tick == KTIME_MAX || ts->next_tick == hrtimer_get_expires(&ts->sched_timer))
--			goto out;
-+			return;
- 
- 		WARN_ON_ONCE(1);
- 		printk_once("basemono: %llu ts->next_tick: %llu dev->next_event: %llu timer->active: %d timer->expires: %llu\n",
-@@ -791,7 +808,7 @@ static ktime_t tick_nohz_stop_sched_tick
- 	if (unlikely(expires == KTIME_MAX)) {
- 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
- 			hrtimer_cancel(&ts->sched_timer);
--		goto out;
-+		return;
- 	}
- 
- 	hrtimer_set_expires(&ts->sched_timer, tick);
-@@ -800,15 +817,23 @@ static ktime_t tick_nohz_stop_sched_tick
- 		hrtimer_start_expires(&ts->sched_timer, HRTIMER_MODE_ABS_PINNED);
- 	else
- 		tick_program_event(tick, 1);
--out:
--	/*
--	 * Update the estimated sleep length until the next timer
--	 * (not only the tick).
--	 */
--	ts->sleep_length = ktime_sub(dev->next_event, now);
--	return tick;
- }
- 
-+static void tick_nohz_retain_tick(struct tick_sched *ts)
-+{
-+	ts->timer_expires_base = 0;
-+}
-+
-+#ifdef CONFIG_NO_HZ_FULL
-+static void tick_nohz_stop_sched_tick(struct tick_sched *ts, int cpu)
-+{
-+	if (tick_nohz_next_event(ts, cpu))
-+		tick_nohz_stop_tick(ts, cpu);
-+	else
-+		tick_nohz_retain_tick(ts);
-+}
-+#endif /* CONFIG_NO_HZ_FULL */
-+
- static void tick_nohz_restart_sched_tick(struct tick_sched *ts, ktime_t now)
- {
- 	/* Update jiffies first */
-@@ -844,7 +869,7 @@ static void tick_nohz_full_update_tick(s
- 		return;
- 
- 	if (can_stop_full_tick(cpu, ts))
--		tick_nohz_stop_sched_tick(ts, ktime_get(), cpu);
-+		tick_nohz_stop_sched_tick(ts, cpu);
- 	else if (ts->tick_stopped)
- 		tick_nohz_restart_sched_tick(ts, ktime_get());
- #endif
-@@ -870,10 +895,8 @@ static bool can_stop_idle_tick(int cpu,
- 		return false;
- 	}
- 
--	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE)) {
--		ts->sleep_length = NSEC_PER_SEC / HZ;
-+	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
- 		return false;
--	}
- 
- 	if (need_resched())
- 		return false;
-@@ -913,25 +936,33 @@ static void __tick_nohz_idle_stop_tick(s
- 	ktime_t expires;
- 	int cpu = smp_processor_id();
- 
--	if (can_stop_idle_tick(cpu, ts)) {
-+	/*
-+	 * If tick_nohz_get_sleep_length() ran tick_nohz_next_event(), the
-+	 * tick timer expiration time is known already.
-+	 */
-+	if (ts->timer_expires_base)
-+		expires = ts->timer_expires;
-+	else if (can_stop_idle_tick(cpu, ts))
-+		expires = tick_nohz_next_event(ts, cpu);
-+	else
-+		return;
-+
-+	ts->idle_calls++;
-+
-+	if (expires > 0LL) {
- 		int was_stopped = ts->tick_stopped;
- 
--		ts->idle_calls++;
-+		tick_nohz_stop_tick(ts, cpu);
- 
--		/*
--		 * The idle entry time should be a sufficient approximation of
--		 * the current time at this point.
--		 */
--		expires = tick_nohz_stop_sched_tick(ts, ts->idle_entrytime, cpu);
--		if (expires > 0LL) {
--			ts->idle_sleeps++;
--			ts->idle_expires = expires;
--		}
-+		ts->idle_sleeps++;
-+		ts->idle_expires = expires;
- 
- 		if (!was_stopped && ts->tick_stopped) {
- 			ts->idle_jiffies = ts->last_jiffies;
- 			nohz_balance_enter_idle(cpu);
- 		}
++	if (sysfs_streq(buf, specval)) {
++		value = ACPI_TAD_WAKE_DISABLED;
 +	} else {
-+		tick_nohz_retain_tick(ts);
- 	}
- }
- 
-@@ -945,6 +976,11 @@ void tick_nohz_idle_stop_tick(void)
- 	__tick_nohz_idle_stop_tick(this_cpu_ptr(&tick_cpu_sched));
- }
- 
-+void tick_nohz_idle_retain_tick(void)
-+{
-+	tick_nohz_retain_tick(this_cpu_ptr(&tick_cpu_sched));
++		int ret = kstrtou32(buf, 0, &value);
++
++		if (ret)
++			return ret;
++
++		if (value == ACPI_TAD_WAKE_DISABLED)
++			return -EINVAL;
++	}
++
++	return acpi_tad_wake_set(dev, method, timer_id, value);
 +}
 +
- /**
-  * tick_nohz_idle_enter - prepare for entering idle on the current CPU
-  *
-@@ -957,7 +993,7 @@ void tick_nohz_idle_enter(void)
- 	lockdep_assert_irqs_enabled();
- 	/*
- 	 * Update the idle state in the scheduler domain hierarchy
--	 * when tick_nohz_stop_sched_tick() is called from the idle loop.
-+	 * when tick_nohz_stop_tick() is called from the idle loop.
- 	 * State will be updated to busy during the first busy tick after
- 	 * exiting idle.
- 	 */
-@@ -966,6 +1002,9 @@ void tick_nohz_idle_enter(void)
- 	local_irq_disable();
- 
- 	ts = this_cpu_ptr(&tick_cpu_sched);
++static ssize_t acpi_tad_wake_read(struct device *dev, char *buf, char *method,
++				  u32 timer_id, const char *specval)
++{
++	acpi_handle handle = ACPI_HANDLE(dev);
++	union acpi_object args[] = {
++		{ .type = ACPI_TYPE_INTEGER, },
++	};
++	struct acpi_object_list arg_list = {
++		.pointer = args,
++		.count = ARRAY_SIZE(args),
++	};
++	unsigned long long retval;
++	acpi_status status;
 +
-+	WARN_ON_ONCE(ts->timer_expires_base);
++	args[0].integer.value = timer_id;
 +
- 	ts->inidle = 1;
- 	tick_nohz_start_idle(ts);
- 
-@@ -991,15 +1030,31 @@ void tick_nohz_irq_exit(void)
- }
- 
- /**
-- * tick_nohz_get_sleep_length - return the length of the current sleep
-+ * tick_nohz_get_sleep_length - return the expected length of the current sleep
-  *
-  * Called from power state control code with interrupts disabled
-  */
- ktime_t tick_nohz_get_sleep_length(void)
- {
-+	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
- 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
-+	int cpu = smp_processor_id();
-+	/*
-+	 * The idle entry time is expected to be a sufficient approximation of
-+	 * the current time at this point.
-+	 */
-+	ktime_t now = ts->idle_entrytime;
++	pm_runtime_get_sync(dev);
 +
-+	WARN_ON_ONCE(!ts->inidle);
++	status = acpi_evaluate_integer(handle, method, &arg_list, &retval);
 +
-+	if (can_stop_idle_tick(cpu, ts)) {
-+		ktime_t next_event = tick_nohz_next_event(ts, cpu);
++	pm_runtime_put_sync(dev);
 +
-+		if (next_event)
-+			return ktime_sub(next_event, now);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	if ((u32)retval == ACPI_TAD_WAKE_DISABLED)
++		return sprintf(buf, "%s\n", specval);
++
++	return sprintf(buf, "%u\n", (u32)retval);
++}
++
++static const char *alarm_specval = "disabled";
++
++static int acpi_tad_alarm_write(struct device *dev, const char *buf,
++				u32 timer_id)
++{
++	return acpi_tad_wake_write(dev, buf, "_STV", timer_id, alarm_specval);
++}
++
++static ssize_t acpi_tad_alarm_read(struct device *dev, char *buf, u32 timer_id)
++{
++	return acpi_tad_wake_read(dev, buf, "_TIV", timer_id, alarm_specval);
++}
++
++static const char *policy_specval = "never";
++
++static int acpi_tad_policy_write(struct device *dev, const char *buf,
++				 u32 timer_id)
++{
++	return acpi_tad_wake_write(dev, buf, "_STP", timer_id, policy_specval);
++}
++
++static ssize_t acpi_tad_policy_read(struct device *dev, char *buf, u32 timer_id)
++{
++	return acpi_tad_wake_read(dev, buf, "_TIP", timer_id, policy_specval);
++}
++
++static int acpi_tad_clear_status(struct device *dev, u32 timer_id)
++{
++	acpi_handle handle = ACPI_HANDLE(dev);
++	union acpi_object args[] = {
++		{ .type = ACPI_TYPE_INTEGER, },
++	};
++	struct acpi_object_list arg_list = {
++		.pointer = args,
++		.count = ARRAY_SIZE(args),
++	};
++	unsigned long long retval;
++	acpi_status status;
++
++	args[0].integer.value = timer_id;
++
++	pm_runtime_get_sync(dev);
++
++	status = acpi_evaluate_integer(handle, "_CWS", &arg_list, &retval);
++
++	pm_runtime_put_sync(dev);
++
++	if (ACPI_FAILURE(status) || retval)
++		return -EIO;
++
++	return 0;
++}
++
++static int acpi_tad_status_write(struct device *dev, const char *buf, u32 timer_id)
++{
++	int ret, value;
++
++	ret = kstrtoint(buf, 0, &value);
++	if (ret)
++		return ret;
++
++	if (value)
++		return -EINVAL;
++
++	return acpi_tad_clear_status(dev, timer_id);
++}
++
++static ssize_t acpi_tad_status_read(struct device *dev, char *buf, u32 timer_id)
++{
++	acpi_handle handle = ACPI_HANDLE(dev);
++	union acpi_object args[] = {
++		{ .type = ACPI_TYPE_INTEGER, },
++	};
++	struct acpi_object_list arg_list = {
++		.pointer = args,
++		.count = ARRAY_SIZE(args),
++	};
++	unsigned long long retval;
++	acpi_status status;
++
++	args[0].integer.value = timer_id;
++
++	pm_runtime_get_sync(dev);
++
++	status = acpi_evaluate_integer(handle, "_GWS", &arg_list, &retval);
++
++	pm_runtime_put_sync(dev);
++
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	return sprintf(buf, "0x%02X\n", (u32)retval);
++}
++
++static ssize_t caps_show(struct device *dev, struct device_attribute *attr,
++			 char *buf)
++{
++	struct acpi_tad_driver_data *dd = dev_get_drvdata(dev);
++
++	return sprintf(buf, "0x%02X\n", dd->capabilities);
++}
++
++static DEVICE_ATTR_RO(caps);
++
++static ssize_t ac_alarm_store(struct device *dev, struct device_attribute *attr,
++			      const char *buf, size_t count)
++{
++	int ret = acpi_tad_alarm_write(dev, buf, ACPI_TAD_AC_TIMER);
++
++	return ret ? ret : count;
++}
++
++static ssize_t ac_alarm_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	return acpi_tad_alarm_read(dev, buf, ACPI_TAD_AC_TIMER);
++}
++
++static DEVICE_ATTR(ac_alarm, S_IRUSR | S_IWUSR, ac_alarm_show, ac_alarm_store);
++
++static ssize_t ac_policy_store(struct device *dev, struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	int ret = acpi_tad_policy_write(dev, buf, ACPI_TAD_AC_TIMER);
++
++	return ret ? ret : count;
++}
++
++static ssize_t ac_policy_show(struct device *dev, struct device_attribute *attr,
++			      char *buf)
++{
++	return acpi_tad_policy_read(dev, buf, ACPI_TAD_AC_TIMER);
++}
++
++static DEVICE_ATTR(ac_policy, S_IRUSR | S_IWUSR, ac_policy_show, ac_policy_store);
++
++static ssize_t ac_status_store(struct device *dev, struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	int ret = acpi_tad_status_write(dev, buf, ACPI_TAD_AC_TIMER);
++
++	return ret ? ret : count;
++}
++
++static ssize_t ac_status_show(struct device *dev, struct device_attribute *attr,
++			      char *buf)
++{
++	return acpi_tad_status_read(dev, buf, ACPI_TAD_AC_TIMER);
++}
++
++static DEVICE_ATTR(ac_status, S_IRUSR | S_IWUSR, ac_status_show, ac_status_store);
++
++static struct attribute *acpi_tad_attrs[] = {
++	&dev_attr_caps.attr,
++	&dev_attr_ac_alarm.attr,
++	&dev_attr_ac_policy.attr,
++	&dev_attr_ac_status.attr,
++	NULL,
++};
++static const struct attribute_group acpi_tad_attr_group = {
++	.attrs	= acpi_tad_attrs,
++};
++
++static ssize_t dc_alarm_store(struct device *dev, struct device_attribute *attr,
++			      const char *buf, size_t count)
++{
++	int ret = acpi_tad_alarm_write(dev, buf, ACPI_TAD_DC_TIMER);
++
++	return ret ? ret : count;
++}
++
++static ssize_t dc_alarm_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	return acpi_tad_alarm_read(dev, buf, ACPI_TAD_DC_TIMER);
++}
++
++static DEVICE_ATTR(dc_alarm, S_IRUSR | S_IWUSR, dc_alarm_show, dc_alarm_store);
++
++static ssize_t dc_policy_store(struct device *dev, struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	int ret = acpi_tad_policy_write(dev, buf, ACPI_TAD_DC_TIMER);
++
++	return ret ? ret : count;
++}
++
++static ssize_t dc_policy_show(struct device *dev, struct device_attribute *attr,
++			      char *buf)
++{
++	return acpi_tad_policy_read(dev, buf, ACPI_TAD_DC_TIMER);
++}
++
++static DEVICE_ATTR(dc_policy, S_IRUSR | S_IWUSR, dc_policy_show, dc_policy_store);
++
++static ssize_t dc_status_store(struct device *dev, struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	int ret = acpi_tad_status_write(dev, buf, ACPI_TAD_DC_TIMER);
++
++	return ret ? ret : count;
++}
++
++static ssize_t dc_status_show(struct device *dev, struct device_attribute *attr,
++			      char *buf)
++{
++	return acpi_tad_status_read(dev, buf, ACPI_TAD_DC_TIMER);
++}
++
++static DEVICE_ATTR(dc_status, S_IRUSR | S_IWUSR, dc_status_show, dc_status_store);
++
++static struct attribute *acpi_tad_dc_attrs[] = {
++	&dev_attr_dc_alarm.attr,
++	&dev_attr_dc_policy.attr,
++	&dev_attr_dc_status.attr,
++	NULL,
++};
++static const struct attribute_group acpi_tad_dc_attr_group = {
++	.attrs	= acpi_tad_dc_attrs,
++};
++
++static int acpi_tad_disable_timer(struct device *dev, u32 timer_id)
++{
++	return acpi_tad_wake_set(dev, "_STV", timer_id, ACPI_TAD_WAKE_DISABLED);
++}
++
++static int acpi_tad_remove(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct acpi_tad_driver_data *dd = dev_get_drvdata(dev);
++
++	device_init_wakeup(dev, false);
++
++	pm_runtime_get_sync(dev);
++
++	if (dd->capabilities & ACPI_TAD_DC_WAKE)
++		sysfs_remove_group(&dev->kobj, &acpi_tad_dc_attr_group);
++
++	sysfs_remove_group(&dev->kobj, &acpi_tad_attr_group);
++
++	acpi_tad_disable_timer(dev, ACPI_TAD_AC_TIMER);
++	acpi_tad_clear_status(dev, ACPI_TAD_AC_TIMER);
++	if (dd->capabilities & ACPI_TAD_DC_WAKE) {
++		acpi_tad_disable_timer(dev, ACPI_TAD_DC_TIMER);
++		acpi_tad_clear_status(dev, ACPI_TAD_DC_TIMER);
 +	}
- 
--	return ts->sleep_length;
-+	return ktime_sub(dev->next_event, now);
- }
- 
- /**
-@@ -1077,6 +1132,7 @@ void tick_nohz_idle_exit(void)
- 	local_irq_disable();
- 
- 	WARN_ON_ONCE(!ts->inidle);
-+	WARN_ON_ONCE(ts->timer_expires_base);
- 
- 	ts->inidle = 0;
- 
-Index: linux-pm/include/linux/tick.h
++
++	pm_runtime_put_sync(dev);
++	pm_runtime_disable(dev);
++	return 0;
++}
++
++static int acpi_tad_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	acpi_handle handle = ACPI_HANDLE(dev);
++	struct acpi_tad_driver_data *dd;
++	acpi_status status;
++	unsigned long long caps;
++	int ret;
++
++	/*
++	 * Initialization failure messages are mostly about firmware issues, so
++	 * print them at the "info" level.
++	 */
++	status = acpi_evaluate_integer(handle, "_GCP", NULL, &caps);
++	if (ACPI_FAILURE(status)) {
++		dev_info(dev, "Unable to get capabilities\n");
++		return -ENODEV;
++	}
++
++	if (!(caps & ACPI_TAD_AC_WAKE)) {
++		dev_info(dev, "Unsupported capabilities\n");
++		return -ENODEV;
++	}
++
++	if (!acpi_has_method(handle, "_PRW")) {
++		dev_info(dev, "Missing _PRW\n");
++		return -ENODEV;
++	}
++
++	dd = devm_kzalloc(dev, sizeof(*dd), GFP_KERNEL);
++	if (!dd)
++		return -ENOMEM;
++
++	dd->capabilities = caps;
++	dev_set_drvdata(dev, dd);
++
++	/*
++	 * Assume that the ACPI PM domain has been attached to the device and
++	 * simply enable system wakeup and runtime PM and put the device into
++	 * runtime suspend.  Everything else should be taken care of by the ACPI
++	 * PM domain callbacks.
++	 */
++	device_init_wakeup(dev, true);
++	dev_pm_set_driver_flags(dev, DPM_FLAG_SMART_SUSPEND |
++				     DPM_FLAG_LEAVE_SUSPENDED);
++	/*
++	 * The platform bus type layer tells the ACPI PM domain powers up the
++	 * device, so set the runtime PM status of it to "active".
++	 */
++	pm_runtime_set_active(dev);
++	pm_runtime_enable(dev);
++	pm_runtime_suspend(dev);
++
++	ret = sysfs_create_group(&dev->kobj, &acpi_tad_attr_group);
++	if (ret)
++		goto fail;
++
++	if (caps & ACPI_TAD_DC_WAKE) {
++		ret = sysfs_create_group(&dev->kobj, &acpi_tad_dc_attr_group);
++		if (ret)
++			goto fail;
++	}
++
++	return 0;
++
++fail:
++	acpi_tad_remove(pdev);
++	return ret;
++}
++
++static const struct acpi_device_id acpi_tad_ids[] = {
++	{"ACPI000E", 0},
++	{}
++};
++
++static struct platform_driver acpi_tad_driver = {
++	.driver = {
++		.name = "acpi-tad",
++		.acpi_match_table = acpi_tad_ids,
++	},
++	.probe = acpi_tad_probe,
++	.remove = acpi_tad_remove,
++};
++MODULE_DEVICE_TABLE(acpi, acpi_tad_ids);
++
++module_platform_driver(acpi_tad_driver);
+Index: linux-pm/Documentation/ABI/testing/sysfs-devices-platform-ACPI-TAD
 ===================================================================
---- linux-pm.orig/include/linux/tick.h
-+++ linux-pm/include/linux/tick.h
-@@ -115,6 +115,7 @@ enum tick_dep_bits {
- extern bool tick_nohz_enabled;
- extern int tick_nohz_tick_stopped(void);
- extern void tick_nohz_idle_stop_tick(void);
-+extern void tick_nohz_idle_retain_tick(void);
- extern void tick_nohz_idle_restart_tick(void);
- extern void tick_nohz_idle_enter(void);
- extern void tick_nohz_idle_exit(void);
-@@ -136,6 +137,7 @@ static inline void tick_nohz_idle_stop_t
- #define tick_nohz_enabled (0)
- static inline int tick_nohz_tick_stopped(void) { return 0; }
- static inline void tick_nohz_idle_stop_tick(void) { }
-+static inline void tick_nohz_idle_retain_tick(void) { }
- static inline void tick_nohz_idle_restart_tick(void) { }
- static inline void tick_nohz_idle_enter(void) { }
- static inline void tick_nohz_idle_exit(void) { }
+--- /dev/null
++++ linux-pm/Documentation/ABI/testing/sysfs-devices-platform-ACPI-TAD
+@@ -0,0 +1,113 @@
++		ACPI Time and Alarm (TAD) device attributes.
++
++What:		/sys/bus/platform/devices/ACPI000E:00/caps
++Date:		March 2018
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Description:
++		(RO) Hexadecimal bitmask of the TAD attributes are reported by
++		the platform firmware (see ACPI 6.2, section 9.18.2):
++
++		BIT(0): AC wakeup implemented if set
++		BIT(1): DC wakeup implemented if set
++		BIT(2): Get/set real time features implemented if set
++		BIT(3): Real time accuracy in milliseconds if set
++		BIT(4): Correct status reported for wakeups from S4/S5 if set
++		BIT(5): The AC timer wakes up from S4 if set
++		BIT(6): The AC timer wakes up from S5 if set
++		BIT(7): The DC timer wakes up from S4 if set
++		BIT(8): The DC timer wakes up from S5 if set
++
++		The other bits are reserved.
++
++What:		/sys/bus/platform/devices/ACPI000E:00/ac_alarm
++Date:		March 2018
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Description:
++		(RW) The AC alarm timer value.
++
++		Reads return the current AC alarm timer value in seconds or
++		"disabled", if the AC alarm is not set to wake up the system.
++
++		Write a new AC alarm timer value in seconds or "disabled" to it
++		to set the AC alarm timer or to disable it, respectively.
++
++		If the AC alarm timer is set through this attribute and it
++		expires, it will immediately wake up the system from the S3
++		sleep state (and from S4/S5 too if supported) until its status
++		is explicitly cleared via the ac_status attribute.
++
++What:		/sys/bus/platform/devices/ACPI000E:00/ac_policy
++Date:		March 2018
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Description:
++		(RW) The AC alarm expired timer wake policy (see ACPI 6.2,
++		Section 9.18 for details).
++
++		Reads return the current expired timer wake delay for the AC
++		alarm timer or "never", if the policy is to discard AC timer
++		wakeups if the system is on DC power.
++
++		Write a new expired timer wake delay for the AC alarm timer in
++		seconds or "never" to it to set the expired timer wake delay for
++		the AC alarm timer or to set its expired wake policy to discard
++		wakeups if the system is on DC power, respectively.
++
++What:		/sys/bus/platform/devices/ACPI000E:00/ac_status
++Date:		March 2018
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Description:
++		(RW) The AC alarm status.
++
++		Reads return a hexadecimal bitmask representing the AC alarm
++		timer status with the following meaning of bits (see ACPI 6.2,
++		Section 9.18.5):
++
++		Bit(0): The timer has expired if set.
++		Bit(1): The timer has woken up the system from a sleep state
++		        (S3 or S4/S5 if supported) if set.
++
++		The other bits are reserved.
++
++		Reads also cause the AC alarm timer status to be reset.
++
++		Another way to reset the the status of the AC alarm timer is to
++		write (the number) 0 to this file.
++
++		If the status return value indicates that the timer has expired,
++		it will immediately wake up the system from the S3 sleep state
++		(and from S4/S5 too if supported) until its status is explicitly
++		cleared through this attribute.
++
++What:		/sys/bus/platform/devices/ACPI000E:00/dc_alarm
++Date:		March 2018
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Description:
++		(RW,optional) The DC alarm timer value.
++
++		This attribute is only present if the TAD supports a separate
++		DC timer.
++
++		It is analogous to the ac_alarm attribute.
++
++What:		/sys/bus/platform/devices/ACPI000E:00/dc_policy
++Date:		March 2018
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Description:
++		(RW,optional) The DC alarm expired timer wake policy.
++
++		This attribute is only present if the TAD supports a separate
++		DC timer.
++
++		It is analogous to the ac_policy attribute.
++
++What:		/sys/bus/platform/devices/ACPI000E:00/dc_status
++Date:		March 2018
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++
++Description:
++		(RW,optional) The DC alarm status.
++
++		This attribute is only present if the TAD supports a separate
++		DC timer.
++
++		It is analogous to the ac_status attribute.
