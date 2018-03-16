@@ -1,42 +1,71 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 0/4] Utilization estimation (util_est) for FAIR tasks
-Date: Fri, 16 Mar 2018 14:25:06 +0100
-Message-ID: <20180316132506.GF4064@hirez.programming.kicks-ass.net>
-References: <20180309095245.11071-1-patrick.bellasi@arm.com>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [RFT][PATCH v4 3/7] sched: idle: Do not stop the tick before
+ cpuidle_idle_call()
+Date: Fri, 16 Mar 2018 15:16:35 +0100
+Message-ID: <20180316141633.GA20981@lerouge>
+References: <2352117.3UUoYAu18A@aspire.rjw.lan>
+ <3550231.xNMJN5JcLx@aspire.rjw.lan>
+ <20180315181858.GA14983@lerouge>
+ <CAJZ5v0jGi_ewnJXxwuY1-y6Ti64Y601A4DQuDhtMJ+riYPJpzA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180309095245.11071-1-patrick.bellasi@arm.com>
+In-Reply-To: <CAJZ5v0jGi_ewnJXxwuY1-y6Ti64Y601A4DQuDhtMJ+riYPJpzA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 09, 2018 at 09:52:41AM +0000, Patrick Bellasi wrote:
-> Hi, here is an update of [1], based on today's tip/sched/core [2], which mainly
-> adds some code cleanups suggested by Peter as well as fixes compilation for
-> !CONFIG_SMP systems.
+On Thu, Mar 15, 2018 at 09:41:10PM +0100, Rafael J. Wysocki wrote:
+> On Thu, Mar 15, 2018 at 7:19 PM, Frederic Weisbecker
+> <frederic@kernel.org> wrote:
+> > On Mon, Mar 12, 2018 at 10:53:25AM +0100, Rafael J. Wysocki wrote:
+> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> Make cpuidle_idle_call() decide whether or not to stop the tick.
+> >>
+> >> First, the cpuidle_enter_s2idle() path deals with the tick (and with
+> >> the entire timekeeping for that matter) by itself and it doesn't need
+> >> the tick to be stopped beforehand.
+> >
+> > Not sure you meant timekeeping either :)
 > 
-> Most notably:
-> a) The util_est's update flag has been renamed into UTIL_AVG_UNCHANGED, which
->    seems to better match its usages.
-> b) The cpu_util_est() function has been removed to reduce cluttering by folding
->    its code directly into cpu_util(). This last function is thus now always
->    returning the estimated utilization of a CPU, unless this sched feature is
->    disabled.
-> c) Not necessary READ_ONCE() have been removed from rq-lock protected code
->    paths. For util_est variable, that we read/modify/write only from rq-lock
->    protected, code we keep just the WRITE_ONCE() barriers, which are still
->    required for synchronization with lockless readers.
->    The READ_ONCE() have been instead maintained in all the getter functions,
->    like for example task_util() and cpu_util(), which can potentially be used
->    by lockless code. e.g. schedutil or load-balancer.
+> Yeah, I meant nohz.
 > 
-> Results on both x86_64 and ARM (Android) targets, which have been collected and
-> reported in previous postings [1,3], show negligible overheads, especially
-> compared to the corresponding power/performance benefits on mobile platforms,
-> where this feature helps to reduce the performance gap between PELT and another
-> other out-of-tree load tracking solution.
+> >>       if (idle_should_enter_s2idle() || dev->use_deepest_state) {
+> >>               if (idle_should_enter_s2idle()) {
+> >> +                     rcu_idle_enter();
+> >> +
+> >>                       entered_state = cpuidle_enter_s2idle(drv, dev);
+> >>                       if (entered_state > 0) {
+> >>                               local_irq_enable();
+> >>                               goto exit_idle;
+> >>                       }
+> >> +
+> >> +                     rcu_idle_exit();
+> >>               }
+> >
+> > I'm not sure how the tick is stopped on suspend to idle. Perhaps through
+> > hrtimer (tick_cancel_sched_timer()) or clockevents code.
+> 
+> The latter.
+> 
+> It does clockevents_shutdown() down the road, eventually.
 
-Thanks Patrick!
+Ah good. And I see tick_resume_oneshot() takes care of restoring if necessary.
+
+> 
+> IOW, it couldn't care less. :-)
+> 
+> > But we may have a similar problem than with idle_poll() called right after
+> > call_cpuidle(). Ie: we arrive in cpuidle_enter_s2idle() with a tick that
+> > should be reprogrammed while it is not. No idea if that can hurt somehow.
+> >
+> > I guess it depends what happens to the tick on s2idle, I'm not clear with that.
+> 
+> No problem there, AFAICS.
+
+Yep, all good.
+
+Thanks!
