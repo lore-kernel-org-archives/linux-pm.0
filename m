@@ -1,35 +1,46 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFT][PATCH v5 0/7] sched/cpuidle: Idle loop rework
-Date: Sat, 17 Mar 2018 09:11:53 -0700
-Message-ID: <001a01d3be0a$ad3a0ed0$07ae2c70$@net>
-References: <2142751.3U6XgWyF8u@aspire.rjw.lan> xBBLeKgi1FfdwxBBQedJaO
+From: Pavel Machek <pavel@ucw.cz>
+Subject: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Sun, 18 Mar 2018 11:40:23 +0100
+Message-ID: <20180318104023.GA10392@amd>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="7JfCtLOvnd9MIVvH"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: xBBLeKgi1FfdwxBBQedJaO
-Content-Language: en-ca
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Peter Zijlstra' <peterz@infradead.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>
-Cc: 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+Cc: Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.17 Thomas Ilsche wrote:
 
-> Over the last week I tested v4+pollv2 and now v5+pollv3. With v5, I
-> observe a particular idle behavior, that I have not seen before with
-> v4. On a dual-socket Skylake system the idle power increases from
-> 74.1 W (system total) to 85.5 W with a 300 HZ build and even to
-> 138.3 W with a 1000 HZ build. A similar Haswell-EP system is also
-> affected.
+--7JfCtLOvnd9MIVvH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I confirm your idle findings. There is a regression between V4 and V5.
-The differences on my test computer are much less than on yours,
-probably because I have only 8 CPUs.
+Hi!
 
-http://fast.smythies.com/rjw_idle.png
+With recent linux-next, after resume networkmanager often claims that
+"network is disabled". Sometimes suspend/resume clears that.
 
-1000 Hz kernel only.
+Any ideas? Does it work for you?
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-... Doug
+--7JfCtLOvnd9MIVvH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlquQhcACgkQMOfwapXb+vL50wCeMsJykRLMDJ2eCf1pIKFtIgBp
+uKcAoKRXiht1B4ehkcZr2/VndouIdkp8
+=UqP1
+-----END PGP SIGNATURE-----
+
+--7JfCtLOvnd9MIVvH--
