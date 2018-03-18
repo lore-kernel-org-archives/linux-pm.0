@@ -1,43 +1,125 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [RFT][PATCH v5 0/7] sched/cpuidle: Idle loop rework
-Date: Sun, 18 Mar 2018 17:06:04 +0100
-Message-ID: <CAJZ5v0h4aYDV8bzBGr2d2u3LFanturh-o9-PJpS4SFhuKS4zkg@mail.gmail.com>
+Date: Sun, 18 Mar 2018 17:15:22 +0100
+Message-ID: <CAJZ5v0h0wbu_hxCyBKLxFnWRFkK6ObqTmYRHAWgHyXTd57aH9Q@mail.gmail.com>
 References: <2142751.3U6XgWyF8u@aspire.rjw.lan> <001a01d3be0a$ad3a0ed0$07ae2c70$@net>
- <000801d3bece$0e4b9090$2ae2b1b0$@net>
+ <2043615.lCdO10SMaB@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000801d3bece$0e4b9090$2ae2b1b0$@net>
+In-Reply-To: <2043615.lCdO10SMaB@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Doug Smythies <dsmythies@telus.net>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Mar 18, 2018 at 4:30 PM, Doug Smythies <dsmythies@telus.net> wrote:
-> On 2018.03.18 04:01 Rafael J. Wysocki wrote:
->
->> Below is a drop-in v6 replacement for patch [4/7].
+On Sun, Mar 18, 2018 at 12:00 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Saturday, March 17, 2018 5:11:53 PM CET Doug Smythies wrote:
+>> On 2018.03.17 Thomas Ilsche wrote:
 >>
->> With this new patch applied instead of the [4/7] the behavior should be much
->> more in line with the v4 behavior, so please try it if you can and let me know
->> if that really is the case on your systems.
+>> > Over the last week I tested v4+pollv2 and now v5+pollv3. With v5, I
+>> > observe a particular idle behavior, that I have not seen before with
+>> > v4. On a dual-socket Skylake system the idle power increases from
+>> > 74.1 W (system total) to 85.5 W with a 300 HZ build and even to
+>> > 138.3 W with a 1000 HZ build. A similar Haswell-EP system is also
+>> > affected.
+>>
+>> I confirm your idle findings. There is a regression between V4 and V5.
+>> The differences on my test computer are much less than on yours,
+>> probably because I have only 8 CPUs.
+>>
+>> http://fast.smythies.com/rjw_idle.png
+>>
+>> 1000 Hz kernel only.
 >
-> Yes, the idle power is back down to V4 levels. (I did not do a new graph).
+> Doug, Thomas,
+>
+> Thank you both for the reports, much appreciated!
+>
+> Below is a drop-in v6 replacement for patch [4/7].
+>
+> With this new patch applied instead of the [4/7] the behavior should be much
+> more in line with the v4 behavior, so please try it if you can and let me know
+> if that really is the case on your systems.
+>
+> Patches [5-7/7] from the original v5 apply on top of it right away for me,
+> but I've also created a git branch you can use to pull all of the series
+> with the below included:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+>  idle-loop
+>
+> Thanks!
+>
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH v6] cpuidle: Return nohz hint from cpuidle_select()
+>
+> Add a new pointer argument to cpuidle_select() and to the ->select
+> cpuidle governor callback to allow a boolean value indicating
+> whether or not the tick should be stopped before entering the
+> selected state to be returned from there.
+>
+> Make the ladder governor ignore that pointer (to preserve its
+> current behavior) and make the menu governor return 'false" through
+> it if:
+>  (1) the idle exit latency is constrained at 0,
+>  (2) the selected state is a polling one, or
+>  (3) the selected state is not deep enough.
+>
+> Since the value returned through the new argument pointer is not
+> used yet, this change is not expected to alter the functionality of
+> the code.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 
-Awesome, thanks!
+[cut]
 
-> Some other data from this week (7 patch set + poll fix verses kernel 4.16-rc5):
+> @@ -354,6 +360,7 @@ static int menu_select(struct cpuidle_dr
+>         if (latency_req > interactivity_req)
+>                 latency_req = interactivity_req;
 >
-> pipe-test: The not cross core test is the most dramatic. Using CPU's 3 and 7,
-> or core 3, uses 6% less power and 18% performance improvement.
->
-> Graphs:
-> http://fast.smythies.com/pipe-test-one-core-power.png
-> http://fast.smythies.com/pipe-test-one-core-times.png
->
-> A couple of Phoronix tests (I didn't get very far yet):
-> himeno: 11% performance improvement; 14% less power.
-> compress-lzma: small performance improvement; small power improvement.
-> mafft: performance similar; small power improvement.
+> +       expected_interval = TICK_USEC_HZ;
+>         /*
+>          * Find the idle state with the lowest power while satisfying
+>          * our constraints.
+> @@ -367,17 +374,44 @@ static int menu_select(struct cpuidle_dr
+>                         continue;
+>                 if (idx == -1)
+>                         idx = i; /* first enabled state */
+> -               if (s->target_residency > data->predicted_us)
+> +               if (s->target_residency > data->predicted_us) {
+> +                       /*
+> +                        * Retain the tick if the selected state is shallower
+> +                        * than the deepest available one with target residency
+> +                        * within the tick period range.
+> +                        *
+> +                        * This allows the tick to be stopped even if the
+> +                        * predicted idle duration is within the tick period
+> +                        * range to counter the effect by which the prediction
+> +                        * may be skewed towards lower values due to the tick
+> +                        * bias.
+> +                        */
+> +                       expected_interval = s->target_residency;
+>                         break;
 
-Great news, thank you!
+BTW, I guess I need to explain the motivation here more thoroughly, so
+here it goes.
+
+The governor predicts idle duration under the assumption that the
+tick will be stopped, so if the result of the prediction is within the tick
+period range and it is not accurate, that needs to be taken into
+account in the governor's statistics.  However, if the tick is allowed
+to run every time the governor predicts idle duration within the tick
+period range, the governor will always see that it was "almost
+right" and the correction factor applied by it to improve the
+prediction next time will not be sufficient.  For this reason, it
+is better to stop the tick at least sometimes when the governor
+predicts idle duration within the tick period range and the idea
+here is to do that when the selected state is the deepest available
+one with the target residency within the tick period range.  This
+allows the opportunity to save more energy to be seized which
+balances the extra overhead of stopping the tick.
+
+HTH
