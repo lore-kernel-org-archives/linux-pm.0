@@ -1,58 +1,114 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v4 2/7] dt-bindings: Introduce interconnect provider
- bindings
-Date: Mon, 19 Mar 2018 17:34:24 +0800
-Message-ID: <45cba7ca-3a83-0ef8-eff7-a8b33bce9185@linaro.org>
-References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-3-georgi.djakov@linaro.org>
- <20180318225029.GQ5626@tuxbook-pro>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFT][PATCH v5 4/7] cpuidle: Return nohz hint from cpuidle_select()
+Date: Mon, 19 Mar 2018 10:39:50 +0100
+Message-ID: <CAJZ5v0gHTyhXvYiLALbO8DrURBfHdUehQp2oi3iSwcCVkc7A+w@mail.gmail.com>
+References: <2142751.3U6XgWyF8u@aspire.rjw.lan> <2021405.tG9RYD54xL@aspire.rjw.lan>
+ <20180319091159.GF4043@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180318225029.GQ5626@tuxbook-pro>
-Content-Language: en-US
+In-Reply-To: <20180319091159.GF4043@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bjorn,
+On Mon, Mar 19, 2018 at 10:11 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, Mar 15, 2018 at 11:11:35PM +0100, Rafael J. Wysocki wrote:
+>
+> I would suggest s/nohz_ret/stop_tick/ throughout, because I keep
+> forgetting which way around the boolean works and the new name doesn't
+> confuse.
 
-On 03/19/2018 06:50 AM, Bjorn Andersson wrote:
-> On Fri 09 Mar 13:09 PST 2018, Georgi Djakov wrote:
->> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-> [..]
->> +Required properties:
->> +- compatible : contains the interconnect provider vendor specific compatible
->> +	       string
->> +- reg : register space of the interconnect controller hardware
-> 
-> These properties doesn't relate to the interconnect provider, so there's
-> no need to describe them here.
+OK
 
-Agree.
+>> Index: linux-pm/drivers/cpuidle/governors/menu.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+>> +++ linux-pm/drivers/cpuidle/governors/menu.c
+>> @@ -275,12 +275,16 @@ again:
+>>       goto again;
+>>  }
+>>
+>> +#define TICK_USEC_HZ   ((USEC_PER_SEC + HZ/2) / HZ)
+>
+> Do we want to put that next to TICK_NSEC?
 
-> 
+That would be one change too far IMHO.
+
+> Also, there are only 2 users of the existing TICK_USEC, do we want to:
+>
+>   s/TICK_USEC/USER_&/
+>
+> and then rename the new thing to TICK_USEC ?
+
+Well, that can be done.
+
+>>  /**
+>>   * menu_select - selects the next idle state to enter
+>>   * @drv: cpuidle driver containing state data
+>>   * @dev: the CPU
+>> + * @nohz_ret: indication on whether or not to stop the tick
+>>   */
+>> +static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>> +                    bool *nohz_ret)
+>>  {
+>>       struct menu_device *data = this_cpu_ptr(&menu_devices);
+>>       struct device *device = get_cpu_device(dev->cpu);
+>> @@ -303,8 +307,10 @@ static int menu_select(struct cpuidle_dr
+>>               latency_req = resume_latency;
+>>
+>>       /* Special case when user has set very strict latency requirement */
+>> +     if (unlikely(latency_req == 0)) {
+>> +             *nohz_ret = false;
+>>               return 0;
+>> +     }
+>>
+>>       /* determine the expected residency time, round up */
+>>       data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
+>> @@ -354,6 +360,7 @@ static int menu_select(struct cpuidle_dr
+>>       if (latency_req > interactivity_req)
+>>               latency_req = interactivity_req;
+>>
+>> +     expected_interval = data->predicted_us;
+>>       /*
+>>        * Find the idle state with the lowest power while satisfying
+>>        * our constraints.
+>> @@ -369,15 +376,30 @@ static int menu_select(struct cpuidle_dr
+>>                       idx = i; /* first enabled state */
+>>               if (s->target_residency > data->predicted_us)
+>>                       break;
+>> +             if (s->exit_latency > latency_req) {
+>> +                     /*
+>> +                      * If we break out of the loop for latency reasons, use
+>> +                      * the target residency of the selected state as the
+>> +                      * expected idle duration so that the tick is retained
+>> +                      * as long as that target residency is low enough.
+>> +                      */
+>> +                     expected_interval = drv->states[idx].target_residency;
+>>                       break;
+>> +             }
+>>               idx = i;
+>>       }
+>>
+>>       if (idx == -1)
+>>               idx = 0; /* No states enabled. Must use 0. */
+>>
+>> +     /*
+>> +      * Don't stop the tick if the selected state is a polling one or if the
+>> +      * expected idle duration is shorter than the tick period length.
+>> +      */
+>> +     if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+>> +         expected_interval < TICK_USEC_HZ)
+>> +             *nohz_ret = false;
 >> +
->> +Examples:
->> +
->> +		snoc: snoc@580000 {
-> 
-> These nodes should be described in a qcom/msm8916 binding document.
+>>       data->last_state_idx = idx;
+>>
+>>       return data->last_state_idx;
+>
+> Yes, much clearer, Thanks!
 
-Ok, will move this and the above to the platform specific binding
-documentation.
+But this has regressed since the v4, please see
+https://patchwork.kernel.org/patch/10291097/
 
-> 
->> +			compatible = "qcom,msm8916-snoc";
->> +			reg = <0x580000 0x14000>;
->> +			clock-names = "bus_clk", "bus_a_clk";
->> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>, <&rpmcc RPM_SMD_SNOC_A_CLK>;
->> +			status = "okay";
->> +		};
-
-Thanks for the comments!
-
-BR,
-Georgi
+Thanks!
