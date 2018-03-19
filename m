@@ -1,102 +1,51 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v1 02/19] dt-bindings: cpufreq: mediatek: use - instead of
- _ in examples
-Date: Mon, 19 Mar 2018 11:35:04 +0100
-Message-ID: <1eafba31-0d0b-89d9-fb66-c4ba5ca6b56f@gmail.com>
-References: <cover.1519378871.git.sean.wang@mediatek.com>
- <fd1fc4c6760ab8fcbf7518df1cecf3837ab18d2c.1519378871.git.sean.wang@mediatek.com>
- <20180226041336.GJ26947@vireshk-i7> <1521427861.13211.8.camel@mtkswgap22>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
+Date: Mon, 19 Mar 2018 10:39:24 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E1F2B@SW-EX-MBX01.diasemi.com>
+References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180309173339.GA9837@kroah.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1D92FC@SW-EX-MBX01.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521427861.13211.8.camel@mtkswgap22>
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1D92FC@SW-EX-MBX01.diasemi.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sean Wang <sean.wang@mediatek.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sean,
+On 12 March 2018 08:33, Adam Thomson wrote:
 
-On 03/19/2018 03:51 AM, Sean Wang wrote:
+> On 09 March 2018 17:34, Greg Kroah-Hartman wrote:
 > 
-> Hi, Matthias
+> > On Tue, Jan 02, 2018 at 03:50:48PM +0000, Adam Thomson wrote:
+> > > This patch set adds sink side support for the PPS feature introduced in the
+> > > USB PD 3.0 specification.
+> > >
+> > > The source PPS supply is represented using the Power Supply framework to
+> provide
+> > > access and control APIs for dealing with it's operating voltage and current,
+> > > and switching between a standard PDO and PPS APDO operation. During standard
+> > PDO
+> > > operation the voltage and current is read-only, but for APDO PPS these are
+> > > writable as well to allow for control.
+> > >
+> > > It should be noted that the keepalive for PPS is not handled within TCPM. The
+> > > expectation is that the external user will be required to ensure re-requests
+> > > occur regularly to ensure PPS remains and the source does not hard reset.
+> >
+> > I've applied the first 3 patches now.  Can you rebase and resend based
+> > on the feedback so far?
 > 
-> I'm worried you missed the patch which already got both tags Reviewed-by
-> from Rob and Acked-by: Viresh and thus I thought it
-> should be ready for your tree.
-> 
+> That's great. Thanks. Need to also rebase based on the patch
+> 'Revert "typec: tcpm: Only request matching pdos"' as this impacts the APDO
+> selection logic. This is on my TODO list and will try and deal with it ASAP,
+> hopefully this week.
 
-Yes, sorry I missed this one. Fortunately it is not critical, can you please add
-it to v2.
-
-I suppose you realized that I didn't take any from 12/19 onwards, especially 14,
-15 and 17, because they have many conflicts with previous patches in the series.
-
-Sorry for the inconvenience.
-Matthias
-
-> For the other patches in the same series, I will have v2 to refine them
-> according to these suggestions and comments in v1 and let them easy to
-> review.
-> 
-> Really thanks for your effort!
-> 	
-> 	Sean
-> 
-> 
-> On Mon, 2018-02-26 at 09:43 +0530, Viresh Kumar wrote:
->> On 23-02-18, 18:16, sean.wang@mediatek.com wrote:
->>> From: Sean Wang <sean.wang@mediatek.com>
->>>
->>> It should be good that no use "_" is in examples. Consequently,
->>> those nodes in certain files which have an inappropriate name containing
->>> "_" are all being replaced with "-".
->>>
->>> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
->>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>> Cc: Rob Herring <robh+dt@kernel.org>
->>> Cc: Mark Rutland <mark.rutland@arm.com>
->>> Cc: linux-pm@vger.kernel.org
->>> Cc: devicetree@vger.kernel.org
->>> ---
->>>  Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt | 6 +++---
->>>  1 file changed, 3 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
->>> index d36f07e..38cfbb5 100644
->>> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
->>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
->>> @@ -26,7 +26,7 @@ Optional properties:
->>>  
->>>  Example 1 (MT7623 SoC):
->>>  
->>> -	cpu_opp_table: opp_table {
->>> +	cpu_opp_table: opp-table {
->>>  		compatible = "operating-points-v2";
->>>  		opp-shared;
->>>  
->>> @@ -86,7 +86,7 @@ Example 1 (MT7623 SoC):
->>>  	};
->>>  
->>>  Example 2 (MT8173 SoC):
->>> -	cpu_opp_table_a: opp_table_a {
->>> +	cpu_opp_table_a: opp-table-a {
->>>  		compatible = "operating-points-v2";
->>>  		opp-shared;
->>>  
->>> @@ -131,7 +131,7 @@ Example 2 (MT8173 SoC):
->>>  		};
->>>  	};
->>>  
->>> -	cpu_opp_table_b: opp_table_b {
->>> +	cpu_opp_table_b: opp-table-b {
->>>  		compatible = "operating-points-v2";
->>>  		opp-shared;
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
-> 
-> 
+One quick question. The patch 'Revert "typec: tcpm: Only request matching pdos"'
+from Hans isn't on your next branch. Is that something that will get pulled in
+soon? Need this as well as my updates you already pulled into your next branch
+before I can resubmit. For now I cherry-picked that patch locally for testing,
+but that's no good for submission.
