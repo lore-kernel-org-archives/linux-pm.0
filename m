@@ -1,56 +1,58 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: linux-next on x60: network manager often complains "network is
- disabled" after resume
-Date: Mon, 19 Mar 2018 10:21:06 +0100
-Message-ID: <20180319092106.GA5683@amd>
-References: <20180318104023.GA10392@amd>
- <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v4 2/7] dt-bindings: Introduce interconnect provider
+ bindings
+Date: Mon, 19 Mar 2018 17:34:24 +0800
+Message-ID: <45cba7ca-3a83-0ef8-eff7-a8b33bce9185@linaro.org>
+References: <20180309210958.16672-1-georgi.djakov@linaro.org>
+ <20180309210958.16672-3-georgi.djakov@linaro.org>
+ <20180318225029.GQ5626@tuxbook-pro>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="nFreZHaLTZJo0R7j"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
+In-Reply-To: <20180318225029.GQ5626@tuxbook-pro>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Woody Suwalski <terraluna977@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Bjorn,
 
---nFreZHaLTZJo0R7j
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 03/19/2018 06:50 AM, Bjorn Andersson wrote:
+> On Fri 09 Mar 13:09 PST 2018, Georgi Djakov wrote:
+>> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> [..]
+>> +Required properties:
+>> +- compatible : contains the interconnect provider vendor specific compatible
+>> +	       string
+>> +- reg : register space of the interconnect controller hardware
+> 
+> These properties doesn't relate to the interconnect provider, so there's
+> no need to describe them here.
 
-On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
-> Pavel Machek wrote:
-> >Hi!
-> >
-> >With recent linux-next, after resume networkmanager often claims that
-> >"network is disabled". Sometimes suspend/resume clears that.
-> >
-> >Any ideas? Does it work for you?
-> >									Pavel
-> Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
+Agree.
 
-Thanks for testing... but yes, 4.16 should be ok. If not fixed,
-problem will appear in 4.17-rc1.
+> 
+>> +
+>> +Examples:
+>> +
+>> +		snoc: snoc@580000 {
+> 
+> These nodes should be described in a qcom/msm8916 binding document.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Ok, will move this and the above to the platform specific binding
+documentation.
 
---nFreZHaLTZJo0R7j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> 
+>> +			compatible = "qcom,msm8916-snoc";
+>> +			reg = <0x580000 0x14000>;
+>> +			clock-names = "bus_clk", "bus_a_clk";
+>> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>, <&rpmcc RPM_SMD_SNOC_A_CLK>;
+>> +			status = "okay";
+>> +		};
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Thanks for the comments!
 
-iEYEARECAAYFAlqvgQIACgkQMOfwapXb+vIWDACbBChamJQ4Dj2h+S9X0mrWZEJ3
-YHgAoII8QvqWob4gD3Gkkus2ahudfcKh
-=faTm
------END PGP SIGNATURE-----
-
---nFreZHaLTZJo0R7j--
+BR,
+Georgi
