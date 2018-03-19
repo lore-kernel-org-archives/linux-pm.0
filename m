@@ -1,86 +1,105 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH v1 02/19] dt-bindings: cpufreq: mediatek: use - instead
- of _ in examples
-Date: Mon, 19 Mar 2018 10:51:01 +0800
-Message-ID: <1521427861.13211.8.camel@mtkswgap22>
-References: <cover.1519378871.git.sean.wang@mediatek.com>
-         <fd1fc4c6760ab8fcbf7518df1cecf3837ab18d2c.1519378871.git.sean.wang@mediatek.com>
-         <20180226041336.GJ26947@vireshk-i7>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFT][PATCH v5 4/7] cpuidle: Return nohz hint from
+ cpuidle_select()
+Date: Mon, 19 Mar 2018 10:11:59 +0100
+Message-ID: <20180319091159.GF4043@hirez.programming.kicks-ass.net>
+References: <2142751.3U6XgWyF8u@aspire.rjw.lan>
+ <2021405.tG9RYD54xL@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180226041336.GJ26947@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <2021405.tG9RYD54xL@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: matthias.bgg@gmail.com
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Mar 15, 2018 at 11:11:35PM +0100, Rafael J. Wysocki wrote:
 
-Hi, Matthias
-
-I'm worried you missed the patch which already got both tags Reviewed-by
-from Rob and Acked-by: Viresh and thus I thought it
-should be ready for your tree.
-
-For the other patches in the same series, I will have v2 to refine them
-according to these suggestions and comments in v1 and let them easy to
-review.
-
-Really thanks for your effort!
-	
-	Sean
+I would suggest s/nohz_ret/stop_tick/ throughout, because I keep
+forgetting which way around the boolean works and the new name doesn't
+confuse.
 
 
-On Mon, 2018-02-26 at 09:43 +0530, Viresh Kumar wrote:
-> On 23-02-18, 18:16, sean.wang@mediatek.com wrote:
-> > From: Sean Wang <sean.wang@mediatek.com>
-> > 
-> > It should be good that no use "_" is in examples. Consequently,
-> > those nodes in certain files which have an inappropriate name containing
-> > "_" are all being replaced with "-".
-> > 
-> > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: Rob Herring <robh+dt@kernel.org>
-> > Cc: Mark Rutland <mark.rutland@arm.com>
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: devicetree@vger.kernel.org
-> > ---
-> >  Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-> > index d36f07e..38cfbb5 100644
-> > --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-> > +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-> > @@ -26,7 +26,7 @@ Optional properties:
-> >  
-> >  Example 1 (MT7623 SoC):
-> >  
-> > -	cpu_opp_table: opp_table {
-> > +	cpu_opp_table: opp-table {
-> >  		compatible = "operating-points-v2";
-> >  		opp-shared;
-> >  
-> > @@ -86,7 +86,7 @@ Example 1 (MT7623 SoC):
-> >  	};
-> >  
-> >  Example 2 (MT8173 SoC):
-> > -	cpu_opp_table_a: opp_table_a {
-> > +	cpu_opp_table_a: opp-table-a {
-> >  		compatible = "operating-points-v2";
-> >  		opp-shared;
-> >  
-> > @@ -131,7 +131,7 @@ Example 2 (MT8173 SoC):
-> >  		};
-> >  	};
-> >  
-> > -	cpu_opp_table_b: opp_table_b {
-> > +	cpu_opp_table_b: opp-table-b {
-> >  		compatible = "operating-points-v2";
-> >  		opp-shared;
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
+> Index: linux-pm/drivers/cpuidle/governors/menu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> +++ linux-pm/drivers/cpuidle/governors/menu.c
+> @@ -275,12 +275,16 @@ again:
+>  	goto again;
+>  }
+>  
+> +#define TICK_USEC_HZ   ((USEC_PER_SEC + HZ/2) / HZ)
+
+Do we want to put that next to TICK_NSEC?
+
+Also, there are only 2 users of the existing TICK_USEC, do we want to:
+
+  s/TICK_USEC/USER_&/
+
+and then rename the new thing to TICK_USEC ?
+
+>  /**
+>   * menu_select - selects the next idle state to enter
+>   * @drv: cpuidle driver containing state data
+>   * @dev: the CPU
+> + * @nohz_ret: indication on whether or not to stop the tick
+>   */
+> +static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+> +		       bool *nohz_ret)
+>  {
+>  	struct menu_device *data = this_cpu_ptr(&menu_devices);
+>  	struct device *device = get_cpu_device(dev->cpu);
+> @@ -303,8 +307,10 @@ static int menu_select(struct cpuidle_dr
+>  		latency_req = resume_latency;
+>  
+>  	/* Special case when user has set very strict latency requirement */
+> +	if (unlikely(latency_req == 0)) {
+> +		*nohz_ret = false;
+>  		return 0;
+> +	}
+>  
+>  	/* determine the expected residency time, round up */
+>  	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
+> @@ -354,6 +360,7 @@ static int menu_select(struct cpuidle_dr
+>  	if (latency_req > interactivity_req)
+>  		latency_req = interactivity_req;
+>  
+> +	expected_interval = data->predicted_us;
+>  	/*
+>  	 * Find the idle state with the lowest power while satisfying
+>  	 * our constraints.
+> @@ -369,15 +376,30 @@ static int menu_select(struct cpuidle_dr
+>  			idx = i; /* first enabled state */
+>  		if (s->target_residency > data->predicted_us)
+>  			break;
+> +		if (s->exit_latency > latency_req) {
+> +			/*
+> +			 * If we break out of the loop for latency reasons, use
+> +			 * the target residency of the selected state as the
+> +			 * expected idle duration so that the tick is retained
+> +			 * as long as that target residency is low enough.
+> +			 */
+> +			expected_interval = drv->states[idx].target_residency;
+>  			break;
+> +		}
+>  		idx = i;
+>  	}
+>  
+>  	if (idx == -1)
+>  		idx = 0; /* No states enabled. Must use 0. */
+>  
+> +	/*
+> +	 * Don't stop the tick if the selected state is a polling one or if the
+> +	 * expected idle duration is shorter than the tick period length.
+> +	 */
+> +	if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+> +	    expected_interval < TICK_USEC_HZ)
+> +		*nohz_ret = false;
+> +
+>  	data->last_state_idx = idx;
+>  
+>  	return data->last_state_idx;
+
+Yes, much clearer, Thanks!
