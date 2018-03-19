@@ -1,62 +1,41 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 00/13] PCI: Simplify PCIe port driver
-Date: Mon, 19 Mar 2018 13:43:22 -0500
-Message-ID: <20180319184322.GB77194@bhelgaas-glaptop.roam.corp.google.com>
-References: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFT][PATCH v5 7/7] cpuidle: menu: Avoid selecting shallow states with stopped tick
+Date: Mon, 19 Mar 2018 11:21:58 -0700
+Message-ID: <003301d3bfaf$2d5e4090$881ac1b0$@net>
+References: <2142751.3U6XgWyF8u@aspire.rjw.lan> <2148754.TY7qXgFyZy@aspire.rjw.lan> xuDHe5JrTQdbpxuDMeg0da
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: xuDHe5JrTQdbpxuDMeg0da
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pci@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Lukas Wunner <lukas@wunner.de>, Frederick Lawler <fred@fredlawl.com>
+To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Rik van Riel' <riel@surriel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'LKML' <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, 'Linux PM' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 09, 2018 at 12:59:49PM -0600, Bjorn Helgaas wrote:
-> This is an attempt to move a few things out of the port driver.
-> 
-> I added these new patches since v1:
-> 
->   Merge pcieport_if.h into portdrv.h
->     Merge pcieport_if.h and portdrv.h to reduce clutter
-> 
->   Remove unnecessary "pcie_ports=auto" parameter
->     This is the default setting anyway, so specifying the parameter doesn't
->     do anything.
-> 
->   Encapsulate pcie_ports_auto inside the port driver
->     "pcie_ports_auto" was declared in linux/pci.h even though nobody
->     outside the port driver used it.
-> 
->   Rename and reverse sense of pcie_ports_auto
->     "pcie_ports_auto" is connected with the "pcie_ports=native" parameter,
->     so rename it to match.
-> 
-> Other changes since v1:
->   - Rebase onto my pci/portdrv branch.
->   - Rename pcie_resume_early() to pcie_pme_root_status_cleanup() as
->     suggested by Rafael.
->   - Add Rafael's Reviewed-by tags.
-> 
-> v1: https://lkml.kernel.org/r/152040297576.240786.1532465558381209070.stgit@bhelgaas-glaptop.roam.corp.google.com
-> 
-> ---
-> 
-> Bjorn Helgaas (13):
->       PCI/portdrv: Merge pcieport_if.h into portdrv.h
->       PCI/PM: Move pcie_clear_root_pme_status() to core
->       PCI/PM: Clear PCIe PME Status bit in core, not PCIe port driver
->       PCI/PM: Clear PCIe PME Status bit for Root Complex Event Collectors
->       PCI/portdrv: Disable port driver in compat mode
->       PCI/portdrv: Remove pcie_port_bus_type link order dependency
->       PCI/portdrv: Remove unused PCIE_PORT_SERVICE_VC
->       PCI/portdrv: Simplify PCIe feature permission checking
->       PCI/portdrv: Remove unnecessary include of <linux/pci-aspm.h>
->       PCI/portdrv: Remove "pcie_hp=nomsi" kernel parameter
->       PCI/portdrv: Remove unnecessary "pcie_ports=auto" parameter
->       PCI/portdrv: Encapsulate pcie_ports_auto inside the port driver
->       PCI/portdrv: Rename and reverse sense of pcie_ports_auto
+On 2018.03.19 05:47 Thomas Ilsche wrote:
+> On 2018-03-15 23:19, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> 
+>> If the scheduler tick has been stopped already and the governor
+>> selects a shallow idle state, the CPU can spend a long time in that
+>> state if the selection is based on an inaccurate prediction of idle
+>> time.  That effect turns out to be noticeable, so it needs to be
+>> mitigated.
+>
+> What are some common causes for that situation?
+> How could I trigger this for testing?
 
-I applied these with Christoph's acks and Lukas' renaming suggestion to
-pci/portdrv for v4.17.
+It appeared quite readily with my simple 100% load
+on one CPU test. Back then (V3) there only 6 patches in the set,
+and before the re-spin there ended up being a patch 7 of 6, which
+made a significant difference in both package power and the
+histograms of times in each idle state.
+
+Reference:
+https://marc.info/?l=linux-pm&m=152075419526696&w=2
+
+... Doug
+ 
