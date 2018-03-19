@@ -1,51 +1,48 @@
-From: Dan Williams <dcbw@redhat.com>
-Subject: Re: linux-next on x60: network manager often complains "network is
- disabled" after resume
-Date: Mon, 19 Mar 2018 12:45:49 -0500
-Message-ID: <1521481549.20208.8.camel@redhat.com>
-References: <20180318104023.GA10392@amd>
-         <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
-         <20180319092106.GA5683@amd> <1521474008.20208.2.camel@redhat.com>
-         <20180319173356.GA28462@amd>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 08/13] PCI/portdrv: Simplify PCIe feature permission
+ checking
+Date: Mon, 19 Mar 2018 13:37:34 -0500
+Message-ID: <20180319183734.GA77194@bhelgaas-glaptop.roam.corp.google.com>
+References: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <152062203293.77693.8159909590216160503.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20180312080402.GE10358@infradead.org>
+ <20180312140316.GB194000@bhelgaas-glaptop.roam.corp.google.com>
+ <20180312142059.GA11186@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180319173356.GA28462@amd>
+Content-Disposition: inline
+In-Reply-To: <20180312142059.GA11186@wunner.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Frederick Lawler <fred@fredlawl.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-03-19 at 18:33 +0100, Pavel Machek wrote:
-> On Mon 2018-03-19 10:40:08, Dan Williams wrote:
-> > On Mon, 2018-03-19 at 10:21 +0100, Pavel Machek wrote:
-> > > On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
-> > > > Pavel Machek wrote:
-> > > > > Hi!
-> > > > > 
-> > > > > With recent linux-next, after resume networkmanager often
-> > > > > claims
-> > > > > that
-> > > > > "network is disabled". Sometimes suspend/resume clears that.
-> > > > > 
-> > > > > Any ideas? Does it work for you?
-> > > > > 								
-> > > > > 	
-> > > > > Pavel
-> > > > 
-> > > > Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
+On Mon, Mar 12, 2018 at 03:20:59PM +0100, Lukas Wunner wrote:
+> On Mon, Mar 12, 2018 at 09:03:16AM -0500, Bjorn Helgaas wrote:
+> > On Mon, Mar 12, 2018 at 01:04:02AM -0700, Christoph Hellwig wrote:
+> > > > +	 * We assume we can manage these PCIe features.  Some systems may
+> > > > +	 * reserve these for use by the platform itself, e.g., an ACPI BIOS
+> > > > +	 * may implement its own AER handling and use _OSC to prevent the
+> > > > +	 * OS from interfering.
+> > > > +	 */
+> > > > +	bridge->use_aer = 1;
+> > > > +	bridge->use_hotplug = 1;
+> > > > +	bridge->use_pme = 1;
 > > > 
-> > > Thanks for testing... but yes, 4.16 should be ok. If not fixed,
-> > > problem will appear in 4.17-rc1.
+> > > If we start out with enabled maybe these should be disable_foo flags
+> > > instead?
 > > 
-> > Where does the complaint occur?  In the GUI, or with nmcli, or
-> > somewhere else?  Also, what's the output of "nmcli dev" after
-> > resume?
+> > I went back and forth on that.  "disable_foo" is nice because the
+> > default value is correct (zero means enabled).  But then you end up
+> > with things like:
+> > 
+> >   if (pcie_ports_native || !host->disable_hotplug)
+> > 
+> > where the "!host->disable_hotplug" is a double negative, and I have a
+> > really hard time reading that.
 > 
-> In the GUI. I click in place where I'd select access point, and menu
-> does not show up, telling me that "network is disabled".
+> native_hotplug or, if you want it reversed, platform_hotplug
+> (or firmware_hotplug?) might improve readability.
 
-Ok, what does 'nmcli dev' and 'nmcli radio' show?
-
-Dan
+Thanks, I like that.  I renamed them to "native_aer", etc.
