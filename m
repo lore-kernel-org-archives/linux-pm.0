@@ -1,48 +1,62 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 08/13] PCI/portdrv: Simplify PCIe feature permission
- checking
-Date: Mon, 19 Mar 2018 13:37:34 -0500
-Message-ID: <20180319183734.GA77194@bhelgaas-glaptop.roam.corp.google.com>
+Subject: Re: [PATCH v2 00/13] PCI: Simplify PCIe port driver
+Date: Mon, 19 Mar 2018 13:43:22 -0500
+Message-ID: <20180319184322.GB77194@bhelgaas-glaptop.roam.corp.google.com>
 References: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <152062203293.77693.8159909590216160503.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20180312080402.GE10358@infradead.org>
- <20180312140316.GB194000@bhelgaas-glaptop.roam.corp.google.com>
- <20180312142059.GA11186@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180312142059.GA11186@wunner.de>
+In-Reply-To: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Frederick Lawler <fred@fredlawl.com>
+To: linux-pci@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Lukas Wunner <lukas@wunner.de>, Frederick Lawler <fred@fredlawl.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 12, 2018 at 03:20:59PM +0100, Lukas Wunner wrote:
-> On Mon, Mar 12, 2018 at 09:03:16AM -0500, Bjorn Helgaas wrote:
-> > On Mon, Mar 12, 2018 at 01:04:02AM -0700, Christoph Hellwig wrote:
-> > > > +	 * We assume we can manage these PCIe features.  Some systems may
-> > > > +	 * reserve these for use by the platform itself, e.g., an ACPI BIOS
-> > > > +	 * may implement its own AER handling and use _OSC to prevent the
-> > > > +	 * OS from interfering.
-> > > > +	 */
-> > > > +	bridge->use_aer = 1;
-> > > > +	bridge->use_hotplug = 1;
-> > > > +	bridge->use_pme = 1;
-> > > 
-> > > If we start out with enabled maybe these should be disable_foo flags
-> > > instead?
-> > 
-> > I went back and forth on that.  "disable_foo" is nice because the
-> > default value is correct (zero means enabled).  But then you end up
-> > with things like:
-> > 
-> >   if (pcie_ports_native || !host->disable_hotplug)
-> > 
-> > where the "!host->disable_hotplug" is a double negative, and I have a
-> > really hard time reading that.
+On Fri, Mar 09, 2018 at 12:59:49PM -0600, Bjorn Helgaas wrote:
+> This is an attempt to move a few things out of the port driver.
 > 
-> native_hotplug or, if you want it reversed, platform_hotplug
-> (or firmware_hotplug?) might improve readability.
+> I added these new patches since v1:
+> 
+>   Merge pcieport_if.h into portdrv.h
+>     Merge pcieport_if.h and portdrv.h to reduce clutter
+> 
+>   Remove unnecessary "pcie_ports=auto" parameter
+>     This is the default setting anyway, so specifying the parameter doesn't
+>     do anything.
+> 
+>   Encapsulate pcie_ports_auto inside the port driver
+>     "pcie_ports_auto" was declared in linux/pci.h even though nobody
+>     outside the port driver used it.
+> 
+>   Rename and reverse sense of pcie_ports_auto
+>     "pcie_ports_auto" is connected with the "pcie_ports=native" parameter,
+>     so rename it to match.
+> 
+> Other changes since v1:
+>   - Rebase onto my pci/portdrv branch.
+>   - Rename pcie_resume_early() to pcie_pme_root_status_cleanup() as
+>     suggested by Rafael.
+>   - Add Rafael's Reviewed-by tags.
+> 
+> v1: https://lkml.kernel.org/r/152040297576.240786.1532465558381209070.stgit@bhelgaas-glaptop.roam.corp.google.com
+> 
+> ---
+> 
+> Bjorn Helgaas (13):
+>       PCI/portdrv: Merge pcieport_if.h into portdrv.h
+>       PCI/PM: Move pcie_clear_root_pme_status() to core
+>       PCI/PM: Clear PCIe PME Status bit in core, not PCIe port driver
+>       PCI/PM: Clear PCIe PME Status bit for Root Complex Event Collectors
+>       PCI/portdrv: Disable port driver in compat mode
+>       PCI/portdrv: Remove pcie_port_bus_type link order dependency
+>       PCI/portdrv: Remove unused PCIE_PORT_SERVICE_VC
+>       PCI/portdrv: Simplify PCIe feature permission checking
+>       PCI/portdrv: Remove unnecessary include of <linux/pci-aspm.h>
+>       PCI/portdrv: Remove "pcie_hp=nomsi" kernel parameter
+>       PCI/portdrv: Remove unnecessary "pcie_ports=auto" parameter
+>       PCI/portdrv: Encapsulate pcie_ports_auto inside the port driver
+>       PCI/portdrv: Rename and reverse sense of pcie_ports_auto
 
-Thanks, I like that.  I renamed them to "native_aer", etc.
+I applied these with Christoph's acks and Lukas' renaming suggestion to
+pci/portdrv for v4.17.
