@@ -1,73 +1,74 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFT][PATCH v5 0/7] sched/cpuidle: Idle loop rework
-Date: Tue, 20 Mar 2018 10:15:30 -0700
-Message-ID: <002501d3c06f$0e7cf750$2b76e5f0$@net>
-References: <2142751.3U6XgWyF8u@aspire.rjw.lan> <001a01d3be0a$ad3a0ed0$07ae2c70$@net> <2043615.lCdO10SMaB@aspire.rjw.lan> <CAJZ5v0h0wbu_hxCyBKLxFnWRFkK6ObqTmYRHAWgHyXTd57aH9Q@mail.gmail.com> yE6GempwD1KonyE6LeVquN
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFT][PATCH v5 7/7] cpuidle: menu: Avoid selecting shallow states
+ with stopped tick
+Date: Tue, 20 Mar 2018 18:28:21 +0100
+Message-ID: <CAJZ5v0hbW-v+392v2+Or4x0Azht7bKQaXy_8SAciMHBv9jX_pQ@mail.gmail.com>
+References: <2142751.3U6XgWyF8u@aspire.rjw.lan> <2148754.TY7qXgFyZy@aspire.rjw.lan>
+ <002401d3c06e$fed035b0$fc70a110$@net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: yE6GempwD1KonyE6LeVquN
-Content-Language: en-ca
+In-Reply-To: <002401d3c06e$fed035b0$fc70a110$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>
-Cc: 'Linux PM' <linux-pm@vger.kernel.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, "'Rafael J. Wysocki'" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: Thomas Ilsche <thomas.ilsche@tu-dresden.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>, Peter Zijlstra <peterz@infradead.org>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, Frederic Weisbecker <fweisbec@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.20 03:02 Thomas Ilsche wrote:
-
-...[snip]...
-
-> Consider the Skylake server system which has residencies in C1E of
-> 20 us and C6 of 800 us. I use a small while(1) {usleep(300);}
-> unsynchronized pinned to each core. While this is an artificial
-> case, it is a very innocent one - easy to predict and regular. Between
-> vanilla 4.16.0-rc5 and idle-loop/v6, the power consumption increases
-> from 149.7 W to 158.1 W. On 4.16.0-rc5, the cores sleep almost
-> entirely in C1E. With the patches applied, the cores spend ~75% of
-> their sleep time in C6, ~25% in C1E. The average time/usage for C1E is
-> also lower with v6 at ~350 us rather than the ~550 us in C6 (and in
-> C1E with the baseline). Generally the new menu governor seems to chose
-> C1E if the next timer is an enabled sched timer - which occasionally
-> interrupts the sleep-interval into two C1E sleeps rather than one C6.
+On Tue, Mar 20, 2018 at 6:15 PM, Doug Smythies <dsmythies@telus.net> wrote:
+> On 2018.03.20 11:22 Doug Smythies wrote:
+>> On 2018.03.19 05:47 Thomas Ilsche wrote:
+>>> On 2018-03-15 23:19, Rafael J. Wysocki wrote:
+>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>
+>>>> If the scheduler tick has been stopped already and the governor
+>>>> selects a shallow idle state, the CPU can spend a long time in that
+>>>> state if the selection is based on an inaccurate prediction of idle
+>>>> time.  That effect turns out to be noticeable, so it needs to be
+>>>> mitigated.
+>>>
+>>> What are some common causes for that situation?
+>>> How could I trigger this for testing?
+>>
+>> It appeared quite readily with my simple 100% load
+>> on one CPU test. Back then (V3) there only 6 patches in the set,
+>> and before the re-spin there ended up being a patch 7 of 6, which
+>> made a significant difference in both package power and the
+>> histograms of times in each idle state.
+>>
+>> Reference:
+>> https://marc.info/?l=linux-pm&m=152075419526696&w=2
 >
-> Manually disabling C6, reduces power consumption back to 149.5 W.
+> I made a kernel (4.16-rc5) with only patches 1 to 6 of 7 (V6)
+> and also with the poll fix.
+>
+> I took an old graph:
+> http://fast.smythies.com/rjwv3pp_100.png
+>
+> and removed an obsolete line and added a line from this
+> kernel:
+>
+> http://fast.smythies.com/rjwv6m_100.png
+>
+> I also acquired a trace during the test and observe:
+>
+> Report: Summary:
+>
+> Idle State 0: Total Entries: 699 : PowerNightmares: 0 : Not PN time (seconds): 0.031169 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 1: Total Entries: 3855 : PowerNightmares: 106 : Not PN time (seconds): 0.123759 : PN time: 43.511914 : Ratio: 351.585856
+> Idle State 2: Total Entries: 3688 : PowerNightmares: 181 : Not PN time (seconds): 1.303237 : PN time: 63.241424 : Ratio: 48.526418
+> Idle State 3: Total Entries: 528 : PowerNightmares: 115 : Not PN time (seconds): 0.276290 : PN time: 44.764111 : Ratio: 162.018571
+>
+> Where "PowerNightmare" is defined as spending excessive time in an idle state,
+> and arbitrarily defined for my processor as:
+>
+> #define THRESHOLD_0 100       /* Idle state 0 PowerNightmare threshold in microseconds */
+> #define THRESHOLD_1 1000      /* Idle state 1 PowerNightmare threshold in microseconds */
+> #define THRESHOLD_2 2000      /* Idle state 2 PowerNightmare threshold in microseconds */
+> #define THRESHOLD_3 4000      /* Idle state 3 PowerNightmare threshold in microseconds */
+>
+> While this trace file was only about 15 megabytes, I have several 10s of gigabytes of trace data for
+> V4 + poll fix and never see any excessive time spent in any idle state.
 
-...[snip]...
+Thanks for this work!
 
-Note that one of the tests that I normally do is a work/sleep
-frequency sweep from 100 to 2100 Hz, typically at a lowish
-workload. I didn't notice anything odd with this test:
-
-http://fast.smythies.com/rjw_freq_sweep.png
-
-However, your test is at 3333 Hz (well, minus overheads).
-I did the same as you. And was surprised to confirm
-your power findings. In my case package power goes from
-~8.6 watts to ~7.3 watts with idle state 4 (C6) disabled.
-
-I am getting different residency times than you though.
-I also observe different overheads between idle state 4
-being disabled or not. i.e. my actual loop frequency
-drops from ~2801 Hz to ~2754 Hz.
-
-Example residencies over the previous minute:
-
-Idle state 4 (C6) disabled (seconds):
-
-Idle state 0: 0.001119
-Idle state 1: 0.056638
-Idle state 2: 13.100550
-Idle state 3: 446.266744
-Idle state 4: 0.000000
-
-Idle state 4 (C6) enabled (seconds):
-
-Idle state 0: 0.034502
-Idle state 1: 1.949595
-Idle state 2: 78.291793
-Idle state 3: 96.467974
-Idle state 4: 286.247524
-
-... Doug
+I prefer it with patch [7/7]. :-)
