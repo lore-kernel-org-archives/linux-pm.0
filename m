@@ -1,194 +1,102 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v5 3/5] power: supply: Add 'usb_type' property and supporting
- code
-Date: Tue, 20 Mar 2018 14:33:45 +0000
-Message-ID: <3774272cd49908e88b56a1c4bbf3b363b851ebdd.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
-References: <cover.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH 6/6] drivers: base: arch_topology.c: Enable EAS for
+ arm/arm64 platforms
+Date: Tue, 20 Mar 2018 16:20:55 +0100
+Message-ID: <c4af4a06-864b-b6e4-358f-4c0223855a9c@arm.com>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-7-dietmar.eggemann@arm.com>
+ <20180320094932.GA23359@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <20180320094932.GA23359@kroah.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-This commit adds the 'usb_type' property to represent USB supplies
-which can report a number of different types based on a connection
-event.
+On 03/20/2018 10:49 AM, Greg Kroah-Hartman wrote:
+> On Tue, Mar 20, 2018 at 09:43:12AM +0000, Dietmar Eggemann wrote:
+>> From: Quentin Perret <quentin.perret@arm.com>
+>>
+>> Energy Aware Scheduling (EAS) has to be started from the arch code.
+> 
+> Ok, but:
+> 
+>> This commit enables it from the arch topology driver for arm/arm64
+>> systems, hence enabling a better support for Arm big.LITTLE and future
+>> DynamIQ architectures.
+> 
+> Why does this have to be in the driver core code just for those specific
+> types of cpus?
 
-Examples of this already exist in drivers whereby the existing 'type'
-property is updated, based on an event, to represent what was
-connected (e.g. USB, USB_DCP, USB_ACA, ...). Current implementations
-however don't show all supported connectable types, so this knowledge
-has to be exlicitly known for each driver that supports this.
+The arch_topology driver is shared functionality between arm and arm64 
+arch. So far it handles the correct setting of per-cpu cpu_scale values 
+which are then used by the task scheduler to set the correct cpu 
+capacity values. This allows to provide cpu invariant load tracking for 
+arm and arm64 big.LITTLE systems.
 
-The 'usb_type' property is intended to fill this void and show users
-all possible USB types supported by a driver. The property, when read,
-shows all available types for the driver, and the one currently chosen
-is highlighted/bracketed. It is expected that the 'type' property
-would then just show the top-level type 'USB', and this would be
-static.
+The driver was initially created so that we didn't had to duplicate the 
+exact code in the arm and arm64 arch.
 
-Currently the 'usb_type' enum contains all of the USB variant types
-that exist for the 'type' enum at this time, and in addition has
-SDP and PPS types. The mirroring is intentional so as to not impact
-existing usage of the 'type' property.
+Big.Little platforms have to set appropriate cpu node capacity-dmips-mhz 
+properties (e.g. arch/arm64/boot/dts/arm/juno.dts) to enable the start 
+the functionality of the driver. The cpu_scale value depends on the 
+capacity-dmips-mhz property as well as on the max frequency of a logical 
+cpu (hence the dependency to cpufreq).
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
----
- Documentation/ABI/testing/sysfs-class-power | 12 +++++++
- drivers/power/supply/power_supply_sysfs.c   | 50 +++++++++++++++++++++++++++++
- include/linux/power_supply.h                | 16 +++++++++
- 3 files changed, 78 insertions(+)
+A corner case would be a big.little platform purely based on max 
+frequency differences (e.g. Google Pixel, Qualcomm MSM8996 Snapdragon 
+821, Quad-core (2x2.15 GHz Kryo & 2x1.6 GHz Kryo)). For such a system 
+capacity-dmips-mhz should be set to the same value for all logical cpus 
+(e.g. 1024).
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index e046566..5e23e22 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -409,6 +409,18 @@ Description:
- 		Access: Read
- 		Valid values: Represented in 1/10 Degrees Celsius
- 
-+What: 		/sys/class/power_supply/<supply_name>/usb_type
-+Date:		March 2018
-+Contact:	linux-pm@vger.kernel.org
-+Description:
-+		Reports what type of USB connection is currently active for
-+		the supply, for example it can show if USB-PD capable source
-+		is attached.
-+
-+		Access: Read-Only
-+		Valid values: "Unknown", "SDP", "DCP", "CDP", "ACA", "C", "PD",
-+			      "PD_DRP", "PD_PPS", "BrickID"
-+
- What: 		/sys/class/power_supply/<supply_name>/voltage_max
- Date:		January 2008
- Contact:	linux-pm@vger.kernel.org
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 5204f11..b68def4 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -46,6 +46,11 @@
- 	"USB_PD", "USB_PD_DRP", "BrickID"
- };
- 
-+static const char * const power_supply_usb_type_text[] = {
-+	"Unknown", "SDP", "DCP", "CDP", "ACA", "C",
-+	"PD", "PD_DRP", "PD_PPS", "BrickID"
-+};
-+
- static const char * const power_supply_status_text[] = {
- 	"Unknown", "Charging", "Discharging", "Not charging", "Full"
- };
-@@ -73,6 +78,46 @@
- 	"Unknown", "System", "Device"
- };
- 
-+static ssize_t power_supply_show_usb_type(struct device *dev,
-+					  enum power_supply_usb_type *usb_types,
-+					  ssize_t num_usb_types,
-+					  union power_supply_propval *value,
-+					  char *buf)
-+{
-+	enum power_supply_usb_type usb_type;
-+	ssize_t count = 0;
-+	bool match = false;
-+	int i;
-+
-+	if ((!usb_types) || (num_usb_types <= 0)) {
-+		dev_warn(dev, "driver has no valid connected types\n");
-+		return -ENODATA;
-+	}
-+
-+	for (i = 0; i < num_usb_types; ++i) {
-+		usb_type = usb_types[i];
-+
-+		if (value->intval == usb_type) {
-+			count += sprintf(buf + count, "[%s] ",
-+					 power_supply_usb_type_text[usb_type]);
-+			match = true;
-+		} else {
-+			count += sprintf(buf + count, "%s ",
-+					 power_supply_usb_type_text[usb_type]);
-+		}
-+	}
-+
-+	if (!match) {
-+		dev_warn(dev, "driver reporting unsupported connected type\n");
-+		return -EINVAL;
-+	}
-+
-+	if (count)
-+		buf[count - 1] = '\n';
-+
-+	return count;
-+}
-+
- static ssize_t power_supply_show_property(struct device *dev,
- 					  struct device_attribute *attr,
- 					  char *buf) {
-@@ -115,6 +160,10 @@ static ssize_t power_supply_show_property(struct device *dev,
- 	else if (off == POWER_SUPPLY_PROP_TYPE)
- 		return sprintf(buf, "%s\n",
- 			       power_supply_type_text[value.intval]);
-+	else if (off == POWER_SUPPLY_PROP_USB_TYPE)
-+		return power_supply_show_usb_type(dev, psy->desc->usb_types,
-+						  psy->desc->num_usb_types,
-+						  &value, buf);
- 	else if (off == POWER_SUPPLY_PROP_SCOPE)
- 		return sprintf(buf, "%s\n",
- 			       power_supply_scope_text[value.intval]);
-@@ -241,6 +290,7 @@ static ssize_t power_supply_store_property(struct device *dev,
- 	POWER_SUPPLY_ATTR(time_to_full_now),
- 	POWER_SUPPLY_ATTR(time_to_full_avg),
- 	POWER_SUPPLY_ATTR(type),
-+	POWER_SUPPLY_ATTR(usb_type),
- 	POWER_SUPPLY_ATTR(scope),
- 	POWER_SUPPLY_ATTR(precharge_current),
- 	POWER_SUPPLY_ATTR(charge_term_current),
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 79e90b3..4ca8876 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -145,6 +145,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
- 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
- 	POWER_SUPPLY_PROP_TYPE, /* use power_supply.type instead */
-+	POWER_SUPPLY_PROP_USB_TYPE,
- 	POWER_SUPPLY_PROP_SCOPE,
- 	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
- 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
-@@ -170,6 +171,19 @@ enum power_supply_type {
- 	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
- };
- 
-+enum power_supply_usb_type {
-+	POWER_SUPPLY_USB_TYPE_UNKNOWN = 0,
-+	POWER_SUPPLY_USB_TYPE_SDP,		/* Standard Downstream Port */
-+	POWER_SUPPLY_USB_TYPE_DCP,		/* Dedicated Charging Port */
-+	POWER_SUPPLY_USB_TYPE_CDP,		/* Charging Downstream Port */
-+	POWER_SUPPLY_USB_TYPE_ACA,		/* Accessory Charger Adapters */
-+	POWER_SUPPLY_USB_TYPE_C,		/* Type C Port */
-+	POWER_SUPPLY_USB_TYPE_PD,		/* Power Delivery Port */
-+	POWER_SUPPLY_USB_TYPE_PD_DRP,		/* PD Dual Role Port */
-+	POWER_SUPPLY_USB_TYPE_PD_PPS,		/* PD Programmable Power Supply */
-+	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
-+};
-+
- enum power_supply_notifier_events {
- 	PSY_EVENT_PROP_CHANGED,
- };
-@@ -196,6 +210,8 @@ struct power_supply_config {
- struct power_supply_desc {
- 	const char *name;
- 	enum power_supply_type type;
-+	enum power_supply_usb_type *usb_types;
-+	size_t num_usb_types;
- 	enum power_supply_property *properties;
- 	size_t num_properties;
- 
--- 
-1.9.1
+We would like to use the same code (shared between arm and arm64) to 
+initialize the energy model and start EAS for arm and arm64 systems.
+
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+>> ---
+>>   drivers/base/arch_topology.c | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+>> index 52ec5174bcb1..e2206ea16538 100644
+>> --- a/drivers/base/arch_topology.c
+>> +++ b/drivers/base/arch_topology.c
+>> @@ -15,6 +15,7 @@
+>>   #include <linux/slab.h>
+>>   #include <linux/string.h>
+>>   #include <linux/sched/topology.h>
+>> +#include <linux/sched/energy.h>
+>>   
+>>   DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
+>>   
+>> @@ -204,6 +205,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+>>   		free_raw_capacity();
+>>   		pr_debug("cpu_capacity: parsing done\n");
+>>   		schedule_work(&parsing_done_work);
+>> +		init_sched_energy();
+> 
+> This is not arch-specific code only for arm.
+
+The driver requires CONFIG_GENERIC_ARCH_TOPOLOGY which is currently only 
+set in arch/arm/Kconfig and arch/arm64/Kconfig.
+
+> Don't you have a ARM cpu bringup code somewhere?  Shouldn't this call be
+> in there?  It feels odd that this scheduler change is buried way down
+> here...
+
+The big benefit is that we don't have to duplicate code for arm and 
+arm64. In the current form, EAS should only be started when cpufreq is 
+initialized for all possible cpus. And we don't have to signal back from 
+the driver to the arch that cpufreq is initialized for all possible cpus.
+
+I agree that none of this is obvious so the patch should explain the 
+requirements and design better.
+
+-- Dietmar
+
+[...]
