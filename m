@@ -1,47 +1,98 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 10/10] dt-bindings: thermal: Remove
- "cooling-{min|max}-level" properties
-Date: Tue, 20 Mar 2018 20:49:50 +0800
-Message-ID: <1521550190.2781.3.camel@intel.com>
-References: <cover.1518166039.git.viresh.kumar@linaro.org>
-         <0ec53640f1a09e6e0d7aa1a21d1a3266c3c209c7.1518166039.git.viresh.kumar@linaro.org>
-         <20180312043815.GW6842@vireshk-i7>
+From: Dan Williams <dcbw@redhat.com>
+Subject: Re: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Tue, 20 Mar 2018 08:12:48 -0500
+Message-ID: <1521551568.16848.5.camel@redhat.com>
+References: <20180318104023.GA10392@amd>
+         <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
+         <20180319092106.GA5683@amd> <1521474008.20208.2.camel@redhat.com>
+         <20180319173356.GA28462@amd> <1521481549.20208.8.camel@redhat.com>
+         <20180320080334.GA31772@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180312043815.GW6842@vireshk-i7>
+In-Reply-To: <20180320080334.GA31772@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 一, 2018-03-12 at 10:08 +0530, Viresh Kumar wrote:
-> On 09-02-18, 14:28, Viresh Kumar wrote:
+On Tue, 2018-03-20 at 09:03 +0100, Pavel Machek wrote:
+> On Mon 2018-03-19 12:45:49, Dan Williams wrote:
+> > On Mon, 2018-03-19 at 18:33 +0100, Pavel Machek wrote:
+> > > On Mon 2018-03-19 10:40:08, Dan Williams wrote:
+> > > > On Mon, 2018-03-19 at 10:21 +0100, Pavel Machek wrote:
+> > > > > On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
+> > > > > > Pavel Machek wrote:
+> > > > > > > Hi!
+> > > > > > > 
+> > > > > > > With recent linux-next, after resume networkmanager often
+> > > > > > > claims
+> > > > > > > that
+> > > > > > > "network is disabled". Sometimes suspend/resume clears
+> > > > > > > that.
+> > > > > > > 
+> > > > > > > Any ideas? Does it work for you?
+> > > > > > > 								
+> > > > > > > 	
+> > > > > > > Pavel
+> > > > > > 
+> > > > > > Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
+> > > > > 
+> > > > > Thanks for testing... but yes, 4.16 should be ok. If not
+> > > > > fixed,
+> > > > > problem will appear in 4.17-rc1.
+> > > > 
+> > > > Where does the complaint occur?  In the GUI, or with nmcli, or
+> > > > somewhere else?  Also, what's the output of "nmcli dev" after
+> > > > resume?
+> > > 
+> > > In the GUI. I click in place where I'd select access point, and
+> > > menu
+> > > does not show up, telling me that "network is disabled".
 > > 
-> > The "cooling-min-level" and "cooling-max-level" properties are not
-> > parsed by any part of kernel currently and the max cooling state of
-> > a
-> > CPU cooling device is found by referring to the cpufreq table
-> > instead.
-> > 
-> > Remove the unused bindings.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  Documentation/devicetree/bindings/thermal/thermal.txt | 16 +----
-> > -----------
-> >  1 file changed, 1 insertion(+), 15 deletions(-)
-> @Zhang/Eduardo: Can you please pick this patch (10/10) as almost
-> everything else
-> is already lined up for 4.17 ?
+> > Ok, what does 'nmcli dev' and 'nmcli radio' show?
+> 
+> Broken state.
+> 
+> pavel@amd:~$ nmcli dev
+> DEVICE  TYPE      STATE        CONNECTION
+> eth1    ethernet  unavailable  --
+> lo      loopback  unmanaged    --
+> wlan0   wifi      unmanaged    --
 
-I think Eduardo should have reviewed all the DT thermal patches in the
-list, but I didn't see his response about this one.
+If the state is "unmanaged" on resume, that would indicate a problem
+with sleep/wake and likely not a kernel network device issue.
 
-Eduardo,
-did you miss this one?
+We should probably move this discussion to the NM lists to debug
+further.  Before you suspend, run "nmcli gen log level trace" to turn
+on full debug logging, then reproduce the issue, and send a pointer to
+those logs (scrubbed for anything you consider sensitive) to the NM
+mailing list.
 
-thanks,
-rui
+Dan
+
+> pavel@amd:~$ nmcli radio
+> WIFI-HW  WIFI     WWAN-HW  WWAN
+> enabled  enabled  enabled  enabled
+> pavel@amd:~$ uname -a
+> Linux amd 4.16.0-rc5-next-20180314+ #31 SMP Thu Mar 15 14:27:19 CET
+> 2018 i686 GNU/Linux
+> 
+> Let me suspend/resume. I was lucky and got it into working state:
+> 
+> pavel@amd:~$ nmcli dev
+> DEVICE  TYPE      STATE        CONNECTION
+> wlan0   wifi      connected    openwireless.org
+> eth1    ethernet  unavailable  --
+> lo      loopback  unmanaged    --
+> pavel@amd:~$ nmcli radio
+> WIFI-HW  WIFI     WWAN-HW  WWAN
+> enabled  enabled  enabled  enabled
+> paveamd:~$
+> 
+> Best regards,
+> 									
+> Pavel
 > 
