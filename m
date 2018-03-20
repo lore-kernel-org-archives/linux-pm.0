@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [RFC PATCH 6/6] drivers: base: arch_topology.c: Enable EAS for arm/arm64 platforms
-Date: Tue, 20 Mar 2018 09:43:12 +0000
-Message-ID: <20180320094312.24081-7-dietmar.eggemann@arm.com>
+Subject: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on task wake-up
+Date: Tue, 20 Mar 2018 09:43:11 +0000
+Message-ID: <20180320094312.24081-6-dietmar.eggemann@arm.com>
 References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180320094312.24081-1-dietmar.eggemann@arm.com>
@@ -12,36 +12,151 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Quentin Perret <quentin.perret@arm.com>
 
-Energy Aware Scheduling (EAS) has to be started from the arch code.
-This commit enables it from the arch topology driver for arm/arm64
-systems, hence enabling a better support for Arm big.LITTLE and future
-DynamIQ architectures.
+In case an energy model is available, waking tasks are re-routed into a
+new energy-aware placement algorithm. The eligible CPUs to be used in the
+energy-aware wakeup path are restricted to the highest non-overutilized
+sched_domain containing prev_cpu and this_cpu. If no such domain is found,
+the tasks go through the usual wake-up path, hence energy-aware placement
+happens only in lightly utilized scenarios.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+The selection of the most energy-efficient CPU for a task is achieved by
+estimating the impact on system-level active energy resulting from the
+placement of the task on each candidate CPU. The best CPU energy-wise is
+then selected if it saves a large enough amount of energy with respect to
+prev_cpu.
+
+Although it has already shown significant benefits on some existing
+targets, this brute force approach clearly cannot scale to platforms with
+numerous CPUs. This patch is an attempt to do something useful as writing
+a fast heuristic that performs reasonably well on a broad spectrum of
+architectures isn't an easy task. As a consequence, the scope of usability
+of the energy-aware wake-up path is restricted to systems with the
+SD_ASYM_CPUCAPACITY flag set. These systems not only show the most
+promising opportunities for saving energy but also typically feature a
+limited number of logical CPUs.
+
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- drivers/base/arch_topology.c | 2 ++
- 1 file changed, 2 insertions(+)
+ kernel/sched/fair.c | 74 ++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 71 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 52ec5174bcb1..e2206ea16538 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/sched/topology.h>
-+#include <linux/sched/energy.h>
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 76bd46502486..65a1bead0773 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6513,6 +6513,60 @@ static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+ 	return energy;
+ }
  
- DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
++static bool task_fits(struct task_struct *p, int cpu)
++{
++	unsigned long next_util = cpu_util_next(cpu, p, cpu);
++
++	return util_fits_capacity(next_util, capacity_orig_of(cpu));
++}
++
++static int find_energy_efficient_cpu(struct sched_domain *sd,
++					struct task_struct *p, int prev_cpu)
++{
++	unsigned long cur_energy, prev_energy, best_energy;
++	int cpu, best_cpu = prev_cpu;
++
++	if (!task_util(p))
++		return prev_cpu;
++
++	/* Compute the energy impact of leaving the task on prev_cpu. */
++	prev_energy = best_energy = compute_energy(p, prev_cpu);
++
++	/* Look for the CPU that minimizes the energy. */
++	for_each_cpu_and(cpu, &p->cpus_allowed, sched_domain_span(sd)) {
++		if (!task_fits(p, cpu) || cpu == prev_cpu)
++			continue;
++		cur_energy = compute_energy(p, cpu);
++		if (cur_energy < best_energy) {
++			best_energy = cur_energy;
++			best_cpu = cpu;
++		}
++	}
++
++	/*
++	 * We pick the best CPU only if it saves at least 1.5% of the
++	 * energy used by prev_cpu.
++	 */
++	if ((prev_energy - best_energy) > (prev_energy >> 6))
++		return best_cpu;
++
++	return prev_cpu;
++}
++
++static inline bool wake_energy(struct task_struct *p, int prev_cpu)
++{
++	struct sched_domain *sd;
++
++	if (!static_branch_unlikely(&sched_energy_present))
++		return false;
++
++	sd = rcu_dereference_sched(cpu_rq(prev_cpu)->sd);
++	if (!sd || sd_overutilized(sd))
++		return false;
++
++	return true;
++}
++
+ /*
+  * select_task_rq_fair: Select target runqueue for the waking task in domains
+  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+@@ -6529,18 +6583,22 @@ static int
+ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_flags)
+ {
+ 	struct sched_domain *tmp, *affine_sd = NULL, *sd = NULL;
++	struct sched_domain *energy_sd = NULL;
+ 	int cpu = smp_processor_id();
+ 	int new_cpu = prev_cpu;
+-	int want_affine = 0;
++	int want_affine = 0, want_energy = 0;
+ 	int sync = (wake_flags & WF_SYNC) && !(current->flags & PF_EXITING);
  
-@@ -204,6 +205,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
- 		free_raw_capacity();
- 		pr_debug("cpu_capacity: parsing done\n");
- 		schedule_work(&parsing_done_work);
-+		init_sched_energy();
++	rcu_read_lock();
++
+ 	if (sd_flag & SD_BALANCE_WAKE) {
+ 		record_wakee(p);
++		want_energy = wake_energy(p, prev_cpu);
+ 		want_affine = !wake_wide(p) && !wake_cap(p, cpu, prev_cpu)
+-			      && cpumask_test_cpu(cpu, &p->cpus_allowed);
++			      && cpumask_test_cpu(cpu, &p->cpus_allowed)
++			      && !want_energy;
  	}
  
- 	return 0;
+-	rcu_read_lock();
+ 	for_each_domain(cpu, tmp) {
+ 		if (!(tmp->flags & SD_LOAD_BALANCE))
+ 			break;
+@@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+ 			break;
+ 		}
+ 
++		/*
++		 * Energy-aware task placement is performed on the highest
++		 * non-overutilized domain spanning over cpu and prev_cpu.
++		 */
++		if (want_energy && !sd_overutilized(tmp) &&
++		    cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
++			energy_sd = tmp;
++
+ 		if (tmp->flags & sd_flag)
+ 			sd = tmp;
+ 		else if (!want_affine)
+@@ -6586,6 +6652,8 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+ 			if (want_affine)
+ 				current->recent_used_cpu = cpu;
+ 		}
++	} else if (energy_sd) {
++		new_cpu = find_energy_efficient_cpu(energy_sd, p, prev_cpu);
+ 	} else {
+ 		new_cpu = find_idlest_cpu(sd, p, cpu, prev_cpu, sd_flag);
+ 	}
 -- 
 2.11.0
