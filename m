@@ -1,54 +1,42 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V4] thermal: Add cooling device's statistics in sysfs
-Date: Tue, 20 Mar 2018 11:19:20 +0800
-Message-ID: <1521515960.2284.1.camel@intel.com>
-References: <6e557b90950723065d49c9a545146ce31d7dc6e1.1516096153.git.viresh.kumar@linaro.org>
-         <1520924571.3766.8.camel@intel.com> <1521014472.2087.32.camel@intel.com>
-         <20180314081426.GG15832@vireshk-i7>
-         <20180320013836.hiu6oy3smwmk35tp@vireshk-mac-ubuntu>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [v2 PATCH 0/2] arm64: dts: Add sdm845 GPU/GMU and
+ SMMU
+Date: Tue, 20 Mar 2018 11:44:50 +0800
+Message-ID: <20180320034450.tw4lcw6jv6wktmef@vireshk-mac-ubuntu>
+References: <20180316185152.32020-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180320013836.hiu6oy3smwmk35tp@vireshk-mac-ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180316185152.32020-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 二, 2018-03-20 at 09:38 +0800, Viresh Kumar wrote:
-> On 14-03-18, 13:44, Viresh Kumar wrote:
-> > 
-> > I got those warnings as well, and I quietly ignored them :)
-> > 
-> > I ignored the renaming part for the sake of consistency. The other
-> > existing
-> > routines for similar purpose are named as:
-> > 
-> > thermal_cooling_device_type_show
-> > thermal_cooling_device_max_state_show
-> > thermal_cooling_device_cur_state_show
-> > thermal_cooling_device_cur_state_store
-> > 
-> > for me it made more sense to follow that naming convention. And I
-> > didn't use the
-> > _RO and _WO variants for the same reason.
-> > 
-> > Now here is what I propose now:
-> > 
-> > - You apply this patch as-is and ignore the warning.
-> > 
-> > - I will send few patches on top of that to do:
-> >   - renaming of all such routines to shorter versions.
-> >   - Use the _RO or _WO variants of the macro everywhere.
-> > 
-> > What do you say ?
-> @Zhang: Can you please share the way you want this to get merged ?
-> And if the
-> above is fine with you ?
-> 
-yes, it works for me.
-I will apply the patch later today.
-
-thanks,
-rui
+T24gMTYtMDMtMTgsIDEyOjUxLCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IChyZXNlbmQgYmVjYXVz
+ZSBJIGZvcmdvdCB0byBDQyBldmVyeWJvZHkgb24gdGhlIHBhdGNoZXMpCj4gCj4gQWRkIERUIG5v
+ZGVzIGZvciB0aGUgc2RtODQ1IEdQVS9HTVUgKGdyYXBoaWNzIG1hbmFnZW1lbnQgdW5pdCkgYW5k
+IHRoZSBjb21wYW5pb24KPiBhcm0tc21tdS12MiBjb21wYXRpYmxlIFNNTVUuCj4gCj4gVGhpcyBi
+dWlsZHMgb24gdGhlIGZvbGxvd2luZyBkZXBlbmRlbmNpZXMgLQo+IGh0dHBzOi8vcGF0Y2h3b3Jr
+Lmtlcm5lbC5vcmcvcGF0Y2gvMTAyODYzNjkvIC0gYmluZGluZ3MgZm9yIHFjb20sbGV2ZWwKPiBo
+dHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwMjgxNTk5LyAtIHFjb20sc21tdS12
+MiBiaW5kaW5ncwo+IAo+IFBsZWFzZSByZWZlciB0byBodHRwczovL3BhdGNod29yay5mcmVlZGVz
+a3RvcC5vcmcvc2VyaWVzLzM3NDI4LyBmb3IgdGhlIGRyaXZlcgo+IGNvZGUuCj4gCj4gW3YyIC0g
+Y2hhbmdlZCBxY29tLGFyYy1sZXZlbCB0byBxY29tLGxldmVsIGZvbGxvd2luZyBkaXNjdXNzaW9u
+IHdpdGggVmlyZXNoOwo+IGNoYW5nZSBnbXUgcGhhbmRsZSB0byBxY29tLGdtdSBwZXIgUm9iXQo+
+IAo+IEpvcmRhbiBDcm91c2UgKDIpOgo+ICAgZHQtYmluZGluZ3M6IERvY3VtZW50IHFjb20sYWRy
+ZW5vLWdtdQo+ICAgYXJtNjQ6IGR0czogc2RtODQ1OiBBZGQgZ3B1IGFuZCBnbXUgZGV2aWNlIG5v
+ZGVzCgpBY2tlZC1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KCi0t
+IAp2aXJlc2gKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+RnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0
+dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
