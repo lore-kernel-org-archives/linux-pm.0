@@ -1,98 +1,33 @@
-From: Dan Williams <dcbw@redhat.com>
-Subject: Re: linux-next on x60: network manager often complains "network is
- disabled" after resume
-Date: Tue, 20 Mar 2018 08:12:48 -0500
-Message-ID: <1521551568.16848.5.camel@redhat.com>
-References: <20180318104023.GA10392@amd>
-         <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
-         <20180319092106.GA5683@amd> <1521474008.20208.2.camel@redhat.com>
-         <20180319173356.GA28462@amd> <1521481549.20208.8.camel@redhat.com>
-         <20180320080334.GA31772@amd>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH] thermal: imx: Fix race condition in imx_thermal_probe()
+Date: Tue, 20 Mar 2018 10:13:01 -0300
+Message-ID: <CAOMZO5CU-X7i7jMTHnSVzK0OiuEC5rEbPh9X_rjypN105R4S8g@mail.gmail.com>
+References: <1517595466-23465-1-git-send-email-festevam@gmail.com>
+ <CAOMZO5D5rRask0pGQBFf+47sG0XURj17=pO4hMiAh4MZa4nkJQ@mail.gmail.com>
+ <CAOMZO5A7vqGffkj0qHUQo7MXVQMfy5Om7yw1YCs6ZR_0aOE37A@mail.gmail.com>
+ <1519792963.2797.20.camel@intel.com> <CAOMZO5CZ5bMKFLuZYcwqwSgL2yLzUL_Dv1xD8_F2sBCGBOLPsw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180320080334.GA31772@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <CAOMZO5CZ5bMKFLuZYcwqwSgL2yLzUL_Dv1xD8_F2sBCGBOLPsw@mail.gmail.com>
+Sender: stable-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Mikhail Lappo <mikhail.lappo@esrlabs.com>, linux-pm@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, stable <stable@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-03-20 at 09:03 +0100, Pavel Machek wrote:
-> On Mon 2018-03-19 12:45:49, Dan Williams wrote:
-> > On Mon, 2018-03-19 at 18:33 +0100, Pavel Machek wrote:
-> > > On Mon 2018-03-19 10:40:08, Dan Williams wrote:
-> > > > On Mon, 2018-03-19 at 10:21 +0100, Pavel Machek wrote:
-> > > > > On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
-> > > > > > Pavel Machek wrote:
-> > > > > > > Hi!
-> > > > > > > 
-> > > > > > > With recent linux-next, after resume networkmanager often
-> > > > > > > claims
-> > > > > > > that
-> > > > > > > "network is disabled". Sometimes suspend/resume clears
-> > > > > > > that.
-> > > > > > > 
-> > > > > > > Any ideas? Does it work for you?
-> > > > > > > 								
-> > > > > > > 	
-> > > > > > > Pavel
-> > > > > > 
-> > > > > > Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
-> > > > > 
-> > > > > Thanks for testing... but yes, 4.16 should be ok. If not
-> > > > > fixed,
-> > > > > problem will appear in 4.17-rc1.
-> > > > 
-> > > > Where does the complaint occur?  In the GUI, or with nmcli, or
-> > > > somewhere else?  Also, what's the output of "nmcli dev" after
-> > > > resume?
-> > > 
-> > > In the GUI. I click in place where I'd select access point, and
-> > > menu
-> > > does not show up, telling me that "network is disabled".
-> > 
-> > Ok, what does 'nmcli dev' and 'nmcli radio' show?
-> 
-> Broken state.
-> 
-> pavel@amd:~$ nmcli dev
-> DEVICE  TYPE      STATE        CONNECTION
-> eth1    ethernet  unavailable  --
-> lo      loopback  unmanaged    --
-> wlan0   wifi      unmanaged    --
+Hi Rui,
 
-If the state is "unmanaged" on resume, that would indicate a problem
-with sleep/wake and likely not a kernel network device issue.
+On Wed, Mar 7, 2018 at 4:55 PM, Fabio Estevam <festevam@gmail.com> wrote:
+> Hi Rui,
+>
+> On Wed, Feb 28, 2018 at 1:42 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+>
+>> interesting, this problem should be covered by this patch https://patch
+>> work.kernel.org/patch/10242483/, together with some driver code change.
+>>
+>> anyway, as that is not a complete solution yet, I will apply this patch
+>> as a quick solution.
+>
+> Thanks, but I still don't see this one in your tree.
 
-We should probably move this discussion to the NM lists to debug
-further.  Before you suspend, run "nmcli gen log level trace" to turn
-on full debug logging, then reproduce the issue, and send a pointer to
-those logs (scrubbed for anything you consider sensitive) to the NM
-mailing list.
-
-Dan
-
-> pavel@amd:~$ nmcli radio
-> WIFI-HW  WIFI     WWAN-HW  WWAN
-> enabled  enabled  enabled  enabled
-> pavel@amd:~$ uname -a
-> Linux amd 4.16.0-rc5-next-20180314+ #31 SMP Thu Mar 15 14:27:19 CET
-> 2018 i686 GNU/Linux
-> 
-> Let me suspend/resume. I was lucky and got it into working state:
-> 
-> pavel@amd:~$ nmcli dev
-> DEVICE  TYPE      STATE        CONNECTION
-> wlan0   wifi      connected    openwireless.org
-> eth1    ethernet  unavailable  --
-> lo      loopback  unmanaged    --
-> pavel@amd:~$ nmcli radio
-> WIFI-HW  WIFI     WWAN-HW  WWAN
-> enabled  enabled  enabled  enabled
-> paveamd:~$
-> 
-> Best regards,
-> 									
-> Pavel
-> 
+Sorry to bother you, but is it possible to get this one to 4.17, please?
