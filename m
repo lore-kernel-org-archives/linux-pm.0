@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v7 2/8] sched: idle: Do not stop the tick upfront in the idle loop
-Date: Tue, 20 Mar 2018 16:15:24 +0100
-Message-ID: <2802114.rPO26tdOrH@aspire.rjw.lan>
+Subject: [RFT][PATCH v7 3/8] sched: idle: Do not stop the tick upfront in the idle loop
+Date: Tue, 20 Mar 2018 16:15:34 +0100
+Message-ID: <5325267.FN4F6lrTUU@aspire.rjw.lan>
 References: <2390019.oHdSGtR3EE@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
