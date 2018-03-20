@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [RFC PATCH 2/6] sched: Introduce energy models of CPUs
-Date: Tue, 20 Mar 2018 09:43:08 +0000
-Message-ID: <20180320094312.24081-3-dietmar.eggemann@arm.com>
+Subject: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation helper function
+Date: Tue, 20 Mar 2018 09:43:10 +0000
+Message-ID: <20180320094312.24081-5-dietmar.eggemann@arm.com>
 References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180320094312.24081-1-dietmar.eggemann@arm.com>
@@ -12,304 +12,119 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Quentin Perret <quentin.perret@arm.com>
 
-The energy consumption of each CPU in the system is modeled with a list
-of values representing its dissipated power and compute capacity at each
-available Operating Performance Point (OPP). These values are derived
-from existing information in the kernel (currently used by the thermal
-subsystem) and don't require the introduction of new platform-specific
-tunables. The energy model is also provided with a simple representation
-of all frequency domains as cpumasks, hence enabling the scheduler to be
-aware of dependencies between CPUs. The data required to build the energy
-model is provided by the OPP library which enables an abstract view of
-the platform from the scheduler. The new data structures holding these
-models and the routines to populate them are stored in
-kernel/sched/energy.c.
-
-For the sake of simplicity, it is assumed in the energy model that all
-CPUs in a frequency domain share the same micro-architecture. As long as
-this assumption is correct, the energy models of different CPUs belonging
-to the same frequency domain are equal. Hence, this commit builds only one
-energy model per frequency domain, and links all relevant CPUs to it in
-order to save time and memory. If needed for future hardware platforms,
-relaxing this assumption should imply relatively simple modifications in
-the code but a significantly higher algorithmic complexity.
-
-As it appears that energy-aware scheduling really makes a difference on
-heterogeneous systems (e.g. big.LITTLE platforms), it is restricted to
-systems having:
-
-   1. SD_ASYM_CPUCAPACITY flag set
-   2. Dynamic Voltage and Frequency Scaling (DVFS) is enabled
-   3. Available power estimates for the OPPs of all possible CPUs
-
-Moreover, the scheduler is notified of the energy model availability
-using a static key in order to minimize the overhead on non-energy-aware
-systems.
+In preparation for the definition of an energy-aware wakeup path, a
+helper function is provided to estimate the consequence on system energy
+when a specific task wakes-up on a specific CPU. compute_energy()
+estimates the OPPs to be reached by all frequency domains and estimates
+the consumption of each online CPU according to its energy model and its
+percentage of busy time.
 
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-
 ---
-This patch depends on additional infrastructure being merged in the OPP
-core. As this infrastructure can also be useful for other clients, the
-related patches have been posted separately [1].
+ kernel/sched/fair.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
 
-[1] https://marc.info/?l=linux-pm&m=151635516419249&w=2
----
- include/linux/sched/energy.h |  31 +++++++
- kernel/sched/Makefile        |   2 +-
- kernel/sched/energy.c        | 190 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 222 insertions(+), 1 deletion(-)
- create mode 100644 include/linux/sched/energy.h
- create mode 100644 kernel/sched/energy.c
-
-diff --git a/include/linux/sched/energy.h b/include/linux/sched/energy.h
-new file mode 100644
-index 000000000000..b4f43564ffe4
---- /dev/null
-+++ b/include/linux/sched/energy.h
-@@ -0,0 +1,31 @@
-+#ifndef _LINUX_SCHED_ENERGY_H
-+#define _LINUX_SCHED_ENERGY_H
-+
-+#ifdef CONFIG_SMP
-+struct capacity_state {
-+	unsigned long cap;	/* compute capacity */
-+	unsigned long power;	/* power consumption at this compute capacity */
-+};
-+
-+struct sched_energy_model {
-+	int nr_cap_states;
-+	struct capacity_state *cap_states;
-+};
-+
-+struct freq_domain {
-+	struct list_head next;
-+	cpumask_t span;
-+};
-+
-+extern struct sched_energy_model ** __percpu energy_model;
-+extern struct static_key_false sched_energy_present;
-+extern struct list_head freq_domains;
-+#define for_each_freq_domain(fdom) \
-+			list_for_each_entry(fdom, &freq_domains, next)
-+
-+void init_sched_energy(void);
-+#else
-+static inline void init_sched_energy(void) { }
-+#endif
-+
-+#endif
-diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
-index d9a02b318108..912972ad4dbc 100644
---- a/kernel/sched/Makefile
-+++ b/kernel/sched/Makefile
-@@ -20,7 +20,7 @@ obj-y += core.o loadavg.o clock.o cputime.o
- obj-y += idle.o fair.o rt.o deadline.o
- obj-y += wait.o wait_bit.o swait.o completion.o
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 6c72a5e7b1b0..76bd46502486 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6409,6 +6409,30 @@ static inline int cpu_overutilized(int cpu)
+ }
  
--obj-$(CONFIG_SMP) += cpupri.o cpudeadline.o topology.o stop_task.o
-+obj-$(CONFIG_SMP) += cpupri.o cpudeadline.o topology.o stop_task.o energy.o
- obj-$(CONFIG_SCHED_AUTOGROUP) += autogroup.o
- obj-$(CONFIG_SCHEDSTATS) += stats.o
- obj-$(CONFIG_SCHED_DEBUG) += debug.o
-diff --git a/kernel/sched/energy.c b/kernel/sched/energy.c
-new file mode 100644
-index 000000000000..4662c993e096
---- /dev/null
-+++ b/kernel/sched/energy.c
-@@ -0,0 +1,190 @@
-+/*
-+ * Released under the GPLv2 only.
-+ * SPDX-License-Identifier: GPL-2.0
-+ *
-+ * Energy-aware scheduling models
-+ *
-+ * Copyright (C) 2018, Arm Ltd.
-+ * Written by: Quentin Perret, Arm Ltd.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
+ /*
++ * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
 + */
-+
-+#define pr_fmt(fmt) "sched-energy: " fmt
-+
-+#include <linux/sched/topology.h>
-+#include <linux/sched/energy.h>
-+#include <linux/pm_opp.h>
-+
-+#include "sched.h"
-+
-+DEFINE_STATIC_KEY_FALSE(sched_energy_present);
-+struct sched_energy_model ** __percpu energy_model;
-+
-+/*
-+ * A copy of the cpumasks representing the frequency domains is kept private
-+ * to the scheduler. They are stacked in a dynamically allocated linked list
-+ * as we don't know how many frequency domains the system has.
-+ */
-+LIST_HEAD(freq_domains);
-+
-+#ifdef CONFIG_PM_OPP
-+static struct sched_energy_model *build_energy_model(int cpu)
++static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
 +{
-+	unsigned long cap_scale = arch_scale_cpu_capacity(NULL, cpu);
-+	unsigned long cap, freq, power, max_freq = ULONG_MAX;
-+	unsigned long opp_eff, prev_opp_eff = ULONG_MAX;
-+	struct sched_energy_model *em = NULL;
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	int opp_cnt, i;
++	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
++	unsigned long capacity = capacity_orig_of(cpu);
 +
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev) {
-+		pr_err("CPU%d: Failed to get device\n", cpu);
-+		return NULL;
-+	}
++	/*
++	 * If p is where it should be, or if it has no impact on cpu, there is
++	 * not much to do.
++	 */
++	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
++		goto clamp_util;
 +
-+	opp_cnt = dev_pm_opp_get_opp_count(cpu_dev);
-+	if (opp_cnt <= 0) {
-+		pr_err("CPU%d: Failed to get # of available OPPs.\n", cpu);
-+		return NULL;
-+	}
++	if (dst_cpu == cpu)
++		util += task_util(p);
++	else
++		util = max_t(long, util - task_util(p), 0);
 +
-+	opp = dev_pm_opp_find_freq_floor(cpu_dev, &max_freq);
-+	if (IS_ERR(opp)) {
-+		pr_err("CPU%d: Failed to get max frequency.\n", cpu);
-+		return NULL;
-+	}
-+
-+	dev_pm_opp_put(opp);
-+	if (!max_freq) {
-+		pr_err("CPU%d: Found null max frequency.\n", cpu);
-+		return NULL;
-+	}
-+
-+	em = kzalloc(sizeof(*em), GFP_KERNEL);
-+	if (!em)
-+		return NULL;
-+
-+	em->cap_states = kcalloc(opp_cnt, sizeof(*em->cap_states), GFP_KERNEL);
-+	if (!em->cap_states)
-+		goto free_em;
-+
-+	for (i = 0, freq = 0; i < opp_cnt; i++, freq++) {
-+		opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq);
-+		if (IS_ERR(opp)) {
-+			pr_err("CPU%d: Failed to get OPP %d.\n", cpu, i+1);
-+			goto free_cs;
-+		}
-+
-+		power = dev_pm_opp_get_power(opp);
-+		dev_pm_opp_put(opp);
-+		if (!power || !freq)
-+			goto free_cs;
-+
-+		cap = freq * cap_scale / max_freq;
-+		em->cap_states[i].power = power;
-+		em->cap_states[i].cap = cap;
-+
-+		/*
-+		 * The capacity/watts efficiency ratio should decrease as the
-+		 * frequency grows on sane platforms. If not, warn the user
-+		 * that some high OPPs are more power efficient than some
-+		 * of the lower ones.
-+		 */
-+		opp_eff = (cap << 20) / power;
-+		if (opp_eff >= prev_opp_eff)
-+			pr_warn("CPU%d: cap/pwr: OPP%d > OPP%d\n", cpu, i, i-1);
-+		prev_opp_eff = opp_eff;
-+	}
-+
-+	em->nr_cap_states = opp_cnt;
-+	return em;
-+
-+free_cs:
-+	kfree(em->cap_states);
-+free_em:
-+	kfree(em);
-+	return NULL;
++clamp_util:
++	return (util >= capacity) ? capacity : util;
 +}
 +
-+static void free_energy_model(void)
++/*
+  * Disable WAKE_AFFINE in the case where task @p doesn't fit in the
+  * capacity of either the waking CPU @cpu or the previous CPU @prev_cpu.
+  *
+@@ -6432,6 +6456,63 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
+ 	return !util_fits_capacity(task_util(p), min_cap);
+ }
+ 
++static struct capacity_state *find_cap_state(int cpu, unsigned long util)
 +{
-+	struct sched_energy_model *em;
-+	struct freq_domain *tmp, *pos;
++	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
++	struct capacity_state *cs = NULL;
++	int i;
++
++	/*
++	 * As the goal is to estimate the OPP reached for a specific util
++	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
++	 */
++	util += util >> 2;
++
++	for (i = 0; i < em->nr_cap_states; i++) {
++		cs = &em->cap_states[i];
++		if (cs->cap >= util)
++			break;
++	}
++
++	return cs;
++}
++
++static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
++{
++	unsigned long util, fdom_max_util;
++	struct capacity_state *cs;
++	unsigned long energy = 0;
++	struct freq_domain *fdom;
 +	int cpu;
 +
-+	list_for_each_entry_safe(pos, tmp, &freq_domains, next) {
-+		cpu = cpumask_first(&(pos->span));
-+		em = *per_cpu_ptr(energy_model, cpu);
-+		if (em) {
-+			kfree(em->cap_states);
-+			kfree(em);
++	for_each_freq_domain(fdom) {
++		fdom_max_util = 0;
++		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
++			util = cpu_util_next(cpu, p, dst_cpu);
++			fdom_max_util = max(util, fdom_max_util);
 +		}
 +
-+		list_del(&(pos->next));
-+		kfree(pos);
-+	}
-+
-+	free_percpu(energy_model);
-+}
-+
-+void init_sched_energy(void)
-+{
-+	struct freq_domain *fdom;
-+	struct sched_energy_model *em;
-+	struct device *cpu_dev;
-+	int cpu, ret, fdom_cpu;
-+
-+	/* Energy Aware Scheduling is used for asymmetric systems only. */
-+	if (!lowest_flag_domain(smp_processor_id(), SD_ASYM_CPUCAPACITY))
-+		return;
-+
-+	energy_model = alloc_percpu(struct sched_energy_model *);
-+	if (!energy_model)
-+		goto exit_fail;
-+
-+	for_each_possible_cpu(cpu) {
-+		if (*per_cpu_ptr(energy_model, cpu))
-+			continue;
-+
-+		/* Keep a copy of the sharing_cpus mask */
-+		fdom = kzalloc(sizeof(struct freq_domain), GFP_KERNEL);
-+		if (!fdom)
-+			goto free_em;
-+
-+		cpu_dev = get_cpu_device(cpu);
-+		ret = dev_pm_opp_get_sharing_cpus(cpu_dev, &(fdom->span));
-+		if (ret)
-+			goto free_em;
-+		list_add(&(fdom->next), &freq_domains);
++		/*
++		 * Here we assume that the capacity states of CPUs belonging to
++		 * the same frequency domains are shared. Hence, we look at the
++		 * capacity state of the first CPU and re-use it for all.
++		 */
++		cpu = cpumask_first(&(fdom->span));
++		cs = find_cap_state(cpu, fdom_max_util);
 +
 +		/*
-+		 * Build the energy model of one CPU, and link it to all CPUs
-+		 * in its frequency domain. This should be correct as long as
-+		 * they share the same micro-architecture.
++		 * The energy consumed by each CPU is derived from the power
++		 * it dissipates at the expected OPP and its percentage of
++		 * busy time.
 +		 */
-+		fdom_cpu = cpumask_first(&(fdom->span));
-+		em = build_energy_model(fdom_cpu);
-+		if (!em)
-+			goto free_em;
-+
-+		for_each_cpu(fdom_cpu, &(fdom->span))
-+			*per_cpu_ptr(energy_model, fdom_cpu) = em;
++		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
++			util = cpu_util_next(cpu, p, dst_cpu);
++			energy += cs->power * util / cs->cap;
++		}
 +	}
-+
-+	static_branch_enable(&sched_energy_present);
-+
-+	pr_info("Energy Aware Scheduling started.\n");
-+	return;
-+free_em:
-+	free_energy_model();
-+exit_fail:
-+	pr_err("Energy Aware Scheduling initialization failed.\n");
++	return energy;
 +}
-+#else
-+void init_sched_energy(void) {}
-+#endif
++
+ /*
+  * select_task_rq_fair: Select target runqueue for the waking task in domains
+  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
 -- 
 2.11.0
