@@ -1,47 +1,52 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4] thermal: Add cooling device's statistics in sysfs
-Date: Tue, 20 Mar 2018 09:38:36 +0800
-Message-ID: <20180320013836.hiu6oy3smwmk35tp@vireshk-mac-ubuntu>
-References: <6e557b90950723065d49c9a545146ce31d7dc6e1.1516096153.git.viresh.kumar@linaro.org>
- <1520924571.3766.8.camel@intel.com>
- <1521014472.2087.32.camel@intel.com>
- <20180314081426.GG15832@vireshk-i7>
+Subject: Re: [PATCH 07/10] ARM: dts: gemini: Remove "cooling-{min|max}-level"
+ for gpio-fan node
+Date: Tue, 20 Mar 2018 09:43:18 +0800
+Message-ID: <20180320014318.g7koh7ld3seucg4c@vireshk-mac-ubuntu>
+References: <cover.1518166039.git.viresh.kumar@linaro.org>
+ <01ddf0ac8962feb63e8871a2c2c3498c763f649b.1518166039.git.viresh.kumar@linaro.org>
+ <20180312043533.GU6842@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180314081426.GG15832@vireshk-i7>
+In-Reply-To: <20180312043533.GU6842@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, arnd.bergmann@linaro.org, arm@kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14-03-18, 13:44, Viresh Kumar wrote:
-> I got those warnings as well, and I quietly ignored them :)
+On 12-03-18, 10:05, Viresh Kumar wrote:
+> On 09-02-18, 14:28, Viresh Kumar wrote:
+> > The "cooling-min-level" and "cooling-max-level" properties are not
+> > parsed by any part of the kernel currently and the max cooling state of
+> > gpio-fan cooling device is found by referring to the
+> > "gpio-fan,speed-map" instead.
+> > 
+> > Remove the unused properties from the gpio-fan node.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  arch/arm/boot/dts/gemini-dlink-dns-313.dts | 2 --
+> >  1 file changed, 2 deletions(-)
+> > 
+> > diff --git a/arch/arm/boot/dts/gemini-dlink-dns-313.dts b/arch/arm/boot/dts/gemini-dlink-dns-313.dts
+> > index 08568ce24d06..727d16eb02d9 100644
+> > --- a/arch/arm/boot/dts/gemini-dlink-dns-313.dts
+> > +++ b/arch/arm/boot/dts/gemini-dlink-dns-313.dts
+> > @@ -78,8 +78,6 @@
+> >  		gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>,
+> >  			<&gpio0 12 GPIO_ACTIVE_HIGH>;
+> >  		gpio-fan,speed-map = <0 0>, <3000 1>, <6000 2>;
+> > -		cooling-min-level = <0>;
+> > -		cooling-max-level = <2>;
+> >  		#cooling-cells = <2>;
+> >  	};
+> >  
 > 
-> I ignored the renaming part for the sake of consistency. The other existing
-> routines for similar purpose are named as:
-> 
-> thermal_cooling_device_type_show
-> thermal_cooling_device_max_state_show
-> thermal_cooling_device_cur_state_show
-> thermal_cooling_device_cur_state_store
-> 
-> for me it made more sense to follow that naming convention. And I didn't use the
-> _RO and _WO variants for the same reason.
-> 
-> Now here is what I propose now:
-> 
-> - You apply this patch as-is and ignore the warning.
-> 
-> - I will send few patches on top of that to do:
->   - renaming of all such routines to shorter versions.
->   - Use the _RO or _WO variants of the macro everywhere.
-> 
-> What do you say ?
+> @Linus: Can you please pick this one for 4.17 ?
 
-@Zhang: Can you please share the way you want this to get merged ? And if the
-above is fine with you ?
+@Arnd/Olof: Can you please pick this one up as well ?
 
 -- 
 viresh
