@@ -1,42 +1,107 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [v2 PATCH 0/2] arm64: dts: Add sdm845 GPU/GMU and
- SMMU
-Date: Tue, 20 Mar 2018 11:44:50 +0800
-Message-ID: <20180320034450.tw4lcw6jv6wktmef@vireshk-mac-ubuntu>
-References: <20180316185152.32020-1-jcrouse@codeaurora.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Tue, 20 Mar 2018 09:03:34 +0100
+Message-ID: <20180320080334.GA31772@amd>
+References: <20180318104023.GA10392@amd>
+ <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
+ <20180319092106.GA5683@amd>
+ <1521474008.20208.2.camel@redhat.com>
+ <20180319173356.GA28462@amd>
+ <1521481549.20208.8.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180316185152.32020-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <1521481549.20208.8.camel@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dan Williams <dcbw@redhat.com>
+Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTYtMDMtMTgsIDEyOjUxLCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IChyZXNlbmQgYmVjYXVz
-ZSBJIGZvcmdvdCB0byBDQyBldmVyeWJvZHkgb24gdGhlIHBhdGNoZXMpCj4gCj4gQWRkIERUIG5v
-ZGVzIGZvciB0aGUgc2RtODQ1IEdQVS9HTVUgKGdyYXBoaWNzIG1hbmFnZW1lbnQgdW5pdCkgYW5k
-IHRoZSBjb21wYW5pb24KPiBhcm0tc21tdS12MiBjb21wYXRpYmxlIFNNTVUuCj4gCj4gVGhpcyBi
-dWlsZHMgb24gdGhlIGZvbGxvd2luZyBkZXBlbmRlbmNpZXMgLQo+IGh0dHBzOi8vcGF0Y2h3b3Jr
-Lmtlcm5lbC5vcmcvcGF0Y2gvMTAyODYzNjkvIC0gYmluZGluZ3MgZm9yIHFjb20sbGV2ZWwKPiBo
-dHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwMjgxNTk5LyAtIHFjb20sc21tdS12
-MiBiaW5kaW5ncwo+IAo+IFBsZWFzZSByZWZlciB0byBodHRwczovL3BhdGNod29yay5mcmVlZGVz
-a3RvcC5vcmcvc2VyaWVzLzM3NDI4LyBmb3IgdGhlIGRyaXZlcgo+IGNvZGUuCj4gCj4gW3YyIC0g
-Y2hhbmdlZCBxY29tLGFyYy1sZXZlbCB0byBxY29tLGxldmVsIGZvbGxvd2luZyBkaXNjdXNzaW9u
-IHdpdGggVmlyZXNoOwo+IGNoYW5nZSBnbXUgcGhhbmRsZSB0byBxY29tLGdtdSBwZXIgUm9iXQo+
-IAo+IEpvcmRhbiBDcm91c2UgKDIpOgo+ICAgZHQtYmluZGluZ3M6IERvY3VtZW50IHFjb20sYWRy
-ZW5vLWdtdQo+ICAgYXJtNjQ6IGR0czogc2RtODQ1OiBBZGQgZ3B1IGFuZCBnbXUgZGV2aWNlIG5v
-ZGVzCgpBY2tlZC1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KCi0t
-IAp2aXJlc2gKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-RnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0
-dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon 2018-03-19 12:45:49, Dan Williams wrote:
+> On Mon, 2018-03-19 at 18:33 +0100, Pavel Machek wrote:
+> > On Mon 2018-03-19 10:40:08, Dan Williams wrote:
+> > > On Mon, 2018-03-19 at 10:21 +0100, Pavel Machek wrote:
+> > > > On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
+> > > > > Pavel Machek wrote:
+> > > > > > Hi!
+> > > > > >=20
+> > > > > > With recent linux-next, after resume networkmanager often
+> > > > > > claims
+> > > > > > that
+> > > > > > "network is disabled". Sometimes suspend/resume clears that.
+> > > > > >=20
+> > > > > > Any ideas? Does it work for you?
+> > > > > > 							=09
+> > > > > > =09
+> > > > > > Pavel
+> > > > >=20
+> > > > > Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
+> > > >=20
+> > > > Thanks for testing... but yes, 4.16 should be ok. If not fixed,
+> > > > problem will appear in 4.17-rc1.
+> > >=20
+> > > Where does the complaint occur?  In the GUI, or with nmcli, or
+> > > somewhere else?  Also, what's the output of "nmcli dev" after
+> > > resume?
+> >=20
+> > In the GUI. I click in place where I'd select access point, and menu
+> > does not show up, telling me that "network is disabled".
+>=20
+> Ok, what does 'nmcli dev' and 'nmcli radio' show?
+
+Broken state.
+
+pavel@amd:~$ nmcli dev
+DEVICE  TYPE      STATE        CONNECTION
+eth1    ethernet  unavailable  --
+lo      loopback  unmanaged    --
+wlan0   wifi      unmanaged    --
+pavel@amd:~$ nmcli radio
+WIFI-HW  WIFI     WWAN-HW  WWAN
+enabled  enabled  enabled  enabled
+pavel@amd:~$ uname -a
+Linux amd 4.16.0-rc5-next-20180314+ #31 SMP Thu Mar 15 14:27:19 CET
+2018 i686 GNU/Linux
+
+Let me suspend/resume. I was lucky and got it into working state:
+
+pavel@amd:~$ nmcli dev
+DEVICE  TYPE      STATE        CONNECTION
+wlan0   wifi      connected    openwireless.org
+eth1    ethernet  unavailable  --
+lo      loopback  unmanaged    --
+pavel@amd:~$ nmcli radio
+WIFI-HW  WIFI     WWAN-HW  WWAN
+enabled  enabled  enabled  enabled
+pavel@amd:~$
+
+Best regards,
+									Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlqwwFYACgkQMOfwapXb+vLcgQCgpItJ4/INPvxhJkAirrtdxEpx
+VbkAn3sofQkWdI2y512QauwsHne9nbmH
+=KszJ
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
