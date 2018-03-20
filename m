@@ -1,107 +1,205 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: linux-next on x60: network manager often complains "network is
- disabled" after resume
-Date: Tue, 20 Mar 2018 09:03:34 +0100
-Message-ID: <20180320080334.GA31772@amd>
-References: <20180318104023.GA10392@amd>
- <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
- <20180319092106.GA5683@amd>
- <1521474008.20208.2.camel@redhat.com>
- <20180319173356.GA28462@amd>
- <1521481549.20208.8.camel@redhat.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: [RFC PATCH 0/6] Energy Aware Scheduling
+Date: Tue, 20 Mar 2018 09:43:06 +0000
+Message-ID: <20180320094312.24081-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1521481549.20208.8.camel@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dan Williams <dcbw@redhat.com>
-Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>
+Cc: linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+1. Overview
 
---k+w/mQv8wyuph6w0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The Energy Aware Scheduler (EAS) based on Morten Rasmussen's posting on
+LKML [1] is currently part of the AOSP Common Kernel and runs on
+today's smartphones with Arm's big.LITTLE CPUs.
+Based on the experience gained over the last two and a half years in
+product development, we propose an energy model based task placement
+for CPUs with asymmetric core capacities (e.g. Arm big.LITTLE or
+DynamIQ), to align with the EAS adopted by the AOSP Common Kernel. We
+have developed a simplified energy model, based on the physical
+active power/performance curve of each core type using existing SoC
+power/performance data already known to the kernel. The energy model
+is used to select the most energy-efficient CPU to place each task,
+taking utilization into account.
 
-On Mon 2018-03-19 12:45:49, Dan Williams wrote:
-> On Mon, 2018-03-19 at 18:33 +0100, Pavel Machek wrote:
-> > On Mon 2018-03-19 10:40:08, Dan Williams wrote:
-> > > On Mon, 2018-03-19 at 10:21 +0100, Pavel Machek wrote:
-> > > > On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
-> > > > > Pavel Machek wrote:
-> > > > > > Hi!
-> > > > > >=20
-> > > > > > With recent linux-next, after resume networkmanager often
-> > > > > > claims
-> > > > > > that
-> > > > > > "network is disabled". Sometimes suspend/resume clears that.
-> > > > > >=20
-> > > > > > Any ideas? Does it work for you?
-> > > > > > 							=09
-> > > > > > =09
-> > > > > > Pavel
-> > > > >=20
-> > > > > Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
-> > > >=20
-> > > > Thanks for testing... but yes, 4.16 should be ok. If not fixed,
-> > > > problem will appear in 4.17-rc1.
-> > >=20
-> > > Where does the complaint occur?  In the GUI, or with nmcli, or
-> > > somewhere else?  Also, what's the output of "nmcli dev" after
-> > > resume?
-> >=20
-> > In the GUI. I click in place where I'd select access point, and menu
-> > does not show up, telling me that "network is disabled".
->=20
-> Ok, what does 'nmcli dev' and 'nmcli radio' show?
+1.1 Energy Model
 
-Broken state.
+A CPU with asymmetric core capacities features cores with significantly
+different energy and performance characteristics. As the configurations
+can vary greatly from one SoC to another, designing an energy-efficient
+scheduling heuristic that performs well on a broad spectrum of platforms
+appears to be particularly hard.
+This proposal attempts to solve this issue by providing the scheduler
+with an energy model of the platform which enables energy impact
+estimation of scheduling decisions in a generic way. The energy model is
+kept very simple as it represents only the active power of CPUs at all
+available P-states and relies on existing data in the kernel (only used
+by the thermal subsystem so far).
+This proposal does not include the power consumption of C-states and
+cluster-level resources which were originally introduced in [1] since
+firstly, their impact on task placement decisions appears to be
+neglectible on modern asymmetric platforms and secondly, they require
+additional infrastructure and data (e.g new DT entries).
+The scheduler is also informed of the span of frequency domains, hence
+enabling an accurate accounting of the energy costs of frequency
+changes. This appears to be especially important for future Arm CPU
+topologies (DynamIQ) where the span of scheduling domains can be
+different from the span of frequency domains.
 
-pavel@amd:~$ nmcli dev
-DEVICE  TYPE      STATE        CONNECTION
-eth1    ethernet  unavailable  --
-lo      loopback  unmanaged    --
-wlan0   wifi      unmanaged    --
-pavel@amd:~$ nmcli radio
-WIFI-HW  WIFI     WWAN-HW  WWAN
-enabled  enabled  enabled  enabled
-pavel@amd:~$ uname -a
-Linux amd 4.16.0-rc5-next-20180314+ #31 SMP Thu Mar 15 14:27:19 CET
-2018 i686 GNU/Linux
+1.2 Overutilization/Tipping Point
 
-Let me suspend/resume. I was lucky and got it into working state:
+The primary job for the task scheduler is to deliver the highest
+possible throughput with minimal latency. With increasing utilization
+the opportunities to save energy for the scheduler become rarer. There
+must be spare CPU time available to place tasks based on utilization
+in an energy-aware fashion, i.e. to pack tasks on energy-efficient CPUs
+with unnecessary constraining of the task throughput. This spare CPU
+time decreases towards zero when the utilization of the system rises.  
+To cope with this situation, we introduce the concept of overutilization
+in order to enable/disable EAS depending on system utilization.
+The point in which a system switches from being not overutilized to
+being overutilized or vice versa is called the tipping point. A per
+sched domain tipping point indicator implementation is introduced here.
 
-pavel@amd:~$ nmcli dev
-DEVICE  TYPE      STATE        CONNECTION
-wlan0   wifi      connected    openwireless.org
-eth1    ethernet  unavailable  --
-lo      loopback  unmanaged    --
-pavel@amd:~$ nmcli radio
-WIFI-HW  WIFI     WWAN-HW  WWAN
-enabled  enabled  enabled  enabled
-pavel@amd:~$
+1.3 Wakeup path
 
-Best regards,
-									Pavel
+On a system which has an energy model, the energy-aware wakeup path
+trumps affine and capacity based wake up in case the lowest sched
+domain of the task's previous CPU is not overutilized. The energy-aware
+algorithm tries to find a new target CPU among the CPUs of the highest
+non-overutilized domain which includes previous and current CPU, for
+which the placement of the task would contribute a minimum on energy
+consumption. The energy model is only enabled on CPUs with asymmetric
+core capacities (SD_ASYM_CPUCAPACITY). These systems typically have
+less than or equal 8 cores.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+2. Tests
 
---k+w/mQv8wyuph6w0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Two fundamentally different tests were executed. Firstly the energy
+test case shows the impact on energy consumption this patch-set has
+using a synthetic set of tasks. Secondly the performance test case
+provides the conventional hackbench metric numbers.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+The tests run on two arm64 big.LITTLE platforms: Hikey960 (4xA73 +
+4xA53) and Juno r0 (2xA57 + 4xA53).
 
-iEYEARECAAYFAlqwwFYACgkQMOfwapXb+vLcgQCgpItJ4/INPvxhJkAirrtdxEpx
-VbkAn3sofQkWdI2y512QauwsHne9nbmH
-=KszJ
------END PGP SIGNATURE-----
+Base kernel is tip/sched/core (4.16-rc4), with some Hikey960 and
+Juno specific patches, the SD_ASYM_CPUCAPACITY flag set at DIE sched
+domain level for arm64 and schedutil as cpufreq governor [2].
 
---k+w/mQv8wyuph6w0--
+2.1 Energy test case
+
+10 iterations of between 10 and 50 periodic rt-app tasks (16ms period,
+5% duty-cycle) for 30 seconds with energy measurement. Unit is Joules.
+The goal is to save energy, so lower is better.
+
+2.1.1 Hikey960
+
+Energy is measured with an ACME Cape on an instrumented board. Numbers
+include consumption of big and little CPUs, LPDDR memory, GPU and most
+of the other small components on the board. They do not include
+consumption of the radio chip (turned-off anyway) and external
+connectors.
+
++----------+-----------------+------------------------+
+|          | Without patches | With patches           |
++----------+---------+-------+-----------------+------+ 
+| Tasks nb | Mean   | RSD*   | Mean            | RSD* |
++----------+---------+-------+-----------------+------+
+|       10 |   41.50 |  1.1% |  37.43 (-9.81%) | 2.0% |
+|       20 |   55.51 |  0.7% |  50.74 (-8.59%) | 1.5% |
+|       30 |   75.39 |  0.4% |  70.36 (-6.67%) | 7.3% |
+|       40 |   95.82 |  0.3% |  89.90 (-6.18%) | 1.5% |
+|       50 |  121.53 |  0.9% | 112.61 (-7.34%) | 0.9% |
++----------+---------+-------+-----------------+------+
+
+2.1.2 Juno r0
+
+Energy is measured with the onboard energy meter. Numbers include
+consumption of big and little CPUs.
+
++----------+-----------------+------------------------+
+|          | Without patches | With patches           |
++----------+--------+--------+-----------------+------+
+| Tasks nb | Mean   | RSD*   | Mean            | RSD* |
++----------+--------+--------+-----------------+------+
+|       10 |  11.52 |  1.1%  |  7.67 (-33.42%) | 2.8% |
+|       20 |  19.25 |  0.9%  | 13.39 (-30.44%) | 1.8% |
+|       30 |  28.73 |  1.3%  | 21.85 (-31.49%) | 0.6% |
+|       40 |  37.58 |  0.9%  | 31.40 (-16.44%) | 0.4% |
+|       50 |  47.24 |  0.6%  | 45.37 ( -3.96%) | 0.6% |
++----------+--------+--------+-----------------+------+
+
+2.2 Performance test case
+
+30 iterations of perf bench sched messaging --pipe --thread --group G
+--loop L with G=[1 2 4 8] and L=50000 (Hikey960)/16000 (Juno r0).
+
+2.2.1 Hikey960
+
+The impact of thermal capping was mitigated thanks to a heatsink, a
+fan, and a 10 sec delay between two successive executions.
+
++----------------+-----------------+------------------------+
+|                | Without patches | With patches           |
++--------+-------+---------+-------+----------------+-------+
+| Groups | Tasks | Mean    | RSD*  | Mean           | RSD*  |
++--------+-------+---------+-------+----------------+-------+
+|      1 |    40 |    8.01 | 1.70% |  8.16 (+1.90%) | 1.79% |
+|      2 |    80 |   15.59 | 0.76% | 15.79 (+1.33%) | 0.92% |
+|      4 |   160 |   32.23 | 0.70% | 32.46 (+0.72%) | 0.55% |
+|      8 |   320 |   66.93 | 0.46% | 67.40 (+0.69%) | 0.37% |
++--------+-------+---------+-------+----------------+-------+
+
+2.2.2 Juno r0
+
++----------------+-----------------+------------------------+
+|                | Without patches | With patches           |
++--------+-------+---------+-------+----------------+-------+
+| Groups | Tasks | Mean    | RSD*  | Mean           | RSD*  |
++--------+-------+---------+-------+----------------+-------+
+|      1 |    40 |    8.37 | 0.12% |  8.33 ( 0.00%) | 0.08% |
+|      2 |    80 |   14.63 | 0.12% | 14.49 (-0.01%) | 0.14% |
+|      4 |   160 |   27.17 | 0.14% | 26.80 (-0.01%) | 0.14% |
+|      8 |   320 |   52.50 | 0.25% | 51.54 (-0.02%) | 0.23% |
++--------+-------+---------+-------+----------------+-------+
+
+*RSD: Relative Standard Deviation (std dev / mean)
+
+3. Dependencies
+
+This series depends on additional infrastructure being merged in the
+OPP core. As this infrastructure can also be useful for other clients,
+the related patches have been posted separately [3].
+
+[1] https://lkml.org/lkml/2015/7/7/754
+[2] http://www.linux-arm.org/git?p=linux-de.git;a=shortlog;h=refs/heads/upstream/eas_v1_base
+[3] https://marc.info/?l=linux-pm&m=151635516419249&w=2
+
+Dietmar Eggemang (1):
+  sched/fair: Create util_fits_capacity()
+
+Quentin Perret (4):
+  sched: Introduce energy models of CPUs
+  sched/fair: Introduce an energy estimation helper function
+  sched/fair: Select an energy-efficient CPU on task wake-up
+  drivers: base: arch_topology.c: Enable EAS for arm/arm64 platforms
+
+Thara Gopinath (1):
+  sched: Add over-utilization/tipping point indicator
+
+ drivers/base/arch_topology.c   |   2 +
+ include/linux/sched/energy.h   |  31 ++++++
+ include/linux/sched/topology.h |   1 +
+ kernel/sched/Makefile          |   2 +-
+ kernel/sched/energy.c          | 190 ++++++++++++++++++++++++++++++++++
+ kernel/sched/fair.c            | 226 +++++++++++++++++++++++++++++++++++++++--
+ kernel/sched/sched.h           |   1 +
+ kernel/sched/topology.c        |  12 +--
+ 8 files changed, 449 insertions(+), 16 deletions(-)
+ create mode 100644 include/linux/sched/energy.h
+ create mode 100644 kernel/sched/energy.c
+
+-- 
+2.11.0
