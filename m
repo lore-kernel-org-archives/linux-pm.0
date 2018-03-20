@@ -1,74 +1,89 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v7 4/8] jiffies: Introduce USER_TICK_USEC and redefine TICK_USEC
-Date: Tue, 20 Mar 2018 16:16:28 +0100
-Message-ID: <4255295.KFD9yx16PH@aspire.rjw.lan>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan>
+Subject: [RFT][PATCH v7 0/8] sched/cpuidle: Idle loop rework
+Date: Tue, 20 Mar 2018 16:12:15 +0100
+Message-ID: <2390019.oHdSGtR3EE@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2390019.oHdSGtR3EE@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Since the subsequent changes will need a TICK_USEC definition
-analogous to TICK_NSEC, rename the existing TICK_USEC as
-USER_TICK_USEC, update its users and redefine TICK_USEC
-accordingly.
+Thanks a lot for the feedback so far!
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/net/ethernet/sfc/mcdi.c |    2 +-
- include/linux/jiffies.h         |    7 +++++--
- kernel/time/ntp.c               |    2 +-
- 3 files changed, 7 insertions(+), 4 deletions(-)
+Respin after recent comments from Peter.
 
-Index: linux-pm/include/linux/jiffies.h
-===================================================================
---- linux-pm.orig/include/linux/jiffies.h
-+++ linux-pm/include/linux/jiffies.h
-@@ -62,8 +62,11 @@ extern int register_refined_jiffies(long
- /* TICK_NSEC is the time between ticks in nsec assuming SHIFTED_HZ */
- #define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
+Patches [1-3] unmodified since v5, patch 4 is new and the other ones
+have been updated to address feedback.
+
+The previous summary that still applies:
+
+On Sunday, March 4, 2018 11:21:30 PM CET Rafael J. Wysocki wrote:
+> 
+> The problem is that if we stop the sched tick in
+> tick_nohz_idle_enter() and then the idle governor predicts short idle
+> duration, we lose regardless of whether or not it is right.
+> 
+> If it is right, we've lost already, because we stopped the tick
+> unnecessarily.  If it is not right, we'll lose going forward, because
+> the idle state selected by the governor is going to be too shallow and
+> we'll draw too much power (that has been reported recently to actually
+> happen often enough for people to care).
+> 
+> This patch series is an attempt to improve the situation and the idea
+> here is to make the decision whether or not to stop the tick deeper in
+> the idle loop and in particular after running the idle state selection
+> in the path where the idle governor is invoked.  This way the problem
+> can be avoided, because the idle duration predicted by the idle governor
+> can be used to decide whether or not to stop the tick so that the tick
+> is only stopped if that value is large enough (and, consequently, the
+> idle state selected by the governor is deep enough).
+> 
+> The series tires to avoid adding too much new code, rather reorder the
+> existing code and make it more fine-grained.
+>
+> Patch 1 prepares the tick-sched code for the subsequent modifications and it
+> doesn't change the code's functionality (at least not intentionally).
+> 
+> Patch 2 starts pushing the tick stopping decision deeper into the idle
+> loop, but that is limited to do_idle() and tick_nohz_irq_exit().
+> 
+> Patch 3 makes cpuidle_idle_call() decide whether or not to stop the tick
+> and sets the stage for the subsequent changes.
+
+Patch 4 is a new one just for the TICK_USEC definition changes.
+
+Patch 5 adds a bool pointer argument to cpuidle_select() and the ->select
+governor callback allowing them to return a "nohz" hint on whether or not to
+stop the tick to the caller.  It also adds code to decide what value to
+return as "nohz" to the menu governor and modifies its correction factor
+computations to take running tick into account if need be.
  
--/* TICK_USEC is the time between ticks in usec assuming fake USER_HZ */
--#define TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
-+/* TICK_USEC is the time between ticks in usec assuming SHIFTED_HZ */
-+#define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
-+
-+/* USER_TICK_USEC is the time between ticks in usec assuming fake USER_HZ */
-+#define USER_TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
+Patch 6 reorders the idle state selection with respect to the stopping of
+the tick and causes the additional "nohz" hint from cpuidle_select() to be
+used for deciding whether or not to stop the tick.
  
- #ifndef __jiffy_arch_data
- #define __jiffy_arch_data
-Index: linux-pm/drivers/net/ethernet/sfc/mcdi.c
-===================================================================
---- linux-pm.orig/drivers/net/ethernet/sfc/mcdi.c
-+++ linux-pm/drivers/net/ethernet/sfc/mcdi.c
-@@ -375,7 +375,7 @@ static int efx_mcdi_poll(struct efx_nic
- 	 * because generally mcdi responses are fast. After that, back off
- 	 * and poll once a jiffy (approximately)
- 	 */
--	spins = TICK_USEC;
-+	spins = USER_TICK_USEC;
- 	finish = jiffies + MCDI_RPC_TIMEOUT;
- 
- 	while (1) {
-Index: linux-pm/kernel/time/ntp.c
-===================================================================
---- linux-pm.orig/kernel/time/ntp.c
-+++ linux-pm/kernel/time/ntp.c
-@@ -31,7 +31,7 @@
- 
- 
- /* USER_HZ period (usecs): */
--unsigned long			tick_usec = TICK_USEC;
-+unsigned long			tick_usec = USER_TICK_USEC;
- 
- /* SHIFTED_HZ period (nsecs): */
- unsigned long			tick_nsec;
+Patch 7 causes the menu governor to refine the state selection in case the
+tick is not going to be stopped and the already selected state may not fit
+before the next tick time.
+
+Patch 8 Deals with the situation in which the tick was stopped previously,
+but the idle governor still predicts short idle.
+
+This series is complementary to the poll_idle() patch at
+
+https://patchwork.kernel.org/patch/10282237/
+
+and I have update the idle-loop branch in my tree
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ idle-loop
+
+with the new patches.
+
+Thanks,
+Rafael
