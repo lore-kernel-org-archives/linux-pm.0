@@ -1,342 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v7.2 5/8] cpuidle: Return nohz hint from cpuidle_select()
-Date: Wed, 21 Mar 2018 14:03:51 +0100
-Message-ID: <2313989.EXUHJuTSS6@aspire.rjw.lan>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <1635957.yuHkCe9oyz@aspire.rjw.lan>
+Subject: Re: [PATCH] ARM: EXYNOS: Fix coupled CPU idle freeze on Exynos4210
+Date: Wed, 21 Mar 2018 14:49:52 +0100
+Message-ID: <3225655.FLAaRANmer@aspire.rjw.lan>
+References: <CGME20180321094523eucas1p1a87d146d65d4191ccdb37f1723977011@eucas1p1.samsung.com> <20180321094505.25494-1-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1635957.yuHkCe9oyz@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20180321094505.25494-1-m.szyprowski@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wednesday, March 21, 2018 10:45:05 AM CET Marek Szyprowski wrote:
+> Since commit 04c8b0f82c7d ("irqchip/gic: Make locking a BL_SWITCHER only
+> feature") coupled CPU idle freezes from time to time on Exynos4210. Later
+> commit 313c8c16ee62 ("PM / CPU: replace raw_notifier with atomic_notifier")
+> changed the context in which the CPU idle code is executed, what results
+> in fully reproducible freeze all the time. However, almost the same coupled
+> CPU idle code works fine on Exynos3250 regarless of the changes made in
+> the mentioned commits.
+> 
+> It turned out that the IPI call used on Exynos4210 is conflicting with the
+> change done in the first mentioned commit in GIC. Fix this by using the
+> same code path as for Exynos3250, instead of the IPI call for
+> synchronization with second CPU core, call dsb_sev() directly.
+> 
+> Tested on Exynos4210-based Trats and Origen boards.
+> 
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> CC: stable@vger.kernel.org # v4.13+
+> ---
+>  arch/arm/mach-exynos/pm.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+> 
+> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> index dc4346ecf16d..a1055a2b8d54 100644
+> --- a/arch/arm/mach-exynos/pm.c
+> +++ b/arch/arm/mach-exynos/pm.c
+> @@ -271,11 +271,7 @@ static int exynos_cpu0_enter_aftr(void)
+>  				goto fail;
+>  
+>  			call_firmware_op(cpu_boot, 1);
+> -
+> -			if (soc_is_exynos3250())
+> -				dsb_sev();
+> -			else
+> -				arch_send_wakeup_ipi_mask(cpumask_of(1));
+> +			dsb_sev();
+>  		}
+>  	}
+>  fail:
+> 
 
-Add a new pointer argument to cpuidle_select() and to the ->select
-cpuidle governor callback to allow a boolean value indicating
-whether or not the tick should be stopped before entering the
-selected state to be returned from there.
-
-Make the ladder governor ignore that pointer (to preserve its
-current behavior) and make the menu governor return 'false" through
-it if:
- (1) the idle exit latency is constrained at 0, or
- (2) the selected state is a polling one, or
- (3) the expected idle period duration is within the tick period
-     range.
-
-In addition to that, the correction factor computations in the menu
-governor need to take the possibility that the tick may not be
-stopped into account to avoid artificially small correction factor
-values.  To that end, add a mechanism to record tick wakeups, as
-suggested by Peter Zijlstra, and use it to modify the menu_reflect()
-behavior when tick wakeup occurs.  Namely, if the CPU is woken up by
-the tick and the return value of tick_nohz_get_sleep_length() is not
-within the tick boundary, the predicted idle duration is likely too
-short, so make menu_reflect() try to compensate for that by bumping
-up the correction factor with a (sufficiently large) constant value.
-
-Since the value returned through the new argument pointer of
-cpuidle_select() is not used by its caller yet, this change by
-itself is not expected to alter the functionality of the code.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-This fixes the bug in the v7.1 of patch [5/8] (and in the original v7 of it
-for that matter) by which tick wakeups occurring for tick_nohz_get_sleep_length()
-return values within the tick boundary were treated in a special way
-incorrectly.
-
-It doesn't run menu_update() on tick wakeups occurring when the return
-value of tick_nohz_get_sleep_length() is not within the tick boundary, but
-simply bumps up the correction factor alone then.
-
->From the theoretical standpoint this is my favorite version of patch [5/8]
-so far, as there's a clear (to me at least) reason for all of the changes.
-Of course, the constant value used for bumping up the correction factor in
-menu_reflect() is a matter of speculation at this point, but this is the
-only remaining sort of moving part I can see.  And it can be adjusted later. :-)
-
-Still, the theory needs to meet practice and we'll see what comes out of that ...
-
-Thanks!
-
----
- drivers/cpuidle/cpuidle.c          |   10 +++++-
- drivers/cpuidle/governors/ladder.c |    3 +
- drivers/cpuidle/governors/menu.c   |   57 +++++++++++++++++++++++++++++++++----
- include/linux/cpuidle.h            |    8 +++--
- include/linux/tick.h               |    2 +
- kernel/sched/idle.c                |    4 +-
- kernel/time/tick-sched.c           |   20 ++++++++++++
- 7 files changed, 92 insertions(+), 12 deletions(-)
-
-Index: linux-pm/include/linux/cpuidle.h
-===================================================================
---- linux-pm.orig/include/linux/cpuidle.h
-+++ linux-pm/include/linux/cpuidle.h
-@@ -135,7 +135,8 @@ extern bool cpuidle_not_available(struct
- 				  struct cpuidle_device *dev);
- 
- extern int cpuidle_select(struct cpuidle_driver *drv,
--			  struct cpuidle_device *dev);
-+			  struct cpuidle_device *dev,
-+			  bool *stop_tick);
- extern int cpuidle_enter(struct cpuidle_driver *drv,
- 			 struct cpuidle_device *dev, int index);
- extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
-@@ -167,7 +168,7 @@ static inline bool cpuidle_not_available
- 					 struct cpuidle_device *dev)
- {return true; }
- static inline int cpuidle_select(struct cpuidle_driver *drv,
--				 struct cpuidle_device *dev)
-+				 struct cpuidle_device *dev, bool *stop_tick)
- {return -ENODEV; }
- static inline int cpuidle_enter(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev, int index)
-@@ -250,7 +251,8 @@ struct cpuidle_governor {
- 					struct cpuidle_device *dev);
- 
- 	int  (*select)		(struct cpuidle_driver *drv,
--					struct cpuidle_device *dev);
-+					struct cpuidle_device *dev,
-+					bool *stop_tick);
- 	void (*reflect)		(struct cpuidle_device *dev, int index);
- };
- 
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -188,13 +188,15 @@ static void cpuidle_idle_call(void)
- 		next_state = cpuidle_find_deepest_state(drv, dev);
- 		call_cpuidle(drv, dev, next_state);
- 	} else {
-+		bool stop_tick = true;
-+
- 		tick_nohz_idle_stop_tick();
- 		rcu_idle_enter();
- 
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
--		next_state = cpuidle_select(drv, dev);
-+		next_state = cpuidle_select(drv, dev, &stop_tick);
- 		entered_state = call_cpuidle(drv, dev, next_state);
- 		/*
- 		 * Give the governor an opportunity to reflect on the outcome
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -272,12 +272,18 @@ int cpuidle_enter_state(struct cpuidle_d
-  *
-  * @drv: the cpuidle driver
-  * @dev: the cpuidle device
-+ * @stop_tick: indication on whether or not to stop the tick
-  *
-  * Returns the index of the idle state.  The return value must not be negative.
-+ *
-+ * The memory location pointed to by @stop_tick is expected to be written the
-+ * 'false' boolean value if the scheduler tick should not be stopped before
-+ * entering the returned state.
-  */
--int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-+int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-+		   bool *stop_tick)
- {
--	return cpuidle_curr_governor->select(drv, dev);
-+	return cpuidle_curr_governor->select(drv, dev, stop_tick);
- }
- 
- /**
-Index: linux-pm/drivers/cpuidle/governors/ladder.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/ladder.c
-+++ linux-pm/drivers/cpuidle/governors/ladder.c
-@@ -63,9 +63,10 @@ static inline void ladder_do_selection(s
-  * ladder_select_state - selects the next state to enter
-  * @drv: cpuidle driver
-  * @dev: the CPU
-+ * @dummy: not used
-  */
- static int ladder_select_state(struct cpuidle_driver *drv,
--				struct cpuidle_device *dev)
-+			       struct cpuidle_device *dev, bool *dummy)
- {
- 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	struct device *device = get_cpu_device(dev->cpu);
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -279,8 +279,10 @@ again:
-  * menu_select - selects the next idle state to enter
-  * @drv: cpuidle driver containing state data
-  * @dev: the CPU
-+ * @stop_tick: indication on whether or not to stop the tick
-  */
--static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-+static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-+		       bool *stop_tick)
- {
- 	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	struct device *device = get_cpu_device(dev->cpu);
-@@ -303,8 +305,10 @@ static int menu_select(struct cpuidle_dr
- 		latency_req = resume_latency;
- 
- 	/* Special case when user has set very strict latency requirement */
--	if (unlikely(latency_req == 0))
-+	if (unlikely(latency_req == 0)) {
-+		*stop_tick = false;
- 		return 0;
-+	}
- 
- 	/* determine the expected residency time, round up */
- 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
-@@ -354,6 +358,7 @@ static int menu_select(struct cpuidle_dr
- 	if (latency_req > interactivity_req)
- 		latency_req = interactivity_req;
- 
-+	expected_interval = data->predicted_us;
- 	/*
- 	 * Find the idle state with the lowest power while satisfying
- 	 * our constraints.
-@@ -369,15 +374,30 @@ static int menu_select(struct cpuidle_dr
- 			idx = i; /* first enabled state */
- 		if (s->target_residency > data->predicted_us)
- 			break;
--		if (s->exit_latency > latency_req)
-+		if (s->exit_latency > latency_req) {
-+			/*
-+			 * If we break out of the loop for latency reasons, use
-+			 * the target residency of the selected state as the
-+			 * expected idle duration so that the tick is retained
-+			 * as long as that target residency is low enough.
-+			 */
-+			expected_interval = drv->states[idx].target_residency;
- 			break;
--
-+		}
- 		idx = i;
- 	}
- 
- 	if (idx == -1)
- 		idx = 0; /* No states enabled. Must use 0. */
- 
-+	/*
-+	 * Don't stop the tick if the selected state is a polling one or if the
-+	 * expected idle duration is shorter than the tick period length.
-+	 */
-+	if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
-+	    expected_interval < TICK_USEC)
-+		*stop_tick = false;
-+
- 	data->last_state_idx = idx;
- 
- 	return data->last_state_idx;
-@@ -396,7 +416,34 @@ static void menu_reflect(struct cpuidle_
- 	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 
- 	data->last_state_idx = index;
--	data->needs_update = 1;
-+	/*
-+	 * Tick wakeups occurring when the tick_nohz_get_sleep_length() return
-+	 * value is within the tick boundary should be treated as regular ones,
-+	 * as the nohz code itself doesn't stop the tick then.
-+	 */
-+	if (tick_nohz_idle_got_tick() && data->next_timer_us > TICK_USEC) {
-+		unsigned int new_factor = data->correction_factor[data->bucket];
-+
-+		/*
-+		 * Only update the correction factor, don't update the repeating
-+		 * pattern data to avoid polluting it with the tick period
-+		 * length which is a design artifact here.
-+		 */
-+		new_factor -= new_factor / DECAY;
-+		/*
-+		 * The nohz code said that there wouldn't be any wakeups
-+		 * within the tick boundary (if the tick wasn't stopped), but
-+		 * menu_select() had a differing opinion.  Yet, the CPU was
-+		 * woken up by the tick, so menu_select() was not quite right.
-+		 * Try to make it do a better job next time by bumping up the
-+		 * correction factor.  Use 0.75 * RESOLUTION (which is easy
-+		 * enough to get) that should work fine on the average.
-+		 */
-+		new_factor += RESOLUTION / 2 + RESOLUTION / 4;
-+		data->correction_factor[data->bucket] = new_factor;
-+	} else {
-+		data->needs_update = 1;
-+	}
- }
- 
- /**
-Index: linux-pm/kernel/time/tick-sched.c
-===================================================================
---- linux-pm.orig/kernel/time/tick-sched.c
-+++ linux-pm/kernel/time/tick-sched.c
-@@ -991,6 +991,20 @@ void tick_nohz_irq_exit(void)
- }
- 
- /**
-+ * tick_nohz_idle_got_tick - Check whether or not the tick handler has run
-+ */
-+bool tick_nohz_idle_got_tick(void)
-+{
-+	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
-+
-+	if (ts->inidle > 1) {
-+		ts->inidle = 1;
-+		return true;
-+	}
-+	return false;
-+}
-+
-+/**
-  * tick_nohz_get_sleep_length - return the length of the current sleep
-  *
-  * Called from power state control code with interrupts disabled
-@@ -1101,6 +1115,9 @@ static void tick_nohz_handler(struct clo
- 	struct pt_regs *regs = get_irq_regs();
- 	ktime_t now = ktime_get();
- 
-+	if (ts->inidle)
-+		ts->inidle = 2;
-+
- 	dev->next_event = KTIME_MAX;
- 
- 	tick_sched_do_timer(now);
-@@ -1198,6 +1215,9 @@ static enum hrtimer_restart tick_sched_t
- 	struct pt_regs *regs = get_irq_regs();
- 	ktime_t now = ktime_get();
- 
-+	if (ts->inidle)
-+		ts->inidle = 2;
-+
- 	tick_sched_do_timer(now);
- 
- 	/*
-Index: linux-pm/include/linux/tick.h
-===================================================================
---- linux-pm.orig/include/linux/tick.h
-+++ linux-pm/include/linux/tick.h
-@@ -119,6 +119,7 @@ extern void tick_nohz_idle_restart_tick(
- extern void tick_nohz_idle_enter(void);
- extern void tick_nohz_idle_exit(void);
- extern void tick_nohz_irq_exit(void);
-+extern bool tick_nohz_idle_got_tick(void);
- extern ktime_t tick_nohz_get_sleep_length(void);
- extern unsigned long tick_nohz_get_idle_calls(void);
- extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
-@@ -139,6 +140,7 @@ static inline void tick_nohz_idle_stop_t
- static inline void tick_nohz_idle_restart_tick(void) { }
- static inline void tick_nohz_idle_enter(void) { }
- static inline void tick_nohz_idle_exit(void) { }
-+static inline bool tick_nohz_idle_got_tick(void) { return false; }
- 
- static inline ktime_t tick_nohz_get_sleep_length(void)
- {
+That will be -stable material I believe?
