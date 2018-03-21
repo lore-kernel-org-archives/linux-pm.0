@@ -1,64 +1,97 @@
-From: Rik van Riel <riel@surriel.com>
-Subject: Re: [RFT][PATCH v7 0/8] sched/cpuidle: Idle loop rework
-Date: Wed, 21 Mar 2018 08:31:07 -0400
-Message-ID: <1521635467.6308.13.camel@surriel.com>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Wed, 21 Mar 2018 12:39:21 +0000
+Message-ID: <20180321123921.GB13951@e110439-lin>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-5-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-pOBjBDEiGvoqpx9GdLow"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2390019.oHdSGtR3EE@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20180320094312.24081-5-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 20-Mar 09:43, Dietmar Eggemann wrote:
+> From: Quentin Perret <quentin.perret@arm.com>
 
---=-pOBjBDEiGvoqpx9GdLow
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+[...]
 
-On Tue, 2018-03-20 at 16:12 +0100, Rafael J. Wysocki wrote:
-> Hi All,
->=20
-> Thanks a lot for the feedback so far!
->=20
-> Respin after recent comments from Peter.
->=20
-> Patches [1-3] unmodified since v5, patch 4 is new and the other ones
-> have been updated to address feedback.
->=20
-> The previous summary that still applies:
+> +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+> +{
+> +	unsigned long util, fdom_max_util;
+> +	struct capacity_state *cs;
+> +	unsigned long energy = 0;
+> +	struct freq_domain *fdom;
+> +	int cpu;
+> +
+> +	for_each_freq_domain(fdom) {
+> +		fdom_max_util = 0;
+> +		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
+> +			util = cpu_util_next(cpu, p, dst_cpu);
 
-For some reason I see increased CPU utilization
-with this patch series (75% -> 85%) with the same
-rate of requests being handled by the vanilla
-kernel and a kernel with these patches applied.
+Would be nice to find a way to cache all these util and reuse them
+below... even just to ensure data consistency between the "cs"
+computation and its usage...
 
-I am running a bisect in the series to see what
-change could possibly cause that, and also digging
-through system statistics to see whether it might
-be something as perverse as not mistakenly choosing
-deeper C-states on one core causing other cores to
-miss out on turbo mode...
+> +			fdom_max_util = max(util, fdom_max_util);
+> +		}
+> +
+> +		/*
+> +		 * Here we assume that the capacity states of CPUs belonging to
+> +		 * the same frequency domains are shared. Hence, we look at the
+> +		 * capacity state of the first CPU and re-use it for all.
+> +		 */
+> +		cpu = cpumask_first(&(fdom->span));
+> +		cs = find_cap_state(cpu, fdom_max_util);
+                ^^^^
 
---=20
-All Rights Reversed.
---=-pOBjBDEiGvoqpx9GdLow
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+The above code could theoretically return NULL, although likely EAS is
+completely disabled if em->nb_cap_states == 0, right?
 
------BEGIN PGP SIGNATURE-----
+If that's the case then, in the previous function, you can certainly
+avoid the initialization of *cs and maybe also add an explicit:
 
-iQEzBAABCAAdFiEEKR73pCCtJ5Xj3yADznnekoTE3oMFAlqyUIsACgkQznnekoTE
-3oN78wf+OJ4QuksPXOz0LCke+Q6pr4fSTjKGqXdHlCRdX+7lF1PuZBiqxkF0S7SJ
-ndIKGyTXpsmL03rMtmGY7nWJbC+dO60Xdf+eEWXyYk4Qpjwz/+P6J6Ty75gDJp7h
-gwljVEE6aB5dlYvhS9pmdFN8ZKbDAHr2eddyOh5C35HfTuD0Z9NrXknKBl2cGan5
-YeE/+tQ7Po0+L419nBmZCEkxnWLCoIcw+rGedo6M1ebum+EK3WBiVrftfgv+At77
-vM9bksnc2T+HSdUEGJXOrr87duDpp8PF48QovGlcZGKR8Uh2wf0VQ8k1t3iWoyQK
-obG/j+L/UOKwgF3IjI36+VbcsOHAVw==
-=DPSM
------END PGP SIGNATURE-----
+    BUG_ON(em->nb_cap_states == 0);
 
---=-pOBjBDEiGvoqpx9GdLow--
+which helps even just as "in code documentation".
+
+But, I'm not sure if maintainers like BUG_ON in scheduler code :)
+
+
+> +
+> +		/*
+> +		 * The energy consumed by each CPU is derived from the power
+                      ^
+
+Should we make more explicit that this is just the "active" energy
+consumed?
+
+> +		 * it dissipates at the expected OPP and its percentage of
+> +		 * busy time.
+> +		 */
+> +		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
+> +			util = cpu_util_next(cpu, p, dst_cpu);
+> +			energy += cs->power * util / cs->cap;
+> +		}
+> +	}
+
+nit-pick: empty line before return?
+
+> +	return energy;
+> +}
+> +
+>  /*
+>   * select_task_rq_fair: Select target runqueue for the waking task in domains
+>   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+> -- 
+> 2.11.0
+> 
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
