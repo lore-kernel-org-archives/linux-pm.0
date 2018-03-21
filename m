@@ -1,78 +1,109 @@
-From: Rik van Riel <riel@surriel.com>
-Subject: Re: [RFT][PATCH v7 0/8] sched/cpuidle: Idle loop rework
-Date: Wed, 21 Mar 2018 10:53:58 -0400
-Message-ID: <1521644038.6308.18.camel@surriel.com>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan>
-         <1521635467.6308.13.camel@surriel.com> <4584935.MPnHlxh7Zu@aspire.rjw.lan>
+From: Juri Lelli <juri.lelli@gmail.com>
+Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Wed, 21 Mar 2018 16:15:13 +0100
+Message-ID: <20180321151513.GE15165@localhost.localdomain>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-5-dietmar.eggemann@arm.com>
+ <20180321090430.GA6913@localhost.localdomain>
+ <20180321122621.GA13951@e110439-lin>
+ <20180321125925.GB15165@localhost.localdomain>
+ <20180321135557.GB1373@queper01-VirtualBox>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4584935.MPnHlxh7Zu@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20180321135557.GB1373@queper01-VirtualBox>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2018-03-21 at 14:55 +0100, Rafael J. Wysocki wrote:
-> On Wednesday, March 21, 2018 1:31:07 PM CET Rik van Riel wrote:
-> > On Tue, 2018-03-20 at 16:12 +0100, Rafael J. Wysocki wrote:
-> > > Hi All,
+On 21/03/18 13:55, Quentin Perret wrote:
+> On Wednesday 21 Mar 2018 at 13:59:25 (+0100), Juri Lelli wrote:
+> > On 21/03/18 12:26, Patrick Bellasi wrote:
+> > > On 21-Mar 10:04, Juri Lelli wrote:
+
+[...]
+
+> > > > > +	/*
+> > > > > +	 * As the goal is to estimate the OPP reached for a specific util
+> > > > > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
+> > > > > +	 */
+> > > > > +	util += util >> 2;
+> > > > 
+> > > > What about other governors (ondemand for example). Is this supposed to
+> > > > work only when schedutil is in use (if so we should probably make it
+> > > > conditional on that)?
 > > > 
-> > > Thanks a lot for the feedback so far!
-> > > 
-> > > Respin after recent comments from Peter.
-> > > 
-> > > Patches [1-3] unmodified since v5, patch 4 is new and the other
-> > > ones
-> > > have been updated to address feedback.
-> > > 
-> > > The previous summary that still applies:
-> 
-> Thanks for the testing!
->  
-> > For some reason I see increased CPU utilization
-> > with this patch series (75% -> 85%) with the same
-> > rate of requests being handled by the vanilla
-> > kernel and a kernel with these patches applied.
+> > > Yes, I would say that EAS mostly makes sense when you have a "minimum"
+> > > control on OPPs... otherwise all the energy estimations are really
+> > > fuzzy.
 > > 
-> > I am running a bisect in the series to see what
-> > change could possibly cause that,
+> > Make sense to me. Shouldn't we then make all this conditional on using
+> > schedutil?
 > 
-> The first 4 patches in the v7 should not change functionality by
-> themselves.
+> So, in theory, EAS could make sense even for other governors than
+> schedutil. Even with the performance governor it is probably more
+> energy efficient (although users using "performance" probably don't care
+> about energy, but that's just an example) to place small tasks onto little
+> CPUs up to a certain point given by the energy model. The ideal solution
+> would be to change the behaviour of find_cap_state() depending on the
+> governor being used, but I don't know if this extra complexity is worth
+> it really.
+> I'm happy to make all this conditional on schedutil as a first step and
+> we can see later if that makes sense to extend EAS to other use-cases.
+
+I agree that EAS makes still sense even for !schedutil cases (your
+performance example being one of them, powersave maybe another one?).
+Making it work with ondemand is tricky, though.
+
+So, not sure what's the best thing to do, but we should be at least aware
+of limitations.
+
 > 
-> If you replace the original [5/8] with the v7.2 of it I've just
-> posted (https://patchwork.kernel.org/patch/10299429/), then it
-> should not change functionality by itself too.
+> > 
+> > > 
+> > > > Also, even when schedutil is in use, shouldn't we ask it for a util
+> > > > "computation" instead of replicating its _current_ heuristic?
+> > > 
+> > > Are you proposing to have the 1.25 factor only here and remove it from
+> > > schedutil?
+> > 
+> > I'm only saying that we shouldn't probably have two places where we add
+> > this 1.25 factor to utilization before using it, as in the future one of
+> > the two might modify that 1.25 to something else and then we'll have
+> > problems. So, maybe a common wrapper that adds such factor?
 > 
-> Then you only have 3 patches to check. :-)
+> Ok, I can definitely factorize this code between schedutil and EAS. And
+> BTW, would it make sense to make schedutil use "capacity_margin" instead
+> of an arbitrary value ? The semantics feels pretty close. Out of curiosity,
+> what was the reason to use C=1.25 in the first place ?
 
-I kicked off a test with your v7.2 series first.
-I have the idle poll loop rework in the mix, too.
+I seem to remember it was choosen out of experiments, but I might surely
+be wrong and Rafael, Viresh, others will correct me. :)
 
-I will check the last 3 patches bit by bit through
-today, and will let you know which causes the issue.
-
-I will also try to figure out what the issue is,
-if I can :)
-
-> > and also digging
-> > through system statistics to see whether it might
-> > be something as perverse as not mistakenly choosing
-> > deeper C-states on one core causing other cores to
-> > miss out on turbo mode...
 > 
-> I have no idea ATM.  And what's the workload?
+> > 
+> > > 
+> > > > I fear  the two might diverge in the future.
+> > > 
+> > > That could be avoided by factoring out from schedutil the
+> > > "compensation" factor into a proper function to be used by all the
+> > > interested playes, isn't it?
+> > 
+> > And I should have read till the end before writing the above paragraph
+> > it seems. :)
+> > 
+> > Thanks,
+> > 
+> > - Juri
+> 
+> Thank you very much for the feedback !
 
-The workload is memcache style, with equal
-queries coming in to both the system running
-the control kernel, and the system running
-the test kernel.
+No problem. I'm of course very interested in this. Could you please
+directly Cc me (juri.lelli@redhat.com) in next versions?
 
-On the control system, CPU utilization is
-around 75%, while on the test system it is
-up to 85% - for the same number of queries.
+Thanks,
 
--- 
-All Rights Reversed.
+- Juri
