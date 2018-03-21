@@ -1,89 +1,71 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH] ARM: EXYNOS: Fix coupled CPU idle freeze on Exynos4210
-Date: Wed, 21 Mar 2018 11:15:00 +0000
-Message-ID: <00bbd758-f0e3-3b21-9bff-3a08c1dc968b@arm.com>
-References: <CGME20180321094523eucas1p1a87d146d65d4191ccdb37f1723977011@eucas1p1.samsung.com>
- <20180321094505.25494-1-m.szyprowski@samsung.com>
- <f1d38d39-59b8-715f-15b3-1933b0971793@arm.com>
- <52224d23-e90a-ce1d-3b4d-add7876eb682@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <52224d23-e90a-ce1d-3b4d-add7876eb682@samsung.com>
-Content-Language: en-GB
-Sender: stable-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, stable@vger.kernel.org
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH 1/2] ACPI / PM: Use register_reboot_notifier() instead of pm_power_off_prepare
+Date: Wed, 21 Mar 2018 19:30:16 +0800
+Message-ID: <7ff55372818461feed4b0550d5f88edce2cc7d41.1521631678.git.baolin.wang@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org, pavel@ucw.cz
+Cc: andrew.smirnov@gmail.com, akpm@linux-foundation.org, broonie@kernel.org, arnd@arndb.de, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, baolin.wang@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21/03/18 10:18, Marek Szyprowski wrote:
-> Hi Marc,
-> 
-> On 2018-03-21 11:05, Marc Zyngier wrote:
->> On 21/03/18 09:45, Marek Szyprowski wrote:
->>> Since commit 04c8b0f82c7d ("irqchip/gic: Make locking a BL_SWITCHER only
->>> feature") coupled CPU idle freezes from time to time on Exynos4210. Later
->>> commit 313c8c16ee62 ("PM / CPU: replace raw_notifier with atomic_notifier")
->>> changed the context in which the CPU idle code is executed, what results
->>> in fully reproducible freeze all the time. However, almost the same coupled
->>> CPU idle code works fine on Exynos3250 regarless of the changes made in
->>> the mentioned commits.
->>>
->>> It turned out that the IPI call used on Exynos4210 is conflicting with the
->>> change done in the first mentioned commit in GIC. Fix this by using the
->>> same code path as for Exynos3250, instead of the IPI call for
->>> synchronization with second CPU core, call dsb_sev() directly.
->>>
->>> Tested on Exynos4210-based Trats and Origen boards.
->>>
->>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>> CC: stable@vger.kernel.org # v4.13+
->>> ---
->>>   arch/arm/mach-exynos/pm.c | 6 +-----
->>>   1 file changed, 1 insertion(+), 5 deletions(-)
->>>
->>> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
->>> index dc4346ecf16d..a1055a2b8d54 100644
->>> --- a/arch/arm/mach-exynos/pm.c
->>> +++ b/arch/arm/mach-exynos/pm.c
->>> @@ -271,11 +271,7 @@ static int exynos_cpu0_enter_aftr(void)
->>>   				goto fail;
->>>   
->>>   			call_firmware_op(cpu_boot, 1);
->>> -
->>> -			if (soc_is_exynos3250())
->>> -				dsb_sev();
->>> -			else
->>> -				arch_send_wakeup_ipi_mask(cpumask_of(1));
->>> +			dsb_sev();
->>>   		}
->>>   	}
->>>   fail:
->>>
->> I'm a bit puzzled here.
->>
->> If the GIC change broke something on your platform, it probably also
->> broke something for all other users of arch_send_wakeup_ipi_mask. But
->> nobody reported anything until now. Also, it doesn't look like 4210 is a
->> big-little platform, so it is unlikely to use the big-little switcher.
->>
->> What is specific to this system that makes misbehave? Were you
->> implicitly relying on the BL lock to perform some serialization?
-> 
-> My hypothesis, after some internal discussion, is that dsb_sev() should be
-> there from the beginning, but instead there was an 
-> arch_send_wakeup_ipi_mask()
-> call, which indirectly called dsb_sev() as a part of GIC spinlock internals.
-> When spinlock has been removed from GIC, there is no dsb_sev() call anymore,
-> what causes synchronization issue.
+We can register one notifier through register_reboot_notifier() function to
+prepare to power off the system, then we can remove the 'pm_power_off_prepare'
+hook in following patch.
 
-That's pretty scary. Glad you pinpointed it in the end.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+Note: Please help to review carefully, since I have no platform to test
+this conversion.
 
-FWIW:
+I saw there is another reboot notifier in this driver, I am not sure the
+orders between them. I can change the priority of notifier to keep their
+orders if it is necessary.
+---
+ drivers/acpi/sleep.c |   22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
-Acked-by: Marc Zyngier <marc.zyngier@arm.com>
-
-	M.
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 46cde091..b3de894 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -1229,14 +1229,24 @@ static void acpi_sleep_hibernate_setup(void)
+ static inline void acpi_sleep_hibernate_setup(void) {}
+ #endif /* !CONFIG_HIBERNATION */
+ 
+-static void acpi_power_off_prepare(void)
++static int acpi_reboot_notify(struct notifier_block *this, unsigned long code,
++			      void *x)
+ {
+-	/* Prepare to power off the system */
+-	acpi_sleep_prepare(ACPI_STATE_S5);
+-	acpi_disable_all_gpes();
+-	acpi_os_wait_events_complete();
++	if (code == SYSTEM_POWER_OFF) {
++		/* Prepare to power off the system */
++		acpi_sleep_prepare(ACPI_STATE_S5);
++		acpi_disable_all_gpes();
++		acpi_os_wait_events_complete();
++	}
++
++	return NOTIFY_DONE;
+ }
+ 
++static struct notifier_block acpi_reboot_notifier = {
++	.notifier_call	= acpi_reboot_notify,
++	.priority	= 0,
++};
++
+ static void acpi_power_off(void)
+ {
+ 	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+@@ -1261,7 +1271,7 @@ int __init acpi_sleep_init(void)
+ 
+ 	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
+ 		sleep_states[ACPI_STATE_S5] = 1;
+-		pm_power_off_prepare = acpi_power_off_prepare;
++		register_reboot_notifier(&acpi_reboot_notifier);
+ 		pm_power_off = acpi_power_off;
+ 	} else {
+ 		acpi_no_s5 = true;
 -- 
-Jazz is not dead. It just smells funny...
+1.7.9.5
