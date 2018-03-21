@@ -1,143 +1,64 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 21 Mar 2018 12:26:21 +0000
-Message-ID: <20180321122621.GA13951@e110439-lin>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-5-dietmar.eggemann@arm.com>
- <20180321090430.GA6913@localhost.localdomain>
+From: Rik van Riel <riel@surriel.com>
+Subject: Re: [RFT][PATCH v7 0/8] sched/cpuidle: Idle loop rework
+Date: Wed, 21 Mar 2018 08:31:07 -0400
+Message-ID: <1521635467.6308.13.camel@surriel.com>
+References: <2390019.oHdSGtR3EE@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-pOBjBDEiGvoqpx9GdLow"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180321090430.GA6913@localhost.localdomain>
+In-Reply-To: <2390019.oHdSGtR3EE@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@gmail.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-Mar 10:04, Juri Lelli wrote:
-> Hi,
-> 
-> On 20/03/18 09:43, Dietmar Eggemann wrote:
-> > From: Quentin Perret <quentin.perret@arm.com>
-> > 
-> > In preparation for the definition of an energy-aware wakeup path, a
-> > helper function is provided to estimate the consequence on system energy
-> > when a specific task wakes-up on a specific CPU. compute_energy()
-> > estimates the OPPs to be reached by all frequency domains and estimates
-> > the consumption of each online CPU according to its energy model and its
-> > percentage of busy time.
-> > 
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > ---
-> >  kernel/sched/fair.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 81 insertions(+)
-> > 
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 6c72a5e7b1b0..76bd46502486 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -6409,6 +6409,30 @@ static inline int cpu_overutilized(int cpu)
-> >  }
-> >  
-> >  /*
-> > + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
-> > + */
-> > +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
-> > +{
-> > +	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
-> 
-> What about other classes? Shouldn't we now also take into account
-> DEADLINE (as schedutil does)?
 
-Good point, although that would likely require to factor out from
-schedutil the utilization aggregation function, isn't it?
+--=-pOBjBDEiGvoqpx9GdLow
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> BTW, we now also have a getter method in sched/sched.h; it takes
-> UTIL_EST into account, though. Do we need to take that into account when
-> estimating energy consumption?
+On Tue, 2018-03-20 at 16:12 +0100, Rafael J. Wysocki wrote:
+> Hi All,
+>=20
+> Thanks a lot for the feedback so far!
+>=20
+> Respin after recent comments from Peter.
+>=20
+> Patches [1-3] unmodified since v5, patch 4 is new and the other ones
+> have been updated to address feedback.
+>=20
+> The previous summary that still applies:
 
-Actually I think that this whole function can be written "just" as:
+For some reason I see increased CPU utilization
+with this patch series (75% -> 85%) with the same
+rate of requests being handled by the vanilla
+kernel and a kernel with these patches applied.
 
----8<---
-   unsigned long util = cpu_util_wake(cpu);
+I am running a bisect in the series to see what
+change could possibly cause that, and also digging
+through system statistics to see whether it might
+be something as perverse as not mistakenly choosing
+deeper C-states on one core causing other cores to
+miss out on turbo mode...
 
-   if (cpu != dst_cpu)
-        return util;
+--=20
+All Rights Reversed.
+--=-pOBjBDEiGvoqpx9GdLow
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-   return min(util + task_util(p), capacity_orig_of(cpu));
----8<---
+-----BEGIN PGP SIGNATURE-----
 
-which will reuse existing functions as well as getting for free other
-stuff (like the CPU util_est).
+iQEzBAABCAAdFiEEKR73pCCtJ5Xj3yADznnekoTE3oMFAlqyUIsACgkQznnekoTE
+3oN78wf+OJ4QuksPXOz0LCke+Q6pr4fSTjKGqXdHlCRdX+7lF1PuZBiqxkF0S7SJ
+ndIKGyTXpsmL03rMtmGY7nWJbC+dO60Xdf+eEWXyYk4Qpjwz/+P6J6Ty75gDJp7h
+gwljVEE6aB5dlYvhS9pmdFN8ZKbDAHr2eddyOh5C35HfTuD0Z9NrXknKBl2cGan5
+YeE/+tQ7Po0+L419nBmZCEkxnWLCoIcw+rGedo6M1ebum+EK3WBiVrftfgv+At77
+vM9bksnc2T+HSdUEGJXOrr87duDpp8PF48QovGlcZGKR8Uh2wf0VQ8k1t3iWoyQK
+obG/j+L/UOKwgF3IjI36+VbcsOHAVw==
+=DPSM
+-----END PGP SIGNATURE-----
 
-Considering your observation above, it makes also easy to add into
-util the DEADLINE and RT utilizations, just before returning the
-value.
-
-> > +	unsigned long capacity = capacity_orig_of(cpu);
-> > +
-> > +	/*
-> > +	 * If p is where it should be, or if it has no impact on cpu, there is
-> > +	 * not much to do.
-> > +	 */
-> > +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
-> > +		goto clamp_util;
-> > +
-> > +	if (dst_cpu == cpu)
-> > +		util += task_util(p);
-> > +	else
-> > +		util = max_t(long, util - task_util(p), 0);
-> > +
-> > +clamp_util:
-> > +	return (util >= capacity) ? capacity : util;
-> > +}
-> > +
-> > +/*
-> >   * Disable WAKE_AFFINE in the case where task @p doesn't fit in the
-> >   * capacity of either the waking CPU @cpu or the previous CPU @prev_cpu.
-> >   *
-> > @@ -6432,6 +6456,63 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
-> >  	return !util_fits_capacity(task_util(p), min_cap);
-> >  }
-> >  
-> > +static struct capacity_state *find_cap_state(int cpu, unsigned long util)
-> > +{
-> > +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
-> > +	struct capacity_state *cs = NULL;
-> > +	int i;
-> > +
-> > +	/*
-> > +	 * As the goal is to estimate the OPP reached for a specific util
-> > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
-> > +	 */
-> > +	util += util >> 2;
-> 
-> What about other governors (ondemand for example). Is this supposed to
-> work only when schedutil is in use (if so we should probably make it
-> conditional on that)?
-
-Yes, I would say that EAS mostly makes sense when you have a "minimum"
-control on OPPs... otherwise all the energy estimations are really
-fuzzy.
-
-> Also, even when schedutil is in use, shouldn't we ask it for a util
-> "computation" instead of replicating its _current_ heuristic?
-
-Are you proposing to have the 1.25 factor only here and remove it from
-schedutil?
-
-> I fear  the two might diverge in the future.
-
-That could be avoided by factoring out from schedutil the
-"compensation" factor into a proper function to be used by all the
-interested playes, isn't it?
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+--=-pOBjBDEiGvoqpx9GdLow--
