@@ -1,157 +1,48 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH 2/6] sched: Introduce energy models of CPUs
-Date: Wed, 21 Mar 2018 00:45:22 +0000
-Message-ID: <20180321004521.GA3174@queper01-VirtualBox>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-3-dietmar.eggemann@arm.com>
- <20180320095215.GB23359@kroah.com>
+From: Woody Suwalski <terraluna977@gmail.com>
+Subject: Re: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Tue, 20 Mar 2018 21:11:54 -0400
+Message-ID: <c7d96582-e2e6-d9c8-1140-3f1dab836132@gmail.com>
+References: <20180318104023.GA10392@amd>
+ <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com> <20180319092106.GA5683@amd>
+ <6e43123a-5227-96c4-a1f5-4416bdb5b0db@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180320095215.GB23359@kroah.com>
+In-Reply-To: <6e43123a-5227-96c4-a1f5-4416bdb5b0db@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 20 Mar 2018 at 10:52:15 (+0100), Greg Kroah-Hartman wrote:
-> On Tue, Mar 20, 2018 at 09:43:08AM +0000, Dietmar Eggemann wrote:
-> > From: Quentin Perret <quentin.perret@arm.com>
-> > 
-> > The energy consumption of each CPU in the system is modeled with a list
-> > of values representing its dissipated power and compute capacity at each
-> > available Operating Performance Point (OPP). These values are derived
-> > from existing information in the kernel (currently used by the thermal
-> > subsystem) and don't require the introduction of new platform-specific
-> > tunables. The energy model is also provided with a simple representation
-> > of all frequency domains as cpumasks, hence enabling the scheduler to be
-> > aware of dependencies between CPUs. The data required to build the energy
-> > model is provided by the OPP library which enables an abstract view of
-> > the platform from the scheduler. The new data structures holding these
-> > models and the routines to populate them are stored in
-> > kernel/sched/energy.c.
-> > 
-> > For the sake of simplicity, it is assumed in the energy model that all
-> > CPUs in a frequency domain share the same micro-architecture. As long as
-> > this assumption is correct, the energy models of different CPUs belonging
-> > to the same frequency domain are equal. Hence, this commit builds only one
-> > energy model per frequency domain, and links all relevant CPUs to it in
-> > order to save time and memory. If needed for future hardware platforms,
-> > relaxing this assumption should imply relatively simple modifications in
-> > the code but a significantly higher algorithmic complexity.
-> > 
-> > As it appears that energy-aware scheduling really makes a difference on
-> > heterogeneous systems (e.g. big.LITTLE platforms), it is restricted to
-> > systems having:
-> > 
-> >    1. SD_ASYM_CPUCAPACITY flag set
-> >    2. Dynamic Voltage and Frequency Scaling (DVFS) is enabled
-> >    3. Available power estimates for the OPPs of all possible CPUs
-> > 
-> > Moreover, the scheduler is notified of the energy model availability
-> > using a static key in order to minimize the overhead on non-energy-aware
-> > systems.
-> > 
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > 
-> > ---
-> > This patch depends on additional infrastructure being merged in the OPP
-> > core. As this infrastructure can also be useful for other clients, the
-> > related patches have been posted separately [1].
-> > 
-> > [1] https://marc.info/?l=linux-pm&m=151635516419249&w=2
-> > ---
-> >  include/linux/sched/energy.h |  31 +++++++
-> >  kernel/sched/Makefile        |   2 +-
-> >  kernel/sched/energy.c        | 190 +++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 222 insertions(+), 1 deletion(-)
-> >  create mode 100644 include/linux/sched/energy.h
-> >  create mode 100644 kernel/sched/energy.c
-> > 
-> > diff --git a/include/linux/sched/energy.h b/include/linux/sched/energy.h
-> > new file mode 100644
-> > index 000000000000..b4f43564ffe4
-> > --- /dev/null
-> > +++ b/include/linux/sched/energy.h
-> > @@ -0,0 +1,31 @@
-> > +#ifndef _LINUX_SCHED_ENERGY_H
-> > +#define _LINUX_SCHED_ENERGY_H
-> 
-> No copyright or license info?  Not good :(
-> 
-> > --- /dev/null
-> > +++ b/kernel/sched/energy.c
-> > @@ -0,0 +1,190 @@
-> > +/*
-> > + * Released under the GPLv2 only.
-> > + * SPDX-License-Identifier: GPL-2.0
-> 
-> Please read the documentation for the SPDX lines on how to do them
-> correctly.  Newer versions of checkpatch.pl will catch this, but that is
-> in linux-next for the moment.
-> 
-> And once you have the SPDX line, the "Released under..." line is not
-> needed.
-> 
-> 
-> > + *
-> > + * Energy-aware scheduling models
-> > + *
-> > + * Copyright (C) 2018, Arm Ltd.
-> > + * Written by: Quentin Perret, Arm Ltd.
-> > + *
-> > + * This file is subject to the terms and conditions of the GNU General Public
-> > + * License.  See the file "COPYING" in the main directory of this archive
-> > + * for more details.
-> 
-> This paragraph is not needed at all.
+Woody Suwalski wrote:
+> Pavel Machek wrote:
+>> On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
+>>> Pavel Machek wrote:
+>>>> Hi!
+>>>>
+>>>> With recent linux-next, after resume networkmanager often claims that
+>>>> "network is disabled". Sometimes suspend/resume clears that.
+>>>>
+>>>> Any ideas? Does it work for you?
+>>>>                                     Pavel
+>>> Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
+>> Thanks for testing... but yes, 4.16 should be ok. If not fixed,
+>> problem will appear in 4.17-rc1.
+>>
+> Works here OK. Tried ~10 suspends, all restarted OK.
+> kernel next-20180320
+> nmcli shows that Wifi always connects OK
+>
+> Woody
+>
+Contrary, it just happened to me on a 64-bit build 4.16-rc5 on T440.
+I think that Dan's suspicion is correct - it is a snafu in the PM: 
+trying to hibernate results in a message:
+Failed to hibernate system via logind: There's already a shutdown or 
+sleep operation in progress.
 
-Right, I will fix all the licence issues and add one to the new header
-file. I took example on existing files a while ago when I first wrote
-the patches and forgot to update them later on. Sorry about that.
+And ps shows "Ds /lib/systemd/systemd-sleep suspend"...
 
-> 
-> > + */
-> > +
-> > +#define pr_fmt(fmt) "sched-energy: " fmt
-> > +
-> > +#include <linux/sched/topology.h>
-> > +#include <linux/sched/energy.h>
-> > +#include <linux/pm_opp.h>
-> > +
-> > +#include "sched.h"
-> > +
-> > +DEFINE_STATIC_KEY_FALSE(sched_energy_present);
-> > +struct sched_energy_model ** __percpu energy_model;
-> > +
-> > +/*
-> > + * A copy of the cpumasks representing the frequency domains is kept private
-> > + * to the scheduler. They are stacked in a dynamically allocated linked list
-> > + * as we don't know how many frequency domains the system has.
-> > + */
-> > +LIST_HEAD(freq_domains);
-> 
-> global variable?  If so, please prefix it with something more unique
-> than "freq_".
-
-Will do.
-
-> 
-> > +#ifdef CONFIG_PM_OPP
-> 
-> #ifdefs go in .h files, not .c files, right?
-
-Yes good point. Actually, I might be able to tweak only kernel/sched/Makefile
-to ensure we have CONFIG_PM_OPP. I will look into it.
-
-> 
-> thanks,
-> 
-> greg k-h
-
-Thanks,
-Quentin
+Woody
