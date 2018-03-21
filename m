@@ -1,166 +1,342 @@
-From: Juri Lelli <juri.lelli@gmail.com>
-Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 21 Mar 2018 13:59:25 +0100
-Message-ID: <20180321125925.GB15165@localhost.localdomain>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-5-dietmar.eggemann@arm.com>
- <20180321090430.GA6913@localhost.localdomain>
- <20180321122621.GA13951@e110439-lin>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFT][PATCH v7.2 5/8] cpuidle: Return nohz hint from cpuidle_select()
+Date: Wed, 21 Mar 2018 14:03:51 +0100
+Message-ID: <2313989.EXUHJuTSS6@aspire.rjw.lan>
+References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <1635957.yuHkCe9oyz@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180321122621.GA13951@e110439-lin>
+In-Reply-To: <1635957.yuHkCe9oyz@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21/03/18 12:26, Patrick Bellasi wrote:
-> On 21-Mar 10:04, Juri Lelli wrote:
-> > Hi,
-> > 
-> > On 20/03/18 09:43, Dietmar Eggemann wrote:
-> > > From: Quentin Perret <quentin.perret@arm.com>
-> > > 
-> > > In preparation for the definition of an energy-aware wakeup path, a
-> > > helper function is provided to estimate the consequence on system energy
-> > > when a specific task wakes-up on a specific CPU. compute_energy()
-> > > estimates the OPPs to be reached by all frequency domains and estimates
-> > > the consumption of each online CPU according to its energy model and its
-> > > percentage of busy time.
-> > > 
-> > > Cc: Ingo Molnar <mingo@redhat.com>
-> > > Cc: Peter Zijlstra <peterz@infradead.org>
-> > > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > > ---
-> > >  kernel/sched/fair.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  1 file changed, 81 insertions(+)
-> > > 
-> > > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > > index 6c72a5e7b1b0..76bd46502486 100644
-> > > --- a/kernel/sched/fair.c
-> > > +++ b/kernel/sched/fair.c
-> > > @@ -6409,6 +6409,30 @@ static inline int cpu_overutilized(int cpu)
-> > >  }
-> > >  
-> > >  /*
-> > > + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
-> > > + */
-> > > +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
-> > > +{
-> > > +	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
-> > 
-> > What about other classes? Shouldn't we now also take into account
-> > DEADLINE (as schedutil does)?
-> 
-> Good point, although that would likely require to factor out from
-> schedutil the utilization aggregation function, isn't it?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Maybe, or simply use getter methods and aggregate again here.
+Add a new pointer argument to cpuidle_select() and to the ->select
+cpuidle governor callback to allow a boolean value indicating
+whether or not the tick should be stopped before entering the
+selected state to be returned from there.
 
-> 
-> > BTW, we now also have a getter method in sched/sched.h; it takes
-> > UTIL_EST into account, though. Do we need to take that into account when
-> > estimating energy consumption?
-> 
-> Actually I think that this whole function can be written "just" as:
-> 
-> ---8<---
->    unsigned long util = cpu_util_wake(cpu);
-> 
->    if (cpu != dst_cpu)
->         return util;
-> 
->    return min(util + task_util(p), capacity_orig_of(cpu));
-> ---8<---
-> 
-> which will reuse existing functions as well as getting for free other
-> stuff (like the CPU util_est).
-> 
-> Considering your observation above, it makes also easy to add into
-> util the DEADLINE and RT utilizations, just before returning the
-> value.
+Make the ladder governor ignore that pointer (to preserve its
+current behavior) and make the menu governor return 'false" through
+it if:
+ (1) the idle exit latency is constrained at 0, or
+ (2) the selected state is a polling one, or
+ (3) the expected idle period duration is within the tick period
+     range.
 
-Well, for RT we should problably consider the fact that schedutil is
-going to select max OPP...
+In addition to that, the correction factor computations in the menu
+governor need to take the possibility that the tick may not be
+stopped into account to avoid artificially small correction factor
+values.  To that end, add a mechanism to record tick wakeups, as
+suggested by Peter Zijlstra, and use it to modify the menu_reflect()
+behavior when tick wakeup occurs.  Namely, if the CPU is woken up by
+the tick and the return value of tick_nohz_get_sleep_length() is not
+within the tick boundary, the predicted idle duration is likely too
+short, so make menu_reflect() try to compensate for that by bumping
+up the correction factor with a (sufficiently large) constant value.
 
-Apart from that I guess it could work like you said.
+Since the value returned through the new argument pointer of
+cpuidle_select() is not used by its caller yet, this change by
+itself is not expected to alter the functionality of the code.
 
-> 
-> > > +	unsigned long capacity = capacity_orig_of(cpu);
-> > > +
-> > > +	/*
-> > > +	 * If p is where it should be, or if it has no impact on cpu, there is
-> > > +	 * not much to do.
-> > > +	 */
-> > > +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
-> > > +		goto clamp_util;
-> > > +
-> > > +	if (dst_cpu == cpu)
-> > > +		util += task_util(p);
-> > > +	else
-> > > +		util = max_t(long, util - task_util(p), 0);
-> > > +
-> > > +clamp_util:
-> > > +	return (util >= capacity) ? capacity : util;
-> > > +}
-> > > +
-> > > +/*
-> > >   * Disable WAKE_AFFINE in the case where task @p doesn't fit in the
-> > >   * capacity of either the waking CPU @cpu or the previous CPU @prev_cpu.
-> > >   *
-> > > @@ -6432,6 +6456,63 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
-> > >  	return !util_fits_capacity(task_util(p), min_cap);
-> > >  }
-> > >  
-> > > +static struct capacity_state *find_cap_state(int cpu, unsigned long util)
-> > > +{
-> > > +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
-> > > +	struct capacity_state *cs = NULL;
-> > > +	int i;
-> > > +
-> > > +	/*
-> > > +	 * As the goal is to estimate the OPP reached for a specific util
-> > > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
-> > > +	 */
-> > > +	util += util >> 2;
-> > 
-> > What about other governors (ondemand for example). Is this supposed to
-> > work only when schedutil is in use (if so we should probably make it
-> > conditional on that)?
-> 
-> Yes, I would say that EAS mostly makes sense when you have a "minimum"
-> control on OPPs... otherwise all the energy estimations are really
-> fuzzy.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Make sense to me. Shouldn't we then make all this conditional on using
-schedutil?
+This fixes the bug in the v7.1 of patch [5/8] (and in the original v7 of it
+for that matter) by which tick wakeups occurring for tick_nohz_get_sleep_length()
+return values within the tick boundary were treated in a special way
+incorrectly.
 
-> 
-> > Also, even when schedutil is in use, shouldn't we ask it for a util
-> > "computation" instead of replicating its _current_ heuristic?
-> 
-> Are you proposing to have the 1.25 factor only here and remove it from
-> schedutil?
+It doesn't run menu_update() on tick wakeups occurring when the return
+value of tick_nohz_get_sleep_length() is not within the tick boundary, but
+simply bumps up the correction factor alone then.
 
-I'm only saying that we shouldn't probably have two places where we add
-this 1.25 factor to utilization before using it, as in the future one of
-the two might modify that 1.25 to something else and then we'll have
-problems. So, maybe a common wrapper that adds such factor?
+>From the theoretical standpoint this is my favorite version of patch [5/8]
+so far, as there's a clear (to me at least) reason for all of the changes.
+Of course, the constant value used for bumping up the correction factor in
+menu_reflect() is a matter of speculation at this point, but this is the
+only remaining sort of moving part I can see.  And it can be adjusted later. :-)
 
-> 
-> > I fear  the two might diverge in the future.
-> 
-> That could be avoided by factoring out from schedutil the
-> "compensation" factor into a proper function to be used by all the
-> interested playes, isn't it?
+Still, the theory needs to meet practice and we'll see what comes out of that ...
 
-And I should have read till the end before writing the above paragraph
-it seems. :)
+Thanks!
 
-Thanks,
+---
+ drivers/cpuidle/cpuidle.c          |   10 +++++-
+ drivers/cpuidle/governors/ladder.c |    3 +
+ drivers/cpuidle/governors/menu.c   |   57 +++++++++++++++++++++++++++++++++----
+ include/linux/cpuidle.h            |    8 +++--
+ include/linux/tick.h               |    2 +
+ kernel/sched/idle.c                |    4 +-
+ kernel/time/tick-sched.c           |   20 ++++++++++++
+ 7 files changed, 92 insertions(+), 12 deletions(-)
 
-- Juri
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -135,7 +135,8 @@ extern bool cpuidle_not_available(struct
+ 				  struct cpuidle_device *dev);
+ 
+ extern int cpuidle_select(struct cpuidle_driver *drv,
+-			  struct cpuidle_device *dev);
++			  struct cpuidle_device *dev,
++			  bool *stop_tick);
+ extern int cpuidle_enter(struct cpuidle_driver *drv,
+ 			 struct cpuidle_device *dev, int index);
+ extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
+@@ -167,7 +168,7 @@ static inline bool cpuidle_not_available
+ 					 struct cpuidle_device *dev)
+ {return true; }
+ static inline int cpuidle_select(struct cpuidle_driver *drv,
+-				 struct cpuidle_device *dev)
++				 struct cpuidle_device *dev, bool *stop_tick)
+ {return -ENODEV; }
+ static inline int cpuidle_enter(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev, int index)
+@@ -250,7 +251,8 @@ struct cpuidle_governor {
+ 					struct cpuidle_device *dev);
+ 
+ 	int  (*select)		(struct cpuidle_driver *drv,
+-					struct cpuidle_device *dev);
++					struct cpuidle_device *dev,
++					bool *stop_tick);
+ 	void (*reflect)		(struct cpuidle_device *dev, int index);
+ };
+ 
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -188,13 +188,15 @@ static void cpuidle_idle_call(void)
+ 		next_state = cpuidle_find_deepest_state(drv, dev);
+ 		call_cpuidle(drv, dev, next_state);
+ 	} else {
++		bool stop_tick = true;
++
+ 		tick_nohz_idle_stop_tick();
+ 		rcu_idle_enter();
+ 
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+-		next_state = cpuidle_select(drv, dev);
++		next_state = cpuidle_select(drv, dev, &stop_tick);
+ 		entered_state = call_cpuidle(drv, dev, next_state);
+ 		/*
+ 		 * Give the governor an opportunity to reflect on the outcome
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -272,12 +272,18 @@ int cpuidle_enter_state(struct cpuidle_d
+  *
+  * @drv: the cpuidle driver
+  * @dev: the cpuidle device
++ * @stop_tick: indication on whether or not to stop the tick
+  *
+  * Returns the index of the idle state.  The return value must not be negative.
++ *
++ * The memory location pointed to by @stop_tick is expected to be written the
++ * 'false' boolean value if the scheduler tick should not be stopped before
++ * entering the returned state.
+  */
+-int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
++		   bool *stop_tick)
+ {
+-	return cpuidle_curr_governor->select(drv, dev);
++	return cpuidle_curr_governor->select(drv, dev, stop_tick);
+ }
+ 
+ /**
+Index: linux-pm/drivers/cpuidle/governors/ladder.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/ladder.c
++++ linux-pm/drivers/cpuidle/governors/ladder.c
+@@ -63,9 +63,10 @@ static inline void ladder_do_selection(s
+  * ladder_select_state - selects the next state to enter
+  * @drv: cpuidle driver
+  * @dev: the CPU
++ * @dummy: not used
+  */
+ static int ladder_select_state(struct cpuidle_driver *drv,
+-				struct cpuidle_device *dev)
++			       struct cpuidle_device *dev, bool *dummy)
+ {
+ 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	struct device *device = get_cpu_device(dev->cpu);
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -279,8 +279,10 @@ again:
+  * menu_select - selects the next idle state to enter
+  * @drv: cpuidle driver containing state data
+  * @dev: the CPU
++ * @stop_tick: indication on whether or not to stop the tick
+  */
+-static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
++		       bool *stop_tick)
+ {
+ 	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	struct device *device = get_cpu_device(dev->cpu);
+@@ -303,8 +305,10 @@ static int menu_select(struct cpuidle_dr
+ 		latency_req = resume_latency;
+ 
+ 	/* Special case when user has set very strict latency requirement */
+-	if (unlikely(latency_req == 0))
++	if (unlikely(latency_req == 0)) {
++		*stop_tick = false;
+ 		return 0;
++	}
+ 
+ 	/* determine the expected residency time, round up */
+ 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
+@@ -354,6 +358,7 @@ static int menu_select(struct cpuidle_dr
+ 	if (latency_req > interactivity_req)
+ 		latency_req = interactivity_req;
+ 
++	expected_interval = data->predicted_us;
+ 	/*
+ 	 * Find the idle state with the lowest power while satisfying
+ 	 * our constraints.
+@@ -369,15 +374,30 @@ static int menu_select(struct cpuidle_dr
+ 			idx = i; /* first enabled state */
+ 		if (s->target_residency > data->predicted_us)
+ 			break;
+-		if (s->exit_latency > latency_req)
++		if (s->exit_latency > latency_req) {
++			/*
++			 * If we break out of the loop for latency reasons, use
++			 * the target residency of the selected state as the
++			 * expected idle duration so that the tick is retained
++			 * as long as that target residency is low enough.
++			 */
++			expected_interval = drv->states[idx].target_residency;
+ 			break;
+-
++		}
+ 		idx = i;
+ 	}
+ 
+ 	if (idx == -1)
+ 		idx = 0; /* No states enabled. Must use 0. */
+ 
++	/*
++	 * Don't stop the tick if the selected state is a polling one or if the
++	 * expected idle duration is shorter than the tick period length.
++	 */
++	if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
++	    expected_interval < TICK_USEC)
++		*stop_tick = false;
++
+ 	data->last_state_idx = idx;
+ 
+ 	return data->last_state_idx;
+@@ -396,7 +416,34 @@ static void menu_reflect(struct cpuidle_
+ 	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 
+ 	data->last_state_idx = index;
+-	data->needs_update = 1;
++	/*
++	 * Tick wakeups occurring when the tick_nohz_get_sleep_length() return
++	 * value is within the tick boundary should be treated as regular ones,
++	 * as the nohz code itself doesn't stop the tick then.
++	 */
++	if (tick_nohz_idle_got_tick() && data->next_timer_us > TICK_USEC) {
++		unsigned int new_factor = data->correction_factor[data->bucket];
++
++		/*
++		 * Only update the correction factor, don't update the repeating
++		 * pattern data to avoid polluting it with the tick period
++		 * length which is a design artifact here.
++		 */
++		new_factor -= new_factor / DECAY;
++		/*
++		 * The nohz code said that there wouldn't be any wakeups
++		 * within the tick boundary (if the tick wasn't stopped), but
++		 * menu_select() had a differing opinion.  Yet, the CPU was
++		 * woken up by the tick, so menu_select() was not quite right.
++		 * Try to make it do a better job next time by bumping up the
++		 * correction factor.  Use 0.75 * RESOLUTION (which is easy
++		 * enough to get) that should work fine on the average.
++		 */
++		new_factor += RESOLUTION / 2 + RESOLUTION / 4;
++		data->correction_factor[data->bucket] = new_factor;
++	} else {
++		data->needs_update = 1;
++	}
+ }
+ 
+ /**
+Index: linux-pm/kernel/time/tick-sched.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-sched.c
++++ linux-pm/kernel/time/tick-sched.c
+@@ -991,6 +991,20 @@ void tick_nohz_irq_exit(void)
+ }
+ 
+ /**
++ * tick_nohz_idle_got_tick - Check whether or not the tick handler has run
++ */
++bool tick_nohz_idle_got_tick(void)
++{
++	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
++
++	if (ts->inidle > 1) {
++		ts->inidle = 1;
++		return true;
++	}
++	return false;
++}
++
++/**
+  * tick_nohz_get_sleep_length - return the length of the current sleep
+  *
+  * Called from power state control code with interrupts disabled
+@@ -1101,6 +1115,9 @@ static void tick_nohz_handler(struct clo
+ 	struct pt_regs *regs = get_irq_regs();
+ 	ktime_t now = ktime_get();
+ 
++	if (ts->inidle)
++		ts->inidle = 2;
++
+ 	dev->next_event = KTIME_MAX;
+ 
+ 	tick_sched_do_timer(now);
+@@ -1198,6 +1215,9 @@ static enum hrtimer_restart tick_sched_t
+ 	struct pt_regs *regs = get_irq_regs();
+ 	ktime_t now = ktime_get();
+ 
++	if (ts->inidle)
++		ts->inidle = 2;
++
+ 	tick_sched_do_timer(now);
+ 
+ 	/*
+Index: linux-pm/include/linux/tick.h
+===================================================================
+--- linux-pm.orig/include/linux/tick.h
++++ linux-pm/include/linux/tick.h
+@@ -119,6 +119,7 @@ extern void tick_nohz_idle_restart_tick(
+ extern void tick_nohz_idle_enter(void);
+ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
++extern bool tick_nohz_idle_got_tick(void);
+ extern ktime_t tick_nohz_get_sleep_length(void);
+ extern unsigned long tick_nohz_get_idle_calls(void);
+ extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
+@@ -139,6 +140,7 @@ static inline void tick_nohz_idle_stop_t
+ static inline void tick_nohz_idle_restart_tick(void) { }
+ static inline void tick_nohz_idle_enter(void) { }
+ static inline void tick_nohz_idle_exit(void) { }
++static inline bool tick_nohz_idle_got_tick(void) { return false; }
+ 
+ static inline ktime_t tick_nohz_get_sleep_length(void)
+ {
