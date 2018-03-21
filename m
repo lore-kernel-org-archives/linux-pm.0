@@ -1,69 +1,38 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] ARM: EXYNOS: Fix coupled CPU idle freeze on Exynos4210
-Date: Wed, 21 Mar 2018 18:55:09 +0100
-Message-ID: <20180321175509.jkemst242vv7d4qv@kozik-lap>
-References: <CGME20180321094523eucas1p1a87d146d65d4191ccdb37f1723977011@eucas1p1.samsung.com>
- <20180321094505.25494-1-m.szyprowski@samsung.com>
- <3225655.FLAaRANmer@aspire.rjw.lan>
+From: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
+Subject: Re: [RFT][PATCH v7 5/8] cpuidle: Return nohz hint from
+ cpuidle_select()
+Date: Wed, 21 Mar 2018 18:59:57 +0100
+Message-ID: <b05c00e7-b5d8-0bcb-0b38-a91324ec597a@tu-dresden.de>
+References: <2390019.oHdSGtR3EE@aspire.rjw.lan>
+ <1635957.yuHkCe9oyz@aspire.rjw.lan>
+ <CAJZ5v0j-CnEms-Wm0Op=386ceuG2GfAouVLXO48rbD_pUPJhMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3225655.FLAaRANmer@aspire.rjw.lan>
-Sender: stable-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0j-CnEms-Wm0Op=386ceuG2GfAouVLXO48rbD_pUPJhMg@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 21, 2018 at 02:49:52PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday, March 21, 2018 10:45:05 AM CET Marek Szyprowski wrote:
-> > Since commit 04c8b0f82c7d ("irqchip/gic: Make locking a BL_SWITCHER only
-> > feature") coupled CPU idle freezes from time to time on Exynos4210. Later
-> > commit 313c8c16ee62 ("PM / CPU: replace raw_notifier with atomic_notifier")
-> > changed the context in which the CPU idle code is executed, what results
-> > in fully reproducible freeze all the time. However, almost the same coupled
-> > CPU idle code works fine on Exynos3250 regarless of the changes made in
-> > the mentioned commits.
-> > 
-> > It turned out that the IPI call used on Exynos4210 is conflicting with the
-> > change done in the first mentioned commit in GIC. Fix this by using the
-> > same code path as for Exynos3250, instead of the IPI call for
-> > synchronization with second CPU core, call dsb_sev() directly.
-> > 
-> > Tested on Exynos4210-based Trats and Origen boards.
-> > 
-> > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> > CC: stable@vger.kernel.org # v4.13+
-> > ---
-> >  arch/arm/mach-exynos/pm.c | 6 +-----
-> >  1 file changed, 1 insertion(+), 5 deletions(-)
-> > 
-> > diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> > index dc4346ecf16d..a1055a2b8d54 100644
-> > --- a/arch/arm/mach-exynos/pm.c
-> > +++ b/arch/arm/mach-exynos/pm.c
-> > @@ -271,11 +271,7 @@ static int exynos_cpu0_enter_aftr(void)
-> >  				goto fail;
-> >  
-> >  			call_firmware_op(cpu_boot, 1);
-> > -
-> > -			if (soc_is_exynos3250())
-> > -				dsb_sev();
-> > -			else
-> > -				arch_send_wakeup_ipi_mask(cpumask_of(1));
-> > +			dsb_sev();
-> >  		}
-> >  	}
-> >  fail:
-> > 
+On 2018-03-21 15:36, Rafael J. Wysocki wrote:
 > 
-> That will be -stable material I believe?
+> So please disregard this one entirely and take the v7.2 replacement
+> instead of it:https://patchwork.kernel.org/patch/10299429/
+> 
+> The current versions (including the above) is in the git branch at
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+>   idle-loop-v7.2
 
-Yes, it is CC-stable.
+With v7.2 (tested on SKL-SP from git) I see similar behavior in idle
+as with v5: several cores which just keep the sched tick enabled.
+Worse yet, some go only in C1 (not even C1E!?) despite sleeping the
+full sched tick.
+The resulting power consumption is ~105 W instead of ~ 70 W.
 
-Marek,
-Thanks, applied (with adjustment of stable address - I believe if some
-text follows it, it makes more readable to put <>).
+https://wwwpub.zih.tu-dresden.de/~tilsche/powernightmares/v7_2_skl_sp_idle.png
 
-Best regards,
-Krzysztof
+I have briefly ran v7 and I believe it was also affected.
