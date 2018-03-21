@@ -1,209 +1,125 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 21 Mar 2018 13:55:58 +0000
-Message-ID: <20180321135557.GB1373@queper01-VirtualBox>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-5-dietmar.eggemann@arm.com>
- <20180321090430.GA6913@localhost.localdomain>
- <20180321122621.GA13951@e110439-lin>
- <20180321125925.GB15165@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFT][PATCH v5 0/7] sched/cpuidle: Idle loop rework
+Date: Wed, 21 Mar 2018 14:58:58 +0100
+Message-ID: <1723233.hpePHmOcVO@aspire.rjw.lan>
+References: <2142751.3U6XgWyF8u@aspire.rjw.lan> <002d01d3c08e$f43aa750$dcaff5f0$@net> <000e01d3c11b$b0ab2400$12016c00$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180321125925.GB15165@localhost.localdomain>
+In-Reply-To: <000e01d3c11b$b0ab2400$12016c00$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@gmail.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, "'Rafael J. Wysocki'" <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 21 Mar 2018 at 13:59:25 (+0100), Juri Lelli wrote:
-> On 21/03/18 12:26, Patrick Bellasi wrote:
-> > On 21-Mar 10:04, Juri Lelli wrote:
-> > > Hi,
-> > > 
-> > > On 20/03/18 09:43, Dietmar Eggemann wrote:
-> > > > From: Quentin Perret <quentin.perret@arm.com>
-> > > > 
-> > > > In preparation for the definition of an energy-aware wakeup path, a
-> > > > helper function is provided to estimate the consequence on system energy
-> > > > when a specific task wakes-up on a specific CPU. compute_energy()
-> > > > estimates the OPPs to be reached by all frequency domains and estimates
-> > > > the consumption of each online CPU according to its energy model and its
-> > > > percentage of busy time.
-> > > > 
-> > > > Cc: Ingo Molnar <mingo@redhat.com>
-> > > > Cc: Peter Zijlstra <peterz@infradead.org>
-> > > > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > > > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > > > ---
-> > > >  kernel/sched/fair.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++
-> > > >  1 file changed, 81 insertions(+)
-> > > > 
-> > > > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > > > index 6c72a5e7b1b0..76bd46502486 100644
-> > > > --- a/kernel/sched/fair.c
-> > > > +++ b/kernel/sched/fair.c
-> > > > @@ -6409,6 +6409,30 @@ static inline int cpu_overutilized(int cpu)
-> > > >  }
-> > > >  
-> > > >  /*
-> > > > + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
-> > > > + */
-> > > > +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
-> > > > +{
-> > > > +	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
-> > > 
-> > > What about other classes? Shouldn't we now also take into account
-> > > DEADLINE (as schedutil does)?
-> > 
-> > Good point, although that would likely require to factor out from
-> > schedutil the utilization aggregation function, isn't it?
+On Wednesday, March 21, 2018 2:51:13 PM CET Doug Smythies wrote:
+> On 2018.03.20 23:33 Rafael J. Wysocki wrote:
+> > On Tuesday, March 20, 2018 10:03:50 PM CET Doug Smythies wrote:
+> >> Summary: My results with kernel 4.16-rc6 and V8 of the patch set
+> >> are completely different, and now show no clear difference
+> >> (a longer test might reveal something). 
+> >
+> > Does this mean that you see the "powernightmares" pattern with the v8
+> > again or are you referring to something else?
 > 
-> Maybe, or simply use getter methods and aggregate again here.
+> Sorry for not being clear.
+> I do not see any "powernightmares" at all with V8.
 
-I agree with you both, taking DL into account here is most likely the
-right thing to do. Thinking about this, there are other places in those
-patches where we should really use capacity_of() instead of
-capacity_orig_of() (in task_fits() in patch 5/6 for ex) in order to
-avoid CPUs under heavy RT pressure. I'll try to improve the integration
-with other scheduling classes in v2.
+Great!
 
+> After this e-mail I did a 3 hour trace and saw none.
 > 
-> > 
-> > > BTW, we now also have a getter method in sched/sched.h; it takes
-> > > UTIL_EST into account, though. Do we need to take that into account when
-> > > estimating energy consumption?
+> >> On 2018.03.20 10:16 Doug Smythies wrote:
+> >>> On 2018.03.20 03:02 Thomas Ilsche wrote:
+> >>>
+> >>>...[snip]...
+> >>>
+> >>>> Consider the Skylake server system which has residencies in C1E of
+> >>>> 20 us and C6 of 800 us. I use a small while(1) {usleep(300);}
+> >>>> unsynchronized pinned to each core. While this is an artificial
+> >>>> case, it is a very innocent one - easy to predict and regular. Between
+> >>>> vanilla 4.16.0-rc5 and idle-loop/v6, the power consumption increases
+> >>>> from 149.7 W to 158.1 W. On 4.16.0-rc5, the cores sleep almost
+> >>>> entirely in C1E. With the patches applied, the cores spend ~75% of
+> >>>> their sleep time in C6, ~25% in C1E. The average time/usage for C1E is
+> >>>> also lower with v6 at ~350 us rather than the ~550 us in C6 (and in
+> >>>> C1E with the baseline). Generally the new menu governor seems to chose
+> >>>> C1E if the next timer is an enabled sched timer - which occasionally
+> >>>> interrupts the sleep-interval into two C1E sleeps rather than one C6.
+> >>>>
+> >>>> Manually disabling C6, reduces power consumption back to 149.5 W.
+> >>>
+> >>> ...[snip]...
+> >>>
+> >>> Note that one of the tests that I normally do is a work/sleep
+> >>> frequency sweep from 100 to 2100 Hz, typically at a lowish
+> >>> workload. I didn't notice anything odd with this test:
+> >>> 
+> >>> http://fast.smythies.com/rjw_freq_sweep.png
+> >
+> > Would it be possible to produce this graph with the v8 of the
+> > patchset?
+> 
+> Yes, sure.
 
-Yes, I think that using UTIL_EST makes a lot of sense for energy
-calculation. This is what is used for frequency selection (with
-schedutil obviously) and this is also our best guess on how much time
-a task will spend on a CPU. V2 will be rebased on the latest
-tip/sched/core and I'll make sure to integrate things better with
-util_est.
+Thanks!
 
-> > 
-> > Actually I think that this whole function can be written "just" as:
-> > 
-> > ---8<---
-> >    unsigned long util = cpu_util_wake(cpu);
-> > 
-> >    if (cpu != dst_cpu)
-> >         return util;
-> > 
-> >    return min(util + task_util(p), capacity_orig_of(cpu));
-> > ---8<---
-> > 
-> > which will reuse existing functions as well as getting for free other
-> > stuff (like the CPU util_est).
-> > 
-> > Considering your observation above, it makes also easy to add into
-> > util the DEADLINE and RT utilizations, just before returning the
-> > value.
+> >>> However, your test is at 3333 Hz (well, minus overheads).
+> >>> I did the same as you. And was surprised to confirm
+> >>> your power findings. In my case package power goes from
+> >>> ~8.6 watts to ~7.3 watts with idle state 4 (C6) disabled.
+> >>>
+> >>> I am getting different residency times than you though.
+> >>> I also observe different overheads between idle state 4
+> >>> being disabled or not. i.e. my actual loop frequency
+> >>> drops from ~2801 Hz to ~2754 Hz.
+> >>>
+> >>> Example residencies over the previous minute:
+> >>>
+> >>> Idle state 4 (C6) disabled (seconds):
+> >>>
+> >>> Idle state 0: 0.001119
+> >>> Idle state 1: 0.056638
+> >>> Idle state 2: 13.100550
+> >>> Idle state 3: 446.266744
+> >>> Idle state 4: 0.000000
+> >>>
+> >>> Idle state 4 (C6) enabled (seconds):
+> >>>
+> >>> Idle state 0: 0.034502
+> >>> Idle state 1: 1.949595
+> >>> Idle state 2: 78.291793
+> >>> Idle state 3: 96.467974
+> >>> Idle state 4: 286.247524
+> >>
+> >> Now, with kernel 4.16-rc6 and V8 of the patch set and the poll fix
+> >> I am unable to measure the processor package power difference
+> >> between idle state 0 enabled or disabled (i.e. it is in the noise).
+> >> also the loop time changes (overhead changes) are minimal. However,
+> >> the overall loop time has dropped to ~2730 Hz, so there seems to be
+> >> a little more overhead in general.
+> >>
+> >> I increased my loop frequency to ~3316 Hz. Similar.
+> >> 
+> >> I increased my loop frequency to ~15474 Hz. Similar.
+> >> Compared to a stock 4.16-rc6 kernel: The loop rate dropped
+> >> to 15,209 Hz and it (the stock kernel) used about 0.3 more
+> >> watts (out of 10.97, or ~3% more).
+> >
+> > So do you prefer v6 or v8?  I guess the former?
 > 
-> Well, for RT we should problably consider the fact that schedutil is
-> going to select max OPP...
+> Again sorry for not being clear.
+> I was saying that V8 is great.
 
-Right, but I need to think about the right place to put that, and how to
-compute the energy accurately in this case. Some modification might also
-be required in find_cap_state() (patch 5/6).
+OK, thanks!
 
-> 
-> Apart from that I guess it could work like you said.
-> 
-> > 
-> > > > +	unsigned long capacity = capacity_orig_of(cpu);
-> > > > +
-> > > > +	/*
-> > > > +	 * If p is where it should be, or if it has no impact on cpu, there is
-> > > > +	 * not much to do.
-> > > > +	 */
-> > > > +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
-> > > > +		goto clamp_util;
-> > > > +
-> > > > +	if (dst_cpu == cpu)
-> > > > +		util += task_util(p);
-> > > > +	else
-> > > > +		util = max_t(long, util - task_util(p), 0);
-> > > > +
-> > > > +clamp_util:
-> > > > +	return (util >= capacity) ? capacity : util;
-> > > > +}
-> > > > +
-> > > > +/*
-> > > >   * Disable WAKE_AFFINE in the case where task @p doesn't fit in the
-> > > >   * capacity of either the waking CPU @cpu or the previous CPU @prev_cpu.
-> > > >   *
-> > > > @@ -6432,6 +6456,63 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
-> > > >  	return !util_fits_capacity(task_util(p), min_cap);
-> > > >  }
-> > > >  
-> > > > +static struct capacity_state *find_cap_state(int cpu, unsigned long util)
-> > > > +{
-> > > > +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
-> > > > +	struct capacity_state *cs = NULL;
-> > > > +	int i;
-> > > > +
-> > > > +	/*
-> > > > +	 * As the goal is to estimate the OPP reached for a specific util
-> > > > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
-> > > > +	 */
-> > > > +	util += util >> 2;
-> > > 
-> > > What about other governors (ondemand for example). Is this supposed to
-> > > work only when schedutil is in use (if so we should probably make it
-> > > conditional on that)?
-> > 
-> > Yes, I would say that EAS mostly makes sense when you have a "minimum"
-> > control on OPPs... otherwise all the energy estimations are really
-> > fuzzy.
-> 
-> Make sense to me. Shouldn't we then make all this conditional on using
-> schedutil?
+It's v7, actually. :-)
 
-So, in theory, EAS could make sense even for other governors than
-schedutil. Even with the performance governor it is probably more
-energy efficient (although users using "performance" probably don't care
-about energy, but that's just an example) to place small tasks onto little
-CPUs up to a certain point given by the energy model. The ideal solution
-would be to change the behaviour of find_cap_state() depending on the
-governor being used, but I don't know if this extra complexity is worth
-it really.
-I'm happy to make all this conditional on schedutil as a first step and
-we can see later if that makes sense to extend EAS to other use-cases.
+> I did more tests after the original e-mail was sent,
+> and the noted slight overhead drop was not always there
+> (i.e. it was inconsistent).
 
-> 
-> > 
-> > > Also, even when schedutil is in use, shouldn't we ask it for a util
-> > > "computation" instead of replicating its _current_ heuristic?
-> > 
-> > Are you proposing to have the 1.25 factor only here and remove it from
-> > schedutil?
-> 
-> I'm only saying that we shouldn't probably have two places where we add
-> this 1.25 factor to utilization before using it, as in the future one of
-> the two might modify that 1.25 to something else and then we'll have
-> problems. So, maybe a common wrapper that adds such factor?
+If possible, please also try the v7.2 replacement for patch [5/8]:
 
-Ok, I can definitely factorize this code between schedutil and EAS. And
-BTW, would it make sense to make schedutil use "capacity_margin" instead
-of an arbitrary value ? The semantics feels pretty close. Out of curiosity,
-what was the reason to use C=1.25 in the first place ?
-
-> 
-> > 
-> > > I fear  the two might diverge in the future.
-> > 
-> > That could be avoided by factoring out from schedutil the
-> > "compensation" factor into a proper function to be used by all the
-> > interested playes, isn't it?
-> 
-> And I should have read till the end before writing the above paragraph
-> it seems. :)
-> 
-> Thanks,
-> 
-> - Juri
-
-Thank you very much for the feedback !
+https://patchwork.kernel.org/patch/10299429/
