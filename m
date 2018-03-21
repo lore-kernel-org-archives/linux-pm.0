@@ -1,63 +1,143 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH v7.1 5/8] cpuidle: Return nohz hint from cpuidle_select()
-Date: Wed, 21 Mar 2018 12:52:21 +0100
-Message-ID: <CAJZ5v0i7AE=HEp1guNdpSV7=a-GS=e00+K1kG7Q6SYnK2g6cZA@mail.gmail.com>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <1635957.yuHkCe9oyz@aspire.rjw.lan>
- <2111949.c172CzMuf8@aspire.rjw.lan>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Wed, 21 Mar 2018 12:26:21 +0000
+Message-ID: <20180321122621.GA13951@e110439-lin>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-5-dietmar.eggemann@arm.com>
+ <20180321090430.GA6913@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2111949.c172CzMuf8@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20180321090430.GA6913@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Juri Lelli <juri.lelli@gmail.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 21, 2018 at 7:48 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Add a new pointer argument to cpuidle_select() and to the ->select
-> cpuidle governor callback to allow a boolean value indicating
-> whether or not the tick should be stopped before entering the
-> selected state to be returned from there.
->
-> Make the ladder governor ignore that pointer (to preserve its
-> current behavior) and make the menu governor return 'false" through
-> it if:
->  (1) the idle exit latency is constrained at 0, or
->  (2) the selected state is a polling one, or
->  (3) the expected idle period duration is within the tick period
->      range.
->
-> In addition to that, the correction factor computations in the menu
-> governor need to take the possibility that the tick may not be
-> stopped into account to avoid artificially small correction factor
-> values.  To that end, add a mechanism to record tick wakeups, as
-> suggested by Peter Zijlstra, and use it to modify the menu_reflect()
-> behavior when tick wakeup occurs.  Namely, if the CPU is woken up by
-> the tick, the predicted idle duration is likely too short, so make
-> menu_reflect() try to compensate by bumping up the correction factor
-> with a (sufficiently large) constant value.
->
-> Since the value returned through the new argument pointer of
-> cpuidle_select() is not used by its caller yet, this change by
-> itself is not expected to alter the functionality of the code.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->
-> Another variant of patch [5/8] to test.
->
-> This one doesn't run menu_update() at all on tick wakeups, but simply
-> bumps up the correction factor alone then.
+On 21-Mar 10:04, Juri Lelli wrote:
+> Hi,
+> 
+> On 20/03/18 09:43, Dietmar Eggemann wrote:
+> > From: Quentin Perret <quentin.perret@arm.com>
+> > 
+> > In preparation for the definition of an energy-aware wakeup path, a
+> > helper function is provided to estimate the consequence on system energy
+> > when a specific task wakes-up on a specific CPU. compute_energy()
+> > estimates the OPPs to be reached by all frequency domains and estimates
+> > the consumption of each online CPU according to its energy model and its
+> > percentage of busy time.
+> > 
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > ---
+> >  kernel/sched/fair.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 81 insertions(+)
+> > 
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 6c72a5e7b1b0..76bd46502486 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -6409,6 +6409,30 @@ static inline int cpu_overutilized(int cpu)
+> >  }
+> >  
+> >  /*
+> > + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
+> > + */
+> > +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
+> > +{
+> > +	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
+> 
+> What about other classes? Shouldn't we now also take into account
+> DEADLINE (as schedutil does)?
 
-I have overlooked one thing in this patch and in the original v7 of it.
+Good point, although that would likely require to factor out from
+schedutil the utilization aggregation function, isn't it?
 
-Namely, tick wakeups occurring when the return value of
-tick_nohz_get_sleep_length() is within the tick boundary should be
-treated as normal wakeups, because the nohz code itself doesn't stop
-the tick then even without this patch series.
+> BTW, we now also have a getter method in sched/sched.h; it takes
+> UTIL_EST into account, though. Do we need to take that into account when
+> estimating energy consumption?
 
-I'll rework this patch for that and will send an update shortly.
+Actually I think that this whole function can be written "just" as:
 
-Thanks!
+---8<---
+   unsigned long util = cpu_util_wake(cpu);
+
+   if (cpu != dst_cpu)
+        return util;
+
+   return min(util + task_util(p), capacity_orig_of(cpu));
+---8<---
+
+which will reuse existing functions as well as getting for free other
+stuff (like the CPU util_est).
+
+Considering your observation above, it makes also easy to add into
+util the DEADLINE and RT utilizations, just before returning the
+value.
+
+> > +	unsigned long capacity = capacity_orig_of(cpu);
+> > +
+> > +	/*
+> > +	 * If p is where it should be, or if it has no impact on cpu, there is
+> > +	 * not much to do.
+> > +	 */
+> > +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
+> > +		goto clamp_util;
+> > +
+> > +	if (dst_cpu == cpu)
+> > +		util += task_util(p);
+> > +	else
+> > +		util = max_t(long, util - task_util(p), 0);
+> > +
+> > +clamp_util:
+> > +	return (util >= capacity) ? capacity : util;
+> > +}
+> > +
+> > +/*
+> >   * Disable WAKE_AFFINE in the case where task @p doesn't fit in the
+> >   * capacity of either the waking CPU @cpu or the previous CPU @prev_cpu.
+> >   *
+> > @@ -6432,6 +6456,63 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
+> >  	return !util_fits_capacity(task_util(p), min_cap);
+> >  }
+> >  
+> > +static struct capacity_state *find_cap_state(int cpu, unsigned long util)
+> > +{
+> > +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
+> > +	struct capacity_state *cs = NULL;
+> > +	int i;
+> > +
+> > +	/*
+> > +	 * As the goal is to estimate the OPP reached for a specific util
+> > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
+> > +	 */
+> > +	util += util >> 2;
+> 
+> What about other governors (ondemand for example). Is this supposed to
+> work only when schedutil is in use (if so we should probably make it
+> conditional on that)?
+
+Yes, I would say that EAS mostly makes sense when you have a "minimum"
+control on OPPs... otherwise all the energy estimations are really
+fuzzy.
+
+> Also, even when schedutil is in use, shouldn't we ask it for a util
+> "computation" instead of replicating its _current_ heuristic?
+
+Are you proposing to have the 1.25 factor only here and remove it from
+schedutil?
+
+> I fear  the two might diverge in the future.
+
+That could be avoided by factoring out from schedutil the
+"compensation" factor into a proper function to be used by all the
+interested playes, isn't it?
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
