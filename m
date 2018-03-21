@@ -1,109 +1,137 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] ACPI / PM: Use register_reboot_notifier() instead of
- pm_power_off_prepare
-Date: Wed, 21 Mar 2018 15:04:23 +0100
-Message-ID: <20180321140422.GA10700@amd>
-References: <7ff55372818461feed4b0550d5f88edce2cc7d41.1521631678.git.baolin.wang@linaro.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Wed, 21 Mar 2018 14:26:32 +0000
+Message-ID: <20180321142630.GB2168@queper01-VirtualBox>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-5-dietmar.eggemann@arm.com>
+ <20180321123921.GB13951@e110439-lin>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="C7zPtVaVf+AK4Oqc"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <7ff55372818461feed4b0550d5f88edce2cc7d41.1521631678.git.baolin.wang@linaro.org>
+In-Reply-To: <20180321123921.GB13951@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: rjw@rjwysocki.net, lenb@kernel.org, andrew.smirnov@gmail.com, akpm@linux-foundation.org, broonie@kernel.org, arnd@arndb.de, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Wednesday 21 Mar 2018 at 12:39:21 (+0000), Patrick Bellasi wrote:
+> On 20-Mar 09:43, Dietmar Eggemann wrote:
+> > From: Quentin Perret <quentin.perret@arm.com>
+> 
+> [...]
+> 
+> > +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+> > +{
+> > +	unsigned long util, fdom_max_util;
+> > +	struct capacity_state *cs;
+> > +	unsigned long energy = 0;
+> > +	struct freq_domain *fdom;
+> > +	int cpu;
+> > +
+> > +	for_each_freq_domain(fdom) {
+> > +		fdom_max_util = 0;
+> > +		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
+> > +			util = cpu_util_next(cpu, p, dst_cpu);
+> 
+> Would be nice to find a way to cache all these util and reuse them
+> below... even just to ensure data consistency between the "cs"
+> computation and its usage...
 
---C7zPtVaVf+AK4Oqc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+So actually, what I can do is add something like
 
-On Wed 2018-03-21 19:30:16, Baolin Wang wrote:
-> We can register one notifier through register_reboot_notifier() function =
-to
-> prepare to power off the system, then we can remove the 'pm_power_off_pre=
-pare'
-> hook in following patch.
->=20
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> ---
-> Note: Please help to review carefully, since I have no platform to test
-> this conversion.
->=20
-> I saw there is another reboot notifier in this driver, I am not sure the
-> orders between them. I can change the priority of notifier to keep their
-> orders if it is necessary.
+    fdom_tot_util += util;
 
-I don't understand why this is good idea... and you should really test
-it. I'm sure you can find PC or notebook somewhere...
-								Pavel
+to this loop and compute
 
->  drivers/acpi/sleep.c |   22 ++++++++++++++++------
->  1 file changed, 16 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> index 46cde091..b3de894 100644
-> --- a/drivers/acpi/sleep.c
-> +++ b/drivers/acpi/sleep.c
-> @@ -1229,14 +1229,24 @@ static void acpi_sleep_hibernate_setup(void)
->  static inline void acpi_sleep_hibernate_setup(void) {}
->  #endif /* !CONFIG_HIBERNATION */
-> =20
-> -static void acpi_power_off_prepare(void)
-> +static int acpi_reboot_notify(struct notifier_block *this, unsigned long=
- code,
-> +			      void *x)
->  {
-> -	/* Prepare to power off the system */
-> -	acpi_sleep_prepare(ACPI_STATE_S5);
-> -	acpi_disable_all_gpes();
-> -	acpi_os_wait_events_complete();
-> +	if (code =3D=3D SYSTEM_POWER_OFF) {
-> +		/* Prepare to power off the system */
-> +		acpi_sleep_prepare(ACPI_STATE_S5);
-> +		acpi_disable_all_gpes();
-> +		acpi_os_wait_events_complete();
-> +	}
-> +
-> +	return NOTIFY_DONE;
->  }
-> =20
-> +static struct notifier_block acpi_reboot_notifier =3D {
-> +	.notifier_call	=3D acpi_reboot_notify,
-> +	.priority	=3D 0,
-> +};
-> +
->  static void acpi_power_off(void)
->  {
->  	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
-> @@ -1261,7 +1271,7 @@ int __init acpi_sleep_init(void)
-> =20
->  	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
->  		sleep_states[ACPI_STATE_S5] =3D 1;
-> -		pm_power_off_prepare =3D acpi_power_off_prepare;
-> +		register_reboot_notifier(&acpi_reboot_notifier);
->  		pm_power_off =3D acpi_power_off;
->  	} else {
->  		acpi_no_s5 =3D true;
+    energy = cs->power * fdom_tot_util / cs->cap;
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+only once, instead of having the second loop to compute the energy. We don't
+have to scale the util for each and every CPU since they share the same
+cap state. That would save some divisions and ensure the consistency
+between the selection of the cap state and the associated energy
+computation. What do you think ?
 
---C7zPtVaVf+AK4Oqc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Or maybe you were talking about consistency between several consecutive
+calls to compute_energy() ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+> 
+> > +			fdom_max_util = max(util, fdom_max_util);
+> > +		}
+> > +
+> > +		/*
+> > +		 * Here we assume that the capacity states of CPUs belonging to
+> > +		 * the same frequency domains are shared. Hence, we look at the
+> > +		 * capacity state of the first CPU and re-use it for all.
+> > +		 */
+> > +		cpu = cpumask_first(&(fdom->span));
+> > +		cs = find_cap_state(cpu, fdom_max_util);
+>                 ^^^^
+> 
+> The above code could theoretically return NULL, although likely EAS is
+> completely disabled if em->nb_cap_states == 0, right?
 
-iEYEARECAAYFAlqyZmYACgkQMOfwapXb+vKPiwCghfQwm3ymuaDQlGMODFJv5DfW
-MRUAn0xM9yJPKHv9cFUaFvS37B8w8/yx
-=A/gx
------END PGP SIGNATURE-----
+That's right. sched_energy_present cannot be enabled with
+em->nb_cap_states == 0, and compute_energy() is never called without
+sched_energy_present in the proposed implementation.
 
---C7zPtVaVf+AK4Oqc--
+> 
+> If that's the case then, in the previous function, you can certainly
+> avoid the initialization of *cs and maybe also add an explicit:
+> 
+>     BUG_ON(em->nb_cap_states == 0);
+> 
+> which helps even just as "in code documentation".
+> 
+> But, I'm not sure if maintainers like BUG_ON in scheduler code :)
+
+Yes, I'm not sure about the BUG_ON either :). I agree that it would be
+nice to document somewhere that compute_energy() is unsafe to call
+without sched_energy_present. I can simply add a proper doc comment to
+this function actually. Would that work ?
+
+> 
+> 
+> > +
+> > +		/*
+> > +		 * The energy consumed by each CPU is derived from the power
+>                       ^
+> 
+> Should we make more explicit that this is just the "active" energy
+> consumed?
+
+Ok, np.
+
+> 
+> > +		 * it dissipates at the expected OPP and its percentage of
+> > +		 * busy time.
+> > +		 */
+> > +		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
+> > +			util = cpu_util_next(cpu, p, dst_cpu);
+> > +			energy += cs->power * util / cs->cap;
+> > +		}
+> > +	}
+> 
+> nit-pick: empty line before return?
+
+Will do.
+
+> 
+> > +	return energy;
+> > +}
+> > +
+> >  /*
+> >   * select_task_rq_fair: Select target runqueue for the waking task in domains
+> >   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+> > -- 
+> > 2.11.0
+> > 
+> 
+> -- 
+> #include <best/regards.h>
+> 
+> Patrick Bellasi
+
+Thanks,
+Quentin
