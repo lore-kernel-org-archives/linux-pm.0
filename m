@@ -1,92 +1,69 @@
-From: Juri Lelli <juri.lelli@gmail.com>
-Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 21 Mar 2018 18:02:59 +0100
-Message-ID: <20180321170259.GG15165@localhost.localdomain>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-5-dietmar.eggemann@arm.com>
- <20180321090430.GA6913@localhost.localdomain>
- <20180321122621.GA13951@e110439-lin>
- <20180321125925.GB15165@localhost.localdomain>
- <20180321135557.GB1373@queper01-VirtualBox>
- <20180321151513.GE15165@localhost.localdomain>
- <20180321162605.GO4589@e105550-lin.cambridge.arm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] ARM: EXYNOS: Fix coupled CPU idle freeze on Exynos4210
+Date: Wed, 21 Mar 2018 18:55:09 +0100
+Message-ID: <20180321175509.jkemst242vv7d4qv@kozik-lap>
+References: <CGME20180321094523eucas1p1a87d146d65d4191ccdb37f1723977011@eucas1p1.samsung.com>
+ <20180321094505.25494-1-m.szyprowski@samsung.com>
+ <3225655.FLAaRANmer@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180321162605.GO4589@e105550-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Quentin Perret <quentin.perret@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+In-Reply-To: <3225655.FLAaRANmer@aspire.rjw.lan>
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21/03/18 16:26, Morten Rasmussen wrote:
-> On Wed, Mar 21, 2018 at 04:15:13PM +0100, Juri Lelli wrote:
-> > On 21/03/18 13:55, Quentin Perret wrote:
-> > > On Wednesday 21 Mar 2018 at 13:59:25 (+0100), Juri Lelli wrote:
-> > > > On 21/03/18 12:26, Patrick Bellasi wrote:
-> > > > > On 21-Mar 10:04, Juri Lelli wrote:
+On Wed, Mar 21, 2018 at 02:49:52PM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, March 21, 2018 10:45:05 AM CET Marek Szyprowski wrote:
+> > Since commit 04c8b0f82c7d ("irqchip/gic: Make locking a BL_SWITCHER only
+> > feature") coupled CPU idle freezes from time to time on Exynos4210. Later
+> > commit 313c8c16ee62 ("PM / CPU: replace raw_notifier with atomic_notifier")
+> > changed the context in which the CPU idle code is executed, what results
+> > in fully reproducible freeze all the time. However, almost the same coupled
+> > CPU idle code works fine on Exynos3250 regarless of the changes made in
+> > the mentioned commits.
 > > 
-> > [...]
+> > It turned out that the IPI call used on Exynos4210 is conflicting with the
+> > change done in the first mentioned commit in GIC. Fix this by using the
+> > same code path as for Exynos3250, instead of the IPI call for
+> > synchronization with second CPU core, call dsb_sev() directly.
 > > 
-> > > > > > > +	/*
-> > > > > > > +	 * As the goal is to estimate the OPP reached for a specific util
-> > > > > > > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
-> > > > > > > +	 */
-> > > > > > > +	util += util >> 2;
-> > > > > > 
-> > > > > > What about other governors (ondemand for example). Is this supposed to
-> > > > > > work only when schedutil is in use (if so we should probably make it
-> > > > > > conditional on that)?
-> > > > > 
-> > > > > Yes, I would say that EAS mostly makes sense when you have a "minimum"
-> > > > > control on OPPs... otherwise all the energy estimations are really
-> > > > > fuzzy.
-> > > > 
-> > > > Make sense to me. Shouldn't we then make all this conditional on using
-> > > > schedutil?
-> > > 
-> > > So, in theory, EAS could make sense even for other governors than
-> > > schedutil. Even with the performance governor it is probably more
-> > > energy efficient (although users using "performance" probably don't care
-> > > about energy, but that's just an example) to place small tasks onto little
-> > > CPUs up to a certain point given by the energy model. The ideal solution
-> > > would be to change the behaviour of find_cap_state() depending on the
-> > > governor being used, but I don't know if this extra complexity is worth
-> > > it really.
-> > > I'm happy to make all this conditional on schedutil as a first step and
-> > > we can see later if that makes sense to extend EAS to other use-cases.
+> > Tested on Exynos4210-based Trats and Origen boards.
 > > 
-> > I agree that EAS makes still sense even for !schedutil cases (your
-> > performance example being one of them, powersave maybe another one?).
-> > Making it work with ondemand is tricky, though.
+> > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> > CC: stable@vger.kernel.org # v4.13+
+> > ---
+> >  arch/arm/mach-exynos/pm.c | 6 +-----
+> >  1 file changed, 1 insertion(+), 5 deletions(-)
 > > 
-> > So, not sure what's the best thing to do, but we should be at least aware
-> > of limitations.
+> > diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> > index dc4346ecf16d..a1055a2b8d54 100644
+> > --- a/arch/arm/mach-exynos/pm.c
+> > +++ b/arch/arm/mach-exynos/pm.c
+> > @@ -271,11 +271,7 @@ static int exynos_cpu0_enter_aftr(void)
+> >  				goto fail;
+> >  
+> >  			call_firmware_op(cpu_boot, 1);
+> > -
+> > -			if (soc_is_exynos3250())
+> > -				dsb_sev();
+> > -			else
+> > -				arch_send_wakeup_ipi_mask(cpumask_of(1));
+> > +			dsb_sev();
+> >  		}
+> >  	}
+> >  fail:
+> > 
 > 
-> I would suggest making as few assumptions about the OPP selection as
-> possible. Even when we do use schedutil, there could be number of
-> reasons why we don't actually get the OPP schedutil requests (thermal,
-> hardware-says-no,...).
-> 
-> In the previous energy model-driven scheduling postings, years back, I
-> went with the assumption that OPP would follow the utilization. So if we
-> put more tasks on a cpu, the OPP would increase to match. If cpufreq or
-> hardware decided to go faster, that is fine but it could lead to
-> suboptimal decisions.
-> 
-> We could call into schedutil somehow to make sure that we at least
-> request the same OPP as the energy model assumes if the overhead is
-> small and we can present schedutil with all the information it needs to
-> choose the OPP for the proposed task placement. I wonder if it is worth
-> it, or if we should just decide on a simple assumption on OPP selection
-> for energy estimation and stick it in a comment.
+> That will be -stable material I believe?
 
-Right, I see your point. Refactoring the 1.25 coefficient calculation in
-some getter method shouldn't hopefully add much overhead, but yes, it
-might not give us much in terms of correctness for certain situations.
+Yes, it is CC-stable.
 
-Best,
+Marek,
+Thanks, applied (with adjustment of stable address - I believe if some
+text follows it, it makes more readable to put <>).
 
-- Juri
+Best regards,
+Krzysztof
