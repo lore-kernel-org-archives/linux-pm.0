@@ -1,148 +1,117 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
- task wake-up
-Date: Wed, 21 Mar 2018 15:35:18 +0000
-Message-ID: <20180321153518.GC13951@e110439-lin>
+Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Wed, 21 Mar 2018 15:54:58 +0000
+Message-ID: <20180321155458.GD13951@e110439-lin>
 References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-6-dietmar.eggemann@arm.com>
+ <20180320094312.24081-5-dietmar.eggemann@arm.com>
+ <20180321123921.GB13951@e110439-lin>
+ <20180321142630.GB2168@queper01-VirtualBox>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180320094312.24081-6-dietmar.eggemann@arm.com>
+In-Reply-To: <20180321142630.GB2168@queper01-VirtualBox>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20-Mar 09:43, Dietmar Eggemann wrote:
-> From: Quentin Perret <quentin.perret@arm.com>
-
-[...]
-
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 76bd46502486..65a1bead0773 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -6513,6 +6513,60 @@ static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
->  	return energy;
->  }
+On 21-Mar 14:26, Quentin Perret wrote:
+> On Wednesday 21 Mar 2018 at 12:39:21 (+0000), Patrick Bellasi wrote:
+> > On 20-Mar 09:43, Dietmar Eggemann wrote:
+> > > From: Quentin Perret <quentin.perret@arm.com>
+> > 
+> > [...]
+> > 
+> > > +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+> > > +{
+> > > +	unsigned long util, fdom_max_util;
+> > > +	struct capacity_state *cs;
+> > > +	unsigned long energy = 0;
+> > > +	struct freq_domain *fdom;
+> > > +	int cpu;
+> > > +
+> > > +	for_each_freq_domain(fdom) {
+> > > +		fdom_max_util = 0;
+> > > +		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
+> > > +			util = cpu_util_next(cpu, p, dst_cpu);
+> > 
+> > Would be nice to find a way to cache all these util and reuse them
+> > below... even just to ensure data consistency between the "cs"
+> > computation and its usage...
 > 
-> +static bool task_fits(struct task_struct *p, int cpu)
-> +{
-> +	unsigned long next_util = cpu_util_next(cpu, p, cpu);
-> +
-> +	return util_fits_capacity(next_util, capacity_orig_of(cpu));
-                                             ^^^^^^^^^^^^^^^^^^^^^
-
-Since here we are at scheduling CFS tasks, should we not better use
-capacity_of() to account for RT/IRQ pressure ?
-
-> +}
-> +
-> +static int find_energy_efficient_cpu(struct sched_domain *sd,
-> +					struct task_struct *p, int prev_cpu)
-> +{
-> +	unsigned long cur_energy, prev_energy, best_energy;
-> +	int cpu, best_cpu = prev_cpu;
-> +
-> +	if (!task_util(p))
-
-We are still waking up a task... what if the task was previously
-running on a big CPU which is now idle?
-
-I understand that from a _relative_ energy_diff standpoint there is
-not much to do for a 0 utilization task. However, for those tasks we
-can still try to return the most energy efficient CPU among the ones
-in their cpus_allowed mask.
-
-It should be a relatively low overhead (maybe contained in a fallback
-most_energy_efficient_cpu() kind of function) which allows, for
-example on ARM big.LITTLE systems, to consolidate those tasks on
-LITTLE CPUs instead for example keep running them on a big CPU.
-
-> +		return prev_cpu;
-> +
-> +	/* Compute the energy impact of leaving the task on prev_cpu. */
-> +	prev_energy = best_energy = compute_energy(p, prev_cpu);
-> +
-> +	/* Look for the CPU that minimizes the energy. */
-                                           ^^^^^^^^^^
-nit-pick: would say explicitly "best_energy" here, just to avoid
-confusion about (non) possible overflows in the following if check ;)
-
-> +	for_each_cpu_and(cpu, &p->cpus_allowed, sched_domain_span(sd)) {
-> +		if (!task_fits(p, cpu) || cpu == prev_cpu)
-
-nit-pick: to me it would read better as:
-
-                if (cpu == prev_cpu)
-                        continue;
-                if (!task_fits(p, cpu))
-                        continue;
-
-but it's more matter of (personal) taste then efficiency.
-
-> +			continue;
-> +		cur_energy = compute_energy(p, cpu);
-> +		if (cur_energy < best_energy) {
-> +			best_energy = cur_energy;
-> +			best_cpu = cpu;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * We pick the best CPU only if it saves at least 1.5% of the
-> +	 * energy used by prev_cpu.
-> +	 */
-> +	if ((prev_energy - best_energy) > (prev_energy >> 6))
-> +		return best_cpu;
-> +
-> +	return prev_cpu;
-> +}
-
-[...]
-
-> @@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
->  			break;
->  		}
+> So actually, what I can do is add something like
 > 
-> +		/*
-> +		 * Energy-aware task placement is performed on the highest
-> +		 * non-overutilized domain spanning over cpu and prev_cpu.
-> +		 */
-> +		if (want_energy && !sd_overutilized(tmp) &&
-> +		    cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
-> +			energy_sd = tmp;
-> +
+>     fdom_tot_util += util;
+> 
+> to this loop and compute
+> 
+>     energy = cs->power * fdom_tot_util / cs->cap;
+> 
+> only once, instead of having the second loop to compute the energy. We don't
+> have to scale the util for each and every CPU since they share the same
+> cap state. That would save some divisions and ensure the consistency
+> between the selection of the cap state and the associated energy
+> computation. What do you think ?
 
-Not entirely sure, but I was trying to understand if we can avoid to
-modify the definition of want_affine (in the previous chunk) and move
-this block before the previous "if (want_affine..." (in mainline but
-not in this chunk), which will became an else, e.g.
+Right, would say that under the hypothesis the we are in the same
+frequency domain (and we are because of fdom->span), that's basically
+doing:
 
-        if (want_energy && !sd_overutilized(tmp) &&
-                // ...
-        else if (want_energy && !sd_overutilized(tmp) &&
-                // ...
+   sum_i(P_x * U_i / C_x) => P_x / C_x * sum_i(U_i)
 
-Isn't that the same?
+Where (C_x, P_x) are the EM reported capacity and power for the
+expected frequency domain OPP.
 
-Maybe there is a code path I'm missing... but otherwise it seems a
-more self contained modification of select_task_rq_fair...
+> Or maybe you were talking about consistency between several consecutive
+> calls to compute_energy() ?
 
->  		if (tmp->flags & sd_flag)
->  			sd = tmp;
->  		else if (!want_affine)
-> @@ -6586,6 +6652,8 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
->  			if (want_affine)
->  				current->recent_used_cpu = cpu;
->  		}
-> +	} else if (energy_sd) {
-> +		new_cpu = find_energy_efficient_cpu(energy_sd, p, prev_cpu);
->  	} else {
->  		new_cpu = find_idlest_cpu(sd, p, cpu, prev_cpu, sd_flag);
->  	}
+Nope, the above +1
+
+> > > +			fdom_max_util = max(util, fdom_max_util);
+> > > +		}
+> > > +
+> > > +		/*
+> > > +		 * Here we assume that the capacity states of CPUs belonging to
+> > > +		 * the same frequency domains are shared. Hence, we look at the
+> > > +		 * capacity state of the first CPU and re-use it for all.
+> > > +		 */
+> > > +		cpu = cpumask_first(&(fdom->span));
+> > > +		cs = find_cap_state(cpu, fdom_max_util);
+> >                 ^^^^
+> > 
+> > The above code could theoretically return NULL, although likely EAS is
+> > completely disabled if em->nb_cap_states == 0, right?
+> 
+> That's right. sched_energy_present cannot be enabled with
+> em->nb_cap_states == 0, and compute_energy() is never called without
+> sched_energy_present in the proposed implementation.
+> 
+> > 
+> > If that's the case then, in the previous function, you can certainly
+> > avoid the initialization of *cs and maybe also add an explicit:
+> > 
+> >     BUG_ON(em->nb_cap_states == 0);
+> > 
+> > which helps even just as "in code documentation".
+> > 
+> > But, I'm not sure if maintainers like BUG_ON in scheduler code :)
+> 
+> Yes, I'm not sure about the BUG_ON either :).
+
+FWIW, there are already some BUG_ON in fair.c... thus, if they can
+pinpoint a specific bug in case of errors, they should be acceptable ?
+
+> I agree that it would be nice to document somewhere that
+> compute_energy() is unsafe to call without sched_energy_present.
+> I can simply add a proper doc comment to this function actually.
+> Would that work ?
+
+Right, it's just that _maybe_ an explicit BUG_ON is improving the
+documentation by making more explicit the error on testing ?
+
+Thus, I would probably add both... but Peter will tell you for sure ;)
 
 -- 
 #include <best/regards.h>
