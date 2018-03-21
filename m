@@ -1,109 +1,150 @@
-From: Juri Lelli <juri.lelli@gmail.com>
-Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 21 Mar 2018 16:15:13 +0100
-Message-ID: <20180321151513.GE15165@localhost.localdomain>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
+ task wake-up
+Date: Wed, 21 Mar 2018 15:35:18 +0000
+Message-ID: <20180321153518.GC13951@e110439-lin>
 References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-5-dietmar.eggemann@arm.com>
- <20180321090430.GA6913@localhost.localdomain>
- <20180321122621.GA13951@e110439-lin>
- <20180321125925.GB15165@localhost.localdomain>
- <20180321135557.GB1373@queper01-VirtualBox>
+ <20180320094312.24081-6-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180321135557.GB1373@queper01-VirtualBox>
+In-Reply-To: <20180320094312.24081-6-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21/03/18 13:55, Quentin Perret wrote:
-> On Wednesday 21 Mar 2018 at 13:59:25 (+0100), Juri Lelli wrote:
-> > On 21/03/18 12:26, Patrick Bellasi wrote:
-> > > On 21-Mar 10:04, Juri Lelli wrote:
+On 20-Mar 09:43, Dietmar Eggemann wrote:
+> From: Quentin Perret <quentin.perret@arm.com>
 
 [...]
 
-> > > > > +	/*
-> > > > > +	 * As the goal is to estimate the OPP reached for a specific util
-> > > > > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
-> > > > > +	 */
-> > > > > +	util += util >> 2;
-> > > > 
-> > > > What about other governors (ondemand for example). Is this supposed to
-> > > > work only when schedutil is in use (if so we should probably make it
-> > > > conditional on that)?
-> > > 
-> > > Yes, I would say that EAS mostly makes sense when you have a "minimum"
-> > > control on OPPs... otherwise all the energy estimations are really
-> > > fuzzy.
-> > 
-> > Make sense to me. Shouldn't we then make all this conditional on using
-> > schedutil?
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 76bd46502486..65a1bead0773 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -6513,6 +6513,60 @@ static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+>  	return energy;
+>  }
 > 
-> So, in theory, EAS could make sense even for other governors than
-> schedutil. Even with the performance governor it is probably more
-> energy efficient (although users using "performance" probably don't care
-> about energy, but that's just an example) to place small tasks onto little
-> CPUs up to a certain point given by the energy model. The ideal solution
-> would be to change the behaviour of find_cap_state() depending on the
-> governor being used, but I don't know if this extra complexity is worth
-> it really.
-> I'm happy to make all this conditional on schedutil as a first step and
-> we can see later if that makes sense to extend EAS to other use-cases.
+> +static bool task_fits(struct task_struct *p, int cpu)
+> +{
+> +	unsigned long next_util = cpu_util_next(cpu, p, cpu);
+> +
+> +	return util_fits_capacity(next_util, capacity_orig_of(cpu));
+                                             ^^^^^^^^^^^^^^^^^^^^^
 
-I agree that EAS makes still sense even for !schedutil cases (your
-performance example being one of them, powersave maybe another one?).
-Making it work with ondemand is tricky, though.
+Since here we are at scheduling CFS tasks, should we not better use
+capacity_of() to account for RT/IRQ pressure ?
 
-So, not sure what's the best thing to do, but we should be at least aware
-of limitations.
+> +}
+> +
+> +static int find_energy_efficient_cpu(struct sched_domain *sd,
+> +					struct task_struct *p, int prev_cpu)
+> +{
+> +	unsigned long cur_energy, prev_energy, best_energy;
+> +	int cpu, best_cpu = prev_cpu;
+> +
+> +	if (!task_util(p))
 
+We are still waking up a task... what if the task was previously
+running on a big CPU which is now idle?
+
+I understand that from a _relative_ energy_diff standpoint there is
+not much to do for a 0 utilization task. However, for those tasks we
+can still try to return the most energy efficient CPU among the ones
+in their cpus_allowed mask.
+
+It should be a relatively low overhead (maybe contained in a fallback
+most_energy_efficient_cpu() kind of function) which allows, for
+example on ARM big.LITTLE systems, to consolidate those tasks on
+LITTLE CPUs instead for example keep running them on a big CPU.
+
+> +		return prev_cpu;
+> +
+> +	/* Compute the energy impact of leaving the task on prev_cpu. */
+> +	prev_energy = best_energy = compute_energy(p, prev_cpu);
+> +
+> +	/* Look for the CPU that minimizes the energy. */
+                                           ^^^^^^^^^^
+nit-pick: would say explicitly "best_energy" here, just to avoid
+confusion about (non) possible overflows in the following if check ;)
+
+> +	for_each_cpu_and(cpu, &p->cpus_allowed, sched_domain_span(sd)) {
+> +		if (!task_fits(p, cpu) || cpu == prev_cpu)
+
+nit-pick: to me it would read better as:
+
+                if (cpu == prev_cpu)
+                        continue;
+                if (!task_fits(p, cpu))
+                        continue;
+
+but it's more matter of (personal) taste then efficiency.
+
+> +			continue;
+> +		cur_energy = compute_energy(p, cpu);
+> +		if (cur_energy < best_energy) {
+> +			best_energy = cur_energy;
+> +			best_cpu = cpu;
+> +		}
+> +	}
+> +
+> +	/*
+> +	 * We pick the best CPU only if it saves at least 1.5% of the
+> +	 * energy used by prev_cpu.
+> +	 */
+> +	if ((prev_energy - best_energy) > (prev_energy >> 6))
+> +		return best_cpu;
+> +
+> +	return prev_cpu;
+> +}
+
+[...]
+
+> @@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+>  			break;
+>  		}
 > 
-> > 
-> > > 
-> > > > Also, even when schedutil is in use, shouldn't we ask it for a util
-> > > > "computation" instead of replicating its _current_ heuristic?
-> > > 
-> > > Are you proposing to have the 1.25 factor only here and remove it from
-> > > schedutil?
-> > 
-> > I'm only saying that we shouldn't probably have two places where we add
-> > this 1.25 factor to utilization before using it, as in the future one of
-> > the two might modify that 1.25 to something else and then we'll have
-> > problems. So, maybe a common wrapper that adds such factor?
-> 
-> Ok, I can definitely factorize this code between schedutil and EAS. And
-> BTW, would it make sense to make schedutil use "capacity_margin" instead
-> of an arbitrary value ? The semantics feels pretty close. Out of curiosity,
-> what was the reason to use C=1.25 in the first place ?
+> +		/*
+> +		 * Energy-aware task placement is performed on the highest
+> +		 * non-overutilized domain spanning over cpu and prev_cpu.
+> +		 */
+> +		if (want_energy && !sd_overutilized(tmp) &&
+> +		    cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
+> +			energy_sd = tmp;
+> +
 
-I seem to remember it was choosen out of experiments, but I might surely
-be wrong and Rafael, Viresh, others will correct me. :)
+Not entirely sure, but I was trying to understand if we can avoid to
+modify the definition of want_affine (in the previous chunk) and move
+this block before the previous "if (want_affine..." (in mainline but
+not in this chunk), which will became an else, e.g.
 
-> 
-> > 
-> > > 
-> > > > I fear  the two might diverge in the future.
-> > > 
-> > > That could be avoided by factoring out from schedutil the
-> > > "compensation" factor into a proper function to be used by all the
-> > > interested playes, isn't it?
-> > 
-> > And I should have read till the end before writing the above paragraph
-> > it seems. :)
-> > 
-> > Thanks,
-> > 
-> > - Juri
-> 
-> Thank you very much for the feedback !
+        if (want_energy && !sd_overutilized(tmp) &&
+                // ...
+        else if (want_energy && !sd_overutilized(tmp) &&
+                // ...
 
-No problem. I'm of course very interested in this. Could you please
-directly Cc me (juri.lelli@redhat.com) in next versions?
+Isn't that the same?
 
-Thanks,
+Maybe there is a code path I'm missing... but otherwise it seems a
+more self contained modification of select_task_rq_fair...
 
-- Juri
+>  		if (tmp->flags & sd_flag)
+>  			sd = tmp;
+>  		else if (!want_affine)
+> @@ -6586,6 +6652,8 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+>  			if (want_affine)
+>  				current->recent_used_cpu = cpu;
+>  		}
+> +	} else if (energy_sd) {
+> +		new_cpu = find_energy_efficient_cpu(energy_sd, p, prev_cpu);
+>  	} else {
+>  		new_cpu = find_idlest_cpu(sd, p, cpu, prev_cpu, sd_flag);
+>  	}
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
