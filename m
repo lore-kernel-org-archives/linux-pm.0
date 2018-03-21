@@ -1,40 +1,63 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] ARM: EXYNOS: Fix coupled CPU idle freeze on Exynos4210
-Date: Wed, 21 Mar 2018 12:39:12 +0100
-Message-ID: <2805898.zLaWSBKIiK@amdc3058>
-References: <CGME20180321094523eucas1p1a87d146d65d4191ccdb37f1723977011@eucas1p1.samsung.com>
-        <20180321094505.25494-1-m.szyprowski@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFT][PATCH v7.1 5/8] cpuidle: Return nohz hint from cpuidle_select()
+Date: Wed, 21 Mar 2018 12:52:21 +0100
+Message-ID: <CAJZ5v0i7AE=HEp1guNdpSV7=a-GS=e00+K1kG7Q6SYnK2g6cZA@mail.gmail.com>
+References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <1635957.yuHkCe9oyz@aspire.rjw.lan>
+ <2111949.c172CzMuf8@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <20180321094505.25494-1-m.szyprowski@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Marc Zyngier <marc.zyngier@arm.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2111949.c172CzMuf8@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 21, 2018 10:45:05 AM Marek Szyprowski wrote:
-> Since commit 04c8b0f82c7d ("irqchip/gic: Make locking a BL_SWITCHER only
-> feature") coupled CPU idle freezes from time to time on Exynos4210. Later
-> commit 313c8c16ee62 ("PM / CPU: replace raw_notifier with atomic_notifier")
-> changed the context in which the CPU idle code is executed, what results
-> in fully reproducible freeze all the time. However, almost the same coupled
-> CPU idle code works fine on Exynos3250 regarless of the changes made in
-> the mentioned commits.
-> 
-> It turned out that the IPI call used on Exynos4210 is conflicting with the
-> change done in the first mentioned commit in GIC. Fix this by using the
-> same code path as for Exynos3250, instead of the IPI call for
-> synchronization with second CPU core, call dsb_sev() directly.
-> 
-> Tested on Exynos4210-based Trats and Origen boards.
-> 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> CC: stable@vger.kernel.org # v4.13+
+On Wed, Mar 21, 2018 at 7:48 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Add a new pointer argument to cpuidle_select() and to the ->select
+> cpuidle governor callback to allow a boolean value indicating
+> whether or not the tick should be stopped before entering the
+> selected state to be returned from there.
+>
+> Make the ladder governor ignore that pointer (to preserve its
+> current behavior) and make the menu governor return 'false" through
+> it if:
+>  (1) the idle exit latency is constrained at 0, or
+>  (2) the selected state is a polling one, or
+>  (3) the expected idle period duration is within the tick period
+>      range.
+>
+> In addition to that, the correction factor computations in the menu
+> governor need to take the possibility that the tick may not be
+> stopped into account to avoid artificially small correction factor
+> values.  To that end, add a mechanism to record tick wakeups, as
+> suggested by Peter Zijlstra, and use it to modify the menu_reflect()
+> behavior when tick wakeup occurs.  Namely, if the CPU is woken up by
+> the tick, the predicted idle duration is likely too short, so make
+> menu_reflect() try to compensate by bumping up the correction factor
+> with a (sufficiently large) constant value.
+>
+> Since the value returned through the new argument pointer of
+> cpuidle_select() is not used by its caller yet, this change by
+> itself is not expected to alter the functionality of the code.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>
+> Another variant of patch [5/8] to test.
+>
+> This one doesn't run menu_update() at all on tick wakeups, but simply
+> bumps up the correction factor alone then.
 
-Thanks for spotting and fixing this.
+I have overlooked one thing in this patch and in the original v7 of it.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Namely, tick wakeups occurring when the return value of
+tick_nohz_get_sleep_length() is within the tick boundary should be
+treated as normal wakeups, because the nohz code itself doesn't stop
+the tick then even without this patch series.
 
-Best regards,
+I'll rework this patch for that and will send an update shortly.
+
+Thanks!
