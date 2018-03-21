@@ -1,119 +1,84 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
 Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
  helper function
-Date: Wed, 21 Mar 2018 15:54:58 +0000
-Message-ID: <20180321155458.GD13951@e110439-lin>
+Date: Wed, 21 Mar 2018 16:26:05 +0000
+Message-ID: <20180321162605.GO4589@e105550-lin.cambridge.arm.com>
 References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
  <20180320094312.24081-5-dietmar.eggemann@arm.com>
- <20180321123921.GB13951@e110439-lin>
- <20180321142630.GB2168@queper01-VirtualBox>
+ <20180321090430.GA6913@localhost.localdomain>
+ <20180321122621.GA13951@e110439-lin>
+ <20180321125925.GB15165@localhost.localdomain>
+ <20180321135557.GB1373@queper01-VirtualBox>
+ <20180321151513.GE15165@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180321142630.GB2168@queper01-VirtualBox>
+In-Reply-To: <20180321151513.GE15165@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: Juri Lelli <juri.lelli@gmail.com>
+Cc: Quentin Perret <quentin.perret@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-Mar 14:26, Quentin Perret wrote:
-> On Wednesday 21 Mar 2018 at 12:39:21 (+0000), Patrick Bellasi wrote:
-> > On 20-Mar 09:43, Dietmar Eggemann wrote:
-> > > From: Quentin Perret <quentin.perret@arm.com>
-> > 
-> > [...]
-> > 
-> > > +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
-> > > +{
-> > > +	unsigned long util, fdom_max_util;
-> > > +	struct capacity_state *cs;
-> > > +	unsigned long energy = 0;
-> > > +	struct freq_domain *fdom;
-> > > +	int cpu;
-> > > +
-> > > +	for_each_freq_domain(fdom) {
-> > > +		fdom_max_util = 0;
-> > > +		for_each_cpu_and(cpu, &(fdom->span), cpu_online_mask) {
-> > > +			util = cpu_util_next(cpu, p, dst_cpu);
-> > 
-> > Would be nice to find a way to cache all these util and reuse them
-> > below... even just to ensure data consistency between the "cs"
-> > computation and its usage...
+On Wed, Mar 21, 2018 at 04:15:13PM +0100, Juri Lelli wrote:
+> On 21/03/18 13:55, Quentin Perret wrote:
+> > On Wednesday 21 Mar 2018 at 13:59:25 (+0100), Juri Lelli wrote:
+> > > On 21/03/18 12:26, Patrick Bellasi wrote:
+> > > > On 21-Mar 10:04, Juri Lelli wrote:
 > 
-> So actually, what I can do is add something like
+> [...]
 > 
->     fdom_tot_util += util;
-> 
-> to this loop and compute
-> 
->     energy = cs->power * fdom_tot_util / cs->cap;
-> 
-> only once, instead of having the second loop to compute the energy. We don't
-> have to scale the util for each and every CPU since they share the same
-> cap state. That would save some divisions and ensure the consistency
-> between the selection of the cap state and the associated energy
-> computation. What do you think ?
-
-Right, would say that under the hypothesis the we are in the same
-frequency domain (and we are because of fdom->span), that's basically
-doing:
-
-   sum_i(P_x * U_i / C_x) => P_x / C_x * sum_i(U_i)
-
-Where (C_x, P_x) are the EM reported capacity and power for the
-expected frequency domain OPP.
-
-> Or maybe you were talking about consistency between several consecutive
-> calls to compute_energy() ?
-
-Nope, the above +1
-
-> > > +			fdom_max_util = max(util, fdom_max_util);
-> > > +		}
-> > > +
-> > > +		/*
-> > > +		 * Here we assume that the capacity states of CPUs belonging to
-> > > +		 * the same frequency domains are shared. Hence, we look at the
-> > > +		 * capacity state of the first CPU and re-use it for all.
-> > > +		 */
-> > > +		cpu = cpumask_first(&(fdom->span));
-> > > +		cs = find_cap_state(cpu, fdom_max_util);
-> >                 ^^^^
+> > > > > > +	/*
+> > > > > > +	 * As the goal is to estimate the OPP reached for a specific util
+> > > > > > +	 * value, mimic the behaviour of schedutil with a 1.25 coefficient
+> > > > > > +	 */
+> > > > > > +	util += util >> 2;
+> > > > > 
+> > > > > What about other governors (ondemand for example). Is this supposed to
+> > > > > work only when schedutil is in use (if so we should probably make it
+> > > > > conditional on that)?
+> > > > 
+> > > > Yes, I would say that EAS mostly makes sense when you have a "minimum"
+> > > > control on OPPs... otherwise all the energy estimations are really
+> > > > fuzzy.
+> > > 
+> > > Make sense to me. Shouldn't we then make all this conditional on using
+> > > schedutil?
 > > 
-> > The above code could theoretically return NULL, although likely EAS is
-> > completely disabled if em->nb_cap_states == 0, right?
+> > So, in theory, EAS could make sense even for other governors than
+> > schedutil. Even with the performance governor it is probably more
+> > energy efficient (although users using "performance" probably don't care
+> > about energy, but that's just an example) to place small tasks onto little
+> > CPUs up to a certain point given by the energy model. The ideal solution
+> > would be to change the behaviour of find_cap_state() depending on the
+> > governor being used, but I don't know if this extra complexity is worth
+> > it really.
+> > I'm happy to make all this conditional on schedutil as a first step and
+> > we can see later if that makes sense to extend EAS to other use-cases.
 > 
-> That's right. sched_energy_present cannot be enabled with
-> em->nb_cap_states == 0, and compute_energy() is never called without
-> sched_energy_present in the proposed implementation.
+> I agree that EAS makes still sense even for !schedutil cases (your
+> performance example being one of them, powersave maybe another one?).
+> Making it work with ondemand is tricky, though.
 > 
-> > 
-> > If that's the case then, in the previous function, you can certainly
-> > avoid the initialization of *cs and maybe also add an explicit:
-> > 
-> >     BUG_ON(em->nb_cap_states == 0);
-> > 
-> > which helps even just as "in code documentation".
-> > 
-> > But, I'm not sure if maintainers like BUG_ON in scheduler code :)
-> 
-> Yes, I'm not sure about the BUG_ON either :).
+> So, not sure what's the best thing to do, but we should be at least aware
+> of limitations.
 
-FWIW, there are already some BUG_ON in fair.c... thus, if they can
-pinpoint a specific bug in case of errors, they should be acceptable ?
+I would suggest making as few assumptions about the OPP selection as
+possible. Even when we do use schedutil, there could be number of
+reasons why we don't actually get the OPP schedutil requests (thermal,
+hardware-says-no,...).
 
-> I agree that it would be nice to document somewhere that
-> compute_energy() is unsafe to call without sched_energy_present.
-> I can simply add a proper doc comment to this function actually.
-> Would that work ?
+In the previous energy model-driven scheduling postings, years back, I
+went with the assumption that OPP would follow the utilization. So if we
+put more tasks on a cpu, the OPP would increase to match. If cpufreq or
+hardware decided to go faster, that is fine but it could lead to
+suboptimal decisions.
 
-Right, it's just that _maybe_ an explicit BUG_ON is improving the
-documentation by making more explicit the error on testing ?
+We could call into schedutil somehow to make sure that we at least
+request the same OPP as the energy model assumes if the overhead is
+small and we can present schedutil with all the information it needs to
+choose the OPP for the proposed task placement. I wonder if it is worth
+it, or if we should just decide on a simple assumption on OPP selection
+for energy estimation and stick it in a comment.
 
-Thus, I would probably add both... but Peter will tell you for sure ;)
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Morten
