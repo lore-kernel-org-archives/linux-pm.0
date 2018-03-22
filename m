@@ -1,78 +1,64 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v5 1/5] typec: tcpm: Add core support for sink side PPS
-Date: Thu, 22 Mar 2018 09:44:49 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E2864@SW-EX-MBX01.diasemi.com>
-References: <cover.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
- <dc50ec940a1e18059a87bca3c96e2dd539f9efa7.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
- <a6d1b2f9-e750-5914-4807-79fc89d26bb5@roeck-us.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/7] PM / Domain: Add struct device to genpd
+Date: Thu, 22 Mar 2018 17:59:03 +0800
+Message-ID: <20180322095903.h7hgm3xylq3esjyf@vireshk-mac-ubuntu>
+References: <cover.1513926033.git.viresh.kumar@linaro.org>
+ <a7867661e9bc6f5b1571f60398266ef678ccc1c0.1513926033.git.viresh.kumar@linaro.org>
+ <CAPDyKFprVsOd7_nKCXDCxDErh-K+vfaWojqDo0arzt0ZJKCPjQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a6d1b2f9-e750-5914-4807-79fc89d26bb5@roeck-us.net>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFprVsOd7_nKCXDCxDErh-K+vfaWojqDo0arzt0ZJKCPjQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjIgTWFyY2ggMjAxOCAwNDowMywgR3VlbnRlciBSb2VjayB3cm90ZToNCg0KPiA+ICAgc3Rh
-dGljIGVudW0gcGRvX2VyciB0Y3BtX2NhcHNfZXJyKHN0cnVjdCB0Y3BtX3BvcnQgKnBvcnQsIGNv
-bnN0IHUzMiAqcGRvLA0KPiA+IEBAIC0xMzA4LDYgKzEzNDcsMjYgQEAgc3RhdGljIGVudW0gcGRv
-X2VyciB0Y3BtX2NhcHNfZXJyKHN0cnVjdCB0Y3BtX3BvcnQNCj4gKnBvcnQsIGNvbnN0IHUzMiAq
-cGRvLA0KPiA+ICAgCQkJCQkgIHBkb19taW5fdm9sdGFnZShwZG9baSAtIDFdKSkpDQo+ID4gICAJ
-CQkJCXJldHVybiBQRE9fRVJSX0RVUEVfUERPOw0KPiA+ICAgCQkJCWJyZWFrOw0KPiA+ICsJCQkv
-Kg0KPiA+ICsJCQkgKiBUaGUgUHJvZ3JhbW1hYmxlIFBvd2VyIFN1cHBseSBBUERPcywgaWYgcHJl
-c2VudCwNCj4gPiArCQkJICogc2hhbGwgYmUgc2VudCBpbiBNYXhpbXVtIFZvbHRhZ2Ugb3JkZXI7
-DQo+ID4gKwkJCSAqIGxvd2VzdCB0byBoaWdoZXN0Lg0KPiA+ICsJCQkgKi8NCj4gPiArCQkJY2Fz
-ZSBQRE9fVFlQRV9BUERPOg0KPiA+ICsJCQkJaWYgKHBkb19hcGRvX3R5cGUocGRvW2ldKSAhPSBB
-UERPX1RZUEVfUFBTKQ0KPiA+ICsJCQkJCWJyZWFrOw0KPiA+ICsNCj4gPiArCQkJCWlmIChwZG9f
-cHBzX2FwZG9fbWF4X2N1cnJlbnQocGRvW2ldKSA8DQo+ID4gKwkJCQkgICAgcGRvX3Bwc19hcGRv
-X21heF9jdXJyZW50KHBkb1tpIC0gMV0pKQ0KPiA+ICsJCQkJCXJldHVybg0KPiBQRE9fRVJSX1BQ
-U19BUERPX05PVF9TT1JURUQ7DQo+ID4gKwkJCQllbHNlIGlmICgocGRvX3Bwc19hcGRvX21pbl92
-b2x0YWdlKHBkb1tpXSkgPT0NCj4gPiArCQkJCQkgIHBkb19wcHNfYXBkb19taW5fdm9sdGFnZShw
-ZG9baSAtIDFdKSkNCj4gJiYNCj4gPiArCQkJCQkgKHBkb19wcHNfYXBkb19tYXhfdm9sdGFnZShw
-ZG9baV0pID09DQo+ID4gKwkJCQkJICBwZG9fcHBzX2FwZG9fbWF4X3ZvbHRhZ2UocGRvW2kgLSAx
-XSkpDQo+ICYmDQo+ID4gKwkJCQkJIChwZG9fcHBzX2FwZG9fbWF4X2N1cnJlbnQocGRvW2ldKSA9
-PQ0KPiA+ICsJCQkJCSAgcGRvX3Bwc19hcGRvX21heF9jdXJyZW50KHBkb1tpIC0gMV0pKSkNCj4N
-Cj4gVW5uZWNlc3NhcnkgKCApDQoNCkkgaGF2ZSB0byBzYXkgSSB0aGluayBpdCdzIG5lYXRlci9j
-bGVhcmVyIHdpdGggdGhhbiB3aXRob3V0IGJ1dCBpZiB0aGF0J3MNCnNvbWV0aGluZyB5b3UgcmVh
-bGx5IGRvbid0IGxpa2UgdGhlbiBJJ2xsIHJlbW92ZSB0aGVtLg0KDQoNCj4gPiArc3RhdGljIGlu
-dCB0Y3BtX3Bwc19zZXRfb3BfY3VycihzdHJ1Y3QgdGNwbV9wb3J0ICpwb3J0LCB1MTYgb3BfY3Vy
-cikNCj4gPiArew0KPiA+ICsJdW5zaWduZWQgaW50IHRhcmdldF9tdzsNCj4gPiArCWludCByZXQg
-PSAwOw0KPiA+ICsNCj4NCj4gVW5uZWNlc3NhcnkgaW5pdGlhbGl6YXRpb24uDQoNCk9rLCB3aWxs
-IHJlbW92ZS4NCg0KDQo+ID4gK3N0YXRpYyBpbnQgdGNwbV9wcHNfc2V0X291dF92b2x0KHN0cnVj
-dCB0Y3BtX3BvcnQgKnBvcnQsIHUxNiBvdXRfdm9sdCkNCj4gPiArew0KPiA+ICsJdW5zaWduZWQg
-aW50IHRhcmdldF9tdzsNCj4gPiArCWludCByZXQgPSAwOw0KPiA+ICsNCj4gVW5uZWNlc3Nhcnkg
-aW5pdGlhbGl6YXRpb24uDQoNCkRpdHRvDQoNCj4gPiArCW11dGV4X2xvY2soJnBvcnQtPnN3YXBf
-bG9jayk7DQo+ID4gKwltdXRleF9sb2NrKCZwb3J0LT5sb2NrKTsNCj4gPiArDQo+ID4gKwlpZiAo
-IXBvcnQtPnBwc19kYXRhLmFjdGl2ZSkgew0KPiA+ICsJCXJldCA9IC1FT1BOT1RTVVBQOw0KPiA+
-ICsJCWdvdG8gcG9ydF91bmxvY2s7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJaWYgKHBvcnQtPnN0
-YXRlICE9IFNOS19SRUFEWSkgew0KPiA+ICsJCXJldCA9IC1FQUdBSU47DQo+ID4gKwkJZ290byBw
-b3J0X3VubG9jazsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlpZiAoKG91dF92b2x0IDwgcG9ydC0+
-cHBzX2RhdGEubWluX3ZvbHQpIHx8DQo+ID4gKwkgICAgKG91dF92b2x0ID4gcG9ydC0+cHBzX2Rh
-dGEubWF4X3ZvbHQpKSB7DQo+DQo+IFVubmVjZXNzYXJ5ICggKQ0KDQpPay4NCg0KPiA+ICsJCXJl
-dCA9IC1FSU5WQUw7DQo+ID4gKwkJZ290byBwb3J0X3VubG9jazsNCj4gPiArCX0NCj4gPiArDQo+
-ID4gKwl0YXJnZXRfbXcgPSAocG9ydC0+cHBzX2RhdGEub3BfY3VyciAqIG91dF92b2x0KSAvIDEw
-MDA7DQo+ID4gKwlpZiAodGFyZ2V0X213IDwgcG9ydC0+b3BlcmF0aW5nX3Nua19tdykgew0KPiA+
-ICsJCXJldCA9IC1FSU5WQUw7DQo+ID4gKwkJZ290byBwb3J0X3VubG9jazsNCj4gPiArCX0NCj4g
-PiArDQo+ID4gKwlyZWluaXRfY29tcGxldGlvbigmcG9ydC0+cHBzX2NvbXBsZXRlKTsNCj4gPiAr
-CXBvcnQtPnBwc19kYXRhLm91dF92b2x0ID0gb3V0X3ZvbHQ7DQo+ID4gKwlwb3J0LT5wcHNfc3Rh
-dHVzID0gMDsNCj4gPiArCXBvcnQtPnBwc19wZW5kaW5nID0gdHJ1ZTsNCj4gPiArCXRjcG1fc2V0
-X3N0YXRlKHBvcnQsIFNOS19ORUdPVElBVEVfUFBTX0NBUEFCSUxJVElFUywgMCk7DQo+ID4gKwlt
-dXRleF91bmxvY2soJnBvcnQtPmxvY2spOw0KPiA+ICsNCj4gPiArCWlmICghd2FpdF9mb3JfY29t
-cGxldGlvbl90aW1lb3V0KCZwb3J0LT5wcHNfY29tcGxldGUsDQo+ID4gKwkJCQltc2Vjc190b19q
-aWZmaWVzKFBEX1NUQVRFX01BQ0hJTkVfVElNRU9VVCkpKQ0KPiA+ICsJCXJldCA9IC1FVElNRURP
-VVQ7DQo+ID4gKwllbHNlDQo+ID4gKwkJcmV0ID0gcG9ydC0+cHBzX3N0YXR1czsNCj4gPiArDQo+
-ID4gKwlnb3RvIHN3YXBfdW5sb2NrOw0KPiA+ICsNCj4gPiArcG9ydF91bmxvY2s6DQo+ID4gKwlt
-dXRleF91bmxvY2soJnBvcnQtPmxvY2spOw0KPiA+ICtzd2FwX3VubG9jazoNCj4gPiArCW11dGV4
-X3VubG9jaygmcG9ydC0+c3dhcF9sb2NrKTsNCj4gPiArDQo+ID4gKwlyZXR1cm4gcmV0Ow0KPiA+
-ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IHRjcG1fcHBzX2FjdGl2YXRlKHN0cnVjdCB0Y3Bt
-X3BvcnQgKnBvcnQsIGJvb2wgYWN0aXZhdGUpDQo+ID4gK3sNCj4gPiArCWludCByZXQgPSAwOw0K
-PiA+ICsNCj4gPiArCW11dGV4X2xvY2soJnBvcnQtPnN3YXBfbG9jayk7DQo+ID4gKwltdXRleF9s
-b2NrKCZwb3J0LT5sb2NrKTsNCj4gPiArDQo+ID4gKwlpZiAoIXBvcnQtPnBwc19kYXRhLnN1cHBv
-cnRlZCkgew0KPiA+ICsJCXJldCA9IC1FT1BOT1RTVVBQOw0KPiA+ICsJCWdvdG8gcG9ydF91bmxv
-Y2s7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJLyogVHJ5aW5nIHRvIGRlYWN0aXZhdGUgUFBTIHdo
-ZW4gYWxyZWFkeSBkZWFjdGl2YXRlZCBzbyBqdXN0IGJhaWwgKi8NCj4gPiArCWlmICgoIXBvcnQt
-PnBwc19kYXRhLmFjdGl2ZSkgJiYgKCFhY3RpdmF0ZSkpDQo+DQo+IFVubmVjZXNzYXJ5ICggKQ0K
-DQpBY3R1YWxseSBhZ3JlZSBvbiB0aGlzIG9uZSA6KQ0K
+On 22-03-18, 10:30, Ulf Hansson wrote:
+> On 22 December 2017 at 08:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > The power-domain core would be using the OPP core going forward and the
+> > OPP core has the basic requirement of a device structure for its working.
+> 
+> According to the OPP core also seems to require the ->dev.of_node to
+> be set. Actually, it seems like that part belongs in patch4 instead,
+> while starting to make use of the opp OF APIs. Could you please move
+> it?
+
+You meaning setting of the of_node to the next patch? I can do that if that;s
+what you want.
+
+> > +static struct bus_type genpd_bus_type = {
+> > +       .name =         "genpd",
+> > +};
+> 
+> This seems silly. Can't we just avoid having a bus type altogether,
+> thus no need to call bus_register() as well?
+
+I thought we need a bus where we want to add the device, haven't tried with that
+pointer being empty. Will try that and let you know.
+
+> > +
+> >  /**
+> >   * pm_genpd_init - Initialize a generic I/O PM domain object.
+> >   * @genpd: PM domain object to initialize.
+> > @@ -1687,6 +1691,18 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+> >                         return ret;
+> >         }
+> >
+> > +       genpd->dev.bus = &genpd_bus_type;
+> > +       device_initialize(&genpd->dev);
+> > +       dev_set_name(&genpd->dev, "%s", genpd->name);
+> > +
+> > +       ret = device_add(&genpd->dev);
+> 
+> What's the point of adding the device? Can we skip this step, as I
+> guess the opp core is only using the device as cookie rather actual
+> using it? No?
+
+We also use it for the OPP debugfs stuff, so that would be required I believe.
+We also use it for playing with clk/regulator stuff as well, though we may not
+use it in genpd case for now.
+
+-- 
+viresh
