@@ -1,7 +1,8 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v6 6/6] typec: tcpm: Add support for sink PPS related messages
-Date: Thu, 22 Mar 2018 15:52:07 +0000
-Message-ID: <f5c0fb8a751eb2fbf627a7633669fea6f927b0c6.1521732966.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v6 4/6] power: supply: Add 'usb_type' property and supporting
+ code
+Date: Thu, 22 Mar 2018 15:52:05 +0000
+Message-ID: <48b526624feacbb01829c92ce3231a630f482ad3.1521732966.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1521732966.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,253 +13,202 @@ To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roec
 Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-This commit adds sink side support for Get_Status, Status,
-Get_PPS_Status and PPS_Status handling. As there's the
-potential for a partner to respond with Not_Supported,
-handling of this message is also added. Sending of
-Not_Supported is added to handle messagescreceived but not
-yet handled.
+This commit adds the 'usb_type' property to represent USB supplies
+which can report a number of different types based on a connection
+event.
+
+Examples of this already exist in drivers whereby the existing 'type'
+property is updated, based on an event, to represent what was
+connected (e.g. USB, USB_DCP, USB_ACA, ...). Current implementations
+however don't show all supported connectable types, so this knowledge
+has to be exlicitly known for each driver that supports this.
+
+The 'usb_type' property is intended to fill this void and show users
+all possible USB types supported by a driver. The property, when read,
+shows all available types for the driver, and the one currently chosen
+is highlighted/bracketed. It is expected that the 'type' property
+would then just show the top-level type 'USB', and this would be
+static.
+
+Currently the 'usb_type' enum contains all of the USB variant types
+that exist for the 'type' enum at this time, and in addition has
+SDP and PPS types. The mirroring is intentional so as to not impact
+existing usage of the 'type' property.
 
 Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 ---
- drivers/usb/typec/tcpm.c | 143 ++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 134 insertions(+), 9 deletions(-)
+ Documentation/ABI/testing/sysfs-class-power | 12 ++++++++
+ drivers/power/supply/power_supply_core.c    |  8 ++++-
+ drivers/power/supply/power_supply_sysfs.c   | 45 +++++++++++++++++++++++++++++
+ include/linux/power_supply.h                | 16 ++++++++++
+ 4 files changed, 80 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
-index c859cba..fffe97d 100644
---- a/drivers/usb/typec/tcpm.c
-+++ b/drivers/usb/typec/tcpm.c
-@@ -19,7 +19,9 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/usb/pd.h>
-+#include <linux/usb/pd_ado.h>
- #include <linux/usb/pd_bdo.h>
-+#include <linux/usb/pd_ext_sdb.h>
- #include <linux/usb/pd_vdo.h>
- #include <linux/usb/tcpm.h>
- #include <linux/usb/typec.h>
-@@ -113,6 +115,11 @@
- 	S(SNK_TRYWAIT_VBUS),			\
- 	S(BIST_RX),				\
- 						\
-+	S(GET_STATUS_SEND),			\
-+	S(GET_STATUS_SEND_TIMEOUT),		\
-+	S(GET_PPS_STATUS_SEND),			\
-+	S(GET_PPS_STATUS_SEND_TIMEOUT),		\
-+						\
- 	S(ERROR_RECOVERY),			\
- 	S(PORT_RESET),				\
- 	S(PORT_RESET_WAIT_OFF)
-@@ -143,6 +150,7 @@ enum pd_msg_request {
- 	PD_MSG_NONE = 0,
- 	PD_MSG_CTRL_REJECT,
- 	PD_MSG_CTRL_WAIT,
-+	PD_MSG_CTRL_NOT_SUPP,
- 	PD_MSG_DATA_SINK_CAP,
- 	PD_MSG_DATA_SOURCE_CAP,
- };
-@@ -1398,10 +1406,42 @@ static int tcpm_validate_caps(struct tcpm_port *port, const u32 *pdo,
- /*
-  * PD (data, control) command handling functions
-  */
-+static inline enum tcpm_state ready_state(struct tcpm_port *port)
-+{
-+	if (port->pwr_role == TYPEC_SOURCE)
-+		return SRC_READY;
-+	else
-+		return SNK_READY;
-+}
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index e046566..5e23e22 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -409,6 +409,18 @@ Description:
+ 		Access: Read
+ 		Valid values: Represented in 1/10 Degrees Celsius
  
- static int tcpm_pd_send_control(struct tcpm_port *port,
- 				enum pd_ctrl_msg_type type);
- 
-+static void tcpm_handle_alert(struct tcpm_port *port, const __le32 *payload,
-+			      int cnt)
-+{
-+	u32 p0 = le32_to_cpu(payload[0]);
-+	unsigned int type = usb_pd_ado_type(p0);
++What: 		/sys/class/power_supply/<supply_name>/usb_type
++Date:		March 2018
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Reports what type of USB connection is currently active for
++		the supply, for example it can show if USB-PD capable source
++		is attached.
 +
-+	if (!type) {
-+		tcpm_log(port, "Alert message received with no type");
-+		return;
++		Access: Read-Only
++		Valid values: "Unknown", "SDP", "DCP", "CDP", "ACA", "C", "PD",
++			      "PD_DRP", "PD_PPS", "BrickID"
++
+ What: 		/sys/class/power_supply/<supply_name>/voltage_max
+ Date:		January 2008
+ Contact:	linux-pm@vger.kernel.org
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 64f6449..dff2bbb 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -843,7 +843,7 @@ static void psy_unregister_cooler(struct power_supply *psy)
+ {
+ 	struct device *dev;
+ 	struct power_supply *psy;
+-	int rc;
++	int i, rc;
+ 
+ 	if (!parent)
+ 		pr_warn("%s: Expected proper parent device for '%s'\n",
+@@ -852,6 +852,12 @@ static void psy_unregister_cooler(struct power_supply *psy)
+ 	if (!desc || !desc->name || !desc->properties || !desc->num_properties)
+ 		return ERR_PTR(-EINVAL);
+ 
++	for (i = 0; i < desc->num_properties; ++i) {
++		if ((desc->properties[i] == POWER_SUPPLY_PROP_USB_TYPE) &&
++		    (!desc->usb_types || !desc->num_usb_types))
++			return ERR_PTR(-EINVAL);
 +	}
 +
-+	/* Just handling non-battery alerts for now */
-+	if (!(type & USB_PD_ADO_TYPE_BATT_STATUS_CHANGE)) {
-+		switch (port->state) {
-+		case SRC_READY:
-+		case SNK_READY:
-+			tcpm_set_state(port, GET_STATUS_SEND, 0);
-+			break;
-+		default:
-+			tcpm_queue_message(port, PD_MSG_CTRL_WAIT);
-+			break;
+ 	psy = kzalloc(sizeof(*psy), GFP_KERNEL);
+ 	if (!psy)
+ 		return ERR_PTR(-ENOMEM);
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5204f11..1350068 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -46,6 +46,11 @@
+ 	"USB_PD", "USB_PD_DRP", "BrickID"
+ };
+ 
++static const char * const power_supply_usb_type_text[] = {
++	"Unknown", "SDP", "DCP", "CDP", "ACA", "C",
++	"PD", "PD_DRP", "PD_PPS", "BrickID"
++};
++
+ static const char * const power_supply_status_text[] = {
+ 	"Unknown", "Charging", "Discharging", "Not charging", "Full"
+ };
+@@ -73,6 +78,41 @@
+ 	"Unknown", "System", "Device"
+ };
+ 
++static ssize_t power_supply_show_usb_type(struct device *dev,
++					  enum power_supply_usb_type *usb_types,
++					  ssize_t num_usb_types,
++					  union power_supply_propval *value,
++					  char *buf)
++{
++	enum power_supply_usb_type usb_type;
++	ssize_t count = 0;
++	bool match = false;
++	int i;
++
++	for (i = 0; i < num_usb_types; ++i) {
++		usb_type = usb_types[i];
++
++		if (value->intval == usb_type) {
++			count += sprintf(buf + count, "[%s] ",
++					 power_supply_usb_type_text[usb_type]);
++			match = true;
++		} else {
++			count += sprintf(buf + count, "%s ",
++					 power_supply_usb_type_text[usb_type]);
 +		}
 +	}
++
++	if (!match) {
++		dev_warn(dev, "driver reporting unsupported connected type\n");
++		return -EINVAL;
++	}
++
++	if (count)
++		buf[count - 1] = '\n';
++
++	return count;
 +}
 +
- static void tcpm_pd_data_request(struct tcpm_port *port,
- 				 const struct pd_message *msg)
- {
-@@ -1487,6 +1527,14 @@ static void tcpm_pd_data_request(struct tcpm_port *port,
- 			tcpm_set_state(port, BIST_RX, 0);
- 		}
- 		break;
-+	case PD_DATA_ALERT:
-+		tcpm_handle_alert(port, msg->payload, cnt);
-+		break;
-+	case PD_DATA_BATT_STATUS:
-+	case PD_DATA_GET_COUNTRY_INFO:
-+		/* Currently unsupported */
-+		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-+		break;
- 	default:
- 		tcpm_log(port, "Unhandled data message type %#x", type);
- 		break;
-@@ -1569,6 +1617,7 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
- 		break;
- 	case PD_CTRL_REJECT:
- 	case PD_CTRL_WAIT:
-+	case PD_CTRL_NOT_SUPP:
- 		switch (port->state) {
- 		case SNK_NEGOTIATE_CAPABILITIES:
- 			/* USB PD specification, Figure 8-43 */
-@@ -1688,12 +1737,75 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
- 			break;
- 		}
- 		break;
-+	case PD_CTRL_GET_SOURCE_CAP_EXT:
-+	case PD_CTRL_GET_STATUS:
-+	case PD_CTRL_FR_SWAP:
-+	case PD_CTRL_GET_PPS_STATUS:
-+	case PD_CTRL_GET_COUNTRY_CODES:
-+		/* Currently not supported */
-+		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-+		break;
- 	default:
- 		tcpm_log(port, "Unhandled ctrl message type %#x", type);
- 		break;
- 	}
- }
+ static ssize_t power_supply_show_property(struct device *dev,
+ 					  struct device_attribute *attr,
+ 					  char *buf) {
+@@ -115,6 +155,10 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 	else if (off == POWER_SUPPLY_PROP_TYPE)
+ 		return sprintf(buf, "%s\n",
+ 			       power_supply_type_text[value.intval]);
++	else if (off == POWER_SUPPLY_PROP_USB_TYPE)
++		return power_supply_show_usb_type(dev, psy->desc->usb_types,
++						  psy->desc->num_usb_types,
++						  &value, buf);
+ 	else if (off == POWER_SUPPLY_PROP_SCOPE)
+ 		return sprintf(buf, "%s\n",
+ 			       power_supply_scope_text[value.intval]);
+@@ -241,6 +285,7 @@ static ssize_t power_supply_store_property(struct device *dev,
+ 	POWER_SUPPLY_ATTR(time_to_full_now),
+ 	POWER_SUPPLY_ATTR(time_to_full_avg),
+ 	POWER_SUPPLY_ATTR(type),
++	POWER_SUPPLY_ATTR(usb_type),
+ 	POWER_SUPPLY_ATTR(scope),
+ 	POWER_SUPPLY_ATTR(precharge_current),
+ 	POWER_SUPPLY_ATTR(charge_term_current),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 79e90b3..4ca8876 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -145,6 +145,7 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+ 	POWER_SUPPLY_PROP_TYPE, /* use power_supply.type instead */
++	POWER_SUPPLY_PROP_USB_TYPE,
+ 	POWER_SUPPLY_PROP_SCOPE,
+ 	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
+ 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
+@@ -170,6 +171,19 @@ enum power_supply_type {
+ 	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
+ };
  
-+static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
-+				    const struct pd_message *msg)
-+{
-+	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
-+	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
++enum power_supply_usb_type {
++	POWER_SUPPLY_USB_TYPE_UNKNOWN = 0,
++	POWER_SUPPLY_USB_TYPE_SDP,		/* Standard Downstream Port */
++	POWER_SUPPLY_USB_TYPE_DCP,		/* Dedicated Charging Port */
++	POWER_SUPPLY_USB_TYPE_CDP,		/* Charging Downstream Port */
++	POWER_SUPPLY_USB_TYPE_ACA,		/* Accessory Charger Adapters */
++	POWER_SUPPLY_USB_TYPE_C,		/* Type C Port */
++	POWER_SUPPLY_USB_TYPE_PD,		/* Power Delivery Port */
++	POWER_SUPPLY_USB_TYPE_PD_DRP,		/* PD Dual Role Port */
++	POWER_SUPPLY_USB_TYPE_PD_PPS,		/* PD Programmable Power Supply */
++	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
++};
 +
-+	if (!(msg->ext_msg.header && PD_EXT_HDR_CHUNKED)) {
-+		tcpm_log(port, "Unchunked extended messages unsupported");
-+		return;
-+	}
-+
-+	if (data_size > (PD_EXT_MAX_CHUNK_DATA)) {
-+		tcpm_log(port, "Chunk handling not yet supported");
-+		return;
-+	}
-+
-+	switch (type) {
-+	case PD_EXT_STATUS:
-+		/*
-+		 * If PPS related events raised then get PPS status to clear
-+		 * (see USB PD 3.0 Spec, 6.5.2.4)
-+		 */
-+		if (msg->ext_msg.data[USB_PD_EXT_SDB_EVENT_FLAGS] &
-+		    USB_PD_EXT_SDB_PPS_EVENTS)
-+			tcpm_set_state(port, GET_PPS_STATUS_SEND, 0);
-+		else
-+			tcpm_set_state(port, ready_state(port), 0);
-+		break;
-+	case PD_EXT_PPS_STATUS:
-+		/*
-+		 * For now the PPS status message is used to clear events
-+		 * and nothing more.
-+		 */
-+		tcpm_set_state(port, ready_state(port), 0);
-+		break;
-+	case PD_EXT_SOURCE_CAP_EXT:
-+	case PD_EXT_GET_BATT_CAP:
-+	case PD_EXT_GET_BATT_STATUS:
-+	case PD_EXT_BATT_CAP:
-+	case PD_EXT_GET_MANUFACTURER_INFO:
-+	case PD_EXT_MANUFACTURER_INFO:
-+	case PD_EXT_SECURITY_REQUEST:
-+	case PD_EXT_SECURITY_RESPONSE:
-+	case PD_EXT_FW_UPDATE_REQUEST:
-+	case PD_EXT_FW_UPDATE_RESPONSE:
-+	case PD_EXT_COUNTRY_INFO:
-+	case PD_EXT_COUNTRY_CODES:
-+		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-+		break;
-+	default:
-+		tcpm_log(port, "Unhandle extended message type %#x", type);
-+		break;
-+	}
-+}
-+
- static void tcpm_pd_rx_handler(struct work_struct *work)
- {
- 	struct pd_rx_event *event = container_of(work,
-@@ -1734,7 +1846,9 @@ static void tcpm_pd_rx_handler(struct work_struct *work)
- 				 "Data role mismatch, initiating error recovery");
- 			tcpm_set_state(port, ERROR_RECOVERY, 0);
- 		} else {
--			if (cnt)
-+			if (msg->header & PD_HEADER_EXT_HDR)
-+				tcpm_pd_ext_msg_request(port, msg);
-+			else if (cnt)
- 				tcpm_pd_data_request(port, msg);
- 			else
- 				tcpm_pd_ctrl_request(port, msg);
-@@ -1795,6 +1909,9 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
- 		case PD_MSG_CTRL_REJECT:
- 			tcpm_pd_send_control(port, PD_CTRL_REJECT);
- 			break;
-+		case PD_MSG_CTRL_NOT_SUPP:
-+			tcpm_pd_send_control(port, PD_CTRL_NOT_SUPP);
-+			break;
- 		case PD_MSG_DATA_SINK_CAP:
- 			tcpm_pd_send_sink_caps(port);
- 			break;
-@@ -2481,14 +2598,6 @@ static inline enum tcpm_state hard_reset_state(struct tcpm_port *port)
- 	return SNK_UNATTACHED;
- }
+ enum power_supply_notifier_events {
+ 	PSY_EVENT_PROP_CHANGED,
+ };
+@@ -196,6 +210,8 @@ struct power_supply_config {
+ struct power_supply_desc {
+ 	const char *name;
+ 	enum power_supply_type type;
++	enum power_supply_usb_type *usb_types;
++	size_t num_usb_types;
+ 	enum power_supply_property *properties;
+ 	size_t num_properties;
  
--static inline enum tcpm_state ready_state(struct tcpm_port *port)
--{
--	if (port->pwr_role == TYPEC_SOURCE)
--		return SRC_READY;
--	else
--		return SNK_READY;
--}
--
- static inline enum tcpm_state unattached_state(struct tcpm_port *port)
- {
- 	if (port->port_type == TYPEC_PORT_DRP) {
-@@ -3191,6 +3300,22 @@ static void run_state_machine(struct tcpm_port *port)
- 		/* Always switch to unattached state */
- 		tcpm_set_state(port, unattached_state(port), 0);
- 		break;
-+	case GET_STATUS_SEND:
-+		tcpm_pd_send_control(port, PD_CTRL_GET_STATUS);
-+		tcpm_set_state(port, GET_STATUS_SEND_TIMEOUT,
-+			       PD_T_SENDER_RESPONSE);
-+		break;
-+	case GET_STATUS_SEND_TIMEOUT:
-+		tcpm_set_state(port, ready_state(port), 0);
-+		break;
-+	case GET_PPS_STATUS_SEND:
-+		tcpm_pd_send_control(port, PD_CTRL_GET_PPS_STATUS);
-+		tcpm_set_state(port, GET_PPS_STATUS_SEND_TIMEOUT,
-+			       PD_T_SENDER_RESPONSE);
-+		break;
-+	case GET_PPS_STATUS_SEND_TIMEOUT:
-+		tcpm_set_state(port, ready_state(port), 0);
-+		break;
- 	case ERROR_RECOVERY:
- 		tcpm_swap_complete(port, -EPROTO);
- 		tcpm_pps_complete(port, -EPROTO);
 -- 
 1.9.1
