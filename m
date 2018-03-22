@@ -1,73 +1,95 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH v7 5/8] cpuidle: Return nohz hint from cpuidle_select()
-Date: Wed, 21 Mar 2018 23:15:01 +0100
-Message-ID: <CAJZ5v0iThFDEjnwTbpAhwHY_vF_KDdAUyhDL1CdB4GJsG5eNRQ@mail.gmail.com>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <1635957.yuHkCe9oyz@aspire.rjw.lan>
- <CAJZ5v0j-CnEms-Wm0Op=386ceuG2GfAouVLXO48rbD_pUPJhMg@mail.gmail.com> <b05c00e7-b5d8-0bcb-0b38-a91324ec597a@tu-dresden.de>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH 1/2] ACPI / PM: Use register_reboot_notifier() instead of pm_power_off_prepare
+Date: Thu, 22 Mar 2018 10:23:02 +0800
+Message-ID: <CAMz4kuK+w0GUyXOw8_35sxyxNix8Os5JPgiyaGNTFcWuzvn_nw@mail.gmail.com>
+References: <7ff55372818461feed4b0550d5f88edce2cc7d41.1521631678.git.baolin.wang@linaro.org>
+ <20180321140422.GA10700@amd>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="000000000000c6f8890567f3852b"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b05c00e7-b5d8-0bcb-0b38-a91324ec597a@tu-dresden.de>
+In-Reply-To: <20180321140422.GA10700@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rjw@rjwysocki.net, Len Brown <lenb@kernel.org>, Andrey Smirnov <andrew.smirnov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-acpi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---000000000000c6f8890567f3852b
-Content-Type: text/plain; charset="UTF-8"
+Hi Pavel,
 
-On Wed, Mar 21, 2018 at 6:59 PM, Thomas Ilsche
-<thomas.ilsche@tu-dresden.de> wrote:
-> On 2018-03-21 15:36, Rafael J. Wysocki wrote:
+On 21 March 2018 at 22:04, Pavel Machek <pavel@ucw.cz> wrote:
+> On Wed 2018-03-21 19:30:16, Baolin Wang wrote:
+>> We can register one notifier through register_reboot_notifier() function to
+>> prepare to power off the system, then we can remove the 'pm_power_off_prepare'
+>> hook in following patch.
 >>
+>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>> ---
+>> Note: Please help to review carefully, since I have no platform to test
+>> this conversion.
 >>
->> So please disregard this one entirely and take the v7.2 replacement
->> instead of it:https://patchwork.kernel.org/patch/10299429/
+>> I saw there is another reboot notifier in this driver, I am not sure the
+>> orders between them. I can change the priority of notifier to keep their
+>> orders if it is necessary.
+>
+> I don't understand why this is good idea... and you should really test
+> it. I'm sure you can find PC or notebook somewhere...
+
+I want to test it, but I have no opensource board with x86
+architecture. But I will try to find one or ask other guys to help to
+test it. Thanks for your comments.
+
+>>  drivers/acpi/sleep.c |   22 ++++++++++++++++------
+>>  1 file changed, 16 insertions(+), 6 deletions(-)
 >>
->> The current versions (including the above) is in the git branch at
+>> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+>> index 46cde091..b3de894 100644
+>> --- a/drivers/acpi/sleep.c
+>> +++ b/drivers/acpi/sleep.c
+>> @@ -1229,14 +1229,24 @@ static void acpi_sleep_hibernate_setup(void)
+>>  static inline void acpi_sleep_hibernate_setup(void) {}
+>>  #endif /* !CONFIG_HIBERNATION */
 >>
->>   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
->>   idle-loop-v7.2
+>> -static void acpi_power_off_prepare(void)
+>> +static int acpi_reboot_notify(struct notifier_block *this, unsigned long code,
+>> +                           void *x)
+>>  {
+>> -     /* Prepare to power off the system */
+>> -     acpi_sleep_prepare(ACPI_STATE_S5);
+>> -     acpi_disable_all_gpes();
+>> -     acpi_os_wait_events_complete();
+>> +     if (code == SYSTEM_POWER_OFF) {
+>> +             /* Prepare to power off the system */
+>> +             acpi_sleep_prepare(ACPI_STATE_S5);
+>> +             acpi_disable_all_gpes();
+>> +             acpi_os_wait_events_complete();
+>> +     }
+>> +
+>> +     return NOTIFY_DONE;
+>>  }
+>>
+>> +static struct notifier_block acpi_reboot_notifier = {
+>> +     .notifier_call  = acpi_reboot_notify,
+>> +     .priority       = 0,
+>> +};
+>> +
+>>  static void acpi_power_off(void)
+>>  {
+>>       /* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+>> @@ -1261,7 +1271,7 @@ int __init acpi_sleep_init(void)
+>>
+>>       if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
+>>               sleep_states[ACPI_STATE_S5] = 1;
+>> -             pm_power_off_prepare = acpi_power_off_prepare;
+>> +             register_reboot_notifier(&acpi_reboot_notifier);
+>>               pm_power_off = acpi_power_off;
+>>       } else {
+>>               acpi_no_s5 = true;
 >
->
-> With v7.2 (tested on SKL-SP from git) I see similar behavior in idle
-> as with v5: several cores which just keep the sched tick enabled.
-> Worse yet, some go only in C1 (not even C1E!?) despite sleeping the
-> full sched tick.
-> The resulting power consumption is ~105 W instead of ~ 70 W.
->
-> https://wwwpub.zih.tu-dresden.de/~tilsche/powernightmares/v7_2_skl_sp_idle.png
->
-> I have briefly ran v7 and I believe it was also affected.
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Then it looks like menu_select() stubbornly thinks that the idle
-duration will be within the tick boundary on those cores.
 
-That may be because the bumping up of the correction factor in
-menu_reflect() is too conservative or it may be necessary to do
-something radical to measured_us in menu_update() in case of a tick
-wakeup combined with a large next_timer_us value.
 
-For starters, please see if the attached patch (on top of the
-idle-loop-v7.2 git branch) changes this behavior in any way.
-
---000000000000c6f8890567f3852b
-Content-Type: text/x-patch; charset="US-ASCII"; name="cpuidle-menu-menu_reflect-debug.patch"
-Content-Disposition: attachment;
-	filename="cpuidle-menu-menu_reflect-debug.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_jf1n9a0y0
-
-LS0tCiBkcml2ZXJzL2NwdWlkbGUvZ292ZXJub3JzL21lbnUuYyB8ICAgIDIgKy0KIDEgZmlsZSBj
-aGFuZ2VkLCAxIGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKQoKSW5kZXg6IGxpbnV4LXBtL2Ry
-aXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMvbWVudS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LXBtLm9y
-aWcvZHJpdmVycy9jcHVpZGxlL2dvdmVybm9ycy9tZW51LmMKKysrIGxpbnV4LXBtL2RyaXZlcnMv
-Y3B1aWRsZS9nb3Zlcm5vcnMvbWVudS5jCkBAIC00OTgsNyArNDk4LDcgQEAgc3RhdGljIHZvaWQg
-bWVudV9yZWZsZWN0KHN0cnVjdCBjcHVpZGxlXwogCQkgKiBjb3JyZWN0aW9uIGZhY3Rvci4gIFVz
-ZSAwLjc1ICogUkVTT0xVVElPTiAod2hpY2ggaXMgZWFzeQogCQkgKiBlbm91Z2ggdG8gZ2V0KSB0
-aGF0IHNob3VsZCB3b3JrIGZpbmUgb24gdGhlIGF2ZXJhZ2UuCiAJCSAqLwotCQluZXdfZmFjdG9y
-ICs9IFJFU09MVVRJT04gLyAyICsgUkVTT0xVVElPTiAvIDQ7CisJCW5ld19mYWN0b3IgKz0gUkVT
-T0xVVElPTjsKIAkJZGF0YS0+Y29ycmVjdGlvbl9mYWN0b3JbZGF0YS0+YnVja2V0XSA9IG5ld19m
-YWN0b3I7CiAJfSBlbHNlIHsKIAkJZGF0YS0+bmVlZHNfdXBkYXRlID0gMTsK
---000000000000c6f8890567f3852b--
+-- 
+Baolin.wang
+Best Regards
