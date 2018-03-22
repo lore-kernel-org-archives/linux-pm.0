@@ -1,49 +1,59 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFT][PATCH v7.3 5/8] cpuidle: Return nohz hint from cpuidle_select()
-Date: Thu, 22 Mar 2018 13:46:49 -0700
-Message-ID: <004001d3c21e$e867a3b0$b936eb10$@net>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <1635957.yuHkCe9oyz@aspire.rjw.lan> z4Bte42s61Konz4ByelYCQ
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI fixes for v4.16-rc7
+Date: Fri, 23 Mar 2018 00:05:20 +0100
+Message-ID: <CAJZ5v0gT_p44NGUhkw7irDk-Uo8HnEYQ35+wJaBUo3ziLSbPsQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: z4Bte42s61Konz4ByelYCQ
-Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.22 10:40 Rafael J. Wysocki wrote:
+Hi Linus,
 
-...[snip]...
+Please pull from the tag
 
->The difference between this and the original v7 (of patch [5/8]) is
-> what happens in menu_update().  This time next_timer_us is checked
-> properly and if that is above the tick boundary and a tick wakeup occurs,
-> the function simply sets mesured_us to a large constant and uses that to
-> update both the correction factor and data->intervals[] (the particular
-> value used in this patch was found through a bit of experimentation).
->
-> Let's see how this works for Thomas and Doug.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-4.16-rc4
 
-System idle test done for 74 minutes.
-After boot and after the system settles down for a couple of minutes,
-Processor package power is constant at 3.7 Watts. (great)
-Not worth a new graph to show a flat line.
+with top-most commit 594fdbaab739f82b3a712b88beb483ca1ca250ee
 
-V7.3 average package power = 3.68 Watts.
-V7 average package power = 3.68 Watts
-V7.2+ average package power = 4.06 Watts (+10%)
+ Merge branch 'acpi-wdat'
 
-> For easier testing there is a git branch containing this patch (and the
-> rest of the series) at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
->  idle-loop-v7.3
+on top of commit c698ca5278934c0ae32297a8725ced2e27585d7f
 
-Thanks. I used this git branch this time and for the first time.
-Much easier.
+ Linux 4.16-rc6
 
-... Doug
+to receive ACPI fixes for 4.16-rc7.
+
+These revert one recent commit that added incorrect battery quirks
+for some Asus systems and fix an off-by-one error in the watchdog
+driver based on the ACPI WDAT table.
+
+Specifics:
+
+ - Revert the recent change adding battery quirks for Asus GL502VSK
+   and UX305LA as these quirks turn out to be inadequate and possibly
+   premature (Daniel Drake).
+
+ - Fix an off-by-one error in the resource allocation part of the
+   watchdog driver based on the ACPI WDAT table (Takashi Iwai).
+
+Thanks!
+
+
+---------------
+
+Daniel Drake (1):
+      Revert "ACPI / battery: Add quirk for Asus GL502VSK and UX305LA"
+
+Takashi Iwai (1):
+      ACPI / watchdog: Fix off-by-one error at resource assignment
+
+---------------
+
+ drivers/acpi/acpi_watchdog.c |  4 ++--
+ drivers/acpi/battery.c       | 48 +++-----------------------------------------
+ drivers/watchdog/wdat_wdt.c  |  2 +-
+ 3 files changed, 6 insertions(+), 48 deletions(-)
