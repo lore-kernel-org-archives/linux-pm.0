@@ -1,177 +1,163 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/7] PM / Domain: Add support to parse domain's OPP table
-Date: Thu, 22 Mar 2018 10:31:01 +0100
-Message-ID: <CAPDyKFontDwvpS97xBskNE-FLMo3HPDLthCEkviZv8rKdA8t=g@mail.gmail.com>
-References: <cover.1513926033.git.viresh.kumar@linaro.org> <596dd0d16dcb31fd35d6a38835d1a3d56254b6ce.1513926033.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 5/7] PM / Domain: Implement of_dev_pm_genpd_get_performance_state()
+Date: Thu, 22 Mar 2018 10:32:02 +0100
+Message-ID: <CAPDyKFrviW6BkjL3-2=587xrdrNaR=VNf_2tOSzzqcRzMc+u=A@mail.gmail.com>
+References: <cover.1513926033.git.viresh.kumar@linaro.org> <755aabf2ad16d3a2131483407d7f580431571a00.1513926033.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <596dd0d16dcb31fd35d6a38835d1a3d56254b6ce.1513926033.git.viresh.kumar@linaro.org>
+In-Reply-To: <755aabf2ad16d3a2131483407d7f580431571a00.1513926033.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 22 December 2017 at 08:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Parse the OPP table for power domains if they have their
-> set_performance_state() callback set.
+> This implements of_dev_pm_genpd_get_performance_state() which can be
+> used from the device drivers or the OPP core to find the performance
+> state encoded in the "required-opp" property of a node. Different
 
-Nitpick:
-This is a bit too short, please elaborate a bit on the why and what
-this change does.
+Please add a two newlines after "node".
+
+> platforms may encode the performance state differently using the OPP
+> table (they may simply return value of opp-hz or opp-microvolt, or apply
+> some algorithm on top of those values) and so a new callback is
+> implemented to allow platform specific drivers to convert the power
+> domain OPP to a performance state.
+
+Could you perhaps clarify at what typical point(s) the drivers or the
+OPP core should call this new API? That is useful information in the
+changelog.
 
 >
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/base/power/domain.c | 78 +++++++++++++++++++++++++++++++++++----------
->  1 file changed, 62 insertions(+), 16 deletions(-)
+>  drivers/base/power/domain.c | 48 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   | 11 +++++++++++
+>  2 files changed, 59 insertions(+)
 >
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 013c1e206167..1ad4ad0b0de0 100644
+> index 1ad4ad0b0de0..ef43b75982fa 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -10,6 +10,7 @@
->  #include <linux/kernel.h>
->  #include <linux/io.h>
->  #include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/pm_domain.h>
->  #include <linux/pm_qos.h>
-> @@ -1900,15 +1901,33 @@ int of_genpd_add_provider_simple(struct device_node *np,
+> @@ -2415,6 +2415,54 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+>  }
+>  EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
 >
->         mutex_lock(&gpd_list_lock);
->
-> -       if (genpd_present(genpd)) {
-> -               ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
-> -               if (!ret) {
-> -                       genpd->provider = &np->fwnode;
-> -                       genpd->has_provider = true;
-> -                       genpd->dev.of_node = np;
-> +       if (!genpd_present(genpd))
-> +               goto unlock;
+> +/**
+> + * of_dev_pm_genpd_get_performance_state- Gets performance state of device's
+> + * power domain corresponding to a DT node's "required-opp" property.
+> + *
+> + * @dev: Device for which the performance-state needs to be found.
+> + * @np: DT node where the "required-opp" property is present. This can be
+> + *     the device node itself (if it doesn't have an OPP table) or a node
+> + *     within the OPP table of a device (if device has an OPP table).
+> + * @state: Pointer to return performance state.
+> + *
+> + * Returns performance state corresponding to the "required-opp" property of
+> + * a DT node. This calls platform specific genpd->get_performance_state()
+> + * callback to translate power domain OPP to performance state.
+> + *
+> + * Returns performance state on success and 0 on failure.
+> + */
+> +unsigned int of_dev_pm_genpd_get_performance_state(struct device *dev,
+> +                                                  struct device_node *np)
+
+First: To clarify the API, perhaps change to "...struct device_node *opp_node)"
+
+Second, the function name is confusing. To me, it sounds like an API
+that will get the dynamically requested performance state for the
+device and that isn't the case.
+
+So, I would rather name it something along the lines of,
+"of_genpd_opp_to_performance_state()". Can you please consider
+renaming it?
+
+> +{
+> +       struct generic_pm_domain *genpd;
+> +       struct dev_pm_opp *opp;
+> +       int state = 0;
 > +
-> +       genpd->dev.of_node = np;
+> +       genpd = dev_to_genpd(dev);
+> +       if (IS_ERR(genpd))
+> +               return 0;
 > +
-> +       /* Parse genpd OPP table */
-> +       if (genpd->set_performance_state) {
-> +               ret = dev_pm_opp_of_add_table(&genpd->dev);
-> +               if (ret) {
-> +                       dev_err(&genpd->dev, "Failed to add OPP table: %d\n",
-> +                               ret);
-> +                       goto unlock;
->                 }
->         }
->
-> +       ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
-> +       if (ret) {
-> +               if (genpd->set_performance_state)
-> +                       dev_pm_opp_of_remove_table(&genpd->dev);
+> +       if (unlikely(!genpd->set_performance_state))
+> +               return 0;
 > +
+> +       genpd_lock(genpd);
+> +
+> +       opp = of_dev_pm_opp_find_required_opp(&genpd->dev, np);
+> +       if (IS_ERR(opp)) {
+> +               state = PTR_ERR(opp);
 > +               goto unlock;
 > +       }
 > +
-> +       genpd->provider = &np->fwnode;
-> +       genpd->has_provider = true;
+> +       state = genpd->get_performance_state(genpd, opp);
+> +       dev_pm_opp_put(opp);
 > +
 > +unlock:
->         mutex_unlock(&gpd_list_lock);
+> +       genpd_unlock(genpd);
+> +
+> +       return state;
+> +}
+> +EXPORT_SYMBOL_GPL(of_dev_pm_genpd_get_performance_state);
+> +
+>  #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
 >
->         return ret;
-> @@ -1923,6 +1942,7 @@ EXPORT_SYMBOL_GPL(of_genpd_add_provider_simple);
->  int of_genpd_add_provider_onecell(struct device_node *np,
->                                   struct genpd_onecell_data *data)
+>
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index aaacaa35005d..4edbdaa54cec 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -47,6 +47,7 @@ struct genpd_power_state {
+>  };
+>
+>  struct genpd_lock_ops;
+> +struct dev_pm_opp;
+>
+>  struct generic_pm_domain {
+>         struct device dev;
+> @@ -68,6 +69,8 @@ struct generic_pm_domain {
+>         unsigned int performance_state; /* Aggregated max performance state */
+>         int (*power_off)(struct generic_pm_domain *domain);
+>         int (*power_on)(struct generic_pm_domain *domain);
+> +       unsigned int (*get_performance_state)(struct generic_pm_domain *genpd,
+> +                                             struct dev_pm_opp *opp);
+
+According to the comments above, please rename the callback to:
+"opp_to_performance_state", or whatever better name you can come up with. :-)
+
+>         int (*set_performance_state)(struct generic_pm_domain *genpd,
+>                                      unsigned int state);
+>         struct gpd_dev_ops dev_ops;
+> @@ -244,6 +247,8 @@ extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
+>  extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
+>  extern int of_genpd_parse_idle_states(struct device_node *dn,
+>                         struct genpd_power_state **states, int *n);
+> +extern unsigned int of_dev_pm_genpd_get_performance_state(struct device *dev,
+> +                               struct device_node *np);
+>
+>  int genpd_dev_pm_attach(struct device *dev);
+>  #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+> @@ -279,6 +284,12 @@ static inline int of_genpd_parse_idle_states(struct device_node *dn,
+>         return -ENODEV;
+>  }
+>
+> +static inline unsigned int of_dev_pm_genpd_get_performance_state(struct device *dev,
+> +                                       struct device_node *np)
+> +{
+> +       return -ENODEV;
+> +}
+> +
+>  static inline int genpd_dev_pm_attach(struct device *dev)
 >  {
-> +       struct generic_pm_domain *genpd;
->         unsigned int i;
->         int ret = -EINVAL;
->
-> @@ -1935,14 +1955,27 @@ int of_genpd_add_provider_onecell(struct device_node *np,
->                 data->xlate = genpd_xlate_onecell;
->
->         for (i = 0; i < data->num_domains; i++) {
-> -               if (!data->domains[i])
-> +               genpd = data->domains[i];
-> +
-> +               if (!genpd)
->                         continue;
-> -               if (!genpd_present(data->domains[i]))
-> +               if (!genpd_present(genpd))
->                         goto error;
->
-> -               data->domains[i]->provider = &np->fwnode;
-> -               data->domains[i]->has_provider = true;
-> -               data->domains[i]->dev.of_node = np;
-> +               genpd->dev.of_node = np;
-> +
-> +               /* Parse genpd OPP table */
-> +               if (genpd->set_performance_state) {
-> +                       ret = dev_pm_opp_of_add_table_indexed(&genpd->dev, i);
-> +                       if (ret) {
-> +                               dev_err(&genpd->dev, "Failed to add OPP table for index %d: %d\n",
-> +                                       i, ret);
-> +                               goto error;
-> +                       }
-> +               }
-> +
-> +               genpd->provider = &np->fwnode;
-> +               genpd->has_provider = true;
->         }
->
->         ret = genpd_add_provider(np, data->xlate, data);
-> @@ -1955,10 +1988,16 @@ int of_genpd_add_provider_onecell(struct device_node *np,
->
->  error:
->         while (i--) {
-> -               if (!data->domains[i])
-> +               genpd = data->domains[i];
-> +
-> +               if (!genpd)
->                         continue;
-> -               data->domains[i]->provider = NULL;
-> -               data->domains[i]->has_provider = false;
-> +
-> +               genpd->provider = NULL;
-> +               genpd->has_provider = false;
-> +
-> +               if (genpd->set_performance_state)
-> +                       dev_pm_opp_of_remove_table(&genpd->dev);
->         }
->
->         mutex_unlock(&gpd_list_lock);
-> @@ -1985,10 +2024,17 @@ void of_genpd_del_provider(struct device_node *np)
->                          * provider, set the 'has_provider' to false
->                          * so that the PM domain can be safely removed.
->                          */
-> -                       list_for_each_entry(gpd, &gpd_list, gpd_list_node)
-> -                               if (gpd->provider == &np->fwnode)
-> +                       list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-> +                               if (gpd->provider == &np->fwnode) {
->                                         gpd->has_provider = false;
->
-> +                                       if (!gpd->set_performance_state)
-> +                                               continue;
-
-Nitpick, perhaps change this to:
-
-if (gpd->set_performance_state)
-       dev_pm_opp_of_remove_table(&gpd->dev);
-
-> +
-> +                                       dev_pm_opp_of_remove_table(&gpd->dev);
-> +                               }
-> +                       }
-> +
->                         list_del(&cp->link);
->                         of_node_put(cp->node);
->                         kfree(cp);
+>         return -ENODEV;
 > --
 > 2.15.0.194.g9af6a3dea062
 >
 
-When fixed the nitpicks, feel free to add:
-
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Mostly minor things, so overall this looks good to me!
 
 Kind regards
 Uffe
