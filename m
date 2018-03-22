@@ -1,30 +1,64 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
-Date: Thu, 22 Mar 2018 20:11:27 +0100
-Message-ID: <20180322191127.GY4043@hirez.programming.kicks-ass.net>
-References: <4137867.C4jYrWdt8n@aspire.rjw.lan>
- <20180314120450.GT4043@hirez.programming.kicks-ass.net>
- <1521736338.6308.24.camel@surriel.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
+ task wake-up
+Date: Thu, 22 Mar 2018 13:10:22 -0700
+Message-ID: <CAJWu+opupHfDF8QoSC2AQnoFXnz3idt6pr-fq6nUp1C59XjtXA@mail.gmail.com>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-6-dietmar.eggemann@arm.com> <20180321153518.GC13951@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1521736338.6308.24.camel@surriel.com>
+In-Reply-To: <20180321153518.GC13951@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rik van Riel <riel@surriel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 22, 2018 at 12:32:18PM -0400, Rik van Riel wrote:
-> On Wed, 2018-03-14 at 13:04 +0100, Peter Zijlstra wrote:
-> 
-> > On x86 we don't have to use that time_check_counter thing,
-> > sched_clock()
-> > is really cheap, not sure if it makes sense on other platforms.
-> 
-> Are you sure? I saw a 5-10% increase in CPU use,
-> for a constant query rate to a memcache style
-> workload, with v3 of this patch.
+On Wed, Mar 21, 2018 at 8:35 AM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> [...]
+>
+>> @@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+>>                       break;
+>>               }
+>>
+>> +             /*
+>> +              * Energy-aware task placement is performed on the highest
+>> +              * non-overutilized domain spanning over cpu and prev_cpu.
+>> +              */
+>> +             if (want_energy && !sd_overutilized(tmp) &&
+>> +                 cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
+>> +                     energy_sd = tmp;
+>> +
+>
+> Not entirely sure, but I was trying to understand if we can avoid to
+> modify the definition of want_affine (in the previous chunk) and move
+> this block before the previous "if (want_affine..." (in mainline but
+> not in this chunk), which will became an else, e.g.
+>
+>         if (want_energy && !sd_overutilized(tmp) &&
+>                 // ...
+>         else if (want_energy && !sd_overutilized(tmp) &&
+>                 // ...
+>
+> Isn't that the same?
+>
+> Maybe there is a code path I'm missing... but otherwise it seems a
+> more self contained modification of select_task_rq_fair...
 
-Well, I expected it to be really cheap, but if you have numbers saying
-otherwise, clearly I'll need to adjust expectations ;-)
+Just replying to this here Patrick instead of the other thread.
+
+I think this is the right place for the block from Quentin quoted
+above because we want to search for the highest domain that is
+!overutilized and look among those for the candidates. So from that
+perspective, we can't move the block to the beginning and it seems to
+be in the right place. My main concern on the other thread was
+different, I was talking about the cases where sd_flag & tmp->flags
+don't match. In that case, sd = NULL would trump EAS and I was
+wondering if that's the right thing to do...
+
+thanks,
+
+- Joel
+
+[...]
