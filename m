@@ -1,42 +1,61 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v5 4/5] typec: tcpm: Represent source supply through
- power_supply
-Date: Thu, 22 Mar 2018 10:40:01 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E28A3@SW-EX-MBX01.diasemi.com>
-References: <cover.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
- <510c0897961f234daca295b273bf4e5047498c55.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
- <b2d508dc-c344-6447-1c50-69f268fdbb83@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Michel Pollet <michel.pollet@bp.renesas.com>
+Subject: [PATCH v2 0/8] arm: Base support for Renesas RZN1D-DB Board
+Date: Thu, 22 Mar 2018 11:44:37 +0000
+Message-ID: <1521719091-25157-1-git-send-email-michel.pollet@bp.renesas.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b2d508dc-c344-6447-1c50-69f268fdbb83@roeck-us.net>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: linux-renesas-soc@vger.kernel.org, Simon Horman <horms@verge.net.au>
+Cc: phil.edworthy@renesas.com, Michel Pollet <michel.pollet@bp.renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjIgTWFyY2ggMjAxOCAwNDowOSwgR3VlbnRlciBSb2VjayB3cm90ZToNCg0KPiA+ICtzdGF0
-aWMgaW50IHRjcG1fcHN5X3NldF9wcm9wKHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSwNCj4gPiAr
-CQkJICAgICBlbnVtIHBvd2VyX3N1cHBseV9wcm9wZXJ0eSBwc3AsDQo+ID4gKwkJCSAgICAgY29u
-c3QgdW5pb24gcG93ZXJfc3VwcGx5X3Byb3B2YWwgKnZhbCkNCj4gPiArew0KPiA+ICsJc3RydWN0
-IHRjcG1fcG9ydCAqcG9ydCA9IHBvd2VyX3N1cHBseV9nZXRfZHJ2ZGF0YShwc3kpOw0KPiA+ICsJ
-aW50IHJldCA9IDA7DQo+ID4gKw0KPiA+ICsJc3dpdGNoIChwc3ApIHsNCj4gPiArCWNhc2UgUE9X
-RVJfU1VQUExZX1BST1BfT05MSU5FOg0KPiA+ICsJCXJldCA9IHRjcG1fcHN5X3NldF9vbmxpbmUo
-cG9ydCwgdmFsKTsNCj4gPiArCQlicmVhazsNCj4gPiArCWNhc2UgUE9XRVJfU1VQUExZX1BST1Bf
-Vk9MVEFHRV9OT1c6DQo+ID4gKwkJaWYgKCh2YWwtPmludHZhbCA8IChwb3J0LT5wcHNfZGF0YS5t
-aW5fdm9sdCAqIDEwMDApKSB8fA0KPiA+ICsJCSAgICAodmFsLT5pbnR2YWwgPiAocG9ydC0+cHBz
-X2RhdGEubWF4X3ZvbHQgKiAxMDAwKSkpDQo+ID4gKwkJCXJldCA9IC1FSU5WQUw7DQo+ID4gKwkJ
-ZWxzZQ0KPiA+ICsJCQlyZXQgPSB0Y3BtX3Bwc19zZXRfb3V0X3ZvbHQocG9ydCwgKHZhbC0+aW50
-dmFsIC8gMTAwMCkpOw0KPiA+ICsJCWJyZWFrOw0KPiA+ICsJY2FzZSBQT1dFUl9TVVBQTFlfUFJP
-UF9DVVJSRU5UX05PVzoNCj4gPiArCQlpZiAodmFsLT5pbnR2YWwgPiAocG9ydC0+cHBzX2RhdGEu
-bWF4X2N1cnIgKiAxMDAwKSkNCj4gPiArCQkJcmV0ID0gLUVJTlZBTDsNCj4gPiArCQllbHNlDQo+
-ID4gKwkJCXJldCA9IHRjcG1fcHBzX3NldF9vcF9jdXJyKHBvcnQsICh2YWwtPmludHZhbCAvIDEw
-MDApKTsNCj4gDQo+IEkgYW0gcmVhbGx5IG5vdCBhIGZyaWVuZCBvZiBleGNlc3NpdmUgKCApLg0K
-DQpZZXMsIEkgZ290IHRoYXQuIDopIEkgYW0gb2YgdGhlIG9waW5pb24gdGhhdCB0aGV5IHNob3Vs
-ZCBiZSB1c2VkIHRvIGVuZm9yY2UNCnByZWNlZGVuY2UuIFRoaXMgdG8gbWUgaXMgZ29vZCBjb2Rp
-bmcgcHJhY3RpY2UgYW5kIG1ha2VzIGl0IHVuYW1iaWd1b3VzIGZvciB0aGUNCnJlYWRlci4gVGhh
-dCdzIHdoeSBJIHVzZSB0aGVtIGFzIGFib3ZlLiBEbyB5b3UgdGhpbmsgdGhlIGFib3ZlIHVzZXMg
-bWFrZSBpdA0KaGFyZGVyIHRvIHVuZGVyc3RhbmQgb3IgbW9yZSBkaWZmaWN1bHQgdG8gbWFpbnRh
-aW4/DQo=
+This series adds the plain basic support for booting a bare
+kernel on the RZ/N1D-DB Board. It's been trimmed to the strict
+minimum as a 'base', further patches that will add the
+rest of the support, pinctrl, clock architecture and quite
+a few others.
+
+Thanks for the comments on the previous version!
+
+v2: 
+ + Fixes for suggestions by Simon Horman
+ + Fixes for suggestions by Rob Herring
+ + Fixes for suggestions by Geert Uytterhoeven
+ + Removed the mach file
+ + Added a MFD base for the sysctrl block
+ + Added a regmap based sub driver for the reboot handler
+ + Renamed the files to match shmobile conventions
+ + Adapted the compatible= strings to reflect 'family' vs 'part'
+   distinction.
+ + Removed the sysctrl.h file entirelly. 
+ + Fixed every warnings from the DTC compiler on W=12 mode.
+ + Split the device-tree patches from the code.
+ 
+Michel Pollet (8):
+  DT: mfd: renesas,rzn1-sysctrl: document RZ/N1 sysctrl node
+  DT: reset: renesas,rzn1-reboot: document RZ/N1 reboot driver
+  DT: arm: renesas,r9a06g032: add the RZ/N1 bindings
+  reset: Renesas RZ/N1 reboot driver
+  arm: rzn1: Add the RZ/N1 arch to the shmobile Kconfig
+  DT: arm: Add Renesas RZ/N1 SoC base device tree file
+  DT: arm: Add Renesas RZN1D-DB Board base file
+  DT: arm: Add the RZN1D-DB Board to Renesas Makefile target
+
+ Documentation/devicetree/bindings/arm/shmobile.txt |   5 +-
+ .../bindings/mfd/renesas,rzn1-sysctrl.txt          |  22 +++++
+ .../bindings/power/renesas,rzn1-reboot.txt         |  22 +++++
+ arch/arm/boot/dts/Makefile                         |   1 +
+ arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts        |  26 +++++
+ arch/arm/boot/dts/r9a06g0xx.dtsi                   |  96 ++++++++++++++++++
+ arch/arm/mach-shmobile/Kconfig                     |   5 +
+ drivers/power/reset/Kconfig                        |   7 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/rzn1-reboot.c                  | 109 +++++++++++++++++++++
+ 10 files changed, 293 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
+ create mode 100644 arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts
+ create mode 100644 arch/arm/boot/dts/r9a06g0xx.dtsi
+ create mode 100644 drivers/power/reset/rzn1-reboot.c
+
+-- 
+2.7.4
