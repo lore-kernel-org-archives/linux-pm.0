@@ -1,85 +1,103 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFT][PATCH v7 5/8] cpuidle: Return nohz hint from cpuidle_select()
-Date: Thu, 22 Mar 2018 08:41:54 -0700
-Message-ID: <000401d3c1f4$5043adb0$f0cb0910$@net>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <1635957.yuHkCe9oyz@aspire.rjw.lan> <CAJZ5v0j-CnEms-Wm0Op=386ceuG2GfAouVLXO48rbD_pUPJhMg@mail.gmail.com> <b05c00e7-b5d8-0bcb-0b38-a91324ec597a@tu-dresden.de> ym0ceyYVT1Konym0eegfln ysl4eqMKwFfdwytebe4RNZ
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v6 0/6] typec: tcpm: Add sink side support for PPS
+Date: Thu, 22 Mar 2018 15:52:01 +0000
+Message-ID: <cover.1521732966.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: ysl4eqMKwFfdwytebe4RNZ
-Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>
-Cc: 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.21 23:25 Doug Smythies wrote:
-> On 2018.03.21 15:15 Rafael J. Wysocki wrote:
->> On Wed, Mar 21, 2018 at 6:59 PM, Thomas Ilsche wrote:
->>> On 2018-03-21 15:36, Rafael J. Wysocki wrote:
->>>>
->>>> So please disregard this one entirely and take the v7.2 replacement
->>>> instead of it:https://patchwork.kernel.org/patch/10299429/
->>>>
->>>> The current versions (including the above) is in the git branch at
->>>>
->>>>   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
->>>>   idle-loop-v7.2
->>>
->>> With v7.2 (tested on SKL-SP from git) I see similar behavior in idle
->>> as with v5: several cores which just keep the sched tick enabled.
->>> Worse yet, some go only in C1 (not even C1E!?) despite sleeping the
->>> full sched tick.
->>> The resulting power consumption is ~105 W instead of ~ 70 W.
->>>
->>> https://wwwpub.zih.tu-dresden.de/~tilsche/powernightmares/v7_2_skl_sp_idle.png
->>>
->>> I have briefly ran v7 and I believe it was also affected.
+This patch set adds sink side support for the PPS feature introduced in the
+USB PD 3.0 specification.
 
-I am not seeing any issues at all with V7.
+The source PPS supply is represented using the Power Supply framework to provide
+access and control APIs for dealing with it's operating voltage and current,
+and switching between a standard PDO and PPS APDO operation. During standard PDO
+operation the voltage and current is read-only, but for APDO PPS these are
+writable as well to allow for control.
 
->>
->> Then it looks like menu_select() stubbornly thinks that the idle
->> duration will be within the tick boundary on those cores.
->> 
->> That may be because the bumping up of the correction factor in
->> menu_reflect() is too conservative or it may be necessary to do
->> something radical to measured_us in menu_update() in case of a tick
->> wakeup combined with a large next_timer_us value.
->>
->> For starters, please see if the attached patch (on top of the
->> idle-loop-v7.2 git branch) changes this behavior in any way.
->
-> O.K. I am seeing some weirdness.
-> On my system with both V7.2 and V7.2 plus this patch, I observe
-> A spike in Idle State 1 residency every 34+ minutes. And slightly
-> higher average idle power than before.
-> (I might not have done V7 idle tests long enough).
+It should be noted that the keepalive for PPS is not handled within TCPM. The
+expectation is that the external user will be required to ensure re-requests
+occur regularly to ensure PPS remains and the source does not hard reset.
 
-I re-did the idle test on V7, and for longer.
-It is great.
-See line added to the idle graph for V7.2+:
+Changes in v6:
+ - Remove unnecessary use of 'data' variable and associated kzalloc/kfree call
+   for extended message handling.
+ - Add patch for error checking psy_desc struct in psy register code.
+ - Add error checking of usb_type property in psy register code.
+ - Cosmetic () and initialisation changes as requested by Guenter.
+ - Removed Acked-by and Reviewed-by on patch 04 as there have been changes to
+   error handling with regards to usb_type, so didn't feel appropriate to keep
+   them.
 
-http://fast.smythies.com/rjw_v72p_v7_idle.png
+Changes in v5:
+ - Rebase on branch with 'Revert "typec: tcpm: Only request matching pdos"' and
+   header changes already included.
+ - Update power_supply registration to make power_supply names unique per port,
+   to avoid errors creating duplicate psy instances. New name uses port
+   dev name as a suffix.
+ - Renamed 'connected_type' psy property to 'usb_type', as requested by
+   maintainer.
+ - Added initial attempt at generic ABI documentation for common psy class
+   properties for Battery and USB type supplies.
+ - Small update to PPS APDO selection code to limit maximum current requested
+   based on sink maximum allowed current. Have left Heikki's 'Acked-by' tag as
+   it's a minor change, but can remove if that's not deemed appropriate.
 
->
-> It can be seen in the frequency sweep I did earlier today, with V7.2:
->
-> http://fast.smythies.com/rjw_freq_sweep_72_combined.png
->
-> Despite the note on the graph that says it might be real, I don't think
-> it is (I forgot to delete the note).
->
-> With V7.2+ sometimes the event occurs at 17 minute intervals.
-> Here is a idle graph (for reference: we have seen idle package power
-> pretty steady at ~3.7 watts before).
+Changes in v4:
+ - For PD 3.0 definitions patch, make it benign with regards to existing TCPM
+   code so build isn't broken if this one patch is applied, as suggested by
+   kbuild robot. Update for dynamic revision is moved to be part of sink side
+   PPS support patch.
+ - Use PTR_ERR_OR_ZERO macro to simplify return of devm_tcpm_psy_register()
+   function, as suggested by kbuild robot.
+ - Make devm_tcpm_psy_register() static as not used outside this file.
 
-Now shown on the new graph. Link above.
+Changes in v3:
+ - Drop 'RFC' from patch series titles
+ - Rename PPS related defines to be PPS specific rather than generic APDO titles
+ - Update source caps logging to only print PPS APDOs, and for others report as
+   undefined.
+ - Add ABI documentation for tcpm-source-psy sysfs properties
+ - Rebase PDO selection on top of 'typec: tcpm: Only request matching pdos'
+   patch.
+ - Update capabilities validation introduced in
+   'typec: tcpm: Validate source and sink caps' to support PPS APDOs.
+ - Dropped power_supply 'type' property update for PPS addition
+ - Added 'connected_type' property to power_supply framework, to support
+   supplies which can report multiple connected types (e.g. USB), as discussed
+   with Heikki.
 
->
-> http://fast.smythies.com/rjw_v72p_idle.png
+Changes in v2:
+ - Use USB_PD and usb_pd prefixes for macros and inline functions in headers.
+ - Negotiate spec revision of PD headers during initial contract agreement.
+ - New headers now use SPDX tags for referencing correct license.
 
-... Doug
- 
+NOTE: Code changes based on usb-next (027bd6cafd9a1e3a109b5e5682c85ac84e804a8d)
+
+Adam Thomson (6):
+  typec: tcpm: Add core support for sink side PPS
+  Documentation: power: Initial effort to document power_supply ABI
+  power: supply: Add error checking of psy desc during registration
+  power: supply: Add 'usb_type' property and supporting code
+  typec: tcpm: Represent source supply through power_supply
+  typec: tcpm: Add support for sink PPS related messages
+
+ Documentation/ABI/testing/sysfs-class-power | 455 ++++++++++++++
+ MAINTAINERS                                 |   1 +
+ drivers/power/supply/power_supply_core.c    |  11 +-
+ drivers/power/supply/power_supply_sysfs.c   |  45 ++
+ drivers/usb/typec/Kconfig                   |   1 +
+ drivers/usb/typec/fusb302/Kconfig           |   2 +-
+ drivers/usb/typec/fusb302/fusb302.c         |  63 +-
+ drivers/usb/typec/tcpm.c                    | 907 +++++++++++++++++++++++++++-
+ include/linux/power_supply.h                |  16 +
+ include/linux/usb/pd.h                      |   4 +-
+ include/linux/usb/tcpm.h                    |   2 +-
+ 11 files changed, 1418 insertions(+), 89 deletions(-)
+
+-- 
+1.9.1
