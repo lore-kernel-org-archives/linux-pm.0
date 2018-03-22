@@ -1,99 +1,172 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 6/7] PM / OPP: Get performance state using genpd helper
-Date: Thu, 22 Mar 2018 10:32:13 +0100
-Message-ID: <CAPDyKFqaP2VHjvBHAsaEOhMi5atRHey_-2ipBGEd+R+8vE9EFw@mail.gmail.com>
-References: <cover.1513926033.git.viresh.kumar@linaro.org> <e9bef639c041e506f1a9fd0c7c84896eee847a16.1513926033.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 7/7] PM / OPP: Remove dev_pm_opp_{un}register_get_pstate_helper()
+Date: Thu, 22 Mar 2018 10:32:39 +0100
+Message-ID: <CAPDyKFoT6Bn538eJokSeL+4-ZfkG=v29fD9e32YUEL24r1Pa1w@mail.gmail.com>
+References: <cover.1513926033.git.viresh.kumar@linaro.org> <46a62463d9a0a04648672d5cd3a9803ad99bd36b.1513926033.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e9bef639c041e506f1a9fd0c7c84896eee847a16.1513926033.git.viresh.kumar@linaro.org>
+In-Reply-To: <46a62463d9a0a04648672d5cd3a9803ad99bd36b.1513926033.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 22 December 2017 at 08:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> The genpd core provides an API now to retrieve the performance state
-> from DT, use that instead of the ->get_pstate() callback.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> These helpers aren't used anymore, remove them.
+
+I guess they weren't used even before? However, as we now have the new
+OF based APIs, we can use them instead.
+
+Anyway, feel free to add:
 
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
 
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/opp/core.c |  3 ---
->  drivers/opp/of.c   | 20 +++++++++++++++++++-
->  2 files changed, 19 insertions(+), 4 deletions(-)
+>  drivers/opp/core.c     | 75 --------------------------------------------------
+>  drivers/opp/opp.h      |  2 --
+>  include/linux/pm_opp.h | 10 -------
+>  3 files changed, 87 deletions(-)
 >
 > diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index bfcad8983fd1..6194219fb95f 100644
+> index 6194219fb95f..9e3c40437991 100644
 > --- a/drivers/opp/core.c
 > +++ b/drivers/opp/core.c
-> @@ -1034,9 +1034,6 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
->                 return ret;
->         }
+> @@ -1545,81 +1545,6 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
 >
-> -       if (opp_table->get_pstate)
-> -               new_opp->pstate = opp_table->get_pstate(dev, new_opp->rate);
+> -/**
+> - * dev_pm_opp_register_get_pstate_helper() - Register get_pstate() helper.
+> - * @dev: Device for which the helper is getting registered.
+> - * @get_pstate: Helper.
+> - *
+> - * TODO: Remove this callback after the same information is available via Device
+> - * Tree.
+> - *
+> - * This allows a platform to initialize the performance states of individual
+> - * OPPs for its devices, until we get similar information directly from DT.
+> - *
+> - * This must be called before the OPPs are initialized for the device.
+> - */
+> -struct opp_table *dev_pm_opp_register_get_pstate_helper(struct device *dev,
+> -               int (*get_pstate)(struct device *dev, unsigned long rate))
+> -{
+> -       struct opp_table *opp_table;
+> -       int ret;
 > -
->         list_add(&new_opp->node, head);
->         mutex_unlock(&opp_table->lock);
+> -       if (!get_pstate)
+> -               return ERR_PTR(-EINVAL);
+> -
+> -       opp_table = dev_pm_opp_get_opp_table(dev);
+> -       if (!opp_table)
+> -               return ERR_PTR(-ENOMEM);
+> -
+> -       /* This should be called before OPPs are initialized */
+> -       if (WARN_ON(!list_empty(&opp_table->opp_list))) {
+> -               ret = -EBUSY;
+> -               goto err;
+> -       }
+> -
+> -       /* Already have genpd_performance_state set */
+> -       if (WARN_ON(opp_table->genpd_performance_state)) {
+> -               ret = -EBUSY;
+> -               goto err;
+> -       }
+> -
+> -       opp_table->genpd_performance_state = true;
+> -       opp_table->get_pstate = get_pstate;
+> -
+> -       return opp_table;
+> -
+> -err:
+> -       dev_pm_opp_put_opp_table(opp_table);
+> -
+> -       return ERR_PTR(ret);
+> -}
+> -EXPORT_SYMBOL_GPL(dev_pm_opp_register_get_pstate_helper);
+> -
+> -/**
+> - * dev_pm_opp_unregister_get_pstate_helper() - Releases resources blocked for
+> - *                                        get_pstate() helper
+> - * @opp_table: OPP table returned from dev_pm_opp_register_get_pstate_helper().
+> - *
+> - * Release resources blocked for platform specific get_pstate() helper.
+> - */
+> -void dev_pm_opp_unregister_get_pstate_helper(struct opp_table *opp_table)
+> -{
+> -       if (!opp_table->genpd_performance_state) {
+> -               pr_err("%s: Doesn't have performance states set\n",
+> -                      __func__);
+> -               return;
+> -       }
+> -
+> -       /* Make sure there are no concurrent readers while updating opp_table */
+> -       WARN_ON(!list_empty(&opp_table->opp_list));
+> -
+> -       opp_table->genpd_performance_state = false;
+> -       opp_table->get_pstate = NULL;
+> -
+> -       dev_pm_opp_put_opp_table(opp_table);
+> -}
+> -EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_get_pstate_helper);
+> -
+>  /**
+>   * dev_pm_opp_add()  - Add an OPP table from a table definitions
+>   * @dev:       device for which we do this operation
+> diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+> index b181032e6938..ae99295b5382 100644
+> --- a/drivers/opp/opp.h
+> +++ b/drivers/opp/opp.h
+> @@ -140,7 +140,6 @@ enum opp_table_access {
+>   * @genpd_performance_state: Device's power domain support performance state.
+>   * @set_opp: Platform specific set_opp callback
+>   * @set_opp_data: Data to be passed to set_opp callback
+> - * @get_pstate: Platform specific get_pstate callback
+>   * @dentry:    debugfs dentry pointer of the real device directory (not links).
+>   * @dentry_name: Name of the real dentry.
+>   *
+> @@ -178,7 +177,6 @@ struct opp_table {
 >
-> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> index 2d1bb348ae73..21265af55117 100644
-> --- a/drivers/opp/of.c
-> +++ b/drivers/opp/of.c
-> @@ -17,6 +17,7 @@
->  #include <linux/errno.h>
->  #include <linux/device.h>
->  #include <linux/of_device.h>
-> +#include <linux/pm_domain.h>
->  #include <linux/slab.h>
->  #include <linux/export.h>
+>         int (*set_opp)(struct dev_pm_set_opp_data *data);
+>         struct dev_pm_set_opp_data *set_opp_data;
+> -       int (*get_pstate)(struct device *dev, unsigned long rate);
 >
-> @@ -321,6 +322,8 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
->         if (!of_property_read_u32(np, "clock-latency-ns", &val))
->                 new_opp->clock_latency_ns = val;
+>  #ifdef CONFIG_DEBUG_FS
+>         struct dentry *dentry;
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index 70686f434c13..528a7d9cf2ef 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -125,8 +125,6 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
+>  void dev_pm_opp_put_clkname(struct opp_table *opp_table);
+>  struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
+>  void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
+> -struct opp_table *dev_pm_opp_register_get_pstate_helper(struct device *dev, int (*get_pstate)(struct device *dev, unsigned long rate));
+> -void dev_pm_opp_unregister_get_pstate_helper(struct opp_table *opp_table);
+>  int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+>  int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+>  int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+> @@ -247,14 +245,6 @@ static inline struct opp_table *dev_pm_opp_register_set_opp_helper(struct device
 >
-> +       new_opp->pstate = of_dev_pm_genpd_get_performance_state(dev, np);
-> +
->         ret = opp_parse_supplies(new_opp, dev, opp_table);
->         if (ret)
->                 goto free_opp;
-> @@ -371,7 +374,8 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+>  static inline void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table) {}
+>
+> -static inline struct opp_table *dev_pm_opp_register_get_pstate_helper(struct device *dev,
+> -               int (*get_pstate)(struct device *dev, unsigned long rate))
+> -{
+> -       return ERR_PTR(-ENOTSUPP);
+> -}
+> -
+> -static inline void dev_pm_opp_unregister_get_pstate_helper(struct opp_table *opp_table) {}
+> -
+>  static inline struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name)
 >  {
->         struct device_node *np;
->         struct opp_table *opp_table;
-> -       int ret = 0, count = 0;
-> +       int ret = 0, count = 0, pstate_count = 0;
-> +       struct dev_pm_opp *opp;
->
->         opp_table = _managed_opp(opp_np);
->         if (opp_table) {
-> @@ -405,6 +409,20 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
->                 goto put_opp_table;
->         }
->
-> +       list_for_each_entry(opp, &opp_table->opp_list, node)
-> +               pstate_count += !!opp->pstate;
-> +
-> +       /* Either all or none of the nodes shall have performance state set */
-> +       if (pstate_count && pstate_count != count) {
-> +               dev_err(dev, "Not all nodes have performance state set (%d: %d)\n",
-> +                       count, pstate_count);
-> +               ret = -ENOENT;
-> +               goto put_opp_table;
-> +       }
-> +
-> +       if (pstate_count)
-> +               opp_table->genpd_performance_state = true;
-> +
->         opp_table->np = opp_np;
->         if (of_property_read_bool(opp_np, "opp-shared"))
->                 opp_table->shared_opp = OPP_TABLE_ACCESS_SHARED;
+>         return ERR_PTR(-ENOTSUPP);
 > --
 > 2.15.0.194.g9af6a3dea062
 >
