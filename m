@@ -1,84 +1,63 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Thu, 22 Mar 2018 05:05:29 +0000
-Message-ID: <20180322050527.GA1559@queper01-VirtualBox>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-5-dietmar.eggemann@arm.com>
- <20180321123921.GB13951@e110439-lin>
- <20180321142630.GB2168@queper01-VirtualBox>
- <20180321155458.GD13951@e110439-lin>
+From: "Yang, Shunyong" <shunyong.yang@hxt-semitech.com>
+Subject: Re: [RFC PATCH] cpufreq: Calling init() of cpufreq_driver  when
+ policy inactive cpu online
+Date: Thu, 22 Mar 2018 05:35:20 +0000
+Message-ID: <1521696919.2792.19.camel@hxt-semitech.com>
+References: <1521627703-7728-1-git-send-email-shunyong.yang@hxt-semitech.com>
+         <20180322033013.3mqhf2fnbaqfdgay@vireshk-mac-ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180321155458.GD13951@e110439-lin>
+In-Reply-To: <20180322033013.3mqhf2fnbaqfdgay@vireshk-mac-ubuntu>
+Content-Language: en-US
+Content-ID: <1E4FF37E2230D24F8E932C2C01AA3AC1@hxt-semitech.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zheng, Joey" <yu.zheng@hxt-semitech.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Wang, Dongsheng" <dongsheng.wang@hxt-semitech.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 21 Mar 2018 at 15:54:58 (+0000), Patrick Bellasi wrote:
-> On 21-Mar 14:26, Quentin Perret wrote:
-> > On Wednesday 21 Mar 2018 at 12:39:21 (+0000), Patrick Bellasi wrote:
-> > > On 20-Mar 09:43, Dietmar Eggemann wrote:
-> > > > From: Quentin Perret <quentin.perret@arm.com>
-
-[...]
-
-> > So actually, what I can do is add something like
-> > 
-> >     fdom_tot_util += util;
-> > 
-> > to this loop and compute
-> > 
-> >     energy = cs->power * fdom_tot_util / cs->cap;
-> > 
-> > only once, instead of having the second loop to compute the energy. We don't
-> > have to scale the util for each and every CPU since they share the same
-> > cap state. That would save some divisions and ensure the consistency
-> > between the selection of the cap state and the associated energy
-> > computation. What do you think ?
-> 
-> Right, would say that under the hypothesis the we are in the same
-> frequency domain (and we are because of fdom->span), that's basically
-> doing:
-> 
->    sum_i(P_x * U_i / C_x) => P_x / C_x * sum_i(U_i)
-> 
-> Where (C_x, P_x) are the EM reported capacity and power for the
-> expected frequency domain OPP.
-> 
-
-Yes that's exactly that. I'll do the change in v2.
-
-> > Or maybe you were talking about consistency between several consecutive
-> > calls to compute_energy() ?
-> 
-> Nope, the above +1
-> 
-
-[...]
-
-> > I agree that it would be nice to document somewhere that
-> > compute_energy() is unsafe to call without sched_energy_present.
-> > I can simply add a proper doc comment to this function actually.
-> > Would that work ?
-> 
-> Right, it's just that _maybe_ an explicit BUG_ON is improving the
-> documentation by making more explicit the error on testing ?
-> 
-> Thus, I would probably add both... but Peter will tell you for sure ;)
-> 
-
-Right, but I'm still not sure if the BUG_ON is the right thing to do. I
-mean, if we really want to make this check, then we could also try
-to recover into a working state ... If we enter compute_energy() without
-having an energy model, and if we detect it on time, we could bail out
-and disable sched_energy_present ASAP with an error message for example.
-That would let us know if EAS is broken without making the system
-unusable.
-
-Anyways, if there is a general agreement, or if the maintainers think
-that the BUG_ON is the right thing to do here, I'm happy to change that
-in future versions :)
+SGksIEt1bWFyDQoNCk9uIFRodSwgMjAxOC0wMy0yMiBhdCAxMTozMCArMDgwMCwgVmlyZXNoIEt1
+bWFyIHdyb3RlOg0KPiBPbiAyMS0wMy0xOCwgMTg6MjEsIFNodW55b25nIFlhbmcgd3JvdGU6DQo+
+ID4gDQo+ID4gV2hlbiBtdWx0aXBsZSBjcHVzIGFyZSByZWxhdGVkIGluIG9uZSBjcHVmcmVxIHBv
+bGljeSwgdGhlIGZpcnN0DQo+ID4gb25saW5lIGNwdQ0KPiA+IHdpbGwgYmUgY2hvc2VuIGJ5IGRl
+ZmF1bHQgdG8gaGFuZGxlIGNwdWZyZXEgb3BlcmF0aW9ucy4gSW4gYSBDUFBDDQo+ID4gY2FzZSwN
+Cj4gPiBsZXQncyB0YWtlIHR3byByZWxhdGVkIGNwdXMsIGNwdTAgYW5kIGNwdTEgYXMgYW4gZXhh
+bXBsZS4NCj4gPiANCj4gPiBBZnRlciBzeXN0ZW0gc3RhcnQsIGNwdTAgaXMgdGhlIGZpcnN0IG9u
+bGluZSBjcHUuIENwdWZyZXEgcG9saWN5DQo+ID4gd2lsbCBiZQ0KPiA+IGFsbG9jYXRlZCBhbmQg
+aW5pdCgpIGluIGNwdWZyZXFfZHJpdmVyIHdpbGwgYmUgY2FsbGVkIHRvIGluaXRpYWxpemUNCj4g
+PiBjcHUwJ3MNCj4gPiBwZXJmIGNhcGFiaWxpdGllcyBhbmQgcG9saWN5IHBhcmFtZXRlcnMuDQo+
+IE5vdCBleGFjdGx5LiBUaGUgaW5pdCgpIGlzIGNhbGxlZCB0byBpbml0aWFsaXplIHN0dWZmIGZv
+ciBhbGwgdGhlDQo+IENQVXMgdGhhdA0KPiBzaG91bGQgYmUgcGFydCBvZiBwb2xpY3ktPnJlbGF0
+ZWRfY3B1cyBhZnRlciBpbml0KCkgaGFzIHJldHVybmVkLiBTbw0KPiB5b3Ugc2hvdWxkDQo+IGlu
+aXRpYWxpemUgcGVyZiBjYXBhYmlsaXRpZXMgZm9yIGFsbCBvZiB0aGVtLg0KDQpJbiBwYWdlIDUz
+MyBvZiBBQ1BJIDYuMiBzcGVjaWZpY2FpdG9uLCBpdCBzYXlzLA0KDQoiU3RhcnRpbmcgd2l0aCBB
+Q1BJIFNwZWNpZmljYXRpb24gNi4yLCBhbGwgX0NQQyByZWdpc3RlcnMgY2FuIGJlIGluDQpQQ0Ms
+IFN5c3RlbSBNZW1vcnksIFN5c3RlbSBJTywgb3IgRnVuY3Rpb25hbCBGaXhlZCBIYXJkd2FyZSBh
+ZGRyZXNzDQpzcGFjZXMuIE9TUE0gc3VwcG9ydCBmb3IgdGhpcyBtb3JlIGZsZXhpYmxlIHJlZ2lz
+dGVyIHNwYWNlIHNjaGVtZSBpcw0KaW5kaWNhdGVkIGJ5IHRoZSDigJxGbGV4aWJsZSBBZGRyZXNz
+IFNwYWNlIGZvciBDUFBDIFJlZ2lzdGVyc+KAnSBfT1NDIGJpdC4iDQoNCkFzIF9DUEMgcmVnaXN0
+ZXIgbWF5YmUgaW4gU3lzdGVtIE1lbW9yeSwgU3lzdGVtIElPLCBvciBGdW5jdGlvbmFsIEZpeGVk
+DQpIYXJkd2FyZSBhZGRyZXNzIHNwYWNlcy4gSSBhbSBub3Qgc3VyZSBhbGwgYXJjaGl0ZWN0dXJl
+IGltcGxlbWVudGluZw0KQ1BQQyBjYW4gcmV0dXJuIGNvcnJlY3QgdmFsdWUgYmVmb3JlIENQVSBj
+b21lIGludG8gb25saW5lLiBUaGF0J3MgdGhlDQpyZWFzb24gSSBhZGQgdGhlIGV4dHJhIGluaXQo
+KSBjYWxsLg0KDQpCVFcsIEkndmUgdGVzdGVkIG9uIFFERjI0MDAgcGxhdGZvcm0gYW5kIGl0IHJl
+dHVybiBjb3JyZWN0IHZhbHVlIHdoZW4NCmNwdTEgaXMgb2ZmbGluZS4NCg0KRG8geW91IGtub3cg
+d2hldGhlciBmaXJtd2FyZSBjYW4gZ3VhcmFudGVlIGNvcnJlY3QgcGVyZiBjYXBhYmlsaXRpZXMN
+CnJlZ2FyZGxlc3Mgb2YgQ1BVIG9ubGluZS9vZmZsaW5lPw0KDQo+IA0KPiA+IA0KPiA+IFdoZW4g
+Y3B1MSBpcyBvbmxpbmUsIGN1cnJlbnQgY29kZQ0KPiA+IHdpbGwgbm90IGNhbGwgaW5pdCgpIGlu
+IGNwdWZyZXFfZHJpdmVyIGFzIHBvbGljeSBoYXMgYmVlbiBhbGxvY2F0ZWQNCj4gPiBhbmQNCj4g
+PiBhY3RpdmF0ZWQgYnkgY3B1MC4gU28sIGNwdTEncyBwZXJmIGNhcGFiaWxpdGllcyBhcmUgbm90
+IGluaXRpYWxpemVkDQo+ID4gKGFsbCAwcykuDQo+ID4gDQo+ID4gV2hlbiBjcHUwIGlzIG9mZmxp
+bmUsIHBvbGljeS0+Y3B1IHdpbGwgYmUgc2hpZnRlZCB0byBjcHUxLiBBcw0KPiA+IGNwdTEncyBw
+ZXJmDQo+ID4gY2FwYWJpbGl0aWVzIGFyZSAwcywgc3BlZWQgY2hhbmdlIHdpbGwgbm90IHRha2Ug
+ZWZmZWN0IHdoZW4gc2V0dGluZw0KPiA+IHNwZWVkLg0KPiA+IA0KPiA+IFRoaXMgcGF0Y2ggYWRk
+cyBjYWxsaW5nIGluaXQoKSBvZiBjcHVmcmVxX2RyaXZlciB3aGVuIHBvbGljeQ0KPiA+IGluYWN0
+aXZlIGNwdQ0KPiA+IGNvbWVzIHRvIG9ubGluZS4NCj4gTm8gQ1BVIHNob3VsZCBiZSBpbmFjdGl2
+ZSBoZXJlLCBpdHMganVzdCB0aGF0IHlvdSBoYXZlbid0IGluaXRpYWxpemVkDQo+IGl0DQo+IHBy
+b3Blcmx5Lg0KPiANCg0KSSBtZWFuIHRoZSBwb2xpY3kgaXMgaGFuZGxlZChhY3RpdmUpIGJ5IHRo
+ZSBmaXJzdCBvbmxpbmUgY3B1J3MgKGNwdTApDQpwZXJmIGNhcGFiaWxpdGllcy4gTm90IGhhbmRs
+ZWQgKGluYWN0aXZlKSBieSB0aGUgb25lJ3MganVzdCBjb21lIGludG8NCm9ubGluZSAoY3B1MSku
+IFNvcnJ5IGZvciB0aGlzLg0KDQpUaGFua3MuDQpTaHVueW9uZy4NCg0KDQo+IEFuZCB3ZSBhcmUg
+bm90IGdvaW5nIHRvIGNhbGwgaW5pdCgpIG11bHRpcGxlIHRpbWVzIGZvciBhIGdyb3VwIG9mDQo+
+IENQVXMuIFRoYXQncw0KPiBub3Qgd2hhdCB0aGUgcHVycG9zZSBvZiBpbml0KCkgaXMuDQo+IA==
