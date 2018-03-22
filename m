@@ -1,29 +1,78 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/7] PM / Domain: Add support to parse domain's OPP table
-Date: Thu, 22 Mar 2018 11:09:53 +0100
-Message-ID: <CAPDyKFokfr+RJzL5zNL-mvEwDBF5+ReJRmo98pQV+oGkaDSM8g@mail.gmail.com>
-References: <cover.1513926033.git.viresh.kumar@linaro.org> <596dd0d16dcb31fd35d6a38835d1a3d56254b6ce.1513926033.git.viresh.kumar@linaro.org>
- <CAPDyKFontDwvpS97xBskNE-FLMo3HPDLthCEkviZv8rKdA8t=g@mail.gmail.com> <20180322100024.xy2ipqzgluj6fhs4@vireshk-mac-ubuntu>
+Subject: Re: [PATCH 3/7] PM / Domain: Add struct device to genpd
+Date: Thu, 22 Mar 2018 11:18:58 +0100
+Message-ID: <CAPDyKFqZeOvHy1oY0JnUau17vFTuRBzCjKp+zzpf=tWzAi3cEw@mail.gmail.com>
+References: <cover.1513926033.git.viresh.kumar@linaro.org> <a7867661e9bc6f5b1571f60398266ef678ccc1c0.1513926033.git.viresh.kumar@linaro.org>
+ <CAPDyKFprVsOd7_nKCXDCxDErh-K+vfaWojqDo0arzt0ZJKCPjQ@mail.gmail.com> <20180322095903.h7hgm3xylq3esjyf@vireshk-mac-ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180322100024.xy2ipqzgluj6fhs4@vireshk-mac-ubuntu>
+In-Reply-To: <20180322095903.h7hgm3xylq3esjyf@vireshk-mac-ubuntu>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 March 2018 at 11:00, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22-03-18, 10:31, Ulf Hansson wrote:
->> Nitpick, perhaps change this to:
+On 22 March 2018 at 10:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 22-03-18, 10:30, Ulf Hansson wrote:
+>> On 22 December 2017 at 08:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > The power-domain core would be using the OPP core going forward and the
+>> > OPP core has the basic requirement of a device structure for its working.
 >>
->> if (gpd->set_performance_state)
->>        dev_pm_opp_of_remove_table(&gpd->dev);
+>> According to the OPP core also seems to require the ->dev.of_node to
+>> be set. Actually, it seems like that part belongs in patch4 instead,
+>> while starting to make use of the opp OF APIs. Could you please move
+>> it?
 >
-> I probably did that to save the 80 column thing. So crossing 80 columns in this
-> case is fine ?
+> You meaning setting of the of_node to the next patch? I can do that if that;s
+> what you want.
 
-If that is needed, then okay!
+Yes, please.
+
+>
+>> > +static struct bus_type genpd_bus_type = {
+>> > +       .name =         "genpd",
+>> > +};
+>>
+>> This seems silly. Can't we just avoid having a bus type altogether,
+>> thus no need to call bus_register() as well?
+>
+> I thought we need a bus where we want to add the device, haven't tried with that
+> pointer being empty. Will try that and let you know.
+
+Great!
+
+>
+>> > +
+>> >  /**
+>> >   * pm_genpd_init - Initialize a generic I/O PM domain object.
+>> >   * @genpd: PM domain object to initialize.
+>> > @@ -1687,6 +1691,18 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>> >                         return ret;
+>> >         }
+>> >
+>> > +       genpd->dev.bus = &genpd_bus_type;
+>> > +       device_initialize(&genpd->dev);
+>> > +       dev_set_name(&genpd->dev, "%s", genpd->name);
+>> > +
+>> > +       ret = device_add(&genpd->dev);
+>>
+>> What's the point of adding the device? Can we skip this step, as I
+>> guess the opp core is only using the device as cookie rather actual
+>> using it? No?
+>
+> We also use it for the OPP debugfs stuff, so that would be required I believe.
+
+Right, however, isn't that only using the dev_name(dev), which you
+don't need to add the device to make use of.
+
+Or maybe I missing something around this...
+
+> We also use it for playing with clk/regulator stuff as well, though we may not
+> use it in genpd case for now.
+>
+> --
+> viresh
 
 Kind regards
 Uffe
