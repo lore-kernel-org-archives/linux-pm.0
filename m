@@ -1,64 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
-Date: Thu, 22 Mar 2018 18:24:28 +0100
-Message-ID: <2958394.SolTkngEXc@aspire.rjw.lan>
-References: <3111105.SmgpqUHPkp@aspire.rjw.lan> <4731938.EeADOapqQb@aspire.rjw.lan> <1521739156.6308.30.camel@surriel.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: linux-next: Tree for Mar 22 (thermal)
+Date: Thu, 22 Mar 2018 10:36:38 -0700
+Message-ID: <5449db25-c11e-68a1-532c-044689794aad@infradead.org>
+References: <20180322193847.63181403@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521739156.6308.30.camel@surriel.com>
+In-Reply-To: <20180322193847.63181403@canb.auug.org.au>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rik van Riel <riel@surriel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Linux-Next Mailing List <linux-next@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, March 22, 2018 6:19:16 PM CET Rik van Riel wrote:
-> On Thu, 2018-03-22 at 18:09 +0100, Rafael J. Wysocki wrote:
-> > On Thursday, March 22, 2018 5:32:23 PM CET Rik van Riel wrote:
-> > > On Wed, 2018-03-14 at 15:08 +0100, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > 
-> > > > If poll_idle() is allowed to spin until need_resched() returns
-> > > > 'true',
-> > > > it may actually spin for a much longer time than expected by the
-> > > > idle
-> > > > governor, since set_tsk_need_resched() is not always called by
-> > > > the
-> > > > timer interrupt handler.  If that happens, the CPU may spend much
-> > > > more time than anticipated in the "polling" state.
-> > > > 
-> > > > To prevent that from happening, limit the time of the spinning
-> > > > loop
-> > > > in poll_idle().
-> > > > 
-> > > > Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > So ... about bisecting that other patch series...
-> > > 
-> > > It turned out I had this patch, which looks so
-> > > obviously correct, as patch #1 in my series.
-> > > 
-> > > It also turned out that this patch is responsible
-> > > for the entire 5-10% increase in CPU use for the
-> > > memcache style workload.
-> > > 
-> > > I wonder if keeping an idle HT thread much busier
-> > > than before slows down its sibling, or something
-> > > like that.
-> > 
-> > Uhm, sorry about this.
+On 03/22/2018 01:38 AM, Stephen Rothwell wrote:
+> Hi all,
 > 
-> No worries, this is why we do patch reviews and
-> tests in the first place.
+> Changes since 20180321:
 > 
-> > Does it improve if you do something like the below on top of it?
+> The vfs tree still had its build failure for which I reverted a commit.
 > 
-> That was my next thing to try, after testing just
-> the idle nohz series by itself :)
-> 
-> I'll push both into the test systems, and will
-> get back to you when I have answers.
 
-Thanks!
+on i386:
+
+ERROR: "nsec_to_clock_t" [drivers/thermal/thermal_sys.ko] undefined!
+
+so in drivers/thermal/thermal_sysfs.c, please add:
+
+#include <linux/jiffies.h>
+
+
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+
+thanks,
+-- 
+~Randy
