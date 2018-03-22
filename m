@@ -1,72 +1,85 @@
-From: Rik van Riel <riel@surriel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
-Date: Thu, 22 Mar 2018 12:32:23 -0400
-Message-ID: <1521736343.6308.25.camel@surriel.com>
-References: <3111105.SmgpqUHPkp@aspire.rjw.lan>
+Date: Thu, 22 Mar 2018 18:09:23 +0100
+Message-ID: <4731938.EeADOapqQb@aspire.rjw.lan>
+References: <3111105.SmgpqUHPkp@aspire.rjw.lan> <1521736343.6308.25.camel@surriel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-/wo3ltzQDl4MtaXa8Xl6"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3111105.SmgpqUHPkp@aspire.rjw.lan>
+In-Reply-To: <1521736343.6308.25.camel@surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Rik van Riel <riel@surriel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday, March 22, 2018 5:32:23 PM CET Rik van Riel wrote:
+> On Wed, 2018-03-14 at 15:08 +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > If poll_idle() is allowed to spin until need_resched() returns
+> > 'true',
+> > it may actually spin for a much longer time than expected by the idle
+> > governor, since set_tsk_need_resched() is not always called by the
+> > timer interrupt handler.  If that happens, the CPU may spend much
+> > more time than anticipated in the "polling" state.
+> > 
+> > To prevent that from happening, limit the time of the spinning loop
+> > in poll_idle().
+> > 
+> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> So ... about bisecting that other patch series...
+> 
+> It turned out I had this patch, which looks so
+> obviously correct, as patch #1 in my series.
+> 
+> It also turned out that this patch is responsible
+> for the entire 5-10% increase in CPU use for the
+> memcache style workload.
+> 
+> I wonder if keeping an idle HT thread much busier
+> than before slows down its sibling, or something
+> like that.
 
---=-/wo3ltzQDl4MtaXa8Xl6
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Uhm, sorry about this.
 
-On Wed, 2018-03-14 at 15:08 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> If poll_idle() is allowed to spin until need_resched() returns
-> 'true',
-> it may actually spin for a much longer time than expected by the idle
-> governor, since set_tsk_need_resched() is not always called by the
-> timer interrupt handler.  If that happens, the CPU may spend much
-> more time than anticipated in the "polling" state.
->=20
-> To prevent that from happening, limit the time of the spinning loop
-> in poll_idle().
->=20
-> Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Does it improve if you do something like the below on top of it?
 
-So ... about bisecting that other patch series...
+> Let me go test the nohz idle series by itself,
+> without this patch.
 
-It turned out I had this patch, which looks so
-obviously correct, as patch #1 in my series.
+OK
 
-It also turned out that this patch is responsible
-for the entire 5-10% increase in CPU use for the
-memcache style workload.
+---
+ drivers/cpuidle/poll_state.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-I wonder if keeping an idle HT thread much busier
-than before slows down its sibling, or something
-like that.
-
-Let me go test the nohz idle series by itself,
-without this patch.
-
---=20
-All Rights Reversed.
---=-/wo3ltzQDl4MtaXa8Xl6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEKR73pCCtJ5Xj3yADznnekoTE3oMFAlqz2pcACgkQznnekoTE
-3oMwawf+Kocem8kRVixqGOqKiJcIzk0d4kbZee1OPDXcUvq9RYOuSniFToDVPjiC
-wweCzV+xxOeznm3VIblxvm69yN1jYav+M2CwuAb5piKd0FAiGOS//iDNfYZM+gyl
-bLFj4L9IgjNvyPL+HylS7nn7I4CNbBHbFNpMAp9eJGlH199Rg7+yM4uZKvybxf/i
-K/CQLr15BwgChmC1a+5FW427vTTNweqv/PinxxgRj14fZPEHrSxsEL83mjZBOycP
-LiY+Kq38bCKUwELX28XjWD1gTW+hvWOexIEwuewZFTTi+7MrYpN78IC8cDODNdmB
-QIGip6zWn1rTXBmCGsdBoimW1etaqg==
-=tSxZ
------END PGP SIGNATURE-----
-
---=-/wo3ltzQDl4MtaXa8Xl6--
+Index: linux-pm/drivers/cpuidle/poll_state.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/poll_state.c
++++ linux-pm/drivers/cpuidle/poll_state.c
+@@ -10,6 +10,7 @@
+ #include <linux/sched/idle.h>
+ 
+ #define POLL_IDLE_TIME_LIMIT	(TICK_NSEC / 16)
++#define POLL_IDLE_COUNT		1000
+ 
+ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+ 			       struct cpuidle_driver *drv, int index)
+@@ -18,9 +19,14 @@ static int __cpuidle poll_idle(struct cp
+ 
+ 	local_irq_enable();
+ 	if (!current_set_polling_and_test()) {
++		unsigned int loop_count = 0;
++
+ 		while (!need_resched()) {
+ 			cpu_relax();
++			if (loop_count++ < POLL_IDLE_COUNT)
++				continue;
+ 
++			loop_count = 0;
+ 			if (local_clock() - time_start > POLL_IDLE_TIME_LIMIT)
+ 				break;
+ 		}
