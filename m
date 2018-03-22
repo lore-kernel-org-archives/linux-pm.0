@@ -1,78 +1,41 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/7] PM / Domain: Add struct device to genpd
-Date: Thu, 22 Mar 2018 11:18:58 +0100
-Message-ID: <CAPDyKFqZeOvHy1oY0JnUau17vFTuRBzCjKp+zzpf=tWzAi3cEw@mail.gmail.com>
-References: <cover.1513926033.git.viresh.kumar@linaro.org> <a7867661e9bc6f5b1571f60398266ef678ccc1c0.1513926033.git.viresh.kumar@linaro.org>
- <CAPDyKFprVsOd7_nKCXDCxDErh-K+vfaWojqDo0arzt0ZJKCPjQ@mail.gmail.com> <20180322095903.h7hgm3xylq3esjyf@vireshk-mac-ubuntu>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v5 3/5] power: supply: Add 'usb_type' property and
+ supporting code
+Date: Thu, 22 Mar 2018 10:27:37 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E2892@SW-EX-MBX01.diasemi.com>
+References: <cover.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
+ <3774272cd49908e88b56a1c4bbf3b363b851ebdd.1521552959.git.Adam.Thomson.Opensource@diasemi.com>
+ <225f9a2f-48cc-e6e4-1240-28507f7b3ab7@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180322095903.h7hgm3xylq3esjyf@vireshk-mac-ubuntu>
+In-Reply-To: <225f9a2f-48cc-e6e4-1240-28507f7b3ab7@roeck-us.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 March 2018 at 10:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22-03-18, 10:30, Ulf Hansson wrote:
->> On 22 December 2017 at 08:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > The power-domain core would be using the OPP core going forward and the
->> > OPP core has the basic requirement of a device structure for its working.
->>
->> According to the OPP core also seems to require the ->dev.of_node to
->> be set. Actually, it seems like that part belongs in patch4 instead,
->> while starting to make use of the opp OF APIs. Could you please move
->> it?
->
-> You meaning setting of the of_node to the next patch? I can do that if that;s
-> what you want.
-
-Yes, please.
-
->
->> > +static struct bus_type genpd_bus_type = {
->> > +       .name =         "genpd",
->> > +};
->>
->> This seems silly. Can't we just avoid having a bus type altogether,
->> thus no need to call bus_register() as well?
->
-> I thought we need a bus where we want to add the device, haven't tried with that
-> pointer being empty. Will try that and let you know.
-
-Great!
-
->
->> > +
->> >  /**
->> >   * pm_genpd_init - Initialize a generic I/O PM domain object.
->> >   * @genpd: PM domain object to initialize.
->> > @@ -1687,6 +1691,18 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->> >                         return ret;
->> >         }
->> >
->> > +       genpd->dev.bus = &genpd_bus_type;
->> > +       device_initialize(&genpd->dev);
->> > +       dev_set_name(&genpd->dev, "%s", genpd->name);
->> > +
->> > +       ret = device_add(&genpd->dev);
->>
->> What's the point of adding the device? Can we skip this step, as I
->> guess the opp core is only using the device as cookie rather actual
->> using it? No?
->
-> We also use it for the OPP debugfs stuff, so that would be required I believe.
-
-Right, however, isn't that only using the dev_name(dev), which you
-don't need to add the device to make use of.
-
-Or maybe I missing something around this...
-
-> We also use it for playing with clk/regulator stuff as well, though we may not
-> use it in genpd case for now.
->
-> --
-> viresh
-
-Kind regards
-Uffe
+T24gMjIgTWFyY2ggMjAxOCAwNDowOCwgR3VlbnRlciBSb2VjayB3cm90ZToNCg0KPiA+ICtzdGF0
+aWMgc3NpemVfdCBwb3dlcl9zdXBwbHlfc2hvd191c2JfdHlwZShzdHJ1Y3QgZGV2aWNlICpkZXYs
+DQo+ID4gKwkJCQkJICBlbnVtIHBvd2VyX3N1cHBseV91c2JfdHlwZQ0KPiAqdXNiX3R5cGVzLA0K
+PiA+ICsJCQkJCSAgc3NpemVfdCBudW1fdXNiX3R5cGVzLA0KPiA+ICsJCQkJCSAgdW5pb24gcG93
+ZXJfc3VwcGx5X3Byb3B2YWwgKnZhbHVlLA0KPiA+ICsJCQkJCSAgY2hhciAqYnVmKQ0KPiA+ICt7
+DQo+ID4gKwllbnVtIHBvd2VyX3N1cHBseV91c2JfdHlwZSB1c2JfdHlwZTsNCj4gPiArCXNzaXpl
+X3QgY291bnQgPSAwOw0KPiA+ICsJYm9vbCBtYXRjaCA9IGZhbHNlOw0KPiA+ICsJaW50IGk7DQo+
+ID4gKw0KPiA+ICsJaWYgKCghdXNiX3R5cGVzKSB8fCAobnVtX3VzYl90eXBlcyA8PSAwKSkgew0K
+Pg0KPiBVbm5lY2Vzc2FyeSAoICkNCg0KRmluZSwgY2FuIHJlbW92ZS4NCg0KPg0KPiA+ICsJCWRl
+dl93YXJuKGRldiwgImRyaXZlciBoYXMgbm8gdmFsaWQgY29ubmVjdGVkIHR5cGVzXG4iKTsNCj4N
+Cj4gQXJlIHRob3NlIHdhcm5pbmdzIHVzZWZ1bCBvciBkbyB0aGV5IGp1c3QgY2xvZyB0aGUgbG9n
+ID8gRWl0aGVyIGNhc2UsIGlmIHRoYXQgaGFwcGVucywNCj4gd291bGRuJ3QgaXQgYmUgYmV0dGVy
+IHRvIGRldGVjdCB0aGUgc2l0dWF0aW9uIGR1cmluZyByZWdpc3RyYXRpb24gYW5kIGFib3J0ID8N
+Cg0KVGhpcyBpcyBhZGRlZCBhcyBhbiBvcHRpb25hbCBwcm9wZXJ0eSBmb3Igc3VwcGx5IGRyaXZl
+cnMuIFRoaXMgd2lsbCBvbmx5IHNob3cNCnVwIGlmIGEgc3VwcGx5IGRyaXZlciBhZGRzIHRoZSBV
+U0JfVFlQRSBwcm9wZXJ0eSB0byBpdHMgbGlzdCwgYW5kIHRoZW4gc29tZW9uZQ0KYXR0ZW1wdHMg
+dG8gYWNjZXNzIGl0LiBBY3R1YWxseSB0aGVyZSdzIG5vIGN1cnJlbnQgY2hlY2tpbmcgZm9yIHRo
+ZSBwc3lfZGVzYw0KaW5mb3JtYXRpb24gcHJvdmlkZWQgdG8gdGhlIHJlZ2lzdGVyIGZ1bmN0aW9u
+LCBzbyBmb3IgZXhhbXBsZSBpZiBpdCdzIE5VTEwgdGhlbg0KdGhlIGtlcm5lbCB3aWxsIGR1bXAg
+d2hlbiBpdCB0cmllcyB0byBkZXJlZmVyZW5jZS4gSSdsbCB0YWtlIGEgbG9vayBhdCB0aGlzIGFu
+ZA0Kc2VlIGlmIEkgY2FuIGFkZCBzb21ldGhpbmcsIGluY2x1ZGluZyBjaGVja3Mgb24gdGhlIHVz
+Yl90eXBlIHByb3BlcnR5Lg0K
