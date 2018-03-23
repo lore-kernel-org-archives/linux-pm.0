@@ -1,53 +1,140 @@
-From: George Cherian <george.cherian@cavium.com>
-Subject: [PATCH] cpufreq: cppc: Use transition_delay_us depending on the transition_latency
-Date: Fri, 23 Mar 2018 03:30:31 -0700
-Message-ID: <1521801031-158659-1-git-send-email-george.cherian@cavium.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 3.18 05/47] cpufreq/sh: Replace racy task affinity logic
+Date: Fri, 23 Mar 2018 10:54:56 +0100
+Message-ID: <20180323094248.347689835@linuxfoundation.org>
+References: <20180323094248.117679641@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180323094248.117679641@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, George Cherian <george.cherian@cavium.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sebastian Siewior <bigeasy@linutronix.de>, linux-pm@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Tejun Heo <tj@kernel.org>, "David S. Miller" <davem@davemloft.net>, Len Brown <lenb@kernel.org>, Sasha Levin <alexander.levin@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
 
-With commit e948bc8fbee0 ("cpufreq: Cap the default transition delay
-value to 10 ms")  the cpufreq was not honouring the delay passed via
-ACPI (PCCT). Due to which on ARM based platforms using CPPC the cpufreq
-governor tries to change the frequency of CPU faster than expeted.
+3.18-stable review patch.  If anyone has any objections, please let me know.
 
-This leads to continuous error messages like the following.
-" ACPI CPPC: PCC check channel failed. Status=0 "
+------------------
 
-Earlier (without above commit) the default transition delay was
-taken form the value passed from PCCT. Use the same value provided by PCCT
-to set the transition_delay_us.
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Fixes: e948bc8fbee0 (cpufreq: Cap the default transition delay value to 10 ms)
-Signed-off-by: George Cherian <george.cherian@cavium.com>
+
+[ Upstream commit 205dcc1ecbc566cbc20acf246e68de3b080b3ecf ]
+
+The target() callback must run on the affected cpu. This is achieved by
+temporarily setting the affinity of the calling thread to the requested CPU
+and reset it to the original affinity afterwards.
+
+That's racy vs. concurrent affinity settings for that thread resulting in
+code executing on the wrong CPU.
+
+Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
+already protected against CPU hotplug.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sebastian Siewior <bigeasy@linutronix.de>
+Cc: linux-pm@vger.kernel.org
+Cc: Lai Jiangshan <jiangshanlai@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Len Brown <lenb@kernel.org>
+Link: http://lkml.kernel.org/r/20170412201042.958216363@linutronix.de
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/cpufreq/cppc_cpufreq.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpufreq/sh-cpufreq.c |   45 +++++++++++++++++++++++++------------------
+ 1 file changed, 27 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index a1c3025..dcb1cb9 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -20,6 +20,7 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/dmi.h>
-+#include <linux/time.h>
- #include <linux/vmalloc.h>
+--- a/drivers/cpufreq/sh-cpufreq.c
++++ b/drivers/cpufreq/sh-cpufreq.c
+@@ -30,54 +30,63 @@
  
- #include <asm/unaligned.h>
-@@ -162,6 +163,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.max_freq = cppc_dmi_max_khz;
+ static DEFINE_PER_CPU(struct clk, sh_cpuclk);
  
- 	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
-+	policy->transition_delay_us = cppc_get_transition_latency(cpu_num) /
-+		NSEC_PER_USEC;
- 	policy->shared_type = cpu->shared_type;
++struct cpufreq_target {
++	struct cpufreq_policy	*policy;
++	unsigned int		freq;
++};
++
+ static unsigned int sh_cpufreq_get(unsigned int cpu)
+ {
+ 	return (clk_get_rate(&per_cpu(sh_cpuclk, cpu)) + 500) / 1000;
+ }
  
- 	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
--- 
-1.8.3.1
+-/*
+- * Here we notify other drivers of the proposed change and the final change.
+- */
+-static int sh_cpufreq_target(struct cpufreq_policy *policy,
+-			     unsigned int target_freq,
+-			     unsigned int relation)
++static long __sh_cpufreq_target(void *arg)
+ {
+-	unsigned int cpu = policy->cpu;
++	struct cpufreq_target *target = arg;
++	struct cpufreq_policy *policy = target->policy;
++	int cpu = policy->cpu;
+ 	struct clk *cpuclk = &per_cpu(sh_cpuclk, cpu);
+-	cpumask_t cpus_allowed;
+ 	struct cpufreq_freqs freqs;
+ 	struct device *dev;
+ 	long freq;
+ 
+-	cpus_allowed = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+-
+-	BUG_ON(smp_processor_id() != cpu);
++	if (smp_processor_id() != cpu)
++		return -ENODEV;
+ 
+ 	dev = get_cpu_device(cpu);
+ 
+ 	/* Convert target_freq from kHz to Hz */
+-	freq = clk_round_rate(cpuclk, target_freq * 1000);
++	freq = clk_round_rate(cpuclk, target->freq * 1000);
+ 
+ 	if (freq < (policy->min * 1000) || freq > (policy->max * 1000))
+ 		return -EINVAL;
+ 
+-	dev_dbg(dev, "requested frequency %u Hz\n", target_freq * 1000);
++	dev_dbg(dev, "requested frequency %u Hz\n", target->freq * 1000);
+ 
+ 	freqs.old	= sh_cpufreq_get(cpu);
+ 	freqs.new	= (freq + 500) / 1000;
+ 	freqs.flags	= 0;
+ 
+-	cpufreq_freq_transition_begin(policy, &freqs);
+-	set_cpus_allowed_ptr(current, &cpus_allowed);
++	cpufreq_freq_transition_begin(target->policy, &freqs);
+ 	clk_set_rate(cpuclk, freq);
+-	cpufreq_freq_transition_end(policy, &freqs, 0);
++	cpufreq_freq_transition_end(target->policy, &freqs, 0);
+ 
+ 	dev_dbg(dev, "set frequency %lu Hz\n", freq);
+-
+ 	return 0;
+ }
+ 
++/*
++ * Here we notify other drivers of the proposed change and the final change.
++ */
++static int sh_cpufreq_target(struct cpufreq_policy *policy,
++			     unsigned int target_freq,
++			     unsigned int relation)
++{
++	struct cpufreq_target data = { .policy = policy, .freq = target_freq };
++
++	return work_on_cpu(policy->cpu, __sh_cpufreq_target, &data);
++}
++
+ static int sh_cpufreq_verify(struct cpufreq_policy *policy)
+ {
+ 	struct clk *cpuclk = &per_cpu(sh_cpuclk, policy->cpu);
