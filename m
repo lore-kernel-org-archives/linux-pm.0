@@ -1,50 +1,46 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH v1 05/16] rtc: mediatek: add MT6323 support to RTC driver
-Date: Fri, 23 Mar 2018 11:01:56 +0100
-Message-ID: <20180323100156.GE3417@piout.net>
-References: <cover.1521794176.git.sean.wang@mediatek.com>
- <c49898db977a0b37363a35d3e3b297af891d7219.1521794177.git.sean.wang@mediatek.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v7 3/6] power: supply: Add error checking of psy desc during
+ registration
+Date: Fri, 23 Mar 2018 10:12:23 +0000
+Message-ID: <84159a4df772e123d850561eff38ece7577e816f.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <c49898db977a0b37363a35d3e3b297af891d7219.1521794177.git.sean.wang@mediatek.com>
+In-Reply-To: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Currently there's no error checking of this parameter in the
+registration function and it's blindly added to psy class and
+subsequently used as is. For example if this is NULL the call
+to psy_register_thermal() will try to dereference the pointer
+thus causing a kernel dump.
 
-The subject line should be rtc: mt6397: (to differentiate with rtc-mt7622)
+This commit updates the registration code to add some basic
+checks on the desc pointer validity, name, and presence of
+properties.
 
-On 23/03/2018 at 17:15:02 +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> Just to add MT6323 support to the existent RTC driver.
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  drivers/rtc/rtc-mt6397.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-> index 385f830..0df7ccd 100644
-> --- a/drivers/rtc/rtc-mt6397.c
-> +++ b/drivers/rtc/rtc-mt6397.c
-> @@ -398,6 +398,7 @@ static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_suspend,
->  			mt6397_rtc_resume);
->  
->  static const struct of_device_id mt6397_rtc_of_match[] = {
-> +	{ .compatible = "mediatek,mt6323-rtc", },
->  	{ .compatible = "mediatek,mt6397-rtc", },
->  	{ }
->  };
-> -- 
-> 2.7.4
-> 
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+---
+ drivers/power/supply/power_supply_core.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 82f998a..64f6449 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -849,6 +849,9 @@ static void psy_unregister_cooler(struct power_supply *psy)
+ 		pr_warn("%s: Expected proper parent device for '%s'\n",
+ 			__func__, desc->name);
+ 
++	if (!desc || !desc->name || !desc->properties || !desc->num_properties)
++		return ERR_PTR(-EINVAL);
++
+ 	psy = kzalloc(sizeof(*psy), GFP_KERNEL);
+ 	if (!psy)
+ 		return ERR_PTR(-ENOMEM);
 -- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-https://bootlin.com
+1.9.1
