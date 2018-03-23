@@ -1,50 +1,53 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH v1 06/16] rtc: mediatek: remove unnecessary parentheses
-Date: Fri, 23 Mar 2018 11:21:23 +0100
-Message-ID: <20180323102123.GG3417@piout.net>
-References: <cover.1521794176.git.sean.wang@mediatek.com>
- <92d07e90f43899981a82fbc684c3d15aaecaf591.1521794177.git.sean.wang@mediatek.com>
+From: George Cherian <george.cherian@cavium.com>
+Subject: [PATCH] cpufreq: cppc: Use transition_delay_us depending on the transition_latency
+Date: Fri, 23 Mar 2018 03:30:31 -0700
+Message-ID: <1521801031-158659-1-git-send-email-george.cherian@cavium.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <92d07e90f43899981a82fbc684c3d15aaecaf591.1521794177.git.sean.wang@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, George Cherian <george.cherian@cavium.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 23/03/2018 at 17:15:03 +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> Remove unnecessary parentheses due to explicit C operator precedence.
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  drivers/rtc/rtc-mt6397.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-> index 0df7ccd..4411c08 100644
-> --- a/drivers/rtc/rtc-mt6397.c
-> +++ b/drivers/rtc/rtc-mt6397.c
-> @@ -106,7 +106,7 @@ static irqreturn_t mtk_rtc_irq_handler_thread(int irq, void *data)
->  	int ret;
->  
->  	ret = regmap_read(rtc->regmap, rtc->addr_base + RTC_IRQ_STA, &irqsta);
-> -	if ((ret >= 0) && (irqsta & RTC_IRQ_STA_AL)) {
-> +	if (ret >= 0 && irqsta & RTC_IRQ_STA_AL) {
+With commit e948bc8fbee0 ("cpufreq: Cap the default transition delay
+value to 10 ms")  the cpufreq was not honouring the delay passed via
+ACPI (PCCT). Due to which on ARM based platforms using CPPC the cpufreq
+governor tries to change the frequency of CPU faster than expeted.
 
-I don't think this makes the code particularly clearer.
+This leads to continuous error messages like the following.
+" ACPI CPPC: PCC check channel failed. Status=0 "
 
->  		rtc_update_irq(rtc->rtc_dev, 1, RTC_IRQF | RTC_AF);
->  		irqen = irqsta & ~RTC_IRQ_EN_AL;
->  		mutex_lock(&rtc->lock);
-> -- 
-> 2.7.4
-> 
+Earlier (without above commit) the default transition delay was
+taken form the value passed from PCCT. Use the same value provided by PCCT
+to set the transition_delay_us.
 
+Fixes: e948bc8fbee0 (cpufreq: Cap the default transition delay value to 10 ms)
+Signed-off-by: George Cherian <george.cherian@cavium.com>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index a1c3025..dcb1cb9 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -20,6 +20,7 @@
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
+ #include <linux/dmi.h>
++#include <linux/time.h>
+ #include <linux/vmalloc.h>
+ 
+ #include <asm/unaligned.h>
+@@ -162,6 +163,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.max_freq = cppc_dmi_max_khz;
+ 
+ 	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
++	policy->transition_delay_us = cppc_get_transition_latency(cpu_num) /
++		NSEC_PER_USEC;
+ 	policy->shared_type = cpu->shared_type;
+ 
+ 	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
 -- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-https://bootlin.com
+1.8.3.1
