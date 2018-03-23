@@ -1,100 +1,79 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
- task wake-up
-Date: Fri, 23 Mar 2018 16:00:59 +0000
-Message-ID: <20180323160059.GQ4589@e105550-lin.cambridge.arm.com>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-6-dietmar.eggemann@arm.com>
- <CAJWu+oqO75h0Ue0=zqD1KTcHFF7tUKYgCHQzXx39RyyGTjiang@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Fri, 23 Mar 2018 14:30:03 -0700
+Message-ID: <000001d3c2ee$1e45c410$5ad14c30$@net>
+References: <4137867.C4jYrWdt8n@aspire.rjw.lan> <20180314120450.GT4043@hirez.programming.kicks-ass.net> <004c01d3c255$c1f146a0$45d3d3e0$@net> <CAJZ5v0iZVVkevY2oJnySoa6uQesMXcj_ZshV97utdXsW2w-aAA@mail.gmail.com> zIfde8JFp1KonzIfeepFUa
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+        charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJWu+oqO75h0Ue0=zqD1KTcHFF7tUKYgCHQzXx39RyyGTjiang@mail.gmail.com>
+In-Reply-To: zIfde8JFp1KonzIfeepFUa
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: 'Rik van Riel' <riel@surriel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 22, 2018 at 09:27:43AM -0700, Joel Fernandes wrote:
-> Hi,
+On 2018.03.23 02:08 Rafael J. Wysocki wrote:
+> On Fri, Mar 23, 2018 at 9:57 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Fri, Mar 23, 2018 at 4:19 AM, Doug Smythies <dsmythies@telus.net> wrote:
+>>> On 2018.03.22 12:12 Doug Smythies wrote:
+
+...[snip]...
+
+>>
+>>> I'm not sure how good it is but I made a test. I didn't believe
+>>> the results, so I did it 3 times.
+>>>
+>>> V7.3 is as from the git branch.
+>>> V7.3p is plus the patch adding the counter loop to poll_state.c
+>>>
+>>> The test is a tight loop (about 19600 loops per second) running
+>>> on all 8 CPUs. I can not seem to get my system to use Idle State
+>>> 0, so I disabled Idle States 1 and 2 to force use of Idle State 0.
+>>>
+>>> V7.3 uses a processor package power of 62.5 Watts
+>>> V7.3p uses a processor package power of 53.4 Watts, or 14.6% less power.
+>>>
+>>> The loop times do not change.
+>>> The Idle state 0 residency per unit time does not change.
+>>
+>> OK, so this means that the results should improve for Rik with this
+>> patch too. :-)
+
+I hope so.
+
+> BTW, can you possibly check how much of a difference it makes to
+> reduce POLL_IDLE_COUNT in the patch to, say, 500 or even more?
 > 
-> On Tue, Mar 20, 2018 at 2:43 AM, Dietmar Eggemann
-> <dietmar.eggemann@arm.com> wrote:
-> >
-> > From: Quentin Perret <quentin.perret@arm.com>
-> >
-> > In case an energy model is available, waking tasks are re-routed into a
-> > new energy-aware placement algorithm. The eligible CPUs to be used in the
-> > energy-aware wakeup path are restricted to the highest non-overutilized
-> > sched_domain containing prev_cpu and this_cpu. If no such domain is found,
-> > the tasks go through the usual wake-up path, hence energy-aware placement
-> > happens only in lightly utilized scenarios.
-> >
-> > The selection of the most energy-efficient CPU for a task is achieved by
-> > estimating the impact on system-level active energy resulting from the
-> > placement of the task on each candidate CPU. The best CPU energy-wise is
-> > then selected if it saves a large enough amount of energy with respect to
-> > prev_cpu.
-> >
-> > Although it has already shown significant benefits on some existing
-> > targets, this brute force approach clearly cannot scale to platforms with
-> > numerous CPUs. This patch is an attempt to do something useful as writing
-> > a fast heuristic that performs reasonably well on a broad spectrum of
-> > architectures isn't an easy task. As a consequence, the scope of usability
-> > of the energy-aware wake-up path is restricted to systems with the
-> > SD_ASYM_CPUCAPACITY flag set. These systems not only show the most
-> > promising opportunities for saving energy but also typically feature a
-> > limited number of logical CPUs.
-> >
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > ---
-> >  kernel/sched/fair.c | 74 ++++++++++++++++++++++++++++++++++++++++++++++++++---
-> >  1 file changed, 71 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 76bd46502486..65a1bead0773 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -6513,6 +6513,60 @@ static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
-> >         return energy;
-> >  }
-> >
-> > +static bool task_fits(struct task_struct *p, int cpu)
-> > +{
-> > +       unsigned long next_util = cpu_util_next(cpu, p, cpu);
-> > +
-> > +       return util_fits_capacity(next_util, capacity_orig_of(cpu));
-> > +}
-> > +
-> > +static int find_energy_efficient_cpu(struct sched_domain *sd,
-> > +                                       struct task_struct *p, int prev_cpu)
-> > +{
-> > +       unsigned long cur_energy, prev_energy, best_energy;
-> > +       int cpu, best_cpu = prev_cpu;
-> > +
-> > +       if (!task_util(p))
-> > +               return prev_cpu;
-> > +
-> > +       /* Compute the energy impact of leaving the task on prev_cpu. */
-> > +       prev_energy = best_energy = compute_energy(p, prev_cpu);
-> 
-> Is it possible that before the wakeup, the task's affinity is changed
-> so that p->cpus_allowed no longer contains prev_cpu ? In that case
-> prev_energy wouldn't matter since previous CPU is no longer an option?
+> The lower it is, the less noise it will introduce AFAICS.
 
-It is possible to wake-up with a disallowed prev_cpu. In fact
-select_idle_sibling() may happily return a disallowed cpu in that case.
-The mistake gets fixed in select_task_rq() which uses
-select_fallback_rq() to find an allowed cpu instead.
+Well, we would expect the curve to be something like a typical 1/x curve:
 
-Could we fix the issue in find_energy_efficient_cpu() by a simple test
-like below
+Power = 53.4 + k1/(k2* POLL_IDLE_COUNT + k3)
 
-if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))
-	prev_energy = best_energy = compute_energy(p, prev_cpu);
-else
-	prev_energy = best_energy = ULONG_MAX;
+I did some runs and did a crude fit:
+
+Power ~= 53.4 + 35/(POLL_IDLE_COUNT + 3)
+
+And then calculate an allowed error from that. A count of 100 gives
+back only 0.64% of the power, and so I suggest would be a reasonable
+number.
+
+That being said, my test is quite crude and we should first see what
+others, including Rik, get.
+
+These two graphs might help explain what I did:
+
+http://fast.smythies.com/v73p_vary_count.png
+http://fast.smythies.com/v73p_extra_power.png
+
+It is just my opinion, but I think users with very stringent
+idle state 0 exit latency requirements should test with
+POLL_IDLE_COUNT set to 1. Then they know the worst case works,
+whereas they might not hit it at 1/POLL_IDLE_COUNT probability.
+Once happy that the worst case works, use nominal (T.B.D.)
+POLL_IDLE_COUNT, for the power savings.
+
+... Doug
