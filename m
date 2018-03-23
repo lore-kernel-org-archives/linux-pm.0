@@ -1,7 +1,8 @@
 From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v1 15/16] MAINTAINERS: update entry for ARM/Mediatek RTC DRIVER
-Date: Fri, 23 Mar 2018 17:15:12 +0800
-Message-ID: <abadf0686094826b241944ee5563996de9a0f41a.1521794177.git.sean.wang@mediatek.com>
+Subject: [PATCH v1 04/16] mfd: mt6397: add MT6323 RTC support into MT6397
+ driver
+Date: Fri, 23 Mar 2018 17:15:01 +0800
+Message-ID: <90320622cb491b9d3251e2ce9d0501422f47660f.1521794177.git.sean.wang@mediatek.com>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,28 +24,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-Add new files for new dt-bindings and a globally visible header file.
+Add compatible string as "mt6323-rtc" that will make the OF core spawn
+child devices for the RTC subnode of that MT6323 MFD node.
 
 Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
- MAINTAINERS | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/mfd/mt6397-core.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index d3c33d7..1c13f29 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1626,9 +1626,11 @@ M:	Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
- L:	linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org (moderated for non-subscribers)
- L:	linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org (moderated for non-subscribers)
- S:	Maintained
-+F:	Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
- F:	Documentation/devicetree/bindings/rtc/rtc-mt7622.txt
- F:	drivers/rtc/rtc-mt6397.c
- F:	drivers/rtc/rtc-mt7622.c
-+F:	include/linux/rtc/mt6397.h
+diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
+index 77b64bd..f71874a 100644
+--- a/drivers/mfd/mt6397-core.c
++++ b/drivers/mfd/mt6397-core.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2014 MediaTek Inc.
++ * Copyright (c) 2014-2018 MediaTek Inc.
+  * Author: Flora Fu, MediaTek
+  *
+  * This program is free software; you can redistribute it and/or modify
+@@ -23,6 +23,9 @@
+ #include <linux/mfd/mt6397/registers.h>
+ #include <linux/mfd/mt6323/registers.h>
  
- ARM/Mediatek SoC support
- M:	Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
++#define MT6323_RTC_BASE		0x8000
++#define MT6323_RTC_SIZE		0x3e
++
+ #define MT6397_RTC_BASE		0xe000
+ #define MT6397_RTC_SIZE		0x3e
+ 
+@@ -30,6 +33,19 @@
+ #define MT6391_CID_CODE		0x91
+ #define MT6397_CID_CODE		0x97
+ 
++static const struct resource mt6323_rtc_resources[] = {
++	{
++		.start = MT6323_RTC_BASE,
++		.end   = MT6323_RTC_BASE + MT6323_RTC_SIZE,
++		.flags = IORESOURCE_MEM,
++	},
++	{
++		.start = MT6323_IRQ_STATUS_RTC,
++		.end   = MT6323_IRQ_STATUS_RTC,
++		.flags = IORESOURCE_IRQ,
++	},
++};
++
+ static const struct resource mt6397_rtc_resources[] = {
+ 	{
+ 		.start = MT6397_RTC_BASE,
+@@ -55,6 +71,11 @@ static const struct resource mt6397_keys_resources[] = {
+ 
+ static const struct mfd_cell mt6323_devs[] = {
+ 	{
++		.name = "mt6323-rtc",
++		.num_resources = ARRAY_SIZE(mt6323_rtc_resources),
++		.resources = mt6323_rtc_resources,
++		.of_compatible = "mediatek,mt6323-rtc",
++	}, {
+ 		.name = "mt6323-regulator",
+ 		.of_compatible = "mediatek,mt6323-regulator"
+ 	}, {
 -- 
 2.7.4
