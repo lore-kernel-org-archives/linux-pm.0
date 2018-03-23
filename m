@@ -1,81 +1,214 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH v1 09/16] rtc: mediatek: convert to use device managed
- functions
-Date: Fri, 23 Mar 2018 11:50:17 +0100
-Message-ID: <20180323105017.GI3417@piout.net>
-References: <cover.1521794176.git.sean.wang@mediatek.com>
- <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v7 4/6] power: supply: Add 'usb_type' property and supporting
+ code
+Date: Fri, 23 Mar 2018 10:12:24 +0000
+Message-ID: <c7704e7434bdf8567137ec239d33dbf4a34b2ff0.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
+In-Reply-To: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-On 23/03/2018 at 17:15:06 +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> Use device managed operation to simplify error handling, reduce source
-> code size, and reduce the likelyhood of bugs, and remove our removal
-> callback which contains anything already done by device managed functions.
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  drivers/rtc/rtc-mt6397.c | 31 ++++++++-----------------------
->  1 file changed, 8 insertions(+), 23 deletions(-)
-> 
-> diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-> index cefb83b..bfc5d6f 100644
-> --- a/drivers/rtc/rtc-mt6397.c
-> +++ b/drivers/rtc/rtc-mt6397.c
-> @@ -14,6 +14,7 @@
->  
->  #include <linux/delay.h>
->  #include <linux/init.h>
-> +#include <linux/interrupt.h>
->  #include <linux/module.h>
->  #include <linux/regmap.h>
->  #include <linux/rtc.h>
-> @@ -328,10 +329,10 @@ static int mtk_rtc_probe(struct platform_device *pdev)
->  
->  	platform_set_drvdata(pdev, rtc);
->  
-> -	ret = request_threaded_irq(rtc->irq, NULL,
-> -				   mtk_rtc_irq_handler_thread,
-> -				   IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
-> -				   "mt6397-rtc", rtc);
-> +	ret = devm_request_threaded_irq(&pdev->dev, rtc->irq, NULL,
-> +					mtk_rtc_irq_handler_thread,
-> +					IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
-> +					"mt6397-rtc", rtc);
->  	if (ret) {
->  		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
->  			rtc->irq, ret);
-> @@ -340,30 +341,15 @@ static int mtk_rtc_probe(struct platform_device *pdev)
->  
->  	device_init_wakeup(&pdev->dev, 1);
->  
-> -	rtc->rtc_dev = rtc_device_register("mt6397-rtc", &pdev->dev,
-> -					   &mtk_rtc_ops, THIS_MODULE);
-> +	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, "mt6397-rtc",
-> +						&mtk_rtc_ops, THIS_MODULE);
+This commit adds the 'usb_type' property to represent USB supplies
+which can report a number of different types based on a connection
+event.
 
-You should probably switch to devm_rtc_allocate_device() and
-rtc_register_device instead of devm_rtc_device_register.
+Examples of this already exist in drivers whereby the existing 'type'
+property is updated, based on an event, to represent what was
+connected (e.g. USB, USB_DCP, USB_ACA, ...). Current implementations
+however don't show all supported connectable types, so this knowledge
+has to be exlicitly known for each driver that supports this.
 
->  	if (IS_ERR(rtc->rtc_dev)) {
->  		dev_err(&pdev->dev, "register rtc device failed\n");
->  		ret = PTR_ERR(rtc->rtc_dev);
-> -		goto out_free_irq;
-> +		return ret;
+The 'usb_type' property is intended to fill this void and show users
+all possible USB types supported by a driver. The property, when read,
+shows all available types for the driver, and the one currently chosen
+is highlighted/bracketed. It is expected that the 'type' property
+would then just show the top-level type 'USB', and this would be
+static.
 
-ret doesn't seem necessary anymore here.
+Currently the 'usb_type' enum contains all of the USB variant types
+that exist for the 'type' enum at this time, and in addition has
+SDP and PPS types. The mirroring is intentional so as to not impact
+existing usage of the 'type' property.
 
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+---
+ Documentation/ABI/testing/sysfs-class-power | 12 ++++++++
+ drivers/power/supply/power_supply_core.c    |  8 ++++-
+ drivers/power/supply/power_supply_sysfs.c   | 45 +++++++++++++++++++++++++++++
+ include/linux/power_supply.h                | 16 ++++++++++
+ 4 files changed, 80 insertions(+), 1 deletion(-)
 
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index e046566..5e23e22 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -409,6 +409,18 @@ Description:
+ 		Access: Read
+ 		Valid values: Represented in 1/10 Degrees Celsius
+ 
++What: 		/sys/class/power_supply/<supply_name>/usb_type
++Date:		March 2018
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Reports what type of USB connection is currently active for
++		the supply, for example it can show if USB-PD capable source
++		is attached.
++
++		Access: Read-Only
++		Valid values: "Unknown", "SDP", "DCP", "CDP", "ACA", "C", "PD",
++			      "PD_DRP", "PD_PPS", "BrickID"
++
+ What: 		/sys/class/power_supply/<supply_name>/voltage_max
+ Date:		January 2008
+ Contact:	linux-pm@vger.kernel.org
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 64f6449..dff2bbb 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -843,7 +843,7 @@ static void psy_unregister_cooler(struct power_supply *psy)
+ {
+ 	struct device *dev;
+ 	struct power_supply *psy;
+-	int rc;
++	int i, rc;
+ 
+ 	if (!parent)
+ 		pr_warn("%s: Expected proper parent device for '%s'\n",
+@@ -852,6 +852,12 @@ static void psy_unregister_cooler(struct power_supply *psy)
+ 	if (!desc || !desc->name || !desc->properties || !desc->num_properties)
+ 		return ERR_PTR(-EINVAL);
+ 
++	for (i = 0; i < desc->num_properties; ++i) {
++		if ((desc->properties[i] == POWER_SUPPLY_PROP_USB_TYPE) &&
++		    (!desc->usb_types || !desc->num_usb_types))
++			return ERR_PTR(-EINVAL);
++	}
++
+ 	psy = kzalloc(sizeof(*psy), GFP_KERNEL);
+ 	if (!psy)
+ 		return ERR_PTR(-ENOMEM);
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5204f11..1350068 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -46,6 +46,11 @@
+ 	"USB_PD", "USB_PD_DRP", "BrickID"
+ };
+ 
++static const char * const power_supply_usb_type_text[] = {
++	"Unknown", "SDP", "DCP", "CDP", "ACA", "C",
++	"PD", "PD_DRP", "PD_PPS", "BrickID"
++};
++
+ static const char * const power_supply_status_text[] = {
+ 	"Unknown", "Charging", "Discharging", "Not charging", "Full"
+ };
+@@ -73,6 +78,41 @@
+ 	"Unknown", "System", "Device"
+ };
+ 
++static ssize_t power_supply_show_usb_type(struct device *dev,
++					  enum power_supply_usb_type *usb_types,
++					  ssize_t num_usb_types,
++					  union power_supply_propval *value,
++					  char *buf)
++{
++	enum power_supply_usb_type usb_type;
++	ssize_t count = 0;
++	bool match = false;
++	int i;
++
++	for (i = 0; i < num_usb_types; ++i) {
++		usb_type = usb_types[i];
++
++		if (value->intval == usb_type) {
++			count += sprintf(buf + count, "[%s] ",
++					 power_supply_usb_type_text[usb_type]);
++			match = true;
++		} else {
++			count += sprintf(buf + count, "%s ",
++					 power_supply_usb_type_text[usb_type]);
++		}
++	}
++
++	if (!match) {
++		dev_warn(dev, "driver reporting unsupported connected type\n");
++		return -EINVAL;
++	}
++
++	if (count)
++		buf[count - 1] = '\n';
++
++	return count;
++}
++
+ static ssize_t power_supply_show_property(struct device *dev,
+ 					  struct device_attribute *attr,
+ 					  char *buf) {
+@@ -115,6 +155,10 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 	else if (off == POWER_SUPPLY_PROP_TYPE)
+ 		return sprintf(buf, "%s\n",
+ 			       power_supply_type_text[value.intval]);
++	else if (off == POWER_SUPPLY_PROP_USB_TYPE)
++		return power_supply_show_usb_type(dev, psy->desc->usb_types,
++						  psy->desc->num_usb_types,
++						  &value, buf);
+ 	else if (off == POWER_SUPPLY_PROP_SCOPE)
+ 		return sprintf(buf, "%s\n",
+ 			       power_supply_scope_text[value.intval]);
+@@ -241,6 +285,7 @@ static ssize_t power_supply_store_property(struct device *dev,
+ 	POWER_SUPPLY_ATTR(time_to_full_now),
+ 	POWER_SUPPLY_ATTR(time_to_full_avg),
+ 	POWER_SUPPLY_ATTR(type),
++	POWER_SUPPLY_ATTR(usb_type),
+ 	POWER_SUPPLY_ATTR(scope),
+ 	POWER_SUPPLY_ATTR(precharge_current),
+ 	POWER_SUPPLY_ATTR(charge_term_current),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 79e90b3..4ca8876 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -145,6 +145,7 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+ 	POWER_SUPPLY_PROP_TYPE, /* use power_supply.type instead */
++	POWER_SUPPLY_PROP_USB_TYPE,
+ 	POWER_SUPPLY_PROP_SCOPE,
+ 	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
+ 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
+@@ -170,6 +171,19 @@ enum power_supply_type {
+ 	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
+ };
+ 
++enum power_supply_usb_type {
++	POWER_SUPPLY_USB_TYPE_UNKNOWN = 0,
++	POWER_SUPPLY_USB_TYPE_SDP,		/* Standard Downstream Port */
++	POWER_SUPPLY_USB_TYPE_DCP,		/* Dedicated Charging Port */
++	POWER_SUPPLY_USB_TYPE_CDP,		/* Charging Downstream Port */
++	POWER_SUPPLY_USB_TYPE_ACA,		/* Accessory Charger Adapters */
++	POWER_SUPPLY_USB_TYPE_C,		/* Type C Port */
++	POWER_SUPPLY_USB_TYPE_PD,		/* Power Delivery Port */
++	POWER_SUPPLY_USB_TYPE_PD_DRP,		/* PD Dual Role Port */
++	POWER_SUPPLY_USB_TYPE_PD_PPS,		/* PD Programmable Power Supply */
++	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
++};
++
+ enum power_supply_notifier_events {
+ 	PSY_EVENT_PROP_CHANGED,
+ };
+@@ -196,6 +210,8 @@ struct power_supply_config {
+ struct power_supply_desc {
+ 	const char *name;
+ 	enum power_supply_type type;
++	enum power_supply_usb_type *usb_types;
++	size_t num_usb_types;
+ 	enum power_supply_property *properties;
+ 	size_t num_properties;
+ 
 -- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-https://bootlin.com
+1.9.1
