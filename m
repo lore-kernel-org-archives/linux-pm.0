@@ -1,140 +1,102 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.4 14/97] cpufreq/sh: Replace racy task affinity logic
-Date: Fri, 23 Mar 2018 10:54:01 +0100
-Message-ID: <20180323094158.305904501@linuxfoundation.org>
-References: <20180323094157.535925724@linuxfoundation.org>
+From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v1 02/16] dt-bindings: rtc: mediatek: add bindings for
+ PMIC RTC
+Date: Fri, 23 Mar 2018 11:15:05 +0100
+Message-ID: <20180323101505.GF3417@piout.net>
+References: <cover.1521794176.git.sean.wang@mediatek.com>
+ <5846e8be319c4836808c8127d5bb51b7e999e896.1521794177.git.sean.wang@mediatek.com>
+ <20180323094118.GC3417@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180323094157.535925724@linuxfoundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sebastian Siewior <bigeasy@linutronix.de>, linux-pm@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Tejun Heo <tj@kernel.org>, "David S. Miller" <davem@davemloft.net>, Len Brown <lenb@kernel.org>, Sasha Levin <alexander.levin@microsoft.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180323094118.GC3417-m++hUPXGwpdeoWH0uzbU5w@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-4.4-stable review patch.  If anyone has any objections, please let me know.
+On 23/03/2018 at 10:41:18 +0100, Alexandre Belloni wrote:
+> Hi,
+> 
+> On 23/03/2018 at 17:14:59 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
+> > From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > 
+> > Add device-tree binding for MediaTek PMIC based RTC.
+> > 
+> > Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > ---
+> >  .../devicetree/bindings/rtc/rtc-mt6397.txt         | 39 ++++++++++++++++++++++
+> >  1 file changed, 39 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+> > new file mode 100644
+> > index 0000000..83ff6be
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+> > @@ -0,0 +1,39 @@
+> > +Device-Tree bindings for MediaTek PMIC based RTC
+> > +
+> > +MediaTek PMIC based RTC is an independent function of MediaTek PMIC which
+> > +is working as a multi-function device (MFD). And the RTC can be configured and
+> > +set up via PMIC wrapper bus. Which is also common resource shared among the
+> > +other functions present on the PMIC.
+> > +
+> > +For MediaTek PMIC wrapper bus bindings, see:
+> > +Documentation/devicetree/bindings/soc/mediatek/pwrap.txt
+> > +
+> > +Required parent node:
+> > +- pmic
+> > +  For MediaTek PMIC MFD bindings, see:
+> > +  Documentation/devicetree/bindings/mfd/mt6397.txt
+> > +
+> > +Required properties:
+> > +- compatible: Should be one of follows
+> > +	"mediatek,mt6323-rtc": for MT6323 PMIC
+> > +	"mediatek,mt6397-rtc": for MT6397 PMIC
+> > +
+> > +Optional child node:
+> > +- power-off
+> > +  For Power-Off Device for MediaTek PMIC RTC bindings, see:
+> > +  Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
+> > +
+> > +Example:
+> > +
+> > +	pmic {
+> > +		compatible = "mediatek,mt6323";
+> > +
+> > +		...
+> > +		rtc {
+> > +			compatible = "mediatek,mt6323-rtc";
+> > +
+> > +			power-off {
+> > +				compatible = "mediatek,mt6323-rtc-poweroff";
+> > +			};
+> 
+> I'm pretty sure the whole point of mfd is to avoid having the poweroff
+> controller under the rtc
+> 
 
-------------------
+BTW, I think it is enough to have that documented in only one file (the
+MFD one is enough)
 
-From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> -- 
+> Alexandre Belloni, Bootlin (formerly Free Electrons)
+> Embedded Linux and Kernel engineering
+> https://bootlin.com
 
-
-[ Upstream commit 205dcc1ecbc566cbc20acf246e68de3b080b3ecf ]
-
-The target() callback must run on the affected cpu. This is achieved by
-temporarily setting the affinity of the calling thread to the requested CPU
-and reset it to the original affinity afterwards.
-
-That's racy vs. concurrent affinity settings for that thread resulting in
-code executing on the wrong CPU.
-
-Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
-already protected against CPU hotplug.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sebastian Siewior <bigeasy@linutronix.de>
-Cc: linux-pm@vger.kernel.org
-Cc: Lai Jiangshan <jiangshanlai@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Len Brown <lenb@kernel.org>
-Link: http://lkml.kernel.org/r/20170412201042.958216363@linutronix.de
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/cpufreq/sh-cpufreq.c |   45 +++++++++++++++++++++++++------------------
- 1 file changed, 27 insertions(+), 18 deletions(-)
-
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -30,54 +30,63 @@
- 
- static DEFINE_PER_CPU(struct clk, sh_cpuclk);
- 
-+struct cpufreq_target {
-+	struct cpufreq_policy	*policy;
-+	unsigned int		freq;
-+};
-+
- static unsigned int sh_cpufreq_get(unsigned int cpu)
- {
- 	return (clk_get_rate(&per_cpu(sh_cpuclk, cpu)) + 500) / 1000;
- }
- 
--/*
-- * Here we notify other drivers of the proposed change and the final change.
-- */
--static int sh_cpufreq_target(struct cpufreq_policy *policy,
--			     unsigned int target_freq,
--			     unsigned int relation)
-+static long __sh_cpufreq_target(void *arg)
- {
--	unsigned int cpu = policy->cpu;
-+	struct cpufreq_target *target = arg;
-+	struct cpufreq_policy *policy = target->policy;
-+	int cpu = policy->cpu;
- 	struct clk *cpuclk = &per_cpu(sh_cpuclk, cpu);
--	cpumask_t cpus_allowed;
- 	struct cpufreq_freqs freqs;
- 	struct device *dev;
- 	long freq;
- 
--	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of(cpu));
--
--	BUG_ON(smp_processor_id() != cpu);
-+	if (smp_processor_id() != cpu)
-+		return -ENODEV;
- 
- 	dev = get_cpu_device(cpu);
- 
- 	/* Convert target_freq from kHz to Hz */
--	freq = clk_round_rate(cpuclk, target_freq * 1000);
-+	freq = clk_round_rate(cpuclk, target->freq * 1000);
- 
- 	if (freq < (policy->min * 1000) || freq > (policy->max * 1000))
- 		return -EINVAL;
- 
--	dev_dbg(dev, "requested frequency %u Hz\n", target_freq * 1000);
-+	dev_dbg(dev, "requested frequency %u Hz\n", target->freq * 1000);
- 
- 	freqs.old	= sh_cpufreq_get(cpu);
- 	freqs.new	= (freq + 500) / 1000;
- 	freqs.flags	= 0;
- 
--	cpufreq_freq_transition_begin(policy, &freqs);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	cpufreq_freq_transition_begin(target->policy, &freqs);
- 	clk_set_rate(cpuclk, freq);
--	cpufreq_freq_transition_end(policy, &freqs, 0);
-+	cpufreq_freq_transition_end(target->policy, &freqs, 0);
- 
- 	dev_dbg(dev, "set frequency %lu Hz\n", freq);
--
- 	return 0;
- }
- 
-+/*
-+ * Here we notify other drivers of the proposed change and the final change.
-+ */
-+static int sh_cpufreq_target(struct cpufreq_policy *policy,
-+			     unsigned int target_freq,
-+			     unsigned int relation)
-+{
-+	struct cpufreq_target data = { .policy = policy, .freq = target_freq };
-+
-+	return work_on_cpu(policy->cpu, __sh_cpufreq_target, &data);
-+}
-+
- static int sh_cpufreq_verify(struct cpufreq_policy *policy)
- {
- 	struct clk *cpuclk = &per_cpu(sh_cpuclk, policy->cpu);
+-- 
+Alexandre Belloni, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+https://bootlin.com
