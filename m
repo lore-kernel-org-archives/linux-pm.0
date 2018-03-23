@@ -1,64 +1,72 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
-Date: Fri, 23 Mar 2018 10:07:31 +0100
-Message-ID: <CAJZ5v0j3yPem=dXGYyFpxT9WfKVYgk17Av__jp-xZxdsKWYLiw@mail.gmail.com>
-References: <4137867.C4jYrWdt8n@aspire.rjw.lan> <20180314120450.GT4043@hirez.programming.kicks-ass.net>
- <004c01d3c255$c1f146a0$45d3d3e0$@net> <CAJZ5v0iZVVkevY2oJnySoa6uQesMXcj_ZshV97utdXsW2w-aAA@mail.gmail.com>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH v1 00/16] Add support to MT6323 RTC and its power device
+Date: Fri, 23 Mar 2018 17:14:57 +0800
+Message-ID: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iZVVkevY2oJnySoa6uQesMXcj_ZshV97utdXsW2w-aAA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Rik van Riel <riel@surriel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
+To: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, eddie.huang@mediatek.com
+Cc: devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 23, 2018 at 9:57 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Mar 23, 2018 at 4:19 AM, Doug Smythies <dsmythies@telus.net> wrote:
->> On 2018.03.22 12:12 Doug Smythies wrote:
->>>On 2018.03.22 09:32 Rik van Riel wrote:
->>>> On Wed, 2018-03-14 at 13:04 +0100, Peter Zijlstra wrote:
->>>>
->>>>> On x86 we don't have to use that time_check_counter thing,
->>>>> sched_clock()
->>>>> is really cheap, not sure if it makes sense on other platforms.
->>>>
->>>> Are you sure? I saw a 5-10% increase in CPU use,
->>>> for a constant query rate to a memcache style
->>>> workload, with v3 of this patch.
->>>
->>> I would very much like to be able to repeat your test results.
->>> However, I am not sure what you mean by "memcache style workload".
->>> Is there a test you can point me to? Say a Phoronix type test, for example.
->>>
->>> All of my tests with the V3 of this patch have been fine.
->>
->> What is the difference between sched_clock() talked about herein,
->> and local_clock() used in the patch?
->
-> It is almost the same (modulo offset) unless sched_clock_stable()
-> returns 'false'.
->
->> I'm not sure how good it is but I made a test. I didn't believe
->> the results, so I did it 3 times.
->>
->> V7.3 is as from the git branch.
->> V7.3p is plus the patch adding the counter loop to poll_state.c
->>
->> The test is a tight loop (about 19600 loops per second) running
->> on all 8 CPUs. I can not seem to get my system to use Idle State
->> 0, so I disabled Idle States 1 and 2 to force use of Idle State 0.
->>
->> V7.3 uses a processor package power of 62.5 Watts
->> V7.3p uses a processor package power of 53.4 Watts, or 14.6% less power.
->>
->> The loop times do not change.
->> The Idle state 0 residency per unit time does not change.
->
-> OK, so this means that the results should improve for Rik with this
-> patch too. :-)
+From: Sean Wang <sean.wang@mediatek.com>
 
-BTW, can you possibly check how much of a difference it makes to
-reduce POLL_IDLE_COUNT in the patch to, say, 500 or even more?
+Hi,
 
-The lower it is, the less noise it will introduce AFAICS.
+The series keeps to extend the capability of BPI-R2 board with MT7623 and
+the result can as well bring benefits into the other MediaTek PMICs such
+as MT6397 or SoCs.
+
+The series sent across mfd, rtc, pm, dt-binding sub-system is for hoping
+to let people have a simple cross-reference to know the exact dependency
+and why those patches are being split in that way between each one.
+
+Patch 1-3: Add dt-binding to the related devices newly or already
+	   supported.
+Patch 4-5: Extend driver with the functionality of MT6323 RTC device.
+Patch 6-9 and 12-13: Add a few of trivial fixups, cleanups and
+	  improvements.
+Patch 10-11: It's a preparation for Patch 14 adding a new driver.
+Patch 14: Add a new driver for a power-off driver.
+Patch 15-16: Update MAINTAINERS with these new files being added.
+
+	Sean
+
+Sean Wang (16):
+  dt-bindings: power: reset: mediatek: add bindings for power device
+  dt-bindings: rtc: mediatek: add bindings for PMIC RTC
+  dt-bindings: mfd: mediatek: add a description for MT6323 RTC
+  mfd: mt6397: add MT6323 RTC support into MT6397 driver
+  rtc: mediatek: add MT6323 support to RTC driver
+  rtc: mediatek: remove unnecessary parentheses
+  rtc: mediatek: replace a poll with regmap_read_poll_timeout
+  rtc: mediatek: remove unnecessary irq_dispose_mapping
+  rtc: mediatek: convert to use device managed functions
+  rtc: mediatek: add devm_of_platform_populate
+  rtc: mediatek: move the declaration into a globally visible header
+    file
+  rtc: mediatek: cleanup header files to include
+  rtc: mediatek: update license converting to using SPDX identifiers
+  power: reset: mediatek: add a power-off driver using PMIC RTC device
+  MAINTAINERS: update entry for ARM/Mediatek RTC DRIVER
+  MAINTAINERS: add an entry for MediaTek board level shutdown driver
+
+ Documentation/devicetree/bindings/mfd/mt6397.txt   |   4 +-
+ .../bindings/power/reset/mt6397-rtc-poweroff.txt   |  24 ++++
+ .../devicetree/bindings/rtc/rtc-mt6397.txt         |  39 ++++++
+ MAINTAINERS                                        |   9 ++
+ drivers/mfd/mt6397-core.c                          |  23 +++-
+ drivers/power/reset/Kconfig                        |   9 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/mt6397-rtc-poweroff.c          | 100 ++++++++++++++
+ drivers/rtc/rtc-mt6397.c                           | 145 +++++----------------
+ include/linux/rtc/mt6397.h                         |  73 +++++++++++
+ 10 files changed, 314 insertions(+), 113 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
+ create mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+ create mode 100644 drivers/power/reset/mt6397-rtc-poweroff.c
+ create mode 100644 include/linux/rtc/mt6397.h
+
+-- 
+2.7.4
