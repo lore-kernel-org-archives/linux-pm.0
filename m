@@ -1,8 +1,7 @@
 From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v1 07/16] rtc: mediatek: replace a poll with
- regmap_read_poll_timeout
-Date: Fri, 23 Mar 2018 17:15:04 +0800
-Message-ID: <5e34fe67466d09ad5ce15e913dbe371eeb0a250f.1521794177.git.sean.wang@mediatek.com>
+Subject: [PATCH v1 08/16] rtc: mediatek: remove unnecessary irq_dispose_mapping
+Date: Fri, 23 Mar 2018 17:15:05 +0800
+Message-ID: <96f39ce7f57a4dcd7653e049eebc87c83bcbdfc9.1521794177.git.sean.wang@mediatek.com>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,74 +23,55 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-Reuse the helper regmap_read_poll_timeout instead to simpify the logic.
+It's unnecessary doing irq_dispose_mapping as a reverse operation for
+platform_get_irq.
 
-Furthermore, the time for a wait in each iteration changed from cpu_relax
-to 20us is for matching the usage of the helper, but it wouldn't acctually
-break any the existent functionality according to a good test on MT6323
-PMIC.
+Ususally, irq_dispose_mapping should be called in error path or module
+removal to release the resources for irq_of_parse_and_map requested.
 
 Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
- drivers/rtc/rtc-mt6397.c | 25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+ drivers/rtc/rtc-mt6397.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-index 4411c08..b62eaa8 100644
+index b62eaa8..cefb83b 100644
 --- a/drivers/rtc/rtc-mt6397.c
 +++ b/drivers/rtc/rtc-mt6397.c
-@@ -18,6 +18,7 @@
+@@ -17,7 +17,6 @@
+ #include <linux/module.h>
  #include <linux/regmap.h>
  #include <linux/rtc.h>
- #include <linux/irqdomain.h>
-+#include <linux/jiffies.h>
+-#include <linux/irqdomain.h>
+ #include <linux/jiffies.h>
  #include <linux/platform_device.h>
  #include <linux/of_address.h>
- #include <linux/of_irq.h>
-@@ -63,6 +64,9 @@
- #define RTC_NUM_YEARS		128
- #define RTC_MIN_YEAR_OFFSET	(RTC_MIN_YEAR - RTC_BASE_YEAR)
+@@ -336,7 +335,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
+ 			rtc->irq, ret);
+-		goto out_dispose_irq;
++		return ret;
+ 	}
  
-+#define MTK_RTC_POLL_DELAY_US	10
-+#define MTK_RTC_POLL_TIMEOUT	(jiffies_to_usecs(HZ))
+ 	device_init_wakeup(&pdev->dev, 1);
+@@ -353,8 +352,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+ 
+ out_free_irq:
+ 	free_irq(rtc->irq, rtc->rtc_dev);
+-out_dispose_irq:
+-	irq_dispose_mapping(rtc->irq);
 +
- struct mt6397_rtc {
- 	struct device		*dev;
- 	struct rtc_device	*rtc_dev;
-@@ -74,7 +78,6 @@ struct mt6397_rtc {
- 
- static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
- {
--	unsigned long timeout = jiffies + HZ;
- 	int ret;
- 	u32 data;
- 
-@@ -82,19 +85,13 @@ static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
- 	if (ret < 0)
- 		return ret;
- 
--	while (1) {
--		ret = regmap_read(rtc->regmap, rtc->addr_base + RTC_BBPU,
--				  &data);
--		if (ret < 0)
--			break;
--		if (!(data & RTC_BBPU_CBUSY))
--			break;
--		if (time_after(jiffies, timeout)) {
--			ret = -ETIMEDOUT;
--			break;
--		}
--		cpu_relax();
--	}
-+	ret = regmap_read_poll_timeout(rtc->regmap,
-+				       rtc->addr_base + RTC_BBPU, data,
-+				       !(data & RTC_BBPU_CBUSY),
-+				       MTK_RTC_POLL_DELAY_US,
-+				       MTK_RTC_POLL_TIMEOUT);
-+	if (ret)
-+		dev_err(rtc->dev, "failed to write WRTGE: %d\n", ret);
- 
  	return ret;
+ }
+ 
+@@ -364,7 +362,6 @@ static int mtk_rtc_remove(struct platform_device *pdev)
+ 
+ 	rtc_device_unregister(rtc->rtc_dev);
+ 	free_irq(rtc->irq, rtc->rtc_dev);
+-	irq_dispose_mapping(rtc->irq);
+ 
+ 	return 0;
  }
 -- 
 2.7.4
