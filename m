@@ -1,79 +1,79 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH v1 08/16] rtc: mediatek: remove unnecessary
- irq_dispose_mapping
-Date: Fri, 23 Mar 2018 11:38:01 +0100
-Message-ID: <20180323103801.GH3417@piout.net>
+Subject: Re: [PATCH v1 09/16] rtc: mediatek: convert to use device managed
+ functions
+Date: Fri, 23 Mar 2018 11:50:17 +0100
+Message-ID: <20180323105017.GI3417@piout.net>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
- <96f39ce7f57a4dcd7653e049eebc87c83bcbdfc9.1521794177.git.sean.wang@mediatek.com>
+ <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <96f39ce7f57a4dcd7653e049eebc87c83bcbdfc9.1521794177.git.sean.wang@mediatek.com>
+In-Reply-To: <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: sean.wang@mediatek.com
 Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23/03/2018 at 17:15:05 +0800, sean.wang@mediatek.com wrote:
+On 23/03/2018 at 17:15:06 +0800, sean.wang@mediatek.com wrote:
 > From: Sean Wang <sean.wang@mediatek.com>
 > 
-> It's unnecessary doing irq_dispose_mapping as a reverse operation for
-> platform_get_irq.
-> 
-> Ususally, irq_dispose_mapping should be called in error path or module
-> removal to release the resources for irq_of_parse_and_map requested.
+> Use device managed operation to simplify error handling, reduce source
+> code size, and reduce the likelyhood of bugs, and remove our removal
+> callback which contains anything already done by device managed functions.
 > 
 > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 > ---
->  drivers/rtc/rtc-mt6397.c | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
+>  drivers/rtc/rtc-mt6397.c | 31 ++++++++-----------------------
+>  1 file changed, 8 insertions(+), 23 deletions(-)
 > 
 > diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-> index b62eaa8..cefb83b 100644
+> index cefb83b..bfc5d6f 100644
 > --- a/drivers/rtc/rtc-mt6397.c
 > +++ b/drivers/rtc/rtc-mt6397.c
-> @@ -17,7 +17,6 @@
+> @@ -14,6 +14,7 @@
+>  
+>  #include <linux/delay.h>
+>  #include <linux/init.h>
+> +#include <linux/interrupt.h>
 >  #include <linux/module.h>
 >  #include <linux/regmap.h>
 >  #include <linux/rtc.h>
-> -#include <linux/irqdomain.h>
->  #include <linux/jiffies.h>
->  #include <linux/platform_device.h>
->  #include <linux/of_address.h>
-> @@ -336,7 +335,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+> @@ -328,10 +329,10 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, rtc);
+>  
+> -	ret = request_threaded_irq(rtc->irq, NULL,
+> -				   mtk_rtc_irq_handler_thread,
+> -				   IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
+> -				   "mt6397-rtc", rtc);
+> +	ret = devm_request_threaded_irq(&pdev->dev, rtc->irq, NULL,
+> +					mtk_rtc_irq_handler_thread,
+> +					IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
+> +					"mt6397-rtc", rtc);
 >  	if (ret) {
 >  		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
 >  			rtc->irq, ret);
-> -		goto out_dispose_irq;
-> +		return ret;
->  	}
+> @@ -340,30 +341,15 @@ static int mtk_rtc_probe(struct platform_device *pdev)
 >  
 >  	device_init_wakeup(&pdev->dev, 1);
-> @@ -353,8 +352,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
 >  
->  out_free_irq:
->  	free_irq(rtc->irq, rtc->rtc_dev);
-> -out_dispose_irq:
-> -	irq_dispose_mapping(rtc->irq);
-> +
+> -	rtc->rtc_dev = rtc_device_register("mt6397-rtc", &pdev->dev,
+> -					   &mtk_rtc_ops, THIS_MODULE);
+> +	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, "mt6397-rtc",
+> +						&mtk_rtc_ops, THIS_MODULE);
 
-Don't you still have a irq_create_mapping?
+You should probably switch to devm_rtc_allocate_device() and
+rtc_register_device instead of devm_rtc_device_register.
 
->  	return ret;
->  }
->  
-> @@ -364,7 +362,6 @@ static int mtk_rtc_remove(struct platform_device *pdev)
->  
->  	rtc_device_unregister(rtc->rtc_dev);
->  	free_irq(rtc->irq, rtc->rtc_dev);
-> -	irq_dispose_mapping(rtc->irq);
->  
->  	return 0;
->  }
-> -- 
-> 2.7.4
-> 
+>  	if (IS_ERR(rtc->rtc_dev)) {
+>  		dev_err(&pdev->dev, "register rtc device failed\n");
+>  		ret = PTR_ERR(rtc->rtc_dev);
+> -		goto out_free_irq;
+> +		return ret;
+
+ret doesn't seem necessary anymore here.
+
 
 -- 
 Alexandre Belloni, Bootlin (formerly Free Electrons)
