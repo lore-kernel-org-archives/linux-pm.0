@@ -1,8 +1,7 @@
 From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v1 16/16] MAINTAINERS: add an entry for MediaTek board level
- shutdown driver
-Date: Fri, 23 Mar 2018 17:15:13 +0800
-Message-ID: <47102dcc92322c21d94b810feee0ba5f657ee17a.1521794177.git.sean.wang@mediatek.com>
+Subject: [PATCH v1 10/16] rtc: mediatek: add devm_of_platform_populate
+Date: Fri, 23 Mar 2018 17:15:07 +0800
+Message-ID: <2bf23f9f05b747674419be6008822bef43085626.1521794177.git.sean.wang@mediatek.com>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,30 +23,34 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-Add an entry for the MediaTek board level shutdown driver.
+Add devm_of_platform_populate to populate all child nodes according to
+the dt-binding.
 
 Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
- MAINTAINERS | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/rtc/rtc-mt6397.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1c13f29..863d1e3 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8818,6 +8818,13 @@ S:	Maintained
- F:	drivers/net/dsa/mt7530.*
- F:	net/dsa/tag_mtk.c
+diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+index bfc5d6f..d133d1f 100644
+--- a/drivers/rtc/rtc-mt6397.c
++++ b/drivers/rtc/rtc-mt6397.c
+@@ -16,6 +16,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/of_platform.h>
+ #include <linux/regmap.h>
+ #include <linux/rtc.h>
+ #include <linux/jiffies.h>
+@@ -349,7 +350,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
  
-+MEDIATEK BOARD LEVEL SHUTDOWN DRIVERS
-+M:	Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-+L:	linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
-+F:	drivers/power/reset/mt6397-rtc-poweroff.c
-+
- MEDIATEK JPEG DRIVER
- M:	Rick Chang <rick.chang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
- M:	Bin Liu <bin.liu-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+-	return 0;
++	return devm_of_platform_populate(&pdev->dev);
+ }
+ 
+ #ifdef CONFIG_PM_SLEEP
 -- 
 2.7.4
