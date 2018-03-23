@@ -1,77 +1,58 @@
-From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v1 08/16] rtc: mediatek: remove unnecessary irq_dispose_mapping
-Date: Fri, 23 Mar 2018 17:15:05 +0800
-Message-ID: <96f39ce7f57a4dcd7653e049eebc87c83bcbdfc9.1521794177.git.sean.wang@mediatek.com>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH v1 01/16] dt-bindings: power: reset: mediatek: add bindings for power device
+Date: Fri, 23 Mar 2018 17:14:58 +0800
+Message-ID: <c5527464207b02d40f1c2682feb97ebf5dd443be.1521794176.git.sean.wang@mediatek.com>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <cover.1521794176.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
-Cc: linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1521794176.git.sean.wang@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, eddie.huang@mediatek.com
+Cc: devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+From: Sean Wang <sean.wang@mediatek.com>
 
-It's unnecessary doing irq_dispose_mapping as a reverse operation for
-platform_get_irq.
+Add device-tree binding for the power device responsible for shutdown a
+remote SoC, which is a tiny circuit block present on MediaTek PMIC based
+RTC.
 
-Ususally, irq_dispose_mapping should be called in error path or module
-removal to release the resources for irq_of_parse_and_map requested.
-
-Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 ---
- drivers/rtc/rtc-mt6397.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ .../bindings/power/reset/mt6397-rtc-poweroff.txt   | 24 ++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
 
-diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-index b62eaa8..cefb83b 100644
---- a/drivers/rtc/rtc-mt6397.c
-+++ b/drivers/rtc/rtc-mt6397.c
-@@ -17,7 +17,6 @@
- #include <linux/module.h>
- #include <linux/regmap.h>
- #include <linux/rtc.h>
--#include <linux/irqdomain.h>
- #include <linux/jiffies.h>
- #include <linux/platform_device.h>
- #include <linux/of_address.h>
-@@ -336,7 +335,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
- 			rtc->irq, ret);
--		goto out_dispose_irq;
-+		return ret;
- 	}
- 
- 	device_init_wakeup(&pdev->dev, 1);
-@@ -353,8 +352,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
- 
- out_free_irq:
- 	free_irq(rtc->irq, rtc->rtc_dev);
--out_dispose_irq:
--	irq_dispose_mapping(rtc->irq);
+diff --git a/Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt b/Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
+new file mode 100644
+index 0000000..75a9d7d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
+@@ -0,0 +1,24 @@
++Device-Tree bindings for Power Device on MediaTek PMIC RTC
 +
- 	return ret;
- }
- 
-@@ -364,7 +362,6 @@ static int mtk_rtc_remove(struct platform_device *pdev)
- 
- 	rtc_device_unregister(rtc->rtc_dev);
- 	free_irq(rtc->irq, rtc->rtc_dev);
--	irq_dispose_mapping(rtc->irq);
- 
- 	return 0;
- }
++The power device is responsible for externally power off or on the remote
++MediaTek SoC through the a tiny circuit block BBPU inside PMIC RTC.
++
++Required parent node:
++- rtc
++	For MediaTek PMIC RTC bindings, see:
++	Documentation/devicetree/bindings/mfd/mt6397.txt
++
++Required properties:
++- compatible: Should be one of follows
++	"mediatek,mt6323-rtc-poweroff": for MT6323 PMIC
++	"mediatek,mt6397-rtc-poweroff": for MT6397 PMIC
++
++Example:
++
++	rtc {
++		compatible = "mediatek,mt6323-rtc";
++
++		power-off {
++			compatible = "mediatek,mt6323-rtc-poweroff";
++		};
++	};
 -- 
 2.7.4
