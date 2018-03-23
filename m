@@ -1,8 +1,7 @@
 From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v1 03/16] dt-bindings: mfd: mediatek: add a description for
- MT6323 RTC
-Date: Fri, 23 Mar 2018 17:15:00 +0800
-Message-ID: <ba4708a34e43fbc12e78804840be1698f84243cc.1521794177.git.sean.wang@mediatek.com>
+Subject: [PATCH v1 15/16] MAINTAINERS: update entry for ARM/Mediatek RTC DRIVER
+Date: Fri, 23 Mar 2018 17:15:12 +0800
+Message-ID: <abadf0686094826b241944ee5563996de9a0f41a.1521794177.git.sean.wang@mediatek.com>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,29 +23,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-Add a description for MT6323 RTC and link it to the detailed binding
-documentation.
+Add new files for new dt-bindings and a globally visible header file.
 
 Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
- Documentation/devicetree/bindings/mfd/mt6397.txt | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ MAINTAINERS | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mfd/mt6397.txt b/Documentation/devicetree/bindings/mfd/mt6397.txt
-index d1df77f..11a748d 100644
---- a/Documentation/devicetree/bindings/mfd/mt6397.txt
-+++ b/Documentation/devicetree/bindings/mfd/mt6397.txt
-@@ -22,8 +22,10 @@ compatible: "mediatek,mt6397" or "mediatek,mt6323"
- Optional subnodes:
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d3c33d7..1c13f29 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1626,9 +1626,11 @@ M:	Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+ L:	linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org (moderated for non-subscribers)
+ L:	linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org (moderated for non-subscribers)
+ S:	Maintained
++F:	Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+ F:	Documentation/devicetree/bindings/rtc/rtc-mt7622.txt
+ F:	drivers/rtc/rtc-mt6397.c
+ F:	drivers/rtc/rtc-mt7622.c
++F:	include/linux/rtc/mt6397.h
  
- - rtc
--	Required properties:
-+	Required properties: Should be one of follows
-+		- compatible: "mediatek,mt6323-rtc"
- 		- compatible: "mediatek,mt6397-rtc"
-+	For details, see Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
- - regulators
- 	Required properties:
- 		- compatible: "mediatek,mt6397-regulator"
+ ARM/Mediatek SoC support
+ M:	Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 -- 
 2.7.4
