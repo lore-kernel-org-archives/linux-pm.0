@@ -1,140 +1,73 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.9 018/177] cpufreq/sh: Replace racy task affinity logic
-Date: Fri, 23 Mar 2018 10:52:26 +0100
-Message-ID: <20180323094205.998254321@linuxfoundation.org>
-References: <20180323094205.090519271@linuxfoundation.org>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
+ task wake-up
+Date: Fri, 23 Mar 2018 15:47:45 +0000
+Message-ID: <20180323154745.GP4589@e105550-lin.cambridge.arm.com>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-6-dietmar.eggemann@arm.com>
+ <20180321153518.GC13951@e110439-lin>
+ <CAJWu+opupHfDF8QoSC2AQnoFXnz3idt6pr-fq6nUp1C59XjtXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180323094205.090519271@linuxfoundation.org>
+Content-Disposition: inline
+In-Reply-To: <CAJWu+opupHfDF8QoSC2AQnoFXnz3idt6pr-fq6nUp1C59XjtXA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sebastian Siewior <bigeasy@linutronix.de>, linux-pm@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Tejun Heo <tj@kernel.org>, "David S. Miller" <davem@davemloft.net>, Len Brown <lenb@kernel.org>, Sasha Levin <alexander.levin@microsoft.com>
+To: Joel Fernandes <joelaf@google.com>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-4.9-stable review patch.  If anyone has any objections, please let me know.
+On Thu, Mar 22, 2018 at 01:10:22PM -0700, Joel Fernandes wrote:
+> On Wed, Mar 21, 2018 at 8:35 AM, Patrick Bellasi
+> <patrick.bellasi@arm.com> wrote:
+> > [...]
+> >
+> >> @@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+> >>                       break;
+> >>               }
+> >>
+> >> +             /*
+> >> +              * Energy-aware task placement is performed on the highest
+> >> +              * non-overutilized domain spanning over cpu and prev_cpu.
+> >> +              */
+> >> +             if (want_energy && !sd_overutilized(tmp) &&
+> >> +                 cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
+> >> +                     energy_sd = tmp;
+> >> +
+> >
+> > Not entirely sure, but I was trying to understand if we can avoid to
+> > modify the definition of want_affine (in the previous chunk) and move
+> > this block before the previous "if (want_affine..." (in mainline but
+> > not in this chunk), which will became an else, e.g.
+> >
+> >         if (want_energy && !sd_overutilized(tmp) &&
+> >                 // ...
+> >         else if (want_energy && !sd_overutilized(tmp) &&
+> >                 // ...
+> >
+> > Isn't that the same?
+> >
+> > Maybe there is a code path I'm missing... but otherwise it seems a
+> > more self contained modification of select_task_rq_fair...
+> 
+> Just replying to this here Patrick instead of the other thread.
+> 
+> I think this is the right place for the block from Quentin quoted
+> above because we want to search for the highest domain that is
+> !overutilized and look among those for the candidates. So from that
+> perspective, we can't move the block to the beginning and it seems to
+> be in the right place. My main concern on the other thread was
+> different, I was talking about the cases where sd_flag & tmp->flags
+> don't match. In that case, sd = NULL would trump EAS and I was
+> wondering if that's the right thing to do...
 
-------------------
+You mean if SD_BALANCE_WAKE isn't set on sched_domains?
 
-From: Thomas Gleixner <tglx@linutronix.de>
+The current code seems to rely on that flag to be set to work correctly.
+Otherwise, the loop might bail out on !want_affine and we end up doing
+the find_energy_efficient_cpu() on the lowest level sched_domain even if
+there is higher level one which isn't over-utilized.
 
-
-[ Upstream commit 205dcc1ecbc566cbc20acf246e68de3b080b3ecf ]
-
-The target() callback must run on the affected cpu. This is achieved by
-temporarily setting the affinity of the calling thread to the requested CPU
-and reset it to the original affinity afterwards.
-
-That's racy vs. concurrent affinity settings for that thread resulting in
-code executing on the wrong CPU.
-
-Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
-already protected against CPU hotplug.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sebastian Siewior <bigeasy@linutronix.de>
-Cc: linux-pm@vger.kernel.org
-Cc: Lai Jiangshan <jiangshanlai@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Len Brown <lenb@kernel.org>
-Link: http://lkml.kernel.org/r/20170412201042.958216363@linutronix.de
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/cpufreq/sh-cpufreq.c |   45 +++++++++++++++++++++++++------------------
- 1 file changed, 27 insertions(+), 18 deletions(-)
-
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -30,54 +30,63 @@
- 
- static DEFINE_PER_CPU(struct clk, sh_cpuclk);
- 
-+struct cpufreq_target {
-+	struct cpufreq_policy	*policy;
-+	unsigned int		freq;
-+};
-+
- static unsigned int sh_cpufreq_get(unsigned int cpu)
- {
- 	return (clk_get_rate(&per_cpu(sh_cpuclk, cpu)) + 500) / 1000;
- }
- 
--/*
-- * Here we notify other drivers of the proposed change and the final change.
-- */
--static int sh_cpufreq_target(struct cpufreq_policy *policy,
--			     unsigned int target_freq,
--			     unsigned int relation)
-+static long __sh_cpufreq_target(void *arg)
- {
--	unsigned int cpu = policy->cpu;
-+	struct cpufreq_target *target = arg;
-+	struct cpufreq_policy *policy = target->policy;
-+	int cpu = policy->cpu;
- 	struct clk *cpuclk = &per_cpu(sh_cpuclk, cpu);
--	cpumask_t cpus_allowed;
- 	struct cpufreq_freqs freqs;
- 	struct device *dev;
- 	long freq;
- 
--	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of(cpu));
--
--	BUG_ON(smp_processor_id() != cpu);
-+	if (smp_processor_id() != cpu)
-+		return -ENODEV;
- 
- 	dev = get_cpu_device(cpu);
- 
- 	/* Convert target_freq from kHz to Hz */
--	freq = clk_round_rate(cpuclk, target_freq * 1000);
-+	freq = clk_round_rate(cpuclk, target->freq * 1000);
- 
- 	if (freq < (policy->min * 1000) || freq > (policy->max * 1000))
- 		return -EINVAL;
- 
--	dev_dbg(dev, "requested frequency %u Hz\n", target_freq * 1000);
-+	dev_dbg(dev, "requested frequency %u Hz\n", target->freq * 1000);
- 
- 	freqs.old	= sh_cpufreq_get(cpu);
- 	freqs.new	= (freq + 500) / 1000;
- 	freqs.flags	= 0;
- 
--	cpufreq_freq_transition_begin(policy, &freqs);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	cpufreq_freq_transition_begin(target->policy, &freqs);
- 	clk_set_rate(cpuclk, freq);
--	cpufreq_freq_transition_end(policy, &freqs, 0);
-+	cpufreq_freq_transition_end(target->policy, &freqs, 0);
- 
- 	dev_dbg(dev, "set frequency %lu Hz\n", freq);
--
- 	return 0;
- }
- 
-+/*
-+ * Here we notify other drivers of the proposed change and the final change.
-+ */
-+static int sh_cpufreq_target(struct cpufreq_policy *policy,
-+			     unsigned int target_freq,
-+			     unsigned int relation)
-+{
-+	struct cpufreq_target data = { .policy = policy, .freq = target_freq };
-+
-+	return work_on_cpu(policy->cpu, __sh_cpufreq_target, &data);
-+}
-+
- static int sh_cpufreq_verify(struct cpufreq_policy *policy)
- {
- 	struct clk *cpuclk = &per_cpu(sh_cpuclk, policy->cpu);
+However, SD_BALANCE_WAKE should be set if SD_ASYM_CPUCAPACITY is set so
+sd == NULL shouldn't be possible? This only holds as long as we only
+want EAS for asymmetric systems.
