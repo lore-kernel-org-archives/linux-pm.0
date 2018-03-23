@@ -1,110 +1,140 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v7 0/6] typec: tcpm: Add sink side support for PPS
-Date: Fri, 23 Mar 2018 10:12:19 +0000
-Message-ID: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.9 018/177] cpufreq/sh: Replace racy task affinity logic
+Date: Fri, 23 Mar 2018 10:52:26 +0100
+Message-ID: <20180323094205.998254321@linuxfoundation.org>
+References: <20180323094205.090519271@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180323094205.090519271@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sebastian Siewior <bigeasy@linutronix.de>, linux-pm@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Tejun Heo <tj@kernel.org>, "David S. Miller" <davem@davemloft.net>, Len Brown <lenb@kernel.org>, Sasha Levin <alexander.levin@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch set adds sink side support for the PPS feature introduced in the
-USB PD 3.0 specification.
+4.9-stable review patch.  If anyone has any objections, please let me know.
 
-The source PPS supply is represented using the Power Supply framework to provide
-access and control APIs for dealing with it's operating voltage and current,
-and switching between a standard PDO and PPS APDO operation. During standard PDO
-operation the voltage and current is read-only, but for APDO PPS these are
-writable as well to allow for control.
+------------------
 
-It should be noted that the keepalive for PPS is not handled within TCPM. The
-expectation is that the external user will be required to ensure re-requests
-occur regularly to ensure PPS remains and the source does not hard reset.
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Changes in v7:
- - Further tidy up with bracket usage and unwanted initialisation.
- - Stop using else if statement after break.
- - Added NULL checking of psy_name after devm_kzalloc().
- - Reinstate PD_ROLE_SWAP_TIMEOUT and revert role swap functions to use this.
- - Add PD_PPS_CTRL_TIMEOUT for PPS related control functions.
 
-Changes in v6:
- - Remove unnecessary use of 'data' variable and associated kzalloc/kfree call
-   for extended message handling.
- - Add patch for error checking psy_desc struct in psy register code.
- - Add error checking of usb_type property in psy register code.
- - Cosmetic () and initialisation changes as requested by Guenter.
- - Removed Acked-by and Reviewed-by, from Heikki and Sebastian respectively, on
-   patch 04 as there have been changes to error handling with regards to
-   usb_type, so didn't feel appropriate to keep them.
+[ Upstream commit 205dcc1ecbc566cbc20acf246e68de3b080b3ecf ]
 
-Changes in v5:
- - Rebase on branch with 'Revert "typec: tcpm: Only request matching pdos"' and
-   header changes already included.
- - Update power_supply registration to make power_supply names unique per port,
-   to avoid errors creating duplicate psy instances. New name uses port
-   dev name as a suffix.
- - Renamed 'connected_type' psy property to 'usb_type', as requested by
-   maintainer.
- - Added initial attempt at generic ABI documentation for common psy class
-   properties for Battery and USB type supplies.
- - Small update to PPS APDO selection code to limit maximum current requested
-   based on sink maximum allowed current. Have left Heikki's 'Acked-by' tag as
-   it's a minor change, but can remove if that's not deemed appropriate.
+The target() callback must run on the affected cpu. This is achieved by
+temporarily setting the affinity of the calling thread to the requested CPU
+and reset it to the original affinity afterwards.
 
-Changes in v4:
- - For PD 3.0 definitions patch, make it benign with regards to existing TCPM
-   code so build isn't broken if this one patch is applied, as suggested by
-   kbuild robot. Update for dynamic revision is moved to be part of sink side
-   PPS support patch.
- - Use PTR_ERR_OR_ZERO macro to simplify return of devm_tcpm_psy_register()
-   function, as suggested by kbuild robot.
- - Make devm_tcpm_psy_register() static as not used outside this file.
+That's racy vs. concurrent affinity settings for that thread resulting in
+code executing on the wrong CPU.
 
-Changes in v3:
- - Drop 'RFC' from patch series titles
- - Rename PPS related defines to be PPS specific rather than generic APDO titles
- - Update source caps logging to only print PPS APDOs, and for others report as
-   undefined.
- - Add ABI documentation for tcpm-source-psy sysfs properties
- - Rebase PDO selection on top of 'typec: tcpm: Only request matching pdos'
-   patch.
- - Update capabilities validation introduced in
-   'typec: tcpm: Validate source and sink caps' to support PPS APDOs.
- - Dropped power_supply 'type' property update for PPS addition
- - Added 'connected_type' property to power_supply framework, to support
-   supplies which can report multiple connected types (e.g. USB), as discussed
-   with Heikki.
+Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
+already protected against CPU hotplug.
 
-Changes in v2:
- - Use USB_PD and usb_pd prefixes for macros and inline functions in headers.
- - Negotiate spec revision of PD headers during initial contract agreement.
- - New headers now use SPDX tags for referencing correct license.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sebastian Siewior <bigeasy@linutronix.de>
+Cc: linux-pm@vger.kernel.org
+Cc: Lai Jiangshan <jiangshanlai@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Len Brown <lenb@kernel.org>
+Link: http://lkml.kernel.org/r/20170412201042.958216363@linutronix.de
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/cpufreq/sh-cpufreq.c |   45 +++++++++++++++++++++++++------------------
+ 1 file changed, 27 insertions(+), 18 deletions(-)
 
-NOTE: Code changes based on usb-next (027bd6cafd9a1e3a109b5e5682c85ac84e804a8d)
-
-Adam Thomson (6):
-  typec: tcpm: Add core support for sink side PPS
-  Documentation: power: Initial effort to document power_supply ABI
-  power: supply: Add error checking of psy desc during registration
-  power: supply: Add 'usb_type' property and supporting code
-  typec: tcpm: Represent source supply through power_supply
-  typec: tcpm: Add support for sink PPS related messages
-
- Documentation/ABI/testing/sysfs-class-power | 455 ++++++++++++++
- MAINTAINERS                                 |   1 +
- drivers/power/supply/power_supply_core.c    |  11 +-
- drivers/power/supply/power_supply_sysfs.c   |  45 ++
- drivers/usb/typec/Kconfig                   |   1 +
- drivers/usb/typec/fusb302/Kconfig           |   2 +-
- drivers/usb/typec/fusb302/fusb302.c         |  63 +-
- drivers/usb/typec/tcpm.c                    | 903 +++++++++++++++++++++++++++-
- include/linux/power_supply.h                |  16 +
- include/linux/usb/pd.h                      |   4 +-
- include/linux/usb/tcpm.h                    |   1 +
- 11 files changed, 1417 insertions(+), 85 deletions(-)
-
--- 
-1.9.1
+--- a/drivers/cpufreq/sh-cpufreq.c
++++ b/drivers/cpufreq/sh-cpufreq.c
+@@ -30,54 +30,63 @@
+ 
+ static DEFINE_PER_CPU(struct clk, sh_cpuclk);
+ 
++struct cpufreq_target {
++	struct cpufreq_policy	*policy;
++	unsigned int		freq;
++};
++
+ static unsigned int sh_cpufreq_get(unsigned int cpu)
+ {
+ 	return (clk_get_rate(&per_cpu(sh_cpuclk, cpu)) + 500) / 1000;
+ }
+ 
+-/*
+- * Here we notify other drivers of the proposed change and the final change.
+- */
+-static int sh_cpufreq_target(struct cpufreq_policy *policy,
+-			     unsigned int target_freq,
+-			     unsigned int relation)
++static long __sh_cpufreq_target(void *arg)
+ {
+-	unsigned int cpu = policy->cpu;
++	struct cpufreq_target *target = arg;
++	struct cpufreq_policy *policy = target->policy;
++	int cpu = policy->cpu;
+ 	struct clk *cpuclk = &per_cpu(sh_cpuclk, cpu);
+-	cpumask_t cpus_allowed;
+ 	struct cpufreq_freqs freqs;
+ 	struct device *dev;
+ 	long freq;
+ 
+-	cpus_allowed = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+-
+-	BUG_ON(smp_processor_id() != cpu);
++	if (smp_processor_id() != cpu)
++		return -ENODEV;
+ 
+ 	dev = get_cpu_device(cpu);
+ 
+ 	/* Convert target_freq from kHz to Hz */
+-	freq = clk_round_rate(cpuclk, target_freq * 1000);
++	freq = clk_round_rate(cpuclk, target->freq * 1000);
+ 
+ 	if (freq < (policy->min * 1000) || freq > (policy->max * 1000))
+ 		return -EINVAL;
+ 
+-	dev_dbg(dev, "requested frequency %u Hz\n", target_freq * 1000);
++	dev_dbg(dev, "requested frequency %u Hz\n", target->freq * 1000);
+ 
+ 	freqs.old	= sh_cpufreq_get(cpu);
+ 	freqs.new	= (freq + 500) / 1000;
+ 	freqs.flags	= 0;
+ 
+-	cpufreq_freq_transition_begin(policy, &freqs);
+-	set_cpus_allowed_ptr(current, &cpus_allowed);
++	cpufreq_freq_transition_begin(target->policy, &freqs);
+ 	clk_set_rate(cpuclk, freq);
+-	cpufreq_freq_transition_end(policy, &freqs, 0);
++	cpufreq_freq_transition_end(target->policy, &freqs, 0);
+ 
+ 	dev_dbg(dev, "set frequency %lu Hz\n", freq);
+-
+ 	return 0;
+ }
+ 
++/*
++ * Here we notify other drivers of the proposed change and the final change.
++ */
++static int sh_cpufreq_target(struct cpufreq_policy *policy,
++			     unsigned int target_freq,
++			     unsigned int relation)
++{
++	struct cpufreq_target data = { .policy = policy, .freq = target_freq };
++
++	return work_on_cpu(policy->cpu, __sh_cpufreq_target, &data);
++}
++
+ static int sh_cpufreq_verify(struct cpufreq_policy *policy)
+ {
+ 	struct clk *cpuclk = &per_cpu(sh_cpuclk, policy->cpu);
