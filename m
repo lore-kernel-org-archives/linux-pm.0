@@ -1,7 +1,7 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH v1 14/16] power: reset: mediatek: add a power-off driver using PMIC RTC device
-Date: Fri, 23 Mar 2018 17:15:11 +0800
-Message-ID: <ba7cd65b58f335b44896bd671f8b0f851d04fc01.1521794177.git.sean.wang@mediatek.com>
+Subject: [PATCH v1 12/16] rtc: mediatek: cleanup header files to include
+Date: Fri, 23 Mar 2018 17:15:09 +0800
+Message-ID: <6e4f709162d57c6e81dfca0996f88358080bf411.1521794177.git.sean.wang@mediatek.com>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,176 +14,41 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-The power device is responsible for externally down or up the power
-of the remote MediaTek SoC through the tiny circuit BBPU inside PMIC RTC.
-
-Though it's a part of RTC device, it would be better to be a standalone
-driver against existent RTC driver so as to make concentration on works
-about power-controlling topic and help gather more improvements while the
-subsystem's constantly growing.
-
-Currently, the most basic functionality supported is to just power off the
-system by writing to a special bit field in BBPU register after the system
-has reached pm_poweroff.
+Clean up those included header files by removing unreferenced ones,
+add missing ones the driver explicitly depends on and finally list
+all #includes in alphabetical order.
 
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 ---
- drivers/power/reset/Kconfig               |   9 +++
- drivers/power/reset/Makefile              |   1 +
- drivers/power/reset/mt6397-rtc-poweroff.c | 100 ++++++++++++++++++++++++++++++
- include/linux/rtc/mt6397.h                |   1 +
- 4 files changed, 111 insertions(+)
- create mode 100644 drivers/power/reset/mt6397-rtc-poweroff.c
+ drivers/rtc/rtc-mt6397.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index a102e74..0bd4603 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -121,6 +121,15 @@ config POWER_RESET_LTC2952
- 	  This driver supports an external powerdown trigger and board power
- 	  down via the LTC2952. Bindings are made in the device tree.
+diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+index 015609d..f5dc70d 100644
+--- a/drivers/rtc/rtc-mt6397.c
++++ b/drivers/rtc/rtc-mt6397.c
+@@ -12,18 +12,15 @@
+ * GNU General Public License for more details.
+ */
  
-+config POWER_RESET_MT6397_RTC
-+	bool "MediaTek MT6397 RTC power-off driver"
-+	help
-+	  This driver supports turning off a remote MediaTek SoC by
-+	  controlling BBPU on MT6397 or MT6323 RTC.
-+
-+	  Select this if you're building a kernel with your MediaTek SoC
-+	  with an equipment with MT6397 or MT6323 PMIC.
-+
- config POWER_RESET_QNAP
- 	bool "QNAP power-off driver"
- 	depends on OF_GPIO && PLAT_ORION
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index dcc92f5..d45099e 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
-+obj-$(CONFIG_POWER_RESET_MT6397_RTC) += mt6397-rtc-poweroff.o
- obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
-diff --git a/drivers/power/reset/mt6397-rtc-poweroff.c b/drivers/power/reset/mt6397-rtc-poweroff.c
-new file mode 100644
-index 0000000..9b57366
---- /dev/null
-+++ b/drivers/power/reset/mt6397-rtc-poweroff.c
-@@ -0,0 +1,100 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Power-off using MediaTek PMIC RTC device
-+ *
-+ * Copyright (C) 2018 MediaTek Inc.
-+ *
-+ * Author: Sean Wang <sean.wang@mediatek.com>
-+ *
-+ */
-+
+-#include <linux/delay.h>
+-#include <linux/init.h>
 +#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
+ #include <linux/interrupt.h>
++#include <linux/mfd/mt6397/core.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/of_platform.h>
 +#include <linux/platform_device.h>
-+#include <linux/rtc/mt6397.h>
-+
-+struct mt6397_rtc_powercon {
-+	struct device *dev;
-+	struct mt6397_rtc *rtc;
-+};
-+
-+static struct mt6397_rtc_powercon *mt_powercon;
-+
-+static void mt6397_rtc_do_poweroff(void)
-+{
-+	struct mt6397_rtc_powercon *powercon = mt_powercon;
-+	struct mt6397_rtc *rtc = powercon->rtc;
-+	unsigned int val;
-+	int ret;
-+
-+	regmap_write(rtc->regmap, rtc->addr_base + RTC_BBPU, RTC_BBPU_KEY);
-+	regmap_write(rtc->regmap, rtc->addr_base + RTC_WRTGR, 1);
-+
-+	ret = regmap_read_poll_timeout(rtc->regmap,
-+				       rtc->addr_base + RTC_BBPU, val,
-+				       !(val & RTC_BBPU_CBUSY),
-+				       MTK_RTC_POLL_DELAY_US,
-+				       MTK_RTC_POLL_TIMEOUT);
-+	if (ret)
-+		dev_err(powercon->dev, "failed to write BBPU: %d\n", ret);
-+
-+	/* Wait some time until system down, otherwise, notice with a warn */
-+	mdelay(1000);
-+
-+	WARN_ONCE(1, "Unable to poweroff system\n");
-+}
-+
-+static int mt6397_rtc_poweroff_probe(struct platform_device *pdev)
-+{
-+	struct mt6397_rtc *rtc = dev_get_drvdata(pdev->dev.parent);
-+	struct mt6397_rtc_powercon *powercon;
-+
-+	if (!rtc) {
-+		dev_err(&pdev->dev, "Can't find RTC as the parent\n");
-+		return -ENODEV;
-+	}
-+
-+	powercon = devm_kzalloc(&pdev->dev, sizeof(*powercon), GFP_KERNEL);
-+	if (!powercon)
-+		return -ENOMEM;
-+
-+	powercon->dev = &pdev->dev;
-+	powercon->rtc = rtc;
-+	mt_powercon = powercon;
-+
-+	pm_power_off = &mt6397_rtc_do_poweroff;
-+
-+	return 0;
-+}
-+
-+static int mt6397_rtc_poweroff_remove(struct platform_device *pdev)
-+{
-+	if (pm_power_off == &mt6397_rtc_do_poweroff)
-+		pm_power_off = NULL;
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id mt6397_rtc_poweroff_dt_match[] = {
-+	{ .compatible = "mediatek,mt6323-rtc-poweroff" },
-+	{ .compatible = "mediatek,mt6397-rtc-poweroff" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mt6397_rtc_poweroff_dt_match);
-+
-+static struct platform_driver mt6397_rtc_poweroff_driver = {
-+	.probe		= mt6397_rtc_poweroff_probe,
-+	.remove		= mt6397_rtc_poweroff_remove,
-+	.driver		= {
-+		.name	= "mt6397-rtc-poweroff",
-+		.of_match_table = mt6397_rtc_poweroff_dt_match,
-+	},
-+};
-+
-+module_platform_driver(mt6397_rtc_poweroff_driver);
-+
-+MODULE_DESCRIPTION("Poweroff driver using MediaTek PMIC RTC");
-+MODULE_AUTHOR("Sean Wang <sean.wang@mediatek.com>");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:mt6397-rtc-poweroff");
-diff --git a/include/linux/rtc/mt6397.h b/include/linux/rtc/mt6397.h
-index 4b19f51..e618974 100644
---- a/include/linux/rtc/mt6397.h
-+++ b/include/linux/rtc/mt6397.h
-@@ -17,6 +17,7 @@
+ #include <linux/regmap.h>
+ #include <linux/rtc.h>
+-#include <linux/platform_device.h>
+-#include <linux/of_address.h>
+-#include <linux/of_irq.h>
+-#include <linux/io.h>
+-#include <linux/mfd/mt6397/core.h>
+ #include <linux/rtc/mt6397.h>
  
- #define RTC_BBPU		0x0000
- #define RTC_BBPU_CBUSY		BIT(6)
-+#define RTC_BBPU_KEY            (0x43 << 8)
- 
- #define RTC_WRTGR		0x003c
- 
+ static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
 -- 
 2.7.4
