@@ -1,8 +1,7 @@
 From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v1 04/16] mfd: mt6397: add MT6323 RTC support into MT6397
- driver
-Date: Fri, 23 Mar 2018 17:15:01 +0800
-Message-ID: <90320622cb491b9d3251e2ce9d0501422f47660f.1521794177.git.sean.wang@mediatek.com>
+Subject: [PATCH v1 02/16] dt-bindings: rtc: mediatek: add bindings for PMIC RTC
+Date: Fri, 23 Mar 2018 17:14:59 +0800
+Message-ID: <5846e8be319c4836808c8127d5bb51b7e999e896.1521794177.git.sean.wang@mediatek.com>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,66 +23,58 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-Add compatible string as "mt6323-rtc" that will make the OF core spawn
-child devices for the RTC subnode of that MT6323 MFD node.
+Add device-tree binding for MediaTek PMIC based RTC.
 
 Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
- drivers/mfd/mt6397-core.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/rtc/rtc-mt6397.txt         | 39 ++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
 
-diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
-index 77b64bd..f71874a 100644
---- a/drivers/mfd/mt6397-core.c
-+++ b/drivers/mfd/mt6397-core.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2014 MediaTek Inc.
-+ * Copyright (c) 2014-2018 MediaTek Inc.
-  * Author: Flora Fu, MediaTek
-  *
-  * This program is free software; you can redistribute it and/or modify
-@@ -23,6 +23,9 @@
- #include <linux/mfd/mt6397/registers.h>
- #include <linux/mfd/mt6323/registers.h>
- 
-+#define MT6323_RTC_BASE		0x8000
-+#define MT6323_RTC_SIZE		0x3e
+diff --git a/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+new file mode 100644
+index 0000000..83ff6be
+--- /dev/null
++++ b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+@@ -0,0 +1,39 @@
++Device-Tree bindings for MediaTek PMIC based RTC
 +
- #define MT6397_RTC_BASE		0xe000
- #define MT6397_RTC_SIZE		0x3e
- 
-@@ -30,6 +33,19 @@
- #define MT6391_CID_CODE		0x91
- #define MT6397_CID_CODE		0x97
- 
-+static const struct resource mt6323_rtc_resources[] = {
-+	{
-+		.start = MT6323_RTC_BASE,
-+		.end   = MT6323_RTC_BASE + MT6323_RTC_SIZE,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = MT6323_IRQ_STATUS_RTC,
-+		.end   = MT6323_IRQ_STATUS_RTC,
-+		.flags = IORESOURCE_IRQ,
-+	},
++MediaTek PMIC based RTC is an independent function of MediaTek PMIC which
++is working as a multi-function device (MFD). And the RTC can be configured and
++set up via PMIC wrapper bus. Which is also common resource shared among the
++other functions present on the PMIC.
++
++For MediaTek PMIC wrapper bus bindings, see:
++Documentation/devicetree/bindings/soc/mediatek/pwrap.txt
++
++Required parent node:
++- pmic
++  For MediaTek PMIC MFD bindings, see:
++  Documentation/devicetree/bindings/mfd/mt6397.txt
++
++Required properties:
++- compatible: Should be one of follows
++	"mediatek,mt6323-rtc": for MT6323 PMIC
++	"mediatek,mt6397-rtc": for MT6397 PMIC
++
++Optional child node:
++- power-off
++  For Power-Off Device for MediaTek PMIC RTC bindings, see:
++  Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
++
++Example:
++
++	pmic {
++		compatible = "mediatek,mt6323";
++
++		...
++		rtc {
++			compatible = "mediatek,mt6323-rtc";
++
++			power-off {
++				compatible = "mediatek,mt6323-rtc-poweroff";
++			};
++		};
 +};
-+
- static const struct resource mt6397_rtc_resources[] = {
- 	{
- 		.start = MT6397_RTC_BASE,
-@@ -55,6 +71,11 @@ static const struct resource mt6397_keys_resources[] = {
- 
- static const struct mfd_cell mt6323_devs[] = {
- 	{
-+		.name = "mt6323-rtc",
-+		.num_resources = ARRAY_SIZE(mt6323_rtc_resources),
-+		.resources = mt6323_rtc_resources,
-+		.of_compatible = "mediatek,mt6323-rtc",
-+	}, {
- 		.name = "mt6323-regulator",
- 		.of_compatible = "mediatek,mt6323-regulator"
- 	}, {
 -- 
 2.7.4
