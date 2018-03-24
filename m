@@ -1,195 +1,102 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH v1 11/16] rtc: mediatek: move the declaration into a
- globally visible header file
-Date: Sat, 24 Mar 2018 15:31:49 +0800
-Message-ID: <1521876709.28226.34.camel@mtkswgap22>
-References: <cover.1521794176.git.sean.wang@mediatek.com>
-         <53afbe8172fb1afd809ce9ba1afeda924b9ea705.1521794177.git.sean.wang@mediatek.com>
-         <20180323095740.GD3417@piout.net>
+From: "Yang, Shunyong" <shunyong.yang@hxt-semitech.com>
+Subject: Re: [RFC PATCH] cpufreq: Calling init() of cpufreq_driver  when
+ policy inactive cpu online
+Date: Sat, 24 Mar 2018 09:37:37 +0000
+Message-ID: <1521884257.2887.11.camel@hxt-semitech.com>
+References: <1521627703-7728-1-git-send-email-shunyong.yang@hxt-semitech.com>
+         <20180322033013.3mqhf2fnbaqfdgay@vireshk-mac-ubuntu>
+         <1521696919.2792.19.camel@hxt-semitech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180323095740.GD3417@piout.net>
+In-Reply-To: <1521696919.2792.19.camel@hxt-semitech.com>
+Content-Language: en-US
+Content-ID: <63AF6496BD13E441AFD99CCFFABC24AC@hxt-semitech.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zheng, Joey" <yu.zheng@hxt-semitech.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Wang, Dongsheng" <dongsheng.wang@hxt-semitech.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-03-23 at 10:57 +0100, Alexandre Belloni wrote:
-> On 23/03/2018 at 17:15:08 +0800, sean.wang@mediatek.com wrote:
-> > From: Sean Wang <sean.wang@mediatek.com>
-> > 
-> > This is in preparation for allowing other drivers can share the
-> > declaration, so move the declaration into a globally visible header file.
-> > 
-> > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> > ---
-> >  drivers/rtc/rtc-mt6397.c   | 53 +---------------------------------
-> >  include/linux/rtc/mt6397.h | 72 ++++++++++++++++++++++++++++++++++++++++++++++
-> 
-> This should go in include/linux/mfd/
-
-include/linux/mfd/mt6397 is present, so include/linux/mfd/mt6397/rtc.h
-seems a nice place to keep these declarations for the pmic rtc.
-
-> >  2 files changed, 73 insertions(+), 52 deletions(-)
-> >  create mode 100644 include/linux/rtc/mt6397.h
-> > 
-> > diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-> > index d133d1f..015609d 100644
-> > --- a/drivers/rtc/rtc-mt6397.c
-> > +++ b/drivers/rtc/rtc-mt6397.c
-> > @@ -19,63 +19,12 @@
-> >  #include <linux/of_platform.h>
-> >  #include <linux/regmap.h>
-> >  #include <linux/rtc.h>
-> > -#include <linux/jiffies.h>
-> >  #include <linux/platform_device.h>
-> >  #include <linux/of_address.h>
-> >  #include <linux/of_irq.h>
-> >  #include <linux/io.h>
-> >  #include <linux/mfd/mt6397/core.h>
-> > -
-> > -#define RTC_BBPU		0x0000
-> > -#define RTC_BBPU_CBUSY		BIT(6)
-> > -
-> > -#define RTC_WRTGR		0x003c
-> > -
-> > -#define RTC_IRQ_STA		0x0002
-> > -#define RTC_IRQ_STA_AL		BIT(0)
-> > -#define RTC_IRQ_STA_LP		BIT(3)
-> > -
-> > -#define RTC_IRQ_EN		0x0004
-> > -#define RTC_IRQ_EN_AL		BIT(0)
-> > -#define RTC_IRQ_EN_ONESHOT	BIT(2)
-> > -#define RTC_IRQ_EN_LP		BIT(3)
-> > -#define RTC_IRQ_EN_ONESHOT_AL	(RTC_IRQ_EN_ONESHOT | RTC_IRQ_EN_AL)
-> > -
-> > -#define RTC_AL_MASK		0x0008
-> > -#define RTC_AL_MASK_DOW		BIT(4)
-> > -
-> > -#define RTC_TC_SEC		0x000a
-> > -/* Min, Hour, Dom... register offset to RTC_TC_SEC */
-> > -#define RTC_OFFSET_SEC		0
-> > -#define RTC_OFFSET_MIN		1
-> > -#define RTC_OFFSET_HOUR		2
-> > -#define RTC_OFFSET_DOM		3
-> > -#define RTC_OFFSET_DOW		4
-> > -#define RTC_OFFSET_MTH		5
-> > -#define RTC_OFFSET_YEAR		6
-> > -#define RTC_OFFSET_COUNT	7
-> > -
-> > -#define RTC_AL_SEC		0x0018
-> > -
-> > -#define RTC_PDN2		0x002e
-> > -#define RTC_PDN2_PWRON_ALARM	BIT(4)
-> > -
-> > -#define RTC_MIN_YEAR		1968
-> > -#define RTC_BASE_YEAR		1900
-> > -#define RTC_NUM_YEARS		128
-> > -#define RTC_MIN_YEAR_OFFSET	(RTC_MIN_YEAR - RTC_BASE_YEAR)
-> > -
-> > -#define MTK_RTC_POLL_DELAY_US	10
-> > -#define MTK_RTC_POLL_TIMEOUT	(jiffies_to_usecs(HZ))
-> > -
-> > -struct mt6397_rtc {
-> > -	struct device		*dev;
-> > -	struct rtc_device	*rtc_dev;
-> > -	struct mutex		lock;
-> > -	struct regmap		*regmap;
-> > -	int			irq;
-> > -	u32			addr_base;
-> > -};
-> > +#include <linux/rtc/mt6397.h>
-> >  
-> >  static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
-> >  {
-> > diff --git a/include/linux/rtc/mt6397.h b/include/linux/rtc/mt6397.h
-> > new file mode 100644
-> > index 0000000..4b19f51
-> > --- /dev/null
-> > +++ b/include/linux/rtc/mt6397.h
-> > @@ -0,0 +1,72 @@
-> > +
-> 
-> Unnecessary empty line
-> 
-
-will remove the unnecessary empty line
-
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/*
-> > + * Copyright (C) 2014-2018 MediaTek Inc.
-> > + *
-> > + * Author: Tianping.Fang <tianping.fang@mediatek.com>
-> > + *	   Sean Wang <sean.wang@mediatek.com>
-> > + */
-> > +
-> > +#ifndef _LINUX_RTC_MT6397_H_
-> > +#define _LINUX_RTC_MT6397_H_
-> > +
-> > +#include <linux/jiffies.h>
-> > +#include <linux/mutex.h>
-> > +#include <linux/regmap.h>
-> > +#include <linux/rtc.h>
-> > +
-> > +#define RTC_BBPU		0x0000
-> > +#define RTC_BBPU_CBUSY		BIT(6)
-> > +
-> > +#define RTC_WRTGR		0x003c
-> > +
-> > +#define RTC_IRQ_STA		0x0002
-> > +#define RTC_IRQ_STA_AL		BIT(0)
-> > +#define RTC_IRQ_STA_LP		BIT(3)
-> > +
-> > +#define RTC_IRQ_EN		0x0004
-> > +#define RTC_IRQ_EN_AL		BIT(0)
-> > +#define RTC_IRQ_EN_ONESHOT	BIT(2)
-> > +#define RTC_IRQ_EN_LP		BIT(3)
-> > +#define RTC_IRQ_EN_ONESHOT_AL	(RTC_IRQ_EN_ONESHOT | RTC_IRQ_EN_AL)
-> > +
-> > +#define RTC_AL_MASK		0x0008
-> > +#define RTC_AL_MASK_DOW		BIT(4)
-> > +
-> > +#define RTC_TC_SEC		0x000a
-> > +/* Min, Hour, Dom... register offset to RTC_TC_SEC */
-> > +#define RTC_OFFSET_SEC		0
-> > +#define RTC_OFFSET_MIN		1
-> > +#define RTC_OFFSET_HOUR		2
-> > +#define RTC_OFFSET_DOM		3
-> > +#define RTC_OFFSET_DOW		4
-> > +#define RTC_OFFSET_MTH		5
-> > +#define RTC_OFFSET_YEAR		6
-> > +#define RTC_OFFSET_COUNT	7
-> > +
-> > +#define RTC_AL_SEC		0x0018
-> > +
-> > +#define RTC_PDN2		0x002e
-> > +#define RTC_PDN2_PWRON_ALARM	BIT(4)
-> > +
-> > +#define RTC_MIN_YEAR		1968
-> > +#define RTC_BASE_YEAR		1900
-> > +#define RTC_NUM_YEARS		128
-> > +#define RTC_MIN_YEAR_OFFSET	(RTC_MIN_YEAR - RTC_BASE_YEAR)
-> > +
-> > +#define MTK_RTC_POLL_DELAY_US	10
-> > +#define MTK_RTC_POLL_TIMEOUT	(jiffies_to_usecs(HZ))
-> > +
-> > +struct mt6397_rtc {
-> > +	struct device		*dev;
-> > +	struct rtc_device	*rtc_dev;
-> > +
-> > +	/* protect registers accessing */
-> > +	struct mutex		lock;
-> > +	struct regmap		*regmap;
-> > +	int			irq;
-> > +	u32			addr_base;
-> > +};
-> > +
-> > +#endif /* _LINUX_RTC_MT6397_H_ */
-> > +
-> > -- 
-> > 2.7.4
-> > 
-> 
+SGksIEt1bWFyLA0KDQpPbiBXZWQsIDIwMTgtMDMtMjEgYXQgMjI6MzUgLTA3MDAsIFlhbmcsIFNo
+dW55b25nIHdyb3RlOg0KPiBIaSwgS3VtYXINCj4gDQo+IE9uIFRodSwgMjAxOC0wMy0yMiBhdCAx
+MTozMCArMDgwMCwgVmlyZXNoIEt1bWFyIHdyb3RlOg0KPiA+IA0KPiA+IE9uIDIxLTAzLTE4LCAx
+ODoyMSwgU2h1bnlvbmcgWWFuZyB3cm90ZToNCj4gPiA+IA0KPiA+ID4gDQo+ID4gPiBXaGVuIG11
+bHRpcGxlIGNwdXMgYXJlIHJlbGF0ZWQgaW4gb25lIGNwdWZyZXEgcG9saWN5LCB0aGUgZmlyc3QN
+Cj4gPiA+IG9ubGluZSBjcHUNCj4gPiA+IHdpbGwgYmUgY2hvc2VuIGJ5IGRlZmF1bHQgdG8gaGFu
+ZGxlIGNwdWZyZXEgb3BlcmF0aW9ucy4gSW4gYSBDUFBDDQo+ID4gPiBjYXNlLA0KPiA+ID4gbGV0
+J3MgdGFrZSB0d28gcmVsYXRlZCBjcHVzLCBjcHUwIGFuZCBjcHUxIGFzIGFuIGV4YW1wbGUuDQo+
+ID4gPiANCj4gPiA+IEFmdGVyIHN5c3RlbSBzdGFydCwgY3B1MCBpcyB0aGUgZmlyc3Qgb25saW5l
+IGNwdS4gQ3B1ZnJlcSBwb2xpY3kNCj4gPiA+IHdpbGwgYmUNCj4gPiA+IGFsbG9jYXRlZCBhbmQg
+aW5pdCgpIGluIGNwdWZyZXFfZHJpdmVyIHdpbGwgYmUgY2FsbGVkIHRvDQo+ID4gPiBpbml0aWFs
+aXplDQo+ID4gPiBjcHUwJ3MNCj4gPiA+IHBlcmYgY2FwYWJpbGl0aWVzIGFuZCBwb2xpY3kgcGFy
+YW1ldGVycy4NCj4gPiBOb3QgZXhhY3RseS4gVGhlIGluaXQoKSBpcyBjYWxsZWQgdG8gaW5pdGlh
+bGl6ZSBzdHVmZiBmb3IgYWxsIHRoZQ0KPiA+IENQVXMgdGhhdA0KPiA+IHNob3VsZCBiZSBwYXJ0
+IG9mIHBvbGljeS0+cmVsYXRlZF9jcHVzIGFmdGVyIGluaXQoKSBoYXMgcmV0dXJuZWQuDQo+ID4g
+U28NCj4gPiB5b3Ugc2hvdWxkDQo+ID4gaW5pdGlhbGl6ZSBwZXJmIGNhcGFiaWxpdGllcyBmb3Ig
+YWxsIG9mIHRoZW0uDQoNClRoYW5rcyBmb3IgeW91ciByZXZpZXcuDQpBcyBjdXJyZW50IENQUEMg
+b25seSBzdXBwb3J0cyBDUFVGUkVRX1NIQVJFRF9UWVBFX0FOWS4gQW5kIEkgdGhpbmsgdGhpcw0K
+aXMgdGhlIGNhc2UgZm9yIG1vc3Qgc3lzdGVtcy7CoA0KQWNjb3JkaW5nIHRvIHlvdXIgc3VnZ2Vz
+dGlvbiB0byBpbml0aWFsaXplIGFsbCBwZXJmb3JtYW5jZSBjYXBhYmlsaXRpcw0KaW4gb25lIGlu
+aXQoKSBjYWxsLCBJIHdhbnQgdG8gY2hhbmdlIHRvIG9ubHkgY29weSB0aGUgb25saW5lIGNwdSdz
+DQpwZXJmb3JtYW5jZSBjYXBhYmlsaXRpZXMgdG8gb3RoZXIgc2hhcmVkIGNwdXMuIEFuZCBJIHRl
+c3RlZCBvbiBRREYyNDAwDQpwbGF0Zm9ybSwgaXQgd29ya3Mgd2VsbC4NCg0KQ291bGQgeW91IHBs
+ZWFzZSBoYXZlIGNvbW1lbnRzIG9uIHRoaXM/wqANCg0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9j
+cHVmcmVxL2NwcGNfY3B1ZnJlcS5jDQpiL2RyaXZlcnMvY3B1ZnJlcS9jcHBjX2NwdWZyZXEuYw0K
+aW5kZXggYTFjMzAyNWY5ZGY3Li5lNDcyZTg4N2U5MWUgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2Nw
+dWZyZXEvY3BwY19jcHVmcmVxLmMNCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHBjX2NwdWZyZXEu
+Yw0KQEAgLTE2NCw4ICsxNjQsMTggQEAgc3RhdGljIGludCBjcHBjX2NwdWZyZXFfY3B1X2luaXQo
+c3RydWN0DQpjcHVmcmVxX3BvbGljeSAqcG9saWN5KQ0KwqDCoMKgwqDCoMKgwqDCoHBvbGljeS0+
+Y3B1aW5mby50cmFuc2l0aW9uX2xhdGVuY3kgPQ0KY3BwY19nZXRfdHJhbnNpdGlvbl9sYXRlbmN5
+KGNwdV9udW0pOw0KwqDCoMKgwqDCoMKgwqDCoHBvbGljeS0+c2hhcmVkX3R5cGUgPSBjcHUtPnNo
+YXJlZF90eXBlOw0KDQotwqDCoMKgwqDCoMKgwqBpZiAocG9saWN5LT5zaGFyZWRfdHlwZSA9PSBD
+UFVGUkVRX1NIQVJFRF9UWVBFX0FOWSkNCivCoMKgwqDCoMKgwqDCoGlmIChwb2xpY3ktPnNoYXJl
+ZF90eXBlID09IENQVUZSRVFfU0hBUkVEX1RZUEVfQU5ZKSB7DQorwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgaW50IGk7DQorDQrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNw
+dW1hc2tfY29weShwb2xpY3ktPmNwdXMsIGNwdS0+c2hhcmVkX2NwdV9tYXApOw0KKw0KK8KgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGZvcl9lYWNoX2NwdShpLCBwb2xpY3ktPmNwdXMpIHsN
+CivCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKGkgIT0g
+cG9saWN5LT5jcHUpDQorwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqBtZW1jcHkoJmFsbF9jcHVfZGF0YVtpXS0+cGVyZl9jYXBzLA0K
+K8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqAmY3B1LT5wZXJmX2NhcHMsDQorwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oHNpemVvZihjcHUtPnBlcmZfY2FwcykpOw0KK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oH0NCivCoMKgwqDCoMKgwqDCoH0NCsKgwqDCoMKgwqDCoMKgwqBlbHNlIGlmIChwb2xpY3ktPnNo
+YXJlZF90eXBlID09IENQVUZSRVFfU0hBUkVEX1RZUEVfQUxMKSB7DQrCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoC8qIFN1cHBvcnQgb25seSBTV19BTlkgZm9yIG5vdy4gKi8NCsKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcHJfZGVidWcoIlVuc3VwcG9ydGVkIENQVSBjby1v
+cmQgdHlwZVxuIik7DQoNClRoYW5rcy4NClNodW55b25nLg0KDQoNCj4gSW4gcGFnZSA1MzMgb2Yg
+QUNQSSA2LjIgc3BlY2lmaWNhaXRvbiwgaXQgc2F5cywNCj4gDQo+ICJTdGFydGluZyB3aXRoIEFD
+UEkgU3BlY2lmaWNhdGlvbiA2LjIsIGFsbCBfQ1BDIHJlZ2lzdGVycyBjYW4gYmUgaW4NCj4gUEND
+LCBTeXN0ZW0gTWVtb3J5LCBTeXN0ZW0gSU8sIG9yIEZ1bmN0aW9uYWwgRml4ZWQgSGFyZHdhcmUg
+YWRkcmVzcw0KPiBzcGFjZXMuIE9TUE0gc3VwcG9ydCBmb3IgdGhpcyBtb3JlIGZsZXhpYmxlIHJl
+Z2lzdGVyIHNwYWNlIHNjaGVtZSBpcw0KPiBpbmRpY2F0ZWQgYnkgdGhlIOKAnEZsZXhpYmxlIEFk
+ZHJlc3MgU3BhY2UgZm9yIENQUEMgUmVnaXN0ZXJz4oCdIF9PU0MNCj4gYml0LiINCj4gDQo+IEFz
+IF9DUEMgcmVnaXN0ZXIgbWF5YmUgaW4gU3lzdGVtIE1lbW9yeSwgU3lzdGVtIElPLCBvciBGdW5j
+dGlvbmFsDQo+IEZpeGVkDQo+IEhhcmR3YXJlIGFkZHJlc3Mgc3BhY2VzLiBJIGFtIG5vdCBzdXJl
+IGFsbCBhcmNoaXRlY3R1cmUgaW1wbGVtZW50aW5nDQo+IENQUEMgY2FuIHJldHVybiBjb3JyZWN0
+IHZhbHVlIGJlZm9yZSBDUFUgY29tZSBpbnRvIG9ubGluZS4gVGhhdCdzIHRoZQ0KPiByZWFzb24g
+SSBhZGQgdGhlIGV4dHJhIGluaXQoKSBjYWxsLg0KPiANCj4gQlRXLCBJJ3ZlIHRlc3RlZCBvbiBR
+REYyNDAwIHBsYXRmb3JtIGFuZCBpdCByZXR1cm4gY29ycmVjdCB2YWx1ZSB3aGVuDQo+IGNwdTEg
+aXMgb2ZmbGluZS4NCj4gDQo+IERvIHlvdSBrbm93IHdoZXRoZXIgZmlybXdhcmUgY2FuIGd1YXJh
+bnRlZSBjb3JyZWN0IHBlcmYgY2FwYWJpbGl0aWVzDQo+IHJlZ2FyZGxlc3Mgb2YgQ1BVIG9ubGlu
+ZS9vZmZsaW5lPw0KPiANCj4gPiANCj4gPiANCj4gPiA+IA0KPiA+ID4gDQo+ID4gPiBXaGVuIGNw
+dTEgaXMgb25saW5lLCBjdXJyZW50IGNvZGUNCj4gPiA+IHdpbGwgbm90IGNhbGwgaW5pdCgpIGlu
+IGNwdWZyZXFfZHJpdmVyIGFzIHBvbGljeSBoYXMgYmVlbg0KPiA+ID4gYWxsb2NhdGVkDQo+ID4g
+PiBhbmQNCj4gPiA+IGFjdGl2YXRlZCBieSBjcHUwLiBTbywgY3B1MSdzIHBlcmYgY2FwYWJpbGl0
+aWVzIGFyZSBub3QNCj4gPiA+IGluaXRpYWxpemVkDQo+ID4gPiAoYWxsIDBzKS4NCj4gPiA+IA0K
+PiA+ID4gV2hlbiBjcHUwIGlzIG9mZmxpbmUsIHBvbGljeS0+Y3B1IHdpbGwgYmUgc2hpZnRlZCB0
+byBjcHUxLiBBcw0KPiA+ID4gY3B1MSdzIHBlcmYNCj4gPiA+IGNhcGFiaWxpdGllcyBhcmUgMHMs
+IHNwZWVkIGNoYW5nZSB3aWxsIG5vdCB0YWtlIGVmZmVjdCB3aGVuDQo+ID4gPiBzZXR0aW5nDQo+
+ID4gPiBzcGVlZC4NCj4gPiA+IA0KPiA+ID4gVGhpcyBwYXRjaCBhZGRzIGNhbGxpbmcgaW5pdCgp
+IG9mIGNwdWZyZXFfZHJpdmVyIHdoZW4gcG9saWN5DQo+ID4gPiBpbmFjdGl2ZSBjcHUNCj4gPiA+
+IGNvbWVzIHRvIG9ubGluZS4NCj4gPiBObyBDUFUgc2hvdWxkIGJlIGluYWN0aXZlIGhlcmUsIGl0
+cyBqdXN0IHRoYXQgeW91IGhhdmVuJ3QNCj4gPiBpbml0aWFsaXplZA0KPiA+IGl0DQo+ID4gcHJv
+cGVybHkuDQo+ID4gDQo+IEkgbWVhbiB0aGUgcG9saWN5IGlzIGhhbmRsZWQoYWN0aXZlKSBieSB0
+aGUgZmlyc3Qgb25saW5lIGNwdSdzIChjcHUwKQ0KPiBwZXJmIGNhcGFiaWxpdGllcy4gTm90IGhh
+bmRsZWQgKGluYWN0aXZlKSBieSB0aGUgb25lJ3MganVzdCBjb21lIGludG8NCj4gb25saW5lIChj
+cHUxKS4gU29ycnkgZm9yIHRoaXMuDQo+IA0KPiBUaGFua3MuDQo+IFNodW55b25nLg0KPiANCj4g
+DQo+ID4gDQo+ID4gQW5kIHdlIGFyZSBub3QgZ29pbmcgdG8gY2FsbCBpbml0KCkgbXVsdGlwbGUg
+dGltZXMgZm9yIGEgZ3JvdXAgb2YNCj4gPiBDUFVzLiBUaGF0J3MNCj4gPiBub3Qgd2hhdCB0aGUg
+cHVycG9zZSBvZiBpbml0KCkgaXMu
