@@ -1,66 +1,60 @@
 From: Quentin Perret <quentin.perret@arm.com>
 Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
  task wake-up
-Date: Sat, 24 Mar 2018 01:34:22 +0000
-Message-ID: <20180324013421.GB1317@queper01-VirtualBox>
+Date: Sat, 24 Mar 2018 01:47:58 +0000
+Message-ID: <20180324014757.GC1317@queper01-VirtualBox>
 References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
  <20180320094312.24081-6-dietmar.eggemann@arm.com>
- <20180321153518.GC13951@e110439-lin>
- <CAJWu+opupHfDF8QoSC2AQnoFXnz3idt6pr-fq6nUp1C59XjtXA@mail.gmail.com>
- <20180323154745.GP4589@e105550-lin.cambridge.arm.com>
- <CAJWu+oqP9NLkhhZsTZ5JogSWgp6D2FoGAmP76Szi4+n87XNSsQ@mail.gmail.com>
+ <CAJWu+oqO75h0Ue0=zqD1KTcHFF7tUKYgCHQzXx39RyyGTjiang@mail.gmail.com>
+ <20180322180623.GE13951@e110439-lin>
+ <CAJWu+oohaZbdk5oWZjLC-t1oY3cO3UuxbqvjgN+L+Do0mAag3Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJWu+oqP9NLkhhZsTZ5JogSWgp6D2FoGAmP76Szi4+n87XNSsQ@mail.gmail.com>
+In-Reply-To: <CAJWu+oohaZbdk5oWZjLC-t1oY3cO3UuxbqvjgN+L+Do0mAag3Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Joel Fernandes <joelaf@google.com>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 Mar 2018 at 18:13:56 (-0700), Joel Fernandes wrote:
-> Hi Morten,
-> 
-> On Fri, Mar 23, 2018 at 8:47 AM, Morten Rasmussen
-> <morten.rasmussen@arm.com> wrote:
-> > On Thu, Mar 22, 2018 at 01:10:22PM -0700, Joel Fernandes wrote:
+On Thursday 22 Mar 2018 at 13:19:03 (-0700), Joel Fernandes wrote:
+> On Thu, Mar 22, 2018 at 11:06 AM, Patrick Bellasi
+> <patrick.bellasi@arm.com> wrote:
 
 [...]
 
-> > You mean if SD_BALANCE_WAKE isn't set on sched_domains?
-> 
-> Yes.
-> 
-> > The current code seems to rely on that flag to be set to work correctly.
-> > Otherwise, the loop might bail out on !want_affine and we end up doing
-> > the find_energy_efficient_cpu() on the lowest level sched_domain even if
-> > there is higher level one which isn't over-utilized.
+> >> > @@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+> >> >                         break;
+> >> >                 }
+> >> >
+> >> > +               /*
+> >> > +                * Energy-aware task placement is performed on the highest
+> >> > +                * non-overutilized domain spanning over cpu and prev_cpu.
+> >> > +                */
+> >> > +               if (want_energy && !sd_overutilized(tmp) &&
+> >> > +                   cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
+> >>
+> >> Shouldn't you check for the SD_ASYM_CPUCAPACITY flag here for tmp level?
 > >
-> > However, SD_BALANCE_WAKE should be set if SD_ASYM_CPUCAPACITY is set so
-> > sd == NULL shouldn't be possible? This only holds as long as we only
-> > want EAS for asymmetric systems.
+> > ... and this then should be covered by the previous check in
+> > wake_energy(), which sets want_energy.
 > 
-> Yes, I see you had topology code that set SD_BALANCE_WAKE for ASYM. It
-> makes sense to me then, thanks for the clarification.
-> 
-> Still I feel it is a bit tedious/confusing when reading code to draw
-> the conclusion about why sd is checked first before doing
-> find_energy_efficient_cpu (and that sd will != NULL for ASYM systems).
-> If energy_sd is set, then we can just proceed with EAS without
-> checking that sd != NULL. This function in mainline is already pretty
-> confusing as it is :-(
+> Right, but in a scenario which probably doesn't exist today where we
+> have both SD_ASYM_CPUCAPACITY and !SD_ASYM_CPUCAPACITY domains in the
+> hierarchy for which want_energy = 1, I was thinking if its more future
+> proof to check it and not make assumptions...
 
-Right I see your point. The code is correct as is, but I agree that having
-a code structured as
+So we can definitely have cases where SD_ASYM_CPUCAPACITY is not set at all
+sd levels. Today, on mobile systems, this flag is typically set only at DIE
+level for big.LITTLE platforms, and not at MC level.
+We enable EAS if we find _at least_ one domain that has this flag in the
+hierarchy, just to make sure we don't enable EAS for symmetric platform.
+It's just a way to check a property about the topology when EAS starts, not
+really a way to actually select the sd at which we do scheduling at
+runtime.
 
-	if (energy_sd) {
-		new_cpu = find_energy_efficient_cpu(energy_sd, p, prev_cpu);
-	} else if (!sd) {
-		...
-
-might be easier to understand and functionally equivalent. What do you
-think ?
+I hope that helps !
 
 Thanks,
 Quentin
