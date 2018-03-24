@@ -1,51 +1,57 @@
 From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH v1 05/16] rtc: mediatek: add MT6323 support to RTC driver
-Date: Sat, 24 Mar 2018 15:06:16 +0800
-Message-ID: <1521875176.28226.25.camel@mtkswgap22>
+Subject: Re: [PATCH v1 06/16] rtc: mediatek: remove unnecessary parentheses
+Date: Sat, 24 Mar 2018 15:14:12 +0800
+Message-ID: <1521875652.28226.29.camel@mtkswgap22>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
-         <c49898db977a0b37363a35d3e3b297af891d7219.1521794177.git.sean.wang@mediatek.com>
-         <20180323100156.GE3417@piout.net>
+         <92d07e90f43899981a82fbc684c3d15aaecaf591.1521794177.git.sean.wang@mediatek.com>
+         <20180323102123.GG3417@piout.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180323100156.GE3417@piout.net>
+In-Reply-To: <20180323102123.GG3417@piout.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-03-23 at 11:01 +0100, Alexandre Belloni wrote:
-> Hi,
-> 
-> The subject line should be rtc: mt6397: (to differentiate with rtc-mt7622)
-> 
-
-Sure, I will change subject line into rtc: mt6397: along with the other
-related patches.
-
-> On 23/03/2018 at 17:15:02 +0800, sean.wang@mediatek.com wrote:
+On Fri, 2018-03-23 at 11:21 +0100, Alexandre Belloni wrote:
+> On 23/03/2018 at 17:15:03 +0800, sean.wang@mediatek.com wrote:
 > > From: Sean Wang <sean.wang@mediatek.com>
 > > 
-> > Just to add MT6323 support to the existent RTC driver.
+> > Remove unnecessary parentheses due to explicit C operator precedence.
 > > 
 > > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 > > ---
-> >  drivers/rtc/rtc-mt6397.c | 1 +
-> >  1 file changed, 1 insertion(+)
+> >  drivers/rtc/rtc-mt6397.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > > 
 > > diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-> > index 385f830..0df7ccd 100644
+> > index 0df7ccd..4411c08 100644
 > > --- a/drivers/rtc/rtc-mt6397.c
 > > +++ b/drivers/rtc/rtc-mt6397.c
-> > @@ -398,6 +398,7 @@ static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_suspend,
-> >  			mt6397_rtc_resume);
+> > @@ -106,7 +106,7 @@ static irqreturn_t mtk_rtc_irq_handler_thread(int irq, void *data)
+> >  	int ret;
 > >  
-> >  static const struct of_device_id mt6397_rtc_of_match[] = {
-> > +	{ .compatible = "mediatek,mt6323-rtc", },
-> >  	{ .compatible = "mediatek,mt6397-rtc", },
-> >  	{ }
-> >  };
+> >  	ret = regmap_read(rtc->regmap, rtc->addr_base + RTC_IRQ_STA, &irqsta);
+> > -	if ((ret >= 0) && (irqsta & RTC_IRQ_STA_AL)) {
+> > +	if (ret >= 0 && irqsta & RTC_IRQ_STA_AL) {
+> 
+> I don't think this makes the code particularly clearer.
+> 
+
+But it is still a one of check items in checkpatch
+
+CHECK:UNNECESSARY_PARENTHESES: Unnecessary parentheses around 'ret >= 0'
+#126: FILE: drivers/rtc/rtc-xxx.c:109:
++       if ((ret >= 0) && (irqsta & RTC_IRQ_STA_AL)) {
+
+
+or we still want to keep it in parentheses around here?
+
+> >  		rtc_update_irq(rtc->rtc_dev, 1, RTC_IRQF | RTC_AF);
+> >  		irqen = irqsta & ~RTC_IRQ_EN_AL;
+> >  		mutex_lock(&rtc->lock);
 > > -- 
 > > 2.7.4
 > > 
