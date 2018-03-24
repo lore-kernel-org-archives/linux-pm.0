@@ -1,102 +1,194 @@
-From: "Yang, Shunyong" <shunyong.yang@hxt-semitech.com>
-Subject: Re: [RFC PATCH] cpufreq: Calling init() of cpufreq_driver  when
- policy inactive cpu online
-Date: Sat, 24 Mar 2018 09:37:37 +0000
-Message-ID: <1521884257.2887.11.camel@hxt-semitech.com>
-References: <1521627703-7728-1-git-send-email-shunyong.yang@hxt-semitech.com>
-         <20180322033013.3mqhf2fnbaqfdgay@vireshk-mac-ubuntu>
-         <1521696919.2792.19.camel@hxt-semitech.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Sat, 24 Mar 2018 12:25:40 +0100
+Message-ID: <2389946.11pl7mXBNR@aspire.rjw.lan>
+References: <4137867.C4jYrWdt8n@aspire.rjw.lan> <CAJZ5v0iZVVkevY2oJnySoa6uQesMXcj_ZshV97utdXsW2w-aAA@mail.gmail.com> <000001d3c2ee$1e45c410$5ad14c30$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521696919.2792.19.camel@hxt-semitech.com>
-Content-Language: en-US
-Content-ID: <63AF6496BD13E441AFD99CCFFABC24AC@hxt-semitech.com>
+In-Reply-To: <000001d3c2ee$1e45c410$5ad14c30$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zheng, Joey" <yu.zheng@hxt-semitech.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Wang, Dongsheng" <dongsheng.wang@hxt-semitech.com>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Rik van Riel' <riel@surriel.com>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIEt1bWFyLA0KDQpPbiBXZWQsIDIwMTgtMDMtMjEgYXQgMjI6MzUgLTA3MDAsIFlhbmcsIFNo
-dW55b25nIHdyb3RlOg0KPiBIaSwgS3VtYXINCj4gDQo+IE9uIFRodSwgMjAxOC0wMy0yMiBhdCAx
-MTozMCArMDgwMCwgVmlyZXNoIEt1bWFyIHdyb3RlOg0KPiA+IA0KPiA+IE9uIDIxLTAzLTE4LCAx
-ODoyMSwgU2h1bnlvbmcgWWFuZyB3cm90ZToNCj4gPiA+IA0KPiA+ID4gDQo+ID4gPiBXaGVuIG11
-bHRpcGxlIGNwdXMgYXJlIHJlbGF0ZWQgaW4gb25lIGNwdWZyZXEgcG9saWN5LCB0aGUgZmlyc3QN
-Cj4gPiA+IG9ubGluZSBjcHUNCj4gPiA+IHdpbGwgYmUgY2hvc2VuIGJ5IGRlZmF1bHQgdG8gaGFu
-ZGxlIGNwdWZyZXEgb3BlcmF0aW9ucy4gSW4gYSBDUFBDDQo+ID4gPiBjYXNlLA0KPiA+ID4gbGV0
-J3MgdGFrZSB0d28gcmVsYXRlZCBjcHVzLCBjcHUwIGFuZCBjcHUxIGFzIGFuIGV4YW1wbGUuDQo+
-ID4gPiANCj4gPiA+IEFmdGVyIHN5c3RlbSBzdGFydCwgY3B1MCBpcyB0aGUgZmlyc3Qgb25saW5l
-IGNwdS4gQ3B1ZnJlcSBwb2xpY3kNCj4gPiA+IHdpbGwgYmUNCj4gPiA+IGFsbG9jYXRlZCBhbmQg
-aW5pdCgpIGluIGNwdWZyZXFfZHJpdmVyIHdpbGwgYmUgY2FsbGVkIHRvDQo+ID4gPiBpbml0aWFs
-aXplDQo+ID4gPiBjcHUwJ3MNCj4gPiA+IHBlcmYgY2FwYWJpbGl0aWVzIGFuZCBwb2xpY3kgcGFy
-YW1ldGVycy4NCj4gPiBOb3QgZXhhY3RseS4gVGhlIGluaXQoKSBpcyBjYWxsZWQgdG8gaW5pdGlh
-bGl6ZSBzdHVmZiBmb3IgYWxsIHRoZQ0KPiA+IENQVXMgdGhhdA0KPiA+IHNob3VsZCBiZSBwYXJ0
-IG9mIHBvbGljeS0+cmVsYXRlZF9jcHVzIGFmdGVyIGluaXQoKSBoYXMgcmV0dXJuZWQuDQo+ID4g
-U28NCj4gPiB5b3Ugc2hvdWxkDQo+ID4gaW5pdGlhbGl6ZSBwZXJmIGNhcGFiaWxpdGllcyBmb3Ig
-YWxsIG9mIHRoZW0uDQoNClRoYW5rcyBmb3IgeW91ciByZXZpZXcuDQpBcyBjdXJyZW50IENQUEMg
-b25seSBzdXBwb3J0cyBDUFVGUkVRX1NIQVJFRF9UWVBFX0FOWS4gQW5kIEkgdGhpbmsgdGhpcw0K
-aXMgdGhlIGNhc2UgZm9yIG1vc3Qgc3lzdGVtcy7CoA0KQWNjb3JkaW5nIHRvIHlvdXIgc3VnZ2Vz
-dGlvbiB0byBpbml0aWFsaXplIGFsbCBwZXJmb3JtYW5jZSBjYXBhYmlsaXRpcw0KaW4gb25lIGlu
-aXQoKSBjYWxsLCBJIHdhbnQgdG8gY2hhbmdlIHRvIG9ubHkgY29weSB0aGUgb25saW5lIGNwdSdz
-DQpwZXJmb3JtYW5jZSBjYXBhYmlsaXRpZXMgdG8gb3RoZXIgc2hhcmVkIGNwdXMuIEFuZCBJIHRl
-c3RlZCBvbiBRREYyNDAwDQpwbGF0Zm9ybSwgaXQgd29ya3Mgd2VsbC4NCg0KQ291bGQgeW91IHBs
-ZWFzZSBoYXZlIGNvbW1lbnRzIG9uIHRoaXM/wqANCg0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9j
-cHVmcmVxL2NwcGNfY3B1ZnJlcS5jDQpiL2RyaXZlcnMvY3B1ZnJlcS9jcHBjX2NwdWZyZXEuYw0K
-aW5kZXggYTFjMzAyNWY5ZGY3Li5lNDcyZTg4N2U5MWUgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2Nw
-dWZyZXEvY3BwY19jcHVmcmVxLmMNCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHBjX2NwdWZyZXEu
-Yw0KQEAgLTE2NCw4ICsxNjQsMTggQEAgc3RhdGljIGludCBjcHBjX2NwdWZyZXFfY3B1X2luaXQo
-c3RydWN0DQpjcHVmcmVxX3BvbGljeSAqcG9saWN5KQ0KwqDCoMKgwqDCoMKgwqDCoHBvbGljeS0+
-Y3B1aW5mby50cmFuc2l0aW9uX2xhdGVuY3kgPQ0KY3BwY19nZXRfdHJhbnNpdGlvbl9sYXRlbmN5
-KGNwdV9udW0pOw0KwqDCoMKgwqDCoMKgwqDCoHBvbGljeS0+c2hhcmVkX3R5cGUgPSBjcHUtPnNo
-YXJlZF90eXBlOw0KDQotwqDCoMKgwqDCoMKgwqBpZiAocG9saWN5LT5zaGFyZWRfdHlwZSA9PSBD
-UFVGUkVRX1NIQVJFRF9UWVBFX0FOWSkNCivCoMKgwqDCoMKgwqDCoGlmIChwb2xpY3ktPnNoYXJl
-ZF90eXBlID09IENQVUZSRVFfU0hBUkVEX1RZUEVfQU5ZKSB7DQorwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgaW50IGk7DQorDQrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNw
-dW1hc2tfY29weShwb2xpY3ktPmNwdXMsIGNwdS0+c2hhcmVkX2NwdV9tYXApOw0KKw0KK8KgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGZvcl9lYWNoX2NwdShpLCBwb2xpY3ktPmNwdXMpIHsN
-CivCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKGkgIT0g
-cG9saWN5LT5jcHUpDQorwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqBtZW1jcHkoJmFsbF9jcHVfZGF0YVtpXS0+cGVyZl9jYXBzLA0K
-K8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqAmY3B1LT5wZXJmX2NhcHMsDQorwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oHNpemVvZihjcHUtPnBlcmZfY2FwcykpOw0KK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oH0NCivCoMKgwqDCoMKgwqDCoH0NCsKgwqDCoMKgwqDCoMKgwqBlbHNlIGlmIChwb2xpY3ktPnNo
-YXJlZF90eXBlID09IENQVUZSRVFfU0hBUkVEX1RZUEVfQUxMKSB7DQrCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoC8qIFN1cHBvcnQgb25seSBTV19BTlkgZm9yIG5vdy4gKi8NCsKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcHJfZGVidWcoIlVuc3VwcG9ydGVkIENQVSBjby1v
-cmQgdHlwZVxuIik7DQoNClRoYW5rcy4NClNodW55b25nLg0KDQoNCj4gSW4gcGFnZSA1MzMgb2Yg
-QUNQSSA2LjIgc3BlY2lmaWNhaXRvbiwgaXQgc2F5cywNCj4gDQo+ICJTdGFydGluZyB3aXRoIEFD
-UEkgU3BlY2lmaWNhdGlvbiA2LjIsIGFsbCBfQ1BDIHJlZ2lzdGVycyBjYW4gYmUgaW4NCj4gUEND
-LCBTeXN0ZW0gTWVtb3J5LCBTeXN0ZW0gSU8sIG9yIEZ1bmN0aW9uYWwgRml4ZWQgSGFyZHdhcmUg
-YWRkcmVzcw0KPiBzcGFjZXMuIE9TUE0gc3VwcG9ydCBmb3IgdGhpcyBtb3JlIGZsZXhpYmxlIHJl
-Z2lzdGVyIHNwYWNlIHNjaGVtZSBpcw0KPiBpbmRpY2F0ZWQgYnkgdGhlIOKAnEZsZXhpYmxlIEFk
-ZHJlc3MgU3BhY2UgZm9yIENQUEMgUmVnaXN0ZXJz4oCdIF9PU0MNCj4gYml0LiINCj4gDQo+IEFz
-IF9DUEMgcmVnaXN0ZXIgbWF5YmUgaW4gU3lzdGVtIE1lbW9yeSwgU3lzdGVtIElPLCBvciBGdW5j
-dGlvbmFsDQo+IEZpeGVkDQo+IEhhcmR3YXJlIGFkZHJlc3Mgc3BhY2VzLiBJIGFtIG5vdCBzdXJl
-IGFsbCBhcmNoaXRlY3R1cmUgaW1wbGVtZW50aW5nDQo+IENQUEMgY2FuIHJldHVybiBjb3JyZWN0
-IHZhbHVlIGJlZm9yZSBDUFUgY29tZSBpbnRvIG9ubGluZS4gVGhhdCdzIHRoZQ0KPiByZWFzb24g
-SSBhZGQgdGhlIGV4dHJhIGluaXQoKSBjYWxsLg0KPiANCj4gQlRXLCBJJ3ZlIHRlc3RlZCBvbiBR
-REYyNDAwIHBsYXRmb3JtIGFuZCBpdCByZXR1cm4gY29ycmVjdCB2YWx1ZSB3aGVuDQo+IGNwdTEg
-aXMgb2ZmbGluZS4NCj4gDQo+IERvIHlvdSBrbm93IHdoZXRoZXIgZmlybXdhcmUgY2FuIGd1YXJh
-bnRlZSBjb3JyZWN0IHBlcmYgY2FwYWJpbGl0aWVzDQo+IHJlZ2FyZGxlc3Mgb2YgQ1BVIG9ubGlu
-ZS9vZmZsaW5lPw0KPiANCj4gPiANCj4gPiANCj4gPiA+IA0KPiA+ID4gDQo+ID4gPiBXaGVuIGNw
-dTEgaXMgb25saW5lLCBjdXJyZW50IGNvZGUNCj4gPiA+IHdpbGwgbm90IGNhbGwgaW5pdCgpIGlu
-IGNwdWZyZXFfZHJpdmVyIGFzIHBvbGljeSBoYXMgYmVlbg0KPiA+ID4gYWxsb2NhdGVkDQo+ID4g
-PiBhbmQNCj4gPiA+IGFjdGl2YXRlZCBieSBjcHUwLiBTbywgY3B1MSdzIHBlcmYgY2FwYWJpbGl0
-aWVzIGFyZSBub3QNCj4gPiA+IGluaXRpYWxpemVkDQo+ID4gPiAoYWxsIDBzKS4NCj4gPiA+IA0K
-PiA+ID4gV2hlbiBjcHUwIGlzIG9mZmxpbmUsIHBvbGljeS0+Y3B1IHdpbGwgYmUgc2hpZnRlZCB0
-byBjcHUxLiBBcw0KPiA+ID4gY3B1MSdzIHBlcmYNCj4gPiA+IGNhcGFiaWxpdGllcyBhcmUgMHMs
-IHNwZWVkIGNoYW5nZSB3aWxsIG5vdCB0YWtlIGVmZmVjdCB3aGVuDQo+ID4gPiBzZXR0aW5nDQo+
-ID4gPiBzcGVlZC4NCj4gPiA+IA0KPiA+ID4gVGhpcyBwYXRjaCBhZGRzIGNhbGxpbmcgaW5pdCgp
-IG9mIGNwdWZyZXFfZHJpdmVyIHdoZW4gcG9saWN5DQo+ID4gPiBpbmFjdGl2ZSBjcHUNCj4gPiA+
-IGNvbWVzIHRvIG9ubGluZS4NCj4gPiBObyBDUFUgc2hvdWxkIGJlIGluYWN0aXZlIGhlcmUsIGl0
-cyBqdXN0IHRoYXQgeW91IGhhdmVuJ3QNCj4gPiBpbml0aWFsaXplZA0KPiA+IGl0DQo+ID4gcHJv
-cGVybHkuDQo+ID4gDQo+IEkgbWVhbiB0aGUgcG9saWN5IGlzIGhhbmRsZWQoYWN0aXZlKSBieSB0
-aGUgZmlyc3Qgb25saW5lIGNwdSdzIChjcHUwKQ0KPiBwZXJmIGNhcGFiaWxpdGllcy4gTm90IGhh
-bmRsZWQgKGluYWN0aXZlKSBieSB0aGUgb25lJ3MganVzdCBjb21lIGludG8NCj4gb25saW5lIChj
-cHUxKS4gU29ycnkgZm9yIHRoaXMuDQo+IA0KPiBUaGFua3MuDQo+IFNodW55b25nLg0KPiANCj4g
-DQo+ID4gDQo+ID4gQW5kIHdlIGFyZSBub3QgZ29pbmcgdG8gY2FsbCBpbml0KCkgbXVsdGlwbGUg
-dGltZXMgZm9yIGEgZ3JvdXAgb2YNCj4gPiBDUFVzLiBUaGF0J3MNCj4gPiBub3Qgd2hhdCB0aGUg
-cHVycG9zZSBvZiBpbml0KCkgaXMu
+On Friday, March 23, 2018 10:30:03 PM CET Doug Smythies wrote:
+> On 2018.03.23 02:08 Rafael J. Wysocki wrote:
+> > On Fri, Mar 23, 2018 at 9:57 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >> On Fri, Mar 23, 2018 at 4:19 AM, Doug Smythies <dsmythies@telus.net> wrote:
+> >>> On 2018.03.22 12:12 Doug Smythies wrote:
+> 
+> ...[snip]...
+> 
+> >>
+> >>> I'm not sure how good it is but I made a test. I didn't believe
+> >>> the results, so I did it 3 times.
+> >>>
+> >>> V7.3 is as from the git branch.
+> >>> V7.3p is plus the patch adding the counter loop to poll_state.c
+> >>>
+> >>> The test is a tight loop (about 19600 loops per second) running
+> >>> on all 8 CPUs. I can not seem to get my system to use Idle State
+> >>> 0, so I disabled Idle States 1 and 2 to force use of Idle State 0.
+> >>>
+> >>> V7.3 uses a processor package power of 62.5 Watts
+> >>> V7.3p uses a processor package power of 53.4 Watts, or 14.6% less power.
+> >>>
+> >>> The loop times do not change.
+> >>> The Idle state 0 residency per unit time does not change.
+> >>
+> >> OK, so this means that the results should improve for Rik with this
+> >> patch too. :-)
+> 
+> I hope so.
+> 
+> > BTW, can you possibly check how much of a difference it makes to
+> > reduce POLL_IDLE_COUNT in the patch to, say, 500 or even more?
+> > 
+> > The lower it is, the less noise it will introduce AFAICS.
+> 
+> Well, we would expect the curve to be something like a typical 1/x curve:
+> 
+> Power = 53.4 + k1/(k2* POLL_IDLE_COUNT + k3)
+> 
+> I did some runs and did a crude fit:
+> 
+> Power ~= 53.4 + 35/(POLL_IDLE_COUNT + 3)
+> 
+> And then calculate an allowed error from that. A count of 100 gives
+> back only 0.64% of the power, and so I suggest would be a reasonable
+> number.
+
+I agree.
+
+> That being said, my test is quite crude and we should first see what
+> others, including Rik, get.
+> 
+> These two graphs might help explain what I did:
+> 
+> http://fast.smythies.com/v73p_vary_count.png
+> http://fast.smythies.com/v73p_extra_power.png
+> 
+> It is just my opinion, but I think users with very stringent
+> idle state 0 exit latency requirements should test with
+> POLL_IDLE_COUNT set to 1. Then they know the worst case works,
+> whereas they might not hit it at 1/POLL_IDLE_COUNT probability.
+> Once happy that the worst case works, use nominal (T.B.D.)
+> POLL_IDLE_COUNT, for the power savings.
+
+Well, the exit latency is a sort of different story. :-)
+
+Obviously, cpuidle_poll_state_init() lies about the exit latency of the
+polling state (which is supposed to be worst-case), but that's for the
+polling state to fit the "state 0" slot.  Ideally, the latency should be
+really 0, meaning that the polling loop should terminate as soon as an
+interrupt occurs (regardless of the need_resched() status).
+
+I have a prototype (appended below) to make that happen which seems to be
+working here.
+
+---
+ drivers/cpuidle/poll_state.c |    4 +++-
+ include/linux/sched.h        |    1 +
+ include/linux/sched/idle.h   |   15 +++++++++++++++
+ kernel/softirq.c             |   10 ++++++++++
+ 4 files changed, 29 insertions(+), 1 deletion(-)
+
+Index: linux-pm/include/linux/sched.h
+===================================================================
+--- linux-pm.orig/include/linux/sched.h
++++ linux-pm/include/linux/sched.h
+@@ -1319,6 +1319,7 @@ extern struct pid *cad_pid;
+ #define PF_SWAPWRITE		0x00800000	/* Allowed to write to swap */
+ #define PF_NO_SETAFFINITY	0x04000000	/* Userland is not allowed to meddle with cpus_allowed */
+ #define PF_MCE_EARLY		0x08000000      /* Early kill for mce process policy */
++#define PF_IDLE_POLL		0x10000000	/* I am an idle task in a polling loop */
+ #define PF_MUTEX_TESTER		0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP		0x40000000	/* Freezer should not count it as freezable */
+ #define PF_SUSPEND_TASK		0x80000000      /* This thread called freeze_processes() and should not be frozen */
+Index: linux-pm/include/linux/sched/idle.h
+===================================================================
+--- linux-pm.orig/include/linux/sched/idle.h
++++ linux-pm/include/linux/sched/idle.h
+@@ -84,4 +84,19 @@ static inline void current_clr_polling(v
+ 	preempt_fold_need_resched();
+ }
+ 
++static inline bool current_may_poll(void)
++{
++	return !!(current->flags & PF_IDLE_POLL);
++}
++
++static inline void current_enable_polling(void)
++{
++	current->flags |= PF_IDLE_POLL;
++}
++
++static inline void current_disable_polling(void)
++{
++	current->flags &= ~PF_IDLE_POLL;
++}
++
+ #endif /* _LINUX_SCHED_IDLE_H */
+Index: linux-pm/drivers/cpuidle/poll_state.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/poll_state.c
++++ linux-pm/drivers/cpuidle/poll_state.c
+@@ -17,11 +17,12 @@ static int __cpuidle poll_idle(struct cp
+ {
+ 	u64 time_start = local_clock();
+ 
++	current_enable_polling();
+ 	local_irq_enable();
+ 	if (!current_set_polling_and_test()) {
+ 		unsigned int loop_count = 0;
+ 
+-		while (!need_resched()) {
++		while (!need_resched() && current_may_poll()) {
+ 			cpu_relax();
+ 			if (loop_count++ < POLL_IDLE_COUNT)
+ 				continue;
+@@ -32,6 +33,7 @@ static int __cpuidle poll_idle(struct cp
+ 		}
+ 	}
+ 	current_clr_polling();
++	current_disable_polling();
+ 
+ 	return index;
+ }
+Index: linux-pm/kernel/softirq.c
+===================================================================
+--- linux-pm.orig/kernel/softirq.c
++++ linux-pm/kernel/softirq.c
+@@ -22,6 +22,7 @@
+ #include <linux/kthread.h>
+ #include <linux/rcupdate.h>
+ #include <linux/ftrace.h>
++#include <linux/sched/idle.h>
+ #include <linux/smp.h>
+ #include <linux/smpboot.h>
+ #include <linux/tick.h>
+@@ -389,6 +390,14 @@ static inline void tick_irq_exit(void)
+ #endif
+ }
+ 
++static inline void idle_irq_exit(void)
++{
++#ifdef CONFIG_CPU_IDLE
++	if (is_idle_task(current))
++		current_disable_polling();
++#endif
++}
++
+ /*
+  * Exit an interrupt context. Process softirqs if needed and possible:
+  */
+@@ -405,6 +414,7 @@ void irq_exit(void)
+ 		invoke_softirq();
+ 
+ 	tick_irq_exit();
++	idle_irq_exit();
+ 	rcu_irq_exit();
+ 	trace_hardirq_exit(); /* must be last! */
+ }
