@@ -1,87 +1,114 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: linux-next on x60: network manager often complains "network is
- disabled" after resume
-Date: Sun, 25 Mar 2018 08:19:27 +0200
-Message-ID: <20180325061927.GA2148@amd>
-References: <20180318104023.GA10392@amd>
- <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
- <20180319092106.GA5683@amd>
- <1521474008.20208.2.camel@redhat.com>
- <20180319173356.GA28462@amd>
- <1521481549.20208.8.camel@redhat.com>
- <20180320080334.GA31772@amd>
- <1521551568.16848.5.camel@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Sun, 25 Mar 2018 13:53:42 +0200
+Message-ID: <CAJZ5v0hhrFrPj834pR6COcF_nJ8Xm7qYJeW9oJUQ0Pe9bGTRuw@mail.gmail.com>
+References: <001401d3c3d0$2a4623d0$7ed26b70$@net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
-Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1521551568.16848.5.camel@redhat.com>
-Sender: netdev-owner@vger.kernel.org
-To: Dan Williams <dcbw@redhat.com>
-Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <001401d3c3d0$2a4623d0$7ed26b70$@net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, Mar 25, 2018 at 1:28 AM, Doug Smythies <dsmythies@telus.net> wrote:
+> On 2018.03.14 07:04 Rafael J. Wysocki wrote:
+>
+>> If poll_idle() is allowed to spin until need_resched() returns 'true',
+>> it may actually spin for a much longer time than expected by the idle
+>> governor, since set_tsk_need_resched() is not always called by the
+>> timer interrupt handler.  If that happens, the CPU may spend much
+>> more time than anticipated in the "polling" state.
+>>
+>> To prevent that from happening, limit the time of the spinning loop
+>> in poll_idle().
+>
+> ...[snip]...
+>
+>> +#define POLL_IDLE_TIME_LIMIT (TICK_NSEC / 16)
+>
+> The other ongoing threads on this aside, potentially, there might
+> be another issue.
+>
+> What if the next available idle state, after 0, has a residency
+> that is greater than TICK_NSEC / 16? Meaning these numbers, for example:
+>
+> /sys/devices/system/cpu/cpu0/cpuidle/state*/residency
+>
+> The suggestion is that upon a timeout exit from idle state 0,
+> the measured_us should maybe be rejected, because the statistics
+> are being biased and it doesn't seem to correct itself.
 
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+OK
 
-> > > Ok, what does 'nmcli dev' and 'nmcli radio' show?
+> Up to 1300% (<- not a typo) extra power consumption has been observed.
+>
+> Supporting experimental data:
+>
+> My processor:
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/residency:20
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:211 <<< Important
+> /sys/devices/system/cpu/cpu0/cpuidle/state4/residency:345
+>
+> A 1000 Hz kernel (TICK_NSEC/16) = 62.5 nsec; idle system:
 
-> >=20
-> > Broken state.
-> >=20
-> > pavel@amd:~$ nmcli dev
-> > DEVICE  TYPE      STATE        CONNECTION
-> > eth1    ethernet  unavailable  --
-> > lo      loopback  unmanaged    --
-> > wlan0   wifi      unmanaged    --
->=20
-> If the state is "unmanaged" on resume, that would indicate a problem
-> with sleep/wake and likely not a kernel network device issue.
->=20
-> We should probably move this discussion to the NM lists to debug
-> further.  Before you suspend, run "nmcli gen log level trace" to turn
-> on full debug logging, then reproduce the issue, and send a pointer to
-> those logs (scrubbed for anything you consider sensitive) to the NM
-> mailing list.
+nsec or usec?
 
-Hmm :-)
+> Idle state 0 time: Typically 0 uSec.
+> Processor package power: 3.7 watts (steady)
+>
+> Now, disable idle states 1 and 2:
+>
+> Idle state 0 time (all 8 CPUs): ~~ 430 Seconds / minute
+> Processor package power: ~52 watts (1300% more power, 14X)
 
-root@amd:/data/pavel# nmcli gen log level trace
-Error: Unknown log level 'trace'
-root@amd:/data/pavel# nmcli gen log level help
-Error: Unknown log level 'help'
-root@amd:/data/pavel# nmcli gen log level
-Error: value for 'level' argument is required.
-root@amd:/data/pavel# nmcli gen log level debug
-root@amd:/data/pavel# cat /var/log/sys/log
+But that's because you have disabled states 1 and 2, isn't it?
 
-Where do I get the logs? I don't see much in the syslog...
+> A 250 Hz kernel (TICK_NSEC/16) = 250 nSec; idle system:
+>
+> Idle state 0 time: Typically < 1 mSec / minute
+> Processor package power: 3.7 to 3.8 watts
+>
+> Now, disable idle states 1 and 2:
+>
+> Idle state 0 time (all 8 CPUs): Typically 0 to 70 mSecs / minute
+> Processor package power: 3.7 to 3.8 watts
+>
+> A 1000 Hz kernel with:
+>
+> +#define POLL_IDLE_TIME_LIMIT   (TICK_NSEC / 4)
+>
+> Note: Just for a test. I am not suggesting this should change.
+>
+> instead. i.e. (TICK_NSEC/4) = 250 nSec.
+>
+> Idle state 0 time: Typically 0 uSec.
+> Processor package power: 3.7 watts (steady)
+>
+> Now, disable idle states 1 and 2:
+>
+> Idle state 0 time (all 8 CPUs): Typically 0 to 70 mSecs / minute
+> Processor package power: ~3.8 watts
+>
+> Note 1: My example is contrived via disabling idle states, so
+> I don't know if it actually needs to be worried about.
+>
+> Note 2: I do not know if there is some processor where
+> cpuidle/state1/residency is > 62.5 nSec.
 
-And.. It seems that it is "every other suspend". One resume results in
-broken network, one in working one, one in broken one...
+If that's usec, I would be quite surprised if there were any. :-)
 
-Thanks,
-									Pavel
+> Note 3: I am trying to figure out a way to test rejecting
+> measured_us upon timeout exit, but haven't made much progress.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Rejecting it has side effects too, because it basically means lost information.
 
---6TrnltStXW4iwmi0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Reaching the time limit means that the CPU could have been idle much
+longer, even though we can't say how much.  That needs to be recorded
+in the data used for the next-time prediction or that is going to be
+inaccurate too.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlq3P28ACgkQMOfwapXb+vLCsQCeMf6Vl1miUZH5hRw9DG172euS
-lcIAnR8RW46Rh3FQuFEjjGkPvKfKKwHT
-=iXHh
------END PGP SIGNATURE-----
-
---6TrnltStXW4iwmi0--
+Of course, what number to record is a good question. :-)
