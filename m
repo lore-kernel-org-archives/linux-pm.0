@@ -1,27 +1,62 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH v1 11/16] rtc: mediatek: move the declaration into a
- globally visible header file
-Date: Sat, 24 Mar 2018 17:00:02 -0300
-Message-ID: <CAOMZO5DuVpcCrQYzoWfN=ZqXeTGC-U1FfwoDFxhQ8frno5-1GQ@mail.gmail.com>
-References: <cover.1521794176.git.sean.wang@mediatek.com> <53afbe8172fb1afd809ce9ba1afeda924b9ea705.1521794177.git.sean.wang@mediatek.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
+ task wake-up
+Date: Sat, 24 Mar 2018 17:12:20 -0700
+Message-ID: <CAJWu+oqVYFT2fNw6nOE2z4sHLU9+o+ZdyfF3XHNo86K9kZJsUw@mail.gmail.com>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-6-dietmar.eggemann@arm.com> <CAJWu+oqO75h0Ue0=zqD1KTcHFF7tUKYgCHQzXx39RyyGTjiang@mail.gmail.com>
+ <20180322180623.GE13951@e110439-lin> <CAJWu+oohaZbdk5oWZjLC-t1oY3cO3UuxbqvjgN+L+Do0mAag3Q@mail.gmail.com>
+ <20180324014757.GC1317@queper01-VirtualBox>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53afbe8172fb1afd809ce9ba1afeda924b9ea705.1521794177.git.sean.wang@mediatek.com>
+In-Reply-To: <20180324014757.GC1317@queper01-VirtualBox>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, eddie.huang@mediatek.com, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "open list:REAL TIME CLOCK (RTC) SUBSYSTEM" <linux-rtc@vger.kernel.org>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 23, 2018 at 6:15 AM,  <sean.wang@mediatek.com> wrote:
+On Fri, Mar 23, 2018 at 6:47 PM, Quentin Perret <quentin.perret@arm.com> wrote:
+> On Thursday 22 Mar 2018 at 13:19:03 (-0700), Joel Fernandes wrote:
+>> On Thu, Mar 22, 2018 at 11:06 AM, Patrick Bellasi
+>> <patrick.bellasi@arm.com> wrote:
+>
+> [...]
+>
+>> >> > @@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+>> >> >                         break;
+>> >> >                 }
+>> >> >
+>> >> > +               /*
+>> >> > +                * Energy-aware task placement is performed on the highest
+>> >> > +                * non-overutilized domain spanning over cpu and prev_cpu.
+>> >> > +                */
+>> >> > +               if (want_energy && !sd_overutilized(tmp) &&
+>> >> > +                   cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
+>> >>
+>> >> Shouldn't you check for the SD_ASYM_CPUCAPACITY flag here for tmp level?
+>> >
+>> > ... and this then should be covered by the previous check in
+>> > wake_energy(), which sets want_energy.
+>>
+>> Right, but in a scenario which probably doesn't exist today where we
+>> have both SD_ASYM_CPUCAPACITY and !SD_ASYM_CPUCAPACITY domains in the
+>> hierarchy for which want_energy = 1, I was thinking if its more future
+>> proof to check it and not make assumptions...
+>
+> So we can definitely have cases where SD_ASYM_CPUCAPACITY is not set at all
+> sd levels. Today, on mobile systems, this flag is typically set only at DIE
+> level for big.LITTLE platforms, and not at MC level.
+> We enable EAS if we find _at least_ one domain that has this flag in the
+> hierarchy, just to make sure we don't enable EAS for symmetric platform.
+> It's just a way to check a property about the topology when EAS starts, not
+> really a way to actually select the sd at which we do scheduling at
+> runtime.
 
-> --- /dev/null
-> +++ b/include/linux/rtc/mt6397.h
-> @@ -0,0 +1,72 @@
-> +
-> +// SPDX-License-Identifier: GPL-2.0
+Yes Ok you're right we do have the ASYM flag set at some sd levels but
+not others at the moment. Sorry about the hasty comment. I understand
+what you're doing now, I am Ok with that.
 
-According to Documentation/process/license-rules.rst the SPDX notation
-for C header file should be:
+thanks,
 
-/* SPDX-License-Identifier: GPL-2.0 */
+- Joel
