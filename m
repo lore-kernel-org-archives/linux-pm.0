@@ -1,62 +1,101 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
- task wake-up
-Date: Sat, 24 Mar 2018 17:12:20 -0700
-Message-ID: <CAJWu+oqVYFT2fNw6nOE2z4sHLU9+o+ZdyfF3XHNo86K9kZJsUw@mail.gmail.com>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-6-dietmar.eggemann@arm.com> <CAJWu+oqO75h0Ue0=zqD1KTcHFF7tUKYgCHQzXx39RyyGTjiang@mail.gmail.com>
- <20180322180623.GE13951@e110439-lin> <CAJWu+oohaZbdk5oWZjLC-t1oY3cO3UuxbqvjgN+L+Do0mAag3Q@mail.gmail.com>
- <20180324014757.GC1317@queper01-VirtualBox>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Sat, 24 Mar 2018 17:28:10 -0700
+Message-ID: <001401d3c3d0$2a4623d0$7ed26b70$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180324014757.GC1317@queper01-VirtualBox>
+References: w74pegSSBpApsw74ueHlNx
+In-Reply-To: w74pegSSBpApsw74ueHlNx
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Peter Zijlstra' <peterz@infradead.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 23, 2018 at 6:47 PM, Quentin Perret <quentin.perret@arm.com> wrote:
-> On Thursday 22 Mar 2018 at 13:19:03 (-0700), Joel Fernandes wrote:
->> On Thu, Mar 22, 2018 at 11:06 AM, Patrick Bellasi
->> <patrick.bellasi@arm.com> wrote:
->
-> [...]
->
->> >> > @@ -6555,6 +6613,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
->> >> >                         break;
->> >> >                 }
->> >> >
->> >> > +               /*
->> >> > +                * Energy-aware task placement is performed on the highest
->> >> > +                * non-overutilized domain spanning over cpu and prev_cpu.
->> >> > +                */
->> >> > +               if (want_energy && !sd_overutilized(tmp) &&
->> >> > +                   cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
->> >>
->> >> Shouldn't you check for the SD_ASYM_CPUCAPACITY flag here for tmp level?
->> >
->> > ... and this then should be covered by the previous check in
->> > wake_energy(), which sets want_energy.
->>
->> Right, but in a scenario which probably doesn't exist today where we
->> have both SD_ASYM_CPUCAPACITY and !SD_ASYM_CPUCAPACITY domains in the
->> hierarchy for which want_energy = 1, I was thinking if its more future
->> proof to check it and not make assumptions...
->
-> So we can definitely have cases where SD_ASYM_CPUCAPACITY is not set at all
-> sd levels. Today, on mobile systems, this flag is typically set only at DIE
-> level for big.LITTLE platforms, and not at MC level.
-> We enable EAS if we find _at least_ one domain that has this flag in the
-> hierarchy, just to make sure we don't enable EAS for symmetric platform.
-> It's just a way to check a property about the topology when EAS starts, not
-> really a way to actually select the sd at which we do scheduling at
-> runtime.
+On 2018.03.14 07:04 Rafael J. Wysocki wrote:
 
-Yes Ok you're right we do have the ASYM flag set at some sd levels but
-not others at the moment. Sorry about the hasty comment. I understand
-what you're doing now, I am Ok with that.
+> If poll_idle() is allowed to spin until need_resched() returns 'true',
+> it may actually spin for a much longer time than expected by the idle
+> governor, since set_tsk_need_resched() is not always called by the
+> timer interrupt handler.  If that happens, the CPU may spend much
+> more time than anticipated in the "polling" state.
+>
+> To prevent that from happening, limit the time of the spinning loop
+> in poll_idle().
 
-thanks,
+...[snip]...
 
-- Joel
+> +#define POLL_IDLE_TIME_LIMIT	(TICK_NSEC / 16)
+
+The other ongoing threads on this aside, potentially, there might
+be another issue.
+
+What if the next available idle state, after 0, has a residency
+that is greater than TICK_NSEC / 16? Meaning these numbers, for example:
+
+/sys/devices/system/cpu/cpu0/cpuidle/state*/residency
+
+The suggestion is that upon a timeout exit from idle state 0,
+the measured_us should maybe be rejected, because the statistics
+are being biased and it doesn't seem to correct itself.
+
+Up to 1300% (<- not a typo) extra power consumption has been observed.
+
+Supporting experimental data:
+
+My processor: 
+/sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
+/sys/devices/system/cpu/cpu0/cpuidle/state2/residency:20
+/sys/devices/system/cpu/cpu0/cpuidle/state3/residency:211 <<< Important
+/sys/devices/system/cpu/cpu0/cpuidle/state4/residency:345
+
+A 1000 Hz kernel (TICK_NSEC/16) = 62.5 nsec; idle system:
+
+Idle state 0 time: Typically 0 uSec.
+Processor package power: 3.7 watts (steady)
+
+Now, disable idle states 1 and 2:
+
+Idle state 0 time (all 8 CPUs): ~~ 430 Seconds / minute
+Processor package power: ~52 watts (1300% more power, 14X)
+
+A 250 Hz kernel (TICK_NSEC/16) = 250 nSec; idle system:
+
+Idle state 0 time: Typically < 1 mSec / minute
+Processor package power: 3.7 to 3.8 watts
+
+Now, disable idle states 1 and 2:
+
+Idle state 0 time (all 8 CPUs): Typically 0 to 70 mSecs / minute
+Processor package power: 3.7 to 3.8 watts
+
+A 1000 Hz kernel with:
+
++#define POLL_IDLE_TIME_LIMIT	(TICK_NSEC / 4)
+
+Note: Just for a test. I am not suggesting this should change.
+
+instead. i.e. (TICK_NSEC/4) = 250 nSec.
+
+Idle state 0 time: Typically 0 uSec.
+Processor package power: 3.7 watts (steady)
+
+Now, disable idle states 1 and 2:
+
+Idle state 0 time (all 8 CPUs): Typically 0 to 70 mSecs / minute
+Processor package power: ~3.8 watts
+
+Note 1: My example is contrived via disabling idle states, so
+I don't know if it actually needs to be worried about.
+
+Note 2: I do not know if there is some processor where
+cpuidle/state1/residency is > 62.5 nSec.
+
+Note 3: I am trying to figure out a way to test rejecting
+measured_us upon timeout exit, but haven't made much progress.
+
+... Doug
