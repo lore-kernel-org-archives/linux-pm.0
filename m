@@ -1,49 +1,81 @@
 From: Quentin Perret <quentin.perret@arm.com>
 Subject: Re: [RFC PATCH 5/6] sched/fair: Select an energy-efficient CPU on
  task wake-up
-Date: Sun, 25 Mar 2018 02:38:35 +0100
-Message-ID: <20180325013833.GA1803@queper01-VirtualBox>
+Date: Sun, 25 Mar 2018 02:52:39 +0100
+Message-ID: <20180325015238.GB1803@queper01-VirtualBox>
 References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
  <20180320094312.24081-6-dietmar.eggemann@arm.com>
- <CAJWu+oqO75h0Ue0=zqD1KTcHFF7tUKYgCHQzXx39RyyGTjiang@mail.gmail.com>
- <20180323160059.GQ4589@e105550-lin.cambridge.arm.com>
+ <20180321153518.GC13951@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180323160059.GQ4589@e105550-lin.cambridge.arm.com>
+In-Reply-To: <20180321153518.GC13951@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Joel Fernandes <joelaf@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 Mar 2018 at 16:00:59 (+0000), Morten Rasmussen wrote:
-> On Thu, Mar 22, 2018 at 09:27:43AM -0700, Joel Fernandes wrote:
-> > Hi,
+On Wednesday 21 Mar 2018 at 15:35:18 (+0000), Patrick Bellasi wrote:
+> On 20-Mar 09:43, Dietmar Eggemann wrote:
+> > From: Quentin Perret <quentin.perret@arm.com>
+> 
+> [...]
+> 
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 76bd46502486..65a1bead0773 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -6513,6 +6513,60 @@ static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+> >  	return energy;
+> >  }
 > > 
-> > On Tue, Mar 20, 2018 at 2:43 AM, Dietmar Eggemann
-> > <dietmar.eggemann@arm.com> wrote:
-
-[...]
-
-> > Is it possible that before the wakeup, the task's affinity is changed
-> > so that p->cpus_allowed no longer contains prev_cpu ? In that case
-> > prev_energy wouldn't matter since previous CPU is no longer an option?
+> > +static bool task_fits(struct task_struct *p, int cpu)
+> > +{
+> > +	unsigned long next_util = cpu_util_next(cpu, p, cpu);
+> > +
+> > +	return util_fits_capacity(next_util, capacity_orig_of(cpu));
+>                                              ^^^^^^^^^^^^^^^^^^^^^
 > 
-> It is possible to wake-up with a disallowed prev_cpu. In fact
-> select_idle_sibling() may happily return a disallowed cpu in that case.
-> The mistake gets fixed in select_task_rq() which uses
-> select_fallback_rq() to find an allowed cpu instead.
-> 
-> Could we fix the issue in find_energy_efficient_cpu() by a simple test
-> like below
-> 
-> if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))
-> 	prev_energy = best_energy = compute_energy(p, prev_cpu);
-> else
-> 	prev_energy = best_energy = ULONG_MAX;
+> Since here we are at scheduling CFS tasks, should we not better use
+> capacity_of() to account for RT/IRQ pressure ?
 
-Right, that should work. I'll change this in v2.
+Yes, definitely. I change this in v2.
+
+> 
+> > +}
+> > +
+> > +static int find_energy_efficient_cpu(struct sched_domain *sd,
+> > +					struct task_struct *p, int prev_cpu)
+> > +{
+> > +	unsigned long cur_energy, prev_energy, best_energy;
+> > +	int cpu, best_cpu = prev_cpu;
+> > +
+> > +	if (!task_util(p))
+> 
+> We are still waking up a task... what if the task was previously
+> running on a big CPU which is now idle?
+> 
+> I understand that from a _relative_ energy_diff standpoint there is
+> not much to do for a 0 utilization task. However, for those tasks we
+> can still try to return the most energy efficient CPU among the ones
+> in their cpus_allowed mask.
+> 
+> It should be a relatively low overhead (maybe contained in a fallback
+> most_energy_efficient_cpu() kind of function) which allows, for
+> example on ARM big.LITTLE systems, to consolidate those tasks on
+> LITTLE CPUs instead for example keep running them on a big CPU.
+
+Hmmmm so the difficult thing about a task with 0 util is that you don't
+know if this is really a small task, or a big task with a very long
+period. The only useful thing you know for sure about the task is where
+it ran last time, so I guess that makes sense to use that information
+rather than make assumptions. There is no perfect solution using the
+util_avg of the task.
+
+Now, UTIL_EST is changing the game here. If we use it for task placement
+(which I think is the right thing to do), this issue should be a lot
+easier to solve. What do you think ?
 
 Thanks,
 Quentin
