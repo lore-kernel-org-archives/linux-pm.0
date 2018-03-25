@@ -1,114 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
-Date: Sun, 25 Mar 2018 13:53:42 +0200
-Message-ID: <CAJZ5v0hhrFrPj834pR6COcF_nJ8Xm7qYJeW9oJUQ0Pe9bGTRuw@mail.gmail.com>
-References: <001401d3c3d0$2a4623d0$7ed26b70$@net>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH 2/6] sched: Introduce energy models of CPUs
+Date: Sun, 25 Mar 2018 14:48:10 +0100
+Message-ID: <20180325134548.GA1344@queper01-VirtualBox>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-3-dietmar.eggemann@arm.com>
+ <20180320095215.GB23359@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <001401d3c3d0$2a4623d0$7ed26b70$@net>
+Content-Disposition: inline
+In-Reply-To: <20180320095215.GB23359@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Mar 25, 2018 at 1:28 AM, Doug Smythies <dsmythies@telus.net> wrote:
-> On 2018.03.14 07:04 Rafael J. Wysocki wrote:
->
->> If poll_idle() is allowed to spin until need_resched() returns 'true',
->> it may actually spin for a much longer time than expected by the idle
->> governor, since set_tsk_need_resched() is not always called by the
->> timer interrupt handler.  If that happens, the CPU may spend much
->> more time than anticipated in the "polling" state.
->>
->> To prevent that from happening, limit the time of the spinning loop
->> in poll_idle().
->
-> ...[snip]...
->
->> +#define POLL_IDLE_TIME_LIMIT (TICK_NSEC / 16)
->
-> The other ongoing threads on this aside, potentially, there might
-> be another issue.
->
-> What if the next available idle state, after 0, has a residency
-> that is greater than TICK_NSEC / 16? Meaning these numbers, for example:
->
-> /sys/devices/system/cpu/cpu0/cpuidle/state*/residency
->
-> The suggestion is that upon a timeout exit from idle state 0,
-> the measured_us should maybe be rejected, because the statistics
-> are being biased and it doesn't seem to correct itself.
+On Tuesday 20 Mar 2018 at 10:52:15 (+0100), Greg Kroah-Hartman wrote:
+> On Tue, Mar 20, 2018 at 09:43:08AM +0000, Dietmar Eggemann wrote:
+> > From: Quentin Perret <quentin.perret@arm.com>
 
-OK
+[...]
 
-> Up to 1300% (<- not a typo) extra power consumption has been observed.
->
-> Supporting experimental data:
->
-> My processor:
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/residency:20
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:211 <<< Important
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/residency:345
->
-> A 1000 Hz kernel (TICK_NSEC/16) = 62.5 nsec; idle system:
+> > +#ifdef CONFIG_PM_OPP
+> 
+> #ifdefs go in .h files, not .c files, right?
+> 
 
-nsec or usec?
+So, after looking into this, my suggestion would be to: 1) remove the
+#ifdef CONFIG_PM_OPP from energy.c entirely; 2) make sure
+init_sched_energy() is stubbed properly for !CONFIG_SMP and
+!CONFIG_PM_OPP in include/linux/sched/energy.h; 3) relocate the global
+variables (energy_model, freq_domains, ...) to fair.c; and 4) modify
+kernel/sched/Makefile with something like:
 
-> Idle state 0 time: Typically 0 uSec.
-> Processor package power: 3.7 watts (steady)
->
-> Now, disable idle states 1 and 2:
->
-> Idle state 0 time (all 8 CPUs): ~~ 430 Seconds / minute
-> Processor package power: ~52 watts (1300% more power, 14X)
+ifeq ($(CONFIG_PM_OPP),y)
+obj-$(CONFIG_SMP) += energy.o
+endif
 
-But that's because you have disabled states 1 and 2, isn't it?
+That way, energy.c is not compiled if not needed by the arch, and the
+ifdef are kept within header files and Makefiles.
 
-> A 250 Hz kernel (TICK_NSEC/16) = 250 nSec; idle system:
->
-> Idle state 0 time: Typically < 1 mSec / minute
-> Processor package power: 3.7 to 3.8 watts
->
-> Now, disable idle states 1 and 2:
->
-> Idle state 0 time (all 8 CPUs): Typically 0 to 70 mSecs / minute
-> Processor package power: 3.7 to 3.8 watts
->
-> A 1000 Hz kernel with:
->
-> +#define POLL_IDLE_TIME_LIMIT   (TICK_NSEC / 4)
->
-> Note: Just for a test. I am not suggesting this should change.
->
-> instead. i.e. (TICK_NSEC/4) = 250 nSec.
->
-> Idle state 0 time: Typically 0 uSec.
-> Processor package power: 3.7 watts (steady)
->
-> Now, disable idle states 1 and 2:
->
-> Idle state 0 time (all 8 CPUs): Typically 0 to 70 mSecs / minute
-> Processor package power: ~3.8 watts
->
-> Note 1: My example is contrived via disabling idle states, so
-> I don't know if it actually needs to be worried about.
->
-> Note 2: I do not know if there is some processor where
-> cpuidle/state1/residency is > 62.5 nSec.
+Would that work ?
 
-If that's usec, I would be quite surprised if there were any. :-)
-
-> Note 3: I am trying to figure out a way to test rejecting
-> measured_us upon timeout exit, but haven't made much progress.
-
-Rejecting it has side effects too, because it basically means lost information.
-
-Reaching the time limit means that the CPU could have been idle much
-longer, even though we can't say how much.  That needs to be recorded
-in the data used for the next-time prediction or that is going to be
-inaccurate too.
-
-Of course, what number to record is a good question. :-)
+Thanks,
+Quentin
