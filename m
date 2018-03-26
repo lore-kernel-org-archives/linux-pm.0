@@ -1,30 +1,38 @@
-From: sricharan@codeaurora.org
-Subject: Re: [v9,04/15] clk: qcom: Add HFPLL driver
-Date: Mon, 26 Mar 2018 15:17:46 +0530
-Message-ID: <0132a9e1371c7e690d174cb4d65bc951@codeaurora.org>
-References: <520347148-27852-5-git-send-email-sricharan@codeaurora.org>
- <20180325193341.27845-1-ctatlor97@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v7 2/6] Documentation: power: Initial effort to document
+ power_supply ABI
+Date: Mon, 26 Mar 2018 11:57:03 +0200
+Message-ID: <20180326095703.GA26466@kroah.com>
+References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <0a26f379c29d65b6e0fa416a4b73aea010b9f718.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180325193341.27845-1-ctatlor97@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <0a26f379c29d65b6e0fa416a4b73aea010b9f718.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Craig Tatlor <ctatlor97@gmail.com>
-Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-03-26 01:03, Craig Tatlor wrote:
-> This doesn't seem to work correctly with the higher clocks on 8974pro,
-> specifically 2150400000 hz or above, maybe its something to do with
-> being bigger than an unsigned long.
+On Fri, Mar 23, 2018 at 10:12:21AM +0000, Adam Thomson wrote:
+> This commit adds generic ABI information regarding power_supply
+> properties. This is an initial attempt to try and align the usage
+> of these properties between drivers. As part of this commit,
+> common Battery and USB related properties have been listed.
 > 
-> When i try to set any higher frequency it jumps down to 300mhz.
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> ---
+>  Documentation/ABI/testing/sysfs-class-power | 443 ++++++++++++++++++++++++++++
+>  MAINTAINERS                                 |   1 +
+>  2 files changed, 444 insertions(+)
 
+How was this not documented before?
 
-  Thanks for testing this series. Not sure i got dropped from the list.
-  So i will check on this and come back.
+Anyway, any objection to me taking this through the USB tree, as the
+typec patches depend on the 3/6 patch here.  If so, can I get an ack
+from the power supply maintainers?
 
-Regards,
-  Sricharan
+thanks,
+
+greg k-h
