@@ -1,62 +1,84 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
-Date: Mon, 26 Mar 2018 22:30:46 +0800
-Message-ID: <20180326143046.GA18782@leoy-ThinkPad-X240s>
-References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <20180307170923.GA6543@localhost.localdomain>
- <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
- <20180308120352.mko2b775ppquverb@oak.lan>
+From: Dan Williams <dcbw@redhat.com>
+Subject: Re: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Mon, 26 Mar 2018 10:33:55 -0500
+Message-ID: <95efbba35c3389015d4919a59f8d01bc2d375a19.camel@redhat.com>
+References: <20180318104023.GA10392@amd>
+         <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
+         <20180319092106.GA5683@amd> <1521474008.20208.2.camel@redhat.com>
+         <20180319173356.GA28462@amd> <1521481549.20208.8.camel@redhat.com>
+         <20180320080334.GA31772@amd> <1521551568.16848.5.camel@redhat.com>
+         <20180325061927.GA2148@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180308120352.mko2b775ppquverb@oak.lan>
+In-Reply-To: <20180325061927.GA2148@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 08, 2018 at 12:03:52PM +0000, Daniel Thompson wrote:
-> On Wed, Mar 07, 2018 at 07:57:17PM +0100, Daniel Lezcano wrote:
-> > >> The preliminary benchmarks show the following changes:
-> > >>
-> > >> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
-> > >> increase of the latency of 16% while sysbench shows a latency increase
-> > >> of 5%.
+On Sun, 2018-03-25 at 08:19 +0200, Pavel Machek wrote:
+> > > > Ok, what does 'nmcli dev' and 'nmcli radio' show?
 > > > 
-> > > I don't follow these numbers. Throughput increase while injecting idle?
-> > > compared to what? percentages of what? Please be more specific to better
-> > > describer your work..
+> > > Broken state.
+> > > 
+> > > pavel@amd:~$ nmcli dev
+> > > DEVICE  TYPE      STATE        CONNECTION
+> > > eth1    ethernet  unavailable  --
+> > > lo      loopback  unmanaged    --
+> > > wlan0   wifi      unmanaged    --
 > > 
-> > The dhrystone throughput is based on the virtual timer, when we are
-> > running, it is at max opp, so the throughput increases. But regarding
-> > the real time, it takes obviously more time to achieve as we are
-> > artificially inserting idle cycles. With the cpufreq governor, we run at
-> > a lower opp, so the throughput is less for dhrystone but it takes less
-> > time to achieve.
+> > If the state is "unmanaged" on resume, that would indicate a
+> > problem
+> > with sleep/wake and likely not a kernel network device issue.
 > > 
-> > Percentages are comparing cpufreq vs cpuidle cooling devices. I will
-> > take care of presenting the results in a more clear way in the next version.
+> > We should probably move this discussion to the NM lists to debug
+> > further.  Before you suspend, run "nmcli gen log level trace" to
+> > turn
+> > on full debug logging, then reproduce the issue, and send a pointer
+> > to
+> > those logs (scrubbed for anything you consider sensitive) to the NM
+> > mailing list.
 > 
-> I think we should also note that the current hikey settings for cpufreq
-> are very badly tuned for this platform. It has a single temp threshold
-> and it jumps from max freq to min freq.
+> Hmm :-)
 > 
-> IIRC Leo's work on Hikey thermals correctly it would be much better if 
-> it used the power-allocator thermal governor or if if copied some of 
-> the Samsung 32-bit platform by configuring the step governor with a 
-> graduated with a slightly lower threshold that moves two stops back in 
-> the OPP table (which is still fairly high clock speed... but it
-> thermally sustainable).
+> root@amd:/data/pavel# nmcli gen log level trace
+> Error: Unknown log level 'trace'
 
-I think Daniel L. is working on this patch set with 'power-allocator'
-governor, and the parameters 'sustainable-power = <3326>' and
-'dynamic-power-coefficient = <311>' are profiling value on Hikey
-platform.  Now we only consider dynamic power and skip static leakage
-for 'power-allocator' governor.  And all these parameters are merged
-into Linux mainline kernel.
+What NM version?  'trace' is pretty old (since 1.0 from December 2014)
+so unless you're using a really, really old version of Debian I'd
+expect you'd have it.  Anyway, debug would do.
 
-Daniel L. could correct me if I misunderstand the testing conditions.
+> root@amd:/data/pavel# nmcli gen log level help
+> Error: Unknown log level 'help'
 
-Thanks,
-Leo Yan
+nmcli gen help
+
+> root@amd:/data/pavel# nmcli gen log level
+> Error: value for 'level' argument is required.
+> root@amd:/data/pavel# nmcli gen log level debug
+
+This should be OK.
+
+> root@amd:/data/pavel# cat /var/log/sys/log
+
+It routes it to whatever the syslog 'daemon' facility logs to (however
+that's configured on your system).  Usually /var/log/messages or
+/var/log/daemon.log or sometimes your distro configures it to
+/var/log/NetworkManager.log.
+
+Or if you're using a systemd-based distro, it would probably be in the
+systemd journal so "journalctl -b -u NetworkManager"
+
+> Where do I get the logs? I don't see much in the syslog...
+
+> And.. It seems that it is "every other suspend". One resume results
+> in
+> broken network, one in working one, one in broken one...
+
+Does your distro use pm-utils, upower, or systemd for suspend/resume
+handling?
+
+Dan
