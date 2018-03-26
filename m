@@ -1,50 +1,62 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v7 2/6] Documentation: power: Initial effort to document
- power_supply ABI
-Date: Mon, 26 Mar 2018 14:50:19 +0200
-Message-ID: <20180326125019.GA29451@kroah.com>
-References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
- <0a26f379c29d65b6e0fa416a4b73aea010b9f718.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
- <20180326095703.GA26466@kroah.com>
- <2E89032DDAA8B9408CB92943514A0337014C1E2EFD@SW-EX-MBX01.diasemi.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
+Date: Mon, 26 Mar 2018 22:30:46 +0800
+Message-ID: <20180326143046.GA18782@leoy-ThinkPad-X240s>
+References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180307170923.GA6543@localhost.localdomain>
+ <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
+ <20180308120352.mko2b775ppquverb@oak.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1E2EFD@SW-EX-MBX01.diasemi.com>
+In-Reply-To: <20180308120352.mko2b775ppquverb@oak.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 26, 2018 at 12:40:06PM +0000, Adam Thomson wrote:
-> On 26 March 2018 10:57, Greg Kroah-Hartman wrote:
+On Thu, Mar 08, 2018 at 12:03:52PM +0000, Daniel Thompson wrote:
+> On Wed, Mar 07, 2018 at 07:57:17PM +0100, Daniel Lezcano wrote:
+> > >> The preliminary benchmarks show the following changes:
+> > >>
+> > >> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
+> > >> increase of the latency of 16% while sysbench shows a latency increase
+> > >> of 5%.
+> > > 
+> > > I don't follow these numbers. Throughput increase while injecting idle?
+> > > compared to what? percentages of what? Please be more specific to better
+> > > describer your work..
+> > 
+> > The dhrystone throughput is based on the virtual timer, when we are
+> > running, it is at max opp, so the throughput increases. But regarding
+> > the real time, it takes obviously more time to achieve as we are
+> > artificially inserting idle cycles. With the cpufreq governor, we run at
+> > a lower opp, so the throughput is less for dhrystone but it takes less
+> > time to achieve.
+> > 
+> > Percentages are comparing cpufreq vs cpuidle cooling devices. I will
+> > take care of presenting the results in a more clear way in the next version.
 > 
-> > On Fri, Mar 23, 2018 at 10:12:21AM +0000, Adam Thomson wrote:
-> > > This commit adds generic ABI information regarding power_supply
-> > > properties. This is an initial attempt to try and align the usage
-> > > of these properties between drivers. As part of this commit,
-> > > common Battery and USB related properties have been listed.
-> > >
-> > > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > > ---
-> > >  Documentation/ABI/testing/sysfs-class-power | 443
-> > ++++++++++++++++++++++++++++
-> > >  MAINTAINERS                                 |   1 +
-> > >  2 files changed, 444 insertions(+)
-> >
-> > How was this not documented before?
+> I think we should also note that the current hikey settings for cpufreq
+> are very badly tuned for this platform. It has a single temp threshold
+> and it jumps from max freq to min freq.
 > 
-> As an FYI, there is some overall documentation under:
-> 
->  Documentation/power/power_supply_class.txt
-> 
-> However, after discussions with Heikki, it was determined something more
-> detailed would be useful to help clarify usage.
+> IIRC Leo's work on Hikey thermals correctly it would be much better if 
+> it used the power-allocator thermal governor or if if copied some of 
+> the Samsung 32-bit platform by configuring the step governor with a 
+> graduated with a slightly lower threshold that moves two stops back in 
+> the OPP table (which is still fairly high clock speed... but it
+> thermally sustainable).
 
-Oh I agree, it belongs in Documentation/ABI/ like you did here, thank
-you so much for that.  I was just amazed it wasn't already there...
+I think Daniel L. is working on this patch set with 'power-allocator'
+governor, and the parameters 'sustainable-power = <3326>' and
+'dynamic-power-coefficient = <311>' are profiling value on Hikey
+platform.  Now we only consider dynamic power and skip static leakage
+for 'power-allocator' governor.  And all these parameters are merged
+into Linux mainline kernel.
 
-thanks,
+Daniel L. could correct me if I misunderstand the testing conditions.
 
-greg k-h
+Thanks,
+Leo Yan
