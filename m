@@ -1,271 +1,90 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v7 6/6] typec: tcpm: Add support for sink PPS related
- messages
-Date: Sun, 25 Mar 2018 20:15:27 -0700
-Message-ID: <e5e236a9-0b12-3791-ea79-782bf2df7ba0@roeck-us.net>
-References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
- <3750bdbd01434d4a6b0319a06eddda819272f604.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+From: Sean Wang <sean.wang@mediatek.com>
+Subject: Re: [PATCH v1 09/16] rtc: mediatek: convert to use device managed
+ functions
+Date: Mon, 26 Mar 2018 12:07:45 +0800
+Message-ID: <1522037265.18424.14.camel@mtkswgap22>
+References: <cover.1521794176.git.sean.wang@mediatek.com>
+         <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
+         <20180323105017.GI3417@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3750bdbd01434d4a6b0319a06eddda819272f604.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
-Content-Language: en-US
+In-Reply-To: <20180323105017.GI3417@piout.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/23/2018 03:12 AM, Adam Thomson wrote:
-> This commit adds sink side support for Get_Status, Status,
-> Get_PPS_Status and PPS_Status handling. As there's the
-> potential for a partner to respond with Not_Supported,
-> handling of this message is also added. Sending of
-> Not_Supported is added to handle messagescreceived but not
-> yet handled.
+On Fri, 2018-03-23 at 11:50 +0100, Alexandre Belloni wrote:
+> On 23/03/2018 at 17:15:06 +0800, sean.wang@mediatek.com wrote:
+> > From: Sean Wang <sean.wang@mediatek.com>
+> > 
+> > Use device managed operation to simplify error handling, reduce source
+> > code size, and reduce the likelyhood of bugs, and remove our removal
+> > callback which contains anything already done by device managed functions.
+> > 
+> > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> > ---
+> >  drivers/rtc/rtc-mt6397.c | 31 ++++++++-----------------------
+> >  1 file changed, 8 insertions(+), 23 deletions(-)
+> > 
+> > diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+> > index cefb83b..bfc5d6f 100644
+> > --- a/drivers/rtc/rtc-mt6397.c
+> > +++ b/drivers/rtc/rtc-mt6397.c
+> > @@ -14,6 +14,7 @@
+> >  
+> >  #include <linux/delay.h>
+> >  #include <linux/init.h>
+> > +#include <linux/interrupt.h>
+> >  #include <linux/module.h>
+> >  #include <linux/regmap.h>
+> >  #include <linux/rtc.h>
+> > @@ -328,10 +329,10 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+> >  
+> >  	platform_set_drvdata(pdev, rtc);
+> >  
+> > -	ret = request_threaded_irq(rtc->irq, NULL,
+> > -				   mtk_rtc_irq_handler_thread,
+> > -				   IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
+> > -				   "mt6397-rtc", rtc);
+> > +	ret = devm_request_threaded_irq(&pdev->dev, rtc->irq, NULL,
+> > +					mtk_rtc_irq_handler_thread,
+> > +					IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
+> > +					"mt6397-rtc", rtc);
+> >  	if (ret) {
+> >  		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
+> >  			rtc->irq, ret);
+> > @@ -340,30 +341,15 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+> >  
+> >  	device_init_wakeup(&pdev->dev, 1);
+> >  
+> > -	rtc->rtc_dev = rtc_device_register("mt6397-rtc", &pdev->dev,
+> > -					   &mtk_rtc_ops, THIS_MODULE);
+> > +	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, "mt6397-rtc",
+> > +						&mtk_rtc_ops, THIS_MODULE);
 > 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-
-> ---
->   drivers/usb/typec/tcpm.c | 143 ++++++++++++++++++++++++++++++++++++++++++++---
->   1 file changed, 134 insertions(+), 9 deletions(-)
+> You should probably switch to devm_rtc_allocate_device() and
+> rtc_register_device instead of devm_rtc_device_register.
 > 
-> diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
-> index 57a7d1a..7025a16 100644
-> --- a/drivers/usb/typec/tcpm.c
-> +++ b/drivers/usb/typec/tcpm.c
-> @@ -19,7 +19,9 @@
->   #include <linux/slab.h>
->   #include <linux/spinlock.h>
->   #include <linux/usb/pd.h>
-> +#include <linux/usb/pd_ado.h>
->   #include <linux/usb/pd_bdo.h>
-> +#include <linux/usb/pd_ext_sdb.h>
->   #include <linux/usb/pd_vdo.h>
->   #include <linux/usb/tcpm.h>
->   #include <linux/usb/typec.h>
-> @@ -113,6 +115,11 @@
->   	S(SNK_TRYWAIT_VBUS),			\
->   	S(BIST_RX),				\
->   						\
-> +	S(GET_STATUS_SEND),			\
-> +	S(GET_STATUS_SEND_TIMEOUT),		\
-> +	S(GET_PPS_STATUS_SEND),			\
-> +	S(GET_PPS_STATUS_SEND_TIMEOUT),		\
-> +						\
->   	S(ERROR_RECOVERY),			\
->   	S(PORT_RESET),				\
->   	S(PORT_RESET_WAIT_OFF)
-> @@ -143,6 +150,7 @@ enum pd_msg_request {
->   	PD_MSG_NONE = 0,
->   	PD_MSG_CTRL_REJECT,
->   	PD_MSG_CTRL_WAIT,
-> +	PD_MSG_CTRL_NOT_SUPP,
->   	PD_MSG_DATA_SINK_CAP,
->   	PD_MSG_DATA_SOURCE_CAP,
->   };
-> @@ -1398,10 +1406,42 @@ static int tcpm_validate_caps(struct tcpm_port *port, const u32 *pdo,
->   /*
->    * PD (data, control) command handling functions
->    */
-> +static inline enum tcpm_state ready_state(struct tcpm_port *port)
-> +{
-> +	if (port->pwr_role == TYPEC_SOURCE)
-> +		return SRC_READY;
-> +	else
-> +		return SNK_READY;
-> +}
->   
->   static int tcpm_pd_send_control(struct tcpm_port *port,
->   				enum pd_ctrl_msg_type type);
->   
-> +static void tcpm_handle_alert(struct tcpm_port *port, const __le32 *payload,
-> +			      int cnt)
-> +{
-> +	u32 p0 = le32_to_cpu(payload[0]);
-> +	unsigned int type = usb_pd_ado_type(p0);
-> +
-> +	if (!type) {
-> +		tcpm_log(port, "Alert message received with no type");
-> +		return;
-> +	}
-> +
-> +	/* Just handling non-battery alerts for now */
-> +	if (!(type & USB_PD_ADO_TYPE_BATT_STATUS_CHANGE)) {
-> +		switch (port->state) {
-> +		case SRC_READY:
-> +		case SNK_READY:
-> +			tcpm_set_state(port, GET_STATUS_SEND, 0);
-> +			break;
-> +		default:
-> +			tcpm_queue_message(port, PD_MSG_CTRL_WAIT);
-> +			break;
-> +		}
-> +	}
-> +}
-> +
->   static void tcpm_pd_data_request(struct tcpm_port *port,
->   				 const struct pd_message *msg)
->   {
-> @@ -1489,6 +1529,14 @@ static void tcpm_pd_data_request(struct tcpm_port *port,
->   			tcpm_set_state(port, BIST_RX, 0);
->   		}
->   		break;
-> +	case PD_DATA_ALERT:
-> +		tcpm_handle_alert(port, msg->payload, cnt);
-> +		break;
-> +	case PD_DATA_BATT_STATUS:
-> +	case PD_DATA_GET_COUNTRY_INFO:
-> +		/* Currently unsupported */
-> +		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-> +		break;
->   	default:
->   		tcpm_log(port, "Unhandled data message type %#x", type);
->   		break;
-> @@ -1571,6 +1619,7 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
->   		break;
->   	case PD_CTRL_REJECT:
->   	case PD_CTRL_WAIT:
-> +	case PD_CTRL_NOT_SUPP:
->   		switch (port->state) {
->   		case SNK_NEGOTIATE_CAPABILITIES:
->   			/* USB PD specification, Figure 8-43 */
-> @@ -1690,12 +1739,75 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
->   			break;
->   		}
->   		break;
-> +	case PD_CTRL_GET_SOURCE_CAP_EXT:
-> +	case PD_CTRL_GET_STATUS:
-> +	case PD_CTRL_FR_SWAP:
-> +	case PD_CTRL_GET_PPS_STATUS:
-> +	case PD_CTRL_GET_COUNTRY_CODES:
-> +		/* Currently not supported */
-> +		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-> +		break;
->   	default:
->   		tcpm_log(port, "Unhandled ctrl message type %#x", type);
->   		break;
->   	}
->   }
->   
-> +static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
-> +				    const struct pd_message *msg)
-> +{
-> +	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
-> +	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
-> +
-> +	if (!(msg->ext_msg.header && PD_EXT_HDR_CHUNKED)) {
-> +		tcpm_log(port, "Unchunked extended messages unsupported");
-> +		return;
-> +	}
-> +
-> +	if (data_size > PD_EXT_MAX_CHUNK_DATA) {
-> +		tcpm_log(port, "Chunk handling not yet supported");
-> +		return;
-> +	}
-> +
-> +	switch (type) {
-> +	case PD_EXT_STATUS:
-> +		/*
-> +		 * If PPS related events raised then get PPS status to clear
-> +		 * (see USB PD 3.0 Spec, 6.5.2.4)
-> +		 */
-> +		if (msg->ext_msg.data[USB_PD_EXT_SDB_EVENT_FLAGS] &
-> +		    USB_PD_EXT_SDB_PPS_EVENTS)
-> +			tcpm_set_state(port, GET_PPS_STATUS_SEND, 0);
-> +		else
-> +			tcpm_set_state(port, ready_state(port), 0);
-> +		break;
-> +	case PD_EXT_PPS_STATUS:
-> +		/*
-> +		 * For now the PPS status message is used to clear events
-> +		 * and nothing more.
-> +		 */
-> +		tcpm_set_state(port, ready_state(port), 0);
-> +		break;
-> +	case PD_EXT_SOURCE_CAP_EXT:
-> +	case PD_EXT_GET_BATT_CAP:
-> +	case PD_EXT_GET_BATT_STATUS:
-> +	case PD_EXT_BATT_CAP:
-> +	case PD_EXT_GET_MANUFACTURER_INFO:
-> +	case PD_EXT_MANUFACTURER_INFO:
-> +	case PD_EXT_SECURITY_REQUEST:
-> +	case PD_EXT_SECURITY_RESPONSE:
-> +	case PD_EXT_FW_UPDATE_REQUEST:
-> +	case PD_EXT_FW_UPDATE_RESPONSE:
-> +	case PD_EXT_COUNTRY_INFO:
-> +	case PD_EXT_COUNTRY_CODES:
-> +		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-> +		break;
-> +	default:
-> +		tcpm_log(port, "Unhandled extended message type %#x", type);
-> +		break;
-> +	}
-> +}
-> +
->   static void tcpm_pd_rx_handler(struct work_struct *work)
->   {
->   	struct pd_rx_event *event = container_of(work,
-> @@ -1736,7 +1848,9 @@ static void tcpm_pd_rx_handler(struct work_struct *work)
->   				 "Data role mismatch, initiating error recovery");
->   			tcpm_set_state(port, ERROR_RECOVERY, 0);
->   		} else {
-> -			if (cnt)
-> +			if (msg->header & PD_HEADER_EXT_HDR)
-> +				tcpm_pd_ext_msg_request(port, msg);
-> +			else if (cnt)
->   				tcpm_pd_data_request(port, msg);
->   			else
->   				tcpm_pd_ctrl_request(port, msg);
-> @@ -1797,6 +1911,9 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
->   		case PD_MSG_CTRL_REJECT:
->   			tcpm_pd_send_control(port, PD_CTRL_REJECT);
->   			break;
-> +		case PD_MSG_CTRL_NOT_SUPP:
-> +			tcpm_pd_send_control(port, PD_CTRL_NOT_SUPP);
-> +			break;
->   		case PD_MSG_DATA_SINK_CAP:
->   			tcpm_pd_send_sink_caps(port);
->   			break;
-> @@ -2483,14 +2600,6 @@ static inline enum tcpm_state hard_reset_state(struct tcpm_port *port)
->   	return SNK_UNATTACHED;
->   }
->   
-> -static inline enum tcpm_state ready_state(struct tcpm_port *port)
-> -{
-> -	if (port->pwr_role == TYPEC_SOURCE)
-> -		return SRC_READY;
-> -	else
-> -		return SNK_READY;
-> -}
-> -
->   static inline enum tcpm_state unattached_state(struct tcpm_port *port)
->   {
->   	if (port->port_type == TYPEC_PORT_DRP) {
-> @@ -3190,6 +3299,22 @@ static void run_state_machine(struct tcpm_port *port)
->   		/* Always switch to unattached state */
->   		tcpm_set_state(port, unattached_state(port), 0);
->   		break;
-> +	case GET_STATUS_SEND:
-> +		tcpm_pd_send_control(port, PD_CTRL_GET_STATUS);
-> +		tcpm_set_state(port, GET_STATUS_SEND_TIMEOUT,
-> +			       PD_T_SENDER_RESPONSE);
-> +		break;
-> +	case GET_STATUS_SEND_TIMEOUT:
-> +		tcpm_set_state(port, ready_state(port), 0);
-> +		break;
-> +	case GET_PPS_STATUS_SEND:
-> +		tcpm_pd_send_control(port, PD_CTRL_GET_PPS_STATUS);
-> +		tcpm_set_state(port, GET_PPS_STATUS_SEND_TIMEOUT,
-> +			       PD_T_SENDER_RESPONSE);
-> +		break;
-> +	case GET_PPS_STATUS_SEND_TIMEOUT:
-> +		tcpm_set_state(port, ready_state(port), 0);
-> +		break;
->   	case ERROR_RECOVERY:
->   		tcpm_swap_complete(port, -EPROTO);
->   		tcpm_pps_complete(port, -EPROTO);
+
+Just would like to know something details
+
+It seems you just encourage me to switch into the new registration
+method and currently devm_rtc_device_register I used for the driver
+shouldn't cause any harm. right?
+
+> >  	if (IS_ERR(rtc->rtc_dev)) {
+> >  		dev_err(&pdev->dev, "register rtc device failed\n");
+> >  		ret = PTR_ERR(rtc->rtc_dev);
+> > -		goto out_free_irq;
+> > +		return ret;
+> 
+> ret doesn't seem necessary anymore here.
+
+
+okay, it'll be removed
+
+> 
 > 
