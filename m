@@ -1,38 +1,50 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v7 2/6] Documentation: power: Initial effort to document
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v7 2/6] Documentation: power: Initial effort to document
  power_supply ABI
-Date: Mon, 26 Mar 2018 11:57:03 +0200
-Message-ID: <20180326095703.GA26466@kroah.com>
+Date: Mon, 26 Mar 2018 12:40:06 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E2EFD@SW-EX-MBX01.diasemi.com>
 References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
  <0a26f379c29d65b6e0fa416a4b73aea010b9f718.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180326095703.GA26466@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0a26f379c29d65b6e0fa416a4b73aea010b9f718.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <20180326095703.GA26466@kroah.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 23, 2018 at 10:12:21AM +0000, Adam Thomson wrote:
-> This commit adds generic ABI information regarding power_supply
-> properties. This is an initial attempt to try and align the usage
-> of these properties between drivers. As part of this commit,
-> common Battery and USB related properties have been listed.
-> 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> ---
->  Documentation/ABI/testing/sysfs-class-power | 443 ++++++++++++++++++++++++++++
->  MAINTAINERS                                 |   1 +
->  2 files changed, 444 insertions(+)
+On 26 March 2018 10:57, Greg Kroah-Hartman wrote:
 
-How was this not documented before?
+> On Fri, Mar 23, 2018 at 10:12:21AM +0000, Adam Thomson wrote:
+> > This commit adds generic ABI information regarding power_supply
+> > properties. This is an initial attempt to try and align the usage
+> > of these properties between drivers. As part of this commit,
+> > common Battery and USB related properties have been listed.
+> >
+> > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > ---
+> >  Documentation/ABI/testing/sysfs-class-power | 443
+> ++++++++++++++++++++++++++++
+> >  MAINTAINERS                                 |   1 +
+> >  2 files changed, 444 insertions(+)
+>
+> How was this not documented before?
 
-Anyway, any objection to me taking this through the USB tree, as the
-typec patches depend on the 3/6 patch here.  If so, can I get an ack
-from the power supply maintainers?
+As an FYI, there is some overall documentation under:
 
-thanks,
+ Documentation/power/power_supply_class.txt
 
-greg k-h
+However, after discussions with Heikki, it was determined something more
+detailed would be useful to help clarify usage.
+
+> Anyway, any objection to me taking this through the USB tree, as the
+> typec patches depend on the 3/6 patch here.  If so, can I get an ack
+> from the power supply maintainers?
+>
+> thanks,
+>
+> greg k-h
