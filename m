@@ -1,90 +1,88 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH v1 09/16] rtc: mediatek: convert to use device managed
- functions
-Date: Mon, 26 Mar 2018 12:07:45 +0800
-Message-ID: <1522037265.18424.14.camel@mtkswgap22>
-References: <cover.1521794176.git.sean.wang@mediatek.com>
-         <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
-         <20180323105017.GI3417@piout.net>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Sun, 25 Mar 2018 22:59:52 -0700
+Message-ID: <003401d3c4c7$ab9f82d0$02de8870$@net>
+References: <3111105.SmgpqUHPkp@aspire.rjw.lan>  <4731938.EeADOapqQb@aspire.rjw.lan> <1522008952.6308.46.camel@surriel.com>      <5810003.D8QGLjubHr@aspire.rjw.lan> 0DSBfDrt1Ffdw0DSCfOhiN
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain;
+        charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180323105017.GI3417@piout.net>
+In-Reply-To: 0DSBfDrt1Ffdw0DSCfOhiN
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+To: 'Rik van Riel' <riel@surriel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-03-23 at 11:50 +0100, Alexandre Belloni wrote:
-> On 23/03/2018 at 17:15:06 +0800, sean.wang@mediatek.com wrote:
-> > From: Sean Wang <sean.wang@mediatek.com>
-> > 
-> > Use device managed operation to simplify error handling, reduce source
-> > code size, and reduce the likelyhood of bugs, and remove our removal
-> > callback which contains anything already done by device managed functions.
-> > 
-> > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> > ---
-> >  drivers/rtc/rtc-mt6397.c | 31 ++++++++-----------------------
-> >  1 file changed, 8 insertions(+), 23 deletions(-)
-> > 
-> > diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-> > index cefb83b..bfc5d6f 100644
-> > --- a/drivers/rtc/rtc-mt6397.c
-> > +++ b/drivers/rtc/rtc-mt6397.c
-> > @@ -14,6 +14,7 @@
-> >  
-> >  #include <linux/delay.h>
-> >  #include <linux/init.h>
-> > +#include <linux/interrupt.h>
-> >  #include <linux/module.h>
-> >  #include <linux/regmap.h>
-> >  #include <linux/rtc.h>
-> > @@ -328,10 +329,10 @@ static int mtk_rtc_probe(struct platform_device *pdev)
-> >  
-> >  	platform_set_drvdata(pdev, rtc);
-> >  
-> > -	ret = request_threaded_irq(rtc->irq, NULL,
-> > -				   mtk_rtc_irq_handler_thread,
-> > -				   IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
-> > -				   "mt6397-rtc", rtc);
-> > +	ret = devm_request_threaded_irq(&pdev->dev, rtc->irq, NULL,
-> > +					mtk_rtc_irq_handler_thread,
-> > +					IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
-> > +					"mt6397-rtc", rtc);
-> >  	if (ret) {
-> >  		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
-> >  			rtc->irq, ret);
-> > @@ -340,30 +341,15 @@ static int mtk_rtc_probe(struct platform_device *pdev)
-> >  
-> >  	device_init_wakeup(&pdev->dev, 1);
-> >  
-> > -	rtc->rtc_dev = rtc_device_register("mt6397-rtc", &pdev->dev,
-> > -					   &mtk_rtc_ops, THIS_MODULE);
-> > +	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, "mt6397-rtc",
-> > +						&mtk_rtc_ops, THIS_MODULE);
-> 
-> You should probably switch to devm_rtc_allocate_device() and
-> rtc_register_device instead of devm_rtc_device_register.
-> 
+On 2018.03.25 14:25 Rik van Riel wrote:
+> On Sun, 2018-03-25 at 23:34 +0200, Rafael J. Wysocki wrote:
+>> On Sunday, March 25, 2018 10:15:52 PM CEST Rik van Riel wrote:
+>>> 
+>>> --=-e8yLbs0aoH4SrxOskwwl
+>>> Content-Type: text/plain; charset="UTF-8"
+>>> Content-Transfer-Encoding: quoted-printable
+>>> 
+>>> On Thu, 2018-03-22 at 18:09 +0100, Rafael J. Wysocki wrote:
+>>>> =20
+>>>> +++ linux-pm/drivers/cpuidle/poll_state.c
+>>>> @@ -10,6 +10,7 @@
+>>>>  #include <linux/sched/idle.h>
+>>>> =20
+>>>>  #define POLL_IDLE_TIME_LIMIT	(TICK_NSEC / 16)
+>>>> +#define POLL_IDLE_COUNT		1000
+>>>> =20
+>>>>  static int __cpuidle poll_idle(struct cpuidle_device *dev,
+>>>>  			       struct cpuidle_driver *drv, int
+>>>> index)
+>>>> @@ -18,9 +19,14 @@ static int __cpuidle poll_idle(struct cp
+>>>>
+>>>>  	local_irq_enable();
+>>>>  	if (!current_set_polling_and_test()) {
+>>>> +		unsigned int loop_count =3D 0;
+>>>> +
+>>>>  		while (!need_resched()) {
+>>>>  			cpu_relax();
+>>>> +			if (loop_count++ < POLL_IDLE_COUNT)
+>>>> +				continue;
+>>>>
+>>>> +			loop_count =3D 0;
+>>>>  			if (local_clock() - time_start >
+>>>> POLL_IDLE_TIME_LIMIT)
+>>>>  				break;
+>>>>  		}
+>>> 
+>>> OK, I am still seeing a performance
+>>> degradation with the above, though
+>>> not throughout the entire workload.
+>>> 
+>>> It appears that making the idle loop
+>>> do anything besides cpu_relax() for
+>>> a significant amount of time slows
+>>> things down.
+>> 
+>> I see.
+>> 
 
-Just would like to know something details
+I have no proof, but I do not see that as
+the problem.
 
-It seems you just encourage me to switch into the new registration
-method and currently devm_rtc_device_register I used for the driver
-shouldn't cause any harm. right?
+I think the issue is the overall exiting
+and then re-entering idle state 0 much
+more often, and the related overheads, where
+interrupts are disabled for short periods.
 
-> >  	if (IS_ERR(rtc->rtc_dev)) {
-> >  		dev_err(&pdev->dev, "register rtc device failed\n");
-> >  		ret = PTR_ERR(rtc->rtc_dev);
-> > -		goto out_free_irq;
-> > +		return ret;
-> 
-> ret doesn't seem necessary anymore here.
+My jury rigged way of trying to create similar
+conditions seems to always have the ISR return with
+the need_resched() flag set, so there is no difference
+in idle state 0 entries per unit time between kernel
+4.16-rc6 and one with the poll fixes added.
 
+i.e. the difference between these numbers over some time:
 
-okay, it'll be removed
+cat /sys/devices/system/cpu/cpu*/cpuidle/state0/usage
 
-> 
-> 
+Rik, I wonder if you see a difference with your real
+workflow?
+
+... Doug
