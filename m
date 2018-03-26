@@ -1,68 +1,98 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH v3] cpuidle: poll_state: Add time limit to poll_idle()
-Date: Mon, 26 Mar 2018 00:13:48 -0700
-Message-ID: <003601d3c4d1$fe4c0440$fae40cc0$@net>
-References: <3111105.SmgpqUHPkp@aspire.rjw.lan>  <4731938.EeADOapqQb@aspire.rjw.lan> <1522008952.6308.46.camel@surriel.com>      <5810003.D8QGLjubHr@aspire.rjw.lan> 0DSBfDrt1Ffdw0DSCfOhiN 0LAnfFcYLFfdw0LApfPvKF
+From: "Subhransu S. Prusty" <subhransu.s.prusty@intel.com>
+Subject: Re: [PATCH] [sound] hdac-codec runtime suspended at PM:Suspend.
+Date: Mon, 26 Mar 2018 12:33:55 +0530
+Message-ID: <20180326070349.GA14895@subhransu-desktop>
+References: <1520853467-31653-1-git-send-email-anshuman.gupta@intel.com>
+ <CAJZ5v0hyk=jto8Wt0er==YmKEsgvfvZhO2wDbGOhxZaWWCNgBg@mail.gmail.com>
+ <5aa8fbe9.4251620a.c3daa.3711SMTPIN_ADDED_BROKEN@mx.google.com>
+ <CAJZ5v0jrKPNFhgpoL97Ac-k9jAmMa-vzgc-4PD+uuynSMqE2Fw@mail.gmail.com>
+ <20180314153714.GA11459@anshuman.gupta@intel.com>
+ <20180315104237.GB13659@subhransu-desktop>
+ <20180315153230.GA16531@anshuman.gupta@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: 0LAnfFcYLFfdw0LApfPvKF
-Content-Language: en-ca
+Content-Disposition: inline
+In-Reply-To: <20180315153230.GA16531@anshuman.gupta@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Rik van Riel' <riel@surriel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: Anshuman Gupta <anshuman.gupta@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.03.25 23:00 Doug Smythies wrote: 
-> On 2018.03.25 14:25 Rik van Riel wrote:
-> On Sun, 2018-03-25 at 23:34 +0200, Rafael J. Wysocki wrote:
->> On Sunday, March 25, 2018 10:15:52 PM CEST Rik van Riel wrote:
+On Thu, Mar 15, 2018 at 09:02:30PM +0530, Anshuman Gupta wrote:
+> On Thu, Mar 15, 2018 at 04:12:44PM +0530, Subhransu S. Prusty wrote:
+> > On Wed, Mar 14, 2018 at 09:07:14PM +0530, Anshuman Gupta wrote:
+> > > On Wed, Mar 14, 2018 at 11:53:58AM +0100, Rafael J. Wysocki wrote:
+> > > > On Wed, Mar 14, 2018 at 11:38 AM, Anshuman Gupta
+> > > > <anshuman.gupta@intel.com> wrote:
+> > > > > On Mon, Mar 12, 2018 at 12:26:53PM +0100, Rafael J. Wysocki wrote:
+> > > > >> On Mon, Mar 12, 2018 at 12:17 PM, Anshuman Gupta
+> > > > >> <anshuman.gupta@intel.com> wrote:
+> > > > >> >
+> > > > >> > +       if (pm_runtime_status_suspended(dev))
+> > > > >> > +               return;
+> > > > >>
+> > > > >> That, again, is somewhat fragile from the concurrency perspective.
+> > > > >>
+> > > > 
+> > > > And here you want to avoid the below if the device is still suspended.
+> > >   Yes, if we do not avoid the code below, complete callback takes about 
+> > >   3 seconds due to snd_hdac_codec_read timed out because hdac controller 
+> > >   would be in runtime suspend state.	
+> > > > 
+> > > > Why is the below code located in the ->complete callback anyway?
+> > > > Shouldn't it be there in the ->resume one?
+> > > > 
+> > >   Yes even i am also having same doubt, why these power down and power up
+> > >   sequences are part of prepare and complete callback.
+> > >   Adding driver author "Subhransu S. Prusty" to provide more inputs on this.
+> > 
+> > This driver needs a late resume as it receives a jack notification from the
+> > i915 driver and the skl controller driver resume may not have happened and
+> > in turn hda controller may not ready. This ensures a synchronization for
+> > jack event during resume from S3.
+>   Let me give you insight of the issue, this driver blocks the direct complete
+>   of hda controller PCI 00:1f.3, sometimes it takes 280ms to resume hda controller
+>   from S3 and s2idle. So it does not make sense to suspend/resume hda controller 
+>   when it is already in runtime suspend.
 
-...[snip]...
+I get it now. I think this patch needs rework to address both the issues. 
 
->>>> 
->>>> OK, I am still seeing a performance
->>>> degradation with the above, though
->>>> not throughout the entire workload.
->>>> 
->>>> It appears that making the idle loop
->>>> do anything besides cpu_relax() for
->>>> a significant amount of time slows
->>>> things down.
->>> 
->>> I see. 
->
-> I have no proof, but I do not see that as
-> the problem.
->
-> I think the issue is the overall exiting
-> and then re-entering idle state 0 much
-> more often, and the related overheads, where
-> interrupts are disabled for short periods.
->
-> My jury rigged way of trying to create similar
-> conditions seems to always have the ISR return with
-> the need_resched() flag set, so there is no difference
-> in idle state 0 entries per unit time between kernel
-> 4.16-rc6 and one with the poll fixes added.
->
-> i.e. the difference between these numbers over some time:
->
-> cat /sys/devices/system/cpu/cpu*/cpuidle/state0/usage
->
-> Rik, I wonder if you see a difference with your real
-> workflow?
+> > 
+> > I think this patch defeats the purpose.
+>   Here in this case PCI driver may kick the direct complete for hda controller
+>   https://elixir.bootlin.com/linux/latest/source/drivers/pci/pci-driver.c#L691
+>   But hdac hdmi codec driver is blocking it.
+>   So i think it will be ok to keep this codec and hda controller in runtime 
+>   suspend while entering S3 or s2idle, both can resume by runtime PM as well,
+>   will it brake any audio functionality?
 
-Using iperf, I was able to show a difference on my computer.
-Another computer was used as the server, and my test computer
-was the client. (the other way around didn't show a difference)
+There was some PM and jack detection issues (I don't recollect now) because
+of which this was added. This was due to the gfx display power and hda
+controller synchronization. The rework may be required in both hdac_hdmi
+and skylake drivers.
 
-With Kernel 4.16-rc6 I got about ~2000 idle state 0 entries
-per minute and ~155 seconds residency. ~32 watts package power.
+Regards,
+Subhransu
 
-With the poll stuff included I got ~46000 idle state 0 entries
-per minute and ~53 seconds residency. ~20 watts package power.  
+> > 
+> > Regards,
+> > Subhransu
+> > 
+> > > > >> >         /* Power up afg */
+> > > > >> >         snd_hdac_codec_read(hdac, hdac->afg, 0, AC_VERB_SET_POWER_STATE,
+> > > > >> >                                                         AC_PWRST_D0);
+> > > > >> > --
+> > > > >> > 2.7.4
+> > > 
+> > > -- 
+> > > Thanks,
+> > > Anshuman
+> > 
+> > -- 
+> 
+> -- 
+> Thanks,
+> Anshuman
 
-... Doug
+-- 
