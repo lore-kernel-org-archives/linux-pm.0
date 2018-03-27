@@ -1,66 +1,38 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
- idle cooling driver
-Date: Tue, 27 Mar 2018 13:10:07 +0200
-Message-ID: <e3384215-1872-3918-3c08-f5cb8754a28e@linaro.org>
-References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
- <20180223073432.GF26947@vireshk-i7>
- <faaf027c-e01c-6801-9a0c-ab7e0ba669a1@linaro.org>
- <20180327034344.GC21693@leoy-ThinkPad-X240s>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 07/10] ARM: dts: gemini: Remove "cooling-{min|max}-level"
+ for gpio-fan node
+Date: Tue, 27 Mar 2018 14:26:58 +0200
+Message-ID: <CAK8P3a3taUgJW=xBZmttH1upv+J_Pj+0XKOCjUbPuzfGTmk13g@mail.gmail.com>
+References: <cover.1518166039.git.viresh.kumar@linaro.org> <01ddf0ac8962feb63e8871a2c2c3498c763f649b.1518166039.git.viresh.kumar@linaro.org>
+ <CACRpkdaQtPOJCcXoVB0UufLDNhkkh4__XTT2sapAKWDu9jw73g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180327034344.GC21693@leoy-ThinkPad-X240s>
-Content-Language: en-US
+In-Reply-To: <CACRpkdaQtPOJCcXoVB0UufLDNhkkh4__XTT2sapAKWDu9jw73g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, edubezval@gmail.com, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 27/03/2018 05:43, Leo Yan wrote:
-> On Fri, Feb 23, 2018 at 12:28:51PM +0100, Daniel Lezcano wrote:
->> On 23/02/2018 08:34, Viresh Kumar wrote:
->>> On 21-02-18, 16:29, Daniel Lezcano wrote:
-> 
->> [ ... ]
+On Tue, Mar 20, 2018 at 4:10 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Fri, Feb 9, 2018 at 9:58 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+>> The "cooling-min-level" and "cooling-max-level" properties are not
+>> parsed by any part of the kernel currently and the max cooling state of
+>> gpio-fan cooling device is found by referring to the
+>> "gpio-fan,speed-map" instead.
 >>
->>>> +static s64 cpuidle_cooling_runtime(struct cpuidle_cooling_device *idle_cdev)
->>>> +{
->>>> +	s64 next_wakeup;
->>>> +	int state = idle_cdev->state;
->>>> +
->>>> +	/*
->>>> +	 * The function must never be called when there is no
->>>> +	 * mitigation because:
->>>> +	 * - that does not make sense
->>>> +	 * - we end up with a division by zero
->>>> +	 */
->>>> +	BUG_ON(!state);
->>>
->>> As there is no locking in place, we can surely hit this case. What if
->>> the state changed to 0 right before this routine was called ?
->>>
->>> I would suggest we should just return 0 in that case and get away with
->>> the BUG_ON().
-> 
-> Here if 'state' equals to 0 and we return 0, then the return value will
-> be same with when 'state' = 100; this lets the return value confused.
-> 
-> I think for 'state' = 0, should we return -1 so indicate the hrtimer
-> will not be set for this case?
+>> Remove the unused properties from the gpio-fan node.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+>
+> I can queue it next week (different machine hosting the git tree)
+> but it is also OK if the ARM SoC maintainers want to pick it
+> directly for the ARM SoC DTS branch.
 
-Yeah, I will look at how to make this smoother.
+I've picked it up directly now, as we're about to run out of time
+before the merge window.
 
-Thanks
-
-  -- Daniel
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+       Arnd
