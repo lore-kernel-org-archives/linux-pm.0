@@ -1,53 +1,82 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 10/10] dt-bindings: thermal: Remove
- "cooling-{min|max}-level" properties
-Date: Tue, 27 Mar 2018 06:46:15 -0700
-Message-ID: <20180327134613.GA10890@localhost.localdomain>
-References: <cover.1518166039.git.viresh.kumar@linaro.org>
- <0ec53640f1a09e6e0d7aa1a21d1a3266c3c209c7.1518166039.git.viresh.kumar@linaro.org>
- <20180312043815.GW6842@vireshk-i7>
- <1521550190.2781.3.camel@intel.com>
+Subject: [GIT PULL] Thermal SoC management updates for v4.17-rc1
+Date: Tue, 27 Mar 2018 06:59:43 -0700
+Message-ID: <20180327135942.GA11104@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1521550190.2781.3.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 20, 2018 at 08:49:50PM +0800, Zhang Rui wrote:
-> On 一, 2018-03-12 at 10:08 +0530, Viresh Kumar wrote:
-> > On 09-02-18, 14:28, Viresh Kumar wrote:
-> > > 
-> > > The "cooling-min-level" and "cooling-max-level" properties are not
-> > > parsed by any part of kernel currently and the max cooling state of
-> > > a
-> > > CPU cooling device is found by referring to the cpufreq table
-> > > instead.
-> > > 
-> > > Remove the unused bindings.
-> > > 
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > ---
-> > >  Documentation/devicetree/bindings/thermal/thermal.txt | 16 +----
-> > > -----------
-> > >  1 file changed, 1 insertion(+), 15 deletions(-)
-> > @Zhang/Eduardo: Can you please pick this patch (10/10) as almost
-> > everything else
-> > is already lined up for 4.17 ?
-> 
-> I think Eduardo should have reviewed all the DT thermal patches in the
-> list, but I didn't see his response about this one.
-> 
-> Eduardo,
-> did you miss this one?
+Hello Rui,
 
-just applied and sending it in my pull request.
+Please find thermal-soc changes for v4.17-rc1 as follows.
 
-> 
-> thanks,
-> rui
-> > 
+- New i.MX7 thermal sensor
+- Mediatek driver now supports MT7622 SoC
+- Fixes on exynos driver
+- Removal of min max cpu cooling dt property
+
+Despite my local testing, this has been tested by kernelci bot:
+Full Boot Summary: https://kernelci.org/boot/all/job/evalenti/branch/for-kernelci/kernel/v4.16-rc1-16-g9db4c0feaf87/
+Full Build Summary: https://kernelci.org/build/evalenti/branch/for-kernelci/kernel/v4.16-rc1-16-g9db4c0feaf87/
+
+BR,
+
+Eduardo
+
+The following changes since commit 7928b2cbe55b2a410a0f5c1f154610059c57b1b2:
+
+  Linux 4.16-rc1 (2018-02-11 15:04:29 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+
+for you to fetch changes up to 2db48884bb51f2ad26b1b716297ceaab624a2e68:
+
+  dt-bindings: thermal: Remove "cooling-{min|max}-level" properties (2018-03-27 06:43:05 -0700)
+
+----------------------------------------------------------------
+Anson Huang (1):
+      thermal: imx: add i.MX7 thermal sensor support
+
+Bartlomiej Zolnierkiewicz (10):
+      thermal: exynos: remove unused "type" field from struct exynos_tmu_platform_data
+      thermal: exynos: remove parsing of samsung, tmu_default_temp_offset property
+      thermal: exynos: remove parsing of samsung, tmu_[first, second]_point_trim properties
+      thermal: exynos: remove parsing of samsung, tmu_noise_cancel_mode property
+      thermal: exynos: remove parsing of samsung, tmu[_min, _max]_efuse_value properties
+      thermal: exynos: remove parsing of samsung, tmu_reference_voltage property
+      thermal: exynos: remove parsing of samsung,tmu_gain property
+      thermal: exynos: remove parsing of samsung, tmu_cal_type property
+      thermal: exynos: remove separate exynos_tmu.h header file
+      dt-bindings: thermal: remove no longer needed samsung thermal properties
+
+Maciej Purski (1):
+      thermal: exynos: Read soc_type from match data
+
+Marek Szyprowski (2):
+      thermal: exynos: Reading temperature makes sense only when TMU is turned on
+      thermal: exynos: Propagate error value from tmu_read()
+
+Sean Wang (2):
+      dt-bindings: thermal: add binding for MT7622 SoC
+      thermal: mediatek: add support for MT7622 SoC
+
+Viresh Kumar (1):
+      dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
+
+ .../devicetree/bindings/thermal/exynos-thermal.txt |  23 +-
+ .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
+ .../bindings/thermal/mediatek-thermal.txt          |   1 +
+ .../devicetree/bindings/thermal/thermal.txt        |  16 +-
+ drivers/thermal/imx_thermal.c                      | 295 ++++++++++++++++-----
+ drivers/thermal/mtk_thermal.c                      |  35 +++
+ drivers/thermal/samsung/exynos_tmu.c               | 268 ++++++++++---------
+ drivers/thermal/samsung/exynos_tmu.h               |  75 ------
+ 8 files changed, 423 insertions(+), 299 deletions(-)
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu.h
