@@ -1,53 +1,64 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
- idle cooling driver
-Date: Tue, 27 Mar 2018 10:03:31 +0800
-Message-ID: <20180327020331.GA21693@leoy-ThinkPad-X240s>
-References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: linux-next: Tree for Mar 22 (thermal)
+Date: Tue, 27 Mar 2018 02:09:00 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092636BF28012@SHSMSX101.ccr.corp.intel.com>
+References: <20180322193847.63181403@canb.auug.org.au>
+ <5449db25-c11e-68a1-532c-044689794aad@infradead.org>
+ <20180326210524.GB1899@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <20180326210524.GB1899@localhost.localdomain>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Eduardo Valentin <edubezval@gmail.com>, Randy Dunlap <rdunlap@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
 
-On Wed, Feb 21, 2018 at 04:29:27PM +0100, Daniel Lezcano wrote:
-> The cpu idle cooling driver performs synchronized idle injection across all
-> cpus belonging to the same cluster and offers a new method to cool down a SoC.
+
+> -----Original Message-----
+> From: Eduardo Valentin [mailto:edubezval@gmail.com]
+> Sent: Tuesday, March 27, 2018 5:05 AM
+> To: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Stephen Rothwell <sfr@canb.auug.org.au>; Linux-Next Mailing List <linux-
+> next@vger.kernel.org>; Linux Kernel Mailing List <linux-
+> kernel@vger.kernel.org>; Linux PM list <linux-pm@vger.kernel.org>; Zhang,
+> Rui <rui.zhang@intel.com>
+> Subject: Re: linux-next: Tree for Mar 22 (thermal)
+> Importance: High
 > 
-> Each cluster has its own idle cooling device, each core has its own idle
-> injection thread, each idle injection thread uses play_idle to enter idle.  In
-> order to reach the deepest idle state, each cooling device has the idle
-> injection threads synchronized together.
+> Rui,
 > 
-> It has some similarity with the intel power clamp driver but it is actually
-> designed to work on the ARM architecture via the DT with a mathematical proof
-> with the power model which comes with the Documentation.
+> On Thu, Mar 22, 2018 at 10:36:38AM -0700, Randy Dunlap wrote:
+> > On 03/22/2018 01:38 AM, Stephen Rothwell wrote:
+> > > Hi all,
+> > >
+> > > Changes since 20180321:
+> > >
+> > > The vfs tree still had its build failure for which I reverted a commit.
+> > >
+> >
+> > on i386:
+> >
+> > ERROR: "nsec_to_clock_t" [drivers/thermal/thermal_sys.ko] undefined!
+> >
+> > so in drivers/thermal/thermal_sysfs.c, please add:
+> >
+> > #include <linux/jiffies.h>
+> >
+> >
+> > Reported-by: Randy Dunlap <rdunlap@infradead.org>
 > 
-> The idle injection cycle is fixed while the running cycle is variable. That
-> allows to have control on the device reactivity for the user experience. At
-> the mitigation point the idle threads are unparked, they play idle the
-> specified amount of time and they schedule themselves. The last thread sets
-> the next idle injection deadline and when the timer expires it wakes up all
-> the threads which in turn play idle again. Meanwhile the running cycle is
-> changed by set_cur_state.  When the mitigation ends, the threads are parked.
-> The algorithm is self adaptive, so there is no need to handle hotplugging.
-
-The idle injection threads are RT threads (FIFO) and I saw in
-play_idle() set/clear flag PF_IDLE for it.  Will these idle injection
-threads utilization be accounted into RT utilization?
-
-If idle injection threads utilization is accounted as RT tasks
-utilization, will this impact CPUFreq governor 'schedutil' for OPP
-selection?
-
-[...]
+> Are you taking care of this?
+> 
+No, I missed that email.
+Will check it today.
 
 Thanks,
-Leo Yan
+rui
+> >
+> > thanks,
+> > --
+> > ~Randy
