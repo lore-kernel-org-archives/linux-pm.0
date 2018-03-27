@@ -1,51 +1,50 @@
-From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v1 09/16] rtc: mediatek: convert to use device managed
- functions
-Date: Tue, 27 Mar 2018 17:07:51 +0200
-Message-ID: <20180327150751.GC22441@piout.net>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH v1 02/16] dt-bindings: rtc: mediatek: add bindings for
+ PMIC RTC
+Date: Tue, 27 Mar 2018 17:18:48 +0200
+Message-ID: <20180327151848.GD22441@piout.net>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
- <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
- <20180323105017.GI3417@piout.net>
- <1522037265.18424.14.camel@mtkswgap22>
+ <5846e8be319c4836808c8127d5bb51b7e999e896.1521794177.git.sean.wang@mediatek.com>
+ <20180323094118.GC3417@piout.net>
+ <20180323101505.GF3417@piout.net>
+ <1521920188.31197.13.camel@mtkswgap22>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1522037265.18424.14.camel@mtkswgap22>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1521920188.31197.13.camel@mtkswgap22>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sean Wang <sean.wang@mediatek.com>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26/03/2018 at 12:07:45 +0800, Sean Wang wrote:
-> > > -	rtc->rtc_dev = rtc_device_register("mt6397-rtc", &pdev->dev,
-> > > -					   &mtk_rtc_ops, THIS_MODULE);
-> > > +	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, "mt6397-rtc",
-> > > +						&mtk_rtc_ops, THIS_MODULE);
-> > 
-> > You should probably switch to devm_rtc_allocate_device() and
-> > rtc_register_device instead of devm_rtc_device_register.
-> > 
+On 25/03/2018 at 03:36:28 +0800, Sean Wang wrote:
+> just reply both replies in the same mail
 > 
-> Just would like to know something details
+> 1.) the power-off device is a part of rtc, use the same registers rtc
+> has and thus it is put as child nodes under the node rtc to reflect the
+> reality of characteristics the rtc has.
 > 
-> It seems you just encourage me to switch into the new registration
-> method and currently devm_rtc_device_register I used for the driver
-> shouldn't cause any harm. right?
+> Or am I wrong for a certain aspect in these opinions?
 > 
 
-It will work but it will have to be converted to rtc_register_device
-later anyway.
+My point is that it is also part of the PMIC so it may as well be
+registers from the mfd driver which already registers a bunch of devices
+instead of doing unusual stuff from the rtc driver.
 
+mt6397_rtc->regmap is mt6397_chip->regmap anyway. You have the added
+benefit that if the RTC driver probe fails for some reason, you may
+still be able to probe the reset driver.
+
+I don't tink there is any benefit having it as a child of the rtc
+device.
+
+> 2) the other sub-functions for the same pmic already created its own
+> dt-binding document belonged to its corresponding subsystem. Don't we
+> really want to follow it them all?
+> 
+
+Ok, that's fine.
 
 -- 
 Alexandre Belloni, Bootlin (formerly Free Electrons)
