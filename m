@@ -1,38 +1,53 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] dt-bindings: Document qcom,adreno-gmu
-Date: Mon, 26 Mar 2018 17:23:00 -0500
-Message-ID: <20180326222300.tls7bsnr4pz7ri2t@rob-hp-laptop>
-References: <20180316185152.32020-1-jcrouse@codeaurora.org>
- <20180316185152.32020-2-jcrouse@codeaurora.org>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Tue, 27 Mar 2018 10:03:31 +0800
+Message-ID: <20180327020331.GA21693@leoy-ThinkPad-X240s>
+References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
+ <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180316185152.32020-2-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBNYXIgMTYsIDIwMTggYXQgMTI6NTE6NTFQTSAtMDYwMCwgSm9yZGFuIENyb3VzZSB3
-cm90ZToKPiBEb2N1bWVudCB0aGUgZGV2aWNlIHRyZWUgYmluZGluZ3MgZm9yIHRoZSBBZHJlbm8g
-R01VIGRldmljZQo+IGF2YWlsYWJsZSBvbiBBZHJlbm8gYTZ4eCB0YXJnZXRzLgo+IAo+IFNpZ25l
-ZC1vZmYtYnk6IEpvcmRhbiBDcm91c2UgPGpjcm91c2VAY29kZWF1cm9yYS5vcmc+Cj4gLS0tCj4g
-IC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dtdS50eHQgICAgICAgIHwgNTQg
-KysrKysrKysrKysrKysrKysrKysrKwo+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5
-L21zbS9ncHUudHh0ICAgICAgICB8IDEwICsrKy0KPiAgMiBmaWxlcyBjaGFuZ2VkLCA2MiBpbnNl
-cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRh
-dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dtdS50eHQKClJldmlld2VkLWJ5
-OiBSb2IgSGVycmluZyA8cm9iaEBrZXJuZWwub3JnPgpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0Bs
-aXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
-bi9saXN0aW5mby9mcmVlZHJlbm8K
+Hi Daniel,
+
+On Wed, Feb 21, 2018 at 04:29:27PM +0100, Daniel Lezcano wrote:
+> The cpu idle cooling driver performs synchronized idle injection across all
+> cpus belonging to the same cluster and offers a new method to cool down a SoC.
+> 
+> Each cluster has its own idle cooling device, each core has its own idle
+> injection thread, each idle injection thread uses play_idle to enter idle.  In
+> order to reach the deepest idle state, each cooling device has the idle
+> injection threads synchronized together.
+> 
+> It has some similarity with the intel power clamp driver but it is actually
+> designed to work on the ARM architecture via the DT with a mathematical proof
+> with the power model which comes with the Documentation.
+> 
+> The idle injection cycle is fixed while the running cycle is variable. That
+> allows to have control on the device reactivity for the user experience. At
+> the mitigation point the idle threads are unparked, they play idle the
+> specified amount of time and they schedule themselves. The last thread sets
+> the next idle injection deadline and when the timer expires it wakes up all
+> the threads which in turn play idle again. Meanwhile the running cycle is
+> changed by set_cur_state.  When the mitigation ends, the threads are parked.
+> The algorithm is self adaptive, so there is no need to handle hotplugging.
+
+The idle injection threads are RT threads (FIFO) and I saw in
+play_idle() set/clear flag PF_IDLE for it.  Will these idle injection
+threads utilization be accounted into RT utilization?
+
+If idle injection threads utilization is accounted as RT tasks
+utilization, will this impact CPUFreq governor 'schedutil' for OPP
+selection?
+
+[...]
+
+Thanks,
+Leo Yan
