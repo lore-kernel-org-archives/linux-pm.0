@@ -1,74 +1,72 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
-Date: Tue, 27 Mar 2018 11:35:42 +0200
-Message-ID: <a3ec7322-f48c-911d-bce0-3696666b6f0d@linaro.org>
+Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Tue, 27 Mar 2018 12:26:58 +0200
+Message-ID: <8ee2cb0d-9afe-6626-0911-90ff6660bf8a@linaro.org>
 References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <20180307170923.GA6543@localhost.localdomain>
- <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
- <20180308120352.mko2b775ppquverb@oak.lan>
- <20180326143046.GA18782@leoy-ThinkPad-X240s>
+ <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
+ <20180327020331.GA21693@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180326143046.GA18782@leoy-ThinkPad-X240s>
+In-Reply-To: <20180327020331.GA21693@leoy-ThinkPad-X240s>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 26/03/2018 16:30, Leo Yan wrote:
-> On Thu, Mar 08, 2018 at 12:03:52PM +0000, Daniel Thompson wrote:
->> On Wed, Mar 07, 2018 at 07:57:17PM +0100, Daniel Lezcano wrote:
->>>>> The preliminary benchmarks show the following changes:
->>>>>
->>>>> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
->>>>> increase of the latency of 16% while sysbench shows a latency increase
->>>>> of 5%.
->>>>
->>>> I don't follow these numbers. Throughput increase while injecting idle?
->>>> compared to what? percentages of what? Please be more specific to better
->>>> describer your work..
->>>
->>> The dhrystone throughput is based on the virtual timer, when we are
->>> running, it is at max opp, so the throughput increases. But regarding
->>> the real time, it takes obviously more time to achieve as we are
->>> artificially inserting idle cycles. With the cpufreq governor, we run at
->>> a lower opp, so the throughput is less for dhrystone but it takes less
->>> time to achieve.
->>>
->>> Percentages are comparing cpufreq vs cpuidle cooling devices. I will
->>> take care of presenting the results in a more clear way in the next version.
->>
->> I think we should also note that the current hikey settings for cpufreq
->> are very badly tuned for this platform. It has a single temp threshold
->> and it jumps from max freq to min freq.
->>
->> IIRC Leo's work on Hikey thermals correctly it would be much better if 
->> it used the power-allocator thermal governor or if if copied some of 
->> the Samsung 32-bit platform by configuring the step governor with a 
->> graduated with a slightly lower threshold that moves two stops back in 
->> the OPP table (which is still fairly high clock speed... but it
->> thermally sustainable).
+On 27/03/2018 04:03, Leo Yan wrote:
+> Hi Daniel,
 > 
-> I think Daniel L. is working on this patch set with 'power-allocator'
-> governor, and the parameters 'sustainable-power = <3326>' and
-> 'dynamic-power-coefficient = <311>' are profiling value on Hikey
-> platform.  Now we only consider dynamic power and skip static leakage
-> for 'power-allocator' governor.  And all these parameters are merged
-> into Linux mainline kernel.
+> On Wed, Feb 21, 2018 at 04:29:27PM +0100, Daniel Lezcano wrote:
+>> The cpu idle cooling driver performs synchronized idle injection across all
+>> cpus belonging to the same cluster and offers a new method to cool down a SoC.
+>>
+>> Each cluster has its own idle cooling device, each core has its own idle
+>> injection thread, each idle injection thread uses play_idle to enter idle.  In
+>> order to reach the deepest idle state, each cooling device has the idle
+>> injection threads synchronized together.
+>>
+>> It has some similarity with the intel power clamp driver but it is actually
+>> designed to work on the ARM architecture via the DT with a mathematical proof
+>> with the power model which comes with the Documentation.
+>>
+>> The idle injection cycle is fixed while the running cycle is variable. That
+>> allows to have control on the device reactivity for the user experience. At
+>> the mitigation point the idle threads are unparked, they play idle the
+>> specified amount of time and they schedule themselves. The last thread sets
+>> the next idle injection deadline and when the timer expires it wakes up all
+>> the threads which in turn play idle again. Meanwhile the running cycle is
+>> changed by set_cur_state.  When the mitigation ends, the threads are parked.
+>> The algorithm is self adaptive, so there is no need to handle hotplugging.
 > 
-> Daniel L. could correct me if I misunderstand the testing conditions.
+> The idle injection threads are RT threads (FIFO) and I saw in
+> play_idle() set/clear flag PF_IDLE for it.  Will these idle injection
+> threads utilization be accounted into RT utilization?
+> 
+> If idle injection threads utilization is accounted as RT tasks
+> utilization, will this impact CPUFreq governor 'schedutil' for OPP
+> selection?
 
-Well, the first iteration is without the powerallocator governor API. It
-was tested with the step-wise governor only. But you are right by saying
-it will use the dynamic-power-coefficient and sustainable-power and will
-implement the power allocator version of the API. I'm working on the
-power allocator version for the idle injection + OPP change as we need
-to compute the capacity equivalence between the idle-injection cycles +
-OPP and the lower OPP in order to change the OPP for optimized power /
-performance trade-off.
+Hi Leo,
+
+The idle injection task has a very low utilization when it is not in the
+play_idle function, basically it wakes up, sets a timer and play_idle().
+
+Regarding the use case, the idle injection is the base brick for an
+combo cooling device with cpufreq + cpuidle. When the idle injection is
+used alone, it is because there is no cpufreq driver for the platform.
+If there is a cpufreq driver, then we should endup with the cpu cooling
+device where we have control of the OPP (and there is no idle injection
+threads) or the combo cooling device.
+
+Except I'm missing something, the idle injection threads won't impact
+the OPP selection.
+
+
+
 
 
 -- 
