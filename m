@@ -1,72 +1,63 @@
-From: Rik van Riel <riel@surriel.com>
-Subject: Re: [PATCH] cpuidle: poll_state: Avoid invoking local_clock() too
- often
-Date: Tue, 27 Mar 2018 18:00:32 -0400
-Message-ID: <1522188032.6308.69.camel@surriel.com>
-References: <2095821.OCbkRpinqI@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFT][PATCH v7 6/8] sched: idle: Select idle state before stopping the tick
+Date: Wed, 28 Mar 2018 00:10:37 +0200
+Message-ID: <4198010.6ArFqS34NK@aspire.rjw.lan>
+References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <2249320.0Z4q8AXauv@aspire.rjw.lan> <6462e44a-e207-6b97-22bf-ad4aed69afc2@tu-dresden.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-XJsuFMo3JHh7LT5idPsA"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2095821.OCbkRpinqI@aspire.rjw.lan>
+In-Reply-To: <6462e44a-e207-6b97-22bf-ad4aed69afc2@tu-dresden.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday, March 27, 2018 11:50:02 PM CEST Thomas Ilsche wrote:
+> On 2018-03-20 16:45, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > In order to address the issue with short idle duration predictions
+> > by the idle governor after the tick has been stopped, reorder the
+> > code in cpuidle_idle_call() so that the governor idle state selection
+> > runs before tick_nohz_idle_go_idle() and use the "nohz" hint returned
+> > by cpuidle_select() to decide whether or not to stop the tick.
+> > 
+> > This isn't straightforward, because menu_select() invokes
+> > tick_nohz_get_sleep_length() to get the time to the next timer
+> > event and the number returned by the latter comes from
+> > __tick_nohz_idle_enter().  Fortunately, however, it is possible
+> > to compute that number without actually stopping the tick and with
+> > the help of the existing code.
+> 
+> I think something is wrong with the new tick_nohz_get_sleep_length.
+> It seems to return a value that is too large, ignoring immanent
+> non-sched timer.
 
---=-XJsuFMo3JHh7LT5idPsA
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+That's a very useful hint, let me have a look.
 
-On Tue, 2018-03-27 at 23:58 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> Rik reports that he sees an increase in CPU use in one benchmark
-> due to commit 612f1a22f067 "cpuidle: poll_state: Add time limit to
-> poll_idle()" that caused poll_idle() to call local_clock() in every
-> iteration of the loop.  Utilization increase generally means more
-> non-idle time with respect to total CPU time (on the average) which
-> implies reduced CPU frequency.
->=20
-> Doug reports that limiting the rate of local_clock() invocations
-> in there causes much less power to be drawn during a CPU-intensive
-> parallel workload (with idle states 1 and 2 disabled to enforce more
-> state 0 residency).
->=20
-> These two reports together suggest that executing local_clock() on
-> multiple CPUs in parallel at a high rate may cause chips to get hot
-> and trigger thermal/power limits on them to kick in, so reduce the
-> rate of local_clock() invocations in poll_idle() to avoid that issue.
->=20
-> Fixes: 612f1a22f067 "cpuidle: poll_state: Add time limit to
-> poll_idle()"
-> Reported-by: Rik van Riel <riel@surriel.com>
-> Reported-by: Doug Smythies <dsmythies@telus.net>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> I tested idle-loop-v7.3. It looks very similar to my previous results
+> on the first idle-loop-git-version [1]. Idle and traditional synthetic
+> powernightmares are mostly good.
 
-Thanks Rafael!
+OK
 
-Tested-by: Rik van Riel <riel@surriel.com>
-Reviewed-by: Rik van Riel <riel@surriel.com>
+> But it selects too deep C-states for short idle periods, which is bad
+> for power consumption [2].
 
---=20
-All Rights Reversed.
---=-XJsuFMo3JHh7LT5idPsA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+That still needs to be improved, then.
 
------BEGIN PGP SIGNATURE-----
+> I tracked this down with additional tests using
+> __attribute__((optimize("O0"))) menu_select
+> and perf probe. With this the behavior seems slightly different, but it
+> shows that data->next_timer_us is:
+> v4.16-rc6: the expected ~500 us [3]
+> idle-loop-v7.3: many milliseconds to minutes [4].
+> This leads to the governor to wrongly selecting C6.
+> 
+> Checking with 372be9e and 6ea0577, I can confirm that the change is
+> introduced by this patch.
 
-iQEzBAABCAAdFiEEKR73pCCtJ5Xj3yADznnekoTE3oMFAlq6vwAACgkQznnekoTE
-3oMnNQf/S5PPW9YhHCQoQxSic+HG8bYUz4NH5Drdcl4fOGtDJX3mMUXnmhcE/0hO
-Lkiq50x/nlO85fNKDF4xSQQ8ZIeO2KDKe0aGi8MXrrjJ2vfwtS/O9A8NObpZSKXL
-pnzTek52GXi9vIenV+asBNl8HtDW/3mSPf5i17YtZ+57IoXlNInKYN4LSfW6JJWq
-yg/I5QG6dJapU9OXr3vGAw1hIL61hJAxmMuDASu6rnhouhQlMCFuPFwR8lGwCIJD
-EHK3ZIW43C9OjnorhfGBPik3eRIu7qbrmrFJA5VyLWEHcTE0RMaX2vsRLH5ZjUcl
-o13gbrkidSBG7kL5g62rPRQaXoWlPg==
-=2kTS
------END PGP SIGNATURE-----
+Yes, that's where the most intrusive reordering happens.
 
---=-XJsuFMo3JHh7LT5idPsA--
+Thanks for the feedback!
