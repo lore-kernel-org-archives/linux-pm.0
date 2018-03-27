@@ -1,78 +1,98 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH v1 01/16] dt-bindings: power: reset: mediatek: add
- bindings for power device
-Date: Tue, 27 Mar 2018 11:21:46 +0800
-Message-ID: <1522120906.18424.21.camel@mtkswgap22>
-References: <cover.1521794176.git.sean.wang@mediatek.com>
-         <c5527464207b02d40f1c2682feb97ebf5dd443be.1521794176.git.sean.wang@mediatek.com>
-         <20180326222455.6kou2rdn76k6p6ct@rob-hp-laptop>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Tue, 27 Mar 2018 11:35:54 +0800
+Message-ID: <20180327033554.GB21693@leoy-ThinkPad-X240s>
+References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
+ <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180326222455.6kou2rdn76k6p6ct@rob-hp-laptop>
+Content-Disposition: inline
+In-Reply-To: <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-03-26 at 17:24 -0500, Rob Herring wrote:
-> On Fri, Mar 23, 2018 at 05:14:58PM +0800, sean.wang@mediatek.com wrote:
-> > From: Sean Wang <sean.wang@mediatek.com>
-> > 
-> > Add device-tree binding for the power device responsible for shutdown a
-> > remote SoC, which is a tiny circuit block present on MediaTek PMIC based
-> > RTC.
-> > 
-> > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> > ---
-> >  .../bindings/power/reset/mt6397-rtc-poweroff.txt   | 24 ++++++++++++++++++++++
-> >  1 file changed, 24 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt b/Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
-> > new file mode 100644
-> > index 0000000..75a9d7d
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/reset/mt6397-rtc-poweroff.txt
-> > @@ -0,0 +1,24 @@
-> > +Device-Tree bindings for Power Device on MediaTek PMIC RTC
-> > +
-> > +The power device is responsible for externally power off or on the remote
-> > +MediaTek SoC through the a tiny circuit block BBPU inside PMIC RTC.
-> > +
-> > +Required parent node:
-> > +- rtc
-> > +	For MediaTek PMIC RTC bindings, see:
-> > +	Documentation/devicetree/bindings/mfd/mt6397.txt
-> > +
-> > +Required properties:
-> > +- compatible: Should be one of follows
-> > +	"mediatek,mt6323-rtc-poweroff": for MT6323 PMIC
-> > +	"mediatek,mt6397-rtc-poweroff": for MT6397 PMIC
-> > +
-> > +Example:
-> > +
-> > +	rtc {
-> > +		compatible = "mediatek,mt6323-rtc";
-> > +
-> > +		power-off {
-> > +			compatible = "mediatek,mt6323-rtc-poweroff";
-> > +		};
-> 
-> There's no need for this node. The OS can register a device in the rtc 
-> driver.
-> 
+On Wed, Feb 21, 2018 at 04:29:27PM +0100, Daniel Lezcano wrote:
 
-It seems a good way.
+[...]
 
-I will remove the really simple dt-binding and use a
-platform_device_register_simple api embedded in rtc driver to
-register the power-off device.
+> +/**
+> + * cpuidle_cooling_injection_thread - Idle injection mainloop thread function
+> + * @arg: a void pointer containing the idle cooling device address
+> + *
+> + * This main function does basically two operations:
+> + *
+> + * - Goes idle for a specific amount of time
+> + *
+> + * - Sets a timer to wake up all the idle injection threads after a
+> + *   running period
+> + *
+> + * That happens only when the mitigation is enabled, otherwise the
+> + * task is scheduled out.
+> + *
+> + * In order to keep the tasks synchronized together, it is the last
+> + * task exiting the idle period which is in charge of setting the
+> + * timer.
+> + *
+> + * This function never returns.
+> + */
+> +static int cpuidle_cooling_injection_thread(void *arg)
+> +{
+> +	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2 };
 
-Hope I do not misconception your points addressed here.
+I am just wandering if should set priority to (MAX_RT_PRIO - 1)?
+Otherwise I am concern it might be cannot enter deep idle state when
+any CPU idle injection thread is preempted by other higher priority RT
+threads so all CPUs have no alignment for idle state entering/exiting.
 
-> > +	};
-> > -- 
-> > 2.7.4
-> > 
+> +	struct cpuidle_cooling_device *idle_cdev = arg;
+> +	struct cpuidle_cooling_tsk *cct = per_cpu_ptr(&cpuidle_cooling_tsk,
+> +						      smp_processor_id());
+> +	DEFINE_WAIT(wait);
+> +
+> +	set_freezable();
+> +
+> +	sched_setscheduler(current, SCHED_FIFO, &param);
+> +
+> +	while (1) {
+> +		s64 next_wakeup;
+> +
+> +		prepare_to_wait(&cct->waitq, &wait, TASK_INTERRUPTIBLE);
+> +
+> +		schedule();
+> +
+> +		atomic_inc(&idle_cdev->count);
+> +
+> +		play_idle(idle_cdev->idle_cycle / USEC_PER_MSEC);
+> +
+> +		/*
+> +		 * The last CPU waking up is in charge of setting the
+> +		 * timer. If the CPU is hotplugged, the timer will
+> +		 * move to another CPU (which may not belong to the
+> +		 * same cluster) but that is not a problem as the
+> +		 * timer will be set again by another CPU belonging to
+> +		 * the cluster, so this mechanism is self adaptive and
+> +		 * does not require any hotplugging dance.
+> +		 */
+> +		if (!atomic_dec_and_test(&idle_cdev->count))
+> +			continue;
+> +
+> +		if (!idle_cdev->state)
+> +			continue;
+> +
+> +		next_wakeup = cpuidle_cooling_runtime(idle_cdev);
+> +
+> +		hrtimer_start(&idle_cdev->timer, ns_to_ktime(next_wakeup),
+> +			      HRTIMER_MODE_REL_PINNED);
+
+If SoC temperature descreases under tipping point, will the timer be
+disabled for this case?  Or will here set next timer event with big
+value from next_wakeup?
+
+[...]
+
+Thanks,
+Leo Yan
