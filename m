@@ -1,86 +1,45 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] [sound] hdac-codec runtime suspended at
-	PM:Suspend.
-Date: Tue, 27 Mar 2018 17:36:36 +0200
-Message-ID: <20180327153636.GA4588@wunner.de>
-References: <1520853467-31653-1-git-send-email-anshuman.gupta@intel.com>
- <CAJZ5v0hyk=jto8Wt0er==YmKEsgvfvZhO2wDbGOhxZaWWCNgBg@mail.gmail.com>
- <5aa8fbe9.4251620a.c3daa.3711SMTPIN_ADDED_BROKEN@mx.google.com>
- <CAJZ5v0jrKPNFhgpoL97Ac-k9jAmMa-vzgc-4PD+uuynSMqE2Fw@mail.gmail.com>
- <s5hr2o770pv.wl-tiwai@suse.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpuidle: poll_state: Add time limit to poll_idle()
+Date: Tue, 27 Mar 2018 18:42:57 +0200
+Message-ID: <CAJZ5v0ikayycQs1m2rTa8WRLZ5sQ5q2SQVZkDuuy6GOE=dJFQQ@mail.gmail.com>
+References: <4137867.C4jYrWdt8n@aspire.rjw.lan> <20180314120450.GT4043@hirez.programming.kicks-ass.net>
+ <1521736338.6308.24.camel@surriel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <alsa-devel-bounces@alsa-project.org>
-Content-Disposition: inline
-In-Reply-To: <s5hr2o770pv.wl-tiwai@suse.de>
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Anshuman Gupta <anshuman.gupta@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, " Subhransu S. Prusty " <subhransu.s.prusty@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1521736338.6308.24.camel@surriel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rik van Riel <riel@surriel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 26, 2018 at 09:30:36AM +0200, Takashi Iwai wrote:
-> On Mon, 26 Mar 2018 09:03:55 +0200, Subhransu S. Prusty  wrote:
-> > On Thu, Mar 15, 2018 at 09:02:30PM +0530, Anshuman Gupta wrote:
-> > > On Thu, Mar 15, 2018 at 04:12:44PM +0530, Subhransu S. Prusty wrote:
-> > > > This driver needs a late resume as it receives a jack notification
-> > > > from the i915 driver and the skl controller driver resume may not
-> > > > have happened and in turn hda controller may not ready. This ensures
-> > > > a synchronization for jack event during resume from S3.
-> > > 
-> > > Let me give you insight of the issue, this driver blocks the direct
-> > > complete of hda controller PCI 00:1f.3, sometimes it takes 280ms to
-> > > resume hda controller from S3 and s2idle. So it does not make sense
-> > > to suspend/resume hda controller when it is already in runtime
-> > > suspend.
-> 
-> If it's about the power well issue, it had been fixed in multiple
-> ways.  In i915 side, every relevant component callback is wrapped with
-> power domain get/put.  And, at least HD-audio legacy side, such a
-> spurious notification is filtered out in the eld notifier:
-> 
-> static void intel_pin_eld_notify(void *audio_ptr, int port, int pipe)
-> {
-> 	....
-> 	/* skip notification during system suspend (but not in runtime PM);
-> 	 * the state will be updated at resume
-> 	 */
-> 	if (snd_power_get_state(codec->card) != SNDRV_CTL_POWER_D0)
-> 		return;
-> 	/* ditto during suspend/resume process itself */
-> 	if (atomic_read(&(codec)->core.in_pm))
-> 		return;
-> 
-> 	snd_hdac_i915_set_bclk(&codec->bus->core);
-> 	check_presence_and_report(codec, pin_nid, dev_id);
-> }
-> 
-> Last but not least, the jack state is explicitly updated via reading
-> the ELD at resume callback.
-> 
-> In that way, we can live with the standard suspend/resume procedure.
+On Thu, Mar 22, 2018 at 5:32 PM, Rik van Riel <riel@surriel.com> wrote:
+> On Wed, 2018-03-14 at 13:04 +0100, Peter Zijlstra wrote:
+>
+>> On x86 we don't have to use that time_check_counter thing,
+>> sched_clock()
+>> is really cheap, not sure if it makes sense on other platforms.
+>
+> Are you sure? I saw a 5-10% increase in CPU use,
+> for a constant query rate to a memcache style
+> workload, with v3 of this patch.
 
-FWIW, the i915 folks have put on their todo list to migrate the
-i915/hda_intel interaction to device links:
+I think I know what's going on.
 
-https://git.kernel.org/next/linux-next/c/7b3b61b62a58
+Increased utilization with the same amount of work per time unit (and
+I guess that's the case given the lack of specific information about
+the workload) means more non-idle time with respect to total time and
+that implies reduced frequency (eg. less turbo).
 
-Something similar has already been done for HDA controllers
-integrated into AMD / Nvidia GPUs with:
+Now, combine that with the Doug's observation that limiting the rate
+of local_clock() invocations in the poll_idle() loop reduces power
+draw during experiments on his system significantly and with the other
+one that in both cases local_lock() ends up being rdtsc() (most
+likely).
 
-https://git.kernel.org/next/linux-next/c/07f4f97d7b4b
+What this implies to me is that invoking rdtsc() at a high rate on
+multiple logical CPUs in parallel causes chips to get hot.  Actually
+that may be so hot that they hit power/thremal (eg. RAPL) limits and
+get their frequency reduced as a result.
 
-With device links, direct_complete will be used naturally,
-so time is probably best spent working towards this approach.
-
-Thanks,
-
-Lukas
+Limiting the rate of local_clock() invocations obviously avoids this issue.
