@@ -1,82 +1,53 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal SoC management updates for v4.17-rc1
-Date: Tue, 27 Mar 2018 06:59:43 -0700
-Message-ID: <20180327135942.GA11104@localhost.localdomain>
+From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v1 09/16] rtc: mediatek: convert to use device managed
+ functions
+Date: Tue, 27 Mar 2018 17:07:51 +0200
+Message-ID: <20180327150751.GC22441@piout.net>
+References: <cover.1521794176.git.sean.wang@mediatek.com>
+ <fbfb1852838820c198d55bc74940a74f1d0b53ed.1521794177.git.sean.wang@mediatek.com>
+ <20180323105017.GI3417@piout.net>
+ <1522037265.18424.14.camel@mtkswgap22>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1522037265.18424.14.camel@mtkswgap22>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Rui,
+On 26/03/2018 at 12:07:45 +0800, Sean Wang wrote:
+> > > -	rtc->rtc_dev = rtc_device_register("mt6397-rtc", &pdev->dev,
+> > > -					   &mtk_rtc_ops, THIS_MODULE);
+> > > +	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, "mt6397-rtc",
+> > > +						&mtk_rtc_ops, THIS_MODULE);
+> > 
+> > You should probably switch to devm_rtc_allocate_device() and
+> > rtc_register_device instead of devm_rtc_device_register.
+> > 
+> 
+> Just would like to know something details
+> 
+> It seems you just encourage me to switch into the new registration
+> method and currently devm_rtc_device_register I used for the driver
+> shouldn't cause any harm. right?
+> 
 
-Please find thermal-soc changes for v4.17-rc1 as follows.
+It will work but it will have to be converted to rtc_register_device
+later anyway.
 
-- New i.MX7 thermal sensor
-- Mediatek driver now supports MT7622 SoC
-- Fixes on exynos driver
-- Removal of min max cpu cooling dt property
 
-Despite my local testing, this has been tested by kernelci bot:
-Full Boot Summary: https://kernelci.org/boot/all/job/evalenti/branch/for-kernelci/kernel/v4.16-rc1-16-g9db4c0feaf87/
-Full Build Summary: https://kernelci.org/build/evalenti/branch/for-kernelci/kernel/v4.16-rc1-16-g9db4c0feaf87/
-
-BR,
-
-Eduardo
-
-The following changes since commit 7928b2cbe55b2a410a0f5c1f154610059c57b1b2:
-
-  Linux 4.16-rc1 (2018-02-11 15:04:29 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
-
-for you to fetch changes up to 2db48884bb51f2ad26b1b716297ceaab624a2e68:
-
-  dt-bindings: thermal: Remove "cooling-{min|max}-level" properties (2018-03-27 06:43:05 -0700)
-
-----------------------------------------------------------------
-Anson Huang (1):
-      thermal: imx: add i.MX7 thermal sensor support
-
-Bartlomiej Zolnierkiewicz (10):
-      thermal: exynos: remove unused "type" field from struct exynos_tmu_platform_data
-      thermal: exynos: remove parsing of samsung, tmu_default_temp_offset property
-      thermal: exynos: remove parsing of samsung, tmu_[first, second]_point_trim properties
-      thermal: exynos: remove parsing of samsung, tmu_noise_cancel_mode property
-      thermal: exynos: remove parsing of samsung, tmu[_min, _max]_efuse_value properties
-      thermal: exynos: remove parsing of samsung, tmu_reference_voltage property
-      thermal: exynos: remove parsing of samsung,tmu_gain property
-      thermal: exynos: remove parsing of samsung, tmu_cal_type property
-      thermal: exynos: remove separate exynos_tmu.h header file
-      dt-bindings: thermal: remove no longer needed samsung thermal properties
-
-Maciej Purski (1):
-      thermal: exynos: Read soc_type from match data
-
-Marek Szyprowski (2):
-      thermal: exynos: Reading temperature makes sense only when TMU is turned on
-      thermal: exynos: Propagate error value from tmu_read()
-
-Sean Wang (2):
-      dt-bindings: thermal: add binding for MT7622 SoC
-      thermal: mediatek: add support for MT7622 SoC
-
-Viresh Kumar (1):
-      dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
-
- .../devicetree/bindings/thermal/exynos-thermal.txt |  23 +-
- .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
- .../bindings/thermal/mediatek-thermal.txt          |   1 +
- .../devicetree/bindings/thermal/thermal.txt        |  16 +-
- drivers/thermal/imx_thermal.c                      | 295 ++++++++++++++++-----
- drivers/thermal/mtk_thermal.c                      |  35 +++
- drivers/thermal/samsung/exynos_tmu.c               | 268 ++++++++++---------
- drivers/thermal/samsung/exynos_tmu.h               |  75 ------
- 8 files changed, 423 insertions(+), 299 deletions(-)
- delete mode 100644 drivers/thermal/samsung/exynos_tmu.h
+-- 
+Alexandre Belloni, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+https://bootlin.com
