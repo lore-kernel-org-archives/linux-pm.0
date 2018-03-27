@@ -1,52 +1,79 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
- idle cooling driver
-Date: Tue, 27 Mar 2018 11:43:44 +0800
-Message-ID: <20180327034344.GC21693@leoy-ThinkPad-X240s>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2 0/7] CPU cooling device new strategies
+Date: Tue, 27 Mar 2018 11:35:42 +0200
+Message-ID: <a3ec7322-f48c-911d-bce0-3696666b6f0d@linaro.org>
 References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
- <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
- <20180223073432.GF26947@vireshk-i7>
- <faaf027c-e01c-6801-9a0c-ab7e0ba669a1@linaro.org>
+ <20180307170923.GA6543@localhost.localdomain>
+ <1c07a155-d8e8-480f-937a-6022cda15d0b@linaro.org>
+ <20180308120352.mko2b775ppquverb@oak.lan>
+ <20180326143046.GA18782@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <faaf027c-e01c-6801-9a0c-ab7e0ba669a1@linaro.org>
+In-Reply-To: <20180326143046.GA18782@leoy-ThinkPad-X240s>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, edubezval@gmail.com, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, kevin.wangtao@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 23, 2018 at 12:28:51PM +0100, Daniel Lezcano wrote:
-> On 23/02/2018 08:34, Viresh Kumar wrote:
-> > On 21-02-18, 16:29, Daniel Lezcano wrote:
-
-> [ ... ]
+On 26/03/2018 16:30, Leo Yan wrote:
+> On Thu, Mar 08, 2018 at 12:03:52PM +0000, Daniel Thompson wrote:
+>> On Wed, Mar 07, 2018 at 07:57:17PM +0100, Daniel Lezcano wrote:
+>>>>> The preliminary benchmarks show the following changes:
+>>>>>
+>>>>> On the hikey6220, dhrystone shows a throughtput increase of 40% for an
+>>>>> increase of the latency of 16% while sysbench shows a latency increase
+>>>>> of 5%.
+>>>>
+>>>> I don't follow these numbers. Throughput increase while injecting idle?
+>>>> compared to what? percentages of what? Please be more specific to better
+>>>> describer your work..
+>>>
+>>> The dhrystone throughput is based on the virtual timer, when we are
+>>> running, it is at max opp, so the throughput increases. But regarding
+>>> the real time, it takes obviously more time to achieve as we are
+>>> artificially inserting idle cycles. With the cpufreq governor, we run at
+>>> a lower opp, so the throughput is less for dhrystone but it takes less
+>>> time to achieve.
+>>>
+>>> Percentages are comparing cpufreq vs cpuidle cooling devices. I will
+>>> take care of presenting the results in a more clear way in the next version.
+>>
+>> I think we should also note that the current hikey settings for cpufreq
+>> are very badly tuned for this platform. It has a single temp threshold
+>> and it jumps from max freq to min freq.
+>>
+>> IIRC Leo's work on Hikey thermals correctly it would be much better if 
+>> it used the power-allocator thermal governor or if if copied some of 
+>> the Samsung 32-bit platform by configuring the step governor with a 
+>> graduated with a slightly lower threshold that moves two stops back in 
+>> the OPP table (which is still fairly high clock speed... but it
+>> thermally sustainable).
 > 
-> >> +static s64 cpuidle_cooling_runtime(struct cpuidle_cooling_device *idle_cdev)
-> >> +{
-> >> +	s64 next_wakeup;
-> >> +	int state = idle_cdev->state;
-> >> +
-> >> +	/*
-> >> +	 * The function must never be called when there is no
-> >> +	 * mitigation because:
-> >> +	 * - that does not make sense
-> >> +	 * - we end up with a division by zero
-> >> +	 */
-> >> +	BUG_ON(!state);
-> > 
-> > As there is no locking in place, we can surely hit this case. What if
-> > the state changed to 0 right before this routine was called ?
-> > 
-> > I would suggest we should just return 0 in that case and get away with
-> > the BUG_ON().
+> I think Daniel L. is working on this patch set with 'power-allocator'
+> governor, and the parameters 'sustainable-power = <3326>' and
+> 'dynamic-power-coefficient = <311>' are profiling value on Hikey
+> platform.  Now we only consider dynamic power and skip static leakage
+> for 'power-allocator' governor.  And all these parameters are merged
+> into Linux mainline kernel.
+> 
+> Daniel L. could correct me if I misunderstand the testing conditions.
 
-Here if 'state' equals to 0 and we return 0, then the return value will
-be same with when 'state' = 100; this lets the return value confused.
+Well, the first iteration is without the powerallocator governor API. It
+was tested with the step-wise governor only. But you are right by saying
+it will use the dynamic-power-coefficient and sustainable-power and will
+implement the power allocator version of the API. I'm working on the
+power allocator version for the idle injection + OPP change as we need
+to compute the capacity equivalence between the idle-injection cycles +
+OPP and the lower OPP in order to change the OPP for optimized power /
+performance trade-off.
 
-I think for 'state' = 0, should we return -1 so indicate the hrtimer
-will not be set for this case?
 
-Thanks,
-Leo Yan
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
