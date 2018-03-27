@@ -1,52 +1,86 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH v1 02/16] dt-bindings: rtc: mediatek: add bindings for
- PMIC RTC
-Date: Tue, 27 Mar 2018 17:18:48 +0200
-Message-ID: <20180327151848.GD22441@piout.net>
-References: <cover.1521794176.git.sean.wang@mediatek.com>
- <5846e8be319c4836808c8127d5bb51b7e999e896.1521794177.git.sean.wang@mediatek.com>
- <20180323094118.GC3417@piout.net>
- <20180323101505.GF3417@piout.net>
- <1521920188.31197.13.camel@mtkswgap22>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH] [sound] hdac-codec runtime suspended at
+	PM:Suspend.
+Date: Tue, 27 Mar 2018 17:36:36 +0200
+Message-ID: <20180327153636.GA4588@wunner.de>
+References: <1520853467-31653-1-git-send-email-anshuman.gupta@intel.com>
+ <CAJZ5v0hyk=jto8Wt0er==YmKEsgvfvZhO2wDbGOhxZaWWCNgBg@mail.gmail.com>
+ <5aa8fbe9.4251620a.c3daa.3711SMTPIN_ADDED_BROKEN@mx.google.com>
+ <CAJZ5v0jrKPNFhgpoL97Ac-k9jAmMa-vzgc-4PD+uuynSMqE2Fw@mail.gmail.com>
+ <s5hr2o770pv.wl-tiwai@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <alsa-devel-bounces@alsa-project.org>
 Content-Disposition: inline
-In-Reply-To: <1521920188.31197.13.camel@mtkswgap22>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sean Wang <sean.wang@mediatek.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <s5hr2o770pv.wl-tiwai@suse.de>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Anshuman Gupta <anshuman.gupta@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, " Subhransu S. Prusty " <subhransu.s.prusty@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25/03/2018 at 03:36:28 +0800, Sean Wang wrote:
-> just reply both replies in the same mail
+On Mon, Mar 26, 2018 at 09:30:36AM +0200, Takashi Iwai wrote:
+> On Mon, 26 Mar 2018 09:03:55 +0200, Subhransu S. Prusty  wrote:
+> > On Thu, Mar 15, 2018 at 09:02:30PM +0530, Anshuman Gupta wrote:
+> > > On Thu, Mar 15, 2018 at 04:12:44PM +0530, Subhransu S. Prusty wrote:
+> > > > This driver needs a late resume as it receives a jack notification
+> > > > from the i915 driver and the skl controller driver resume may not
+> > > > have happened and in turn hda controller may not ready. This ensures
+> > > > a synchronization for jack event during resume from S3.
+> > > 
+> > > Let me give you insight of the issue, this driver blocks the direct
+> > > complete of hda controller PCI 00:1f.3, sometimes it takes 280ms to
+> > > resume hda controller from S3 and s2idle. So it does not make sense
+> > > to suspend/resume hda controller when it is already in runtime
+> > > suspend.
 > 
-> 1.) the power-off device is a part of rtc, use the same registers rtc
-> has and thus it is put as child nodes under the node rtc to reflect the
-> reality of characteristics the rtc has.
+> If it's about the power well issue, it had been fixed in multiple
+> ways.  In i915 side, every relevant component callback is wrapped with
+> power domain get/put.  And, at least HD-audio legacy side, such a
+> spurious notification is filtered out in the eld notifier:
 > 
-> Or am I wrong for a certain aspect in these opinions?
+> static void intel_pin_eld_notify(void *audio_ptr, int port, int pipe)
+> {
+> 	....
+> 	/* skip notification during system suspend (but not in runtime PM);
+> 	 * the state will be updated at resume
+> 	 */
+> 	if (snd_power_get_state(codec->card) != SNDRV_CTL_POWER_D0)
+> 		return;
+> 	/* ditto during suspend/resume process itself */
+> 	if (atomic_read(&(codec)->core.in_pm))
+> 		return;
 > 
-
-My point is that it is also part of the PMIC so it may as well be
-registers from the mfd driver which already registers a bunch of devices
-instead of doing unusual stuff from the rtc driver.
-
-mt6397_rtc->regmap is mt6397_chip->regmap anyway. You have the added
-benefit that if the RTC driver probe fails for some reason, you may
-still be able to probe the reset driver.
-
-I don't tink there is any benefit having it as a child of the rtc
-device.
-
-> 2) the other sub-functions for the same pmic already created its own
-> dt-binding document belonged to its corresponding subsystem. Don't we
-> really want to follow it them all?
+> 	snd_hdac_i915_set_bclk(&codec->bus->core);
+> 	check_presence_and_report(codec, pin_nid, dev_id);
+> }
 > 
+> Last but not least, the jack state is explicitly updated via reading
+> the ELD at resume callback.
+> 
+> In that way, we can live with the standard suspend/resume procedure.
 
-Ok, that's fine.
+FWIW, the i915 folks have put on their todo list to migrate the
+i915/hda_intel interaction to device links:
 
--- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-https://bootlin.com
+https://git.kernel.org/next/linux-next/c/7b3b61b62a58
+
+Something similar has already been done for HDA controllers
+integrated into AMD / Nvidia GPUs with:
+
+https://git.kernel.org/next/linux-next/c/07f4f97d7b4b
+
+With device links, direct_complete will be used naturally,
+so time is probably best spent working towards this approach.
+
+Thanks,
+
+Lukas
