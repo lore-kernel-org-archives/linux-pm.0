@@ -1,37 +1,68 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v1 03/16] dt-bindings: mfd: mediatek: add a description
- for MT6323 RTC
-Date: Wed, 28 Mar 2018 12:13:25 +0100
-Message-ID: <20180328111325.2vbyrbfcixheocma@dell>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v1 04/16] mfd: mt6397: add MT6323 RTC support into MT6397
+ driver
+Date: Wed, 28 Mar 2018 12:15:37 +0100
+Message-ID: <20180328111537.34xcqzpgjf7gu3zw@dell>
 References: <cover.1521794176.git.sean.wang@mediatek.com>
- <ba4708a34e43fbc12e78804840be1698f84243cc.1521794177.git.sean.wang@mediatek.com>
+ <90320622cb491b9d3251e2ce9d0501422f47660f.1521794177.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <ba4708a34e43fbc12e78804840be1698f84243cc.1521794177.git.sean.wang@mediatek.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <90320622cb491b9d3251e2ce9d0501422f47660f.1521794177.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 23 Mar 2018, sean.wang@mediatek.com wrote:
-
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> Add a description for MT6323 RTC and link it to the detailed binding
-> documentation.
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  Documentation/devicetree/bindings/mfd/mt6397.txt | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-
-Acked-by: Lee Jones <lee.jones@linaro.org>
-
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+T24gRnJpLCAyMyBNYXIgMjAxOCwgc2Vhbi53YW5nQG1lZGlhdGVrLmNvbSB3cm90ZToKCj4gRnJv
+bTogU2VhbiBXYW5nIDxzZWFuLndhbmdAbWVkaWF0ZWsuY29tPgo+IAo+IEFkZCBjb21wYXRpYmxl
+IHN0cmluZyBhcyAibXQ2MzIzLXJ0YyIgdGhhdCB3aWxsIG1ha2UgdGhlIE9GIGNvcmUgc3Bhd24K
+PiBjaGlsZCBkZXZpY2VzIGZvciB0aGUgUlRDIHN1Ym5vZGUgb2YgdGhhdCBNVDYzMjMgTUZEIG5v
+ZGUuCj4gCj4gU2lnbmVkLW9mZi1ieTogU2VhbiBXYW5nIDxzZWFuLndhbmdAbWVkaWF0ZWsuY29t
+Pgo+IC0tLQo+ICBkcml2ZXJzL21mZC9tdDYzOTctY29yZS5jIHwgMjMgKysrKysrKysrKysrKysr
+KysrKysrKy0KPiAgMSBmaWxlIGNoYW5nZWQsIDIyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24o
+LSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9tZmQvbXQ2Mzk3LWNvcmUuYyBiL2RyaXZlcnMv
+bWZkL210NjM5Ny1jb3JlLmMKPiBpbmRleCA3N2I2NGJkLi5mNzE4NzRhIDEwMDY0NAo+IC0tLSBh
+L2RyaXZlcnMvbWZkL210NjM5Ny1jb3JlLmMKPiArKysgYi9kcml2ZXJzL21mZC9tdDYzOTctY29y
+ZS5jCj4gQEAgLTEsNSArMSw1IEBACj4gIC8qCj4gLSAqIENvcHlyaWdodCAoYykgMjAxNCBNZWRp
+YVRlayBJbmMuCj4gKyAqIENvcHlyaWdodCAoYykgMjAxNC0yMDE4IE1lZGlhVGVrIEluYy4KPiAg
+ICogQXV0aG9yOiBGbG9yYSBGdSwgTWVkaWFUZWsKPiAgICoKPiAgICogVGhpcyBwcm9ncmFtIGlz
+IGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkKPiBA
+QCAtMjMsNiArMjMsOSBAQAo+ICAjaW5jbHVkZSA8bGludXgvbWZkL210NjM5Ny9yZWdpc3RlcnMu
+aD4KPiAgI2luY2x1ZGUgPGxpbnV4L21mZC9tdDYzMjMvcmVnaXN0ZXJzLmg+Cj4gIAo+ICsjZGVm
+aW5lIE1UNjMyM19SVENfQkFTRQkJMHg4MDAwCj4gKyNkZWZpbmUgTVQ2MzIzX1JUQ19TSVpFCQkw
+eDNlCj4gKwo+ICAjZGVmaW5lIE1UNjM5N19SVENfQkFTRQkJMHhlMDAwCj4gICNkZWZpbmUgTVQ2
+Mzk3X1JUQ19TSVpFCQkweDNlCj4gIAo+IEBAIC0zMCw2ICszMywxOSBAQAo+ICAjZGVmaW5lIE1U
+NjM5MV9DSURfQ09ERQkJMHg5MQo+ICAjZGVmaW5lIE1UNjM5N19DSURfQ09ERQkJMHg5Nwo+ICAK
+PiArc3RhdGljIGNvbnN0IHN0cnVjdCByZXNvdXJjZSBtdDYzMjNfcnRjX3Jlc291cmNlc1tdID0g
+ewo+ICsJewo+ICsJCS5zdGFydCA9IE1UNjMyM19SVENfQkFTRSwKPiArCQkuZW5kICAgPSBNVDYz
+MjNfUlRDX0JBU0UgKyBNVDYzMjNfUlRDX1NJWkUsCj4gKwkJLmZsYWdzID0gSU9SRVNPVVJDRV9N
+RU0sCj4gKwl9LAo+ICsJewo+ICsJCS5zdGFydCA9IE1UNjMyM19JUlFfU1RBVFVTX1JUQywKPiAr
+CQkuZW5kICAgPSBNVDYzMjNfSVJRX1NUQVRVU19SVEMsCj4gKwkJLmZsYWdzID0gSU9SRVNPVVJD
+RV9JUlEsCj4gKwl9LAo+ICt9OwoKUGxlYXNlIHVzZSB0aGUgREVGSU5FX1JFU18qIGhlbHBlcnMg
+aW5zdGVhZC4KCkRlZmluZWQgaW46IGluY2x1ZGUvbGludXgvaW9wb3J0LmgKCj4gIHN0YXRpYyBj
+b25zdCBzdHJ1Y3QgcmVzb3VyY2UgbXQ2Mzk3X3J0Y19yZXNvdXJjZXNbXSA9IHsKPiAgCXsKPiAg
+CQkuc3RhcnQgPSBNVDYzOTdfUlRDX0JBU0UsCj4gQEAgLTU1LDYgKzcxLDExIEBAIHN0YXRpYyBj
+b25zdCBzdHJ1Y3QgcmVzb3VyY2UgbXQ2Mzk3X2tleXNfcmVzb3VyY2VzW10gPSB7Cj4gIAo+ICBz
+dGF0aWMgY29uc3Qgc3RydWN0IG1mZF9jZWxsIG10NjMyM19kZXZzW10gPSB7Cj4gIAl7Cj4gKwkJ
+Lm5hbWUgPSAibXQ2MzIzLXJ0YyIsCj4gKwkJLm51bV9yZXNvdXJjZXMgPSBBUlJBWV9TSVpFKG10
+NjMyM19ydGNfcmVzb3VyY2VzKSwKPiArCQkucmVzb3VyY2VzID0gbXQ2MzIzX3J0Y19yZXNvdXJj
+ZXMsCj4gKwkJLm9mX2NvbXBhdGlibGUgPSAibWVkaWF0ZWssbXQ2MzIzLXJ0YyIsCj4gKwl9LCB7
+Cj4gIAkJLm5hbWUgPSAibXQ2MzIzLXJlZ3VsYXRvciIsCj4gIAkJLm9mX2NvbXBhdGlibGUgPSAi
+bWVkaWF0ZWssbXQ2MzIzLXJlZ3VsYXRvciIKPiAgCX0sIHsKCi0tIApMZWUgSm9uZXMgW+adjueQ
+vOaWr10KTGluYXJvIFNlcnZpY2VzIFRlY2huaWNhbCBMZWFkCkxpbmFyby5vcmcg4pSCIE9wZW4g
+c291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwpGb2xsb3cgTGluYXJvOiBGYWNlYm9vayB8IFR3
+aXR0ZXIgfCBCbG9nCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpMaW51eC1tZWRpYXRlayBtYWlsaW5nIGxpc3QKTGludXgtbWVkaWF0ZWtAbGlzdHMuaW5m
+cmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LW1lZGlhdGVrCg==
