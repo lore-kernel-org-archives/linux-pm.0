@@ -1,69 +1,79 @@
-From: Chris Wilson <chris@chris-wilson.co.uk>
-Subject: Re: [PATCH 9/9] drm/i915/execlists: Report GPU
- rendering as IO activity to cpufreq.
-Date: Wed, 28 Mar 2018 09:02:52 +0100
-Message-ID: <152222417278.10679.15949311520002257163@mail.alporthouse.com>
-References: <20180328063845.4884-1-currojerez@riseup.net>
- <20180328063845.4884-10-currojerez@riseup.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFT][PATCH v7 6/8] sched: idle: Select idle state before
+ stopping the tick
+Date: Wed, 28 Mar 2018 10:13:38 +0200
+Message-ID: <CAJZ5v0j5mEaQSAiW4ynitM1ee=sqkpc8G_tZ40RYUgyavXXhqQ@mail.gmail.com>
+References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <2249320.0Z4q8AXauv@aspire.rjw.lan>
+ <6462e44a-e207-6b97-22bf-ad4aed69afc2@tu-dresden.de> <4198010.6ArFqS34NK@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <20180328063845.4884-10-currojerez@riseup.net>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4198010.6ArFqS34NK@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-UXVvdGluZyBGcmFuY2lzY28gSmVyZXogKDIwMTgtMDMtMjggMDc6Mzg6NDUpCj4gVGhpcyBhbGxv
-d3MgY3B1ZnJlcSBnb3Zlcm5vcnMgdG8gcmVhbGl6ZSB3aGVuIHRoZSBzeXN0ZW0gYmVjb21lcwo+
-IG5vbi1DUFUtYm91bmQgZHVlIHRvIEdQVSByZW5kZXJpbmcgYWN0aXZpdHksIHdoaWNoIHdpbGwg
-Y2F1c2UgdGhlCj4gaW50ZWxfcHN0YXRlIExQIGNvbnRyb2xsZXIgdG8gYmVoYXZlIG1vcmUgY29u
-c2VydmF0aXZlbHk6IENQVSBlbmVyZ3kKPiB1c2FnZSB3aWxsIGJlIHJlZHVjZWQgd2hlbiB0aGVy
-ZSBpc24ndCBhIGdvb2QgY2hhbmNlIGZvciBzeXN0ZW0KPiBwZXJmb3JtYW5jZSB0byBzY2FsZSB3
-aXRoIENQVSBmcmVxdWVuY3kuICBUaGlzIGxlYXZlcyBhZGRpdGlvbmFsIFREUAo+IGJ1ZGdldCBh
-dmFpbGFibGUgZm9yIHRoZSBHUFUgdG8gcmVhY2ggaGlnaGVyIGZyZXF1ZW5jaWVzLCB3aGljaCBp
-cwo+IHRyYW5zbGF0ZWQgaW50byBhbiBpbXByb3ZlbWVudCBpbiBncmFwaGljcyBwZXJmb3JtYW5j
-ZSB0byB0aGUgZXh0ZW50Cj4gdGhhdCB0aGUgd29ya2xvYWQgcmVtYWlucyBURFAtbGltaXRlZCAo
-TW9zdCBub24tdHJpdmlhbCBncmFwaGljcwo+IGJlbmNobWFya3Mgb3V0IHRoZXJlIGltcHJvdmUg
-c2lnbmlmaWNhbnRseSBpbiBURFAtY29uc3RyYWluZWQKPiBwbGF0Zm9ybXMsIHNlZSB0aGUgY292
-ZXIgbGV0dGVyIGZvciBzb21lIG51bWJlcnMpLiAgSWYgdGhlIHdvcmtsb2FkCj4gaXNuJ3QgKGFu
-eW1vcmUpIFREUC1saW1pdGVkIHBlcmZvcm1hbmNlIHNob3VsZCBzdGF5IHJvdWdobHkgY29uc3Rh
-bnQsCj4gYnV0IGVuZXJneSB1c2FnZSB3aWxsIGJlIGRpdmlkZWQgYnkgYSBzaW1pbGFyIGZhY3Rv
-ci4KCkFuZCB0aGF0J3Mgd2hhdCBJIHRob3VnaHQgSVBTIHdhcyBhbHJlYWR5IG1lYW50IHRvIGJl
-IGFjaGlldmluZzsKaW50ZWxsaWdlbnQgZGlzdHJpYnV0aW9uIGJldHdlZW4gZGlmZmVyZW50IHVu
-aXRzLi4uCiAKPiBUaGUgaW50ZWxfcHN0YXRlIExQIGNvbnRyb2xsZXIgaXMgb25seSBlbmFibGVk
-IG9uIEJYVCsgc21hbGwtY29yZQo+IHBsYXRmb3JtcyBhdCB0aGlzIHBvaW50LCBzbyB0aGlzIHNo
-b3VsZG4ndCBoYXZlIGFueSBlZmZlY3Qgb24gb3RoZXIKPiBzeXN0ZW1zLgoKQWx0aG91Z2ggdGhh
-dCdzIHByb2JhYmx5IG9ubHkgYSBmZWF0dXJlIGZvciBiaWcgY29yZSA6KQogCj4gU2lnbmVkLW9m
-Zi1ieTogRnJhbmNpc2NvIEplcmV6IDxjdXJyb2plcmV6QHJpc2V1cC5uZXQ+Cj4gLS0tCj4gIGRy
-aXZlcnMvZ3B1L2RybS9pOTE1L2ludGVsX2xyYy5jIHwgNCArKysrCj4gIDEgZmlsZSBjaGFuZ2Vk
-LCA0IGluc2VydGlvbnMoKykKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2k5MTUv
-aW50ZWxfbHJjLmMgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pbnRlbF9scmMuYwo+IGluZGV4IDNh
-NjliMzY3ZTU2NS4uNzIxZjkxNTExNWJkIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9p
-OTE1L2ludGVsX2xyYy5jCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvaW50ZWxfbHJjLmMK
-PiBAQCAtMTMyLDYgKzEzMiw3IEBACj4gICAqCj4gICAqLwo+ICAjaW5jbHVkZSA8bGludXgvaW50
-ZXJydXB0Lmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9jcHVmcmVxLmg+Cj4gIAo+ICAjaW5jbHVkZSA8
-ZHJtL2RybVAuaD4KPiAgI2luY2x1ZGUgPGRybS9pOTE1X2RybS5oPgo+IEBAIC0zNzksMTEgKzM4
-MCwxMyBAQCBleGVjbGlzdHNfY29udGV4dF9zY2hlZHVsZV9pbihzdHJ1Y3QgaTkxNV9yZXF1ZXN0
-ICpycSkKPiAgewo+ICAgICAgICAgZXhlY2xpc3RzX2NvbnRleHRfc3RhdHVzX2NoYW5nZShycSwg
-SU5URUxfQ09OVEVYVF9TQ0hFRFVMRV9JTik7Cj4gICAgICAgICBpbnRlbF9lbmdpbmVfY29udGV4
-dF9pbihycS0+ZW5naW5lKTsKPiArICAgICAgIGNwdWZyZXFfaW9fYWN0aXZlX2JlZ2luKCk7CgpT
-aW5jZSB5b3Ugb25seSBjYXJlIGFib3V0IGEgYmluYXJ5IHZhbHVlIGZvciBHUFUgYWN0aXZpdHks
-IHdlIGRvbid0IG5lZWQKdG8gZG8gdGhpcyBvbiBlYWNoIGNvbnRleHQsIGp1c3QgYmV0d2VlbiBz
-dWJtaXR0aW5nIHRoZSBmaXJzdCByZXF1ZXN0CmFuZCB0aGUgZmluYWwgY29tcGxldGlvbiwgaS5l
-LiBjb3VwbGUgdGhpcyB0byBFWEVDTElTVFNfQUNUSVZFX1VTRVIuCgpIYXZlbid0IHlldCBnb25l
-IGJhY2sgdG8gY2hlY2sgaG93IGhlYXZ5IGlvX2FjdGl2ZV9iZWdpbi9lbmQgYXJlLCBidXQgSQp0
-cnVzdCB5b3UgYXBwcmVjaWF0ZSB0aGF0IHRoaXMgY29kZSBpcyBwYXJ0aWN1bGFybHkgbGF0ZW5j
-eSBzZW5zaXRpdmUuCi1DaHJpcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVz
-a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9p
-bnRlbC1nZngK
+On Wed, Mar 28, 2018 at 12:10 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, March 27, 2018 11:50:02 PM CEST Thomas Ilsche wrote:
+>> On 2018-03-20 16:45, Rafael J. Wysocki wrote:
+>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >
+>> > In order to address the issue with short idle duration predictions
+>> > by the idle governor after the tick has been stopped, reorder the
+>> > code in cpuidle_idle_call() so that the governor idle state selection
+>> > runs before tick_nohz_idle_go_idle() and use the "nohz" hint returned
+>> > by cpuidle_select() to decide whether or not to stop the tick.
+>> >
+>> > This isn't straightforward, because menu_select() invokes
+>> > tick_nohz_get_sleep_length() to get the time to the next timer
+>> > event and the number returned by the latter comes from
+>> > __tick_nohz_idle_enter().  Fortunately, however, it is possible
+>> > to compute that number without actually stopping the tick and with
+>> > the help of the existing code.
+>>
+>> I think something is wrong with the new tick_nohz_get_sleep_length.
+>> It seems to return a value that is too large, ignoring immanent
+>> non-sched timer.
+>
+> That's a very useful hint, let me have a look.
+>
+>> I tested idle-loop-v7.3. It looks very similar to my previous results
+>> on the first idle-loop-git-version [1]. Idle and traditional synthetic
+>> powernightmares are mostly good.
+>
+> OK
+>
+>> But it selects too deep C-states for short idle periods, which is bad
+>> for power consumption [2].
+>
+> That still needs to be improved, then.
+>
+>> I tracked this down with additional tests using
+>> __attribute__((optimize("O0"))) menu_select
+>> and perf probe. With this the behavior seems slightly different, but it
+>> shows that data->next_timer_us is:
+>> v4.16-rc6: the expected ~500 us [3]
+>> idle-loop-v7.3: many milliseconds to minutes [4].
+>> This leads to the governor to wrongly selecting C6.
+>>
+>> Checking with 372be9e and 6ea0577, I can confirm that the change is
+>> introduced by this patch.
+>
+> Yes, that's where the most intrusive reordering happens.
+
+Overall, this is an interesting conundrum, because the case in
+question is when the tick should never be stopped at all during the
+workload and the code's behavior in that case should not change, so
+the change was not intentional.
+
+Now, from walking through the code, as long as can_stop_idle_tick()
+returns 'true' all should be fine or at least I don't see why there is
+any difference in behavior in that case.
+
+However, if can_stop_idle_tick() returns 'false' (for example, because
+need_resched() returns 'true' when it is evaluated), the behavior *is*
+different in a couple of ways.  I sort of know how that can be
+addressed, but I'd like to reproduce your results here.
+
+Are you still using the same workload as before to trigger this behavior?
