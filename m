@@ -1,43 +1,37 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH v7 6/8] sched: idle: Select idle state before
- stopping the tick
-Date: Wed, 28 Mar 2018 12:56:42 +0200
-Message-ID: <CAJZ5v0h40DDZ5da7CS4702Z=D3bY7SsOhbUqPR44qVKU0E4D4A@mail.gmail.com>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <2249320.0Z4q8AXauv@aspire.rjw.lan>
- <6462e44a-e207-6b97-22bf-ad4aed69afc2@tu-dresden.de> <4198010.6ArFqS34NK@aspire.rjw.lan>
- <CAJZ5v0j5mEaQSAiW4ynitM1ee=sqkpc8G_tZ40RYUgyavXXhqQ@mail.gmail.com>
- <b904266b-b5bb-587d-334a-844a70341f8d@tu-dresden.de> <CAJZ5v0iRjj5DEKU1m2_y96WRBNu6U1w=GSADRxWXfVDN9K+edQ@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v1 03/16] dt-bindings: mfd: mediatek: add a description
+ for MT6323 RTC
+Date: Wed, 28 Mar 2018 12:13:25 +0100
+Message-ID: <20180328111325.2vbyrbfcixheocma@dell>
+References: <cover.1521794176.git.sean.wang@mediatek.com>
+ <ba4708a34e43fbc12e78804840be1698f84243cc.1521794177.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iRjj5DEKU1m2_y96WRBNu6U1w=GSADRxWXfVDN9K+edQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <ba4708a34e43fbc12e78804840be1698f84243cc.1521794177.git.sean.wang@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: sean.wang@mediatek.com
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 28, 2018 at 12:37 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Mar 28, 2018 at 10:38 AM, Thomas Ilsche
-> <thomas.ilsche@tu-dresden.de> wrote:
->> On 2018-03-28 10:13, Rafael J. Wysocki wrote:
->>>
+On Fri, 23 Mar 2018, sean.wang@mediatek.com wrote:
 
-[cut]
+> From: Sean Wang <sean.wang@mediatek.com>
+> 
+> Add a description for MT6323 RTC and link it to the detailed binding
+> documentation.
+> 
+> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> ---
+>  Documentation/devicetree/bindings/mfd/mt6397.txt | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
->
-> So I do
->
-> $ for cpu in 0 1 2 3; do taskset -c $cpu sh -c 'while true; do usleep
-> 500; done' & done
->
-> which is a shell kind of imitation of the above and I cannot see this
-> issue at all.
->
-> I count the number of times data->next_timer_us in menu_select() is
-> greater than TICK_USEC and while this "workload" is running, that
-> number is exactly 0.
->
-> I'll try with a C program still.
+Acked-by: Lee Jones <lee.jones@linaro.org>
 
-And with a C program I see data->next_timer_us greater than TICK_USEC
-while it is running, so let me dig deeper.
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
