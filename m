@@ -1,66 +1,112 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH v7 6/8] sched: idle: Select idle state before
- stopping the tick
-Date: Thu, 29 Mar 2018 01:11:11 +0200
-Message-ID: <CAJZ5v0g6=f60Owy2NLSeXZs7hL4tGECseqhwgy7h0imLOTvt5w@mail.gmail.com>
-References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <2249320.0Z4q8AXauv@aspire.rjw.lan>
- <6462e44a-e207-6b97-22bf-ad4aed69afc2@tu-dresden.de> <4198010.6ArFqS34NK@aspire.rjw.lan>
- <CAJZ5v0j5mEaQSAiW4ynitM1ee=sqkpc8G_tZ40RYUgyavXXhqQ@mail.gmail.com>
- <b904266b-b5bb-587d-334a-844a70341f8d@tu-dresden.de> <CAJZ5v0iRjj5DEKU1m2_y96WRBNu6U1w=GSADRxWXfVDN9K+edQ@mail.gmail.com>
- <CAJZ5v0h40DDZ5da7CS4702Z=D3bY7SsOhbUqPR44qVKU0E4D4A@mail.gmail.com> <006501d3c6d5$2d03e500$870baf00$@net>
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Subject: Re: [PATCH 9/9] drm/i915/execlists: Report GPU
+ rendering as IO activity to cpufreq.
+Date: Thu, 29 Mar 2018 00:19:40 +0100
+Message-ID: <152227918019.10679.9470023556595388428@mail.alporthouse.com>
+References: <20180328063845.4884-1-currojerez@riseup.net>
+ <20180328063845.4884-10-currojerez@riseup.net>
+ <152222417278.10679.15949311520002257163@mail.alporthouse.com>
+ <87muysowrz.fsf@riseup.net>
+ <152226481977.10679.15243453393086412220@mail.alporthouse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <006501d3c6d5$2d03e500$870baf00$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <152226481977.10679.15243453393086412220@mail.alporthouse.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 28, 2018 at 10:41 PM, Doug Smythies <dsmythies@telus.net> wrote:
-> On 2018.03.28 08:15 Thomas Ilsche wrote:
->> On 2018-03-28 12:56, Rafael J. Wysocki wrote:
->>> On Wed, Mar 28, 2018 at 12:37 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>> On Wed, Mar 28, 2018 at 10:38 AM, Thomas Ilsche
->>>> <thomas.ilsche@tu-dresden.de> wrote:
->>>>> On 2018-03-28 10:13, Rafael J. Wysocki wrote:
->>>>>>
->>>
->>> [cut]
->>>
->>>>
->>>> So I do
->>>>
->>>> $ for cpu in 0 1 2 3; do taskset -c $cpu sh -c 'while true; do usleep
->>>> 500; done' & done
->>>>
->>>> which is a shell kind of imitation of the above and I cannot see this
->>>> issue at all.
->>>>
->>>> I count the number of times data->next_timer_us in menu_select() is
->>>> greater than TICK_USEC and while this "workload" is running, that
->>>> number is exactly 0.
->>>>
->>>> I'll try with a C program still.
->>>
->>> And with a C program I see data->next_timer_us greater than TICK_USEC
->>> while it is running, so let me dig deeper.
->>>
->>
->> I can confirm that a shell-loop behaves differently like you describe.
->> Even if it's just a shell-loop calling "main{usleep(500);}" binary.
->
-> I normally use the C program method.
-> The timer there returns with the need_sched() flag set.
-
-I found the problem, but addressing it will not be straightforward,
-which is kind of unfortunate.
-
-Namely, get_next_timer_interrupt() doesn't take high resolution timers
-into account if they are enabled (which I overlooked), but they
-obviously need to be taken into account in
-tick_nohz_get_sleep_length(), so calling tick_nohz_next_event() in
-there is not sufficient.
-
-Moreover, it needs to know the next highres timer not including the
-tick and that's not so easy to get.  It is doable, though, AFAICS.
+UXVvdGluZyBDaHJpcyBXaWxzb24gKDIwMTgtMDMtMjggMjA6MjA6MTkpCj4gUXVvdGluZyBGcmFu
+Y2lzY28gSmVyZXogKDIwMTgtMDMtMjggMTk6NTU6MTIpCj4gPiBIaSBDaHJpcywKPiA+IAo+IFtz
+bmlwXQo+ID4gVGhhdCBzYWlkLCBpdCB3b3VsZG4ndCBodXJ0IHRvIGNhbGwgZWFjaCBvZiB0aGVt
+IG9uY2UgcGVyIHNlcXVlbmNlIG9mCj4gPiBvdmVybGFwcGluZyByZXF1ZXN0cy4gIERvIHlvdSB3
+YW50IG1lIHRvIGNhbGwgdGhlbSBmcm9tCj4gPiBleGVjbGlzdHNfc2V0L2NsZWFyX2FjdGl2ZSgp
+IHRoZW1zZWx2ZXMgd2hlbiBiaXQgPT0gRVhFQ0xJU1RTX0FDVElWRV9VU0VSLAo+ID4gb3IgYXQg
+ZWFjaCBjYWxsc2l0ZSBvZiBleGVjbGlzdHNfc2V0L2NsZWFyX2FjdGl2ZSgpPyBbcG9zc2libHkg
+cHJvdGVjdGVkCj4gPiB3aXRoIGEgY2hlY2sgdGhhdCBleGVjbGlzdHNfaXNfYWN0aXZlKEVYRUNM
+SVNUU19BQ1RJVkVfVVNFUikgd2Fzbid0Cj4gPiBhbHJlYWR5IHRoZSBleHBlY3RlZCB2YWx1ZV0K
+PiAKPiBObywgSSB3YXMgdGhpbmtpbmcgb2YgYWRkaW5nIGFuIGV4ZWNsaXN0c19zdGFydCgpL2V4
+ZWNsaXN0c19zdG9wKCkKPiBbbmFtaW5nIHN1Z2dlc3Rpb25zIHdlbGNvbWUsIGJlZ2luL2VuZD9d
+IHdoZXJlIHdlIGNvdWxkIGhvb2sgYWRkaXRpb25hbAo+IGJvb2trZWVwaW5nIGludG8uCgpUcnlp
+bmcgdG8gY2FsbCBleGVjbGlzdF9iZWdpbigpIG9uY2UgZGlkbid0IHBhbiBvdXQuIEl0J3MgZWFz
+aWVyIHRvCnJldXNlIGZvciBzaW1pbGFyIGJvb2trZWVwaW5nIHVzZWQgaW4gZnV0dXJlIHBhdGNo
+ZXMgaWYgZXhlY2xpc3RfYmVnaW4oKQoob3Igd2hhdGV2ZXIgbmFtZSBzdWl0cyBiZXN0KSBhdCB0
+aGUgc3RhcnQgb2YgZWFjaCBjb250ZXh0LgoKU29tZXRoaW5nIGFsb25nIHRoZSBsaW5lcyBvZjoK
+CkBAIC0zNzQsNiArMzc0LDE5IEBAIGV4ZWNsaXN0c19jb250ZXh0X3N0YXR1c19jaGFuZ2Uoc3Ry
+dWN0IGk5MTVfcmVxdWVzdCAqcnEsIHVuc2lnbmVkIGxvbmcgc3RhdHVzKQogICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIHN0YXR1cywgcnEpOwogfQogCitzdGF0aWMgaW5saW5lIHZv
+aWQKK2V4ZWNsaXN0c19iZWdpbihzdHJ1Y3QgaW50ZWxfZW5naW5lX2V4ZWNsaXN0cyAqZXhlY2xp
+c3RzLAorICAgICAgICAgICAgICAgc3RydWN0IGV4ZWNsaXN0X3BvcnQgKnBvcnQpCit7CisgICAg
+ICAgZXhlY2xpc3RzX3NldF9hY3RpdmVfb25jZShleGVjbGlzdHMsIEVYRUNMSVNUU19BQ1RJVkVf
+VVNFUik7Cit9CisKK3N0YXRpYyBpbmxpbmUgdm9pZAorZXhlY2xpc3RzX2VuZChzdHJ1Y3QgaW50
+ZWxfZW5naW5lX2V4ZWNsaXN0cyAqZXhlY2xpc3RzKQoreworICAgICAgIGV4ZWNsaXN0c19jbGVh
+cl9hY3RpdmUoZXhlY2xpc3RzLCBFWEVDTElTVFNfQUNUSVZFX1VTRVIpOworfQorCiBzdGF0aWMg
+aW5saW5lIHZvaWQKIGV4ZWNsaXN0c19jb250ZXh0X3NjaGVkdWxlX2luKHN0cnVjdCBpOTE1X3Jl
+cXVlc3QgKnJxKQogewpAQCAtNzEwLDcgKzcyMyw3IEBAIHN0YXRpYyB2b2lkIGV4ZWNsaXN0c19k
+ZXF1ZXVlKHN0cnVjdCBpbnRlbF9lbmdpbmVfY3MgKmVuZ2luZSkKICAgICAgICBzcGluX3VubG9j
+a19pcnEoJmVuZ2luZS0+dGltZWxpbmUtPmxvY2spOwogCiAgICAgICAgaWYgKHN1Ym1pdCkgewot
+ICAgICAgICAgICAgICAgZXhlY2xpc3RzX3NldF9hY3RpdmUoZXhlY2xpc3RzLCBFWEVDTElTVFNf
+QUNUSVZFX1VTRVIpOworICAgICAgICAgICAgICAgZXhlY2xpc3RzX2JlZ2luKGV4ZWNsaXN0cywg
+ZXhlY2xpc3RzLT5wb3J0KTsKICAgICAgICAgICAgICAgIGV4ZWNsaXN0c19zdWJtaXRfcG9ydHMo
+ZW5naW5lKTsKICAgICAgICB9CiAKQEAgLTc0MSw3ICs3NTQsNyBAQCBleGVjbGlzdHNfY2FuY2Vs
+X3BvcnRfcmVxdWVzdHMoc3RydWN0IGludGVsX2VuZ2luZV9leGVjbGlzdHMgKiBjb25zdCBleGVj
+bGlzdHMpCiAgICAgICAgICAgICAgICBwb3J0Kys7CiAgICAgICAgfQogCi0gICAgICAgZXhlY2xp
+c3RzX2NsZWFyX2FjdGl2ZShleGVjbGlzdHMsIEVYRUNMSVNUU19BQ1RJVkVfVVNFUik7CisgICAg
+ICAgZXhlY2xpc3RzX2VuZChleGVjbGlzdHMpOwogfQogCiBzdGF0aWMgdm9pZCBjbGVhcl9ndGlp
+cihzdHJ1Y3QgaW50ZWxfZW5naW5lX2NzICplbmdpbmUpCkBAIC04NzIsNyArODg1LDcgQEAgc3Rh
+dGljIHZvaWQgZXhlY2xpc3RzX3N1Ym1pc3Npb25fdGFza2xldCh1bnNpZ25lZCBsb25nIGRhdGEp
+CiB7CiAgICAgICAgc3RydWN0IGludGVsX2VuZ2luZV9jcyAqIGNvbnN0IGVuZ2luZSA9IChzdHJ1
+Y3QgaW50ZWxfZW5naW5lX2NzICopZGF0YTsKICAgICAgICBzdHJ1Y3QgaW50ZWxfZW5naW5lX2V4
+ZWNsaXN0cyAqIGNvbnN0IGV4ZWNsaXN0cyA9ICZlbmdpbmUtPmV4ZWNsaXN0czsKLSAgICAgICBz
+dHJ1Y3QgZXhlY2xpc3RfcG9ydCAqIGNvbnN0IHBvcnQgPSBleGVjbGlzdHMtPnBvcnQ7CisgICAg
+ICAgc3RydWN0IGV4ZWNsaXN0X3BvcnQgKnBvcnQgPSBleGVjbGlzdHMtPnBvcnQ7CiAgICAgICAg
+c3RydWN0IGRybV9pOTE1X3ByaXZhdGUgKmRldl9wcml2ID0gZW5naW5lLT5pOTE1OwogICAgICAg
+IGJvb2wgZncgPSBmYWxzZTsKIApAQCAtMTAxMCw5ICsxMDIzLDE5IEBAIHN0YXRpYyB2b2lkIGV4
+ZWNsaXN0c19zdWJtaXNzaW9uX3Rhc2tsZXQodW5zaWduZWQgbG9uZyBkYXRhKQogCiAgICAgICAg
+ICAgICAgICAgICAgICAgIEdFTV9CVUdfT04oY291bnQgPT0gMCk7CiAgICAgICAgICAgICAgICAg
+ICAgICAgIGlmICgtLWNvdW50ID09IDApIHsKKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAvKgorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAqIE9uIHRoZSBmaW5hbCBldmVu
+dCBjb3JyZXNwb25kaW5nIHRvIHRoZQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAq
+IHN1Ym1pc3Npb24gb2YgdGhpcyBjb250ZXh0LCB3ZSBleHBlY3QgZWl0aGVyCisgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICogYW4gZWxlbWVudC1zd2l0Y2ggZXZlbnQgb3IgYW4gY29t
+cGxldGlvbgorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAqIGV2ZW50IChhbmQgb24g
+Y29tcGxldGlvbiwgdGhlIGFjdGl2ZS1pZGxlCisgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICogbWFya2VyKS4gTm8gbW9yZSBwcmVlbXB0aW9ucywgbGl0ZS1yZXN0b3JlCisgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICogb3Igb3RoZXJ3aXNlCisgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICovCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgR0VNX0JV
+R19PTihzdGF0dXMgJiBHRU44X0NUWF9TVEFUVVNfUFJFRU1QVEVEKTsKICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICBHRU1fQlVHX09OKHBvcnRfaXNzZXQoJnBvcnRbMV0pICYmCiAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAhKHN0YXR1cyAmIEdFTjhfQ1RY
+X1NUQVRVU19FTEVNRU5UX1NXSVRDSCkpOworICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IEdFTV9CVUdfT04oIXBvcnRfaXNzZXQoJnBvcnRbMV0pICYmCisgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAhKHN0YXR1cyAmIEdFTjhfQ1RYX1NUQVRVU19BQ1RJVkVf
+SURMRSkpOwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEdFTV9CVUdfT04oIWk5MTVf
+cmVxdWVzdF9jb21wbGV0ZWQocnEpKTsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBl
+eGVjbGlzdHNfY29udGV4dF9zY2hlZHVsZV9vdXQocnEpOwogICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIHRyYWNlX2k5MTVfcmVxdWVzdF9vdXQocnEpOwpAQCAtMTAyMSwxNyArMTA0NCwx
+NCBAQCBzdGF0aWMgdm9pZCBleGVjbGlzdHNfc3VibWlzc2lvbl90YXNrbGV0KHVuc2lnbmVkIGxv
+bmcgZGF0YSkKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBHRU1fVFJBQ0UoIiVzIGNv
+bXBsZXRlZCBjdHg9JWRcbiIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIGVuZ2luZS0+bmFtZSwgcG9ydC0+Y29udGV4dF9pZCk7CiAKLSAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICBleGVjbGlzdHNfcG9ydF9jb21wbGV0ZShleGVjbGlzdHMsIHBvcnQpOwor
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvcnQgPSBleGVjbGlzdHNfcG9ydF9jb21w
+bGV0ZShleGVjbGlzdHMsIHBvcnQpOworICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlm
+IChwb3J0X2lzc2V0KHBvcnQpKQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgZXhlY2xpc3RzX2JlZ2luKGV4ZWNsaXN0cywgcG9ydCk7CisgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgZWxzZQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ZXhlY2xpc3RzX2VuZChleGVjbGlzdHMpOwogICAgICAgICAgICAgICAgICAgICAgICB9IGVsc2Ug
+ewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvcnRfc2V0KHBvcnQsIHBvcnRfcGFj
+ayhycSwgY291bnQpKTsKICAgICAgICAgICAgICAgICAgICAgICAgfQoKLUNocmlzCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5n
+IGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVk
+ZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
