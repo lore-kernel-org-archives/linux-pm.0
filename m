@@ -1,48 +1,127 @@
 From: Michel Pollet <michel.pollet@bp.renesas.com>
-Subject: RE: [PATCH v2 3/8] DT: arm: renesas,r9a06g032: add the RZ/N1 bindings
-Date: Wed, 28 Mar 2018 07:44:03 +0000
-Message-ID: <OSBPR01MB2054832DF4C7ACB15F49C129D2A30@OSBPR01MB2054.jpnprd01.prod.outlook.com>
+Subject: RE: [PATCH v2 0/8] arm: Base support for Renesas RZN1D-DB Board
+Date: Wed, 28 Mar 2018 08:00:10 +0000
+Message-ID: <OSBPR01MB2054B502FE0D0777386C636BD2A30@OSBPR01MB2054.jpnprd01.prod.outlook.com>
 References: <1521719091-25157-1-git-send-email-michel.pollet@bp.renesas.com>
- <1521719091-25157-4-git-send-email-michel.pollet@bp.renesas.com>
- <CAMuHMdXaRarxors3E-Jv7TLjka-p9XGYCTKyF7jM3p+UemgO+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdXaRarxors3E-Jv7TLjka-p9XGYCTKyF7jM3p+UemgO+w@mail.gmail.com>
+In-Reply-To: <1521719091-25157-1-git-send-email-michel.pollet@bp.renesas.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Phil Edworthy <phil.edworthy@renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Michel Pollet <michel.pollet@bp.renesas.com>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>
+Cc: Phil Edworthy <phil.edworthy@renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgR2VlcnQsDQoNClRoYW5rcyBmb3IgeW91ciByZXZpZXchDQoNCk9uICAyMiBNYXJjaCAyMDE4
-IDEyOjM3LCBHZWVydCBzYWlkOg0KPiBIaSBNaWNoZWwsDQo+DQo+IE9uIFRodSwgTWFyIDIyLCAy
-MDE4IGF0IDEyOjQ0IFBNLCBNaWNoZWwgUG9sbGV0DQo+IDxtaWNoZWwucG9sbGV0QGJwLnJlbmVz
-YXMuY29tPiB3cm90ZToNCj4gPiBUaGlzIGRvY3VtZW50cyB0aGUgUlovTjEgYmluZGluZ3MgZm9y
-IGJvdGggdGhlIFJaL04xIGFuZCB0aGUNCj4gPiBSWk4xRDQwMC1EQiBib2FyZC4NCj4gPg0KPiA+
-IFNpZ25lZC1vZmYtYnk6IE1pY2hlbCBQb2xsZXQgPG1pY2hlbC5wb2xsZXRAYnAucmVuZXNhcy5j
-b20+DQo+DQo+IFRoYW5rcyBmb3IgeW91ciBwYXRjaCENCj4NCj4gPiAtLS0gYS9Eb2N1bWVudGF0
-aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL3NobW9iaWxlLnR4dA0KPiA+ICsrKyBiL0RvY3Vt
-ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vc2htb2JpbGUudHh0DQo+ID4gQEAgLTQ3
-LDcgKzQ3LDggQEAgU29DczoNCj4gPiAgICAgIGNvbXBhdGlibGUgPSAicmVuZXNhcyxyOGE3Nzk4
-MCINCj4gPiAgICAtIFItQ2FyIEQzIChSOEE3Nzk5NSkNCj4gPiAgICAgIGNvbXBhdGlibGUgPSAi
-cmVuZXNhcyxyOGE3Nzk5NSINCj4gPiAtDQo+ID4gKyAgLSBSWi9OMUQgKFI5QTA2RzAzMikNCj4g
-PiArICAgIGNvbXBhdGlibGUgPSAicmVuZXNhcyxyOWEwNmcwMzIiDQo+ID4NCj4gPiAgQm9hcmRz
-Og0KPiA+DQo+ID4gQEAgLTEwNCw2ICsxMDUsOCBAQCBCb2FyZHM6DQo+ID4gICAgICBjb21wYXRp
-YmxlID0gInJlbmVzYXMscG9ydGVyIiwgInJlbmVzYXMscjhhNzc5MSINCj4gPiAgICAtIFJTS1Ja
-QTEgKFlSMEs3NzIxMEMwMDBCRSkNCj4gPiAgICAgIGNvbXBhdGlibGUgPSAicmVuZXNhcyxyc2ty
-emExIiwgInJlbmVzYXMscjdzNzIxMDAiDQo+ID4gKyAgLSBSWk4xRC1EQiAoUlovTjFEIERlbW8g
-Qm9hcmQgZm9yIHRoZSBSWi9OMUQgNDAwIHBpbnMgcGFja2FnZSkNCj4NCj4gVGhlIG9mZmljaWFs
-IGJvYXJkIHBhcnQgbnVtYmVyIChiZXR3ZWVuIHBhcmVudGhlc2VzKSBzaG91bGQgYmUNCj4gWUNP
-Tk5FQ1QtSVQtUlpOMUQ/DQoNCkkndmUgY2hlY2tlZCB0aGlzLCBhbmQgdGhlIFlDT05ORUNUIGlz
-IHRoZSAvYmFzZSBib2FyZC8gZm9yIHRoaXMgJ21vZHVsZScsIHRoZSBtb2R1bGUNCmlzIGNhbGxl
-ZCBSWk4xRC1EQi4NCg0KPg0KPiA+ICsgICAgY29tcGF0aWJsZSA9ICJyZW5lc2FzLHJ6bjFkNDAw
-LWRiIiwgInJlbmVzYXMscjlhMDZnMDMyIg0KPiA+ICAgIC0gU2FsdmF0b3ItWCAoUlRQMFJDNzc5
-NVNJUEIwMDEwUykNCj4gPiAgICAgIGNvbXBhdGlibGUgPSAicmVuZXNhcyxzYWx2YXRvci14Iiwg
-InJlbmVzYXMscjhhNzc5NSINCj4gPiAgICAtIFNhbHZhdG9yLVggKFJUUDBSQzc3OTZTSVBCMDAx
-MVMpDQo+DQo+IEdye29ldGplLGVldGluZ31zLA0KPg0KPiAgICAgICAgICAgICAgICAgICAgICAg
-ICBHZWVydA0KDQpNaWNoZWwNCg0KDQoNCg0KUmVuZXNhcyBFbGVjdHJvbmljcyBFdXJvcGUgTHRk
-LCBEdWtlcyBNZWFkb3csIE1pbGxib2FyZCBSb2FkLCBCb3VybmUgRW5kLCBCdWNraW5naGFtc2hp
-cmUsIFNMOCA1RkgsIFVLLiBSZWdpc3RlcmVkIGluIEVuZ2xhbmQgJiBXYWxlcyB1bmRlciBSZWdp
-c3RlcmVkIE5vLiAwNDU4NjcwOS4NCg==
+Replying to myself here, more or less to reflect further discussion on IRC =
+related to where the
+bindings goes. Also, to publicly acknowledge and thank Geert for tons of ad=
+vice and comments
+outside the email chain...
+
+So, after further discussion on IRC, that's what I've been trying to do
+[hope outlook doesn't mangle this]:
++---------------------------------+     +----------------------------------=
+--+     +--------------------------------+
+|          r9a06g0xx.dtsi         |     |         r9a06g032.dtsi           =
+  |     |     r9a06g032-rzn1d-db.dts     |
+|                                 |     |                                  =
+  |     |                                |
+|   compatible=3D                   |     |  compatible=3D                 =
+      |     | compatible=3D                    |
+|         "renesas,rzn1";         |     |        "renesas,r9a06g032",      =
+  |     |       "renesas,rzn1d-db",      |
+|                                 +----->        "renesas,rzn1";           =
+  +----->       "renesas,r9a06g032",     |
+|   ...                           |     |  ...                             =
+  |     |       "renesas,rzn1";          |
+|   compatible=3D                   |     |  compatible=3D                 =
+      |     |                                |
+|         "renesas,rzn1-reset";   |     |        "renesas,r9a06g032-reset",=
+  |     |                                |
+|                                 |     |        "renesas,rzn1-reset";     =
+  |     |                                |
+|                                 |     |                                  =
+  |     |                                |
++---------------------------------+     +----------------------------------=
+--+     +--------------------------------+
+      Family File, "rzn1" only                  Future, potential SoC      =
+                    Board File
+                                                Specific override file
+
+The idea is that the 1D and 1S share /everything/ apart from one extra QSPI=
+, no DDR, one less CPU
+and a few other bits and bobs. So the r9a06g0xx.dtsi will contain 98% of bo=
+th SoC bindings. *Perhaps*
+later I could add a r9a06g03[23].dtsi for SoC specific bindings, but curren=
+tly that is not necessary, so we
+Won't need that file.
+
+If everyone happy with this? I've got a v3 simmering on the fire, but I'd r=
+eally like everyone to be
+happy with the proposed solution...
+
+Cheers,
+Michel
+
+On 22 March 2018 11:45, I wrote:
+> This series adds the plain basic support for booting a bare kernel on the
+> RZ/N1D-DB Board. It's been trimmed to the strict minimum as a 'base',
+> further patches that will add the rest of the support, pinctrl, clock
+> architecture and quite a few others.
+>
+> Thanks for the comments on the previous version!
+>
+> v2:
+>  + Fixes for suggestions by Simon Horman  + Fixes for suggestions by Rob
+> Herring  + Fixes for suggestions by Geert Uytterhoeven  + Removed the
+> mach file  + Added a MFD base for the sysctrl block  + Added a regmap bas=
+ed
+> sub driver for the reboot handler  + Renamed the files to match shmobile
+> conventions  + Adapted the compatible=3D strings to reflect 'family' vs '=
+part'
+>    distinction.
+>  + Removed the sysctrl.h file entirelly.
+>  + Fixed every warnings from the DTC compiler on W=3D12 mode.
+>  + Split the device-tree patches from the code.
+>
+> Michel Pollet (8):
+>   DT: mfd: renesas,rzn1-sysctrl: document RZ/N1 sysctrl node
+>   DT: reset: renesas,rzn1-reboot: document RZ/N1 reboot driver
+>   DT: arm: renesas,r9a06g032: add the RZ/N1 bindings
+>   reset: Renesas RZ/N1 reboot driver
+>   arm: rzn1: Add the RZ/N1 arch to the shmobile Kconfig
+>   DT: arm: Add Renesas RZ/N1 SoC base device tree file
+>   DT: arm: Add Renesas RZN1D-DB Board base file
+>   DT: arm: Add the RZN1D-DB Board to Renesas Makefile target
+>
+>  Documentation/devicetree/bindings/arm/shmobile.txt |   5 +-
+>  .../bindings/mfd/renesas,rzn1-sysctrl.txt          |  22 +++++
+>  .../bindings/power/renesas,rzn1-reboot.txt         |  22 +++++
+>  arch/arm/boot/dts/Makefile                         |   1 +
+>  arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts        |  26 +++++
+>  arch/arm/boot/dts/r9a06g0xx.dtsi                   |  96 +++++++++++++++=
++++
+>  arch/arm/mach-shmobile/Kconfig                     |   5 +
+>  drivers/power/reset/Kconfig                        |   7 ++
+>  drivers/power/reset/Makefile                       |   1 +
+>  drivers/power/reset/rzn1-reboot.c                  | 109
+> +++++++++++++++++++++
+>  10 files changed, 293 insertions(+), 1 deletion(-)  create mode 100644
+> Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+>  create mode 100644
+> Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
+>  create mode 100644 arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts
+>  create mode 100644 arch/arm/boot/dts/r9a06g0xx.dtsi  create mode 100644
+> drivers/power/reset/rzn1-reboot.c
+>
+> --
+> 2.7.4
+
+
+
+
+Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
+uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
+ No. 04586709.
