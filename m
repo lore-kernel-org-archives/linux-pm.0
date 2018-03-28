@@ -1,127 +1,69 @@
-From: Michel Pollet <michel.pollet@bp.renesas.com>
-Subject: RE: [PATCH v2 0/8] arm: Base support for Renesas RZN1D-DB Board
-Date: Wed, 28 Mar 2018 08:00:10 +0000
-Message-ID: <OSBPR01MB2054B502FE0D0777386C636BD2A30@OSBPR01MB2054.jpnprd01.prod.outlook.com>
-References: <1521719091-25157-1-git-send-email-michel.pollet@bp.renesas.com>
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Subject: Re: [PATCH 9/9] drm/i915/execlists: Report GPU
+ rendering as IO activity to cpufreq.
+Date: Wed, 28 Mar 2018 09:02:52 +0100
+Message-ID: <152222417278.10679.15949311520002257163@mail.alporthouse.com>
+References: <20180328063845.4884-1-currojerez@riseup.net>
+ <20180328063845.4884-10-currojerez@riseup.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521719091-25157-1-git-send-email-michel.pollet@bp.renesas.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>
-Cc: Phil Edworthy <phil.edworthy@renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <20180328063845.4884-10-currojerez@riseup.net>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-Replying to myself here, more or less to reflect further discussion on IRC =
-related to where the
-bindings goes. Also, to publicly acknowledge and thank Geert for tons of ad=
-vice and comments
-outside the email chain...
-
-So, after further discussion on IRC, that's what I've been trying to do
-[hope outlook doesn't mangle this]:
-+---------------------------------+     +----------------------------------=
---+     +--------------------------------+
-|          r9a06g0xx.dtsi         |     |         r9a06g032.dtsi           =
-  |     |     r9a06g032-rzn1d-db.dts     |
-|                                 |     |                                  =
-  |     |                                |
-|   compatible=3D                   |     |  compatible=3D                 =
-      |     | compatible=3D                    |
-|         "renesas,rzn1";         |     |        "renesas,r9a06g032",      =
-  |     |       "renesas,rzn1d-db",      |
-|                                 +----->        "renesas,rzn1";           =
-  +----->       "renesas,r9a06g032",     |
-|   ...                           |     |  ...                             =
-  |     |       "renesas,rzn1";          |
-|   compatible=3D                   |     |  compatible=3D                 =
-      |     |                                |
-|         "renesas,rzn1-reset";   |     |        "renesas,r9a06g032-reset",=
-  |     |                                |
-|                                 |     |        "renesas,rzn1-reset";     =
-  |     |                                |
-|                                 |     |                                  =
-  |     |                                |
-+---------------------------------+     +----------------------------------=
---+     +--------------------------------+
-      Family File, "rzn1" only                  Future, potential SoC      =
-                    Board File
-                                                Specific override file
-
-The idea is that the 1D and 1S share /everything/ apart from one extra QSPI=
-, no DDR, one less CPU
-and a few other bits and bobs. So the r9a06g0xx.dtsi will contain 98% of bo=
-th SoC bindings. *Perhaps*
-later I could add a r9a06g03[23].dtsi for SoC specific bindings, but curren=
-tly that is not necessary, so we
-Won't need that file.
-
-If everyone happy with this? I've got a v3 simmering on the fire, but I'd r=
-eally like everyone to be
-happy with the proposed solution...
-
-Cheers,
-Michel
-
-On 22 March 2018 11:45, I wrote:
-> This series adds the plain basic support for booting a bare kernel on the
-> RZ/N1D-DB Board. It's been trimmed to the strict minimum as a 'base',
-> further patches that will add the rest of the support, pinctrl, clock
-> architecture and quite a few others.
->
-> Thanks for the comments on the previous version!
->
-> v2:
->  + Fixes for suggestions by Simon Horman  + Fixes for suggestions by Rob
-> Herring  + Fixes for suggestions by Geert Uytterhoeven  + Removed the
-> mach file  + Added a MFD base for the sysctrl block  + Added a regmap bas=
-ed
-> sub driver for the reboot handler  + Renamed the files to match shmobile
-> conventions  + Adapted the compatible=3D strings to reflect 'family' vs '=
-part'
->    distinction.
->  + Removed the sysctrl.h file entirelly.
->  + Fixed every warnings from the DTC compiler on W=3D12 mode.
->  + Split the device-tree patches from the code.
->
-> Michel Pollet (8):
->   DT: mfd: renesas,rzn1-sysctrl: document RZ/N1 sysctrl node
->   DT: reset: renesas,rzn1-reboot: document RZ/N1 reboot driver
->   DT: arm: renesas,r9a06g032: add the RZ/N1 bindings
->   reset: Renesas RZ/N1 reboot driver
->   arm: rzn1: Add the RZ/N1 arch to the shmobile Kconfig
->   DT: arm: Add Renesas RZ/N1 SoC base device tree file
->   DT: arm: Add Renesas RZN1D-DB Board base file
->   DT: arm: Add the RZN1D-DB Board to Renesas Makefile target
->
->  Documentation/devicetree/bindings/arm/shmobile.txt |   5 +-
->  .../bindings/mfd/renesas,rzn1-sysctrl.txt          |  22 +++++
->  .../bindings/power/renesas,rzn1-reboot.txt         |  22 +++++
->  arch/arm/boot/dts/Makefile                         |   1 +
->  arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts        |  26 +++++
->  arch/arm/boot/dts/r9a06g0xx.dtsi                   |  96 +++++++++++++++=
-+++
->  arch/arm/mach-shmobile/Kconfig                     |   5 +
->  drivers/power/reset/Kconfig                        |   7 ++
->  drivers/power/reset/Makefile                       |   1 +
->  drivers/power/reset/rzn1-reboot.c                  | 109
-> +++++++++++++++++++++
->  10 files changed, 293 insertions(+), 1 deletion(-)  create mode 100644
-> Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
->  create mode 100644
-> Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
->  create mode 100644 arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts
->  create mode 100644 arch/arm/boot/dts/r9a06g0xx.dtsi  create mode 100644
-> drivers/power/reset/rzn1-reboot.c
->
-> --
-> 2.7.4
-
-
-
-
-Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
-uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
- No. 04586709.
+UXVvdGluZyBGcmFuY2lzY28gSmVyZXogKDIwMTgtMDMtMjggMDc6Mzg6NDUpCj4gVGhpcyBhbGxv
+d3MgY3B1ZnJlcSBnb3Zlcm5vcnMgdG8gcmVhbGl6ZSB3aGVuIHRoZSBzeXN0ZW0gYmVjb21lcwo+
+IG5vbi1DUFUtYm91bmQgZHVlIHRvIEdQVSByZW5kZXJpbmcgYWN0aXZpdHksIHdoaWNoIHdpbGwg
+Y2F1c2UgdGhlCj4gaW50ZWxfcHN0YXRlIExQIGNvbnRyb2xsZXIgdG8gYmVoYXZlIG1vcmUgY29u
+c2VydmF0aXZlbHk6IENQVSBlbmVyZ3kKPiB1c2FnZSB3aWxsIGJlIHJlZHVjZWQgd2hlbiB0aGVy
+ZSBpc24ndCBhIGdvb2QgY2hhbmNlIGZvciBzeXN0ZW0KPiBwZXJmb3JtYW5jZSB0byBzY2FsZSB3
+aXRoIENQVSBmcmVxdWVuY3kuICBUaGlzIGxlYXZlcyBhZGRpdGlvbmFsIFREUAo+IGJ1ZGdldCBh
+dmFpbGFibGUgZm9yIHRoZSBHUFUgdG8gcmVhY2ggaGlnaGVyIGZyZXF1ZW5jaWVzLCB3aGljaCBp
+cwo+IHRyYW5zbGF0ZWQgaW50byBhbiBpbXByb3ZlbWVudCBpbiBncmFwaGljcyBwZXJmb3JtYW5j
+ZSB0byB0aGUgZXh0ZW50Cj4gdGhhdCB0aGUgd29ya2xvYWQgcmVtYWlucyBURFAtbGltaXRlZCAo
+TW9zdCBub24tdHJpdmlhbCBncmFwaGljcwo+IGJlbmNobWFya3Mgb3V0IHRoZXJlIGltcHJvdmUg
+c2lnbmlmaWNhbnRseSBpbiBURFAtY29uc3RyYWluZWQKPiBwbGF0Zm9ybXMsIHNlZSB0aGUgY292
+ZXIgbGV0dGVyIGZvciBzb21lIG51bWJlcnMpLiAgSWYgdGhlIHdvcmtsb2FkCj4gaXNuJ3QgKGFu
+eW1vcmUpIFREUC1saW1pdGVkIHBlcmZvcm1hbmNlIHNob3VsZCBzdGF5IHJvdWdobHkgY29uc3Rh
+bnQsCj4gYnV0IGVuZXJneSB1c2FnZSB3aWxsIGJlIGRpdmlkZWQgYnkgYSBzaW1pbGFyIGZhY3Rv
+ci4KCkFuZCB0aGF0J3Mgd2hhdCBJIHRob3VnaHQgSVBTIHdhcyBhbHJlYWR5IG1lYW50IHRvIGJl
+IGFjaGlldmluZzsKaW50ZWxsaWdlbnQgZGlzdHJpYnV0aW9uIGJldHdlZW4gZGlmZmVyZW50IHVu
+aXRzLi4uCiAKPiBUaGUgaW50ZWxfcHN0YXRlIExQIGNvbnRyb2xsZXIgaXMgb25seSBlbmFibGVk
+IG9uIEJYVCsgc21hbGwtY29yZQo+IHBsYXRmb3JtcyBhdCB0aGlzIHBvaW50LCBzbyB0aGlzIHNo
+b3VsZG4ndCBoYXZlIGFueSBlZmZlY3Qgb24gb3RoZXIKPiBzeXN0ZW1zLgoKQWx0aG91Z2ggdGhh
+dCdzIHByb2JhYmx5IG9ubHkgYSBmZWF0dXJlIGZvciBiaWcgY29yZSA6KQogCj4gU2lnbmVkLW9m
+Zi1ieTogRnJhbmNpc2NvIEplcmV6IDxjdXJyb2plcmV6QHJpc2V1cC5uZXQ+Cj4gLS0tCj4gIGRy
+aXZlcnMvZ3B1L2RybS9pOTE1L2ludGVsX2xyYy5jIHwgNCArKysrCj4gIDEgZmlsZSBjaGFuZ2Vk
+LCA0IGluc2VydGlvbnMoKykKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2k5MTUv
+aW50ZWxfbHJjLmMgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pbnRlbF9scmMuYwo+IGluZGV4IDNh
+NjliMzY3ZTU2NS4uNzIxZjkxNTExNWJkIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9p
+OTE1L2ludGVsX2xyYy5jCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvaW50ZWxfbHJjLmMK
+PiBAQCAtMTMyLDYgKzEzMiw3IEBACj4gICAqCj4gICAqLwo+ICAjaW5jbHVkZSA8bGludXgvaW50
+ZXJydXB0Lmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9jcHVmcmVxLmg+Cj4gIAo+ICAjaW5jbHVkZSA8
+ZHJtL2RybVAuaD4KPiAgI2luY2x1ZGUgPGRybS9pOTE1X2RybS5oPgo+IEBAIC0zNzksMTEgKzM4
+MCwxMyBAQCBleGVjbGlzdHNfY29udGV4dF9zY2hlZHVsZV9pbihzdHJ1Y3QgaTkxNV9yZXF1ZXN0
+ICpycSkKPiAgewo+ICAgICAgICAgZXhlY2xpc3RzX2NvbnRleHRfc3RhdHVzX2NoYW5nZShycSwg
+SU5URUxfQ09OVEVYVF9TQ0hFRFVMRV9JTik7Cj4gICAgICAgICBpbnRlbF9lbmdpbmVfY29udGV4
+dF9pbihycS0+ZW5naW5lKTsKPiArICAgICAgIGNwdWZyZXFfaW9fYWN0aXZlX2JlZ2luKCk7CgpT
+aW5jZSB5b3Ugb25seSBjYXJlIGFib3V0IGEgYmluYXJ5IHZhbHVlIGZvciBHUFUgYWN0aXZpdHks
+IHdlIGRvbid0IG5lZWQKdG8gZG8gdGhpcyBvbiBlYWNoIGNvbnRleHQsIGp1c3QgYmV0d2VlbiBz
+dWJtaXR0aW5nIHRoZSBmaXJzdCByZXF1ZXN0CmFuZCB0aGUgZmluYWwgY29tcGxldGlvbiwgaS5l
+LiBjb3VwbGUgdGhpcyB0byBFWEVDTElTVFNfQUNUSVZFX1VTRVIuCgpIYXZlbid0IHlldCBnb25l
+IGJhY2sgdG8gY2hlY2sgaG93IGhlYXZ5IGlvX2FjdGl2ZV9iZWdpbi9lbmQgYXJlLCBidXQgSQp0
+cnVzdCB5b3UgYXBwcmVjaWF0ZSB0aGF0IHRoaXMgY29kZSBpcyBwYXJ0aWN1bGFybHkgbGF0ZW5j
+eSBzZW5zaXRpdmUuCi1DaHJpcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVz
+a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9p
+bnRlbC1nZngK
