@@ -1,41 +1,68 @@
-From: Chris Wilson <chris@chris-wilson.co.uk>
-Subject: Re: [PATCH 9/9] drm/i915/execlists: Report GPU
- rendering as IO activity to cpufreq.
-Date: Wed, 28 Mar 2018 20:20:19 +0100
-Message-ID: <152226481977.10679.15243453393086412220@mail.alporthouse.com>
-References: <20180328063845.4884-1-currojerez@riseup.net>
- <20180328063845.4884-10-currojerez@riseup.net>
- <152222417278.10679.15949311520002257163@mail.alporthouse.com>
- <87muysowrz.fsf@riseup.net>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFT][PATCH v7 6/8] sched: idle: Select idle state before stopping the tick
+Date: Wed, 28 Mar 2018 13:41:35 -0700
+Message-ID: <006501d3c6d5$2d03e500$870baf00$@net>
+References: <2390019.oHdSGtR3EE@aspire.rjw.lan> <2249320.0Z4q8AXauv@aspire.rjw.lan> <6462e44a-e207-6b97-22bf-ad4aed69afc2@tu-dresden.de> <4198010.6ArFqS34NK@aspire.rjw.lan> <CAJZ5v0j5mEaQSAiW4ynitM1ee=sqkpc8G_tZ40RYUgyavXXhqQ@mail.gmail.com> <b904266b-b5bb-587d-334a-844a70341f8d@tu-dresden.de> <CAJZ5v0iRjj5DEKU1m2_y96WRBNu6U1w=GSADRxWXfVDN9K+edQ@mail.gmail.com> <CAJZ5v0h40DDZ5da7CS4702Z=D3bY7SsOhbUqPR44qVKU0E4D4A@mail.gmail.com> 1CoHfInOKlebY1CoMfMNTB
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <87muysowrz.fsf@riseup.net>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: 1CoHfInOKlebY1CoMfMNTB
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: 'Peter Zijlstra' <peterz@infradead.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Frederic Weisbecker' <fweisbec@gmail.com>, 'Thomas Gleixner' <tglx@linutronix.de>, 'Paul McKenney' <paulmck@linux.vnet.ibm.com>, 'Rik van Riel' <riel@surriel.com>, 'Aubrey Li' <aubrey.li@linux.intel.com>, 'Mike Galbraith' <mgalbraith@suse.de>, 'LKML' <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-UXVvdGluZyBGcmFuY2lzY28gSmVyZXogKDIwMTgtMDMtMjggMTk6NTU6MTIpCj4gSGkgQ2hyaXMs
-Cj4gCltzbmlwXQo+IFRoYXQgc2FpZCwgaXQgd291bGRuJ3QgaHVydCB0byBjYWxsIGVhY2ggb2Yg
-dGhlbSBvbmNlIHBlciBzZXF1ZW5jZSBvZgo+IG92ZXJsYXBwaW5nIHJlcXVlc3RzLiAgRG8geW91
-IHdhbnQgbWUgdG8gY2FsbCB0aGVtIGZyb20KPiBleGVjbGlzdHNfc2V0L2NsZWFyX2FjdGl2ZSgp
-IHRoZW1zZWx2ZXMgd2hlbiBiaXQgPT0gRVhFQ0xJU1RTX0FDVElWRV9VU0VSLAo+IG9yIGF0IGVh
-Y2ggY2FsbHNpdGUgb2YgZXhlY2xpc3RzX3NldC9jbGVhcl9hY3RpdmUoKT8gW3Bvc3NpYmx5IHBy
-b3RlY3RlZAo+IHdpdGggYSBjaGVjayB0aGF0IGV4ZWNsaXN0c19pc19hY3RpdmUoRVhFQ0xJU1RT
-X0FDVElWRV9VU0VSKSB3YXNuJ3QKPiBhbHJlYWR5IHRoZSBleHBlY3RlZCB2YWx1ZV0KCk5vLCBJ
-IHdhcyB0aGlua2luZyBvZiBhZGRpbmcgYW4gZXhlY2xpc3RzX3N0YXJ0KCkvZXhlY2xpc3RzX3N0
-b3AoKQpbbmFtaW5nIHN1Z2dlc3Rpb25zIHdlbGNvbWUsIGJlZ2luL2VuZD9dIHdoZXJlIHdlIGNv
-dWxkIGhvb2sgYWRkaXRpb25hbApib29ra2VlcGluZyBpbnRvLgotQ2hyaXMKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlz
-dApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
+On 2018.03.28 08:15 Thomas Ilsche wrote:
+> On 2018-03-28 12:56, Rafael J. Wysocki wrote:
+>> On Wed, Mar 28, 2018 at 12:37 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> On Wed, Mar 28, 2018 at 10:38 AM, Thomas Ilsche
+>>> <thomas.ilsche@tu-dresden.de> wrote:
+>>>> On 2018-03-28 10:13, Rafael J. Wysocki wrote:
+>>>>>
+>> 
+>> [cut]
+>> 
+>>>
+>>> So I do
+>>>
+>>> $ for cpu in 0 1 2 3; do taskset -c $cpu sh -c 'while true; do usleep
+>>> 500; done' & done
+>>>
+>>> which is a shell kind of imitation of the above and I cannot see this
+>>> issue at all.
+>>>
+>>> I count the number of times data->next_timer_us in menu_select() is
+>>> greater than TICK_USEC and while this "workload" is running, that
+>>> number is exactly 0.
+>>>
+>>> I'll try with a C program still.
+>> 
+>> And with a C program I see data->next_timer_us greater than TICK_USEC
+>> while it is running, so let me dig deeper.
+>> 
+>
+> I can confirm that a shell-loop behaves differently like you describe.
+> Even if it's just a shell-loop calling "main{usleep(500);}" binary.
+
+I normally use the C program method.
+The timer there returns with the need_sched() flag set.
+
+I do not seem to have usleep on my system, but when using sleep in a
+shell loop, the timer returns without the need_resched() flag set.
+
+Most of my test results involving varying the value of
+POLL_IDLE_COUNT are total garbage, because I was using the
+C program method, and thus exiting the poll_idle loop based
+on the need_resched() flag and not the POLL_IDLE_COUNT
+setting. 
+
+I don't know if I can re-do the work, because I
+do not have a good way to get my system to use Idle
+State 0 with any real workflow, and I seem to get into
+side effect issues when I disable other idle states to 
+force more use of idle state 0.
+
+... Doug
