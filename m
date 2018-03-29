@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v8 07/10] time: hrtimer: Timer exclusion support for hrtimer_get_next_event()
-Date: Thu, 29 Mar 2018 14:12:55 +0200
-Message-ID: <3236595.CEefXZ6hJ9@aspire.rjw.lan>
+Subject: [PATCH v8 01/10] time: tick-sched: Reorganize idle tick management code
+Date: Thu, 29 Mar 2018 14:00:01 +0200
+Message-ID: <6322298.N2JNOlAanx@aspire.rjw.lan>
 References: <40092860.XNQZrLjKDd@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,194 +15,198 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The next set of changes will need to compute the time to the next
-hrtimer event over all hrtimers except for the scheduler tick one.
+Prepare the scheduler tick code for reworking the idle loop to
+avoid stopping the tick in some cases.
 
-To prepare for that, modify hrtimer_get_next_event() so that it can
-take a pointer to the timer to exclude from the next event check
-and change the underlying code to handle that.
+The idea is to split the nohz idle entry call to decouple the idle
+time stats accounting and preparatory work from the actual tick stop
+code, in order to later be able to delay the tick stop once we reach
+more power-knowledgeable callers.
+
+Move away the tick_nohz_start_idle() invocation from
+__tick_nohz_idle_enter(), rename the latter to
+__tick_nohz_idle_stop_tick() and define tick_nohz_idle_stop_tick()
+as a wrapper around it for calling it from the outside.
+
+Make tick_nohz_idle_enter() only call tick_nohz_start_idle() instead
+of calling the entire __tick_nohz_idle_enter(), add another wrapper
+disabling and enabling interrupts around tick_nohz_idle_stop_tick()
+and make the current callers of tick_nohz_idle_enter() call it too
+to retain their current functionality.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-v7 -> v8: New patch.
+v7 -> v8: No changes.
 
 ---
- include/linux/hrtimer.h |    2 -
- kernel/time/hrtimer.c   |   56 ++++++++++++++++++++++++++++++++++++------------
- kernel/time/timer.c     |    4 +--
- 3 files changed, 46 insertions(+), 16 deletions(-)
+ arch/x86/xen/smp_pv.c    |    1 +
+ include/linux/tick.h     |   12 ++++++++++++
+ kernel/sched/idle.c      |    1 +
+ kernel/time/tick-sched.c |   46 +++++++++++++++++++++++++---------------------
+ 4 files changed, 39 insertions(+), 21 deletions(-)
 
-Index: linux-pm/include/linux/hrtimer.h
+Index: linux-pm/include/linux/tick.h
 ===================================================================
---- linux-pm.orig/include/linux/hrtimer.h
-+++ linux-pm/include/linux/hrtimer.h
-@@ -425,7 +425,7 @@ static inline ktime_t hrtimer_get_remain
- 	return __hrtimer_get_remaining(timer, false);
+--- linux-pm.orig/include/linux/tick.h
++++ linux-pm/include/linux/tick.h
+@@ -114,6 +114,7 @@ enum tick_dep_bits {
+ #ifdef CONFIG_NO_HZ_COMMON
+ extern bool tick_nohz_enabled;
+ extern int tick_nohz_tick_stopped(void);
++extern void tick_nohz_idle_stop_tick(void);
+ extern void tick_nohz_idle_enter(void);
+ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
+@@ -122,9 +123,18 @@ extern unsigned long tick_nohz_get_idle_
+ extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+ extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
++
++static inline void tick_nohz_idle_stop_tick_protected(void)
++{
++	local_irq_disable();
++	tick_nohz_idle_stop_tick();
++	local_irq_enable();
++}
++
+ #else /* !CONFIG_NO_HZ_COMMON */
+ #define tick_nohz_enabled (0)
+ static inline int tick_nohz_tick_stopped(void) { return 0; }
++static inline void tick_nohz_idle_stop_tick(void) { }
+ static inline void tick_nohz_idle_enter(void) { }
+ static inline void tick_nohz_idle_exit(void) { }
+ 
+@@ -134,6 +144,8 @@ static inline ktime_t tick_nohz_get_slee
+ }
+ static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+ static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
++
++static inline void tick_nohz_idle_stop_tick_protected(void) { }
+ #endif /* !CONFIG_NO_HZ_COMMON */
+ 
+ #ifdef CONFIG_NO_HZ_FULL
+Index: linux-pm/kernel/time/tick-sched.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-sched.c
++++ linux-pm/kernel/time/tick-sched.c
+@@ -539,14 +539,11 @@ static void tick_nohz_stop_idle(struct t
+ 	sched_clock_idle_wakeup_event();
  }
  
--extern u64 hrtimer_get_next_event(void);
-+extern u64 hrtimer_get_next_event(const struct hrtimer *exclude);
- 
- extern bool hrtimer_active(const struct hrtimer *timer);
- 
-Index: linux-pm/kernel/time/hrtimer.c
-===================================================================
---- linux-pm.orig/kernel/time/hrtimer.c
-+++ linux-pm/kernel/time/hrtimer.c
-@@ -490,6 +490,7 @@ __next_base(struct hrtimer_cpu_base *cpu
- 	while ((base = __next_base((cpu_base), &(active))))
- 
- static ktime_t __hrtimer_next_event_base(struct hrtimer_cpu_base *cpu_base,
-+					 const struct hrtimer *exclude,
- 					 unsigned int active,
- 					 ktime_t expires_next)
+-static ktime_t tick_nohz_start_idle(struct tick_sched *ts)
++static void tick_nohz_start_idle(struct tick_sched *ts)
  {
-@@ -502,9 +503,24 @@ static ktime_t __hrtimer_next_event_base
+-	ktime_t now = ktime_get();
+-
+-	ts->idle_entrytime = now;
++	ts->idle_entrytime = ktime_get();
+ 	ts->idle_active = 1;
+ 	sched_clock_idle_sleep_event();
+-	return now;
+ }
  
- 		next = timerqueue_getnext(&base->active);
- 		timer = container_of(next, struct hrtimer, node);
-+		if (timer == exclude) {
-+			/* Get to the next timer in the queue. */
-+			struct rb_node *rbn = rb_next(&next->node);
-+
-+			next = rb_entry_safe(rbn, struct timerqueue_node, node);
-+			if (!next)
-+				continue;
-+
-+			timer = container_of(next, struct hrtimer, node);
-+		}
- 		expires = ktime_sub(hrtimer_get_expires(timer), base->offset);
- 		if (expires < expires_next) {
- 			expires_next = expires;
-+
-+			/* Skip cpu_base update if a timer is being excluded. */
-+			if (exclude)
-+				continue;
-+
- 			if (timer->is_soft)
- 				cpu_base->softirq_next_timer = timer;
- 			else
-@@ -538,8 +554,9 @@ static ktime_t __hrtimer_next_event_base
-  *  - HRTIMER_ACTIVE_SOFT, or
-  *  - HRTIMER_ACTIVE_HARD.
-  */
--static ktime_t
--__hrtimer_get_next_event(struct hrtimer_cpu_base *cpu_base, unsigned int active_mask)
-+static ktime_t __hrtimer_get_next_event(struct hrtimer_cpu_base *cpu_base,
-+					const struct hrtimer *exclude,
-+					unsigned int active_mask)
- {
- 	unsigned int active;
- 	struct hrtimer *next_timer = NULL;
-@@ -547,16 +564,22 @@ __hrtimer_get_next_event(struct hrtimer_
- 
- 	if (!cpu_base->softirq_activated && (active_mask & HRTIMER_ACTIVE_SOFT)) {
- 		active = cpu_base->active_bases & HRTIMER_ACTIVE_SOFT;
--		cpu_base->softirq_next_timer = NULL;
--		expires_next = __hrtimer_next_event_base(cpu_base, active, KTIME_MAX);
-+		if (!exclude)
-+			cpu_base->softirq_next_timer = NULL;
-+
-+		expires_next = __hrtimer_next_event_base(cpu_base, exclude,
-+							 active, KTIME_MAX);
- 
- 		next_timer = cpu_base->softirq_next_timer;
- 	}
- 
- 	if (active_mask & HRTIMER_ACTIVE_HARD) {
- 		active = cpu_base->active_bases & HRTIMER_ACTIVE_HARD;
--		cpu_base->next_timer = next_timer;
--		expires_next = __hrtimer_next_event_base(cpu_base, active, expires_next);
-+		if (!exclude)
-+			cpu_base->next_timer = next_timer;
-+
-+		expires_next = __hrtimer_next_event_base(cpu_base, exclude,
-+							 active, expires_next);
- 	}
- 
- 	return expires_next;
-@@ -605,7 +628,7 @@ hrtimer_force_reprogram(struct hrtimer_c
- 	/*
- 	 * Find the current next expiration time.
- 	 */
--	expires_next = __hrtimer_get_next_event(cpu_base, HRTIMER_ACTIVE_ALL);
-+	expires_next = __hrtimer_get_next_event(cpu_base, NULL, HRTIMER_ACTIVE_ALL);
- 
- 	if (cpu_base->next_timer && cpu_base->next_timer->is_soft) {
- 		/*
-@@ -614,7 +637,7 @@ hrtimer_force_reprogram(struct hrtimer_c
- 		 * timer interrupt could occur too late.
- 		 */
- 		if (cpu_base->softirq_activated)
--			expires_next = __hrtimer_get_next_event(cpu_base,
-+			expires_next = __hrtimer_get_next_event(cpu_base, NULL,
- 								HRTIMER_ACTIVE_HARD);
- 		else
- 			cpu_base->softirq_expires_next = expires_next;
-@@ -1034,7 +1057,7 @@ hrtimer_update_softirq_timer(struct hrti
- 	/*
- 	 * Find the next SOFT expiration.
- 	 */
--	expires = __hrtimer_get_next_event(cpu_base, HRTIMER_ACTIVE_SOFT);
-+	expires = __hrtimer_get_next_event(cpu_base, NULL, HRTIMER_ACTIVE_SOFT);
- 
- 	/*
- 	 * reprogramming needs to be triggered, even if the next soft
-@@ -1184,19 +1207,26 @@ EXPORT_SYMBOL_GPL(__hrtimer_get_remainin
- #ifdef CONFIG_NO_HZ_COMMON
  /**
-  * hrtimer_get_next_event - get the time until next expiry event
-+ * @exclude:	timer to exclude from the check
+@@ -911,19 +908,21 @@ static bool can_stop_idle_tick(int cpu,
+ 	return true;
+ }
+ 
+-static void __tick_nohz_idle_enter(struct tick_sched *ts)
++static void __tick_nohz_idle_stop_tick(struct tick_sched *ts)
+ {
+-	ktime_t now, expires;
++	ktime_t expires;
+ 	int cpu = smp_processor_id();
+ 
+-	now = tick_nohz_start_idle(ts);
+-
+ 	if (can_stop_idle_tick(cpu, ts)) {
+ 		int was_stopped = ts->tick_stopped;
+ 
+ 		ts->idle_calls++;
+ 
+-		expires = tick_nohz_stop_sched_tick(ts, now, cpu);
++		/*
++		 * The idle entry time should be a sufficient approximation of
++		 * the current time at this point.
++		 */
++		expires = tick_nohz_stop_sched_tick(ts, ts->idle_entrytime, cpu);
+ 		if (expires > 0LL) {
+ 			ts->idle_sleeps++;
+ 			ts->idle_expires = expires;
+@@ -937,16 +936,19 @@ static void __tick_nohz_idle_enter(struc
+ }
+ 
+ /**
+- * tick_nohz_idle_enter - stop the idle tick from the idle task
++ * tick_nohz_idle_stop_tick - stop the idle tick from the idle task
   *
-  * Returns the next expiry time or KTIME_MAX if no timer is pending.
-+ *
-+ * KTIME_MAX is also returned if the @exclude timer pointer is not NULL and high
-+ * resolution timers are not enabled.
+  * When the next event is more than a tick into the future, stop the idle tick
+- * Called when we start the idle loop.
+- *
+- * The arch is responsible of calling:
++ */
++void tick_nohz_idle_stop_tick(void)
++{
++	__tick_nohz_idle_stop_tick(this_cpu_ptr(&tick_cpu_sched));
++}
++
++/**
++ * tick_nohz_idle_enter - prepare for entering idle on the current CPU
+  *
+- * - rcu_idle_enter() after its last use of RCU before the CPU is put
+- *  to sleep.
+- * - rcu_idle_exit() before the first use of RCU after the CPU is woken up.
++ * Called when we start the idle loop.
   */
--u64 hrtimer_get_next_event(void)
-+u64 hrtimer_get_next_event(const struct hrtimer *exclude)
+ void tick_nohz_idle_enter(void)
  {
- 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);
- 	u64 expires = KTIME_MAX;
- 	unsigned long flags;
-+	bool hres_active;
+@@ -965,7 +967,7 @@ void tick_nohz_idle_enter(void)
  
- 	raw_spin_lock_irqsave(&cpu_base->lock, flags);
+ 	ts = this_cpu_ptr(&tick_cpu_sched);
+ 	ts->inidle = 1;
+-	__tick_nohz_idle_enter(ts);
++	tick_nohz_start_idle(ts);
  
--	if (!__hrtimer_hres_active(cpu_base))
--		expires = __hrtimer_get_next_event(cpu_base, HRTIMER_ACTIVE_ALL);
-+	hres_active = __hrtimer_hres_active(cpu_base);
-+	if ((!exclude && !hres_active) || (exclude && hres_active))
-+		expires = __hrtimer_get_next_event(cpu_base, exclude,
-+						   HRTIMER_ACTIVE_ALL);
+ 	local_irq_enable();
+ }
+@@ -982,10 +984,12 @@ void tick_nohz_irq_exit(void)
+ {
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
  
- 	raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
+-	if (ts->inidle)
+-		__tick_nohz_idle_enter(ts);
+-	else
++	if (ts->inidle) {
++		tick_nohz_start_idle(ts);
++		__tick_nohz_idle_stop_tick(ts);
++	} else {
+ 		tick_nohz_full_update_tick(ts);
++	}
+ }
  
-@@ -1469,7 +1499,7 @@ retry:
- 	__hrtimer_run_queues(cpu_base, now, flags, HRTIMER_ACTIVE_HARD);
- 
- 	/* Reevaluate the clock bases for the next expiry */
--	expires_next = __hrtimer_get_next_event(cpu_base, HRTIMER_ACTIVE_ALL);
-+	expires_next = __hrtimer_get_next_event(cpu_base, NULL, HRTIMER_ACTIVE_ALL);
- 	/*
- 	 * Store the new expiry value so the migration code can verify
- 	 * against it.
-Index: linux-pm/kernel/time/timer.c
+ /**
+Index: linux-pm/arch/x86/xen/smp_pv.c
 ===================================================================
---- linux-pm.orig/kernel/time/timer.c
-+++ linux-pm/kernel/time/timer.c
-@@ -1481,11 +1481,11 @@ static unsigned long __next_timer_interr
-  */
- static u64 cmp_next_hrtimer_event(u64 basem, u64 expires)
- {
--	u64 nextevt = hrtimer_get_next_event();
-+	u64 nextevt = hrtimer_get_next_event(NULL);
- 
- 	/*
- 	 * If high resolution timers are enabled
--	 * hrtimer_get_next_event() returns KTIME_MAX.
-+	 * hrtimer_get_next_event(NULL) returns KTIME_MAX.
+--- linux-pm.orig/arch/x86/xen/smp_pv.c
++++ linux-pm/arch/x86/xen/smp_pv.c
+@@ -425,6 +425,7 @@ static void xen_pv_play_dead(void) /* us
+ 	 * data back is to call:
  	 */
- 	if (expires <= nextevt)
- 		return expires;
+ 	tick_nohz_idle_enter();
++	tick_nohz_idle_stop_tick_protected();
+ 
+ 	cpuhp_online_idle(CPUHP_AP_ONLINE_IDLE);
+ }
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -221,6 +221,7 @@ static void do_idle(void)
+ 
+ 	__current_set_polling();
+ 	tick_nohz_idle_enter();
++	tick_nohz_idle_stop_tick_protected();
+ 
+ 	while (!need_resched()) {
+ 		check_pgt_cache();
