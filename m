@@ -1,37 +1,92 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [kbuild-all] [PATCH] OPTIONAL: cpufreq/intel_pstate: fix
- debugfs_simple_attr.cocci warnings
-Date: Thu, 29 Mar 2018 21:44:02 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1803292140340.2750@hadrien>
-References: <alpine.DEB.2.20.1803292109180.2750@hadrien> <CAOMZO5CLpW+2yCYRwAJTPWtXgXkaPGyPQrB3cbBGYvV1fryUQw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v4 00/14] CPU scaling support for msm8996
+Date: Fri, 30 Mar 2018 00:26:33 +0300
+Message-ID: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOMZO5CLpW+2yCYRwAJTPWtXgXkaPGyPQrB3cbBGYvV1fryUQw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, kbuild-all@01.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 0day robot <fengguang.wu@intel.com>, Len Brown <lenb@kernel.org>, Nicolai Stange <nstange@suse.de>
+To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: rnayak@codeaurora.org, ilialin@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
+[v4]
+ * Adressed comments from Stephen
+ * Added CPU regulator support
+ * Added qcom-cpufreq-kryo driver
+
+[v3]
+ * Rebased on top of the latest PLL driver changes
+ * Addressed comment from Rob Herring for bindings
+
+[v2]
+ * Addressed comments from Rob Herring for bindings
+ * Addressed comments from Mark Rutland for memory barrier
+ * Addressed comments from Julien Thierry for clock reenabling condition
+ * Tuned the HW configuration for clock frequencies below 600MHz
+
+Clocks:
+This series adds support for the CPU clocks on msm8996 devices.
+The driver uses the existing PLL drivers and is required to control
+the CPU frequency scaling on the MSM8996.
+
+Regulators:
+Added SAW regulator support to the SPMI regulator driver. The SAW regulators
+will be controlled through special CPU registers instead of direct
+SPMI accesses.
+
+Cpufreq:
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
+
+A previous post of RFC can be found here:
+https://patchwork.kernel.org/patch/10218991/
 
 
-On Thu, 29 Mar 2018, Fabio Estevam wrote:
+Ilia Lin (10):
+  soc: qcom: Separate kryo l2 accessors from PMU driver
+  clk: qcom: Add DT bindings for CPU clock driver for msm8996
+  clk: qcom: Add ACD path to CPU clock driver for msm8996
+  dt: qcom: Add opp and thermal to the msm8996
+  regulator: qcom_spmi: Add support for SAW
+  dt-bindings: Add support for SAW documentation
+  dt: qcom: Add SAW regulator for 8x96 CPUs
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+  dt: qcom: Add qcom-cpufreq-kryo driver configuration
 
-> Hi Julia,
->
-> On Thu, Mar 29, 2018 at 4:12 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >  Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE
-> >  for debugfs files.
-> >
-> > Semantic patch information:
-> >  Rationale: DEFINE_SIMPLE_ATTRIBUTE + debugfs_create_file()
-> >  imposes some significant overhead as compared to
-> >  DEFINE_DEBUGFS_ATTRIBUTE + debugfs_create_file_unsafe().
->
-> Just curious: could you please expand on what "imposes some
-> significant overhead" means?
+Rajendra Nayak (4):
+  clk: qcom: Make clk_alpha_pll_configure available to modules
+  clk: qcom: Add CPU clock driver for msm8996
+  clk: qcom: cpu-8996: Add support to switch to alternate PLL
+  clk: qcom: cpu-8996: Add support to switch below 600Mhz
 
-I don't know.  I didn't write this rule.  Nicolai, can you explain?
+ .../devicetree/bindings/clock/qcom,kryocc.txt      |  17 +
+ .../devicetree/bindings/cpufreq/kryo-cpufreq.txt   | 693 +++++++++++++++++++++
+ .../bindings/regulator/qcom,spmi-regulator.txt     |  45 ++
+ arch/arm64/boot/dts/qcom/apq8096-db820c.dts        |   2 +-
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              | 658 ++++++++++++++++++-
+ drivers/clk/clk-fixed-factor.c                     |   2 +-
+ drivers/clk/qcom/Kconfig                           |   8 +
+ drivers/clk/qcom/Makefile                          |   1 +
+ drivers/clk/qcom/clk-alpha-pll.c                   |   1 +
+ drivers/clk/qcom/clk-alpha-pll.h                   |   6 +
+ drivers/clk/qcom/clk-cpu-8996.c                    | 520 ++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  11 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 147 +++++
+ drivers/perf/qcom_l2_pmu.c                         |  44 +-
+ drivers/regulator/qcom_spmi-regulator.c            | 133 +++-
+ drivers/soc/qcom/Makefile                          |   2 +
+ drivers/soc/qcom/kryo-l2-accessors.c               |  66 ++
+ include/soc/qcom/kryo-l2-accessors.h               |  20 +
+ 20 files changed, 2324 insertions(+), 56 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,kryocc.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt
+ create mode 100644 drivers/clk/qcom/clk-cpu-8996.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+ create mode 100644 drivers/soc/qcom/kryo-l2-accessors.c
+ create mode 100644 include/soc/qcom/kryo-l2-accessors.h
 
-thanks,
-julia
+-- 
+1.9.1
