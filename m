@@ -1,130 +1,99 @@
-From: Michel Pollet <michel.pollet@bp.renesas.com>
-Subject: [PATCH v3 6/8] DT: arm: Add Renesas RZ/N1 SoC base device tree file
-Date: Thu, 29 Mar 2018 08:47:02 +0100
-Message-ID: <1522309629-10152-7-git-send-email-michel.pollet@bp.renesas.com>
-References: <1522309629-10152-1-git-send-email-michel.pollet@bp.renesas.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: =?UTF-8?B?562U5aSNOiDnrZTlpI06?= [PATCH] Delete some unusefull operations for centaur CPU/platform
+Date: Thu, 29 Mar 2018 13:03:35 +0200
+Message-ID: <7112264.IUdZzFR1Qm@aspire.rjw.lan>
+References: <1519963908-4359-1-git-send-email-davidwang@zhaoxin.com> <20180312094609.46sw3ojaa7sw3mee@gmail.com> <0230c32412474e97bf7d2ef45cc64c4d@zhaoxin.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1522309629-10152-1-git-send-email-michel.pollet@bp.renesas.com>
+In-Reply-To: <0230c32412474e97bf7d2ef45cc64c4d@zhaoxin.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-renesas-soc@vger.kernel.org, Simon Horman <horms@verge.net.au>
-Cc: phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Michel Pollet <michel.pollet@bp.renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: David Wang <DavidWang@zhaoxin.com>
+Cc: Ingo Molnar <mingo@kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@kernel.org" <linux-pm@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Bruce Chang (VAS)" <BruceChang@via-alliance.com>, "Cooper Yan(BJ-RD)" <CooperYan@zhaoxin.com>, "Qiyuan Wang(BJ-RD)" <QiyuanWang@zhaoxin.com>, Benjamin Pan <BenjaminPan@viatech.com>, Luke Lin <LukeLin@viacpu.com>, "Tim Guo(BJ-RD)" <TimGuo@zhaoxin.com>, "Cobe Chen(BJ-RD)" <CobeChen@zhaoxin.com>, "Jiangbo Wang(BJ-RD)" <JiangboWang@zhaoxin.com>
 List-Id: linux-pm@vger.kernel.org
 
-This adds the Renesas RZ/N1 Family (Part #R9A06G0xx) SoC
-bare bone support.
+On Wednesday, March 28, 2018 11:21:15 AM CEST David Wang wrote:
+> Dear Rafael,
+> 
+> After disscusion with engineer from Centaur,   the orginal patch maybe not safe for some older Centaur CPU/platform. So, I want to use another patch like the following:
 
-This currently only handles generic parts (gic, architected timer)
-and a UART.
-For simplicity sake, this also relies on the bootloader to set the
-pinctrl and clocks.
+OK
 
-Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
----
- arch/arm/boot/dts/r9a06g0xx.dtsi | 96 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 96 insertions(+)
- create mode 100644 arch/arm/boot/dts/r9a06g0xx.dtsi
+I will drop the previous one, no problem.
 
-diff --git a/arch/arm/boot/dts/r9a06g0xx.dtsi b/arch/arm/boot/dts/r9a06g0xx.dtsi
-new file mode 100644
-index 0000000..c6eeee3
---- /dev/null
-+++ b/arch/arm/boot/dts/r9a06g0xx.dtsi
-@@ -0,0 +1,96 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Base Device Tree Source for the Renesas RZ/N1 SoC Family of devices
-+ *
-+ * Copyright (C) 2018 Renesas Electronics Europe Limited
-+ *
-+ */
-+
-+#include <dt-bindings/interrupt-controller/arm-gic.h>
-+
-+/ {
-+	compatible = "renesas,rzn1";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a7";
-+			reg = <0>;
-+		};
-+		cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a7";
-+			reg = <1>;
-+		};
-+	};
-+	clocks {
-+		/*
-+		 * this is fixed clock for now,
-+		 * until the clock driver is merged
-+		 */
-+		clkuarts: clkuarts {
-+			#clock-cells = <0>;
-+			compatible = "fixed-clock";
-+			clock-frequency = <47619047>;
-+		};
-+	};
-+	arch-timer {
-+		compatible = "arm,cortex-a7-timer",
-+			     "arm,armv7-timer";
-+		interrupt-parent = <&gic>;
-+		arm,cpu-registers-not-fw-configured;
-+		interrupts =
-+			<GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) |
-+				IRQ_TYPE_LEVEL_LOW)>,
-+			<GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(2) |
-+				IRQ_TYPE_LEVEL_LOW)>,
-+			<GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(2) |
-+				IRQ_TYPE_LEVEL_LOW)>,
-+			<GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2) |
-+				IRQ_TYPE_LEVEL_LOW)>;
-+	};
-+	soc {
-+		compatible = "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		interrupt-parent = <&gic>;
-+		ranges;
-+
-+		gic: gic@44101000 {
-+			compatible = "arm,cortex-a7-gic", "arm,gic-400";
-+			interrupt-controller;
-+			#interrupt-cells = <3>;
-+			reg = <0x44101000 0x1000>, /* Distributer */
-+			      <0x44102000 0x2000>, /* CPU interface */
-+			      <0x44104000 0x2000>, /* Virt interface control */
-+			      <0x44106000 0x2000>; /* Virt CPU interface */
-+			interrupts =
-+				<GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(2) |
-+					IRQ_TYPE_LEVEL_HIGH)>;
-+		};
-+		sysctrl: sysctrl@4000c000 {
-+			compatible = "renesas,rzn1-sysctrl", "syscon",
-+					"simple-mfd";
-+			reg = <0x4000c000 0x1000>;
-+
-+			reboot {
-+				compatible = "renesas,rzn1-reboot";
-+			};
-+		};
-+		uart0: serial@40060000 {
-+			compatible = "snps,dw-apb-uart";
-+			reg = <0x40060000 0x400>;
-+			interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
-+			reg-shift = <2>;
-+			reg-io-width = <4>;
-+			clocks = <&clkuarts>;
-+			clock-names = "baudclk";
-+			status = "disabled";
-+		};
-+	};
-+};
--- 
-2.7.4
+Please resumbit the new one on top of the Linus' tree.
+
+Thanks!
+
+> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+> index 6c74dec..d92a7f3 100644
+> --- a/arch/x86/kernel/acpi/cstate.c
+> +++ b/arch/x86/kernel/acpi/cstate.c
+> @@ -52,17 +52,15 @@ void acpi_processor_power_init_bm_check(struct acpi_processor_flags *flags,
+>             (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
+>                         flags->bm_control = 0;
+> 
+> -        if (c->x86_vendor == X86_VENDOR_CENTAUR) {
+> -               /*
+> -                * On all Centaur CPUs, software need not flush the CPU caches
+> -                * when entering C3-type C-states.
+> -                *
+> -                * On all Centaur platforms, software need not disable bus
+> -                * master arbitration when entering C3-type C-states.
+> -                */
+> -               flags->bm_check = 1;
+> -               flags->bm_control = 0;
+> -       }
+> +       /*
+> +        * For all recent Centaur CPUs, the ucode will make sure that each core can keep
+> +        * cache coherence with each other while entering C3 type state.
+> +        * So, set bm_check to 1 to indicate that the kernel need not execute a cache
+> +        * flush operation (WBINVD) when entering C3 type state.
+> +        */
+> +       if (c->x86_vendor == X86_VENDOR_CENTAUR &&
+> +           (c->x86 > 6 || (c->x86 == 6 && c->x86_model == 0x0f && c->x86_mask>=0x0e)))
+> +                       flags->bm_check = 1;
+>  }
+>  EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
+> 
+> Can you help to drop the orignal patch you queued up to the linux-next?
+> Thank you.
+> 
+> 
+> David
+> 
+> ________________________________
+> 发件人: Ingo Molnar <mingo.kernel.org@gmail.com> 代表 Ingo Molnar <mingo@kernel.org>
+> 发送时间: 2018年3月12日 17:46:09
+> 收件人: Rafael J. Wysocki
+> 抄送: David Wang; len.brown@intel.com; pavel@ucw.cz; tglx@linutronix.de; mingo@redhat.com; hpa@zytor.com; x86@kernel.org; linux-pm@kernel.org; linux-kernel@vger.kernel.org; Bruce Chang (VAS); Cooper Yan(BJ-RD); Qiyuan Wang(BJ-RD); Benjamin Pan; Luke Lin; Tim Guo(BJ-RD); Cobe Chen(BJ-RD); Jiangbo Wang(BJ-RD)
+> 主题: Re: 答复: [PATCH] Delete some unusefull operations for centaur CPU/platform
+> 
+> 
+> * Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> 
+> > On Monday, March 12, 2018 9:40:33 AM CET Ingo Molnar wrote:
+> > >
+> > > * David Wang <DavidWang@zhaoxin.com> wrote:
+> > >
+> > > > [David] pr->flags.has_cst means BIOS define valid C state table.  And at lease
+> > > > define 2 entries. On all centaur platform which support C3, this condition is
+> > > > always true.
+> > >
+> > > > [David] Just as the following comment said, we need not execute WBINVD and
+> > > > ARB_DISABLE/ARB_ENABLE when entering C3 if bm_check=1 and bm_control=0.  This
+> > > > logic is valid for all platform not only for Centaur, I think.
+> > >
+> > > Ok, fair enough!
+> >
+> > Well, I still have this one queued up as cpuidle material.
+> >
+> > I can drop it if you want to take it instead.
+> 
+> No need to drop it, it looks good to me!
+> 
+> Thanks,
+> 
+>         Ingo
+> 
