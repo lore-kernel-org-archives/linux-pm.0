@@ -1,18 +1,18 @@
-From: Chris Wilson <chris@chris-wilson.co.uk>
+From: Francisco Jerez <currojerez@riseup.net>
 Subject: Re: [PATCH 9/9] drm/i915/execlists: Report GPU
  rendering as IO activity to cpufreq.
-Date: Thu, 29 Mar 2018 00:19:40 +0100
-Message-ID: <152227918019.10679.9470023556595388428@mail.alporthouse.com>
+Date: Wed, 28 Mar 2018 17:32:07 -0700
+Message-ID: <874lkzpvqw.fsf@riseup.net>
 References: <20180328063845.4884-1-currojerez@riseup.net>
  <20180328063845.4884-10-currojerez@riseup.net>
  <152222417278.10679.15949311520002257163@mail.alporthouse.com>
  <87muysowrz.fsf@riseup.net>
  <152226481977.10679.15243453393086412220@mail.alporthouse.com>
+ <152227918019.10679.9470023556595388428@mail.alporthouse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============0711365871=="
 Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <152226481977.10679.15243453393086412220@mail.alporthouse.com>
+In-Reply-To: <152227918019.10679.9470023556595388428@mail.alporthouse.com>
 List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
  <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
 List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
@@ -22,91 +22,193 @@ List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
  <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
 Errors-To: intel-gfx-bounces@lists.freedesktop.org
 Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Chris Wilson <chris@chris-wilson.co.uk>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-UXVvdGluZyBDaHJpcyBXaWxzb24gKDIwMTgtMDMtMjggMjA6MjA6MTkpCj4gUXVvdGluZyBGcmFu
-Y2lzY28gSmVyZXogKDIwMTgtMDMtMjggMTk6NTU6MTIpCj4gPiBIaSBDaHJpcywKPiA+IAo+IFtz
-bmlwXQo+ID4gVGhhdCBzYWlkLCBpdCB3b3VsZG4ndCBodXJ0IHRvIGNhbGwgZWFjaCBvZiB0aGVt
-IG9uY2UgcGVyIHNlcXVlbmNlIG9mCj4gPiBvdmVybGFwcGluZyByZXF1ZXN0cy4gIERvIHlvdSB3
-YW50IG1lIHRvIGNhbGwgdGhlbSBmcm9tCj4gPiBleGVjbGlzdHNfc2V0L2NsZWFyX2FjdGl2ZSgp
-IHRoZW1zZWx2ZXMgd2hlbiBiaXQgPT0gRVhFQ0xJU1RTX0FDVElWRV9VU0VSLAo+ID4gb3IgYXQg
-ZWFjaCBjYWxsc2l0ZSBvZiBleGVjbGlzdHNfc2V0L2NsZWFyX2FjdGl2ZSgpPyBbcG9zc2libHkg
-cHJvdGVjdGVkCj4gPiB3aXRoIGEgY2hlY2sgdGhhdCBleGVjbGlzdHNfaXNfYWN0aXZlKEVYRUNM
-SVNUU19BQ1RJVkVfVVNFUikgd2Fzbid0Cj4gPiBhbHJlYWR5IHRoZSBleHBlY3RlZCB2YWx1ZV0K
-PiAKPiBObywgSSB3YXMgdGhpbmtpbmcgb2YgYWRkaW5nIGFuIGV4ZWNsaXN0c19zdGFydCgpL2V4
-ZWNsaXN0c19zdG9wKCkKPiBbbmFtaW5nIHN1Z2dlc3Rpb25zIHdlbGNvbWUsIGJlZ2luL2VuZD9d
-IHdoZXJlIHdlIGNvdWxkIGhvb2sgYWRkaXRpb25hbAo+IGJvb2trZWVwaW5nIGludG8uCgpUcnlp
-bmcgdG8gY2FsbCBleGVjbGlzdF9iZWdpbigpIG9uY2UgZGlkbid0IHBhbiBvdXQuIEl0J3MgZWFz
-aWVyIHRvCnJldXNlIGZvciBzaW1pbGFyIGJvb2trZWVwaW5nIHVzZWQgaW4gZnV0dXJlIHBhdGNo
-ZXMgaWYgZXhlY2xpc3RfYmVnaW4oKQoob3Igd2hhdGV2ZXIgbmFtZSBzdWl0cyBiZXN0KSBhdCB0
-aGUgc3RhcnQgb2YgZWFjaCBjb250ZXh0LgoKU29tZXRoaW5nIGFsb25nIHRoZSBsaW5lcyBvZjoK
-CkBAIC0zNzQsNiArMzc0LDE5IEBAIGV4ZWNsaXN0c19jb250ZXh0X3N0YXR1c19jaGFuZ2Uoc3Ry
-dWN0IGk5MTVfcmVxdWVzdCAqcnEsIHVuc2lnbmVkIGxvbmcgc3RhdHVzKQogICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIHN0YXR1cywgcnEpOwogfQogCitzdGF0aWMgaW5saW5lIHZv
-aWQKK2V4ZWNsaXN0c19iZWdpbihzdHJ1Y3QgaW50ZWxfZW5naW5lX2V4ZWNsaXN0cyAqZXhlY2xp
-c3RzLAorICAgICAgICAgICAgICAgc3RydWN0IGV4ZWNsaXN0X3BvcnQgKnBvcnQpCit7CisgICAg
-ICAgZXhlY2xpc3RzX3NldF9hY3RpdmVfb25jZShleGVjbGlzdHMsIEVYRUNMSVNUU19BQ1RJVkVf
-VVNFUik7Cit9CisKK3N0YXRpYyBpbmxpbmUgdm9pZAorZXhlY2xpc3RzX2VuZChzdHJ1Y3QgaW50
-ZWxfZW5naW5lX2V4ZWNsaXN0cyAqZXhlY2xpc3RzKQoreworICAgICAgIGV4ZWNsaXN0c19jbGVh
-cl9hY3RpdmUoZXhlY2xpc3RzLCBFWEVDTElTVFNfQUNUSVZFX1VTRVIpOworfQorCiBzdGF0aWMg
-aW5saW5lIHZvaWQKIGV4ZWNsaXN0c19jb250ZXh0X3NjaGVkdWxlX2luKHN0cnVjdCBpOTE1X3Jl
-cXVlc3QgKnJxKQogewpAQCAtNzEwLDcgKzcyMyw3IEBAIHN0YXRpYyB2b2lkIGV4ZWNsaXN0c19k
-ZXF1ZXVlKHN0cnVjdCBpbnRlbF9lbmdpbmVfY3MgKmVuZ2luZSkKICAgICAgICBzcGluX3VubG9j
-a19pcnEoJmVuZ2luZS0+dGltZWxpbmUtPmxvY2spOwogCiAgICAgICAgaWYgKHN1Ym1pdCkgewot
-ICAgICAgICAgICAgICAgZXhlY2xpc3RzX3NldF9hY3RpdmUoZXhlY2xpc3RzLCBFWEVDTElTVFNf
-QUNUSVZFX1VTRVIpOworICAgICAgICAgICAgICAgZXhlY2xpc3RzX2JlZ2luKGV4ZWNsaXN0cywg
-ZXhlY2xpc3RzLT5wb3J0KTsKICAgICAgICAgICAgICAgIGV4ZWNsaXN0c19zdWJtaXRfcG9ydHMo
-ZW5naW5lKTsKICAgICAgICB9CiAKQEAgLTc0MSw3ICs3NTQsNyBAQCBleGVjbGlzdHNfY2FuY2Vs
-X3BvcnRfcmVxdWVzdHMoc3RydWN0IGludGVsX2VuZ2luZV9leGVjbGlzdHMgKiBjb25zdCBleGVj
-bGlzdHMpCiAgICAgICAgICAgICAgICBwb3J0Kys7CiAgICAgICAgfQogCi0gICAgICAgZXhlY2xp
-c3RzX2NsZWFyX2FjdGl2ZShleGVjbGlzdHMsIEVYRUNMSVNUU19BQ1RJVkVfVVNFUik7CisgICAg
-ICAgZXhlY2xpc3RzX2VuZChleGVjbGlzdHMpOwogfQogCiBzdGF0aWMgdm9pZCBjbGVhcl9ndGlp
-cihzdHJ1Y3QgaW50ZWxfZW5naW5lX2NzICplbmdpbmUpCkBAIC04NzIsNyArODg1LDcgQEAgc3Rh
-dGljIHZvaWQgZXhlY2xpc3RzX3N1Ym1pc3Npb25fdGFza2xldCh1bnNpZ25lZCBsb25nIGRhdGEp
-CiB7CiAgICAgICAgc3RydWN0IGludGVsX2VuZ2luZV9jcyAqIGNvbnN0IGVuZ2luZSA9IChzdHJ1
-Y3QgaW50ZWxfZW5naW5lX2NzICopZGF0YTsKICAgICAgICBzdHJ1Y3QgaW50ZWxfZW5naW5lX2V4
-ZWNsaXN0cyAqIGNvbnN0IGV4ZWNsaXN0cyA9ICZlbmdpbmUtPmV4ZWNsaXN0czsKLSAgICAgICBz
-dHJ1Y3QgZXhlY2xpc3RfcG9ydCAqIGNvbnN0IHBvcnQgPSBleGVjbGlzdHMtPnBvcnQ7CisgICAg
-ICAgc3RydWN0IGV4ZWNsaXN0X3BvcnQgKnBvcnQgPSBleGVjbGlzdHMtPnBvcnQ7CiAgICAgICAg
-c3RydWN0IGRybV9pOTE1X3ByaXZhdGUgKmRldl9wcml2ID0gZW5naW5lLT5pOTE1OwogICAgICAg
-IGJvb2wgZncgPSBmYWxzZTsKIApAQCAtMTAxMCw5ICsxMDIzLDE5IEBAIHN0YXRpYyB2b2lkIGV4
-ZWNsaXN0c19zdWJtaXNzaW9uX3Rhc2tsZXQodW5zaWduZWQgbG9uZyBkYXRhKQogCiAgICAgICAg
-ICAgICAgICAgICAgICAgIEdFTV9CVUdfT04oY291bnQgPT0gMCk7CiAgICAgICAgICAgICAgICAg
-ICAgICAgIGlmICgtLWNvdW50ID09IDApIHsKKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAvKgorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAqIE9uIHRoZSBmaW5hbCBldmVu
-dCBjb3JyZXNwb25kaW5nIHRvIHRoZQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAq
-IHN1Ym1pc3Npb24gb2YgdGhpcyBjb250ZXh0LCB3ZSBleHBlY3QgZWl0aGVyCisgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICogYW4gZWxlbWVudC1zd2l0Y2ggZXZlbnQgb3IgYW4gY29t
-cGxldGlvbgorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAqIGV2ZW50IChhbmQgb24g
-Y29tcGxldGlvbiwgdGhlIGFjdGl2ZS1pZGxlCisgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICogbWFya2VyKS4gTm8gbW9yZSBwcmVlbXB0aW9ucywgbGl0ZS1yZXN0b3JlCisgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICogb3Igb3RoZXJ3aXNlCisgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICovCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgR0VNX0JV
-R19PTihzdGF0dXMgJiBHRU44X0NUWF9TVEFUVVNfUFJFRU1QVEVEKTsKICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICBHRU1fQlVHX09OKHBvcnRfaXNzZXQoJnBvcnRbMV0pICYmCiAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAhKHN0YXR1cyAmIEdFTjhfQ1RY
-X1NUQVRVU19FTEVNRU5UX1NXSVRDSCkpOworICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IEdFTV9CVUdfT04oIXBvcnRfaXNzZXQoJnBvcnRbMV0pICYmCisgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAhKHN0YXR1cyAmIEdFTjhfQ1RYX1NUQVRVU19BQ1RJVkVf
-SURMRSkpOwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEdFTV9CVUdfT04oIWk5MTVf
-cmVxdWVzdF9jb21wbGV0ZWQocnEpKTsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBl
-eGVjbGlzdHNfY29udGV4dF9zY2hlZHVsZV9vdXQocnEpOwogICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIHRyYWNlX2k5MTVfcmVxdWVzdF9vdXQocnEpOwpAQCAtMTAyMSwxNyArMTA0NCwx
-NCBAQCBzdGF0aWMgdm9pZCBleGVjbGlzdHNfc3VibWlzc2lvbl90YXNrbGV0KHVuc2lnbmVkIGxv
-bmcgZGF0YSkKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBHRU1fVFJBQ0UoIiVzIGNv
-bXBsZXRlZCBjdHg9JWRcbiIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIGVuZ2luZS0+bmFtZSwgcG9ydC0+Y29udGV4dF9pZCk7CiAKLSAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICBleGVjbGlzdHNfcG9ydF9jb21wbGV0ZShleGVjbGlzdHMsIHBvcnQpOwor
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvcnQgPSBleGVjbGlzdHNfcG9ydF9jb21w
-bGV0ZShleGVjbGlzdHMsIHBvcnQpOworICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlm
-IChwb3J0X2lzc2V0KHBvcnQpKQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgZXhlY2xpc3RzX2JlZ2luKGV4ZWNsaXN0cywgcG9ydCk7CisgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgZWxzZQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ZXhlY2xpc3RzX2VuZChleGVjbGlzdHMpOwogICAgICAgICAgICAgICAgICAgICAgICB9IGVsc2Ug
-ewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvcnRfc2V0KHBvcnQsIHBvcnRfcGFj
-ayhycSwgY291bnQpKTsKICAgICAgICAgICAgICAgICAgICAgICAgfQoKLUNocmlzCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5n
-IGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVk
-ZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+--===============0711365871==
+Content-Type: multipart/signed; boundary="==-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
+
+--==-=-=
+Content-Type: multipart/mixed; boundary="=-=-="
+
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Chris Wilson <chris@chris-wilson.co.uk> writes:
+
+> Quoting Chris Wilson (2018-03-28 20:20:19)
+>> Quoting Francisco Jerez (2018-03-28 19:55:12)
+>> > Hi Chris,
+>> >=20
+>> [snip]
+>> > That said, it wouldn't hurt to call each of them once per sequence of
+>> > overlapping requests.  Do you want me to call them from
+>> > execlists_set/clear_active() themselves when bit =3D=3D EXECLISTS_ACTI=
+VE_USER,
+>> > or at each callsite of execlists_set/clear_active()? [possibly protect=
+ed
+>> > with a check that execlists_is_active(EXECLISTS_ACTIVE_USER) wasn't
+>> > already the expected value]
+>>=20
+>> No, I was thinking of adding an execlists_start()/execlists_stop()
+>> [naming suggestions welcome, begin/end?] where we could hook additional
+>> bookkeeping into.
+>
+> Trying to call execlist_begin() once didn't pan out. It's easier to
+> reuse for similar bookkeeping used in future patches if execlist_begin()
+> (or whatever name suits best) at the start of each context.
+>
+> Something along the lines of:
+>
+> @@ -374,6 +374,19 @@ execlists_context_status_change(struct i915_request =
+*rq, unsigned long status)
+>                                    status, rq);
+>  }
+>=20=20
+> +static inline void
+> +execlists_begin(struct intel_engine_execlists *execlists,
+
+I had started writing something along the same lines in my working tree
+called execlists_active_user_begin/end -- Which name do you prefer?
+
+> +               struct execlist_port *port)
+> +{
+
+What do you expect the port argument to be useful for?  Is it ever going
+to be anything other than execlists->port?
+
+> +       execlists_set_active_once(execlists, EXECLISTS_ACTIVE_USER);
+> +}
+> +
+> +static inline void
+> +execlists_end(struct intel_engine_execlists *execlists)
+> +{
+> +       execlists_clear_active(execlists, EXECLISTS_ACTIVE_USER);
+> +}
+> +
+>  static inline void
+>  execlists_context_schedule_in(struct i915_request *rq)
+>  {
+> @@ -710,7 +723,7 @@ static void execlists_dequeue(struct intel_engine_cs =
+*engine)
+>         spin_unlock_irq(&engine->timeline->lock);
+>=20=20
+>         if (submit) {
+> -               execlists_set_active(execlists, EXECLISTS_ACTIVE_USER);
+> +               execlists_begin(execlists, execlists->port);
+>                 execlists_submit_ports(engine);
+>         }
+>=20=20
+> @@ -741,7 +754,7 @@ execlists_cancel_port_requests(struct intel_engine_ex=
+eclists * const execlists)
+>                 port++;
+>         }
+>=20=20
+> -       execlists_clear_active(execlists, EXECLISTS_ACTIVE_USER);
+
+This line doesn't seem to exist in my working tree.  I guess it was just
+added?
+
+> +       execlists_end(execlists);
+>  }
+>=20=20
+>  static void clear_gtiir(struct intel_engine_cs *engine)
+> @@ -872,7 +885,7 @@ static void execlists_submission_tasklet(unsigned lon=
+g data)
+>  {
+>         struct intel_engine_cs * const engine =3D (struct intel_engine_cs=
+ *)data;
+>         struct intel_engine_execlists * const execlists =3D &engine->exec=
+lists;
+> -       struct execlist_port * const port =3D execlists->port;
+> +       struct execlist_port *port =3D execlists->port;
+>         struct drm_i915_private *dev_priv =3D engine->i915;
+>         bool fw =3D false;
+>=20=20
+> @@ -1010,9 +1023,19 @@ static void execlists_submission_tasklet(unsigned =
+long data)
+>=20=20
+>                         GEM_BUG_ON(count =3D=3D 0);
+>                         if (--count =3D=3D 0) {
+> +                               /*
+> +                                * On the final event corresponding to the
+> +                                * submission of this context, we expect =
+either
+> +                                * an element-switch event or an completi=
+on
+> +                                * event (and on completion, the active-i=
+dle
+> +                                * marker). No more preemptions, lite-res=
+tore
+> +                                * or otherwise
+> +                                */
+>                                 GEM_BUG_ON(status & GEN8_CTX_STATUS_PREEM=
+PTED);
+>                                 GEM_BUG_ON(port_isset(&port[1]) &&
+>                                            !(status & GEN8_CTX_STATUS_ELE=
+MENT_SWITCH));
+> +                               GEM_BUG_ON(!port_isset(&port[1]) &&
+> +                                          !(status & GEN8_CTX_STATUS_ACT=
+IVE_IDLE));
+>                                 GEM_BUG_ON(!i915_request_completed(rq));
+>                                 execlists_context_schedule_out(rq);
+>                                 trace_i915_request_out(rq);
+> @@ -1021,17 +1044,14 @@ static void execlists_submission_tasklet(unsigned=
+ long data)
+>                                 GEM_TRACE("%s completed ctx=3D%d\n",
+>                                           engine->name, port->context_id);
+>=20=20
+> -                               execlists_port_complete(execlists, port);
+> +                               port =3D execlists_port_complete(execlist=
+s, port);
+> +                               if (port_isset(port))
+> +                                       execlists_begin(execlists, port);
+
+Isn't this going to call execlists_begin() roughly once per request?
+What's the purpose if we expect it to be a no-op except for the first
+request submitted after execlists_end()?  Isn't the intention to provide
+a hook for bookkeeping that depends on idle to active and active to idle
+transitions of the hardware?
+
+> +                               else
+> +                                       execlists_end(execlists);
+>                         } else {
+>                                 port_set(port, port_pack(rq, count));
+>                         }
+>
+
+Isn't there an "execlists_clear_active(execlists,
+EXECLISTS_ACTIVE_USER);" call in your tree a few lines below that is now
+redundant?
+
+> -Chris
+
+--=-=-=--
+
+--==-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCWrw0CAAKCRCDmTidfVK/
+W4AsAP9rZDfoYOQ3T5JXXO+NEUkLgVGEiN1FRxhxWd7geIj9NwEAlWCd8pWMyfss
+Zn1Si9XdvzZBWfSJhiSLjZ3PAAqk5wQ=
+=5fOZ
+-----END PGP SIGNATURE-----
+--==-=-=--
+
+--===============0711365871==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4
+IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
+
+--===============0711365871==--
