@@ -1,86 +1,156 @@
-From: Michel Pollet <michel.pollet@bp.renesas.com>
-Subject: RE: [PATCH v3 4/8] reset: Renesas RZ/N1 reboot driver
-Date: Thu, 29 Mar 2018 11:12:45 +0000
-Message-ID: <OSBPR01MB205430EB7EE4F338829135EDD2A20@OSBPR01MB2054.jpnprd01.prod.outlook.com>
-References: <1522309629-10152-1-git-send-email-michel.pollet@bp.renesas.com>
- <1522309629-10152-5-git-send-email-michel.pollet@bp.renesas.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v8 09/10] cpuidle: menu: Refine idle state selection for running tick
+Date: Thu, 29 Mar 2018 14:20:16 +0200
+Message-ID: <2436638.Sgs1ur0NPv@aspire.rjw.lan>
+References: <40092860.XNQZrLjKDd@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1522309629-10152-5-git-send-email-michel.pollet@bp.renesas.com>
-Content-Language: en-US
+In-Reply-To: <40092860.XNQZrLjKDd@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>
-Cc: Phil Edworthy <phil.edworthy@renesas.com>, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 29 March 2018 08:47, I messed up:
-[snip]
->
-> The Renesas RZ/N1 Family (Part #R9A06G0xx) needs a small driver to reboot
-> the Cortex-A7 cores. This driver is a sub driver of the sysctrl MFD.
->
-> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
-> ---
->  drivers/power/reset/Kconfig       |   7 +++
->  drivers/power/reset/Makefile      |   1 +
->  drivers/power/reset/rzn1-reboot.c | 105
-[snip]
-> +
-> +parent =3D pdev->dev.parent;
-> +if (!parent || !parent->of_node)
+If the tick isn't stopped, the target residency of the state selected
+by the menu governor may be greater than the actual time to the next
+tick and that means lost energy.
 
-Not sure what went on when I had all the patches loaded in the editor befor=
-e sending, but I've deleted a brace here. Will be fixed in v4... :/
+To avoid that, make tick_nohz_get_sleep_length() return the current
+time to the next event (before stopping the tick) in addition to the
+estimated one via an extra pointer argument and make menu_select()
+use that value to refine the state selection when necessary.
 
-Michel
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
+v7 -> v8: Rebase (on top of the new [06-08/10]).
 
-> +dev_err(&pdev->dev, "couldn't find sysctrl node\n");
-> +return -ENODEV;
-> +}
-> +sysctrl =3D syscon_node_to_regmap(parent->of_node);
-> +if (IS_ERR(sysctrl)) {
-> +dev_err(&pdev->dev, "couldn't find find regmap\n");
-> +return PTR_ERR(sysctrl);
-> +}
-> +err =3D register_restart_handler(&rzn1_reboot_nb);
-> +if (err) {
-> +dev_err(&pdev->dev, "register restart handler
-> failed(err=3D%d)\n",
-> +err);
-> +}
-> +
-> +return err;
-> +}
-> +
-> +static const struct of_device_id rzn1_reboot_of_match[] =3D {
-> +{ .compatible =3D "renesas,rzn1-reboot" },
-> +{}
-> +};
-> +MODULE_DEVICE_TABLE(of, rzn1_reboot_of_match);
-> +
-> +static struct platform_driver rzn1_reboot_driver =3D {
-> +.probe =3D rzn1_reboot_probe,
-> +.driver =3D {
-> +.name =3D "rzn1-reboot",
-> +.of_match_table =3D rzn1_reboot_of_match,
-> +},
-> +};
-> +module_platform_driver(rzn1_reboot_driver);
-> +
-> +MODULE_DESCRIPTION("RZ/N1 reboot driver");
-> MODULE_AUTHOR("Michel Pollet
-> +<michel.pollet@bp.renesas.com>, <buserror@gmail.com>");
-> +MODULE_LICENSE("GPL v2");
-> --
-> 2.7.4
+---
+ drivers/cpuidle/governors/menu.c |   22 ++++++++++++++++++++--
+ include/linux/tick.h             |    7 ++++---
+ kernel/time/tick-sched.c         |   12 ++++++------
+ 3 files changed, 30 insertions(+), 11 deletions(-)
 
-
-
-
-Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
-uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
- No. 04586709.
+Index: linux-pm/include/linux/tick.h
+===================================================================
+--- linux-pm.orig/include/linux/tick.h
++++ linux-pm/include/linux/tick.h
+@@ -121,7 +121,7 @@ extern void tick_nohz_idle_enter(void);
+ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
+ extern bool tick_nohz_idle_got_tick(void);
+-extern ktime_t tick_nohz_get_sleep_length(void);
++extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
+ extern unsigned long tick_nohz_get_idle_calls(void);
+ extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+@@ -144,9 +144,10 @@ static inline void tick_nohz_idle_enter(
+ static inline void tick_nohz_idle_exit(void) { }
+ static inline bool tick_nohz_idle_got_tick(void) { return false; }
+ 
+-static inline ktime_t tick_nohz_get_sleep_length(void)
++static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
+ {
+-	return NSEC_PER_SEC / HZ;
++	*delta_next = NSEC_PER_SEC / HZ;
++	return *delta_next;
+ }
+ static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+ static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+Index: linux-pm/kernel/time/tick-sched.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-sched.c
++++ linux-pm/kernel/time/tick-sched.c
+@@ -1047,10 +1047,11 @@ bool tick_nohz_idle_got_tick(void)
+ 
+ /**
+  * tick_nohz_get_sleep_length - return the expected length of the current sleep
++ * @delta_next: duration until the next event if the tick cannot be stopped
+  *
+  * Called from power state control code with interrupts disabled
+  */
+-ktime_t tick_nohz_get_sleep_length(void)
++ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
+ {
+ 	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+@@ -1064,12 +1065,14 @@ ktime_t tick_nohz_get_sleep_length(void)
+ 
+ 	WARN_ON_ONCE(!ts->inidle);
+ 
++	*delta_next = ktime_sub(dev->next_event, now);
++
+ 	if (!can_stop_idle_tick(cpu, ts))
+-		goto out_dev;
++		return *delta_next;
+ 
+ 	next_event = tick_nohz_next_event(ts, cpu);
+ 	if (!next_event)
+-		goto out_dev;
++		return *delta_next;
+ 
+ 	/*
+ 	 * If the next highres timer to expire is earlier than next_event, the
+@@ -1079,9 +1082,6 @@ ktime_t tick_nohz_get_sleep_length(void)
+ 			   hrtimer_get_next_event(&ts->sched_timer));
+ 
+ 	return ktime_sub(next_event, now);
+-
+-out_dev:
+-	return ktime_sub(dev->next_event, now);
+ }
+ 
+ /**
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -295,6 +295,7 @@ static int menu_select(struct cpuidle_dr
+ 	unsigned int expected_interval;
+ 	unsigned long nr_iowaiters, cpu_load;
+ 	int resume_latency = dev_pm_qos_raw_read_value(device);
++	ktime_t delta_next;
+ 
+ 	if (data->needs_update) {
+ 		menu_update(drv, dev);
+@@ -312,7 +313,7 @@ static int menu_select(struct cpuidle_dr
+ 	}
+ 
+ 	/* determine the expected residency time, round up */
+-	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
++	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&delta_next));
+ 
+ 	get_iowait_load(&nr_iowaiters, &cpu_load);
+ 	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
+@@ -396,9 +397,26 @@ static int menu_select(struct cpuidle_dr
+ 	 * expected idle duration is shorter than the tick period length.
+ 	 */
+ 	if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+-	    expected_interval < TICK_USEC)
++	    expected_interval < TICK_USEC) {
+ 		*stop_tick = false;
+ 
++		if (!tick_nohz_tick_stopped()) {
++			unsigned int delta_next_us = ktime_to_us(delta_next);
++
++			/*
++			 * Because the tick is not going to be stopped, make
++			 * sure that the target residency of the state to be
++			 * returned is within the time to the next timer event
++			 * including the tick.
++			 */
++			while (idx > 0 &&
++			    (drv->states[idx].target_residency > delta_next_us ||
++			     drv->states[idx].disabled ||
++			     dev->states_usage[idx].disable))
++				idx--;
++		}
++	}
++
+ 	data->last_state_idx = idx;
+ 
+ 	return data->last_state_idx;
