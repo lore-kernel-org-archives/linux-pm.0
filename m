@@ -1,146 +1,67 @@
-From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
-Date: Thu, 29 Mar 2018 15:49:43 +0800
-Message-ID: <CADAEsF8j4yfuzDSfyO4VtqSP6rGY2r6L_AEn6MEhhhAUdo+7dA@mail.gmail.com>
-References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Michel Pollet <michel.pollet@bp.renesas.com>
+Subject: [PATCH v3 0/8] arm: Base support for Renesas RZN1D-DB Board
+Date: Thu, 29 Mar 2018 08:46:56 +0100
+Message-ID: <1522309629-10152-1-git-send-email-michel.pollet@bp.renesas.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ganesh Mahendran <opensource.ganesh@gmail.com>
+To: linux-renesas-soc@vger.kernel.org, Simon Horman <horms@verge.net.au>
+Cc: phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Michel Pollet <michel.pollet@bp.renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-ping.
+This series adds the plain basic support for booting a bare
+kernel on the RZ/N1D-DB Board. It's been trimmed to the strict
+minimum as a 'base', further patches that will add the
+rest of the support, pinctrl, clock architecture and quite
+a few others.
 
-2018-03-05 16:47 GMT+08:00 Ganesh Mahendran <opensource.ganesh@gmail.com>:
-> single_open() interface requires that the whole output must
-> fit into a single buffer. This will lead to timeout when
-> system memory is not in a good situation.
->
-> This patch use seq_open() to show wakeup stats. This method
-> need only one page, so timeout will not be observed.
+Thanks for the comments on the previous version!
 
-We have resolved the watchdog timeout issue by this patch.
-Please help to review.
+v3:
+ + Fixes for suggestions by Geert Uytterhoeven
+ + Removed SoC Specific renesas,r9a06g032-xxx, as it's not needed for now.
+ + Kept renesas,rzn1 as a family/generic for this family.
+ + Fixed a couple of the commit messages.
+ + Added Geert's Reviewed-By where appropriate.
+v2: 
+ + Fixes for suggestions by Simon Horman
+ + Fixes for suggestions by Rob Herring
+ + Fixes for suggestions by Geert Uytterhoeven
+ + Removed the mach file
+ + Added a MFD base for the sysctrl block
+ + Added a regmap based sub driver for the reboot handler
+ + Renamed the files to match shmobile conventions
+ + Adapted the compatible= strings to reflect 'family' vs 'part'
+   distinction.
+ + Removed the sysctrl.h file entirelly. 
+ + Fixed every warnings from the DTC compiler on W=12 mode.
+ + Split the device-tree patches from the code.
 
-Thanks.
+Michel Pollet (8):
+  DT: mfd: renesas,rzn1-sysctrl: document RZ/N1 sysctrl node
+  DT: reset: renesas,rzn1-reboot: document RZ/N1 reboot driver
+  DT: arm: renesas,rzn1: add the RZ/N1 SoC and RZN1D-DB board
+  reset: Renesas RZ/N1 reboot driver
+  arm: shmobile: Add the RZ/N1 arch to the shmobile Kconfig
+  DT: arm: Add Renesas RZ/N1 SoC base device tree file
+  DT: arm: Add Renesas RZN1D-DB Board base file
+  DT: arm: Add the RZN1D-DB Board to Renesas Makefile target
 
->
-> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
-> ----
-> v2: use srcu_read_lock instead of rcu_read_lock
-> ---
->  drivers/base/power/wakeup.c | 77 +++++++++++++++++++++++++++++++++++----------
->  1 file changed, 61 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index ea01621..3bcab7d 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
->         return 0;
->  }
->
-> -/**
-> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
-> - * @m: seq_file to print the statistics into.
-> - */
-> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
-> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
-> +                                       loff_t *pos)
->  {
->         struct wakeup_source *ws;
-> -       int srcuidx;
-> +       loff_t n = *pos;
-> +       int *srcuidx = m->private;
->
-> -       seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> -               "expire_count\tactive_since\ttotal_time\tmax_time\t"
-> -               "last_change\tprevent_suspend_time\n");
-> +       if (n == 0) {
-> +               seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> +                       "expire_count\tactive_since\ttotal_time\tmax_time\t"
-> +                       "last_change\tprevent_suspend_time\n");
-> +       }
->
-> -       srcuidx = srcu_read_lock(&wakeup_srcu);
-> -       list_for_each_entry_rcu(ws, &wakeup_sources, entry)
-> -               print_wakeup_source_stats(m, ws);
-> -       srcu_read_unlock(&wakeup_srcu, srcuidx);
-> +       *srcuidx = srcu_read_lock(&wakeup_srcu);
-> +       list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> +               if (n-- > 0)
-> +                       continue;
-> +               goto out;
-> +       }
-> +       ws = NULL;
-> +out:
-> +       return ws;
-> +}
-> +
-> +static void *wakeup_sources_stats_seq_next(struct seq_file *m,
-> +                                       void *v, loff_t *pos)
-> +{
-> +       struct wakeup_source *ws = v;
-> +       struct wakeup_source *next_ws = NULL;
-> +
-> +       ++(*pos);
->
-> -       print_wakeup_source_stats(m, &deleted_ws);
-> +       list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
-> +               next_ws = ws;
-> +               break;
-> +       }
-> +
-> +       return next_ws;
-> +}
-> +
-> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
-> +{
-> +       int *srcuidx = m->private;
-> +
-> +       srcu_read_unlock(&wakeup_srcu, *srcuidx);
-> +}
-> +
-> +/**
-> + * wakeup_sources_stats_seq_show - Print wakeup sources statistics information.
-> + * @m: seq_file to print the statistics into.
-> + * @v: wakeup_source of each iteration
-> + */
-> +static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
-> +{
-> +       struct wakeup_source *ws = v;
-> +
-> +       print_wakeup_source_stats(m, ws);
->
->         return 0;
->  }
->
-> +static const struct seq_operations wakeup_sources_stats_seq_ops = {
-> +       .start = wakeup_sources_stats_seq_start,
-> +       .next  = wakeup_sources_stats_seq_next,
-> +       .stop  = wakeup_sources_stats_seq_stop,
-> +       .show  = wakeup_sources_stats_seq_show,
-> +};
-> +
->  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->  {
-> -       return single_open(file, wakeup_sources_stats_show, NULL);
-> +       return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
->  }
->
->  static const struct file_operations wakeup_sources_stats_fops = {
-> @@ -1062,7 +1107,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->         .open = wakeup_sources_stats_open,
->         .read = seq_read,
->         .llseek = seq_lseek,
-> -       .release = single_release,
-> +       .release = seq_release_private,
->  };
->
->  static int __init wakeup_sources_debugfs_init(void)
-> --
-> 1.9.1
->
+ Documentation/devicetree/bindings/arm/shmobile.txt |   7 +-
+ .../bindings/mfd/renesas,rzn1-sysctrl.txt          |  19 ++++
+ .../bindings/power/renesas,rzn1-reboot.txt         |  20 ++++
+ arch/arm/boot/dts/Makefile                         |   1 +
+ arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts        |  26 +++++
+ arch/arm/boot/dts/r9a06g0xx.dtsi                   |  96 +++++++++++++++++++
+ arch/arm/mach-shmobile/Kconfig                     |   5 +
+ drivers/power/reset/Kconfig                        |   7 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/rzn1-reboot.c                  | 105 +++++++++++++++++++++
+ 10 files changed, 286 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
+ create mode 100644 arch/arm/boot/dts/r9a06g032-rzn1d400-db.dts
+ create mode 100644 arch/arm/boot/dts/r9a06g0xx.dtsi
+ create mode 100644 drivers/power/reset/rzn1-reboot.c
+
+-- 
+2.7.4
