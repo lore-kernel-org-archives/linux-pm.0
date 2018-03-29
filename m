@@ -1,18 +1,20 @@
-From: Francisco Jerez <currojerez@riseup.net>
+From: Chris Wilson <chris@chris-wilson.co.uk>
 Subject: Re: [PATCH 9/9] drm/i915/execlists: Report GPU
  rendering as IO activity to cpufreq.
-Date: Wed, 28 Mar 2018 17:32:07 -0700
-Message-ID: <874lkzpvqw.fsf@riseup.net>
+Date: Thu, 29 Mar 2018 02:01:37 +0100
+Message-ID: <152228529761.16812.1704657375621461360@mail.alporthouse.com>
 References: <20180328063845.4884-1-currojerez@riseup.net>
  <20180328063845.4884-10-currojerez@riseup.net>
  <152222417278.10679.15949311520002257163@mail.alporthouse.com>
  <87muysowrz.fsf@riseup.net>
  <152226481977.10679.15243453393086412220@mail.alporthouse.com>
  <152227918019.10679.9470023556595388428@mail.alporthouse.com>
+ <874lkzpvqw.fsf@riseup.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0711365871=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <152227918019.10679.9470023556595388428@mail.alporthouse.com>
+In-Reply-To: <874lkzpvqw.fsf@riseup.net>
 List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
  <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
 List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
@@ -22,193 +24,141 @@ List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
  <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
 Errors-To: intel-gfx-bounces@lists.freedesktop.org
 Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Chris Wilson <chris@chris-wilson.co.uk>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============0711365871==
-Content-Type: multipart/signed; boundary="==-=-=";
-	micalg=pgp-sha256; protocol="application/pgp-signature"
-
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
-
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Chris Wilson <chris@chris-wilson.co.uk> writes:
-
-> Quoting Chris Wilson (2018-03-28 20:20:19)
->> Quoting Francisco Jerez (2018-03-28 19:55:12)
->> > Hi Chris,
->> >=20
->> [snip]
->> > That said, it wouldn't hurt to call each of them once per sequence of
->> > overlapping requests.  Do you want me to call them from
->> > execlists_set/clear_active() themselves when bit =3D=3D EXECLISTS_ACTI=
-VE_USER,
->> > or at each callsite of execlists_set/clear_active()? [possibly protect=
-ed
->> > with a check that execlists_is_active(EXECLISTS_ACTIVE_USER) wasn't
->> > already the expected value]
->>=20
->> No, I was thinking of adding an execlists_start()/execlists_stop()
->> [naming suggestions welcome, begin/end?] where we could hook additional
->> bookkeeping into.
->
-> Trying to call execlist_begin() once didn't pan out. It's easier to
-> reuse for similar bookkeeping used in future patches if execlist_begin()
-> (or whatever name suits best) at the start of each context.
->
-> Something along the lines of:
->
-> @@ -374,6 +374,19 @@ execlists_context_status_change(struct i915_request =
-*rq, unsigned long status)
->                                    status, rq);
->  }
->=20=20
-> +static inline void
-> +execlists_begin(struct intel_engine_execlists *execlists,
-
-I had started writing something along the same lines in my working tree
-called execlists_active_user_begin/end -- Which name do you prefer?
-
-> +               struct execlist_port *port)
-> +{
-
-What do you expect the port argument to be useful for?  Is it ever going
-to be anything other than execlists->port?
-
-> +       execlists_set_active_once(execlists, EXECLISTS_ACTIVE_USER);
-> +}
-> +
-> +static inline void
-> +execlists_end(struct intel_engine_execlists *execlists)
-> +{
-> +       execlists_clear_active(execlists, EXECLISTS_ACTIVE_USER);
-> +}
-> +
->  static inline void
->  execlists_context_schedule_in(struct i915_request *rq)
->  {
-> @@ -710,7 +723,7 @@ static void execlists_dequeue(struct intel_engine_cs =
-*engine)
->         spin_unlock_irq(&engine->timeline->lock);
->=20=20
->         if (submit) {
-> -               execlists_set_active(execlists, EXECLISTS_ACTIVE_USER);
-> +               execlists_begin(execlists, execlists->port);
->                 execlists_submit_ports(engine);
->         }
->=20=20
-> @@ -741,7 +754,7 @@ execlists_cancel_port_requests(struct intel_engine_ex=
-eclists * const execlists)
->                 port++;
->         }
->=20=20
-> -       execlists_clear_active(execlists, EXECLISTS_ACTIVE_USER);
-
-This line doesn't seem to exist in my working tree.  I guess it was just
-added?
-
-> +       execlists_end(execlists);
->  }
->=20=20
->  static void clear_gtiir(struct intel_engine_cs *engine)
-> @@ -872,7 +885,7 @@ static void execlists_submission_tasklet(unsigned lon=
-g data)
->  {
->         struct intel_engine_cs * const engine =3D (struct intel_engine_cs=
- *)data;
->         struct intel_engine_execlists * const execlists =3D &engine->exec=
-lists;
-> -       struct execlist_port * const port =3D execlists->port;
-> +       struct execlist_port *port =3D execlists->port;
->         struct drm_i915_private *dev_priv =3D engine->i915;
->         bool fw =3D false;
->=20=20
-> @@ -1010,9 +1023,19 @@ static void execlists_submission_tasklet(unsigned =
-long data)
->=20=20
->                         GEM_BUG_ON(count =3D=3D 0);
->                         if (--count =3D=3D 0) {
-> +                               /*
-> +                                * On the final event corresponding to the
-> +                                * submission of this context, we expect =
-either
-> +                                * an element-switch event or an completi=
-on
-> +                                * event (and on completion, the active-i=
-dle
-> +                                * marker). No more preemptions, lite-res=
-tore
-> +                                * or otherwise
-> +                                */
->                                 GEM_BUG_ON(status & GEN8_CTX_STATUS_PREEM=
-PTED);
->                                 GEM_BUG_ON(port_isset(&port[1]) &&
->                                            !(status & GEN8_CTX_STATUS_ELE=
-MENT_SWITCH));
-> +                               GEM_BUG_ON(!port_isset(&port[1]) &&
-> +                                          !(status & GEN8_CTX_STATUS_ACT=
-IVE_IDLE));
->                                 GEM_BUG_ON(!i915_request_completed(rq));
->                                 execlists_context_schedule_out(rq);
->                                 trace_i915_request_out(rq);
-> @@ -1021,17 +1044,14 @@ static void execlists_submission_tasklet(unsigned=
- long data)
->                                 GEM_TRACE("%s completed ctx=3D%d\n",
->                                           engine->name, port->context_id);
->=20=20
-> -                               execlists_port_complete(execlists, port);
-> +                               port =3D execlists_port_complete(execlist=
-s, port);
-> +                               if (port_isset(port))
-> +                                       execlists_begin(execlists, port);
-
-Isn't this going to call execlists_begin() roughly once per request?
-What's the purpose if we expect it to be a no-op except for the first
-request submitted after execlists_end()?  Isn't the intention to provide
-a hook for bookkeeping that depends on idle to active and active to idle
-transitions of the hardware?
-
-> +                               else
-> +                                       execlists_end(execlists);
->                         } else {
->                                 port_set(port, port_pack(rq, count));
->                         }
->
-
-Isn't there an "execlists_clear_active(execlists,
-EXECLISTS_ACTIVE_USER);" call in your tree a few lines below that is now
-redundant?
-
-> -Chris
-
---=-=-=--
-
---==-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCWrw0CAAKCRCDmTidfVK/
-W4AsAP9rZDfoYOQ3T5JXXO+NEUkLgVGEiN1FRxhxWd7geIj9NwEAlWCd8pWMyfss
-Zn1Si9XdvzZBWfSJhiSLjZ3PAAqk5wQ=
-=5fOZ
------END PGP SIGNATURE-----
---==-=-=--
-
---===============0711365871==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
-
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4
-IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
-
---===============0711365871==--
+UXVvdGluZyBGcmFuY2lzY28gSmVyZXogKDIwMTgtMDMtMjkgMDE6MzI6MDcpCj4gQ2hyaXMgV2ls
+c29uIDxjaHJpc0BjaHJpcy13aWxzb24uY28udWs+IHdyaXRlczoKPiAKPiA+IFF1b3RpbmcgQ2hy
+aXMgV2lsc29uICgyMDE4LTAzLTI4IDIwOjIwOjE5KQo+ID4+IFF1b3RpbmcgRnJhbmNpc2NvIEpl
+cmV6ICgyMDE4LTAzLTI4IDE5OjU1OjEyKQo+ID4+ID4gSGkgQ2hyaXMsCj4gPj4gPiAKPiA+PiBb
+c25pcF0KPiA+PiA+IFRoYXQgc2FpZCwgaXQgd291bGRuJ3QgaHVydCB0byBjYWxsIGVhY2ggb2Yg
+dGhlbSBvbmNlIHBlciBzZXF1ZW5jZSBvZgo+ID4+ID4gb3ZlcmxhcHBpbmcgcmVxdWVzdHMuICBE
+byB5b3Ugd2FudCBtZSB0byBjYWxsIHRoZW0gZnJvbQo+ID4+ID4gZXhlY2xpc3RzX3NldC9jbGVh
+cl9hY3RpdmUoKSB0aGVtc2VsdmVzIHdoZW4gYml0ID09IEVYRUNMSVNUU19BQ1RJVkVfVVNFUiwK
+PiA+PiA+IG9yIGF0IGVhY2ggY2FsbHNpdGUgb2YgZXhlY2xpc3RzX3NldC9jbGVhcl9hY3RpdmUo
+KT8gW3Bvc3NpYmx5IHByb3RlY3RlZAo+ID4+ID4gd2l0aCBhIGNoZWNrIHRoYXQgZXhlY2xpc3Rz
+X2lzX2FjdGl2ZShFWEVDTElTVFNfQUNUSVZFX1VTRVIpIHdhc24ndAo+ID4+ID4gYWxyZWFkeSB0
+aGUgZXhwZWN0ZWQgdmFsdWVdCj4gPj4gCj4gPj4gTm8sIEkgd2FzIHRoaW5raW5nIG9mIGFkZGlu
+ZyBhbiBleGVjbGlzdHNfc3RhcnQoKS9leGVjbGlzdHNfc3RvcCgpCj4gPj4gW25hbWluZyBzdWdn
+ZXN0aW9ucyB3ZWxjb21lLCBiZWdpbi9lbmQ/XSB3aGVyZSB3ZSBjb3VsZCBob29rIGFkZGl0aW9u
+YWwKPiA+PiBib29ra2VlcGluZyBpbnRvLgo+ID4KPiA+IFRyeWluZyB0byBjYWxsIGV4ZWNsaXN0
+X2JlZ2luKCkgb25jZSBkaWRuJ3QgcGFuIG91dC4gSXQncyBlYXNpZXIgdG8KPiA+IHJldXNlIGZv
+ciBzaW1pbGFyIGJvb2trZWVwaW5nIHVzZWQgaW4gZnV0dXJlIHBhdGNoZXMgaWYgZXhlY2xpc3Rf
+YmVnaW4oKQo+ID4gKG9yIHdoYXRldmVyIG5hbWUgc3VpdHMgYmVzdCkgYXQgdGhlIHN0YXJ0IG9m
+IGVhY2ggY29udGV4dC4KPiA+Cj4gPiBTb21ldGhpbmcgYWxvbmcgdGhlIGxpbmVzIG9mOgo+ID4K
+PiA+IEBAIC0zNzQsNiArMzc0LDE5IEBAIGV4ZWNsaXN0c19jb250ZXh0X3N0YXR1c19jaGFuZ2Uo
+c3RydWN0IGk5MTVfcmVxdWVzdCAqcnEsIHVuc2lnbmVkIGxvbmcgc3RhdHVzKQo+ID4gICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdGF0dXMsIHJxKTsKPiA+ICB9Cj4gPiAgCj4g
+PiArc3RhdGljIGlubGluZSB2b2lkCj4gPiArZXhlY2xpc3RzX2JlZ2luKHN0cnVjdCBpbnRlbF9l
+bmdpbmVfZXhlY2xpc3RzICpleGVjbGlzdHMsCj4gCj4gSSBoYWQgc3RhcnRlZCB3cml0aW5nIHNv
+bWV0aGluZyBhbG9uZyB0aGUgc2FtZSBsaW5lcyBpbiBteSB3b3JraW5nIHRyZWUKPiBjYWxsZWQg
+ZXhlY2xpc3RzX2FjdGl2ZV91c2VyX2JlZ2luL2VuZCAtLSBXaGljaCBuYW1lIGRvIHlvdSBwcmVm
+ZXI/CgpIbW0sIHNvIHRoZSByZWFzb24gd2h5IHRoZSB1c2VyIGRpc3RpbmN0aW9uIGV4aXN0cyBp
+cyB0aGF0IHdlIG1heQptb21lbnRhcmlseSByZW1haW4gYWN0aXZlIGFmdGVyIHRoZSBsYXN0IHVz
+ZXIgY29udGV4dCBpcyBzd2l0Y2ggb3V0LCBpZgp0aGVyZSBpcyBhIHByZWVtcHRpb24gZXZlbnQg
+c3RpbGwgcGVuZGluZy4gS2VlcGluZyB0aGUgdXNlciB0YWcgZG9lcwpoZWxwIG1haW50YWluIHRo
+YXQgZGlzdGluY3Rpb24uCgo+IAo+ID4gKyAgICAgICAgICAgICAgIHN0cnVjdCBleGVjbGlzdF9w
+b3J0ICpwb3J0KQo+ID4gK3sKPiAKPiBXaGF0IGRvIHlvdSBleHBlY3QgdGhlIHBvcnQgYXJndW1l
+bnQgdG8gYmUgdXNlZnVsIGZvcj8gIElzIGl0IGV2ZXIgZ29pbmcKPiB0byBiZSBhbnl0aGluZyBv
+dGhlciB0aGFuIGV4ZWNsaXN0cy0+cG9ydD8KClRoZXJlIGFyZSBwYXRjaGVzIGFmb290IHRvIGNo
+YW5nZSB0aGF0LCBzbyBzaW5jZSBJIG5lZWRlZCB0byBpbnNwZWN0CnBvcnQgaGVyZSBpdCBzZWVt
+ZWQgdG8gdGllIGluIG5pY2VseSB3aXRoIHRoZSBwcm9wb3NlZCBjaGFuZ2VzIHRvCmV4ZWNsaXN0
+c19wb3J0X2NvbXBsZXRlLgoKPiA+ICsgICAgICAgZXhlY2xpc3RzX3NldF9hY3RpdmVfb25jZShl
+eGVjbGlzdHMsIEVYRUNMSVNUU19BQ1RJVkVfVVNFUik7Cj4gPiArfQo+ID4gKwo+ID4gK3N0YXRp
+YyBpbmxpbmUgdm9pZAo+ID4gK2V4ZWNsaXN0c19lbmQoc3RydWN0IGludGVsX2VuZ2luZV9leGVj
+bGlzdHMgKmV4ZWNsaXN0cykKPiA+ICt7Cj4gPiArICAgICAgIGV4ZWNsaXN0c19jbGVhcl9hY3Rp
+dmUoZXhlY2xpc3RzLCBFWEVDTElTVFNfQUNUSVZFX1VTRVIpOwo+ID4gK30KPiA+ICsKPiA+ICBz
+dGF0aWMgaW5saW5lIHZvaWQKPiA+ICBleGVjbGlzdHNfY29udGV4dF9zY2hlZHVsZV9pbihzdHJ1
+Y3QgaTkxNV9yZXF1ZXN0ICpycSkKPiA+ICB7Cj4gPiBAQCAtNzEwLDcgKzcyMyw3IEBAIHN0YXRp
+YyB2b2lkIGV4ZWNsaXN0c19kZXF1ZXVlKHN0cnVjdCBpbnRlbF9lbmdpbmVfY3MgKmVuZ2luZSkK
+PiA+ICAgICAgICAgc3Bpbl91bmxvY2tfaXJxKCZlbmdpbmUtPnRpbWVsaW5lLT5sb2NrKTsKPiA+
+ICAKPiA+ICAgICAgICAgaWYgKHN1Ym1pdCkgewo+ID4gLSAgICAgICAgICAgICAgIGV4ZWNsaXN0
+c19zZXRfYWN0aXZlKGV4ZWNsaXN0cywgRVhFQ0xJU1RTX0FDVElWRV9VU0VSKTsKPiA+ICsgICAg
+ICAgICAgICAgICBleGVjbGlzdHNfYmVnaW4oZXhlY2xpc3RzLCBleGVjbGlzdHMtPnBvcnQpOwo+
+ID4gICAgICAgICAgICAgICAgIGV4ZWNsaXN0c19zdWJtaXRfcG9ydHMoZW5naW5lKTsKPiA+ICAg
+ICAgICAgfQo+ID4gIAo+ID4gQEAgLTc0MSw3ICs3NTQsNyBAQCBleGVjbGlzdHNfY2FuY2VsX3Bv
+cnRfcmVxdWVzdHMoc3RydWN0IGludGVsX2VuZ2luZV9leGVjbGlzdHMgKiBjb25zdCBleGVjbGlz
+dHMpCj4gPiAgICAgICAgICAgICAgICAgcG9ydCsrOwo+ID4gICAgICAgICB9Cj4gPiAgCj4gPiAt
+ICAgICAgIGV4ZWNsaXN0c19jbGVhcl9hY3RpdmUoZXhlY2xpc3RzLCBFWEVDTElTVFNfQUNUSVZF
+X1VTRVIpOwo+IAo+IFRoaXMgbGluZSBkb2Vzbid0IHNlZW0gdG8gZXhpc3QgaW4gbXkgd29ya2lu
+ZyB0cmVlLiAgSSBndWVzcyBpdCB3YXMganVzdAo+IGFkZGVkPwoKQSBmZXcgZGF5cyBhZ28sIHll
+cy4KCj4gPiArICAgICAgIGV4ZWNsaXN0c19lbmQoZXhlY2xpc3RzKTsKPiA+ICB9Cj4gPiAgCj4g
+PiAgc3RhdGljIHZvaWQgY2xlYXJfZ3RpaXIoc3RydWN0IGludGVsX2VuZ2luZV9jcyAqZW5naW5l
+KQo+ID4gQEAgLTg3Miw3ICs4ODUsNyBAQCBzdGF0aWMgdm9pZCBleGVjbGlzdHNfc3VibWlzc2lv
+bl90YXNrbGV0KHVuc2lnbmVkIGxvbmcgZGF0YSkKPiA+ICB7Cj4gPiAgICAgICAgIHN0cnVjdCBp
+bnRlbF9lbmdpbmVfY3MgKiBjb25zdCBlbmdpbmUgPSAoc3RydWN0IGludGVsX2VuZ2luZV9jcyAq
+KWRhdGE7Cj4gPiAgICAgICAgIHN0cnVjdCBpbnRlbF9lbmdpbmVfZXhlY2xpc3RzICogY29uc3Qg
+ZXhlY2xpc3RzID0gJmVuZ2luZS0+ZXhlY2xpc3RzOwo+ID4gLSAgICAgICBzdHJ1Y3QgZXhlY2xp
+c3RfcG9ydCAqIGNvbnN0IHBvcnQgPSBleGVjbGlzdHMtPnBvcnQ7Cj4gPiArICAgICAgIHN0cnVj
+dCBleGVjbGlzdF9wb3J0ICpwb3J0ID0gZXhlY2xpc3RzLT5wb3J0Owo+ID4gICAgICAgICBzdHJ1
+Y3QgZHJtX2k5MTVfcHJpdmF0ZSAqZGV2X3ByaXYgPSBlbmdpbmUtPmk5MTU7Cj4gPiAgICAgICAg
+IGJvb2wgZncgPSBmYWxzZTsKPiA+ICAKPiA+IEBAIC0xMDEwLDkgKzEwMjMsMTkgQEAgc3RhdGlj
+IHZvaWQgZXhlY2xpc3RzX3N1Ym1pc3Npb25fdGFza2xldCh1bnNpZ25lZCBsb25nIGRhdGEpCj4g
+PiAgCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICBHRU1fQlVHX09OKGNvdW50ID09IDApOwo+
+ID4gICAgICAgICAgICAgICAgICAgICAgICAgaWYgKC0tY291bnQgPT0gMCkgewo+ID4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAvKgo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgKiBPbiB0aGUgZmluYWwgZXZlbnQgY29ycmVzcG9uZGluZyB0byB0aGUKPiA+ICsg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICogc3VibWlzc2lvbiBvZiB0aGlzIGNvbnRl
+eHQsIHdlIGV4cGVjdCBlaXRoZXIKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICogYW4gZWxlbWVudC1zd2l0Y2ggZXZlbnQgb3IgYW4gY29tcGxldGlvbgo+ID4gKyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgKiBldmVudCAoYW5kIG9uIGNvbXBsZXRpb24sIHRoZSBh
+Y3RpdmUtaWRsZQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKiBtYXJrZXIp
+LiBObyBtb3JlIHByZWVtcHRpb25zLCBsaXRlLXJlc3RvcmUKPiA+ICsgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICogb3Igb3RoZXJ3aXNlCj4gPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAqLwo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBHRU1fQlVH
+X09OKHN0YXR1cyAmIEdFTjhfQ1RYX1NUQVRVU19QUkVFTVBURUQpOwo+ID4gICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICBHRU1fQlVHX09OKHBvcnRfaXNzZXQoJnBvcnRbMV0pICYmCj4g
+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIShzdGF0dXMgJiBH
+RU44X0NUWF9TVEFUVVNfRUxFTUVOVF9TV0lUQ0gpKTsKPiA+ICsgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgR0VNX0JVR19PTighcG9ydF9pc3NldCgmcG9ydFsxXSkgJiYKPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAhKHN0YXR1cyAmIEdFTjhfQ1RY
+X1NUQVRVU19BQ1RJVkVfSURMRSkpOwo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICBHRU1fQlVHX09OKCFpOTE1X3JlcXVlc3RfY29tcGxldGVkKHJxKSk7Cj4gPiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIGV4ZWNsaXN0c19jb250ZXh0X3NjaGVkdWxlX291dChycSk7
+Cj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRyYWNlX2k5MTVfcmVxdWVzdF9v
+dXQocnEpOwo+ID4gQEAgLTEwMjEsMTcgKzEwNDQsMTQgQEAgc3RhdGljIHZvaWQgZXhlY2xpc3Rz
+X3N1Ym1pc3Npb25fdGFza2xldCh1bnNpZ25lZCBsb25nIGRhdGEpCj4gPiAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIEdFTV9UUkFDRSgiJXMgY29tcGxldGVkIGN0eD0lZFxuIiwKPiA+
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGVuZ2luZS0+bmFtZSwg
+cG9ydC0+Y29udGV4dF9pZCk7Cj4gPiAgCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIGV4ZWNsaXN0c19wb3J0X2NvbXBsZXRlKGV4ZWNsaXN0cywgcG9ydCk7Cj4gPiArICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHBvcnQgPSBleGVjbGlzdHNfcG9ydF9jb21wbGV0ZShl
+eGVjbGlzdHMsIHBvcnQpOwo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpZiAo
+cG9ydF9pc3NldChwb3J0KSkKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICBleGVjbGlzdHNfYmVnaW4oZXhlY2xpc3RzLCBwb3J0KTsKPiAKPiBJc24ndCB0aGlzIGdv
+aW5nIHRvIGNhbGwgZXhlY2xpc3RzX2JlZ2luKCkgcm91Z2hseSBvbmNlIHBlciByZXF1ZXN0Pwo+
+IFdoYXQncyB0aGUgcHVycG9zZSBpZiB3ZSBleHBlY3QgaXQgdG8gYmUgYSBuby1vcCBleGNlcHQg
+Zm9yIHRoZSBmaXJzdAo+IHJlcXVlc3Qgc3VibWl0dGVkIGFmdGVyIGV4ZWNsaXN0c19lbmQoKT8g
+IElzbid0IHRoZSBpbnRlbnRpb24gdG8gcHJvdmlkZQo+IGEgaG9vayBmb3IgYm9va2tlZXBpbmcg
+dGhhdCBkZXBlbmRzIG9uIGlkbGUgdG8gYWN0aXZlIGFuZCBhY3RpdmUgdG8gaWRsZQo+IHRyYW5z
+aXRpb25zIG9mIHRoZSBoYXJkd2FyZT8KCkJlY2F1c2Ugb24gYSBjb250ZXh0IHN3aXRjaCBJIG5l
+ZWQgdG8gdXBkYXRlIHRoZSBHUFUgY2xvY2tzLCB1cGRhdGUKdHJhY2tpbmcgZm9yIHByZWVtcHRp
+b24sIGFuZCB0aGF0J3MganVzdCB0aGUgdHdvIEkgaGF2ZSBpbiBteSB0cmVlIHRoYXQKbmVlZCB0
+byBsYW5kIGluIHRoZSBuZXh0IGNvdXBsZSBvZiB3ZWVrcy4uLgoKQ3VycmVudGx5IEkgaGF2ZSwK
+CnN0YXRpYyBpbmxpbmUgdm9pZApleGVjbGlzdHNfYmVnaW4oc3RydWN0IGludGVsX2VuZ2luZV9l
+eGVjbGlzdHMgKmV4ZWNsaXN0cywKICAgICAgICAgICAgICAgIHN0cnVjdCBleGVjbGlzdF9wb3J0
+ICpwb3J0KQp7CiAgICAgICAgc3RydWN0IGludGVsX2VuZ2luZV9jcyAqZW5naW5lID0KICAgICAg
+ICAgICAgICAgIGNvbnRhaW5lcl9vZihleGVjbGlzdHMsIHR5cGVvZigqZW5naW5lKSwgZXhlY2xp
+c3RzKTsKICAgICAgICBzdHJ1Y3QgaTkxNV9yZXF1ZXN0ICpycSA9IHBvcnRfcmVxdWVzdChwb3J0
+KTsKCiAgICAgICAgZXhlY2xpc3RzX3NldF9hY3RpdmVfb25jZShleGVjbGlzdHMsIEVYRUNMSVNU
+U19BQ1RJVkVfVVNFUik7CgogICAgICAgIGludGVsX3Jwc191cGRhdGVfZW5naW5lKGVuZ2luZSwg
+cnEtPmN0eCk7CiAgICAgICAgZXhlY2xpc3RzLT5jdXJyZW50X3ByaW9yaXR5ID0gcnFfcHJpbyhy
+cSk7Cn0KCnN0YXRpYyBpbmxpbmUgdm9pZApleGVjbGlzdHNfZW5kKHN0cnVjdCBpbnRlbF9lbmdp
+bmVfZXhlY2xpc3RzICpleGVjbGlzdHMpCnsKICAgICAgICBzdHJ1Y3QgaW50ZWxfZW5naW5lX2Nz
+ICplbmdpbmUgPQogICAgICAgICAgICAgICAgY29udGFpbmVyX29mKGV4ZWNsaXN0cywgdHlwZW9m
+KCplbmdpbmUpLCBleGVjbGlzdHMpOwoKICAgICAgICBleGVjbGlzdHMtPmN1cnJlbnRfcHJpb3Jp
+dHkgPSBJTlRfTUlOOwogICAgICAgIGludGVsX3Jwc191cGRhdGVfZW5naW5lKGVuZ2luZSwgTlVM
+TCk7CgogICAgICAgIGV4ZWNsaXN0c19jbGVhcl9hY3RpdmUoZXhlY2xpc3RzLCBFWEVDTElTVFNf
+QUNUSVZFX1VTRVIpOwp9Cgo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBlbHNl
+Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZXhlY2xpc3RzX2Vu
+ZChleGVjbGlzdHMpOwo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgfSBlbHNlIHsKPiA+ICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcG9ydF9zZXQocG9ydCwgcG9ydF9wYWNrKHJx
+LCBjb3VudCkpOwo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgfQo+ID4KPiAKPiBJc24ndCB0
+aGVyZSBhbiAiZXhlY2xpc3RzX2NsZWFyX2FjdGl2ZShleGVjbGlzdHMsCj4gRVhFQ0xJU1RTX0FD
+VElWRV9VU0VSKTsiIGNhbGwgaW4geW91ciB0cmVlIGEgZmV3IGxpbmVzIGJlbG93IHRoYXQgaXMg
+bm93Cj4gcmVkdW5kYW50PwoKVGhpcyBpcyBvbmx5IGhhbGYgdGhlIHBhdGNoIHRvIHNob3cgdGhl
+IGdpc3QuIDopCi1DaHJpcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3Rv
+cC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRl
+bC1nZngK
