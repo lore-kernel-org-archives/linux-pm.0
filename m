@@ -1,97 +1,25 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [kbuild-all] [PATCH] OPTIONAL: cpufreq/intel_pstate: fix
- debugfs_simple_attr.cocci warnings
-Date: Fri, 30 Mar 2018 08:22:58 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1803300821330.2870@hadrien>
-References: <alpine.DEB.2.20.1803292109180.2750@hadrien> <CAOMZO5CLpW+2yCYRwAJTPWtXgXkaPGyPQrB3cbBGYvV1fryUQw@mail.gmail.com> <alpine.DEB.2.20.1803292140340.2750@hadrien> <87po3mxf73.fsf@suse.de>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v3 5/8] arm: shmobile: Add the RZ/N1 arch to the shmobile
+ Kconfig
+Date: Fri, 30 Mar 2018 09:18:13 +0200
+Message-ID: <20180330071813.ov5356yaocqptbkx@verge.net.au>
+References: <1522309629-10152-1-git-send-email-michel.pollet@bp.renesas.com>
+ <1522309629-10152-6-git-send-email-michel.pollet@bp.renesas.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323329-449675951-1522390979=:2870"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87po3mxf73.fsf@suse.de>
+Content-Disposition: inline
+In-Reply-To: <1522309629-10152-6-git-send-email-michel.pollet@bp.renesas.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolai Stange <nstange@suse.de>
-Cc: Fabio Estevam <festevam@gmail.com>, Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, kbuild-all@01.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 0day robot <fengguang.wu@intel.com>, Len Brown <lenb@kernel.org>
+To: Michel Pollet <michel.pollet@bp.renesas.com>
+Cc: linux-renesas-soc@vger.kernel.org, phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---8323329-449675951-1522390979=:2870
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+On Thu, Mar 29, 2018 at 08:47:01AM +0100, Michel Pollet wrote:
+> Add the RZ/N1 Family (Part #R9A06G0xx) ARCH config to the rest of
+> the Renesas SoC collection.
+> 
+> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-
-
-On Fri, 30 Mar 2018, Nicolai Stange wrote:
-
-> Julia Lawall <julia.lawall@lip6.fr> writes:
->
-> > On Thu, 29 Mar 2018, Fabio Estevam wrote:
-> >
-> >> Hi Julia,
-> >>
-> >> On Thu, Mar 29, 2018 at 4:12 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >> >  Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE
-> >> >  for debugfs files.
-> >> >
-> >> > Semantic patch information:
-> >> >  Rationale: DEFINE_SIMPLE_ATTRIBUTE + debugfs_create_file()
-> >> >  imposes some significant overhead as compared to
-> >> >  DEFINE_DEBUGFS_ATTRIBUTE + debugfs_create_file_unsafe().
-> >>
-> >> Just curious: could you please expand on what "imposes some
-> >> significant overhead" means?
-> >
-> > I don't know.  I didn't write this rule.  Nicolai, can you explain?
->
-> From commit 49d200deaa68 ("debugfs: prevent access to removed files' private
-> data"):
->
->     Upon return of debugfs_remove()/debugfs_remove_recursive(), it might
->     still be attempted to access associated private file data through
->     previously opened struct file objects. If that data has been freed by
->     the caller of debugfs_remove*() in the meanwhile, the reading/writing
->     process would either encounter a fault or, if the memory address in
->     question has been reassigned again, unrelated data structures could get
->     overwritten.
->     [...]
->     Currently, there are ~1000 call sites of debugfs_create_file() spread
->     throughout the whole tree and touching all of those struct file_operations
->     in order to make them file removal aware by means of checking the result of
->     debugfs_use_file_start() from within their methods is unfeasible.
->
->     Instead, wrap the struct file_operations by a lifetime managing proxy at
->     file open [...]
->
-> The additional overhead comes in terms of additional memory needed: for
-> debugs files created through debugfs_create_file(), one such struct
-> file_operations proxy is allocated for each struct file instantiation,
-> c.f. full_proxy_open().
->
-> This was needed to "repair" the ~1000 call sites without touching them.
->
-> New debugfs users should make their file_operations removal aware
-> themselves by means of DEFINE_DEBUGFS_ATTRIBUTE() and signal that fact to
-> the debugfs core by instantiating them through
-> debugfs_create_file_unsafe().
->
-> See commit c64688081490 ("debugfs: add support for self-protecting
-> attribute file fops") for further information.
-
-Thanks.  Perhaps it would be good to add a reference to this commit in
-the message generated by the semantic patch.
-
-Would it be sufficient to just apply the semantic patch everywhere and
-submit the patches?
-
-julia
-
->
->
-> Thanks,
->
-> Nicolai
->
->
-> --
-> SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton,
-> HRB 21284 (AG Nürnberg)
->
---8323329-449675951-1522390979=:2870--
+Thanks, applied.
