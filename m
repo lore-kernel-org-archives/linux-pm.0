@@ -1,36 +1,81 @@
-From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH 2/2] thermal: uniphier: add UniPhier PXs3 support
-Date: Fri, 30 Mar 2018 12:51:20 +0900
-Message-ID: <1522381880-18892-3-git-send-email-hayashi.kunihiko@socionext.com>
-References: <1522381880-18892-1-git-send-email-hayashi.kunihiko@socionext.com>
+From: Nicolai Stange <nstange@suse.de>
+Subject: Re: [kbuild-all] [PATCH] OPTIONAL: cpufreq/intel_pstate: fix debugfs_simple_attr.cocci warnings
+Date: Fri, 30 Mar 2018 08:14:40 +0200
+Message-ID: <87po3mxf73.fsf@suse.de>
+References: <alpine.DEB.2.20.1803292109180.2750@hadrien>
+        <CAOMZO5CLpW+2yCYRwAJTPWtXgXkaPGyPQrB3cbBGYvV1fryUQw@mail.gmail.com>
+        <alpine.DEB.2.20.1803292140340.2750@hadrien>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1522381880-18892-1-git-send-email-hayashi.kunihiko@socionext.com>
+In-Reply-To: <alpine.DEB.2.20.1803292140340.2750@hadrien> (Julia Lawall's
+        message of "Thu, 29 Mar 2018 21:44:02 +0200 (CEST)")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Julia Lawall <julia.lawall@lip6.fr>, Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, kbuild-all@01.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 0day robot <fengguang.wu@intel.com>, Len Brown <lenb@kernel.org>, Nicolai Stange <nstange@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Add support for UniPhier PXs3 SoC. It is equivalent to LD20.
+Julia Lawall <julia.lawall@lip6.fr> writes:
 
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
----
- drivers/thermal/uniphier_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+> On Thu, 29 Mar 2018, Fabio Estevam wrote:
+>
+>> Hi Julia,
+>>
+>> On Thu, Mar 29, 2018 at 4:12 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+>> >  Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE
+>> >  for debugfs files.
+>> >
+>> > Semantic patch information:
+>> >  Rationale: DEFINE_SIMPLE_ATTRIBUTE + debugfs_create_file()
+>> >  imposes some significant overhead as compared to
+>> >  DEFINE_DEBUGFS_ATTRIBUTE + debugfs_create_file_unsafe().
+>>
+>> Just curious: could you please expand on what "imposes some
+>> significant overhead" means?
+>
+> I don't know.  I didn't write this rule.  Nicolai, can you explain?
 
-diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
-index 9570473..55477d7 100644
---- a/drivers/thermal/uniphier_thermal.c
-+++ b/drivers/thermal/uniphier_thermal.c
-@@ -365,6 +365,10 @@ static const struct of_device_id uniphier_tm_dt_ids[] = {
- 		.compatible = "socionext,uniphier-ld20-thermal",
- 		.data       = &uniphier_ld20_tm_data,
- 	},
-+	{
-+		.compatible = "socionext,uniphier-pxs3-thermal",
-+		.data       = &uniphier_ld20_tm_data,
-+	},
- 	{ /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, uniphier_tm_dt_ids);
+>From commit 49d200deaa68 ("debugfs: prevent access to removed files' private
+data"):
+
+    Upon return of debugfs_remove()/debugfs_remove_recursive(), it might
+    still be attempted to access associated private file data through
+    previously opened struct file objects. If that data has been freed by
+    the caller of debugfs_remove*() in the meanwhile, the reading/writing
+    process would either encounter a fault or, if the memory address in
+    question has been reassigned again, unrelated data structures could get
+    overwritten.
+    [...]
+    Currently, there are ~1000 call sites of debugfs_create_file() spread
+    throughout the whole tree and touching all of those struct file_operations
+    in order to make them file removal aware by means of checking the result of
+    debugfs_use_file_start() from within their methods is unfeasible.
+    
+    Instead, wrap the struct file_operations by a lifetime managing proxy at
+    file open [...]
+
+The additional overhead comes in terms of additional memory needed: for
+debugs files created through debugfs_create_file(), one such struct
+file_operations proxy is allocated for each struct file instantiation,
+c.f. full_proxy_open().
+
+This was needed to "repair" the ~1000 call sites without touching them.
+
+New debugfs users should make their file_operations removal aware
+themselves by means of DEFINE_DEBUGFS_ATTRIBUTE() and signal that fact to
+the debugfs core by instantiating them through
+debugfs_create_file_unsafe().
+
+See commit c64688081490 ("debugfs: add support for self-protecting
+attribute file fops") for further information.
+
+
+Thanks,
+
+Nicolai
+
+
 -- 
-2.7.4
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton,
+HRB 21284 (AG Nürnberg)
