@@ -1,47 +1,103 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH V3] PM / core: fix deferred probe breaking suspend resume
- order
-Date: Fri, 30 Mar 2018 17:50:24 -0500
-Message-ID: <20180330225024.GH9322@bhelgaas-glaptop.roam.corp.google.com>
-References: <1520274579-30492-1-git-send-email-fkan@apm.com>
- <CAL85gmAAVoCCXoLH+c0ROSBy4mS3z86tnbX+7Avh5oGT=fHcfA@mail.gmail.com>
+From: Nicolai Stange <nstange@suse.de>
+Subject: Re: [kbuild-all] [PATCH] OPTIONAL: cpufreq/intel_pstate: fix debugfs_simple_attr.cocci warnings
+Date: Sat, 31 Mar 2018 06:20:32 +0200
+Message-ID: <87605cx4dr.fsf@suse.de>
+References: <alpine.DEB.2.20.1803292109180.2750@hadrien>
+        <CAOMZO5CLpW+2yCYRwAJTPWtXgXkaPGyPQrB3cbBGYvV1fryUQw@mail.gmail.com>
+        <alpine.DEB.2.20.1803292140340.2750@hadrien> <87po3mxf73.fsf@suse.de>
+        <alpine.DEB.2.20.1803300821330.2870@hadrien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <CAL85gmAAVoCCXoLH+c0ROSBy4mS3z86tnbX+7Avh5oGT=fHcfA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Feng Kan <fkan@apm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1803300821330.2870@hadrien> (Julia Lawall's
+        message of "Fri, 30 Mar 2018 08:22:58 +0200 (CEST)")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Nicolai Stange <nstange@suse.de>, Fabio Estevam <festevam@gmail.com>, Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, kbuild-all@01.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 0day robot <fengguang.wu@intel.com>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 15, 2018 at 11:41:33AM -0700, Feng Kan wrote:
-> On Mon, Mar 5, 2018 at 10:29 AM, Feng Kan <fkan@apm.com> wrote:
-> > When bridge and its endpoint is enumerated the devices are added to the
-> > dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
-> > This causes the bridge to be moved to the end of the dpm list when
-> > deferred probe kicks in. The order of the dpm list for bridge and
-> > endpoint is reversed.
-> >
-> > Add reordering code to move the bridge and its children and consumers to
-> > the end of the pm list so the order for suspend and resume is not altered.
-> > The code also move device and its children and consumers to the tail of
-> > device_kset list if it is registered.
-> >
-> > Signed-off-by: Feng Kan <fkan@apm.com>
-> > Signed-off-by: Toan Le <toanle@apm.com>
-> > ...
-> >
-> Hi, just wanted to check if there is anything else I need to change on
-> this. Thanks.
+Julia Lawall <julia.lawall@lip6.fr> writes:
 
-I'm assuming Rafael will handle this.
+> On Fri, 30 Mar 2018, Nicolai Stange wrote:
+>
+>> Julia Lawall <julia.lawall@lip6.fr> writes:
+>>
+>> > On Thu, 29 Mar 2018, Fabio Estevam wrote:
+>> >
+>> >> Hi Julia,
+>> >>
+>> >> On Thu, Mar 29, 2018 at 4:12 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+>> >> >  Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE
+>> >> >  for debugfs files.
+>> >> >
+>> >> > Semantic patch information:
+>> >> >  Rationale: DEFINE_SIMPLE_ATTRIBUTE + debugfs_create_file()
+>> >> >  imposes some significant overhead as compared to
+>> >> >  DEFINE_DEBUGFS_ATTRIBUTE + debugfs_create_file_unsafe().
+>> >>
+>> >> Just curious: could you please expand on what "imposes some
+>> >> significant overhead" means?
+>> >
+>> > I don't know.  I didn't write this rule.  Nicolai, can you explain?
+>>
+>> From commit 49d200deaa68 ("debugfs: prevent access to removed files' private
+>> data"):
+>>
+>>     Upon return of debugfs_remove()/debugfs_remove_recursive(), it might
+>>     still be attempted to access associated private file data through
+>>     previously opened struct file objects. If that data has been freed by
+>>     the caller of debugfs_remove*() in the meanwhile, the reading/writing
+>>     process would either encounter a fault or, if the memory address in
+>>     question has been reassigned again, unrelated data structures could get
+>>     overwritten.
+>>     [...]
+>>     Currently, there are ~1000 call sites of debugfs_create_file() spread
+>>     throughout the whole tree and touching all of those struct file_operations
+>>     in order to make them file removal aware by means of checking the result of
+>>     debugfs_use_file_start() from within their methods is unfeasible.
+>>
+>>     Instead, wrap the struct file_operations by a lifetime managing proxy at
+>>     file open [...]
+>>
+>> The additional overhead comes in terms of additional memory needed: for
+>> debugs files created through debugfs_create_file(), one such struct
+>> file_operations proxy is allocated for each struct file instantiation,
+>> c.f. full_proxy_open().
+>>
+>> This was needed to "repair" the ~1000 call sites without touching them.
+>>
+>> New debugfs users should make their file_operations removal aware
+>> themselves by means of DEFINE_DEBUGFS_ATTRIBUTE() and signal that fact to
+>> the debugfs core by instantiating them through
+>> debugfs_create_file_unsafe().
+>>
+>> See commit c64688081490 ("debugfs: add support for self-protecting
+>> attribute file fops") for further information.
+>
+> Thanks.  Perhaps it would be good to add a reference to this commit in
+> the message generated by the semantic patch.
+
+Thanks for doing this!
+
+
+>
+> Would it be sufficient to just apply the semantic patch everywhere and
+> submit the patches?
+
+In principle yes. But I'm note sure whether such a mass application is
+worth it: the proxy allocation happens only at file open and the
+expectation is that there aren't that many debugfs files kept open at a
+time. OTOH, a struct file_operation consumes 256 bytes with
+sizeof(long) == 8.
+
+In my opinion, new users should avoid this overhead as it's easily
+doable. For existing ones, I don't know.
+
+Thanks,
+
+Nicolai
+
+-- 
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton,
+HRB 21284 (AG Nürnberg)
