@@ -1,44 +1,112 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [PATCH v8 01/10] time: tick-sched: Reorganize idle tick
- management code
-Date: Sun, 1 Apr 2018 03:50:28 +0200
-Message-ID: <20180401015027.GA28019@lerouge>
-References: <40092860.XNQZrLjKDd@aspire.rjw.lan>
- <6322298.N2JNOlAanx@aspire.rjw.lan>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH v4 01/14] soc: qcom: Separate kryo l2 accessors from PMU
+ driver
+Date: Sun, 1 Apr 2018 15:34:56 -0700
+Message-ID: <20180401223456.GG510@tuxbook-pro>
+References: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
+ <1522358807-10413-2-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6322298.N2JNOlAanx@aspire.rjw.lan>
+In-Reply-To: <1522358807-10413-2-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 29, 2018 at 02:00:01PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Prepare the scheduler tick code for reworking the idle loop to
-> avoid stopping the tick in some cases.
-> 
-> The idea is to split the nohz idle entry call to decouple the idle
-> time stats accounting and preparatory work from the actual tick stop
-> code, in order to later be able to delay the tick stop once we reach
-> more power-knowledgeable callers.
-> 
-> Move away the tick_nohz_start_idle() invocation from
-> __tick_nohz_idle_enter(), rename the latter to
-> __tick_nohz_idle_stop_tick() and define tick_nohz_idle_stop_tick()
-> as a wrapper around it for calling it from the outside.
-> 
-> Make tick_nohz_idle_enter() only call tick_nohz_start_idle() instead
-> of calling the entire __tick_nohz_idle_enter(), add another wrapper
-> disabling and enabling interrupts around tick_nohz_idle_stop_tick()
-> and make the current callers of tick_nohz_idle_enter() call it too
-> to retain their current functionality.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu 29 Mar 14:26 PDT 2018, Ilia Lin wrote:
 
-Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+> diff --git a/drivers/soc/qcom/kryo-l2-accessors.c b/drivers/soc/qcom/kryo-l2-accessors.c
+> new file mode 100644
+> index 0000000..b0356c2
+> --- /dev/null
+> +++ b/drivers/soc/qcom/kryo-l2-accessors.c
+> @@ -0,0 +1,66 @@
+> +/*
+> + * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * SPDX-License-Identifier: GPL-2.0
+> + */
 
-Thanks!
+The copyright header in the C file should be:
+
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights reserved.
+ */
+
+> +
+> +#include <linux/spinlock.h>
+> +#include <asm/sysreg.h>
+> +#include <soc/qcom/kryo-l2-accessors.h>
+> +
+> +#define L2CPUSRSELR_EL1         sys_reg(3, 3, 15, 0, 6)
+> +#define L2CPUSRDR_EL1           sys_reg(3, 3, 15, 0, 7)
+> +
+> +static DEFINE_RAW_SPINLOCK(l2_access_lock);
+> +
+> +/**
+> + * set_l2_indirect_reg: write value to an L2 register
+
+* set_l2_indirect_reg() - write value to an L2 register
+
+> + * @reg: Address of L2 register.
+> + * @value: Value to be written to register.
+> + *
+> + * Use architecturally required barriers for ordering between system register
+> + * accesses, and system registers with respect to device memory
+> + */
+> +void set_l2_indirect_reg(u64 reg, u64 val)
+
+As these are now kernel-global functions I recommend that you give them
+a slightly more specific name; e.g. kryo_l2_set_indirect_reg() and
+kryo_l2_get_indirect_reg().
+
+[..]
+> diff --git a/include/soc/qcom/kryo-l2-accessors.h b/include/soc/qcom/kryo-l2-accessors.h
+> new file mode 100644
+> index 0000000..3c796cf
+> --- /dev/null
+> +++ b/include/soc/qcom/kryo-l2-accessors.h
+> @@ -0,0 +1,20 @@
+> +/*
+> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+
+And in the header file it should be:
+
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights reserved.
+ */
+
+> +
+> +#ifndef __SOC_ARCH_QCOM_KRYO_L2_ACCESSORS_H
+> +#define __SOC_ARCH_QCOM_KRYO_L2_ACCESSORS_H
+> +
+> +void set_l2_indirect_reg(u64 reg_addr, u64 val);
+> +u64 get_l2_indirect_reg(u64 reg_addr);
+
+Rename "reg_addr" to "reg" to match the implementation.
+
+Regards,
+Bjorn
