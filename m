@@ -1,179 +1,99 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v4 12/14] cpufreq: Add Kryo CPU scaling driver
-Date: Mon, 2 Apr 2018 20:26:00 +0530
-Message-ID: <c17f3623-849f-cba8-8118-623e4e8261da@codeaurora.org>
+Subject: Re: [PATCH v4 13/14] dt-bindings: cpufreq: Document
+ operating-points-v2-kryo-cpu
+Date: Mon, 2 Apr 2018 20:37:54 +0530
+Message-ID: <7ca35b7a-6078-620b-4772-091e53ef6790@codeaurora.org>
 References: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
- <1522358807-10413-13-git-send-email-ilialin@codeaurora.org>
+ <1522358807-10413-14-git-send-email-ilialin@codeaurora.org>
+ <20180402093018.GC3572@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1522358807-10413-13-git-send-email-ilialin@codeaurora.org>
+In-Reply-To: <20180402093018.GC3572@vireshk-i7>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>, mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Ilia Lin <ilialin@codeaurora.org>
+Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ilia,
+Hi Viresh,
 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 7f56fe5..71350e2 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -134,6 +134,17 @@ config ARM_OMAP2PLUS_CPUFREQ
->  	depends on ARCH_OMAP2PLUS
->  	default ARCH_OMAP2PLUS
->  
-> +config ARM_QCOM_CPUFREQ_KRYO
-> +	tristate "Qualcomm Technologies, Inc. Kryo based"
+On 4/2/2018 3:00 PM, Viresh Kumar wrote:
+> +Sricharan,
+> 
+> On 30-03-18, 00:26, Ilia Lin wrote:
+>> In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996
+>> that have KRYO processors, the CPU ferequencies subset and voltage value
+>> of each OPP varies based on the silicon variant in use.
+>> Qualcomm Technologies, Inc. Process Voltage Scaling Tables
+>> defines the voltage and frequency value based on the msm-id in SMEM
+>> and speedbin blown in the efuse combination.
+>> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
+>> to provide the OPP framework with required information.
+>> This is used to determine the voltage and frequency value for each OPP of
+>> operating-points-v2 table when it is parsed by the OPP framework.
+>>
+>> This change adds documentation.
+>>
+>> Change-Id: I1953f652a48249fb516d175f0e965a9510cd4209
+>> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
+>> ---
+>>  .../devicetree/bindings/cpufreq/kryo-cpufreq.txt   | 693 +++++++++++++++++++++
+>>  1 file changed, 693 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt
+> 
+> This should really go in opp directory.
+> 
+>> new file mode 100644
+>> index 0000000..20cef9d
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt
+>> @@ -0,0 +1,693 @@
+>> +Qualcomm Technologies, Inc. KRYO CPUFreq and OPP bindings
+>> +===================================
+>> +
+>> +In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996
+>> +that have KRYO processors, the CPU ferequencies subset and voltage value
+>> +of each OPP varies based on the silicon variant in use.
+>> +Qualcomm Technologies, Inc. Process Voltage Scaling Tables
+>> +defines the voltage and frequency value based on the msm-id in SMEM
+>> +and speedbin blown in the efuse combination.
+>> +The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
+>> +to provide the OPP framework with required information (existing HW bitmap).
+>> +This is used to determine the voltage and frequency value for each OPP of
+>> +operating-points-v2 table when it is parsed by the OPP framework.
+>> +
+>> +Required properties:
+>> +--------------------
+>> +In 'cpus' nodes:
+>> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+>> +
+>> +In 'operating-points-v2' table:
+>> +- compatible: Should be
+>> +	- 'operating-points-v2-kryo-cpu' for apq8096 and msm8996.
+>> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+>> +		efuse registers that has information about the
+>> +		speedbin that is used to select the right frequency/voltage
+>> +		value pair.
+>> +		Please refer the for nvmem-cells
+>> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
+>> +		and also examples below.
+> 
+> Sricharan is also working on adding these, just make sure you guys do the same
+> thing..
+> 
 
- Does this need to be 'tristate' ?. 'cpu-freq-dt' driver is already
- built as module.
-
-<..>
-
-> +
-> +#include <linux/cpu.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/io.h>
-
- Is io.h required ?
+ Right, i was adding a similar one for krait cores [1]. There is code common in the
+ init sequence across both (little). Do you intent to make them common ?
 
 Regards,
-  Sricharan
+ Sricharan
 
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/nvmem-consumer.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +#include <linux/soc/qcom/smem.h>
-> +
-> +#define MSM_ID_SMEM	137
-> +#define SILVER_LEAD	0
-> +#define GOLD_LEAD	2
-> +
-> +enum _msm_id {
-> +	MSM8996V3 = 0xF6ul,
-> +	APQ8096V3 = 0x123ul,
-> +	MSM8996SG = 0x131ul,
-> +	APQ8096SG = 0x138ul,
-> +};
-> +
-> +enum _msm8996_version {
-> +	MSM8996_V3,
-> +	MSM8996_SG,
-> +	NUM_OF_MSM8996_VERSIONS,
-> +};
-> +
-> +static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
-> +{
-> +	size_t len;
-> +	u32 *msm_id;
-> +	enum _msm8996_version version;
-> +
-> +	msm_id = qcom_smem_get(QCOM_SMEM_HOST_ANY, MSM_ID_SMEM, &len);
-> +	/* The first 4 bytes are format, next to them is the actual msm-id */
-> +	msm_id++;
-> +
-> +	switch ((enum _msm_id)*msm_id) {
-> +	case MSM8996V3:
-> +	case APQ8096V3:
-> +		version = MSM8996_V3;
-> +		break;
-> +	case MSM8996SG:
-> +	case APQ8096SG:
-> +		version = MSM8996_SG;
-> +		break;
-> +	default:
-> +		version = NUM_OF_MSM8996_VERSIONS;
-> +	}
-> +
-> +	return version;
-> +}
-> +
-> +static int __init qcom_cpufreq_kryo_driver_init(void)
-> +{
-> +	struct platform_device *pdev;
-> +	struct device *cpu_dev;
-> +	struct device_node *np;
-> +	struct nvmem_cell *speedbin_nvmem;
-> +	enum _msm8996_version msm8996_version;
-> +	u8 *speedbin;
-> +	size_t len;
-> +	int ret;
-> +	u32 versions;
-> +
-> +	cpu_dev = get_cpu_device(SILVER_LEAD);
-> +	if (IS_ERR_OR_NULL(cpu_dev))
-> +		return PTR_ERR(cpu_dev);
-> +
-> +	msm8996_version = qcom_cpufreq_kryo_get_msm_id();
-> +	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
-> +		dev_err(cpu_dev, "Not Snapdragon 820/821!");
-> +		return -ENODEV;
-> +        }
-> +
-> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
-> +	if (IS_ERR_OR_NULL(np))
-> +		return PTR_ERR(np);
-> +
-> +	if (!of_device_is_compatible(np, "operating-points-v2-kryo-cpu")) {
-> +		ret = -ENOENT;
-> +		goto free_np;
-> +	}
-> +
-> +	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
-> +	if (IS_ERR(speedbin_nvmem)) {
-> +		ret = PTR_ERR(speedbin_nvmem);
-> +		dev_err(cpu_dev, "Could not get nvmem cell: %d\n", ret);
-> +		goto free_np;
-> +	}
-> +
-> +	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
-> +
-> +	switch (msm8996_version) {
-> +	case MSM8996_V3:
-> +		versions = 1 << (unsigned int)(*speedbin);
-> +		break;
-> +	case MSM8996_SG:
-> +		versions = 1 << ((unsigned int)(*speedbin) + 4);
-> +		break;
-> +	default:
-> +		BUG();
-> +		break;
-> +	}
-> +
-> +	ret = PTR_ERR_OR_ZERO(dev_pm_opp_set_supported_hw(cpu_dev,&versions,1));
-> +	if (0 > ret)
-> +		goto free_np;
-> +
-> +	cpu_dev = get_cpu_device(GOLD_LEAD);
-> +	ret = PTR_ERR_OR_ZERO(dev_pm_opp_set_supported_hw(cpu_dev,&versions,1));
-> +
-> +	of_node_put(np);
-> +
-> +	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-> +	if (IS_ERR(pdev)) {
-> +		return PTR_ERR(pdev);
-> +	}
-> +
-> +	return 0;
-> +
-> +free_np:
-> +	of_node_put(np);
-> +
-> +	return ret;
-> +}
-> +late_initcall(qcom_cpufreq_kryo_driver_init);
-> +
-> +MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
-> +MODULE_LICENSE("GPL v2");
-> 
+ [1] https://patchwork.kernel.org/patch/10261873/
+
 
 -- 
 "QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
