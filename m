@@ -1,112 +1,92 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v4 01/14] soc: qcom: Separate kryo l2 accessors from PMU
- driver
-Date: Sun, 1 Apr 2018 15:34:56 -0700
-Message-ID: <20180401223456.GG510@tuxbook-pro>
-References: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
- <1522358807-10413-2-git-send-email-ilialin@codeaurora.org>
+From: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
+Date: Mon, 2 Apr 2018 09:31:33 +0800
+Message-ID: <CADAEsF-BCTYM5a2ywwHv1WkMbghKyw5z=y51Qu8DMCVeax9BwA@mail.gmail.com>
+References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com> <2654052.UvzeiuBsVA@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1522358807-10413-2-git-send-email-ilialin@codeaurora.org>
+In-Reply-To: <2654052.UvzeiuBsVA@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 29 Mar 14:26 PDT 2018, Ilia Lin wrote:
+2018-03-30 18:25 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> On Monday, March 5, 2018 9:47:46 AM CEST Ganesh Mahendran wrote:
+>> single_open() interface requires that the whole output must
+>> fit into a single buffer. This will lead to timeout when
+>> system memory is not in a good situation.
+>>
+>> This patch use seq_open() to show wakeup stats. This method
+>> need only one page, so timeout will not be observed.
+>>
+>> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+>> ----
+>> v2: use srcu_read_lock instead of rcu_read_lock
+>> ---
+>>  drivers/base/power/wakeup.c | 77 +++++++++++++++++++++++++++++++++++----------
+>>  1 file changed, 61 insertions(+), 16 deletions(-)
+>>
+>> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+>> index ea01621..3bcab7d 100644
+>> --- a/drivers/base/power/wakeup.c
+>> +++ b/drivers/base/power/wakeup.c
+>> @@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
+>>       return 0;
+>>  }
+>>
+>> -/**
+>> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
+>> - * @m: seq_file to print the statistics into.
+>> - */
+>> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
+>> +                                     loff_t *pos)
+>>  {
+>>       struct wakeup_source *ws;
+>> -     int srcuidx;
+>> +     loff_t n = *pos;
+>> +     int *srcuidx = m->private;
+>>
+>> -     seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+>> -             "expire_count\tactive_since\ttotal_time\tmax_time\t"
+>> -             "last_change\tprevent_suspend_time\n");
+>> +     if (n == 0) {
+>> +             seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+>> +                     "expire_count\tactive_since\ttotal_time\tmax_time\t"
+>> +                     "last_change\tprevent_suspend_time\n");
+>> +     }
+>>
+>> -     srcuidx = srcu_read_lock(&wakeup_srcu);
+>> -     list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+>> -             print_wakeup_source_stats(m, ws);
+>> -     srcu_read_unlock(&wakeup_srcu, srcuidx);
+>> +     *srcuidx = srcu_read_lock(&wakeup_srcu);
+>> +     list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+>> +             if (n-- > 0)
+>> +                     continue;
+>> +             goto out;
+>> +     }
+>> +     ws = NULL;
+>> +out:
+>> +     return ws;
+>> +}
+>
+> Please clean up the above at least.
 
-> diff --git a/drivers/soc/qcom/kryo-l2-accessors.c b/drivers/soc/qcom/kryo-l2-accessors.c
-> new file mode 100644
-> index 0000000..b0356c2
-> --- /dev/null
-> +++ b/drivers/soc/qcom/kryo-l2-accessors.c
-> @@ -0,0 +1,66 @@
-> +/*
-> + * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * SPDX-License-Identifier: GPL-2.0
-> + */
+Hi, Rafael
 
-The copyright header in the C file should be:
+When length of file "wakeup_sources" is larger than 1 page,
+wakeup_sources_stats_seq_start()
+may be called more then 1 time if the user space wants to read all of the file.
+So we need to locate to last read item, if it is not the first time to
+read the file.
 
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights reserved.
- */
+We can see the same logic in kmemleak_seq_start().
 
-> +
-> +#include <linux/spinlock.h>
-> +#include <asm/sysreg.h>
-> +#include <soc/qcom/kryo-l2-accessors.h>
-> +
-> +#define L2CPUSRSELR_EL1         sys_reg(3, 3, 15, 0, 6)
-> +#define L2CPUSRDR_EL1           sys_reg(3, 3, 15, 0, 7)
-> +
-> +static DEFINE_RAW_SPINLOCK(l2_access_lock);
-> +
-> +/**
-> + * set_l2_indirect_reg: write value to an L2 register
+Thanks.
 
-* set_l2_indirect_reg() - write value to an L2 register
-
-> + * @reg: Address of L2 register.
-> + * @value: Value to be written to register.
-> + *
-> + * Use architecturally required barriers for ordering between system register
-> + * accesses, and system registers with respect to device memory
-> + */
-> +void set_l2_indirect_reg(u64 reg, u64 val)
-
-As these are now kernel-global functions I recommend that you give them
-a slightly more specific name; e.g. kryo_l2_set_indirect_reg() and
-kryo_l2_get_indirect_reg().
-
-[..]
-> diff --git a/include/soc/qcom/kryo-l2-accessors.h b/include/soc/qcom/kryo-l2-accessors.h
-> new file mode 100644
-> index 0000000..3c796cf
-> --- /dev/null
-> +++ b/include/soc/qcom/kryo-l2-accessors.h
-> @@ -0,0 +1,20 @@
-> +/*
-> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-
-And in the header file it should be:
-
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights reserved.
- */
-
-> +
-> +#ifndef __SOC_ARCH_QCOM_KRYO_L2_ACCESSORS_H
-> +#define __SOC_ARCH_QCOM_KRYO_L2_ACCESSORS_H
-> +
-> +void set_l2_indirect_reg(u64 reg_addr, u64 val);
-> +u64 get_l2_indirect_reg(u64 reg_addr);
-
-Rename "reg_addr" to "reg" to match the implementation.
-
-Regards,
-Bjorn
+>
+> If I'm not mistaken, you don't need the label and the goto here.
+>
