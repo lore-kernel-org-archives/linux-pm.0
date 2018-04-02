@@ -1,492 +1,596 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5] thermal: Add cooling device's statistics in sysfs
-Date: Mon,  2 Apr 2018 16:26:25 +0530
-Message-ID: <bab196f91cbddca175c725ae6159c0af639bfe07.1522666398.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI updates for v4.17-rc1
+Date: Mon, 2 Apr 2018 13:10:09 +0200
+Message-ID: <CAJZ5v0jSdVxb9ZuXExRBitmq4uzhPMRMDaVLg0-opO+ite4cMA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This extends the sysfs interface for thermal cooling devices and exposes
-some pretty useful statistics. These statistics have proven to be quite
-useful specially while doing benchmarks related to the task scheduler,
-where we want to make sure that nothing has disrupted the test,
-specially the cooling device which may have put constraints on the CPUs.
-The information exposed here tells us to what extent the CPUs were
-constrained by the thermal framework.
+Hi Linus,
 
-The write-only "reset" file is used to reset the statistics.
+Please pull from the tag
 
-The read-only "time_in_state_ms" file shows the time (in msec) spent by the
-device in the respective cooling states, and it prints one line per
-cooling state.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-4.17-rc1
 
-The read-only "total_trans" file shows single positive integer value
-showing the total number of cooling state transitions the device has
-gone through since the time the cooling device is registered or the time
-when statistics were reset last.
+with top-most commit 49076b2c64a25d21d5d2870dc9caa4aa562b8609
 
-The read-only "trans_table" file shows a two dimensional matrix, where
-an entry <i,j> (row i, column j) represents the number of transitions
-from State_i to State_j.
+ Merge branches 'acpi-osi', 'acpi-scan', 'acpi-tad', 'acpi-video' and
+'acpi-misc'
 
-This is how the directory structure looks like for a single cooling
-device:
+on top of commit 3eb2ce825ea1ad89d20f7a3b5780df850e4be274
 
-$ ls -R /sys/class/thermal/cooling_device0/
-/sys/class/thermal/cooling_device0/:
-cur_state  max_state  power  stats  subsystem  type  uevent
+ Linux 4.16-rc7
 
-/sys/class/thermal/cooling_device0/power:
-autosuspend_delay_ms  runtime_active_time  runtime_suspended_time
-control               runtime_status
+to receive ACPI updates for 4.17-rc1.
 
-/sys/class/thermal/cooling_device0/stats:
-reset  time_in_state_ms  total_trans  trans_table
+These update the ACPICA code in the kernel to follow upstream
+revision 20180313 which includes fixes related to the so-called
+module-level AML (mostly "if" type of statements outside of any
+methods) that should improve the handling of systems that load
+alternative SSDTs depending on the current configuration, for
+example, and event handling fixes related to disabling and enabling
+GPEs on system startup and on suspend/resume.  Moreover, the ACPICA
+license boilerplate is replaced with SPDX license IDs which alone
+reduces the number of lines of ACPICA code in the kernel quite a bit.
 
-This is tested on ARM 64-bit Hisilicon hikey620 board running Ubuntu and
-ARM 64-bit Hisilicon hikey960 board running Android.
+Also added is a new driver for the generic ACPI Time and Alarm
+Device (TAD).  At the moment it only handles the most basic
+capabilities of the TAD, however.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V4->V5:
-- time_in_state's unit is msec now instead of clock_t.
-- Remove double setting of ->stats pointer.
+In addition to that the ACPI battery driver is improved to handle
+battery thresholds on ThinkPads, among other things, some bugs are
+fixed, a new backlight quirk is added and some documentation is
+updated.
 
-V3->V4:
-- Added CONFIG_THERMAL_STATISTICS
-- Added transition table file in sysfs
-- Updated documentation for new sysfs files
-- The unit of time in time_in_state is clock_t now
-- Separate routines for cooling device stat setup/destroy
+Specifics:
 
-V2->V3:
-- Total number of states is max_level + 1. The earlier version didn't
-  take that into account and so the stats for the highest state were
-  missing.
+ - Update the in-kernel ACPICA code to upstream revision 20180313
+   including:
+   * Module-level AML code handling fixes and simplifications (Bob
+     Moore, Erik Schmauss).
+   * Fixes and cleanups related to messaging (Bob Moore).
+   * Events handling fixes related to disabling and enabling GPEs
+     (Erik Schmauss).
+   * Introduction of SPDX license identifiers and removal of license
+     boilerplate in multiple files (Erik Schmauss).
+   * Assorted fixes and cleanups (Bob Moore, Erik Schmauss, Hans
+     de Goede, Seunghun Han).
 
-V1->V2:
-- Move to sysfs from debugfs
+ - Add new basic driver for the ACPI Time and Alarm Device (Rafael
+   Wysocki).
 
- Documentation/thermal/sysfs-api.txt |  31 +++++
- drivers/thermal/Kconfig             |   7 ++
- drivers/thermal/thermal_core.c      |   3 +-
- drivers/thermal/thermal_core.h      |  10 ++
- drivers/thermal/thermal_helpers.c   |   5 +-
- drivers/thermal/thermal_sysfs.c     | 225 ++++++++++++++++++++++++++++++++++++
- include/linux/thermal.h             |   1 +
- 7 files changed, 280 insertions(+), 2 deletions(-)
+ - Modify the ACPI battery driver to support battery thresholds on
+   Lenovo ThinkPads (Ognjen Galic, Colin Ian King).
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index bb9a0a53e76b..911399730c1c 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -255,6 +255,7 @@ temperature) and throttle appropriate devices.
- 2. sysfs attributes structure
- 
- RO	read only value
-+WO	write only value
- RW	read/write value
- 
- Thermal sysfs attributes will be represented under /sys/class/thermal.
-@@ -286,6 +287,11 @@ if hwmon is compiled in or built as a module.
-     |---type:			Type of the cooling device(processor/fan/...)
-     |---max_state:		Maximum cooling state of the cooling device
-     |---cur_state:		Current cooling state of the cooling device
-+    |---stats:			Directory containing cooling device's statistics
-+    |---stats/reset:		Writing any value resets the statistics
-+    |---stats/time_in_state_ms:	Time (msec) spent in various cooling states
-+    |---stats/total_trans:	Total number of times cooling state is changed
-+    |---stats/trans_table:	Cooing state transition table
- 
- 
- Then next two dynamic attributes are created/removed in pairs. They represent
-@@ -490,6 +496,31 @@ cur_state
- 	- cur_state == max_state means the maximum cooling.
- 	RW, Required
- 
-+stats/reset
-+	Writing any value resets the cooling device's statistics.
-+	WO, Required
-+
-+stats/time_in_state_ms:
-+	The amount of time spent by the cooling device in various cooling
-+	states. The output will have "<state> <time>" pair in each line, which
-+	will mean this cooling device spent <time> msec of time at <state>.
-+	Output will have one line for each of the supported states.  usertime
-+	units here is 10mS (similar to other time exported in /proc).
-+	RO, Required
-+
-+stats/total_trans:
-+	A single positive value showing the total number of times the state of a
-+	cooling device is changed.
-+	RO, Required
-+
-+stats/trans_table:
-+	This gives fine grained information about all the cooling state
-+	transitions. The cat output here is a two dimensional matrix, where an
-+	entry <i,j> (row i, column j) represents the number of transitions from
-+	State_i to State_j. If the transition table is bigger than PAGE_SIZE,
-+	reading this will return an -EFBIG error.
-+	RO, Required
-+
- 3. A simple implementation
- 
- ACPI thermal zone may support multiple trip points like critical, hot,
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index b6adc54b96f1..82979880f985 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -15,6 +15,13 @@ menuconfig THERMAL
- 
- if THERMAL
- 
-+config THERMAL_STATISTICS
-+	bool "Thermal state transition statistics"
-+	help
-+	  Export thermal state transition statistics information through sysfs.
-+
-+	  If in doubt, say N.
-+
- config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
- 	int "Emergency poweroff delay in milli-seconds"
- 	depends on THERMAL
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 2b1b0ba393a4..d64325e078db 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -972,8 +972,8 @@ __thermal_cooling_device_register(struct device_node *np,
- 	cdev->ops = ops;
- 	cdev->updated = false;
- 	cdev->device.class = &thermal_class;
--	thermal_cooling_device_setup_sysfs(cdev);
- 	cdev->devdata = devdata;
-+	thermal_cooling_device_setup_sysfs(cdev);
- 	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
- 	result = device_register(&cdev->device);
- 	if (result) {
-@@ -1106,6 +1106,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- 
- 	ida_simple_remove(&thermal_cdev_ida, cdev->id);
- 	device_unregister(&cdev->device);
-+	thermal_cooling_device_destroy_sysfs(cdev);
- }
- EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
- 
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 27e3b1df7360..5e4150261500 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -73,6 +73,7 @@ int thermal_build_list_of_policies(char *buf);
- int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
- void thermal_zone_destroy_device_groups(struct thermal_zone_device *);
- void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *);
-+void thermal_cooling_device_destroy_sysfs(struct thermal_cooling_device *cdev);
- /* used only at binding time */
- ssize_t
- thermal_cooling_device_trip_point_show(struct device *,
-@@ -84,6 +85,15 @@ ssize_t thermal_cooling_device_weight_store(struct device *,
- 					    struct device_attribute *,
- 					    const char *, size_t);
- 
-+#ifdef CONFIG_THERMAL_STATISTICS
-+void thermal_cooling_device_stats_update(struct thermal_cooling_device *cdev,
-+					 unsigned long new_state);
-+#else
-+static inline void
-+thermal_cooling_device_stats_update(struct thermal_cooling_device *cdev,
-+				    unsigned long new_state) {}
-+#endif /* CONFIG_THERMAL_STATISTICS */
-+
- #ifdef CONFIG_THERMAL_GOV_STEP_WISE
- int thermal_gov_step_wise_register(void);
- void thermal_gov_step_wise_unregister(void);
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index 8cdf75adcce1..eb03d7e099bb 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -187,7 +187,10 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 		if (instance->target > target)
- 			target = instance->target;
- 	}
--	cdev->ops->set_cur_state(cdev, target);
-+
-+	if (!cdev->ops->set_cur_state(cdev, target))
-+		thermal_cooling_device_stats_update(cdev, target);
-+
- 	cdev->updated = true;
- 	mutex_unlock(&cdev->lock);
- 	trace_cdev_update(cdev, target);
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index ba81c9080f6e..23b5e0a709b0 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -20,6 +20,7 @@
- #include <linux/err.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-+#include <linux/jiffies.h>
- 
- #include "thermal_core.h"
- 
-@@ -721,6 +722,7 @@ thermal_cooling_device_cur_state_store(struct device *dev,
- 	result = cdev->ops->set_cur_state(cdev, state);
- 	if (result)
- 		return result;
-+	thermal_cooling_device_stats_update(cdev, state);
- 	return count;
- }
- 
-@@ -745,14 +747,237 @@ static const struct attribute_group cooling_device_attr_group = {
- 
- static const struct attribute_group *cooling_device_attr_groups[] = {
- 	&cooling_device_attr_group,
-+	NULL, /* Space allocated for cooling_device_stats_attr_group */
- 	NULL,
- };
- 
-+#ifdef CONFIG_THERMAL_STATISTICS
-+struct cooling_dev_stats {
-+	spinlock_t lock;
-+	unsigned int total_trans;
-+	unsigned long state;
-+	unsigned long max_states;
-+	ktime_t last_time;
-+	ktime_t *time_in_state;
-+	unsigned int *trans_table;
-+};
-+
-+static void update_time_in_state(struct cooling_dev_stats *stats)
-+{
-+	ktime_t now = ktime_get(), delta;
-+
-+	delta = ktime_sub(now, stats->last_time);
-+	stats->time_in_state[stats->state] =
-+		ktime_add(stats->time_in_state[stats->state], delta);
-+	stats->last_time = now;
-+}
-+
-+void thermal_cooling_device_stats_update(struct thermal_cooling_device *cdev,
-+					 unsigned long new_state)
-+{
-+	struct cooling_dev_stats *stats = cdev->stats;
-+
-+	spin_lock(&stats->lock);
-+
-+	if (stats->state == new_state)
-+		goto unlock;
-+
-+	update_time_in_state(stats);
-+	stats->trans_table[stats->state * stats->max_states + new_state]++;
-+	stats->state = new_state;
-+	stats->total_trans++;
-+
-+unlock:
-+	spin_unlock(&stats->lock);
-+}
-+
-+static ssize_t
-+thermal_cooling_device_total_trans_show(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+	struct cooling_dev_stats *stats = cdev->stats;
-+	int ret;
-+
-+	spin_lock(&stats->lock);
-+	ret = sprintf(buf, "%u\n", stats->total_trans);
-+	spin_unlock(&stats->lock);
-+
-+	return ret;
-+}
-+
-+static ssize_t
-+thermal_cooling_device_time_in_state_show(struct device *dev,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+	struct cooling_dev_stats *stats = cdev->stats;
-+	ssize_t len = 0;
-+	int i;
-+
-+	spin_lock(&stats->lock);
-+	update_time_in_state(stats);
-+
-+	for (i = 0; i < stats->max_states; i++) {
-+		len += sprintf(buf + len, "state%u\t%llu\n", i,
-+			       ktime_to_ms(stats->time_in_state[i]));
-+	}
-+	spin_unlock(&stats->lock);
-+
-+	return len;
-+}
-+
-+static ssize_t
-+thermal_cooling_device_reset_store(struct device *dev,
-+				   struct device_attribute *attr,
-+				   const char *buf, size_t count)
-+{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+	struct cooling_dev_stats *stats = cdev->stats;
-+	int i, states = stats->max_states;
-+
-+	spin_lock(&stats->lock);
-+
-+	stats->total_trans = 0;
-+	stats->last_time = ktime_get();
-+	memset(stats->trans_table, 0,
-+	       states * states * sizeof(*stats->trans_table));
-+
-+	for (i = 0; i < stats->max_states; i++)
-+		stats->time_in_state[i] = ktime_set(0, 0);
-+
-+	spin_unlock(&stats->lock);
-+
-+	return count;
-+}
-+
-+static ssize_t
-+thermal_cooling_device_trans_table_show(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+	struct cooling_dev_stats *stats = cdev->stats;
-+	ssize_t len = 0;
-+	int i, j;
-+
-+	len += snprintf(buf + len, PAGE_SIZE - len, " From  :    To\n");
-+	len += snprintf(buf + len, PAGE_SIZE - len, "       : ");
-+	for (i = 0; i < stats->max_states; i++) {
-+		if (len >= PAGE_SIZE)
-+			break;
-+		len += snprintf(buf + len, PAGE_SIZE - len, "state%2u  ", i);
-+	}
-+	if (len >= PAGE_SIZE)
-+		return PAGE_SIZE;
-+
-+	len += snprintf(buf + len, PAGE_SIZE - len, "\n");
-+
-+	for (i = 0; i < stats->max_states; i++) {
-+		if (len >= PAGE_SIZE)
-+			break;
-+
-+		len += snprintf(buf + len, PAGE_SIZE - len, "state%2u:", i);
-+
-+		for (j = 0; j < stats->max_states; j++) {
-+			if (len >= PAGE_SIZE)
-+				break;
-+			len += snprintf(buf + len, PAGE_SIZE - len, "%8u ",
-+				stats->trans_table[i * stats->max_states + j]);
-+		}
-+		if (len >= PAGE_SIZE)
-+			break;
-+		len += snprintf(buf + len, PAGE_SIZE - len, "\n");
-+	}
-+
-+	if (len >= PAGE_SIZE) {
-+		pr_warn_once("Thermal transition table exceeds PAGE_SIZE. Disabling\n");
-+		return -EFBIG;
-+	}
-+	return len;
-+}
-+
-+static DEVICE_ATTR(total_trans, 0444, thermal_cooling_device_total_trans_show,
-+		   NULL);
-+static DEVICE_ATTR(time_in_state_ms, 0444,
-+		   thermal_cooling_device_time_in_state_show, NULL);
-+static DEVICE_ATTR(reset, 0200, NULL, thermal_cooling_device_reset_store);
-+static DEVICE_ATTR(trans_table, 0444,
-+		   thermal_cooling_device_trans_table_show, NULL);
-+
-+static struct attribute *cooling_device_stats_attrs[] = {
-+	&dev_attr_total_trans.attr,
-+	&dev_attr_time_in_state_ms.attr,
-+	&dev_attr_reset.attr,
-+	&dev_attr_trans_table.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group cooling_device_stats_attr_group = {
-+	.attrs = cooling_device_stats_attrs,
-+	.name = "stats"
-+};
-+
-+static void cooling_device_stats_setup(struct thermal_cooling_device *cdev)
-+{
-+	struct cooling_dev_stats *stats;
-+	unsigned long states;
-+	int var;
-+
-+	if (cdev->ops->get_max_state(cdev, &states))
-+		return;
-+
-+	states++; /* Total number of states is highest state + 1 */
-+
-+	var = sizeof(*stats);
-+	var += sizeof(*stats->time_in_state) * states;
-+	var += sizeof(*stats->trans_table) * states * states;
-+
-+	stats = kzalloc(var, GFP_KERNEL);
-+	if (!stats)
-+		return;
-+
-+	stats->time_in_state = (ktime_t *)(stats + 1);
-+	stats->trans_table = (unsigned int *)(stats->time_in_state + states);
-+	cdev->stats = stats;
-+	stats->last_time = ktime_get();
-+	stats->max_states = states;
-+
-+	spin_lock_init(&stats->lock);
-+
-+	/* Fill the empty slot left in cooling_device_attr_groups */
-+	var = ARRAY_SIZE(cooling_device_attr_groups) - 2;
-+	cooling_device_attr_groups[var] = &cooling_device_stats_attr_group;
-+}
-+
-+static void cooling_device_stats_destroy(struct thermal_cooling_device *cdev)
-+{
-+	kfree(cdev->stats);
-+	cdev->stats = NULL;
-+}
-+
-+#else
-+
-+static inline void
-+cooling_device_stats_setup(struct thermal_cooling_device *cdev) {}
-+static inline void
-+cooling_device_stats_destroy(struct thermal_cooling_device *cdev) {}
-+
-+#endif /* CONFIG_THERMAL_STATISTICS */
-+
- void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *cdev)
- {
-+	cooling_device_stats_setup(cdev);
- 	cdev->device.groups = cooling_device_attr_groups;
- }
- 
-+void thermal_cooling_device_destroy_sysfs(struct thermal_cooling_device *cdev)
-+{
-+	cooling_device_stats_destroy(cdev);
-+}
-+
- /* these helper will be used only at the time of bindig */
- ssize_t
- thermal_cooling_device_trip_point_show(struct device *dev,
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 8c5302374eaa..7834be668d80 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -148,6 +148,7 @@ struct thermal_cooling_device {
- 	struct device device;
- 	struct device_node *np;
- 	void *devdata;
-+	void *stats;
- 	const struct thermal_cooling_device_ops *ops;
- 	bool updated; /* true if the cooling device does not need update */
- 	struct mutex lock; /* protect thermal_instances list */
--- 
-2.15.0.194.g9af6a3dea062
+ - Avoid reporting battery capacity over 100 in the ACPI battery
+   driver in some cases (Laszlo Toth).
+
+ - Make the kernel recognize an OEM _OSI string from Dell to avoid
+   power management issues with NVidia GPUs in Dell platforms (Alex
+   Hung).
+
+ - Make the PCI IRQ management code handle missing _PRS cleanly (Alex
+   Hung).
+
+ - Fix uevent notifications related to device hotplut (Lee, Chun-Yi).
+
+ - Prevent the ACPI PAD driver from leaking memory (Lenny Szubowicz).
+
+ - Update the ACPI CPPC library code to include subspace IDs in the
+   kernel messages logged by it (George Cherian).
+
+ - Add backlight quirk for Samsung 670Z5E (Hans de Goede).
+
+ - Add the NFIT and HMAT tables to the list of ACPI tables that can
+   be overridden via initrd (Dan Williams).
+
+ - Fix and clean up some ACPI documentation and Kconfig help language
+   (Aishwarya Pant, Randy Dunlap).
+
+ - Replace license boilerplate with an SPDX license ID in the ACPI
+   PMIC operation region handling code (Rajmohan Mani).
+
+Thanks!
+
+
+---------------
+
+Aishwarya Pant (1):
+      ACPI: sysfs: Update device object sysfs documentation
+
+Alex Hung (2):
+      ACPI / PCI: pci_link: Allow the absence of _PRS and change log level
+      ACPI / OSI: Add OEM _OSI strings to disable NVidia RTD3
+
+Bob Moore (11):
+      ACPICA: Update error message, no functional change
+      ACPICA: Update for some debug output. No functional change
+      ACPICA: Revert "Fix for implicit result conversion for the
+To____ functions"
+      ACPICA: Add option to disable Package object name resolution errors
+      ACPICA: Update version to 20180209
+      ACPICA: Fix memory leak on unusual memory leak
+      ACPICA: AML Debug Object: Don't ignore output of zero-length strings
+      ACPICA: Change a compile-time option to a runtime option
+      ACPICA: Rename a global for clarity, no functional change
+      ACPICA: Cleanup/simplify module-level code support
+      ACPICA: Update version to 20180313
+
+Colin Ian King (1):
+      ACPI: battery: make function __battery_hook_unregister() static
+
+Dan Williams (1):
+      ACPI: add NFIT and HMAT to the initrd override list
+
+Erik Schmauss (8):
+      ACPICA: Restructure ACPI table files
+      ACPICA: Events: Stop unconditionally clearing ACPI IRQs during
+suspend/resume
+      ACPICA: Events: Add parallel GPE handling support to fix
+potential redundant _Exx evaluations
+      ACPICA: Events: Dispatch GPEs after enabling for the first time
+      ACPICA: macros: fix ACPI_ERROR_NAMESPACE macro
+      ACPICA: adding SPDX headers
+      ACPICA: Events: add a return on failure from acpi_hw_register_read
+      ACPICA: Integrate package handling with module-level code
+
+George Cherian (1):
+      ACPI / CPPC: Update all pr_(debug/err) messages to log the susbspace id
+
+Hans de Goede (2):
+      ACPICA: Remove calling of _STA from acpi_get_object_info()
+      ACPI / video: Add quirk to force acpi-video backlight on Samsung 670Z5E
+
+Laszlo Toth (1):
+      ACPI: battery: do not export degraded capacity values over 100
+
+Lee, Chun-Yi (1):
+      ACPI / scan: Send change uevent with offine environmental data
+
+Lenny Szubowicz (1):
+      ACPI: acpi_pad: Fix memory leak in power saving threads
+
+Ognjen Galic (4):
+      battery: Add the battery hooking API
+      power: add to_power_supply macro to the API
+      thinkpad_acpi: Add support for battery thresholds
+      ACPI: battery: Add the ThinkPad "Not Charging" quirk
+
+Rafael J. Wysocki (2):
+      Revert "ACPI: battery: Add the ThinkPad "Not Charging" quirk"
+      ACPI: Add Time and Alarm Device (TAD) driver
+
+Rajmohan Mani (1):
+      ACPI / PMIC: Replace license boilerplate with SPDX license identifier
+
+Randy Dunlap (1):
+      ACPI / Kconfig: Update ACPI_PROCFS_POWER help text
+
+Seunghun Han (1):
+      ACPICA: acpi: acpica: fix acpi operand cache leak in nseval.c
+
+---------------
+
+ .mailmap                                           |    1 -
+ Documentation/ABI/testing/sysfs-bus-acpi           |   37 +
+ .../ABI/testing/sysfs-devices-platform-ACPI-TAD    |  113 ++
+ Documentation/isdn/INTERFACE.CAPI                  |    2 +-
+ Documentation/isdn/README                          |    4 +-
+ Documentation/isdn/README.FAQ                      |    4 +-
+ Documentation/isdn/README.gigaset                  |   16 +-
+ MAINTAINERS                                        |   39 +-
+ Makefile                                           |    6 +-
+ arch/arm/Kconfig.debug                             |    1 -
+ arch/arm/boot/deflate_xip_data.sh                  |    6 +-
+ arch/arm/boot/dts/aspeed-g4.dtsi                   |    5 -
+ arch/arm/boot/dts/aspeed-g5.dtsi                   |    5 -
+ arch/arm/boot/dts/imx7d-sdb.dts                    |    2 +-
+ arch/arm/boot/dts/rk3288.dtsi                      |    2 -
+ arch/arm/boot/dts/sun6i-a31s-sinovoip-bpi-m2.dts   |   63 +-
+ arch/arm/include/asm/vdso.h                        |    2 +
+ arch/arm/kernel/vdso.c                             |   12 +-
+ arch/arm/mach-davinci/board-omapl138-hawk.c        |    4 +-
+ arch/arm/mach-ux500/cpu-db8500.c                   |    3 -
+ arch/arm/plat-omap/dmtimer.c                       |    7 +-
+ arch/arm/plat-omap/include/plat/sram.h             |   11 +-
+ arch/arm/plat-omap/sram.c                          |   36 +-
+ arch/arm/vfp/vfpmodule.c                           |    2 +-
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi       |   16 +-
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi           |    8 +-
+ arch/powerpc/include/asm/book3s/64/mmu.h           |    3 -
+ .../powerpc/include/asm/book3s/64/tlbflush-radix.h |    3 +
+ arch/powerpc/include/asm/cputable.h                |    3 +-
+ arch/powerpc/include/asm/mmu_context.h             |   18 +-
+ arch/powerpc/kernel/dt_cpu_ftrs.c                  |    6 -
+ arch/powerpc/kernel/exceptions-64s.S               |    2 +-
+ arch/powerpc/kernel/irq.c                          |    8 -
+ arch/powerpc/kvm/book3s_64_mmu_radix.c             |    3 -
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c                |   11 -
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   35 +-
+ arch/powerpc/mm/hash_native_64.c                   |   16 +-
+ arch/powerpc/mm/mmu_context_book3s64.c             |    1 -
+ arch/powerpc/mm/pgtable_64.c                       |    1 -
+ arch/powerpc/mm/tlb-radix.c                        |  169 +-
+ arch/x86/events/intel/ds.c                         |   25 +-
+ arch/x86/include/asm/alternative.h                 |    4 +-
+ arch/x86/include/asm/hw_irq.h                      |    1 -
+ arch/x86/include/asm/uv/uv_mmrs.h                  |    2 +-
+ arch/x86/kernel/idt.c                              |    3 -
+ arch/x86/kernel/kvm.c                              |    4 +-
+ arch/x86/kvm/vmx.c                                 |   10 +-
+ arch/x86/platform/uv/tlb_uv.c                      |    2 +
+ arch/x86/purgatory/Makefile                        |    2 +-
+ drivers/acpi/Kconfig                               |   21 +-
+ drivers/acpi/Makefile                              |    1 +
+ drivers/acpi/ac.c                                  |    2 +-
+ drivers/acpi/acpi_pad.c                            |    3 +
+ drivers/acpi/acpi_tad.c                            |  473 +++++
+ drivers/acpi/acpica/acapps.h                       |   38 +-
+ drivers/acpi/acpica/accommon.h                     |   38 +-
+ drivers/acpi/acpica/acconvert.h                    |   38 +-
+ drivers/acpi/acpica/acdebug.h                      |   38 +-
+ drivers/acpi/acpica/acdispat.h                     |   38 +-
+ drivers/acpi/acpica/acevents.h                     |   56 +-
+ drivers/acpi/acpica/acglobal.h                     |   38 +-
+ drivers/acpi/acpica/achware.h                      |   38 +-
+ drivers/acpi/acpica/acinterp.h                     |   38 +-
+ drivers/acpi/acpica/aclocal.h                      |   38 +-
+ drivers/acpi/acpica/acmacros.h                     |   42 +-
+ drivers/acpi/acpica/acnamesp.h                     |   38 +-
+ drivers/acpi/acpica/acobject.h                     |   38 +-
+ drivers/acpi/acpica/acopcode.h                     |   52 +-
+ drivers/acpi/acpica/acparser.h                     |   38 +-
+ drivers/acpi/acpica/acpredef.h                     |   38 +-
+ drivers/acpi/acpica/acresrc.h                      |   38 +-
+ drivers/acpi/acpica/acstruct.h                     |   38 +-
+ drivers/acpi/acpica/actables.h                     |   38 +-
+ drivers/acpi/acpica/acutils.h                      |   38 +-
+ drivers/acpi/acpica/amlcode.h                      |   58 +-
+ drivers/acpi/acpica/amlresrc.h                     |   38 +-
+ drivers/acpi/acpica/dbcmds.c                       |   38 +-
+ drivers/acpi/acpica/dbconvert.c                    |   38 +-
+ drivers/acpi/acpica/dbdisply.c                     |   43 +-
+ drivers/acpi/acpica/dbexec.c                       |   38 +-
+ drivers/acpi/acpica/dbfileio.c                     |   38 +-
+ drivers/acpi/acpica/dbhistry.c                     |   40 +-
+ drivers/acpi/acpica/dbinput.c                      |   38 +-
+ drivers/acpi/acpica/dbmethod.c                     |   38 +-
+ drivers/acpi/acpica/dbnames.c                      |   38 +-
+ drivers/acpi/acpica/dbobject.c                     |   38 +-
+ drivers/acpi/acpica/dbstats.c                      |   38 +-
+ drivers/acpi/acpica/dbtest.c                       |   38 +-
+ drivers/acpi/acpica/dbutils.c                      |   38 +-
+ drivers/acpi/acpica/dbxface.c                      |   38 +-
+ drivers/acpi/acpica/dsargs.c                       |   41 +-
+ drivers/acpi/acpica/dscontrol.c                    |   38 +-
+ drivers/acpi/acpica/dsdebug.c                      |   38 +-
+ drivers/acpi/acpica/dsfield.c                      |   40 +-
+ drivers/acpi/acpica/dsinit.c                       |   38 +-
+ drivers/acpi/acpica/dsmethod.c                     |   40 +-
+ drivers/acpi/acpica/dsmthdat.c                     |   38 +-
+ drivers/acpi/acpica/dsobject.c                     |   38 +-
+ drivers/acpi/acpica/dsopcode.c                     |   44 +-
+ drivers/acpi/acpica/dspkginit.c                    |  204 +-
+ drivers/acpi/acpica/dsutils.c                      |   38 +-
+ drivers/acpi/acpica/dswexec.c                      |   44 +-
+ drivers/acpi/acpica/dswload.c                      |   40 +-
+ drivers/acpi/acpica/dswload2.c                     |   38 +-
+ drivers/acpi/acpica/dswscope.c                     |   40 +-
+ drivers/acpi/acpica/dswstate.c                     |   40 +-
+ drivers/acpi/acpica/evevent.c                      |   47 +-
+ drivers/acpi/acpica/evglock.c                      |   38 +-
+ drivers/acpi/acpica/evgpe.c                        |  282 ++-
+ drivers/acpi/acpica/evgpeblk.c                     |   62 +-
+ drivers/acpi/acpica/evgpeinit.c                    |   38 +-
+ drivers/acpi/acpica/evgpeutil.c                    |   38 +-
+ drivers/acpi/acpica/evhandler.c                    |   38 +-
+ drivers/acpi/acpica/evmisc.c                       |   38 +-
+ drivers/acpi/acpica/evregion.c                     |   40 +-
+ drivers/acpi/acpica/evrgnini.c                     |   45 +-
+ drivers/acpi/acpica/evsci.c                        |   38 +-
+ drivers/acpi/acpica/evxface.c                      |   49 +-
+ drivers/acpi/acpica/evxfevnt.c                     |   40 +-
+ drivers/acpi/acpica/evxfgpe.c                      |   61 +-
+ drivers/acpi/acpica/evxfregn.c                     |   38 +-
+ drivers/acpi/acpica/exconcat.c                     |   38 +-
+ drivers/acpi/acpica/exconfig.c                     |   38 +-
+ drivers/acpi/acpica/exconvrt.c                     |   39 +-
+ drivers/acpi/acpica/excreate.c                     |   40 +-
+ drivers/acpi/acpica/exdebug.c                      |   45 +-
+ drivers/acpi/acpica/exdump.c                       |   38 +-
+ drivers/acpi/acpica/exfield.c                      |   38 +-
+ drivers/acpi/acpica/exfldio.c                      |   40 +-
+ drivers/acpi/acpica/exmisc.c                       |   38 +-
+ drivers/acpi/acpica/exmutex.c                      |   40 +-
+ drivers/acpi/acpica/exnames.c                      |   45 +-
+ drivers/acpi/acpica/exoparg1.c                     |   38 +-
+ drivers/acpi/acpica/exoparg2.c                     |   38 +-
+ drivers/acpi/acpica/exoparg3.c                     |   38 +-
+ drivers/acpi/acpica/exoparg6.c                     |   38 +-
+ drivers/acpi/acpica/exprep.c                       |   38 +-
+ drivers/acpi/acpica/exregion.c                     |   40 +-
+ drivers/acpi/acpica/exresnte.c                     |   38 +-
+ drivers/acpi/acpica/exresolv.c                     |   38 +-
+ drivers/acpi/acpica/exresop.c                      |   39 +-
+ drivers/acpi/acpica/exstore.c                      |   38 +-
+ drivers/acpi/acpica/exstoren.c                     |   38 +-
+ drivers/acpi/acpica/exstorob.c                     |   38 +-
+ drivers/acpi/acpica/exsystem.c                     |   40 +-
+ drivers/acpi/acpica/extrace.c                      |   40 +-
+ drivers/acpi/acpica/exutils.c                      |   40 +-
+ drivers/acpi/acpica/hwacpi.c                       |   38 +-
+ drivers/acpi/acpica/hwesleep.c                     |   40 +-
+ drivers/acpi/acpica/hwgpe.c                        |   41 +-
+ drivers/acpi/acpica/hwpci.c                        |   38 +-
+ drivers/acpi/acpica/hwregs.c                       |   38 +-
+ drivers/acpi/acpica/hwsleep.c                      |   49 +-
+ drivers/acpi/acpica/hwtimer.c                      |   40 +-
+ drivers/acpi/acpica/hwvalid.c                      |   38 +-
+ drivers/acpi/acpica/hwxface.c                      |   40 +-
+ drivers/acpi/acpica/hwxfsleep.c                    |   42 +-
+ drivers/acpi/acpica/nsaccess.c                     |   38 +-
+ drivers/acpi/acpica/nsalloc.c                      |   38 +-
+ drivers/acpi/acpica/nsarguments.c                  |   38 +-
+ drivers/acpi/acpica/nsconvert.c                    |   40 +-
+ drivers/acpi/acpica/nsdump.c                       |   40 +-
+ drivers/acpi/acpica/nsdumpdv.c                     |   43 +-
+ drivers/acpi/acpica/nseval.c                       |   68 +-
+ drivers/acpi/acpica/nsinit.c                       |   45 +-
+ drivers/acpi/acpica/nsload.c                       |   62 +-
+ drivers/acpi/acpica/nsnames.c                      |   41 +-
+ drivers/acpi/acpica/nsobject.c                     |   38 +-
+ drivers/acpi/acpica/nsparse.c                      |   74 +-
+ drivers/acpi/acpica/nspredef.c                     |   38 +-
+ drivers/acpi/acpica/nsprepkg.c                     |   38 +-
+ drivers/acpi/acpica/nsrepair.c                     |   40 +-
+ drivers/acpi/acpica/nsrepair2.c                    |   40 +-
+ drivers/acpi/acpica/nssearch.c                     |   38 +-
+ drivers/acpi/acpica/nsutils.c                      |   40 +-
+ drivers/acpi/acpica/nswalk.c                       |   38 +-
+ drivers/acpi/acpica/nsxfeval.c                     |   38 +-
+ drivers/acpi/acpica/nsxfname.c                     |   59 +-
+ drivers/acpi/acpica/nsxfobj.c                      |   38 +-
+ drivers/acpi/acpica/psargs.c                       |   44 +-
+ drivers/acpi/acpica/psloop.c                       |   66 +-
+ drivers/acpi/acpica/psobject.c                     |   48 +-
+ drivers/acpi/acpica/psopcode.c                     |   38 +-
+ drivers/acpi/acpica/psopinfo.c                     |   38 +-
+ drivers/acpi/acpica/psparse.c                      |   40 +-
+ drivers/acpi/acpica/psscope.c                      |   40 +-
+ drivers/acpi/acpica/pstree.c                       |   39 +-
+ drivers/acpi/acpica/psutils.c                      |   40 +-
+ drivers/acpi/acpica/pswalk.c                       |   38 +-
+ drivers/acpi/acpica/psxface.c                      |   38 +-
+ drivers/acpi/acpica/rsaddr.c                       |   38 +-
+ drivers/acpi/acpica/rscalc.c                       |   38 +-
+ drivers/acpi/acpica/rscreate.c                     |   38 +-
+ drivers/acpi/acpica/rsdump.c                       |   38 +-
+ drivers/acpi/acpica/rsdumpinfo.c                   |   38 +-
+ drivers/acpi/acpica/rsinfo.c                       |   38 +-
+ drivers/acpi/acpica/rsio.c                         |   38 +-
+ drivers/acpi/acpica/rsirq.c                        |   38 +-
+ drivers/acpi/acpica/rslist.c                       |   38 +-
+ drivers/acpi/acpica/rsmemory.c                     |   38 +-
+ drivers/acpi/acpica/rsmisc.c                       |   38 +-
+ drivers/acpi/acpica/rsserial.c                     |   38 +-
+ drivers/acpi/acpica/rsutils.c                      |   38 +-
+ drivers/acpi/acpica/rsxface.c                      |   38 +-
+ drivers/acpi/acpica/tbdata.c                       |   58 +-
+ drivers/acpi/acpica/tbfadt.c                       |   40 +-
+ drivers/acpi/acpica/tbfind.c                       |   38 +-
+ drivers/acpi/acpica/tbinstal.c                     |   44 +-
+ drivers/acpi/acpica/tbprint.c                      |   40 +-
+ drivers/acpi/acpica/tbutils.c                      |   40 +-
+ drivers/acpi/acpica/tbxface.c                      |   40 +-
+ drivers/acpi/acpica/tbxfload.c                     |   51 +-
+ drivers/acpi/acpica/tbxfroot.c                     |   38 +-
+ drivers/acpi/acpica/utaddress.c                    |   38 +-
+ drivers/acpi/acpica/utalloc.c                      |   38 +-
+ drivers/acpi/acpica/utascii.c                      |   40 +-
+ drivers/acpi/acpica/utbuffer.c                     |   38 +-
+ drivers/acpi/acpica/utcache.c                      |   45 +-
+ drivers/acpi/acpica/utcopy.c                       |   40 +-
+ drivers/acpi/acpica/utdebug.c                      |   40 +-
+ drivers/acpi/acpica/utdecode.c                     |   40 +-
+ drivers/acpi/acpica/utdelete.c                     |   58 +-
+ drivers/acpi/acpica/uterror.c                      |   38 +-
+ drivers/acpi/acpica/uteval.c                       |   38 +-
+ drivers/acpi/acpica/utexcep.c                      |   38 +-
+ drivers/acpi/acpica/utglobal.c                     |   38 +-
+ drivers/acpi/acpica/uthex.c                        |   40 +-
+ drivers/acpi/acpica/utids.c                        |   38 +-
+ drivers/acpi/acpica/utinit.c                       |   38 +-
+ drivers/acpi/acpica/utlock.c                       |   40 +-
+ drivers/acpi/acpica/utmath.c                       |   38 +-
+ drivers/acpi/acpica/utmisc.c                       |   38 +-
+ drivers/acpi/acpica/utmutex.c                      |   38 +-
+ drivers/acpi/acpica/utnonansi.c                    |   38 +-
+ drivers/acpi/acpica/utobject.c                     |   40 +-
+ drivers/acpi/acpica/utosi.c                        |   40 +-
+ drivers/acpi/acpica/utownerid.c                    |   38 +-
+ drivers/acpi/acpica/utpredef.c                     |   40 +-
+ drivers/acpi/acpica/utprint.c                      |   40 +-
+ drivers/acpi/acpica/utresdecode.c                  |   38 +-
+ drivers/acpi/acpica/utresrc.c                      |   38 +-
+ drivers/acpi/acpica/utstate.c                      |   38 +-
+ drivers/acpi/acpica/utstring.c                     |   38 +-
+ drivers/acpi/acpica/utstrsuppt.c                   |   38 +-
+ drivers/acpi/acpica/utstrtoul64.c                  |   38 +-
+ drivers/acpi/acpica/uttrack.c                      |   40 +-
+ drivers/acpi/acpica/utuuid.c                       |   38 +-
+ drivers/acpi/acpica/utxface.c                      |   40 +-
+ drivers/acpi/acpica/utxferror.c                    |   38 +-
+ drivers/acpi/acpica/utxfinit.c                     |   86 +-
+ drivers/acpi/acpica/utxfmutex.c                    |   38 +-
+ drivers/acpi/battery.c                             |  174 +-
+ drivers/acpi/battery.h                             |   11 -
+ drivers/acpi/bus.c                                 |    6 +-
+ drivers/acpi/cppc_acpi.c                           |   27 +-
+ drivers/acpi/osi.c                                 |    9 +
+ drivers/acpi/pci_link.c                            |    4 +-
+ drivers/acpi/pmic/tps68470_pmic.c                  |   10 +-
+ drivers/acpi/sbs.c                                 |    2 +-
+ drivers/acpi/scan.c                                |    3 +-
+ drivers/acpi/tables.c                              |    2 +-
+ drivers/acpi/video_detect.c                        |    9 +
+ drivers/atm/iphase.c                               |    2 +-
+ .../gpu/drm/amd/amdkfd/kfd_device_queue_manager.c  |   20 +-
+ drivers/gpu/drm/amd/amdkfd/kfd_packet_manager.c    |    3 +-
+ drivers/gpu/drm/tegra/dc.c                         |    6 +-
+ drivers/i2c/busses/i2c-stm32f7.c                   |    5 -
+ drivers/infiniband/core/addr.c                     |   25 -
+ drivers/infiniband/core/device.c                   |    3 +-
+ drivers/infiniband/core/ucma.c                     |   47 +-
+ drivers/infiniband/hw/hns/hns_roce_hw_v2.c         |    2 +-
+ drivers/infiniband/hw/mlx5/main.c                  |   12 +-
+ drivers/infiniband/hw/mlx5/mr.c                    |    3 -
+ drivers/infiniband/hw/qedr/main.c                  |    3 +-
+ drivers/infiniband/hw/qedr/verbs.c                 |   45 +-
+ drivers/md/dm-mpath.c                              |    2 +-
+ drivers/md/dm.c                                    |    8 +-
+ drivers/mtd/chips/jedec_probe.c                    |    2 -
+ drivers/mtd/nand/atmel/pmecc.c                     |    2 +-
+ drivers/net/bonding/bond_main.c                    |   73 +-
+ drivers/net/dsa/mt7530.c                           |    2 +-
+ drivers/net/ethernet/marvell/mvneta.c              |    1 -
+ drivers/net/ethernet/mellanox/mlx4/en_dcb_nl.c     |   72 +-
+ drivers/net/ethernet/mellanox/mlx4/en_ethtool.c    |   33 +-
+ drivers/net/ethernet/mellanox/mlx4/en_main.c       |    4 +-
+ .../net/ethernet/mellanox/mlx4/resource_tracker.c  |    1 -
+ drivers/net/ethernet/mellanox/mlx5/core/Kconfig    |    2 +-
+ .../net/ethernet/mellanox/mlx5/core/en_ethtool.c   |   17 -
+ drivers/net/ethernet/mellanox/mlx5/core/en_main.c  |   13 +-
+ drivers/net/ethernet/mellanox/mlx5/core/en_rep.c   |   34 +-
+ drivers/net/ethernet/mellanox/mlx5/core/en_tc.c    |   18 +-
+ .../net/ethernet/mellanox/mlxsw/spectrum_router.c  |   78 +-
+ drivers/net/ethernet/netronome/nfp/bpf/jit.c       |    6 +-
+ drivers/net/ethernet/qlogic/qede/qede_fp.c         |   20 +-
+ drivers/net/ethernet/realtek/r8169.c               |    4 +-
+ drivers/net/hyperv/rndis_filter.c                  |    2 +-
+ drivers/net/team/team.c                            |   12 +-
+ drivers/net/usb/lan78xx.c                          |   33 +-
+ drivers/net/usb/qmi_wwan.c                         |    5 -
+ drivers/net/vrf.c                                  |    5 +-
+ .../broadcom/brcm80211/brcmfmac/cfg80211.c         |    2 +-
+ .../wireless/broadcom/brcm80211/brcmfmac/common.c  |    5 -
+ .../wireless/broadcom/brcm80211/brcmfmac/common.h  |    1 -
+ .../wireless/broadcom/brcm80211/brcmfmac/core.c    |   57 -
+ drivers/net/wireless/intel/iwlwifi/cfg/9000.c      |   62 -
+ drivers/net/wireless/intel/iwlwifi/fw/file.h       |    1 -
+ drivers/net/wireless/intel/iwlwifi/iwl-config.h    |    5 -
+ drivers/net/wireless/intel/iwlwifi/mvm/fw.c        |    4 -
+ drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c  |    9 +-
+ drivers/net/wireless/intel/iwlwifi/mvm/mvm.h       |    3 -
+ drivers/net/wireless/intel/iwlwifi/mvm/phy-ctxt.c  |   21 +-
+ drivers/net/wireless/intel/iwlwifi/mvm/sta.c       |   74 +-
+ .../net/wireless/intel/iwlwifi/mvm/time-event.c    |   15 +-
+ drivers/net/wireless/intel/iwlwifi/mvm/tx.c        |   10 +-
+ drivers/net/wireless/intel/iwlwifi/pcie/drv.c      |   38 +-
+ drivers/platform/x86/Kconfig                       |    1 +
+ drivers/platform/x86/thinkpad_acpi.c               |  389 +++-
+ drivers/power/supply/ds2780_battery.c              |    5 -
+ drivers/power/supply/ds2781_battery.c              |    5 -
+ drivers/power/supply/power_supply_core.c           |    2 +-
+ drivers/scsi/hosts.c                               |    1 -
+ drivers/scsi/hpsa.c                                |   73 +-
+ drivers/scsi/hpsa.h                                |    1 -
+ drivers/scsi/ibmvscsi/ibmvfc.c                     |    6 +-
+ drivers/scsi/iscsi_tcp.c                           |    8 -
+ drivers/scsi/megaraid/megaraid_sas.h               |    1 -
+ drivers/scsi/megaraid/megaraid_sas_base.c          |   39 +-
+ drivers/scsi/megaraid/megaraid_sas_fusion.c        |   12 +-
+ drivers/scsi/sd.c                                  |    2 -
+ drivers/scsi/virtio_scsi.c                         |  129 +-
+ drivers/vhost/net.c                                |    4 +-
+ drivers/vhost/vhost.c                              |   17 +-
+ fs/ceph/file.c                                     |    9 +-
+ include/acpi/acbuffer.h                            |   38 +-
+ include/acpi/acconfig.h                            |   40 +-
+ include/acpi/acexcep.h                             |   38 +-
+ include/acpi/acnames.h                             |   38 +-
+ include/acpi/acoutput.h                            |   38 +-
+ include/acpi/acpi.h                                |   38 +-
+ include/acpi/acpiosxf.h                            |   38 +-
+ include/acpi/acpixf.h                              |   63 +-
+ include/acpi/acrestyp.h                            |   38 +-
+ include/acpi/actbl.h                               |   38 +-
+ include/acpi/actbl1.h                              | 1668 ++++++++--------
+ include/acpi/actbl2.h                              | 1990 +++++++++++---------
+ include/acpi/actbl3.h                              | 1056 +++++------
+ include/acpi/actypes.h                             |   61 +-
+ include/acpi/acuuid.h                              |   38 +-
+ include/acpi/battery.h                             |   21 +
+ include/acpi/platform/acenv.h                      |   38 +-
+ include/acpi/platform/acenvex.h                    |   38 +-
+ include/acpi/platform/acgcc.h                      |   38 +-
+ include/acpi/platform/acgccex.h                    |   38 +-
+ include/acpi/platform/acintel.h                    |   38 +-
+ include/acpi/platform/aclinux.h                    |   40 +-
+ include/acpi/platform/aclinuxex.h                  |   38 +-
+ include/linux/if_vlan.h                            |   15 +-
+ include/linux/net_dim.h                            |    2 +-
+ include/linux/power_supply.h                       |    2 +
+ include/net/llc_conn.h                             |    2 +-
+ include/net/netfilter/nf_tables.h                  |    4 -
+ include/net/sch_generic.h                          |    1 -
+ include/rdma/ib_addr.h                             |    2 -
+ include/scsi/scsi_host.h                           |    3 -
+ ipc/shm.c                                          |   12 -
+ kernel/events/hw_breakpoint.c                      |   30 +-
+ mm/kmemleak.c                                      |   12 +-
+ mm/memcontrol.c                                    |    6 +-
+ mm/page_owner.c                                    |    6 +-
+ mm/slab.c                                          |    1 -
+ mm/vmstat.c                                        |    2 -
+ net/batman-adv/gateway_client.c                    |    5 +-
+ net/batman-adv/multicast.c                         |    4 +-
+ net/core/dev.c                                     |    2 +-
+ net/core/skbuff.c                                  |    6 +-
+ net/ipv4/ip_tunnel.c                               |   31 +-
+ net/ipv4/ip_vti.c                                  |    2 +
+ net/ipv4/netfilter/Makefile                        |    2 +-
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c     |   14 +-
+ net/ipv4/netfilter/nf_socket_ipv4.c                |    6 +-
+ net/ipv4/syncookies.c                              |    2 -
+ net/ipv4/tcp_input.c                               |    3 -
+ net/ipv6/ip6_output.c                              |   13 +-
+ net/ipv6/ip6_vti.c                                 |   36 +-
+ net/ipv6/netfilter/nf_socket_ipv6.c                |    6 +-
+ net/ipv6/route.c                                   |   16 +-
+ net/ipv6/seg6_iptunnel.c                           |   16 +-
+ net/ipv6/syncookies.c                              |    2 -
+ net/llc/llc_c_ac.c                                 |   15 +-
+ net/llc/llc_conn.c                                 |   32 +-
+ net/netfilter/nf_tables_api.c                      |  106 +-
+ net/netfilter/nft_set_hash.c                       |    2 +-
+ net/netlink/af_netlink.c                           |    3 -
+ net/sched/act_api.c                                |    4 +-
+ net/sched/sch_generic.c                            |   17 +-
+ net/smc/smc_clc.c                                  |    2 +-
+ net/strparser/strparser.c                          |    4 +-
+ net/xfrm/xfrm_input.c                              |    6 -
+ net/xfrm/xfrm_output.c                             |    5 +-
+ scripts/adjust_autoksyms.sh                        |    7 -
+ scripts/package/builddeb                           |    2 +-
+ scripts/package/mkspec                             |    2 +-
+ sound/core/oss/pcm_oss.c                           |    4 +-
+ sound/core/pcm_native.c                            |    2 +-
+ sound/usb/quirks.c                                 |    1 -
+ tools/bpf/bpftool/map.c                            |    2 +-
+ tools/objtool/check.c                              |   11 -
+ tools/power/acpi/common/cmfsize.c                  |   38 +-
+ tools/power/acpi/common/getopt.c                   |   38 +-
+ .../acpi/os_specific/service_layers/oslinuxtbl.c   |   40 +-
+ .../acpi/os_specific/service_layers/osunixdir.c    |   40 +-
+ .../acpi/os_specific/service_layers/osunixmap.c    |   40 +-
+ .../acpi/os_specific/service_layers/osunixxf.c     |   40 +-
+ tools/power/acpi/tools/acpidump/acpidump.h         |   38 +-
+ tools/power/acpi/tools/acpidump/apdump.c           |   40 +-
+ tools/power/acpi/tools/acpidump/apfiles.c          |   38 +-
+ tools/power/acpi/tools/acpidump/apmain.c           |   38 +-
+ 417 files changed, 5389 insertions(+), 12584 deletions(-)
