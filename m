@@ -1,83 +1,86 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
-Date: Mon, 2 Apr 2018 08:46:58 +0200
-Message-ID: <CAMuHMdV42sNybiCv7kE+AjKCr1P4Zdw66S1xRxA+d-86nrNQMw@mail.gmail.com>
-References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
- <2654052.UvzeiuBsVA@aspire.rjw.lan> <CAMuHMdXqLmyJF6qhyzgnPeU=T0TyxDpsw1PD8BiYiSXCZeTz=g@mail.gmail.com>
- <CADAEsF89WyoBA2vEadOUL6qeEQtGGMm5XFNpXRJh7FpZpJUneQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
+ capabilities
+Date: Mon, 2 Apr 2018 12:38:02 +0530
+Message-ID: <20180402070802.GE4714@vireshk-i7>
+References: <1522229514-14377-1-git-send-email-shunyong.yang@hxt-semitech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CADAEsF89WyoBA2vEadOUL6qeEQtGGMm5XFNpXRJh7FpZpJUneQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1522229514-14377-1-git-send-email-shunyong.yang@hxt-semitech.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Shunyong Yang <shunyong.yang@hxt-semitech.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Joey Zheng <yu.zheng@hxt-semitech.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ganesh,
+On 28-03-18, 17:31, Shunyong Yang wrote:
+> When multiple cpus are related in one cpufreq policy, the first online
+> cpu will be chosen by default to handle cpufreq operations. Let's take
+> cpu0 and cpu1 as an example.
+> 
+> When cpu0 is offline, policy->cpu will be shifted to cpu1. Cpu1's should
+> be initialized. Otherwise, perf capabilities are 0s and speed change can
+> not take effect.
+> 
+> This patch copies perf capabilities of the first online cpu to other
+> shared cpus when policy shared type is CPUFREQ_SHARED_TYPE_ANY.
+> 
+> Cc: Joey Zheng <yu.zheng@hxt-semitech.com>
+> Signed-off-by: Shunyong Yang <shunyong.yang@hxt-semitech.com>
+> ---
+> 
+> The original RFC link,
+>   https://patchwork.kernel.org/patch/10299055/.
+> 
+> This patch solves same issue as RFC above.
+> 
+> Patch name is changed as code is too much different with RFC above.
+> 
+> Remove extra init() per Viresh Kumar's comments and only handle
+> CPPC CPUFREQ_SHARED_TYPE_ANY case.
+> 
+> ---
+>  drivers/cpufreq/cppc_cpufreq.c | 12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 8f7b21a4d537..dc625a93a58e 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -164,8 +164,18 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
+>  	policy->shared_type = cpu->shared_type;
+>  
+> -	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+> +	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+> +		int i;
+> +
+>  		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
+> +
+> +		for_each_cpu(i, policy->cpus) {
+> +			if (i != policy->cpu)
 
-On Mon, Apr 2, 2018 at 3:33 AM, Ganesh Mahendran
-<opensource.ganesh@gmail.com> wrote:
-> 2018-03-30 19:00 GMT+08:00 Geert Uytterhoeven <geert@linux-m68k.org>:
->> On Fri, Mar 30, 2018 at 12:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> On Monday, March 5, 2018 9:47:46 AM CEST Ganesh Mahendran wrote:
->>>> single_open() interface requires that the whole output must
->>>> fit into a single buffer. This will lead to timeout when
->>>> system memory is not in a good situation.
->>>>
->>>> This patch use seq_open() to show wakeup stats. This method
->>>> need only one page, so timeout will not be observed.
+I would rather do:
 
->>>> --- a/drivers/base/power/wakeup.c
->>>> +++ b/drivers/base/power/wakeup.c
->>>> @@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
->>>>       return 0;
->>>>  }
->>>>
->>>> -/**
->>>> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
->>>> - * @m: seq_file to print the statistics into.
->>>> - */
->>>> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
->>>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
->>>> +                                     loff_t *pos)
->>>>  {
+                        if (unlikely(i == policy->cpu))
+                                continue;
 
->>>> +     list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
->>>> +             if (n-- > 0)
->>>> +                     continue;
->>>> +             goto out;
->>>> +     }
->>>> +     ws = NULL;
->>>> +out:
->>>> +     return ws;
->>>> +}
->>>
->>> Please clean up the above at least.
->>>
->>> If I'm not mistaken, you don't need the label and the goto here.
->>
->> The continue is also not needed, if the test condition is inverted.
->
-> Hi, Geert
->
-> We need to locate to the last read item. What is your suggestion here?
+> +				memcpy(&all_cpu_data[i]->perf_caps,
+> +				       &cpu->perf_caps,
+> +				       sizeof(cpu->perf_caps));
+> +		}
+> +	}
+>  	else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
 
-I didn't mean to get rid of that logic, but to reorganize the code to make it
-simpler:
+It should be:
 
-        list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-                if (n-- <= 0)
-                        return ws;
-        }
+  	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
 
-Gr{oetje,eeting}s,
+>  		/* Support only SW_ANY for now. */
+>  		pr_debug("Unsupported CPU co-ord type\n");
 
-                        Geert
+And thanks for making it work this way.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+viresh
