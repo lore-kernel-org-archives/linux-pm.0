@@ -1,84 +1,110 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 13/14] dt-bindings: cpufreq: Document
- operating-points-v2-kryo-cpu
-Date: Mon, 2 Apr 2018 15:00:18 +0530
-Message-ID: <20180402093018.GC3572@vireshk-i7>
-References: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
- <1522358807-10413-14-git-send-email-ilialin@codeaurora.org>
+From: "Yang, Shunyong" <shunyong.yang@hxt-semitech.com>
+Subject: Re: [PATCH] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
+ capabilities
+Date: Mon, 2 Apr 2018 10:00:42 +0000
+Message-ID: <1522663241.8018.3.camel@hxt-semitech.com>
+References: <1522229514-14377-1-git-send-email-shunyong.yang@hxt-semitech.com>
+         <20180402070802.GE4714@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1522358807-10413-14-git-send-email-ilialin@codeaurora.org>
+In-Reply-To: <20180402070802.GE4714@vireshk-i7>
+Content-Language: en-US
+Content-ID: <13C51476FCD5504D862AD055F20F9A28@hxt-semitech.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org, sricharan@codeaurora.org
+To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zheng, Joey" <yu.zheng@hxt-semitech.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-+Sricharan,
+Hi, Kumar,
 
-On 30-03-18, 00:26, Ilia Lin wrote:
-> In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996
-> that have KRYO processors, the CPU ferequencies subset and voltage value
-> of each OPP varies based on the silicon variant in use.
-> Qualcomm Technologies, Inc. Process Voltage Scaling Tables
-> defines the voltage and frequency value based on the msm-id in SMEM
-> and speedbin blown in the efuse combination.
-> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
-> to provide the OPP framework with required information.
-> This is used to determine the voltage and frequency value for each OPP of
-> operating-points-v2 table when it is parsed by the OPP framework.
+On Mon, 2018-04-02 at 12:38 +0530, Viresh Kumar wrote:
+> On 28-03-18, 17:31, Shunyong Yang wrote:
+> > 
+> > When multiple cpus are related in one cpufreq policy, the first
+> > online
+> > cpu will be chosen by default to handle cpufreq operations. Let's
+> > take
+> > cpu0 and cpu1 as an example.
+> > 
+> > When cpu0 is offline, policy->cpu will be shifted to cpu1. Cpu1's
+> > should
+> > be initialized. Otherwise, perf capabilities are 0s and speed
+> > change can
+> > not take effect.
+> > 
+> > This patch copies perf capabilities of the first online cpu to
+> > other
+> > shared cpus when policy shared type is CPUFREQ_SHARED_TYPE_ANY.
+> > 
+> > Cc: Joey Zheng <yu.zheng@hxt-semitech.com>
+> > Signed-off-by: Shunyong Yang <shunyong.yang@hxt-semitech.com>
+> > ---
+> > 
+> > The original RFC link,
+> >   https://patchwork.kernel.org/patch/10299055/.
+> > 
+> > This patch solves same issue as RFC above.
+> > 
+> > Patch name is changed as code is too much different with RFC above.
+> > 
+> > Remove extra init() per Viresh Kumar's comments and only handle
+> > CPPC CPUFREQ_SHARED_TYPE_ANY case.
+> > 
+> > ---
+> >  drivers/cpufreq/cppc_cpufreq.c | 12 +++++++++++-
+> >  1 file changed, 11 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cppc_cpufreq.c
+> > b/drivers/cpufreq/cppc_cpufreq.c
+> > index 8f7b21a4d537..dc625a93a58e 100644
+> > --- a/drivers/cpufreq/cppc_cpufreq.c
+> > +++ b/drivers/cpufreq/cppc_cpufreq.c
+> > @@ -164,8 +164,18 @@ static int cppc_cpufreq_cpu_init(struct
+> > cpufreq_policy *policy)
+> >  	policy->cpuinfo.transition_latency =
+> > cppc_get_transition_latency(cpu_num);
+> >  	policy->shared_type = cpu->shared_type;
+> >  
+> > -	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+> > +	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+> > +		int i;
+> > +
+> >  		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
+> > +
+> > +		for_each_cpu(i, policy->cpus) {
+> > +			if (i != policy->cpu)
+> I would rather do:
 > 
-> This change adds documentation.
+>                         if (unlikely(i == policy->cpu))
+>                                 continue;
+
+Thanks. Will change in v2.
+
+> > 
+> > +				memcpy(&all_cpu_data[i]-
+> > >perf_caps,
+> > +				       &cpu->perf_caps,
+> > +				       sizeof(cpu->perf_caps));
+> > +		}
+> > +	}
+> >  	else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
+> It should be:
 > 
-> Change-Id: I1953f652a48249fb516d175f0e965a9510cd4209
-> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-> ---
->  .../devicetree/bindings/cpufreq/kryo-cpufreq.txt   | 693 +++++++++++++++++++++
->  1 file changed, 693 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt
+>   	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL)
+> {
 > 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt
 
-This should really go in opp directory.
+Thanks. Will change in v2. I ignored this as checkpatch.pl reports
+nothing here.
 
-> new file mode 100644
-> index 0000000..20cef9d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/kryo-cpufreq.txt
-> @@ -0,0 +1,693 @@
-> +Qualcomm Technologies, Inc. KRYO CPUFreq and OPP bindings
-> +===================================
-> +
-> +In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996
-> +that have KRYO processors, the CPU ferequencies subset and voltage value
-> +of each OPP varies based on the silicon variant in use.
-> +Qualcomm Technologies, Inc. Process Voltage Scaling Tables
-> +defines the voltage and frequency value based on the msm-id in SMEM
-> +and speedbin blown in the efuse combination.
-> +The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
-> +to provide the OPP framework with required information (existing HW bitmap).
-> +This is used to determine the voltage and frequency value for each OPP of
-> +operating-points-v2 table when it is parsed by the OPP framework.
-> +
-> +Required properties:
-> +--------------------
-> +In 'cpus' nodes:
-> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> +
-> +In 'operating-points-v2' table:
-> +- compatible: Should be
-> +	- 'operating-points-v2-kryo-cpu' for apq8096 and msm8996.
-> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-> +		efuse registers that has information about the
-> +		speedbin that is used to select the right frequency/voltage
-> +		value pair.
-> +		Please refer the for nvmem-cells
-> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
-> +		and also examples below.
+Thanks.
+Shunyong.
 
-Sricharan is also working on adding these, just make sure you guys do the same
-thing..
 
--- 
-viresh
+> > 
+> >  		/* Support only SW_ANY for now. */
+> >  		pr_debug("Unsupported CPU co-ord type\n");
+> And thanks for making it work this way.
+> 
