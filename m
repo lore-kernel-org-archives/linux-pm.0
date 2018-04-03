@@ -1,11 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/2] cpufreq: Stop validating cpufreq table in drivers
-Date: Tue,  3 Apr 2018 15:37:37 +0530
-Message-ID: <cover.1522749887.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/2] cpufreq: scmi: Don't validate the frequency table twice
+Date: Tue,  3 Apr 2018 15:37:38 +0530
+Message-ID: <442ecfd0a5bddf32c912c449b072d8a0139318fc.1522749887.git.viresh.kumar@linaro.org>
+References: <cover.1522749887.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cover.1522749887.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1522749887.git.viresh.kumar@linaro.org>
+References: <cover.1522749887.git.viresh.kumar@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,25 +23,45 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The cpufreq core is already validating the CPU frequency table after
+calling the ->init() callback of the cpufreq drivers and the drivers
+don't need to do the same anymore. Though they need to set the
+policy->freq_table field directly from the ->init() callback now.
 
-Most of the patches from the previous series are already applied but we
-didn't remove the cpufreq_table_validate_and_show() helper yet as the
-scmi driver came from a different tree than PM.
+Stop validating the frequency table from scmi driver.
 
-These can be applied over 4.17-rc1 (that would come out after a week),
-currently based off linux next.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/scmi-cpufreq.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-Viresh Kumar (2):
-  cpufreq: scmi: Don't validate the frequency table twice
-  cpufreq: Drop cpufreq_table_validate_and_show()
-
- Documentation/cpu-freq/core.txt        | 12 +++++-------
- Documentation/cpu-freq/cpu-drivers.txt |  6 ++----
- drivers/cpufreq/freq_table.c           | 14 --------------
- drivers/cpufreq/scmi-cpufreq.c         | 10 +---------
- include/linux/cpufreq.h                |  2 --
- 5 files changed, 8 insertions(+), 36 deletions(-)
-
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index 959a1dbe3835..b4dbc77459b6 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -159,13 +159,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	priv->domain_id = handle->perf_ops->device_domain_id(cpu_dev);
+ 
+ 	policy->driver_data = priv;
+-
+-	ret = cpufreq_table_validate_and_show(policy, freq_table);
+-	if (ret) {
+-		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
+-			ret);
+-		goto out_free_cpufreq_table;
+-	}
++	policy->freq_table = freq_table;
+ 
+ 	/* SCMI allows DVFS request for any domain from any CPU */
+ 	policy->dvfs_possible_from_any_cpu = true;
+@@ -179,8 +173,6 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->fast_switch_possible = true;
+ 	return 0;
+ 
+-out_free_cpufreq_table:
+-	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+ out_free_priv:
+ 	kfree(priv);
+ out_free_opp:
 -- 
 2.15.0.194.g9af6a3dea062
