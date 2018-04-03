@@ -1,126 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: linux-next on x60: hangs when I request suspend was Re: linux-next
- on x60: network manager often complains "network is disabled" after resume
-Date: Tue, 3 Apr 2018 10:51:20 +0200
-Message-ID: <20180403085120.GD3926@amd>
-References: <20180318104023.GA10392@amd>
- <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
- <20180319092106.GA5683@amd>
- <1521474008.20208.2.camel@redhat.com>
- <20180319173356.GA28462@amd>
- <1521481549.20208.8.camel@redhat.com>
- <20180320080334.GA31772@amd>
- <1521551568.16848.5.camel@redhat.com>
- <20180325061927.GA2148@amd>
- <95efbba35c3389015d4919a59f8d01bc2d375a19.camel@redhat.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/2] cpufreq: Stop validating cpufreq table in drivers
+Date: Tue,  3 Apr 2018 15:37:37 +0530
+Message-ID: <cover.1522749887.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="IMjqdzrDRly81ofr"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <95efbba35c3389015d4919a59f8d01bc2d375a19.camel@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dan Williams <dcbw@redhat.com>
-Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---IMjqdzrDRly81ofr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Most of the patches from the previous series are already applied but we
+didn't remove the cpufreq_table_validate_and_show() helper yet as the
+scmi driver came from a different tree than PM.
 
-Hi!
+These can be applied over 4.17-rc1 (that would come out after a week),
+currently based off linux next.
 
-I wanted to re-test next (4.16.0-rc7-next-20180329), but that one does
-not suspend at all.
+Viresh Kumar (2):
+  cpufreq: scmi: Don't validate the frequency table twice
+  cpufreq: Drop cpufreq_table_validate_and_show()
 
-I normally suspend by pressing power button in MATE, but that action
-currently results in machine hanging.
+ Documentation/cpu-freq/core.txt        | 12 +++++-------
+ Documentation/cpu-freq/cpu-drivers.txt |  6 ++----
+ drivers/cpufreq/freq_table.c           | 14 --------------
+ drivers/cpufreq/scmi-cpufreq.c         | 10 +---------
+ include/linux/cpufreq.h                |  2 --
+ 5 files changed, 8 insertions(+), 36 deletions(-)
 
-								Pavel
-
-
-On Mon 2018-03-26 10:33:55, Dan Williams wrote:
-> On Sun, 2018-03-25 at 08:19 +0200, Pavel Machek wrote:
-> > > > > Ok, what does 'nmcli dev' and 'nmcli radio' show?
-> > > >=20
-> > > > Broken state.
-> > > >=20
-> > > > pavel@amd:~$ nmcli dev
-> > > > DEVICE  TYPE      STATE        CONNECTION
-> > > > eth1    ethernet  unavailable  --
-> > > > lo      loopback  unmanaged    --
-> > > > wlan0   wifi      unmanaged    --
-> > >=20
-> > > If the state is "unmanaged" on resume, that would indicate a
-> > > problem
-> > > with sleep/wake and likely not a kernel network device issue.
-> > >=20
-> > > We should probably move this discussion to the NM lists to debug
-> > > further.  Before you suspend, run "nmcli gen log level trace" to
-> > > turn
-> > > on full debug logging, then reproduce the issue, and send a pointer
-> > > to
-> > > those logs (scrubbed for anything you consider sensitive) to the NM
-> > > mailing list.
-> >=20
-> > Hmm :-)
-> >=20
-> > root@amd:/data/pavel# nmcli gen log level trace
-> > Error: Unknown log level 'trace'
->=20
-> What NM version?  'trace' is pretty old (since 1.0 from December 2014)
-> so unless you're using a really, really old version of Debian I'd
-> expect you'd have it.  Anyway, debug would do.
->=20
-> > root@amd:/data/pavel# nmcli gen log level help
-> > Error: Unknown log level 'help'
->=20
-> nmcli gen help
->=20
-> > root@amd:/data/pavel# nmcli gen log level
-> > Error: value for 'level' argument is required.
-> > root@amd:/data/pavel# nmcli gen log level debug
->=20
-> This should be OK.
->=20
-> > root@amd:/data/pavel# cat /var/log/sys/log
->=20
-> It routes it to whatever the syslog 'daemon' facility logs to (however
-> that's configured on your system).  Usually /var/log/messages or
-> /var/log/daemon.log or sometimes your distro configures it to
-> /var/log/NetworkManager.log.
->=20
-> Or if you're using a systemd-based distro, it would probably be in the
-> systemd journal so "journalctl -b -u NetworkManager"
->=20
-> > Where do I get the logs? I don't see much in the syslog...
->=20
-> > And.. It seems that it is "every other suspend". One resume results
-> > in
-> > broken network, one in working one, one in broken one...
->=20
-> Does your distro use pm-utils, upower, or systemd for suspend/resume
-> handling?
->=20
-> Dan
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---IMjqdzrDRly81ofr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlrDQIgACgkQMOfwapXb+vJlNwCffj9I76y/inQmM5n3MBpHRnQ2
-/d8An0c2qoHmtzrhJj/9CeogIKHuLobz
-=KQ5p
------END PGP SIGNATURE-----
-
---IMjqdzrDRly81ofr--
+-- 
+2.15.0.194.g9af6a3dea062
