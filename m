@@ -1,26 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Do not include debugfs.h
-Date: Tue, 3 Apr 2018 16:07:52 +0530
-Message-ID: <CAOh2x=m_QPyCJri9XyM9TYZe10F2mDs6P3uPgerGFM5AxsSo-A@mail.gmail.com>
-References: <1679361.0Gr8UWkMAK@aspire.rjw.lan>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / QoS: mark expected switch fall-throughs
+Date: Tue, 3 Apr 2018 12:49:50 +0200
+Message-ID: <20180403104950.GI6758@amd>
+References: <20180330211844.GA23072@embeddedgus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="pe+tqlI1iYzVj1X/"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1679361.0Gr8UWkMAK@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20180330211844.GA23072@embeddedgus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 30, 2018 at 3:22 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The intel_pstate driver doesn't use debugfs any more, so drop
-> linux/debugfs.h from the list of included headers in it.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c |    1 -
->  1 file changed, 1 deletion(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+--pe+tqlI1iYzVj1X/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri 2018-03-30 16:18:44, Gustavo A. R. Silva wrote:
+> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+> where we are expecting to fall through.
+>=20
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--pe+tqlI1iYzVj1X/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlrDXE4ACgkQMOfwapXb+vLkmgCbB80CiFmKMNG0Tmeor6hhbyLK
+TcMAnji0LXVnZPoM7yx6f1vo8KQNh4Pe
+=BzI7
+-----END PGP SIGNATURE-----
+
+--pe+tqlI1iYzVj1X/--
