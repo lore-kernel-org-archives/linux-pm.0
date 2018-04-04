@@ -1,76 +1,44 @@
-From: Shunyong Yang <shunyong.yang@hxt-semitech.com>
-Subject: [PATCH v2] cpufreq: cppc_cpufreq: Initialize shared cpu's perf capabilities
-Date: Wed, 4 Apr 2018 17:16:20 +0800
-Message-ID: <1522833380-18438-1-git-send-email-shunyong.yang@hxt-semitech.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V2 1/2] cpufreq: scmi: Don't validate the frequency table
+ twice
+Date: Wed, 4 Apr 2018 10:48:02 +0100
+Message-ID: <5ce48bce-4fcf-1e0a-6b78-f588fbf7e4a5@arm.com>
+References: <cover.1522749887.git.viresh.kumar@linaro.org>
+ <442ecfd0a5bddf32c912c449b072d8a0139318fc.1522749887.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shunyong Yang <shunyong.yang@hxt-semitech.com>, Joey Zheng <yu.zheng@hxt-semitech.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <442ecfd0a5bddf32c912c449b072d8a0139318fc.1522749887.git.viresh.kumar@linaro.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-When multiple cpus are related in one cpufreq policy, the first online
-cpu will be chosen by default to handle cpufreq operations. Let's take
-cpu0 and cpu1 as an example.
 
-When cpu0 is offline, policy->cpu will be shifted to cpu1. Cpu1's perf
-capabilities should be initialized. Otherwise, perf capabilities are 0s
-and speed change can not take effect.
+(I have exact patches ready :), was on vacation)
 
-This patch copies perf capabilities of the first online cpu to other
-shared cpus when policy shared type is CPUFREQ_SHARED_TYPE_ANY.
+On 03/04/18 11:07, Viresh Kumar wrote:
+> The cpufreq core is already validating the CPU frequency table after
+> calling the ->init() callback of the cpufreq drivers and the drivers
+> don't need to do the same anymore. Though they need to set the
+> policy->freq_table field directly from the ->init() callback now.
+> 
+> Stop validating the frequency table from scmi driver.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Cc: Joey Zheng <yu.zheng@hxt-semitech.com>
-Signed-off-by: Shunyong Yang <shunyong.yang@hxt-semitech.com>
----
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Changes in v2:
-  -Add unlikely in cpu comparison per Kumar's comments.
-  -Fix coding style per Kumar's comments.
-
-Changes in v1:
-  -Drop RFC tag,
-     The original RFC link,
-     https://patchwork.kernel.org/patch/10299055/.
-
-     This patch solves same issue as RFC above.
-
-     Patch name is changed as code is too much different with RFC above.
-
-  -Remove extra init() per Viresh Kumar's comments and only handle
-   CPPC CPUFREQ_SHARED_TYPE_ANY case.
-
----
- drivers/cpufreq/cppc_cpufreq.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 8f7b21a4d537..679e43b9c980 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -164,9 +164,20 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
- 	policy->shared_type = cpu->shared_type;
- 
--	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-+	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
-+		int i;
-+
- 		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
--	else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
-+
-+		for_each_cpu(i, policy->cpus) {
-+			if (unlikely(i == policy->cpu))
-+				continue;
-+
-+			memcpy(&all_cpu_data[i]->perf_caps,
-+			       &cpu->perf_caps,
-+			       sizeof(cpu->perf_caps));
-+		}
-+	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
- 		/* Support only SW_ANY for now. */
- 		pr_debug("Unsupported CPU co-ord type\n");
- 		return -EFAULT;
 -- 
-1.8.3.1
+Regards,
+Sudeep
