@@ -1,147 +1,66 @@
-From: Stefan Popa <stefan.popa@analog.com>
-Subject: [PATCH 2/3] adp5061: Add support for battery charging enable
-Date: Wed, 4 Apr 2018 11:17:57 +0300
-Message-ID: <1522829877-7977-1-git-send-email-stefan.popa@analog.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: x32 suspend failuer in Re: linux-next: Tree for Apr 4
+Date: Wed, 4 Apr 2018 10:49:05 +0200
+Message-ID: <20180404084905.GA12303@amd>
+References: <20180404165559.4cd0c12c@canb.auug.org.au>
+ <20180404075047.GB9342@amd>
+ <CAJZ5v0hxyXtyKacJufivL9HWbQBsxTBYVipnHK4+QquTYjpc+A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="HcAYCG3uE/tztfnV"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hxyXtyKacJufivL9HWbQBsxTBYVipnHK4+QquTYjpc+A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: davem@davemloft.net, mchehab@kernel.org, gregkh@linuxfoundation.org, linus.walleij@linaro.org, akpm@linux-foundation.org, rdunlap@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stefan.popa@analog.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the option to enable/disable battery charging. This
-option is not configurable via the power_supply properties, therefore,
-access via sysfs was provided to examine and modify this attribute on the
-fly.
 
-Signed-off-by: Stefan Popa <stefan.popa@analog.com>
----
- .../ABI/testing/sysfs-class-power-adp5061          | 10 ++++
- MAINTAINERS                                        |  1 +
- drivers/power/supply/adp5061.c                     | 62 ++++++++++++++++++++++
- 3 files changed, 73 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-power-adp5061
+--HcAYCG3uE/tztfnV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-adp5061 b/Documentation/ABI/testing/sysfs-class-power-adp5061
-new file mode 100644
-index 0000000..0d056aa
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-power-adp5061
-@@ -0,0 +1,10 @@
-+What: /sys/class/power_supply/adp5061/charging_enabled
-+Description:
-+	Enable/disable battery charging.
-+
-+	The ADP5061 charging function can be enabled by setting
-+	this attribute to 1. See device datasheet for details.
-+
-+	Valid values:
-+		- 1: enabled
-+		- 0: disabled
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a9ca73b..9271246 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -804,6 +804,7 @@ W:	http://ez.analog.com/community/linux-device-drivers
- S:	Supported
- F:	Documentation/devicetree/bindings/power/supply/adp5061.txt
- F:	drivers/power/supply/adp5061.c
-+F:	Documentation/ABI/testing/sysfs-class-power-adp5061
- 
- ANALOG DEVICES INC ADV7180 DRIVER
- M:	Lars-Peter Clausen <lars@metafoo.de>
-diff --git a/drivers/power/supply/adp5061.c b/drivers/power/supply/adp5061.c
-index c00a02e..7cd2e67 100644
---- a/drivers/power/supply/adp5061.c
-+++ b/drivers/power/supply/adp5061.c
-@@ -79,6 +79,10 @@
- #define ADP5061_IEND_IEND_MSK			GENMASK(7, 5)
- #define ADP5061_IEND_IEND_MODE(x)		(((x) & 0x07) << 5)
- 
-+/* ADP5061_FUNC_SET_1 */
-+#define ADP5061_FUNC_SET_1_EN_CHG_MSK		BIT(0)
-+#define ADP5061_FUNC_SET_1_EN_CHG_MODE(x)	(((x) & 0x01) << 0)
-+
- #define ADP5061_NO_BATTERY	0x01
- #define ADP5061_ICHG_MAX	1300 // mA
- 
-@@ -692,11 +696,63 @@ static const struct power_supply_desc adp5061_desc = {
- 	.num_properties		= ARRAY_SIZE(adp5061_props),
- };
- 
-+static int charging_enabled_show(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct adp5061_state *st = power_supply_get_drvdata(psy);
-+	unsigned int regval;
-+	int ret;
-+
-+	ret = regmap_read(st->regmap, ADP5061_FUNC_SET_1, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	regval &= ADP5061_FUNC_SET_1_EN_CHG_MSK;
-+	return sprintf(buf, "%d\n", regval);
-+}
-+
-+static int charging_enabled_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct adp5061_state *st = power_supply_get_drvdata(psy);
-+	u8 chg_en;
-+	int ret;
-+
-+	ret = kstrtou8(buf, 0, &chg_en);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_update_bits(st->regmap, ADP5061_FUNC_SET_1,
-+				 ADP5061_FUNC_SET_1_EN_CHG_MSK,
-+				 ADP5061_FUNC_SET_1_EN_CHG_MODE(!!chg_en));
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR_RW(charging_enabled);
-+
-+static struct attribute *adp5061_attributes[] = {
-+	&dev_attr_charging_enabled.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group adp5061_attr_group = {
-+	.attrs = adp5061_attributes,
-+};
-+
- static int adp5061_probe(struct i2c_client *client,
- 			 const struct i2c_device_id *id)
- {
- 	struct power_supply_config psy_cfg = {};
- 	struct adp5061_state *st;
-+	int ret;
- 
- 	st = devm_kzalloc(&client->dev, sizeof(*st), GFP_KERNEL);
- 	if (!st)
-@@ -722,6 +778,12 @@ static int adp5061_probe(struct i2c_client *client,
- 		return PTR_ERR(st->psy);
- 	}
- 
-+	ret = sysfs_create_group(&st->psy->dev.kobj, &adp5061_attr_group);
-+	if (ret < 0) {
-+		dev_err(&client->dev, "failed to create sysfs group\n");
-+		return ret;
-+	}
-+
- 	return 0;
- }
- 
--- 
-2.7.4
+On Wed 2018-04-04 09:58:17, Rafael J. Wysocki wrote:
+> On Wed, Apr 4, 2018 at 9:50 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> >> Please do not add any v4.18 destined stuff to your linux-next included
+> >> trees until after v4.17-rc1 has been released.
+> >
+> > On thinkpad x60, suspend does not suspend at all with this -next
+> > version. Previous versions suspended/resumed fine but broke networking.
+> >
+> > Any ideas? I guess bisecting on next would not be easy?
+>=20
+> Well, why would it be different from a bisect on any other git repo?
+
+Well, v4.16-rc4 is parent of v4.16-rc6, but next-20180304 is not
+parent of next-20180307.
+
+But you are right that if I do bisect between -linus and -next, it
+should work.
+
+Anyway, does s2ram work for you in -next? Are you testing 32bit?
+
+Best regards,
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--HcAYCG3uE/tztfnV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlrEkYEACgkQMOfwapXb+vLG4QCgsFeKGFXML6N/TenjjVMvDLz5
+eW0An2VftGX/HEQTmpKPKF9iGVJJD0Oo
+=pdrV
+-----END PGP SIGNATURE-----
+
+--HcAYCG3uE/tztfnV--
