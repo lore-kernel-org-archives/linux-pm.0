@@ -1,88 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
- capabilities
-Date: Wed, 4 Apr 2018 16:06:00 +0530
-Message-ID: <20180404103600.GJ3572@vireshk-i7>
-References: <1522833380-18438-1-git-send-email-shunyong.yang@hxt-semitech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1522833380-18438-1-git-send-email-shunyong.yang@hxt-semitech.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shunyong Yang <shunyong.yang@hxt-semitech.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Joey Zheng <yu.zheng@hxt-semitech.com>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: [PATCH] cpufreq: armada-37xx: Fix clock leak
+Date: Wed,  4 Apr 2018 16:44:44 +0200
+Message-ID: <20180404144444.4142-1-gregory.clement@bootlin.com>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04-04-18, 17:16, Shunyong Yang wrote:
-> When multiple cpus are related in one cpufreq policy, the first online
-> cpu will be chosen by default to handle cpufreq operations. Let's take
-> cpu0 and cpu1 as an example.
-> 
-> When cpu0 is offline, policy->cpu will be shifted to cpu1. Cpu1's perf
-> capabilities should be initialized. Otherwise, perf capabilities are 0s
-> and speed change can not take effect.
-> 
-> This patch copies perf capabilities of the first online cpu to other
-> shared cpus when policy shared type is CPUFREQ_SHARED_TYPE_ANY.
-> 
-> Cc: Joey Zheng <yu.zheng@hxt-semitech.com>
-> Signed-off-by: Shunyong Yang <shunyong.yang@hxt-semitech.com>
-> ---
-> 
-> Changes in v2:
->   -Add unlikely in cpu comparison per Kumar's comments.
->   -Fix coding style per Kumar's comments.
-> 
-> Changes in v1:
->   -Drop RFC tag,
->      The original RFC link,
->      https://patchwork.kernel.org/patch/10299055/.
-> 
->      This patch solves same issue as RFC above.
-> 
->      Patch name is changed as code is too much different with RFC above.
-> 
->   -Remove extra init() per Viresh Kumar's comments and only handle
->    CPPC CPUFREQ_SHARED_TYPE_ANY case.
-> 
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 8f7b21a4d537..679e43b9c980 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -164,9 +164,20 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
->  	policy->shared_type = cpu->shared_type;
->  
-> -	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-> +	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
-> +		int i;
-> +
->  		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
-> -	else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
-> +
-> +		for_each_cpu(i, policy->cpus) {
-> +			if (unlikely(i == policy->cpu))
-> +				continue;
-> +
-> +			memcpy(&all_cpu_data[i]->perf_caps,
-> +			       &cpu->perf_caps,
-> +			       sizeof(cpu->perf_caps));
+There was no clk_put() balancing the clk_get(). This commit fixes it.
 
-I think this can be written in two lines without violating the 80
-columns rule.
+Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
+Cc: <stable@vger.kernel.org>
+Reported-by: Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+---
+ drivers/cpufreq/armada-37xx-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> +		}
-> +	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
->  		/* Support only SW_ANY for now. */
->  		pr_debug("Unsupported CPU co-ord type\n");
->  		return -EFAULT;
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
+diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
+index c6ebc88a7d8d..72a2975499db 100644
+--- a/drivers/cpufreq/armada-37xx-cpufreq.c
++++ b/drivers/cpufreq/armada-37xx-cpufreq.c
+@@ -202,6 +202,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
+ 	cur_frequency = clk_get_rate(clk);
+ 	if (!cur_frequency) {
+ 		dev_err(cpu_dev, "Failed to get clock rate for CPU\n");
++		clk_put(clk);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -210,6 +211,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
+ 		return -EINVAL;
+ 
+ 	armada37xx_cpufreq_dvfs_setup(nb_pm_base, clk, dvfs->divider);
++	clk_put(clk);
+ 
+ 	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
+ 	     load_lvl++) {
 -- 
-viresh
+2.16.3
