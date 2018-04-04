@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v9 04/10] jiffies: Introduce USER_TICK_USEC and redefine TICK_USEC
-Date: Wed, 04 Apr 2018 10:38:34 +0200
-Message-ID: <7620417.mBP1cQHt5D@aspire.rjw.lan>
+Subject: [PATCH v9 10/10] cpuidle: menu: Avoid selecting shallow states with stopped tick
+Date: Wed, 04 Apr 2018 10:50:36 +0200
+Message-ID: <6542020.eHGLEK9V0J@aspire.rjw.lan>
 References: <1736751.LdhZHb50jq@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,64 +15,63 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since the subsequent changes will need a TICK_USEC definition
-analogous to TICK_NSEC, rename the existing TICK_USEC as
-USER_TICK_USEC, update its users and redefine TICK_USEC
-accordingly.
+If the scheduler tick has been stopped already and the governor
+selects a shallow idle state, the CPU can spend a long time in that
+state if the selection is based on an inaccurate prediction of idle
+time.  That effect turns out to be relevant, so it needs to be
+mitigated.
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
+To that end, modify the menu governor to discard the result of the
+idle time prediction if the tick is stopped and the predicted idle
+time is less than the tick period length, unless the tick timer is
+going to expire soon.
+
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
 v8 -> v9: No changes.
 
 ---
- drivers/net/ethernet/sfc/mcdi.c |    2 +-
- include/linux/jiffies.h         |    7 +++++--
- kernel/time/ntp.c               |    2 +-
- 3 files changed, 7 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/menu.c |   29 ++++++++++++++++++++++-------
+ 1 file changed, 22 insertions(+), 7 deletions(-)
 
-Index: linux-pm/include/linux/jiffies.h
+Index: linux-pm/drivers/cpuidle/governors/menu.c
 ===================================================================
---- linux-pm.orig/include/linux/jiffies.h
-+++ linux-pm/include/linux/jiffies.h
-@@ -62,8 +62,11 @@ extern int register_refined_jiffies(long
- /* TICK_NSEC is the time between ticks in nsec assuming SHIFTED_HZ */
- #define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
- 
--/* TICK_USEC is the time between ticks in usec assuming fake USER_HZ */
--#define TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
-+/* TICK_USEC is the time between ticks in usec assuming SHIFTED_HZ */
-+#define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
-+
-+/* USER_TICK_USEC is the time between ticks in usec assuming fake USER_HZ */
-+#define USER_TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
- 
- #ifndef __jiffy_arch_data
- #define __jiffy_arch_data
-Index: linux-pm/drivers/net/ethernet/sfc/mcdi.c
-===================================================================
---- linux-pm.orig/drivers/net/ethernet/sfc/mcdi.c
-+++ linux-pm/drivers/net/ethernet/sfc/mcdi.c
-@@ -375,7 +375,7 @@ static int efx_mcdi_poll(struct efx_nic
- 	 * because generally mcdi responses are fast. After that, back off
- 	 * and poll once a jiffy (approximately)
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -352,13 +352,28 @@ static int menu_select(struct cpuidle_dr
  	 */
--	spins = TICK_USEC;
-+	spins = USER_TICK_USEC;
- 	finish = jiffies + MCDI_RPC_TIMEOUT;
+ 	data->predicted_us = min(data->predicted_us, expected_interval);
  
- 	while (1) {
-Index: linux-pm/kernel/time/ntp.c
-===================================================================
---- linux-pm.orig/kernel/time/ntp.c
-+++ linux-pm/kernel/time/ntp.c
-@@ -31,7 +31,7 @@
+-	/*
+-	 * Use the performance multiplier and the user-configurable
+-	 * latency_req to determine the maximum exit latency.
+-	 */
+-	interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
+-	if (latency_req > interactivity_req)
+-		latency_req = interactivity_req;
++	if (tick_nohz_tick_stopped()) {
++		/*
++		 * If the tick is already stopped, the cost of possible short
++		 * idle duration misprediction is much higher, because the CPU
++		 * may be stuck in a shallow idle state for a long time as a
++		 * result of it.  In that case say we might mispredict and try
++		 * to force the CPU into a state for which we would have stopped
++		 * the tick, unless the tick timer is going to expire really
++		 * soon anyway.
++		 */
++		if (data->predicted_us < TICK_USEC)
++			data->predicted_us = min_t(unsigned int, TICK_USEC,
++						   ktime_to_us(delta_next));
++	} else {
++		/*
++		 * Use the performance multiplier and the user-configurable
++		 * latency_req to determine the maximum exit latency.
++		 */
++		interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
++		if (latency_req > interactivity_req)
++			latency_req = interactivity_req;
++	}
  
- 
- /* USER_HZ period (usecs): */
--unsigned long			tick_usec = TICK_USEC;
-+unsigned long			tick_usec = USER_TICK_USEC;
- 
- /* SHIFTED_HZ period (nsecs): */
- unsigned long			tick_nsec;
+ 	expected_interval = data->predicted_us;
+ 	/*
