@@ -1,37 +1,36 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v4 13/14] dt-bindings: cpufreq: Document
- operating-points-v2-kryo-cpu
-Date: Tue, 3 Apr 2018 22:09:43 +0530
-Message-ID: <1dcbd33a-09e8-89fa-8cae-011e80b3ceb8@codeaurora.org>
-References: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
- <1522358807-10413-14-git-send-email-ilialin@codeaurora.org>
- <20180402093018.GC3572@vireshk-i7>
- <7ca35b7a-6078-620b-4772-091e53ef6790@codeaurora.org>
- <06308b25-14ea-8d8b-6f95-f05c101a617b@codeaurora.org>
- <20180403042341.GI3572@vireshk-i7>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH] dmaengine: rcar-dmac: Fix too early/late system
+ suspend/resume callbacks
+Date: Wed, 4 Apr 2018 11:24:21 +0530
+Message-ID: <20180404055420.GE15443@localhost>
+References: <1522342412-10126-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180403042341.GI3572@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1522342412-10126-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ilia Lin <ilialin@codeaurora.org>, mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund+renesas@ragnatech.se>, dmaengine@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-On 4/3/2018 9:53 AM, Viresh Kumar wrote:
-> On 03-04-18, 08:11, Sricharan R wrote:
->>  Right, i was adding a similar one for krait cores [1]. There is code common in the
->>  init sequence across both (little). Do you suggest to make them common ?
+On Thu, Mar 29, 2018 at 06:53:32PM +0200, Geert Uytterhoeven wrote:
+> If serial console wake-up is enabled ("echo enabled >
+> /sys/.../ttySC0/power/wakeup"), and any serial input is received while
+> the system is suspended, serial port input no longer works after system
+> resume.
 > 
-> It may make sense as we are talking about one SoC family here :)
+> Note that:
+>   1) The system can still be woken up using the serial console,
+>   2) Serial port input keeps working if the system is woken up in some
+>      other way (e.g. Wake-on-LAN or gpio-keys), and no serial input was
+>      received while suspended.
 > 
-  ok. So either of us can merge, depending upon which one goes first.
+> To fix this, replace SET_LATE_SYSTEM_SLEEP_PM_OPS() by
+> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(), as the callbacks installed by the
+> former happen too early resp. late in the suspend resp. resume process.
 
-Regards,
- Sricharan
+Applied, thanks
+
 -- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+~Vinod
