@@ -1,149 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v9 07/10] time: hrtimer: Introduce hrtimer_next_event_without()
-Date: Wed, 04 Apr 2018 10:45:39 +0200
-Message-ID: <101528364.6nGUqP0EsC@aspire.rjw.lan>
-References: <1736751.LdhZHb50jq@aspire.rjw.lan>
+From: Shunyong Yang <shunyong.yang@hxt-semitech.com>
+Subject: [PATCH v2] cpufreq: cppc_cpufreq: Initialize shared cpu's perf capabilities
+Date: Wed, 4 Apr 2018 17:16:20 +0800
+Message-ID: <1522833380-18438-1-git-send-email-shunyong.yang@hxt-semitech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1736751.LdhZHb50jq@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shunyong Yang <shunyong.yang@hxt-semitech.com>, Joey Zheng <yu.zheng@hxt-semitech.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+When multiple cpus are related in one cpufreq policy, the first online
+cpu will be chosen by default to handle cpufreq operations. Let's take
+cpu0 and cpu1 as an example.
 
-The next set of changes will need to compute the time to the next
-hrtimer event over all hrtimers except for the scheduler tick one.
+When cpu0 is offline, policy->cpu will be shifted to cpu1. Cpu1's perf
+capabilities should be initialized. Otherwise, perf capabilities are 0s
+and speed change can not take effect.
 
-To that end introduce a new helper function,
-hrtimer_next_event_without(), for computing the time until the next
-hrtimer event over all timers except for one and modify the underlying
-code in __hrtimer_next_event_base() to prepare it for being called by
-that new function.
+This patch copies perf capabilities of the first online cpu to other
+shared cpus when policy shared type is CPUFREQ_SHARED_TYPE_ANY.
 
-No intentional changes in functionality.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Joey Zheng <yu.zheng@hxt-semitech.com>
+Signed-off-by: Shunyong Yang <shunyong.yang@hxt-semitech.com>
 ---
 
-v8 -> v9:
- * Make fewer changes to the existing code.
- * Add a new helper function for the handling of the use case at hand.
+Changes in v2:
+  -Add unlikely in cpu comparison per Kumar's comments.
+  -Fix coding style per Kumar's comments.
+
+Changes in v1:
+  -Drop RFC tag,
+     The original RFC link,
+     https://patchwork.kernel.org/patch/10299055/.
+
+     This patch solves same issue as RFC above.
+
+     Patch name is changed as code is too much different with RFC above.
+
+  -Remove extra init() per Viresh Kumar's comments and only handle
+   CPPC CPUFREQ_SHARED_TYPE_ANY case.
 
 ---
- include/linux/hrtimer.h |    1 
- kernel/time/hrtimer.c   |   55 ++++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 54 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cppc_cpufreq.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Index: linux-pm/include/linux/hrtimer.h
-===================================================================
---- linux-pm.orig/include/linux/hrtimer.h
-+++ linux-pm/include/linux/hrtimer.h
-@@ -426,6 +426,7 @@ static inline ktime_t hrtimer_get_remain
- }
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 8f7b21a4d537..679e43b9c980 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -164,9 +164,20 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
+ 	policy->shared_type = cpu->shared_type;
  
- extern u64 hrtimer_get_next_event(void);
-+extern u64 hrtimer_next_event_without(const struct hrtimer *exclude);
- 
- extern bool hrtimer_active(const struct hrtimer *timer);
- 
-Index: linux-pm/kernel/time/hrtimer.c
-===================================================================
---- linux-pm.orig/kernel/time/hrtimer.c
-+++ linux-pm/kernel/time/hrtimer.c
-@@ -490,6 +490,7 @@ __next_base(struct hrtimer_cpu_base *cpu
- 	while ((base = __next_base((cpu_base), &(active))))
- 
- static ktime_t __hrtimer_next_event_base(struct hrtimer_cpu_base *cpu_base,
-+					 const struct hrtimer *exclude,
- 					 unsigned int active,
- 					 ktime_t expires_next)
- {
-@@ -502,9 +503,24 @@ static ktime_t __hrtimer_next_event_base
- 
- 		next = timerqueue_getnext(&base->active);
- 		timer = container_of(next, struct hrtimer, node);
-+		if (timer == exclude) {
-+			/* Get to the next timer in the queue. */
-+			struct rb_node *rbn = rb_next(&next->node);
+-	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
++	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
++		int i;
 +
-+			next = rb_entry_safe(rbn, struct timerqueue_node, node);
-+			if (!next)
+ 		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
+-	else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
++
++		for_each_cpu(i, policy->cpus) {
++			if (unlikely(i == policy->cpu))
 +				continue;
 +
-+			timer = container_of(next, struct hrtimer, node);
++			memcpy(&all_cpu_data[i]->perf_caps,
++			       &cpu->perf_caps,
++			       sizeof(cpu->perf_caps));
 +		}
- 		expires = ktime_sub(hrtimer_get_expires(timer), base->offset);
- 		if (expires < expires_next) {
- 			expires_next = expires;
-+
-+			/* Skip cpu_base update if a timer is being excluded. */
-+			if (exclude)
-+				continue;
-+
- 			if (timer->is_soft)
- 				cpu_base->softirq_next_timer = timer;
- 			else
-@@ -548,7 +564,8 @@ __hrtimer_get_next_event(struct hrtimer_
- 	if (!cpu_base->softirq_activated && (active_mask & HRTIMER_ACTIVE_SOFT)) {
- 		active = cpu_base->active_bases & HRTIMER_ACTIVE_SOFT;
- 		cpu_base->softirq_next_timer = NULL;
--		expires_next = __hrtimer_next_event_base(cpu_base, active, KTIME_MAX);
-+		expires_next = __hrtimer_next_event_base(cpu_base, NULL,
-+							 active, KTIME_MAX);
- 
- 		next_timer = cpu_base->softirq_next_timer;
- 	}
-@@ -556,7 +573,8 @@ __hrtimer_get_next_event(struct hrtimer_
- 	if (active_mask & HRTIMER_ACTIVE_HARD) {
- 		active = cpu_base->active_bases & HRTIMER_ACTIVE_HARD;
- 		cpu_base->next_timer = next_timer;
--		expires_next = __hrtimer_next_event_base(cpu_base, active, expires_next);
-+		expires_next = __hrtimer_next_event_base(cpu_base, NULL, active,
-+							 expires_next);
- 	}
- 
- 	return expires_next;
-@@ -1200,6 +1218,39 @@ u64 hrtimer_get_next_event(void)
- 
- 	raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
- 
-+	return expires;
-+}
-+
-+/**
-+ * hrtimer_next_event_without - time until next expiry event w/o one timer
-+ * @exclude:	timer to exclude
-+ *
-+ * Returns the next expiry time over all timers except for the @exclude one or
-+ * KTIME_MAX if none of them is pending.
-+ */
-+u64 hrtimer_next_event_without(const struct hrtimer *exclude)
-+{
-+	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);
-+	u64 expires = KTIME_MAX;
-+	unsigned long flags;
-+
-+	raw_spin_lock_irqsave(&cpu_base->lock, flags);
-+
-+	if (__hrtimer_hres_active(cpu_base)) {
-+		unsigned int active;
-+
-+		if (!cpu_base->softirq_activated) {
-+			active = cpu_base->active_bases & HRTIMER_ACTIVE_SOFT;
-+			expires = __hrtimer_next_event_base(cpu_base, exclude,
-+							    active, KTIME_MAX);
-+		}
-+		active = cpu_base->active_bases & HRTIMER_ACTIVE_HARD;
-+		expires = __hrtimer_next_event_base(cpu_base, exclude, active,
-+						    expires);
-+	}
-+
-+	raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
-+
- 	return expires;
- }
- #endif
++	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
+ 		/* Support only SW_ANY for now. */
+ 		pr_debug("Unsupported CPU co-ord type\n");
+ 		return -EFAULT;
+-- 
+1.8.3.1
