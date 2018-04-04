@@ -1,66 +1,83 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: x32 suspend failuer in Re: linux-next: Tree for Apr 4
-Date: Wed, 4 Apr 2018 10:49:05 +0200
-Message-ID: <20180404084905.GA12303@amd>
-References: <20180404165559.4cd0c12c@canb.auug.org.au>
- <20180404075047.GB9342@amd>
- <CAJZ5v0hxyXtyKacJufivL9HWbQBsxTBYVipnHK4+QquTYjpc+A@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Wed, 4 Apr 2018 10:50:02 +0200
+Message-ID: <78504a65-d21a-eea0-d8af-6e12d5747b87@linaro.org>
+References: <1519226968-19821-1-git-send-email-daniel.lezcano@linaro.org>
+ <1519226968-19821-7-git-send-email-daniel.lezcano@linaro.org>
+ <20180223073432.GF26947@vireshk-i7>
+ <faaf027c-e01c-6801-9a0c-ab7e0ba669a1@linaro.org>
+ <20180226043021.GK26947@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="HcAYCG3uE/tztfnV"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hxyXtyKacJufivL9HWbQBsxTBYVipnHK4+QquTYjpc+A@mail.gmail.com>
+In-Reply-To: <20180226043021.GK26947@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 26/02/2018 05:30, Viresh Kumar wrote:
 
---HcAYCG3uE/tztfnV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[ ... ]
 
-On Wed 2018-04-04 09:58:17, Rafael J. Wysocki wrote:
-> On Wed, Apr 4, 2018 at 9:50 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >> Please do not add any v4.18 destined stuff to your linux-next included
-> >> trees until after v4.17-rc1 has been released.
-> >
-> > On thinkpad x60, suspend does not suspend at all with this -next
-> > version. Previous versions suspended/resumed fine but broke networking.
-> >
-> > Any ideas? I guess bisecting on next would not be easy?
->=20
-> Well, why would it be different from a bisect on any other git repo?
+>>>> +
+>>>> +	for_each_possible_cpu(cpu) {
+>>>> +		cpumask = topology_core_cpumask(cpu);
+>>>> +
+>>>> +		cct = per_cpu_ptr(&cpuidle_cooling_tsk, cpu);
+>>>> +
+>>>> +		/*
+>>>> +		 * This condition makes the first cpu belonging to the
+>>>> +		 * cluster to create a cooling device and allocates
+>>>> +		 * the structure. Others CPUs belonging to the same
+>>>> +		 * cluster will just increment the refcount on the
+>>>> +		 * cooling device structure and initialize it.
+>>>> +		 */
+>>>> +		if (cpu == cpumask_first(cpumask)) {
+>>>
+>>> Your function still have few assumptions of cpu numbering and it will
+>>> break in few cases. What if the CPUs on a big Little system (4x4) are
+>>> present in this order: B L L L L B B B  ??
+>>>
+>>> This configuration can happen if CPUs in DT are marked as: 0-3 LITTLE,
+>>> 4-7 big and a big CPU is used by the boot loader to bring up Linux.
+>>
+>> Ok, how can I sort it out ?
+> 
+> I would do something like this:
+> 
+>         cpumask_copy(possible, cpu_possible_mask);
+>         
+>         while (!cpumask_empty(possible)) {
+>                 first = cpumask_first(possible);
+>                 cpumask = topology_core_cpumask(first);
+>                 cpumask_andnot(possible, possible, cpumask);
+>         
+>                 allocate_cooling_dev(first); //This is most of this function in your patch.
+>         
+>                 while (!cpumask_empty(cpumask)) {
+>                         temp = cpumask_first(possible);
+>                         //rest init "temp"
+>                         cpumask_clear_cpu(temp, cpumask);
+>                 }
+>         
+>                 //Everything done, register cooling device for cpumask.
+>         }
 
-Well, v4.16-rc4 is parent of v4.16-rc6, but next-20180304 is not
-parent of next-20180307.
 
-But you are right that if I do bisect between -linus and -next, it
-should work.
+Mmh, that sounds very complex. May be it is simpler to count the number
+of cluster and initialize the idle_cdev for each cluster and then go for
+this loop with the cluster cpumask.
 
-Anyway, does s2ram work for you in -next? Are you testing 32bit?
 
-Best regards,
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
 
---HcAYCG3uE/tztfnV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-iEYEARECAAYFAlrEkYEACgkQMOfwapXb+vLG4QCgsFeKGFXML6N/TenjjVMvDLz5
-eW0An2VftGX/HEQTmpKPKF9iGVJJD0Oo
-=pdrV
------END PGP SIGNATURE-----
-
---HcAYCG3uE/tztfnV--
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
