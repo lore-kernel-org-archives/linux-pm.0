@@ -1,36 +1,51 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH] dmaengine: rcar-dmac: Fix too early/late system
- suspend/resume callbacks
-Date: Wed, 4 Apr 2018 11:24:21 +0530
-Message-ID: <20180404055420.GE15443@localhost>
-References: <1522342412-10126-1-git-send-email-geert+renesas@glider.be>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: x32 suspend failuer in Re: linux-next: Tree for Apr 4
+Date: Wed, 4 Apr 2018 09:50:47 +0200
+Message-ID: <20180404075047.GB9342@amd>
+References: <20180404165559.4cd0c12c@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="cmJC7u66zC7hs+87"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1522342412-10126-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <20180404165559.4cd0c12c@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund+renesas@ragnatech.se>, dmaengine@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 29, 2018 at 06:53:32PM +0200, Geert Uytterhoeven wrote:
-> If serial console wake-up is enabled ("echo enabled >
-> /sys/.../ttySC0/power/wakeup"), and any serial input is received while
-> the system is suspended, serial port input no longer works after system
-> resume.
-> 
-> Note that:
->   1) The system can still be woken up using the serial console,
->   2) Serial port input keeps working if the system is woken up in some
->      other way (e.g. Wake-on-LAN or gpio-keys), and no serial input was
->      received while suspended.
-> 
-> To fix this, replace SET_LATE_SYSTEM_SLEEP_PM_OPS() by
-> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(), as the callbacks installed by the
-> former happen too early resp. late in the suspend resp. resume process.
 
-Applied, thanks
+--cmJC7u66zC7hs+87
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-~Vinod
+Hi!
+
+> Please do not add any v4.18 destined stuff to your linux-next included
+> trees until after v4.17-rc1 has been released.
+
+On thinkpad x60, suspend does not suspend at all with this -next
+version. Previous versions suspended/resumed fine but broke networking.
+
+Any ideas? I guess bisecting on next would not be easy?
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--cmJC7u66zC7hs+87
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlrEg9cACgkQMOfwapXb+vIqTQCgkKTm03QvrJlJu/vS1Hv4PrmE
+mdQAnjOF4HybehpJqY0cFnYQuogd8PJu
+=yUi4
+-----END PGP SIGNATURE-----
+
+--cmJC7u66zC7hs+87--
