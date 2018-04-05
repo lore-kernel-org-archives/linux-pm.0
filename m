@@ -1,51 +1,134 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: armada-37xx: Fix clock leak
-Date: Thu, 5 Apr 2018 10:21:53 +0530
-Message-ID: <20180405045153.GL3572@vireshk-i7>
-References: <20180404144444.4142-1-gregory.clement@bootlin.com>
+Subject: Re: [PATCH] cpufreq/schedutil: Cleanup and document iowait boost
+Date: Thu, 5 Apr 2018 15:28:58 +0530
+Message-ID: <20180405095858.GP3572@vireshk-i7>
+References: <20180328090721.26068-1-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180404144444.4142-1-gregory.clement@bootlin.com>
-Sender: stable-owner@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, stable@vger.kernel.org
+In-Reply-To: <20180328090721.26068-1-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 04-04-18, 16:44, Gregory CLEMENT wrote:
-> There was no clk_put() balancing the clk_get(). This commit fixes it.
-> 
-> Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
-> Cc: <stable@vger.kernel.org>
-> Reported-by: Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
-> ---
->  drivers/cpufreq/armada-37xx-cpufreq.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-> index c6ebc88a7d8d..72a2975499db 100644
-> --- a/drivers/cpufreq/armada-37xx-cpufreq.c
-> +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-> @@ -202,6 +202,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
->  	cur_frequency = clk_get_rate(clk);
->  	if (!cur_frequency) {
->  		dev_err(cpu_dev, "Failed to get clock rate for CPU\n");
-> +		clk_put(clk);
->  		return -EINVAL;
->  	}
->  
-> @@ -210,6 +211,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
->  		return -EINVAL;
->  
->  	armada37xx_cpufreq_dvfs_setup(nb_pm_base, clk, dvfs->divider);
-> +	clk_put(clk);
->  
->  	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
->  	     load_lvl++) {
+On 28-03-18, 10:07, Patrick Bellasi wrote:
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 2b124811947d..c840b0626735 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -201,43 +201,80 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+>  	return min(util, sg_cpu->max);
+>  }
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I like the general idea but there are few things which look incorrect
+to me, even in the current code.
+
+> -static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
+> +/**
+> + * sugov_set_iowait_boost updates the IO boost at each wakeup from IO.
+> + * @sg_cpu: the sugov data for the CPU to boost
+> + * @flags:  SCHED_CPUFREQ_IOWAIT if the task is waking up after an IO wait
+> + *
+> + * Each time a task wakes up after an IO operation, the CPU utilization can be
+> + * boosted to a certain utilization which is doubled at each wakeup
+> + * from IO, starting from the utilization of the minimum OPP to that of the
+> + * maximum one.
+
+You may also want to write here that the doubling of boost value is
+restricted by rate_limit_us duration, its not that we double every
+time this routine is called.
+
+> + */
+> +static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, unsigned int flags)
+>  {
+
+>  
+> -		/* Clear iowait_boost if the CPU apprears to have been idle. */
+> -		if (delta_ns > TICK_NSEC) {
+> -			sg_cpu->iowait_boost = 0;
+> -			sg_cpu->iowait_boost_pending = false;
+> -		}
+
+So this is the only difference in this routine, everything else is
+re-arrangement IIUC.
+
+There is a problem that I see in existing code as well as code after
+this commit.
+
+Consider this sequence of events on a platform where cpufreq policies
+aren't shared, i.e. each CPU has his own policy.
+
+sugov_set_iowait_boost() gets called multiple times for a CPU with
+IOWAIT flag set that leads us to a big boost value, like fmax. The CPU
+goes to idle then and the task wakes up after few ticks.  Because we
+are first checking the IOWAIT flag in this routine, we will double the
+iowait boost. Ideally, based on the TICK_NSEC logic we have, we should
+have first set the iowait boost to 0 and then because the flag was
+set, set the boost to fmin. So the order of this routine needs to get
+fixed in the first patch.
+
+The same problem can happen for cases where the policy is shared as
+well, but chances are less.
+
+> -static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
+> -			       unsigned long *max)
+> +/**
+> + * sugov_iowait_boost boosts a CPU after a wakeup from IO.
+> + * @sg_cpu: the sugov data for the cpu to boost
+> + * @time:   the update time from the caller
+> + * @util:   the utilization to (eventually) boost
+> + * @max:    the maximum value the utilization can be boosted to
+> + *
+> + * A CPU running a task which woken up after an IO operation can have its
+> + * utilization boosted to speed up the completion of those IO operations.
+> + * The IO boost value is increased each time a task wakes up from IO, in
+> + * sugov_set_iowait_boost(), and it's instead decreased by this function,
+> + * each time an increase has not been requested (!iowait_boost_pending).
+> + *
+> + * A CPU which also appears to have been idle for at least one tick has also
+> + * its IO boost utilization reset.
+> + *
+> + * This mechanism is designed to boost high frequently IO waiting tasks, while
+> + * being more conservative on tasks which does sporadic IO operations.
+> + */
+> +static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
+> +			       unsigned long *util, unsigned long *max)
+>  {
+>  	unsigned int boost_util, boost_max;
+>  
+> -	if (!sg_cpu->iowait_boost)
+> +	/* Clear boost if the CPU appears to have been idle enough */
+> +	if (sg_cpu->iowait_boost) {
+> +		s64 delta_ns = time - sg_cpu->last_update;
+> +
+> +		if (delta_ns > TICK_NSEC) {
+> +			sg_cpu->iowait_boost = 0;
+> +			sg_cpu->iowait_boost_pending = false;
+> +		}
+>  		return;
+
+This looks incorrect. I have read this 10 times and it looked
+incorrect every single time :(
+
+The "return" statement should be part of the if block itself ? Else we
+will never boost.
+
+> +	}
+>  
+
+Now we can reach here even on !sg_cpu->iowait_boost which wasn't the
+case earlier. Though we will eventually return from the routine
+without doing any damage, but we will waste some time running useless
+if/else expressions.
+
+Maybe still have something like
+
+        if (!sg_cpu->iowait_boost)
+                return;
+
+??
 
 -- 
 viresh
