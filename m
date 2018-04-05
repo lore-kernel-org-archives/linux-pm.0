@@ -1,95 +1,123 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v9 10/10] cpuidle: menu: Avoid selecting shallow states
- with stopped tick
-Date: Thu, 5 Apr 2018 16:29:29 +0200
-Message-ID: <CAJZ5v0iJx7qfPTVMJbXJRSL-K9KstMPD2JYXjeQQn+vsQHe6HA@mail.gmail.com>
-References: <1736751.LdhZHb50jq@aspire.rjw.lan> <6542020.eHGLEK9V0J@aspire.rjw.lan>
- <20180405124757.GQ4082@hirez.programming.kicks-ass.net> <CAJZ5v0h2c5RtUxwF2z3Gjy8O2RSBaD7wN3CxUXrg57jH57_xoA@mail.gmail.com>
- <20180405141127.GS4043@hirez.programming.kicks-ass.net> <20180405141326.GH4129@hirez.programming.kicks-ass.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH v3 0/7] CPU cooling device new strategies
+Date: Thu,  5 Apr 2018 18:16:37 +0200
+Message-ID: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180405141326.GH4129@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: viresh.kumar@linaro.org, edubezval@gmail.com
+Cc: kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 5, 2018 at 4:13 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, Apr 05, 2018 at 04:11:27PM +0200, Peter Zijlstra wrote:
->> On Thu, Apr 05, 2018 at 03:49:32PM +0200, Rafael J. Wysocki wrote:
->> > On Thu, Apr 5, 2018 at 2:47 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> > > On Wed, Apr 04, 2018 at 10:50:36AM +0200, Rafael J. Wysocki wrote:
->> > >> +     if (tick_nohz_tick_stopped()) {
->> > >> +             /*
->> > >> +              * If the tick is already stopped, the cost of possible short
->> > >> +              * idle duration misprediction is much higher, because the CPU
->> > >> +              * may be stuck in a shallow idle state for a long time as a
->> > >> +              * result of it.  In that case say we might mispredict and try
->> > >> +              * to force the CPU into a state for which we would have stopped
->> > >> +              * the tick, unless the tick timer is going to expire really
->> > >> +              * soon anyway.
->> > >
->> > > Wait what; the tick was stopped, therefore it _cannot_ expire soon.
->> > >
->> > > *confused*
->> > >
->> > > Did you mean s/tick/a/ ?
->> >
->> > Yeah, that should be "a timer".
->>
->> *phew* ok, that makes a lot more sense ;-)
->>
->> My only concern with this is that we can now be overly pessimistic. The
->> predictor might know that statistically it's very likely a device
->> interrupt will arrive soon, but because the tick is already disabled, we
->> don't dare trust it, causing possible excessive latencies.
+Changelog:
+  V3:
+    - Changed this description to be more clear with the numbers
+    - Took into account the comments for the documentation
+    - Switched to the smpboot threads to use the hotplug API
+    - Removed usage of the waitq as the code relies on the smpboot
+    - Removed the macro DEFAULT_IDLE_TIME_US and use directly TICK_USEC
+    - Removed the list to store the cooling devices
+    - Fixed static for the percpu cpuidle_cooling_tsk
+    - Removed the BUG_ON in the cpuidle_cooling_runtime function and return 0
+    - Used this_cpu_ptr instead of per_cpu_ptr(smp_processor_id())
+    - Moved the function cpuidle_cooling_release closer to its caller
+    - Fixed spaces instead of tab
+    - Fixed function description log
+    - Cancel timer on release
+    - Fixed return value doc
+    - Changed the initialization so the cpu numbering is no longer a problem
+    - Removed useless atomic_set(0)
+    - Moved the thermal cooling device creation after the cpuidle cooling device
+    - Let the refcount to zero at init
+    - Moved the initialization message at the end of the function
+    - Changed the cpuidle_cooling_register to return void
+    - Removed message in the cpuidle-arm driver if cpuidle_cooling_register fails
 
-That's possible, but then we already stopped the tick before and the
-CPU was in a deep idle state (or we wouldn't have got here with the
-tick stopped), so the extra bit of latency coming from this is not
-likely to matter IMO.
+  V2:
+     - Dropped the cpu combo cooling device
+     - Added the acked-by tags
+     - Replaced task array by a percpu structure
+     - Fixed the copyright dates
+     - Fixed the extra lines
+     - Fixed the compilation macros to be reused
+     - Fixed the list node removal
+     - Massaged a couple of function names
 
-And the code can stay simpler this way. :-)
 
->> Would an alternative be to make @stop_tick be an enum capable of forcing
->> the tick back on?
->>
->> enum tick_action {
->>       NOHZ_TICK_STOP,
->>       NOHZ_TICK_RETAIN,
->>       NOHZ_TICK_START,
->> };
->>
->>       enum tick_action tick_action = NOHZ_TICK_STOP;
->>
->>       state = cpuidle_select(..., &tick_action);
->>
->>       switch (tick_action) {
->>       case NOHZ_TICK_STOP:
->>               tick_nohz_stop_tick();
->>               break;
->>
->>       case NOHZ_TICK_RETAIN:
->>               tick_nozh_retain_tick();
->>               break;
->>
->>       case NOHZ_TICK_START:
->>               tick_nohz_start_tick();
->>               break;
->>       };
->>
->>
->> Or something along those lines?
->
-> To clarify, RETAIN keeps the status quo, if its off, it stays off, if
-> its on it stays on.
+The following series provides a new way to cool down a SoC by reducing
+the dissipated power on the CPUs. Based on the initial work from Kevin
+Wangtao, the series implements a CPU cooling device based on idle
+injection, relying on the cpuidle framework.
 
-That could be done, but I'm not sure if the menu governor has a good
-way to decide whether to use NOHZ_TICK_RETAIN or NOHZ_TICK_START.
+The patchset is designed to have the current DT binding for the
+cpufreq cooling device to be compatible with the new cooling devices.
 
-Doing NOHZ_TICK_START every time the predicted idle duration is within
-the tick range may be wasteful.
+Different cpu cooling devices can not co-exist on the system, the cpu
+cooling device is enabled or not, and one cooling strategy is selected
+(cpufreq or cpuidle). It is not possible to have all of them available
+at the same time. However, the goal is to enable them all and be able
+to switch from one to another at runtime but the thermal framework may
+need some attention regarding the mitigation vs switching the cooling
+device at runtime.
 
-Besides, enum tick_action and so on can be introduced later if really
-needed, but for now it looks like the simpler code gets the job done.
+This series is divided into two parts.
+
+The first part just provides trivial changes for the copyright and
+removes an unused field in the cpu freq cooling device structure.
+
+The second part provides the idle injection cooling device, allowing a SoC
+without a cpufreq driver to use this cooling device as an alternative.
+
+The cpuidle cooling device has been tested against the cpufreq cooling
+in the same conditions: same board and a fan on top of the SoC. For
+optimal trade-off between perf vs cooling effect the cpuidle cooling
+device acts on one cluster only, for the bL SoC, the big cluster is
+idle-mitigated. The targetted temperature is 75°C.
+
+Command:
+--------
+ time ./dhrystone -t 8 -l 100
+
+                   ------------------------------------------------------
+                  |       hikey6220         |         hikey3660          |
+                   ------------------------------------------------------
+                  |   cpuidle  | cpufreq   ||   cpuidle   |   cpufreq    |
+  -----------------------------------------------------------------------
+ | DMIPS avg      |       1007 |     922   ||     2279    |       2250   |
+  -----------------------------------------------------------------------
+ | rtime (sec)    |      1.21  |    1.19   ||       49    |         51   |
+  -----------------------------------------------------------------------
+ | temp avg (mC)  |      75043 |   74862   ||    75640    |      75978   |
+  -----------------------------------------------------------------------
+ | temp stddev    |    309.357 |    6205   ||     3258    |       1950   |
+  -----------------------------------------------------------------------
+ | temp min (mC)  |      74235 |   71880   ||    66395    |      71315   |
+  -----------------------------------------------------------------------
+ | temp max (mC)  |      75805 |   77375   ||    84640    |      81360   |
+  -----------------------------------------------------------------------
+
+We can see the both cooling method have similar behavior in this
+configuration.
+
+
+Daniel Lezcano (7):
+  thermal/drivers/cpu_cooling: Fixup the header and copyright
+  thermal/drivers/cpu_cooling: Add Software Package Data Exchange (SPDX)
+  thermal/drivers/cpu_cooling: Remove pointless field
+  thermal/drivers/Kconfig: Convert the CPU cooling device to a choice
+  thermal/drivers/cpu_cooling: Add idle cooling device documentation
+  thermal/drivers/cpu_cooling: Introduce the cpu idle cooling driver
+  cpuidle/drivers/cpuidle-arm: Register the cooling device
+
+ Documentation/thermal/cpu-idle-cooling.txt | 166 ++++++++++
+ drivers/cpuidle/cpuidle-arm.c              |   3 +
+ drivers/thermal/Kconfig                    |  30 +-
+ drivers/thermal/cpu_cooling.c              | 508 +++++++++++++++++++++++++++--
+ include/linux/cpu_cooling.h                |  12 +-
+ 5 files changed, 692 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/thermal/cpu-idle-cooling.txt
+
+-- 
+2.7.4
