@@ -1,8 +1,8 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v9 09/10] cpuidle: menu: Refine idle state selection for
  running tick
-Date: Thu, 5 Apr 2018 14:27:58 +0200
-Message-ID: <20180405122758.GO4082@hirez.programming.kicks-ass.net>
+Date: Thu, 5 Apr 2018 14:32:19 +0200
+Message-ID: <20180405123219.GP4082@hirez.programming.kicks-ass.net>
 References: <1736751.LdhZHb50jq@aspire.rjw.lan>
  <5752796.zf5UeYB95r@aspire.rjw.lan>
 Mime-Version: 1.0
@@ -16,11 +16,8 @@ Cc: Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
 On Wed, Apr 04, 2018 at 10:49:34AM +0200, Rafael J. Wysocki wrote:
-> -static inline ktime_t tick_nohz_get_sleep_length(void)
-> +static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
->  {
-> -	return NSEC_PER_SEC / HZ;
-> +	*delta_next = NSEC_PER_SEC / HZ;
-> +	return *delta_next;
+> +	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&delta_next));
+> +		unsigned int delta_next_us = ktime_to_us(delta_next);
 
-Shouldn't that be TICK_NSEC ?
+We really should be looking at removing all that us nonsense from the
+idle code, but that'll be another series.
