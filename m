@@ -1,115 +1,56 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH v3 4/7] thermal/drivers/Kconfig: Convert the CPU cooling device to a choice
-Date: Thu,  5 Apr 2018 18:16:41 +0200
-Message-ID: <1522945005-7165-5-git-send-email-daniel.lezcano@linaro.org>
-References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org, edubezval@gmail.com
-Cc: kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3] PM / core: fix deferred probe breaking suspend resume
+ order
+Date: Thu, 05 Apr 2018 18:38:30 +0200
+Message-ID: <7780328.CMcpMVPvTI@aspire.rjw.lan>
+References: <1520274579-30492-1-git-send-email-fkan@apm.com>
+ <20180330225024.GH9322@bhelgaas-glaptop.roam.corp.google.com>
+ <CAL85gmBtFnXje9tPngXEyCCwuvxvH6YHB=HrvjfU7npPDiSTCw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAL85gmBtFnXje9tPngXEyCCwuvxvH6YHB=HrvjfU7npPDiSTCw@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Feng Kan <fkan@apm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The next changes will add new way to cool down a CPU. In order to
-sanitize and make the overall cpu cooling code consistent and robust
-we must prevent the cpu cooling devices to co-exists with the same
-purpose at the same time in the kernel.
+On Wednesday, April 4, 2018 11:10:41 PM CEST Feng Kan wrote:
+> On Fri, Mar 30, 2018 at 3:50 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > On Thu, Mar 15, 2018 at 11:41:33AM -0700, Feng Kan wrote:
+> >> On Mon, Mar 5, 2018 at 10:29 AM, Feng Kan <fkan@apm.com> wrote:
+> >> > When bridge and its endpoint is enumerated the devices are added to the
+> >> > dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
+> >> > This causes the bridge to be moved to the end of the dpm list when
+> >> > deferred probe kicks in. The order of the dpm list for bridge and
+> >> > endpoint is reversed.
+> >> >
+> >> > Add reordering code to move the bridge and its children and consumers to
+> >> > the end of the pm list so the order for suspend and resume is not altered.
+> >> > The code also move device and its children and consumers to the tail of
+> >> > device_kset list if it is registered.
+> >> >
+> >> > Signed-off-by: Feng Kan <fkan@apm.com>
+> >> > Signed-off-by: Toan Le <toanle@apm.com>
+> >> > ...
+> >> >
+> >> Hi, just wanted to check if there is anything else I need to change on
+> >> this. Thanks.
+> >
+> > I'm assuming Rafael will handle this.
+> Rafael, sorry to ping again. Do you have a position on this patch yet?
 
-Make the CPU cooling device a choice in the Kconfig, so only one CPU
-cooling strategy can be chosen.
+Sorry, I thought that Greg might want to send a comment here.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/Kconfig       | 20 +++++++++++++++++---
- drivers/thermal/cpu_cooling.c |  2 ++
- include/linux/cpu_cooling.h   |  6 +++---
- 3 files changed, 22 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index b6adc54..5aaae1b 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -142,17 +142,31 @@ config THERMAL_GOV_POWER_ALLOCATOR
- 	  allocating and limiting power to devices.
- 
- config CPU_THERMAL
--	bool "generic cpu cooling support"
--	depends on CPU_FREQ
-+	bool "Generic cpu cooling support"
- 	depends on THERMAL_OF
- 	help
-+	  Enable the CPU cooling features. If the system has no active
-+	  cooling device available, this option allows to use the CPU
-+	  as a cooling device.
-+
-+choice
-+	prompt "CPU cooling strategies"
-+	depends on CPU_THERMAL
-+	default CPU_FREQ_THERMAL
-+	help
-+	  Select the CPU cooling strategy.
-+
-+config CPU_FREQ_THERMAL
-+        bool "CPU frequency cooling strategy"
-+	depends on CPU_FREQ
-+	help
- 	  This implements the generic cpu cooling mechanism through frequency
- 	  reduction. An ACPI version of this already exists
- 	  (drivers/acpi/processor_thermal.c).
- 	  This will be useful for platforms using the generic thermal interface
- 	  and not the ACPI interface.
- 
--	  If you want this support, you should say Y here.
-+endchoice
- 
- config CLOCK_THERMAL
- 	bool "Generic clock cooling support"
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 7bdc19f..5c219dc 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -22,6 +22,7 @@
- 
- #include <trace/events/thermal.h>
- 
-+#ifdef CONFIG_CPU_FREQ_THERMAL
- /*
-  * Cooling state <-> CPUFreq frequency
-  *
-@@ -926,3 +927,4 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 	kfree(cpufreq_cdev);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cooling_unregister);
-+#endif /* CONFIG_CPU_FREQ_THERMAL */
-diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-index d4292eb..c0accc7 100644
---- a/include/linux/cpu_cooling.h
-+++ b/include/linux/cpu_cooling.h
-@@ -33,7 +33,7 @@ struct cpufreq_policy;
- typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
- 			    unsigned long voltage, u32 *power);
- 
--#ifdef CONFIG_CPU_THERMAL
-+#ifdef CONFIG_CPU_FREQ_THERMAL
- /**
-  * cpufreq_cooling_register - function to create cpufreq cooling device.
-  * @policy: cpufreq policy.
-@@ -84,7 +84,7 @@ of_cpufreq_power_cooling_register(struct device_node *np,
-  */
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
- 
--#else /* !CONFIG_CPU_THERMAL */
-+#else /* !CONFIG_CPU_FREQ_THERMAL */
- static inline struct thermal_cooling_device *
- cpufreq_cooling_register(struct cpufreq_policy *policy)
- {
-@@ -118,6 +118,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
- 	return;
- }
--#endif	/* CONFIG_CPU_THERMAL */
-+#endif	/* CONFIG_CPU_FREQ_THERMAL */
- 
- #endif /* __CPU_COOLING_H__ */
--- 
-2.7.4
+I'm basically fine with the approach.  I only have two minor remarks to the
+kernedoc comment of the new function, but let me reply directly to the patch
+message.
