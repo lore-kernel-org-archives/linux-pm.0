@@ -1,88 +1,106 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3] PM / core: fix deferred probe breaking suspend resume
- order
-Date: Thu, 05 Apr 2018 18:40:35 +0200
-Message-ID: <2883677.nJtJiE16PD@aspire.rjw.lan>
-References: <1520274579-30492-1-git-send-email-fkan@apm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: update-binfmts breaking suspend was Re: x32 suspend failuer in
+ Re: linux-next: Tree for Apr 4
+Date: Thu, 5 Apr 2018 22:30:45 +0200
+Message-ID: <20180405203045.GA23313@amd>
+References: <20180404165559.4cd0c12c@canb.auug.org.au>
+ <20180404075047.GB9342@amd>
+ <CAJZ5v0hxyXtyKacJufivL9HWbQBsxTBYVipnHK4+QquTYjpc+A@mail.gmail.com>
+ <20180404084905.GA12303@amd>
+ <20180405122503.GA28446@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1520274579-30492-1-git-send-email-fkan@apm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Feng Kan <fkan@apm.com>
-Cc: lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, gregkh@linuxfoundation.org, bhelgaas@google.com, Toan Le <toanle@apm.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180405122503.GA28446@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, jikos@suse.cz, mawilcox@microsoft.com, raven@themaw.net, akpm@linux-foundation.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 5, 2018 7:29:39 PM CEST Feng Kan wrote:
-> When bridge and its endpoint is enumerated the devices are added to the
-> dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
-> This causes the bridge to be moved to the end of the dpm list when
-> deferred probe kicks in. The order of the dpm list for bridge and
-> endpoint is reversed.
-> 
-> Add reordering code to move the bridge and its children and consumers to
-> the end of the pm list so the order for suspend and resume is not altered.
-> The code also move device and its children and consumers to the tail of
-> device_kset list if it is registered.
-> 
-> Signed-off-by: Feng Kan <fkan@apm.com>
-> Signed-off-by: Toan Le <toanle@apm.com>
-> ---
->  V3:
-> 	1. additional code comment changes
->  V2:
->         1. change patch title from "move device and its children..."
->         2. move define based on Bjorn's comment
->         3. rename function name and comment content
-> 
->  drivers/base/base.h |  3 +++
->  drivers/base/core.c | 20 ++++++++++++++++++++
->  drivers/base/dd.c   |  4 +---
->  3 files changed, 24 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/base/base.h b/drivers/base/base.h
-> index d800de6..a75c302 100644
-> --- a/drivers/base/base.h
-> +++ b/drivers/base/base.h
-> @@ -161,3 +161,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
->  extern void device_links_no_driver(struct device *dev);
->  extern bool device_links_busy(struct device *dev);
->  extern void device_links_unbind_consumers(struct device *dev);
-> +
-> +/* device pm support */
-> +void device_pm_move_to_tail(struct device *dev);
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 110230d..3b37906 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -148,6 +148,26 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
->  }
->  
->  /**
-> + * device_pm_move_to_tail - Move set of devices to the end of device lists
-> + * @dev: current device pointer
 
-What does "current" mean here, exactly?
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I guess it would be better to say "Device to move" or similar here.
+Hi!
 
-> + *
-> + * This is a device_reorder_to_tail() wrapper taking the requisite locks.
-> + *
-> + * It moves the device along with all of its children and all of its consumers
+> > Well, v4.16-rc4 is parent of v4.16-rc6, but next-20180304 is not
+> > parent of next-20180307.
+> >=20
+> > But you are right that if I do bisect between -linus and -next, it
+> > should work.
+> >=20
+> > Anyway, does s2ram work for you in -next? Are you testing 32bit?
+>=20
+> Hmm. I tested on T40p. That works ok, so at least some 32bit machines
+> do work.
+>=20
+> Hmm, and my test scripts were wrong.
+>=20
+> Failure is not a hang, as they expect, but... machine locks up, but
+> does not suspend, and then continues running after a delay..
+>=20
+> [   35.038766] PM: Syncing filesystems ... done.
+> [   35.051246] Freezing user space processes ...
+> [   55.060528] Freezing of tasks failed after 20.009 seconds (1 tasks
+> refusing to freeze, wq_busy
+> =3D0):
+> [   55.060552] update-binfmts  D    0  2727      1 0x80000004
+> [   55.060576] Call Trace:
+> [   55.060600]  __schedule+0x37a/0x7e0
+> [   55.060618]  schedule+0x29/0x70
+> [   55.060635]  autofs4_wait+0x359/0x7a0
+> [   55.060653]  ? wait_woken+0x70/0x70
+> [   55.060668]  autofs4_mount_wait+0x4a/0xe0
+> [   55.060684]  ? autofs4_mount_wait+0x4a/0xe0
+> [   55.060699]  autofs4_d_automount+0xe0/0x200
+> [   55.060715]  ? autofs4_d_automount+0xe0/0x200
+>=20
+> Did the rework of freezing start already in -next?
 
-"The device" is @dev, so it's better to use @dev here, like
+Hmm, so I did git bisect, and it pointed to:
 
-"It moves @dev along with ..."
+commit 7cb03edf112fea6ead2fcd3c5fd639756d6d114b
+Author: Matthew Wilcox <mawilcox@microsoft.com>
+Date:   Thu Mar 29 10:15:17 2018 +1100
 
-Thanks,
-Rafael
+    autofs4: use wait_event_killable
+
+    This playing with signals to allow only fatal signals appears to
+    predate
+        the introduction of wait_event_killable(), and I'm fairly sure
+    that
+        wait_event_killable is what was meant to happen here.
+
+    Link:
+    http://lkml.kernel.org/r/20180319191609.23880-1-willy@infradead.org
+        Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
+	    Acked-by: Ian Kent <raven@themaw.net>
+	        Signed-off-by: Andrew Morton
+    <akpm@linux-foundation.org>
+        Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+=09
+
+
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--HlL+5n6rz5pIUxbD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlrGh3UACgkQMOfwapXb+vJPpACcC/lSAgo2k/KIXNu0X1yLkcUV
+Dh4Aniex/LbnMIfOsdz+lAobvWq/F+Dh
+=Al6e
+-----END PGP SIGNATURE-----
+
+--HlL+5n6rz5pIUxbD--
