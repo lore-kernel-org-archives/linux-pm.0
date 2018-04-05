@@ -1,134 +1,97 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq/schedutil: Cleanup and document iowait boost
-Date: Thu, 5 Apr 2018 15:28:58 +0530
-Message-ID: <20180405095858.GP3572@vireshk-i7>
-References: <20180328090721.26068-1-patrick.bellasi@arm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: update-binfmts breaking suspend was Re: x32 suspend failuer in Re:
+ linux-next: Tree for Apr 4
+Date: Thu, 5 Apr 2018 14:25:03 +0200
+Message-ID: <20180405122503.GA28446@amd>
+References: <20180404165559.4cd0c12c@canb.auug.org.au>
+ <20180404075047.GB9342@amd>
+ <CAJZ5v0hxyXtyKacJufivL9HWbQBsxTBYVipnHK4+QquTYjpc+A@mail.gmail.com>
+ <20180404084905.GA12303@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180328090721.26068-1-patrick.bellasi@arm.com>
+In-Reply-To: <20180404084905.GA12303@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, jikos@suse.cz
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 28-03-18, 10:07, Patrick Bellasi wrote:
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 2b124811947d..c840b0626735 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -201,43 +201,80 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
->  	return min(util, sg_cpu->max);
->  }
 
-I like the general idea but there are few things which look incorrect
-to me, even in the current code.
+--pf9I7BMVVzbSWLtt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> -static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
-> +/**
-> + * sugov_set_iowait_boost updates the IO boost at each wakeup from IO.
-> + * @sg_cpu: the sugov data for the CPU to boost
-> + * @flags:  SCHED_CPUFREQ_IOWAIT if the task is waking up after an IO wait
-> + *
-> + * Each time a task wakes up after an IO operation, the CPU utilization can be
-> + * boosted to a certain utilization which is doubled at each wakeup
-> + * from IO, starting from the utilization of the minimum OPP to that of the
-> + * maximum one.
+On Wed 2018-04-04 10:49:05, Pavel Machek wrote:
+> On Wed 2018-04-04 09:58:17, Rafael J. Wysocki wrote:
+> > On Wed, Apr 4, 2018 at 9:50 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > > Hi!
+> > >
+> > >> Please do not add any v4.18 destined stuff to your linux-next includ=
+ed
+> > >> trees until after v4.17-rc1 has been released.
+> > >
+> > > On thinkpad x60, suspend does not suspend at all with this -next
+> > > version. Previous versions suspended/resumed fine but broke networkin=
+g.
+> > >
+> > > Any ideas? I guess bisecting on next would not be easy?
+> >=20
+> > Well, why would it be different from a bisect on any other git repo?
+>=20
+> Well, v4.16-rc4 is parent of v4.16-rc6, but next-20180304 is not
+> parent of next-20180307.
+>=20
+> But you are right that if I do bisect between -linus and -next, it
+> should work.
+>=20
+> Anyway, does s2ram work for you in -next? Are you testing 32bit?
 
-You may also want to write here that the doubling of boost value is
-restricted by rate_limit_us duration, its not that we double every
-time this routine is called.
+Hmm. I tested on T40p. That works ok, so at least some 32bit machines
+do work.
 
-> + */
-> +static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, unsigned int flags)
->  {
+Hmm, and my test scripts were wrong.
 
->  
-> -		/* Clear iowait_boost if the CPU apprears to have been idle. */
-> -		if (delta_ns > TICK_NSEC) {
-> -			sg_cpu->iowait_boost = 0;
-> -			sg_cpu->iowait_boost_pending = false;
-> -		}
+Failure is not a hang, as they expect, but... machine locks up, but
+does not suspend, and then continues running after a delay..
 
-So this is the only difference in this routine, everything else is
-re-arrangement IIUC.
+[   35.038766] PM: Syncing filesystems ... done.
+[   35.051246] Freezing user space processes ...
+[   55.060528] Freezing of tasks failed after 20.009 seconds (1 tasks
+refusing to freeze, wq_busy
+=3D0):
+[   55.060552] update-binfmts  D    0  2727      1 0x80000004
+[   55.060576] Call Trace:
+[   55.060600]  __schedule+0x37a/0x7e0
+[   55.060618]  schedule+0x29/0x70
+[   55.060635]  autofs4_wait+0x359/0x7a0
+[   55.060653]  ? wait_woken+0x70/0x70
+[   55.060668]  autofs4_mount_wait+0x4a/0xe0
+[   55.060684]  ? autofs4_mount_wait+0x4a/0xe0
+[   55.060699]  autofs4_d_automount+0xe0/0x200
+[   55.060715]  ? autofs4_d_automount+0xe0/0x200
 
-There is a problem that I see in existing code as well as code after
-this commit.
+Did the rework of freezing start already in -next?
 
-Consider this sequence of events on a platform where cpufreq policies
-aren't shared, i.e. each CPU has his own policy.
 
-sugov_set_iowait_boost() gets called multiple times for a CPU with
-IOWAIT flag set that leads us to a big boost value, like fmax. The CPU
-goes to idle then and the task wakes up after few ticks.  Because we
-are first checking the IOWAIT flag in this routine, we will double the
-iowait boost. Ideally, based on the TICK_NSEC logic we have, we should
-have first set the iowait boost to 0 and then because the flag was
-set, set the boost to fmin. So the order of this routine needs to get
-fixed in the first patch.
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-The same problem can happen for cases where the policy is shared as
-well, but chances are less.
+--pf9I7BMVVzbSWLtt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> -static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
-> -			       unsigned long *max)
-> +/**
-> + * sugov_iowait_boost boosts a CPU after a wakeup from IO.
-> + * @sg_cpu: the sugov data for the cpu to boost
-> + * @time:   the update time from the caller
-> + * @util:   the utilization to (eventually) boost
-> + * @max:    the maximum value the utilization can be boosted to
-> + *
-> + * A CPU running a task which woken up after an IO operation can have its
-> + * utilization boosted to speed up the completion of those IO operations.
-> + * The IO boost value is increased each time a task wakes up from IO, in
-> + * sugov_set_iowait_boost(), and it's instead decreased by this function,
-> + * each time an increase has not been requested (!iowait_boost_pending).
-> + *
-> + * A CPU which also appears to have been idle for at least one tick has also
-> + * its IO boost utilization reset.
-> + *
-> + * This mechanism is designed to boost high frequently IO waiting tasks, while
-> + * being more conservative on tasks which does sporadic IO operations.
-> + */
-> +static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-> +			       unsigned long *util, unsigned long *max)
->  {
->  	unsigned int boost_util, boost_max;
->  
-> -	if (!sg_cpu->iowait_boost)
-> +	/* Clear boost if the CPU appears to have been idle enough */
-> +	if (sg_cpu->iowait_boost) {
-> +		s64 delta_ns = time - sg_cpu->last_update;
-> +
-> +		if (delta_ns > TICK_NSEC) {
-> +			sg_cpu->iowait_boost = 0;
-> +			sg_cpu->iowait_boost_pending = false;
-> +		}
->  		return;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-This looks incorrect. I have read this 10 times and it looked
-incorrect every single time :(
+iEYEARECAAYFAlrGFZ8ACgkQMOfwapXb+vKK4gCfQnOJ7D75mhKz386tUxywi8i8
+lyMAnjnHozobvose7s62mzpom1kG6+mn
+=DPRS
+-----END PGP SIGNATURE-----
 
-The "return" statement should be part of the if block itself ? Else we
-will never boost.
-
-> +	}
->  
-
-Now we can reach here even on !sg_cpu->iowait_boost which wasn't the
-case earlier. Though we will eventually return from the routine
-without doing any damage, but we will waste some time running useless
-if/else expressions.
-
-Maybe still have something like
-
-        if (!sg_cpu->iowait_boost)
-                return;
-
-??
-
--- 
-viresh
+--pf9I7BMVVzbSWLtt--
