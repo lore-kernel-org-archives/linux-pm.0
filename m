@@ -1,355 +1,870 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH] sched/fair: schedutil: update only with all info available
-Date: Fri,  6 Apr 2018 18:28:35 +0100
-Message-ID: <20180406172835.20078-1-patrick.bellasi@arm.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v4 1/7] interconnect: Add generic on-chip interconnect API
+Date: Fri, 6 Apr 2018 10:38:46 -0700
+Message-ID: <20180406173846.GC130399@google.com>
+References: <20180309210958.16672-1-georgi.djakov@linaro.org>
+ <20180309210958.16672-2-georgi.djakov@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180309210958.16672-2-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Schedutil is not properly updated when the first FAIR task wakes up on a
-CPU and when a RQ is (un)throttled. This is mainly due to the current
-integration strategy, which relies on updates being triggered implicitly
-each time a cfs_rq's utilization is updated.
+On Fri, Mar 09, 2018 at 11:09:52PM +0200, Georgi Djakov wrote:
+> This patch introduce a new API to get requirements and configure the
+> interconnect buses across the entire chipset to fit with the current
+> demand.
+> 
+> The API is using a consumer/provider-based model, where the providers are
+> the interconnect buses and the consumers could be various drivers.
+> The consumers request interconnect resources (path) between endpoints and
+> set the desired constraints on this data flow path. The providers receive
+> requests from consumers and aggregate these requests for all master-slave
+> pairs on that path. Then the providers configure each participating in the
+> topology node according to the requested data flow path, physical links and
+> constraints. The topology could be complicated and multi-tiered and is SoC
+> specific.
+> 
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  Documentation/interconnect/interconnect.rst |  96 ++++++
+>  drivers/Kconfig                             |   2 +
+>  drivers/Makefile                            |   1 +
+>  drivers/interconnect/Kconfig                |  10 +
+>  drivers/interconnect/Makefile               |   1 +
+>  drivers/interconnect/core.c                 | 489 ++++++++++++++++++++++++++++
+>  include/linux/interconnect-provider.h       | 109 +++++++
+>  include/linux/interconnect.h                |  40 +++
+>  8 files changed, 748 insertions(+)
+>  create mode 100644 Documentation/interconnect/interconnect.rst
+>  create mode 100644 drivers/interconnect/Kconfig
+>  create mode 100644 drivers/interconnect/Makefile
+>  create mode 100644 drivers/interconnect/core.c
+>  create mode 100644 include/linux/interconnect-provider.h
+>  create mode 100644 include/linux/interconnect.h
+> 
+> diff --git a/Documentation/interconnect/interconnect.rst b/Documentation/interconnect/interconnect.rst
+> new file mode 100644
+> index 000000000000..23eba68e8424
+> --- /dev/null
+> +++ b/Documentation/interconnect/interconnect.rst
+> @@ -0,0 +1,96 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +
+> +=====================================
+> +GENERIC SYSTEM INTERCONNECT SUBSYSTEM
+> +=====================================
+> +
+> +Introduction
+> +------------
+> +
+> +This framework is designed to provide a standard kernel interface to control
+> +the settings of the interconnects on a SoC. These settings can be throughput,
+> +latency and priority between multiple interconnected devices or functional
+> +blocks. This can be controlled dynamically in order to save power or provide
+> +maximum performance.
+> +
+> +The interconnect bus is a hardware with configurable parameters, which can be
+> +set on a data path according to the requests received from various drivers.
+> +An example of interconnect buses are the interconnects between various
+> +components or functional blocks in chipsets. There can be multiple interconnects
+> +on a SoC that can be multi-tiered.
+> +
+> +Below is a simplified diagram of a real-world SoC interconnect bus topology.
+> +
+> +::
+> +
+> + +----------------+    +----------------+
+> + | HW Accelerator |--->|      M NoC     |<---------------+
+> + +----------------+    +----------------+                |
+> +                         |      |                    +------------+
+> +  +-----+  +-------------+      V       +------+     |            |
+> +  | DDR |  |                +--------+  | PCIe |     |            |
+> +  +-----+  |                | Slaves |  +------+     |            |
+> +    ^ ^    |                +--------+     |         |   C NoC    |
+> +    | |    V                               V         |            |
+> + +------------------+   +------------------------+   |            |   +-----+
+> + |                  |-->|                        |-->|            |-->| CPU |
+> + |                  |-->|                        |<--|            |   +-----+
+> + |     Mem NoC      |   |         S NoC          |   +------------+
+> + |                  |<--|                        |---------+    |
+> + |                  |<--|                        |<------+ |    |   +--------+
+> + +------------------+   +------------------------+       | |    +-->| Slaves |
+> +   ^  ^    ^    ^          ^                             | |        +--------+
+> +   |  |    |    |          |                             | V
+> + +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+> + | CPUs |  |  | GPU |   | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
+> + +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+> +           |
+> +       +-------+
+> +       | Modem |
+> +       +-------+
+> +
+> +Terminology
+> +-----------
+> +
+> +Interconnect provider is the software definition of the interconnect hardware.
+> +The interconnect providers on the above diagram are M NoC, S NoC, C NoC and Mem
+> +NoC.
 
-Those updates are currently provided (mainly) via
-   cfs_rq_util_change()
-which is used in:
- - update_cfs_rq_load_avg()
-   when the utilization of a cfs_rq is updated
- - {attach,detach}_entity_load_avg()
-This is done based on the idea that "we should callback schedutil
-frequently enough" to properly update the CPU frequency at every
-utilization change.
+Should P NoC be part of that list?
 
-Since this recent schedutil update:
+> +
+> +Interconnect node is the software definition of the interconnect hardware
+> +port. Each interconnect provider consists of multiple interconnect nodes,
+> +which are connected to other SoC components including other interconnect
+> +providers. The point on the diagram where the CPUs connects to the memory is
+> +called an interconnect node, which belongs to the Mem NoC interconnect provider.
+> +
+> +Interconnect endpoints are the first or the last element of the path. Every
+> +endpoint is a node, but not every node is an endpoint.
+> +
+> +Interconnect path is everything between two endpoints including all the nodes
+> +that have to be traversed to reach from a source to destination node. It may
+> +include multiple master-slave pairs across several interconnect providers.
+> +
+> +Interconnect consumers are the entities which make use of the data paths exposed
+> +by the providers. The consumers send requests to providers requesting various
+> +throughput, latency and priority. Usually the consumers are device drivers, that
+> +send request based on their needs. An example for a consumer is a video decoder
+> +that supports various formats and image sizes.
+> +
+> +Interconnect providers
+> +----------------------
+> +
+> +Interconnect provider is an entity that implements methods to initialize and
+> +configure a interconnect bus hardware. The interconnect provider drivers should
+> +be registered with the interconnect provider core.
+> +
+> +The interconnect framework provider API functions are documented in
+> +.. kernel-doc:: include/linux/interconnect-provider.h
+> +
+> +Interconnect consumers
+> +----------------------
+> +
+> +Interconnect consumers are the clients which use the interconnect APIs to
+> +get paths between endpoints and set their bandwidth/latency/QoS requirements
+> +for these interconnect paths.
+> +
+> +The interconnect framework consumer API functions are documented in
+> +.. kernel-doc:: include/linux/interconnect.h
+> diff --git a/drivers/Kconfig b/drivers/Kconfig
+> index 879dc0604cba..96a1db022cee 100644
+> --- a/drivers/Kconfig
+> +++ b/drivers/Kconfig
+> @@ -219,4 +219,6 @@ source "drivers/siox/Kconfig"
+>  
+>  source "drivers/slimbus/Kconfig"
+>  
+> +source "drivers/interconnect/Kconfig"
+> +
+>  endmenu
+> diff --git a/drivers/Makefile b/drivers/Makefile
+> index 24cd47014657..0cca95740d9b 100644
+> --- a/drivers/Makefile
+> +++ b/drivers/Makefile
+> @@ -185,3 +185,4 @@ obj-$(CONFIG_TEE)		+= tee/
+>  obj-$(CONFIG_MULTIPLEXER)	+= mux/
+>  obj-$(CONFIG_UNISYS_VISORBUS)	+= visorbus/
+>  obj-$(CONFIG_SIOX)		+= siox/
+> +obj-$(CONFIG_INTERCONNECT)	+= interconnect/
+> diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
+> new file mode 100644
+> index 000000000000..a261c7d41deb
+> --- /dev/null
+> +++ b/drivers/interconnect/Kconfig
+> @@ -0,0 +1,10 @@
+> +menuconfig INTERCONNECT
+> +	tristate "On-Chip Interconnect management support"
+> +	help
+> +	  Support for management of the on-chip interconnects.
+> +
+> +	  This framework is designed to provide a generic interface for
+> +	  managing the interconnects in a SoC.
+> +
+> +	  If unsure, say no.
+> +
+> diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+> new file mode 100644
+> index 000000000000..5edf0ae80818
+> --- /dev/null
+> +++ b/drivers/interconnect/Makefile
+> @@ -0,0 +1 @@
+> +obj-$(CONFIG_INTERCONNECT)		+= core.o
+> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+> new file mode 100644
+> index 000000000000..6306e258b9b9
+> --- /dev/null
+> +++ b/drivers/interconnect/core.c
+> @@ -0,0 +1,489 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Interconnect framework core driver
+> + *
+> + * Copyright (c) 2018, Linaro Ltd.
+> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+> + */
+> +
+> +#include <linux/device.h>
+> +#include <linux/idr.h>
+> +#include <linux/init.h>
+> +#include <linux/interconnect.h>
+> +#include <linux/interconnect-provider.h>
+> +#include <linux/list.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/slab.h>
+> +
+> +static DEFINE_IDR(icc_idr);
+> +static LIST_HEAD(icc_provider_list);
+> +static DEFINE_MUTEX(icc_provider_list_mutex);
+> +static DEFINE_MUTEX(icc_path_mutex);
+> +
+> +/**
+> + * struct icc_req - constraints that are attached to each node
+> + *
+> + * @req_node: entry in list of requests for the particular @node
+> + * @node: the interconnect node to which this constraint applies
+> + * @avg_bw: an integer describing the average bandwidth in kbps
+> + * @peak_bw: an integer describing the peak bandwidth in kbps
+> + */
+> +struct icc_req {
+> +	struct hlist_node req_node;
+> +	struct icc_node *node;
+> +	u32 avg_bw;
+> +	u32 peak_bw;
+> +};
+> +
+> +/**
+> + * struct icc_path - interconnect path structure
+> + * @num_nodes: number of hops (nodes)
+> + * @reqs: array of the requests applicable to this path of nodes
+> + */
+> +struct icc_path {
+> +	size_t num_nodes;
+> +	struct icc_req reqs[0];
+> +};
+> +
+> +static struct icc_node *node_find(const int id)
+> +{
+> +	struct icc_node *node;
+> +
+> +	node = idr_find(&icc_idr, id);
+> +
+> +	return node;
+> +}
+> +
+> +static struct icc_path *path_allocate(struct icc_node *node, ssize_t num_nodes)
+> +{
+> +	struct icc_path *path;
+> +	size_t i;
+> +
+> +	path = kzalloc(sizeof(*path) + num_nodes * sizeof(*path->reqs),
+> +		       GFP_KERNEL);
+> +	if (!path)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	path->num_nodes = num_nodes;
+> +
+> +	for (i = 0; i < num_nodes; i++) {
+> +		hlist_add_head(&path->reqs[i].req_node, &node->req_list);
+> +
+> +		path->reqs[i].node = node;
+> +		/* reference to previous node was saved during path traversal */
+> +		node = node->reverse;
+> +	}
+> +
+> +	return path;
+> +}
+> +
+> +static struct icc_path *path_find(struct icc_node *src, struct icc_node *dst)
+> +{
+> +	struct icc_node *node = NULL;
+> +	struct list_head traverse_list;
+> +	struct list_head edge_list;
+> +	struct list_head tmp_list;
+> +	size_t i, number = 0;
+> +	bool found = false;
+> +
+> +	INIT_LIST_HEAD(&traverse_list);
+> +	INIT_LIST_HEAD(&edge_list);
+> +	INIT_LIST_HEAD(&tmp_list);
+> +
+> +	list_add_tail(&src->search_list, &traverse_list);
+> +
+> +	do {
+> +		list_for_each_entry(node, &traverse_list, search_list) {
+> +			if (node == dst) {
+> +				found = true;
+> +				list_add(&node->search_list, &tmp_list);
+> +				break;
+> +			}
+> +			for (i = 0; i < node->num_links; i++) {
+> +				struct icc_node *tmp = node->links[i];
+> +
+> +				if (!tmp)
+> +					return ERR_PTR(-ENOENT);
+> +
+> +				if (tmp->is_traversed)
+> +					continue;
+> +
+> +				tmp->is_traversed = true;
+> +				tmp->reverse = node;
+> +				list_add_tail(&tmp->search_list, &edge_list);
+> +			}
+> +		}
+> +		if (found)
+> +			break;
+> +
+> +		list_splice_init(&traverse_list, &tmp_list);
+> +		list_splice_init(&edge_list, &traverse_list);
+> +
+> +		/* count the number of nodes */
+> +		number++;
+> +
+> +	} while (!list_empty(&traverse_list));
+> +
+> +	/* reset the traversed state */
+> +	list_for_each_entry(node, &tmp_list, search_list)
+> +		node->is_traversed = false;
+> +
+> +	if (found)
+> +		return path_allocate(dst, number);
+> +
+> +	return ERR_PTR(-EPROBE_DEFER);
+> +}
+> +
+> +static int path_init(struct icc_path *path)
+> +{
+> +	struct icc_node *node;
+> +	size_t i;
+> +
+> +	for (i = 0; i < path->num_nodes; i++) {
+> +		node = path->reqs[i].node;
+> +
+> +		mutex_lock(&node->provider->lock);
+> +		node->provider->users++;
+> +		mutex_unlock(&node->provider->lock);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void node_aggregate(struct icc_node *node)
+> +{
+> +	struct icc_req *r;
+> +	u32 agg_avg = 0;
 
-  commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
+Should this be u64 to avoid overflow in case of a large number of
+constraints and high bandwidths?
 
-we use additional RQ information to properly account for FAIR tasks
-utilization. Specifically, cfs_rq::h_nr_running has to be non-zero
-in sugov_aggregate_util() to sum up the cfs_rq's utilization.
+> +	u32 agg_peak = 0;
+> +
+> +	hlist_for_each_entry(r, &node->req_list, req_node) {
+> +		/* sum(averages) and max(peaks) */
+> +		agg_avg += r->avg_bw;
+> +		agg_peak = max(agg_peak, r->peak_bw);
+> +	}
+> +
+> +	node->avg_bw = agg_avg;
 
-However, cfs_rq::h_nr_running is usually updated as:
+Is it really intended to store the sum of averages here rather than
+the overall average?
 
-    enqueue_entity()
-       ...
-       update_load_avg()
-          ...
-          cfs_rq_util_change ==> trigger schedutil update
-    ...
-    cfs_rq->h_nr_running += number_of_tasks
+> +	node->peak_bw = agg_peak;
+> +}
+> +
+> +static void provider_aggregate(struct icc_provider *provider, u32 *avg_bw,
+> +			       u32 *peak_bw)
+> +{
+> +	struct icc_node *n;
+> +	u32 agg_avg = 0;
 
-both in enqueue_task_fair() as well as in unthrottle_cfs_rq().
-A similar pattern is used also in dequeue_task_fair() and
-throttle_cfs_rq() to remove tasks.
+See above.
 
-This means that we are likely to see a zero cfs_rq utilization when we
-enqueue a task on an empty CPU, or a non-zero cfs_rq utilization when
-instead, for example, we are throttling all the FAIR tasks of a CPU.
+> +	u32 agg_peak = 0;
+> +
+> +	/* aggregate for the interconnect provider */
+> +	list_for_each_entry(n, &provider->nodes, node_list) {
+> +		/* sum the average and max the peak */
+> +		agg_avg += n->avg_bw;
+> +		agg_peak = max(agg_peak, n->peak_bw);
+> +	}
+> +
+> +	*avg_bw = agg_avg;
 
-While the second issue is less important, since we are less likely to
-reduce frequency when CPU utilization decreases, the first issue can
-instead impact performance. Indeed, we potentially introduce a not desired
-latency between a task enqueue on a CPU and its frequency increase.
+See above.
 
-Another possible unwanted side effect is the iowait boosting of a CPU
-when we enqueue a task into a throttled cfs_rq.
+> +	*peak_bw = agg_peak;
+> +}
+> +
+> +static int constraints_apply(struct icc_path *path)
+> +{
+> +	struct icc_node *next, *prev = NULL;
+> +	int i;
+> +
+> +	for (i = 0; i < path->num_nodes; i++, prev = next) {
+> +		struct icc_provider *provider;
+> +		u32 avg_bw = 0;
+> +		u32 peak_bw = 0;
+> +		int ret;
+> +
+> +		next = path->reqs[i].node;
+> +		/*
+> +		 * Both endpoints should be valid master-slave pairs of the
+> +		 * same interconnect provider that will be configured.
+> +		 */
+> +		if (!next || !prev)
+> +			continue;
+> +
+> +		if (next->provider != prev->provider)
+> +			continue;
+> +
+> +		provider = next->provider;
+> +		mutex_lock(&provider->lock);
+> +
+> +		/* aggregate requests for the provider */
+> +		provider_aggregate(provider, &avg_bw, &peak_bw);
+> +
+> +		if (provider->set) {
+> +			/* set the constraints */
+> +			ret = provider->set(prev, next, avg_bw, peak_bw);
+> +		}
+> +
+> +		mutex_unlock(&provider->lock);
+> +
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * icc_set() - set constraints on an interconnect path between two endpoints
+> + * @path: reference to the path returned by icc_get()
+> + * @avg_bw: average bandwidth in kbps
+> + * @peak_bw: peak bandwidth in kbps
+> + *
+> + * This function is used by an interconnect consumer to express its own needs
+> + * in term of bandwidth and QoS for a previously requested path between two
+> + * endpoints. The requests are aggregated and each node is updated accordingly.
+> + *
+> + * Returns 0 on success, or an approproate error code otherwise.
+> + */
+> +int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+> +{
+> +	struct icc_node *node;
+> +	size_t i;
+> +	int ret;
+> +
+> +	if (!path)
+> +		return 0;
+> +
+> +	for (i = 0; i < path->num_nodes; i++) {
+> +		node = path->reqs[i].node;
+> +
+> +		mutex_lock(&icc_path_mutex);
+> +
+> +		/* update the consumer request for this path */
+> +		path->reqs[i].avg_bw = avg_bw;
+> +		path->reqs[i].peak_bw = peak_bw;
+> +
+> +		/* aggregate requests for this node */
+> +		node_aggregate(node);
+> +
+> +		mutex_unlock(&icc_path_mutex);
+> +	}
+> +
+> +	ret = constraints_apply(path);
+> +	if (ret)
+> +		pr_err("interconnect: error applying constraints (%d)", ret);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(icc_set);
+> +
+> +/**
+> + * icc_get() - return a handle for path between two endpoints
+> + * @src_id: source device port id
+> + * @dst_id: destination device port id
+> + *
+> + * This function will search for a path between two endpoints and return an
+> + * icc_path handle on success. Use icc_put() to release
+> + * constraints when the they are not needed anymore.
+> + *
+> + * Return: icc_path pointer on success, or ERR_PTR() on error
+> + */
+> +struct icc_path *icc_get(const int src_id, const int dst_id)
+> +{
+> +	struct icc_node *src, *dst;
+> +	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
+> +
+> +	src = node_find(src_id);
+> +	if (!src)
+> +		goto out;
+> +
+> +	dst = node_find(dst_id);
+> +	if (!dst)
+> +		goto out;
+> +
+> +	mutex_lock(&icc_path_mutex);
+> +	path = path_find(src, dst);
+> +	mutex_unlock(&icc_path_mutex);
+> +	if (IS_ERR(path))
+> +		goto out;
+> +
+> +	path_init(path);
+> +
+> +out:
+> +	return path;
+> +}
+> +EXPORT_SYMBOL_GPL(icc_get);
+> +
+> +/**
+> + * icc_put() - release the reference to the icc_path
+> + * @path: interconnect path
+> + *
+> + * Use this function to release the constraints on a path when the path is
+> + * no longer needed. The constraints will be re-aggregated.
+> + */
+> +void icc_put(struct icc_path *path)
+> +{
+> +	struct icc_node *node;
+> +	size_t i;
+> +	int ret;
+> +
+> +	if (!path || WARN_ON_ONCE(IS_ERR(path)))
+> +		return;
+> +
+> +	ret = icc_set(path, 0, 0);
+> +	if (ret)
+> +		pr_err("%s: error (%d)\n", __func__, ret);
+> +
+> +	for (i = 0; i < path->num_nodes; i++) {
+> +		node = path->reqs[i].node;
+> +		hlist_del(&path->reqs[i].req_node);
+> +
+> +		mutex_lock(&node->provider->lock);
+> +		node->provider->users--;
+> +		mutex_unlock(&node->provider->lock);
+> +	}
+> +
+> +	kfree(path);
+> +}
+> +EXPORT_SYMBOL_GPL(icc_put);
+> +
+> +/**
+> + * icc_node_create() - create a node
+> + * @id: node id
+> + *
+> + * Return: icc_node pointer on success, or ERR_PTR() on error
+> + */
+> +struct icc_node *icc_node_create(int id)
+> +{
+> +	struct icc_node *node;
+> +
+> +	/* check if node already exists */
+> +	node = node_find(id);
+> +	if (node)
+> +		return node;
+> +
+> +	node = kzalloc(sizeof(*node), GFP_KERNEL);
+> +	if (!node)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	id = idr_alloc(&icc_idr, node, id, id + 1, GFP_KERNEL);
+> +	if (WARN(id < 0, "couldn't get idr"))
+> +		return ERR_PTR(id);
+> +
+> +	node->id = id;
+> +
+> +	return node;
+> +}
+> +EXPORT_SYMBOL_GPL(icc_node_create);
+> +
+> +/**
+> + * icc_link_create() - create a link between two nodes
+> + * @src_id: source node id
+> + * @dst_id: destination node id
+> + *
+> + * Return: 0 on success, or an error code otherwise
+> + */
+> +int icc_link_create(struct icc_node *node, const int dst_id)
+> +{
+> +	struct icc_node *dst;
+> +	struct icc_node **new;
+> +	int ret = 0;
+> +
+> +	if (IS_ERR_OR_NULL(node))
+> +		return PTR_ERR(node);
+> +
+> +	mutex_lock(&node->provider->lock);
+> +
+> +	dst = node_find(dst_id);
+> +	if (!dst)
+> +		dst = icc_node_create(dst_id);
+> +
+> +	new = krealloc(node->links,
+> +		       (node->num_links + 1) * sizeof(*node->links),
+> +		       GFP_KERNEL);
+> +	if (!new) {
+> +		ret = -ENOMEM;
+> +		goto out;
+> +	}
+> +
+> +	node->links = new;
+> +	node->links[node->num_links++] = dst;
+> +
+> +out:
+> +	mutex_unlock(&node->provider->lock);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(icc_link_create);
+> +
+> +/**
+> + * icc_add_node() - add an interconnect node to interconnect provider
+> + * @node: pointer to the interconnect node
+> + * @provider: pointer to the interconnect provider
+> + *
+> + * Return: 0 on success, or an error code otherwise
+> + */
+> +int icc_node_add(struct icc_node *node, struct icc_provider *provider)
+> +{
+> +	if (WARN_ON(!node))
+> +		return -EINVAL;
+> +
+> +	if (WARN_ON(!provider))
+> +		return -EINVAL;
+> +
+> +	node->provider = provider;
+> +
+> +	mutex_lock(&provider->lock);
+> +	list_add_tail(&node->node_list, &provider->nodes);
+> +	mutex_unlock(&provider->lock);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * icc_add_provider() - add a new interconnect provider
+> + * @icc_provider: the interconnect provider that will be added into topology
+> + *
+> + * Return: 0 on success, or an error code otherwise
+> + */
+> +int icc_add_provider(struct icc_provider *provider)
+> +{
+> +	if (WARN_ON(!provider))
+> +		return -EINVAL;
+> +
+> +	if (WARN_ON(!provider->set))
+> +		return -EINVAL;
+> +
+> +	mutex_init(&provider->lock);
+> +	INIT_LIST_HEAD(&provider->nodes);
+> +
+> +	mutex_lock(&icc_provider_list_mutex);
+> +	list_add(&provider->provider_list, &icc_provider_list);
+> +	mutex_unlock(&icc_provider_list_mutex);
+> +
+> +	dev_dbg(provider->dev, "interconnect provider added to topology\n");
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(icc_add_provider);
+> +
+> +/**
+> + * icc_del_provider() - delete previously added interconnect provider
+> + * @icc_provider: the interconnect provider that will be removed from topology
+> + *
+> + * Return: 0 on success, or an error code otherwise
+> + */
+> +int icc_del_provider(struct icc_provider *provider)
+> +{
+> +	mutex_lock(&provider->lock);
+> +	if (provider->users) {
+> +		pr_warn("interconnect provider still has %d users\n",
+> +			provider->users);
+> +	}
+> +	mutex_unlock(&provider->lock);
+> +
+> +	mutex_lock(&icc_provider_list_mutex);
+> +	list_del(&provider->provider_list);
+> +	mutex_unlock(&icc_provider_list_mutex);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(icc_del_provider);
+> +
+> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org");
+> +MODULE_DESCRIPTION("Interconnect Driver Core");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
+> new file mode 100644
+> index 000000000000..779b5b5b1306
+> --- /dev/null
+> +++ b/include/linux/interconnect-provider.h
+> @@ -0,0 +1,109 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (c) 2018, Linaro Ltd.
+> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+> + */
+> +
+> +#ifndef _LINUX_INTERCONNECT_PROVIDER_H
+> +#define _LINUX_INTERCONNECT_PROVIDER_H
+> +
+> +#include <linux/interconnect.h>
+> +
+> +struct icc_node;
+> +
+> +/**
+> + * struct icc_provider - interconnect provider (controller) entity that might
+> + * provide multiple interconnect controls
+> + *
+> + * @provider_list: list of the registered interconnect providers
+> + * @nodes: internal list of the interconnect provider nodes
+> + * @set: pointer to device specific set operation function
+> + * @dev: the device this interconnect provider belongs to
+> + * @lock: lock to provide consistency during aggregation/update of constraints
+> + * @users: count of active users
+> + * @data: pointer to private data
+> + */
+> +struct icc_provider {
+> +	struct list_head	provider_list;
+> +	struct list_head	nodes;
+> +	int (*set)(struct icc_node *src, struct icc_node *dst,
+> +		   u32 avg_bw, u32 peak_bw);
+> +	struct device		*dev;
+> +	struct mutex		lock;
+> +	int			users;
+> +	void			*data;
+> +};
+> +
+> +/**
+> + * struct icc_node - entity that is part of the interconnect topology
+> + *
+> + * @id: platform specific node id
+> + * @name: node name used in debugfs
+> + * @links: a list of targets where we can go next when traversing
+> + * @num_links: number of links to other interconnect nodes
+> + * @provider: points to the interconnect provider of this node
+> + * @node_list: list of interconnect nodes associated with @provider
+> + * @search_list: list used when walking the nodes graph
+> + * @reverse: pointer to previous node when walking the nodes graph
+> + * @is_traversed: flag that is used when walking the nodes graph
+> + * @req_list: a list of QoS constraint requests associated with this node
+> + * @avg_bw: aggregated value of average bandwidth
+> + * @peak_bw: aggregated value of peak bandwidth
+> + * @data: pointer to private data
+> + */
+> +struct icc_node {
+> +	int			id;
+> +	const char              *name;
+> +	struct icc_node		**links;
+> +	size_t			num_links;
+> +
+> +	struct icc_provider	*provider;
+> +	struct list_head	node_list;
+> +	struct list_head	orphan_list;
 
-Moreover, the current schedutil integration has these other downsides:
+orphan_list is not used (nor documented)
 
- - schedutil updates are triggered by RQ's load updates, which makes
-   sense in general but it does not allow to know exactly which other RQ
-   related information has been updated (e.g. h_nr_running).
-
- - increasing the chances to update schedutil does not always correspond
-   to provide the most accurate information for a proper frequency
-   selection, thus we can skip some updates.
-
- - we don't know exactly at which point a schedutil update is triggered,
-   and thus potentially a frequency change started, and that's because
-   the update is a side effect of cfs_rq_util_changed instead of an
-   explicit call from the most suitable call path.
-
- - cfs_rq_util_change() is mainly a wrapper function for an already
-   existing "public API", cpufreq_update_util(), to ensure we actually
-   update schedutil only when we are updating a root RQ. Thus, especially
-   when task groups are in use, most of the calls to this wrapper
-   function are really not required.
-
- - the usage of a wrapper function is not completely consistent across
-   fair.c, since we still need sometimes additional explicit calls to
-   cpufreq_update_util(), for example to support the IOWAIT boot flag in
-   the wakeup path
-
- - it makes it hard to integrate new features since it could require to
-   change other function prototypes just to pass in an additional flag,
-   as it happened for example here:
-
-      commit ea14b57e8a18 ("sched/cpufreq: Provide migration hint")
-
-All the above considered, let's try to make schedutil updates more
-explicit in fair.c by:
-
- - removing the cfs_rq_util_change() wrapper function to use the
-   cpufreq_update_util() public API only when root cfs_rq is updated
-
- - remove indirect and side-effect (sometimes not required) schedutil
-   updates when the cfs_rq utilization is updated
-
- - call cpufreq_update_util() explicitly in the few call sites where it
-   really makes sense and all the required information has been updated
-
-By doing so, this patch mainly removes code and adds explicit calls to
-schedutil only when we:
- - {enqueue,dequeue}_task_fair() a task to/from the root cfs_rq
- - (un)throttle_cfs_rq() a set of tasks up to the root cfs_rq
- - task_tick_fair() to update the utilization of the root cfs_rq
-
-All the other code paths, currently _indirectly_ covered by a call to
-update_load_avg(), are also covered by the above three calls.
-Some already imply enqueue/dequeue calls:
- - switch_{to,from}_fair()
- - sched_move_task()
-or are followed by enqueue/dequeue calls:
- - cpu_cgroup_fork() and
-   post_init_entity_util_avg():
-     are used at wakeup_new_task() time and thus already followed by an
-     enqueue_task_fair()
- - migrate_task_rq_fair():
-     updates the removed utilization but not the actual cfs_rq
-     utilization, which is updated by a following sched event
-
-This new proposal allows also to better aggregate schedutil related
-flags, which are required only at enqueue_task_fair() time.
-Indeed, IOWAIT and MIGRATION flags are now requested only when a task is
-actually visible at the root cfs_rq level.
-
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Joel Fernandes <joelaf@google.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-
----
-
-The SCHED_CPUFREQ_MIGRATION flags, recently introduced by:
-
-   ea14b57e8a18 sched/cpufreq: Provide migration hint
-
-is maintained although there are not actual usages so far in mainline
-for this hint... do we really need it?
----
- kernel/sched/fair.c | 84 ++++++++++++++++++++++++-----------------------------
- 1 file changed, 38 insertions(+), 46 deletions(-)
-
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 0951d1c58d2f..e726f91f0089 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -772,7 +772,7 @@ void post_init_entity_util_avg(struct sched_entity *se)
- 			 * For !fair tasks do:
- 			 *
- 			update_cfs_rq_load_avg(now, cfs_rq);
--			attach_entity_load_avg(cfs_rq, se, 0);
-+			attach_entity_load_avg(cfs_rq, se);
- 			switched_from_fair(rq, p);
- 			 *
- 			 * such that the next switched_to_fair() has the
-@@ -3009,29 +3009,6 @@ static inline void update_cfs_group(struct sched_entity *se)
- }
- #endif /* CONFIG_FAIR_GROUP_SCHED */
- 
--static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
--{
--	struct rq *rq = rq_of(cfs_rq);
--
--	if (&rq->cfs == cfs_rq || (flags & SCHED_CPUFREQ_MIGRATION)) {
--		/*
--		 * There are a few boundary cases this might miss but it should
--		 * get called often enough that that should (hopefully) not be
--		 * a real problem.
--		 *
--		 * It will not get called when we go idle, because the idle
--		 * thread is a different class (!fair), nor will the utilization
--		 * number include things like RT tasks.
--		 *
--		 * As is, the util number is not freq-invariant (we'd have to
--		 * implement arch_scale_freq_capacity() for that).
--		 *
--		 * See cpu_util().
--		 */
--		cpufreq_update_util(rq, flags);
--	}
--}
--
- #ifdef CONFIG_SMP
- /*
-  * Approximate:
-@@ -3712,9 +3689,6 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
- 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
- #endif
- 
--	if (decayed)
--		cfs_rq_util_change(cfs_rq, 0);
--
- 	return decayed;
- }
- 
-@@ -3726,7 +3700,7 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
-  * Must call update_cfs_rq_load_avg() before this, since we rely on
-  * cfs_rq->avg.last_update_time being current.
-  */
--static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-+static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
- 	u32 divider = LOAD_AVG_MAX - 1024 + cfs_rq->avg.period_contrib;
- 
-@@ -3762,7 +3736,6 @@ static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 
- 	add_tg_cfs_propagate(cfs_rq, se->avg.load_sum);
- 
--	cfs_rq_util_change(cfs_rq, flags);
- }
- 
- /**
-@@ -3781,7 +3754,6 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 
- 	add_tg_cfs_propagate(cfs_rq, -se->avg.load_sum);
- 
--	cfs_rq_util_change(cfs_rq, 0);
- }
- 
- /*
-@@ -3818,7 +3790,7 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 		 *
- 		 * IOW we're enqueueing a task on a new CPU.
- 		 */
--		attach_entity_load_avg(cfs_rq, se, SCHED_CPUFREQ_MIGRATION);
-+		attach_entity_load_avg(cfs_rq, se);
- 		update_tg_load_avg(cfs_rq, 0);
- 
- 	} else if (decayed && (flags & UPDATE_TG))
-@@ -4028,13 +4000,12 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
- 
- static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int not_used1)
- {
--	cfs_rq_util_change(cfs_rq, 0);
- }
- 
- static inline void remove_entity_load_avg(struct sched_entity *se) {}
- 
- static inline void
--attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {}
-+attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
- static inline void
- detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
- 
-@@ -4762,8 +4733,11 @@ static void throttle_cfs_rq(struct cfs_rq *cfs_rq)
- 			dequeue = 0;
- 	}
- 
--	if (!se)
-+	/* The tasks are no more visible from the root cfs_rq */
-+	if (!se) {
- 		sub_nr_running(rq, task_delta);
-+		cpufreq_update_util(rq, 0);
-+	}
- 
- 	cfs_rq->throttled = 1;
- 	cfs_rq->throttled_clock = rq_clock(rq);
-@@ -4825,8 +4799,11 @@ void unthrottle_cfs_rq(struct cfs_rq *cfs_rq)
- 			break;
- 	}
- 
--	if (!se)
-+	/* The tasks are now visible from the root cfs_rq */
-+	if (!se) {
- 		add_nr_running(rq, task_delta);
-+		cpufreq_update_util(rq, 0);
-+	}
- 
- 	/* Determine whether we need to wake up potentially idle CPU: */
- 	if (rq->curr == rq->idle && rq->cfs.nr_running)
-@@ -5356,14 +5333,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &p->se;
- 
--	/*
--	 * If in_iowait is set, the code below may not trigger any cpufreq
--	 * utilization updates, so do it here explicitly with the IOWAIT flag
--	 * passed.
--	 */
--	if (p->in_iowait)
--		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
--
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
- 			break;
-@@ -5394,9 +5363,27 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		update_cfs_group(se);
- 	}
- 
--	if (!se)
-+	/* The task is visible from the root cfs_rq */
-+	if (!se) {
-+		unsigned int flags = 0;
-+
- 		add_nr_running(rq, 1);
- 
-+		if (p->in_iowait)
-+			flags |= SCHED_CPUFREQ_IOWAIT;
-+
-+		/*
-+		 * !last_update_time means we've passed through
-+		 * migrate_task_rq_fair() indicating we migrated.
-+		 *
-+		 * IOW we're enqueueing a task on a new CPU.
-+		 */
-+		if (!p->se.avg.last_update_time)
-+			flags |= SCHED_CPUFREQ_MIGRATION;
-+
-+		cpufreq_update_util(rq, flags);
-+	}
-+
- 	util_est_enqueue(&rq->cfs, p);
- 	hrtick_update(rq);
- }
-@@ -5454,8 +5441,11 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		update_cfs_group(se);
- 	}
- 
--	if (!se)
-+	/* The task is no more visible from the root cfs_rq */
-+	if (!se) {
- 		sub_nr_running(rq, 1);
-+		cpufreq_update_util(rq, 0);
-+	}
- 
- 	util_est_dequeue(&rq->cfs, p, task_sleep);
- 	hrtick_update(rq);
-@@ -9950,6 +9940,8 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
- 
- 	if (static_branch_unlikely(&sched_numa_balancing))
- 		task_tick_numa(rq, curr);
-+
-+	cpufreq_update_util(rq, 0);
- }
- 
- /*
-@@ -10087,7 +10079,7 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
- 
- 	/* Synchronize entity with its cfs_rq */
- 	update_load_avg(cfs_rq, se, sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
--	attach_entity_load_avg(cfs_rq, se, 0);
-+	attach_entity_load_avg(cfs_rq, se);
- 	update_tg_load_avg(cfs_rq, false);
- 	propagate_entity_cfs_rq(se);
- }
--- 
-2.15.1
+> +	struct list_head	search_list;
+> +	struct icc_node		*reverse;
+> +	bool			is_traversed;
+> +	struct hlist_head	req_list;
+> +	u32			avg_bw;
+> +	u32			peak_bw;
+> +	void			*data;
+> +};
+> +
+> +#if IS_ENABLED(CONFIG_INTERCONNECT)
+> +
+> +struct icc_node *icc_node_create(int id);
+> +int icc_node_add(struct icc_node *node, struct icc_provider *provider);
+> +int icc_link_create(struct icc_node *node, const int dst_id);
+> +int icc_add_provider(struct icc_provider *provider);
+> +int icc_del_provider(struct icc_provider *provider);
+> +
+> +#else
+> +
+> +static inline struct icc_node *icc_node_create(int id)
+> +{
+> +	return ERR_PTR(-ENOTSUPP);
+> +}
+> +
+> +int icc_node_add(struct icc_node *node, struct icc_provider *provider)
+> +{
+> +	return -ENOTSUPP;
+> +}
+> +
+> +static inline int icc_link_create(struct icc_node *node, const int dst_id)
+> +{
+> +	return -ENOTSUPP;
+> +}
+> +
+> +static inline int icc_add_provider(struct icc_provider *provider)
+> +{
+> +	return -ENOTSUPP;
+> +}
+> +
+> +static inline int icc_del_provider(struct icc_provider *provider)
+> +{
+> +	return -ENOTSUPP;
+> +}
+> +
+> +#endif /* CONFIG_INTERCONNECT */
+> +
+> +#endif /* _LINUX_INTERCONNECT_PROVIDER_H */
+> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+> new file mode 100644
+> index 000000000000..5a7cf72b76a5
+> --- /dev/null
+> +++ b/include/linux/interconnect.h
+> @@ -0,0 +1,40 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (c) 2018, Linaro Ltd.
+> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+> + */
+> +
+> +#ifndef _LINUX_INTERCONNECT_H
+> +#define _LINUX_INTERCONNECT_H
+> +
+> +#include <linux/types.h>
+> +#include <linux/mutex.h>
+> +
+> +struct icc_path;
+> +struct device;
+> +
+> +#if IS_ENABLED(CONFIG_INTERCONNECT)
+> +
+> +struct icc_path *icc_get(const int src_id, const int dst_id);
+> +void icc_put(struct icc_path *path);
+> +int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw);
+> +
+> +#else
+> +
+> +static inline struct icc_path *icc_get(const int src_id, const int dst_id)
+> +{
+> +	return NULL;
+> +}
+> +
+> +static inline void icc_put(struct icc_path *path)
+> +{
+> +}
+> +
+> +static inline int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+> +{
+> +	return 0;
+> +}
+> +
+> +#endif /* CONFIG_INTERCONNECT */
+> +
+> +#endif /* _LINUX_INTERCONNECT_H */
