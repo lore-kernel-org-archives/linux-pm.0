@@ -1,325 +1,355 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [RFC PATCH v2 2/6] sched: Introduce energy models of CPUs
-Date: Fri,  6 Apr 2018 16:36:03 +0100
-Message-ID: <20180406153607.17815-3-dietmar.eggemann@arm.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH] sched/fair: schedutil: update only with all info available
+Date: Fri,  6 Apr 2018 18:28:35 +0100
+Message-ID: <20180406172835.20078-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180406153607.17815-1-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>
-Cc: linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Quentin Perret <quentin.perret@arm.com>
+Schedutil is not properly updated when the first FAIR task wakes up on a
+CPU and when a RQ is (un)throttled. This is mainly due to the current
+integration strategy, which relies on updates being triggered implicitly
+each time a cfs_rq's utilization is updated.
 
-The energy consumption of each CPU in the system is modeled with a list
-of values representing its dissipated power and compute capacity at each
-available Operating Performance Point (OPP). These values are derived
-from existing information in the kernel (currently used by the thermal
-subsystem) and don't require the introduction of new platform-specific
-tunables. The energy model is also provided with a simple representation
-of all frequency domains as cpumasks, hence enabling the scheduler to be
-aware of dependencies between CPUs. The data required to build the energy
-model is provided by the OPP library which enables an abstract view of
-the platform from the scheduler. The new data structures holding these
-models and the routines to populate them are stored in
-kernel/sched/energy.c.
+Those updates are currently provided (mainly) via
+   cfs_rq_util_change()
+which is used in:
+ - update_cfs_rq_load_avg()
+   when the utilization of a cfs_rq is updated
+ - {attach,detach}_entity_load_avg()
+This is done based on the idea that "we should callback schedutil
+frequently enough" to properly update the CPU frequency at every
+utilization change.
 
-For the sake of simplicity, it is assumed in the energy model that all
-CPUs in a frequency domain share the same micro-architecture. As long as
-this assumption is correct, the energy models of different CPUs belonging
-to the same frequency domain are equal. Hence, this commit builds only one
-energy model per frequency domain, and links all relevant CPUs to it in
-order to save time and memory. If needed for future hardware platforms,
-relaxing this assumption should imply relatively simple modifications in
-the code but a significantly higher algorithmic complexity.
+Since this recent schedutil update:
 
-As it appears that energy-aware scheduling really makes a difference on
-heterogeneous systems (e.g. big.LITTLE platforms), it is restricted to
-systems having:
+  commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
 
-   1. SD_ASYM_CPUCAPACITY flag set
-   2. Dynamic Voltage and Frequency Scaling (DVFS) is enabled
-   3. Available power estimates for the OPPs of all possible CPUs
+we use additional RQ information to properly account for FAIR tasks
+utilization. Specifically, cfs_rq::h_nr_running has to be non-zero
+in sugov_aggregate_util() to sum up the cfs_rq's utilization.
 
-Moreover, the scheduler is notified of the energy model availability
-using a static key in order to minimize the overhead on non-energy-aware
-systems.
+However, cfs_rq::h_nr_running is usually updated as:
 
+    enqueue_entity()
+       ...
+       update_load_avg()
+          ...
+          cfs_rq_util_change ==> trigger schedutil update
+    ...
+    cfs_rq->h_nr_running += number_of_tasks
+
+both in enqueue_task_fair() as well as in unthrottle_cfs_rq().
+A similar pattern is used also in dequeue_task_fair() and
+throttle_cfs_rq() to remove tasks.
+
+This means that we are likely to see a zero cfs_rq utilization when we
+enqueue a task on an empty CPU, or a non-zero cfs_rq utilization when
+instead, for example, we are throttling all the FAIR tasks of a CPU.
+
+While the second issue is less important, since we are less likely to
+reduce frequency when CPU utilization decreases, the first issue can
+instead impact performance. Indeed, we potentially introduce a not desired
+latency between a task enqueue on a CPU and its frequency increase.
+
+Another possible unwanted side effect is the iowait boosting of a CPU
+when we enqueue a task into a throttled cfs_rq.
+
+Moreover, the current schedutil integration has these other downsides:
+
+ - schedutil updates are triggered by RQ's load updates, which makes
+   sense in general but it does not allow to know exactly which other RQ
+   related information has been updated (e.g. h_nr_running).
+
+ - increasing the chances to update schedutil does not always correspond
+   to provide the most accurate information for a proper frequency
+   selection, thus we can skip some updates.
+
+ - we don't know exactly at which point a schedutil update is triggered,
+   and thus potentially a frequency change started, and that's because
+   the update is a side effect of cfs_rq_util_changed instead of an
+   explicit call from the most suitable call path.
+
+ - cfs_rq_util_change() is mainly a wrapper function for an already
+   existing "public API", cpufreq_update_util(), to ensure we actually
+   update schedutil only when we are updating a root RQ. Thus, especially
+   when task groups are in use, most of the calls to this wrapper
+   function are really not required.
+
+ - the usage of a wrapper function is not completely consistent across
+   fair.c, since we still need sometimes additional explicit calls to
+   cpufreq_update_util(), for example to support the IOWAIT boot flag in
+   the wakeup path
+
+ - it makes it hard to integrate new features since it could require to
+   change other function prototypes just to pass in an additional flag,
+   as it happened for example here:
+
+      commit ea14b57e8a18 ("sched/cpufreq: Provide migration hint")
+
+All the above considered, let's try to make schedutil updates more
+explicit in fair.c by:
+
+ - removing the cfs_rq_util_change() wrapper function to use the
+   cpufreq_update_util() public API only when root cfs_rq is updated
+
+ - remove indirect and side-effect (sometimes not required) schedutil
+   updates when the cfs_rq utilization is updated
+
+ - call cpufreq_update_util() explicitly in the few call sites where it
+   really makes sense and all the required information has been updated
+
+By doing so, this patch mainly removes code and adds explicit calls to
+schedutil only when we:
+ - {enqueue,dequeue}_task_fair() a task to/from the root cfs_rq
+ - (un)throttle_cfs_rq() a set of tasks up to the root cfs_rq
+ - task_tick_fair() to update the utilization of the root cfs_rq
+
+All the other code paths, currently _indirectly_ covered by a call to
+update_load_avg(), are also covered by the above three calls.
+Some already imply enqueue/dequeue calls:
+ - switch_{to,from}_fair()
+ - sched_move_task()
+or are followed by enqueue/dequeue calls:
+ - cpu_cgroup_fork() and
+   post_init_entity_util_avg():
+     are used at wakeup_new_task() time and thus already followed by an
+     enqueue_task_fair()
+ - migrate_task_rq_fair():
+     updates the removed utilization but not the actual cfs_rq
+     utilization, which is updated by a following sched event
+
+This new proposal allows also to better aggregate schedutil related
+flags, which are required only at enqueue_task_fair() time.
+Indeed, IOWAIT and MIGRATION flags are now requested only when a task is
+actually visible at the root cfs_rq level.
+
+Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Joel Fernandes <joelaf@google.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
 ---
-This patch depends on additional infrastructure being merged in the OPP
-core. As this infrastructure can also be useful for other clients, the
-related patches have been posted separately [1].
 
-[1] https://marc.info/?l=linux-pm&m=151635516419249&w=2
+The SCHED_CPUFREQ_MIGRATION flags, recently introduced by:
+
+   ea14b57e8a18 sched/cpufreq: Provide migration hint
+
+is maintained although there are not actual usages so far in mainline
+for this hint... do we really need it?
 ---
- include/linux/sched/energy.h |  49 ++++++++++++
- kernel/sched/Makefile        |   3 +
- kernel/sched/energy.c        | 184 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 236 insertions(+)
- create mode 100644 include/linux/sched/energy.h
- create mode 100644 kernel/sched/energy.c
+ kernel/sched/fair.c | 84 ++++++++++++++++++++++++-----------------------------
+ 1 file changed, 38 insertions(+), 46 deletions(-)
 
-diff --git a/include/linux/sched/energy.h b/include/linux/sched/energy.h
-new file mode 100644
-index 000000000000..941071eec013
---- /dev/null
-+++ b/include/linux/sched/energy.h
-@@ -0,0 +1,49 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#ifndef _LINUX_SCHED_ENERGY_H
-+#define _LINUX_SCHED_ENERGY_H
-+
-+struct capacity_state {
-+	unsigned long cap;	/* compute capacity */
-+	unsigned long power;	/* power consumption at this compute capacity */
-+};
-+
-+struct sched_energy_model {
-+	int nr_cap_states;
-+	struct capacity_state *cap_states;
-+};
-+
-+struct freq_domain {
-+	struct list_head next;
-+	cpumask_t span;
-+};
-+
-+#if defined(CONFIG_SMP) && defined(CONFIG_PM_OPP)
-+extern struct sched_energy_model ** __percpu energy_model;
-+extern struct static_key_false sched_energy_present;
-+extern struct list_head sched_freq_domains;
-+
-+static inline bool sched_energy_enabled(void)
-+{
-+	return static_branch_unlikely(&sched_energy_present);
-+}
-+
-+static inline struct cpumask *freq_domain_span(struct freq_domain *fd)
-+{
-+	return &fd->span;
-+}
-+
-+extern void init_sched_energy(void);
-+
-+#define for_each_freq_domain(fdom) \
-+	list_for_each_entry(fdom, &sched_freq_domains, next)
-+
-+#else
-+struct freq_domain;
-+static inline bool sched_energy_enabled(void) { return false; }
-+static inline struct cpumask
-+*freq_domain_span(struct freq_domain *fd) { return NULL; }
-+static inline void init_sched_energy(void) { }
-+#define for_each_freq_domain(fdom) for (; fdom; fdom = NULL)
-+#endif
-+
-+#endif /* _LINUX_SCHED_ENERGY_H */
-diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
-index d9a02b318108..15fb3dfd7064 100644
---- a/kernel/sched/Makefile
-+++ b/kernel/sched/Makefile
-@@ -29,3 +29,6 @@ obj-$(CONFIG_CPU_FREQ) += cpufreq.o
- obj-$(CONFIG_CPU_FREQ_GOV_SCHEDUTIL) += cpufreq_schedutil.o
- obj-$(CONFIG_MEMBARRIER) += membarrier.o
- obj-$(CONFIG_CPU_ISOLATION) += isolation.o
-+ifeq ($(CONFIG_PM_OPP),y)
-+       obj-$(CONFIG_SMP) += energy.o
-+endif
-diff --git a/kernel/sched/energy.c b/kernel/sched/energy.c
-new file mode 100644
-index 000000000000..704bea6e1cad
---- /dev/null
-+++ b/kernel/sched/energy.c
-@@ -0,0 +1,184 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Energy-aware scheduling models
-+ *
-+ * Copyright (C) 2018, Arm Ltd.
-+ * Written by: Quentin Perret, Arm Ltd.
-+ */
-+
-+#define pr_fmt(fmt) "sched-energy: " fmt
-+
-+#include <linux/sched/topology.h>
-+#include <linux/sched/energy.h>
-+#include <linux/pm_opp.h>
-+
-+#include "sched.h"
-+
-+DEFINE_STATIC_KEY_FALSE(sched_energy_present);
-+struct sched_energy_model ** __percpu energy_model;
-+
-+/*
-+ * A copy of the cpumasks representing the frequency domains is kept private
-+ * to the scheduler. They are stacked in a dynamically allocated linked list
-+ * as we don't know how many frequency domains the system has.
-+ */
-+LIST_HEAD(sched_freq_domains);
-+
-+static struct sched_energy_model *build_energy_model(int cpu)
-+{
-+	unsigned long cap_scale = arch_scale_cpu_capacity(NULL, cpu);
-+	unsigned long cap, freq, power, max_freq = ULONG_MAX;
-+	unsigned long opp_eff, prev_opp_eff = ULONG_MAX;
-+	struct sched_energy_model *em = NULL;
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	int opp_cnt, i;
-+
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev) {
-+		pr_err("CPU%d: Failed to get device\n", cpu);
-+		return NULL;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 0951d1c58d2f..e726f91f0089 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -772,7 +772,7 @@ void post_init_entity_util_avg(struct sched_entity *se)
+ 			 * For !fair tasks do:
+ 			 *
+ 			update_cfs_rq_load_avg(now, cfs_rq);
+-			attach_entity_load_avg(cfs_rq, se, 0);
++			attach_entity_load_avg(cfs_rq, se);
+ 			switched_from_fair(rq, p);
+ 			 *
+ 			 * such that the next switched_to_fair() has the
+@@ -3009,29 +3009,6 @@ static inline void update_cfs_group(struct sched_entity *se)
+ }
+ #endif /* CONFIG_FAIR_GROUP_SCHED */
+ 
+-static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
+-{
+-	struct rq *rq = rq_of(cfs_rq);
+-
+-	if (&rq->cfs == cfs_rq || (flags & SCHED_CPUFREQ_MIGRATION)) {
+-		/*
+-		 * There are a few boundary cases this might miss but it should
+-		 * get called often enough that that should (hopefully) not be
+-		 * a real problem.
+-		 *
+-		 * It will not get called when we go idle, because the idle
+-		 * thread is a different class (!fair), nor will the utilization
+-		 * number include things like RT tasks.
+-		 *
+-		 * As is, the util number is not freq-invariant (we'd have to
+-		 * implement arch_scale_freq_capacity() for that).
+-		 *
+-		 * See cpu_util().
+-		 */
+-		cpufreq_update_util(rq, flags);
+-	}
+-}
+-
+ #ifdef CONFIG_SMP
+ /*
+  * Approximate:
+@@ -3712,9 +3689,6 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+ 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
+ #endif
+ 
+-	if (decayed)
+-		cfs_rq_util_change(cfs_rq, 0);
+-
+ 	return decayed;
+ }
+ 
+@@ -3726,7 +3700,7 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+  * Must call update_cfs_rq_load_avg() before this, since we rely on
+  * cfs_rq->avg.last_update_time being current.
+  */
+-static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
++static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+ 	u32 divider = LOAD_AVG_MAX - 1024 + cfs_rq->avg.period_contrib;
+ 
+@@ -3762,7 +3736,6 @@ static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+ 
+ 	add_tg_cfs_propagate(cfs_rq, se->avg.load_sum);
+ 
+-	cfs_rq_util_change(cfs_rq, flags);
+ }
+ 
+ /**
+@@ -3781,7 +3754,6 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+ 
+ 	add_tg_cfs_propagate(cfs_rq, -se->avg.load_sum);
+ 
+-	cfs_rq_util_change(cfs_rq, 0);
+ }
+ 
+ /*
+@@ -3818,7 +3790,7 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+ 		 *
+ 		 * IOW we're enqueueing a task on a new CPU.
+ 		 */
+-		attach_entity_load_avg(cfs_rq, se, SCHED_CPUFREQ_MIGRATION);
++		attach_entity_load_avg(cfs_rq, se);
+ 		update_tg_load_avg(cfs_rq, 0);
+ 
+ 	} else if (decayed && (flags & UPDATE_TG))
+@@ -4028,13 +4000,12 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+ 
+ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int not_used1)
+ {
+-	cfs_rq_util_change(cfs_rq, 0);
+ }
+ 
+ static inline void remove_entity_load_avg(struct sched_entity *se) {}
+ 
+ static inline void
+-attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {}
++attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
+ static inline void
+ detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
+ 
+@@ -4762,8 +4733,11 @@ static void throttle_cfs_rq(struct cfs_rq *cfs_rq)
+ 			dequeue = 0;
+ 	}
+ 
+-	if (!se)
++	/* The tasks are no more visible from the root cfs_rq */
++	if (!se) {
+ 		sub_nr_running(rq, task_delta);
++		cpufreq_update_util(rq, 0);
 +	}
-+
-+	opp_cnt = dev_pm_opp_get_opp_count(cpu_dev);
-+	if (opp_cnt <= 0) {
-+		pr_err("CPU%d: Failed to get # of available OPPs.\n", cpu);
-+		return NULL;
+ 
+ 	cfs_rq->throttled = 1;
+ 	cfs_rq->throttled_clock = rq_clock(rq);
+@@ -4825,8 +4799,11 @@ void unthrottle_cfs_rq(struct cfs_rq *cfs_rq)
+ 			break;
+ 	}
+ 
+-	if (!se)
++	/* The tasks are now visible from the root cfs_rq */
++	if (!se) {
+ 		add_nr_running(rq, task_delta);
++		cpufreq_update_util(rq, 0);
 +	}
+ 
+ 	/* Determine whether we need to wake up potentially idle CPU: */
+ 	if (rq->curr == rq->idle && rq->cfs.nr_running)
+@@ -5356,14 +5333,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	struct cfs_rq *cfs_rq;
+ 	struct sched_entity *se = &p->se;
+ 
+-	/*
+-	 * If in_iowait is set, the code below may not trigger any cpufreq
+-	 * utilization updates, so do it here explicitly with the IOWAIT flag
+-	 * passed.
+-	 */
+-	if (p->in_iowait)
+-		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
+-
+ 	for_each_sched_entity(se) {
+ 		if (se->on_rq)
+ 			break;
+@@ -5394,9 +5363,27 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 		update_cfs_group(se);
+ 	}
+ 
+-	if (!se)
++	/* The task is visible from the root cfs_rq */
++	if (!se) {
++		unsigned int flags = 0;
 +
-+	opp = dev_pm_opp_find_freq_floor(cpu_dev, &max_freq);
-+	if (IS_ERR(opp)) {
-+		pr_err("CPU%d: Failed to get max frequency.\n", cpu);
-+		return NULL;
-+	}
-+
-+	dev_pm_opp_put(opp);
-+	if (!max_freq) {
-+		pr_err("CPU%d: Found null max frequency.\n", cpu);
-+		return NULL;
-+	}
-+
-+	em = kzalloc(sizeof(*em), GFP_KERNEL);
-+	if (!em)
-+		return NULL;
-+
-+	em->cap_states = kcalloc(opp_cnt, sizeof(*em->cap_states), GFP_KERNEL);
-+	if (!em->cap_states)
-+		goto free_em;
-+
-+	for (i = 0, freq = 0; i < opp_cnt; i++, freq++) {
-+		opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq);
-+		if (IS_ERR(opp)) {
-+			pr_err("CPU%d: Failed to get OPP %d.\n", cpu, i+1);
-+			goto free_cs;
-+		}
-+
-+		power = dev_pm_opp_get_power(opp);
-+		dev_pm_opp_put(opp);
-+		if (!power || !freq)
-+			goto free_cs;
-+
-+		cap = freq * cap_scale / max_freq;
-+		em->cap_states[i].power = power;
-+		em->cap_states[i].cap = cap;
+ 		add_nr_running(rq, 1);
+ 
++		if (p->in_iowait)
++			flags |= SCHED_CPUFREQ_IOWAIT;
 +
 +		/*
-+		 * The capacity/watts efficiency ratio should decrease as the
-+		 * frequency grows on sane platforms. If not, warn the user
-+		 * that some high OPPs are more power efficient than some
-+		 * of the lower ones.
++		 * !last_update_time means we've passed through
++		 * migrate_task_rq_fair() indicating we migrated.
++		 *
++		 * IOW we're enqueueing a task on a new CPU.
 +		 */
-+		opp_eff = (cap << 20) / power;
-+		if (opp_eff >= prev_opp_eff)
-+			pr_warn("CPU%d: cap/pwr: OPP%d > OPP%d\n", cpu, i, i-1);
-+		prev_opp_eff = opp_eff;
++		if (!p->se.avg.last_update_time)
++			flags |= SCHED_CPUFREQ_MIGRATION;
++
++		cpufreq_update_util(rq, flags);
 +	}
 +
-+	em->nr_cap_states = opp_cnt;
-+	return em;
-+
-+free_cs:
-+	kfree(em->cap_states);
-+free_em:
-+	kfree(em);
-+	return NULL;
-+}
-+
-+static void free_energy_model(void)
-+{
-+	struct sched_energy_model *em;
-+	struct freq_domain *tmp, *pos;
-+	int cpu;
-+
-+	list_for_each_entry_safe(pos, tmp, &sched_freq_domains, next) {
-+		cpu = cpumask_first(&(pos->span));
-+		em = *per_cpu_ptr(energy_model, cpu);
-+		if (em) {
-+			kfree(em->cap_states);
-+			kfree(em);
-+		}
-+
-+		list_del(&(pos->next));
-+		kfree(pos);
+ 	util_est_enqueue(&rq->cfs, p);
+ 	hrtick_update(rq);
+ }
+@@ -5454,8 +5441,11 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 		update_cfs_group(se);
+ 	}
+ 
+-	if (!se)
++	/* The task is no more visible from the root cfs_rq */
++	if (!se) {
+ 		sub_nr_running(rq, 1);
++		cpufreq_update_util(rq, 0);
 +	}
+ 
+ 	util_est_dequeue(&rq->cfs, p, task_sleep);
+ 	hrtick_update(rq);
+@@ -9950,6 +9940,8 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
+ 
+ 	if (static_branch_unlikely(&sched_numa_balancing))
+ 		task_tick_numa(rq, curr);
 +
-+	free_percpu(energy_model);
-+}
-+
-+void init_sched_energy(void)
-+{
-+	struct freq_domain *fdom;
-+	struct sched_energy_model *em;
-+	struct sched_domain *sd;
-+	struct device *cpu_dev;
-+	int cpu, ret, fdom_cpu;
-+
-+	/* Energy Aware Scheduling is used for asymmetric systems only. */
-+	rcu_read_lock();
-+	sd = lowest_flag_domain(smp_processor_id(), SD_ASYM_CPUCAPACITY);
-+	rcu_read_unlock();
-+	if (!sd)
-+		return;
-+
-+	energy_model = alloc_percpu(struct sched_energy_model *);
-+	if (!energy_model)
-+		goto exit_fail;
-+
-+	for_each_possible_cpu(cpu) {
-+		if (*per_cpu_ptr(energy_model, cpu))
-+			continue;
-+
-+		/* Keep a copy of the sharing_cpus mask */
-+		fdom = kzalloc(sizeof(struct freq_domain), GFP_KERNEL);
-+		if (!fdom)
-+			goto free_em;
-+
-+		cpu_dev = get_cpu_device(cpu);
-+		ret = dev_pm_opp_get_sharing_cpus(cpu_dev, &(fdom->span));
-+		if (ret)
-+			goto free_em;
-+		list_add(&(fdom->next), &sched_freq_domains);
-+
-+		/*
-+		 * Build the energy model of one CPU, and link it to all CPUs
-+		 * in its frequency domain. This should be correct as long as
-+		 * they share the same micro-architecture.
-+		 */
-+		fdom_cpu = cpumask_first(&(fdom->span));
-+		em = build_energy_model(fdom_cpu);
-+		if (!em)
-+			goto free_em;
-+
-+		for_each_cpu(fdom_cpu, &(fdom->span))
-+			*per_cpu_ptr(energy_model, fdom_cpu) = em;
-+	}
-+
-+	static_branch_enable(&sched_energy_present);
-+
-+	pr_info("Energy Aware Scheduling started.\n");
-+	return;
-+free_em:
-+	free_energy_model();
-+exit_fail:
-+	pr_err("Energy Aware Scheduling initialization failed.\n");
-+}
++	cpufreq_update_util(rq, 0);
+ }
+ 
+ /*
+@@ -10087,7 +10079,7 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
+ 
+ 	/* Synchronize entity with its cfs_rq */
+ 	update_load_avg(cfs_rq, se, sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
+-	attach_entity_load_avg(cfs_rq, se, 0);
++	attach_entity_load_avg(cfs_rq, se);
+ 	update_tg_load_avg(cfs_rq, false);
+ 	propagate_entity_cfs_rq(se);
+ }
 -- 
-2.11.0
+2.15.1
