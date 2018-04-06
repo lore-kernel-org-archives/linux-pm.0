@@ -1,92 +1,72 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH v9 05/10] cpuidle: Return nohz hint from cpuidle_select()
-Date: Fri, 06 Apr 2018 10:11:04 +0200
-Message-ID: <6471749.luEdDuCiOl@aspire.rjw.lan>
-References: <1736751.LdhZHb50jq@aspire.rjw.lan> <5818594.T4StF86Hkt@aspire.rjw.lan> <20180406024413.GB4400@lerouge>
+Date: Fri, 06 Apr 2018 14:56:36 +0200
+Message-ID: <34634950.bjF6TWOVDx@aspire.rjw.lan>
+References: <1736751.LdhZHb50jq@aspire.rjw.lan> <20180406024413.GB4400@lerouge> <6471749.luEdDuCiOl@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180406024413.GB4400@lerouge>
+In-Reply-To: <6471749.luEdDuCiOl@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Frederic Weisbecker <frederic@kernel.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 6, 2018 4:44:14 AM CEST Frederic Weisbecker wrote:
-> On Wed, Apr 04, 2018 at 10:39:50AM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Index: linux-pm/kernel/time/tick-sched.c
-> > ===================================================================
-> > --- linux-pm.orig/kernel/time/tick-sched.c
-> > +++ linux-pm/kernel/time/tick-sched.c
-> > @@ -991,6 +991,20 @@ void tick_nohz_irq_exit(void)
-> >  }
-> >  
-> >  /**
-> > + * tick_nohz_idle_got_tick - Check whether or not the tick handler has run
-> > + */
-> > +bool tick_nohz_idle_got_tick(void)
-> > +{
-> > +	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
-> > +
-> > +	if (ts->inidle > 1) {
-> > +		ts->inidle = 1;
-> > +		return true;
-> > +	}
-> > +	return false;
-> > +}
-> > +
-> > +/**
-> >   * tick_nohz_get_sleep_length - return the length of the current sleep
-> >   *
-> >   * Called from power state control code with interrupts disabled
-> > @@ -1101,6 +1115,9 @@ static void tick_nohz_handler(struct clo
-> >  	struct pt_regs *regs = get_irq_regs();
-> >  	ktime_t now = ktime_get();
-> >  
-> > +	if (ts->inidle)
-> > +		ts->inidle = 2;
-> > +
-> 
-> You can move that to tick_sched_do_timer() to avoid code duplication.
-> 
-> Also these constants are very opaque. And even with proper symbols it wouldn't look
-> right to extend ts->inidle that way.
-> 
-> Perhaps you should add a field such as ts->got_idle_tick under the boolean fields
-> after the below patch:
-> 
-> --
-> From c7b2ca5a4c512517ddfeb9f922d5999f82542ced Mon Sep 17 00:00:00 2001
+On Friday, April 6, 2018 10:11:04 AM CEST Rafael J. Wysocki wrote:
+> On Friday, April 6, 2018 4:44:14 AM CEST Frederic Weisbecker wrote:
+> > On Wed, Apr 04, 2018 at 10:39:50AM +0200, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > Index: linux-pm/kernel/time/tick-sched.c
+> > > ===================================================================
+> > > --- linux-pm.orig/kernel/time/tick-sched.c
+> > > +++ linux-pm/kernel/time/tick-sched.c
+> > > @@ -991,6 +991,20 @@ void tick_nohz_irq_exit(void)
+> > >  }
+
+[cut]
+
+> So what about this?  And moving the duplicated piece of got_idle_tick
+> manipulation on top of it?
+
+And appended is a patch to get rid of the code duplication (on top of the one
+below), for completeness.
+
+> ---
 > From: Frederic Weisbecker <frederic@kernel.org>
-> Date: Fri, 6 Apr 2018 04:32:37 +0200
 > Subject: [PATCH] nohz: Gather tick_sched booleans under a common flag field
 > 
-> This optimize the space and leave plenty of room for further flags.
+> Optimize the space and leave plenty of room for further flags.
 > 
 > Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+> [ rjw: Do not use __this_cpu_read() to access tick_stopped and add
+>        got_idle_tick to avoid overloading inidle ]
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  kernel/time/tick-sched.h | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+>  kernel/time/tick-sched.c |   12 +++++++-----
+>  kernel/time/tick-sched.h |   12 ++++++++----
+>  2 files changed, 15 insertions(+), 9 deletions(-)
 > 
-> diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
-> index 954b43d..38f24dc 100644
-> --- a/kernel/time/tick-sched.h
-> +++ b/kernel/time/tick-sched.h
-> @@ -45,14 +45,17 @@ struct tick_sched {
+> Index: linux-pm/kernel/time/tick-sched.h
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-sched.h
+> +++ linux-pm/kernel/time/tick-sched.h
+> @@ -41,19 +41,24 @@ enum tick_nohz_mode {
+>   * @timer_expires:	Anticipated timer expiration time (in case sched tick is stopped)
+>   * @timer_expires_base:	Base time clock monotonic for @timer_expires
+>   * @do_timer_lst:	CPU was the last one doing do_timer before going idle
+> + * @got_idle_tick:	Tick timer function has run with @inidle set
+>   */
+>  struct tick_sched {
 >  	struct hrtimer			sched_timer;
 >  	unsigned long			check_clocks;
 >  	enum tick_nohz_mode		nohz_mode;
 > +
 > +	unsigned int			inidle		: 1;
 > +	unsigned int			tick_stopped	: 1;
-
-This particular change breaks build, because tick_stopped is
-accessed via __this_cpu_read() in tick_nohz_tick_stopped().
-
 > +	unsigned int			idle_active	: 1;
 > +	unsigned int			do_timer_last	: 1;
+> +	unsigned int			got_idle_tick	: 1;
 > +
 >  	ktime_t				last_tick;
 >  	ktime_t				next_tick;
@@ -99,115 +79,121 @@ accessed via __this_cpu_read() in tick_nohz_tick_stopped().
 >  	ktime_t				idle_entrytime;
 >  	ktime_t				idle_waketime;
 >  	ktime_t				idle_exittime;
-> @@ -62,7 +65,6 @@ struct tick_sched {
->  	unsigned long			last_jiffies;
+> @@ -64,7 +69,6 @@ struct tick_sched {
+>  	u64				timer_expires_base;
 >  	u64				next_timer;
 >  	ktime_t				idle_expires;
 > -	int				do_timer_last;
 >  	atomic_t			tick_dep_mask;
 >  };
 >  
-> 
-
-So what about this?  And moving the duplicated piece of got_idle_tick
-manipulation on top of it?
+> Index: linux-pm/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-sched.c
+> +++ linux-pm/kernel/time/tick-sched.c
+> @@ -465,7 +465,9 @@ __setup("nohz=", setup_tick_nohz);
+>  
+>  bool tick_nohz_tick_stopped(void)
+>  {
+> -	return __this_cpu_read(tick_cpu_sched.tick_stopped);
+> +	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+> +
+> +	return ts->tick_stopped;
+>  }
+>  
+>  bool tick_nohz_tick_stopped_cpu(int cpu)
+> @@ -1014,8 +1016,8 @@ bool tick_nohz_idle_got_tick(void)
+>  {
+>  	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+>  
+> -	if (ts->inidle > 1) {
+> -		ts->inidle = 1;
+> +	if (ts->got_idle_tick) {
+> +		ts->got_idle_tick = 0;
+>  		return true;
+>  	}
+>  	return false;
+> @@ -1161,7 +1163,7 @@ static void tick_nohz_handler(struct clo
+>  	ktime_t now = ktime_get();
+>  
+>  	if (ts->inidle)
+> -		ts->inidle = 2;
+> +		ts->got_idle_tick = 1;
+>  
+>  	dev->next_event = KTIME_MAX;
+>  
+> @@ -1261,7 +1263,7 @@ static enum hrtimer_restart tick_sched_t
+>  	ktime_t now = ktime_get();
+>  
+>  	if (ts->inidle)
+> -		ts->inidle = 2;
+> +		ts->got_idle_tick = 1;
+>  
+>  	tick_sched_do_timer(now);
+>  
 
 ---
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: [PATCH] nohz: Gather tick_sched booleans under a common flag field
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] nohz: Avoid duplication of code related to got_idle_tick
 
-Optimize the space and leave plenty of room for further flags.
+Move the code setting ts->got_idle_tick into tick_sched_do_timer() to
+avoid code duplication.
 
-Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
-[ rjw: Do not use __this_cpu_read() to access tick_stopped and add
-       got_idle_tick to avoid overloading inidle ]
+No intentional changes in functionality.
+
+Suggested-by: Frederic Weisbecker <frederic@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/time/tick-sched.c |   12 +++++++-----
- kernel/time/tick-sched.h |   12 ++++++++----
- 2 files changed, 15 insertions(+), 9 deletions(-)
+ kernel/time/tick-sched.c |   16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-Index: linux-pm/kernel/time/tick-sched.h
-===================================================================
---- linux-pm.orig/kernel/time/tick-sched.h
-+++ linux-pm/kernel/time/tick-sched.h
-@@ -41,19 +41,24 @@ enum tick_nohz_mode {
-  * @timer_expires:	Anticipated timer expiration time (in case sched tick is stopped)
-  * @timer_expires_base:	Base time clock monotonic for @timer_expires
-  * @do_timer_lst:	CPU was the last one doing do_timer before going idle
-+ * @got_idle_tick:	Tick timer function has run with @inidle set
-  */
- struct tick_sched {
- 	struct hrtimer			sched_timer;
- 	unsigned long			check_clocks;
- 	enum tick_nohz_mode		nohz_mode;
-+
-+	unsigned int			inidle		: 1;
-+	unsigned int			tick_stopped	: 1;
-+	unsigned int			idle_active	: 1;
-+	unsigned int			do_timer_last	: 1;
-+	unsigned int			got_idle_tick	: 1;
-+
- 	ktime_t				last_tick;
- 	ktime_t				next_tick;
--	int				inidle;
--	int				tick_stopped;
- 	unsigned long			idle_jiffies;
- 	unsigned long			idle_calls;
- 	unsigned long			idle_sleeps;
--	int				idle_active;
- 	ktime_t				idle_entrytime;
- 	ktime_t				idle_waketime;
- 	ktime_t				idle_exittime;
-@@ -64,7 +69,6 @@ struct tick_sched {
- 	u64				timer_expires_base;
- 	u64				next_timer;
- 	ktime_t				idle_expires;
--	int				do_timer_last;
- 	atomic_t			tick_dep_mask;
- };
- 
 Index: linux-pm/kernel/time/tick-sched.c
 ===================================================================
 --- linux-pm.orig/kernel/time/tick-sched.c
 +++ linux-pm/kernel/time/tick-sched.c
-@@ -465,7 +465,9 @@ __setup("nohz=", setup_tick_nohz);
- 
- bool tick_nohz_tick_stopped(void)
- {
--	return __this_cpu_read(tick_cpu_sched.tick_stopped);
-+	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
-+
-+	return ts->tick_stopped;
+@@ -113,8 +113,7 @@ static ktime_t tick_init_jiffy_update(vo
+ 	return period;
  }
  
- bool tick_nohz_tick_stopped_cpu(int cpu)
-@@ -1014,8 +1016,8 @@ bool tick_nohz_idle_got_tick(void)
+-
+-static void tick_sched_do_timer(ktime_t now)
++static void tick_sched_do_timer(struct tick_sched *ts, ktime_t now)
  {
- 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+ 	int cpu = smp_processor_id();
  
--	if (ts->inidle > 1) {
--		ts->inidle = 1;
-+	if (ts->got_idle_tick) {
-+		ts->got_idle_tick = 0;
- 		return true;
- 	}
- 	return false;
-@@ -1161,7 +1163,7 @@ static void tick_nohz_handler(struct clo
+@@ -134,6 +133,9 @@ static void tick_sched_do_timer(ktime_t
+ 	/* Check, if the jiffies need an update */
+ 	if (tick_do_timer_cpu == cpu)
+ 		tick_do_update_jiffies64(now);
++
++	if (ts->inidle)
++		ts->got_idle_tick = 1;
+ }
+ 
+ static void tick_sched_handle(struct tick_sched *ts, struct pt_regs *regs)
+@@ -1162,12 +1164,9 @@ static void tick_nohz_handler(struct clo
+ 	struct pt_regs *regs = get_irq_regs();
  	ktime_t now = ktime_get();
  
- 	if (ts->inidle)
--		ts->inidle = 2;
-+		ts->got_idle_tick = 1;
- 
+-	if (ts->inidle)
+-		ts->got_idle_tick = 1;
+-
  	dev->next_event = KTIME_MAX;
  
-@@ -1261,7 +1263,7 @@ static enum hrtimer_restart tick_sched_t
+-	tick_sched_do_timer(now);
++	tick_sched_do_timer(ts, now);
+ 	tick_sched_handle(ts, regs);
+ 
+ 	/* No need to reprogram if we are running tickless  */
+@@ -1262,10 +1261,7 @@ static enum hrtimer_restart tick_sched_t
+ 	struct pt_regs *regs = get_irq_regs();
  	ktime_t now = ktime_get();
  
- 	if (ts->inidle)
--		ts->inidle = 2;
-+		ts->got_idle_tick = 1;
+-	if (ts->inidle)
+-		ts->got_idle_tick = 1;
+-
+-	tick_sched_do_timer(now);
++	tick_sched_do_timer(ts, now);
  
- 	tick_sched_do_timer(now);
- 
+ 	/*
+ 	 * Do not call, when we are not in irq context and have
