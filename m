@@ -1,87 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
- capabilities
-Date: Fri, 6 Apr 2018 10:37:00 +0530
-Message-ID: <20180406050700.GR3572@vireshk-i7>
-References: <1522982629-7557-1-git-send-email-shunyong.yang@hxt-semitech.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v9 04/10] jiffies: Introduce USER_TICK_USEC and redefine TICK_USEC
+Date: Fri, 06 Apr 2018 09:20:31 +0200
+Message-ID: <72540493.566rOE4q81@aspire.rjw.lan>
+References: <1736751.LdhZHb50jq@aspire.rjw.lan> <7620417.mBP1cQHt5D@aspire.rjw.lan> <20180406010954.GA4400@lerouge>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1522982629-7557-1-git-send-email-shunyong.yang@hxt-semitech.com>
+In-Reply-To: <20180406010954.GA4400@lerouge>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shunyong Yang <shunyong.yang@hxt-semitech.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Joey Zheng <yu.zheng@hxt-semitech.com>
+To: Frederic Weisbecker <frederic@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 06-04-18, 10:43, Shunyong Yang wrote:
-> When multiple cpus are related in one cpufreq policy, the first online
-> cpu will be chosen by default to handle cpufreq operations. Let's take
-> cpu0 and cpu1 as an example.
+On Friday, April 6, 2018 3:09:55 AM CEST Frederic Weisbecker wrote:
+> On Wed, Apr 04, 2018 at 10:38:34AM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Since the subsequent changes will need a TICK_USEC definition
+> > analogous to TICK_NSEC, rename the existing TICK_USEC as
+> > USER_TICK_USEC, update its users and redefine TICK_USEC
+> > accordingly.
+> > 
+> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> > 
+> > v8 -> v9: No changes.
+> > 
+> > ---
+> >  drivers/net/ethernet/sfc/mcdi.c |    2 +-
+> >  include/linux/jiffies.h         |    7 +++++--
+> >  kernel/time/ntp.c               |    2 +-
+> >  3 files changed, 7 insertions(+), 4 deletions(-)
+> > 
+> > Index: linux-pm/include/linux/jiffies.h
+> > ===================================================================
+> > --- linux-pm.orig/include/linux/jiffies.h
+> > +++ linux-pm/include/linux/jiffies.h
+> > @@ -62,8 +62,11 @@ extern int register_refined_jiffies(long
+> >  /* TICK_NSEC is the time between ticks in nsec assuming SHIFTED_HZ */
+> >  #define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
+> >  
+> > -/* TICK_USEC is the time between ticks in usec assuming fake USER_HZ */
+> > -#define TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
+> > +/* TICK_USEC is the time between ticks in usec assuming SHIFTED_HZ */
+> > +#define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
 > 
-> When cpu0 is offline, policy->cpu will be shifted to cpu1. Cpu1's perf
-> capabilities should be initialized. Otherwise, perf capabilities are 0s
-> and speed change can not take effect.
-> 
-> This patch copies perf capabilities of the first online cpu to other
-> shared cpus when policy shared type is CPUFREQ_SHARED_TYPE_ANY.
-> 
-> Cc: Joey Zheng <yu.zheng@hxt-semitech.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Shunyong Yang <shunyong.yang@hxt-semitech.com>
-> ---
-> 
-> Changes in v3:
->   -Remove unnecessary wrap per Kumar's comments.
-> 
-> Changes in v2:
->   -Add unlikely in cpu comparison per Kumar's comments.
->   -Fix coding style per Kumar's comments.
-> 
-> Changes in v1:
->   -Drop RFC tag,
->      The original RFC link,
->      https://patchwork.kernel.org/patch/10299055/.
-> 
->      This patch solves same issue as RFC above.
-> 
->      Patch name is changed as code is too much different with RFC above.
-> 
->   -Remove extra init() per Viresh Kumar's comments and only handle
->    CPPC CPUFREQ_SHARED_TYPE_ANY case.
-> 
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 8300a9fcb80c..8b432d6e846d 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -167,9 +167,19 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  		NSEC_PER_USEC;
->  	policy->shared_type = cpu->shared_type;
->  
-> -	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-> +	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
-> +		int i;
-> +
->  		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
-> -	else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
-> +
-> +		for_each_cpu(i, policy->cpus) {
-> +			if (unlikely(i == policy->cpu))
-> +				continue;
-> +
-> +			memcpy(&all_cpu_data[i]->perf_caps, &cpu->perf_caps,
-> +			       sizeof(cpu->perf_caps));
-> +		}
-> +	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
->  		/* Support only SW_ANY for now. */
->  		pr_debug("Unsupported CPU co-ord type\n");
->  		return -EFAULT;
+> Nit: SHIFTED_HZ doesn't seem to exist anymore.
 
-LGTM. Thanks.
+Well, fair enough, but that would need to be changed along with the TICK_NSEC
+comment IMO.
 
--- 
-viresh
+> Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+
+Thanks!
