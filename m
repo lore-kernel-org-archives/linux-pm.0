@@ -1,113 +1,107 @@
-From: "Yang, Shunyong" <shunyong.yang@hxt-semitech.com>
-Subject: Re: [PATCH v2] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
- capabilities
-Date: Fri, 6 Apr 2018 01:21:05 +0000
-Message-ID: <1522977662.9269.2.camel@hxt-semitech.com>
-References: <1522833380-18438-1-git-send-email-shunyong.yang@hxt-semitech.com>
-         <20180404103600.GJ3572@vireshk-i7>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [PATCH v9 05/10] cpuidle: Return nohz hint from cpuidle_select()
+Date: Fri, 6 Apr 2018 04:44:14 +0200
+Message-ID: <20180406024413.GB4400@lerouge>
+References: <1736751.LdhZHb50jq@aspire.rjw.lan>
+ <5818594.T4StF86Hkt@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180404103600.GJ3572@vireshk-i7>
-Content-Language: en-US
-Content-ID: <F506D0A0E171724EAF0F80231DBE0920@hxt-semitech.com>
+Content-Disposition: inline
+In-Reply-To: <5818594.T4StF86Hkt@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zheng, Joey" <yu.zheng@hxt-semitech.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Kumar,
+On Wed, Apr 04, 2018 at 10:39:50AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Index: linux-pm/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-sched.c
+> +++ linux-pm/kernel/time/tick-sched.c
+> @@ -991,6 +991,20 @@ void tick_nohz_irq_exit(void)
+>  }
+>  
+>  /**
+> + * tick_nohz_idle_got_tick - Check whether or not the tick handler has run
+> + */
+> +bool tick_nohz_idle_got_tick(void)
+> +{
+> +	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+> +
+> +	if (ts->inidle > 1) {
+> +		ts->inidle = 1;
+> +		return true;
+> +	}
+> +	return false;
+> +}
+> +
+> +/**
+>   * tick_nohz_get_sleep_length - return the length of the current sleep
+>   *
+>   * Called from power state control code with interrupts disabled
+> @@ -1101,6 +1115,9 @@ static void tick_nohz_handler(struct clo
+>  	struct pt_regs *regs = get_irq_regs();
+>  	ktime_t now = ktime_get();
+>  
+> +	if (ts->inidle)
+> +		ts->inidle = 2;
+> +
 
-On Wed, 2018-04-04 at 16:06 +0530, Viresh Kumar wrote:
-> On 04-04-18, 17:16, Shunyong Yang wrote:
-> > 
-> > When multiple cpus are related in one cpufreq policy, the first
-> > online
-> > cpu will be chosen by default to handle cpufreq operations. Let's
-> > take
-> > cpu0 and cpu1 as an example.
-> > 
-> > When cpu0 is offline, policy->cpu will be shifted to cpu1. Cpu1's
-> > perf
-> > capabilities should be initialized. Otherwise, perf capabilities
-> > are 0s
-> > and speed change can not take effect.
-> > 
-> > This patch copies perf capabilities of the first online cpu to
-> > other
-> > shared cpus when policy shared type is CPUFREQ_SHARED_TYPE_ANY.
-> > 
-> > Cc: Joey Zheng <yu.zheng@hxt-semitech.com>
-> > Signed-off-by: Shunyong Yang <shunyong.yang@hxt-semitech.com>
-> > ---
-> > 
-> > Changes in v2:
-> >   -Add unlikely in cpu comparison per Kumar's comments.
-> >   -Fix coding style per Kumar's comments.
-> > 
-> > Changes in v1:
-> >   -Drop RFC tag,
-> >      The original RFC link,
-> >      https://patchwork.kernel.org/patch/10299055/.
-> > 
-> >      This patch solves same issue as RFC above.
-> > 
-> >      Patch name is changed as code is too much different with RFC
-> > above.
-> > 
-> >   -Remove extra init() per Viresh Kumar's comments and only handle
-> >    CPPC CPUFREQ_SHARED_TYPE_ANY case.
-> > 
-> > ---
-> >  drivers/cpufreq/cppc_cpufreq.c | 15 +++++++++++++--
-> >  1 file changed, 13 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/cppc_cpufreq.c
-> > b/drivers/cpufreq/cppc_cpufreq.c
-> > index 8f7b21a4d537..679e43b9c980 100644
-> > --- a/drivers/cpufreq/cppc_cpufreq.c
-> > +++ b/drivers/cpufreq/cppc_cpufreq.c
-> > @@ -164,9 +164,20 @@ static int cppc_cpufreq_cpu_init(struct
-> > cpufreq_policy *policy)
-> >  	policy->cpuinfo.transition_latency =
-> > cppc_get_transition_latency(cpu_num);
-> >  	policy->shared_type = cpu->shared_type;
-> >  
-> > -	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-> > +	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
-> > +		int i;
-> > +
-> >  		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
-> > -	else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
-> > +
-> > +		for_each_cpu(i, policy->cpus) {
-> > +			if (unlikely(i == policy->cpu))
-> > +				continue;
-> > +
-> > +			memcpy(&all_cpu_data[i]->perf_caps,
-> > +			       &cpu->perf_caps,
-> > +			       sizeof(cpu->perf_caps));
-> I think this can be written in two lines without violating the 80
-> columns rule.
+You can move that to tick_sched_do_timer() to avoid code duplication.
 
-I think you mean change like following?
+Also these constants are very opaque. And even with proper symbols it wouldn't look
+right to extend ts->inidle that way.
 
-     memcpy(&all_cpu_data[i]->perf_caps, &cpu->perf_caps,
-            sizeof(cpu->perf_caps));
+Perhaps you should add a field such as ts->got_idle_tick under the boolean fields
+after the below patch:
 
-I will send v3 to change this.
+--
+>From c7b2ca5a4c512517ddfeb9f922d5999f82542ced Mon Sep 17 00:00:00 2001
+From: Frederic Weisbecker <frederic@kernel.org>
+Date: Fri, 6 Apr 2018 04:32:37 +0200
+Subject: [PATCH] nohz: Gather tick_sched booleans under a common flag field
 
-Thanks.
-Shunyong.
+This optimize the space and leave plenty of room for further flags.
 
-> 
-> > 
-> > +		}
-> > +	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL)
-> > {
-> >  		/* Support only SW_ANY for now. */
-> >  		pr_debug("Unsupported CPU co-ord type\n");
-> >  		return -EFAULT;
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
+Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+---
+ kernel/time/tick-sched.h | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
+index 954b43d..38f24dc 100644
+--- a/kernel/time/tick-sched.h
++++ b/kernel/time/tick-sched.h
+@@ -45,14 +45,17 @@ struct tick_sched {
+ 	struct hrtimer			sched_timer;
+ 	unsigned long			check_clocks;
+ 	enum tick_nohz_mode		nohz_mode;
++
++	unsigned int			inidle		: 1;
++	unsigned int			tick_stopped	: 1;
++	unsigned int			idle_active	: 1;
++	unsigned int			do_timer_last	: 1;
++
+ 	ktime_t				last_tick;
+ 	ktime_t				next_tick;
+-	int				inidle;
+-	int				tick_stopped;
+ 	unsigned long			idle_jiffies;
+ 	unsigned long			idle_calls;
+ 	unsigned long			idle_sleeps;
+-	int				idle_active;
+ 	ktime_t				idle_entrytime;
+ 	ktime_t				idle_waketime;
+ 	ktime_t				idle_exittime;
+@@ -62,7 +65,6 @@ struct tick_sched {
+ 	unsigned long			last_jiffies;
+ 	u64				next_timer;
+ 	ktime_t				idle_expires;
+-	int				do_timer_last;
+ 	atomic_t			tick_dep_mask;
+ };
+ 
+-- 
+2.7.4
