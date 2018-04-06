@@ -1,8 +1,8 @@
 From: "Yang, Shunyong" <shunyong.yang@hxt-semitech.com>
 Subject: Re: [PATCH v2] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
  capabilities
-Date: Fri, 6 Apr 2018 01:10:07 +0000
-Message-ID: <1522977004.8366.11.camel@hxt-semitech.com>
+Date: Fri, 6 Apr 2018 01:21:05 +0000
+Message-ID: <1522977662.9269.2.camel@hxt-semitech.com>
 References: <1522833380-18438-1-git-send-email-shunyong.yang@hxt-semitech.com>
          <20180404103600.GJ3572@vireshk-i7>
 Mime-Version: 1.0
@@ -11,7 +11,7 @@ Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180404103600.GJ3572@vireshk-i7>
 Content-Language: en-US
-Content-ID: <DD0DEEB3AD2AD545BEC636038F947F1F@hxt-semitech.com>
+Content-ID: <F506D0A0E171724EAF0F80231DBE0920@hxt-semitech.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zheng, Joey" <yu.zheng@hxt-semitech.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
@@ -91,14 +91,15 @@ On Wed, 2018-04-04 at 16:06 +0530, Viresh Kumar wrote:
 > I think this can be written in two lines without violating the 80
 > columns rule.
 
-The memcpy() is split in three lines (the three "+"). And I rechecked
-it by downloading from
+I think you mean change like following?
 
-https://patchwork.kernel.org/patch/10322305/
+     memcpy(&all_cpu_data[i]->perf_caps, &cpu->perf_caps,
+            sizeof(cpu->perf_caps));
 
-and apply to code. The maximum column number is 59. 
-And I re-run checkpatch.pl and it passed.
-I am not sure why it is over 80 columns in your tool. 
+I will send v3 to change this.
+
+Thanks.
+Shunyong.
 
 > 
 > > 
@@ -109,11 +110,4 @@ I am not sure why it is over 80 columns in your tool. 
 > >  		pr_debug("Unsupported CPU co-ord type\n");
 > >  		return -EFAULT;
 > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Thanks for your ACK.
-
-Thanks.
-Shunyong.
-
-
 > 
