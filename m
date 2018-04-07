@@ -1,7 +1,7 @@
 From: Craig Tatlor <ctatlor97@gmail.com>
-Subject: [PATCH v2 1/3] power: supply: Add support for the Qualcomm Battery Monitoring System
-Date: Sat,  7 Apr 2018 14:55:52 +0100
-Message-ID: <20180407135608.24927-1-ctatlor97@gmail.com>
+Subject: [PATCH v3 1/3] power: supply: Add support for the Qualcomm Battery Monitoring System
+Date: Sat,  7 Apr 2018 14:59:19 +0100
+Message-ID: <20180407135934.26122-1-ctatlor97@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 Cc: ctatlor97@gmail.com, linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -235,7 +235,7 @@ index 000000000000..5aa6e906d1b9
 +
 +	/*
 +	 * Sleep for 100 microseconds here to make sure there has
-+	 * been at least three cycles of the sleep clock so that
++	 * been at least three cycles of the sleep clock so that 
 +	 * the registers are correctly locked.
 +	 */
 +	udelay(100);
