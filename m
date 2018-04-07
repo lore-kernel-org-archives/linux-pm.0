@@ -1,49 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v9 06/10] time: tick-sched: Split tick_nohz_stop_sched_tick()
-Date: Sat, 07 Apr 2018 18:36:34 +0200
-Message-ID: <2792573.Q2KagqXIrf@aspire.rjw.lan>
-References: <1736751.LdhZHb50jq@aspire.rjw.lan> <4511679.r9V9QramI4@aspire.rjw.lan> <20180407023623.GA16600@lerouge>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v3 1/3] power: supply: Add support for the Qualcomm
+ Battery Monitoring System
+Date: Sat, 7 Apr 2018 09:37:21 -0700
+Message-ID: <d33902cb-65d8-9790-7950-e30134f68578@infradead.org>
+References: <20180407135934.26122-1-ctatlor97@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180407023623.GA16600@lerouge>
+In-Reply-To: <20180407135934.26122-1-ctatlor97@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Frederic Weisbecker <frederic@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: Craig Tatlor <ctatlor97@gmail.com>
+Cc: linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, April 7, 2018 4:36:25 AM CEST Frederic Weisbecker wrote:
-> On Wed, Apr 04, 2018 at 10:41:13AM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > In order to address the issue with short idle duration predictions
-> > by the idle governor after the scheduler tick has been stopped, split
-> > tick_nohz_stop_sched_tick() into two separate routines, one computing
-> > the time to the next timer event and the other simply stopping the
-> > tick when the time to the next timer event is known.
-> > 
-> > Prepare these two routines to be called separately, as one of them
-> > will be called by the idle governor in the cpuidle_select() code
-> > path after subsequent changes.
-> > 
-> > Update the former callers of tick_nohz_stop_sched_tick() to use
-> > the new routines, tick_nohz_next_event() and tick_nohz_stop_tick(),
-> > instead of it and move the updates of the sleep_length field in
-> > struct tick_sched into __tick_nohz_idle_stop_tick() as it doesn't
-> > need to be updated anywhere else.
-> > 
-> > There should be no intentional visible changes in functionality
-> > resulting from this change.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 04/07/2018 06:59 AM, Craig Tatlor wrote:
+> This patch adds a driver for the BMS (Battery Monitoring System)
+> block of the PM8941 PMIC, it uses a lookup table defined in the
+> device tree to generate a capacity from the BMS supplied OCV, it
+> then ammends the coulomb counter to that to increase the accuracy
+> of the estimated capacity.
 > 
-> Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
-> 
-> Thanks! And sorry for the slow reviews, the changes are sensitive
+> Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
+> ---
+>  drivers/power/supply/Kconfig    |   9 +
+>  drivers/power/supply/Makefile   |   1 +
+>  drivers/power/supply/qcom_bms.c | 500 ++++++++++++++++++++++++++++++++
+>  3 files changed, 510 insertions(+)
+>  create mode 100644 drivers/power/supply/qcom_bms.c
 
-Right, very much so.
+> diff --git a/drivers/power/supply/qcom_bms.c b/drivers/power/supply/qcom_bms.c
+> new file mode 100644
+> index 000000000000..5aa6e906d1b9
+> --- /dev/null
+> +++ b/drivers/power/supply/qcom_bms.c
+> @@ -0,0 +1,500 @@
 
-> and I want to make sure we are not breaking some subtlety.
+Hi,
 
-Thanks a lot for doing that!
+> +static unsigned int between(int left, int right, int val)
+> +{
+> +	if (left <= val && val >= right)
+
+maybe double-check those if() conditions?
+[or I need my morning coffee]
+
+> +		return 1;
+> +
+> +	return 0;
+> +}
+
+thanks,
+-- 
+~Randy
