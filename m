@@ -1,164 +1,45 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH] sched/fair: schedutil: update only with all info available
-Date: Fri, 6 Apr 2018 16:48:22 -0700
-Message-ID: <CAJWu+or7OeTELc=yUuTw=vRKvU6VaCyeHp5gA1UJsLSFonYz0w@mail.gmail.com>
-References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [PATCH v9 06/10] time: tick-sched: Split
+ tick_nohz_stop_sched_tick()
+Date: Sat, 7 Apr 2018 04:36:25 +0200
+Message-ID: <20180407023623.GA16600@lerouge>
+References: <1736751.LdhZHb50jq@aspire.rjw.lan>
+ <4511679.r9V9QramI4@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180406172835.20078-1-patrick.bellasi@arm.com>
+Content-Disposition: inline
+In-Reply-To: <4511679.r9V9QramI4@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 6, 2018 at 10:28 AM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-> Schedutil is not properly updated when the first FAIR task wakes up on a
-> CPU and when a RQ is (un)throttled. This is mainly due to the current
-> integration strategy, which relies on updates being triggered implicitly
-> each time a cfs_rq's utilization is updated.
+On Wed, Apr 04, 2018 at 10:41:13AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> In order to address the issue with short idle duration predictions
+> by the idle governor after the scheduler tick has been stopped, split
+> tick_nohz_stop_sched_tick() into two separate routines, one computing
+> the time to the next timer event and the other simply stopping the
+> tick when the time to the next timer event is known.
+> 
+> Prepare these two routines to be called separately, as one of them
+> will be called by the idle governor in the cpuidle_select() code
+> path after subsequent changes.
+> 
+> Update the former callers of tick_nohz_stop_sched_tick() to use
+> the new routines, tick_nohz_next_event() and tick_nohz_stop_tick(),
+> instead of it and move the updates of the sleep_length field in
+> struct tick_sched into __tick_nohz_idle_stop_tick() as it doesn't
+> need to be updated anywhere else.
+> 
+> There should be no intentional visible changes in functionality
+> resulting from this change.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To me that's not implicit, but is explicitly done when the util is
-updated. It seems that's the logical place..
+Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
 
->
-> Those updates are currently provided (mainly) via
->    cfs_rq_util_change()
-> which is used in:
->  - update_cfs_rq_load_avg()
->    when the utilization of a cfs_rq is updated
->  - {attach,detach}_entity_load_avg()
-> This is done based on the idea that "we should callback schedutil
-> frequently enough" to properly update the CPU frequency at every
-
-This also I didn't get, its not called "frequently enough" but at the
-right time (when the util is updated).
-
-> utilization change.
->
-> Since this recent schedutil update:
->
->   commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
->
-> we use additional RQ information to properly account for FAIR tasks
-> utilization. Specifically, cfs_rq::h_nr_running has to be non-zero
-> in sugov_aggregate_util() to sum up the cfs_rq's utilization.
->
-> However, cfs_rq::h_nr_running is usually updated as:
->
->     enqueue_entity()
->        ...
->        update_load_avg()
->           ...
->           cfs_rq_util_change ==> trigger schedutil update
->     ...
->     cfs_rq->h_nr_running += number_of_tasks
->
-> both in enqueue_task_fair() as well as in unthrottle_cfs_rq().
-> A similar pattern is used also in dequeue_task_fair() and
-> throttle_cfs_rq() to remove tasks.
-
-Maybe this should be fixed then? It seems broken to begin with...
-
->
-> This means that we are likely to see a zero cfs_rq utilization when we
-> enqueue a task on an empty CPU, or a non-zero cfs_rq utilization when
-> instead, for example, we are throttling all the FAIR tasks of a CPU.
->
-> While the second issue is less important, since we are less likely to
-
-Actually I wanted behavior like the second issue, because that means
-frequency will not be dropped if CPU is about to idle which is similar
-to a patch I sent long time ago (skip freq update if CPU about to
-idle).
-
-> reduce frequency when CPU utilization decreases, the first issue can
-> instead impact performance. Indeed, we potentially introduce a not desired
-
-This issue would be fixed by just fixing the h_nr_running bug right?
-
-> latency between a task enqueue on a CPU and its frequency increase.
->
-> Another possible unwanted side effect is the iowait boosting of a CPU
-> when we enqueue a task into a throttled cfs_rq.
-
-Probably very very rare.
-
-> Moreover, the current schedutil integration has these other downsides:
->
->  - schedutil updates are triggered by RQ's load updates, which makes
->    sense in general but it does not allow to know exactly which other RQ
->    related information has been updated (e.g. h_nr_running).
-
-It seems broken that all information that schedutil needs isn't
-updated _before_ the cpufreq update request, so that should be fixed
-instead?
-
->
->  - increasing the chances to update schedutil does not always correspond
->    to provide the most accurate information for a proper frequency
->    selection, thus we can skip some updates.
-
-Again IMO its just updated at the right time already, not just
-frequently enough...
-
->
->  - we don't know exactly at which point a schedutil update is triggered,
->    and thus potentially a frequency change started, and that's because
->    the update is a side effect of cfs_rq_util_changed instead of an
->    explicit call from the most suitable call path.
->
->  - cfs_rq_util_change() is mainly a wrapper function for an already
->    existing "public API", cpufreq_update_util(), to ensure we actually
->    update schedutil only when we are updating a root RQ. Thus, especially
->    when task groups are in use, most of the calls to this wrapper
->    function are really not required.
->
->  - the usage of a wrapper function is not completely consistent across
->    fair.c, since we still need sometimes additional explicit calls to
->    cpufreq_update_util(), for example to support the IOWAIT boot flag in
->    the wakeup path
->
->  - it makes it hard to integrate new features since it could require to
->    change other function prototypes just to pass in an additional flag,
->    as it happened for example here:
->
->       commit ea14b57e8a18 ("sched/cpufreq: Provide migration hint")
->
-> All the above considered, let's try to make schedutil updates more
-> explicit in fair.c by:
->
->  - removing the cfs_rq_util_change() wrapper function to use the
->    cpufreq_update_util() public API only when root cfs_rq is updated
->
->  - remove indirect and side-effect (sometimes not required) schedutil
->    updates when the cfs_rq utilization is updated
->
->  - call cpufreq_update_util() explicitly in the few call sites where it
->    really makes sense and all the required information has been updated
->
-> By doing so, this patch mainly removes code and adds explicit calls to
-> schedutil only when we:
->  - {enqueue,dequeue}_task_fair() a task to/from the root cfs_rq
->  - (un)throttle_cfs_rq() a set of tasks up to the root cfs_rq
->  - task_tick_fair() to update the utilization of the root cfs_rq
-
-About the "update for root" thingy, we're already doing rq->cfs ==
-cfs_rq in cfs_rq_util_change so its already covered?
-
-Also, I feel if you can shorten the commit message a little and only
-include the best reasons for this patch that'll be nice so its easier
-to review.
-
->
-> All the other code paths, currently _indirectly_ covered by a call to
-> update_load_avg(), are also covered by the above three calls.
-
-I would rather we do it in as few places as possible (when util is
-updated for root) than spreading it around and making it "explicit". I
-hope I didn't miss something but I feel its explicit enough already...
-
-thanks!
-
-- Joel
+Thanks! And sorry for the slow reviews, the changes are sensitive
+and I want to make sure we are not breaking some subtlety.
