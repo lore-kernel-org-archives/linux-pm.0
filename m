@@ -1,104 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v9 00/10] sched/cpuidle: Idle loop rework
-Date: Sun, 08 Apr 2018 18:32:45 +0200
-Message-ID: <1607755.Sz6cLBVOsW@aspire.rjw.lan>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [PATCH v9 07/10] time: hrtimer: Introduce
+ hrtimer_next_event_without()
+Date: Sun, 8 Apr 2018 19:58:48 +0200
+Message-ID: <20180408175847.GA21904@lerouge>
 References: <1736751.LdhZHb50jq@aspire.rjw.lan>
+ <101528364.6nGUqP0EsC@aspire.rjw.lan>
+ <20180407144637.GC16600@lerouge>
+ <3441609.rVjWXosy3s@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1736751.LdhZHb50jq@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <3441609.rVjWXosy3s@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, April 4, 2018 10:32:12 AM CEST Rafael J. Wysocki wrote:
-> Hi All,
-> 
-> Thanks a lot for the feedback so far!
-> 
-> For the motivation/summary, please refer to the BZ entry at
-> 
->  https://bugzilla.kernel.org/show_bug.cgi?id=199227
-> 
-> created for collecting information related to this patch series.  Some v7.3
-> testing results from Len and Doug are in there already.
-> 
-> The testing so far shows significant idle power improvements, both in terms of
-> reducing the average idle power (about 10% on some systems) and in terms of
-> reducing the idle power noise (in the vast majority of cases, with this series
-> applied the idle power is mostly stable around the power floor of the system).
-> The average power is also reduced in some non-idle workloads and there are
-> some performance improvements in them.
-> 
-> It also is reported that the series generally addresses the problem it has been
-> motivated by (ie. the "powernightmares" issue).
-> 
-> This revision is mostly a re-send of the v8 with three patches changed as
-> follows.
-> 
-> > Patch 1 prepares the tick-sched code for the subsequent modifications and it
-> > doesn't change the code's functionality (at least not intentionally).
+On Sun, Apr 08, 2018 at 10:20:30AM +0200, Rafael J. Wysocki wrote:
+> On Saturday, April 7, 2018 4:46:38 PM CEST Frederic Weisbecker wrote:
+> > On Wed, Apr 04, 2018 at 10:45:39AM +0200, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > The next set of changes will need to compute the time to the next
+> > > hrtimer event over all hrtimers except for the scheduler tick one.
+> > > 
+> > > To that end introduce a new helper function,
+> > > hrtimer_next_event_without(), for computing the time until the next
+> > > hrtimer event over all timers except for one and modify the underlying
+> > > code in __hrtimer_next_event_base() to prepare it for being called by
+> > > that new function.
+> > > 
+> > > No intentional changes in functionality.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > ---
+> > > 
+> > > v8 -> v9:
+> > >  * Make fewer changes to the existing code.
+> > >  * Add a new helper function for the handling of the use case at hand.
+> > > 
+> > > ---
+> > >  include/linux/hrtimer.h |    1 
+> > >  kernel/time/hrtimer.c   |   55 ++++++++++++++++++++++++++++++++++++++++++++++--
+> > >  2 files changed, 54 insertions(+), 2 deletions(-)
+> > > 
+> > > Index: linux-pm/include/linux/hrtimer.h
+> > > ===================================================================
+> > > --- linux-pm.orig/include/linux/hrtimer.h
+> > > +++ linux-pm/include/linux/hrtimer.h
+> > > @@ -426,6 +426,7 @@ static inline ktime_t hrtimer_get_remain
+> > >  }
+> > >  
+> > >  extern u64 hrtimer_get_next_event(void);
+> > > +extern u64 hrtimer_next_event_without(const struct hrtimer *exclude);
+> > >  
+> > >  extern bool hrtimer_active(const struct hrtimer *timer);
+> > >  
+> > > Index: linux-pm/kernel/time/hrtimer.c
+> > > ===================================================================
+> > > --- linux-pm.orig/kernel/time/hrtimer.c
+> > > +++ linux-pm/kernel/time/hrtimer.c
+> > > @@ -490,6 +490,7 @@ __next_base(struct hrtimer_cpu_base *cpu
+> > >  	while ((base = __next_base((cpu_base), &(active))))
+> > >  
+> > >  static ktime_t __hrtimer_next_event_base(struct hrtimer_cpu_base *cpu_base,
+> > > +					 const struct hrtimer *exclude,
+> > >  					 unsigned int active,
+> > >  					 ktime_t expires_next)
+> > >  {
+> > > @@ -502,9 +503,24 @@ static ktime_t __hrtimer_next_event_base
+> > >  
+> > >  		next = timerqueue_getnext(&base->active);
+> > >  		timer = container_of(next, struct hrtimer, node);
+> > > +		if (timer == exclude) {
+> > > +			/* Get to the next timer in the queue. */
+> > > +			struct rb_node *rbn = rb_next(&next->node);
+> > > +
+> > > +			next = rb_entry_safe(rbn, struct timerqueue_node, node);
+> > > +			if (!next)
+> > > +				continue;
 > > 
-> > Patch 2 starts pushing the tick stopping decision deeper into the idle
-> > loop, but that is limited to do_idle() and tick_nohz_irq_exit().
-> > 
-> > Patch 3 makes cpuidle_idle_call() decide whether or not to stop the tick
-> > and sets the stage for the subsequent changes.
-> >
-> > Patch 4 is a new one just for the TICK_USEC definition changes.
-> >
-> > Patch 5 adds a bool pointer argument to cpuidle_select() and the ->select
-> > governor callback allowing them to return a "nohz" hint on whether or not to
-> > stop the tick to the caller.  It also adds code to decide what value to
-> > return as "nohz" to the menu governor and modifies its correction factor
-> > computations to take running tick into account if need be.
-> >
-> > Patch 6 (which is new) contains some changes that previously were included
-> > into the big reordering patch (patch [6/8] in the v7).  Essentially, it does
-> > more tick-sched code reorganization in preparation for the subsequent changes
-> > (and should not modify the functionality).
+> > Minor cosmectic detail again, timerqueue_iterate_next() would do the job and
+> > avoid browsing timerqueue details.
 > 
-> Patch 7 is a new version of its v8 counterpart.  It makes fewer changes to the
-> existing code and adds a special function for the handling of the use case it
-> is about.  It still makes some hrtimer code modifications allowing it to return
-> the time to the next event with one timer excluded (which needs to be done with
-> respect to the tick timer), though.
+> And below is a patch to make this change on top of the original.
 > 
-> Patch 8 reorders the idle state selection with respect to the stopping of
-> the tick and causes the additional "nohz" hint from cpuidle_select() to be
-> used for deciding whether or not to stop the tick.  It is a rebased version
-> of its v8 counterpart.
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] time: hrtimer: Use timerqueue_iterate_next() to get to the next timer
 > 
-> Patch 9 causes the menu governor to refine the state selection in case the
-> tick is not going to be stopped and the already selected state does not fit
-> the interval before the next tick time.  It is a new version that avoids
-> using state 0 if it has been disabled (if state 0 has been disabled, the
-> governor only should use it when no states are enabled at all).
+> Use timerqueue_iterate_next() to get to the next timer in
+> __hrtimer_next_event_base() without browsing the timerqueue
+> details diredctly.
 > 
-> > Patch 10 Deals with the situation in which the tick was stopped previously,
-> > but the idle governor still predicts short idle (it has not changed).
+> No intentional changes in functionality.
 > 
-> This series is complementary to the poll_idle() patches discussed recently
-> 
-> https://patchwork.kernel.org/patch/10282237/
-> https://patchwork.kernel.org/patch/10311775/
-> 
-> that have been merged for v4.17 already.
-> 
-> There is a new git branch containing the current series at
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
->  idle-loop-v9
+> Suggested-by: Frederic Weisbecker <frederic@kernel.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The v9 along with some cleanups suggested by Frederic on top of it and with
-ACKs from Peter (obtained on IRC) is now available from the pm-cpuidle branch
-in the linux-pm.git tree.
-
-It has been added to my linux-next branch, so it probably will be picked up by
-linux-next tomorrow and I have a plan to push it for v4.17 in the second half
-of the next week unless a major issue with it is found in the meantime.
-
-Thanks,
-Rafael
+Thanks!
