@@ -1,61 +1,63 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 2/8] DT: reset: renesas,rzn1-reboot: document RZ/N1
- reboot driver
-Date: Mon, 9 Apr 2018 15:10:27 -0500
-Message-ID: <20180409201027.ydlvyx72mrt5fphh@rob-hp-laptop>
-References: <1522309629-10152-1-git-send-email-michel.pollet@bp.renesas.com>
- <1522309629-10152-3-git-send-email-michel.pollet@bp.renesas.com>
+Subject: Re: [PATCH v4 10/14] dt-bindings: Add support for SAW documentation
+Date: Mon, 9 Apr 2018 15:21:44 -0500
+Message-ID: <20180409202144.76gjmc6kcn2msffl@rob-hp-laptop>
+References: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
+ <1522358807-10413-11-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1522309629-10152-3-git-send-email-michel.pollet@bp.renesas.com>
+In-Reply-To: <1522358807-10413-11-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>
-Cc: linux-renesas-soc@vger.kernel.org, Simon Horman <horms@verge.net.au>, phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: mturquette@baylibre.com, sboyd@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 29, 2018 at 08:46:58AM +0100, Michel Pollet wrote:
-> The Renesas RZ/N1 Family (Part #R9A06G0xx) requires a driver
-> as part of the sysctrl MFD to handle rebooting the CA7 cores.
-> This documents the driver bindings.
+On Fri, Mar 30, 2018 at 12:26:43AM +0300, Ilia Lin wrote:
+> Add support for SAW controlled regulators in 8x96.
+> Document it.
+
+Perhaps some clue in the subject what subsystem and/or device this 
+applies to.
+
 > 
-> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
 > ---
->  .../bindings/power/renesas,rzn1-reboot.txt           | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
+>  .../bindings/regulator/qcom,spmi-regulator.txt     | 45 ++++++++++++++++++++++
+>  1 file changed, 45 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt b/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
-> new file mode 100644
-> index 0000000..f592769
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
-> @@ -0,0 +1,20 @@
-> +DT bindings for the Renesas RZ/N1 Reboot Driver
+> diff --git a/Documentation/devicetree/bindings/regulator/qcom,spmi-regulator.txt b/Documentation/devicetree/bindings/regulator/qcom,spmi-regulator.txt
+> index 57d2c65..406f2e5 100644
+> --- a/Documentation/devicetree/bindings/regulator/qcom,spmi-regulator.txt
+> +++ b/Documentation/devicetree/bindings/regulator/qcom,spmi-regulator.txt
+> @@ -110,6 +110,11 @@ Qualcomm SPMI Regulators
+>  	Definition: Reference to regulator supplying the input pin, as
+>  		    described in the data sheet.
+>  
+> +- qcom,saw-reg:
+> +	Usage: optional
+> +	Value type: <phandle>
+> +	Description: Reference to syscon node defining the SAW registers.
 > +
-> +== Reboot Driver Node ==
+>  
+>  The regulator node houses sub-nodes for each regulator within the device. Each
+>  sub-node is identified using the node's name, with valid values listed for each
+> @@ -201,6 +206,17 @@ see regulator.txt - with additional custom properties described below:
+>  			2 = 0.55 uA
+>  			3 = 0.75 uA
+>  
+> +- qcom,saw-slave:
+> +	Usage: optional
+> +	Value type: <boo>
+> +	Description: SAW controlled gang slave. Will not be configured.
 > +
-> +The reboot driver is always a subnode of the system controller node, see
-> +renesas,rzn1-sysctrl.txt for details.
-> +
-> +Bindings:
-> ++ Required:
-> +	compatible = "renesas,rzn1-reboot";
-> +
-> +Example:
-> +	sysctrl: sysctrl@4000c000 {
-> +		compatible = "renesas,rzn1-sysctrl", "syscon", "simple-mfd";
+> +- qcom,saw-leader:
+> +	Usage: optional
+> +	Value type: <boo>
+> +	Description: SAW controlled gang leader. Will be configured as
+> +		     SAW regulator.
 
-Are there other functions for this block? If so, please define a 
-complete binding for the block.
-
-> +		reg = <0x4000c000 0x1000>;
-> +
-> +		reboot {
-> +			compatible = "renesas,rzn1-reboot";
-
-Why is this node needed? The driver for "renesas,rzn1-sysctrl" should 
-be able to register as a reboot handler/driver/provider.
+Would the coupled regulator binding work in this case?
 
 Rob
