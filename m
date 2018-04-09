@@ -1,16 +1,16 @@
 From: Sasha Levin <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL for 4.4 144/162] x86/power: Fix swsusp_arch_resume
+Subject: [PATCH AUTOSEL for 4.9 268/293] x86/power: Fix swsusp_arch_resume
  prototype
-Date: Mon, 9 Apr 2018 00:29:41 +0000
-Message-ID: <20180409002738.163941-144-alexander.levin@microsoft.com>
-References: <20180409002738.163941-1-alexander.levin@microsoft.com>
+Date: Mon, 9 Apr 2018 00:26:24 +0000
+Message-ID: <20180409002239.163177-268-alexander.levin@microsoft.com>
+References: <20180409002239.163177-1-alexander.levin@microsoft.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180409002738.163941-1-alexander.levin@microsoft.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20180409002239.163177-1-alexander.levin@microsoft.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: stable-owner@vger.kernel.org
 To: "stable@vger.kernel.org" <stable@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, Nicolas Pitre <nico@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Bart Van Assche <bart.vanassche@wdc.com>, Sasha Levin <Alexander.Levin@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
@@ -54,7 +54,7 @@ Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
  4 files changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/arch/x86/power/hibernate_32.c b/arch/x86/power/hibernate_32.c
-index 291226b952a9..77ac4e4deb16 100644
+index 9f14bd34581d..74b516cb39df 100644
 --- a/arch/x86/power/hibernate_32.c
 +++ b/arch/x86/power/hibernate_32.c
 @@ -142,7 +142,7 @@ static inline void resume_init_first_level_page_table(p=
@@ -68,10 +68,10 @@ gd_t *pg_dir)
  	int error;
 =20
 diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-index 009947d419a6..0e0c773edffc 100644
+index 9634557a5444..0cb1dd461529 100644
 --- a/arch/x86/power/hibernate_64.c
 +++ b/arch/x86/power/hibernate_64.c
-@@ -78,7 +78,7 @@ static int set_up_temporary_mappings(void)
+@@ -149,7 +149,7 @@ static int relocate_restore_code(void)
  	return 0;
  }
 =20
@@ -81,10 +81,10 @@ index 009947d419a6..0e0c773edffc 100644
  	int error;
 =20
 diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 8b6ec7ef0854..4a69bca7c6ab 100644
+index d9718378a8be..249dafce2788 100644
 --- a/include/linux/suspend.h
 +++ b/include/linux/suspend.h
-@@ -377,6 +377,8 @@ extern int swsusp_page_is_forbidden(struct page *);
+@@ -378,6 +378,8 @@ extern int swsusp_page_is_forbidden(struct page *);
  extern void swsusp_set_page_free(struct page *);
  extern void swsusp_unset_page_free(struct page *);
  extern unsigned long get_safe_page(gfp_t gfp_mask);
@@ -95,10 +95,10 @@ index 8b6ec7ef0854..4a69bca7c6ab 100644
 );
  extern int hibernate(void);
 diff --git a/kernel/power/power.h b/kernel/power/power.h
-index caadb566e82b..25367fc0b152 100644
+index 56d1d0dedf76..ccba4d820078 100644
 --- a/kernel/power/power.h
 +++ b/kernel/power/power.h
-@@ -85,9 +85,6 @@ extern int in_suspend;
+@@ -103,9 +103,6 @@ extern int in_suspend;
  extern dev_t swsusp_resume_device;
  extern sector_t swsusp_resume_block;
 =20
