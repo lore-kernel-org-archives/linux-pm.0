@@ -1,14 +1,14 @@
 From: Sasha Levin <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL for 3.18 089/101] x86/power: Fix swsusp_arch_resume
+Subject: [PATCH AUTOSEL for 4.4 144/162] x86/power: Fix swsusp_arch_resume
  prototype
-Date: Mon, 9 Apr 2018 00:41:47 +0000
-Message-ID: <20180409004042.164920-39-alexander.levin@microsoft.com>
-References: <20180409004042.164920-1-alexander.levin@microsoft.com>
+Date: Mon, 9 Apr 2018 00:29:41 +0000
+Message-ID: <20180409002738.163941-144-alexander.levin@microsoft.com>
+References: <20180409002738.163941-1-alexander.levin@microsoft.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180409004042.164920-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180409002738.163941-1-alexander.levin@microsoft.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: "stable@vger.kernel.org" <stable@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
@@ -81,10 +81,10 @@ index 009947d419a6..0e0c773edffc 100644
  	int error;
 =20
 diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 3388c1b6f7d8..10a48138e063 100644
+index 8b6ec7ef0854..4a69bca7c6ab 100644
 --- a/include/linux/suspend.h
 +++ b/include/linux/suspend.h
-@@ -325,6 +325,8 @@ extern int swsusp_page_is_forbidden(struct page *);
+@@ -377,6 +377,8 @@ extern int swsusp_page_is_forbidden(struct page *);
  extern void swsusp_set_page_free(struct page *);
  extern void swsusp_unset_page_free(struct page *);
  extern unsigned long get_safe_page(gfp_t gfp_mask);
@@ -95,7 +95,7 @@ index 3388c1b6f7d8..10a48138e063 100644
 );
  extern int hibernate(void);
 diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 2df883a9d3cb..45244cb31c91 100644
+index caadb566e82b..25367fc0b152 100644
 --- a/kernel/power/power.h
 +++ b/kernel/power/power.h
 @@ -85,9 +85,6 @@ extern int in_suspend;
