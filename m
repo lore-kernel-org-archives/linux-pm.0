@@ -1,83 +1,49 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFC PATCH 3/6] sched: Add over-utilization/tipping point
- indicator
-Date: Mon, 9 Apr 2018 11:53:00 +0200
-Message-ID: <093ba425-4f81-9f86-78a6-1cd1fd4651f9@arm.com>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-4-dietmar.eggemann@arm.com>
- <20180409094001.GZ4043@hirez.programming.kicks-ass.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 3/7] PM / Domain: Add struct device to genpd
+Date: Mon, 9 Apr 2018 12:46:47 +0200
+Message-ID: <CAPDyKFpiahCSEtAAS856B+MWa=o5VCTZH--Hp+xTnzmT2M9v+A@mail.gmail.com>
+References: <cover.1513926033.git.viresh.kumar@linaro.org> <a7867661e9bc6f5b1571f60398266ef678ccc1c0.1513926033.git.viresh.kumar@linaro.org>
+ <CAPDyKFprVsOd7_nKCXDCxDErh-K+vfaWojqDo0arzt0ZJKCPjQ@mail.gmail.com>
+ <20180322095903.h7hgm3xylq3esjyf@vireshk-mac-ubuntu> <CAPDyKFqZeOvHy1oY0JnUau17vFTuRBzCjKp+zzpf=tWzAi3cEw@mail.gmail.com>
+ <20180409075342.GB7671@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180409094001.GZ4043@hirez.programming.kicks-ass.net>
-Content-Language: en-US
+In-Reply-To: <20180409075342.GB7671@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/09/2018 11:40 AM, Peter Zijlstra wrote:
-> 
-> (I know there is a new version out; but I was reading through this to
-> catch up with the discussion)
-> 
-> On Tue, Mar 20, 2018 at 09:43:09AM +0000, Dietmar Eggemann wrote:
->> +static inline int sd_overutilized(struct sched_domain *sd)
->> +{
->> +	return READ_ONCE(sd->shared->overutilized);
->> +}
->> +
->> +static inline void update_overutilized_status(struct rq *rq)
->> +{
->> +	struct sched_domain *sd;
->> +
->> +	rcu_read_lock();
->> +	sd = rcu_dereference(rq->sd);
->> +	if (sd && !sd_overutilized(sd) && cpu_overutilized(rq->cpu))
->> +		WRITE_ONCE(sd->shared->overutilized, 1);
->> +	rcu_read_unlock();
->> +}
->> +#else
-> 
-> I think you ought to go have a look at the end of
-> kernel/sched/topology.c:sd_init(), where it says:
-> 
-> 	/*
-> 	 * For all levels sharing cache; connect a sched_domain_shared
-> 	 * instance.
-> 	 */
-> 	if (sd->flags & SD_SHARE_PKG_RESOURCES) {
-> 		sd->shared = *per_cpu_ptr(sdd->sds, sd_id);
-> 		atomic_inc(&sd->shared->ref);
-> 		atomic_set(&sd->shared->nr_busy_cpus, sd_weight);
-> 	}
-> 
-> Because if I read all this correctly, your code assumes sd->shared
-> exists unconditionally, while the quoted bit only ensures it does so <=
-> LLC.
-> 
+On 9 April 2018 at 09:53, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 22-03-18, 11:18, Ulf Hansson wrote:
+>> On 22 March 2018 at 10:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > On 22-03-18, 10:30, Ulf Hansson wrote:
+>> >> On 22 December 2017 at 08:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+>> >> > +       ret = device_add(&genpd->dev);
+>> >>
+>> >> What's the point of adding the device? Can we skip this step, as I
+>> >> guess the opp core is only using the device as cookie rather actual
+>> >> using it? No?
+>> >
+>> > We also use it for the OPP debugfs stuff, so that would be required I believe.
+>>
+>> Right, however, isn't that only using the dev_name(dev), which you
+>> don't need to add the device to make use of.
+>>
+>> Or maybe I missing something around this...
+>
+> So I tested this bit. The code works fine even if the device isn't added
+> (registered), but this looks a bit sloppy to attempt.
+>
+> Please let me know what would you prefer in this case, add the device or not.
 
-But the patch changes this part further down.
+Well, I don't know if there is policy of how to do this in general. Or
+perhaps this can be considered as a special case as the device is only
+going to be used as cookie (at least so far).
 
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index 64cc564f5255..c8b7c7665ab2 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -1184,15 +1184,11 @@ sd_init(struct sched_domain_topology_level *tl,
-  		sd->idle_idx = 1;
-  	}
+I suggest we keep it as simple as possible and *not* add (register) the device.
 
--	/*
--	 * For all levels sharing cache; connect a sched_domain_shared
--	 * instance.
--	 */
--	if (sd->flags & SD_SHARE_PKG_RESOURCES) {
--		sd->shared = *per_cpu_ptr(sdd->sds, sd_id);
--		atomic_inc(&sd->shared->ref);
-+	sd->shared = *per_cpu_ptr(sdd->sds, sd_id);
-+	atomic_inc(&sd->shared->ref);
-+
-+	if (sd->flags & SD_SHARE_PKG_RESOURCES)
-  		atomic_set(&sd->shared->nr_busy_cpus, sd_weight);
--	}
+Kind regards
+Uffe
