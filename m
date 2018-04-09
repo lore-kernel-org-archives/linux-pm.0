@@ -1,64 +1,37 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [PATCH v9 08/10] sched: idle: Select idle state before stopping
- the tick
-Date: Mon, 9 Apr 2018 04:41:51 +0200
-Message-ID: <20180409024150.GB21904@lerouge>
-References: <1736751.LdhZHb50jq@aspire.rjw.lan>
- <13248276.RivpnYp3Yv@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: srplinux2008 <srplinux2008@gmail.com>
+Subject: [PATCH] thermal: devfreq_cooling: add const to struct thermal_cooling_device_ops
+Date: Mon,  9 Apr 2018 08:22:55 +0530
+Message-ID: <1523242375-3937-1-git-send-email-srplinux2008@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <13248276.RivpnYp3Yv@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: orjan.eide@arm.com, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, srplinux2008@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 04, 2018 at 10:47:06AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> In order to address the issue with short idle duration predictions
-> by the idle governor after the scheduler tick has been stopped,
-> reorder the code in cpuidle_idle_call() so that the governor idle
-> state selection runs before tick_nohz_idle_go_idle() and use the
-> "nohz" hint returned by cpuidle_select() to decide whether or not
-> to stop the tick.
-> 
-> This isn't straightforward, because menu_select() invokes
-> tick_nohz_get_sleep_length() to get the time to the next timer
-> event and the number returned by the latter comes from
-> __tick_nohz_idle_stop_tick().  Fortunately, however, it is possible
-> to compute that number without actually stopping the tick and with
-> the help of the existing code.
-> 
-> Namely, tick_nohz_get_sleep_length() can be made call
-> tick_nohz_next_event(), introduced earlier, to get the time to the
-> next non-highres timer event.  If that happens, tick_nohz_next_event()
-> need not be called by __tick_nohz_idle_stop_tick() again.
-> 
-> If it turns out that the scheduler tick cannot be stopped going
-> forward or the next timer event is too close for the tick to be
-> stopped, tick_nohz_get_sleep_length() can simply return the time to
-> the next event currently programmed into the corresponding clock
-> event device.
-> 
-> In addition to knowing the return value of tick_nohz_next_event(),
-> however, tick_nohz_get_sleep_length() needs to know the time to the
-> next highres timer event, but with the scheduler tick timer excluded,
-> which can be computed with the help of hrtimer_get_next_event().
-> 
-> That minimum of that number and the tick_nohz_next_event() return
-> value is the total time to the next timer event with the assumption
-> that the tick will be stopped.  It can be returned to the idle
-> governor which can use it for predicting idle duration (under the
-> assumption that the tick will be stopped) and deciding whether or
-> not it makes sense to stop the tick before putting the CPU into the
-> selected idle state.
-> 
-> With the above, the sleep_length field in struct tick_sched is not
-> necessary any more, so drop it.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: srp linux <srplinux2008@gmail.com>
 
-Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+Add the typecast constant to structure thermal_cooling_device_ops. This
+is the last argument to the function thermal_of_cooling_device_register
+and this argument is of type const. So, declare this structure
+thermal_cooling_device_ops as constant.
+
+Signed-off-by: srp linux <srplinux2008@gmail.com>
+---
+ drivers/thermal/devfreq_cooling.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index ef59256..80efc4e 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -392,7 +392,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
+ 	return 0;
+ }
+ 
+-static struct thermal_cooling_device_ops devfreq_cooling_ops = {
++static const struct thermal_cooling_device_ops devfreq_cooling_ops = {
+ 	.get_max_state = devfreq_cooling_get_max_state,
+ 	.get_cur_state = devfreq_cooling_get_cur_state,
+ 	.set_cur_state = devfreq_cooling_set_cur_state,
+-- 
+2.7.4
