@@ -1,110 +1,44 @@
-From: Pintu Kumar <pintu.ping@gmail.com>
-Subject: Re: [HELP] CPU Hard LOCKUP during boot up with HPET clock source
-Date: Mon, 9 Apr 2018 12:26:42 +0530
-Message-ID: <CAOuPNLjvW4LTuim1BC29ZfTeCb=6E202tXoc-CRhc2DQquF91Q@mail.gmail.com>
-References: <CAOuPNLjoNFa4sAhT4B_Xx7YfLwOMOF9VsK-O_dwWhhw2GGdMMQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/7] PM / Domain: Add struct device to genpd
+Date: Mon, 9 Apr 2018 13:23:42 +0530
+Message-ID: <20180409075342.GB7671@vireshk-i7>
+References: <cover.1513926033.git.viresh.kumar@linaro.org>
+ <a7867661e9bc6f5b1571f60398266ef678ccc1c0.1513926033.git.viresh.kumar@linaro.org>
+ <CAPDyKFprVsOd7_nKCXDCxDErh-K+vfaWojqDo0arzt0ZJKCPjQ@mail.gmail.com>
+ <20180322095903.h7hgm3xylq3esjyf@vireshk-mac-ubuntu>
+ <CAPDyKFqZeOvHy1oY0JnUau17vFTuRBzCjKp+zzpf=tWzAi3cEw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOuPNLjoNFa4sAhT4B_Xx7YfLwOMOF9VsK-O_dwWhhw2GGdMMQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFqZeOvHy1oY0JnUau17vFTuRBzCjKp+zzpf=tWzAi3cEw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 22-03-18, 11:18, Ulf Hansson wrote:
+> On 22 March 2018 at 10:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 22-03-18, 10:30, Ulf Hansson wrote:
+> >> On 22 December 2017 at 08:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-As a simple query,
-Is there a way to skip current available clock source (hpet) and allow
-to pick the next one ?
-I guess this will solve our purpose.
+> >> > +       ret = device_add(&genpd->dev);
+> >>
+> >> What's the point of adding the device? Can we skip this step, as I
+> >> guess the opp core is only using the device as cookie rather actual
+> >> using it? No?
+> >
+> > We also use it for the OPP debugfs stuff, so that would be required I believe.
+> 
+> Right, however, isn't that only using the dev_name(dev), which you
+> don't need to add the device to make use of.
+> 
+> Or maybe I missing something around this...
 
+So I tested this bit. The code works fine even if the device isn't added
+(registered), but this looks a bit sloppy to attempt.
 
-Thanks,
-Pintu
+Please let me know what would you prefer in this case, add the device or not.
 
-
-On Fri, Apr 6, 2018 at 8:37 PM, Pintu Kumar <pintu.ping@gmail.com> wrote:
-> Hi,
->
-> First the few details:
-> Kernel: 4.9.20
-> Machine: x86_64 (AMD)
-> Model: Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-> Cores: 8
-> Available clock source:
-> # cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-> tsc hpet acpi_pm
->
-> Problem:
-> [   28.027409] NMI watchdog: Watchdog detected hard LOCKUP on cpu
-> 1dModules linked in:c
-> [   28.136317] RIP: 0010:[<ffffffff98058c43>] c [<ffffffff98058c43>]
-> read_hpet+0xb3/0x120
-> [...]
->
-> ------------------
-> This lockup happens during boot when the cpu is stuck for about ~28 seconds.
-> This is because of our internal code changes.
-> During our init function we are running some calibrate loops
-> 10,000,000 (10MHz) times twice.
-> The LOCKUP is coming because of this loop.
->
-> But, we observed that the main issue is the clock source that is
-> available at that time.
-> At the time this loop is executed, the available clock source is HPET (not TSC).
-> With HPET the loop runs slower. It takes almost 28 seconds to complete
-> with HPET clock source. Hence the boot time also increase by 28
-> seconds.
-> Where as with TSC the loop completes in less than 4 seconds. So, with
-> TSC we dont get the LOCKUP.
->
-> Thus, the lockup is happening only because the loop executes with HPET
-> clock source.
->
-> To fix the problem, I tried the following approach:
-> 1) Use late_initcall for our driver init to delay the call until TSC
-> clock source is ready.
->     => With this there is no LOCKUP trace and no impact on boot time.
->     This is because the loop executes with TSC.
->
-> 2) We have 2 loops. So I split the local_irq_save/restore part for
-> each loops separately.
->      => With this also there is no backtrace seen.
->      => But boot time is increased.
->
-> 3) I used delayed_workqueue to delay the execution of the loop by 5
-> seconds, until TSC is ready.
->     => With this there is no back trace and also boot time is normal.
->     => But if we disable TSC then we still get the back trace.
->
-> 4) Disabled HPET from kernel command line using : hpet=disable
->     => This also works as the loop executes with the next available
-> clock source: acpi_pm
->     => But changing boot args is not recommended in our case.
->
-> 5) Disable HPET related configs in kernel
->     => CONFIG_HPET=n
->     => CONFIG_HPET_TIMER=n
->     => This method does not work as we were not able to disable
-> HPET_TIMER on x86_64.
->
-> 6) Use hpet_disable() from our code.
->     => This method also does not work. It actually does not disable
-> HPET clock source.
->
->
-> -----------------------------
-> Thus we wanted to know your opinion which is the right solution to fix
-> this lockup during boot time.
->
-> Is there a way to purposefully fallback to next available clock source
-> (acpi_pm) instead of hpet, from the source code, before executing our
-> loop ?
->
->
-> Please let me know if there are alternate options.
->
->
->
-> Thanks,
-> Pintu
+-- 
+viresh
