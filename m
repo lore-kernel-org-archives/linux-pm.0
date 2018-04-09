@@ -1,102 +1,112 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [PATCH v9 07/10] time: hrtimer: Introduce
- hrtimer_next_event_without()
-Date: Sun, 8 Apr 2018 19:58:48 +0200
-Message-ID: <20180408175847.GA21904@lerouge>
-References: <1736751.LdhZHb50jq@aspire.rjw.lan>
- <101528364.6nGUqP0EsC@aspire.rjw.lan>
- <20180407144637.GC16600@lerouge>
- <3441609.rVjWXosy3s@aspire.rjw.lan>
+From: Sasha Levin <Alexander.Levin@microsoft.com>
+Subject: [PATCH AUTOSEL for 4.14 116/161] x86/power: Fix swsusp_arch_resume
+ prototype
+Date: Mon, 9 Apr 2018 00:21:27 +0000
+Message-ID: <20180409001936.162706-116-alexander.levin@microsoft.com>
+References: <20180409001936.162706-1-alexander.levin@microsoft.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3441609.rVjWXosy3s@aspire.rjw.lan>
+In-Reply-To: <20180409001936.162706-1-alexander.levin@microsoft.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Ilsche <thomas.ilsche@tu-dresden.de>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@surriel.com>, Aubrey Li <aubrey.li@linux.intel.com>, Mike Galbraith <mgalbraith@suse.de>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: "stable@vger.kernel.org" <stable@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, Nicolas Pitre <nico@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Bart Van Assche <bart.vanassche@wdc.com>, Sasha Levin <Alexander.Levin@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Apr 08, 2018 at 10:20:30AM +0200, Rafael J. Wysocki wrote:
-> On Saturday, April 7, 2018 4:46:38 PM CEST Frederic Weisbecker wrote:
-> > On Wed, Apr 04, 2018 at 10:45:39AM +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > The next set of changes will need to compute the time to the next
-> > > hrtimer event over all hrtimers except for the scheduler tick one.
-> > > 
-> > > To that end introduce a new helper function,
-> > > hrtimer_next_event_without(), for computing the time until the next
-> > > hrtimer event over all timers except for one and modify the underlying
-> > > code in __hrtimer_next_event_base() to prepare it for being called by
-> > > that new function.
-> > > 
-> > > No intentional changes in functionality.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > > 
-> > > v8 -> v9:
-> > >  * Make fewer changes to the existing code.
-> > >  * Add a new helper function for the handling of the use case at hand.
-> > > 
-> > > ---
-> > >  include/linux/hrtimer.h |    1 
-> > >  kernel/time/hrtimer.c   |   55 ++++++++++++++++++++++++++++++++++++++++++++++--
-> > >  2 files changed, 54 insertions(+), 2 deletions(-)
-> > > 
-> > > Index: linux-pm/include/linux/hrtimer.h
-> > > ===================================================================
-> > > --- linux-pm.orig/include/linux/hrtimer.h
-> > > +++ linux-pm/include/linux/hrtimer.h
-> > > @@ -426,6 +426,7 @@ static inline ktime_t hrtimer_get_remain
-> > >  }
-> > >  
-> > >  extern u64 hrtimer_get_next_event(void);
-> > > +extern u64 hrtimer_next_event_without(const struct hrtimer *exclude);
-> > >  
-> > >  extern bool hrtimer_active(const struct hrtimer *timer);
-> > >  
-> > > Index: linux-pm/kernel/time/hrtimer.c
-> > > ===================================================================
-> > > --- linux-pm.orig/kernel/time/hrtimer.c
-> > > +++ linux-pm/kernel/time/hrtimer.c
-> > > @@ -490,6 +490,7 @@ __next_base(struct hrtimer_cpu_base *cpu
-> > >  	while ((base = __next_base((cpu_base), &(active))))
-> > >  
-> > >  static ktime_t __hrtimer_next_event_base(struct hrtimer_cpu_base *cpu_base,
-> > > +					 const struct hrtimer *exclude,
-> > >  					 unsigned int active,
-> > >  					 ktime_t expires_next)
-> > >  {
-> > > @@ -502,9 +503,24 @@ static ktime_t __hrtimer_next_event_base
-> > >  
-> > >  		next = timerqueue_getnext(&base->active);
-> > >  		timer = container_of(next, struct hrtimer, node);
-> > > +		if (timer == exclude) {
-> > > +			/* Get to the next timer in the queue. */
-> > > +			struct rb_node *rbn = rb_next(&next->node);
-> > > +
-> > > +			next = rb_entry_safe(rbn, struct timerqueue_node, node);
-> > > +			if (!next)
-> > > +				continue;
-> > 
-> > Minor cosmectic detail again, timerqueue_iterate_next() would do the job and
-> > avoid browsing timerqueue details.
-> 
-> And below is a patch to make this change on top of the original.
-> 
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] time: hrtimer: Use timerqueue_iterate_next() to get to the next timer
-> 
-> Use timerqueue_iterate_next() to get to the next timer in
-> __hrtimer_next_event_base() without browsing the timerqueue
-> details diredctly.
-> 
-> No intentional changes in functionality.
-> 
-> Suggested-by: Frederic Weisbecker <frederic@kernel.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
-Thanks!
+[ Upstream commit 328008a72d38b5bde6491e463405c34a81a65d3e ]
+
+The declaration for swsusp_arch_resume marks it as 'asmlinkage', but the
+definition in x86-32 does not, and it fails to include the header with the
+declaration. This leads to a warning when building with
+link-time-optimizations:
+
+kernel/power/power.h:108:23: error: type of 'swsusp_arch_resume' does not m=
+atch original declaration [-Werror=3Dlto-type-mismatch]
+ extern asmlinkage int swsusp_arch_resume(void);
+                       ^
+arch/x86/power/hibernate_32.c:148:0: note: 'swsusp_arch_resume' was previou=
+sly declared here
+ int swsusp_arch_resume(void)
+
+This moves the declaration into a globally visible header file and fixes up
+both x86 definitions to match it.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Nicolas Pitre <nico@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Bart Van Assche <bart.vanassche@wdc.com>
+Link: https://lkml.kernel.org/r/20180202145634.200291-2-arnd@arndb.de
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+---
+ arch/x86/power/hibernate_32.c | 2 +-
+ arch/x86/power/hibernate_64.c | 2 +-
+ include/linux/suspend.h       | 2 ++
+ kernel/power/power.h          | 3 ---
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/power/hibernate_32.c b/arch/x86/power/hibernate_32.c
+index c35fdb585c68..afc4ed7b1578 100644
+--- a/arch/x86/power/hibernate_32.c
++++ b/arch/x86/power/hibernate_32.c
+@@ -145,7 +145,7 @@ static inline void resume_init_first_level_page_table(p=
+gd_t *pg_dir)
+ #endif
+ }
+=20
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
+=20
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index f910c514438f..0ef5e5204968 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -174,7 +174,7 @@ out:
+ 	return 0;
+ }
+=20
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
+=20
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index d60b0f5c38d5..8544357d92d0 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -384,6 +384,8 @@ extern int swsusp_page_is_forbidden(struct page *);
+ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+ extern unsigned long get_safe_page(gfp_t gfp_mask);
++extern asmlinkage int swsusp_arch_suspend(void);
++extern asmlinkage int swsusp_arch_resume(void);
+=20
+ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops=
+);
+ extern int hibernate(void);
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index f29cd178df90..9e58bdc8a562 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -104,9 +104,6 @@ extern int in_suspend;
+ extern dev_t swsusp_resume_device;
+ extern sector_t swsusp_resume_block;
+=20
+-extern asmlinkage int swsusp_arch_suspend(void);
+-extern asmlinkage int swsusp_arch_resume(void);
+-
+ extern int create_basic_memory_bitmaps(void);
+ extern void free_basic_memory_bitmaps(void);
+ extern int hibernate_preallocate_memory(void);
+--=20
+2.15.1
