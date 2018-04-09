@@ -1,43 +1,23 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V2 1/2] cpufreq: scmi: Don't validate the frequency table
- twice
-Date: Mon, 9 Apr 2018 13:39:44 +0200
-Message-ID: <CAJZ5v0hGgLAK2MRx0tEpTt5Hh9i_9zwhFJPsOsxQ+fOSiLBr_w@mail.gmail.com>
-References: <cover.1522749887.git.viresh.kumar@linaro.org>
- <442ecfd0a5bddf32c912c449b072d8a0139318fc.1522749887.git.viresh.kumar@linaro.org>
- <5ce48bce-4fcf-1e0a-6b78-f588fbf7e4a5@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 3/6] sched: Add over-utilization/tipping point
+ indicator
+Date: Mon, 9 Apr 2018 13:49:32 +0200
+Message-ID: <20180409114932.GY4082@hirez.programming.kicks-ass.net>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-4-dietmar.eggemann@arm.com>
+ <20180409094001.GZ4043@hirez.programming.kicks-ass.net>
+ <093ba425-4f81-9f86-78a6-1cd1fd4651f9@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <5ce48bce-4fcf-1e0a-6b78-f588fbf7e4a5@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <093ba425-4f81-9f86-78a6-1cd1fd4651f9@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 4, 2018 at 11:48 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> (I have exact patches ready :), was on vacation)
+On Mon, Apr 09, 2018 at 11:53:00AM +0200, Dietmar Eggemann wrote:
+> But the patch changes this part further down.
 
-What am I expected to do with this one?
-
-> On 03/04/18 11:07, Viresh Kumar wrote:
->> The cpufreq core is already validating the CPU frequency table after
->> calling the ->init() callback of the cpufreq drivers and the drivers
->> don't need to do the same anymore. Though they need to set the
->> policy->freq_table field directly from the ->init() callback now.
->>
->> Stop validating the frequency table from scmi driver.
->>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+Yes.. let's call it Monday morning sickness :-)
