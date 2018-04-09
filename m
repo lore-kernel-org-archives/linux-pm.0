@@ -1,49 +1,57 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 2/6] sched: Introduce energy models of CPUs
-Date: Mon, 9 Apr 2018 14:01:11 +0200
-Message-ID: <20180409120111.GA4043@hirez.programming.kicks-ass.net>
-References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
- <20180320094312.24081-3-dietmar.eggemann@arm.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V2 1/2] cpufreq: scmi: Don't validate the frequency table
+ twice
+Date: Mon, 9 Apr 2018 14:20:02 +0100
+Message-ID: <d86012d8-f98f-b9e9-aa0b-032ef0ee9c9c@arm.com>
+References: <cover.1522749887.git.viresh.kumar@linaro.org>
+ <442ecfd0a5bddf32c912c449b072d8a0139318fc.1522749887.git.viresh.kumar@linaro.org>
+ <5ce48bce-4fcf-1e0a-6b78-f588fbf7e4a5@arm.com>
+ <CAJZ5v0hGgLAK2MRx0tEpTt5Hh9i_9zwhFJPsOsxQ+fOSiLBr_w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180320094312.24081-3-dietmar.eggemann@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAJZ5v0hGgLAK2MRx0tEpTt5Hh9i_9zwhFJPsOsxQ+fOSiLBr_w@mail.gmail.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 20, 2018 at 09:43:08AM +0000, Dietmar Eggemann wrote:
-> From: Quentin Perret <quentin.perret@arm.com>
-> 
-> The energy consumption of each CPU in the system is modeled with a list
-> of values representing its dissipated power and compute capacity at each
-> available Operating Performance Point (OPP). These values are derived
-> from existing information in the kernel (currently used by the thermal
-> subsystem) and don't require the introduction of new platform-specific
-> tunables. The energy model is also provided with a simple representation
-> of all frequency domains as cpumasks, hence enabling the scheduler to be
-> aware of dependencies between CPUs. The data required to build the energy
-> model is provided by the OPP library which enables an abstract view of
-> the platform from the scheduler. The new data structures holding these
-> models and the routines to populate them are stored in
-> kernel/sched/energy.c.
-> 
-> For the sake of simplicity, it is assumed in the energy model that all
-> CPUs in a frequency domain share the same micro-architecture. As long as
-> this assumption is correct, the energy models of different CPUs belonging
-> to the same frequency domain are equal. Hence, this commit builds only one
-> energy model per frequency domain, and links all relevant CPUs to it in
-> order to save time and memory. If needed for future hardware platforms,
-> relaxing this assumption should imply relatively simple modifications in
-> the code but a significantly higher algorithmic complexity.
 
-What this doesn't mention is why this isn't part of the regular topology
-bits. IIRC this is because the frequency domains don't necessarily need
-to align with the existing topology, but this completely fails to state
-any of that.
 
-Also, since I'm not at all familiar with DT and the OPP library stuff,
-this code is completely unreadable to me and there isn't a nice comment
-to help me along.
+On 09/04/18 12:39, Rafael J. Wysocki wrote:
+> On Wed, Apr 4, 2018 at 11:48 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>
+>> (I have exact patches ready :), was on vacation)
+> 
+> What am I expected to do with this one?
+> 
+
+Sorry for not being explicit. I assumed you can pick up this patch along
+with 2/2 removing the function, that's why I just acked the patch. The
+SCMI code is now merged.
+
+>> On 03/04/18 11:07, Viresh Kumar wrote:
+>>> The cpufreq core is already validating the CPU frequency table after
+>>> calling the ->init() callback of the cpufreq drivers and the drivers
+>>> don't need to do the same anymore. Though they need to set the
+>>> policy->freq_table field directly from the ->init() callback now.
+>>>
+>>> Stop validating the frequency table from scmi driver.
+>>>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+
+-- 
+Regards,
+Sudeep
