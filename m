@@ -1,82 +1,108 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
-Date: Tue, 10 Apr 2018 13:06:26 +0200 (CEST)
-Message-ID: <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org> <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com> <f253686d26b3470f0e9b60502eb62315@codeaurora.org> <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
- <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v6 20/25] drivers: firmware: psci: Introduce
+ psci_dt_topology_init()
+Date: Tue, 10 Apr 2018 12:10:43 +0100
+Message-ID: <20180410111043.t577a43a3bvjpkc7@lakrids.cambridge.arm.com>
+References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
+ <1521046715-30683-21-git-send-email-ulf.hansson@linaro.org>
+ <20180314173833.dyu7jtweu233rfi4@lakrids.cambridge.arm.com>
+ <CAPDyKFpJQZ87ViwZxX_yBnKPzgRv5YxbLz=qxScBTMCvY6e2vw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFpJQZ87ViwZxX_yBnKPzgRv5YxbLz=qxScBTMCvY6e2vw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: yuankuiz@codeaurora.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
-> On 2018-04-10 05:10 PM, Thomas Gleixner wrote:
-> > On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
-> > > On 2018-04-10 04:00 PM, Rafael J. Wysocki wrote:
-> > > > On Tue, Apr 10, 2018 at 9:33 AM,  <yuankuiz@codeaurora.org> wrote:
-> > > > > From: John Zhao <yuankuiz@codeaurora.org>
-> > > > >
-> > > > > Variable tick_stopped returned by tick_nohz_tick_stopped
-> > > > > can have only true / false values. Since the return type
-> > > > > of the tick_nohz_tick_stopped is also bool, variable
-> > > > > tick_stopped nice to have data type as bool in place of unsigned int.
-> > > > > Moreover, the executed instructions cost could be minimal
-> > > > > without potiential data type conversion.
-> > > > >
-> > > > > Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
-> > > > > ---
-> > > > >  kernel/time/tick-sched.h | 2 +-
-> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > >
-> > > > > diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
-> > > > > index 6de959a..4d34309 100644
-> > > > > --- a/kernel/time/tick-sched.h
-> > > > > +++ b/kernel/time/tick-sched.h
-> > > > > @@ -48,8 +48,8 @@ struct tick_sched {
-> > > > >         unsigned long                   check_clocks;
-> > > > >         enum tick_nohz_mode             nohz_mode;
-> > > > >
-> > > > > +       bool                            tick_stopped    : 1;
-> > > > >         unsigned int                    inidle          : 1;
-> > > > > -       unsigned int                    tick_stopped    : 1;
-> > > > >         unsigned int                    idle_active     : 1;
-> > > > >         unsigned int                    do_timer_last   : 1;
-> > > > >         unsigned int                    got_idle_tick   : 1;
-> > > >
-> > > > I don't think this is a good idea at all.
-> > > >
-> > > > Please see https://lkml.org/lkml/2017/11/21/384 for example.
-> > > [ZJ] Thanks for this sharing. Looks like, this patch fall into the case of
-> > > "Maybe".
-> > 
-> > This patch falls into the case 'pointless' because it adds extra storage
-> [ZJ] 1 bit vs 1 bit. no more.
+On Tue, Apr 10, 2018 at 09:19:26AM +0200, Ulf Hansson wrote:
+> On 14 March 2018 at 18:38, Mark Rutland <mark.rutland@arm.com> wrote:
+> > On Wed, Mar 14, 2018 at 05:58:30PM +0100, Ulf Hansson wrote:
+> >> In case the hierarchical layout is used in DT, we want to initialize the
+> >> corresponding PM domain topology for the CPUs, by using the generic PM
+> >> domain (aka genpd) infrastructure.
+> >>
+> >> At first glance, it may seem feasible to hook into the existing
+> >> psci_dt_init() function, although because it's called quite early in the
+> >> boot sequence, allocating the dynamic data structure for a genpd doesn't
+> >> work.
+> >>
+> >> Therefore, let's export a new init function for PSCI,
+> >> psci_dt_topology_init(), which the ARM machine code should call from a
+> >> suitable initcall.
+> >>
+> >> Succeeding to initialize the PM domain topology, which means at least one
+> >> instance of a genpd becomes created, allows us to continue to enable the
+> >> PSCI OS initiated mode for the platform. If everything turns out fine,
+> >> let's print a message in log to inform the user about the changed mode.
+> >>
+> >> In case of any failures, we stick to the default PSCI Platform Coordinated
+> >> mode.
+> >
+> > For kexec/kdump we'll need to explicitly set the suspend mode to
+> > platform coordinated if for whatever reason we choose not to use OSI.
+> 
+> Could you please elaborate on this? I am not really understanding what
+> you are suggesting me to do and why.
 
-Groan. No. Care to look at the data structure? You create a new storage,
-which is incidentally merged into the other bitfield by the compiler at a
-different bit position, but there is no guarantee that a compiler does
-that. It's free to use distinct storage for that bool based bit.
+Sorry for not being clear.
 
-> > for no benefit at all.
-> [ZJ] tick_stopped is returned by the tick_nohz_tick_stopped() which is bool.
-> The benefit is no any potiential type conversion could be minded.
+What I'd like to see is that we always call SET_SUSPEND_MODE before
+invoking CPU_SUSPEND. Either deciding early if we can use OSI, or always
+setting it to platform co-ordinated early on in boot and later switching
+it over.
 
-A bit stays a bit. 'bool foo : 1;' or 'unsigned int foo : 1' has to be
-evaluated as a bit. So there is a type conversion from BIT to bool required
-because BIT != bool.
+That way we can be sure of the suspend mode, even if we've kexec'd from
+a kernel that had fiddled with it.
 
-By chance the evaluation can be done by evaluating the byte in which the
-bit is placed just because the compiler knows that the remaining bits are
-not used. There is no guarantee that this is done, it happens to be true
-for a particular compiler.
+> >> Cc: Lina Iyer <ilina@codeaurora.org>
+> >> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> ---
+> >>  drivers/firmware/psci.c | 31 +++++++++++++++++++++++++++++++
+> >>  include/linux/psci.h    |  2 ++
+> >>  2 files changed, 33 insertions(+)
+> >>
+> >> diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+> >> index 463f78c..45d55fc 100644
+> >> --- a/drivers/firmware/psci.c
+> >> +++ b/drivers/firmware/psci.c
+> >> @@ -723,6 +723,37 @@ int __init psci_dt_init(void)
+> >>       return ret;
+> >>  }
+> >>
+> >> +int __init psci_dt_topology_init(void)
+> >> +{
+> >> +     struct device_node *np;
+> >> +     int ret;
+> >> +
+> >> +     if (!psci_has_osi_support())
+> >> +             return 0;
+> >> +
+> >> +     np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
+> >> +     if (!np)
+> >> +             return -ENODEV;
+> >> +
+> >> +     /* Initialize the CPU PM domains based on topology described in DT. */
+> >> +     ret = psci_dt_init_pm_domains(np);
+> >> +     if (ret <= 0)
+> >> +             goto out;
+> >> +
+> >> +     /* Enable OSI mode. */
+> >> +     ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
+> >> +                          PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
+> >
+> > IIUC, this patch will need to be moved after the subsequent two patches
+> > to ensure that this series bisects cleanly.
+> 
+> Actually not.
+> 
+> $subject patch adds a new init function, which purpose is to
+> initialize the PSCI PM domains. At this point none is calling it.
 
-But that does not make it any more interesting. It just makes the code
-harder to read and eventually leads to bigger storage.
+Ah. I missed the fact there were no callers. Sorry for the noise!
 
 Thanks,
-
-	tglx
+Mark.
