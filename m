@@ -1,181 +1,108 @@
-From: yuankuiz@codeaurora.org
-Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
-Date: Wed, 11 Apr 2018 07:20:55 +0800
-Message-ID: <c08f28e5c0461384c8d9a9d2d8b04799@codeaurora.org>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
- <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
- <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
- <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
- <2f7755fae34bb65ef0a4b5a11c67f431@codeaurora.org>
- <c3e05a4aad4895046401519dc83fa623@codeaurora.org>
- <a98928c4a1ee719aba5f00932a41a2c3@codeaurora.org>
+From: Feng Kan <fkan@apm.com>
+Subject: [PATCH V4] PM / core: fix deferred probe breaking suspend resume order
+Date: Tue, 10 Apr 2018 16:57:06 -0700
+Message-ID: <1523404626-1466-1-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a98928c4a1ee719aba5f00932a41a2c3@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org, akpm@linux-foundation.org, joe@perches.com
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rjw@rjwysocki.net, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org, bhelgaas@google.com, gregkh@linuxfoundation.org
+Cc: Feng Kan <fkan@apm.com>, Toan Le <toanle@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-++
-On 2018-04-11 07:09 AM, yuankuiz@codeaurora.org wrote:
-> ++
-> 
-> On 2018-04-10 10:49 PM, yuankuiz@codeaurora.org wrote:
->> Typo...
->> 
->> On 2018-04-10 10:08 PM, yuankuiz@codeaurora.org wrote:
->>> On 2018-04-10 07:06 PM, Thomas Gleixner wrote:
->>>> On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
->>>>> On 2018-04-10 05:10 PM, Thomas Gleixner wrote:
->>>>> > On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
->>>>> > > On 2018-04-10 04:00 PM, Rafael J. Wysocki wrote:
->>>>> > > > On Tue, Apr 10, 2018 at 9:33 AM,  <yuankuiz@codeaurora.org> wrote:
->>>>> > > > > From: John Zhao <yuankuiz@codeaurora.org>
->>>>> > > > >
->>>>> > > > > Variable tick_stopped returned by tick_nohz_tick_stopped
->>>>> > > > > can have only true / false values. Since the return type
->>>>> > > > > of the tick_nohz_tick_stopped is also bool, variable
->>>>> > > > > tick_stopped nice to have data type as bool in place of unsigned int.
->>>>> > > > > Moreover, the executed instructions cost could be minimal
->>>>> > > > > without potiential data type conversion.
->>>>> > > > >
->>>>> > > > > Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
->>>>> > > > > ---
->>>>> > > > >  kernel/time/tick-sched.h | 2 +-
->>>>> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
->>>>> > > > >
->>>>> > > > > diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
->>>>> > > > > index 6de959a..4d34309 100644
->>>>> > > > > --- a/kernel/time/tick-sched.h
->>>>> > > > > +++ b/kernel/time/tick-sched.h
->>>>> > > > > @@ -48,8 +48,8 @@ struct tick_sched {
->>>>> > > > >         unsigned long                   check_clocks;
->>>>> > > > >         enum tick_nohz_mode             nohz_mode;
->>>>> > > > >
->>>>> > > > > +       bool                            tick_stopped    : 1;
->>>>> > > > >         unsigned int                    inidle          : 1;
->>>>> > > > > -       unsigned int                    tick_stopped    : 1;
->>>>> > > > >         unsigned int                    idle_active     : 1;
->>>>> > > > >         unsigned int                    do_timer_last   : 1;
->>>>> > > > >         unsigned int                    got_idle_tick   : 1;
->>>>> > > >
->>>>> > > > I don't think this is a good idea at all.
->>>>> > > >
->>>>> > > > Please see https://lkml.org/lkml/2017/11/21/384 for example.
->>>>> > > [ZJ] Thanks for this sharing. Looks like, this patch fall into the case of
->>>>> > > "Maybe".
->>>>> >
->>>>> > This patch falls into the case 'pointless' because it adds extra storage
->>>>> [ZJ] 1 bit vs 1 bit. no more.
->>>> 
->>>> Groan. No. Care to look at the data structure? You create a new 
->>>> storage,
->>> [ZJ] Say, {unsigned int, unsigned int, unsigned int, unsigned int,
->>> unsigned int} becomes
->>>           {bool        , unsigned int, unsigned int, unsigned int, 
->>> unsigned int}
->>> As specified by the rule No.10 at the section 6.7.2.1 of C99 TC2 as:
->>> "If enough space remains, a bit-field that immediately follows 
->>> another
->>> bit-field in a
->>> structure shall be packed into adjacent bits of the same unit." What
->>> is the new storage so far?
->>> 
->>>> which is incidentally merged into the other bitfield by the compiler 
->>>> at a
->>>> different bit position, but there is no guarantee that a compiler 
->>>> does
->>>> that. It's free to use distinct storage for that bool based bit.
->>> [ZJ] Per the rule No.10 at section 6.7.2.1 of C99 TC2 as:
->>> " If insufficient space remains, whether  a  bit-field  that  does
->>> not  fit  is  put  into
->>> the  next  unit  or overlaps  adjacent  units  is 
->>> implementation-defined."
->>> So, implementation is never mind which type will be stored if any.
->>> 
->>>> >> > for no benefit at all.
->>>>> [ZJ] tick_stopped is returned by the tick_nohz_tick_stopped() which 
->>>>> is bool.
->>>>> The benefit is no any potiential type conversion could be minded.
->>>> 
->>>> A bit stays a bit. 'bool foo : 1;' or 'unsigned int foo : 1' has to 
->>>> be
->>>> evaluated as a bit. So there is a type conversion from BIT to bool 
->>>> required
->>>> because BIT != bool.
->>> [ZJ] Per the rule No.9 at section 6.7.2.1 of C99 TC2 as:
->>> "If  the  value  0  or  1  is  stored  into  a  nonzero-width
->>> bit-field  of  types
->>> _Bool, the value of the bit-field shall compare equal to the value 
->>> stored."
->>> Obviously, it is nothing related to type conversion actually.
->>>> 
->>>> By chance the evaluation can be done by evaluating the byte in which 
->>>> the
->>>> bit is placed just because the compiler knows that the remaining 
->>>> bits are
->>>> not used. There is no guarantee that this is done, it happens to be 
->>>> true
->>>> for a particular compiler.
->>> [ZJ] Actually, such as GCC owe that kind of guarantee to be promised 
->>> by ABI.
->>>> 
->>>> But that does not make it any more interesting. It just makes the 
->>>> code
->>>> harder to read and eventually leads to bigger storage.
->>> [ZJ] To get the benctifit to be profiled, it is given as:
->>> number of instructions of function tick_nohz_tick_stopped():
->> [ZJ] Here, I used is not the tick_nohz_tick_stopped(), but an 
->> evaluation() as:
->> #include <stdio.h>
->> #include <stdbool.h>
->> 
->> struct tick_sched {
->>         unsigned int inidle             : 1;
->>         unsigned int tick_stopped       : 1;
->> };
->> 
->> bool get_status()
->> {
->>         struct tick_sched *ts;
->>         ts->tick_stopped = 1;
->>         return ts->tick_stopped;
->> }
->> 
->> int main()
->> {
->>         if (get_status()) return 0;
->>         return 0;
->> }
->> 
->> [ZJ] Toggle the declaration of tick_stopped in side of the tick_sched
->> structure for comparison.
->> 
->> 
->>>                         original: 17
->>>                         patched:  14
->>>      Which was saved is:
->>>                movzbl	%al, %eax
->>>                testl	%eax, %eax
->>>                setne    %al
->>>      Say, 3 / 17 = 17 % could be gained in the instruction executed
->>> for this function can be evaluated.
->>> 
->>> Note:
->>>      The environment I used is:
->>>                OS : Ubuntu Desktop 16.04 LTS
->>>                gcc: 6.3.0                       (without optimization
->>> for in general purpose)
->>> 
->>>> 
->> 
->> Just FYI.
->> 
->> Thanks,
->> ZJ
+When bridge and its endpoint is enumerated the devices are added to the
+dpm list. Afterward, the bridge defers probe when IOMMU is not ready.
+This causes the bridge to be moved to the end of the dpm list when
+deferred probe kicks in. The order of the dpm list for bridge and
+endpoint is reversed.
+
+Add reordering code to move the bridge and its children and consumers to
+the end of the pm list so the order for suspend and resume is not altered.
+The code also move device and its children and consumers to the tail of
+device_kset list if it is registered.
+
+Signed-off-by: Feng Kan <fkan@apm.com>
+Signed-off-by: Toan Le <toanle@apm.com>
+---
+ V4:
+	1. additional comment change from Rafael
+ V3:
+	1. additional code comment changes
+ V2:
+        1. change patch title from "move device and its children..."
+        2. move define based on Bjorn's comment
+        3. rename function name and comment content
+
+ drivers/base/base.h |  3 +++
+ drivers/base/core.c | 20 ++++++++++++++++++++
+ drivers/base/dd.c   |  4 +---
+ 3 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index d800de6..a75c302 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -161,3 +161,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
+ extern void device_links_no_driver(struct device *dev);
+ extern bool device_links_busy(struct device *dev);
+ extern void device_links_unbind_consumers(struct device *dev);
++
++/* device pm support */
++void device_pm_move_to_tail(struct device *dev);
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 110230d..eaa5d9f 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -148,6 +148,26 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
+ }
+ 
+ /**
++ * device_pm_move_to_tail - Move set of devices to the end of device lists
++ * @dev: Device to move
++ *
++ * This is a device_reorder_to_tail() wrapper taking the requisite locks.
++ *
++ * It moves the @dev along with all of its children and all of its consumers
++ * to the ends of the device_kset and dpm_list, recursively.
++ */
++void device_pm_move_to_tail(struct device *dev)
++{
++	int idx;
++
++	idx = device_links_read_lock();
++	device_pm_lock();
++	device_reorder_to_tail(dev, NULL);
++	device_pm_unlock();
++	device_links_read_unlock(idx);
++}
++
++/**
+  * device_link_add - Create a link between two devices.
+  * @consumer: Consumer end of the link.
+  * @supplier: Supplier end of the link.
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 2c964f5..96fab29 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -123,9 +123,7 @@ static void deferred_probe_work_func(struct work_struct *work)
+ 		 * the list is a good order for suspend but deferred
+ 		 * probe makes that very unsafe.
+ 		 */
+-		device_pm_lock();
+-		device_pm_move_last(dev);
+-		device_pm_unlock();
++		device_pm_move_to_tail(dev);
+ 
+ 		dev_dbg(dev, "Retrying from deferred list\n");
+ 		if (initcall_debug && !initcalls_done)
+-- 
+1.8.3.1
