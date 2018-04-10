@@ -1,51 +1,59 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Subject: [PATCH] [PATCH] time: tick-sched: use bool for
- tick_stopped
-Date: Tue, 10 Apr 2018 18:30:17 +0200
-Message-ID: <20180410163017.GH4082@hirez.programming.kicks-ass.net>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <20180410123305.GF4082@hirez.programming.kicks-ass.net>
- <bece0d90535709ef39006adb5f481993d6063929.camel@perches.com>
+Subject: Re: [RFC PATCH v2 5/6] sched/fair: Select an energy-efficient CPU on
+ task wake-up
+Date: Tue, 10 Apr 2018 19:29:32 +0200
+Message-ID: <20180410172932.GD4043@hirez.programming.kicks-ass.net>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-6-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <bece0d90535709ef39006adb5f481993d6063929.camel@perches.com>
+In-Reply-To: <20180406153607.17815-6-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, aulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, apw@canonical.com
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 10, 2018 at 08:14:54AM -0700, Joe Perches wrote:
-> Whinging about bool <foo> : <x> seems entirely sensible
-> and straightforward to do.
-> 
-> I'm not so sure about bool in structs as a patch context
-> could be adding a bool to local stack definitions and
-> there's no real ability to determine if the bool is in a
-> struct or on the stack.
-> 
-> Also, I think there's nothing really wrong with using
-> bool in structs.  Steven Rostedt's rationale in
-> https://lkml.org/lkml/2017/11/21/207 isn't really right
-> as sizeof(int) is 4 not 1 and sizeof(bool) is 1 on arches
-> without alignment issues.  I believe when using gcc,
-> sizeof(bool) is always 1 and there may be alignment padding
-> added on some arches.  Dunno.
+On Fri, Apr 06, 2018 at 04:36:06PM +0100, Dietmar Eggemann wrote:
+> +	for_each_freq_domain(fd) {
+> +		unsigned long spare_cap, max_spare_cap = 0;
+> +		int max_spare_cap_cpu = -1;
+> +		unsigned long util;
+> +
+> +		/* Find the CPU with the max spare cap in the freq. dom. */
+> +		for_each_cpu_and(cpu, freq_domain_span(fd), sched_domain_span(sd)) {
+> +			if (!cpumask_test_cpu(cpu, &p->cpus_allowed))
+> +				continue;
+> +
+> +			if (cpu == prev_cpu)
+> +				continue;
+> +
+> +			util = cpu_util_wake(cpu, p);
+> +			cpu_cap = capacity_of(cpu);
+> +			if (!util_fits_capacity(util + task_util, cpu_cap))
+> +				continue;
+> +
+> +			spare_cap = cpu_cap - util;
+> +			if (spare_cap > max_spare_cap) {
+> +				max_spare_cap = spare_cap;
+> +				max_spare_cap_cpu = cpu;
+> +			}
+> +		}
+> +
+> +		/* Evaluate the energy impact of using this CPU. */
+> +		if (max_spare_cap_cpu >= 0) {
+> +			cur_energy = compute_energy(p, max_spare_cap_cpu);
+> +			if (cur_energy < best_energy) {
+> +				best_energy = cur_energy;
+> +				best_energy_cpu = max_spare_cap_cpu;
+> +			}
+> +		}
+> +	}
 
-C std simply does not define sizeof(_Bool) and leaves it up to
-architecture ABI, therefore I refuse to use _Bool in composite types,
-because I care about layout.
+If each CPU has its own frequency domain, then the above loop ends up
+being O(n^2), no? Is there really nothing we can do about that? Also, I
+feel that warrants a comment warning about this.
 
-Also, not all architectures can do byte addressing, see Alpha <EV56
-and for those _Bool would have to be a whole word (the existence of such
-architectures likely influenced the vague definition of _Bool in the
-first place).
-
-> But I think the battle is already lost anyway.
-> 
-> git grep -P  '(?<!static|extern)\s+bool\s+\w+\s*;' include | wc -l
-> 1543
-
-Yes I know, doesn't mean we shouldn't discourage it for new code; also Linus.
+Someone, somewhere will try and build a 64+64 cpu system and get
+surprised it doesn't work :-)
