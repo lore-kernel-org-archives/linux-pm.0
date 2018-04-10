@@ -1,55 +1,55 @@
-From: Joe Perches <joe@perches.com>
-Subject: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Tue, 10 Apr 2018 11:19:54 -0700
-Message-ID: <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
-         <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
-         <20180410123305.GF4082@hirez.programming.kicks-ass.net>
-         <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] cpufreq/schedutil: Cleanup, document and fix iowait
+ boost
+Date: Tue, 10 Apr 2018 21:37:08 +0200
+Message-ID: <20180410193708.GE4043@hirez.programming.kicks-ass.net>
+References: <20180410155931.31973-1-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+Content-Disposition: inline
+In-Reply-To: <20180410155931.31973-1-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Andy Whitcroft <apw@canonical.com>
-Cc: yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Juri Lelli <juri.lelli@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-A struct with a bool member can have different sizes on various
-architectures because neither bool size nor alignment is standardized.
+On Tue, Apr 10, 2018 at 04:59:31PM +0100, Patrick Bellasi wrote:
+> The iowait boosting code has been recently updated to add a progressive
+> boosting behavior which allows to be less aggressive in boosting tasks
+> doing only sporadic IO operations, thus being more energy efficient for
+> example on mobile platforms.
+> 
+> The current code is now however a bit convoluted. Some functionalities
+> (e.g. iowait boost reset) are replicated in different paths and their
+> documentation is slightly misaligned.
 
-So emit a message on the use of bool in structs only in .h files and
-not .c files.
+While your patch does seem to improve things, it still has duplicated
+bits in. Eg. the TICK_NSEC clearing exists in both functions.
 
-There is the real possibility that this test could have a false positive
-when a bool is declared as an automatic, so limit the test to .h files
-where the only false positive is for declarations in static inline functions.
+> - sugov_set_iowait_boost: is now in charge only to set/increase the IO
+>      wait boost, every time a task wakes up from an IO wait.
+> 
+> - sugov_iowait_boost: is now in charge to reset/reduce the IO wait
+>      boost, every time a sugov update is triggered, as well as
+>      to (eventually) enforce the currently required IO boost value.
 
-Signed-off-by: Joe Perches <joe@perches.com>
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
----
- scripts/checkpatch.pl | 7 +++++++
- 1 file changed, 7 insertions(+)
+I'm not sold on those function names; feels like we can do better,
+although I'm struggling to come up with anything sensible just now.
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index e16d6713f236..24618dffc5cb 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -6257,6 +6257,13 @@ sub process {
- 			     "Avoid using bool as bitfield.  Prefer bool bitfields as unsigned int or u<8|16|32>\n" . $herecurr);
- 		}
- 
-+# check for bool use in .h files
-+		if ($realfile =~ /\.h$/ &&
-+		    $sline =~ /^.\s+bool\s*$Ident\s*(?::\s*d+\s*)?;/) {
-+			CHK("BOOL_MEMBER",
-+			    "Avoid using bool structure members because of possible alignment issues - see: https://lkml.org/lkml/2017/11/21/384\n" . $herecurr);
-+		}
-+
- # check for semaphores initialized locked
- 		if ($line =~ /^.\s*sema_init.+,\W?0\W?\)/) {
- 			WARN("CONSIDER_COMPLETION",
--- 
-2.15.0
+
+>  
+>  		if (delta_ns > TICK_NSEC) {
+> +			sg_cpu->iowait_boost = iowait
+> +				? sg_cpu->sg_policy->policy->min : 0;
+> +			sg_cpu->iowait_boost_pending = iowait;
+> +			return;
+>  		}
+
+> +	if (delta_ns > TICK_NSEC) {
+> +		sg_cpu->iowait_boost = 0;
+> +		sg_cpu->iowait_boost_pending = false;
+> +		return;
+> +	}
+
+Looks like something we can maybe put in a helper or something.
