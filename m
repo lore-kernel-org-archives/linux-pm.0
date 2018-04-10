@@ -1,75 +1,35 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/3] adp5061: New driver for ADP5061 I2C battery charger
-Date: Tue, 10 Apr 2018 08:50:17 -0500
-Message-ID: <20180410135017.7sikebbbdsdxjsxs@rob-hp-laptop>
-References: <1522829832-7866-1-git-send-email-stefan.popa@analog.com>
+From: Sasha Levin <Alexander.Levin@microsoft.com>
+Subject: Re: [PATCH v3] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
+ capabilities
+Date: Tue, 10 Apr 2018 13:50:11 +0000
+Message-ID: <DM5PR2101MB1032506EC8C3EBB8CC3ADD97FBBE0@DM5PR2101MB1032.namprd21.prod.outlook.com>
+References: <1522982629-7557-1-git-send-email-shunyong.yang@hxt-semitech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1522829832-7866-1-git-send-email-stefan.popa@analog.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stefan Popa <stefan.popa@analog.com>
-Cc: sre@kernel.org, mark.rutland@arm.com, davem@davemloft.net, mchehab@kernel.org, gregkh@linuxfoundation.org, linus.walleij@linaro.org, akpm@linux-foundation.org, rdunlap@infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1522982629-7557-1-git-send-email-shunyong.yang@hxt-semitech.com>
+Content-Language: en-US
+Sender: stable-owner@vger.kernel.org
+To: Sasha Levin <Alexander.Levin@microsoft.com>, Shunyong Yang <shunyong.yang@hxt-semitech.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Joey Zheng <yu.zheng@hxt-semitech.com>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 04, 2018 at 11:17:12AM +0300, Stefan Popa wrote:
-> This patch adds basic support for Analog Devices I2C programmable linear
-> battery charger.
-> 
-> With this driver, some parameters can be read and configured such as:
-> * trickle charge current level
-> * trickle charge voltage threshold
-> * weak charge threshold
-> * constant current
-> * constant charge voltage limit
-> * battery full
-> * input current limit
-> * charger status
-> * battery status
-> * termination current
+Hi,
 
-Don't you need to describe all these parameters of the battery used? 
-Charger bindings are never this simple.
+[This is an automated email]
 
-> 
-> Datasheet:
-> http://www.analog.com/media/en/technical-documentation/data-sheets/ADP5061.pdf
-> 
-> Signed-off-by: Stefan Popa <stefan.popa@analog.com>
-> ---
->  .../devicetree/bindings/power/supply/adp5061.txt   |  17 +
+This commit has been processed by the -stable helper bot and determined
+to be a high probability candidate for -stable trees. (score: 14.0185)
 
-Please split bindings to a separate patch.
+The bot has tested the following trees: v4.16.1, v4.15.16, v4.14.33, v4.9.9=
+3, v4.4.127.
 
->  MAINTAINERS                                        |   8 +
->  drivers/power/supply/Kconfig                       |  11 +
->  drivers/power/supply/Makefile                      |   1 +
->  drivers/power/supply/adp5061.c                     | 745 +++++++++++++++++++++
->  5 files changed, 782 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/adp5061.txt
->  create mode 100644 drivers/power/supply/adp5061.c
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/adp5061.txt b/Documentation/devicetree/bindings/power/supply/adp5061.txt
-> new file mode 100644
-> index 0000000..7447446
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/adp5061.txt
-> @@ -0,0 +1,17 @@
-> +Analog Devices ADP5061 Programmable Linear Battery Charger Driver
-> +
-> +Required properties:
-> +  - compatible:		should be "adi,adp5061"
-> +  - reg:		i2c address of the device
-> +
-> +The node for this driver must be a child node of a I2C controller, hence
-> +all mandatory properties described in
-> +Documentation/devicetree/bindings/i2c/i2c.txt
-> +must be specified.
-> +
-> +Example:
-> +
-> +	adp5061@14 {
-> +		    compatible = "adi,adp5061";
-> +		    reg = <0x14>;
-> +	};
+v4.16.1: Build OK!
+v4.15.16: Build OK!
+v4.14.33: Build OK!
+v4.9.93: Build OK!
+v4.4.127: Build OK!
+
+Please let us know if you'd like to have this patch included in a stable tr=
+ee.
