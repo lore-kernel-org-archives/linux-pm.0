@@ -1,124 +1,74 @@
-From: Stefan Popa <stefan.popa@analog.com>
-Subject: [PATCH v2 3/3] adp5061: Add support for charging voltage limit enable
-Date: Tue, 10 Apr 2018 12:51:42 +0300
-Message-ID: <1523353902-23748-1-git-send-email-stefan.popa@analog.com>
-References: <1522829896-8087-1-git-send-email-stefan.popa@analog.com>
+From: yuankuiz@codeaurora.org
+Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
+Date: Tue, 10 Apr 2018 18:07:17 +0800
+Message-ID: <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+ <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
+ <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1522829896-8087-1-git-send-email-stefan.popa@analog.com>
+In-Reply-To: <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stefan.popa@analog.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the option to activate/deactivate the charging voltage
-limit. If activated, the charger prevents charging until the battery
-voltage drops below the VCHG_VLIM threshold.
+Hi Thomas,
 
-This option is not configurable via the power_supply properties,
-therefore, access via sysfs was provided to examine and modify this
-attribute on the fly.
+On 2018-04-10 05:10 PM, Thomas Gleixner wrote:
+> On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
+>> On 2018-04-10 04:00 PM, Rafael J. Wysocki wrote:
+>> > On Tue, Apr 10, 2018 at 9:33 AM,  <yuankuiz@codeaurora.org> wrote:
+>> > > From: John Zhao <yuankuiz@codeaurora.org>
+>> > >
+>> > > Variable tick_stopped returned by tick_nohz_tick_stopped
+>> > > can have only true / false values. Since the return type
+>> > > of the tick_nohz_tick_stopped is also bool, variable
+>> > > tick_stopped nice to have data type as bool in place of unsigned int.
+>> > > Moreover, the executed instructions cost could be minimal
+>> > > without potiential data type conversion.
+>> > >
+>> > > Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
+>> > > ---
+>> > >  kernel/time/tick-sched.h | 2 +-
+>> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> > >
+>> > > diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
+>> > > index 6de959a..4d34309 100644
+>> > > --- a/kernel/time/tick-sched.h
+>> > > +++ b/kernel/time/tick-sched.h
+>> > > @@ -48,8 +48,8 @@ struct tick_sched {
+>> > >         unsigned long                   check_clocks;
+>> > >         enum tick_nohz_mode             nohz_mode;
+>> > >
+>> > > +       bool                            tick_stopped    : 1;
+>> > >         unsigned int                    inidle          : 1;
+>> > > -       unsigned int                    tick_stopped    : 1;
+>> > >         unsigned int                    idle_active     : 1;
+>> > >         unsigned int                    do_timer_last   : 1;
+>> > >         unsigned int                    got_idle_tick   : 1;
+>> >
+>> > I don't think this is a good idea at all.
+>> >
+>> > Please see https://lkml.org/lkml/2017/11/21/384 for example.
+>> [ZJ] Thanks for this sharing. Looks like, this patch fall into the 
+>> case of
+>> "Maybe".
+> 
+> This patch falls into the case 'pointless' because it adds extra 
+> storage
+[ZJ] 1 bit vs 1 bit. no more.
 
-Signed-off-by: Stefan Popa <stefan.popa@analog.com>
----
-Changes in v2:
-  - Fixed the kbuild test error by changing the type of the
-    charging_vlim_enabled_show() and charging_vlim_enabled_store()
-    functions from int to ssize_t.
+> for no benefit at all.
+[ZJ] tick_stopped is returned by the tick_nohz_tick_stopped() which is 
+bool.
+The benefit is no any potiential type conversion could be minded.
 
- .../ABI/testing/sysfs-class-power-adp5061          | 13 ++++++
- drivers/power/supply/adp5061.c                     | 46 ++++++++++++++++++++++
- 2 files changed, 59 insertions(+)
-
-diff --git a/Documentation/ABI/testing/sysfs-class-power-adp5061 b/Documentation/ABI/testing/sysfs-class-power-adp5061
-index 0d056aa..25064c1 100644
---- a/Documentation/ABI/testing/sysfs-class-power-adp5061
-+++ b/Documentation/ABI/testing/sysfs-class-power-adp5061
-@@ -8,3 +8,16 @@ Description:
- 	Valid values:
- 		- 1: enabled
- 		- 0: disabled
-+
-+What: /sys/class/power_supply/adp5061/charging_vlim_enabled
-+Description:
-+	Enable/disable charging voltage limit
-+
-+	The ADP5061 charging voltage limit can be enabled by setting
-+	this attribute to 1. When enabled, the charger prevents charging
-+	until the battery voltage drops bellow the VCHG_VLIM threshold.
-+	See device datasheet for details.
-+
-+	Valid values:
-+		- 1: enabled
-+		- 0: disabled
-diff --git a/drivers/power/supply/adp5061.c b/drivers/power/supply/adp5061.c
-index 99871e6..9716059 100644
---- a/drivers/power/supply/adp5061.c
-+++ b/drivers/power/supply/adp5061.c
-@@ -84,6 +84,10 @@
- #define ADP5061_FUNC_SET_1_EN_CHG_MSK		BIT(0)
- #define ADP5061_FUNC_SET_1_EN_CHG_MODE(x)	(((x) & 0x01) << 0)
- 
-+/* ADP5061_FUNC_SET_2 */
-+#define ADP5061_FUNC_SET_2_EN_CHG_VLIM_MSK	BIT(5)
-+#define ADP5061_FUNC_SET_2_EN_CHG_VLIM_MODE(x)	(((x) & 0x01) << 5)
-+
- #define ADP5061_NO_BATTERY	0x01
- #define ADP5061_ICHG_MAX	1300 // mA
- 
-@@ -737,10 +741,52 @@ static ssize_t charging_enabled_store(struct device *dev,
- 	return count;
- }
- 
-+static ssize_t charging_vlim_enabled_show(struct device *dev,
-+				      struct device_attribute *attr,
-+				      char *buf)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct adp5061_state *st = power_supply_get_drvdata(psy);
-+	unsigned int regval;
-+	int ret;
-+
-+	ret = regmap_read(st->regmap, ADP5061_FUNC_SET_2, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	regval = (regval & ADP5061_FUNC_SET_2_EN_CHG_VLIM_MSK) >> 5;
-+	return sprintf(buf, "%d\n", regval);
-+}
-+
-+static ssize_t charging_vlim_enabled_store(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf, size_t count)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct adp5061_state *st = power_supply_get_drvdata(psy);
-+	u8 chg_vlim_en;
-+	int ret;
-+
-+	ret = kstrtou8(buf, 0, &chg_vlim_en);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_update_bits(st->regmap, ADP5061_FUNC_SET_2,
-+			ADP5061_FUNC_SET_2_EN_CHG_VLIM_MSK,
-+			ADP5061_FUNC_SET_2_EN_CHG_VLIM_MODE(!!chg_vlim_en));
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
- static DEVICE_ATTR_RW(charging_enabled);
-+static DEVICE_ATTR_RW(charging_vlim_enabled);
- 
- static struct attribute *adp5061_attributes[] = {
- 	&dev_attr_charging_enabled.attr,
-+	&dev_attr_charging_vlim_enabled.attr,
- 	NULL
- };
- 
--- 
-2.7.4
+> 
+> Thanks,
+> 
+> 	tglx
