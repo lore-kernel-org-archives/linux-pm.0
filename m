@@ -1,78 +1,44 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 4/7] sched/core: uclamp: add utilization clamping to the
- CPU controller
-Date: Mon, 9 Apr 2018 15:24:17 -0700
-Message-ID: <20180409222417.GK3126663@devbig577.frc2.facebook.com>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-5-patrick.bellasi@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V2 1/2] cpufreq: scmi: Don't validate the frequency table
+ twice
+Date: Tue, 10 Apr 2018 08:42:47 +0200
+Message-ID: <CAJZ5v0jwTevHFss-CriUDavLFT2mvZKVb2Bnm2bYxBbAy4zfzA@mail.gmail.com>
+References: <cover.1522749887.git.viresh.kumar@linaro.org>
+ <442ecfd0a5bddf32c912c449b072d8a0139318fc.1522749887.git.viresh.kumar@linaro.org>
+ <5ce48bce-4fcf-1e0a-6b78-f588fbf7e4a5@arm.com>
+ <CAJZ5v0hGgLAK2MRx0tEpTt5Hh9i_9zwhFJPsOsxQ+fOSiLBr_w@mail.gmail.com>
+ <d86012d8-f98f-b9e9-aa0b-032ef0ee9c9c@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180409165615.2326-5-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <d86012d8-f98f-b9e9-aa0b-032ef0ee9c9c@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Patrick.
+On Mon, Apr 9, 2018 at 3:20 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+>
+> On 09/04/18 12:39, Rafael J. Wysocki wrote:
+>> On Wed, Apr 4, 2018 at 11:48 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>>
+>>> (I have exact patches ready :), was on vacation)
+>>
+>> What am I expected to do with this one?
+>>
+>
+> Sorry for not being explicit. I assumed you can pick up this patch along
+> with 2/2 removing the function, that's why I just acked the patch. The
+> SCMI code is now merged.
 
-Comments purely on cgroup interface side.
-
-On Mon, Apr 09, 2018 at 05:56:12PM +0100, Patrick Bellasi wrote:
-> This patch extends the CPU controller by adding a couple of new attributes,
-> util_min and util_max, which can be used to enforce frequency boosting and
-> capping. Specifically:
-> 
-> - util_min: defines the minimum CPU utilization which should be considered,
-> 	    e.g. when  schedutil selects the frequency for a CPU while a
-> 	    task in this group is RUNNABLE.
-> 	    i.e. the task will run at least at a minimum frequency which
-> 	         corresponds to the min_util utilization
-> 
-> - util_max: defines the maximum CPU utilization which should be considered,
-> 	    e.g. when schedutil selects the frequency for a CPU while a
-> 	    task in this group is RUNNABLE.
-> 	    i.e. the task will run up to a maximum frequency which
-> 	         corresponds to the max_util utilization
-
-I'm not too enthusiastic about util_min/max given that it can easily
-be read as actual utilization based bandwidth control when what's
-actually implemented, IIUC, is affecting CPU frequency selection.
-Maybe something like cpu.freq.min/max are better names?
-
-> These attributes:
-> a) are tunable at all hierarchy levels, i.e. at root group level too, thus
->    allowing to define the minimum and maximum frequency constraints for all
->    otherwise non-classified tasks (e.g. autogroups) and to be a sort-of
->    replacement for cpufreq's powersave, ondemand and performance
->    governors.
-
-This is a problem which exists for all other interfaces.  For
-historical and other reasons, at least till now, we've opted to put
-everything at system level outside of cgroup interface.  We might
-change this in the future and duplicate system-level information and
-interfaces in the root cgroup but we wanna do that in a more systemtic
-fashion than adding an one-off knob in the cgroup root.
-
-Besides, if a feature makes sense at the system level which is the
-cgroup root, it makes sense without cgroup mounted or enabled, so it
-needs a place outside cgroup one way or the other.
-
-> b) allow to create subgroups of tasks which are not violating the
->    utilization constraints defined by the parent group.
-
-Tying creation / config operations to the config propagation doesn't
-work well with delegation and is inconsistent with what other
-controllers are doing.  For cases where the propagated config being
-visible in a sub cgroup is necessary, please add .effective files.
-
-> Tasks on a subgroup can only be more boosted and/or capped, which is
-
-Less boosted.  .low at a parent level must set the upper bound of .low
-that all its descendants can have.
-
-Thanks.
-
--- 
-tejun
+OK, applied now, thanks!
