@@ -1,46 +1,57 @@
-From: Jia-Ju Bai <baijiaju1990@gmail.com>
-Subject: [PATCH 3/3] thermal: armada_thermal: Replace mdelay with usleep_range in armada380_init_sensor
-Date: Tue, 10 Apr 2018 16:13:28 +0800
-Message-ID: <1523348008-29461-1-git-send-email-baijiaju1990@gmail.com>
+From: yuankuiz@codeaurora.org
+Subject: Re: Subject: [PATCH] [PATCH] time: tick-sched: use bool for
+ tick_stopped
+Date: Tue, 10 Apr 2018 16:15:04 +0800
+Message-ID: <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, aulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-armada380_init_sensor() is never called in atomic context.
+On 2018-04-10 04:00 PM, Rafael J. Wysocki wrote:
+> On Tue, Apr 10, 2018 at 9:33 AM,  <yuankuiz@codeaurora.org> wrote:
+>> From: John Zhao <yuankuiz@codeaurora.org>
+>> 
+>> Variable tick_stopped returned by tick_nohz_tick_stopped
+>> can have only true / forse values. Since the return type
+>> of the tick_nohz_tick_stopped is also bool, variable
+>> tick_stopped nice to have data type as bool in place of int.
+>> Moreover, the executed instructions cost could be minimal
+>> without potiential data type conversion.
+>> 
+>> Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
+>> ---
+>>  kernel/time/tick-sched.h | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> 
+>> diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
+>> index 6de959a..4d34309 100644
+>> --- a/kernel/time/tick-sched.h
+>> +++ b/kernel/time/tick-sched.h
+>> @@ -48,8 +48,8 @@ struct tick_sched {
+>>         unsigned long                   check_clocks;
+>>         enum tick_nohz_mode             nohz_mode;
+>> 
+>> +       bool                            tick_stopped    : 1;
+>>         unsigned int                    inidle          : 1;
+>> -       unsigned int                    tick_stopped    : 1;
+>>         unsigned int                    idle_active     : 1;
+>>         unsigned int                    do_timer_last   : 1;
+>>         unsigned int                    got_idle_tick   : 1;
+> 
+> I don't think this is a good idea at all.
+> 
+> Please see https://lkml.org/lkml/2017/11/21/384 for example.
+[ZJ] Thanks for this sharing. Looks like, this patch fall into the case 
+of "Maybe".
 
-armada380_init_sensor() is set as ".init_sensor" in
-struct armada_thermal_data.
-".init_sensor" is called armada_thermal_probe().
-armada_thermal_probe() is set as ".probe" in struct platform_driver.
-This function is not called in atomic context.
-
-Despite never getting called from atomic context, armada380_init_sensor()
-calls mdelay() to busily wait.
-This is not necessary and can be replaced with usleep_range() to
-avoid busy waiting.
-
-This is found by a static analysis tool named DCNS written by myself.
-And I also manually check it.
-
-Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
----
- drivers/thermal/armada_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index ae75328..c289ae4 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -143,7 +143,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
- 	if (!(reg & A380_HW_RESET)) {
- 		reg |= A380_HW_RESET;
- 		writel(reg, priv->control);
--		mdelay(10);
-+		usleep_range(10000, 11000);
- 	}
- }
- 
--- 
-1.9.1
+> 
+> Thanks!
