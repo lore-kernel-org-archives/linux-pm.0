@@ -1,53 +1,59 @@
-From: yuankuiz@codeaurora.org
-Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
-Date: Tue, 10 Apr 2018 16:54:49 +0800
-Message-ID: <2ff99a214053551fc28c9024322306eb@codeaurora.org>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <9ee70560651fefffcc61949d8a37315d@codeaurora.org>
- <ab6167c5ea5be81f0482a7da54d781a4@codeaurora.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Subject: [PATCH] [PATCH] time: tick-sched: use bool for
+ tick_stopped
+Date: Tue, 10 Apr 2018 11:10:53 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org> <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com> <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ab6167c5ea5be81f0482a7da54d781a4@codeaurora.org>
+In-Reply-To: <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, fweisbec@gmail.com, peterz@infradead.org, tglx@linutronix.de, mingo@kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org, linux-pm-owner@vger.kernel.org
+To: yuankuiz@codeaurora.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, aulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Subject and commit message have been updated due for typo.
-This patch is based on the tip of linux-pm-cpuild branch.
+On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
+> On 2018-04-10 04:00 PM, Rafael J. Wysocki wrote:
+> > On Tue, Apr 10, 2018 at 9:33 AM,  <yuankuiz@codeaurora.org> wrote:
+> > > From: John Zhao <yuankuiz@codeaurora.org>
+> > > 
+> > > Variable tick_stopped returned by tick_nohz_tick_stopped
+> > > can have only true / forse values. Since the return type
+> > > of the tick_nohz_tick_stopped is also bool, variable
+> > > tick_stopped nice to have data type as bool in place of int.
+> > > Moreover, the executed instructions cost could be minimal
+> > > without potiential data type conversion.
+> > > 
+> > > Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
+> > > ---
+> > >  kernel/time/tick-sched.h | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
+> > > index 6de959a..4d34309 100644
+> > > --- a/kernel/time/tick-sched.h
+> > > +++ b/kernel/time/tick-sched.h
+> > > @@ -48,8 +48,8 @@ struct tick_sched {
+> > >         unsigned long                   check_clocks;
+> > >         enum tick_nohz_mode             nohz_mode;
+> > > 
+> > > +       bool                            tick_stopped    : 1;
+> > >         unsigned int                    inidle          : 1;
+> > > -       unsigned int                    tick_stopped    : 1;
+> > >         unsigned int                    idle_active     : 1;
+> > >         unsigned int                    do_timer_last   : 1;
+> > >         unsigned int                    got_idle_tick   : 1;
+> > 
+> > I don't think this is a good idea at all.
+> > 
+> > Please see https://lkml.org/lkml/2017/11/21/384 for example.
+> [ZJ] Thanks for this sharing. Looks like, this patch fall into the case of
+> "Maybe".
 
-Thanks
+This patch falls into the case 'pointless' because it adds extra storage
+for no benefit at all.
 
-On 2018-04-10 04:51 PM, yuankuiz@codeaurora.org wrote:
-> From: John Zhao <yuankuiz@codeaurora.org>
-> 
-> Variable tick_stopped returned by tick_nohz_tick_stopped
-> can only be true / false values. Since the return type
-> of the tick_nohz_tick_stopped is also bool, variable
-> tick_stopped nice to have data type as 'bool' in place of
-> the 'unsigned int'.
-> Moreover, the executed instructions cost could be minimal
-> without potiential data type conversion.
-> 
-> Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
-> ---
->  kernel/time/tick-sched.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
-> index 6de959a..4d34309 100644
-> --- a/kernel/time/tick-sched.h
-> +++ b/kernel/time/tick-sched.h
-> @@ -48,8 +48,8 @@ struct tick_sched {
->  	unsigned long			check_clocks;
->  	enum tick_nohz_mode		nohz_mode;
-> 
-> +	bool				tick_stopped	: 1;
->  	unsigned int			inidle		: 1;
-> -	unsigned int			tick_stopped	: 1;
->  	unsigned int			idle_active	: 1;
->  	unsigned int			do_timer_last	: 1;
->  	unsigned int			got_idle_tick	: 1;
+Thanks,
+
+	tglx
