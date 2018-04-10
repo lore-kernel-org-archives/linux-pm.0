@@ -1,39 +1,54 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFC PATCH v2 2/6] sched: Introduce energy models of CPUs
-Date: Tue, 10 Apr 2018 14:03:25 +0200
-Message-ID: <2e35ede9-0926-836b-4068-8d12b6296597@arm.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-3-dietmar.eggemann@arm.com>
- <20180410115457.GB4043@hirez.programming.kicks-ass.net>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
+Date: Tue, 10 Apr 2018 14:07:32 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1804101407040.2058@nanos.tec.linutronix.de>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org> <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com> <f253686d26b3470f0e9b60502eb62315@codeaurora.org> <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
+ <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org> <20180410112637.GD4082@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180410115457.GB4043@hirez.programming.kicks-ass.net>
-Content-Language: en-US
+In-Reply-To: <20180410112637.GD4082@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: yuankuiz@codeaurora.org, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/10/2018 01:54 PM, Peter Zijlstra wrote:
-> On Fri, Apr 06, 2018 at 04:36:03PM +0100, Dietmar Eggemann wrote:
->> +		/*
->> +		 * Build the energy model of one CPU, and link it to all CPUs
->> +		 * in its frequency domain. This should be correct as long as
->> +		 * they share the same micro-architecture.
->> +		 */
-> 
-> Aside from the whole PM_OPP question; you should assert that assumption.
-> Put an explicit check for the uarch in and FAIL the init if that isn't
-> met.
-> 
-> I don't think it makes _ANY_ kind of sense to share a frequency domain
-> across uarchs and we should be very clear we're not going to support
-> anything like that.
-> 
-> I know DynamiQ strictly speaking allows that, but since it's insane, we
-> should consider that a bug in DynamiQ.
+On Tue, 10 Apr 2018, Peter Zijlstra wrote:
 
-Totally agree! We will add this assert. One open question of the current 
-EAS design solved ;-)
+> On Tue, Apr 10, 2018 at 06:07:17PM +0800, yuankuiz@codeaurora.org wrote:
+> > > > > > @@ -48,8 +48,8 @@ struct tick_sched {
+> > > > > >         unsigned long                   check_clocks;
+> > > > > >         enum tick_nohz_mode             nohz_mode;
+> > > > > >
+> > > > > > +       bool                            tick_stopped    : 1;
+> > > > > >         unsigned int                    inidle          : 1;
+> > > > > > -       unsigned int                    tick_stopped    : 1;
+> > > > > >         unsigned int                    idle_active     : 1;
+> > > > > >         unsigned int                    do_timer_last   : 1;
+> > > > > >         unsigned int                    got_idle_tick   : 1;
+> > > > >
+> > > > > I don't think this is a good idea at all.
+> > > > >
+> > > > > Please see https://lkml.org/lkml/2017/11/21/384 for example.
+> > > > [ZJ] Thanks for this sharing. Looks like, this patch fall into the
+> > > > case of
+> > > > "Maybe".
+> > > 
+> > > This patch falls into the case 'pointless' because it adds extra storage
+> > [ZJ] 1 bit vs 1 bit. no more.
+> 
+> Since its a different type, the bitfields will not be merged. Also I'm
+> surprised a bitfield with base-type _Bool is even allowed.
+> 
+> > > for no benefit at all.
+> > [ZJ] tick_stopped is returned by the tick_nohz_tick_stopped() which is bool.
+> > The benefit is no any potiential type conversion could be minded.
+> 
+> Do you have any actual evidence for that? Is there a compiler stupid
+> enough to generate code to convert a bool to a 1bit value?
+
+Sure, if you do:
+
+> > > > > > +       bool                            tick_stopped    : 1;
+
+which is stupidly allowed by the standard....
