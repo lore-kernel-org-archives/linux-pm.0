@@ -1,109 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq/schedutil: Cleanup and document iowait boost
-Date: Tue, 10 Apr 2018 16:26:06 +0530
-Message-ID: <20180410105606.GH7671@vireshk-i7>
-References: <20180328090721.26068-1-patrick.bellasi@arm.com>
- <20180405095858.GP3572@vireshk-i7>
- <20180410104349.GE14248@e110439-lin>
+From: "Bityutskiy, Artem" <artem.bityutskiy@intel.com>
+Subject: Re: [PATCH][RFC] tools/power turbostat: if --max_loop, print for
+ specific time of loops
+Date: Tue, 10 Apr 2018 11:02:22 +0000
+Message-ID: <1523358141.2753.194.camel@intel.com>
+References: <20180410101831.28530-1-yu.c.chen@intel.com>
+Reply-To: "Bityutskiy, Artem" <artem.bityutskiy@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180410104349.GE14248@e110439-lin>
+In-Reply-To: <20180410101831.28530-1-yu.c.chen@intel.com>
+Content-Language: en-US
+Content-ID: <9CAD6EC5472D3B4BA0D098C7505E52A5@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: "Chen, Yu C" <yu.c.chen@intel.com>, "lenb@kernel.org" <lenb@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-04-18, 11:43, Patrick Bellasi wrote:
-> On 05-Apr 15:28, Viresh Kumar wrote:
-> What about this new version for the two functions,
-> just compile tested:
-> 
-> ---8<---
-> 
-> static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-> 				   unsigned int flags)
-> {
-> 	bool iowait = flags & SCHED_CPUFREQ_IOWAIT;
-> 
-> 	/* Reset boost if the CPU appears to have been idle enough */
-> 	if (sg_cpu->iowait_boost) {
-> 		s64 delta_ns = time - sg_cpu->last_update;
-> 
-> 		if (delta_ns > TICK_NSEC) {
-> 			sg_cpu->iowait_boost = iowait
-> 				? sg_cpu->sg_policy->policy->min : 0;
-
-Yeah, I see you are trying to optimize it a bit here but this makes
-things more confusing I would say :)
-
-I would just set iowait_boost to 0 and drop the return; from below and
-let the code fall through and reach the end of this routine.
-
-> 			sg_cpu->iowait_boost_pending = iowait;
-> 			return;
-> 		}
-> 	}
-> 
-> 	/* Boost only tasks waking up after IO */
-> 	if (!iowait)
-> 		return;
-> 
-> 	/* Ensure IO boost doubles only one time at each frequency increase */
-> 	if (sg_cpu->iowait_boost_pending)
-> 		return;
-> 	sg_cpu->iowait_boost_pending = true;
-> 
-> 	/* Double the IO boost at each frequency increase */
-> 	if (sg_cpu->iowait_boost) {
-> 		sg_cpu->iowait_boost <<= 1;
-> 		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
-> 			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
-> 		return;
-> 	}
-> 
-> 	/* At first wakeup after IO, start with minimum boost */
-> 	sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
-> }
-> 
-> static void sugov_iowait_boost(struct sugov_cpu *sg_cpu,
-> 			       unsigned long *util, unsigned long *max)
-> {
-> 	unsigned int boost_util, boost_max;
-> 
->         /* No IOWait boost active */
->         if (!sg_cpu->iowait_boost)
->                 return;
-> 
-> 	/* An IO waiting task has just woken up, use the boost value */
-> 	if (sg_cpu->iowait_boost_pending) {
-> 		sg_cpu->iowait_boost_pending = false;
-> 	} else {
-> 		/* Reduce the boost value otherwise */
-> 		sg_cpu->iowait_boost >>= 1;
-> 		if (sg_cpu->iowait_boost < sg_cpu->sg_policy->policy->min) {
-> 			sg_cpu->iowait_boost = 0;
-> 			return;
-> 		}
-> 	}
-> 
-> 	boost_util = sg_cpu->iowait_boost;
-> 	boost_max = sg_cpu->iowait_boost_max;
-> 
-> 	/*
-> 	 * A CPU is boosted only if its current utilization is smaller then
-> 	 * the current IO boost level.
-> 	 */
-> 	if (*util * boost_max < *max * boost_util) {
-> 		*util = boost_util;
-> 		*max = boost_max;
-> 	}
-> }
-
-So this is quite different than what you proposed, it is only fixing
-the existing problem which I pointed out to. Looks fine, not much
-changed really from the current state of code.
-
--- 
-viresh
+T24gVHVlLCAyMDE4LTA0LTEwIGF0IDE4OjE4ICswODAwLCBZdSBDaGVuIHdyb3RlOg0KPiBAQCAt
+NTA3Niw2ICs1MDg0LDE1IEBAIHZvaWQgY21kbGluZShpbnQgYXJnYywgY2hhciAqKmFyZ3YpDQo+
+ICAgICAgICAgICAgICAgICAgICAgICAgIHByaW50X3ZlcnNpb24oKTsNCj4gICAgICAgICAgICAg
+ICAgICAgICAgICAgZXhpdCgwKTsNCj4gICAgICAgICAgICAgICAgICAgICAgICAgYnJlYWs7DQo+
+ICsgICAgICAgICAgICAgICBjYXNlICd4JzoNCj4gKyAgICAgICAgICAgICAgICAgICAgICAgew0K
+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHVuc2lnbmVkIGludCBsb29wcyA9IHN0
+cnRvZChvcHRhcmcsIE5VTEwpOw0KDQpJdCB3b3VsZCBtYWtlIHNlbnNlIHRvIGVycm9yIG91dCBo
+ZXJlIGlmIHlvdSBnZXQgYSB2YWx1ZSA8PSAwLg0KDQo+ICsNCj4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICBpZiAobG9vcHMgJSAyKQ0KPiArICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgbG9vcHMrKzsNCg0KV2hhdCBpcyB0aGlzIGZvcj8NCg0KPiArICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIG1heF9sb29wcyA9IGxvb3BzOw0KDQpJcyB0aGUgImxv
+b3BzIiB2YXJpYWJsZSByZWFsbHkgbmVlZGVkPyBDYW4geW91IHN0cnRvZCBkaXJlY3RseSB0bw0K
+bWF4X2xvb3BzPw0KDQotLSANCkJlc3QgUmVnYXJkcywNCkFydGVtIEJpdHl1dHNraXkKLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tCkludGVsIEZpbmxhbmQgT3kKUmVnaXN0ZXJlZCBBZGRyZXNzOiBQTCAyODEsIDAwMTgx
+IEhlbHNpbmtpIApCdXNpbmVzcyBJZGVudGl0eSBDb2RlOiAwMzU3NjA2IC0gNCAKRG9taWNpbGVk
+IGluIEhlbHNpbmtpIAoKVGhpcyBlLW1haWwgYW5kIGFueSBhdHRhY2htZW50cyBtYXkgY29udGFp
+biBjb25maWRlbnRpYWwgbWF0ZXJpYWwgZm9yCnRoZSBzb2xlIHVzZSBvZiB0aGUgaW50ZW5kZWQg
+cmVjaXBpZW50KHMpLiBBbnkgcmV2aWV3IG9yIGRpc3RyaWJ1dGlvbgpieSBvdGhlcnMgaXMgc3Ry
+aWN0bHkgcHJvaGliaXRlZC4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkCnJlY2lwaWVudCwg
+cGxlYXNlIGNvbnRhY3QgdGhlIHNlbmRlciBhbmQgZGVsZXRlIGFsbCBjb3BpZXMuCg==
