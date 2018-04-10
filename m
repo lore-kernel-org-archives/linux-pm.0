@@ -1,125 +1,39 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH] cpufreq/schedutil: Cleanup and document iowait boost
-Date: Tue, 10 Apr 2018 12:57:56 +0100
-Message-ID: <20180410115756.GI14248@e110439-lin>
-References: <20180328090721.26068-1-patrick.bellasi@arm.com>
- <20180405095858.GP3572@vireshk-i7>
- <20180410104349.GE14248@e110439-lin>
- <20180410105606.GH7671@vireshk-i7>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH v2 2/6] sched: Introduce energy models of CPUs
+Date: Tue, 10 Apr 2018 14:03:25 +0200
+Message-ID: <2e35ede9-0926-836b-4068-8d12b6296597@arm.com>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-3-dietmar.eggemann@arm.com>
+ <20180410115457.GB4043@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180410105606.GH7671@vireshk-i7>
+In-Reply-To: <20180410115457.GB4043@hirez.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-Apr 16:26, Viresh Kumar wrote:
-> On 10-04-18, 11:43, Patrick Bellasi wrote:
-> > On 05-Apr 15:28, Viresh Kumar wrote:
-> > What about this new version for the two functions,
-> > just compile tested:
-> > 
-> > ---8<---
-> > 
-> > static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-> > 				   unsigned int flags)
-> > {
-> > 	bool iowait = flags & SCHED_CPUFREQ_IOWAIT;
-> > 
-> > 	/* Reset boost if the CPU appears to have been idle enough */
-> > 	if (sg_cpu->iowait_boost) {
-> > 		s64 delta_ns = time - sg_cpu->last_update;
-> > 
-> > 		if (delta_ns > TICK_NSEC) {
-> > 			sg_cpu->iowait_boost = iowait
-> > 				? sg_cpu->sg_policy->policy->min : 0;
+On 04/10/2018 01:54 PM, Peter Zijlstra wrote:
+> On Fri, Apr 06, 2018 at 04:36:03PM +0100, Dietmar Eggemann wrote:
+>> +		/*
+>> +		 * Build the energy model of one CPU, and link it to all CPUs
+>> +		 * in its frequency domain. This should be correct as long as
+>> +		 * they share the same micro-architecture.
+>> +		 */
 > 
-> Yeah, I see you are trying to optimize it a bit here but this makes
-> things more confusing I would say :)
+> Aside from the whole PM_OPP question; you should assert that assumption.
+> Put an explicit check for the uarch in and FAIL the init if that isn't
+> met.
 > 
-> I would just set iowait_boost to 0 and drop the return; from below and
-> let the code fall through and reach the end of this routine.
-
-Yes, that's possible... althought it's in the same scope of the
-optimization you suggested for the next function, bail out ASAP to
-avoid other branches.
-
-> > 			sg_cpu->iowait_boost_pending = iowait;
-> > 			return;
-> > 		}
-> > 	}
-> > 
-> > 	/* Boost only tasks waking up after IO */
-> > 	if (!iowait)
-> > 		return;
-> > 
-> > 	/* Ensure IO boost doubles only one time at each frequency increase */
-> > 	if (sg_cpu->iowait_boost_pending)
-> > 		return;
-> > 	sg_cpu->iowait_boost_pending = true;
-> > 
-> > 	/* Double the IO boost at each frequency increase */
-> > 	if (sg_cpu->iowait_boost) {
-> > 		sg_cpu->iowait_boost <<= 1;
-> > 		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
-> > 			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
-> > 		return;
-> > 	}
-> > 
-> > 	/* At first wakeup after IO, start with minimum boost */
-> > 	sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
-> > }
-> > 
-> > static void sugov_iowait_boost(struct sugov_cpu *sg_cpu,
-> > 			       unsigned long *util, unsigned long *max)
-> > {
-> > 	unsigned int boost_util, boost_max;
-> > 
-> >         /* No IOWait boost active */
-> >         if (!sg_cpu->iowait_boost)
-> >                 return;
-> > 
-> > 	/* An IO waiting task has just woken up, use the boost value */
-> > 	if (sg_cpu->iowait_boost_pending) {
-> > 		sg_cpu->iowait_boost_pending = false;
-> > 	} else {
-> > 		/* Reduce the boost value otherwise */
-> > 		sg_cpu->iowait_boost >>= 1;
-> > 		if (sg_cpu->iowait_boost < sg_cpu->sg_policy->policy->min) {
-> > 			sg_cpu->iowait_boost = 0;
-> > 			return;
-> > 		}
-> > 	}
-> > 
-> > 	boost_util = sg_cpu->iowait_boost;
-> > 	boost_max = sg_cpu->iowait_boost_max;
-> > 
-> > 	/*
-> > 	 * A CPU is boosted only if its current utilization is smaller then
-> > 	 * the current IO boost level.
-> > 	 */
-> > 	if (*util * boost_max < *max * boost_util) {
-> > 		*util = boost_util;
-> > 		*max = boost_max;
-> > 	}
-> > }
+> I don't think it makes _ANY_ kind of sense to share a frequency domain
+> across uarchs and we should be very clear we're not going to support
+> anything like that.
 > 
-> So this is quite different than what you proposed, it is only fixing
-> the existing problem which I pointed out to. Looks fine, not much
-> changed really from the current state of code.
+> I know DynamiQ strictly speaking allows that, but since it's insane, we
+> should consider that a bug in DynamiQ.
 
-Yes, maybe... I think we still get the benefit to consolidate all the
-iowait boost code into just these two function, while instead
-currently the reset is in sugov_next_freq_shared().
-
-Moreoverer, IMO it's easy to read and with a documentation more
-aligned... but, lemme post a v2 and then we will see if it still makes
-sense or I should just drop it.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Totally agree! We will add this assert. One open question of the current 
+EAS design solved ;-)
