@@ -1,35 +1,109 @@
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Subject: Re: [PATCH][RFC] tools/power turbostat: if --max_loop, print for
- specific time of loops
-Date: Tue, 10 Apr 2018 13:53:35 +0300
-Message-ID: <1523357615.2753.188.camel@gmail.com>
-References: <20180410101831.28530-1-yu.c.chen@intel.com>
-         <CAJZ5v0ic=bm76r=z+owZamVpb-fFxy3tqfeFvh_N2ROKpsYo=A@mail.gmail.com>
-Reply-To: dedekind1@gmail.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq/schedutil: Cleanup and document iowait boost
+Date: Tue, 10 Apr 2018 16:26:06 +0530
+Message-ID: <20180410105606.GH7671@vireshk-i7>
+References: <20180328090721.26068-1-patrick.bellasi@arm.com>
+ <20180405095858.GP3572@vireshk-i7>
+ <20180410104349.GE14248@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ic=bm76r=z+owZamVpb-fFxy3tqfeFvh_N2ROKpsYo=A@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20180410104349.GE14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Yu Chen <yu.c.chen@intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-04-10 at 12:22 +0200, Rafael J. Wysocki wrote:
-> On Tue, Apr 10, 2018 at 12:18 PM, Yu Chen <yu.c.chen@intel.com>
-> wrote:
-> > From: Chen Yu <yu.c.chen@intel.com>
-> > 
-> > There's a use case during test to only print specific round of
-> > loops
-> > if --interval is specified, for example, with this patch applied:
-> > 
-> > turbostat -i 5 --max_loops 4
-> > will capture 4 samples with 5 seconds interval.
+On 10-04-18, 11:43, Patrick Bellasi wrote:
+> On 05-Apr 15:28, Viresh Kumar wrote:
+> What about this new version for the two functions,
+> just compile tested:
 > 
-> Why --max_loops and not just --loops or --iterations?
+> ---8<---
+> 
+> static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
+> 				   unsigned int flags)
+> {
+> 	bool iowait = flags & SCHED_CPUFREQ_IOWAIT;
+> 
+> 	/* Reset boost if the CPU appears to have been idle enough */
+> 	if (sg_cpu->iowait_boost) {
+> 		s64 delta_ns = time - sg_cpu->last_update;
+> 
+> 		if (delta_ns > TICK_NSEC) {
+> 			sg_cpu->iowait_boost = iowait
+> 				? sg_cpu->sg_policy->policy->min : 0;
 
-Or just --count.
+Yeah, I see you are trying to optimize it a bit here but this makes
+things more confusing I would say :)
 
-Artem.
+I would just set iowait_boost to 0 and drop the return; from below and
+let the code fall through and reach the end of this routine.
+
+> 			sg_cpu->iowait_boost_pending = iowait;
+> 			return;
+> 		}
+> 	}
+> 
+> 	/* Boost only tasks waking up after IO */
+> 	if (!iowait)
+> 		return;
+> 
+> 	/* Ensure IO boost doubles only one time at each frequency increase */
+> 	if (sg_cpu->iowait_boost_pending)
+> 		return;
+> 	sg_cpu->iowait_boost_pending = true;
+> 
+> 	/* Double the IO boost at each frequency increase */
+> 	if (sg_cpu->iowait_boost) {
+> 		sg_cpu->iowait_boost <<= 1;
+> 		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
+> 			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
+> 		return;
+> 	}
+> 
+> 	/* At first wakeup after IO, start with minimum boost */
+> 	sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
+> }
+> 
+> static void sugov_iowait_boost(struct sugov_cpu *sg_cpu,
+> 			       unsigned long *util, unsigned long *max)
+> {
+> 	unsigned int boost_util, boost_max;
+> 
+>         /* No IOWait boost active */
+>         if (!sg_cpu->iowait_boost)
+>                 return;
+> 
+> 	/* An IO waiting task has just woken up, use the boost value */
+> 	if (sg_cpu->iowait_boost_pending) {
+> 		sg_cpu->iowait_boost_pending = false;
+> 	} else {
+> 		/* Reduce the boost value otherwise */
+> 		sg_cpu->iowait_boost >>= 1;
+> 		if (sg_cpu->iowait_boost < sg_cpu->sg_policy->policy->min) {
+> 			sg_cpu->iowait_boost = 0;
+> 			return;
+> 		}
+> 	}
+> 
+> 	boost_util = sg_cpu->iowait_boost;
+> 	boost_max = sg_cpu->iowait_boost_max;
+> 
+> 	/*
+> 	 * A CPU is boosted only if its current utilization is smaller then
+> 	 * the current IO boost level.
+> 	 */
+> 	if (*util * boost_max < *max * boost_util) {
+> 		*util = boost_util;
+> 		*max = boost_max;
+> 	}
+> }
+
+So this is quite different than what you proposed, it is only fixing
+the existing problem which I pointed out to. Looks fine, not much
+changed really from the current state of code.
+
+-- 
+viresh
