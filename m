@@ -1,54 +1,33 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
-Date: Tue, 10 Apr 2018 14:07:32 +0200 (CEST)
-Message-ID: <alpine.DEB.2.21.1804101407040.2058@nanos.tec.linutronix.de>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org> <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com> <f253686d26b3470f0e9b60502eb62315@codeaurora.org> <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
- <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org> <20180410112637.GD4082@hirez.programming.kicks-ass.net>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH][RFC] tools/power turbostat: if --max_loop, print for
+ specific time of loops
+Date: Tue, 10 Apr 2018 20:19:49 +0800
+Message-ID: <20180410121949.GA29464@yu-chen.sh.intel.com>
+References: <20180410101831.28530-1-yu.c.chen@intel.com>
+ <CAJZ5v0ic=bm76r=z+owZamVpb-fFxy3tqfeFvh_N2ROKpsYo=A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180410112637.GD4082@hirez.programming.kicks-ass.net>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0ic=bm76r=z+owZamVpb-fFxy3tqfeFvh_N2ROKpsYo=A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: yuankuiz@codeaurora.org, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Artem Bityutskiy <artem.bityutskiy@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 10 Apr 2018, Peter Zijlstra wrote:
-
-> On Tue, Apr 10, 2018 at 06:07:17PM +0800, yuankuiz@codeaurora.org wrote:
-> > > > > > @@ -48,8 +48,8 @@ struct tick_sched {
-> > > > > >         unsigned long                   check_clocks;
-> > > > > >         enum tick_nohz_mode             nohz_mode;
-> > > > > >
-> > > > > > +       bool                            tick_stopped    : 1;
-> > > > > >         unsigned int                    inidle          : 1;
-> > > > > > -       unsigned int                    tick_stopped    : 1;
-> > > > > >         unsigned int                    idle_active     : 1;
-> > > > > >         unsigned int                    do_timer_last   : 1;
-> > > > > >         unsigned int                    got_idle_tick   : 1;
-> > > > >
-> > > > > I don't think this is a good idea at all.
-> > > > >
-> > > > > Please see https://lkml.org/lkml/2017/11/21/384 for example.
-> > > > [ZJ] Thanks for this sharing. Looks like, this patch fall into the
-> > > > case of
-> > > > "Maybe".
-> > > 
-> > > This patch falls into the case 'pointless' because it adds extra storage
-> > [ZJ] 1 bit vs 1 bit. no more.
+On Tue, Apr 10, 2018 at 12:22:16PM +0200, Rafael J. Wysocki wrote:
+> On Tue, Apr 10, 2018 at 12:18 PM, Yu Chen <yu.c.chen@intel.com> wrote:
+> > From: Chen Yu <yu.c.chen@intel.com>
+> >
+> > There's a use case during test to only print specific round of loops
+> > if --interval is specified, for example, with this patch applied:
+> >
+> > turbostat -i 5 --max_loops 4
+> > will capture 4 samples with 5 seconds interval.
 > 
-> Since its a different type, the bitfields will not be merged. Also I'm
-> surprised a bitfield with base-type _Bool is even allowed.
-> 
-> > > for no benefit at all.
-> > [ZJ] tick_stopped is returned by the tick_nohz_tick_stopped() which is bool.
-> > The benefit is no any potiential type conversion could be minded.
-> 
-> Do you have any actual evidence for that? Is there a compiler stupid
-> enough to generate code to convert a bool to a 1bit value?
+> Why --max_loops and not just --loops or --iterations?
+>
+I thought -l has been used already. OK, changed to --interation and
+-t respectively.
 
-Sure, if you do:
-
-> > > > > > +       bool                            tick_stopped    : 1;
-
-which is stupidly allowed by the standard....
+Thanks!
