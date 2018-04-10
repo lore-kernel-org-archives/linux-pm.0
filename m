@@ -1,43 +1,50 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 06/17] thermal: brcmstb: enable/check sensor after its setup
- is finished
-Date: Tue, 10 Apr 2018 14:42:00 +0200
-Message-ID: <1523364131-31059-7-git-send-email-b.zolnierkie@samsung.com>
-References: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180410124333epcas2p2491f24a23bc90b06dd7cf46bd469babd@epcas2p2.samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Tue, 10 Apr 2018 14:51:05 +0200
+Message-ID: <20180410125105.GC4043@hirez.programming.kicks-ass.net>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-5-dietmar.eggemann@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20180406153607.17815-5-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Enable/check sensor after setting priv->thermal.
+On Fri, Apr 06, 2018 at 04:36:05PM +0100, Dietmar Eggemann wrote:
+> +static inline
+> +struct capacity_state *find_cap_state(int cpu, unsigned long util)
+> +{
+> +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
+> +	struct capacity_state *cs = NULL;
+> +	int i;
+> +
+> +	util += util >> 2;
+> +
+> +	for (i = 0; i < em->nr_cap_states; i++) {
+> +		cs = &em->cap_states[i];
+> +		if (cs->cap >= util)
+> +			break;
+> +	}
+> +
+> +	return cs;
+> +}
 
-Cc: Markus Mayer <mmayer@broadcom.com>
-Cc: bcm-kernel-feedback-list@broadcom.com
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/thermal/broadcom/brcmstb_thermal.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+So in the last thread there was some discussion about this; in
+particular on how this related to schedutil and if we should tie it into
+that.
 
-diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
-index fead74f..eada8c1 100644
---- a/drivers/thermal/broadcom/brcmstb_thermal.c
-+++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-@@ -336,11 +336,11 @@ static int brcmstb_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	priv->thermal = thermal;
-+
- 	thermal_zone_device_toggle(thermal, true);
- 	thermal_zone_device_check(thermal);
- 
--	priv->thermal = thermal;
--
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0) {
- 		dev_err(&pdev->dev, "could not get IRQ\n");
--- 
-1.9.1
+I think for starters tying it to schedutil is not a bad idea; ideally
+people _should_ migrate towards using that.
+
+Also; I think it makes sense to better integrate cpufreq and the
+energy-model values like what rjw already suggested, such that maybe we
+can have cpufreq_driver_resolve_freq() return a structure containing the
+relevant information for the selected frequency.
+
+But implementing the frequency selection thing in multiple places like
+now sounds like a very bad idea to me.
