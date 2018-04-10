@@ -1,71 +1,137 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Tue, 10 Apr 2018 14:56:41 +0100
-Message-ID: <20180410135640.GB3866@e108498-lin.cambridge.arm.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-5-dietmar.eggemann@arm.com>
- <20180410125105.GC4043@hirez.programming.kicks-ass.net>
+From: yuankuiz@codeaurora.org
+Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
+Date: Tue, 10 Apr 2018 22:08:07 +0800
+Message-ID: <2f7755fae34bb65ef0a4b5a11c67f431@codeaurora.org>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+ <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
+ <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
+ <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
+ <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180410125105.GC4043@hirez.programming.kicks-ass.net>
+In-Reply-To: <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 10 Apr 2018 at 14:51:05 (+0200), Peter Zijlstra wrote:
-> On Fri, Apr 06, 2018 at 04:36:05PM +0100, Dietmar Eggemann wrote:
-> > +static inline
-> > +struct capacity_state *find_cap_state(int cpu, unsigned long util)
-> > +{
-> > +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
-> > +	struct capacity_state *cs = NULL;
-> > +	int i;
-> > +
-> > +	util += util >> 2;
-> > +
-> > +	for (i = 0; i < em->nr_cap_states; i++) {
-> > +		cs = &em->cap_states[i];
-> > +		if (cs->cap >= util)
-> > +			break;
-> > +	}
-> > +
-> > +	return cs;
-> > +}
+On 2018-04-10 07:06 PM, Thomas Gleixner wrote:
+> On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
+>> On 2018-04-10 05:10 PM, Thomas Gleixner wrote:
+>> > On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
+>> > > On 2018-04-10 04:00 PM, Rafael J. Wysocki wrote:
+>> > > > On Tue, Apr 10, 2018 at 9:33 AM,  <yuankuiz@codeaurora.org> wrote:
+>> > > > > From: John Zhao <yuankuiz@codeaurora.org>
+>> > > > >
+>> > > > > Variable tick_stopped returned by tick_nohz_tick_stopped
+>> > > > > can have only true / false values. Since the return type
+>> > > > > of the tick_nohz_tick_stopped is also bool, variable
+>> > > > > tick_stopped nice to have data type as bool in place of unsigned int.
+>> > > > > Moreover, the executed instructions cost could be minimal
+>> > > > > without potiential data type conversion.
+>> > > > >
+>> > > > > Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
+>> > > > > ---
+>> > > > >  kernel/time/tick-sched.h | 2 +-
+>> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> > > > >
+>> > > > > diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
+>> > > > > index 6de959a..4d34309 100644
+>> > > > > --- a/kernel/time/tick-sched.h
+>> > > > > +++ b/kernel/time/tick-sched.h
+>> > > > > @@ -48,8 +48,8 @@ struct tick_sched {
+>> > > > >         unsigned long                   check_clocks;
+>> > > > >         enum tick_nohz_mode             nohz_mode;
+>> > > > >
+>> > > > > +       bool                            tick_stopped    : 1;
+>> > > > >         unsigned int                    inidle          : 1;
+>> > > > > -       unsigned int                    tick_stopped    : 1;
+>> > > > >         unsigned int                    idle_active     : 1;
+>> > > > >         unsigned int                    do_timer_last   : 1;
+>> > > > >         unsigned int                    got_idle_tick   : 1;
+>> > > >
+>> > > > I don't think this is a good idea at all.
+>> > > >
+>> > > > Please see https://lkml.org/lkml/2017/11/21/384 for example.
+>> > > [ZJ] Thanks for this sharing. Looks like, this patch fall into the case of
+>> > > "Maybe".
+>> >
+>> > This patch falls into the case 'pointless' because it adds extra storage
+>> [ZJ] 1 bit vs 1 bit. no more.
 > 
-> So in the last thread there was some discussion about this; in
-> particular on how this related to schedutil and if we should tie it into
-> that.
+> Groan. No. Care to look at the data structure? You create a new 
+> storage,
+[ZJ] Say, {unsigned int, unsigned int, unsigned int, unsigned int, 
+unsigned int} becomes
+           {bool        , unsigned int, unsigned int, unsigned int, 
+unsigned int}
+As specified by the rule No.10 at the section 6.7.2.1 of C99 TC2 as:
+"If enough space remains, a bit-field that immediately follows another 
+bit-field in a
+structure shall be packed into adjacent bits of the same unit." What is 
+the new storage so far?
+
+> which is incidentally merged into the other bitfield by the compiler at 
+> a
+> different bit position, but there is no guarantee that a compiler does
+> that. It's free to use distinct storage for that bool based bit.
+[ZJ] Per the rule No.10 at section 6.7.2.1 of C99 TC2 as:
+" If insufficient space remains, whether  a  bit-field  that  does  not  
+fit  is  put  into
+the  next  unit  or overlaps  adjacent  units  is 
+implementation-defined."
+So, implementation is never mind which type will be stored if any.
+
+> >> > for no benefit at all.
+>> [ZJ] tick_stopped is returned by the tick_nohz_tick_stopped() which is 
+>> bool.
+>> The benefit is no any potiential type conversion could be minded.
 > 
-> I think for starters tying it to schedutil is not a bad idea; ideally
-> people _should_ migrate towards using that.
+> A bit stays a bit. 'bool foo : 1;' or 'unsigned int foo : 1' has to be
+> evaluated as a bit. So there is a type conversion from BIT to bool 
+> required
+> because BIT != bool.
+[ZJ] Per the rule No.9 at section 6.7.2.1 of C99 TC2 as:
+"If  the  value  0  or  1  is  stored  into  a  nonzero-width  bit-field 
+  of  types
+_Bool, the value of the bit-field shall compare equal to the value 
+stored."
+Obviously, it is nothing related to type conversion actually.
 > 
-> Also; I think it makes sense to better integrate cpufreq and the
-> energy-model values like what rjw already suggested, such that maybe we
-> can have cpufreq_driver_resolve_freq() return a structure containing the
-> relevant information for the selected frequency.
+> By chance the evaluation can be done by evaluating the byte in which 
+> the
+> bit is placed just because the compiler knows that the remaining bits 
+> are
+> not used. There is no guarantee that this is done, it happens to be 
+> true
+> for a particular compiler.
+[ZJ] Actually, such as GCC owe that kind of guarantee to be promised by 
+ABI.
+> 
+> But that does not make it any more interesting. It just makes the code
+> harder to read and eventually leads to bigger storage.
+[ZJ] To get the benctifit to be profiled, it is given as:
+number of instructions of function tick_nohz_tick_stopped():
+                         original: 17
+                         patched:  14
+      Which was saved is:
+                movzbl	%al, %eax
+                testl	%eax, %eax
+                setne    %al
+      Say, 3 / 17 = 17 % could be gained in the instruction executed for 
+this function can be evaluated.
 
-I guess if we want to do that in the wake-up path, we would also need to
-add a new parameter to it to make sure we don't actually call into
-cpufreq_driver->resolve_freq() ...
-
-But then, we could sort of rely on cpufreq_schedutil.c::get_next_freq()
-to replace find_cap_state() ... Is this what you had in mind ?
+Note:
+      The environment I used is:
+                OS : Ubuntu Desktop 16.04 LTS
+                gcc: 6.3.0                       (without optimization 
+for in general purpose)
 
 > 
-> But implementing the frequency selection thing in multiple places like
-> now sounds like a very bad idea to me.
-
-Understood. Making sure we share the same code everywhere might have
-consequences though. I guess we'll have to either accept the cost of
-function calls in the wake-up path, or to accept to inline those
-functions for ex. Or maybe you had something else in mind ?
-
-Anyways, that's probably another good discussion topic for OSPM
-next week :-)
-
-Thanks,
-Quentin
+> Thanks,
+> 
+> 	tglx
