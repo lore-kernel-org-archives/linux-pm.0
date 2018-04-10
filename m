@@ -1,10 +1,10 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 14/17] thermal: ti-soc-thermal: enable/check sensor after
- its setup is finished
-Date: Tue, 10 Apr 2018 14:42:08 +0200
-Message-ID: <1523364131-31059-15-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 15/17] thermal: uniphier: enable/check sensor after its
+ setup is finished
+Date: Tue, 10 Apr 2018 14:42:09 +0200
+Message-ID: <1523364131-31059-16-git-send-email-b.zolnierkie@samsung.com>
 References: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180410124436epcas1p3422f3653277634b8cc8bef223bc9298f@epcas1p3.samsung.com>
+        <CGME20180410124442epcas1p1b9d69f57eb25cc4dc69ebd7e85479036@epcas1p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -12,34 +12,39 @@ To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 Cc: Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Enable sensor after setting sensor data and check sensor after
-writing update interval.
+Enable sensor after checking trip points (unipher_tm_enable_sensor()
+enables IRQ so we need to toggle sensor before calling it) and check
+sensor after doing chipset specific enable sensor operation.
 
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Keerthy <j-keerthy@ti.com>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/thermal/uniphier_thermal.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 3c2299b..a9afbf9 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -197,13 +197,15 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
- 		return PTR_ERR(data->ti_thermal);
+diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
+index 8070747..cdecccd 100644
+--- a/drivers/thermal/uniphier_thermal.c
++++ b/drivers/thermal/uniphier_thermal.c
+@@ -307,9 +307,6 @@ static int uniphier_tm_probe(struct platform_device *pdev)
+ 		return PTR_ERR(tdev->tz_dev);
  	}
  
-+	ti_bandgap_set_sensor_data(bgp, id, data);
+-	thermal_zone_device_toggle(tdev->tz_dev, true);
+-	thermal_zone_device_check(tdev->tz_dev);
+-
+ 	/* get trip points */
+ 	trips = of_thermal_get_trip_points(tdev->tz_dev);
+ 	ntrips = of_thermal_get_ntrips(tdev->tz_dev);
+@@ -332,8 +329,12 @@ static int uniphier_tm_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
++	thermal_zone_device_toggle(tdev->tz_dev, true);
 +
- 	thermal_zone_device_toggle(data->ti_thermal, true);
--	thermal_zone_device_check(data->ti_thermal);
+ 	uniphier_tm_enable_sensor(tdev);
  
--	ti_bandgap_set_sensor_data(bgp, id, data);
- 	ti_bandgap_write_update_interval(bgp, data->sensor_id,
- 					data->ti_thermal->polling_delay);
- 
-+	thermal_zone_device_check(data->ti_thermal);
++	thermal_zone_device_check(tdev->tz_dev);
 +
  	return 0;
  }
