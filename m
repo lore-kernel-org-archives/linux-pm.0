@@ -1,55 +1,127 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2] cpufreq/schedutil: Cleanup, document and fix iowait
- boost
-Date: Tue, 10 Apr 2018 21:37:08 +0200
-Message-ID: <20180410193708.GE4043@hirez.programming.kicks-ass.net>
-References: <20180410155931.31973-1-patrick.bellasi@arm.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 4/7] sched/core: uclamp: add utilization clamping to the
+ CPU controller
+Date: Tue, 10 Apr 2018 13:05:14 -0700
+Message-ID: <20180410200514.GA793541@devbig577.frc2.facebook.com>
+References: <20180409165615.2326-1-patrick.bellasi@arm.com>
+ <20180409165615.2326-5-patrick.bellasi@arm.com>
+ <20180409222417.GK3126663@devbig577.frc2.facebook.com>
+ <20180410171612.GJ14248@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180410155931.31973-1-patrick.bellasi@arm.com>
+In-Reply-To: <20180410171612.GJ14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Juri Lelli <juri.lelli@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 10, 2018 at 04:59:31PM +0100, Patrick Bellasi wrote:
-> The iowait boosting code has been recently updated to add a progressive
-> boosting behavior which allows to be less aggressive in boosting tasks
-> doing only sporadic IO operations, thus being more energy efficient for
-> example on mobile platforms.
+Hello,
+
+On Tue, Apr 10, 2018 at 06:16:12PM +0100, Patrick Bellasi wrote:
+> > I'm not too enthusiastic about util_min/max given that it can easily
+> > be read as actual utilization based bandwidth control when what's
+> > actually implemented, IIUC, is affecting CPU frequency selection.
 > 
-> The current code is now however a bit convoluted. Some functionalities
-> (e.g. iowait boost reset) are replicated in different paths and their
-> documentation is slightly misaligned.
-
-While your patch does seem to improve things, it still has duplicated
-bits in. Eg. the TICK_NSEC clearing exists in both functions.
-
-> - sugov_set_iowait_boost: is now in charge only to set/increase the IO
->      wait boost, every time a task wakes up from an IO wait.
+> Right now we are basically affecting the frequency selection.
+> However, the next step is to use this same interface to possibly bias
+> task placement.
 > 
-> - sugov_iowait_boost: is now in charge to reset/reduce the IO wait
->      boost, every time a sugov update is triggered, as well as
->      to (eventually) enforce the currently required IO boost value.
+> The idea is that:
+> 
+> - the util_min value can be used to possibly avoid CPUs which have
+>   a (maybe temporarily) limited capacity, for example, due to thermal
+>   pressure.
+> 
+> - a util_max value can use used to possibly identify tasks which can
+>   be co-scheduled together in a (maybe) limited capacity CPU since
+>   they are more likely "less important" tasks.
+> 
+> Thus, since this is a new user-space API, we would like to find a
+> concept which is generic enough to express the current requirement but
+> also easily accommodate future extensions.
 
-I'm not sold on those function names; feels like we can do better,
-although I'm struggling to come up with anything sensible just now.
+I'm not sure we can overload the meanings like that on the same
+interface.  Right now, it doesn't say anything about bandwidth (or
+utilization) allocation.  It just limits the frequency range the
+particular cpu that the task ended up on can be in and what you're
+describing above is the third different thing.  It doesn't seem clear
+that they're something which can be overloaded onto the same
+interface.
 
+> > Maybe something like cpu.freq.min/max are better names?
+> 
+> IMO this is something too much platform specific.
+> 
+> I agree that utilization is maybe too much an implementation detail,
+> but perhaps this can be solved by using a more generic range.
+> 
+> What about using values in the [0..100] range which define:
+> 
+>    a percentage of the maximum available capacity
+>          for the CPUs in the target system
+> 
+> Do you think this can work?
 
->  
->  		if (delta_ns > TICK_NSEC) {
-> +			sg_cpu->iowait_boost = iowait
-> +				? sg_cpu->sg_policy->policy->min : 0;
-> +			sg_cpu->iowait_boost_pending = iowait;
-> +			return;
->  		}
+Yeah, sure, it's more that right now the intention isn't clear.  A
+cgroup control knob which limits cpu frequency range while the cgroup
+is on a cpu is a very different thing from a cgroup knob which
+restricts what tasks can be scheduled on the same cpu.  They're
+actually incompatible.  Doing the latter actively breaks the former.
 
-> +	if (delta_ns > TICK_NSEC) {
-> +		sg_cpu->iowait_boost = 0;
-> +		sg_cpu->iowait_boost_pending = false;
-> +		return;
-> +	}
+> > This is a problem which exists for all other interfaces.  For
+> > historical and other reasons, at least till now, we've opted to put
+> > everything at system level outside of cgroup interface.  We might
+> > change this in the future and duplicate system-level information and
+> > interfaces in the root cgroup but we wanna do that in a more systemtic
+> > fashion than adding an one-off knob in the cgroup root.
+> 
+> I see, I think we can easily come up with a procfs/sysfs interface
+> usable to define system-wide values.
+> 
+> Any suggestion for something already existing which I can use as a
+> reference?
 
-Looks like something we can maybe put in a helper or something.
+Most system level interfaces are there with a long history and things
+aren't that consistent.  One route could be finding an interface
+implementing a nearby feature and staying consistent with that.
+
+> > Tying creation / config operations to the config propagation doesn't
+> > work well with delegation and is inconsistent with what other
+> > controllers are doing.  For cases where the propagated config being
+> > visible in a sub cgroup is necessary, please add .effective files.
+> 
+> I'm not sure to understand this point: you mean that we should not
+> enforce "consistency rules" among parent-child groups?
+
+You should.  It just shouldn't make configurations fail cuz that ends
+up breaking delegations.
+
+> I have to look better into this "effective" concept.
+> Meanwhile, can you make a simple example?
+
+There's a recent cpuset patchset posted by Waiman Long.  Googling for
+lkml cpuset and Waiman Long should find it easily.
+
+> > > Tasks on a subgroup can only be more boosted and/or capped, which is
+> > 
+> > Less boosted.  .low at a parent level must set the upper bound of .low
+> > that all its descendants can have.
+> 
+> Is that a mandatory requirement? Or based on a proper justification
+> you can also accept what I'm proposing?
+>
+> I've always been more of the idea that what I'm proposing could make
+> more sense for a general case but perhaps I just need to go back and
+> better check the use-cases we have on hand to see if it's really
+> required or not.
+
+Yeah, I think we want to stick to that semantics.  That's what memory
+controller does and it'd be really confusing to flip the directions on
+different controllers.
+
+Thanks.
+
+-- 
+tejun
