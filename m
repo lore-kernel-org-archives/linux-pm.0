@@ -1,21 +1,23 @@
 From: yuankuiz@codeaurora.org
-Subject: Subject: [PATCH] [PATCH] time: tick-sched: use bool for tick_stopped
-Date: Tue, 10 Apr 2018 15:33:44 +0800
-Message-ID: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+Subject: [PATCH] [PATCH] time: tick-sched: use bool for tick_stopped
+Date: Tue, 10 Apr 2018 15:45:46 +0800
+Message-ID: <9ee70560651fefffcc61949d8a37315d@codeaurora.org>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII;
  format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, fweisbec@gmail.com, peterz@infradead.org, tglx@linutronix.de, aulmck@linux.vnet.ibm.com, mingo@kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, fweisbec@gmail.com, peterz@infradead.org, tglx@linutronix.de, mingo@kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
  From: John Zhao <yuankuiz@codeaurora.org>
 
 Variable tick_stopped returned by tick_nohz_tick_stopped
-can have only true / forse values. Since the return type
+can only be true / false values. Since the return type
 of the tick_nohz_tick_stopped is also bool, variable
 tick_stopped nice to have data type as bool in place of int.
 Moreover, the executed instructions cost could be minimal
