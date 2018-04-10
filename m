@@ -1,84 +1,82 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH] sched/fair: schedutil: update only with all info
- available
-Date: Tue, 10 Apr 2018 12:04:12 +0100
-Message-ID: <20180410110412.GG14248@e110439-lin>
-References: <20180406172835.20078-1-patrick.bellasi@arm.com>
- <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
+Date: Tue, 10 Apr 2018 13:06:26 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org> <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com> <f253686d26b3470f0e9b60502eb62315@codeaurora.org> <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
+ <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+In-Reply-To: <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: yuankuiz@codeaurora.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vincent,
+On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
+> On 2018-04-10 05:10 PM, Thomas Gleixner wrote:
+> > On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
+> > > On 2018-04-10 04:00 PM, Rafael J. Wysocki wrote:
+> > > > On Tue, Apr 10, 2018 at 9:33 AM,  <yuankuiz@codeaurora.org> wrote:
+> > > > > From: John Zhao <yuankuiz@codeaurora.org>
+> > > > >
+> > > > > Variable tick_stopped returned by tick_nohz_tick_stopped
+> > > > > can have only true / false values. Since the return type
+> > > > > of the tick_nohz_tick_stopped is also bool, variable
+> > > > > tick_stopped nice to have data type as bool in place of unsigned int.
+> > > > > Moreover, the executed instructions cost could be minimal
+> > > > > without potiential data type conversion.
+> > > > >
+> > > > > Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
+> > > > > ---
+> > > > >  kernel/time/tick-sched.h | 2 +-
+> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > >
+> > > > > diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
+> > > > > index 6de959a..4d34309 100644
+> > > > > --- a/kernel/time/tick-sched.h
+> > > > > +++ b/kernel/time/tick-sched.h
+> > > > > @@ -48,8 +48,8 @@ struct tick_sched {
+> > > > >         unsigned long                   check_clocks;
+> > > > >         enum tick_nohz_mode             nohz_mode;
+> > > > >
+> > > > > +       bool                            tick_stopped    : 1;
+> > > > >         unsigned int                    inidle          : 1;
+> > > > > -       unsigned int                    tick_stopped    : 1;
+> > > > >         unsigned int                    idle_active     : 1;
+> > > > >         unsigned int                    do_timer_last   : 1;
+> > > > >         unsigned int                    got_idle_tick   : 1;
+> > > >
+> > > > I don't think this is a good idea at all.
+> > > >
+> > > > Please see https://lkml.org/lkml/2017/11/21/384 for example.
+> > > [ZJ] Thanks for this sharing. Looks like, this patch fall into the case of
+> > > "Maybe".
+> > 
+> > This patch falls into the case 'pointless' because it adds extra storage
+> [ZJ] 1 bit vs 1 bit. no more.
 
-On 09-Apr 10:51, Vincent Guittot wrote:
-> Hi Patrick
-> 
-> On 6 April 2018 at 19:28, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> > Schedutil is not properly updated when the first FAIR task wakes up on a
-> > CPU and when a RQ is (un)throttled. This is mainly due to the current
-> > integration strategy, which relies on updates being triggered implicitly
-> > each time a cfs_rq's utilization is updated.
-> >
-> > Those updates are currently provided (mainly) via
-> >    cfs_rq_util_change()
-> > which is used in:
-> >  - update_cfs_rq_load_avg()
-> >    when the utilization of a cfs_rq is updated
-> >  - {attach,detach}_entity_load_avg()
-> > This is done based on the idea that "we should callback schedutil
-> > frequently enough" to properly update the CPU frequency at every
-> > utilization change.
-> >
-> > Since this recent schedutil update:
-> >
-> >   commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
-> >
-> > we use additional RQ information to properly account for FAIR tasks
-> > utilization. Specifically, cfs_rq::h_nr_running has to be non-zero
-> > in sugov_aggregate_util() to sum up the cfs_rq's utilization.
-> 
-> Isn't the use of cfs_rq::h_nr_running,  the root cause of the problem ?
+Groan. No. Care to look at the data structure? You create a new storage,
+which is incidentally merged into the other bitfield by the compiler at a
+different bit position, but there is no guarantee that a compiler does
+that. It's free to use distinct storage for that bool based bit.
 
-Not really...
+> > for no benefit at all.
+> [ZJ] tick_stopped is returned by the tick_nohz_tick_stopped() which is bool.
+> The benefit is no any potiential type conversion could be minded.
 
-> I can now see a lot a frequency changes on my hikey with this new
-> condition in sugov_aggregate_util().
-> With a rt-app UC that creates a periodic cfs task, I have a lot of
-> frequency changes instead of staying at the same frequency
+A bit stays a bit. 'bool foo : 1;' or 'unsigned int foo : 1' has to be
+evaluated as a bit. So there is a type conversion from BIT to bool required
+because BIT != bool.
 
-I don't remember a similar behavior... but I'll check better.
+By chance the evaluation can be done by evaluating the byte in which the
+bit is placed just because the compiler knows that the remaining bits are
+not used. There is no guarantee that this is done, it happens to be true
+for a particular compiler.
 
-> Peter,
-> what was your goal with adding the condition "if
-> (rq->cfs.h_nr_running)" for the aggragation of CFS utilization
+But that does not make it any more interesting. It just makes the code
+harder to read and eventually leads to bigger storage.
 
-The original intent was to get rid of sched class flags, used to track
-which class has tasks runnable from within schedutil. The reason was
-to solve some misalignment between scheduler class status and
-schedutil status.
+Thanks,
 
-The solution, initially suggested by Viresh, and finally proposed by
-Peter was to exploit RQ knowledges directly from within schedutil.
-
-The problem is that now schedutil updated depends on two information:
-utilization changes and number of RT and CFS runnable tasks.
-
-Thus, using cfs_rq::h_nr_running is not the problem... it's actually
-part of a much more clean solution of the code we used to have.
-
-The problem, IMO is that we now depend on other information which
-needs to be in sync before calling schedutil... and the patch I
-proposed is meant to make it less likely that all the information
-required are not aligned (also in the future).
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+	tglx
