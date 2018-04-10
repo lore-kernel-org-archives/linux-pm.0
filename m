@@ -1,263 +1,51 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v2] cpufreq/schedutil: Cleanup, document and fix iowait boost
-Date: Tue, 10 Apr 2018 16:59:31 +0100
-Message-ID: <20180410155931.31973-1-patrick.bellasi@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Subject: [PATCH] [PATCH] time: tick-sched: use bool for
+ tick_stopped
+Date: Tue, 10 Apr 2018 18:30:17 +0200
+Message-ID: <20180410163017.GH4082@hirez.programming.kicks-ass.net>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+ <20180410123305.GF4082@hirez.programming.kicks-ass.net>
+ <bece0d90535709ef39006adb5f481993d6063929.camel@perches.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <bece0d90535709ef39006adb5f481993d6063929.camel@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Juri Lelli <juri.lelli@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+To: Joe Perches <joe@perches.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, aulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, apw@canonical.com
 List-Id: linux-pm@vger.kernel.org
 
-The iowait boosting code has been recently updated to add a progressive
-boosting behavior which allows to be less aggressive in boosting tasks
-doing only sporadic IO operations, thus being more energy efficient for
-example on mobile platforms.
+On Tue, Apr 10, 2018 at 08:14:54AM -0700, Joe Perches wrote:
+> Whinging about bool <foo> : <x> seems entirely sensible
+> and straightforward to do.
+> 
+> I'm not so sure about bool in structs as a patch context
+> could be adding a bool to local stack definitions and
+> there's no real ability to determine if the bool is in a
+> struct or on the stack.
+> 
+> Also, I think there's nothing really wrong with using
+> bool in structs.  Steven Rostedt's rationale in
+> https://lkml.org/lkml/2017/11/21/207 isn't really right
+> as sizeof(int) is 4 not 1 and sizeof(bool) is 1 on arches
+> without alignment issues.  I believe when using gcc,
+> sizeof(bool) is always 1 and there may be alignment padding
+> added on some arches.  Dunno.
 
-The current code is now however a bit convoluted. Some functionalities
-(e.g. iowait boost reset) are replicated in different paths and their
-documentation is slightly misaligned.
+C std simply does not define sizeof(_Bool) and leaves it up to
+architecture ABI, therefore I refuse to use _Bool in composite types,
+because I care about layout.
 
-Moreover, from a functional stadpoint, the iowait boosting is also not
-always reset in systems where cpufreq policies are not shared, each CPU
-has his own policy. Indeed, when a CPU is idle for a long time we keep
-doubling the boosting instead of resetting it to the minimum frequency,
-as expected by the TICK_NSEC logic, whenever a task wakes up from IO.
+Also, not all architectures can do byte addressing, see Alpha <EV56
+and for those _Bool would have to be a whole word (the existence of such
+architectures likely influenced the vague definition of _Bool in the
+first place).
 
-Let's cleanup the code by consolidating all the IO wait boosting related
-functionality inside the already existing functions and better define
-their role:
+> But I think the battle is already lost anyway.
+> 
+> git grep -P  '(?<!static|extern)\s+bool\s+\w+\s*;' include | wc -l
+> 1543
 
-- sugov_set_iowait_boost: is now in charge only to set/increase the IO
-     wait boost, every time a task wakes up from an IO wait.
-
-- sugov_iowait_boost: is now in charge to reset/reduce the IO wait
-     boost, every time a sugov update is triggered, as well as
-     to (eventually) enforce the currently required IO boost value.
-
-This is possible since these two functions are already used one after
-the other, both in single and shared frequency domains, following the
-same template:
-
-   /* Configure IO boost, if required */
-   sugov_set_iowait_boost()
-
-   /* Return here if freq change is in progress or throttled */
-
-   /* Collect and aggregate utilization information */
-   sugov_get_util()
-   sugov_aggregate_util()
-
-   /* Add IO boost if currently enabled */
-   sugov_iowait_boost()
-
-As a extra bonus, let's also add the documentation for these two
-functions and better align the in-code documentation.
-
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Joel Fernandes <joelaf@google.com>
-Cc: Steve Muckle <smuckle@google.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-
----
-Changes in v2:
-- Fix return in sugov_iowait_boost()'s reset code (Viresh)
-- Add iowait boost reset for sugov_update_single() (Viresh)
-- Title changed to reflact the fix from previous point
-
-Based on today's tip/sched/core:
-   b720342 sched/core: Update preempt_notifier_key to modern API
----
- kernel/sched/cpufreq_schedutil.c | 120 ++++++++++++++++++++++++++-------------
- 1 file changed, 81 insertions(+), 39 deletions(-)
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 2b124811947d..2a2ae3a0e41f 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -51,7 +51,7 @@ struct sugov_cpu {
- 	bool			iowait_boost_pending;
- 	unsigned int		iowait_boost;
- 	unsigned int		iowait_boost_max;
--	u64 last_update;
-+	u64			last_update;
- 
- 	/* The fields below are only needed when sharing a policy: */
- 	unsigned long		util_cfs;
-@@ -201,43 +201,97 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
- 	return min(util, sg_cpu->max);
- }
- 
--static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
-+/**
-+ * sugov_set_iowait_boost updates the IO boost at each wakeup from IO.
-+ * @sg_cpu: the sugov data for the CPU to boost
-+ * @time:   the update time from the caller
-+ * @flags:  SCHED_CPUFREQ_IOWAIT if the task is waking up after an IO wait
-+ *
-+ * Each time a task wakes up after an IO operation, the CPU utilization can be
-+ * boosted to a certain utilization which is doubled at each wakeup
-+ * from IO, starting from the utilization of the minimum OPP to that of the
-+ * maximum one.
-+ */
-+static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-+				   unsigned int flags)
- {
--	if (flags & SCHED_CPUFREQ_IOWAIT) {
--		if (sg_cpu->iowait_boost_pending)
--			return;
--
--		sg_cpu->iowait_boost_pending = true;
-+	bool iowait = flags & SCHED_CPUFREQ_IOWAIT;
- 
--		if (sg_cpu->iowait_boost) {
--			sg_cpu->iowait_boost <<= 1;
--			if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
--				sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
--		} else {
--			sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
--		}
--	} else if (sg_cpu->iowait_boost) {
-+	/* Reset boost if the CPU appears to have been idle enough */
-+	if (sg_cpu->iowait_boost) {
- 		s64 delta_ns = time - sg_cpu->last_update;
- 
--		/* Clear iowait_boost if the CPU apprears to have been idle. */
- 		if (delta_ns > TICK_NSEC) {
--			sg_cpu->iowait_boost = 0;
--			sg_cpu->iowait_boost_pending = false;
-+			sg_cpu->iowait_boost = iowait
-+				? sg_cpu->sg_policy->policy->min : 0;
-+			sg_cpu->iowait_boost_pending = iowait;
-+			return;
- 		}
- 	}
-+
-+	/* Boost only tasks waking up after IO */
-+	if (!iowait)
-+		return;
-+
-+	/* Ensure IO boost doubles only one time at each frequency increase */
-+	if (sg_cpu->iowait_boost_pending)
-+		return;
-+	sg_cpu->iowait_boost_pending = true;
-+
-+	/* Double the IO boost at each frequency increase */
-+	if (sg_cpu->iowait_boost) {
-+		sg_cpu->iowait_boost <<= 1;
-+		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
-+			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
-+		return;
-+	}
-+
-+	/* At first wakeup after IO, start with minimum boost */
-+	sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
- }
- 
--static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
--			       unsigned long *max)
-+/**
-+ * sugov_iowait_boost boosts a CPU after a wakeup from IO.
-+ * @sg_cpu: the sugov data for the cpu to boost
-+ * @time:   the update time from the caller
-+ * @util:   the utilization to (eventually) boost
-+ * @max:    the maximum value the utilization can be boosted to
-+ *
-+ * A CPU running a task which woken up after an IO operation can have its
-+ * utilization boosted to speed up the completion of those IO operations.
-+ * The IO boost value is increased each time a task wakes up from IO, in
-+ * sugov_set_iowait_boost(), and it's instead decreased by this function,
-+ * each time an increase has not been requested (!iowait_boost_pending).
-+ *
-+ * A CPU which also appears to have been idle for at least one tick has also
-+ * its IO boost utilization reset.
-+ *
-+ * This mechanism is designed to boost high frequently IO waiting tasks, while
-+ * being more conservative on tasks which does sporadic IO operations.
-+ */
-+static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-+			       unsigned long *util, unsigned long *max)
- {
- 	unsigned int boost_util, boost_max;
-+	s64 delta_ns;
- 
-+	/* No IOWait boost active */
- 	if (!sg_cpu->iowait_boost)
- 		return;
- 
-+	/* Clear boost if the CPU appears to have been idle enough */
-+	delta_ns = time - sg_cpu->last_update;
-+	if (delta_ns > TICK_NSEC) {
-+		sg_cpu->iowait_boost = 0;
-+		sg_cpu->iowait_boost_pending = false;
-+		return;
-+	}
-+
-+	/* An IO waiting task has just woken up, use the boost value */
- 	if (sg_cpu->iowait_boost_pending) {
- 		sg_cpu->iowait_boost_pending = false;
- 	} else {
-+		/* Reduce the boost value otherwise */
- 		sg_cpu->iowait_boost >>= 1;
- 		if (sg_cpu->iowait_boost < sg_cpu->sg_policy->policy->min) {
- 			sg_cpu->iowait_boost = 0;
-@@ -248,6 +302,10 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
- 	boost_util = sg_cpu->iowait_boost;
- 	boost_max = sg_cpu->iowait_boost_max;
- 
-+	/*
-+	 * A CPU is boosted only if its current utilization is smaller then
-+	 * the current IO boost level.
-+	 */
- 	if (*util * boost_max < *max * boost_util) {
- 		*util = boost_util;
- 		*max = boost_max;
-@@ -299,7 +357,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	sugov_get_util(sg_cpu);
- 	max = sg_cpu->max;
- 	util = sugov_aggregate_util(sg_cpu);
--	sugov_iowait_boost(sg_cpu, &util, &max);
-+	sugov_iowait_boost(sg_cpu, time, &util, &max);
- 	next_f = get_next_freq(sg_policy, util, max);
- 	/*
- 	 * Do not reduce the frequency if the CPU has not been idle
-@@ -325,28 +383,12 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
- 	for_each_cpu(j, policy->cpus) {
- 		struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
- 		unsigned long j_util, j_max;
--		s64 delta_ns;
- 
- 		sugov_get_util(j_sg_cpu);
--
--		/*
--		 * If the CFS CPU utilization was last updated before the
--		 * previous frequency update and the time elapsed between the
--		 * last update of the CPU utilization and the last frequency
--		 * update is long enough, reset iowait_boost and util_cfs, as
--		 * they are now probably stale. However, still consider the
--		 * CPU contribution if it has some DEADLINE utilization
--		 * (util_dl).
--		 */
--		delta_ns = time - j_sg_cpu->last_update;
--		if (delta_ns > TICK_NSEC) {
--			j_sg_cpu->iowait_boost = 0;
--			j_sg_cpu->iowait_boost_pending = false;
--		}
--
- 		j_max = j_sg_cpu->max;
- 		j_util = sugov_aggregate_util(j_sg_cpu);
--		sugov_iowait_boost(j_sg_cpu, &j_util, &j_max);
-+		sugov_iowait_boost(j_sg_cpu, time, &j_util, &j_max);
-+
- 		if (j_util * max > j_max * util) {
- 			util = j_util;
- 			max = j_max;
--- 
-2.15.1
+Yes I know, doesn't mean we shouldn't discourage it for new code; also Linus.
