@@ -1,81 +1,55 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v2 5/6] sched/fair: Select an energy-efficient CPU on
- task wake-up
-Date: Tue, 10 Apr 2018 19:14:42 +0100
-Message-ID: <20180410181442.GA9565@e108498-lin.cambridge.arm.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-6-dietmar.eggemann@arm.com>
- <20180410172932.GD4043@hirez.programming.kicks-ass.net>
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Tue, 10 Apr 2018 11:19:54 -0700
+Message-ID: <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+         <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+         <20180410123305.GF4082@hirez.programming.kicks-ass.net>
+         <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180410172932.GD4043@hirez.programming.kicks-ass.net>
+In-Reply-To: <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Andy Whitcroft <apw@canonical.com>
+Cc: yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 10 Apr 2018 at 19:29:32 (+0200), Peter Zijlstra wrote:
-> On Fri, Apr 06, 2018 at 04:36:06PM +0100, Dietmar Eggemann wrote:
-> > +	for_each_freq_domain(fd) {
-> > +		unsigned long spare_cap, max_spare_cap = 0;
-> > +		int max_spare_cap_cpu = -1;
-> > +		unsigned long util;
-> > +
-> > +		/* Find the CPU with the max spare cap in the freq. dom. */
-> > +		for_each_cpu_and(cpu, freq_domain_span(fd), sched_domain_span(sd)) {
-> > +			if (!cpumask_test_cpu(cpu, &p->cpus_allowed))
-> > +				continue;
-> > +
-> > +			if (cpu == prev_cpu)
-> > +				continue;
-> > +
-> > +			util = cpu_util_wake(cpu, p);
-> > +			cpu_cap = capacity_of(cpu);
-> > +			if (!util_fits_capacity(util + task_util, cpu_cap))
-> > +				continue;
-> > +
-> > +			spare_cap = cpu_cap - util;
-> > +			if (spare_cap > max_spare_cap) {
-> > +				max_spare_cap = spare_cap;
-> > +				max_spare_cap_cpu = cpu;
-> > +			}
-> > +		}
-> > +
-> > +		/* Evaluate the energy impact of using this CPU. */
-> > +		if (max_spare_cap_cpu >= 0) {
-> > +			cur_energy = compute_energy(p, max_spare_cap_cpu);
-> > +			if (cur_energy < best_energy) {
-> > +				best_energy = cur_energy;
-> > +				best_energy_cpu = max_spare_cap_cpu;
-> > +			}
-> > +		}
-> > +	}
-> 
-> If each CPU has its own frequency domain, then the above loop ends up
-> being O(n^2), no?
+A struct with a bool member can have different sizes on various
+architectures because neither bool size nor alignment is standardized.
 
-Hmmm, yes, that should be O(n^2) indeed.
+So emit a message on the use of bool in structs only in .h files and
+not .c files.
 
-> Is there really nothing we can do about that?
+There is the real possibility that this test could have a false positive
+when a bool is declared as an automatic, so limit the test to .h files
+where the only false positive is for declarations in static inline functions.
 
-So, the only thing I see just now would be to make compute_energy()
-smarter somehow. Today we compute the energy consumed by each frequency
-domain and then sum them up to get the system energy. We re-compute the
-energy of each frequency domain, even when it is not involved in the
-migration. In the case you describe, we will end up re-computing the
-energy of many frequency domains on which nothing happens every time
-we re-call compute_energy(). So there is probably something we could do
-by caching those values somehow.
+Signed-off-by: Joe Perches <joe@perches.com>
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+---
+ scripts/checkpatch.pl | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Otherwise, on systems with 2 frequency domains (e.g. big.LITTLE), the
-current code should behave relatively well. And I think that covers a
-large portion of the real-world systems for which EAS is useful, as of
-today at least ... :-)
-
-> Also, I
-> feel that warrants a comment warning about this.
-> 
-> Someone, somewhere will try and build a 64+64 cpu system and get
-> surprised it doesn't work :-)
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index e16d6713f236..24618dffc5cb 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -6257,6 +6257,13 @@ sub process {
+ 			     "Avoid using bool as bitfield.  Prefer bool bitfields as unsigned int or u<8|16|32>\n" . $herecurr);
+ 		}
+ 
++# check for bool use in .h files
++		if ($realfile =~ /\.h$/ &&
++		    $sline =~ /^.\s+bool\s*$Ident\s*(?::\s*d+\s*)?;/) {
++			CHK("BOOL_MEMBER",
++			    "Avoid using bool structure members because of possible alignment issues - see: https://lkml.org/lkml/2017/11/21/384\n" . $herecurr);
++		}
++
+ # check for semaphores initialized locked
+ 		if ($line =~ /^.\s*sema_init.+,\W?0\W?\)/) {
+ 			WARN("CONSIDER_COMPLETION",
+-- 
+2.15.0
