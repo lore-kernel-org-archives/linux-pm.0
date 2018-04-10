@@ -1,35 +1,71 @@
-From: Sasha Levin <Alexander.Levin@microsoft.com>
-Subject: Re: [PATCH v3] cpufreq: cppc_cpufreq: Initialize shared cpu's perf
- capabilities
-Date: Tue, 10 Apr 2018 13:50:11 +0000
-Message-ID: <DM5PR2101MB1032506EC8C3EBB8CC3ADD97FBBE0@DM5PR2101MB1032.namprd21.prod.outlook.com>
-References: <1522982629-7557-1-git-send-email-shunyong.yang@hxt-semitech.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Tue, 10 Apr 2018 14:56:41 +0100
+Message-ID: <20180410135640.GB3866@e108498-lin.cambridge.arm.com>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-5-dietmar.eggemann@arm.com>
+ <20180410125105.GC4043@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1522982629-7557-1-git-send-email-shunyong.yang@hxt-semitech.com>
-Content-Language: en-US
-Sender: stable-owner@vger.kernel.org
-To: Sasha Levin <Alexander.Levin@microsoft.com>, Shunyong Yang <shunyong.yang@hxt-semitech.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Joey Zheng <yu.zheng@hxt-semitech.com>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180410125105.GC4043@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tuesday 10 Apr 2018 at 14:51:05 (+0200), Peter Zijlstra wrote:
+> On Fri, Apr 06, 2018 at 04:36:05PM +0100, Dietmar Eggemann wrote:
+> > +static inline
+> > +struct capacity_state *find_cap_state(int cpu, unsigned long util)
+> > +{
+> > +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
+> > +	struct capacity_state *cs = NULL;
+> > +	int i;
+> > +
+> > +	util += util >> 2;
+> > +
+> > +	for (i = 0; i < em->nr_cap_states; i++) {
+> > +		cs = &em->cap_states[i];
+> > +		if (cs->cap >= util)
+> > +			break;
+> > +	}
+> > +
+> > +	return cs;
+> > +}
+> 
+> So in the last thread there was some discussion about this; in
+> particular on how this related to schedutil and if we should tie it into
+> that.
+> 
+> I think for starters tying it to schedutil is not a bad idea; ideally
+> people _should_ migrate towards using that.
+> 
+> Also; I think it makes sense to better integrate cpufreq and the
+> energy-model values like what rjw already suggested, such that maybe we
+> can have cpufreq_driver_resolve_freq() return a structure containing the
+> relevant information for the selected frequency.
 
-[This is an automated email]
+I guess if we want to do that in the wake-up path, we would also need to
+add a new parameter to it to make sure we don't actually call into
+cpufreq_driver->resolve_freq() ...
 
-This commit has been processed by the -stable helper bot and determined
-to be a high probability candidate for -stable trees. (score: 14.0185)
+But then, we could sort of rely on cpufreq_schedutil.c::get_next_freq()
+to replace find_cap_state() ... Is this what you had in mind ?
 
-The bot has tested the following trees: v4.16.1, v4.15.16, v4.14.33, v4.9.9=
-3, v4.4.127.
+> 
+> But implementing the frequency selection thing in multiple places like
+> now sounds like a very bad idea to me.
 
-v4.16.1: Build OK!
-v4.15.16: Build OK!
-v4.14.33: Build OK!
-v4.9.93: Build OK!
-v4.4.127: Build OK!
+Understood. Making sure we share the same code everywhere might have
+consequences though. I guess we'll have to either accept the cost of
+function calls in the wake-up path, or to accept to inline those
+functions for ex. Or maybe you had something else in mind ?
 
-Please let us know if you'd like to have this patch included in a stable tr=
-ee.
+Anyways, that's probably another good discussion topic for OSPM
+next week :-)
+
+Thanks,
+Quentin
