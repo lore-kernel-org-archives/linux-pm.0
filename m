@@ -1,50 +1,46 @@
-From: yuankuiz@codeaurora.org
-Subject: Re: Subject: [PATCH] [PATCH] time: tick-sched: use bool for
- tick_stopped
-Date: Tue, 10 Apr 2018 16:12:00 +0800
-Message-ID: <e1ef27ca497614463d4eb9a32eadfc00@codeaurora.org>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <alpine.DEB.2.21.1804100946060.2058@nanos.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+From: Jia-Ju Bai <baijiaju1990@gmail.com>
+Subject: [PATCH 1/3] thermal: armada_thermal: Replace mdelay with usleep_range in armada370_init_sensor
+Date: Tue, 10 Apr 2018 16:13:02 +0800
+Message-ID: <1523347982-29373-1-git-send-email-baijiaju1990@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.21.1804100946060.2058@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, fweisbec@gmail.com, peterz@infradead.org, aulmck@linux.vnet.ibm.com, mingo@kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-04-10 03:55 PM, Thomas Gleixner wrote:
-> On Tue, 10 Apr 2018, yuankuiz@codeaurora.org wrote:
-> 
->> From: John Zhao <yuankuiz@codeaurora.org>
->> 
->> Variable tick_stopped returned by tick_nohz_tick_stopped
->> can have only true / forse values. Since the return type
->> of the tick_nohz_tick_stopped is also bool, variable
->> tick_stopped nice to have data type as bool in place of int.
-> 
-> The data type is not int.
-[ZJ] Yes. Per newest tip in branch of linux-pm-cpuidle, it is unsigned 
-int with 1 bit in width.
-There is typo in commit message, "int" at here should be "unsigned int"
+armada370_init_sensor() is never called in atomic context.
 
-> It's part of an integer bitfield and occupies
-> exactly one bit of storage, while bool has an architecture dependend 
-> size
-> and is at least 1 byte, i.e. 8 bit. So with alignment effects you grew 
-> the
-> size of the data structure and therefore the cache foot print.
-[ZJ] So, 1 bit in width is specified as:
-+	bool				tick_stopped	: 1;
-      This patch is based on the linux-pm-cpuidle branch which has
-already gathered available space in the structure of tick_sched.
+armada370_init_sensor() is set as ".init_sensor" in 
+struct armada_thermal_data.
+".init_sensor" is called armada_thermal_probe().
+armada_thermal_probe() is set as ".probe" in struct platform_driver.
+This function is not called in atomic context.
 
-> 
-> This is not about 'nice to have' ....
-> 
-> Thanks,
-> 
-> 	tglx
+Despite never getting called from atomic context, armada370_init_sensor()
+calls mdelay() to busily wait.
+This is not necessary and can be replaced with usleep_range() to
+avoid busy waiting.
+
+This is found by a static analysis tool named DCNS written by myself.
+And I also manually check it.
+
+Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+---
+ drivers/thermal/armada_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index ae75328..807fe74 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -113,7 +113,7 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 	reg &= ~PMU_TDC0_START_CAL_MASK;
+ 	writel(reg, priv->control);
+ 
+-	mdelay(10);
++	usleep_range(10000, 11000);
+ }
+ 
+ static void armada375_init_sensor(struct platform_device *pdev,
+-- 
+1.9.1
