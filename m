@@ -1,104 +1,42 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v6 20/25] drivers: firmware: psci: Introduce psci_dt_topology_init()
-Date: Tue, 10 Apr 2018 09:19:26 +0200
-Message-ID: <CAPDyKFpJQZ87ViwZxX_yBnKPzgRv5YxbLz=qxScBTMCvY6e2vw@mail.gmail.com>
-References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
- <1521046715-30683-21-git-send-email-ulf.hansson@linaro.org> <20180314173833.dyu7jtweu233rfi4@lakrids.cambridge.arm.com>
+From: yuankuiz@codeaurora.org
+Subject: Subject: [PATCH] [PATCH] time: tick-sched: use bool for tick_stopped
+Date: Tue, 10 Apr 2018 15:33:44 +0800
+Message-ID: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180314173833.dyu7jtweu233rfi4@lakrids.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, fweisbec@gmail.com, peterz@infradead.org, tglx@linutronix.de, aulmck@linux.vnet.ibm.com, mingo@kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14 March 2018 at 18:38, Mark Rutland <mark.rutland@arm.com> wrote:
-> On Wed, Mar 14, 2018 at 05:58:30PM +0100, Ulf Hansson wrote:
->> In case the hierarchical layout is used in DT, we want to initialize the
->> corresponding PM domain topology for the CPUs, by using the generic PM
->> domain (aka genpd) infrastructure.
->>
->> At first glance, it may seem feasible to hook into the existing
->> psci_dt_init() function, although because it's called quite early in the
->> boot sequence, allocating the dynamic data structure for a genpd doesn't
->> work.
->>
->> Therefore, let's export a new init function for PSCI,
->> psci_dt_topology_init(), which the ARM machine code should call from a
->> suitable initcall.
->>
->> Succeeding to initialize the PM domain topology, which means at least one
->> instance of a genpd becomes created, allows us to continue to enable the
->> PSCI OS initiated mode for the platform. If everything turns out fine,
->> let's print a message in log to inform the user about the changed mode.
->>
->> In case of any failures, we stick to the default PSCI Platform Coordinated
->> mode.
->
-> For kexec/kdump we'll need to explicitly set the suspend mode to
-> platform coordinated if for whatever reason we choose not to use OSI.
+ From: John Zhao <yuankuiz@codeaurora.org>
 
-Could you please elaborate on this? I am not really understanding what
-you are suggesting me to do and why.
+Variable tick_stopped returned by tick_nohz_tick_stopped
+can have only true / forse values. Since the return type
+of the tick_nohz_tick_stopped is also bool, variable
+tick_stopped nice to have data type as bool in place of int.
+Moreover, the executed instructions cost could be minimal
+without potiential data type conversion.
 
->
->>
->> Cc: Lina Iyer <ilina@codeaurora.org>
->> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  drivers/firmware/psci.c | 31 +++++++++++++++++++++++++++++++
->>  include/linux/psci.h    |  2 ++
->>  2 files changed, 33 insertions(+)
->>
->> diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
->> index 463f78c..45d55fc 100644
->> --- a/drivers/firmware/psci.c
->> +++ b/drivers/firmware/psci.c
->> @@ -723,6 +723,37 @@ int __init psci_dt_init(void)
->>       return ret;
->>  }
->>
->> +int __init psci_dt_topology_init(void)
->> +{
->> +     struct device_node *np;
->> +     int ret;
->> +
->> +     if (!psci_has_osi_support())
->> +             return 0;
->> +
->> +     np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
->> +     if (!np)
->> +             return -ENODEV;
->> +
->> +     /* Initialize the CPU PM domains based on topology described in DT. */
->> +     ret = psci_dt_init_pm_domains(np);
->> +     if (ret <= 0)
->> +             goto out;
->> +
->> +     /* Enable OSI mode. */
->> +     ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
->> +                          PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
->
-> IIUC, this patch will need to be moved after the subsequent two patches
-> to ensure that this series bisects cleanly.
+Signed-off-by: John Zhao <yuankuiz@codeaurora.org>
+---
+  kernel/time/tick-sched.h | 2 +-
+  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Actually not.
+diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
+index 6de959a..4d34309 100644
+--- a/kernel/time/tick-sched.h
++++ b/kernel/time/tick-sched.h
+@@ -48,8 +48,8 @@ struct tick_sched {
+  	unsigned long			check_clocks;
+  	enum tick_nohz_mode		nohz_mode;
 
-$subject patch adds a new init function, which purpose is to
-initialize the PSCI PM domains. At this point none is calling it.
-
-The following changes, builds on top, making it possible to add CPU
-devices to the PSCI PM domains (if the PM domains has been created and
-OSI mode successfully enabled) and also to properly deal CPU hotplug
-when OSI mode is enabled.
-
-The purpose doing it this way is to keep changes small and
-review-able, but in principle I can squash 20, 21 and 22 - if you
-prefer.
-
-Again, thanks for reviewing!
-
-Kind regards
-Uffe
++	bool				tick_stopped	: 1;
+  	unsigned int			inidle		: 1;
+-	unsigned int			tick_stopped	: 1;
+  	unsigned int			idle_active	: 1;
+  	unsigned int			do_timer_last	: 1;
+  	unsigned int			got_idle_tick	: 1;
