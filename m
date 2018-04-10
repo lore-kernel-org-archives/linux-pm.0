@@ -1,40 +1,84 @@
-From: "Bityutskiy, Artem" <artem.bityutskiy@intel.com>
-Subject: Re: [PATCH][RFC] tools/power turbostat: if --max_loop, print for
- specific time of loops
-Date: Tue, 10 Apr 2018 11:02:22 +0000
-Message-ID: <1523358141.2753.194.camel@intel.com>
-References: <20180410101831.28530-1-yu.c.chen@intel.com>
-Reply-To: "Bityutskiy, Artem" <artem.bityutskiy@intel.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info
+ available
+Date: Tue, 10 Apr 2018 12:04:12 +0100
+Message-ID: <20180410110412.GG14248@e110439-lin>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180410101831.28530-1-yu.c.chen@intel.com>
-Content-Language: en-US
-Content-ID: <9CAD6EC5472D3B4BA0D098C7505E52A5@intel.com>
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>, "lenb@kernel.org" <lenb@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDE4LTA0LTEwIGF0IDE4OjE4ICswODAwLCBZdSBDaGVuIHdyb3RlOg0KPiBAQCAt
-NTA3Niw2ICs1MDg0LDE1IEBAIHZvaWQgY21kbGluZShpbnQgYXJnYywgY2hhciAqKmFyZ3YpDQo+
-ICAgICAgICAgICAgICAgICAgICAgICAgIHByaW50X3ZlcnNpb24oKTsNCj4gICAgICAgICAgICAg
-ICAgICAgICAgICAgZXhpdCgwKTsNCj4gICAgICAgICAgICAgICAgICAgICAgICAgYnJlYWs7DQo+
-ICsgICAgICAgICAgICAgICBjYXNlICd4JzoNCj4gKyAgICAgICAgICAgICAgICAgICAgICAgew0K
-PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHVuc2lnbmVkIGludCBsb29wcyA9IHN0
-cnRvZChvcHRhcmcsIE5VTEwpOw0KDQpJdCB3b3VsZCBtYWtlIHNlbnNlIHRvIGVycm9yIG91dCBo
-ZXJlIGlmIHlvdSBnZXQgYSB2YWx1ZSA8PSAwLg0KDQo+ICsNCj4gKyAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICBpZiAobG9vcHMgJSAyKQ0KPiArICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgbG9vcHMrKzsNCg0KV2hhdCBpcyB0aGlzIGZvcj8NCg0KPiArICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIG1heF9sb29wcyA9IGxvb3BzOw0KDQpJcyB0aGUgImxv
-b3BzIiB2YXJpYWJsZSByZWFsbHkgbmVlZGVkPyBDYW4geW91IHN0cnRvZCBkaXJlY3RseSB0bw0K
-bWF4X2xvb3BzPw0KDQotLSANCkJlc3QgUmVnYXJkcywNCkFydGVtIEJpdHl1dHNraXkKLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tCkludGVsIEZpbmxhbmQgT3kKUmVnaXN0ZXJlZCBBZGRyZXNzOiBQTCAyODEsIDAwMTgx
-IEhlbHNpbmtpIApCdXNpbmVzcyBJZGVudGl0eSBDb2RlOiAwMzU3NjA2IC0gNCAKRG9taWNpbGVk
-IGluIEhlbHNpbmtpIAoKVGhpcyBlLW1haWwgYW5kIGFueSBhdHRhY2htZW50cyBtYXkgY29udGFp
-biBjb25maWRlbnRpYWwgbWF0ZXJpYWwgZm9yCnRoZSBzb2xlIHVzZSBvZiB0aGUgaW50ZW5kZWQg
-cmVjaXBpZW50KHMpLiBBbnkgcmV2aWV3IG9yIGRpc3RyaWJ1dGlvbgpieSBvdGhlcnMgaXMgc3Ry
-aWN0bHkgcHJvaGliaXRlZC4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkCnJlY2lwaWVudCwg
-cGxlYXNlIGNvbnRhY3QgdGhlIHNlbmRlciBhbmQgZGVsZXRlIGFsbCBjb3BpZXMuCg==
+Hi Vincent,
+
+On 09-Apr 10:51, Vincent Guittot wrote:
+> Hi Patrick
+> 
+> On 6 April 2018 at 19:28, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> > Schedutil is not properly updated when the first FAIR task wakes up on a
+> > CPU and when a RQ is (un)throttled. This is mainly due to the current
+> > integration strategy, which relies on updates being triggered implicitly
+> > each time a cfs_rq's utilization is updated.
+> >
+> > Those updates are currently provided (mainly) via
+> >    cfs_rq_util_change()
+> > which is used in:
+> >  - update_cfs_rq_load_avg()
+> >    when the utilization of a cfs_rq is updated
+> >  - {attach,detach}_entity_load_avg()
+> > This is done based on the idea that "we should callback schedutil
+> > frequently enough" to properly update the CPU frequency at every
+> > utilization change.
+> >
+> > Since this recent schedutil update:
+> >
+> >   commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
+> >
+> > we use additional RQ information to properly account for FAIR tasks
+> > utilization. Specifically, cfs_rq::h_nr_running has to be non-zero
+> > in sugov_aggregate_util() to sum up the cfs_rq's utilization.
+> 
+> Isn't the use of cfs_rq::h_nr_running,  the root cause of the problem ?
+
+Not really...
+
+> I can now see a lot a frequency changes on my hikey with this new
+> condition in sugov_aggregate_util().
+> With a rt-app UC that creates a periodic cfs task, I have a lot of
+> frequency changes instead of staying at the same frequency
+
+I don't remember a similar behavior... but I'll check better.
+
+> Peter,
+> what was your goal with adding the condition "if
+> (rq->cfs.h_nr_running)" for the aggragation of CFS utilization
+
+The original intent was to get rid of sched class flags, used to track
+which class has tasks runnable from within schedutil. The reason was
+to solve some misalignment between scheduler class status and
+schedutil status.
+
+The solution, initially suggested by Viresh, and finally proposed by
+Peter was to exploit RQ knowledges directly from within schedutil.
+
+The problem is that now schedutil updated depends on two information:
+utilization changes and number of RT and CFS runnable tasks.
+
+Thus, using cfs_rq::h_nr_running is not the problem... it's actually
+part of a much more clean solution of the code we used to have.
+
+The problem, IMO is that we now depend on other information which
+needs to be in sync before calling schedutil... and the patch I
+proposed is meant to make it less likely that all the information
+required are not aligned (also in the future).
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
