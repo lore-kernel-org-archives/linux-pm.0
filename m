@@ -1,98 +1,104 @@
-From: Michel Pollet <michel.pollet@bp.renesas.com>
-Subject: RE: [PATCH v3 2/8] DT: reset: renesas,rzn1-reboot: document RZ/N1
- reboot driver
-Date: Tue, 10 Apr 2018 07:08:45 +0000
-Message-ID: <OSBPR01MB2054DA948D0301F20AB9F1EDD2BE0@OSBPR01MB2054.jpnprd01.prod.outlook.com>
-References: <1522309629-10152-1-git-send-email-michel.pollet@bp.renesas.com>
- <1522309629-10152-3-git-send-email-michel.pollet@bp.renesas.com>
- <20180409201027.ydlvyx72mrt5fphh@rob-hp-laptop>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v6 20/25] drivers: firmware: psci: Introduce psci_dt_topology_init()
+Date: Tue, 10 Apr 2018 09:19:26 +0200
+Message-ID: <CAPDyKFpJQZ87ViwZxX_yBnKPzgRv5YxbLz=qxScBTMCvY6e2vw@mail.gmail.com>
+References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
+ <1521046715-30683-21-git-send-email-ulf.hansson@linaro.org> <20180314173833.dyu7jtweu233rfi4@lakrids.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180409201027.ydlvyx72mrt5fphh@rob-hp-laptop>
-Content-Language: en-US
+In-Reply-To: <20180314173833.dyu7jtweu233rfi4@lakrids.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Phil Edworthy <phil.edworthy@renesas.com>, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
-
-On 09 April 2018 21:10,  Rob Herring wrote:
-> On Thu, Mar 29, 2018 at 08:46:58AM +0100, Michel Pollet wrote:
-> > The Renesas RZ/N1 Family (Part #R9A06G0xx) requires a driver as part
-> > of the sysctrl MFD to handle rebooting the CA7 cores.
-> > This documents the driver bindings.
-> >
-> > Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
-> > ---
-> >  .../bindings/power/renesas,rzn1-reboot.txt           | 20
-> ++++++++++++++++++++
-> >  1 file changed, 20 insertions(+)
-> >  create mode 100644
-> > Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
-> >
-> > diff --git
-> > a/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
-> > b/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
-> > new file mode 100644
-> > index 0000000..f592769
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/renesas,rzn1-
-> reboot.txt
-> > @@ -0,0 +1,20 @@
-> > +DT bindings for the Renesas RZ/N1 Reboot Driver
-> > +
-> > +=3D=3D Reboot Driver Node =3D=3D
-> > +
-> > +The reboot driver is always a subnode of the system controller node,
-> > +see renesas,rzn1-sysctrl.txt for details.
-> > +
-> > +Bindings:
-> > ++ Required:
-> > +compatible =3D "renesas,rzn1-reboot";
-> > +
-> > +Example:
-> > +sysctrl: sysctrl@4000c000 {
-> > +compatible =3D "renesas,rzn1-sysctrl", "syscon", "simple-mfd";
+On 14 March 2018 at 18:38, Mark Rutland <mark.rutland@arm.com> wrote:
+> On Wed, Mar 14, 2018 at 05:58:30PM +0100, Ulf Hansson wrote:
+>> In case the hierarchical layout is used in DT, we want to initialize the
+>> corresponding PM domain topology for the CPUs, by using the generic PM
+>> domain (aka genpd) infrastructure.
+>>
+>> At first glance, it may seem feasible to hook into the existing
+>> psci_dt_init() function, although because it's called quite early in the
+>> boot sequence, allocating the dynamic data structure for a genpd doesn't
+>> work.
+>>
+>> Therefore, let's export a new init function for PSCI,
+>> psci_dt_topology_init(), which the ARM machine code should call from a
+>> suitable initcall.
+>>
+>> Succeeding to initialize the PM domain topology, which means at least one
+>> instance of a genpd becomes created, allows us to continue to enable the
+>> PSCI OS initiated mode for the platform. If everything turns out fine,
+>> let's print a message in log to inform the user about the changed mode.
+>>
+>> In case of any failures, we stick to the default PSCI Platform Coordinated
+>> mode.
 >
-> Are there other functions for this block? If so, please define a complete
-> binding for the block.
+> For kexec/kdump we'll need to explicitly set the suspend mode to
+> platform coordinated if for whatever reason we choose not to use OSI.
 
-There are indeed multiple functions for this particular IP block. It's pret=
-ty much a
-kitchen sink of clocks, pinmux, reboot, watchdog, SMP and probably a couple
-more I forgot about!
-
-We've discussed this MFD structure with Geert, we picked that because if I
-were to add all these callbacks/drivers to a 'sysctrl' driver, it'd end up =
-looking
-like ... a mach-xx.c file in the end!
-So the current version is just a placeholder for a single driver for now, b=
-ut it
-won't last, there's already a SMP core enable driver lined up next...
+Could you please elaborate on this? I am not really understanding what
+you are suggesting me to do and why.
 
 >
-> > +reg =3D <0x4000c000 0x1000>;
-> > +
-> > +reboot {
-> > +compatible =3D "renesas,rzn1-reboot";
+>>
+>> Cc: Lina Iyer <ilina@codeaurora.org>
+>> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/firmware/psci.c | 31 +++++++++++++++++++++++++++++++
+>>  include/linux/psci.h    |  2 ++
+>>  2 files changed, 33 insertions(+)
+>>
+>> diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+>> index 463f78c..45d55fc 100644
+>> --- a/drivers/firmware/psci.c
+>> +++ b/drivers/firmware/psci.c
+>> @@ -723,6 +723,37 @@ int __init psci_dt_init(void)
+>>       return ret;
+>>  }
+>>
+>> +int __init psci_dt_topology_init(void)
+>> +{
+>> +     struct device_node *np;
+>> +     int ret;
+>> +
+>> +     if (!psci_has_osi_support())
+>> +             return 0;
+>> +
+>> +     np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
+>> +     if (!np)
+>> +             return -ENODEV;
+>> +
+>> +     /* Initialize the CPU PM domains based on topology described in DT. */
+>> +     ret = psci_dt_init_pm_domains(np);
+>> +     if (ret <= 0)
+>> +             goto out;
+>> +
+>> +     /* Enable OSI mode. */
+>> +     ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
+>> +                          PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
 >
-> Why is this node needed? The driver for "renesas,rzn1-sysctrl" should be
-> able to register as a reboot handler/driver/provider.
+> IIUC, this patch will need to be moved after the subsequent two patches
+> to ensure that this series bisects cleanly.
 
-Please see above...
+Actually not.
 
->
-> Rob
+$subject patch adds a new init function, which purpose is to
+initialize the PSCI PM domains. At this point none is calling it.
 
-Thanks for your input!
-Michel
+The following changes, builds on top, making it possible to add CPU
+devices to the PSCI PM domains (if the PM domains has been created and
+OSI mode successfully enabled) and also to properly deal CPU hotplug
+when OSI mode is enabled.
 
+The purpose doing it this way is to keep changes small and
+review-able, but in principle I can squash 20, 21 and 22 - if you
+prefer.
 
+Again, thanks for reviewing!
 
-
-Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
-uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
- No. 04586709.
+Kind regards
+Uffe
