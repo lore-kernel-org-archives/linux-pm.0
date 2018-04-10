@@ -1,102 +1,63 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: [PATCH][RFC] tools/power turbostat: if --max_loop, print for specific time of loops
-Date: Tue, 10 Apr 2018 18:18:31 +0800
-Message-ID: <20180410101831.28530-1-yu.c.chen@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH 2/6] sched: Introduce energy models of CPUs
+Date: Tue, 10 Apr 2018 12:20:00 +0200
+Message-ID: <CAJZ5v0hCR-X9zoPnw=RUwStTe=8JGcmxS8d_fjC2W0hf1cowLA@mail.gmail.com>
+References: <20180320094312.24081-1-dietmar.eggemann@arm.com>
+ <20180320094312.24081-3-dietmar.eggemann@arm.com> <20180409120111.GA4043@hirez.programming.kicks-ass.net>
+ <20180409134510.GA4577@e108498-lin.cambridge.arm.com> <20180409153233.GA4082@hirez.programming.kicks-ass.net>
+ <20180409164205.GA3520@e108498-lin.cambridge.arm.com> <CAJZ5v0hEvQ1jJYErGCa2d6pcydMYrD9_+uh7eM2F6v08NyGQ6Q@mail.gmail.com>
+ <20180410093022.GA26106@e108498-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180410093022.GA26106@e108498-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Artem Bityutskiy <artem.bityutskiy@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chen Yu <yu.c.chen@intel.com>
+On Tue, Apr 10, 2018 at 11:31 AM, Quentin Perret <quentin.perret@arm.com> wrote:
+> On Tuesday 10 Apr 2018 at 08:55:14 (+0200), Rafael J. Wysocki wrote:
+>> On Mon, Apr 9, 2018 at 6:42 PM, Quentin Perret <quentin.perret@arm.com> wrote:
+>> > On Monday 09 Apr 2018 at 17:32:33 (+0200), Peter Zijlstra wrote:
+>> >> On Mon, Apr 09, 2018 at 02:45:11PM +0100, Quentin Perret wrote:
+>
+> [...]
+>
+>> > I quiet like the first idea from a pure design standpoint, but I could
+>> > also understand if maintainers of other archs were reluctant to
+>> > have new dependencies on PM_OPP ...
+>>
+>> Not just reluctant I would think.
+>>
+>> Depending on PM_OPP directly here is like depending on ACPI directly.
+>> Would you agree with the latter?
+>
+> Right, I see your point. I was suggesting to use PM_OPP only to make the
+> OPPs *visible*, nothing else. That doesn't mean all archs would have
+> to use dev_pm_opp_set_rate() or anything, they could just keep on doing
+> DVFS their own way. PM_OPP would just be a common way to make OPPs
+> visible outside of their subsystem, which should be harmless. The point
+> is to keep the energy model loading code common to all archs.
+>
+> Another solution would be to let the archs populate the energy model
+> data-structures themselves, and turn the current energy.c file into
+> arm/arm64-specific code for ex.
+>
+> Overall, I guess the question is whether or not PM_OPP is the right
+> interface for EAS of multiple archs ... That sounds like an interesting
+> discussion topic for OSPM next week,
 
-There's a use case during test to only print specific round of loops
-if --interval is specified, for example, with this patch applied:
+I agree.
 
-turbostat -i 5 --max_loops 4
-will capture 4 samples with 5 seconds interval.
+> so thanks a lot for raising this point !
 
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+And moreover, we already have cpufreq and cpuidle that use their own
+representations of the same information, generally coming from lower
+layers.  They do that, because they need to work with different
+platforms that generally represent the low-level information
+differently.  I don't see why that principle doesn't apply to EAS.
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bd9c6b31a504..a35418a59468 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -48,6 +48,7 @@ char *proc_stat = "/proc/stat";
- FILE *outf;
- int *fd_percpu;
- struct timespec interval_ts = {5, 0};
-+unsigned int max_loops;
- unsigned int debug;
- unsigned int quiet;
- unsigned int sums_need_wide_columns;
-@@ -470,6 +471,7 @@ void help(void)
- 	"		{core | package | j,k,l..m,n-p }\n"
- 	"--quiet	skip decoding system configuration header\n"
- 	"--interval sec	Override default 5-second measurement interval\n"
-+	"--max_loops times	The number of loops if interval is specified\n"
- 	"--help		print this help message\n"
- 	"--list		list column headers only\n"
- 	"--out file	create or truncate \"file\" for all output\n"
-@@ -2565,6 +2567,7 @@ void turbostat_loop()
- {
- 	int retval;
- 	int restarted = 0;
-+	int loops = 0;
- 
- restart:
- 	restarted++;
-@@ -2583,6 +2586,7 @@ void turbostat_loop()
- 	restarted = 0;
- 	gettimeofday(&tv_even, (struct timezone *)NULL);
- 
-+	loops = 0;
- 	while (1) {
- 		if (for_all_proc_cpus(cpu_is_not_present)) {
- 			re_initialize();
-@@ -2626,6 +2630,9 @@ void turbostat_loop()
- 		compute_average(ODD_COUNTERS);
- 		format_all_counters(ODD_COUNTERS);
- 		flush_output_stdout();
-+
-+		if (++loops >= (max_loops/2))
-+			break;
- 	}
- }
- 
-@@ -5009,12 +5016,13 @@ void cmdline(int argc, char **argv)
- 		{"Summary",	no_argument,		0, 'S'},
- 		{"TCC",		required_argument,	0, 'T'},
- 		{"version",	no_argument,		0, 'v' },
-+		{"max_loops",	required_argument,	0, 'x'},
- 		{0,		0,			0,  0 }
- 	};
- 
- 	progname = argv[0];
- 
--	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:v",
-+	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:vx:",
- 				long_options, &option_index)) != -1) {
- 		switch (opt) {
- 		case 'a':
-@@ -5076,6 +5084,15 @@ void cmdline(int argc, char **argv)
- 			print_version();
- 			exit(0);
- 			break;
-+		case 'x':
-+			{
-+				unsigned int loops = strtod(optarg, NULL);
-+
-+				if (loops % 2)
-+					loops++;
-+				max_loops = loops;
-+			}
-+			break;
- 		}
- 	}
- }
--- 
-2.13.6
+Maybe there should be a common data structure to be used by them all,
+but I'm quite confident that PM_OPP is not suitable for this purpose
+in general.
