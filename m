@@ -1,55 +1,118 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Tue, 10 Apr 2018 16:08:53 +0200
-Message-ID: <20180410140853.GG4082@hirez.programming.kicks-ass.net>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-5-dietmar.eggemann@arm.com>
- <20180410125105.GC4043@hirez.programming.kicks-ass.net>
- <20180410135640.GB3866@e108498-lin.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: [PATCH][v2] tools/power turbostat: if --max_loop, print for specific time of loops
+Date: Tue, 10 Apr 2018 22:51:41 +0800
+Message-ID: <20180410145141.31166-1-yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180410135640.GB3866@e108498-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Artem Bityutskiy <artem.bityutskiy@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 10, 2018 at 02:56:41PM +0100, Quentin Perret wrote:
-> > So in the last thread there was some discussion about this; in
-> > particular on how this related to schedutil and if we should tie it into
-> > that.
-> > 
-> > I think for starters tying it to schedutil is not a bad idea; ideally
-> > people _should_ migrate towards using that.
-> > 
-> > Also; I think it makes sense to better integrate cpufreq and the
-> > energy-model values like what rjw already suggested, such that maybe we
-> > can have cpufreq_driver_resolve_freq() return a structure containing the
-> > relevant information for the selected frequency.
-> 
-> I guess if we want to do that in the wake-up path, we would also need to
-> add a new parameter to it to make sure we don't actually call into
-> cpufreq_driver->resolve_freq() ...
-> 
-> But then, we could sort of rely on cpufreq_schedutil.c::get_next_freq()
-> to replace find_cap_state() ... Is this what you had in mind ?
+From: Chen Yu <yu.c.chen@intel.com>
 
-Yes, something along those lines; we could also of course factor
-get_next_freq() into two parts.
+There's a use case during test to only print specific round of loops
+if --iterations is specified, for example, with this patch applied:
 
-> > But implementing the frequency selection thing in multiple places like
-> > now sounds like a very bad idea to me.
-> 
-> Understood. Making sure we share the same code everywhere might have
-> consequences though. I guess we'll have to either accept the cost of
-> function calls in the wake-up path, or to accept to inline those
-> functions for ex. Or maybe you had something else in mind ?
-> 
-> Anyways, that's probably another good discussion topic for OSPM
-> next week :-)
+turbostat -i 5 -t 4
+will capture 4 samples with 5 seconds interval.
 
-Yes, that wants a wee bit of discussion. Ideally we'd have a shared data
-structure we can iterate instead of a chain of indirect calls.
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index bd9c6b31a504..7a09291765af 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -48,6 +48,7 @@ char *proc_stat = "/proc/stat";
+ FILE *outf;
+ int *fd_percpu;
+ struct timespec interval_ts = {5, 0};
++int iterations;
+ unsigned int debug;
+ unsigned int quiet;
+ unsigned int sums_need_wide_columns;
+@@ -470,6 +471,7 @@ void help(void)
+ 	"		{core | package | j,k,l..m,n-p }\n"
+ 	"--quiet	skip decoding system configuration header\n"
+ 	"--interval sec	Override default 5-second measurement interval\n"
++	"--iterations loops	The number of loops if interval is specified\n"
+ 	"--help		print this help message\n"
+ 	"--list		list column headers only\n"
+ 	"--out file	create or truncate \"file\" for all output\n"
+@@ -2565,6 +2567,7 @@ void turbostat_loop()
+ {
+ 	int retval;
+ 	int restarted = 0;
++	int loops = 0;
+ 
+ restart:
+ 	restarted++;
+@@ -2583,6 +2586,7 @@ void turbostat_loop()
+ 	restarted = 0;
+ 	gettimeofday(&tv_even, (struct timezone *)NULL);
+ 
++	loops = 0;
+ 	while (1) {
+ 		if (for_all_proc_cpus(cpu_is_not_present)) {
+ 			re_initialize();
+@@ -2607,6 +2611,10 @@ void turbostat_loop()
+ 		compute_average(EVEN_COUNTERS);
+ 		format_all_counters(EVEN_COUNTERS);
+ 		flush_output_stdout();
++
++		if (iterations && (++loops >= iterations))
++			break;
++
+ 		nanosleep(&interval_ts, NULL);
+ 		if (snapshot_proc_sysfs_files())
+ 			goto restart;
+@@ -2626,6 +2634,9 @@ void turbostat_loop()
+ 		compute_average(ODD_COUNTERS);
+ 		format_all_counters(ODD_COUNTERS);
+ 		flush_output_stdout();
++
++		if (iterations && (++loops >= iterations))
++			break;
+ 	}
+ }
+ 
+@@ -4999,6 +5010,7 @@ void cmdline(int argc, char **argv)
+ 		{"Dump",	no_argument,		0, 'D'},
+ 		{"debug",	no_argument,		0, 'd'},	/* internal, not documented */
+ 		{"interval",	required_argument,	0, 'i'},
++		{"iterations",	required_argument,	0, 't'},
+ 		{"help",	no_argument,		0, 'h'},
+ 		{"hide",	required_argument,	0, 'H'},	// meh, -h taken by --help
+ 		{"Joules",	no_argument,		0, 'J'},
+@@ -5014,7 +5026,7 @@ void cmdline(int argc, char **argv)
+ 
+ 	progname = argv[0];
+ 
+-	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:v",
++	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:vt:",
+ 				long_options, &option_index)) != -1) {
+ 		switch (opt) {
+ 		case 'a':
+@@ -5069,6 +5081,18 @@ void cmdline(int argc, char **argv)
+ 		case 'S':
+ 			summary_only++;
+ 			break;
++		case 't':
++			{
++				int loops = strtod(optarg, NULL);
++
++				if (loops <= 0) {
++					fprintf(outf, "loops %d should be positive number\n",
++						iterations);
++					exit(2);
++				}
++				iterations = loops;
++			}
++			break;
+ 		case 'T':
+ 			tcc_activation_temp_override = atoi(optarg);
+ 			break;
+-- 
+2.13.6
