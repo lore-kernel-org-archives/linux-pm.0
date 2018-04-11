@@ -1,84 +1,35 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Wed, 11 Apr 2018 09:51:26 -0700
-Message-ID: <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
-         <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
-         <20180410123305.GF4082@hirez.programming.kicks-ass.net>
-         <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
-         <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
-         <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
-         <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
-         <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
-         <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
-         <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info available
+Date: Wed, 11 Apr 2018 18:51:21 +0200
+Message-ID: <CAKfTPtA+79WitkoBHeaGxjxJzr=8A4aH7iimz54Doj2ok8JXcA@mail.gmail.com>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+ <20180410110412.GG14248@e110439-lin> <20180411151450.GK4043@hirez.programming.kicks-ass.net>
+ <CAKfTPtC+-FR3ZD_t1vkGR2gVoUyxXpE=i4g9zqqLXu4jKKqgUA@mail.gmail.com>
+ <20180411153710.GN4082@hirez.programming.kicks-ass.net> <CAKfTPtCNdxSmDfDO0Etf7fbYPeryrjdQChSGwMWxSRH8CcXqqg@mail.gmail.com>
+ <20180411160000.GO4082@hirez.programming.kicks-ass.net> <CAKfTPtDjyjC5R7bhjGxhV8BN5J+LdzJmMgwaaVuE9ypvcSKapA@mail.gmail.com>
+ <20180411161548.GP4082@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+In-Reply-To: <20180411161548.GP4082@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Julia Lawall <julia.lawall@lip6.fr>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-(Adding Julia Lawall)
+On 11 April 2018 at 18:15, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, Apr 11, 2018 at 06:10:47PM +0200, Vincent Guittot wrote:
+>> > Could is be that for some reason the nohz balancer now takes a very long
+>> > time to run?
+>>
+>> Heiner mentions that is was a relatively slow celeron and he uses
+>> ondemand governor. So I was about to ask him to use performance
+>> governor to see if it can be because cpu runs slow and takes too muche
+>> time to enter idle
+>
+> Maybe also hand him a patch with some trace_printk()s in and ask him to
+> send /debug/tracing/trace after it happens or somesuch. Maybe we can
+> find a clue that way.
 
-On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
-> We already have some 500 bools-in-structs
-
-I got at least triple that only in include/
-so I expect there are at probably an order
-of magnitude more than 500 in the kernel.
-
-I suppose some cocci script could count the
-actual number of instances.  A regex can not.
-
-> and the owners of that code will
-> be wondering whether they should change them, and whether they should
-> apply those remove-bool-in-struct patches which someone sent them.
-
-Which is why the warning is --strict only
-
-> So... can we please get some clarity here?
-
-
-> ...
-> 
-> (ooh, https://lkml.org/lkml/2017/11/21/384 is working this morning)
-> 
-> hm, Linus suggests that instead of using
-> 
-> 	bool mybool;
-> 
-> we should use
-> 
-> 	unsigned mybool:1;
-> 
-> However that introduces the risk that alterations of mybool will use
-> nonatomic rmw operations.
-> 
-> 	unsigned myboolA:1;
-> 	unsigned myboolB:1;
-> 
-> so
-> 
-> 	foo->myboolA = 1;
-> 
-> could scribble on concurrent alterations of foo->myboolB.  I think.
-
-Without barriers, that could happen anyway.
-
-To me, the biggest problem with conversions
-from bool to bitfield is logical.  ie:
-
-	unsigned int.singlebitfield = 4;
-
-is not the same result as
-
-	bool = 4;
-
-because of implicit truncation vs boolean conversion
-so a direct change of bool use in structs to unsigned
-would also require logic analysis.
+yes
