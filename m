@@ -1,92 +1,37 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
- idle cooling driver
-Date: Wed, 11 Apr 2018 11:29:53 +0200
-Message-ID: <a1533926-0d9b-248a-96e9-e3148b4d9f08@linaro.org>
-References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
- <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
- <20180411085130.GN7671@vireshk-i7>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH][v2] tools/power turbostat: if --max_loop, print for
+ specific time of loops
+Date: Wed, 11 Apr 2018 18:15:29 +0800
+Message-ID: <20180411101529.GA12068@yu-chen.sh.intel.com>
+References: <20180410145141.31166-1-yu.c.chen@intel.com>
+ <1523438944.2753.207.camel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180411085130.GN7671@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1523438944.2753.207.camel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-Hi Viresh,
-
-thanks for the review.
-
-
-On 11/04/2018 10:51, Viresh Kumar wrote:
-
-[ ... ]
-
->> +void __init cpuidle_cooling_register(void)
->> +{
->> +	struct cpuidle_cooling_device *idle_cdev = NULL;
->> +	struct thermal_cooling_device *cdev;
->> +	struct device_node *np;
->> +	cpumask_var_t cpumask;
+On Wed, Apr 11, 2018 at 12:29:04PM +0300, Artem Bityutskiy wrote:
+> On Tue, 2018-04-10 at 22:51 +0800, Yu Chen wrote:
+> > +		case 't':
+> > +			{
+> > +				int loops = strtod(optarg, NULL);
+> > +
+> > +				if (loops <= 0) {
+> > +					fprintf(outf, "loops %d should be positive number\n",
+> > +						iterations);
+> > +					exit(2);
+> > +				}
+> > +				iterations = loops;
+> > +			}
 > 
-> maybe call it clustermask ?
-
-Yeah, sounds better.
-
->> +		cdev = thermal_of_cooling_device_register(np, dev_name,
->> +							  idle_cdev,
->> +							  &cpuidle_cooling_ops);
->> +		if (IS_ERR(cdev)) {
->> +			ret = PTR_ERR(cdev);
->> +			goto out;
->> +		}
->> +
->> +		idle_cdev->cdev = cdev;
->> +		cpumask_set_cpu(cluster_id, cpumask);
->> +	}
->> +
->> +	ret = smpboot_register_percpu_thread(&cpuidle_cooling_threads);
->> +	if (ret)
->> +		goto out;
->> +
->> +	pr_info("Created cpuidle cooling device\n");
->> +out:
->> +	free_cpumask_var(cpumask);
->> +
->> +	if (ret) {
->> +		cpuidle_cooling_unregister();
->> +		pr_err("Failed to create idle cooling device (%d)\n", ret);
->> +	}
+> What is the point of the additional {} scope and the 'loops' variable
+> in it? You could use the 'iterations' variable directly and simplify
+> the code.
+Got your point, will change it.
 > 
-> Maybe rearrange it a bit:
-> 
-> +	ret = smpboot_register_percpu_thread(&cpuidle_cooling_threads);
-> +
-> +out:
-> +	if (ret) {
-> +		cpuidle_cooling_unregister();
-> +		pr_err("Failed to create idle cooling device (%d)\n", ret);
-> +	} else {
-> +	        pr_info("Created cpuidle cooling devices\n");
-> +       }
-> +
-> +	free_cpumask_var(cpumask);
-> 
-> ??
-
-I usually tend to avoid using 'else' statements when possible (a coding
-style practice) but if you prefer this version I'm fine with that.
-
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> Artem.
