@@ -1,76 +1,81 @@
-From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v2 01/12] dt-bindings: cpufreq: mediatek: use - instead of _
- in examples
-Date: Wed, 11 Apr 2018 16:53:54 +0800
-Message-ID: <1b9604aa3d3c68be68caf8af32fa4130f57743d6.1523434758.git.sean.wang@mediatek.com>
-References: <cover.1523434757.git.sean.wang@mediatek.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <cover.1523434757.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] vfio: platform: Fix using devices in PM Domains
+Date: Wed, 11 Apr 2018 11:24:08 +0200
+Message-ID: <1523438648-17672-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baptiste Reynal <b.reynal@virtualopensystems.com>, Alex Williamson <alex.williamson@redhat.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, kvm@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+If a device is part of a PM Domain (e.g. power and/or clock domain), its
+power state is managed using Runtime PM.  Without Runtime PM, the device
+may not be powered up, causing subtle failures, crashes, or system
+lock-ups when the device is accessed by the guest.
 
-It should be good that no use "_" is in examples. Consequently,
-those nodes in certain files which have an inappropriate name containing
-"_" are all being replaced with "-".
+Fix this by adding Runtime PM support, powering the device when the VFIO
+device is opened by the guest.
 
-Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Note that while more fine-grained power management could be implemented
+on the guest side, if exported, this would be inherently unsafe, as
+abusing it may kill the whole system.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+This depends on "[PATCH v3 2/2] vfio: platform: Add generic DT reset
+support" due to a small contextual change (addition of "#include
+<linux/reset.h>").
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-index d36f07e..38cfbb5 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-@@ -26,7 +26,7 @@ Optional properties:
+ drivers/vfio/platform/vfio_platform_common.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/vfio/platform/vfio_platform_common.c b/drivers/vfio/platform/vfio_platform_common.c
+index ef9b9e3220ebe939..4db0a143992c3353 100644
+--- a/drivers/vfio/platform/vfio_platform_common.c
++++ b/drivers/vfio/platform/vfio_platform_common.c
+@@ -17,6 +17,7 @@
+ #include <linux/iommu.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/pm_runtime.h>
+ #include <linux/reset.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
+@@ -249,6 +250,8 @@ static void vfio_platform_release(void *device_data)
+ 		const char *extra_dbg = NULL;
+ 		int ret;
  
- Example 1 (MT7623 SoC):
++		pm_runtime_put(vdev->device);
++
+ 		ret = vfio_platform_call_reset(vdev, &extra_dbg);
+ 		if (ret && vdev->reset_required) {
+ 			dev_warn(vdev->device, "reset driver is required and reset call failed in release (%d) %s\n",
+@@ -291,6 +294,10 @@ static int vfio_platform_open(void *device_data)
+ 				 ret, extra_dbg ? extra_dbg : "");
+ 			goto err_rst;
+ 		}
++
++		ret = pm_runtime_get_sync(vdev->device);
++		if (ret < 0)
++			goto err_rst;
+ 	}
  
--	cpu_opp_table: opp_table {
-+	cpu_opp_table: opp-table {
- 		compatible = "operating-points-v2";
- 		opp-shared;
+ 	vdev->refcnt++;
+@@ -706,6 +713,7 @@ int vfio_platform_probe_common(struct vfio_platform_device *vdev,
  
-@@ -86,7 +86,7 @@ Example 1 (MT7623 SoC):
- 	};
+ 	mutex_init(&vdev->igate);
  
- Example 2 (MT8173 SoC):
--	cpu_opp_table_a: opp_table_a {
-+	cpu_opp_table_a: opp-table-a {
- 		compatible = "operating-points-v2";
- 		opp-shared;
++	pm_runtime_enable(vdev->device);
+ 	return 0;
  
-@@ -131,7 +131,7 @@ Example 2 (MT8173 SoC):
- 		};
- 	};
+ put_iommu:
+@@ -723,6 +731,7 @@ struct vfio_platform_device *vfio_platform_remove_common(struct device *dev)
+ 	vdev = vfio_del_group_dev(dev);
  
--	cpu_opp_table_b: opp_table_b {
-+	cpu_opp_table_b: opp-table-b {
- 		compatible = "operating-points-v2";
- 		opp-shared;
- 
+ 	if (vdev) {
++		pm_runtime_disable(vdev->device);
+ 		vfio_platform_put_reset(vdev);
+ 		vfio_iommu_group_put(dev->iommu_group, dev);
+ 	}
 -- 
 2.7.4
