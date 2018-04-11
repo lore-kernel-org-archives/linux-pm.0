@@ -1,36 +1,67 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/2] nohz: Align types to bool for tick_nohz_tick_stopped_cpu()
-Date: Wed, 11 Apr 2018 13:01:33 +0200
-Message-ID: <1523444493-12665-2-git-send-email-ulf.hansson@linaro.org>
-References: <1523444493-12665-1-git-send-email-ulf.hansson@linaro.org>
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH][v3] tools/power turbostat: if --max_loop, print for
+ specific time of loops
+Date: Wed, 11 Apr 2018 14:02:02 +0300
+Message-ID: <1523444522.2753.218.camel@gmail.com>
+References: <20180411103038.12735-1-yu.c.chen@intel.com>
+Reply-To: dedekind1@gmail.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523444493-12665-1-git-send-email-ulf.hansson@linaro.org>
+In-Reply-To: <20180411103038.12735-1-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Yu Chen <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>
+Cc: Rafael J Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The intent was likely to also make the inline version a bool, so let's
-change this.
+A couple of nitpicks.
 
-Fixes: 22ab8bc02a5f ("nohz: Allow to check if remote CPU tick is stopped")
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- include/linux/tick.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, 2018-04-11 at 18:30 +0800, Yu Chen wrote:
+> @@ -48,6 +48,7 @@ char *proc_stat = "/proc/stat";
+>  FILE *outf;
+>  int *fd_percpu;
+>  struct timespec interval_ts = {5, 0};
+> +int iterations;
 
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index f9070b9..cb52c38 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -126,7 +126,7 @@ extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
- #else /* !CONFIG_NO_HZ_COMMON */
- #define tick_nohz_enabled (0)
- static inline bool tick_nohz_tick_stopped(void) { return false; }
--static inline int tick_nohz_tick_stopped_cpu(int cpu) { return 0; }
-+static inline bool tick_nohz_tick_stopped_cpu(int cpu) { return false; }
- static inline void tick_nohz_idle_enter(void) { }
- static inline void tick_nohz_idle_exit(void) { }
- 
--- 
-2.7.4
+OK, out of several choices, you selected "iterations".
+
+>  unsigned int debug;
+>  unsigned int quiet;
+>  unsigned int sums_need_wide_columns;
+> @@ -470,6 +471,7 @@ void help(void)
+>  	"		{core | package | j,k,l..m,n-p }\n"
+>  	"--quiet	skip decoding system configuration header\n"
+>  	"--interval sec	Override default 5-second measurement interval\n"
+> +	"--iterations loops	The number of loops if interval is specified\n"
+
+Since "iterations" is the term, be consistent and do not mix it with
+"loops". Who knows may be the "loops" term will be used for something
+else in the future. Use something like this:
+
+"--iterations count    Number of measurement iterations (requires '
+--interval')"
+
+>  	print this help mkk
+>  	"--list		list column headers only\n"
+>  	"--out file	create or truncate \"file\" for all output\n"
+> @@ -2565,6 +2567,7 @@ void turbostat_loop()
+>  {
+>  	int retval;
+>  	int restarted = 0;
+> +	int loops = 0;
+
+Please, name variables in a consistent manner, this should really be
+something like 'int iters = 0'. Or may be 'done_iters', or something.
+But not "loops".
+
+> @@ -4999,6 +5010,7 @@ void cmdline(int argc, char **argv)
+>  		{"Dump",	no_argument,		0, 'D'},
+>  		{"debug",	no_argument,		0, 'd'},	/* internal, not documented */
+>  		{"interval",	required_argument,	0, 'i'},
+> +		{"iterations",	required_argument,	0, 't'},
+
+If you used term "count", you could have consistent long and short
+option names, like '--count / -c'. I find '--iterations / -t' to be
+inconsistent, and harder to remember the short option, because I think
+about time, not "iterations" when I see -t.
