@@ -1,37 +1,83 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH][v2] tools/power turbostat: if --max_loop, print for
- specific time of loops
-Date: Wed, 11 Apr 2018 18:15:29 +0800
-Message-ID: <20180411101529.GA12068@yu-chen.sh.intel.com>
-References: <20180410145141.31166-1-yu.c.chen@intel.com>
- <1523438944.2753.207.camel@gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info
+ available
+Date: Wed, 11 Apr 2018 11:15:17 +0100
+Message-ID: <20180411101517.GL14248@e110439-lin>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+ <20180410110412.GG14248@e110439-lin>
+ <CAKfTPtAJQgA7w+2PRwhrY1xzsVH9CUt-wZurc+9qdmMLopYfUQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1523438944.2753.207.camel@gmail.com>
+In-Reply-To: <CAKfTPtAJQgA7w+2PRwhrY1xzsVH9CUt-wZurc+9qdmMLopYfUQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 11, 2018 at 12:29:04PM +0300, Artem Bityutskiy wrote:
-> On Tue, 2018-04-10 at 22:51 +0800, Yu Chen wrote:
-> > +		case 't':
-> > +			{
-> > +				int loops = strtod(optarg, NULL);
-> > +
-> > +				if (loops <= 0) {
-> > +					fprintf(outf, "loops %d should be positive number\n",
-> > +						iterations);
-> > +					exit(2);
-> > +				}
-> > +				iterations = loops;
-> > +			}
+On 11-Apr 08:57, Vincent Guittot wrote:
+> On 10 April 2018 at 13:04, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> > On 09-Apr 10:51, Vincent Guittot wrote:
+> >> On 6 April 2018 at 19:28, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> >> Peter,
+> >> what was your goal with adding the condition "if
+> >> (rq->cfs.h_nr_running)" for the aggragation of CFS utilization
+> >
+> > The original intent was to get rid of sched class flags, used to track
+> > which class has tasks runnable from within schedutil. The reason was
+> > to solve some misalignment between scheduler class status and
+> > schedutil status.
 > 
-> What is the point of the additional {} scope and the 'loops' variable
-> in it? You could use the 'iterations' variable directly and simplify
-> the code.
-Got your point, will change it.
+> This was mainly for RT tasks but it was not the case for cfs task
+> before commit 8f111bc357aa
+
+True, but with his solution Peter has actually come up with a unified
+interface which is now (and can be IMO) based just on RUNNABLE
+counters for each class.
+
+> > The solution, initially suggested by Viresh, and finally proposed by
+> > Peter was to exploit RQ knowledges directly from within schedutil.
+> >
+> > The problem is that now schedutil updated depends on two information:
+> > utilization changes and number of RT and CFS runnable tasks.
+> >
+> > Thus, using cfs_rq::h_nr_running is not the problem... it's actually
+> > part of a much more clean solution of the code we used to have.
 > 
-> Artem.
+> So there are 2 problems there:
+> - using cfs_rq::h_nr_running when aggregating cfs utilization which
+> generates a lot of frequency drop
+
+You mean because we now completely disregard the blocked utilization
+where a CPU is idle, right?
+
+Given how PELT works and the recent support for IDLE CPUs updated, we
+should probably always add contributions for the CFS class.
+
+> - making sure that the nr-running are up-to-date when used in sched_util
+
+Right... but, if we always add the cfs_rq (to always account for
+blocked utilization), we don't have anymore this last dependency,
+isn't it?
+
+We still have to account for the util_est dependency.
+
+Should I add a patch to this series to disregard cfs_rq::h_nr_running
+from schedutil as you suggested?
+
+> > The problem, IMO is that we now depend on other information which
+> > needs to be in sync before calling schedutil... and the patch I
+> > proposed is meant to make it less likely that all the information
+> > required are not aligned (also in the future).
+> >
+> > --
+> > #include <best/regards.h>
+> >
+> > Patrick Bellasi
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
