@@ -1,76 +1,142 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH][v3] tools/power turbostat: if --max_loop, print for
- specific time of loops
-Date: Wed, 11 Apr 2018 20:51:58 +0800
-Message-ID: <20180411125158.GA15388@yu-chen.sh.intel.com>
-References: <20180411103038.12735-1-yu.c.chen@intel.com>
- <1523444522.2753.218.camel@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] More power management updates for v4.17-rc1
+Date: Wed, 11 Apr 2018 15:15:33 +0200
+Message-ID: <CAJZ5v0ix6HLnQfvwTD7TAH9zrgo=1sUmCMJ3ecsLaPw+ddxm5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1523444522.2753.218.camel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Len Brown <lenb@kernel.org>, Rafael J Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Wed, Apr 11, 2018 at 02:02:02PM +0300, Artem Bityutskiy wrote:
-> A couple of nitpicks.
-> 
-> On Wed, 2018-04-11 at 18:30 +0800, Yu Chen wrote:
-> > @@ -48,6 +48,7 @@ char *proc_stat = "/proc/stat";
-> >  FILE *outf;
-> >  int *fd_percpu;
-> >  struct timespec interval_ts = {5, 0};
-> > +int iterations;
-> 
-> OK, out of several choices, you selected "iterations".
-> 
-> >  unsigned int debug;
-> >  unsigned int quiet;
-> >  unsigned int sums_need_wide_columns;
-> > @@ -470,6 +471,7 @@ void help(void)
-> >  	"		{core | package | j,k,l..m,n-p }\n"
-> >  	"--quiet	skip decoding system configuration header\n"
-> >  	"--interval sec	Override default 5-second measurement interval\n"
-> > +	"--iterations loops	The number of loops if interval is specified\n"
-> 
-> Since "iterations" is the term, be consistent and do not mix it with
-> "loops". Who knows may be the "loops" term will be used for something
-> else in the future. Use something like this:
-> 
-> "--iterations count    Number of measurement iterations (requires '
-> --interval')"
->
-OK, this looks more consistent.
-> >  	print this help mkk
-> >  	"--list		list column headers only\n"
-> >  	"--out file	create or truncate \"file\" for all output\n"
-> > @@ -2565,6 +2567,7 @@ void turbostat_loop()
-> >  {
-> >  	int retval;
-> >  	int restarted = 0;
-> > +	int loops = 0;
-> 
-> Please, name variables in a consistent manner, this should really be
-> something like 'int iters = 0'. Or may be 'done_iters', or something.
-> But not "loops".
-> 
-OK.
-> > @@ -4999,6 +5010,7 @@ void cmdline(int argc, char **argv)
-> >  		{"Dump",	no_argument,		0, 'D'},
-> >  		{"debug",	no_argument,		0, 'd'},	/* internal, not documented */
-> >  		{"interval",	required_argument,	0, 'i'},
-> > +		{"iterations",	required_argument,	0, 't'},
-> 
-> If you used term "count", you could have consistent long and short
-> option names, like '--count / -c'. I find '--iterations / -t' to be
-> inconsistent, and harder to remember the short option, because I think
-> about time, not "iterations" when I see -t.
-However the '-c' is already used as a short form for '--cpu',
-so I chose --iterations previously.
+Hi Linus,
 
-Thanks,
-Yu
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.17-rc1-2
+
+with top-most commit 51798deaffb738ef3bdd4f544b11ce2adaff40f3
+
+ Merge branches 'pm-cpuidle' and 'pm-qos'
+
+on top of commit 38c23685b273cfb4ccf31a199feccce3bdcb5d83
+
+ Merge tag 'armsoc-drivers' of
+git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc
+
+to receive additional power management updates for 4.17-rc1.
+
+These include one big-ticket item which is the rework of the idle
+loop in order to prevent CPUs from spending too much time in shallow
+idle states.  It reduces idle power on some systems by 10% or more
+and may improve performance of workloads in which the idle loop
+overhead matters.  This has been in the works for several weeks and
+it has been tested and reviewed quite thoroughly.
+
+Also included are changes that finalize the cpufreq cleanup moving
+frequency table validation from drivers to the core, a few fixes and
+cleanups of cpufreq drivers, a cpuidle documentation update and a
+PM QoS core update to mark the expected switch fall-throughs in it.
+
+Specifics:
+
+ - Rework the idle loop in order to prevent CPUs from spending too
+   much time in shallow idle states by making it stop the scheduler
+   tick before putting the CPU into an idle state only if the idle
+   duration predicted by the idle governor is long enough.  That
+   required the code to be reordered to invoke the idle governor
+   before stopping the tick, among other things (Rafael Wysocki,
+   Frederic Weisbecker, Arnd Bergmann).
+
+ - Add the missing description of the residency sysfs attribute to
+   the cpuidle documentation (Prashanth Prakash).
+
+ - Finalize the cpufreq cleanup moving frequency table validation
+   from drivers to the core (Viresh Kumar).
+
+ - Fix a clock leak regression in the armada-37xx cpufreq driver
+   (Gregory Clement).
+
+ - Fix the initialization of the CPU performance data structures
+   for shared policies in the CPPC cpufreq driver (Shunyong Yang).
+
+ - Clean up the ti-cpufreq, intel_pstate and CPPC cpufreq drivers
+   a bit (Viresh Kumar, Rafael Wysocki).
+
+ - Mark the expected switch fall-throughs in the PM QoS core (Gustavo
+   Silva).
+
+Thanks!
+
+
+---------------
+
+Arnd Bergmann (1):
+      tick-sched: avoid a maybe-uninitialized warning
+
+Frederic Weisbecker (1):
+      nohz: Gather tick_sched booleans under a common flag field
+
+Gregory CLEMENT (1):
+      cpufreq: armada-37xx: Fix clock leak
+
+Gustavo A. R. Silva (1):
+      PM / QoS: mark expected switch fall-throughs
+
+Prakash, Prashanth (1):
+      cpuidle: Add definition of residency to sysfs documentation
+
+Rafael J. Wysocki (13):
+      time: tick-sched: Reorganize idle tick management code
+      sched: idle: Do not stop the tick upfront in the idle loop
+      sched: idle: Do not stop the tick before cpuidle_idle_call()
+      jiffies: Introduce USER_TICK_USEC and redefine TICK_USEC
+      cpuidle: Return nohz hint from cpuidle_select()
+      time: tick-sched: Split tick_nohz_stop_sched_tick()
+      time: hrtimer: Introduce hrtimer_next_event_without()
+      sched: idle: Select idle state before stopping the tick
+      cpuidle: menu: Refine idle state selection for running tick
+      cpuidle: menu: Avoid selecting shallow states with stopped tick
+      nohz: Avoid duplication of code related to got_idle_tick
+      time: hrtimer: Use timerqueue_iterate_next() to get to the next timer
+      cpufreq: intel_pstate: Do not include debugfs.h
+
+Shunyong Yang (1):
+      cpufreq: CPPC: Initialize shared perf capabilities of CPUs
+
+Viresh Kumar (4):
+      cpufreq: ti-cpufreq: Use builtin_platform_driver()
+      cpufreq: CPPC: Don't set transition_latency
+      cpufreq: SCMI: Don't validate the frequency table twice
+      cpufreq: Drop cpufreq_table_validate_and_show()
+
+---------------
+
+ Documentation/cpu-freq/core.txt        |  12 +-
+ Documentation/cpu-freq/cpu-drivers.txt |   6 +-
+ Documentation/cpuidle/sysfs.txt        |   6 +
+ arch/x86/xen/smp_pv.c                  |   1 +
+ drivers/cpufreq/armada-37xx-cpufreq.c  |   2 +
+ drivers/cpufreq/cppc_cpufreq.c         |  15 +-
+ drivers/cpufreq/freq_table.c           |  14 --
+ drivers/cpufreq/intel_pstate.c         |   1 -
+ drivers/cpufreq/scmi-cpufreq.c         |  10 +-
+ drivers/cpufreq/ti-cpufreq.c           |   2 +-
+ drivers/cpuidle/cpuidle.c              |  10 +-
+ drivers/cpuidle/governors/ladder.c     |   3 +-
+ drivers/cpuidle/governors/menu.c       | 113 ++++++++++++---
+ drivers/net/ethernet/sfc/mcdi.c        |   2 +-
+ include/linux/cpufreq.h                |   2 -
+ include/linux/cpuidle.h                |   8 +-
+ include/linux/hrtimer.h                |   1 +
+ include/linux/jiffies.h                |   7 +-
+ include/linux/tick.h                   |  25 +++-
+ kernel/power/qos.c                     |   2 +
+ kernel/sched/idle.c                    |  34 ++++-
+ kernel/time/hrtimer.c                  |  53 ++++++-
+ kernel/time/ntp.c                      |   2 +-
+ kernel/time/tick-sched.c               | 250 +++++++++++++++++++++++----------
+ kernel/time/tick-sched.h               |  18 ++-
+ 25 files changed, 438 insertions(+), 161 deletions(-)
