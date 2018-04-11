@@ -1,51 +1,35 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH] sched/fair: schedutil: update only with all info
- available
-Date: Wed, 11 Apr 2018 10:27:56 +0100
-Message-ID: <20180411092756.GK14248@e110439-lin>
-References: <20180406172835.20078-1-patrick.bellasi@arm.com>
- <CAKfTPtB+6LoduwinNxEyTq2TFsOv8jEjnQ3o0M=Sf5viB+PL0w@mail.gmail.com>
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH][v2] tools/power turbostat: if --max_loop, print for
+ specific time of loops
+Date: Wed, 11 Apr 2018 12:29:04 +0300
+Message-ID: <1523438944.2753.207.camel@gmail.com>
+References: <20180410145141.31166-1-yu.c.chen@intel.com>
+Reply-To: dedekind1@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtB+6LoduwinNxEyTq2TFsOv8jEjnQ3o0M=Sf5viB+PL0w@mail.gmail.com>
+In-Reply-To: <20180410145141.31166-1-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Yu Chen <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11-Apr 09:57, Vincent Guittot wrote:
-> On 6 April 2018 at 19:28, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> 
-> >  }
-> > @@ -5454,8 +5441,11 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >                 update_cfs_group(se);
-> >         }
-> >
-> > -       if (!se)
-> > +       /* The task is no more visible from the root cfs_rq */
-> > +       if (!se) {
-> >                 sub_nr_running(rq, 1);
-> > +               cpufreq_update_util(rq, 0);
-> 
-> call to cpufreq_update_util() should be done after util_est_dequeue()
+On Tue, 2018-04-10 at 22:51 +0800, Yu Chen wrote:
+> +		case 't':
+> +			{
+> +				int loops = strtod(optarg, NULL);
+> +
+> +				if (loops <= 0) {
+> +					fprintf(outf, "loops %d should be positive number\n",
+> +						iterations);
+> +					exit(2);
+> +				}
+> +				iterations = loops;
+> +			}
 
-Yeah... good point, looks like I should have notice it :)
+What is the point of the additional {} scope and the 'loops' variable
+in it? You could use the 'iterations' variable directly and simplify
+the code.
 
-That's another compelling example why updating schedutil as a side
-effect of update_load_avg does not allow to easily track when it's the
-best time to trigger an update.
-
-UtilEst is now a factor which could impact on OPP selection for CFS
-tasks, and thus we should update at the really end of the function.
-
-> > +       }
-> >
-> >         util_est_dequeue(&rq->cfs, p, task_sleep);
-> >         hrtick_update(rq);
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Artem.
