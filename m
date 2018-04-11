@@ -1,59 +1,42 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v2] cpufreq/schedutil: Cleanup, document and fix iowait
  boost
-Date: Wed, 11 Apr 2018 15:39:21 +0100
-Message-ID: <20180411143921.GP14248@e110439-lin>
+Date: Wed, 11 Apr 2018 20:14:56 +0530
+Message-ID: <20180411144456.GP7671@vireshk-i7>
 References: <20180410155931.31973-1-patrick.bellasi@arm.com>
- <20180410193708.GE4043@hirez.programming.kicks-ass.net>
- <20180411104445.GM14248@e110439-lin>
- <20180411105828.GL4082@hirez.programming.kicks-ass.net>
+ <20180411043726.GJ7671@vireshk-i7>
+ <20180411104824.GN14248@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180411105828.GL4082@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180411104824.GN14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Juri Lelli <juri.lelli@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Juri Lelli <juri.lelli@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11-Apr 12:58, Peter Zijlstra wrote:
-> On Wed, Apr 11, 2018 at 11:44:45AM +0100, Patrick Bellasi wrote:
-> > > > - sugov_set_iowait_boost: is now in charge only to set/increase the IO
-> > > >      wait boost, every time a task wakes up from an IO wait.
-> > > > 
-> > > > - sugov_iowait_boost: is now in charge to reset/reduce the IO wait
-> > > >      boost, every time a sugov update is triggered, as well as
-> > > >      to (eventually) enforce the currently required IO boost value.
-> > > 
-> > > I'm not sold on those function names; feels like we can do better,
-> > > although I'm struggling to come up with anything sensible just now.
-> > 
-> > What about something like:
-> > 
-> >  sugov_iowait_init()
-> >  since here we are mainly initializing the iowait boost
-> > 
-> >  sugov_iowait_boost()
-> >  since here we are mainly applying the proper boost to each cpu
-> > 
-> > Although they are not really so different...
-> 
-> How about:
-> 
->   sugov_iowait_boost() -- does the actual impulse/boost
->   sugov_iowait_apply() -- applies the boost state
-> 
-> ?
+On 11-04-18, 11:48, Patrick Bellasi wrote:
+> On 11-Apr 10:07, Viresh Kumar wrote:
+> > On 10-04-18, 16:59, Patrick Bellasi wrote:
 
-Whould say it can work too, and it also allows to add a:
+> > The above part should be a different patch with this:
+> > 
+> > Fixes: a5a0809bc58e ("cpufreq: schedutil: Make iowait boost more energy efficient")
+> 
+> You mean to split out on a separate patch the fix for the iowait boost
+> on per-cpu policies?
 
-    sugov_iowait_reset() -- resets boots state after
-                            TICK_NSEC CPU idle time
+Right.
 
-Viresh, Rafael, Joel: any preferences or other suggestions?
+> > And the rest is just code rearrangement. And as Peter said, we better
+> > have a routine to clear boost values on delta > TICK_NSEC.
+> 
+> Right, already commented in reply to Peter. I'll split in two patches:
+> one for documentation and code re-organization and a second one for
+> the fix to the issue you pointed out.
+
+Thanks.
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+viresh
