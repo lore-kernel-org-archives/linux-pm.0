@@ -1,33 +1,58 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH] sched/fair: schedutil: update only with all info available
-Date: Wed, 11 Apr 2018 09:57:28 +0200
-Message-ID: <CAKfTPtB+6LoduwinNxEyTq2TFsOv8jEjnQ3o0M=Sf5viB+PL0w@mail.gmail.com>
-References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Wed, 11 Apr 2018 10:15:02 +0200
+Message-ID: <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+ <20180410123305.GF4082@hirez.programming.kicks-ass.net>
+ <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+ <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
+ <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
+ <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
+ <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180406172835.20078-1-patrick.bellasi@arm.com>
+Content-Disposition: inline
+In-Reply-To: <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 6 April 2018 at 19:28, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+On Tue, Apr 10, 2018 at 03:00:11PM -0700, Andrew Morton wrote:
+> On Tue, 10 Apr 2018 14:53:51 -0700 Joe Perches <joe@perches.com> wrote:
+> 
+> > On Tue, 2018-04-10 at 14:39 -0700, Andrew Morton wrote:
+> > > On Tue, 10 Apr 2018 11:19:54 -0700 Joe Perches <joe@perches.com> wrote:
+> > > 
+> > > > A struct with a bool member can have different sizes on various
+> > > > architectures because neither bool size nor alignment is standardized.
+> > > 
+> > > What's wrong with bools in structs?
+> > 
+> > See above.
+> 
+> Yeah, but so what?  `long' has different sizes on different
+> architectures too.
 
->  }
-> @@ -5454,8 +5441,11 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->                 update_cfs_group(se);
->         }
->
-> -       if (!se)
-> +       /* The task is no more visible from the root cfs_rq */
-> +       if (!se) {
->                 sub_nr_running(rq, 1);
-> +               cpufreq_update_util(rq, 0);
+Right, so we have ILP32/LP64 for all our 32/64 bit archs respectively.
+So only 2 possible variations to consider, and if you know your bitness
+you know your layout.
 
-call to cpufreq_update_util() should be done after util_est_dequeue()
+(+- some really unfortunate alignment exceptions, the worst of which
+Arnd recently removed, hooray!)
 
-> +       }
->
->         util_est_dequeue(&rq->cfs, p, task_sleep);
->         hrtick_update(rq);
+But neither says anything about sizeof(_Bool), and the standard leaves
+it undefined and only mandates it is large enough to store either 0 or
+1 (and I suspect this vagueness is because there are architectures that
+either have no byte addressibility or it's more expensive than word
+addressibility).
+
+Typically GCC chooses a single byte to represent _Bool, but there are no
+guarantees. This means that when you care about structure layout (as we
+all really should) things go wobbly when you use _Bool.
+
+If GCC were to guarantee a 1 byte _Bool for all Linux ABIs we could
+reconsider.
