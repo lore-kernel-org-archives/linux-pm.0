@@ -1,126 +1,59 @@
-From: Stefan Popa <stefan.popa@analog.com>
-Subject: [PATCH v3 4/4] adp5061: Add support for charging voltage limit enable
-Date: Wed, 11 Apr 2018 18:11:21 +0300
-Message-ID: <1523459481-31860-1-git-send-email-stefan.popa@analog.com>
-References: <1523353902-23748-1-git-send-email-stefan.popa@analog.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info
+ available
+Date: Wed, 11 Apr 2018 17:14:50 +0200
+Message-ID: <20180411151450.GK4043@hirez.programming.kicks-ass.net>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+ <20180410110412.GG14248@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523353902-23748-1-git-send-email-stefan.popa@analog.com>
+Content-Disposition: inline
+In-Reply-To: <20180410110412.GG14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stefan Popa <stefan.popa@analog.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the option to activate/deactivate the charging voltage
-limit. If activated, the charger prevents charging until the battery
-voltage drops below the VCHG_VLIM threshold.
+On Tue, Apr 10, 2018 at 12:04:12PM +0100, Patrick Bellasi wrote:
+> On 09-Apr 10:51, Vincent Guittot wrote:
 
-This option is not configurable via the power_supply properties,
-therefore, access via sysfs was provided to examine and modify this
-attribute on the fly.
+> > Peter,
+> > what was your goal with adding the condition "if
+> > (rq->cfs.h_nr_running)" for the aggragation of CFS utilization
+> 
+> The original intent was to get rid of sched class flags, used to track
+> which class has tasks runnable from within schedutil. The reason was
+> to solve some misalignment between scheduler class status and
+> schedutil status.
+> 
+> The solution, initially suggested by Viresh, and finally proposed by
+> Peter was to exploit RQ knowledges directly from within schedutil.
+> 
+> The problem is that now schedutil updated depends on two information:
+> utilization changes and number of RT and CFS runnable tasks.
+> 
+> Thus, using cfs_rq::h_nr_running is not the problem... it's actually
+> part of a much more clean solution of the code we used to have.
+> 
+> The problem, IMO is that we now depend on other information which
+> needs to be in sync before calling schedutil... and the patch I
+> proposed is meant to make it less likely that all the information
+> required are not aligned (also in the future).
 
-Signed-off-by: Stefan Popa <stefan.popa@analog.com>
----
-Changes in v2:
-	- Fixed the kbuild test error by changing the type of the
-	  charging_vlim_enabled_show() and charging_vlim_enabled_store()
-	  functions from int to ssize_t.
-Changes in v3:
-	- Nothing changed, just to follow the patch set version.
+Specifically, the h_nr_running test was get rid of
 
- .../ABI/testing/sysfs-class-power-adp5061          | 13 ++++++
- drivers/power/supply/adp5061.c                     | 46 ++++++++++++++++++++++
- 2 files changed, 59 insertions(+)
+                if (delta_ns > TICK_NSEC) {
+                        j_sg_cpu->iowait_boost = 0;
+                        j_sg_cpu->iowait_boost_pending = false;
+-                       j_sg_cpu->util_cfs = 0;
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-adp5061 b/Documentation/ABI/testing/sysfs-class-power-adp5061
-index 0d056aa..25064c1 100644
---- a/Documentation/ABI/testing/sysfs-class-power-adp5061
-+++ b/Documentation/ABI/testing/sysfs-class-power-adp5061
-@@ -8,3 +8,16 @@ Description:
- 	Valid values:
- 		- 1: enabled
- 		- 0: disabled
-+
-+What: /sys/class/power_supply/adp5061/charging_vlim_enabled
-+Description:
-+	Enable/disable charging voltage limit
-+
-+	The ADP5061 charging voltage limit can be enabled by setting
-+	this attribute to 1. When enabled, the charger prevents charging
-+	until the battery voltage drops bellow the VCHG_VLIM threshold.
-+	See device datasheet for details.
-+
-+	Valid values:
-+		- 1: enabled
-+		- 0: disabled
-diff --git a/drivers/power/supply/adp5061.c b/drivers/power/supply/adp5061.c
-index 99871e6..9716059 100644
---- a/drivers/power/supply/adp5061.c
-+++ b/drivers/power/supply/adp5061.c
-@@ -84,6 +84,10 @@
- #define ADP5061_FUNC_SET_1_EN_CHG_MSK		BIT(0)
- #define ADP5061_FUNC_SET_1_EN_CHG_MODE(x)	(((x) & 0x01) << 0)
- 
-+/* ADP5061_FUNC_SET_2 */
-+#define ADP5061_FUNC_SET_2_EN_CHG_VLIM_MSK	BIT(5)
-+#define ADP5061_FUNC_SET_2_EN_CHG_VLIM_MODE(x)	(((x) & 0x01) << 5)
-+
- #define ADP5061_NO_BATTERY	0x01
- #define ADP5061_ICHG_MAX	1300 // mA
- 
-@@ -737,10 +741,52 @@ static ssize_t charging_enabled_store(struct device *dev,
- 	return count;
- }
- 
-+static ssize_t charging_vlim_enabled_show(struct device *dev,
-+				      struct device_attribute *attr,
-+				      char *buf)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct adp5061_state *st = power_supply_get_drvdata(psy);
-+	unsigned int regval;
-+	int ret;
-+
-+	ret = regmap_read(st->regmap, ADP5061_FUNC_SET_2, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	regval = (regval & ADP5061_FUNC_SET_2_EN_CHG_VLIM_MSK) >> 5;
-+	return sprintf(buf, "%d\n", regval);
-+}
-+
-+static ssize_t charging_vlim_enabled_store(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf, size_t count)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct adp5061_state *st = power_supply_get_drvdata(psy);
-+	u8 chg_vlim_en;
-+	int ret;
-+
-+	ret = kstrtou8(buf, 0, &chg_vlim_en);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_update_bits(st->regmap, ADP5061_FUNC_SET_2,
-+			ADP5061_FUNC_SET_2_EN_CHG_VLIM_MSK,
-+			ADP5061_FUNC_SET_2_EN_CHG_VLIM_MODE(!!chg_vlim_en));
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
- static DEVICE_ATTR_RW(charging_enabled);
-+static DEVICE_ATTR_RW(charging_vlim_enabled);
- 
- static struct attribute *adp5061_attributes[] = {
- 	&dev_attr_charging_enabled.attr,
-+	&dev_attr_charging_vlim_enabled.attr,
- 	NULL
- };
- 
--- 
-2.7.4
+			^^^^^^^^^^^^^^^^^^^^^^^ that..
+
+-                       if (j_sg_cpu->util_dl == 0)
+-                               continue;
+                }
+
+
+because that felt rather arbitrary.
