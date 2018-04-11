@@ -1,80 +1,102 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Wed, 11 Apr 2018 19:00:49 +0200
-Message-ID: <20180411170049.GR4082@hirez.programming.kicks-ass.net>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <20180410123305.GF4082@hirez.programming.kicks-ass.net>
- <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
- <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
- <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
- <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
- <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
- <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info available
+Date: Wed, 11 Apr 2018 14:34:54 -0700
+Message-ID: <CAJWu+orqbT0n+dHabinf=kWN8Frh+3VH6cpc6ADit_BDhFFhTQ@mail.gmail.com>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+ <20180410110412.GG14248@e110439-lin> <CAKfTPtAJQgA7w+2PRwhrY1xzsVH9CUt-wZurc+9qdmMLopYfUQ@mail.gmail.com>
+ <20180411101517.GL14248@e110439-lin> <CAKfTPtBKPx0o7AfEMsJv998aCggYQzsOnxmy-qu6B8UULCZabA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+In-Reply-To: <CAKfTPtBKPx0o7AfEMsJv998aCggYQzsOnxmy-qu6B8UULCZabA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 11, 2018 at 09:29:59AM -0700, Andrew Morton wrote:
-> 
-> OK.  I guess.  But I'm not really seeing some snappy description which
-> helps people understand why checkpatch is warning about this. 
+Hi Vincent,
 
- "Results in architecture dependent layout."
+On Wed, Apr 11, 2018 at 4:56 AM, Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
+> On 11 April 2018 at 12:15, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+>> On 11-Apr 08:57, Vincent Guittot wrote:
+>>> On 10 April 2018 at 13:04, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+>>> > On 09-Apr 10:51, Vincent Guittot wrote:
+>>> >> On 6 April 2018 at 19:28, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+>>> >> Peter,
+>>> >> what was your goal with adding the condition "if
+>>> >> (rq->cfs.h_nr_running)" for the aggragation of CFS utilization
+>>> >
+>>> > The original intent was to get rid of sched class flags, used to track
+>>> > which class has tasks runnable from within schedutil. The reason was
+>>> > to solve some misalignment between scheduler class status and
+>>> > schedutil status.
+>>>
+>>> This was mainly for RT tasks but it was not the case for cfs task
+>>> before commit 8f111bc357aa
+>>
+>> True, but with his solution Peter has actually come up with a unified
+>> interface which is now (and can be IMO) based just on RUNNABLE
+>> counters for each class.
+>
+> But do we really want to only take care of runnable counter for all class ?
+>
+>>
+>>> > The solution, initially suggested by Viresh, and finally proposed by
+>>> > Peter was to exploit RQ knowledges directly from within schedutil.
+>>> >
+>>> > The problem is that now schedutil updated depends on two information:
+>>> > utilization changes and number of RT and CFS runnable tasks.
+>>> >
+>>> > Thus, using cfs_rq::h_nr_running is not the problem... it's actually
+>>> > part of a much more clean solution of the code we used to have.
+>>>
+>>> So there are 2 problems there:
+>>> - using cfs_rq::h_nr_running when aggregating cfs utilization which
+>>> generates a lot of frequency drop
+>>
+>> You mean because we now completely disregard the blocked utilization
+>> where a CPU is idle, right?
+>
+> yes
+>
+>>
+>> Given how PELT works and the recent support for IDLE CPUs updated, we
+>> should probably always add contributions for the CFS class.
+>>
+>>> - making sure that the nr-running are up-to-date when used in sched_util
+>>
+>> Right... but, if we always add the cfs_rq (to always account for
+>> blocked utilization), we don't have anymore this last dependency,
+>> isn't it?
+>
+> yes
+>
+>>
+>> We still have to account for the util_est dependency.
+>>
+>> Should I add a patch to this series to disregard cfs_rq::h_nr_running
+>> from schedutil as you suggested?
+>
+> It's probably better to have a separate patch as these are 2 different topics
+> - when updating cfs_rq::h_nr_running and when calling cpufreq_update_util
+> - should we use runnable or running utilization for CFS
 
-is the best short sentence I can come up with.
+By runnable you don't mean sched_avg::load_avg right? I got a bit
+confused, since runnable means load_avg and running means util_avg.
+But I didn't follow here why we are talking about load_avg for
+schedutil at all. I am guessing by "runnable" you mean h_nr_running !=
+0.
 
-> We already have some 500 bools-in-structs and the owners of that code
-> will be wondering whether they should change them, and whether they
-> should apply those remove-bool-in-struct patches which someone sent
-> them.
+Also that aside, the "running util" is what was used to drive the CFS
+util before Peter's patch (8f111bc357a). That was accounting the
+blocked and decaying utilization but that patch changed the behavior.
+It seems logical we should just use that not check for h_nr_running
+for CFS so we don't miss on the decayed  utilization. What is the use
+of checking h_nr_running or state of runqueue for CFS? I am sure to be
+missing something here. :-(
 
-I still have room in my /dev/null mailbox for pure checkpatch patches.
+thanks!
 
-> (ooh, https://lkml.org/lkml/2017/11/21/384 is working this morning)
-
-Yes, we really should not use lkml.org for references. Sadly google
-displays it very prominently when you search for something.
-
-> hm, Linus suggests that instead of using
-> 
-> 	bool mybool;
-> 
-> we should use
-> 
-> 	unsigned mybool:1;
-> 
-> However that introduces the risk that alterations of mybool will use
-> nonatomic rmw operations.
-> 
-> 	unsigned myboolA:1;
-> 	unsigned myboolB:1;
-> 
-> so
-> 
-> 	foo->myboolA = 1;
-> 
-> could scribble on concurrent alterations of foo->myboolB.  I think.
-
-So that is true of u8 on Alpha <EV56 too. If you want concurrent, you
-had better know what you're doing.
-
-> I guess that risk is also present if myboolA and myboolB were `bool',
-> too.  The compiler could do any old thing with them including, perhaps,
-> using a single-bit bitfield(?).
-
-The smallest addressable type in C is a byte, so while _Bool may be
-larger than a byte, it cannot be smaller. Otherwise we could not write:
-
-	_Bool var;
-	_Boll *ptr = &var;
-
-Which is something that comes apart with bitfields.
+- Joel
