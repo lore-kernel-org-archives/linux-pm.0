@@ -1,58 +1,116 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Wed, 11 Apr 2018 10:15:02 +0200
-Message-ID: <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <20180410123305.GF4082@hirez.programming.kicks-ass.net>
- <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
- <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
- <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
- <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.17-rc1
+Date: Wed, 11 Apr 2018 16:41:17 +0800
+Message-ID: <1523436077.16235.5.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 10, 2018 at 03:00:11PM -0700, Andrew Morton wrote:
-> On Tue, 10 Apr 2018 14:53:51 -0700 Joe Perches <joe@perches.com> wrote:
-> 
-> > On Tue, 2018-04-10 at 14:39 -0700, Andrew Morton wrote:
-> > > On Tue, 10 Apr 2018 11:19:54 -0700 Joe Perches <joe@perches.com> wrote:
-> > > 
-> > > > A struct with a bool member can have different sizes on various
-> > > > architectures because neither bool size nor alignment is standardized.
-> > > 
-> > > What's wrong with bools in structs?
-> > 
-> > See above.
-> 
-> Yeah, but so what?  `long' has different sizes on different
-> architectures too.
+Hi, Linus,
 
-Right, so we have ILP32/LP64 for all our 32/64 bit archs respectively.
-So only 2 possible variations to consider, and if you know your bitness
-you know your layout.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-(+- some really unfortunate alignment exceptions, the worst of which
-Arnd recently removed, hooray!)
+to receive the latest Thermal Management updates for v4.17-rc1 with
+top-most commit f8837aac36cdc7430422cd65f4466071b42654bb:
 
-But neither says anything about sizeof(_Bool), and the standard leaves
-it undefined and only mandates it is large enough to store either 0 or
-1 (and I suspect this vagueness is because there are architectures that
-either have no byte addressibility or it's more expensive than word
-addressibility).
+  Merge branches 'thermal-core' and 'thermal-soc' into next (2018-04-02 
+21:49:31 +0800)
 
-Typically GCC chooses a single byte to represent _Bool, but there are no
-guarantees. This means that when you care about structure layout (as we
-all really should) things go wobbly when you use _Bool.
+on top of commit 0c8efd610b58cb23cefdfa12015799079aef94ae:
 
-If GCC were to guarantee a 1 byte _Bool for all Linux ABIs we could
-reconsider.
+  Linux 4.16-rc5 (2018-03-11 17:25:09 -0700)
+
+Specifics:
+
+- Fix race condition in imx_thermal_probe(). (Mikhail Lappo)
+
+- Add cooling device's statistics in sysfs. (Viresh Kumar)
+
+- add support for i.MX7 thermal sensor in imx_thermal driver. (Anson
+Huang)
+
+- add support for MT7622 SoC in mtk_thermal driver. (Sean Wang)
+
+- Remove unused min/max cpu cooling DT property. (Viresh Kumar).
+
+- A series of fixes on exynos driver. (Bartlomiej Zolnierkiewicz,
+Maciej Purski, Marek Szyprowski)
+
+thanks,
+rui
+
+
+
+----------------------------------------------------------------
+Anson Huang (1):
+      thermal: imx: add i.MX7 thermal sensor support
+
+Bartlomiej Zolnierkiewicz (10):
+      thermal: exynos: remove unused "type" field from struct
+exynos_tmu_platform_data
+      thermal: exynos: remove parsing of samsung,
+tmu_default_temp_offset property
+      thermal: exynos: remove parsing of samsung, tmu_[first,
+second]_point_trim properties
+      thermal: exynos: remove parsing of samsung, tmu_noise_cancel_mode
+property
+      thermal: exynos: remove parsing of samsung, tmu[_min,
+_max]_efuse_value properties
+      thermal: exynos: remove parsing of samsung, tmu_reference_voltage
+property
+      thermal: exynos: remove parsing of samsung,tmu_gain property
+      thermal: exynos: remove parsing of samsung, tmu_cal_type property
+      thermal: exynos: remove separate exynos_tmu.h header file
+      dt-bindings: thermal: remove no longer needed samsung thermal
+properties
+
+Maciej Purski (1):
+      thermal: exynos: Read soc_type from match data
+
+Marek Szyprowski (2):
+      thermal: exynos: Reading temperature makes sense only when TMU is
+turned on
+      thermal: exynos: Propagate error value from tmu_read()
+
+Mikhail Lappo (1):
+      thermal: imx: Fix race condition in imx_thermal_probe()
+
+Sean Wang (2):
+      dt-bindings: thermal: add binding for MT7622 SoC
+      thermal: mediatek: add support for MT7622 SoC
+
+Viresh Kumar (2):
+      dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
+      thermal: Add cooling device's statistics in sysfs
+
+Zhang Rui (2):
+      Merge branch 'linus' of git://git.kernel.org/.../evalenti/linux-
+soc-thermal into thermal-soc
+      Merge branches 'thermal-core' and 'thermal-soc' into next
+
+ .../devicetree/bindings/thermal/exynos-thermal.txt |  23 +-
+ .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
+ .../bindings/thermal/mediatek-thermal.txt          |   1 +
+ .../devicetree/bindings/thermal/thermal.txt        |  16 +-
+ Documentation/thermal/sysfs-api.txt                |  31 +++
+ drivers/thermal/Kconfig                            |   7 +
+ drivers/thermal/imx_thermal.c                      | 301
+++++++++++++++++-----
+ drivers/thermal/mtk_thermal.c                      |  35 +++
+ drivers/thermal/samsung/exynos_tmu.c               | 268 +++++++++--
+-------
+ drivers/thermal/samsung/exynos_tmu.h               |  75 -----
+ drivers/thermal/thermal_core.c                     |   3 +-
+ drivers/thermal/thermal_core.h                     |  10 +
+ drivers/thermal/thermal_helpers.c                  |   5 +-
+ drivers/thermal/thermal_sysfs.c                    | 225
++++++++++++++++
+ include/linux/thermal.h                            |   1 +
+ 15 files changed, 706 insertions(+), 304 deletions(-)
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu.h
