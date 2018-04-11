@@ -1,35 +1,80 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH] sched/fair: schedutil: update only with all info available
-Date: Wed, 11 Apr 2018 18:51:21 +0200
-Message-ID: <CAKfTPtA+79WitkoBHeaGxjxJzr=8A4aH7iimz54Doj2ok8JXcA@mail.gmail.com>
-References: <20180406172835.20078-1-patrick.bellasi@arm.com>
- <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
- <20180410110412.GG14248@e110439-lin> <20180411151450.GK4043@hirez.programming.kicks-ass.net>
- <CAKfTPtC+-FR3ZD_t1vkGR2gVoUyxXpE=i4g9zqqLXu4jKKqgUA@mail.gmail.com>
- <20180411153710.GN4082@hirez.programming.kicks-ass.net> <CAKfTPtCNdxSmDfDO0Etf7fbYPeryrjdQChSGwMWxSRH8CcXqqg@mail.gmail.com>
- <20180411160000.GO4082@hirez.programming.kicks-ass.net> <CAKfTPtDjyjC5R7bhjGxhV8BN5J+LdzJmMgwaaVuE9ypvcSKapA@mail.gmail.com>
- <20180411161548.GP4082@hirez.programming.kicks-ass.net>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Wed, 11 Apr 2018 19:00:49 +0200
+Message-ID: <20180411170049.GR4082@hirez.programming.kicks-ass.net>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+ <20180410123305.GF4082@hirez.programming.kicks-ass.net>
+ <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+ <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
+ <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
+ <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
+ <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
+ <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
+ <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180411161548.GP4082@hirez.programming.kicks-ass.net>
+Content-Disposition: inline
+In-Reply-To: <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11 April 2018 at 18:15, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, Apr 11, 2018 at 06:10:47PM +0200, Vincent Guittot wrote:
->> > Could is be that for some reason the nohz balancer now takes a very long
->> > time to run?
->>
->> Heiner mentions that is was a relatively slow celeron and he uses
->> ondemand governor. So I was about to ask him to use performance
->> governor to see if it can be because cpu runs slow and takes too muche
->> time to enter idle
->
-> Maybe also hand him a patch with some trace_printk()s in and ask him to
-> send /debug/tracing/trace after it happens or somesuch. Maybe we can
-> find a clue that way.
+On Wed, Apr 11, 2018 at 09:29:59AM -0700, Andrew Morton wrote:
+> 
+> OK.  I guess.  But I'm not really seeing some snappy description which
+> helps people understand why checkpatch is warning about this. 
 
-yes
+ "Results in architecture dependent layout."
+
+is the best short sentence I can come up with.
+
+> We already have some 500 bools-in-structs and the owners of that code
+> will be wondering whether they should change them, and whether they
+> should apply those remove-bool-in-struct patches which someone sent
+> them.
+
+I still have room in my /dev/null mailbox for pure checkpatch patches.
+
+> (ooh, https://lkml.org/lkml/2017/11/21/384 is working this morning)
+
+Yes, we really should not use lkml.org for references. Sadly google
+displays it very prominently when you search for something.
+
+> hm, Linus suggests that instead of using
+> 
+> 	bool mybool;
+> 
+> we should use
+> 
+> 	unsigned mybool:1;
+> 
+> However that introduces the risk that alterations of mybool will use
+> nonatomic rmw operations.
+> 
+> 	unsigned myboolA:1;
+> 	unsigned myboolB:1;
+> 
+> so
+> 
+> 	foo->myboolA = 1;
+> 
+> could scribble on concurrent alterations of foo->myboolB.  I think.
+
+So that is true of u8 on Alpha <EV56 too. If you want concurrent, you
+had better know what you're doing.
+
+> I guess that risk is also present if myboolA and myboolB were `bool',
+> too.  The compiler could do any old thing with them including, perhaps,
+> using a single-bit bitfield(?).
+
+The smallest addressable type in C is a byte, so while _Bool may be
+larger than a byte, it cannot be smaller. Otherwise we could not write:
+
+	_Bool var;
+	_Boll *ptr = &var;
+
+Which is something that comes apart with bitfields.
