@@ -1,51 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 7/7] cpuidle/drivers/cpuidle-arm: Register the cooling
- device
-Date: Wed, 11 Apr 2018 14:21:51 +0530
-Message-ID: <20180411085151.GO7671@vireshk-i7>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 1/7] thermal/drivers/cpu_cooling: Fixup the header and
+ copyright
+Date: Wed, 11 Apr 2018 10:56:57 +0200
+Message-ID: <4d367d3f-c6c9-1e05-13d7-2b131a0fa5b8@linaro.org>
 References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
- <1522945005-7165-8-git-send-email-daniel.lezcano@linaro.org>
+ <1522945005-7165-2-git-send-email-daniel.lezcano@linaro.org>
+ <20180411061514.GL7671@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1522945005-7165-8-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <20180411061514.GL7671@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 05-04-18, 18:16, Daniel Lezcano wrote:
-> Register the ARM generic cpuidle driver as a cooling device.
+On 11/04/2018 08:15, Viresh Kumar wrote:
+> On 05-04-18, 18:16, Daniel Lezcano wrote:
+>> The copyright format does not conform to the format requested by
+>> Linaro: https://wiki.linaro.org/Copyright
+>>
+>> Fix it.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/cpuidle/cpuidle-arm.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index ddee1b6..44b4fe3 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -11,6 +11,7 @@
->  
->  #define pr_fmt(fmt) "CPUidle arm: " fmt
->  
-> +#include <linux/cpu_cooling.h>
->  #include <linux/cpuidle.h>
->  #include <linux/cpumask.h>
->  #include <linux/cpu_pm.h>
-> @@ -172,6 +173,8 @@ static int __init arm_idle_init(void)
->  			goto out_fail;
->  	}
->  
-> +	cpuidle_cooling_register();
-> +
->  	return 0;
->  
->  out_fail:
+> You forgot to include my Ack ?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Yes :)
+
+
 
 -- 
-viresh
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
