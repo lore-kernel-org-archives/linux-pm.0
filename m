@@ -1,189 +1,131 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
- improvements for the intel_pstate driver.
-Date: Tue, 10 Apr 2018 20:14:34 -0700
-Message-ID: <1523416474.2700.2.camel@linux.intel.com>
-References: <20180328063845.4884-1-currojerez@riseup.net>
- <87604ybssf.fsf@riseup.net>
+From: Matthew Wilcox <willy@infradead.org>
+Subject: Re: update-binfmts breaking suspend
+Date: Tue, 10 Apr 2018 21:30:52 -0700
+Message-ID: <20180411043052.GA15171@bombadil.infradead.org>
+References: <20180404165559.4cd0c12c@canb.auug.org.au>
+ <20180404075047.GB9342@amd>
+ <CAJZ5v0hxyXtyKacJufivL9HWbQBsxTBYVipnHK4+QquTYjpc+A@mail.gmail.com>
+ <20180404084905.GA12303@amd>
+ <20180405122503.GA28446@amd>
+ <20180405203045.GA23313@amd>
+ <SN4PR2101MB073673B12998428D48DA62E5CBBA0@SN4PR2101MB0736.namprd21.prod.outlook.com>
+ <20180406144355.GA20605@bombadil.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <87604ybssf.fsf@riseup.net>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180406144355.GA20605@bombadil.infradead.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael@kernel.org>, jikos@suse.cz, raven@themaw.net, akpm@linux-foundation.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDE4LTA0LTEwIGF0IDE1OjI4IC0wNzAwLCBGcmFuY2lzY28gSmVyZXogd3JvdGU6
-Cj4gRnJhbmNpc2NvIEplcmV6IDxjdXJyb2plcmV6QHJpc2V1cC5uZXQ+IHdyaXRlczoKPiAKWy4u
-Ll0KCgo+IEZvciB0aGUgY2FzZSBhbnlvbmUgaXMgd29uZGVyaW5nIHdoYXQncyBnb2luZyBvbiwg
-U3Jpbml2YXMgcG9pbnRlZCBtZQo+IGF0Cj4gYSBsYXJnZXIgaWRsZSBwb3dlciB1c2FnZSBpbmNy
-ZWFzZSBvZmYtbGlzdCwgdWx0aW1hdGVseSBjYXVzZWQgYnkgdGhlCj4gbG93LWxhdGVuY3kgaGV1
-cmlzdGljIGFzIGRpc2N1c3NlZCBpbiB0aGUgcGFyYWdyYXBoIGFib3ZlLsKgwqBJIGhhdmUgYQo+
-IHYyCj4gb2YgUEFUQ0ggNiB0aGF0IGdpdmVzIHRoZSBjb250cm9sbGVyIGEgdGhpcmQgcmVzcG9u
-c2UgY3VydmUgcm91Z2hseQo+IGludGVybWVkaWF0ZSBiZXR3ZWVuIHRoZSBsb3ctbGF0ZW5jeSBh
-bmQgbG93LXBvd2VyIHN0YXRlcyBvZiB0aGlzCj4gcmV2aXNpb24sIHdoaWNoIGF2b2lkcyB0aGUg
-ZW5lcmd5IHVzYWdlIGluY3JlYXNlIHdoaWxlIEMwIHJlc2lkZW5jeQo+IGlzCj4gbG93IChlLmcu
-IGR1cmluZyBpZGxlKSBleHBlY3RlZCBmb3IgdjEuwqDCoFRoZSBsb3ctbGF0ZW5jeSBiZWhhdmlv
-ciBvZgo+IHRoaXMgcmV2aXNpb24gaXMgc3RpbGwgZ29pbmcgdG8gYmUgYXZhaWxhYmxlIGJhc2Vk
-IG9uIGEgaGV1cmlzdGljIChpbgo+IHBhcnRpY3VsYXIgd2hlbiBhIHJlYWx0aW1lLXByaW9yaXR5
-IHRhc2sgaXMgc2NoZWR1bGVkKS7CoMKgV2UncmUKPiBjYXJyeWluZwo+IG91dCBzb21lIGFkZGl0
-aW9uYWwgdGVzdGluZywgSSdsbCBwb3N0IHRoZSBjb2RlIGhlcmUgZXZlbnR1YWxseS4KClBsZWFz
-ZSB0cnkgc2NoZWQtdXRpbCBnb3Zlcm5vciBhbHNvLiBUaGVyZSBpcyBhIGZyZXF1ZW5jeS1pbnZh
-cmlhbnQKcGF0Y2gsIHdoaWNoIEkgY2FuIHNlbmQgeW91IChUaGlzIGV2ZW50dWFsbHkgd2lsbCBi
-ZSBwdXNoZWQgYnkgUGV0ZXIpLgpXZSB3YW50IHRvIGF2b2lkIGNvbXBsZXhpdHkgdG8gaW50ZWwt
-cHN0YXRlIGZvciBub24gSFdQIHBvd2VyIHNlbnNpdGl2ZQpwbGF0Zm9ybXMgYXMgZmFyIGFzIHBv
-c3NpYmxlLgoKClRoYW5rcywKU3Jpbml2YXMKCgoKPiAKPiA+IFtBYnNvbHV0ZSBiZW5jaG1hcmsg
-cmVzdWx0cyBhcmUgdW5mb3J0dW5hdGVseSBvbWl0dGVkIGZyb20gdGhpcwo+ID4gbGV0dGVyCj4g
-PiBkdWUgdG8gY29tcGFueSBwb2xpY2llcywgYnV0IHRoZSBwZXJjZW50IGNoYW5nZSBhbmQgU3R1
-ZGVudCdzIFQKPiA+IHAtdmFsdWUgYXJlIGluY2x1ZGVkIGFib3ZlIGFuZCBpbiB0aGUgcmVmZXJl
-bmNlZCBiZW5jaG1hcmsgcmVzdWx0c10KPiA+IAo+ID4gVGhlIG1vc3Qgb2J2aW91cyBpbXBhY3Qg
-b2YgdGhpcyBzZXJpZXMgd2lsbCBsaWtlbHkgYmUgdGhlIG92ZXJhbGwKPiA+IGltcHJvdmVtZW50
-IGluIGdyYXBoaWNzIHBlcmZvcm1hbmNlIG9uIHN5c3RlbXMgd2l0aCBhbiBJR1AKPiA+IGludGVn
-cmF0ZWQKPiA+IGludG8gdGhlIHByb2Nlc3NvciBwYWNrYWdlICh0aG91Z2ggZm9yIHRoZSBtb21l
-bnQgdGhpcyBpcyBvbmx5Cj4gPiBlbmFibGVkCj4gPiBvbiBCWFQrKSwgYmVjYXVzZSB0aGUgVERQ
-IGJ1ZGdldCBzaGFyZWQgYW1vbmcgQ1BVIGFuZCBHUFUgY2FuCj4gPiBmcmVxdWVudGx5IGJlY29t
-ZSBhIGxpbWl0aW5nIGZhY3RvciBpbiBsb3ctcG93ZXIgZGV2aWNlcy7CoMKgT24KPiA+IGhlYXZp
-bHkKPiA+IFREUC1ib3VuZCBkZXZpY2VzIHRoaXMgc2VyaWVzIGltcHJvdmVzIHBlcmZvcm1hbmNl
-IG9mIHZpcnR1YWxseSBhbnkKPiA+IG5vbi10cml2aWFsIGdyYXBoaWNzIHJlbmRlcmluZyBieSBh
-IHNpZ25pZmljYW50IGFtb3VudCAob2YgdGhlCj4gPiBvcmRlcgo+ID4gb2YgdGhlIGVuZXJneSBl
-ZmZpY2llbmN5IGltcHJvdmVtZW50IGZvciB0aGF0IHdvcmtsb2FkIGFzc3VtaW5nIHRoZQo+ID4g
-b3B0aW1pemF0aW9uIGRpZG4ndCBjYXVzZSBpdCB0byBiZWNvbWUgbm9uLVREUC1ib3VuZCkuCj4g
-PiAKPiA+IFNlZSBbMV0tWzVdIGZvciBkZXRhaWxlZCBudW1iZXJzIGluY2x1ZGluZyB2YXJpb3Vz
-IGdyYXBoaWNzCj4gPiBiZW5jaG1hcmtzCj4gPiBhbmQgYSBzYW1wbGUgb2YgdGhlIFBob3Jvbml4
-IGRhaWx5LXN5c3RlbS10cmFja2VyLsKgwqBTb21lIHBvcHVsYXIKPiA+IGdyYXBoaWNzIGJlbmNo
-bWFya3MgbGlrZSBHZnhCZW5jaCBnbF9tYW5oYXR0YW4zMSBhbmQgZ2xfNCBpbXByb3ZlCj4gPiBi
-ZXR3ZWVuIDUlIGFuZCAxMSUgb24gb3VyIHN5c3RlbXMuwqDCoFRoZSBleGFjdCBpbXByb3ZlbWVu
-dCBjYW4gdmFyeQo+ID4gc3Vic3RhbnRpYWxseSBiZXR3ZWVuIHN5c3RlbXMgKGNvbXBhcmUgdGhl
-IGJlbmNobWFyayByZXN1bHRzIGZyb20KPiA+IHRoZQo+ID4gdHdvIGRpZmZlcmVudCBKMzQ1NSBz
-eXN0ZW1zIFsxXSBhbmQgWzNdKSBkdWUgdG8gYSBudW1iZXIgb2YKPiA+IGZhY3RvcnMsCj4gPiBp
-bmNsdWRpbmcgdGhlIHJhdGlvIGJldHdlZW4gQ1BVIGFuZCBHUFUgcHJvY2Vzc2luZyBwb3dlciwg
-dGhlCj4gPiBiZWhhdmlvcgo+ID4gb2YgdGhlIHVzZXJzcGFjZSBncmFwaGljcyBkcml2ZXIsIHRo
-ZSB3aW5kb3dpbmcgc3lzdGVtIGFuZAo+ID4gcmVzb2x1dGlvbiwKPiA+IHRoZSBCSU9TICh3aGlj
-aCBoYXMgYW4gaW5mbHVlbmNlIG9uIHRoZSBwYWNrYWdlIFREUCksIHRoZSB0aGVybWFsCj4gPiBj
-aGFyYWN0ZXJpc3RpY3Mgb2YgdGhlIHN5c3RlbSwgZXRjLgo+ID4gCj4gPiBVbmlnaW5lIFZhbGxl
-eSBhbmQgSGVhdmVuIGltcHJvdmUgYnkgYSBzaW1pbGFyIGZhY3RvciBvbiBzb21lCj4gPiBzeXN0
-ZW1zCj4gPiAoc2VlIHRoZSBKMzQ1NSByZXN1bHRzIFsxXSksIGJ1dCBvbiBvdGhlcnMgdGhlIGlt
-cHJvdmVtZW50IGlzIGxvd2VyCj4gPiBiZWNhdXNlIHRoZSBiZW5jaG1hcmsgZmFpbHMgdG8gZnVs
-bHkgdXRpbGl6ZSB0aGUgR1BVLCB3aGljaCBjYXVzZXMKPiA+IHRoZQo+ID4gaGV1cmlzdGljIHRv
-IHJlbWFpbiBpbiBsb3ctbGF0ZW5jeSBzdGF0ZSBmb3IgbG9uZ2VyLCB3aGljaCBsZWF2ZXMgYQo+
-ID4gcmVkdWNlZCBURFAgYnVkZ2V0IGF2YWlsYWJsZSB0byB0aGUgR1BVLCB3aGljaCBwcmV2ZW50
-cyBwZXJmb3JtYW5jZQo+ID4gZnJvbSBpbmNyZWFzaW5nIGZ1cnRoZXIuwqDCoFRoaXMgY2FuIGJl
-IGF2b2lkZWQgYnkgdXNpbmcgdGhlCj4gPiBhbHRlcm5hdGl2ZQo+ID4gaGV1cmlzdGljIHBhcmFt
-ZXRlcnMgc3VnZ2VzdGVkIGluIHRoZSBjb21taXQgbWVzc2FnZSBvZiBQQVRDSCA4LAo+ID4gd2hp
-Y2gKPiA+IHByb3ZpZGUgYSBsb3dlciBJTyB1dGlsaXphdGlvbiB0aHJlc2hvbGQgYW5kIGh5c3Rl
-cmVzaXMgZm9yIHRoZQo+ID4gY29udHJvbGxlciB0byBhdHRlbXB0IHRvIHNhdmUgZW5lcmd5LsKg
-wqBJJ20gbm90IHByb3Bvc2luZyB0aG9zZSBmb3IKPiA+IHVwc3RyZWFtICh5ZXQpIGJlY2F1c2Ug
-dGhleSB3b3VsZCBhbHNvIGluY3JlYXNlIHRoZSByaXNrIGZvcgo+ID4gbGF0ZW5jeS1zZW5zaXRp
-dmUgSU8taGVhdnkgd29ya2xvYWRzIHRvIHJlZ3Jlc3MgKGxpa2UgU3luTWFyazIKPiA+IE9nbFRl
-cnJhaW5GbHkqIGFuZCBzb21lIGFyZ3VhYmx5IHBvb3JseSBkZXNpZ25lZCBJUEMtYm91bmQgWDEx
-Cj4gPiBiZW5jaG1hcmtzKS4KPiA+IAo+ID4gRGlzY3JldGUgZ3JhcGhpY3MgYXJlbid0IGxpa2Vs
-eSB0byBleHBlcmllbmNlIHRoYXQgbXVjaCBvZiBhCj4gPiB2aXNpYmxlCj4gPiBpbXByb3ZlbWVu
-dCBmcm9tIHRoaXMsIGV2ZW4gdGhvdWdoIG1hbnkgbm9uLUlHUCB3b3JrbG9hZHMgKmNvdWxkKgo+
-ID4gYmVuZWZpdCBieSByZWR1Y2luZyB0aGUgc3lzdGVtJ3MgZW5lcmd5IHVzYWdlIHdoaWxlIHRo
-ZSBkaXNjcmV0ZQo+ID4gR1BVCj4gPiAob3IgcmVhbGx5LCBhbnkgb3RoZXIgSU8gZGV2aWNlKSBi
-ZWNvbWVzIGEgYm90dGxlbmVjaywgYnV0IHRoaXMgaXMKPiA+IG5vdAo+ID4gYXR0ZW1wdGVkIGlu
-IHRoaXMgc2VyaWVzLCBzaW5jZSB0aGF0IHdvdWxkIGludm9sdmUgbWFraW5nIGFuIGVuZXJneQo+
-ID4gZWZmaWNpZW5jeS9sYXRlbmN5IHRyYWRlLW9mZiB0aGF0IG9ubHkgdGhlIG1haW50YWluZXJz
-IG9mIHRoZQo+ID4gcmVzcGVjdGl2ZSBkcml2ZXJzIGFyZSBpbiBhIHBvc2l0aW9uIHRvIG1ha2Uu
-wqDCoFRoZSBjcHVmcmVxCj4gPiBpbnRlcmZhY2UKPiA+IGludHJvZHVjZWQgaW4gUEFUQ0ggMSB0
-byBhY2hpZXZlIHRoaXMgaXMgbGVmdCBhcyBhbiBvcHQtaW4gZm9yIHRoYXQKPiA+IHJlYXNvbiwg
-b25seSB0aGUgaTkxNSBEUk0gZHJpdmVyIGlzIGhvb2tlZCB1cCBzaW5jZSBpdCB3aWxsIGdldCB0
-aGUKPiA+IG1vc3QgZGlyZWN0IHBheS1vZmYgZHVlIHRvIHRoZSBpbmNyZWFzZWQgZW5lcmd5IGJ1
-ZGdldCBhdmFpbGFibGUgdG8KPiA+IHRoZSBHUFUsIGJ1dCBvdGhlciBwb3dlci1odW5ncnkgdGhp
-cmQtcGFydHkgZ2FkZ2V0cyBidWlsdCBpbnRvIHRoZQo+ID4gc2FtZSBwYWNrYWdlICgqY291Z2gq
-IEFNRCAqY291Z2gqIE1hbGkgKmNvdWdoKiBQb3dlclZSICpjb3VnaCopIG1heQo+ID4gYmUKPiA+
-IGFibGUgdG8gYmVuZWZpdCBmcm9tIHRoaXMgaW50ZXJmYWNlIGV2ZW50dWFsbHkgYnkgaW5zdHJ1
-bWVudGluZyB0aGUKPiA+IGRyaXZlciBpbiBhIHNpbWlsYXIgd2F5Lgo+ID4gCj4gPiBUaGUgY3B1
-ZnJlcSBpbnRlcmZhY2UgaXMgbm90IGV4Y2x1c2l2ZWx5IHRpZWQgdG8gdGhlIGludGVsX3BzdGF0
-ZQo+ID4gZHJpdmVyLCBiZWNhdXNlIG90aGVyIGdvdmVybm9ycyBjYW4gbWFrZSB1c2Ugb2YgdGhl
-IHN0YXRpc3RpYwo+ID4gY2FsY3VsYXRlZCBhcyByZXN1bHQgdG8gYXZvaWQgb3Zlci1vcHRpbWl6
-aW5nIGZvciBsYXRlbmN5IGluCj4gPiBzY2VuYXJpb3MKPiA+IHdoZXJlIGEgbG93ZXIgZnJlcXVl
-bmN5IHdvdWxkIGJlIGFibGUgdG8gYWNoaWV2ZSBzaW1pbGFyIHRocm91Z2hwdXQKPiA+IHdoaWxl
-IHVzaW5nIGxlc3MgZW5lcmd5LsKgwqBUaGUgaW50ZXJwcmV0YXRpb24gb2YgdGhpcyBzdGF0aXN0
-aWMKPiA+IHJlbGllcwo+ID4gb24gdGhlIG9ic2VydmF0aW9uIHRoYXQgZm9yIGFzIGxvbmcgYXMg
-dGhlIHN5c3RlbSBpcyBDUFUtYm91bmQsIGFueQo+ID4gSU8KPiA+IGxvYWQgb2NjdXJyaW5nIGFz
-IGEgcmVzdWx0IG9mIHRoZSBleGVjdXRpb24gb2YgYSBwcm9ncmFtIHdpbGwgc2NhbGUKPiA+IHJv
-dWdobHkgbGluZWFybHkgd2l0aCB0aGUgY2xvY2sgZnJlcXVlbmN5IHRoZSBwcm9ncmFtIGlzIHJ1
-biBhdCwgc28KPiA+IChhc3N1bWluZyB0aGF0IHRoZSBDUFUgaGFzIGVub3VnaCBwcm9jZXNzaW5n
-IHBvd2VyKSBhIHBvaW50IHdpbGwgYmUKPiA+IHJlYWNoZWQgYXQgd2hpY2ggdGhlIHByb2dyYW0g
-d29uJ3QgYmUgYWJsZSB0byBleGVjdXRlIGZhc3RlciB3aXRoCj4gPiBpbmNyZWFzaW5nIENQVSBm
-cmVxdWVuY3kgYmVjYXVzZSB0aGUgdGhyb3VnaHB1dCBsaW1pdHMgb2Ygc29tZQo+ID4gZGV2aWNl
-Cj4gPiB3aWxsIGhhdmUgYmVlbiBhdHRhaW5lZC7CoMKgSW5jcmVhc2luZyBmcmVxdWVuY2llcyBw
-YXN0IHRoYXQgcG9pbnQKPiA+IG9ubHkKPiA+IHBlc3NpbWl6ZXMgZW5lcmd5IHVzYWdlIGZvciBu
-byByZWFsIGJlbmVmaXQgLS0gVGhlIG9wdGltYWwgYmVoYXZpb3IKPiA+IGlzCj4gPiBmb3IgdGhl
-IENQVSB0byBsb2NrIHRvIHRoZSBtaW5pbXVtIGZyZXF1ZW5jeSB0aGF0IGlzIGFibGUgdG8ga2Vl
-cAo+ID4gdGhlCj4gPiBJTyBkZXZpY2VzIGludm9sdmVkIGZ1bGx5IHV0aWxpemVkIChhc3N1bWlu
-ZyB3ZSBhcmUgcGFzdCB0aGUKPiA+IG1heGltdW0tZWZmaWNpZW5jeSBpbmZsZWN0aW9uIHBvaW50
-IG9mIHRoZSBDUFUncyBwb3dlci10by1mcmVxdWVuY3kKPiA+IGN1cnZlKSwgd2hpY2ggaXMgcm91
-Z2hseSB0aGUgZ29hbCBvZiB0aGlzIHNlcmllcy4KPiA+IAo+ID4gUEVMVCBjb3VsZCBiZSBhIHVz
-ZWZ1bCBleHRlbnNpb24gZm9yIHRoaXMgbW9kZWwgc2luY2UgaXRzIGxhcmdlbHkKPiA+IGhldXJp
-c3RpYyBhc3N1bXB0aW9ucyB3b3VsZCBiZWNvbWUgbW9yZSBhY2N1cmF0ZSBpZiB0aGUgSU8gYW5k
-IENQVQo+ID4gbG9hZCBjb3VsZCBiZSB0cmFja2VkIHNlcGFyYXRlbHkgZm9yIGVhY2ggc2NoZWR1
-bGluZyBlbnRpdHksIGJ1dAo+ID4gdGhpcwo+ID4gaXMgbm90IGF0dGVtcHRlZCBpbiB0aGlzIHNl
-cmllcyBiZWNhdXNlIHRoZSBhZGRpdGlvbmFsIGNvbXBsZXhpdHkKPiA+IGFuZAo+ID4gY29tcHV0
-YXRpb25hbCBjb3N0IG9mIHN1Y2ggYW4gYXBwcm9hY2ggaXMgaGFyZCB0byBqdXN0aWZ5IGF0IHRo
-aXMKPiA+IHN0YWdlLCBwYXJ0aWN1bGFybHkgc2luY2UgdGhlIGN1cnJlbnQgZ292ZXJub3IgaGFz
-IHNpbWlsYXIKPiA+IGxpbWl0YXRpb25zLgo+ID4gCj4gPiBWYXJpb3VzIGZyZXF1ZW5jeSBhbmQg
-c3RlcC1mdW5jdGlvbiByZXNwb25zZSBncmFwaHMgYXJlIGF2YWlsYWJsZQo+ID4gaW4KPiA+IFs2
-XS1bOV0gZm9yIGNvbXBhcmlzb24gKG9idGFpbmVkIGVtcGlyaWNhbGx5IG9uIGEgQlhUIEozNDU1
-Cj4gPiBzeXN0ZW0pLgo+ID4gVGhlIHJlc3BvbnNlIGN1cnZlcyBmb3IgdGhlIGxvdy1sYXRlbmN5
-IGFuZCBsb3ctcG93ZXIgc3RhdGVzIG9mIHRoZQo+ID4gaGV1cmlzdGljIGFyZSBzaG93biBzZXBh
-cmF0ZWx5IC0tIEFzIHlvdSBjYW4gc2VlIHRoZXkgcm91Z2hseQo+ID4gYnJhY2tldAo+ID4gdGhl
-IGZyZXF1ZW5jeSByZXNwb25zZSBjdXJ2ZSBvZiB0aGUgY3VycmVudCBnb3Zlcm5vci7CoMKgVGhl
-IHN0ZXAKPiA+IHJlc3BvbnNlIG9mIHRoZSBhZ2dyZXNzaXZlIGhldXJpc3RpYyBpcyB3aXRoaW4g
-YSBzaW5nbGUgdXBkYXRlCj4gPiBwZXJpb2QKPiA+IChldmVuIHRob3VnaCBpdCdzIG5vdCBxdWl0
-ZSBvYnZpb3VzIGZyb20gdGhlIGdyYXBoIHdpdGggdGhlIGxldmVscwo+ID4gb2YKPiA+IHpvb20g
-cHJvdmlkZWQpLsKgwqBJJ2xsIGF0dGFjaCBiZW5jaG1hcmsgcmVzdWx0cyBmcm9tIGEgc2xvd2Vy
-IGJ1dAo+ID4gbm9uLVREUC1saW1pdGVkIG1hY2hpbmUgKHdoaWNoIG1lYW5zIHRoZXJlIHdpbGwg
-YmUgbm8gVERQIGJ1ZGdldAo+ID4gaW5jcmVhc2UgdGhhdCBjb3VsZCBwb3NzaWJseSBtYXNrIGEg
-cGVyZm9ybWFuY2UgcmVncmVzc2lvbiBvZiBvdGhlcgo+ID4ga2luZCkgYXMgc29vbiBhcyB0aGV5
-IGNvbWUgb3V0Lgo+ID4gCj4gPiBUaGFua3MgdG8gRWVybyBhbmQgVmFsdHRlcmkgZm9yIHRlc3Rp
-bmcgYSBudW1iZXIgb2YgaW50ZXJtZWRpYXRlCj4gPiByZXZpc2lvbnMgb2YgdGhpcyBzZXJpZXMg
-KGFuZCB0aGVyZSB3ZXJlIHF1aXRlIGEgZmV3IG9mIHRoZW0pIGluCj4gPiBtb3JlCj4gPiB0aGFu
-IGhhbGYgYSBkb3plbiBzeXN0ZW1zLCB0aGV5IGhlbHBlZCBzcG90IHF1aXRlIGEgZmV3IGlzc3Vl
-cyBvZgo+ID4gZWFybGllciB2ZXJzaW9ucyBvZiB0aGlzIGhldXJpc3RpYy4KPiA+IAo+ID4gW1BB
-VENIIDEvOV0gY3B1ZnJlcTogSW1wbGVtZW50IGluZnJhc3RydWN0dXJlIGtlZXBpbmcgdHJhY2sg
-b2YKPiA+IGFnZ3JlZ2F0ZWQgSU8gYWN0aXZlIHRpbWUuCj4gPiBbUEFUQ0ggMi85XSBSZXZlcnQg
-ImNwdWZyZXE6IGludGVsX3BzdGF0ZTogUmVwbGFjZSBieHRfZnVuY3Mgd2l0aAo+ID4gY29yZV9m
-dW5jcyIKPiA+IFtQQVRDSCAzLzldIFJldmVydCAiY3B1ZnJlcTogaW50ZWxfcHN0YXRlOiBTaG9y
-dGVuIGEgY291cGxlIG9mIGxvbmcKPiA+IG5hbWVzIgo+ID4gW1BBVENIIDQvOV0gUmV2ZXJ0ICJj
-cHVmcmVxOiBpbnRlbF9wc3RhdGU6IFNpbXBsaWZ5Cj4gPiBpbnRlbF9wc3RhdGVfYWRqdXN0X3Bz
-dGF0ZSgpIgo+ID4gW1BBVENIIDUvOV0gUmV2ZXJ0ICJjcHVmcmVxOiBpbnRlbF9wc3RhdGU6IERy
-b3AgLT51cGRhdGVfdXRpbCBmcm9tCj4gPiBwc3RhdGVfZnVuY3MiCj4gPiBbUEFUQ0ggNi85XSBj
-cHVmcmVxL2ludGVsX3BzdGF0ZTogSW1wbGVtZW50IHZhcmlhYmx5IGxvdy1wYXNzCj4gPiBmaWx0
-ZXJpbmcgY29udHJvbGxlciBmb3Igc21hbGwgY29yZS4KPiA+IFtQQVRDSCA3LzldIFNRVUFTSDog
-Y3B1ZnJlcS9pbnRlbF9wc3RhdGU6IEVuYWJsZSBMUCBjb250cm9sbGVyCj4gPiBiYXNlZCBvbiBB
-Q1BJIEZBRFQgcHJvZmlsZS4KPiA+IFtQQVRDSCA4LzldIE9QVElPTkFMOiBjcHVmcmVxL2ludGVs
-X3BzdGF0ZTogRXhwb3NlIExQIGNvbnRyb2xsZXIKPiA+IHBhcmFtZXRlcnMgdmlhIGRlYnVnZnMu
-Cj4gPiBbUEFUQ0ggOS85XSBkcm0vaTkxNS9leGVjbGlzdHM6IFJlcG9ydCBHUFUgcmVuZGVyaW5n
-IGFzIElPIGFjdGl2aXR5Cj4gPiB0byBjcHVmcmVxLgo+ID4gCj4gPiBbMV0gaHR0cDovL3Blb3Bs
-ZS5mcmVlZGVza3RvcC5vcmcvfmN1cnJvamVyZXovaW50ZWxfcHN0YXRlLWxwL2JlbmNoCj4gPiBt
-YXJrLXBlcmYtY29tcGFyaXNvbi1KMzQ1NS5sb2cKPiA+IFsyXSBodHRwOi8vcGVvcGxlLmZyZWVk
-ZXNrdG9wLm9yZy9+Y3Vycm9qZXJlei9pbnRlbF9wc3RhdGUtbHAvYmVuY2gKPiA+IG1hcmstcGVy
-Zi1wZXItd2F0dC1jb21wYXJpc29uLUozNDU1LmxvZwo+ID4gWzNdIGh0dHA6Ly9wZW9wbGUuZnJl
-ZWRlc2t0b3Aub3JnL35jdXJyb2plcmV6L2ludGVsX3BzdGF0ZS1scC9iZW5jaAo+ID4gbWFyay1w
-ZXJmLWNvbXBhcmlzb24tSjM0NTUtMS5sb2cKPiA+IFs0XSBodHRwOi8vcGVvcGxlLmZyZWVkZXNr
-dG9wLm9yZy9+Y3Vycm9qZXJlei9pbnRlbF9wc3RhdGUtbHAvYmVuY2gKPiA+IG1hcmstcGVyZi1j
-b21wYXJpc29uLUo0MjA1LmxvZwo+ID4gWzVdIGh0dHA6Ly9wZW9wbGUuZnJlZWRlc2t0b3Aub3Jn
-L35jdXJyb2plcmV6L2ludGVsX3BzdGF0ZS1scC9iZW5jaAo+ID4gbWFyay1wZXJmLWNvbXBhcmlz
-b24tSjUwMDUubG9nCj4gPiBbNl0gaHR0cDovL3Blb3BsZS5mcmVlZGVza3RvcC5vcmcvfmN1cnJv
-amVyZXovaW50ZWxfcHN0YXRlLWxwL2ZyZXF1Cj4gPiBlbmN5LXJlc3BvbnNlLW1hZ25pdHVkZS1j
-b21wYXJpc29uLnN2Zwo+ID4gWzddIGh0dHA6Ly9wZW9wbGUuZnJlZWRlc2t0b3Aub3JnL35jdXJy
-b2plcmV6L2ludGVsX3BzdGF0ZS1scC9mcmVxdQo+ID4gZW5jeS1yZXNwb25zZS1waGFzZS1jb21w
-YXJpc29uLnN2Zwo+ID4gWzhdIGh0dHA6Ly9wZW9wbGUuZnJlZWRlc2t0b3Aub3JnL35jdXJyb2pl
-cmV6L2ludGVsX3BzdGF0ZS1scC9zdGVwLQo+ID4gcmVzcG9uc2UtY29tcGFyaXNvbi0xLnN2Zwo+
-ID4gWzldIGh0dHA6Ly9wZW9wbGUuZnJlZWRlc2t0b3Aub3JnL35jdXJyb2plcmV6L2ludGVsX3Bz
-dGF0ZS1scC9zdGVwLQo+ID4gcmVzcG9uc2UtY29tcGFyaXNvbi0yLnN2ZwpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0
-CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3Rv
-cC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
+
+Ping?
+
+On Fri, Apr 06, 2018 at 07:43:55AM -0700, Matthew Wilcox wrote:
+> Pavel Machek <pavel@ucw.cz> wrote:
+> > > Failure is not a hang, as they expect, but... machine locks up, but
+> > > does not suspend, and then continues running after a delay..
+> > > 
+> > > [   35.038766] PM: Syncing filesystems ... done.
+> > > [   35.051246] Freezing user space processes ...
+> > > [   55.060528] Freezing of tasks failed after 20.009 seconds (1 tasks
+> > > refusing to freeze, wq_busy
+> > > =0):
+> > > [   55.060552] update-binfmts  D    0  2727      1 0x80000004
+> > > [   55.060576] Call Trace:
+> > > [   55.060600]  __schedule+0x37a/0x7e0
+> > > [   55.060618]  schedule+0x29/0x70
+> > > [   55.060635]  autofs4_wait+0x359/0x7a0
+> > > [   55.060653]  ? wait_woken+0x70/0x70
+> > > [   55.060668]  autofs4_mount_wait+0x4a/0xe0
+> > > [   55.060684]  ? autofs4_mount_wait+0x4a/0xe0
+> > > [   55.060699]  autofs4_d_automount+0xe0/0x200
+> > > [   55.060715]  ? autofs4_d_automount+0xe0/0x200
+> > > 
+> > > Did the rework of freezing start already in -next?
+> > 
+> > Hmm, so I did git bisect, and it pointed to:
+> > 
+> > commit 7cb03edf112fea6ead2fcd3c5fd639756d6d114b
+> > Author: Matthew Wilcox <mawilcox@microsoft.com>
+> > Date:   Thu Mar 29 10:15:17 2018 +1100
+> > 
+> >     autofs4: use wait_event_killable
+> > 
+> >     This playing with signals to allow only fatal signals appears to
+> >     predate
+> >         the introduction of wait_event_killable(), and I'm fairly sure
+> >     that
+> >         wait_event_killable is what was meant to happen here.
+> 
+> Umm.  I'm not familiar with the freezer.  Help me out here ...
+> 
+> I see the message coming from here:
+> 
+>                 pr_err("Freezing of tasks %s after %d.%03d seconds "
+>                        "(%d tasks refusing to freeze, wq_busy=%d):\n",
+>                        wakeup ? "aborted" : "failed",
+>                        elapsed_msecs / 1000, elapsed_msecs % 1000,
+>                        todo - wq_busy, wq_busy);
+> 
+> and then backtracking in that function, I see this:
+> 
+>                 for_each_process_thread(g, p) {
+>                         if (p == current || !freeze_task(p))
+>                                 continue;
+> 
+> in freeze_task(), I see this:
+> 
+>         if (!(p->flags & PF_KTHREAD))
+>                 fake_signal_wake_up(p);
+>         else
+>                 wake_up_state(p, TASK_INTERRUPTIBLE);
+> 
+> which does this:
+> 
+>         if (lock_task_sighand(p, &flags)) {
+>                 signal_wake_up(p, 0);
+>                 unlock_task_sighand(p, &flags);
+>         }
+> 
+> which does this:
+> 
+> static inline void signal_wake_up(struct task_struct *t, bool resume)
+> {
+>         signal_wake_up_state(t, resume ? TASK_WAKEKILL : 0);
+> }
+> 
+> which does this:
+> 
+> void signal_wake_up_state(struct task_struct *t, unsigned int state)
+> {
+>         set_tsk_thread_flag(t, TIF_SIGPENDING);
+>         /*
+>          * TASK_WAKEKILL also means wake it up in the stopped/traced/killable
+>          * case. We don't check t->state here because there is a race with it
+>          * executing another processor and just now entering stopped state.
+>          * By using wake_up_state, we ensure the process will wake up and
+>          * handle its death signal.
+>          */
+>         if (!wake_up_state(t, state | TASK_INTERRUPTIBLE))
+>                 kick_process(t);
+> }
+> 
+> Now I don't know why we only wake interruptible tasks here and not killable
+> tasks.  I've trawled git history all the way back to 2.6.12-rc2, and the
+> reasoning behind signal_wake_up() (as it originally was) is lost to pre-git
+> history.
+> 
+> So ... why do we only wake interruptible tasks on suspend?  Why not wake
+> uninterruptible tasks too?
+> 
+>         if (lock_task_sighand(p, &flags)) {
+> -               signal_wake_up(p, 0);
+> +               signal_wake_up_state(p, TASK_WAKEKILL);
+>                 unlock_task_sighand(p, &flags);
+>         }
+> 
+> or why do we consider tasks waiting uninterruptibly to block freezing?
+> Is it because they're (probably) waiting for I/O and we want the I/O
+> to complete?
