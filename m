@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v7 20/26] drivers: firmware: psci: Share a few internal PSCI functions
-Date: Thu, 12 Apr 2018 13:14:25 +0200
-Message-ID: <1523531671-27491-21-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v7 19/26] drivers: firmware: psci: Prepare to use OS initiated suspend mode
+Date: Thu, 12 Apr 2018 13:14:24 +0200
+Message-ID: <1523531671-27491-20-git-send-email-ulf.hansson@linaro.org>
 References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,86 +10,91 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Following changes needs to be able to call psci_get|set_domain_state() and
-psci_dt_parse_state_node(), but from a separate file. Let's make that
-possible by sharing them via a new internal PSCI header file.
+To enable the OS initiated mode, the CPU topology needs to be described
+using the hierarchical model in DT. When used, the idle state bits for the
+CPU needs to be created by ORing the bits for CPU's selected idle state
+with the bits for CPU's PM domain (CPU's cluster) idle state.
+
+Let's prepare the PSCI driver to deal with this, via introducing a per CPU
+variable called domain_state and by adding internal helpers to read/write
+the value of variable.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/psci.c | 14 ++++++++------
- drivers/firmware/psci/psci.h | 13 +++++++++++++
- 2 files changed, 21 insertions(+), 6 deletions(-)
- create mode 100644 drivers/firmware/psci/psci.h
+ drivers/firmware/psci/psci.c | 26 ++++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 40b2b89..463f78c 100644
+index e8f4f84..40b2b89 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -34,6 +34,8 @@
- #include <asm/smp_plat.h>
- #include <asm/suspend.h>
+@@ -87,8 +87,19 @@ static u32 psci_function_id[PSCI_FN_MAX];
+ 				(PSCI_1_0_EXT_POWER_STATE_ID_MASK | \
+ 				PSCI_1_0_EXT_POWER_STATE_TYPE_MASK)
  
-+#include "psci.h"
-+
- /*
-  * While a 64-bit OS can make calls with SMC32 calling conventions, for some
-  * calls it is necessary to use SMC64 to pass or return 64-bit values.
-@@ -90,12 +92,12 @@ static u32 psci_function_id[PSCI_FN_MAX];
- static DEFINE_PER_CPU(u32, domain_state);
++static DEFINE_PER_CPU(u32, domain_state);
  static u32 psci_cpu_suspend_feature;
  
--static inline u32 psci_get_domain_state(void)
-+u32 psci_get_domain_state(void)
++static inline u32 psci_get_domain_state(void)
++{
++	return this_cpu_read(domain_state);
++}
++
++static inline void psci_set_domain_state(u32 state)
++{
++	this_cpu_write(domain_state, state);
++}
++
+ static inline bool psci_has_ext_power_state(void)
  {
- 	return this_cpu_read(domain_state);
+ 	return psci_cpu_suspend_feature &
+@@ -187,6 +198,8 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
+ 
+ 	fn = psci_function_id[PSCI_FN_CPU_ON];
+ 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
++	/* Clear the domain state to start fresh. */
++	psci_set_domain_state(0);
+ 	return psci_to_linux_errno(err);
  }
  
--static inline void psci_set_domain_state(u32 state)
-+void psci_set_domain_state(u32 state)
+@@ -408,15 +421,17 @@ int psci_cpu_init_idle(unsigned int cpu)
+ static int psci_suspend_finisher(unsigned long index)
  {
- 	this_cpu_write(domain_state, state);
- }
-@@ -285,10 +287,7 @@ static int __init psci_features(u32 psci_func_id)
- 			      psci_func_id, 0, 0);
- }
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 composite_state = state[index - 1] | psci_get_domain_state();
  
--#ifdef CONFIG_CPU_IDLE
--static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
--
--static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
-+int psci_dt_parse_state_node(struct device_node *np, u32 *state)
- {
- 	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
- 
-@@ -305,6 +304,9 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
- 	return 0;
+-	return psci_ops.cpu_suspend(state[index - 1],
+-				    __pa_symbol(cpu_resume));
++	return psci_ops.cpu_suspend(composite_state, __pa_symbol(cpu_resume));
  }
  
-+#ifdef CONFIG_CPU_IDLE
-+static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
-+
- static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ int psci_cpu_suspend_enter(unsigned long index)
  {
- 	int i, ret = 0, count = 0;
-diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
-new file mode 100644
-index 0000000..a2b4be5
---- /dev/null
-+++ b/drivers/firmware/psci/psci.h
-@@ -0,0 +1,13 @@
-+// SPDX-License-Identifier: GPL-2.0
+ 	int ret;
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 composite_state = state[index - 1] | psci_get_domain_state();
 +
-+#ifndef __PSCI_H
-+#define __PSCI_H
+ 	/*
+ 	 * idle state index 0 corresponds to wfi, should never be called
+ 	 * from the cpu_suspend operations
+@@ -424,11 +439,14 @@ int psci_cpu_suspend_enter(unsigned long index)
+ 	if (WARN_ON_ONCE(!index))
+ 		return -EINVAL;
+ 
+-	if (!psci_power_state_loses_context(state[index - 1]))
+-		ret = psci_ops.cpu_suspend(state[index - 1], 0);
++	if (!psci_power_state_loses_context(composite_state))
++		ret = psci_ops.cpu_suspend(composite_state, 0);
+ 	else
+ 		ret = cpu_suspend(index, psci_suspend_finisher);
+ 
++	/* Clear the domain state to start fresh when back from idle. */
++	psci_set_domain_state(0);
 +
-+struct device_node;
-+
-+u32 psci_get_domain_state(void);
-+void psci_set_domain_state(u32 state);
-+
-+int psci_dt_parse_state_node(struct device_node *np, u32 *state);
-+
-+#endif /* __PSCI_H */
+ 	return ret;
+ }
+ 
 -- 
 2.7.4
