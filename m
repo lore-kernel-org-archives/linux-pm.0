@@ -1,99 +1,40 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v7 08/26] PM / Domains: Extend genpd CPU governor to cope with QoS constraints
-Date: Thu, 12 Apr 2018 13:14:13 +0200
-Message-ID: <1523531671-27491-9-git-send-email-ulf.hansson@linaro.org>
-References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Thu, 12 Apr 2018 13:50:22 +0200
+Message-ID: <20180412115022.GL4043@hirez.programming.kicks-ass.net>
+References: <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+ <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
+ <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
+ <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
+ <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
+ <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
+ <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+ <20180411170049.GR4082@hirez.programming.kicks-ass.net>
+ <20180412074719.pmcddramzyikppco@gmail.com>
+ <20180412093521.GA6427@andrea>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20180412093521.GA6427@andrea>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andrea Parri <andrea.parri@amarulasolutions.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-CPU devices and other regular devices may share the same PM domain and may
-also be hierarchically related via subdomains. In either case, all devices
-including CPUs, may be attached to a PM domain managed by genpd, that has
-an idle state with an enter/exit latency.
+On Thu, Apr 12, 2018 at 11:35:21AM +0200, Andrea Parri wrote:
+> Is there a better or recommended way to reference posts on LKML in commit
+> messages? (I do like the idea of linking to previous discussions, results,
+> ...)
 
-Let's take these latencies into account in the state selection process by
-genpd's governor for CPUs. This means the governor, pm_domain_cpu_gov,
-becomes extended to satisfy both a state's residency and a potential dev PM
-QoS constraint.
+Yes:
 
-Cc: Lina Iyer <ilina@codeaurora.org>
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain_governor.c | 15 +++++++++++----
- include/linux/pm_domain.h            |  1 +
- 2 files changed, 12 insertions(+), 4 deletions(-)
+  https://lkml.kernel.org/r/$MSGID
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 1aad557..03d4e94 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -214,8 +214,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
- 	struct gpd_link *link;
- 
--	if (!genpd->max_off_time_changed)
-+	if (!genpd->max_off_time_changed) {
-+		genpd->state_idx = genpd->cached_power_down_state_idx;
- 		return genpd->cached_power_down_ok;
-+	}
- 
- 	/*
- 	 * We have to invalidate the cached results for the masters, so
-@@ -240,6 +242,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		genpd->state_idx--;
- 	}
- 
-+	genpd->cached_power_down_state_idx = genpd->state_idx;
- 	return genpd->cached_power_down_ok;
- }
- 
-@@ -255,6 +258,10 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
- 	s64 idle_duration_ns;
- 	int cpu, i;
- 
-+	/* Validate dev PM QoS constraints. */
-+	if (!default_power_down_ok(pd))
-+		return false;
-+
- 	if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
- 		return true;
- 
-@@ -276,9 +283,9 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
- 	/*
- 	 * Find the deepest idle state that has its residency value satisfied
- 	 * and by also taking into account the power off latency for the state.
--	 * Start at the deepest supported state.
-+	 * Start at the state picked by the dev PM QoS constraint validation.
- 	 */
--	i = genpd->state_count - 1;
-+	i = genpd->state_idx;
- 	do {
- 		if (!genpd->states[i].residency_ns)
- 			break;
-@@ -312,6 +319,6 @@ struct dev_power_governor pm_domain_always_on_gov = {
- };
- 
- struct dev_power_governor pm_domain_cpu_gov = {
--	.suspend_ok = NULL,
-+	.suspend_ok = default_suspend_ok,
- 	.power_down_ok = cpu_power_down_ok,
- };
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 8f60181..e7910d2 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -77,6 +77,7 @@ struct generic_pm_domain {
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
- 	bool cached_power_down_ok;
-+	bool cached_power_down_state_idx;
- 	int (*attach_dev)(struct generic_pm_domain *domain,
- 			  struct device *dev);
- 	void (*detach_dev)(struct generic_pm_domain *domain,
--- 
-2.7.4
+that has the added benefit that it immediately includes the msg-id, so
+even if you don't have tubes, you can search for it in your local
+mailboxes.
+
+Also, since we (kernel.org) control the redirection (currently
+marc.info) we can always point it to a life archive.
