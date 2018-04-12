@@ -1,55 +1,44 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFC PATCH v2 1/6] sched/fair: Create util_fits_capacity()
-Date: Thu, 12 Apr 2018 10:20:05 +0200
-Message-ID: <0184b049-9333-2b6b-09a0-bdb71f491e25@arm.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-2-dietmar.eggemann@arm.com>
- <20180412070230.GV7671@vireshk-i7>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
+ improvements for the intel_pstate driver.
+Date: Thu, 12 Apr 2018 10:58:24 +0200
+Message-ID: <20180412085824.GX4082@hirez.programming.kicks-ass.net>
+References: <20180328063845.4884-1-currojerez@riseup.net>
+ <87604ybssf.fsf@riseup.net>
+ <1523416474.2700.2.camel@linux.intel.com>
+ <87vacx7mh3.fsf@riseup.net> <87muy97lr0.fsf@riseup.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180412070230.GV7671@vireshk-i7>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+Content-Disposition: inline
+In-Reply-To: <87muy97lr0.fsf@riseup.net>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Francisco Jerez <currojerez@riseup.net>
+Cc: intel-gfx@lists.freedesktop.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eero Tamminen <eero.t.tamminen@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/12/2018 09:02 AM, Viresh Kumar wrote:
-> On 06-04-18, 16:36, Dietmar Eggemann wrote:
->> The functionality that a given utilization fits into a given capacity
->> is factored out into a separate function.
->>
->> Currently it is only used in wake_cap() but will be re-used to figure
->> out if a cpu or a scheduler group is over-utilized.
->>
->> Cc: Ingo Molnar <mingo@redhat.com>
->> Cc: Peter Zijlstra <peterz@infradead.org>
->> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
->> ---
->>   kernel/sched/fair.c | 7 ++++++-
->>   1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index 0951d1c58d2f..0a76ad2ef022 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -6574,6 +6574,11 @@ static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
->>   	return min_t(unsigned long, util, capacity_orig_of(cpu));
->>   }
->>   
->> +static inline int util_fits_capacity(unsigned long util, unsigned long capacity)
->> +{
->> +	return capacity * 1024 > util * capacity_margin;
-> 
-> This changes the behavior slightly compared to existing code. If that
-> wasn't intentional, perhaps you should use >= here.
-
-You're right here ... Already on our v3 list. Thanks!
-
-The 'misfit' patch-set comes with a similar function 
-task_fits_capacity() so we have to align on this one with this patch-set 
-as well.
-
-[...]
+T24gV2VkLCBBcHIgMTEsIDIwMTggYXQgMDk6MjY6MTFBTSAtMDcwMCwgRnJhbmNpc2NvIEplcmV6
+IHdyb3RlOgo+ICJqdXN0IGxpa2UiIGhlcmUgaXMgcG9zc2libHkgc29tZXdoYXQgdW5mYWlyIHRv
+IHRoZSBzY2hlZHV0aWwgZ292ZXJub3IsCj4gYWRtaXR0ZWRseSBpdHMgcHJvZ3Jlc3NpdmUgSU9X
+QUlUIGJvb3N0aW5nIGJlaGF2aW9yIHNlZW1zIHNvbWV3aGF0IGxlc3MKPiB3YXN0ZWZ1bCB0aGFu
+IHRoZSBpbnRlbF9wc3RhdGUgbm9uLUhXUCBnb3Zlcm5vcidzIElPV0FJVCBib29zdGluZwo+IGJl
+aGF2aW9yLCBidXQgaXQncyBzdGlsbCBsYXJnZWx5IHVuaGVscGZ1bCBvbiBJTy1ib3VuZCBjb25k
+aXRpb25zLgoKU28geW91IHVuZGVyc3RhbmQgd2h5IHdlIG5lZWQgdGhlIGlvd2FpdCBib29zdGlu
+ZyByaWdodD8KCkl0IGlzIGp1c3QgdGhhdCB3aGVuIHdlIGdldCBiYWNrIHRvIHJ1bm5hYmxlLCB3
+ZSB3YW50IHRvIHByb2Nlc3MgdGhlCm5leHQgZGF0YSBwYWNrZXQgQVNBUC4gU2VlIGFsc28gaGVy
+ZToKCiAgaHR0cHM6Ly9sa21sLmtlcm5lbC5vcmcvci8yMDE3MDUyMjA4MjE1NC5mNTdjcW92dGVy
+ZDJxYWp2QGhpcmV6LnByb2dyYW1taW5nLmtpY2tzLWFzcy5uZXQKCldoYXQgSSBkb24ndCByZWFs
+bHkgdW5kZXJzdGFuZCBpcyB3aHkgaXQgaXMgY29zdGluZyBzbyBtdWNoIHBvd2VyOyBhZnRlcgph
+bGwsIHdoZW4gd2UncmUgaW4gaW93YWl0IHRoZSBDUFUgaXMgbW9zdGx5IGlkbGUgYW5kIGNhbiBw
+b3dlci1nYXRlLgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcK
+aHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
