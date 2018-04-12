@@ -1,65 +1,40 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
-Date: Thu, 12 Apr 2018 19:42:09 +0200
-Message-ID: <1bbc5ab1-3532-95f5-1246-0bb89c566508@linaro.org>
-References: <1523436077.16235.5.camel@intel.com>
- <CA+55aFzqJ2PfUnkVJ6A-8WRQTciWb8j+25r41JLCvz7h0QEJiA@mail.gmail.com>
- <1523509711.16235.25.camel@intel.com>
- <CA+55aFw0C-S0L-cnk0oROG=Khqy9s36O+g3_BxqPfewKGQ9_EQ@mail.gmail.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info available
+Date: Thu, 12 Apr 2018 11:06:35 -0700
+Message-ID: <CAJWu+oo3j-i0AsbRxkp5t8aiEWQezbEQL5FmHTS1p+aUJBx77w@mail.gmail.com>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+ <20180410110412.GG14248@e110439-lin> <CAKfTPtAJQgA7w+2PRwhrY1xzsVH9CUt-wZurc+9qdmMLopYfUQ@mail.gmail.com>
+ <20180411101517.GL14248@e110439-lin> <CAKfTPtBKPx0o7AfEMsJv998aCggYQzsOnxmy-qu6B8UULCZabA@mail.gmail.com>
+ <CAJWu+orqbT0n+dHabinf=kWN8Frh+3VH6cpc6ADit_BDhFFhTQ@mail.gmail.com> <CAKfTPtAkcATqmahtuc046GC6sw1084PFokx+Nb8Z3ucBPPCeFQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+55aFw0C-S0L-cnk0oROG=Khqy9s36O+g3_BxqPfewKGQ9_EQ@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <CAKfTPtAkcATqmahtuc046GC6sw1084PFokx+Nb8Z3ucBPPCeFQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Li, Philip" <philip.li@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/04/2018 18:55, Linus Torvalds wrote:
-> On Wed, Apr 11, 2018 at 10:08 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+On Thu, Apr 12, 2018 at 12:01 AM, Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
+
 >>
->> could you please illustrate me what the kconfig & warning is?
-> 
-> Just "make allmodconfig" and the warning is about a uninitialized variable.
-> 
-> Line 304 in drivers/thermal/samsung/exynos_tmu.c if my shell history
-> is to be believed.
-> 
->                 Linus
+>> Also that aside, the "running util" is what was used to drive the CFS
+>> util before Peter's patch (8f111bc357a). That was accounting the
+>> blocked and decaying utilization but that patch changed the behavior.
+>> It seems logical we should just use that not check for h_nr_running
+>> for CFS so we don't miss on the decayed  utilization. What is the use
+>> of checking h_nr_running or state of runqueue for CFS? I am sure to be
+>> missing something here. :-(
+>
+> As Peter mentioned, the change in commit (8f111bc357a) was to remove
+> the test that was arbitrary removing the util_avg of a cpu that has
+> not been updated since a tick
+>
+> But with the update of blocked idle load, we don't need to handle the
+> case of stalled load/utilization
 
-These couple of warnings were introduced by:
+Thanks a lot for the clarification. It makes sense now.
 
-commit 480b5bfc16e17ef51ca1c55bfcebf55db8673ebf
-Author: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date:   Tue Mar 6 15:43:45 2018 +0100
-
-    thermal: exynos: remove parsing of samsung, tmu_default_temp_offset
-property
-
-    Trimming (one point based or two points based) is always used for
-    the temperature calibration and the default non-trimming code should
-    never be reached.
-
-    Modify temp_to_code() and code_to_temp() accordingly (WARN_ON(1)
-    in the default cases) and then remove no longer needed parsing of
-    samsung,tmu_default_temp_offset property.
-
-    There should be no functional changes caused by this patch.
-
-    Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-    Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-
-
-After digging into, there is no obvious fix. It returns effectively an
-uninitialized value and the callers are assuming the value is always
-correct, so it is also not possible to simply return an error.
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+- Joel
