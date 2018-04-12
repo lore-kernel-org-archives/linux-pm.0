@@ -1,90 +1,62 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
+From: Joe Perches <joe@perches.com>
 Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
  member definitions
-Date: Thu, 12 Apr 2018 08:22:12 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1804120816130.3559@hadrien>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>  <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>  <20180410123305.GF4082@hirez.programming.kicks-ass.net>  <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>  <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>  <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>  <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
- <20180411081502.GJ4082@hirez.programming.kicks-ass.net>  <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org> <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
+Date: Wed, 11 Apr 2018 23:42:20 -0700
+Message-ID: <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+          <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+          <20180410123305.GF4082@hirez.programming.kicks-ass.net>
+          <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+          <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
+          <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
+          <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
+          <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
+          <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
+          <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+         <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
+         <alpine.DEB.2.20.1804120816130.3559@hadrien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
+In-Reply-To: <alpine.DEB.2.20.1804120816130.3559@hadrien>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
+To: Julia Lawall <julia.lawall@lip6.fr>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
+> On Wed, 11 Apr 2018, Joe Perches wrote:
+> > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
+> > > We already have some 500 bools-in-structs
+> > 
+> > I got at least triple that only in include/
+> > so I expect there are at probably an order
+> > of magnitude more than 500 in the kernel.
+> > 
+> > I suppose some cocci script could count the
+> > actual number of instances.  A regex can not.
+> 
+> I got 12667.
 
+Could you please post the cocci script?
 
-On Wed, 11 Apr 2018, Joe Perches wrote:
+> I'm not sure to understand the issue.  Will using a bitfield help if there
+> are no other bitfields in the structure?
 
-> (Adding Julia Lawall)
->
-> On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
-> > We already have some 500 bools-in-structs
->
-> I got at least triple that only in include/
-> so I expect there are at probably an order
-> of magnitude more than 500 in the kernel.
->
-> I suppose some cocci script could count the
-> actual number of instances.  A regex can not.
+IMO, not really.
 
-I got 12667.
+The primary issue is described by Linus here:
+https://lkml.org/lkml/2017/11/21/384
 
-I'm not sure to understand the issue.  Will using a bitfield help if there
-are no other bitfields in the structure?
+I personally do not find a significant issue with
+uncontrolled sizes of bool in kernel structs as
+all of the kernel structs are transitory and not
+written out to storage.
 
-julia
+I suppose bool bitfields are also OK, but for the
+RMW required.
 
->
-> > and the owners of that code will
-> > be wondering whether they should change them, and whether they should
-> > apply those remove-bool-in-struct patches which someone sent them.
->
-> Which is why the warning is --strict only
->
-> > So... can we please get some clarity here?
->
->
-> > ...
-> >
-> > (ooh, https://lkml.org/lkml/2017/11/21/384 is working this morning)
-> >
-> > hm, Linus suggests that instead of using
-> >
-> > 	bool mybool;
-> >
-> > we should use
-> >
-> > 	unsigned mybool:1;
-> >
-> > However that introduces the risk that alterations of mybool will use
-> > nonatomic rmw operations.
-> >
-> > 	unsigned myboolA:1;
-> > 	unsigned myboolB:1;
-> >
-> > so
-> >
-> > 	foo->myboolA = 1;
-> >
-> > could scribble on concurrent alterations of foo->myboolB.  I think.
->
-> Without barriers, that could happen anyway.
->
-> To me, the biggest problem with conversions
-> from bool to bitfield is logical.  ie:
->
-> 	unsigned int.singlebitfield = 4;
->
-> is not the same result as
->
-> 	bool = 4;
->
-> because of implicit truncation vs boolean conversion
-> so a direct change of bool use in structs to unsigned
-> would also require logic analysis.
->
->
+Using unsigned int :1 bitfield instead of bool :1
+has the negative of truncation so that the uint
+has to be set with !! instead of a simple assign.
