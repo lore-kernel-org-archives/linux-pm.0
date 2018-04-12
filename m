@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v7 18/26] drivers: firmware: psci: Announce support for OS initiated suspend mode
-Date: Thu, 12 Apr 2018 13:14:23 +0200
-Message-ID: <1523531671-27491-19-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v7 22/26] drivers: firmware: psci: Introduce psci_dt_topology_init()
+Date: Thu, 12 Apr 2018 13:14:27 +0200
+Message-ID: <1523531671-27491-23-git-send-email-ulf.hansson@linaro.org>
 References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,86 +10,109 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-PSCI firmware v1.0+, supports two different modes for CPU_SUSPEND. The
-Platform Coordinated mode, which is the default and mandatory mode, while
-support for the OS initiated mode is optional.
+In case the hierarchical layout is used in DT, we want to initialize the
+corresponding PM domain topology for the CPUs, by using the generic PM
+domain (aka genpd) infrastructure.
 
-This change introduces initial support for the OS initiated mode, in way
-that it adds the related PSCI bits from the spec and prints a message in
-the log to inform whether the mode is supported by the PSCI FW.
+At first glance, it may seem feasible to hook into the existing
+psci_dt_init() function, although because it's called quite early in the
+boot sequence, allocating the dynamic data structure for a genpd doesn't
+work.
+
+Therefore, let's export a new init function for PSCI,
+psci_dt_topology_init(), which the ARM machine code should call from a
+suitable initcall.
+
+Succeeding to initialize the PM domain topology, which means at least one
+instance of a genpd becomes created, allows us to continue to enable the
+PSCI OS initiated mode for the platform. If everything turns out fine,
+let's print a message in log to inform the user about the changed mode.
+
+In case of any failures, we stick to the default PSCI Platform Coordinated
+mode. Moreover, in case the kernel started from a kexec call, let's make
+sure to explicitly default to this mode during boot, in case the previous
+kernel changed the mode.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
 Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/psci.c | 21 ++++++++++++++++++++-
- include/uapi/linux/psci.h    |  5 +++++
- 2 files changed, 25 insertions(+), 1 deletion(-)
+ drivers/firmware/psci/psci.c | 38 +++++++++++++++++++++++++++++++++++++-
+ include/linux/psci.h         |  2 ++
+ 2 files changed, 39 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 3888100..e8f4f84 100644
+index 463f78c..80c286d 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -95,6 +95,11 @@ static inline bool psci_has_ext_power_state(void)
- 				PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK;
- }
+@@ -691,9 +691,14 @@ static int __init psci_1_0_init(struct device_node *np)
+ 	if (err)
+ 		return err;
  
-+static inline bool psci_has_osi_support(void)
-+{
-+	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
-+}
+-	if (psci_has_osi_support())
++	if (psci_has_osi_support()) {
+ 		pr_info("OSI mode supported.\n");
+ 
++		/* Make sure we default to PC mode. */
++		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
++	}
 +
- static inline bool psci_power_state_loses_context(u32 state)
- {
- 	const u32 mask = psci_has_ext_power_state() ?
-@@ -658,10 +663,24 @@ static int __init psci_0_1_init(struct device_node *np)
  	return 0;
  }
  
-+static int __init psci_1_0_init(struct device_node *np)
+@@ -723,6 +728,37 @@ int __init psci_dt_init(void)
+ 	return ret;
+ }
+ 
++int __init psci_dt_topology_init(void)
 +{
-+	int err;
++	struct device_node *np;
++	int ret;
 +
-+	err = psci_0_2_init(np);
-+	if (err)
-+		return err;
++	if (!psci_has_osi_support())
++		return 0;
 +
-+	if (psci_has_osi_support())
-+		pr_info("OSI mode supported.\n");
++	np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
++	if (!np)
++		return -ENODEV;
 +
-+	return 0;
++	/* Initialize the CPU PM domains based on topology described in DT. */
++	ret = psci_dt_init_pm_domains(np);
++	if (ret <= 0)
++		goto out;
++
++	/* Enable OSI mode. */
++	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			     PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
++	if (ret) {
++		pr_info("failed to enable OSI mode: %d\n", ret);
++		goto out;
++	}
++
++	pr_info("OSI mode enabled.\n");
++out:
++	of_node_put(np);
++	return ret;
 +}
 +
- static const struct of_device_id psci_of_match[] __initconst = {
- 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
- 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
--	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
-+	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
- 	{},
- };
+ #ifdef CONFIG_ACPI
+ /*
+  * We use PSCI 0.2+ when ACPI is deployed on ARM64 and it's
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index 8b1b3b5..298a044 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -53,8 +53,10 @@ extern struct psci_operations psci_ops;
  
-diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-index b3bcabe..581f720 100644
---- a/include/uapi/linux/psci.h
-+++ b/include/uapi/linux/psci.h
-@@ -49,6 +49,7 @@
+ #if defined(CONFIG_ARM_PSCI_FW)
+ int __init psci_dt_init(void);
++int __init psci_dt_topology_init(void);
+ #else
+ static inline int psci_dt_init(void) { return 0; }
++static inline int psci_dt_topology_init(void) { return 0; }
+ #endif
  
- #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
- #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
-+#define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
- 
- #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
- 
-@@ -97,6 +98,10 @@
- #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
- 			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
- 
-+#define PSCI_1_0_OS_INITIATED			BIT(0)
-+#define PSCI_1_0_SUSPEND_MODE_PC		0
-+#define PSCI_1_0_SUSPEND_MODE_OSI		1
-+
- /* PSCI return values (inclusive of all PSCI versions) */
- #define PSCI_RET_SUCCESS			0
- #define PSCI_RET_NOT_SUPPORTED			-1
+ #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
 -- 
 2.7.4
