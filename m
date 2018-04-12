@@ -1,42 +1,25 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Thu, 12 Apr 2018 09:47:19 +0200
-Message-ID: <20180412074719.pmcddramzyikppco@gmail.com>
-References: <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <20180410123305.GF4082@hirez.programming.kicks-ass.net>
- <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
- <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
- <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
- <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
- <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
- <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
- <20180411170049.GR4082@hirez.programming.kicks-ass.net>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v4 1/8] arm: shmobile: Add the RZ/N1 arch to the shmobile
+ Kconfig
+Date: Thu, 12 Apr 2018 10:00:10 +0200
+Message-ID: <20180412080010.n2am3co66acwgo22@verge.net.au>
+References: <1523349015-37985-1-git-send-email-michel.pollet@bp.renesas.com>
+ <1523349015-37985-2-git-send-email-michel.pollet@bp.renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180411170049.GR4082@hirez.programming.kicks-ass.net>
+In-Reply-To: <1523349015-37985-2-git-send-email-michel.pollet@bp.renesas.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Michel Pollet <michel.pollet@bp.renesas.com>
+Cc: linux-renesas-soc@vger.kernel.org, phil.edworthy@renesas.com, buserror+upstream@gmail.com, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> I still have room in my /dev/null mailbox for pure checkpatch patches.
+On Tue, Apr 10, 2018 at 09:30:01AM +0100, Michel Pollet wrote:
+> Add the RZ/N1 Family (Part #R9A06G0xx) ARCH config to the rest of
+> the Renesas SoC collection.
 > 
-> > (ooh, https://lkml.org/lkml/2017/11/21/384 is working this morning)
-> 
-> Yes, we really should not use lkml.org for references. Sadly google
-> displays it very prominently when you search for something.
+> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-lkml.org is nice in emails that have a short expected life time and relevance - 
-but it probably shouldn't be used for permanent references such as kernel 
-messages, code comments and Git log entries.
-
-Thanks,
-
-	Ingo
+This change has already been accepted for v4.18.
