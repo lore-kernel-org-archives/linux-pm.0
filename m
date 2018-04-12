@@ -1,98 +1,118 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v7 06/26] timer: Export next wakeup time of a CPU
-Date: Thu, 12 Apr 2018 13:14:11 +0200
-Message-ID: <1523531671-27491-7-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v7 11/26] of: base: Add of_get_cpu_state_node() to get idle states for a CPU node
+Date: Thu, 12 Apr 2018 13:14:16 +0200
+Message-ID: <1523531671-27491-12-git-send-email-ulf.hansson@linaro.org>
 References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@kernel.org>, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Lina Iyer <lina.iyer@linaro.org>
+The CPU's idle state nodes are currently parsed at the common cpuidle DT
+library, but also when initializing back-end data for the arch specific CPU
+operations, as in the PSCI driver case.
 
-Knowing the sleep duration of CPUs, is known to be needed while selecting
-the most energy efficient idle state for a CPU or a group of CPUs.
+To avoid open-coding, let's introduce of_get_cpu_state_node(), which takes
+the device node for the CPU and the index to the requested idle state node,
+as in-parameters. In case a corresponding idle state node is found, it
+returns the node with the refcount incremented for it, else it returns
+NULL.
 
-However, to be able to compute the sleep duration, we need to know at what
-time the next expected wakeup is for the CPU. Therefore, let's export this
-information via a new function, tick_nohz_get_next_wakeup(). Following
-changes make use of it.
+Moreover, for ARM, there are two generic methods, to describe the CPU's
+idle states, either via the flattened description through the
+"cpu-idle-states" binding [1] or via the hierarchical layout, using the
+"power-domains" and the "domain-idle-states" bindings [2]. Hence, let's
+take both options into account.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+[1]
+Documentation/devicetree/bindings/arm/idle-states.txt
+[2]
+Documentation/devicetree/bindings/arm/psci.txt
+
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org
 Cc: Lina Iyer <ilina@codeaurora.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- include/linux/tick.h     | 10 ++++++++++
- kernel/time/tick-sched.c | 11 +++++++++++
- 2 files changed, 21 insertions(+)
+ drivers/of/base.c  | 35 +++++++++++++++++++++++++++++++++++
+ include/linux/of.h |  8 ++++++++
+ 2 files changed, 43 insertions(+)
 
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 389aa25..d341811 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -125,6 +125,7 @@ extern bool tick_nohz_idle_got_tick(void);
- extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
- extern unsigned long tick_nohz_get_idle_calls(void);
- extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
-+extern ktime_t tick_nohz_get_next_wakeup(int cpu);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
- extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 848f549..97350cc 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -400,6 +400,41 @@ int of_cpu_node_to_id(struct device_node *cpu_node)
+ EXPORT_SYMBOL(of_cpu_node_to_id);
  
-@@ -151,6 +152,15 @@ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
- 	*delta_next = TICK_NSEC;
- 	return *delta_next;
- }
-+
-+static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-+{
-+	ktime_t t;
-+
-+	/* Next wake up is the tick period, assume it starts now */
-+	return ktime_add(tick_nohz_get_sleep_length(&t), ktime_get());
-+}
-+
- static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
- static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
- 
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 646645e..08db7f3 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -1098,6 +1098,17 @@ unsigned long tick_nohz_get_idle_calls(void)
- 	return ts->idle_calls;
- }
- 
-+/**
-+ * tick_nohz_get_next_wakeup - return the next wake up of the CPU
+ /**
++ * of_get_cpu_state_node - Get CPU's idle state node at the given index
++ *
++ * @cpu_node: The device node for the CPU
++ * @index: The index in the list of the idle states
++ *
++ * Two generic methods can be used to describe a CPU's idle states, either via
++ * a flattened description through the "cpu-idle-states" binding or via the
++ * hierarchical layout, using the "power-domains" and the "domain-idle-states"
++ * bindings. This function check for both and returns the idle state node for
++ * the requested index.
++ *
++ * In case and idle state node is found at index, the refcount incremented for
++ * it, so call of_node_put() on it when done. Returns NULL if not found.
 + */
-+ktime_t tick_nohz_get_next_wakeup(int cpu)
++struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
++					  int index)
 +{
-+	struct clock_event_device *dev =
-+			per_cpu(tick_cpu_device.evtdev, cpu);
++	struct of_phandle_args args;
++	int err;
 +
-+	return dev->next_event;
++	err = of_parse_phandle_with_args(cpu_node, "power-domains",
++					"#power-domain-cells", 0, &args);
++	if (!err) {
++		struct device_node *state_node =
++			of_parse_phandle(args.np, "domain-idle-states", index);
++
++		of_node_put(args.np);
++		return state_node;
++	}
++
++	return of_parse_phandle(cpu_node, "cpu-idle-states", index);
++}
++EXPORT_SYMBOL(of_get_cpu_state_node);
++
++/**
+  * __of_device_is_compatible() - Check if the node matches given constraints
+  * @device: pointer to node
+  * @compat: required compatible string, NULL or "" for any match
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 4d25e4f..15072b1 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -348,6 +348,8 @@ extern const void *of_get_property(const struct device_node *node,
+ 				const char *name,
+ 				int *lenp);
+ extern struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
++extern struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
++						 int index);
+ #define for_each_property_of_node(dn, pp) \
+ 	for (pp = dn->properties; pp != NULL; pp = pp->next)
+ 
+@@ -733,6 +735,12 @@ static inline struct device_node *of_get_cpu_node(int cpu,
+ 	return NULL;
+ }
+ 
++static inline struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
++					int index)
++{
++	return NULL;
 +}
 +
- static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+ static inline int of_n_addr_cells(struct device_node *np)
  {
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 	return 0;
 -- 
 2.7.4
