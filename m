@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v7 22/26] drivers: firmware: psci: Introduce psci_dt_topology_init()
-Date: Thu, 12 Apr 2018 13:14:27 +0200
-Message-ID: <1523531671-27491-23-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v7 23/26] drivers: firmware: psci: Try to attach CPU devices to their PM domains
+Date: Thu, 12 Apr 2018 13:14:28 +0200
+Message-ID: <1523531671-27491-24-git-send-email-ulf.hansson@linaro.org>
 References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,109 +10,64 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In case the hierarchical layout is used in DT, we want to initialize the
-corresponding PM domain topology for the CPUs, by using the generic PM
-domain (aka genpd) infrastructure.
+In case the OS initiated CPU suspend mode have been enabled, the PM domain
+topology for CPUs have earlier been created by PSCI. Let's use this
+information in psci_dt_cpu_init_idle() as a condition for when it makes
+sense to try to attach the CPU to its corresponding PM domain, via calling
+of_genpd_attach_cpu().
 
-At first glance, it may seem feasible to hook into the existing
-psci_dt_init() function, although because it's called quite early in the
-boot sequence, allocating the dynamic data structure for a genpd doesn't
-work.
-
-Therefore, let's export a new init function for PSCI,
-psci_dt_topology_init(), which the ARM machine code should call from a
-suitable initcall.
-
-Succeeding to initialize the PM domain topology, which means at least one
-instance of a genpd becomes created, allows us to continue to enable the
-PSCI OS initiated mode for the platform. If everything turns out fine,
-let's print a message in log to inform the user about the changed mode.
-
-In case of any failures, we stick to the default PSCI Platform Coordinated
-mode. Moreover, in case the kernel started from a kexec call, let's make
-sure to explicitly default to this mode during boot, in case the previous
-kernel changed the mode.
+If the CPU is attached successfully to its PM domain, idle management is
+now fully prepared to be controlled through runtime PM for the CPU.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
 Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/psci.c | 38 +++++++++++++++++++++++++++++++++++++-
- include/linux/psci.h         |  2 ++
- 2 files changed, 39 insertions(+), 1 deletion(-)
+ drivers/firmware/psci/psci.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 463f78c..80c286d 100644
+index 80c286d..700e0e9 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -691,9 +691,14 @@ static int __init psci_1_0_init(struct device_node *np)
- 	if (err)
- 		return err;
+@@ -20,6 +20,7 @@
+ #include <linux/linkage.h>
+ #include <linux/of.h>
+ #include <linux/pm.h>
++#include <linux/pm_domain.h>
+ #include <linux/printk.h>
+ #include <linux/psci.h>
+ #include <linux/reboot.h>
+@@ -91,6 +92,7 @@ static u32 psci_function_id[PSCI_FN_MAX];
  
--	if (psci_has_osi_support())
-+	if (psci_has_osi_support()) {
- 		pr_info("OSI mode supported.\n");
+ static DEFINE_PER_CPU(u32, domain_state);
+ static u32 psci_cpu_suspend_feature;
++static bool psci_osi_mode_enabled;
  
-+		/* Make sure we default to PC mode. */
-+		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-+			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
+ u32 psci_get_domain_state(void)
+ {
+@@ -339,6 +341,14 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ 
+ 	/* Idle states parsed correctly, initialize per-cpu pointer */
+ 	per_cpu(psci_power_state, cpu) = psci_states;
++
++	/* If running OSI mode, attach the CPU device to its PM domain. */
++	if (psci_osi_mode_enabled) {
++		ret = of_genpd_attach_cpu(cpu);
++		if (ret)
++			goto free_mem;
 +	}
 +
  	return 0;
- }
  
-@@ -723,6 +728,37 @@ int __init psci_dt_init(void)
- 	return ret;
- }
+ free_mem:
+@@ -753,6 +763,7 @@ int __init psci_dt_topology_init(void)
+ 		goto out;
+ 	}
  
-+int __init psci_dt_topology_init(void)
-+{
-+	struct device_node *np;
-+	int ret;
-+
-+	if (!psci_has_osi_support())
-+		return 0;
-+
-+	np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
-+	if (!np)
-+		return -ENODEV;
-+
-+	/* Initialize the CPU PM domains based on topology described in DT. */
-+	ret = psci_dt_init_pm_domains(np);
-+	if (ret <= 0)
-+		goto out;
-+
-+	/* Enable OSI mode. */
-+	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-+			     PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
-+	if (ret) {
-+		pr_info("failed to enable OSI mode: %d\n", ret);
-+		goto out;
-+	}
-+
-+	pr_info("OSI mode enabled.\n");
-+out:
-+	of_node_put(np);
-+	return ret;
-+}
-+
- #ifdef CONFIG_ACPI
- /*
-  * We use PSCI 0.2+ when ACPI is deployed on ARM64 and it's
-diff --git a/include/linux/psci.h b/include/linux/psci.h
-index 8b1b3b5..298a044 100644
---- a/include/linux/psci.h
-+++ b/include/linux/psci.h
-@@ -53,8 +53,10 @@ extern struct psci_operations psci_ops;
- 
- #if defined(CONFIG_ARM_PSCI_FW)
- int __init psci_dt_init(void);
-+int __init psci_dt_topology_init(void);
- #else
- static inline int psci_dt_init(void) { return 0; }
-+static inline int psci_dt_topology_init(void) { return 0; }
- #endif
- 
- #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
++	psci_osi_mode_enabled = true;
+ 	pr_info("OSI mode enabled.\n");
+ out:
+ 	of_node_put(np);
 -- 
 2.7.4
