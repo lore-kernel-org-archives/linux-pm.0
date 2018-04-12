@@ -1,15 +1,16 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v4 1/7] interconnect: Add generic on-chip interconnect API
-Date: Thu, 12 Apr 2018 16:06:06 +0300
-Message-ID: <2e1f70b5-e62e-33c2-4bcc-c1414c1083c4@linaro.org>
+Subject: [PATCH v4 5/7] interconnect: qcom: Add msm8916 interconnect provider
+ driver
+Date: Thu, 12 Apr 2018 16:09:08 +0300
+Message-ID: <9334aaad-845b-32e5-eb4f-06fee7be2931@linaro.org>
 References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-2-georgi.djakov@linaro.org>
- <20180406173846.GC130399@google.com>
+ <20180309210958.16672-6-georgi.djakov@linaro.org>
+ <20180405225846.GB130399@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180406173846.GC130399@google.com>
+In-Reply-To: <20180405225846.GB130399@google.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Matthias Kaehlcke <mka@chromium.org>
@@ -18,180 +19,158 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Matthias,
 
-On 04/06/2018 08:38 PM, Matthias Kaehlcke wrote:
-> On Fri, Mar 09, 2018 at 11:09:52PM +0200, Georgi Djakov wrote:
->> This patch introduce a new API to get requirements and configure the
->> interconnect buses across the entire chipset to fit with the current
->> demand.
->>
->> The API is using a consumer/provider-based model, where the providers are
->> the interconnect buses and the consumers could be various drivers.
->> The consumers request interconnect resources (path) between endpoints and
->> set the desired constraints on this data flow path. The providers receive
->> requests from consumers and aggregate these requests for all master-slave
->> pairs on that path. Then the providers configure each participating in the
->> topology node according to the requested data flow path, physical links and
->> constraints. The topology could be complicated and multi-tiered and is SoC
->> specific.
+On 04/06/2018 01:58 AM, Matthias Kaehlcke wrote:
+> On Fri, Mar 09, 2018 at 11:09:56PM +0200, Georgi Djakov wrote:
+>> Add driver for the Qualcomm interconnect buses found in msm8916 based
+>> platforms.
 >>
 >> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 >> ---
->>  Documentation/interconnect/interconnect.rst |  96 ++++++
->>  drivers/Kconfig                             |   2 +
->>  drivers/Makefile                            |   1 +
->>  drivers/interconnect/Kconfig                |  10 +
->>  drivers/interconnect/Makefile               |   1 +
->>  drivers/interconnect/core.c                 | 489 ++++++++++++++++++++++++++++
->>  include/linux/interconnect-provider.h       | 109 +++++++
->>  include/linux/interconnect.h                |  40 +++
->>  8 files changed, 748 insertions(+)
->>  create mode 100644 Documentation/interconnect/interconnect.rst
->>  create mode 100644 drivers/interconnect/Kconfig
->>  create mode 100644 drivers/interconnect/Makefile
->>  create mode 100644 drivers/interconnect/core.c
->>  create mode 100644 include/linux/interconnect-provider.h
->>  create mode 100644 include/linux/interconnect.h
+>>  drivers/interconnect/Kconfig        |   5 +
+>>  drivers/interconnect/Makefile       |   1 +
+>>  drivers/interconnect/qcom/Kconfig   |  11 +
+>>  drivers/interconnect/qcom/Makefile  |   2 +
+>>  drivers/interconnect/qcom/msm8916.c | 482 ++++++++++++++++++++++++++++++++++++
+>>  include/linux/interconnect/qcom.h   | 350 ++++++++++++++++++++++++++
+>>  6 files changed, 851 insertions(+)
+>>  create mode 100644 drivers/interconnect/qcom/Kconfig
+>>  create mode 100644 drivers/interconnect/qcom/msm8916.c
+>>  create mode 100644 include/linux/interconnect/qcom.h
 >>
->> diff --git a/Documentation/interconnect/interconnect.rst b/Documentation/interconnect/interconnect.rst
->> new file mode 100644
->> index 000000000000..23eba68e8424
->> --- /dev/null
->> +++ b/Documentation/interconnect/interconnect.rst
 
 [..]
 
->> +Terminology
->> +-----------
 >> +
->> +Interconnect provider is the software definition of the interconnect hardware.
->> +The interconnect providers on the above diagram are M NoC, S NoC, C NoC and Mem
->> +NoC.
+>> +DEFINE_QNODE(mas_video, 63, 8, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, 10000, 10002);
 > 
-> Should P NoC be part of that list?
+> IIUC this should be something like:
 > 
+> +DEFINE_QNODE(mas_video, MASTER_VIDEO_P0, MASTER_ADM_PORT1, 16, 1, -1,
+> -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_0, SNOC_MM_INT_2);
+> 
+> and similar for the other nodes.
+>
 
-Yes, it should be!
+Yes, exactly.
 
->> +
->> +Interconnect node is the software definition of the interconnect hardware
->> +port. Each interconnect provider consists of multiple interconnect nodes,
->> +which are connected to other SoC components including other interconnect
->> +providers. The point on the diagram where the CPUs connects to the memory is
->> +called an interconnect node, which belongs to the Mem NoC interconnect provider.
->> +
->> +Interconnect endpoints are the first or the last element of the path. Every
->> +endpoint is a node, but not every node is an endpoint.
->> +
->> +Interconnect path is everything between two endpoints including all the nodes
->> +that have to be traversed to reach from a source to destination node. It may
->> +include multiple master-slave pairs across several interconnect providers.
->> +
->> +Interconnect consumers are the entities which make use of the data paths exposed
->> +by the providers. The consumers send requests to providers requesting various
->> +throughput, latency and priority. Usually the consumers are device drivers, that
->> +send request based on their needs. An example for a consumer is a video decoder
->> +that supports various formats and image sizes.
->> +
->> +Interconnect providers
->> +----------------------
-
-[..]
-
->> +static void node_aggregate(struct icc_node *node)
->> +{
->> +	struct icc_req *r;
->> +	u32 agg_avg = 0;
-> 
-> Should this be u64 to avoid overflow in case of a large number of
-> constraints and high bandwidths?
-
-These values are proposed to be in kbps and u32 seems to be enough for
-now, but in the future we can switch to u64 if needed.
-
-> 
->> +	u32 agg_peak = 0;
->> +
->> +	hlist_for_each_entry(r, &node->req_list, req_node) {
->> +		/* sum(averages) and max(peaks) */
->> +		agg_avg += r->avg_bw;
->> +		agg_peak = max(agg_peak, r->peak_bw);
->> +	}
->> +
->> +	node->avg_bw = agg_avg;
-> 
-> Is it really intended to store the sum of averages here rather than
-> the overall average?
-
-Yes, the intention is to sum all the averages in total, so that the
-hardware is set in a state that would be able to handle the total
-bandwidth passing through a node.
-
-Also in the next version of this patch i have changed this part a bit,
-so that the aggregation could be customized and made platform specific,
-as different platforms could use their own aggregation algorithms other
-than the default sum/max.
-
-> 
->> +	node->peak_bw = agg_peak;
->> +}
->> +
->> +static void provider_aggregate(struct icc_provider *provider, u32 *avg_bw,
->> +			       u32 *peak_bw)
->> +{
->> +	struct icc_node *n;
->> +	u32 agg_avg = 0;
-> 
-> See above.
-> 
->> +	u32 agg_peak = 0;
->> +
->> +	/* aggregate for the interconnect provider */
->> +	list_for_each_entry(n, &provider->nodes, node_list) {
->> +		/* sum the average and max the peak */
->> +		agg_avg += n->avg_bw;
->> +		agg_peak = max(agg_peak, n->peak_bw);
->> +	}
->> +
->> +	*avg_bw = agg_avg;
-> 
-> See above.
-> 
->> +	*peak_bw = agg_peak;
->> +}
+>> +DEFINE_QNODE(mas_jpeg, 62, 6, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, 10000, 10002);
+>> +DEFINE_QNODE(mas_vfe, 29, 9, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, 10001, 10002);
+>> +DEFINE_QNODE(mas_mdp, 22, 7, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, 10000, 10002);
+>> +DEFINE_QNODE(mas_qdss_bam, 53, 11, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10009);
+>> +DEFINE_QNODE(mas_snoc_cfg, 54, 0, 16, 0, 20, -1, QCOM_QOS_MODE_BYPASS, 1, 10009);
+>> +DEFINE_QNODE(mas_qdss_etr, 60, 10, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10009);
+>> +DEFINE_QNODE(mm_int_0, 10000, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10003);
+>> +DEFINE_QNODE(mm_int_1, 10001, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10003);
+>> +DEFINE_QNODE(mm_int_2, 10002, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10004);
+>> +DEFINE_QNODE(mm_int_bimc, 10003, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10008);
+>> +DEFINE_QNODE(snoc_int_0, 10004, 0, 8, 0, 99, 130, QCOM_QOS_MODE_FIXED, 3, 588, 519, 10027);
+>> +DEFINE_QNODE(snoc_int_1, 10005, 0, 8, 0, 100, 131, QCOM_QOS_MODE_FIXED, 3, 517, 663, 664);
+>> +DEFINE_QNODE(snoc_int_bimc, 10006, 0, 8, 0, 101, 132, QCOM_QOS_MODE_FIXED, 1, 10007);
+>> +DEFINE_QNODE(snoc_bimc_0_mas, 10007, 0, 8, 0, 3, -1, QCOM_QOS_MODE_FIXED, 1, 10025);
+>> +DEFINE_QNODE(snoc_bimc_1_mas, 10008, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10026);
+>> +DEFINE_QNODE(qdss_int, 10009, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 2, 10004, 10006);
+>> +DEFINE_QNODE(bimc_snoc_slv, 10017, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 2, 10004, 10005);
+>> +DEFINE_QNODE(snoc_pnoc_mas, 10027, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10028);
+>> +DEFINE_QNODE(pnoc_snoc_slv, 10011, 0, 8, 0, -1, 45, QCOM_QOS_MODE_FIXED, 3, 10004, 10006, 10005);
+>> +DEFINE_QNODE(slv_srvc_snoc, 587, 0, 8, 0, -1, 29, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_qdss_stm, 588, 0, 4, 0, -1, 30, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_imem, 519, 0, 8, 0, -1, 26, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_apss, 517, 0, 4, 0, -1, 20, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_cats_0, 663, 0, 16, 0, -1, 106, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_cats_1, 664, 0, 8, 0, -1, 107, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(mas_apss, 1, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, 512, 10016, 514);
+>> +DEFINE_QNODE(mas_tcu0, 104, 5, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, 512, 10016, 514);
+>> +DEFINE_QNODE(mas_tcu1, 105, 6, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, 512, 10016, 514);
+>> +DEFINE_QNODE(mas_gfx, 26, 2, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, 512, 10016, 514);
+>> +DEFINE_QNODE(bimc_snoc_mas, 10016, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10017);
+>> +DEFINE_QNODE(snoc_bimc_0_slv, 10025, 0, 8, 0, -1, 24, QCOM_QOS_MODE_FIXED, 1, 512);
+>> +DEFINE_QNODE(snoc_bimc_1_slv, 10026, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, 512);
+>> +DEFINE_QNODE(slv_ebi_ch0, 512, 0, 8, 0, -1, 0, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_apps_l2, 514, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(snoc_pnoc_slv, 10028, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10012);
+>> +DEFINE_QNODE(pnoc_int_0, 10012, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 8, 10010, 10018, 10019, 10020, 10021, 10022, 10023, 10024);
+>> +DEFINE_QNODE(pnoc_int_1, 10013, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10010);
+>> +DEFINE_QNODE(pnoc_m_0, 10014, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10012);
+>> +DEFINE_QNODE(pnoc_m_1, 10015, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10010);
+>> +DEFINE_QNODE(pnoc_s_0, 10018, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, 620, 624, 579, 622, 521);
+>> +DEFINE_QNODE(pnoc_s_1, 10019, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, 627, 625, 535, 577, 618);
+>> +DEFINE_QNODE(pnoc_s_2, 10020, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, 533, 630, 629, 641, 632);
+>> +DEFINE_QNODE(pnoc_s_3, 10021, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, 536, 647, 636, 635, 634);
+>> +DEFINE_QNODE(pnoc_s_4, 10022, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, 596, 589, 590);
+>> +DEFINE_QNODE(pnoc_s_8, 10023, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, 614, 606, 613);
+>> +DEFINE_QNODE(pnoc_s_9, 10024, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, 609, 522, 598);
+>> +DEFINE_QNODE(slv_imem_cfg, 627, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_crypto_0_cfg, 625, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_msg_ram, 535, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_pdm, 577, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_prng, 618, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_clk_ctl, 620, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_mss, 521, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_tlmm, 624, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_tcsr, 579, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_security, 622, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_spdm, 533, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_pnoc_cfg, 641, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_pmic_arb, 632, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_bimc_cfg, 629, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_boot_rom, 630, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_mpm, 536, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_qdss_cfg, 635, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_rbcpr_cfg, 636, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_snoc_cfg, 647, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_dehr_cfg, 634, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_venus_cfg, 596, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_display_cfg, 590, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_camera_cfg, 589, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_usb_hs, 614, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_sdcc_1, 606, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_blsp_1, 613, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_sdcc_2, 609, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_gfx_cfg, 598, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(slv_audio, 522, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+>> +DEFINE_QNODE(mas_blsp_1, 86, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10015);
+>> +DEFINE_QNODE(mas_spdm, 36, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10014);
+>> +DEFINE_QNODE(mas_dehr, 75, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10014);
+>> +DEFINE_QNODE(mas_audio, 15, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10014);
+>> +DEFINE_QNODE(mas_usb_hs, 87, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10015);
+>> +DEFINE_QNODE(mas_pnoc_crypto_0, 55, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10013);
+>> +DEFINE_QNODE(mas_pnoc_sdcc_1, 78, 7, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10013);
+>> +DEFINE_QNODE(mas_pnoc_sdcc_2, 81, 8, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, 10013);
+>> +DEFINE_QNODE(pnoc_snoc_mas, 10010, 0, 8, 0, 29, -1, QCOM_QOS_MODE_FIXED, 1, 10011);
 >> +
 
 [..]
 
->> +/**
->> + * struct icc_node - entity that is part of the interconnect topology
->> + *
->> + * @id: platform specific node id
->> + * @name: node name used in debugfs
->> + * @links: a list of targets where we can go next when traversing
->> + * @num_links: number of links to other interconnect nodes
->> + * @provider: points to the interconnect provider of this node
->> + * @node_list: list of interconnect nodes associated with @provider
->> + * @search_list: list used when walking the nodes graph
->> + * @reverse: pointer to previous node when walking the nodes graph
->> + * @is_traversed: flag that is used when walking the nodes graph
->> + * @req_list: a list of QoS constraint requests associated with this node
->> + * @avg_bw: aggregated value of average bandwidth
->> + * @peak_bw: aggregated value of peak bandwidth
->> + * @data: pointer to private data
->> + */
->> +struct icc_node {
->> +	int			id;
->> +	const char              *name;
->> +	struct icc_node		**links;
->> +	size_t			num_links;
+>> +static const struct of_device_id qnoc_of_match[] = {
+>> +	{ .compatible = "qcom,msm8916-pnoc", .data = &msm8916_pnoc },
+>> +	{ .compatible = "qcom,msm8916-snoc", .data = &msm8916_snoc },
+>> +	{ .compatible = "qcom,msm8916-bimc", .data = &msm8916_bimc },
+>> +	{ },
+>> +};
+>> +MODULE_DEVICE_TABLE(of, qnoc_of_match);
 >> +
->> +	struct icc_provider	*provider;
->> +	struct list_head	node_list;
->> +	struct list_head	orphan_list;
+>> +static struct platform_driver qnoc_driver = {
+>> +	.probe = qnoc_probe,
+>> +	.remove = qnoc_remove,
+>> +	.driver = {
+>> +		.name = "qnoc-msm8916",
+>> +		.of_match_table = qnoc_of_match,
+>> +	},
+>> +};
+>> +module_platform_driver(qnoc_driver);
+>> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org>");
+>> +MODULE_DESCRIPTION("Qualcomm msm8916 NoC driver");
+>> +MODULE_LICENSE("GPL v2");
+>> diff --git a/include/linux/interconnect/qcom.h
+>> b/include/linux/interconnect/qcom.h
 > 
-> orphan_list is not used (nor documented)
+> Are the values in this file valid for all Qualcomm SoCs or specific to
+> the MSM8916? In the latter case you might want to include the chip
+> (family) in the name of the constant.
 
-It's not used anymore. Will remove!
+Currently i am trying to use common ids, which is useful if you have
+same drivers for different SoCs and use only platform data. But the goal
+here is to fully move to DT and then we could use arbitrary ids.
 
 Thanks,
 Georgi
