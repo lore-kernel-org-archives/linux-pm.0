@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v7 17/26] drivers: firmware: psci: Simplify error path of psci_dt_init()
-Date: Thu, 12 Apr 2018 13:14:22 +0200
-Message-ID: <1523531671-27491-18-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v7 16/26] drivers: firmware: psci: Support hierarchical CPU idle states
+Date: Thu, 12 Apr 2018 13:14:21 +0200
+Message-ID: <1523531671-27491-17-git-send-email-ulf.hansson@linaro.org>
 References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,88 +10,45 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Instead of having each psci init function taking care of the of_node_put(),
-let's deal with that from psci_dt_init(), as this enables a bit simpler
-error path for each psci init function.
+From: Lina Iyer <lina.iyer@linaro.org>
+
+Currently CPU's idle states are represented in a flattened model, via the
+"cpu-idle-states" binding from within the CPU's device nodes.
+
+Support the hierarchical layout, simply by converting to calling the new OF
+helper, of_get_cpu_state_node().
 
 Cc: Lina Iyer <ilina@codeaurora.org>
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Mark Rutland <mark.rutland@arm.com>
 ---
- drivers/firmware/psci/psci.c | 23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
+ drivers/firmware/psci/psci.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 256b4ed..3888100 100644
+index 9788bfc..256b4ed 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -608,9 +608,9 @@ static int __init psci_0_2_init(struct device_node *np)
- 	int err;
+@@ -294,8 +294,7 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ 	struct device_node *state_node;
  
- 	err = get_set_conduit_method(np);
--
- 	if (err)
--		goto out_put_node;
-+		return err;
-+
- 	/*
- 	 * Starting with v0.2, the PSCI specification introduced a call
- 	 * (PSCI_VERSION) that allows probing the firmware version, so
-@@ -618,11 +618,7 @@ static int __init psci_0_2_init(struct device_node *np)
- 	 * can be carried out according to the specific version reported
- 	 * by firmware
- 	 */
--	err = psci_probe();
--
--out_put_node:
--	of_node_put(np);
--	return err;
-+	return psci_probe();
- }
- 
- /*
-@@ -634,9 +630,8 @@ static int __init psci_0_1_init(struct device_node *np)
- 	int err;
- 
- 	err = get_set_conduit_method(np);
--
- 	if (err)
--		goto out_put_node;
-+		return err;
- 
- 	pr_info("Using PSCI v0.1 Function IDs from DT\n");
- 
-@@ -660,9 +655,7 @@ static int __init psci_0_1_init(struct device_node *np)
- 		psci_ops.migrate = psci_migrate;
+ 	/* Count idle states */
+-	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+-					      count))) {
++	while ((state_node = of_get_cpu_state_node(cpu_node, count))) {
+ 		count++;
+ 		of_node_put(state_node);
  	}
+@@ -308,7 +307,7 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ 		return -ENOMEM;
  
--out_put_node:
--	of_node_put(np);
--	return err;
-+	return 0;
- }
+ 	for (i = 0; i < count; i++) {
+-		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
++		state_node = of_get_cpu_state_node(cpu_node, i);
+ 		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
+ 		of_node_put(state_node);
  
- static const struct of_device_id psci_of_match[] __initconst = {
-@@ -677,6 +670,7 @@ int __init psci_dt_init(void)
- 	struct device_node *np;
- 	const struct of_device_id *matched_np;
- 	psci_initcall_t init_fn;
-+	int ret;
- 
- 	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
- 
-@@ -684,7 +678,10 @@ int __init psci_dt_init(void)
- 		return -ENODEV;
- 
- 	init_fn = (psci_initcall_t)matched_np->data;
--	return init_fn(np);
-+	ret = init_fn(np);
-+
-+	of_node_put(np);
-+	return ret;
- }
- 
- #ifdef CONFIG_ACPI
 -- 
 2.7.4
