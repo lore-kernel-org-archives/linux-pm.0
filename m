@@ -1,64 +1,107 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH v2 1/6] sched/fair: Create util_fits_capacity()
-Date: Thu, 12 Apr 2018 12:32:30 +0530
-Message-ID: <20180412070230.GV7671@vireshk-i7>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-2-dietmar.eggemann@arm.com>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Thu, 12 Apr 2018 09:03:25 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1804120901220.3559@hadrien>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>   <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>   <20180410123305.GF4082@hirez.programming.kicks-ass.net>   <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>  
+ <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>   <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>   <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>   <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>  
+ <20180411081502.GJ4082@hirez.programming.kicks-ass.net>   <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>  <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>  <alpine.DEB.2.20.1804120816130.3559@hadrien>
+ <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180406153607.17815-2-dietmar.eggemann@arm.com>
+In-Reply-To: <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06-04-18, 16:36, Dietmar Eggemann wrote:
-> The functionality that a given utilization fits into a given capacity
-> is factored out into a separate function.
-> 
-> Currently it is only used in wake_cap() but will be re-used to figure
-> out if a cpu or a scheduler group is over-utilized.
-> 
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> ---
->  kernel/sched/fair.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 0951d1c58d2f..0a76ad2ef022 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -6574,6 +6574,11 @@ static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
->  	return min_t(unsigned long, util, capacity_orig_of(cpu));
->  }
->  
-> +static inline int util_fits_capacity(unsigned long util, unsigned long capacity)
-> +{
-> +	return capacity * 1024 > util * capacity_margin;
 
-This changes the behavior slightly compared to existing code. If that
-wasn't intentional, perhaps you should use >= here.
 
-> +}
-> +
->  /*
->   * Disable WAKE_AFFINE in the case where task @p doesn't fit in the
->   * capacity of either the waking CPU @cpu or the previous CPU @prev_cpu.
-> @@ -6595,7 +6600,7 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
->  	/* Bring task utilization in sync with prev_cpu */
->  	sync_entity_load_avg(&p->se);
->  
-> -	return min_cap * 1024 < task_util(p) * capacity_margin;
-> +	return !util_fits_capacity(task_util(p), min_cap);
->  }
->  
->  /*
-> -- 
-> 2.11.0
+On Wed, 11 Apr 2018, Joe Perches wrote:
 
--- 
-viresh
+> On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
+> > On Wed, 11 Apr 2018, Joe Perches wrote:
+> > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
+> > > > We already have some 500 bools-in-structs
+> > >
+> > > I got at least triple that only in include/
+> > > so I expect there are at probably an order
+> > > of magnitude more than 500 in the kernel.
+> > >
+> > > I suppose some cocci script could count the
+> > > actual number of instances.  A regex can not.
+> >
+> > I got 12667.
+>
+> Could you please post the cocci script?
+
+Sure.
+
+julia
+
+
+Command line:
+spatch.opt boolinstruct.cocci -j 40 --very-quiet --no-includes --include-headers /run/shm/linux-next --use-idutils
+
+This was tested on:
+
+struct foo {
+  bool a;
+  bool b,c;
+  int r;
+};
+
+struct {
+  bool a;
+  bool b,c;
+  int r;
+} x;
+
+----------------------
+
+@initialize:ocaml@
+@@
+let ctr = ref 0
+
+@r@
+identifier i,x;
+position p;
+@@
+
+struct i {
+  ...
+  bool x@p;
+  ...
+}
+
+@script:ocaml@
+_p << r.p;
+@@
+
+ctr := !ctr + 1
+
+@s@
+identifier x;
+position p;
+@@
+
+struct {
+  ...
+  bool x@p;
+  ...
+}
+
+@script:ocaml@
+_p << s.p;
+@@
+
+ctr := !ctr + 1
+
+@finalize:ocaml@
+ctrs << merge.ctr;
+@@
+
+ctr := 0;
+List.iter (function c -> ctr := !c + !ctr) ctrs;
+Printf.printf "%d\n" !ctr
