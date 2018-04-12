@@ -1,95 +1,36 @@
-From: Neil Armstrong <narmstrong@baylibre.com>
-Subject: Re: [PATCH v4 2/7] dt-bindings: Introduce interconnect provider
- bindings
-Date: Thu, 12 Apr 2018 15:15:01 +0200
-Message-ID: <7723f351-2460-7378-411a-cfcdf4138d8f@baylibre.com>
-References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-3-georgi.djakov@linaro.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Thu, 12 Apr 2018 09:47:58 -0700
+Message-ID: <20180412094758.dfef388d9be84fa41d2dcd5d@linux-foundation.org>
+References: <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
+        <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
+        <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
+        <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
+        <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+        <20180411170049.GR4082@hirez.programming.kicks-ass.net>
+        <20180412074719.pmcddramzyikppco@gmail.com>
+        <20180412093521.GA6427@andrea>
+        <20180412115022.GL4043@hirez.programming.kicks-ass.net>
+        <a8677d8c351e4cb49907f9a8addcc261d810655a.camel@perches.com>
+        <20180412120832.GZ4082@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180309210958.16672-3-georgi.djakov@linaro.org>
-Content-Language: en-US
+In-Reply-To: <20180412120832.GZ4082@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: mark.rutland@arm.com, lorenzo.pieralisi@arm.com, skannan@codeaurora.org, seansw@qti.qualcomm.com, khilman@baylibre.com, mturquette@baylibre.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, amit.kucheria@linaro.org, bjorn.andersson@linaro.org, robh+dt@kernel.org, linux-arm-msm@vger.kernel.org, davidai@quicinc.com, vincent.guittot@linaro.org, linux-arm-kernel@lists.infradead.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Joe Perches <joe@perches.com>, Andrea Parri <andrea.parri@amarulasolutions.com>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/03/2018 22:09, Georgi Djakov wrote:
-> This binding is intended to represent the interconnect hardware present
-> in some of the modern SoCs. Currently it consists only of a binding for
-> the interconnect hardware devices (provider).
-> 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->  .../bindings/interconnect/interconnect.txt         | 47 ++++++++++++++++++++++
->  1 file changed, 47 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-> new file mode 100644
-> index 000000000000..70612bb201e4
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-> @@ -0,0 +1,47 @@
-> +Interconnect Provider Device Tree Bindings
-> +=========================================
-> +
-> +The purpose of this document is to define a common set of generic interconnect
-> +providers/consumers properties.
-> +
-> +
-> += interconnect providers =
-> +
-> +The interconnect provider binding is intended to represent the interconnect
-> +controllers in the system. Each provider registers a set of interconnect
-> +nodes, which expose the interconnect related capabilities of the interconnect
-> +to consumer drivers. These capabilities can be throughput, latency, priority
-> +etc. The consumer drivers set constraints on interconnect path (or endpoints)
-> +depending on the usecase. Interconnect providers can also be interconnect
-> +consumers, such as in the case where two network-on-chip fabrics interface
-> +directly
+On Thu, 12 Apr 2018 14:08:32 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
 
-Hi,
-
-Can't we specify the number of cells for the phandle ? It should be aligned with other consumer/provider bindings.
-
-Neil
-
-> +
-> +Required properties:
-> +- compatible : contains the interconnect provider vendor specific compatible
-> +	       string
-> +- reg : register space of the interconnect controller hardware
-> +
-> +Examples:
-> +
-> +		snoc: snoc@580000 {
-> +			compatible = "qcom,msm8916-snoc";
-> +			reg = <0x580000 0x14000>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>, <&rpmcc RPM_SMD_SNOC_A_CLK>;
-> +			status = "okay";
-> +		};
-> +		bimc: bimc@400000 {
-> +			compatible = "qcom,msm8916-bimc";
-> +			reg = <0x400000 0x62000>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_BIMC_CLK>, <&rpmcc RPM_SMD_BIMC_A_CLK>;
-> +			status = "okay";
-> +		};
-> +		pnoc: pnoc@500000 {
-> +			compatible = "qcom,msm8916-pnoc";
-> +			reg = <0x500000 0x11000>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_PCNOC_CLK>, <&rpmcc RPM_SMD_PCNOC_A_CLK>;
-> +			status = "okay";
-> +		};
-> +
+> > It'd be _much_ nicer if vger.kernel.org stored every email
+> > it sent and had a search mechanism available rather than
+> > relying on external systems.
 > 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+> People are looking at that afaik.
+
+I have linux-kernel mboxes going back to October 2000, which I can send
+to whoever-that-is if needed for importation purposes...
