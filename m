@@ -1,53 +1,146 @@
-From: Andrea Parri <andrea.parri@amarulasolutions.com>
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Thu, 12 Apr 2018 11:35:21 +0200
-Message-ID: <20180412093521.GA6427@andrea>
-References: <20180410123305.GF4082@hirez.programming.kicks-ass.net>
- <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
- <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
- <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
- <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
- <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
- <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
- <20180411170049.GR4082@hirez.programming.kicks-ass.net>
- <20180412074719.pmcddramzyikppco@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v7 00/26] PM / Domains: Support hierarchical CPU arrangement (PSCI/ARM)
+Date: Thu, 12 Apr 2018 13:14:05 +0200
+Message-ID: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180412074719.pmcddramzyikppco@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Thu, Apr 12, 2018 at 09:47:19AM +0200, Ingo Molnar wrote:
-> 
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > I still have room in my /dev/null mailbox for pure checkpatch patches.
-> > 
-> > > (ooh, https://lkml.org/lkml/2017/11/21/384 is working this morning)
-> > 
-> > Yes, we really should not use lkml.org for references. Sadly google
-> > displays it very prominently when you search for something.
-> 
-> lkml.org is nice in emails that have a short expected life time and relevance - 
-> but it probably shouldn't be used for permanent references such as kernel 
-> messages, code comments and Git log entries.
-
-Is there a better or recommended way to reference posts on LKML in commit
-messages? (I do like the idea of linking to previous discussions, results,
-...)
-
-  Andrea
+Changes in v7:
+ - Addressed comments concerning the PSCI changes from Mark Rutland, which moves
+   the psci firmware driver to a new firmware subdir and change to force PSCI PC
+   mode during boot to cope with kexec'ed booted kernels.
+ - Added some maintainers in cc for the timer/nohz patches.
+ - Minor update to the new genpd governor, taking into account the state's
+   poweroff latency while validating the sleep duration time.
+ - Addressed a problem pointed out by Geert Uytterhoeven, around calling
+   pm_runtime_get|put() for CPUs that has not been attached to a CPU PM domain.
+ - Re-based on Linus' latest master.
 
 
-> 
-> Thanks,
-> 
-> 	Ingo
+This series is a re-worked version from Lina Iyer's two series [1] that got
+posted more than a year ago by now. I have picked up the series and done a
+significant re-work of it and here's the result. All patches have been changed,
+some have been dropped, some are entirely new.
+
+For those few changes that are kind of similar, I have kept Lina's authorship,
+the rest are now authored by me.
+
+ - Lina (or anybody else for that matter) please tell if you think I should
+   change, in regards to what tag/authorship should be for each commit!
+
+Some background:
+
+Overall this series have been discussed over years at various Linux conferences
+and LKML, although let me give a brief introduction and then the rest can be
+read in each changelog.
+
+For ARM, the PSCI firmware interface may be managing the power to the CPUs.
+Depending on the SoC, CPUs may also be arranged in hierarchical manner, which
+could add another level of complexity from a CPU idle management point of view.
+
+PSCI v1.0+ adds support for the so called OS initiated CPU suspend mode, which
+enables a more fine grained method, allowing Linux to get more control, in
+regards to being energy efficient. This is typically useful for these kind of
+complex battery driven platforms.
+
+Now, in principle what is missing today around CPU idle management for these
+SoCs arranging CPUs in a hierarchical manner, that is what this series intends
+to address.
+
+I could potentially have split the series into two parts, but for completeness
+I decided to post it as one. Please tell if want me to change!
+
+ - The first part are changes to generic PM code (genpd, cpu_pm and timers):
+   Patch 1 -> Patch 9.
+
+ - The second part, which depends on the first, are changes specific to
+   PSCI/ARM64 (psci, of, arm64): Patch 10 -> Patch 26.
+
+The series is based on Linus' master as of today. The code has been tested on a
+QCOM 410c dragonboard and I except that test coverage should be increased by
+some more boards shortly (for ARM64 with PSCI OSI support - only a few DT
+changes are needed). You may find the code at:
+
+git.linaro.org/people/ulf.hansson/linux-pm.git next
+
+If for some reason you want to have a look at the previous version, it's
+available at a branch, next_v6, in the same git as above.
+
+Kind regards
+Ulf Hansson
+
+[1]
+https://lwn.net/Articles/716300/
+https://www.spinics.net/lists/arm-kernel/msg566200.html
+
+
+Lina Iyer (6):
+  PM / Domains: Add generic data pointer to genpd_power_state struct
+  timer: Export next wakeup time of a CPU
+  dt: psci: Update DT bindings to support hierarchical PSCI states
+  cpuidle: dt: Support hierarchical CPU idle states
+  drivers: firmware: psci: Support hierarchical CPU idle states
+  arm64: dts: Convert to the hierarchical CPU topology layout for
+    MSM8916
+
+Ulf Hansson (20):
+  PM / Domains: Don't treat zero found compatible idle states as an
+    error
+  PM / Domains: Deal with multiple states but no governor in genpd
+  PM / Domains: Add support for CPU devices to genpd
+  PM / Domains: Add helper functions to attach/detach CPUs to/from genpd
+  PM / Domains: Add genpd governor for CPUs
+  PM / Domains: Extend genpd CPU governor to cope with QoS constraints
+  kernel/cpu_pm: Manage runtime PM in the idle path for CPUs
+  of: base: Add of_get_cpu_state_node() to get idle states for a CPU
+    node
+  drivers: firmware: psci: Move psci to separate directory
+  MAINTAINERS: Update files for PSCI
+  drivers: firmware: psci: Split psci_dt_cpu_init_idle()
+  drivers: firmware: psci: Simplify error path of psci_dt_init()
+  drivers: firmware: psci: Announce support for OS initiated suspend
+    mode
+  drivers: firmware: psci: Prepare to use OS initiated suspend mode
+  drivers: firmware: psci: Share a few internal PSCI functions
+  drivers: firmware: psci: Add support for PM domains using genpd
+  drivers: firmware: psci: Introduce psci_dt_topology_init()
+  drivers: firmware: psci: Try to attach CPU devices to their PM domains
+  drivers: firmware: psci: Deal with CPU hotplug when using OSI mode
+  arm64: kernel: Respect the hierarchical CPU topology in DT for PSCI
+
+ Documentation/devicetree/bindings/arm/psci.txt | 156 +++++++++++++++++++++
+ MAINTAINERS                                    |   2 +-
+ arch/arm64/boot/dts/qcom/msm8916.dtsi          |  53 +++++++-
+ arch/arm64/kernel/setup.c                      |   3 +
+ drivers/base/power/domain.c                    | 156 ++++++++++++++++++++-
+ drivers/base/power/domain_governor.c           |  67 ++++++++-
+ drivers/cpuidle/dt_idle_states.c               |   5 +-
+ drivers/firmware/Kconfig                       |  15 +--
+ drivers/firmware/Makefile                      |   3 +-
+ drivers/firmware/psci/Kconfig                  |  13 ++
+ drivers/firmware/psci/Makefile                 |   4 +
+ drivers/firmware/{ => psci}/psci.c             | 174 ++++++++++++++++++------
+ drivers/firmware/psci/psci.h                   |  19 +++
+ drivers/firmware/{ => psci}/psci_checker.c     |   0
+ drivers/firmware/psci/psci_pm_domain.c         | 180 +++++++++++++++++++++++++
+ drivers/of/base.c                              |  35 +++++
+ include/linux/of.h                             |   8 ++
+ include/linux/pm_domain.h                      |  16 +++
+ include/linux/psci.h                           |   2 +
+ include/linux/tick.h                           |  10 ++
+ include/uapi/linux/psci.h                      |   5 +
+ kernel/cpu_pm.c                                |  11 ++
+ kernel/time/tick-sched.c                       |  11 ++
+ 23 files changed, 878 insertions(+), 70 deletions(-)
+ create mode 100644 drivers/firmware/psci/Kconfig
+ create mode 100644 drivers/firmware/psci/Makefile
+ rename drivers/firmware/{ => psci}/psci.c (83%)
+ create mode 100644 drivers/firmware/psci/psci.h
+ rename drivers/firmware/{ => psci}/psci_checker.c (100%)
+ create mode 100644 drivers/firmware/psci/psci_pm_domain.c
+
+-- 
+2.7.4
