@@ -1,31 +1,39 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] vfio: platform: Fix using devices in PM Domains
-Date: Thu, 12 Apr 2018 09:03:31 +0200
-Message-ID: <20180412070330.gzpmbgad4cmeqrn4@verge.net.au>
-References: <1523438648-17672-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 1/2] nohz: Align types to bool for tick_nohz_tick_stopped()
+Date: Thu, 12 Apr 2018 09:09:18 +0200
+Message-ID: <1523516959-5761-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1523438648-17672-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Baptiste Reynal <b.reynal@virtualopensystems.com>, Alex Williamson <alex.williamson@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, kvm@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 11, 2018 at 11:24:08AM +0200, Geert Uytterhoeven wrote:
-> If a device is part of a PM Domain (e.g. power and/or clock domain), its
-> power state is managed using Runtime PM.  Without Runtime PM, the device
-> may not be powered up, causing subtle failures, crashes, or system
-> lock-ups when the device is accessed by the guest.
-> 
-> Fix this by adding Runtime PM support, powering the device when the VFIO
-> device is opened by the guest.
-> 
-> Note that while more fine-grained power management could be implemented
-> on the guest side, if exported, this would be inherently unsafe, as
-> abusing it may kill the whole system.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+The intent was likely to also make the inline version a bool, so let's
+change this.
 
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+Fixes: a364298359e7 ("nohz: Convert tick_nohz_tick_stopped() to bool")
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
+Changes in v2:
+	- Rebased on top of Linus' latest master to apply cleanly.
+
+---
+ include/linux/tick.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index 55388ab..4132eba 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -137,7 +137,7 @@ static inline void tick_nohz_idle_stop_tick_protected(void)
+ 
+ #else /* !CONFIG_NO_HZ_COMMON */
+ #define tick_nohz_enabled (0)
+-static inline int tick_nohz_tick_stopped(void) { return 0; }
++static inline bool tick_nohz_tick_stopped(void) { return false; }
+ static inline int tick_nohz_tick_stopped_cpu(int cpu) { return 0; }
+ static inline void tick_nohz_idle_stop_tick(void) { }
+ static inline void tick_nohz_idle_retain_tick(void) { }
+-- 
+2.7.4
