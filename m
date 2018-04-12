@@ -1,253 +1,150 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v7 21/26] drivers: firmware: psci: Add support for PM domains using genpd
-Date: Thu, 12 Apr 2018 13:14:26 +0200
-Message-ID: <1523531671-27491-22-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v7 26/26] arm64: dts: Convert to the hierarchical CPU topology layout for MSM8916
+Date: Thu, 12 Apr 2018 13:14:31 +0200
+Message-ID: <1523531671-27491-27-git-send-email-ulf.hansson@linaro.org>
 References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-When the hierarchical layout is used in DT, as to describe the PM topology
-for the CPUs, which are managed by PSCI, we want to be able to initialize
-and setup the corresponding PM domain data structures.
+From: Lina Iyer <lina.iyer@linaro.org>
 
-Let's make this possible via adding a new file, psci_pm_domains.c and
-implement the needed interface towards the generic PM domain (aka genpd).
-Share a helper function, psci_dt_init_pm_domains(), which the regular PSCI
-firmware driver may call when it needs to initialize the PM topology using
-genpd.
+In the hierarchical layout, we are creating power domains around each CPU
+and describes the idle states for them inside the power domain provider
+node.  Note that, the CPU's idle states still needs to be compatible with
+"arm,idle-state".
 
-In principle, the implementation consists of allocating/initializing the
-genpd data structures, parsing the domain-idle states DT bindings via
-calling of_genpd_parse_idle_states() and to call pm_genpd_init() for the
-allocated genpds.
+Furthermore, represent the CPU cluster as a separate master power domain,
+powering the CPU's power domains. The cluster node, contains the idle
+states for the cluster and each idle state needs to be compatible with the
+"domain-idle-state".
 
-Finally, one genpd OF provider is added per genpd. Via DT, this enables
-devices, including CPU devices, to be attached to the created genpds.
+If the running platform is using a PSCI FW that supports the OS initiated
+CPU suspend mode, which likely should be the case unless the PSCI FW is
+very old, this change makes the PSCI driver to enable it.
 
+Cc: Andy Gross <andy.gross@linaro.org>
+Cc: David Brown <david.brown@linaro.org>
 Cc: Lina Iyer <ilina@codeaurora.org>
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/Makefile         |   2 +-
- drivers/firmware/psci/psci.h           |   6 ++
- drivers/firmware/psci/psci_pm_domain.c | 180 +++++++++++++++++++++++++++++++++
- 3 files changed, 187 insertions(+), 1 deletion(-)
- create mode 100644 drivers/firmware/psci/psci_pm_domain.c
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 53 ++++++++++++++++++++++++++++++++---
+ 1 file changed, 49 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
-index 1956b88..ff300f1 100644
---- a/drivers/firmware/psci/Makefile
-+++ b/drivers/firmware/psci/Makefile
-@@ -1,4 +1,4 @@
- # SPDX-License-Identifier: GPL-2.0
- #
--obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
-+obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o psci_pm_domain.o
- obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
-diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
-index a2b4be5..8b6fe51 100644
---- a/drivers/firmware/psci/psci.h
-+++ b/drivers/firmware/psci/psci.h
-@@ -10,4 +10,10 @@ void psci_set_domain_state(u32 state);
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 66b318e..aff4b91 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -113,10 +113,10 @@
+ 			reg = <0x0>;
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+-			cpu-idle-states = <&CPU_SPC>;
+ 			clocks = <&apcs 0>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
++			power-domains = <&CPU_PD0>;
+ 		};
  
- int psci_dt_parse_state_node(struct device_node *np, u32 *state);
+ 		CPU1: cpu@1 {
+@@ -125,10 +125,10 @@
+ 			reg = <0x1>;
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+-			cpu-idle-states = <&CPU_SPC>;
+ 			clocks = <&apcs 0>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
++			power-domains = <&CPU_PD1>;
+ 		};
  
-+#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-+int psci_dt_init_pm_domains(struct device_node *np);
-+#else
-+static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
-+#endif
+ 		CPU2: cpu@2 {
+@@ -137,10 +137,10 @@
+ 			reg = <0x2>;
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+-			cpu-idle-states = <&CPU_SPC>;
+ 			clocks = <&apcs 0>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
++			power-domains = <&CPU_PD2>;
+ 		};
+ 
+ 		CPU3: cpu@3 {
+@@ -149,10 +149,10 @@
+ 			reg = <0x3>;
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+-			cpu-idle-states = <&CPU_SPC>;
+ 			clocks = <&apcs 0>;
+ 			operating-points-v2 = <&cpu_opp_table>;
+ 			#cooling-cells = <2>;
++			power-domains = <&CPU_PD3>;
+ 		};
+ 
+ 		L2_0: l2-cache {
+@@ -169,12 +169,57 @@
+ 				min-residency-us = <2000>;
+ 				local-timer-stop;
+ 			};
 +
- #endif /* __PSCI_H */
-diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
-new file mode 100644
-index 0000000..f54819e
---- /dev/null
-+++ b/drivers/firmware/psci/psci_pm_domain.c
-@@ -0,0 +1,180 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * PM domains for CPUs via genpd - managed by PSCI.
-+ *
-+ * Copyright (C) 2018 Linaro Ltd.
-+ * Author: Ulf Hansson <ulf.hansson@linaro.org>
-+ *
-+ */
++			CLUSTER_RET: cluster-retention {
++				compatible = "domain-idle-state";
++				arm,psci-suspend-param = <0x1000010>;
++				entry-latency-us = <500>;
++				exit-latency-us = <500>;
++				min-residency-us = <2000>;
++			};
 +
-+#define pr_fmt(fmt) "psci: " fmt
++			CLUSTER_PWRDN: cluster-gdhs {
++				compatible = "domain-idle-state";
++				arm,psci-suspend-param = <0x1000030>;
++				entry-latency-us = <2000>;
++				exit-latency-us = <2000>;
++				min-residency-us = <6000>;
++			};
+ 		};
+ 	};
+ 
+ 	psci {
+ 		compatible = "arm,psci-1.0";
+ 		method = "smc";
 +
-+#include <linux/device.h>
-+#include <linux/kernel.h>
-+#include <linux/pm_domain.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
++		CPU_PD0: cpu-pd0 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_PD>;
++			domain-idle-states = <&CPU_SPC>;
++		};
 +
-+#include "psci.h"
++		CPU_PD1: cpu-pd1 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_PD>;
++			domain-idle-states = <&CPU_SPC>;
++		};
 +
-+#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-+static int psci_pd_power_off(struct generic_pm_domain *pd)
-+{
-+	struct genpd_power_state *state = &pd->states[pd->state_idx];
-+	u32 *pd_state;
-+	u32 composite_pd_state;
++		CPU_PD2: cpu-pd2 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_PD>;
++			domain-idle-states = <&CPU_SPC>;
++		};
 +
-+	if (!state->data)
-+		return 0;
++		CPU_PD3: cpu-pd3 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_PD>;
++			domain-idle-states = <&CPU_SPC>;
++		};
 +
-+	pd_state = state->data;
-+	composite_pd_state = *pd_state | psci_get_domain_state();
-+	psci_set_domain_state(composite_pd_state);
-+
-+	return 0;
-+}
-+
-+static int psci_dt_parse_pd_states(struct genpd_power_state *states,
-+				   int state_count)
-+{
-+	int i, err;
-+	u32 *psci_states;
-+
-+	if (!state_count)
-+		return 0;
-+
-+	psci_states = kcalloc(state_count, sizeof(psci_states), GFP_KERNEL);
-+	if (!psci_states)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < state_count; i++) {
-+		err = psci_dt_parse_state_node(to_of_node(states[i].fwnode),
-+					       &psci_states[i]);
-+		if (err) {
-+			kfree(psci_states);
-+			return err;
-+		}
-+	}
-+
-+	for (i = 0; i < state_count; i++)
-+		states[i].data = &psci_states[i];
-+
-+	return 0;
-+}
-+
-+static int psci_dt_init_genpd(struct device_node *np,
-+			      struct genpd_power_state *states,
-+			      unsigned int state_count)
-+{
-+	struct generic_pm_domain *pd;
-+	struct dev_power_governor *pd_gov;
-+	int ret = -ENOMEM;
-+
-+	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-+	if (!pd)
-+		return -ENOMEM;
-+
-+	pd->name = kasprintf(GFP_KERNEL, "%pOF", np);
-+	if (!pd->name)
-+		goto free_pd;
-+
-+	pd->name = kbasename(pd->name);
-+	pd->power_off = psci_pd_power_off;
-+	pd->states = states;
-+	pd->state_count = state_count;
-+	pd->flags |= GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN;
-+
-+	/* Use governor for CPU PM domains if it has some states to manage. */
-+	pd_gov = state_count > 0 ? &pm_domain_cpu_gov : NULL;
-+
-+	ret = pm_genpd_init(pd, pd_gov, false);
-+	if (ret)
-+		goto free_name;
-+
-+	ret = of_genpd_add_provider_simple(np, pd);
-+	if (ret)
-+		goto remove_pd;
-+
-+	pr_info("init PM domain %s\n", pd->name);
-+	return 0;
-+
-+remove_pd:
-+	pm_genpd_remove(pd);
-+free_name:
-+	kfree(pd->name);
-+free_pd:
-+	kfree(pd);
-+	pr_err("failed to init PM domain ret=%d %pOF\n", ret, np);
-+	return ret;
-+}
-+
-+static int psci_dt_set_genpd_topology(struct device_node *np)
-+{
-+	struct device_node *node;
-+	struct of_phandle_args child, parent;
-+	int ret;
-+
-+	for_each_child_of_node(np, node) {
-+		if (of_parse_phandle_with_args(node, "power-domains",
-+					       "#power-domain-cells", 0,
-+					       &parent))
-+			continue;
-+
-+		child.np = node;
-+		child.args_count = 0;
-+
-+		ret = of_genpd_add_subdomain(&parent, &child);
-+		of_node_put(parent.np);
-+		if (ret) {
-+			of_node_put(node);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+int psci_dt_init_pm_domains(struct device_node *np)
-+{
-+	struct device_node *node;
-+	struct genpd_power_state *states;
-+	int state_count;
-+	int pd_count = 0;
-+	int ret;
-+
-+	/* Parse child nodes for "#power-domain-cells". */
-+	for_each_child_of_node(np, node) {
-+		if (!of_find_property(node, "#power-domain-cells", NULL))
-+			continue;
-+
-+		ret = of_genpd_parse_idle_states(node, &states, &state_count);
-+		if (ret)
-+			goto err_put;
-+
-+		ret = psci_dt_parse_pd_states(states, state_count);
-+		if (ret)
-+			goto err_put;
-+
-+		ret = psci_dt_init_genpd(node, states, state_count);
-+		if (ret)
-+			goto err_put;
-+
-+		pd_count++;
-+	}
-+
-+	if (!pd_count)
-+		return 0;
-+
-+	ret = psci_dt_set_genpd_topology(np);
-+	if (ret)
-+		goto err_msg;
-+
-+	return pd_count;
-+
-+err_put:
-+	of_node_put(node);
-+err_msg:
-+	pr_err("failed to create PM domains ret=%d\n", ret);
-+	return ret;
-+}
-+#endif
++		CLUSTER_PD: cluster-pd {
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWRDN>;
++		};
+ 	};
+ 
+ 	pmu {
 -- 
 2.7.4
