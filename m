@@ -1,55 +1,55 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] sched/fair: add support to tune PELT ramp/decay timings
-Date: Thu, 12 Apr 2018 21:13:18 +0200
-Message-ID: <20180412191318.GA7129@worktop.programming.kicks-ass.net>
-References: <20180409165134.707-1-patrick.bellasi@arm.com>
+Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
+ improvements for the intel_pstate driver.
+Date: Thu, 12 Apr 2018 21:33:35 +0200
+Message-ID: <20180412193335.GA4330@worktop.programming.kicks-ass.net>
+References: <20180328063845.4884-1-currojerez@riseup.net>
+ <87604ybssf.fsf@riseup.net>
+ <1523416474.2700.2.camel@linux.intel.com>
+ <87vacx7mh3.fsf@riseup.net> <87muy97lr0.fsf@riseup.net>
+ <20180412085824.GX4082@hirez.programming.kicks-ass.net>
+ <87r2nk46k1.fsf@riseup.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <20180409165134.707-1-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Jonathan Corbet <corbet@lwn.net>, Paul Turner <pjt@google.com>, linux-doc@vger.kernel.org
+In-Reply-To: <87r2nk46k1.fsf@riseup.net>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Francisco Jerez <currojerez@riseup.net>
+Cc: intel-gfx@lists.freedesktop.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eero Tamminen <eero.t.tamminen@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 09, 2018 at 05:51:34PM +0100, Patrick Bellasi wrote:
-> The PELT half-life is the time [ms] required by the PELT signal to build
-> up a 50% load/utilization, starting from zero. This time is currently
-> hardcoded to be 32ms, a value which seems to make sense for most of the
-> workloads.
-> 
-> However, 32ms has been verified to be too long for certain classes of
-> workloads. For example, in the mobile space many tasks affecting the
-> user-experience run with a 16ms or 8ms cadence, since they need to match
-> the common 60Hz or 120Hz refresh rate of the graphics pipeline.
-> This contributed so fare to the idea that "PELT is too slow" to properly
-> track the utilization of interactive mobile workloads, especially
-> compared to alternative load tracking solutions which provides a
-> better representation of tasks demand in the range of 10-20ms.
-
-Initially the 32 was chosen to more or less correspond to the effective
-scheduling period (sysctl_sched_latency based). The thinking was that if
-you pick a PELT window shorter than the period, the result becomes
-unstable due to not all tasks getting an equal go at things.
-
-(of course, stuffing enough tasks on a rq will break this, but at that
-point you have worse problems to deal with)
-
-Should we retain this? Esp. with the lower end (8ms) I worry we'll see
-more of those effects.
-
-
-> Fortunately, since the integration of the utilization estimation
-> support in mainline kernel:
-> 
->    commit 7f65ea42eb00 ("sched/fair: Add util_est on top of PELT")
-> 
-> a fast decay time is no longer an issue for tasks utilization estimation.
-> Although estimated utilization does not slow down the decay of blocked
-> utilization on idle CPUs, for mobile workloads this seems not to be a
-> major concern compared to the benefits in interactivity responsiveness.
-
-By picking a smaller PELT window, the util_est window shrinks
-correspondingly; is that intentional or do we want to modify
-UTIL_EST_WEIGHT_SHIFT to negate the PELT window changes?
+T24gVGh1LCBBcHIgMTIsIDIwMTggYXQgMTE6MzQ6NTRBTSAtMDcwMCwgRnJhbmNpc2NvIEplcmV6
+IHdyb3RlOgo+IFRoZSByZWFzb24gZm9yIHRoZSBlbmVyZ3kgZWZmaWNpZW5jeSBwcm9ibGVtIG9m
+IGlvd2FpdCBib29zdGluZyBpcwo+IHByZWNpc2VseSB0aGUgZ3JlYXRlciBvc2NpbGxhdGlvbiBi
+ZXR3ZWVuIHR1cmJvIGFuZCBpZGxlLiAgU2F5IHRoYXQKPiBpb3dhaXQgYm9vc3QgaW5jcmVhc2Vz
+IHRoZSBmcmVxdWVuY3kgYnkgYSBmYWN0b3IgYWxwaGEgcmVsYXRpdmUgdG8gdGhlCj4gb3B0aW1h
+bCBmcmVxdWVuY3kgZjAgKGluIHRlcm1zIG9mIGVuZXJneSBlZmZpY2llbmN5KSByZXF1aXJlZCB0
+byBleGVjdXRlCj4gc29tZSBJTy1ib3VuZCB3b3JrbG9hZC4gIFRoaXMgd2lsbCBjYXVzZSB0aGUg
+Q1BVIHRvIGJlIGJ1c3kgZm9yIGEKPiBmcmFjdGlvbiBvZiB0aGUgdGltZSBpdCB3YXMgYnVzeSBv
+cmlnaW5hbGx5LCBhcHByb3hpbWF0ZWx5IHQxID0gdDAgLwo+IGFscGhhLCB3aGljaCBpbmRlZWQg
+ZGl2aWRlcyB0aGUgb3ZlcmFsbCBlbmVyZ3kgdXNhZ2UgYnkgYSBmYWN0b3IgYWxwaGEsCj4gYnV0
+IGF0IHRoZSBzYW1lIHRpbWUgbXVsdGlwbGllcyB0aGUgaW5zdGFudGFuZW91cyBwb3dlciBjb25z
+dW1wdGlvbgo+IHdoaWxlIGJ1c3kgYnkgYSBmYWN0b3IgcG90ZW50aWFsbHkgbXVjaCBncmVhdGVy
+IHRoYW4gYWxwaGEsIHNpbmNlIHRoZQo+IENQVSdzIHBvd2VyIGN1cnZlIGlzIGxhcmdlbHkgbm9u
+LWxpbmVhciwgYW5kIGluIGZhY3QgYXBwcm94aW1hdGVseQo+IGNvbnZleCB3aXRoaW4gdGhlIGZy
+ZXF1ZW5jeSByYW5nZSBhbGxvd2VkIGJ5IHRoZSBwb2xpY3ksIHNvIHlvdSBnZXQgYW4KPiBhdmVy
+YWdlIGVuZXJneSB1c2FnZSBwb3NzaWJseSBtdWNoIGdyZWF0ZXIgdGhhbiB0aGUgb3B0aW1hbC4K
+CkFoLCBidXQgd2UgZG9uJ3QgKHlldCkgaGF2ZSB0aGUgKG5vcm1hbGl6ZWQpIHBvd2VyIGN1cnZl
+cywgc28gd2UgY2Fubm90Cm1ha2UgdGhhdCBjYWxsLgoKT25jZSB3ZSBoYXZlIHRoZSB2YXJpb3Vz
+IGVuZXJneS9PUFAgbnVtYmVycyByZXF1aXJlZCBmb3IgRUFTIHdlIGNhbgpjb21wdXRlIHRoZSBv
+cHRpbWFsLiBJIHRoaW5rIHN1Y2ggd2FzIGV2ZW4gbWVudGlvbmVkIGluIHRoZSB0aHJlYWQgSQpy
+ZWZlcnJlZCBlYXJsaWVyLgoKVW50aWwgc3VjaCB0aW1lOyB3ZSBib29zdCB0byBtYXggZm9yIGxh
+Y2sgb2YgYSBiZXR0ZXIgb3B0aW9uLgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9pbnRlbC1nZngK
