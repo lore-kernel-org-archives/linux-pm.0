@@ -1,121 +1,62 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: [PATCH][v4] tools/power turbostat: if --iterations, print for specific time of iterations
-Date: Fri, 13 Apr 2018 11:40:47 +0800
-Message-ID: <20180413034047.1240-1-yu.c.chen@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH v2 2/6] sched: Introduce energy models of CPUs
+Date: Fri, 13 Apr 2018 09:32:53 +0530
+Message-ID: <20180413040253.GW7671@vireshk-i7>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-3-dietmar.eggemann@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180406153607.17815-3-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, Rafael J Wysocki <rjw@rjwysocki.net>, Artem Bityutskiy <artem.bityutskiy@intel.com>, Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chen Yu <yu.c.chen@intel.com>
+On 06-04-18, 16:36, Dietmar Eggemann wrote:
+> diff --git a/include/linux/sched/energy.h b/include/linux/sched/energy.h
 
-There's a use case during test to only print specific round of iterations
-if --iterations is specified, for example, with this patch applied:
+> +#if defined(CONFIG_SMP) && defined(CONFIG_PM_OPP)
+> +extern struct sched_energy_model ** __percpu energy_model;
+> +extern struct static_key_false sched_energy_present;
+> +extern struct list_head sched_freq_domains;
+> +
+> +static inline bool sched_energy_enabled(void)
+> +{
+> +	return static_branch_unlikely(&sched_energy_present);
+> +}
+> +
+> +static inline struct cpumask *freq_domain_span(struct freq_domain *fd)
+> +{
+> +	return &fd->span;
+> +}
+> +
+> +extern void init_sched_energy(void);
+> +
+> +#define for_each_freq_domain(fdom) \
+> +	list_for_each_entry(fdom, &sched_freq_domains, next)
+> +
+> +#else
+> +struct freq_domain;
+> +static inline bool sched_energy_enabled(void) { return false; }
+> +static inline struct cpumask
+> +*freq_domain_span(struct freq_domain *fd) { return NULL; }
+> +static inline void init_sched_energy(void) { }
+> +#define for_each_freq_domain(fdom) for (; fdom; fdom = NULL)
 
-turbostat -i 5 -I 4
-will capture 4 samples with 5 seconds interval.
+I am not sure if this is correct. fdom would normally be a local
+uninitialized variable and with above we may end up running the loop
+once with an invalid pointer. Maybe rewrite it as:
 
-Cc: Len Brown <lenb@kernel.org>
-Cc: Rafael J Wysocki <rjw@rjwysocki.net>
-Cc: Artem Bityutskiy <artem.bityutskiy@intel.com>
-Cc: Doug Smythies <dsmythies@telus.net>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+for (fdom = NULL; fdom; )
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bd9c6b31a504..a2fe96f038f0 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -48,6 +48,7 @@ char *proc_stat = "/proc/stat";
- FILE *outf;
- int *fd_percpu;
- struct timespec interval_ts = {5, 0};
-+int iterations;
- unsigned int debug;
- unsigned int quiet;
- unsigned int sums_need_wide_columns;
-@@ -470,6 +471,7 @@ void help(void)
- 	"		{core | package | j,k,l..m,n-p }\n"
- 	"--quiet	skip decoding system configuration header\n"
- 	"--interval sec	Override default 5-second measurement interval\n"
-+	"--iterations count	Number of measurement iterations(requires '--interval'\n"
- 	"--help		print this help message\n"
- 	"--list		list column headers only\n"
- 	"--out file	create or truncate \"file\" for all output\n"
-@@ -2565,6 +2567,7 @@ void turbostat_loop()
- {
- 	int retval;
- 	int restarted = 0;
-+	int done_iters = 0;
- 
- restart:
- 	restarted++;
-@@ -2581,6 +2584,7 @@ void turbostat_loop()
- 		goto restart;
- 	}
- 	restarted = 0;
-+	done_iters = 0;
- 	gettimeofday(&tv_even, (struct timezone *)NULL);
- 
- 	while (1) {
-@@ -2607,6 +2611,10 @@ void turbostat_loop()
- 		compute_average(EVEN_COUNTERS);
- 		format_all_counters(EVEN_COUNTERS);
- 		flush_output_stdout();
-+
-+		if (iterations && (++done_iters >= iterations))
-+			break;
-+
- 		nanosleep(&interval_ts, NULL);
- 		if (snapshot_proc_sysfs_files())
- 			goto restart;
-@@ -2626,6 +2634,9 @@ void turbostat_loop()
- 		compute_average(ODD_COUNTERS);
- 		format_all_counters(ODD_COUNTERS);
- 		flush_output_stdout();
-+
-+		if (iterations && (++done_iters >= iterations))
-+			break;
- 	}
- }
- 
-@@ -4999,6 +5010,7 @@ void cmdline(int argc, char **argv)
- 		{"Dump",	no_argument,		0, 'D'},
- 		{"debug",	no_argument,		0, 'd'},	/* internal, not documented */
- 		{"interval",	required_argument,	0, 'i'},
-+		{"iterations",	required_argument,	0, 'I'},
- 		{"help",	no_argument,		0, 'h'},
- 		{"hide",	required_argument,	0, 'H'},	// meh, -h taken by --help
- 		{"Joules",	no_argument,		0, 'J'},
-@@ -5014,7 +5026,7 @@ void cmdline(int argc, char **argv)
- 
- 	progname = argv[0];
- 
--	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:v",
-+	while ((opt = getopt_long_only(argc, argv, "+C:c:DdhI:i:JM:m:o:qST:v",
- 				long_options, &option_index)) != -1) {
- 		switch (opt) {
- 		case 'a':
-@@ -5036,6 +5048,15 @@ void cmdline(int argc, char **argv)
- 		default:
- 			help();
- 			exit(1);
-+		case 'I':
-+			iterations = strtod(optarg, NULL);
-+
-+			if (iterations <= 0) {
-+				fprintf(outf, "iterations %d should be positive number\n",
-+					iterations);
-+				exit(2);
-+			}
-+			break;
- 		case 'i':
- 			{
- 				double interval = strtod(optarg, NULL);
+
+And for the whole OPP discussion, perhaps we should have another
+architecture specific callback which the scheduler can call to get a
+ready-made energy model with all the structures filled in. That way
+the OPP specific stuff will move to the architecture specific
+callback.
+
 -- 
-2.13.6
+viresh
