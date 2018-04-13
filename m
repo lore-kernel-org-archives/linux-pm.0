@@ -1,358 +1,204 @@
-From: Eduardo Valentin <edubezval@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
-Date: Thu, 12 Apr 2018 21:08:57 -0700
-Message-ID: <20180413040855.GA29826@localhost.localdomain>
+Date: Fri, 13 Apr 2018 13:29:57 +0800
+Message-ID: <1523597397.16235.45.camel@intel.com>
 References: <1523436077.16235.5.camel@intel.com>
- <CA+55aFzqJ2PfUnkVJ6A-8WRQTciWb8j+25r41JLCvz7h0QEJiA@mail.gmail.com>
- <1523509711.16235.25.camel@intel.com>
- <CA+55aFw0C-S0L-cnk0oROG=Khqy9s36O+g3_BxqPfewKGQ9_EQ@mail.gmail.com>
+         <CA+55aFzqJ2PfUnkVJ6A-8WRQTciWb8j+25r41JLCvz7h0QEJiA@mail.gmail.com>
+         <1523509711.16235.25.camel@intel.com>
+         <CA+55aFw0C-S0L-cnk0oROG=Khqy9s36O+g3_BxqPfewKGQ9_EQ@mail.gmail.com>
+         <20180413040855.GA29826@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="=-Enux9b8z9l3+25MSJ1H/"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFw0C-S0L-cnk0oROG=Khqy9s36O+g3_BxqPfewKGQ9_EQ@mail.gmail.com>
+In-Reply-To: <20180413040855.GA29826@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Eduardo Valentin <edubezval@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
 
-On Thu, Apr 12, 2018 at 09:55:19AM -0700, Linus Torvalds wrote:
-> On Wed, Apr 11, 2018 at 10:08 PM, Zhang Rui <rui.zhang@intel.com> wrote:
-> >
-> > could you please illustrate me what the kconfig & warning is?
+--=-Enux9b8z9l3+25MSJ1H/
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+On 四, 2018-04-12 at 21:08 -0700, Eduardo Valentin wrote:
+> Hello,
 > 
-> Just "make allmodconfig" and the warning is about a uninitialized variable.
+> On Thu, Apr 12, 2018 at 09:55:19AM -0700, Linus Torvalds wrote:
+> > 
+> > On Wed, Apr 11, 2018 at 10:08 PM, Zhang Rui <rui.zhang@intel.com>
+> > wrote:
+> > > 
+> > > 
+> > > could you please illustrate me what the kconfig & warning is?
+> > Just "make allmodconfig" and the warning is about a uninitialized
+> > variable.
+> > 
+> > Line 304 in drivers/thermal/samsung/exynos_tmu.c if my shell
+> > history
+> > is to be believed.
+> > 
+> >                 Linus
+> Yeah, this has also passed my local compilation error. Somehow my
+> gcc4.9
+> is not catching it. Using an older gcc (gcc4.6) does catch it.
 > 
-> Line 304 in drivers/thermal/samsung/exynos_tmu.c if my shell history
-> is to be believed.
-> 
->                 Linus
 
-Yeah, this has also passed my local compilation error. Somehow my gcc4.9
-is not catching it. Using an older gcc (gcc4.6) does catch it.
+I think there are two problems here
 
-Anyways, given that the conversion functions are written to cover
-for unexpected cal_type, the right way of fixing this is to rewrite
-the conversion functions to allow for returning error codes and
-adjusting the callers as expected.
+1. Actually, this error has been raised by 0-day earlier.
+https://marc.info/?l=linux-pm&m=152107340117077&w=2
+Don't know why it still goes into thermal-soc tree.
 
-Rui, bzolnier, please consider the following fix:
+2. After pulled the thermal-soc changes, I also asked 0-day to run
+build test, but I didn't get any warning report (email attached), CC
+Philip and Shun to look at this issue.
 
->From 2aaf94f80c0021a21b4122c9f4197acff08ea398 Mon Sep 17 00:00:00 2001
-From: Eduardo Valentin <edubezval@gmail.com>
-Date: Thu, 12 Apr 2018 21:00:48 -0700
-Subject: [PATCH 1/1] thermal: exynos: fix compilation warning around
- conversion functions
+thanks,
+rui
+--=-Enux9b8z9l3+25MSJ1H/
+Content-Type: application/mbox;
+	name*0="[rui:next]_BUILD_SUCCESS_f8837aac36cdc7430422cd65f4466071b42654bb";
+	name*1=".mbox"
+Content-Disposition: attachment;
+	filename*0="[rui:next]_BUILD_SUCCESS_f8837aac36cdc7430422cd65f4466071b426";
+	filename*1="54bb.mbox"
+Content-Transfer-Encoding: base64
 
-In order to fix the warns:
-drivers/thermal/samsung/exynos_tmu.c:931:37: warning: 'temp' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/thermal/samsung/exynos_tmu.c:304:9: warning: 'temp_code' may be used uninitialized in this function [-Wmaybe-uninitialized]
+RnJvbSBmZW5nZ3Vhbmcud3VAaW50ZWwuY29tIFR1ZSBBcHIgIDMgMTA6NDk6NDYgMjAxOApSZWNl
+aXZlZDogZnJvbSBzaHNtc3gxMDEuY2NyLmNvcnAuaW50ZWwuY29tICgxMC4yMzkuNC4xNTMpIGJ5
+CiBTSFNNU1gxMDQuY2NyLmNvcnAuaW50ZWwuY29tICgxMC4yMzkuNC43MCkgd2l0aCBNaWNyb3Nv
+ZnQgU01UUCBTZXJ2ZXIgKFRMUykKIGlkIDE0LjMuMzE5LjI7IFR1ZSwgMyBBcHIgMjAxOCAxMDo0
+OTo0NiArMDgwMApSZWNlaXZlZDogZnJvbSBmbXNtc3gxMDUuYW1yLmNvcnAuaW50ZWwuY29tICgx
+MC4xOC4xMjQuMjAzKSBieQogU0hTTVNYMTAxLmNjci5jb3JwLmludGVsLmNvbSAoMTAuMjM5LjQu
+MTUzKSB3aXRoIE1pY3Jvc29mdCBTTVRQIFNlcnZlcgogKFRMUykgaWQgMTQuMy4zMTkuMjsgVHVl
+LCAzIEFwciAyMDE4IDEwOjQ5OjQ1ICswODAwClJlY2VpdmVkOiBmcm9tIGZtc21nYTAwNi5mbS5p
+bnRlbC5jb20gKDEwLjI1My4yNC4yMCkgYnkKIGZtc21zeDEwNS0yLmNwcy5pbnRlbC5jb20gKDEw
+LjE4LjEyNC4yMTIpIHdpdGggTWljcm9zb2Z0IFNNVFAgU2VydmVyIGlkCiAxNC4zLjMxOS4yOyBN
+b24sIDIgQXByIDIwMTggMTk6NDk6NDQgLTA3MDAKWC1FeHRMb29wMTogMQpYLUlyb25Qb3J0LUFW
+OiBFPVNvcGhvcztpPSI1LjQ4LDM5OCwxNTE3OTA0MDAwIjsgIGQ9InNjYW4nMjA4IjthPSIyMTcw
+MDgxNTEiClJlY2VpdmVkOiBmcm9tIGJlZS5zaC5pbnRlbC5jb20gKEhFTE8gYmVlKSAoWzEwLjIz
+OS45Ny4xNF0pICBieQogZm1zbWdhMDA2LmZtLmludGVsLmNvbSB3aXRoIEVTTVRQOyAwMiBBcHIg
+MjAxOCAxOTo0OTozOSAtMDcwMApSZWNlaXZlZDogZnJvbSBrYnVpbGQgYnkgYmVlIHdpdGggbG9j
+YWwgKEV4aW0gNC44NF8yKQkoZW52ZWxvcGUtZnJvbQogPGZlbmdndWFuZy53dUBpbnRlbC5jb20+
+KQlpZCAxZjNDMHctMDAwSjBrLUI0OyBUdWUsIDAzIEFwciAyMDE4IDEwOjQ5OjM4CiArMDgwMApE
+YXRlOiBUdWUsIDMgQXByIDIwMTggMTA6NDk6MDQgKzA4MDAKRnJvbToga2J1aWxkIHRlc3Qgcm9i
+b3QgPGZlbmdndWFuZy53dUBpbnRlbC5jb20+ClRvOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRl
+bC5jb20+ClN1YmplY3Q6IFtydWk6bmV4dF0gQlVJTEQgU1VDQ0VTUyBmODgzN2FhYzM2Y2RjNzQz
+MDQyMmNkNjVmNDQ2NjA3MWI0MjY1NGJiCk1lc3NhZ2UtSUQ6IDw1YWMyZWJhMC5NOHM4c2VTck4r
+Z01Lajh5JWZlbmdndWFuZy53dUBpbnRlbC5jb20+ClVzZXItQWdlbnQ6IEhlaXJsb29tIG1haWx4
+IDEyLjUgNi8yMC8xMApDb250ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9InVzLWFzY2lp
+IgpYLVNBLUV4aW0tQ29ubmVjdC1JUDogPGxvY2FsbHkgZ2VuZXJhdGVkPgpYLVNBLUV4aW0tTWFp
+bC1Gcm9tOiBmZW5nZ3Vhbmcud3VAaW50ZWwuY29tClgtU0EtRXhpbS1TY2FubmVkOiBObyAob24g
+YmVlKTsgU0FFeGltUnVuQ29uZCBleHBhbmRlZCB0byBmYWxzZQpSZXR1cm4tUGF0aDogZmVuZ2d1
+YW5nLnd1QGludGVsLmNvbQpYLU1TLUV4Y2hhbmdlLU9yZ2FuaXphdGlvbi1BdXRoU291cmNlOiBG
+TVNNU1gxMDUuYW1yLmNvcnAuaW50ZWwuY29tClgtTVMtRXhjaGFuZ2UtT3JnYW5pemF0aW9uLUF1
+dGhBczogSW50ZXJuYWwKWC1NUy1FeGNoYW5nZS1Pcmdhbml6YXRpb24tQXV0aE1lY2hhbmlzbTog
+MTAKWC1NUy1FeGNoYW5nZS1Pcmdhbml6YXRpb24tQVZTdGFtcC1NYWlsYm94OiBOQUk7NTkwOTYz
+MTY7MDtub3ZpcnVzCk1JTUUtVmVyc2lvbjogMS4wClgtRXZvbHV0aW9uLVNvdXJjZTogMTM1MTgz
+Njk2MC4xMDg4Ny4yMUByemhhbmcxLW1vYmw0CkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDhi
+aXQKCnRyZWUvYnJhbmNoOiBnaXQ6Ly9iZWUuc2guaW50ZWwuY29tL2dpdC9ydWkvbGludXguZ2l0
+ICBuZXh0DQpicmFuY2ggSEVBRDogZjg4MzdhYWMzNmNkYzc0MzA0MjJjZDY1ZjQ0NjYwNzFiNDI2
+NTRiYiAgTWVyZ2UgYnJhbmNoZXMgJ3RoZXJtYWwtY29yZScgYW5kICd0aGVybWFsLXNvYycgaW50
+byBuZXh0DQoNCmVsYXBzZWQgdGltZTogMzdtDQoNCmNvbmZpZ3MgdGVzdGVkOiAxMTYNCg0KVGhl
+IGZvbGxvd2luZyBjb25maWdzIGhhdmUgYmVlbiBidWlsdCBzdWNjZXNzZnVsbHkuDQpNb3JlIGNv
+bmZpZ3MgbWF5IGJlIHRlc3RlZCBpbiB0aGUgY29taW5nIGRheXMuDQoNCmFscGhhICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIGRlZmNvbmZpZw0KcGFyaXNjICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIGFsbG5vY29uZmlnDQpwYXJpc2MgICAgICAgICAgICAgICAgICAgICAgICAgYjE4
+MF9kZWZjb25maWcNCnBhcmlzYyAgICAgICAgICAgICAgICAgICAgICAgIGMzMDAwX2RlZmNvbmZp
+Zw0KcGFyaXNjICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZGVmY29uZmlnDQppMzg2ICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRpbnljb25maWcNCnNoICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICBhbGxub2NvbmZpZw0Kc2ggICAgICAgICAgICAgICAgICAgICAgICAg
+IHJzazcyNjlfZGVmY29uZmlnDQpzaCAgICAgICAgICAgICAgICAgIHNoNzc4NWxjcl8zMmJpdF9k
+ZWZjb25maWcNCnNoICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRpdGFuX2RlZmNvbmZpZw0K
+aTM4NiAgICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMTMtMjAxODEzDQppMzg2ICAgICAg
+ICAgICAgICAgICAgIHJhbmRjb25maWcteDAxNC0yMDE4MTMNCmkzODYgICAgICAgICAgICAgICAg
+ICAgcmFuZGNvbmZpZy14MDEyLTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICByYW5kY29u
+ZmlnLXgwMTUtMjAxODEzDQppMzg2ICAgICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDAxNi0y
+MDE4MTMNCmkzODYgICAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDE5LTIwMTgxMw0KaTM4
+NiAgICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMTAtMjAxODEzDQppMzg2ICAgICAgICAg
+ICAgICAgICAgIHJhbmRjb25maWcteDAxOC0yMDE4MTMNCmkzODYgICAgICAgICAgICAgICAgICAg
+cmFuZGNvbmZpZy14MDExLTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICByYW5kY29uZmln
+LXgwMTctMjAxODEzDQptaWNyb2JsYXplICAgICAgICAgICAgICAgICAgICAgIG1tdV9kZWZjb25m
+aWcNCm1pY3JvYmxhemUgICAgICAgICAgICAgICAgICAgIG5vbW11X2RlZmNvbmZpZw0KaTM4NiAg
+ICAgICAgICAgICAgICAgICAgIHJhbmRjb25maWctbjAtMjAxODEzDQppMzg2ICAgICAgICAgICAg
+ICAgICAgICAgcmFuZGNvbmZpZy1pMC0yMDE4MTMNCmkzODYgICAgICAgICAgICAgICAgICAgICBy
+YW5kY29uZmlnLWkxLTIwMTgxMw0KYmxhY2tmaW4gICAgICAgICAgICAgICAgQkY1MjYtRVpCUkRf
+ZGVmY29uZmlnDQpibGFja2ZpbiAgICAgICAgICAgICAgICBCRjUzMy1FWktJVF9kZWZjb25maWcN
+CmJsYWNrZmluICAgICAgICAgICAgQkY1NjEtRVpLSVQtU01QX2RlZmNvbmZpZw0KYmxhY2tmaW4g
+ICAgICAgICAgICAgICAgICBUQ00tQkY1MzdfZGVmY29uZmlnDQpjcmlzICAgICAgICAgICAgICAg
+ICBldHJheC0xMDBseF92Ml9kZWZjb25maWcNCmZydiAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIGRlZmNvbmZpZw0KbW4xMDMwMCAgICAgICAgICAgICAgICAgICAgIGFzYjIzNjRfZGVm
+Y29uZmlnDQpvcGVucmlzYyAgICAgICAgICAgICAgICAgICAgb3Ixa3NpbV9kZWZjb25maWcNCnRp
+bGUgICAgICAgICAgICAgICAgICAgICAgICAgdGlsZWd4X2RlZmNvbmZpZw0KdW0gICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIGkzODZfZGVmY29uZmlnDQp1bSAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHg4Nl82NF9kZWZjb25maWcNCmM2eCAgICAgICAgICAgICAgICAgICAgICAgIGV2bWM2
+Njc4X2RlZmNvbmZpZw0KaDgzMDAgICAgICAgICAgICAgICAgICAgIGg4MzAwaC1zaW1fZGVmY29u
+ZmlnDQptMzJyICAgICAgICAgICAgICAgICAgICAgICBtMzIxMDR1dF9kZWZjb25maWcNCm0zMnIg
+ICAgICAgICAgICAgICAgICAgICBtYXBwaTMuc21wX2RlZmNvbmZpZw0KbTMyciAgICAgICAgICAg
+ICAgICAgICAgICAgICBvcHNwdXRfZGVmY29uZmlnDQptMzJyICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgdXNydl9kZWZjb25maWcNCm5pb3MyICAgICAgICAgICAgICAgICAgICAgICAgIDEwbTUw
+X2RlZmNvbmZpZw0Kc2NvcmUgICAgICAgICAgICAgICAgICAgICAgc3BjdDY2MDBfZGVmY29uZmln
+DQp4dGVuc2EgICAgICAgICAgICAgICAgICAgICAgIGNvbW1vbl9kZWZjb25maWcNCnh0ZW5zYSAg
+ICAgICAgICAgICAgICAgICAgICAgICAgaXNzX2RlZmNvbmZpZw0KaWE2NCAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgYWxsZGVmY29uZmlnDQppYTY0ICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgYWxsbm9jb25maWcNCmlhNjQgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRl
+ZmNvbmZpZw0KaTM4NiAgICAgICAgICAgICAgICAgICAgIHJhbmRjb25maWctYTAtMjAxODEzDQpp
+Mzg2ICAgICAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy1hMS0yMDE4MTMNCng4Nl82NCAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgYWNwaS1yZWRlZg0KeDg2XzY0ICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgYWxseWVzZGViaWFuDQp4ODZfNjQgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIG5mc3Jvb3QNCng4Nl82NCAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDEwLTIw
+MTgxMw0KeDg2XzY0ICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMTMtMjAxODEzDQp4ODZf
+NjQgICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDAxNC0yMDE4MTMNCng4Nl82NCAgICAgICAg
+ICAgICAgICAgcmFuZGNvbmZpZy14MDE5LTIwMTgxMw0KeDg2XzY0ICAgICAgICAgICAgICAgICBy
+YW5kY29uZmlnLXgwMTEtMjAxODEzDQp4ODZfNjQgICAgICAgICAgICAgICAgIHJhbmRjb25maWct
+eDAxNS0yMDE4MTMNCng4Nl82NCAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDE4LTIwMTgx
+Mw0KeDg2XzY0ICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMTYtMjAxODEzDQp4ODZfNjQg
+ICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDAxNy0yMDE4MTMNCng4Nl82NCAgICAgICAgICAg
+ICAgICAgcmFuZGNvbmZpZy14MDEyLTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgYWxsZGVmY29uZmlnDQppMzg2ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYWxs
+bm9jb25maWcNCmkzODYgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRlZmNvbmZpZw0K
+eDg2XzY0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByaGVsDQp4ODZfNjQgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgcmhlbC03LjINCmkzODYgICAgICAgICAgICAgICAg
+ICAgICByYW5kY29uZmlnLXMwLTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICAgIHJhbmRj
+b25maWctczEtMjAxODEzDQp4ODZfNjQgICAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy1pMC0y
+MDE4MTMNCnNwYXJjICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRlZmNvbmZpZw0Kc3Bh
+cmM2NCAgICAgICAgICAgICAgICAgICAgICAgICAgIGFsbG5vY29uZmlnDQpzcGFyYzY0ICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICBkZWZjb25maWcNCm02OGsgICAgICAgICAgICAgICAgICAg
+ICAgIG01NDc1ZXZiX2RlZmNvbmZpZw0KbTY4ayAgICAgICAgICAgICAgICAgICAgICAgICAgbXVs
+dGlfZGVmY29uZmlnDQptNjhrICAgICAgICAgICAgICAgICAgICAgICAgICAgc3VuM19kZWZjb25m
+aWcNCng4Nl82NCAgICAgICAgICAgICAgICAgICAgICAgICAgIGFsbG1vZGNvbmZpZw0KbWlwcyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIDMycjJfZGVmY29uZmlnDQptaXBzICAgICAgICAgICAg
+ICAgICAgICAgICAgIDY0cjZlbF9kZWZjb25maWcNCm1pcHMgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBhbGxub2NvbmZpZw0KbWlwcyAgICAgICAgICAgICAgICAgICAgICBmdWxvb25nMmVf
+ZGVmY29uZmlnDQptaXBzICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBqejQ3NDAN
+Cm1pcHMgICAgICAgICAgICAgICAgICAgICAgbWFsdGFfa3ZtX2RlZmNvbmZpZw0KbWlwcyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0eHg5DQp4ODZfNjQgICAgICAgICAgICAg
+ICAgIHJhbmRjb25maWcteDAwMi0yMDE4MTMNCng4Nl82NCAgICAgICAgICAgICAgICAgcmFuZGNv
+bmZpZy14MDA2LTIwMTgxMw0KeDg2XzY0ICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMDUt
+MjAxODEzDQp4ODZfNjQgICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDAwNC0yMDE4MTMNCng4
+Nl82NCAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDA5LTIwMTgxMw0KeDg2XzY0ICAgICAg
+ICAgICAgICAgICByYW5kY29uZmlnLXgwMDEtMjAxODEzDQp4ODZfNjQgICAgICAgICAgICAgICAg
+IHJhbmRjb25maWcteDAwOC0yMDE4MTMNCng4Nl82NCAgICAgICAgICAgICAgICAgcmFuZGNvbmZp
+Zy14MDAzLTIwMTgxMw0KeDg2XzY0ICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMDAtMjAx
+ODEzDQp4ODZfNjQgICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDAwNy0yMDE4MTMNCmkzODYg
+ICAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDczLTIwMTgxMw0KaTM4NiAgICAgICAgICAg
+ICAgICAgICByYW5kY29uZmlnLXgwNzUtMjAxODEzDQppMzg2ICAgICAgICAgICAgICAgICAgIHJh
+bmRjb25maWcteDA3MS0yMDE4MTMNCmkzODYgICAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14
+MDc2LTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwNzktMjAxODEz
+DQppMzg2ICAgICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDA3MC0yMDE4MTMNCmkzODYgICAg
+ICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDc3LTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAg
+ICAgICByYW5kY29uZmlnLXgwNzQtMjAxODEzDQppMzg2ICAgICAgICAgICAgICAgICAgIHJhbmRj
+b25maWcteDA3OC0yMDE4MTMNCmkzODYgICAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDcy
+LTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMDYtMjAxODEzDQpp
+Mzg2ICAgICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDAwMC0yMDE4MTMNCmkzODYgICAgICAg
+ICAgICAgICAgICAgcmFuZGNvbmZpZy14MDA4LTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAg
+ICByYW5kY29uZmlnLXgwMDktMjAxODEzDQppMzg2ICAgICAgICAgICAgICAgICAgIHJhbmRjb25m
+aWcteDAwNC0yMDE4MTMNCmkzODYgICAgICAgICAgICAgICAgICAgcmFuZGNvbmZpZy14MDAzLTIw
+MTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICByYW5kY29uZmlnLXgwMDUtMjAxODEzDQppMzg2
+ICAgICAgICAgICAgICAgICAgIHJhbmRjb25maWcteDAwMi0yMDE4MTMNCmkzODYgICAgICAgICAg
+ICAgICAgICAgcmFuZGNvbmZpZy14MDAxLTIwMTgxMw0KaTM4NiAgICAgICAgICAgICAgICAgICBy
+YW5kY29uZmlnLXgwMDctMjAxODEzDQoNClRoYW5rcywNCkZlbmdndWFuZw0KCg==
 
-the conversion functions should allow return error codes
-and the not mix the converted value with error code.
 
-This patch change the conversion functions to return
-error code or success and adjusts the callers accordingly.
-
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 120 ++++++++++++++++++++++++-----------
- 1 file changed, 84 insertions(+), 36 deletions(-)
-
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 2ec8548..b3f0704 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -282,52 +282,54 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
-  * TMU treats temperature as a mapped temperature code.
-  * The temperature is converted differently depending on the calibration type.
-  */
--static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
-+static int temp_to_code(struct exynos_tmu_data *data, u8 temp, int *temp_code)
- {
--	int temp_code;
-+	int ret = 0;
- 
- 	switch (data->cal_type) {
- 	case TYPE_TWO_POINT_TRIMMING:
--		temp_code = (temp - EXYNOS_FIRST_POINT_TRIM) *
-+		*temp_code = (temp - EXYNOS_FIRST_POINT_TRIM) *
- 			(data->temp_error2 - data->temp_error1) /
- 			(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) +
- 			data->temp_error1;
- 		break;
- 	case TYPE_ONE_POINT_TRIMMING:
--		temp_code = temp + data->temp_error1 - EXYNOS_FIRST_POINT_TRIM;
-+		*temp_code = temp + data->temp_error1 - EXYNOS_FIRST_POINT_TRIM;
- 		break;
- 	default:
- 		WARN_ON(1);
-+		ret = -EINVAL;
- 		break;
- 	}
- 
--	return temp_code;
-+	return ret;
- }
- 
- /*
-  * Calculate a temperature value from a temperature code.
-  * The unit of the temperature is degree Celsius.
-  */
--static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
-+static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code, int *temp)
- {
--	int temp;
-+	int ret = 0;
- 
- 	switch (data->cal_type) {
- 	case TYPE_TWO_POINT_TRIMMING:
--		temp = (temp_code - data->temp_error1) *
-+		*temp = (temp_code - data->temp_error1) *
- 			(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) /
- 			(data->temp_error2 - data->temp_error1) +
- 			EXYNOS_FIRST_POINT_TRIM;
- 		break;
- 	case TYPE_ONE_POINT_TRIMMING:
--		temp = temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TRIM;
-+		*temp = temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TRIM;
- 		break;
- 	default:
- 		WARN_ON(1);
-+		ret = -EINVAL;
- 		break;
- 	}
- 
--	return temp;
-+	return ret;
- }
- 
- static void sanitize_temp_error(struct exynos_tmu_data *data, u32 trim_info)
-@@ -352,7 +354,7 @@ static u32 get_th_reg(struct exynos_tmu_data *data, u32 threshold, bool falling)
- 	struct thermal_zone_device *tz = data->tzd;
- 	const struct thermal_trip * const trips =
- 		of_thermal_get_trip_points(tz);
--	unsigned long temp;
-+	int temp;
- 	int i;
- 
- 	if (!trips) {
-@@ -362,6 +364,8 @@ static u32 get_th_reg(struct exynos_tmu_data *data, u32 threshold, bool falling)
- 	}
- 
- 	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
-+		int val, ret;
-+
- 		if (trips[i].type == THERMAL_TRIP_CRITICAL)
- 			continue;
- 
-@@ -371,7 +375,14 @@ static u32 get_th_reg(struct exynos_tmu_data *data, u32 threshold, bool falling)
- 		else
- 			threshold &= ~(0xff << 8 * i);
- 
--		threshold |= temp_to_code(data, temp) << 8 * i;
-+		ret = temp_to_code(data, temp, &val);
-+		if (ret) {
-+			pr_err("%s: Convertion error from temp (%d) to code: %d!\n",
-+				__func__, temp, ret);
-+			return 0;
-+		}
-+
-+		threshold |= val << 8 * i;
- 	}
- 
- 	return threshold;
-@@ -460,11 +471,10 @@ static int exynos4210_tmu_initialize(struct platform_device *pdev)
- 
- 	/* Write temperature code for threshold */
- 	reference = trips[0].temperature / MCELSIUS;
--	threshold_code = temp_to_code(data, reference);
--	if (threshold_code < 0) {
--		ret = threshold_code;
-+	ret = temp_to_code(data, reference, &threshold_code);
-+	if (ret < 0 || threshold_code < 0)
- 		goto out;
--	}
-+
- 	writeb(threshold_code, data->base + EXYNOS4210_TMU_REG_THRESHOLD_TEMP);
- 
- 	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
-@@ -537,7 +547,10 @@ static int exynos4412_tmu_initialize(struct platform_device *pdev)
- 		goto out;
- 	}
- 
--	threshold_code = temp_to_code(data, crit_temp / MCELSIUS);
-+	ret = temp_to_code(data, crit_temp / MCELSIUS, &threshold_code);
-+	if (ret)
-+		goto out;
-+
- 	/* 1-4 level to be assigned in th0 reg */
- 	rising_threshold &= ~(0xff << 8 * i);
- 	rising_threshold |= threshold_code << 8 * i;
-@@ -620,7 +633,9 @@ static int exynos5433_tmu_initialize(struct platform_device *pdev)
- 		/* Write temperature code for rising threshold */
- 		tz->ops->get_trip_temp(tz, i, &temp);
- 		temp /= MCELSIUS;
--		threshold_code = temp_to_code(data, temp);
-+		ret = temp_to_code(data, temp, &threshold_code);
-+		if (ret)
-+			goto out;
- 
- 		rising_threshold = readl(data->base + rising_reg_offset);
- 		rising_threshold |= (threshold_code << j * 8);
-@@ -629,7 +644,9 @@ static int exynos5433_tmu_initialize(struct platform_device *pdev)
- 		/* Write temperature code for falling threshold */
- 		tz->ops->get_trip_hyst(tz, i, &temp_hist);
- 		temp_hist = temp - (temp_hist / MCELSIUS);
--		threshold_code = temp_to_code(data, temp_hist);
-+		ret = temp_to_code(data, temp_hist, &threshold_code);
-+		if (ret)
-+			goto out;
- 
- 		falling_threshold = readl(data->base + falling_reg_offset);
- 		falling_threshold &= ~(0xff << j * 8);
-@@ -677,7 +694,12 @@ static int exynos5440_tmu_initialize(struct platform_device *pdev)
- 
- 	/* if last threshold limit is also present */
- 	if (!data->tzd->ops->get_crit_temp(data->tzd, &crit_temp)) {
--		threshold_code = temp_to_code(data, crit_temp / MCELSIUS);
-+		int ret;
-+
-+		ret = temp_to_code(data, crit_temp / MCELSIUS, &threshold_code);
-+		if (ret)
-+			return ret;
-+
- 		/* 5th level to be assigned in th2 reg */
- 		rising_threshold =
- 			threshold_code << EXYNOS5440_TMU_TH_RISE4_SHIFT;
-@@ -749,7 +771,10 @@ static int exynos7_tmu_initialize(struct platform_device *pdev)
- 		temp_hist = temp - (temp_hist / MCELSIUS);
- 
- 		/* Set 9-bit temperature code for rising threshold levels */
--		threshold_code = temp_to_code(data, temp);
-+		ret = temp_to_code(data, temp, &threshold_code);
-+		if (ret)
-+			goto out;
-+
- 		rising_threshold = readl(data->base +
- 			EXYNOS7_THD_TEMP_RISE7_6 + reg_off);
- 		rising_threshold &= ~(EXYNOS7_TMU_TEMP_MASK << (16 * bit_off));
-@@ -758,7 +783,9 @@ static int exynos7_tmu_initialize(struct platform_device *pdev)
- 		       data->base + EXYNOS7_THD_TEMP_RISE7_6 + reg_off);
- 
- 		/* Set 9-bit temperature code for falling threshold levels */
--		threshold_code = temp_to_code(data, temp_hist);
-+		ret = temp_to_code(data, temp_hist, &threshold_code);
-+		if (ret)
-+			goto out;
- 		falling_threshold &= ~(EXYNOS7_TMU_TEMP_MASK << (16 * bit_off));
- 		falling_threshold |= threshold_code << (16 * bit_off);
- 		writel(falling_threshold,
-@@ -925,11 +952,18 @@ static int exynos_get_temp(void *p, int *temp)
- 	clk_enable(data->clk);
- 
- 	value = data->tmu_read(data);
--	if (value < 0)
-+	if (value < 0) {
- 		ret = value;
--	else
--		*temp = code_to_temp(data, value) * MCELSIUS;
-+		goto out;
-+	}
-+
-+	ret = code_to_temp(data, value, temp);
-+	if (ret)
-+		goto out;
- 
-+	*temp *= MCELSIUS;
-+
-+out:
- 	clk_disable(data->clk);
- 	mutex_unlock(&data->lock);
- 
-@@ -937,9 +971,11 @@ static int exynos_get_temp(void *p, int *temp)
- }
- 
- #ifdef CONFIG_THERMAL_EMULATION
--static u32 get_emul_con_reg(struct exynos_tmu_data *data, unsigned int val,
--			    int temp)
-+static int get_emul_con_reg(struct exynos_tmu_data *data, unsigned int val,
-+			    int temp, u32 *con_reg)
- {
-+	int code, ret = 0;
-+
- 	if (temp) {
- 		temp /= MCELSIUS;
- 
-@@ -950,27 +986,36 @@ static u32 get_emul_con_reg(struct exynos_tmu_data *data, unsigned int val,
- 		if (data->soc == SOC_ARCH_EXYNOS7) {
- 			val &= ~(EXYNOS7_EMUL_DATA_MASK <<
- 				EXYNOS7_EMUL_DATA_SHIFT);
--			val |= (temp_to_code(data, temp) <<
--				EXYNOS7_EMUL_DATA_SHIFT) |
-+			ret = temp_to_code(data, temp, &code);
-+			if (ret)
-+				goto out;
-+
-+			val |= (code << EXYNOS7_EMUL_DATA_SHIFT) |
- 				EXYNOS_EMUL_ENABLE;
- 		} else {
- 			val &= ~(EXYNOS_EMUL_DATA_MASK <<
- 				EXYNOS_EMUL_DATA_SHIFT);
--			val |= (temp_to_code(data, temp) <<
--				EXYNOS_EMUL_DATA_SHIFT) |
-+			ret = temp_to_code(data, temp, &code);
-+			if (ret)
-+				goto out;
-+
-+			val |= (code << EXYNOS_EMUL_DATA_SHIFT) |
- 				EXYNOS_EMUL_ENABLE;
- 		}
- 	} else {
- 		val &= ~EXYNOS_EMUL_ENABLE;
- 	}
- 
--	return val;
-+	*con_reg = val;
-+out:
-+	return ret;
- }
- 
- static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
- 					 int temp)
- {
- 	unsigned int val;
-+	int ret;
- 	u32 emul_con;
- 
- 	if (data->soc == SOC_ARCH_EXYNOS5260)
-@@ -983,18 +1028,21 @@ static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
- 		emul_con = EXYNOS_EMUL_CON;
- 
- 	val = readl(data->base + emul_con);
--	val = get_emul_con_reg(data, val, temp);
--	writel(val, data->base + emul_con);
-+	ret = get_emul_con_reg(data, val, temp, &val);
-+	if (!ret)
-+		writel(val, data->base + emul_con);
- }
- 
- static void exynos5440_tmu_set_emulation(struct exynos_tmu_data *data,
- 					 int temp)
- {
- 	unsigned int val;
-+	int ret;
- 
- 	val = readl(data->base + EXYNOS5440_TMU_S0_7_DEBUG);
--	val = get_emul_con_reg(data, val, temp);
--	writel(val, data->base + EXYNOS5440_TMU_S0_7_DEBUG);
-+	ret = get_emul_con_reg(data, val, temp, &val);
-+	if (!ret)
-+		writel(val, data->base + EXYNOS5440_TMU_S0_7_DEBUG);
- }
- 
- static int exynos_tmu_set_emulation(void *drv_data, int temp)
--- 
-2.1.4
+--=-Enux9b8z9l3+25MSJ1H/--
