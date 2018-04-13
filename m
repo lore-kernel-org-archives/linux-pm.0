@@ -1,76 +1,49 @@
-From: Juri Lelli <juri.lelli@gmail.com>
-Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
- improvements for the intel_pstate driver.
-Date: Wed, 11 Apr 2018 19:35:58 +0200
-Message-ID: <20180411173558.GL13334@localhost.localdomain>
-References: <20180328063845.4884-1-currojerez@riseup.net>
- <87604ybssf.fsf@riseup.net>
- <1523416474.2700.2.camel@linux.intel.com>
- <87vacx7mh3.fsf@riseup.net> <87muy97lr0.fsf@riseup.net>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 3/8] dt-bindings: mfd: renesas,rzn1-sysctrl: document
+ RZ/N1 sysctrl node
+Date: Fri, 13 Apr 2018 13:05:49 -0500
+Message-ID: <20180413180549.yjzkl2yf7osz7myt@rob-hp-laptop>
+References: <1523349015-37985-1-git-send-email-michel.pollet@bp.renesas.com>
+ <1523349015-37985-4-git-send-email-michel.pollet@bp.renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <87muy97lr0.fsf@riseup.net>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Francisco Jerez <currojerez@riseup.net>
-Cc: Javi Merino <Javi.Merino@arm.com>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, intel-gfx@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <1523349015-37985-4-git-send-email-michel.pollet@bp.renesas.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Michel Pollet <michel.pollet@bp.renesas.com>
+Cc: linux-renesas-soc@vger.kernel.org, Simon Horman <horms@verge.net.au>, phil.edworthy@renesas.com, buserror+upstream@gmail.com, Magnus Damm <magnus.damm@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiAxMS8wNC8xOCAwOToyNiwgRnJhbmNpc2NvIEplcmV6IHdyb3RlOgo+IEZyYW5jaXNj
-byBKZXJleiA8Y3Vycm9qZXJlekByaXNldXAubmV0PiB3cml0ZXM6Cj4gCj4gPiBIaSBTcmluaXZh
-cywKPiA+Cj4gPiBTcmluaXZhcyBQYW5kcnV2YWRhIDxzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4
-LmludGVsLmNvbT4gd3JpdGVzOgo+ID4KPiA+PiBPbiBUdWUsIDIwMTgtMDQtMTAgYXQgMTU6Mjgg
-LTA3MDAsIEZyYW5jaXNjbyBKZXJleiB3cm90ZToKPiA+Pj4gRnJhbmNpc2NvIEplcmV6IDxjdXJy
-b2plcmV6QHJpc2V1cC5uZXQ+IHdyaXRlczoKPiA+Pj4gCj4gPj4gWy4uLl0KPiA+Pgo+ID4+Cj4g
-Pj4+IEZvciB0aGUgY2FzZSBhbnlvbmUgaXMgd29uZGVyaW5nIHdoYXQncyBnb2luZyBvbiwgU3Jp
-bml2YXMgcG9pbnRlZCBtZQo+ID4+PiBhdAo+ID4+PiBhIGxhcmdlciBpZGxlIHBvd2VyIHVzYWdl
-IGluY3JlYXNlIG9mZi1saXN0LCB1bHRpbWF0ZWx5IGNhdXNlZCBieSB0aGUKPiA+Pj4gbG93LWxh
-dGVuY3kgaGV1cmlzdGljIGFzIGRpc2N1c3NlZCBpbiB0aGUgcGFyYWdyYXBoIGFib3ZlLsKgwqBJ
-IGhhdmUgYQo+ID4+PiB2Mgo+ID4+PiBvZiBQQVRDSCA2IHRoYXQgZ2l2ZXMgdGhlIGNvbnRyb2xs
-ZXIgYSB0aGlyZCByZXNwb25zZSBjdXJ2ZSByb3VnaGx5Cj4gPj4+IGludGVybWVkaWF0ZSBiZXR3
-ZWVuIHRoZSBsb3ctbGF0ZW5jeSBhbmQgbG93LXBvd2VyIHN0YXRlcyBvZiB0aGlzCj4gPj4+IHJl
-dmlzaW9uLCB3aGljaCBhdm9pZHMgdGhlIGVuZXJneSB1c2FnZSBpbmNyZWFzZSB3aGlsZSBDMCBy
-ZXNpZGVuY3kKPiA+Pj4gaXMKPiA+Pj4gbG93IChlLmcuIGR1cmluZyBpZGxlKSBleHBlY3RlZCBm
-b3IgdjEuwqDCoFRoZSBsb3ctbGF0ZW5jeSBiZWhhdmlvciBvZgo+ID4+PiB0aGlzIHJldmlzaW9u
-IGlzIHN0aWxsIGdvaW5nIHRvIGJlIGF2YWlsYWJsZSBiYXNlZCBvbiBhIGhldXJpc3RpYyAoaW4K
-PiA+Pj4gcGFydGljdWxhciB3aGVuIGEgcmVhbHRpbWUtcHJpb3JpdHkgdGFzayBpcyBzY2hlZHVs
-ZWQpLsKgwqBXZSdyZQo+ID4+PiBjYXJyeWluZwo+ID4+PiBvdXQgc29tZSBhZGRpdGlvbmFsIHRl
-c3RpbmcsIEknbGwgcG9zdCB0aGUgY29kZSBoZXJlIGV2ZW50dWFsbHkuCj4gPj4KPiA+PiBQbGVh
-c2UgdHJ5IHNjaGVkLXV0aWwgZ292ZXJub3IgYWxzby4gVGhlcmUgaXMgYSBmcmVxdWVuY3ktaW52
-YXJpYW50Cj4gPj4gcGF0Y2gsIHdoaWNoIEkgY2FuIHNlbmQgeW91IChUaGlzIGV2ZW50dWFsbHkg
-d2lsbCBiZSBwdXNoZWQgYnkgUGV0ZXIpLgo+ID4+IFdlIHdhbnQgdG8gYXZvaWQgY29tcGxleGl0
-eSB0byBpbnRlbC1wc3RhdGUgZm9yIG5vbiBIV1AgcG93ZXIgc2Vuc2l0aXZlCj4gPj4gcGxhdGZv
-cm1zIGFzIGZhciBhcyBwb3NzaWJsZS4KPiA+Pgo+ID4KPiA+IFVuZm9ydHVuYXRlbHkgdGhlIHNj
-aGVkdXRpbCBnb3Zlcm5vciAod2hldGhlciBmcmVxdWVuY3kgaW52YXJpYW50IG9yCj4gPiBub3Qp
-IGhhcyB0aGUgZXhhY3Qgc2FtZSBlbmVyZ3kgZWZmaWNpZW5jeSBpc3N1ZXMgYXMgdGhlIHByZXNl
-bnQKPiA+IGludGVsX3BzdGF0ZSBub24tSFdQIGdvdmVybm9yLiAgSXRzIHJlc3BvbnNlIGlzIHNl
-dmVyZWx5IHVuZGVyZGFtcGVkCj4gPiBsZWFkaW5nIHRvIGVuZXJneS1pbmVmZmljaWVudCBiZWhh
-dmlvciBmb3IgYW55IG9zY2lsbGF0aW5nIG5vbi1DUFUtYm91bmQKPiA+IHdvcmtsb2FkLiAgVG8g
-ZXhhY2VyYmF0ZSB0aGF0IHByb2JsZW0gdGhlIGZyZXF1ZW5jeSBpcyBtYXhlZCBvdXQgb24KPiA+
-IGZyZXF1ZW50IElPIHdhaXRpbmcganVzdCBsaWtlIHRoZSBjdXJyZW50IGludGVsX3BzdGF0ZSBj
-cHUtbG9hZAo+IAo+ICJqdXN0IGxpa2UiIGhlcmUgaXMgcG9zc2libHkgc29tZXdoYXQgdW5mYWly
-IHRvIHRoZSBzY2hlZHV0aWwgZ292ZXJub3IsCj4gYWRtaXR0ZWRseSBpdHMgcHJvZ3Jlc3NpdmUg
-SU9XQUlUIGJvb3N0aW5nIGJlaGF2aW9yIHNlZW1zIHNvbWV3aGF0IGxlc3MKPiB3YXN0ZWZ1bCB0
-aGFuIHRoZSBpbnRlbF9wc3RhdGUgbm9uLUhXUCBnb3Zlcm5vcidzIElPV0FJVCBib29zdGluZwo+
-IGJlaGF2aW9yLCBidXQgaXQncyBzdGlsbCBsYXJnZWx5IHVuaGVscGZ1bCBvbiBJTy1ib3VuZCBj
-b25kaXRpb25zLgoKU29ycnkgaWYgSSBqdW1wIGluIG91dCBvZiB0aGUgYmx1ZSwgYnV0IHdoYXQg
-eW91IGFyZSB0cnlpbmcgdG8gc29sdmUKbG9va3MgdmVyeSBzaW1pbGFyIHRvIHdoYXQgSVBBIFsx
-XSBpcyB0YXJnZXRpbmcgYXMgd2VsbC4gSSBtaWdodCBiZQp3cm9uZyAoSSdsbCB0cnkgdG8gc3Bl
-bmQgbW9yZSB0aW1lIHJldmlld2luZyB5b3VyIHNldCksIGJ1dCBteSBmaXJzdAppbXByZXNzaW9u
-IGlzIHRoYXQgd2Ugc2hvdWxkIHRyeSB0byBzb2x2ZSBzaW1pbGFyIHByb2JsZW1zIHdpdGggYSBt
-b3JlCmdlbmVyYWwgYXBwcm9hY2ggdGhhdCBjb3VsZCBiZW5lZml0IGRpZmZlcmVudCBzeXMvYXJj
-aHMuCgpJJ20gQ2MtaW5nIHNvbWUgQXJtIGZvbGtzLi4uCgpCZXN0LAoKLSBKdXJpCgpbMV0gaHR0
-cHM6Ly9kZXZlbG9wZXIuYXJtLmNvbS9vcGVuLXNvdXJjZS9pbnRlbGxpZ2VudC1wb3dlci1hbGxv
-Y2F0aW9uCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCklu
-dGVsLWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRw
-czovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+On Tue, Apr 10, 2018 at 09:30:03AM +0100, Michel Pollet wrote:
+> The Renesas RZ/N1 Family (Part #R9A06G0xx) has a multi-function
+> system controller. This documents the node used to encapsulate
+> it's sub drivers.
+> 
+> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+> ---
+>  .../bindings/mfd/renesas,rzn1-sysctrl.txt          | 23 ++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt b/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+> new file mode 100644
+> index 0000000..9897f8f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+> @@ -0,0 +1,23 @@
+> +DT bindings for the Renesas RZ/N1 System Controller
+> +
+> +== System Controller Node ==
+> +
+> +The system controller node currently only hosts a single sub-node to handle
+> +the rebooting of the CPU. Eventually it will host the clock driver, SMP
+> +start handler, watchdog etc.
+
+Please submit a complete binding for the h/w block.
+
+Again, if the only reason you have sub nodes is to define compatible 
+strings and in turn enumerate drivers, then you don't need the nodes in 
+DT. DT is not the only way to instantiate drivers.
+
+Rob
