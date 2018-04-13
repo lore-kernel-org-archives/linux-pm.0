@@ -1,84 +1,63 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 12:15:10 +0100
-Message-ID: <20180413111510.GS14248@e110439-lin>
+Date: Fri, 13 Apr 2018 13:15:31 +0200
+Message-ID: <20180413111531.GE4082@hirez.programming.kicks-ass.net>
 References: <20180409165615.2326-1-patrick.bellasi@arm.com>
  <20180409165615.2326-2-patrick.bellasi@arm.com>
- <20180413084302.GR4043@hirez.programming.kicks-ass.net>
+ <20180413082648.GP4043@hirez.programming.kicks-ass.net>
+ <20180413102202.GN4129@hirez.programming.kicks-ass.net>
+ <20180413110426.GQ14248@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180413084302.GR4043@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180413110426.GQ14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Apr 10:43, Peter Zijlstra wrote:
-> On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> > +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
-> > +{
-> > +	int cpu = cpu_of(rq);
-> > +	int clamp_id;
-> > +
-> > +	/* The idle task does not affect CPU's clamps */
-> > +	if (unlikely(p->sched_class == &idle_sched_class))
-> > +		return;
-> > +	/* DEADLINE tasks do not affect CPU's clamps */
-> > +	if (unlikely(p->sched_class == &dl_sched_class))
-> > +		return;
-> > +
-> > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> > +		if (uclamp_task_affects(p, clamp_id))
-> > +			uclamp_cpu_put(p, cpu, clamp_id);
-> > +		else
-> > +			uclamp_cpu_get(p, cpu, clamp_id);
-> > +	}
-> > +}
+On Fri, Apr 13, 2018 at 12:04:26PM +0100, Patrick Bellasi wrote:
+> On 13-Apr 12:22, Peter Zijlstra wrote:
+> > On Fri, Apr 13, 2018 at 10:26:48AM +0200, Peter Zijlstra wrote:
+> > > On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
+> > > > +static inline void uclamp_cpu_get(struct task_struct *p, int cpu, int clamp_id)
+> > > > +{
+> > > > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+> > > 
+> > > > +static inline void uclamp_cpu_put(struct task_struct *p, int cpu, int clamp_id)
+> > > > +{
+> > > > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+> > > 
+> > > That all seems daft, since you already have rq at the call site.
+> > > 
+> > > > +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
+> > > > +{
+> > > > +	int cpu = cpu_of(rq);
+> > > > +	int clamp_id;
+> > > > +
+> > > > +	/* The idle task does not affect CPU's clamps */
+> > > > +	if (unlikely(p->sched_class == &idle_sched_class))
+> > > > +		return;
+> > > > +	/* DEADLINE tasks do not affect CPU's clamps */
+> > > > +	if (unlikely(p->sched_class == &dl_sched_class))
+> > > > +		return;
+> > > 
+> > > This is wrong; it misses the stop_sched_class.
+> > > 
+> > > And since you're looking at sched_class anyway, maybe put a marker in
+> > > there:
+> > > 
+> > > 	if (!p->sched_class->has_clamping)
+> > > 		return;
+> > 
+> > Alternatively, we could simply add uclamp_task_{en,de}queue() into
+> > {en,de}queue_task_{fair,rt}().
 > 
-> Is that uclamp_task_affects() thing there to fix up the fact you failed
-> to propagate the calling context (enqueue/dequeue) ?
+> I like better your first proposal, I think it makes sense to factor
+> out in core code used by both RT and FAIR the same way.
+> 
+> Do you have a strong preference?
 
-Not really, it's intended by design: we back annotate the clamp_group
-a task has been refcounted in.
-
-The uclamp_task_affects() tells if we are refcounted now and then we
-know from the back-annotation from which refcounter we need to remove
-the task.
-
-I found this solution much less racy and effective in avoiding to
-screw up the refcounter whenever we look at a task at either
-dequeue/migration time and these operations can overlaps with the
-slow-path. Meaning, when we change the task specific clamp_group
-either via syscall or cgroups attributes.
-
-IOW, the back annotation allows to decouple refcounting from
-clamp_group configuration in a lockless way.
-
-> I find this code _really_ hard to read...
-
-Hope the explanation above clarifies the logic... do you have
-alternative proposals?
-
-> > @@ -743,6 +929,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
-> >  	if (!(flags & ENQUEUE_RESTORE))
-> >  		sched_info_queued(rq, p);
-> >  
-> > +	uclamp_task_update(rq, p);
-> >  	p->sched_class->enqueue_task(rq, p, flags);
-> >  }
-> >  
-> > @@ -754,6 +941,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
-> >  	if (!(flags & DEQUEUE_SAVE))
-> >  		sched_info_dequeued(rq, p);
-> >  
-> > +	uclamp_task_update(rq, p);
-> >  	p->sched_class->dequeue_task(rq, p, flags);
-> >  }
-> >  
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+The second is probably faster as it avoids the load+branch; then again,
+without LTO you'll get an actual call in return. Dunno...
