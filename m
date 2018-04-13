@@ -1,77 +1,80 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
-Date: Fri, 13 Apr 2018 13:21:45 +0200
-Message-ID: <5312146.KITRp36PIx@amdc3058>
-References: <1523436077.16235.5.camel@intel.com>
-        <10298074.ogKH1ypqfx@amdc3058> <2093381.eDLEWQi9DB@amdc3058>
-        <CGME20180413112148epcas1p3f657cb50af4151d41f8c404e6b0d5fab@epcas1p3.samsung.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Fri, 13 Apr 2018 12:23:15 +0100
+Message-ID: <3f3b3b7a-3b74-aee2-2fac-f2759babe3f0@arm.com>
+References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
+ <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <2093381.eDLEWQi9DB@amdc3058>
+In-Reply-To: <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: viresh.kumar@linaro.org, edubezval@gmail.com, Sudeep Holla <sudeep.holla@arm.com>, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 13, 2018 01:12:39 PM Bartlomiej Zolnierkiewicz wrote:
-> On Friday, April 13, 2018 12:41:18 PM Bartlomiej Zolnierkiewicz wrote:
-> > On Friday, April 13, 2018 12:30:04 PM Daniel Lezcano wrote:
-> > > On 13/04/2018 11:28, Bartlomiej Zolnierkiewicz wrote:
-> > > 
-> > > [ ... ]
-> > > 
-> > > >>> It is okay to return 0 because this code-path (the default one) will be
-> > > >>> never hit by the driver (probe makes sure of it) - the default case is
-> > > >>> here is just to silence compilation errors..
-> > > >>
-> > > >> The init function is making sure cal_type is one or another. Can you fix
-> > > >> it correctly by replacing the 'switch' by a 'if' instead of adding dead
-> > > >> branches to please gcc?
-> > > >>
-> > > >> if (data->cal_type == TYPE_TWO_POINT_TRIMMING) {
-> > > >> 	return ...;
-> > > >> }
-> > > >>
-> > > >> return ...;
-> > > > 
-> > > > I'm not the one that added this switch statement (it has been there since
-> > > > 2011) and I would be happy to remove it. 
-> > > 
-> > > Actually the switch statement was fine until the cleanup.
-> > 
-> > I don't see how it was fine before as the driver has never used the default
-> > case (always used TYPE_ONE_POINT_TRIMMING or TYPE_TWO_POINT_TRIMMING).
-> > 
-> > Could you please explain this more?
-> > 
-> > > > However could we please defer
-> > > > this to v4.17 and merge the current set of Exynos thermal fixes/cleanups
-> > > > (they simplify the driver a lot and make ground for future changes)?
-> > > 
-> > > Regarding the latest comment, this can be fixed properly by 'return' (or
-> > > whatever you want which does not get around of gcc warnings).
-> > 
-> > Do you mean that you want the patch with switch statement removal?
-> > 
-> > Is incremental fix OK or do you want something else?
-> 
-> Danial has already posted it, I hope the fix is fine with you.
+Hi Daniel,
 
-should have been:
+On 05/04/18 17:16, Daniel Lezcano wrote:
 
-Eduardo: Daniel has already posted it, I hope the fix is fine with you.
+[...]
 
-(& sorry for the typo)
+> +/**
+> + * cpuidle_cooling_register - Idle cooling device initialization function
+> + *
+> + * This function is in charge of creating a cooling device per cluster
+> + * and register it to thermal framework. For this we rely on the
+> + * topology as there is nothing yet describing better the idle state
+> + * power domains.
+> + *
+> + * We create a cpuidle cooling device per cluster. For this reason we
+> + * must, for each cluster, allocate and initialize the cooling device
+> + * and for each cpu belonging to this cluster, do the initialization
+> + * on a cpu basis.
+> + *
+> + * This approach for creating the cooling device is needed as we don't
+> + * have the guarantee the CPU numbering is sequential.
+> + *
+> + * Unfortunately, there is no API to browse from top to bottom the
+> + * topology, cluster->cpu, only the usual for_each_possible_cpu loop.
+> + * In order to solve that, we use a cpumask to flag the cluster_id we
+> + * already processed. The cpumask will always have enough room for all
+> + * the cluster because it is based on NR_CPUS and it is not possible
+> + * to have more clusters than cpus.
+> + *
+> + */
+> +void __init cpuidle_cooling_register(void)
+> +{
+> +	struct cpuidle_cooling_device *idle_cdev = NULL;
+> +	struct thermal_cooling_device *cdev;
+> +	struct device_node *np;
+> +	cpumask_var_t cpumask;
+> +	char dev_name[THERMAL_NAME_LENGTH];
+> +	int ret = -ENOMEM, cpu;
+> +	int cluster_id;
+> +
+> +	if (!zalloc_cpumask_var(&cpumask, GFP_KERNEL))
+> +		return;
+> +
+> +	for_each_possible_cpu(cpu) {
+> +
+> +		cluster_id = topology_physical_package_id(cpu);
+> +		if (cpumask_test_cpu(cluster_id, cpumask))
+> +			continue;
 
-> Also sorry for the delay with handling issue - I was on holiday last two
-> days and for some reason I was under (wrong) impression that the previous
-> fix has been in thermal tree (so I was quite surprised today reading this
-> mail thread).
+Sorry for chiming in randomly, I haven't read the patches in detail.
+But it was brought to my notice that topology_physical_package_id is
+being used for cluster ID here. It's completely wrong and will
+changesoon with ACPI topology related changes Jeremy is working on.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+You will get the physical socket number(which is mostly 0 on single SoC
+system). Makes sure that this won't break with that change.
+
+Please note with cluster id not defined architecturally, relying on that
+is simply problematic.
+-- 
+Regards,
+Sudeep
