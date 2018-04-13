@@ -1,80 +1,30 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
- idle cooling driver
-Date: Fri, 13 Apr 2018 12:23:15 +0100
-Message-ID: <3f3b3b7a-3b74-aee2-2fac-f2759babe3f0@arm.com>
-References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
- <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
+Date: Fri, 13 Apr 2018 13:29:26 +0200
+Message-ID: <20180413112926.GQ4064@hirez.programming.kicks-ass.net>
+References: <20180409165615.2326-1-patrick.bellasi@arm.com>
+ <20180409165615.2326-2-patrick.bellasi@arm.com>
+ <20180413084019.GQ4043@hirez.programming.kicks-ass.net>
+ <20180413111753.GT14248@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180413111753.GT14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: viresh.kumar@linaro.org, edubezval@gmail.com, Sudeep Holla <sudeep.holla@arm.com>, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
+On Fri, Apr 13, 2018 at 12:17:53PM +0100, Patrick Bellasi wrote:
+> On 13-Apr 10:40, Peter Zijlstra wrote:
+> > On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
+> > > +static inline void init_uclamp(void)
+> > 
+> > WTH is that inline?
+> 
+> You mean I can avoid the attribute?
+> ... or that I should do it in another way?
 
-On 05/04/18 17:16, Daniel Lezcano wrote:
-
-[...]
-
-> +/**
-> + * cpuidle_cooling_register - Idle cooling device initialization function
-> + *
-> + * This function is in charge of creating a cooling device per cluster
-> + * and register it to thermal framework. For this we rely on the
-> + * topology as there is nothing yet describing better the idle state
-> + * power domains.
-> + *
-> + * We create a cpuidle cooling device per cluster. For this reason we
-> + * must, for each cluster, allocate and initialize the cooling device
-> + * and for each cpu belonging to this cluster, do the initialization
-> + * on a cpu basis.
-> + *
-> + * This approach for creating the cooling device is needed as we don't
-> + * have the guarantee the CPU numbering is sequential.
-> + *
-> + * Unfortunately, there is no API to browse from top to bottom the
-> + * topology, cluster->cpu, only the usual for_each_possible_cpu loop.
-> + * In order to solve that, we use a cpumask to flag the cluster_id we
-> + * already processed. The cpumask will always have enough room for all
-> + * the cluster because it is based on NR_CPUS and it is not possible
-> + * to have more clusters than cpus.
-> + *
-> + */
-> +void __init cpuidle_cooling_register(void)
-> +{
-> +	struct cpuidle_cooling_device *idle_cdev = NULL;
-> +	struct thermal_cooling_device *cdev;
-> +	struct device_node *np;
-> +	cpumask_var_t cpumask;
-> +	char dev_name[THERMAL_NAME_LENGTH];
-> +	int ret = -ENOMEM, cpu;
-> +	int cluster_id;
-> +
-> +	if (!zalloc_cpumask_var(&cpumask, GFP_KERNEL))
-> +		return;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +
-> +		cluster_id = topology_physical_package_id(cpu);
-> +		if (cpumask_test_cpu(cluster_id, cpumask))
-> +			continue;
-
-Sorry for chiming in randomly, I haven't read the patches in detail.
-But it was brought to my notice that topology_physical_package_id is
-being used for cluster ID here. It's completely wrong and will
-changesoon with ACPI topology related changes Jeremy is working on.
-
-You will get the physical socket number(which is mostly 0 on single SoC
-system). Makes sure that this won't break with that change.
-
-Please note with cluster id not defined architecturally, relying on that
-is simply problematic.
--- 
-Regards,
-Sudeep
+yea, its init code, no need to go all inline with that (gcc will likely
+inline it anyway because static-with-single-callsite).
