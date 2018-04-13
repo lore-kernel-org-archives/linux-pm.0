@@ -1,7 +1,7 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 10:40:19 +0200
-Message-ID: <20180413084019.GQ4043@hirez.programming.kicks-ass.net>
+Date: Fri, 13 Apr 2018 10:43:02 +0200
+Message-ID: <20180413084302.GR4043@hirez.programming.kicks-ass.net>
 References: <20180409165615.2326-1-patrick.bellasi@arm.com>
  <20180409165615.2326-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
@@ -15,26 +15,44 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@r
 List-Id: linux-pm@vger.kernel.org
 
 On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> +static inline void init_uclamp(void)
-
-WTH is that inline?
-
+> +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
 > +{
-> +	struct uclamp_cpu *uc_cpu;
+> +	int cpu = cpu_of(rq);
 > +	int clamp_id;
-> +	int cpu;
 > +
-> +	mutex_init(&uclamp_mutex);
+> +	/* The idle task does not affect CPU's clamps */
+> +	if (unlikely(p->sched_class == &idle_sched_class))
+> +		return;
+> +	/* DEADLINE tasks do not affect CPU's clamps */
+> +	if (unlikely(p->sched_class == &dl_sched_class))
+> +		return;
 > +
 > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> +		/* Init CPU's clamp groups */
-> +		for_each_possible_cpu(cpu) {
-> +			uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
-> +			memset(uc_cpu, UCLAMP_NONE, sizeof(struct uclamp_cpu));
-> +		}
+> +		if (uclamp_task_affects(p, clamp_id))
+> +			uclamp_cpu_put(p, cpu, clamp_id);
+> +		else
+> +			uclamp_cpu_get(p, cpu, clamp_id);
 > +	}
-
-Those loops are the wrong way around, this shreds your cache. This is a
-slow path so it doesn't much matter, but it is sloppy.
-
 > +}
+
+Is that uclamp_task_affects() thing there to fix up the fact you failed
+to propagate the calling context (enqueue/dequeue) ?
+
+I find this code _really_ hard to read...
+
+> @@ -743,6 +929,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
+>  	if (!(flags & ENQUEUE_RESTORE))
+>  		sched_info_queued(rq, p);
+>  
+> +	uclamp_task_update(rq, p);
+>  	p->sched_class->enqueue_task(rq, p, flags);
+>  }
+>  
+> @@ -754,6 +941,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
+>  	if (!(flags & DEQUEUE_SAVE))
+>  		sched_info_dequeued(rq, p);
+>  
+> +	uclamp_task_update(rq, p);
+>  	p->sched_class->dequeue_task(rq, p, flags);
+>  }
+>  
