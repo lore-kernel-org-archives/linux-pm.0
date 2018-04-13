@@ -1,93 +1,63 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 12:52:29 +0100
-Message-ID: <20180413115229.GW14248@e110439-lin>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-2-patrick.bellasi@arm.com>
- <20180413084302.GR4043@hirez.programming.kicks-ass.net>
- <20180413111510.GS14248@e110439-lin>
- <20180413113650.GR4064@hirez.programming.kicks-ass.net>
- <20180413114745.GV14248@e110439-lin>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] vfio: platform: Fix using devices in PM Domains
+Date: Fri, 13 Apr 2018 14:00:04 +0200
+Message-ID: <CAMuHMdVqX2efW=heQeRUG=iXWaROAtkNwy6VAOBikV+e+fcWLw@mail.gmail.com>
+References: <1523438648-17672-1-git-send-email-geert+renesas@glider.be>
+ <0cc6cead-cd75-0a18-7a53-5ce16b03e823@redhat.com> <CAMuHMdUHEkamgGORLx37QOns22LTrx_TGYHmxYWZ=TNyhABh=A@mail.gmail.com>
+ <4eedb2df-4bf8-814e-7e47-60faa646f4bf@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180413114745.GV14248@e110439-lin>
+In-Reply-To: <4eedb2df-4bf8-814e-7e47-60faa646f4bf@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Auger Eric <eric.auger@redhat.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Baptiste Reynal <b.reynal@virtualopensystems.com>, Alex Williamson <alex.williamson@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, KVM list <kvm@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Apr 12:47, Patrick Bellasi wrote:
-> On 13-Apr 13:36, Peter Zijlstra wrote:
-> > On Fri, Apr 13, 2018 at 12:15:10PM +0100, Patrick Bellasi wrote:
-> > > On 13-Apr 10:43, Peter Zijlstra wrote:
-> > > > On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> > > > > +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
-> > > > > +{
-> > > > > +	int cpu = cpu_of(rq);
-> > > > > +	int clamp_id;
-> > > > > +
-> > > > > +	/* The idle task does not affect CPU's clamps */
-> > > > > +	if (unlikely(p->sched_class == &idle_sched_class))
-> > > > > +		return;
-> > > > > +	/* DEADLINE tasks do not affect CPU's clamps */
-> > > > > +	if (unlikely(p->sched_class == &dl_sched_class))
-> > > > > +		return;
-> > > > > +
-> > > > > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> > > > > +		if (uclamp_task_affects(p, clamp_id))
-> > > > > +			uclamp_cpu_put(p, cpu, clamp_id);
-> > > > > +		else
-> > > > > +			uclamp_cpu_get(p, cpu, clamp_id);
-> > > > > +	}
-> > > > > +}
-> > > > 
-> > > > Is that uclamp_task_affects() thing there to fix up the fact you failed
-> > > > to propagate the calling context (enqueue/dequeue) ?
-> > > 
-> > > Not really, it's intended by design: we back annotate the clamp_group
-> > > a task has been refcounted in.
-> > > 
-> > > The uclamp_task_affects() tells if we are refcounted now and then we
-> > > know from the back-annotation from which refcounter we need to remove
-> > > the task.
-> > > 
-> > > I found this solution much less racy and effective in avoiding to
-> > > screw up the refcounter whenever we look at a task at either
-> > > dequeue/migration time and these operations can overlaps with the
-> > > slow-path. Meaning, when we change the task specific clamp_group
-> > > either via syscall or cgroups attributes.
-> > > 
-> > > IOW, the back annotation allows to decouple refcounting from
-> > > clamp_group configuration in a lockless way.
-> > 
-> > But it adds extra state and logic, to a fastpath, for no reason.
-> > 
-> > I suspect you messed up the cgroup side; because the syscall should
-> > already have done task_rq_lock() and hold both p->pi_lock and rq->lock
-> > and have dequeued the task when changing the attribute.
-> 
-> Yes, actually I'm using task_rq_lock() from the cgroup callback to
-> update each task already queued. And I do the same from the
-> sched_setattr syscall...
-> 
-> > It is actually really hard to make the syscall do it wrong.
-> 
-> ... thus, I'll look better into this.
+Hi Eric,
+
+On Fri, Apr 13, 2018 at 11:44 AM, Auger Eric <eric.auger@redhat.com> wrote:
+> On 13/04/18 11:19, Geert Uytterhoeven wrote:
+>> On Fri, Apr 13, 2018 at 11:14 AM, Auger Eric <eric.auger@redhat.com> wrote:
+>>> On 11/04/18 11:24, Geert Uytterhoeven wrote:
+>>>> If a device is part of a PM Domain (e.g. power and/or clock domain), its
+>>>> power state is managed using Runtime PM.  Without Runtime PM, the device
+>>>> may not be powered up, causing subtle failures, crashes, or system
+>>>> lock-ups when the device is accessed by the guest.
+>>> the device may not be powered up/clcoked or power/clock may be switched
+>>> off while the guest uses it.
+>>>>
+>>>> Fix this by adding Runtime PM support, powering the device when the VFIO
+>>>> device is opened by the guest.
+>>>>
+>>>> Note that while more fine-grained power management could be implemented
+>>>> on the guest side, if exported, this would be inherently unsafe, as
+>>>> abusing it may kill the whole system.
+>>>
+>>> Please can you elaborate on this remark please?
+>>
+>> If power-management of the device would be delegated to the guest, and the
+>> guest forgets to enable device power before accessing the device's registers,
+>> this could lock up the system, and thus disturb both the host and other guests.
 >
-> Not sure now if there was some other corner-case.
+> Wouldn't you need to assign another device or use para-virt to allow the
+> guest to perform this power management control? I think you can remove
+> this paragraph from the commit message.
 
-Actually, I've just remembered another use-case for that
-back-annotation. That's used when we have cgroups and per-task API
-asserting two different clamp values.
+Yes, that needs additional exporting of power-management (cfr. the "if
+exported").
+I just wanted to mention the caveat, as eventually, someone is going to
+suggest doing this ;-)
 
-For example, a task in a TG with max_clamp=50 is further clamped with a
-task specific max_clamp=10. The back annotation tracks the group_id in
-which we have been refcount right now, which is the task specific group
-in the previous example.
+But if you think the comment should be removed, I can of course do so.
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-#include <best/regards.h>
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Patrick Bellasi
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
