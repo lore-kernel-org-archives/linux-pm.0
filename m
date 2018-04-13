@@ -1,144 +1,72 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] thermal/drivers/exynos_tmu: Fix warnings in
- temp_to_code / code_to_temp
-Date: Fri, 13 Apr 2018 13:08:35 +0200
-Message-ID: <11044079.DdDvlFD91s@amdc3058>
-References: <10298074.ogKH1ypqfx@amdc3058>
-        <CGME20180413110032epcas4p3e0ef781eecb771b1294b7992d2ee6e6d@epcas4p3.samsung.com>
-        <1523617209-1730-1-git-send-email-daniel.lezcano@linaro.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
+Date: Fri, 13 Apr 2018 12:08:48 +0100
+Message-ID: <20180413110848.GR14248@e110439-lin>
+References: <20180409165615.2326-1-patrick.bellasi@arm.com>
+ <20180409165615.2326-2-patrick.bellasi@arm.com>
+ <20180413094615.GT4043@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1523617209-1730-1-git-send-email-daniel.lezcano@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20180413094615.GT4043@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, rui.zhang@intel.com, philip.li@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, "open list:SAMSUNG THERMAL DRIVER" <linux-samsung-soc@vger.kernel.org>, "moderated list:ARM/SAMSUNG EXYNOS ARM ARCHITECTURES" <linux-arm-kernel@lists.infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 13, 2018 01:00:09 PM Daniel Lezcano wrote:
-> The latest driver cleanup introduced a compilation warning
->=20
->  drivers/thermal/samsung/exynos_tmu.c: In function =E2=80=98exynos_ge=
-t_temp=E2=80=99:
->  drivers/thermal/samsung/exynos_tmu.c:931:37: warning: =E2=80=98temp=E2=
-=80=99 may be used uninitialized in this function [-Wmaybe-uninitialize=
-d]
->    *temp =3D code_to_temp(data, value) * MCELSIUS;
->                                         ^
->=20
->  drivers/thermal/samsung/exynos_tmu.c: In function =E2=80=98temp_to_c=
-ode=E2=80=99
->  drivers/thermal/samsung/exynos_tmu.c:304:9: warning: =E2=80=98temp_c=
-ode=E2=80=99 may be used uninitialized in this function [-Wmaybe-uninit=
-ialized]
-> =09=09=09=09=09  return temp_code;
-> =09=09=09=09=09           ^~~~~~~~~
->=20
-> The compiler gives a warning because semantically speaking the
-> function has no default value. However the code path, were the
-> variable is never initialized is a dead branch because the switch
-> statement always choose one of the two cases as the data->cal_type is=
+On 13-Apr 11:46, Peter Zijlstra wrote:
+> On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
+> > +static inline void uclamp_cpu_get(struct task_struct *p, int cpu, int clamp_id)
+> > +{
+> > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+> > +	int clamp_value;
+> > +	int group_id;
+> > +
+> > +	/* Get task's specific clamp value */
+> > +	clamp_value = p->uclamp[clamp_id].value;
+> > +	group_id = p->uclamp[clamp_id].group_id;
+> > +
+> > +	/* No task specific clamp values: nothing to do */
+> > +	if (group_id == UCLAMP_NONE)
+> > +		return;
+> > +
+> > +	/* Increment the current group_id */
+> 
+> That I think qualifies being called a bad comment.
 
-> initialized in the init function to one of both values.
->=20
-> This is unclear as it adds a dependency on the initialization functio=
-n
-> and it is prone to error. Make things clearer by converting the
-> functions with if ... return statements, thus showing we are expectin=
-g
-> the values to be correctly filled before calling this function.
->=20
-> This change fixes the couple of function warnings.
->=20
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+my bad :/
 
-Thanks Daniel, this is much better fix.
+> > +	uc_cpu->group[group_id].tasks += 1;
+> > +
+> > +	/* Mark task as enqueued for this clamp index */
+> > +	p->uclamp_group_id[clamp_id] = group_id;
+> 
+> Why exactly do we need this? we got group_id from @p in the first place.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+The idea is to back-annotate on the task the group in which it has
+been refcounted. That allows a much simpler and less racy refcount
+decrements at dequeue/migration time.
 
-> ---
->  drivers/thermal/samsung/exynos_tmu.c | 46 ++++++++++----------------=
-----------
->  1 file changed, 12 insertions(+), 34 deletions(-)
->=20
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/s=
-amsung/exynos_tmu.c
-> index 2ec8548..197f267 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -284,24 +284,13 @@ static void exynos_report_trigger(struct exynos=
-_tmu_data *p)
->   */
->  static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
->  {
-> -=09int temp_code;
-> -
-> -=09switch (data->cal_type) {
-> -=09case TYPE_TWO_POINT_TRIMMING:
-> -=09=09temp_code =3D (temp - EXYNOS_FIRST_POINT_TRIM) *
-> -=09=09=09(data->temp_error2 - data->temp_error1) /
-> -=09=09=09(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) +
-> -=09=09=09data->temp_error1;
-> -=09=09break;
-> -=09case TYPE_ONE_POINT_TRIMMING:
-> -=09=09temp_code =3D temp + data->temp_error1 - EXYNOS_FIRST_POINT_TR=
-IM;
-> -=09=09break;
-> -=09default:
-> -=09=09WARN_ON(1);
-> -=09=09break;
-> -=09}
-> +=09if (data->cal_type =3D=3D TYPE_ONE_POINT_TRIMMING)
-> +=09=09return temp + data->temp_error1 - EXYNOS_FIRST_POINT_TRIM;
-> =20
-> -=09return temp_code;
-> +=09return (temp - EXYNOS_FIRST_POINT_TRIM) *
-> +=09=09(data->temp_error2 - data->temp_error1) /
-> +=09=09(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) +
-> +=09=09data->temp_error1;
->  }
-> =20
->  /*
-> @@ -310,24 +299,13 @@ static int temp_to_code(struct exynos_tmu_data =
-*data, u8 temp)
->   */
->  static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)=
+That's also why we have a single call-back, uclamp_task_update(),
+for both enqueue/dequeue. Depending on the check performed by
+uclamp_task_affects() we know if we have to get or put the refcounter.
 
->  {
-> -=09int temp;
-> -
-> -=09switch (data->cal_type) {
-> -=09case TYPE_TWO_POINT_TRIMMING:
-> -=09=09temp =3D (temp_code - data->temp_error1) *
-> -=09=09=09(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) /
-> -=09=09=09(data->temp_error2 - data->temp_error1) +
-> -=09=09=09EXYNOS_FIRST_POINT_TRIM;
-> -=09=09break;
-> -=09case TYPE_ONE_POINT_TRIMMING:
-> -=09=09temp =3D temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TR=
-IM;
-> -=09=09break;
-> -=09default:
-> -=09=09WARN_ON(1);
-> -=09=09break;
-> -=09}
-> +=09if (data->cal_type =3D=3D TYPE_ONE_POINT_TRIMMING)
-> +=09=09return temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TRIM=
-;
-> =20
-> -=09return temp;
-> +=09return (temp_code - data->temp_error1) *
-> +=09=09(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) /
-> +=09=09(data->temp_error2 - data->temp_error1) +
-> +=09=09EXYNOS_FIRST_POINT_TRIM;
->  }
-> =20
->  static void sanitize_temp_error(struct exynos_tmu_data *data, u32 tr=
-im_info)
+> I suspect this is because when we update p->uclamp[], we don't update
+> this active value (when needed), is that worth it?
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+What you mean by "we don't update this active value"?
+
+> > +	/*
+> > +	 * If this is the new max utilization clamp value, then we can update
+> > +	 * straight away the CPU clamp value. Otherwise, the current CPU clamp
+> > +	 * value is still valid and we are done.
+> > +	 */
+> > +	if (uc_cpu->value < clamp_value)
+> > +		uc_cpu->value = clamp_value;
+> > +}
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
