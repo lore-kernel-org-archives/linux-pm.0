@@ -1,79 +1,55 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
-Date: Fri, 13 Apr 2018 12:27:17 +0200
-Message-ID: <3605298.EUomHGJ8vH@amdc3058>
-References: <1523436077.16235.5.camel@intel.com>
-        <CGME20180413100808epcas3p4b943a763c77624c88f73492ff11e1b0d@epcas3p4.samsung.com>
-        <20180413100801.GA21913@localhost.localdomain>
+Date: Fri, 13 Apr 2018 12:30:04 +0200
+Message-ID: <3b41052a-233d-9992-223a-d16f48295905@linaro.org>
+References: <1523436077.16235.5.camel@intel.com> <3546651.LUmDXQgY88@amdc3058>
+ <16cbc915-ad89-7bab-c644-8086cfef082f@linaro.org>
+ <CGME20180413092901epcas2p43245301152a01c782620f0ab95b2a692@epcas2p4.samsung.com>
+ <4212243.RcCUWlsaar@amdc3058>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180413100801.GA21913@localhost.localdomain>
+In-Reply-To: <4212243.RcCUWlsaar@amdc3058>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 13, 2018 03:08:03 AM Eduardo Valentin wrote:
-> On Fri, Apr 13, 2018 at 01:39:05PM +0800, Zhang Rui wrote:
-> > Hi, Eduardo,
-> >=20
-> > On =E5=9B=9B, 2018-04-12 at 21:08 -0700, Eduardo Valentin wrote:
-> > > Hello,
-> > >=20
-> > > On Thu, Apr 12, 2018 at 09:55:19AM -0700, Linus Torvalds wrote:
-> > > >=20
-> > > > On Wed, Apr 11, 2018 at 10:08 PM, Zhang Rui <rui.zhang@intel.co=
-m>
-> > > > wrote:
-> > > > >=20
-> > > > >=20
-> > > > > could you please illustrate me what the kconfig & warning is?=
+On 13/04/2018 11:28, Bartlomiej Zolnierkiewicz wrote:
 
-> > > > Just "make allmodconfig" and the warning is about a uninitializ=
-ed
-> > > > variable.
-> > > >=20
-> > > > Line 304 in drivers/thermal/samsung/exynos_tmu.c if my shell
-> > > > history
-> > > > is to be believed.
-> > > >=20
-> > > >                 Linus
-> > > Yeah, this has also passed my local compilation error. Somehow my=
+[ ... ]
 
-> > > gcc4.9
-> > > is not catching it. Using an older gcc (gcc4.6) does catch it.
-> > >=20
-> > > Anyways, given that the conversion functions are written to cover=
+>>> It is okay to return 0 because this code-path (the default one) will be
+>>> never hit by the driver (probe makes sure of it) - the default case is
+>>> here is just to silence compilation errors..
+>>
+>> The init function is making sure cal_type is one or another. Can you fix
+>> it correctly by replacing the 'switch' by a 'if' instead of adding dead
+>> branches to please gcc?
+>>
+>> if (data->cal_type == TYPE_TWO_POINT_TRIMMING) {
+>> 	return ...;
+>> }
+>>
+>> return ...;
+> 
+> I'm not the one that added this switch statement (it has been there since
+> 2011) and I would be happy to remove it. 
 
-> > > for unexpected cal_type, the right way of fixing this is to rewri=
-te
-> > > the conversion functions to allow for returning error codes and
-> > > adjusting the callers as expected.
-> > >=20
-> > > Rui, bzolnier, please consider the following fix:
-> > >=20
-> > as it is late in this merge window, I'd prefer to
-> > 1. drop all the thermal-soc material in the first pull request whic=
-h I
-> > will send out soon.
-> > 2. you can prepare another pull request containing the thermal-soc
-> > materials except the exynos fixes
-> > 3. exynos fixes with the problem solved can be queued for -rc2 or
-> > later.
-> >=20
->=20
-> Agreed
+Actually the switch statement was fine until the cleanup.
 
-What should I do now to help resolve the issue?
+> However could we please defer
+> this to v4.17 and merge the current set of Exynos thermal fixes/cleanups
+> (they simplify the driver a lot and make ground for future changes)?
 
-[ There has been no action from you on Arnd's fix for over two weeks an=
-d
-  also you have not commented on it now.. ]
+Regarding the latest comment, this can be fixed properly by 'return' (or
+whatever you want which does not get around of gcc warnings).
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
