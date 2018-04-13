@@ -1,114 +1,71 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] thermal/drivers/exynos_tmu: Fix warnings in temp_to_code / code_to_temp
-Date: Fri, 13 Apr 2018 13:00:09 +0200
-Message-ID: <1523617209-1730-1-git-send-email-daniel.lezcano@linaro.org>
-References: <10298074.ogKH1ypqfx@amdc3058>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
+Date: Fri, 13 Apr 2018 12:04:26 +0100
+Message-ID: <20180413110426.GQ14248@e110439-lin>
+References: <20180409165615.2326-1-patrick.bellasi@arm.com>
+ <20180409165615.2326-2-patrick.bellasi@arm.com>
+ <20180413082648.GP4043@hirez.programming.kicks-ass.net>
+ <20180413102202.GN4129@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <10298074.ogKH1ypqfx@amdc3058>
+Content-Disposition: inline
+In-Reply-To: <20180413102202.GN4129@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: b.zolnierkie@samsung.com, edubezval@gmail.com, rui.zhang@intel.com
-Cc: philip.li@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, "open list:SAMSUNG THERMAL DRIVER" <linux-samsung-soc@vger.kernel.org>, "moderated list:ARM/SAMSUNG EXYNOS
-        ARM ARCHITECTURES" <linux-arm-kernel@lists.infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-The latest driver cleanup introduced a compilation warning
+On 13-Apr 12:22, Peter Zijlstra wrote:
+> On Fri, Apr 13, 2018 at 10:26:48AM +0200, Peter Zijlstra wrote:
+> > On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
+> > > +static inline void uclamp_cpu_get(struct task_struct *p, int cpu, int clamp_id)
+> > > +{
+> > > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+> > 
+> > > +static inline void uclamp_cpu_put(struct task_struct *p, int cpu, int clamp_id)
+> > > +{
+> > > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+> > 
+> > That all seems daft, since you already have rq at the call site.
+> > 
+> > > +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
+> > > +{
+> > > +	int cpu = cpu_of(rq);
+> > > +	int clamp_id;
+> > > +
+> > > +	/* The idle task does not affect CPU's clamps */
+> > > +	if (unlikely(p->sched_class == &idle_sched_class))
+> > > +		return;
+> > > +	/* DEADLINE tasks do not affect CPU's clamps */
+> > > +	if (unlikely(p->sched_class == &dl_sched_class))
+> > > +		return;
+> > 
+> > This is wrong; it misses the stop_sched_class.
+> > 
+> > And since you're looking at sched_class anyway, maybe put a marker in
+> > there:
+> > 
+> > 	if (!p->sched_class->has_clamping)
+> > 		return;
+> 
+> Alternatively, we could simply add uclamp_task_{en,de}queue() into
+> {en,de}queue_task_{fair,rt}().
 
- drivers/thermal/samsung/exynos_tmu.c: In function ‘exynos_get_temp’:
- drivers/thermal/samsung/exynos_tmu.c:931:37: warning: ‘temp’ may be used uninitialized in this function [-Wmaybe-uninitialized]
-   *temp = code_to_temp(data, value) * MCELSIUS;
-                                        ^
+I like better your first proposal, I think it makes sense to factor
+out in core code used by both RT and FAIR the same way.
 
- drivers/thermal/samsung/exynos_tmu.c: In function ‘temp_to_code’
- drivers/thermal/samsung/exynos_tmu.c:304:9: warning: ‘temp_code’ may be used uninitialized in this function [-Wmaybe-uninitialized]
-					  return temp_code;
-					           ^~~~~~~~~
+Do you have a strong preference?
 
-The compiler gives a warning because semantically speaking the
-function has no default value. However the code path, were the
-variable is never initialized is a dead branch because the switch
-statement always choose one of the two cases as the data->cal_type is
-initialized in the init function to one of both values.
+> > > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> > > +		if (uclamp_task_affects(p, clamp_id))
+> > > +			uclamp_cpu_put(p, cpu, clamp_id);
+> > > +		else
+> > > +			uclamp_cpu_get(p, cpu, clamp_id);
+> > > +	}
+> > > +}
 
-This is unclear as it adds a dependency on the initialization function
-and it is prone to error. Make things clearer by converting the
-functions with if ... return statements, thus showing we are expecting
-the values to be correctly filled before calling this function.
-
-This change fixes the couple of function warnings.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/samsung/exynos_tmu.c | 46 ++++++++++--------------------------
- 1 file changed, 12 insertions(+), 34 deletions(-)
-
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 2ec8548..197f267 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -284,24 +284,13 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
-  */
- static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
- {
--	int temp_code;
--
--	switch (data->cal_type) {
--	case TYPE_TWO_POINT_TRIMMING:
--		temp_code = (temp - EXYNOS_FIRST_POINT_TRIM) *
--			(data->temp_error2 - data->temp_error1) /
--			(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) +
--			data->temp_error1;
--		break;
--	case TYPE_ONE_POINT_TRIMMING:
--		temp_code = temp + data->temp_error1 - EXYNOS_FIRST_POINT_TRIM;
--		break;
--	default:
--		WARN_ON(1);
--		break;
--	}
-+	if (data->cal_type == TYPE_ONE_POINT_TRIMMING)
-+		return temp + data->temp_error1 - EXYNOS_FIRST_POINT_TRIM;
- 
--	return temp_code;
-+	return (temp - EXYNOS_FIRST_POINT_TRIM) *
-+		(data->temp_error2 - data->temp_error1) /
-+		(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) +
-+		data->temp_error1;
- }
- 
- /*
-@@ -310,24 +299,13 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
-  */
- static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
- {
--	int temp;
--
--	switch (data->cal_type) {
--	case TYPE_TWO_POINT_TRIMMING:
--		temp = (temp_code - data->temp_error1) *
--			(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) /
--			(data->temp_error2 - data->temp_error1) +
--			EXYNOS_FIRST_POINT_TRIM;
--		break;
--	case TYPE_ONE_POINT_TRIMMING:
--		temp = temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TRIM;
--		break;
--	default:
--		WARN_ON(1);
--		break;
--	}
-+	if (data->cal_type == TYPE_ONE_POINT_TRIMMING)
-+		return temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TRIM;
- 
--	return temp;
-+	return (temp_code - data->temp_error1) *
-+		(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) /
-+		(data->temp_error2 - data->temp_error1) +
-+		EXYNOS_FIRST_POINT_TRIM;
- }
- 
- static void sanitize_temp_error(struct exynos_tmu_data *data, u32 trim_info)
 -- 
-2.7.4
+#include <best/regards.h>
+
+Patrick Bellasi
