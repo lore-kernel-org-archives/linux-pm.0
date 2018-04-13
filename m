@@ -1,58 +1,104 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 10:43:02 +0200
-Message-ID: <20180413084302.GR4043@hirez.programming.kicks-ass.net>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-2-patrick.bellasi@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v7 06/26] timer: Export next wakeup time of a CPU
+Date: Fri, 13 Apr 2018 10:47:39 +0200
+Message-ID: <CAJZ5v0j=TL7Pvc6W+ieJ1D3C-9mJKMzmkcSRoHnquAwZC_k+0w@mail.gmail.com>
+References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org> <1523531671-27491-7-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180409165615.2326-2-patrick.bellasi@arm.com>
+In-Reply-To: <1523531671-27491-7-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <fweisbec@gm>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
+On Thu, Apr 12, 2018 at 1:14 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> From: Lina Iyer <lina.iyer@linaro.org>
+>
+> Knowing the sleep duration of CPUs, is known to be needed while selecting
+> the most energy efficient idle state for a CPU or a group of CPUs.
+>
+> However, to be able to compute the sleep duration, we need to know at what
+> time the next expected wakeup is for the CPU. Therefore, let's export this
+> information via a new function, tick_nohz_get_next_wakeup(). Following
+> changes make use of it.
+>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  include/linux/tick.h     | 10 ++++++++++
+>  kernel/time/tick-sched.c | 11 +++++++++++
+>  2 files changed, 21 insertions(+)
+>
+> diff --git a/include/linux/tick.h b/include/linux/tick.h
+> index 389aa25..d341811 100644
+> --- a/include/linux/tick.h
+> +++ b/include/linux/tick.h
+> @@ -125,6 +125,7 @@ extern bool tick_nohz_idle_got_tick(void);
+>  extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
+>  extern unsigned long tick_nohz_get_idle_calls(void);
+>  extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
+> +extern ktime_t tick_nohz_get_next_wakeup(int cpu);
+>  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+>  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+>
+> @@ -151,6 +152,15 @@ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
+>         *delta_next = TICK_NSEC;
+>         return *delta_next;
+>  }
+> +
+> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
 > +{
-> +	int cpu = cpu_of(rq);
-> +	int clamp_id;
+> +       ktime_t t;
 > +
-> +	/* The idle task does not affect CPU's clamps */
-> +	if (unlikely(p->sched_class == &idle_sched_class))
-> +		return;
-> +	/* DEADLINE tasks do not affect CPU's clamps */
-> +	if (unlikely(p->sched_class == &dl_sched_class))
-> +		return;
-> +
-> +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> +		if (uclamp_task_affects(p, clamp_id))
-> +			uclamp_cpu_put(p, cpu, clamp_id);
-> +		else
-> +			uclamp_cpu_get(p, cpu, clamp_id);
-> +	}
+> +       /* Next wake up is the tick period, assume it starts now */
+> +       return ktime_add(tick_nohz_get_sleep_length(&t), ktime_get());
 > +}
 
-Is that uclamp_task_affects() thing there to fix up the fact you failed
-to propagate the calling context (enqueue/dequeue) ?
+Well, given that tick_nohz_get_sleep_length() is just the above in
+this case, wouldn't it be simpler to return ktime_add(ktime_get(),
+TICK_NSEC) from here?
 
-I find this code _really_ hard to read...
+> +
+>  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+>  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+>
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index 646645e..08db7f3 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -1098,6 +1098,17 @@ unsigned long tick_nohz_get_idle_calls(void)
+>         return ts->idle_calls;
+>  }
+>
+> +/**
+> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
+> + */
+> +ktime_t tick_nohz_get_next_wakeup(int cpu)
+> +{
+> +       struct clock_event_device *dev =
+> +                       per_cpu(tick_cpu_device.evtdev, cpu);
 
-> @@ -743,6 +929,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
->  	if (!(flags & ENQUEUE_RESTORE))
->  		sched_info_queued(rq, p);
->  
-> +	uclamp_task_update(rq, p);
->  	p->sched_class->enqueue_task(rq, p, flags);
->  }
->  
-> @@ -754,6 +941,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
->  	if (!(flags & DEQUEUE_SAVE))
->  		sched_info_dequeued(rq, p);
->  
-> +	uclamp_task_update(rq, p);
->  	p->sched_class->dequeue_task(rq, p, flags);
->  }
->  
+I would avoid breaking the line, honestly.
+
+If you really really want to avoid going above the 80 chars line
+length limit, why don't you do
+
+struct clock_event_device *dev;
+
+dev = per_cpu(tick_cpu_device.evtdev, cpu);
+
+> +
+> +       return dev->next_event;
+> +}
+> +
+>  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+>  {
+>  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+> --
