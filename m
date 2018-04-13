@@ -1,53 +1,63 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 11:46:15 +0200
-Message-ID: <20180413094615.GT4043@hirez.programming.kicks-ass.net>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-2-patrick.bellasi@arm.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
+Date: Fri, 13 Apr 2018 03:08:03 -0700
+Message-ID: <20180413100801.GA21913@localhost.localdomain>
+References: <1523436077.16235.5.camel@intel.com>
+ <CA+55aFzqJ2PfUnkVJ6A-8WRQTciWb8j+25r41JLCvz7h0QEJiA@mail.gmail.com>
+ <1523509711.16235.25.camel@intel.com>
+ <CA+55aFw0C-S0L-cnk0oROG=Khqy9s36O+g3_BxqPfewKGQ9_EQ@mail.gmail.com>
+ <20180413040855.GA29826@localhost.localdomain>
+ <1523597945.16235.52.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180409165615.2326-2-patrick.bellasi@arm.com>
+In-Reply-To: <1523597945.16235.52.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> +static inline void uclamp_cpu_get(struct task_struct *p, int cpu, int clamp_id)
-> +{
-> +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
-> +	int clamp_value;
-> +	int group_id;
-> +
-> +	/* Get task's specific clamp value */
-> +	clamp_value = p->uclamp[clamp_id].value;
-> +	group_id = p->uclamp[clamp_id].group_id;
-> +
-> +	/* No task specific clamp values: nothing to do */
-> +	if (group_id == UCLAMP_NONE)
-> +		return;
-> +
-> +	/* Increment the current group_id */
+On Fri, Apr 13, 2018 at 01:39:05PM +0800, Zhang Rui wrote:
+> Hi, Eduardo,
+> 
+> On 四, 2018-04-12 at 21:08 -0700, Eduardo Valentin wrote:
+> > Hello,
+> > 
+> > On Thu, Apr 12, 2018 at 09:55:19AM -0700, Linus Torvalds wrote:
+> > > 
+> > > On Wed, Apr 11, 2018 at 10:08 PM, Zhang Rui <rui.zhang@intel.com>
+> > > wrote:
+> > > > 
+> > > > 
+> > > > could you please illustrate me what the kconfig & warning is?
+> > > Just "make allmodconfig" and the warning is about a uninitialized
+> > > variable.
+> > > 
+> > > Line 304 in drivers/thermal/samsung/exynos_tmu.c if my shell
+> > > history
+> > > is to be believed.
+> > > 
+> > >                 Linus
+> > Yeah, this has also passed my local compilation error. Somehow my
+> > gcc4.9
+> > is not catching it. Using an older gcc (gcc4.6) does catch it.
+> > 
+> > Anyways, given that the conversion functions are written to cover
+> > for unexpected cal_type, the right way of fixing this is to rewrite
+> > the conversion functions to allow for returning error codes and
+> > adjusting the callers as expected.
+> > 
+> > Rui, bzolnier, please consider the following fix:
+> > 
+> as it is late in this merge window, I'd prefer to
+> 1. drop all the thermal-soc material in the first pull request which I
+> will send out soon.
+> 2. you can prepare another pull request containing the thermal-soc
+> materials except the exynos fixes
+> 3. exynos fixes with the problem solved can be queued for -rc2 or
+> later.
+> 
 
-That I think qualifies being called a bad comment.
-
-> +	uc_cpu->group[group_id].tasks += 1;
-> +
-> +	/* Mark task as enqueued for this clamp index */
-> +	p->uclamp_group_id[clamp_id] = group_id;
-
-Why exactly do we need this? we got group_id from @p in the first place.
-
-I suspect this is because when we update p->uclamp[], we don't update
-this active value (when needed), is that worth it?
-
-> +	/*
-> +	 * If this is the new max utilization clamp value, then we can update
-> +	 * straight away the CPU clamp value. Otherwise, the current CPU clamp
-> +	 * value is still valid and we are done.
-> +	 */
-> +	if (uc_cpu->value < clamp_value)
-> +		uc_cpu->value = clamp_value;
-> +}
+Agreed
