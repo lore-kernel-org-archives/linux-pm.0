@@ -1,50 +1,61 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 14:44:58 +0200
-Message-ID: <20180413124458.GG4082@hirez.programming.kicks-ass.net>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-2-patrick.bellasi@arm.com>
- <20180413084302.GR4043@hirez.programming.kicks-ass.net>
- <20180413111510.GS14248@e110439-lin>
- <20180413113650.GR4064@hirez.programming.kicks-ass.net>
- <20180413114745.GV14248@e110439-lin>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL V2] Thermal management updates for v4.17-rc1
+Date: Fri, 13 Apr 2018 22:04:22 +0800
+Message-ID: <1523628262.2142.4.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180413114745.GV14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 13, 2018 at 12:47:45PM +0100, Patrick Bellasi wrote:
-> In the past I remember some funny dance in cgroup callbacks when a
-> task was terminating (like being moved in the root-rq just before
-> exiting). But, as you say, if we always have the task_rq_lock we
-> should be safe.
+Hi, Linus,
 
-The syscall does the whole:
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-	task_rq_lock();
-	queued = task_on_rq_queued();
-	running = task_current();
-	if (queued)
-		dequeue_task();
-	if (running)
-		put_prev_task();
+to receive the latest Thermal Management updates for v4.17-rc1 with
+top-most commit b907b408ca64482989cd95dacef804ce509a3673:
 
-	/*
-	 * task is in invariant state here,
-	 * muck with it.
-	 */
+  Merge branches 'thermal-core' and 'thermal-soc' into next (2018-04-13 
+14:11:53 +0800)
 
-	if (queued)
-		enqueue_task();
-	if (running)
-		set_curr_task()
-	task_rq_unlock();
+on top of commit 0c8efd610b58cb23cefdfa12015799079aef94ae:
 
-pattern; which because C sucks, we've not found a good template for yet.
+  Linux 4.16-rc5 (2018-03-11 17:25:09 -0700)
 
-Without the dequeue/put,enqueue/set you have to jump a few extra hoops.
+Differences in V2:
+- Dropped all patches from thermal-soc tree, including the exynos patch
+that introduces the compiler warnings.
+
+Specifics:
+
+- Fix race condition in imx_thermal_probe(). (Mikhail Lappo)
+
+- Add cooling device's statistics in sysfs. (Viresh Kumar)
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Mikhail Lappo (1):
+      thermal: imx: Fix race condition in imx_thermal_probe()
+
+Viresh Kumar (1):
+      thermal: Add cooling device's statistics in sysfs
+
+Zhang Rui (1):
+      Merge branches 'thermal-core' and 'thermal-soc' into next
+
+ Documentation/thermal/sysfs-api.txt |  31 +++++
+ drivers/thermal/Kconfig             |   7 ++
+ drivers/thermal/imx_thermal.c       |   6 +-
+ drivers/thermal/thermal_core.c      |   3 +-
+ drivers/thermal/thermal_core.h      |  10 ++
+ drivers/thermal/thermal_helpers.c   |   5 +-
+ drivers/thermal/thermal_sysfs.c     | 225
+++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h             |   1 +
+ 8 files changed, 283 insertions(+), 5 deletions(-)
