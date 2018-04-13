@@ -1,54 +1,30 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 10:26:48 +0200
-Message-ID: <20180413082648.GP4043@hirez.programming.kicks-ass.net>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-2-patrick.bellasi@arm.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v2 2/6] sched: Introduce energy models of CPUs
+Date: Fri, 13 Apr 2018 09:37:31 +0100
+Message-ID: <20180413083730.GA3470@e108498-lin.cambridge.arm.com>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-3-dietmar.eggemann@arm.com>
+ <20180413040253.GW7671@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180409165615.2326-2-patrick.bellasi@arm.com>
+In-Reply-To: <20180413040253.GW7671@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> +static inline void uclamp_cpu_get(struct task_struct *p, int cpu, int clamp_id)
-> +{
-> +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+On Friday 13 Apr 2018 at 09:32:53 (+0530), Viresh Kumar wrote:
+[...]
+> And for the whole OPP discussion, perhaps we should have another
+> architecture specific callback which the scheduler can call to get a
+> ready-made energy model with all the structures filled in. That way
+> the OPP specific stuff will move to the architecture specific
+> callback.
 
-> +static inline void uclamp_cpu_put(struct task_struct *p, int cpu, int clamp_id)
-> +{
-> +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+Yes, that's another possible solution indeed. Actually, it's already on
+the list of ideas to be dicussed in OSPM ;-)
 
-That all seems daft, since you already have rq at the call site.
-
-> +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
-> +{
-> +	int cpu = cpu_of(rq);
-> +	int clamp_id;
-> +
-> +	/* The idle task does not affect CPU's clamps */
-> +	if (unlikely(p->sched_class == &idle_sched_class))
-> +		return;
-> +	/* DEADLINE tasks do not affect CPU's clamps */
-> +	if (unlikely(p->sched_class == &dl_sched_class))
-> +		return;
-
-This is wrong; it misses the stop_sched_class.
-
-And since you're looking at sched_class anyway, maybe put a marker in
-there:
-
-	if (!p->sched_class->has_clamping)
-		return;
-
-> +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> +		if (uclamp_task_affects(p, clamp_id))
-> +			uclamp_cpu_put(p, cpu, clamp_id);
-> +		else
-> +			uclamp_cpu_get(p, cpu, clamp_id);
-> +	}
-> +}
+Thanks,
+Quentin
