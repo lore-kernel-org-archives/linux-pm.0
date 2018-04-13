@@ -1,71 +1,84 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
-Date: Fri, 13 Apr 2018 13:12:39 +0200
-Message-ID: <2093381.eDLEWQi9DB@amdc3058>
-References: <1523436077.16235.5.camel@intel.com>
-        <3b41052a-233d-9992-223a-d16f48295905@linaro.org>
-        <10298074.ogKH1ypqfx@amdc3058>
-        <CGME20180413111242epcas1p4cd5ecac004dd9c1e00e1608088ff88e2@epcas1p4.samsung.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
+Date: Fri, 13 Apr 2018 12:15:10 +0100
+Message-ID: <20180413111510.GS14248@e110439-lin>
+References: <20180409165615.2326-1-patrick.bellasi@arm.com>
+ <20180409165615.2326-2-patrick.bellasi@arm.com>
+ <20180413084302.GR4043@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <10298074.ogKH1ypqfx@amdc3058>
+Content-Disposition: inline
+In-Reply-To: <20180413084302.GR4043@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 13, 2018 12:41:18 PM Bartlomiej Zolnierkiewicz wrote:
-> On Friday, April 13, 2018 12:30:04 PM Daniel Lezcano wrote:
-> > On 13/04/2018 11:28, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > [ ... ]
-> > 
-> > >>> It is okay to return 0 because this code-path (the default one) will be
-> > >>> never hit by the driver (probe makes sure of it) - the default case is
-> > >>> here is just to silence compilation errors..
-> > >>
-> > >> The init function is making sure cal_type is one or another. Can you fix
-> > >> it correctly by replacing the 'switch' by a 'if' instead of adding dead
-> > >> branches to please gcc?
-> > >>
-> > >> if (data->cal_type == TYPE_TWO_POINT_TRIMMING) {
-> > >> 	return ...;
-> > >> }
-> > >>
-> > >> return ...;
-> > > 
-> > > I'm not the one that added this switch statement (it has been there since
-> > > 2011) and I would be happy to remove it. 
-> > 
-> > Actually the switch statement was fine until the cleanup.
+On 13-Apr 10:43, Peter Zijlstra wrote:
+> On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
+> > +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
+> > +{
+> > +	int cpu = cpu_of(rq);
+> > +	int clamp_id;
+> > +
+> > +	/* The idle task does not affect CPU's clamps */
+> > +	if (unlikely(p->sched_class == &idle_sched_class))
+> > +		return;
+> > +	/* DEADLINE tasks do not affect CPU's clamps */
+> > +	if (unlikely(p->sched_class == &dl_sched_class))
+> > +		return;
+> > +
+> > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> > +		if (uclamp_task_affects(p, clamp_id))
+> > +			uclamp_cpu_put(p, cpu, clamp_id);
+> > +		else
+> > +			uclamp_cpu_get(p, cpu, clamp_id);
+> > +	}
+> > +}
 > 
-> I don't see how it was fine before as the driver has never used the default
-> case (always used TYPE_ONE_POINT_TRIMMING or TYPE_TWO_POINT_TRIMMING).
-> 
-> Could you please explain this more?
-> 
-> > > However could we please defer
-> > > this to v4.17 and merge the current set of Exynos thermal fixes/cleanups
-> > > (they simplify the driver a lot and make ground for future changes)?
-> > 
-> > Regarding the latest comment, this can be fixed properly by 'return' (or
-> > whatever you want which does not get around of gcc warnings).
-> 
-> Do you mean that you want the patch with switch statement removal?
-> 
-> Is incremental fix OK or do you want something else?
+> Is that uclamp_task_affects() thing there to fix up the fact you failed
+> to propagate the calling context (enqueue/dequeue) ?
 
-Danial has already posted it, I hope the fix is fine with you.
+Not really, it's intended by design: we back annotate the clamp_group
+a task has been refcounted in.
 
-Also sorry for the delay with handling issue - I was on holiday last two
-days and for some reason I was under (wrong) impression that the previous
-fix has been in thermal tree (so I was quite surprised today reading this
-mail thread).
+The uclamp_task_affects() tells if we are refcounted now and then we
+know from the back-annotation from which refcounter we need to remove
+the task.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+I found this solution much less racy and effective in avoiding to
+screw up the refcounter whenever we look at a task at either
+dequeue/migration time and these operations can overlaps with the
+slow-path. Meaning, when we change the task specific clamp_group
+either via syscall or cgroups attributes.
+
+IOW, the back annotation allows to decouple refcounting from
+clamp_group configuration in a lockless way.
+
+> I find this code _really_ hard to read...
+
+Hope the explanation above clarifies the logic... do you have
+alternative proposals?
+
+> > @@ -743,6 +929,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
+> >  	if (!(flags & ENQUEUE_RESTORE))
+> >  		sched_info_queued(rq, p);
+> >  
+> > +	uclamp_task_update(rq, p);
+> >  	p->sched_class->enqueue_task(rq, p, flags);
+> >  }
+> >  
+> > @@ -754,6 +941,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
+> >  	if (!(flags & DEQUEUE_SAVE))
+> >  		sched_info_dequeued(rq, p);
+> >  
+> > +	uclamp_task_update(rq, p);
+> >  	p->sched_class->dequeue_task(rq, p, flags);
+> >  }
+> >  
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
