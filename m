@@ -1,67 +1,79 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 13:36:50 +0200
-Message-ID: <20180413113650.GR4064@hirez.programming.kicks-ass.net>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-2-patrick.bellasi@arm.com>
- <20180413084302.GR4043@hirez.programming.kicks-ass.net>
- <20180413111510.GS14248@e110439-lin>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Fri, 13 Apr 2018 12:38:48 +0100
+Message-ID: <20180413113848.xj7hg7gsbxpxekbo@holly.lan>
+References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
+ <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180413111510.GS14248@e110439-lin>
+In-Reply-To: <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: viresh.kumar@linaro.org, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 13, 2018 at 12:15:10PM +0100, Patrick Bellasi wrote:
-> On 13-Apr 10:43, Peter Zijlstra wrote:
-> > On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> > > +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
-> > > +{
-> > > +	int cpu = cpu_of(rq);
-> > > +	int clamp_id;
-> > > +
-> > > +	/* The idle task does not affect CPU's clamps */
-> > > +	if (unlikely(p->sched_class == &idle_sched_class))
-> > > +		return;
-> > > +	/* DEADLINE tasks do not affect CPU's clamps */
-> > > +	if (unlikely(p->sched_class == &dl_sched_class))
-> > > +		return;
-> > > +
-> > > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> > > +		if (uclamp_task_affects(p, clamp_id))
-> > > +			uclamp_cpu_put(p, cpu, clamp_id);
-> > > +		else
-> > > +			uclamp_cpu_get(p, cpu, clamp_id);
-> > > +	}
-> > > +}
-> > 
-> > Is that uclamp_task_affects() thing there to fix up the fact you failed
-> > to propagate the calling context (enqueue/dequeue) ?
-> 
-> Not really, it's intended by design: we back annotate the clamp_group
-> a task has been refcounted in.
-> 
-> The uclamp_task_affects() tells if we are refcounted now and then we
-> know from the back-annotation from which refcounter we need to remove
-> the task.
-> 
-> I found this solution much less racy and effective in avoiding to
-> screw up the refcounter whenever we look at a task at either
-> dequeue/migration time and these operations can overlaps with the
-> slow-path. Meaning, when we change the task specific clamp_group
-> either via syscall or cgroups attributes.
-> 
-> IOW, the back annotation allows to decouple refcounting from
-> clamp_group configuration in a lockless way.
+On Thu, Apr 05, 2018 at 06:16:43PM +0200, Daniel Lezcano wrote:
+> +/**
+> + * cpuidle_cooling_register - Idle cooling device initialization function
+> + *
+> + * This function is in charge of creating a cooling device per cluster
+> + * and register it to thermal framework. For this we rely on the
+> + * topology as there is nothing yet describing better the idle state
+> + * power domains.
+> + *
+> + * We create a cpuidle cooling device per cluster. For this reason we
+> + * must, for each cluster, allocate and initialize the cooling device
+> + * and for each cpu belonging to this cluster, do the initialization
+> + * on a cpu basis.
+> + *
+> + * This approach for creating the cooling device is needed as we don't
+> + * have the guarantee the CPU numbering is sequential.
+> + *
+> + * Unfortunately, there is no API to browse from top to bottom the
+> + * topology, cluster->cpu, only the usual for_each_possible_cpu loop.
+> + * In order to solve that, we use a cpumask to flag the cluster_id we
+> + * already processed. The cpumask will always have enough room for all
+> + * the cluster because it is based on NR_CPUS and it is not possible
+> + * to have more clusters than cpus.
+> + *
+> + */
+> +void __init cpuidle_cooling_register(void)
+> +{
+> +	struct cpuidle_cooling_device *idle_cdev = NULL;
+> +	struct thermal_cooling_device *cdev;
+> +	struct device_node *np;
+> +	cpumask_var_t cpumask;
+> +	char dev_name[THERMAL_NAME_LENGTH];
+> +	int ret = -ENOMEM, cpu;
+> +	int cluster_id;
+> +
+> +	if (!zalloc_cpumask_var(&cpumask, GFP_KERNEL))
+> +		return;
+> +
+> +	for_each_possible_cpu(cpu) {
+> +
+> +		cluster_id = topology_physical_package_id(cpu);
+> +		if (cpumask_test_cpu(cluster_id, cpumask))
+> +			continue;
+> +
+> +		/*
+> +		 * Allocate the cpuidle cooling device with the list
+> +		 * of the cpus belonging to the cluster.
+> +		 */
+> +		idle_cdev = cpuidle_cooling_alloc(topology_core_cpumask(cpu));
+> +		if (!idle_cdev)
+> +			goto out;
 
-But it adds extra state and logic, to a fastpath, for no reason.
+Perhaps nitpicking but it might be better to set ret to -ENOMEM here 
+and avoid initializing it during the declarations.
 
-I suspect you messed up the cgroup side; because the syscall should
-already have done task_rq_lock() and hold both p->pi_lock and rq->lock
-and have dequeued the task when changing the attribute.
+There's no bug in the current form since ret is never assigned to
+outside of the error paths, but the unwritten assumption that ret keeps
+its original value throughout the loop seems like a bit of a landmine
+w.r.t. future maintainance.
 
-It is actually really hard to make the syscall do it wrong.
+
+Daniel.
