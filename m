@@ -1,27 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Fri, 13 Apr 2018 11:57:41 +0530
-Message-ID: <20180413062741.GA17616@vireshk-i7>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-5-dietmar.eggemann@arm.com>
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH][v4] tools/power turbostat: if --iterations, print for
+ specific time of iterations
+Date: Fri, 13 Apr 2018 09:48:56 +0300
+Message-ID: <1523602136.2753.240.camel@gmail.com>
+References: <20180413034047.1240-1-yu.c.chen@intel.com>
+Reply-To: dedekind1@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180406153607.17815-5-dietmar.eggemann@arm.com>
+In-Reply-To: <20180413034047.1240-1-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Yu Chen <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>
+Cc: Rafael J Wysocki <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06-04-18, 16:36, Dietmar Eggemann wrote:
-> +static inline struct capacity_state
-> +*find_cap_state(int cpu, unsigned long util) { return NULL; }
+On Fri, 2018-04-13 at 11:40 +0800, Yu Chen wrote:
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index bd9c6b31a504..a2fe96f038f0 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -48,6 +48,7 @@ char *proc_stat = "/proc/stat";
+>  FILE *outf;
+>  int *fd_percpu;
+>  struct timespec interval_ts = {5, 0};
+> +int iterations;
+>  unsigned int debug;
+>  unsigned int quiet;
+>  unsigned int sums_need_wide_columns;
+> @@ -470,6 +471,7 @@ void help(void)
+>  	"		{core | package | j,k,l..m,n-p }\n"
+>  	"--quiet	skip decoding system configuration header\n"
+>  	"--interval sec	Override default 5-second measurement interval\n"
+> +	"--iterations count	Number of measurement iterations(requires '--interval'\n"
 
-I saw this somewhere else as well in this series. I believe the line break
-should happen after "*" as "struct capacity_state *" should be read together as
-one entity.
+Missing white-space and ")".
 
 -- 
-viresh
+Best Regards,
+Artem Bityutskiy
