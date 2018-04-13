@@ -1,63 +1,53 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 13:15:31 +0200
-Message-ID: <20180413111531.GE4082@hirez.programming.kicks-ass.net>
+Date: Fri, 13 Apr 2018 12:17:53 +0100
+Message-ID: <20180413111753.GT14248@e110439-lin>
 References: <20180409165615.2326-1-patrick.bellasi@arm.com>
  <20180409165615.2326-2-patrick.bellasi@arm.com>
- <20180413082648.GP4043@hirez.programming.kicks-ass.net>
- <20180413102202.GN4129@hirez.programming.kicks-ass.net>
- <20180413110426.GQ14248@e110439-lin>
+ <20180413084019.GQ4043@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180413110426.GQ14248@e110439-lin>
+In-Reply-To: <20180413084019.GQ4043@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 13, 2018 at 12:04:26PM +0100, Patrick Bellasi wrote:
-> On 13-Apr 12:22, Peter Zijlstra wrote:
-> > On Fri, Apr 13, 2018 at 10:26:48AM +0200, Peter Zijlstra wrote:
-> > > On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> > > > +static inline void uclamp_cpu_get(struct task_struct *p, int cpu, int clamp_id)
-> > > > +{
-> > > > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
-> > > 
-> > > > +static inline void uclamp_cpu_put(struct task_struct *p, int cpu, int clamp_id)
-> > > > +{
-> > > > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
-> > > 
-> > > That all seems daft, since you already have rq at the call site.
-> > > 
-> > > > +static inline void uclamp_task_update(struct rq *rq, struct task_struct *p)
-> > > > +{
-> > > > +	int cpu = cpu_of(rq);
-> > > > +	int clamp_id;
-> > > > +
-> > > > +	/* The idle task does not affect CPU's clamps */
-> > > > +	if (unlikely(p->sched_class == &idle_sched_class))
-> > > > +		return;
-> > > > +	/* DEADLINE tasks do not affect CPU's clamps */
-> > > > +	if (unlikely(p->sched_class == &dl_sched_class))
-> > > > +		return;
-> > > 
-> > > This is wrong; it misses the stop_sched_class.
-> > > 
-> > > And since you're looking at sched_class anyway, maybe put a marker in
-> > > there:
-> > > 
-> > > 	if (!p->sched_class->has_clamping)
-> > > 		return;
-> > 
-> > Alternatively, we could simply add uclamp_task_{en,de}queue() into
-> > {en,de}queue_task_{fair,rt}().
+On 13-Apr 10:40, Peter Zijlstra wrote:
+> On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
+> > +static inline void init_uclamp(void)
 > 
-> I like better your first proposal, I think it makes sense to factor
-> out in core code used by both RT and FAIR the same way.
-> 
-> Do you have a strong preference?
+> WTH is that inline?
 
-The second is probably faster as it avoids the load+branch; then again,
-without LTO you'll get an actual call in return. Dunno...
+You mean I can avoid the attribute?
+... or that I should do it in another way?
+
+> > +{
+> > +	struct uclamp_cpu *uc_cpu;
+> > +	int clamp_id;
+> > +	int cpu;
+> > +
+> > +	mutex_init(&uclamp_mutex);
+> > +
+> > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> > +		/* Init CPU's clamp groups */
+> > +		for_each_possible_cpu(cpu) {
+> > +			uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
+> > +			memset(uc_cpu, UCLAMP_NONE, sizeof(struct uclamp_cpu));
+> > +		}
+> > +	}
+> 
+> Those loops are the wrong way around, this shreds your cache. This is a
+> slow path so it doesn't much matter, but it is sloppy.
+
+Yess... my bad!... good catch! ;)
+
+> 
+> > +}
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
