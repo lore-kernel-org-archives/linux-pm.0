@@ -1,72 +1,94 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 1/7] sched/core: uclamp: add CPU clamp groups accounting
-Date: Fri, 13 Apr 2018 12:08:48 +0100
-Message-ID: <20180413110848.GR14248@e110439-lin>
-References: <20180409165615.2326-1-patrick.bellasi@arm.com>
- <20180409165615.2326-2-patrick.bellasi@arm.com>
- <20180413094615.GT4043@hirez.programming.kicks-ass.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
+Date: Fri, 13 Apr 2018 13:10:21 +0200
+Message-ID: <417cb724-2fcf-717f-63bf-9a479cc0d540@linaro.org>
+References: <1523436077.16235.5.camel@intel.com> <4212243.RcCUWlsaar@amdc3058>
+ <3b41052a-233d-9992-223a-d16f48295905@linaro.org>
+ <CGME20180413104120epcas1p319b9e78b025cb68f810f047c67a48362@epcas1p3.samsung.com>
+ <10298074.ogKH1ypqfx@amdc3058>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180413094615.GT4043@hirez.programming.kicks-ass.net>
+In-Reply-To: <10298074.ogKH1ypqfx@amdc3058>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Apr 11:46, Peter Zijlstra wrote:
-> On Mon, Apr 09, 2018 at 05:56:09PM +0100, Patrick Bellasi wrote:
-> > +static inline void uclamp_cpu_get(struct task_struct *p, int cpu, int clamp_id)
-> > +{
-> > +	struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp[clamp_id];
-> > +	int clamp_value;
-> > +	int group_id;
-> > +
-> > +	/* Get task's specific clamp value */
-> > +	clamp_value = p->uclamp[clamp_id].value;
-> > +	group_id = p->uclamp[clamp_id].group_id;
-> > +
-> > +	/* No task specific clamp values: nothing to do */
-> > +	if (group_id == UCLAMP_NONE)
-> > +		return;
-> > +
-> > +	/* Increment the current group_id */
+On 13/04/2018 12:41, Bartlomiej Zolnierkiewicz wrote:
+> On Friday, April 13, 2018 12:30:04 PM Daniel Lezcano wrote:
+>> On 13/04/2018 11:28, Bartlomiej Zolnierkiewicz wrote:
+>>
+>> [ ... ]
+>>
+>>>>> It is okay to return 0 because this code-path (the default one) will be
+>>>>> never hit by the driver (probe makes sure of it) - the default case is
+>>>>> here is just to silence compilation errors..
+>>>>
+>>>> The init function is making sure cal_type is one or another. Can you fix
+>>>> it correctly by replacing the 'switch' by a 'if' instead of adding dead
+>>>> branches to please gcc?
+>>>>
+>>>> if (data->cal_type == TYPE_TWO_POINT_TRIMMING) {
+>>>> 	return ...;
+>>>> }
+>>>>
+>>>> return ...;
+>>>
+>>> I'm not the one that added this switch statement (it has been there since
+>>> 2011) and I would be happy to remove it. 
+>>
+>> Actually the switch statement was fine until the cleanup.
 > 
-> That I think qualifies being called a bad comment.
-
-my bad :/
-
-> > +	uc_cpu->group[group_id].tasks += 1;
-> > +
-> > +	/* Mark task as enqueued for this clamp index */
-> > +	p->uclamp_group_id[clamp_id] = group_id;
+> I don't see how it was fine before as the driver has never used the default
+> case (always used TYPE_ONE_POINT_TRIMMING or TYPE_TWO_POINT_TRIMMING).
 > 
-> Why exactly do we need this? we got group_id from @p in the first place.
+> Could you please explain this more?
 
-The idea is to back-annotate on the task the group in which it has
-been refcounted. That allows a much simpler and less racy refcount
-decrements at dequeue/migration time.
+>From commit 480b5bfc16e17ef51ca1c
 
-That's also why we have a single call-back, uclamp_task_update(),
-for both enqueue/dequeue. Depending on the check performed by
-uclamp_task_affects() we know if we have to get or put the refcounter.
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -260,7 +260,7 @@ static int temp_to_code(struct exynos_tmu_data
+*data, u8 temp)
+                temp_code = temp + data->temp_error1 -
+pdata->first_point_trim;
+                break;
+        default:
+-               temp_code = temp + pdata->default_temp_offset;
++               WARN_ON(1);
+                break;
+        }
 
-> I suspect this is because when we update p->uclamp[], we don't update
-> this active value (when needed), is that worth it?
+@@ -287,7 +287,7 @@ static int code_to_temp(struct exynos_tmu_data
+*data, u16 temp_code)
+                temp = temp_code - data->temp_error1 +
+pdata->first_point_trim;
+                break;
+        default:
+-               temp = temp_code - pdata->default_temp_offset;
++               WARN_ON(1);
+                break;
+        }
 
-What you mean by "we don't update this active value"?
+I'm not saying the code path was fine but from the compiler point of
+view, it was. By removing the defaulting temp value there is a code path
+gcc sees the temp variable as not initialized.
 
-> > +	/*
-> > +	 * If this is the new max utilization clamp value, then we can update
-> > +	 * straight away the CPU clamp value. Otherwise, the current CPU clamp
-> > +	 * value is still valid and we are done.
-> > +	 */
-> > +	if (uc_cpu->value < clamp_value)
-> > +		uc_cpu->value = clamp_value;
-> > +}
+Your cleanups are relevant.
+
+
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+
 
 -- 
-#include <best/regards.h>
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Patrick Bellasi
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
