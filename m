@@ -1,135 +1,56 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: [PATCH][v5] tools/power turbostat: if --iterations, print for specific count of iterations
-Date: Sat, 14 Apr 2018 12:10:55 +0800
-Message-ID: <20180414041055.10159-1-yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, Rafael J Wysocki <rjw@rjwysocki.net>, Artem Bityutskiy <artem.bityutskiy@intel.com>, Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
+ improvements for the intel_pstate driver.
+Date: Sat, 14 Apr 2018 11:49:43 +0200
+Message-ID: <20180414094943.GU4064@hirez.programming.kicks-ass.net>
+References: <87604ybssf.fsf@riseup.net>
+ <1523416474.2700.2.camel@linux.intel.com>
+ <87vacx7mh3.fsf@riseup.net> <87muy97lr0.fsf@riseup.net>
+ <20180412085824.GX4082@hirez.programming.kicks-ass.net>
+ <87r2nk46k1.fsf@riseup.net>
+ <20180412193335.GA4330@worktop.programming.kicks-ass.net>
+ <87a7u842tg.fsf@riseup.net>
+ <20180413181537.GS4064@hirez.programming.kicks-ass.net>
+ <87d0z21re4.fsf@riseup.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+Content-Disposition: inline
+In-Reply-To: <87d0z21re4.fsf@riseup.net>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Francisco Jerez <currojerez@riseup.net>
+Cc: intel-gfx@lists.freedesktop.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eero Tamminen <eero.t.tamminen@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chen Yu <yu.c.chen@intel.com>
-
-There's a use case during test to only print specific round of iterations
-if --iterations is specified, for example, with this patch applied:
-
-turbostat -i 5 -r 4
-will capture 4 samples with 5 seconds interval.
-
-Cc: Len Brown <lenb@kernel.org>
-Cc: Rafael J Wysocki <rjw@rjwysocki.net>
-Cc: Artem Bityutskiy <artem.bityutskiy@intel.com>
-Cc: Doug Smythies <dsmythies@telus.net>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- tools/power/x86/turbostat/turbostat.8 |  2 ++
- tools/power/x86/turbostat/turbostat.c | 23 ++++++++++++++++++++++-
- 2 files changed, 24 insertions(+), 1 deletion(-)
-
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index ccf2a69365cc..7452dc42273b 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -64,6 +64,8 @@ name as necessary to disambiguate it from others is necessary.  Note that option
- .PP
- \fB--interval seconds\fP overrides the default 5.0 second measurement interval.
- .PP
-+\fB--iterations count\fP number of the measurement iterations.
-+.PP
- \fB--out output_file\fP turbostat output is written to the specified output_file.
- The file is truncated if it already exists, and it is created if it does not exist.
- .PP
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bd9c6b31a504..ae9e3d08e3cf 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -48,6 +48,7 @@ char *proc_stat = "/proc/stat";
- FILE *outf;
- int *fd_percpu;
- struct timespec interval_ts = {5, 0};
-+int iterations;
- unsigned int debug;
- unsigned int quiet;
- unsigned int sums_need_wide_columns;
-@@ -470,6 +471,7 @@ void help(void)
- 	"		{core | package | j,k,l..m,n-p }\n"
- 	"--quiet	skip decoding system configuration header\n"
- 	"--interval sec	Override default 5-second measurement interval\n"
-+	"--iterations count	number of the measurement iterations\n"
- 	"--help		print this help message\n"
- 	"--list		list column headers only\n"
- 	"--out file	create or truncate \"file\" for all output\n"
-@@ -2565,6 +2567,7 @@ void turbostat_loop()
- {
- 	int retval;
- 	int restarted = 0;
-+	int done_iters = 0;
- 
- restart:
- 	restarted++;
-@@ -2581,6 +2584,7 @@ void turbostat_loop()
- 		goto restart;
- 	}
- 	restarted = 0;
-+	done_iters = 0;
- 	gettimeofday(&tv_even, (struct timezone *)NULL);
- 
- 	while (1) {
-@@ -2607,6 +2611,10 @@ void turbostat_loop()
- 		compute_average(EVEN_COUNTERS);
- 		format_all_counters(EVEN_COUNTERS);
- 		flush_output_stdout();
-+
-+		if (iterations && (++done_iters >= iterations))
-+			break;
-+
- 		nanosleep(&interval_ts, NULL);
- 		if (snapshot_proc_sysfs_files())
- 			goto restart;
-@@ -2626,6 +2634,9 @@ void turbostat_loop()
- 		compute_average(ODD_COUNTERS);
- 		format_all_counters(ODD_COUNTERS);
- 		flush_output_stdout();
-+
-+		if (iterations && (++done_iters >= iterations))
-+			break;
- 	}
- }
- 
-@@ -4999,6 +5010,7 @@ void cmdline(int argc, char **argv)
- 		{"Dump",	no_argument,		0, 'D'},
- 		{"debug",	no_argument,		0, 'd'},	/* internal, not documented */
- 		{"interval",	required_argument,	0, 'i'},
-+		{"iterations",	required_argument,	0, 'r'},
- 		{"help",	no_argument,		0, 'h'},
- 		{"hide",	required_argument,	0, 'H'},	// meh, -h taken by --help
- 		{"Joules",	no_argument,		0, 'J'},
-@@ -5014,7 +5026,7 @@ void cmdline(int argc, char **argv)
- 
- 	progname = argv[0];
- 
--	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:v",
-+	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qr:ST:v",
- 				long_options, &option_index)) != -1) {
- 		switch (opt) {
- 		case 'a':
-@@ -5063,6 +5075,15 @@ void cmdline(int argc, char **argv)
- 		case 'q':
- 			quiet = 1;
- 			break;
-+		case 'r':
-+			iterations = strtod(optarg, NULL);
-+
-+			if (iterations <= 0) {
-+				fprintf(outf, "iterations %d should be positive number\n",
-+					iterations);
-+				exit(2);
-+			}
-+			break;
- 		case 's':
- 			parse_show_hide(optarg, SHOW_LIST);
- 			break;
--- 
-2.13.6
+T24gRnJpLCBBcHIgMTMsIDIwMTggYXQgMDY6NTc6MzlQTSAtMDcwMCwgRnJhbmNpc2NvIEplcmV6
+IHdyb3RlOgo+IFBldGVyIFppamxzdHJhIDxwZXRlcnpAaW5mcmFkZWFkLm9yZz4gd3JpdGVzOgo+
+IAo+ID4gT24gVGh1LCBBcHIgMTIsIDIwMTggYXQgMTI6NTU6MzlQTSAtMDcwMCwgRnJhbmNpc2Nv
+IEplcmV6IHdyb3RlOgo+ID4+IEFjdHVhbGx5IGFzc3VtaW5nIHRoYXQgYSBzaW5nbGUgZ2VvbWV0
+cmljIGZlYXR1cmUgb2YgdGhlIHBvd2VyIGN1cnZlIGlzCj4gPj4ga25vd24gLS0gaXQgYmVpbmcg
+Y29udmV4IGluIHRoZSBmcmVxdWVuY3kgcmFuZ2UgYWxsb3dlZCBieSB0aGUgcG9saWN5Cj4gPj4g
+KHdoaWNoIGlzIGFsbW9zdCBhbHdheXMgdGhlIGNhc2UsIG5vdCBvbmx5IGZvciBJbnRlbCBDUFVz
+KSwgdGhlIG9wdGltYWwKPiA+PiBmcmVxdWVuY3kgZm9yIGFuIElPLWJvdW5kIHdvcmtsb2FkIGlz
+IGZ1bGx5IGluZGVwZW5kZW50IG9mIHRoZSBleGFjdAo+ID4+IHBvd2VyIGN1cnZlIC0tIEl0J3Mg
+anVzdCB0aGUgbWluaW11bSBDUFUgZnJlcXVlbmN5IHRoYXQncyBhYmxlIHRvIGtlZXAKPiA+PiB0
+aGUgYm90dGxlbmVja2luZyBJTyBkZXZpY2UgYXQgMTAwJSB1dGlsaXphdGlvbi4gCj4gPgo+ID4g
+SSB0aGluayB0aGF0IGlzIGRpZmZpY3VsdCB0byBkZXRlcm1pbmUgd2l0aCB0aGUgaW5mb3JtYXRp
+b24gYXQgaGFuZC4gV2UKPiA+IGhhdmUgbG9zdCBhbGwgZGV2aWNlIGluZm9ybWF0aW9uIGJ5IHRo
+ZSB0aW1lIHdlIHJlYWNoIHRoZSBzY2hlZHVsZXIuCj4gCj4gSSBhc3N1bWUgeW91IG1lYW4gaXQn
+cyBkaWZmaWN1bHQgdG8gdGVsbCB3aGV0aGVyIHRoZSB3b3JrbG9hZCBpcwo+IENQVS1ib3VuZCBv
+ciBJTy1ib3VuZD8gIFllYWgsIGl0J3Mgbm9uLXRyaXZpYWwgdG8gZGV0ZXJtaW5lIHdoZXRoZXIg
+dGhlCj4gc3lzdGVtIGlzIGJvdHRsZW5lY2tpbmcgb24gSU8sIGl0IHJlcXVpcmVzIGFkZGl0aW9u
+YWwgaW5mcmFzdHJ1Y3R1cmUgdG8KPiBrZWVwIHRyYWNrIG9mIElPIHV0aWxpemF0aW9uICh0aGF0
+J3MgdGhlIHB1cnBvc2Ugb2YgUEFUQ0ggMSksIGFuZCBldmVuCgpOb3RlIHRoYXQgSSd2ZSBub3Qg
+YWN0dWFsbHkgc2VlbiBhbnkgb2YgeW91ciBwYXRjaGVzOyBJIGdvdCBDYydlZCBvbgpsYXRlci4K
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLWdm
+eCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xp
+c3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
