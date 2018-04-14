@@ -1,73 +1,64 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL V3] Thermal SoC management updates for v4.17-rc1
-Date: Sat, 14 Apr 2018 11:30:53 -0700
-Message-ID: <20180414183051.GA27921@localhost.localdomain>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Sat, 14 Apr 2018 23:19:09 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1804142315300.2750@hadrien>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>   <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>   <20180410123305.GF4082@hirez.programming.kicks-ass.net>   <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>  
+ <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>   <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>   <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>   <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>  
+ <20180411081502.GJ4082@hirez.programming.kicks-ass.net>   <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>  <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>  <alpine.DEB.2.20.1804120816130.3559@hadrien>
+ <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Joe Perches <joe@perches.com>
+Cc: Julia Lawall <julia.lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Linus,
-
-Please find thermal-soc changes for v4.17-rc1.
-Rui asked me to send the pull request directly to you
-as we are close to the end of the merge window.
-Essentially this pull removes the series that caused
-warning regression. I will work with the developer
-to get that fixed later on, but I am still sending
-the other few patches that are unrelated to that.
-Let me know if this causes any issues and can still
-be pulled.
-
-Changelog:
-- New i.MX7 thermal sensor
-- Mediatek driver now supports MT7622 SoC
-- Removal of min max cpu cooling DT property
-
-Differences in V3:
-- Rebased on top current linus/master, to avoid and merge issues
-from previous pulled thermal code.
-
-Differences in V2:
-- Reordered the patches to drop exynos changes for now until we get
-agreement on the fix on that driver for the compilation warns
-caused by the confusing conversion functions.
 
 
-The following changes since commit 48023102b7078a6674516b1fe0d639669336049d:
+On Wed, 11 Apr 2018, Joe Perches wrote:
 
-  Merge branch 'overlayfs-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs (2018-04-13 16:55:41 -0700)
+> On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
+> > On Wed, 11 Apr 2018, Joe Perches wrote:
+> > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
+> > > > We already have some 500 bools-in-structs
+> > >
+> > > I got at least triple that only in include/
+> > > so I expect there are at probably an order
+> > > of magnitude more than 500 in the kernel.
+> > >
+> > > I suppose some cocci script could count the
+> > > actual number of instances.  A regex can not.
+> >
+> > I got 12667.
+>
+> Could you please post the cocci script?
+>
+> > I'm not sure to understand the issue.  Will using a bitfield help if there
+> > are no other bitfields in the structure?
+>
+> IMO, not really.
+>
+> The primary issue is described by Linus here:
+> https://lkml.org/lkml/2017/11/21/384
+>
+> I personally do not find a significant issue with
+> uncontrolled sizes of bool in kernel structs as
+> all of the kernel structs are transitory and not
+> written out to storage.
+>
+> I suppose bool bitfields are also OK, but for the
+> RMW required.
+>
+> Using unsigned int :1 bitfield instead of bool :1
+> has the negative of truncation so that the uint
+> has to be set with !! instead of a simple assign.
 
-are available in the git repository at:
+At least with gcc 5.4.0, a number of structures become larger with
+unsigned int :1. bool:1 seems to mostly solve this problem.  The structure
+ichx_desc, defined in drivers/gpio/gpio-ich.c seems to become larger with
+both approaches.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
-
-for you to fetch changes up to 15a32df1918259be6c23fc36014fc26ee66c836c:
-
-  dt-bindings: thermal: Remove "cooling-{min|max}-level" properties (2018-04-14 09:37:55 -0700)
-
-----------------------------------------------------------------
-Anson Huang (1):
-      thermal: imx: add i.MX7 thermal sensor support
-
-Bartlomiej Zolnierkiewicz (1):
-      dt-bindings: thermal: remove no longer needed samsung thermal properties
-
-Sean Wang (2):
-      dt-bindings: thermal: add binding for MT7622 SoC
-      thermal: mediatek: add support for MT7622 SoC
-
-Viresh Kumar (1):
-      dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
-
- .../devicetree/bindings/thermal/exynos-thermal.txt |  23 +-
- .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
- .../bindings/thermal/mediatek-thermal.txt          |   1 +
- .../devicetree/bindings/thermal/thermal.txt        |  16 +-
- drivers/thermal/imx_thermal.c                      | 295 ++++++++++++++++-----
- drivers/thermal/mtk_thermal.c                      |  35 +++
- 6 files changed, 281 insertions(+), 98 deletions(-)
+julia
