@@ -1,128 +1,100 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [RFC PATCH v2 3/6] sched: Add over-utilization/tipping point indicator
-Date: Fri, 13 Apr 2018 16:56:39 -0700
-Message-ID: <CAJWu+oqxGkUKzmj6OokRHoQ=1B+618cnLL_SXrnXFOgX1GWdkA@mail.gmail.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com> <20180406153607.17815-4-dietmar.eggemann@arm.com>
+From: Francisco Jerez <currojerez@riseup.net>
+Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
+ improvements for the intel_pstate driver.
+Date: Fri, 13 Apr 2018 18:57:39 -0700
+Message-ID: <87d0z21re4.fsf@riseup.net>
+References: <20180328063845.4884-1-currojerez@riseup.net>
+ <87604ybssf.fsf@riseup.net> <1523416474.2700.2.camel@linux.intel.com>
+ <87vacx7mh3.fsf@riseup.net> <87muy97lr0.fsf@riseup.net>
+ <20180412085824.GX4082@hirez.programming.kicks-ass.net>
+ <87r2nk46k1.fsf@riseup.net>
+ <20180412193335.GA4330@worktop.programming.kicks-ass.net>
+ <87a7u842tg.fsf@riseup.net>
+ <20180413181537.GS4064@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180406153607.17815-4-dietmar.eggemann@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: multipart/mixed; boundary="===============1084453024=="
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <20180413181537.GS4064@hirez.programming.kicks-ass.net>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: intel-gfx@lists.freedesktop.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eero Tamminen <eero.t.tamminen@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============1084453024==
+Content-Type: multipart/signed; boundary="==-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
 
-On Fri, Apr 6, 2018 at 8:36 AM, Dietmar Eggemann
-<dietmar.eggemann@arm.com> wrote:
-> From: Thara Gopinath <thara.gopinath@linaro.org>
->
-> Energy-aware scheduling should only operate when the system is not
-> overutilized. There must be cpu time available to place tasks based on
-> utilization in an energy-aware fashion, i.e. to pack tasks on
-> energy-efficient cpus without harming the overall throughput.
->
-> In case the system operates above this tipping point the tasks have to
-> be placed based on task and cpu load in the classical way of spreading
-> tasks across as many cpus as possible.
->
-> The point in which a system switches from being not overutilized to
-> being overutilized is called the tipping point.
->
-> Such a tipping point indicator on a sched domain as the system
-> boundary is introduced here. As soon as one cpu of a sched domain is
-> overutilized the whole sched domain is declared overutilized as well.
-> A cpu becomes overutilized when its utilization is higher that 80%
-> (capacity_margin) of its capacity.
->
-> The implementation takes advantage of the shared sched domain which is
-> shared across all per-cpu views of a sched domain level. The new
-> overutilized flag is placed in this shared sched domain.
->
-> Load balancing is skipped in case the energy model is present and the
-> sched domain is not overutilized because under this condition the
-> predominantly load-per-capacity driven load-balancer should not
-> interfere with the energy-aware wakeup placement based on utilization.
->
-> In case the total utilization of a sched domain is greater than the
-> total sched domain capacity the overutilized flag is set at the parent
-> sched domain level to let other sched groups help getting rid of the
-> overutilization of cpus.
->
-> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> ---
->  include/linux/sched/topology.h |  1 +
->  kernel/sched/fair.c            | 62 ++++++++++++++++++++++++++++++++++++++++--
->  kernel/sched/sched.h           |  1 +
->  kernel/sched/topology.c        | 12 +++-----
->  4 files changed, 65 insertions(+), 11 deletions(-)
->
-> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
-> index 26347741ba50..dd001c232646 100644
-> --- a/include/linux/sched/topology.h
-> +++ b/include/linux/sched/topology.h
-> @@ -72,6 +72,7 @@ struct sched_domain_shared {
->         atomic_t        ref;
->         atomic_t        nr_busy_cpus;
->         int             has_idle_cores;
-> +       int             overutilized;
->  };
->
->  struct sched_domain {
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 0a76ad2ef022..6960e5ef3c14 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -5345,6 +5345,28 @@ static inline void hrtick_update(struct rq *rq)
->  }
->  #endif
->
-> +#ifdef CONFIG_SMP
-> +static inline int cpu_overutilized(int cpu);
-> +
-> +static inline int sd_overutilized(struct sched_domain *sd)
-> +{
-> +       return READ_ONCE(sd->shared->overutilized);
-> +}
-> +
-> +static inline void update_overutilized_status(struct rq *rq)
-> +{
-> +       struct sched_domain *sd;
-> +
-> +       rcu_read_lock();
-> +       sd = rcu_dereference(rq->sd);
-> +       if (sd && !sd_overutilized(sd) && cpu_overutilized(rq->cpu))
-> +               WRITE_ONCE(sd->shared->overutilized, 1);
-> +       rcu_read_unlock();
-> +}
-> +#else
-> +static inline void update_overutilized_status(struct rq *rq) {}
-> +#endif /* CONFIG_SMP */
-> +
->  /*
->   * The enqueue_task method is called before nr_running is
->   * increased. Here we update the fair scheduling stats and
-> @@ -5394,8 +5416,10 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->                 update_cfs_group(se);
->         }
->
-> -       if (!se)
-> +       if (!se) {
->                 add_nr_running(rq, 1);
-> +               update_overutilized_status(rq);
-> +       }
+--==-=-=
+Content-Type: multipart/mixed; boundary="=-=-="
 
-I'm wondering if it makes sense for considering scenarios whether
-other classes cause CPUs in the domain to go above the tipping point.
-Then in that case also, it makes sense to not to do EAS in that domain
-because of the overutilization.
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I guess task_fits using cpu_util which is PELT only at the moment...
-so may require some other method like aggregation of CFS PELT, with
-RT-PELT and DL running bw or something.
+Peter Zijlstra <peterz@infradead.org> writes:
 
-thanks,
+> On Thu, Apr 12, 2018 at 12:55:39PM -0700, Francisco Jerez wrote:
+>> Actually assuming that a single geometric feature of the power curve is
+>> known -- it being convex in the frequency range allowed by the policy
+>> (which is almost always the case, not only for Intel CPUs), the optimal
+>> frequency for an IO-bound workload is fully independent of the exact
+>> power curve -- It's just the minimum CPU frequency that's able to keep
+>> the bottlenecking IO device at 100% utilization.=20
+>
+> I think that is difficult to determine with the information at hand. We
+> have lost all device information by the time we reach the scheduler.
 
-- Joel
+I assume you mean it's difficult to tell whether the workload is
+CPU-bound or IO-bound?  Yeah, it's non-trivial to determine whether the
+system is bottlenecking on IO, it requires additional infrastructure to
+keep track of IO utilization (that's the purpose of PATCH 1), and even
+then it involves some heuristic assumptions which are not guaranteed
+fail-proof, so the controller needs to be prepared for things to behave
+reasonably when the assumptions deviate from reality (see the comments
+in PATCH 6 for more details on what happens in such cases) -- How
+frequently that happens in practice is what determines how far the
+controller's response will be from the optimally energy-efficient
+behavior in a real workload.  It seems to work fairly well in practice,
+at least in the sample of test-cases I've been able to gather data from
+so far.
+
+Anyway that's the difficult part.  Once (if) you know you're IO-bound,
+determining the optimal (most energy-efficient) CPU frequency is
+relatively straightforward, and doesn't require knowledge of the exact
+power curve of the CPU (beyond clamping the controller response to the
+convexity region of the power curve).
+
+--=-=-=--
+
+--==-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCWtFgEwAKCRCDmTidfVK/
+Wy08AP9iRNHFgTeLITZwjR0uWOd6EPkn+VDSkFmJjgDWqKiOEAD5AafGsy7bqlD3
+NZeQqhAnbWZQmua7z7A/Uc3k6lTkyzs=
+=cTld
+-----END PGP SIGNATURE-----
+--==-=-=--
+
+--===============1084453024==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4
+IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
+
+--===============1084453024==--
