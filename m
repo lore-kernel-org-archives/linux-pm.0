@@ -1,64 +1,71 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Sat, 14 Apr 2018 23:19:09 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1804142315300.2750@hadrien>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>   <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>   <20180410123305.GF4082@hirez.programming.kicks-ass.net>   <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>  
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>   <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>   <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>   <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>  
- <20180411081502.GJ4082@hirez.programming.kicks-ass.net>   <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>  <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>  <alpine.DEB.2.20.1804120816130.3559@hadrien>
- <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
+Date: Sun, 15 Apr 2018 01:51:45 -0700
+Message-ID: <20180415085142.GA8054@localhost.localdomain>
+References: <1523436077.16235.5.camel@intel.com>
+ <CGME20180413100808epcas3p4b943a763c77624c88f73492ff11e1b0d@epcas3p4.samsung.com>
+ <20180413100801.GA21913@localhost.localdomain>
+ <3605298.EUomHGJ8vH@amdc3058>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
+Content-Disposition: inline
+In-Reply-To: <3605298.EUomHGJ8vH@amdc3058>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, yuankuiz@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Apr 13, 2018 at 12:27:17PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Friday, April 13, 2018 03:08:03 AM Eduardo Valentin wrote:
+> > On Fri, Apr 13, 2018 at 01:39:05PM +0800, Zhang Rui wrote:
+> > > Hi, Eduardo,
+> > > 
+> > > On 四, 2018-04-12 at 21:08 -0700, Eduardo Valentin wrote:
+> > > > Hello,
+> > > > 
+> > > > On Thu, Apr 12, 2018 at 09:55:19AM -0700, Linus Torvalds wrote:
+> > > > > 
+> > > > > On Wed, Apr 11, 2018 at 10:08 PM, Zhang Rui <rui.zhang@intel.com>
+> > > > > wrote:
+> > > > > > 
+> > > > > > 
+> > > > > > could you please illustrate me what the kconfig & warning is?
+> > > > > Just "make allmodconfig" and the warning is about a uninitialized
+> > > > > variable.
+> > > > > 
+> > > > > Line 304 in drivers/thermal/samsung/exynos_tmu.c if my shell
+> > > > > history
+> > > > > is to be believed.
+> > > > > 
+> > > > >                 Linus
+> > > > Yeah, this has also passed my local compilation error. Somehow my
+> > > > gcc4.9
+> > > > is not catching it. Using an older gcc (gcc4.6) does catch it.
+> > > > 
+> > > > Anyways, given that the conversion functions are written to cover
+> > > > for unexpected cal_type, the right way of fixing this is to rewrite
+> > > > the conversion functions to allow for returning error codes and
+> > > > adjusting the callers as expected.
+> > > > 
+> > > > Rui, bzolnier, please consider the following fix:
+> > > > 
+> > > as it is late in this merge window, I'd prefer to
+> > > 1. drop all the thermal-soc material in the first pull request which I
+> > > will send out soon.
+> > > 2. you can prepare another pull request containing the thermal-soc
+> > > materials except the exynos fixes
+> > > 3. exynos fixes with the problem solved can be queued for -rc2 or
+> > > later.
+> > > 
+> > 
+> > Agreed
+> 
+> What should I do now to help resolve the issue?
 
+Please resend your series with the patches without the warnings..
 
-On Wed, 11 Apr 2018, Joe Perches wrote:
+Thanks,
 
-> On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
-> > On Wed, 11 Apr 2018, Joe Perches wrote:
-> > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
-> > > > We already have some 500 bools-in-structs
-> > >
-> > > I got at least triple that only in include/
-> > > so I expect there are at probably an order
-> > > of magnitude more than 500 in the kernel.
-> > >
-> > > I suppose some cocci script could count the
-> > > actual number of instances.  A regex can not.
-> >
-> > I got 12667.
->
-> Could you please post the cocci script?
->
-> > I'm not sure to understand the issue.  Will using a bitfield help if there
-> > are no other bitfields in the structure?
->
-> IMO, not really.
->
-> The primary issue is described by Linus here:
-> https://lkml.org/lkml/2017/11/21/384
->
-> I personally do not find a significant issue with
-> uncontrolled sizes of bool in kernel structs as
-> all of the kernel structs are transitory and not
-> written out to storage.
->
-> I suppose bool bitfields are also OK, but for the
-> RMW required.
->
-> Using unsigned int :1 bitfield instead of bool :1
-> has the negative of truncation so that the uint
-> has to be set with !! instead of a simple assign.
-
-At least with gcc 5.4.0, a number of structures become larger with
-unsigned int :1. bool:1 seems to mostly solve this problem.  The structure
-ichx_desc, defined in drivers/gpio/gpio-ich.c seems to become larger with
-both approaches.
-
-julia
+Eduardo
