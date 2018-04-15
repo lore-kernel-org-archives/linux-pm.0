@@ -1,71 +1,56 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc1
-Date: Sun, 15 Apr 2018 01:51:45 -0700
-Message-ID: <20180415085142.GA8054@localhost.localdomain>
-References: <1523436077.16235.5.camel@intel.com>
- <CGME20180413100808epcas3p4b943a763c77624c88f73492ff11e1b0d@epcas3p4.samsung.com>
- <20180413100801.GA21913@localhost.localdomain>
- <3605298.EUomHGJ8vH@amdc3058>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v7 11/26] of: base: Add of_get_cpu_state_node() to get
+ idle states for a CPU node
+Date: Sun, 15 Apr 2018 13:59:55 +0200
+Message-ID: <CAPDyKFo8wMetVmUBok_PmhZ6tHLKKn0_23j3PRfyBmXzeMF4VA@mail.gmail.com>
+References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
+ <1523531671-27491-12-git-send-email-ulf.hansson@linaro.org> <CAL_JsqL=i1mXSW-x2CRAHoyAxG+QtGL1YLGwpJdpQbizrqzv-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3605298.EUomHGJ8vH@amdc3058>
+In-Reply-To: <CAL_JsqL=i1mXSW-x2CRAHoyAxG+QtGL1YLGwpJdpQbizrqzv-w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
+To: Rob Herring <robh+dt@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 13, 2018 at 12:27:17PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Friday, April 13, 2018 03:08:03 AM Eduardo Valentin wrote:
-> > On Fri, Apr 13, 2018 at 01:39:05PM +0800, Zhang Rui wrote:
-> > > Hi, Eduardo,
-> > > 
-> > > On 四, 2018-04-12 at 21:08 -0700, Eduardo Valentin wrote:
-> > > > Hello,
-> > > > 
-> > > > On Thu, Apr 12, 2018 at 09:55:19AM -0700, Linus Torvalds wrote:
-> > > > > 
-> > > > > On Wed, Apr 11, 2018 at 10:08 PM, Zhang Rui <rui.zhang@intel.com>
-> > > > > wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > could you please illustrate me what the kconfig & warning is?
-> > > > > Just "make allmodconfig" and the warning is about a uninitialized
-> > > > > variable.
-> > > > > 
-> > > > > Line 304 in drivers/thermal/samsung/exynos_tmu.c if my shell
-> > > > > history
-> > > > > is to be believed.
-> > > > > 
-> > > > >                 Linus
-> > > > Yeah, this has also passed my local compilation error. Somehow my
-> > > > gcc4.9
-> > > > is not catching it. Using an older gcc (gcc4.6) does catch it.
-> > > > 
-> > > > Anyways, given that the conversion functions are written to cover
-> > > > for unexpected cal_type, the right way of fixing this is to rewrite
-> > > > the conversion functions to allow for returning error codes and
-> > > > adjusting the callers as expected.
-> > > > 
-> > > > Rui, bzolnier, please consider the following fix:
-> > > > 
-> > > as it is late in this merge window, I'd prefer to
-> > > 1. drop all the thermal-soc material in the first pull request which I
-> > > will send out soon.
-> > > 2. you can prepare another pull request containing the thermal-soc
-> > > materials except the exynos fixes
-> > > 3. exynos fixes with the problem solved can be queued for -rc2 or
-> > > later.
-> > > 
-> > 
-> > Agreed
-> 
-> What should I do now to help resolve the issue?
+On 13 April 2018 at 17:05, Rob Herring <robh+dt@kernel.org> wrote:
+> On Thu, Apr 12, 2018 at 6:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> The CPU's idle state nodes are currently parsed at the common cpuidle DT
+>> library, but also when initializing back-end data for the arch specific CPU
+>> operations, as in the PSCI driver case.
+>>
+>> To avoid open-coding, let's introduce of_get_cpu_state_node(), which takes
+>> the device node for the CPU and the index to the requested idle state node,
+>> as in-parameters. In case a corresponding idle state node is found, it
+>> returns the node with the refcount incremented for it, else it returns
+>> NULL.
+>>
+>> Moreover, for ARM, there are two generic methods, to describe the CPU's
+>> idle states, either via the flattened description through the
+>> "cpu-idle-states" binding [1] or via the hierarchical layout, using the
+>> "power-domains" and the "domain-idle-states" bindings [2]. Hence, let's
+>> take both options into account.
+>>
+>> [1]
+>> Documentation/devicetree/bindings/arm/idle-states.txt
+>> [2]
+>> Documentation/devicetree/bindings/arm/psci.txt
+>>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: devicetree@vger.kernel.org
+>> Cc: Lina Iyer <ilina@codeaurora.org>
+>> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+>> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/of/base.c  | 35 +++++++++++++++++++++++++++++++++++
+>>  include/linux/of.h |  8 ++++++++
+>>  2 files changed, 43 insertions(+)
+>
+> Some reason you didn't add my Reviewed-by from v6?
 
-Please resend your series with the patches without the warnings..
+No, I was just sloppy. My apologies!
 
-Thanks,
-
-Eduardo
+Kind regards
+Uffe
