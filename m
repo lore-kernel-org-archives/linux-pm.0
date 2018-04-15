@@ -1,152 +1,100 @@
-From: Craig Tatlor <ctatlor97@gmail.com>
-Subject: Re: [PATCH v4 2/3] dt-bindings: power: supply: qcom_bms: Add bindings
-Date: Sun, 15 Apr 2018 13:55:28 +0100
-Message-ID: <20180415125528.GA15803@arch.home>
-References: <20180407135934.26122-1-ctatlor97@gmail.com>
- <20180407175802.29444-1-ctatlor97@gmail.com>
- <20180407175802.29444-2-ctatlor97@gmail.com>
- <20180413163527.ludqnnc5nkj4spre@rob-hp-laptop>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Sun, 15 Apr 2018 18:15:51 +0200
+Message-ID: <20180415161551.GF10802@amd>
+References: <20180318104023.GA10392@amd>
+ <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
+ <20180319092106.GA5683@amd>
+ <6e43123a-5227-96c4-a1f5-4416bdb5b0db@gmail.com>
+ <c7d96582-e2e6-d9c8-1140-3f1dab836132@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="l+goss899txtYvYf"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180413163527.ludqnnc5nkj4spre@rob-hp-laptop>
+In-Reply-To: <c7d96582-e2e6-d9c8-1140-3f1dab836132@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Woody Suwalski <terraluna977@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 13, 2018 at 11:35:27AM -0500, Rob Herring wrote:
-> On Sat, Apr 07, 2018 at 06:57:45PM +0100, Craig Tatlor wrote:
-> > Add bindings for the Qualcomm Battery Monitoring system.
-> > 
-> > Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
-> > ---
-> >  .../bindings/power/supply/qcom_bms.txt        | 93 +++++++++++++++++++
-> >  1 file changed, 93 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power/supply/qcom_bms.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/supply/qcom_bms.txt b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
-> > new file mode 100644
-> > index 000000000000..6296399edc09
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
-> > @@ -0,0 +1,93 @@
-> > +Qualcomm Battery Measurement System
-> > +
-> > +The Qualcomm Battery Measurement System is found inside of Qualcomm PM8941
-> 
-> Is it Monitoring or Measurment?
-> 
-> > +PMICs. It provides OCV and coulomb counter registers that allow the kernel
-> > +to infer a capacity level.
-> 
-> s/kernel/OS/
-> 
-> OCV?
-> 
-> > +
-> > +Required properties:
-> > +- compatible:               Should contain "qcom,pm8941-bms".
-> > +- reg:                      Specifies the SPMI address and length of the
-> > +			    controller's registers.
-> > +- interrupts:               OCV threshold interrupt.
-> > +- io-channels:              Should contain IIO channel specifier for the
-> > +			    ADC channel that reports battery temperature.
-> > +- io-channel-names:         Should contain "temp".
-> > +- qcom,fcc-temp-legend:     An array containing the temperature, in degC,
-> > +			    for each column of the FCC lookup table.
-> 
-> What's FCC?
-> 
-> > +- qcom,fcc-lut:             An array of FCC values in mah, one entry for each
-> > +			    temperature defined in in qcom,fcc-temp-legend.
-> > +- qcom,ocv-temp-legend:     An array containing the temperature, in degC,
-> > +			    for each column of the OCV lookup table.
-> > +- qcom,ocv-capacity-legend: An array containing the capacity for each
-> > +			    row of the OCV lookup table.
-> > +- qcom,ocv-lut:             An array of OCV values in mV, one entry for each
-> > +			    capacity defined in qcom,ocv-capacity-legend.
-> 
-> Need to specify the sizes of these if not 32-bit.
-> 
-> All these seem to have units, so add unit suffixes as defined in 
-> property-units.txt.
-Should i change code to use microamphours & microvolts or add a new
-suffix?
-> 
-> > +
-> > +Example:
-> > +
-> > +		pm8941_vadc: vadc@3100 {
-> 
-> adc@...
-> 
-> > +			compatible = "qcom,spmi-vadc";
-> > +			reg = <0x3100>;
-> > +			interrupts = <0x0 0x31 0x0 IRQ_TYPE_EDGE_RISING>;
-> > +			#address-cells = <1>;
-> > +			#size-cells = <0>;
-> > +			#io-channel-cells = <1>;
-> > +
-> > +			bat_temp {
-> > +				reg = <VADC_LR_MUX1_BAT_THERM>;
-> > +			};
-> > +		};
-> > +
-> > +		bms@4000 {
-> > +			compatible = "qcom,pm8941-bms";
-> > +			reg = <0x4000>;
-> > +			interrupts = <0x0 0x40 0x4 IRQ_TYPE_EDGE_RISING>;
-> > +			interrupt-names = "ocv_thr";
-> > +
-> > +			io-channels = <&pm8941_vadc VADC_LR_MUX1_BAT_THERM>;
-> > +			io-channel-names = "temp";
-> > +
-> > +			qcom,fcc-temp-legend = /bits/ 8 <(-10) 0 25 50 65>;
-> > +			qcom,fcc-lut = /bits/ 16 <6010 6070 6680 6780 6670>;
-> > +
-> > +			qcom,ocv-capacity-legend = /bits/ 8 <100 95 90 85
-> > +							     80 75 70 65
-> > +							     60 55 50 45
-> > +							     40 35 30 25
-> > +							     20 15 10 9
-> > +							     8 7 6 5 4
-> > +							     3 2 1 0>;
-> > +
-> > +			qcom,ocv-temp-legend = /bits/ 8 <(-10) 0 25 50 65>;
-> > +			qcom,ocv-lut = /bits/ 16 <4288 4288 4306 4315 4315
-> > +						  4261 4241 4259 4266 4246
-> > +						  4201 4181 4201 4207 4187
-> > +						  4153 4133 4150 4155 4135
-> > +						  4105 4085 4100 4104 4084
-> > +						  4058 4038 4052 4058 4038
-> > +						  4012 3992 4004 4014 3994
-> > +						  3970 3950 3959 3971 3951
-> > +						  3931 3911 3915 3927 3907
-> > +						  3899 3879 3880 3884 3864
-> > +						  3873 3853 3851 3853 3833
-> > +						  3848 3828 3827 3829 3809
-> > +						  3829 3809 3808 3809 3789
-> > +						  3815 3795 3791 3791 3771
-> > +						  3801 3781 3775 3772 3752
-> > +						  3785 3765 3751 3746 3726
-> > +						  3767 3747 3727 3719 3699
-> > +						  3750 3730 3702 3692 3672
-> > +						  3728 3708 3680 3672 3652
-> > +						  3720 3700 3676 3665 3645
-> > +						  3712 3692 3670 3660 3645
-> > +						  3695 3675 3658 3648 3633
-> > +						  3662 3647 3629 3620 3610
-> > +						  3620 3605 3589 3580 3570
-> > +						  3562 3552 3538 3529 3519
-> > +						  3490 3480 3474 3470 3465
-> > +						  3403 3398 3388 3380 3375
-> > +						  3320 3300 3255 3221 3206
-> > +						  3000 3000 3000 3000 3000>;
-> > +		};
-> > +	};
-> > +};
-> > -- 
-> > 2.17.0
-> > 
+
+--l+goss899txtYvYf
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue 2018-03-20 21:11:54, Woody Suwalski wrote:
+> Woody Suwalski wrote:
+> >Pavel Machek wrote:
+> >>On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
+> >>>Pavel Machek wrote:
+> >>>>Hi!
+> >>>>
+> >>>>With recent linux-next, after resume networkmanager often claims that
+> >>>>"network is disabled". Sometimes suspend/resume clears that.
+> >>>>
+> >>>>Any ideas? Does it work for you?
+> >>>>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 Pavel
+> >>>Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
+> >>Thanks for testing... but yes, 4.16 should be ok. If not fixed,
+> >>problem will appear in 4.17-rc1.
+> >>
+> >Works here OK. Tried ~10 suspends, all restarted OK.
+> >kernel next-20180320
+> >nmcli shows that Wifi always connects OK
+> >
+> >Woody
+> >
+> Contrary, it just happened to me on a 64-bit build 4.16-rc5 on T440.
+> I think that Dan's suspicion is correct - it is a snafu in the PM: trying=
+ to
+> hibernate results in a message:
+> Failed to hibernate system via logind: There's already a shutdown or sleep
+> operation in progress.
+>=20
+> And ps shows "Ds /lib/systemd/systemd-sleep suspend"...
+
+Problem now seems to be in the mainline.
+
+But no, I don't see systemd-sleep in my process list :-(.
+
+I guess you can't reproduce it easily? I tried bisecting, but while it
+happens often enough to make v4.17 hard to use, it does not permit
+reliable bisect.
+
+These should be bad according to my notes
+
+b04240a33b99b32cf6fbdf5c943c04e505a0cb07=20
+ ed80dc19e4dd395c951f745acd1484d61c4cfb20
+ 52113a0d3889d6e2738cf09bf79bc9cac7b5e1c6
+ 4fc97ef94bbfa185d16b3e44199b7559d0668747
+ 14ebdb2c814f508936fe178a2abc906a16a3ab48
+ 639adbeef5ae1bb8eeebbb0cde0b885397bde192
+
+bisection claimed
+
+c16add24522547bf52c189b3c0d1ab6f5c2b4375
+
+is first bad commit, but I'm not sure if I trust that.
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--l+goss899txtYvYf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlrTercACgkQMOfwapXb+vKx9ACgiDP2CHhqiPMvrneTl75lVeoJ
+xQ8AnidZqh2Z02oIM6FKUUY/RCiK18wp
+=uP0j
+-----END PGP SIGNATURE-----
+
+--l+goss899txtYvYf--
