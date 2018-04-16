@@ -1,10 +1,10 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 09/14] thermal: exynos: remove parsing of
- samsung,tmu_reference_voltage property
-Date: Mon, 16 Apr 2018 12:12:00 +0200
-Message-ID: <1523873525-23718-10-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 07/14] thermal: exynos: remove parsing of
+ samsung,tmu_noise_cancel_mode property
+Date: Mon, 16 Apr 2018 12:11:58 +0200
+Message-ID: <1523873525-23718-8-git-send-email-b.zolnierkie@samsung.com>
 References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180416101412epcas2p241ac78d221c7c288e79fc410dd90d6ab@epcas2p2.samsung.com>
+        <CGME20180416101406epcas2p267a664bb26a00bdca6c4c176f9ce08ed@epcas2p2.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -12,130 +12,73 @@ To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Since pdata reference_voltage values are SoC (not platform) specific
-just move it from platform data to struct exynos_tmu_data instance.
-Then remove parsing of samsung,tmu_reference_voltage property.
+All SoCs use the same value (4) for the noise cancel mode so just
+make it explicit and remove parsing of samsung,tmu_noise_cancel_mode
+property.
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 18 +++++++++++++++---
- drivers/thermal/samsung/exynos_tmu.h |  4 ----
- 2 files changed, 15 insertions(+), 7 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 10 ++++------
+ drivers/thermal/samsung/exynos_tmu.h |  3 ---
+ 2 files changed, 4 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 9a0e961..6db6ef6 100644
+index 7ec8061..1fa162d 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -123,6 +123,8 @@
+@@ -168,6 +168,8 @@
+ #define EXYNOS_FIRST_POINT_TRIM			25
+ #define EXYNOS_SECOND_POINT_TRIM		85
  
- #define EXYNOS5433_PD_DET_EN			1
- 
-+#define EXYNOS5433_G3D_BASE			0x10070000
++#define EXYNOS_NOISE_CANCEL_MODE		4
 +
- /*exynos5440 specific registers*/
- #define EXYNOS5440_TMU_S0_7_TRIM		0x000
- #define EXYNOS5440_TMU_S0_7_CTRL		0x020
-@@ -190,6 +192,9 @@
-  * @max_efuse_value: maximum valid trimming data
-  * @temp_error1: fused value of the first point trim.
-  * @temp_error2: fused value of the second point trim.
-+ * @reference_voltage: reference voltage of amplifier
-+ *	in the positive-TC generator block
-+ *	0 < reference_voltage <= 31
-  * @regulator: pointer to the TMU regulator structure.
-  * @reg_conf: pointer to structure to register with core thermal.
-  * @ntrip: number of supported trip points.
-@@ -214,6 +219,7 @@ struct exynos_tmu_data {
- 	u32 min_efuse_value;
- 	u32 max_efuse_value;
- 	u16 temp_error1, temp_error2;
-+	u8 reference_voltage;
- 	struct regulator *regulator;
- 	struct thermal_zone_device *tzd;
- 	unsigned int ntrip;
-@@ -369,7 +375,7 @@ static u32 get_con_reg(struct exynos_tmu_data *data, u32 con)
- 		con |= (EXYNOS4412_MUX_ADDR_VALUE << EXYNOS4412_MUX_ADDR_SHIFT);
- 
- 	con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK << EXYNOS_TMU_REF_VOLTAGE_SHIFT);
--	con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
-+	con |= data->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
- 
+ #define MCELSIUS	1000
+ /**
+  * struct exynos_tmu_data : A structure to hold the private data of the TMU
+@@ -368,10 +370,8 @@ static u32 get_con_reg(struct exynos_tmu_data *data, u32 con)
  	con &= ~(EXYNOS_TMU_BUF_SLOPE_SEL_MASK << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
  	con |= (pdata->gain << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
-@@ -1136,8 +1142,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
  
- 	ret = of_property_read_u32(np, "samsung,tmu_gain", &value);
+-	if (pdata->noise_cancel_mode) {
+-		con &= ~(EXYNOS_TMU_TRIP_MODE_MASK << EXYNOS_TMU_TRIP_MODE_SHIFT);
+-		con |= (pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT);
+-	}
++	con &= ~(EXYNOS_TMU_TRIP_MODE_MASK << EXYNOS_TMU_TRIP_MODE_SHIFT);
++	con |= (EXYNOS_NOISE_CANCEL_MODE << EXYNOS_TMU_TRIP_MODE_SHIFT);
+ 
+ 	return con;
+ }
+@@ -1135,8 +1135,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
  	pdata->gain = (u8)value;
--	of_property_read_u32(np, "samsung,tmu_reference_voltage", &value);
--	pdata->reference_voltage = (u8)value;
+ 	of_property_read_u32(np, "samsung,tmu_reference_voltage", &value);
+ 	pdata->reference_voltage = (u8)value;
+-	of_property_read_u32(np, "samsung,tmu_noise_cancel_mode", &value);
+-	pdata->noise_cancel_mode = (u8)value;
  
- 	of_property_read_u32(np, "samsung,tmu_cal_type", &pdata->cal_type);
- 
-@@ -1192,6 +1196,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_read = exynos4210_tmu_read;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
- 		data->ntrip = 4;
-+		data->reference_voltage = 7;
- 		data->efuse_value = 55;
- 		data->min_efuse_value = 40;
- 		data->max_efuse_value = 100;
-@@ -1208,6 +1213,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
- 		data->ntrip = 4;
-+		data->reference_voltage = 16;
- 		data->efuse_value = 55;
- 		if (data->soc != SOC_ARCH_EXYNOS5420 &&
- 		    data->soc != SOC_ARCH_EXYNOS5420_TRIMINFO)
-@@ -1223,6 +1229,10 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
- 		data->ntrip = 8;
-+		if (res.start == EXYNOS5433_G3D_BASE)
-+			data->reference_voltage = 23;
-+		else
-+			data->reference_voltage = 16;
- 		data->efuse_value = 75;
- 		data->min_efuse_value = 40;
- 		data->max_efuse_value = 150;
-@@ -1234,6 +1244,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
- 		data->ntrip = 4;
-+		data->reference_voltage = 16;
- 		data->efuse_value = 0x5d2d;
- 		data->min_efuse_value = 16;
- 		data->max_efuse_value = 76;
-@@ -1245,6 +1256,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
- 		data->ntrip = 8;
-+		data->reference_voltage = 17;
- 		data->efuse_value = 75;
- 		data->min_efuse_value = 15;
- 		data->max_efuse_value = 100;
+ 	of_property_read_u32(np, "samsung,tmu_efuse_value",
+ 			     &pdata->efuse_value);
 diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 4c49312..9f4318c 100644
+index a5d8c9c..b111a01 100644
 --- a/drivers/thermal/samsung/exynos_tmu.h
 +++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -42,16 +42,12 @@ enum soc_type {
-  * struct exynos_tmu_platform_data
-  * @gain: gain of amplifier in the positive-TC generator block
-  *	0 < gain <= 15
-- * @reference_voltage: reference voltage of amplifier
-- *	in the positive-TC generator block
-- *	0 < reference_voltage <= 31
-  * @cal_type: calibration type for temperature
-  *
-  * This structure is required for configuration of exynos_tmu driver.
-  */
+@@ -45,8 +45,6 @@ enum soc_type {
+  * @reference_voltage: reference voltage of amplifier
+  *	in the positive-TC generator block
+  *	0 < reference_voltage <= 31
+- * @noise_cancel_mode: noise cancellation mode
+- *	000, 100, 101, 110 and 111 can be different modes
+  * @efuse_value: platform defined fuse value
+  * @min_efuse_value: minimum valid trimming data
+  * @max_efuse_value: maximum valid trimming data
+@@ -57,7 +55,6 @@ enum soc_type {
  struct exynos_tmu_platform_data {
  	u8 gain;
--	u8 reference_voltage;
+ 	u8 reference_voltage;
+-	u8 noise_cancel_mode;
  
- 	u32 cal_type;
- };
+ 	u32 efuse_value;
+ 	u32 min_efuse_value;
 -- 
 1.9.1
