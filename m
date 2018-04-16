@@ -1,125 +1,129 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 05/14] thermal: exynos: remove parsing of
- samsung,tmu_default_temp_offset property
-Date: Mon, 16 Apr 2018 12:11:56 +0200
-Message-ID: <1523873525-23718-6-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 03/14] thermal: exynos: Read soc_type from match data
+Date: Mon, 16 Apr 2018 12:11:54 +0200
+Message-ID: <1523873525-23718-4-git-send-email-b.zolnierkie@samsung.com>
 References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180416101400epcas1p45e65b37b922a5d0265de7879eeb1df87@epcas1p4.samsung.com>
+        <CGME20180416101353epcas2p1793d6079b1a1fbb8b4841ee562b22155@epcas2p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Maciej Purski <m.purski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Trimming (one point based or two points based) is always used for
-the temperature calibration and the default non-trimming code is
-never reached. Remove it and then remove no longer needed parsing
-of samsung,tmu_default_temp_offset property.
+From: Maciej Purski <m.purski@samsung.com>
 
-There should be no functional changes caused by this patch.
+Device context's field data->soc is currently obtained by comparing
+of_compatible's. Provide soc_type as .data field in device's match
+table, as it is done in most drivers.
 
+Signed-off-by: Maciej Purski <m.purski@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 48 ++++++++++--------------------------
- drivers/thermal/samsung/exynos_tmu.h |  2 --
- 2 files changed, 13 insertions(+), 37 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 74 +++++++++++++++++-------------------
+ 1 file changed, 34 insertions(+), 40 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index d7a3c3c..958a7c4 100644
+index ac83f72..d7a3c3c 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -249,24 +249,14 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
- static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
- {
- 	struct exynos_tmu_platform_data *pdata = data->pdata;
--	int temp_code;
--
--	switch (pdata->cal_type) {
--	case TYPE_TWO_POINT_TRIMMING:
--		temp_code = (temp - pdata->first_point_trim) *
--			(data->temp_error2 - data->temp_error1) /
--			(pdata->second_point_trim - pdata->first_point_trim) +
--			data->temp_error1;
--		break;
--	case TYPE_ONE_POINT_TRIMMING:
--		temp_code = temp + data->temp_error1 - pdata->first_point_trim;
--		break;
--	default:
--		temp_code = temp + pdata->default_temp_offset;
--		break;
--	}
- 
--	return temp_code;
-+	if (pdata->cal_type == TYPE_ONE_POINT_TRIMMING)
-+		return temp + data->temp_error1 - pdata->first_point_trim;
-+
-+	return (temp - pdata->first_point_trim) *
-+		(data->temp_error2 - data->temp_error1) /
-+		(pdata->second_point_trim - pdata->first_point_trim) +
-+		data->temp_error1;
+@@ -29,7 +29,7 @@
+ #include <linux/io.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+-#include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/platform_device.h>
+@@ -1105,47 +1105,41 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
  }
  
- /*
-@@ -276,24 +266,14 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
- static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
- {
- 	struct exynos_tmu_platform_data *pdata = data->pdata;
--	int temp;
- 
--	switch (pdata->cal_type) {
--	case TYPE_TWO_POINT_TRIMMING:
--		temp = (temp_code - data->temp_error1) *
--			(pdata->second_point_trim - pdata->first_point_trim) /
--			(data->temp_error2 - data->temp_error1) +
--			pdata->first_point_trim;
--		break;
--	case TYPE_ONE_POINT_TRIMMING:
--		temp = temp_code - data->temp_error1 + pdata->first_point_trim;
--		break;
--	default:
--		temp = temp_code - pdata->default_temp_offset;
--		break;
--	}
-+	if (pdata->cal_type == TYPE_ONE_POINT_TRIMMING)
-+		return temp_code - data->temp_error1 + pdata->first_point_trim;
- 
--	return temp;
-+	return (temp_code - data->temp_error1) *
-+		(pdata->second_point_trim - pdata->first_point_trim) /
-+		(data->temp_error2 - data->temp_error1) +
-+		pdata->first_point_trim;
- }
- 
- static void sanitize_temp_error(struct exynos_tmu_data *data, u32 trim_info)
-@@ -1166,8 +1146,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
- 	pdata->first_point_trim = (u8)value;
- 	of_property_read_u32(np, "samsung,tmu_second_point_trim", &value);
- 	pdata->second_point_trim = (u8)value;
--	of_property_read_u32(np, "samsung,tmu_default_temp_offset", &value);
--	pdata->default_temp_offset = (u8)value;
- 
- 	of_property_read_u32(np, "samsung,tmu_cal_type", &pdata->cal_type);
- 
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 8c468b6..a7e81b4 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -50,7 +50,6 @@ enum soc_type {
-  * @efuse_value: platform defined fuse value
-  * @min_efuse_value: minimum valid trimming data
-  * @max_efuse_value: maximum valid trimming data
-- * @default_temp_offset: default temperature offset in case of no trimming
-  * @cal_type: calibration type for temperature
-  *
-  * This structure is required for configuration of exynos_tmu driver.
-@@ -65,7 +64,6 @@ struct exynos_tmu_platform_data {
- 	u32 max_efuse_value;
- 	u8 first_point_trim;
- 	u8 second_point_trim;
--	u8 default_temp_offset;
- 
- 	u32 cal_type;
+ static const struct of_device_id exynos_tmu_match[] = {
+-	{ .compatible = "samsung,exynos3250-tmu", },
+-	{ .compatible = "samsung,exynos4210-tmu", },
+-	{ .compatible = "samsung,exynos4412-tmu", },
+-	{ .compatible = "samsung,exynos5250-tmu", },
+-	{ .compatible = "samsung,exynos5260-tmu", },
+-	{ .compatible = "samsung,exynos5420-tmu", },
+-	{ .compatible = "samsung,exynos5420-tmu-ext-triminfo", },
+-	{ .compatible = "samsung,exynos5433-tmu", },
+-	{ .compatible = "samsung,exynos5440-tmu", },
+-	{ .compatible = "samsung,exynos7-tmu", },
+-	{ /* sentinel */ },
++	{
++		.compatible = "samsung,exynos3250-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS3250,
++	}, {
++		.compatible = "samsung,exynos4210-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS4210,
++	}, {
++		.compatible = "samsung,exynos4412-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS4412,
++	}, {
++		.compatible = "samsung,exynos5250-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS5250,
++	}, {
++		.compatible = "samsung,exynos5260-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS5260,
++	}, {
++		.compatible = "samsung,exynos5420-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS5420,
++	}, {
++		.compatible = "samsung,exynos5420-tmu-ext-triminfo",
++		.data = (const void *)SOC_ARCH_EXYNOS5420_TRIMINFO,
++	}, {
++		.compatible = "samsung,exynos5433-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS5433,
++	}, {
++		.compatible = "samsung,exynos5440-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS5440,
++	}, {
++		.compatible = "samsung,exynos7-tmu",
++		.data = (const void *)SOC_ARCH_EXYNOS7,
++	},
++	{ },
  };
+ MODULE_DEVICE_TABLE(of, exynos_tmu_match);
+ 
+-static int exynos_of_get_soc_type(struct device_node *np)
+-{
+-	if (of_device_is_compatible(np, "samsung,exynos3250-tmu"))
+-		return SOC_ARCH_EXYNOS3250;
+-	else if (of_device_is_compatible(np, "samsung,exynos4210-tmu"))
+-		return SOC_ARCH_EXYNOS4210;
+-	else if (of_device_is_compatible(np, "samsung,exynos4412-tmu"))
+-		return SOC_ARCH_EXYNOS4412;
+-	else if (of_device_is_compatible(np, "samsung,exynos5250-tmu"))
+-		return SOC_ARCH_EXYNOS5250;
+-	else if (of_device_is_compatible(np, "samsung,exynos5260-tmu"))
+-		return SOC_ARCH_EXYNOS5260;
+-	else if (of_device_is_compatible(np, "samsung,exynos5420-tmu"))
+-		return SOC_ARCH_EXYNOS5420;
+-	else if (of_device_is_compatible(np,
+-					 "samsung,exynos5420-tmu-ext-triminfo"))
+-		return SOC_ARCH_EXYNOS5420_TRIMINFO;
+-	else if (of_device_is_compatible(np, "samsung,exynos5433-tmu"))
+-		return SOC_ARCH_EXYNOS5433;
+-	else if (of_device_is_compatible(np, "samsung,exynos5440-tmu"))
+-		return SOC_ARCH_EXYNOS5440;
+-	else if (of_device_is_compatible(np, "samsung,exynos7-tmu"))
+-		return SOC_ARCH_EXYNOS7;
+-
+-	return -EINVAL;
+-}
+-
+ static int exynos_of_sensor_conf(struct device_node *np,
+ 				 struct exynos_tmu_platform_data *pdata)
+ {
+@@ -1219,7 +1213,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 
+ 	exynos_of_sensor_conf(pdev->dev.of_node, pdata);
+ 	data->pdata = pdata;
+-	data->soc = exynos_of_get_soc_type(pdev->dev.of_node);
++	data->soc = (enum soc_type)of_device_get_match_data(&pdev->dev);
+ 
+ 	switch (data->soc) {
+ 	case SOC_ARCH_EXYNOS4210:
 -- 
 1.9.1
