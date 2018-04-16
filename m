@@ -1,66 +1,139 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 02/14] thermal: exynos: Propagate error value from
- tmu_read()
-Date: Mon, 16 Apr 2018 14:54:01 +0200
-Message-ID: <4123d3bb-408f-b0c0-43c3-862e93f4907a@linaro.org>
+Subject: Re: [PATCH 05/14] thermal: exynos: remove parsing of
+ samsung,tmu_default_temp_offset property
+Date: Mon, 16 Apr 2018 14:55:54 +0200
+Message-ID: <86b33c49-d6a3-0db7-5c95-78619f0f29fe@linaro.org>
 References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
- <6993557.YT37RIp4lG@amdc3058>
- <22d7f063-9a69-78cf-e0fd-2043e187244e@linaro.org>
- <CGME20180416124956eucas1p17636602f59e7ad83088253ed369e7894@eucas1p1.samsung.com>
- <21168314.MLeXVVoknU@amdc3058>
+ <CGME20180416101400epcas1p45e65b37b922a5d0265de7879eeb1df87@epcas1p4.samsung.com>
+ <1523873525-23718-6-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <21168314.MLeXVVoknU@amdc3058>
+In-Reply-To: <1523873525-23718-6-git-send-email-b.zolnierkie@samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16/04/2018 14:49, Bartlomiej Zolnierkiewicz wrote:
-> On Monday, April 16, 2018 02:41:48 PM Daniel Lezcano wrote:
->> On 16/04/2018 14:35, Bartlomiej Zolnierkiewicz wrote:
->>> On Monday, April 16, 2018 02:16:56 PM Daniel Lezcano wrote:
->>>> On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
->>>>> From: Marek Szyprowski <m.szyprowski@samsung.com>
->>>>>
->>>>> tmu_read() in case of Exynos4210 might return error for out of bound
->>>>> values. Current code ignores such value, what leads to reporting critical
->>>>> temperature value. Add proper error code propagation to exynos_get_temp()
->>>>> function.
->>>>
->>>> For me the comment in the function exynos4210_tmu_read
->>>>
->>>> /* "temp_code" should range between 75 and 175 */
->>>>
->>>> ... is strange. I would double check this assertion before dealing with
->>>> the error value.
->>>
->>> static int exynos4210_tmu_read(struct exynos_tmu_data *data)
->>> {
->>> 	int ret = readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP);
->>>
->>> 	/* "temp_code" should range between 75 and 175 */
->>> 	return (ret < 75 || ret > 175) ? -ENODATA : ret;
->>> }
->>>
->>
->> But I don't get why it *should* ?
+On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
+> Trimming (one point based or two points based) is always used for
+> the temperature calibration and the default non-trimming code is
+> never reached. Remove it and then remove no longer needed parsing
+> of samsung,tmu_default_temp_offset property.
 > 
-> Because of hardware design.
+> There should be no functional changes caused by this patch.
 > 
->> Shouldn't be the same with the 4412, it seems having the same sensor, no?
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+This one was easy :)
+
+
+>  drivers/thermal/samsung/exynos_tmu.c | 48 ++++++++++--------------------------
+>  drivers/thermal/samsung/exynos_tmu.h |  2 --
+>  2 files changed, 13 insertions(+), 37 deletions(-)
 > 
-> Probably same limitations apply to all SoCs (Exynos4412 has very similar
-> sensor) but the driver currently lacks the needed checks for them (it is
-> on TODO but other things have higher priority).
-
-
-I understand. Why the other boards are not reporting a critical value?
-
-
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> index d7a3c3c..958a7c4 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -249,24 +249,14 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
+>  static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
+>  {
+>  	struct exynos_tmu_platform_data *pdata = data->pdata;
+> -	int temp_code;
+> -
+> -	switch (pdata->cal_type) {
+> -	case TYPE_TWO_POINT_TRIMMING:
+> -		temp_code = (temp - pdata->first_point_trim) *
+> -			(data->temp_error2 - data->temp_error1) /
+> -			(pdata->second_point_trim - pdata->first_point_trim) +
+> -			data->temp_error1;
+> -		break;
+> -	case TYPE_ONE_POINT_TRIMMING:
+> -		temp_code = temp + data->temp_error1 - pdata->first_point_trim;
+> -		break;
+> -	default:
+> -		temp_code = temp + pdata->default_temp_offset;
+> -		break;
+> -	}
+>  
+> -	return temp_code;
+> +	if (pdata->cal_type == TYPE_ONE_POINT_TRIMMING)
+> +		return temp + data->temp_error1 - pdata->first_point_trim;
+> +
+> +	return (temp - pdata->first_point_trim) *
+> +		(data->temp_error2 - data->temp_error1) /
+> +		(pdata->second_point_trim - pdata->first_point_trim) +
+> +		data->temp_error1;
+>  }
+>  
+>  /*
+> @@ -276,24 +266,14 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
+>  static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
+>  {
+>  	struct exynos_tmu_platform_data *pdata = data->pdata;
+> -	int temp;
+>  
+> -	switch (pdata->cal_type) {
+> -	case TYPE_TWO_POINT_TRIMMING:
+> -		temp = (temp_code - data->temp_error1) *
+> -			(pdata->second_point_trim - pdata->first_point_trim) /
+> -			(data->temp_error2 - data->temp_error1) +
+> -			pdata->first_point_trim;
+> -		break;
+> -	case TYPE_ONE_POINT_TRIMMING:
+> -		temp = temp_code - data->temp_error1 + pdata->first_point_trim;
+> -		break;
+> -	default:
+> -		temp = temp_code - pdata->default_temp_offset;
+> -		break;
+> -	}
+> +	if (pdata->cal_type == TYPE_ONE_POINT_TRIMMING)
+> +		return temp_code - data->temp_error1 + pdata->first_point_trim;
+>  
+> -	return temp;
+> +	return (temp_code - data->temp_error1) *
+> +		(pdata->second_point_trim - pdata->first_point_trim) /
+> +		(data->temp_error2 - data->temp_error1) +
+> +		pdata->first_point_trim;
+>  }
+>  
+>  static void sanitize_temp_error(struct exynos_tmu_data *data, u32 trim_info)
+> @@ -1166,8 +1146,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
+>  	pdata->first_point_trim = (u8)value;
+>  	of_property_read_u32(np, "samsung,tmu_second_point_trim", &value);
+>  	pdata->second_point_trim = (u8)value;
+> -	of_property_read_u32(np, "samsung,tmu_default_temp_offset", &value);
+> -	pdata->default_temp_offset = (u8)value;
+>  
+>  	of_property_read_u32(np, "samsung,tmu_cal_type", &pdata->cal_type);
+>  
+> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+> index 8c468b6..a7e81b4 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.h
+> +++ b/drivers/thermal/samsung/exynos_tmu.h
+> @@ -50,7 +50,6 @@ enum soc_type {
+>   * @efuse_value: platform defined fuse value
+>   * @min_efuse_value: minimum valid trimming data
+>   * @max_efuse_value: maximum valid trimming data
+> - * @default_temp_offset: default temperature offset in case of no trimming
+>   * @cal_type: calibration type for temperature
+>   *
+>   * This structure is required for configuration of exynos_tmu driver.
+> @@ -65,7 +64,6 @@ struct exynos_tmu_platform_data {
+>  	u32 max_efuse_value;
+>  	u8 first_point_trim;
+>  	u8 second_point_trim;
+> -	u8 default_temp_offset;
+>  
+>  	u32 cal_type;
+>  };
+> 
 
 
 -- 
