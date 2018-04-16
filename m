@@ -1,10 +1,10 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 14/14] arm64: dts: exynos: remove no longer needed samsung
- thermal properties
-Date: Mon, 16 Apr 2018 12:12:05 +0200
-Message-ID: <1523873525-23718-15-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 10/14] thermal: exynos: remove parsing of samsung,tmu_gain
+ property
+Date: Mon, 16 Apr 2018 12:12:01 +0200
+Message-ID: <1523873525-23718-11-git-send-email-b.zolnierkie@samsung.com>
 References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180416101428epcas1p1d9646bf1b56f0512a3fa3a6301b793c6@epcas1p1.samsung.com>
+        <CGME20180416101415epcas1p1b1108c9d654a7b2832179b5c1f49ff4a@epcas1p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -12,161 +12,131 @@ To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Remove no longer needed samsung thermal properties.
+Since pdata gain values are SoC (not platform) specific just move
+it from platform data to struct exynos_tmu_data instance. Then
+remove parsing of samsung,tmu_gain property.
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- .../dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi  | 20 --------------------
- .../boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi | 19 -------------------
- arch/arm64/boot/dts/exynos/exynos5433.dtsi          | 10 +++++-----
- .../boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi    | 21 ---------------------
- arch/arm64/boot/dts/exynos/exynos7.dtsi             |  2 +-
- 5 files changed, 6 insertions(+), 66 deletions(-)
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi
+ drivers/thermal/samsung/exynos_tmu.c | 18 +++++++++---------
+ drivers/thermal/samsung/exynos_tmu.h |  4 ----
+ 2 files changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi b/arch/arm64/boot/dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi
-deleted file mode 100644
-index f080357..0000000
---- a/arch/arm64/boot/dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi
-+++ /dev/null
-@@ -1,20 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * Device tree sources for Exynos5433 TMU sensor configuration
-- *
-- * Copyright (c) 2016 Jonghwa Lee <jonghwa3.lee@samsung.com>
-- */
--
--#include <dt-bindings/thermal/thermal_exynos.h>
--
--#thermal-sensor-cells = <0>;
--samsung,tmu_gain = <8>;
--samsung,tmu_reference_voltage = <23>;
--samsung,tmu_noise_cancel_mode = <4>;
--samsung,tmu_efuse_value = <75>;
--samsung,tmu_min_efuse_value = <40>;
--samsung,tmu_max_efuse_value = <150>;
--samsung,tmu_first_point_trim = <25>;
--samsung,tmu_second_point_trim = <85>;
--samsung,tmu_default_temp_offset = <50>;
--samsung,tmu_mux_addr = <6>;
-diff --git a/arch/arm64/boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi b/arch/arm64/boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi
-deleted file mode 100644
-index cccae66..0000000
---- a/arch/arm64/boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi
-+++ /dev/null
-@@ -1,19 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * Device tree sources for Exynos5433 TMU sensor configuration
-- *
-- * Copyright (c) 2016 Chanwoo Choi <cw00.choi@samsung.com>
-- */
--
--#include <dt-bindings/thermal/thermal_exynos.h>
--
--#thermal-sensor-cells = <0>;
--samsung,tmu_gain = <8>;
--samsung,tmu_reference_voltage = <16>;
--samsung,tmu_noise_cancel_mode = <4>;
--samsung,tmu_efuse_value = <75>;
--samsung,tmu_min_efuse_value = <40>;
--samsung,tmu_max_efuse_value = <150>;
--samsung,tmu_first_point_trim = <25>;
--samsung,tmu_second_point_trim = <85>;
--samsung,tmu_default_temp_offset = <50>;
-diff --git a/arch/arm64/boot/dts/exynos/exynos5433.dtsi b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
-index c0231d0..c414a27 100644
---- a/arch/arm64/boot/dts/exynos/exynos5433.dtsi
-+++ b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
-@@ -637,7 +637,7 @@
- 			clocks = <&cmu_peris CLK_PCLK_TMU0_APBIF>,
- 				<&cmu_peris CLK_SCLK_TMU0>;
- 			clock-names = "tmu_apbif", "tmu_sclk";
--			#include "exynos5433-tmu-sensor-conf.dtsi"
-+			#thermal-sensor-cells = <0>;
- 			status = "disabled";
- 		};
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 6db6ef6..3cdbc09 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -192,6 +192,8 @@
+  * @max_efuse_value: maximum valid trimming data
+  * @temp_error1: fused value of the first point trim.
+  * @temp_error2: fused value of the second point trim.
++ * @gain: gain of amplifier in the positive-TC generator block
++ *	0 < gain <= 15
+  * @reference_voltage: reference voltage of amplifier
+  *	in the positive-TC generator block
+  *	0 < reference_voltage <= 31
+@@ -219,6 +221,7 @@ struct exynos_tmu_data {
+ 	u32 min_efuse_value;
+ 	u32 max_efuse_value;
+ 	u16 temp_error1, temp_error2;
++	u8 gain;
+ 	u8 reference_voltage;
+ 	struct regulator *regulator;
+ 	struct thermal_zone_device *tzd;
+@@ -368,8 +371,6 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
  
-@@ -648,7 +648,7 @@
- 			clocks = <&cmu_peris CLK_PCLK_TMU0_APBIF>,
- 				<&cmu_peris CLK_SCLK_TMU0>;
- 			clock-names = "tmu_apbif", "tmu_sclk";
--			#include "exynos5433-tmu-sensor-conf.dtsi"
-+			#thermal-sensor-cells = <0>;
- 			status = "disabled";
- 		};
- 
-@@ -659,7 +659,7 @@
- 			clocks = <&cmu_peris CLK_PCLK_TMU1_APBIF>,
- 				<&cmu_peris CLK_SCLK_TMU1>;
- 			clock-names = "tmu_apbif", "tmu_sclk";
--			#include "exynos5433-tmu-g3d-sensor-conf.dtsi"
-+			#thermal-sensor-cells = <0>;
- 			status = "disabled";
- 		};
- 
-@@ -670,7 +670,7 @@
- 			clocks = <&cmu_peris CLK_PCLK_TMU1_APBIF>,
- 				<&cmu_peris CLK_SCLK_TMU1>;
- 			clock-names = "tmu_apbif", "tmu_sclk";
--			#include "exynos5433-tmu-sensor-conf.dtsi"
-+			#thermal-sensor-cells = <0>;
- 			status = "disabled";
- 		};
- 
-@@ -681,7 +681,7 @@
- 			clocks = <&cmu_peris CLK_PCLK_TMU1_APBIF>,
- 				<&cmu_peris CLK_SCLK_TMU1>;
- 			clock-names = "tmu_apbif", "tmu_sclk";
--			#include "exynos5433-tmu-sensor-conf.dtsi"
-+			#thermal-sensor-cells = <0>;
- 			status = "disabled";
- 		};
- 
-diff --git a/arch/arm64/boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi b/arch/arm64/boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi
-deleted file mode 100644
-index 4849471..0000000
---- a/arch/arm64/boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi
-+++ /dev/null
-@@ -1,21 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * Device tree sources for Exynos7 TMU sensor configuration
-- *
-- * Copyright (c) 2016 Samsung Electronics Co., Ltd.
-- *		http://www.samsung.com
-- */
+ static u32 get_con_reg(struct exynos_tmu_data *data, u32 con)
+ {
+-	struct exynos_tmu_platform_data *pdata = data->pdata;
 -
--#include <dt-bindings/thermal/thermal_exynos.h>
--
--#thermal-sensor-cells = <0>;
--samsung,tmu_gain = <9>;
--samsung,tmu_reference_voltage = <17>;
--samsung,tmu_noise_cancel_mode = <4>;
--samsung,tmu_efuse_value = <75>;
--samsung,tmu_min_efuse_value = <15>;
--samsung,tmu_max_efuse_value = <100>;
--samsung,tmu_first_point_trim = <25>;
--samsung,tmu_second_point_trim = <85>;
--samsung,tmu_default_temp_offset = <50>;
--samsung,tmu_cal_type = <TYPE_ONE_POINT_TRIMMING>;
-diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-index ad9dce6..8834879 100644
---- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
-+++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-@@ -589,7 +589,7 @@
- 			clocks = <&clock_peris PCLK_TMU>,
- 				 <&clock_peris SCLK_TMU>;
- 			clock-names = "tmu_apbif", "tmu_sclk";
--			#include "exynos7-tmu-sensor-conf.dtsi"
-+			#thermal-sensor-cells = <0>;
- 		};
+ 	if (data->soc == SOC_ARCH_EXYNOS4412 ||
+ 	    data->soc == SOC_ARCH_EXYNOS3250)
+ 		con |= (EXYNOS4412_MUX_ADDR_VALUE << EXYNOS4412_MUX_ADDR_SHIFT);
+@@ -378,7 +379,7 @@ static u32 get_con_reg(struct exynos_tmu_data *data, u32 con)
+ 	con |= data->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
  
- 		thermal-zones {
+ 	con &= ~(EXYNOS_TMU_BUF_SLOPE_SEL_MASK << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
+-	con |= (pdata->gain << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
++	con |= (data->gain << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
+ 
+ 	con &= ~(EXYNOS_TMU_TRIP_MODE_MASK << EXYNOS_TMU_TRIP_MODE_SHIFT);
+ 	con |= (EXYNOS_NOISE_CANCEL_MODE << EXYNOS_TMU_TRIP_MODE_SHIFT);
+@@ -1135,14 +1136,8 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
+ static int exynos_of_sensor_conf(struct device_node *np,
+ 				 struct exynos_tmu_platform_data *pdata)
+ {
+-	u32 value;
+-	int ret;
+-
+ 	of_node_get(np);
+ 
+-	ret = of_property_read_u32(np, "samsung,tmu_gain", &value);
+-	pdata->gain = (u8)value;
+-
+ 	of_property_read_u32(np, "samsung,tmu_cal_type", &pdata->cal_type);
+ 
+ 	of_node_put(np);
+@@ -1196,6 +1191,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_read = exynos4210_tmu_read;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 4;
++		data->gain = 15;
+ 		data->reference_voltage = 7;
+ 		data->efuse_value = 55;
+ 		data->min_efuse_value = 40;
+@@ -1213,6 +1209,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 4;
++		data->gain = 8;
+ 		data->reference_voltage = 16;
+ 		data->efuse_value = 55;
+ 		if (data->soc != SOC_ARCH_EXYNOS5420 &&
+@@ -1229,6 +1226,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 8;
++		data->gain = 8;
+ 		if (res.start == EXYNOS5433_G3D_BASE)
+ 			data->reference_voltage = 23;
+ 		else
+@@ -1244,6 +1242,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
+ 		data->ntrip = 4;
++		data->gain = 5;
+ 		data->reference_voltage = 16;
+ 		data->efuse_value = 0x5d2d;
+ 		data->min_efuse_value = 16;
+@@ -1256,6 +1255,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
+ 		data->ntrip = 8;
++		data->gain = 9;
+ 		data->reference_voltage = 17;
+ 		data->efuse_value = 75;
+ 		data->min_efuse_value = 15;
+diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+index 9f4318c..689453d 100644
+--- a/drivers/thermal/samsung/exynos_tmu.h
++++ b/drivers/thermal/samsung/exynos_tmu.h
+@@ -40,15 +40,11 @@ enum soc_type {
+ 
+ /**
+  * struct exynos_tmu_platform_data
+- * @gain: gain of amplifier in the positive-TC generator block
+- *	0 < gain <= 15
+  * @cal_type: calibration type for temperature
+  *
+  * This structure is required for configuration of exynos_tmu driver.
+  */
+ struct exynos_tmu_platform_data {
+-	u8 gain;
+-
+ 	u32 cal_type;
+ };
+ 
 -- 
 1.9.1
