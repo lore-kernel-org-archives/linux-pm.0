@@ -1,70 +1,36 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 02/14] thermal: exynos: Propagate error value from
- tmu_read()
-Date: Mon, 16 Apr 2018 15:02:50 +0200
-Message-ID: <1533276.iHnOBFtKQV@amdc3058>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 07/14] thermal: exynos: remove parsing of
+ samsung,tmu_noise_cancel_mode property
+Date: Mon, 16 Apr 2018 15:03:39 +0200
+Message-ID: <bb3f5efc-a53b-52cc-c863-9c29d356feef@linaro.org>
 References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
-        <21168314.MLeXVVoknU@amdc3058>
-        <4123d3bb-408f-b0c0-43c3-862e93f4907a@linaro.org>
-        <CGME20180416130254eucas1p24732958e5b202cacaddc69cde747a478@eucas1p2.samsung.com>
+ <CGME20180416101406epcas2p267a664bb26a00bdca6c4c176f9ce08ed@epcas2p2.samsung.com>
+ <1523873525-23718-8-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4123d3bb-408f-b0c0-43c3-862e93f4907a@linaro.org>
+In-Reply-To: <1523873525-23718-8-git-send-email-b.zolnierkie@samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 16, 2018 02:54:01 PM Daniel Lezcano wrote:
-> On 16/04/2018 14:49, Bartlomiej Zolnierkiewicz wrote:
-> > On Monday, April 16, 2018 02:41:48 PM Daniel Lezcano wrote:
-> >> On 16/04/2018 14:35, Bartlomiej Zolnierkiewicz wrote:
-> >>> On Monday, April 16, 2018 02:16:56 PM Daniel Lezcano wrote:
-> >>>> On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
-> >>>>> From: Marek Szyprowski <m.szyprowski@samsung.com>
-> >>>>>
-> >>>>> tmu_read() in case of Exynos4210 might return error for out of bound
-> >>>>> values. Current code ignores such value, what leads to reporting critical
-> >>>>> temperature value. Add proper error code propagation to exynos_get_temp()
-> >>>>> function.
-> >>>>
-> >>>> For me the comment in the function exynos4210_tmu_read
-> >>>>
-> >>>> /* "temp_code" should range between 75 and 175 */
-> >>>>
-> >>>> ... is strange. I would double check this assertion before dealing with
-> >>>> the error value.
-> >>>
-> >>> static int exynos4210_tmu_read(struct exynos_tmu_data *data)
-> >>> {
-> >>> 	int ret = readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP);
-> >>>
-> >>> 	/* "temp_code" should range between 75 and 175 */
-> >>> 	return (ret < 75 || ret > 175) ? -ENODATA : ret;
-> >>> }
-> >>>
-> >>
-> >> But I don't get why it *should* ?
-> > 
-> > Because of hardware design.
-> > 
-> >> Shouldn't be the same with the 4412, it seems having the same sensor, no?
-> > 
-> > Probably same limitations apply to all SoCs (Exynos4412 has very similar
-> > sensor) but the driver currently lacks the needed checks for them (it is
-> > on TODO but other things have higher priority).
+On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
+> All SoCs use the same value (4) for the noise cancel mode so just
+> make it explicit and remove parsing of samsung,tmu_noise_cancel_mode
+> property.
 > 
-> 
-> I understand. Why the other boards are not reporting a critical value?
+> There should be no functional changes caused by this patch.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-->tmu_read methods for other SoCs currently lack hardware limitations
-checking so they don't return negative values (which before fix was passed
-to code_to_temp() unchecked and was mapped to critical temperature value).
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
