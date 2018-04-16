@@ -1,30 +1,39 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH V6 2/2] thermal: imx: add i.MX7 thermal sensor support
-Date: Mon, 16 Apr 2018 16:44:25 +0800
-Message-ID: <20180416084423.GG25429@dragon>
-References: <1519955970-11365-1-git-send-email-Anson.Huang@nxp.com>
- <1519955970-11365-2-git-send-email-Anson.Huang@nxp.com>
- <AM3PR04MB13158EE8C129D6AEC605A106F5D20@AM3PR04MB1315.eurprd04.prod.outlook.com>
- <1520923865.3766.4.camel@intel.com>
- <20180315005140.GB12096@localhost.localdomain>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Mon, 16 Apr 2018 10:34:31 +0100
+Message-ID: <20180416093431.GA27901@e107533-lin>
+References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
+ <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
+ <3f3b3b7a-3b74-aee2-2fac-f2759babe3f0@arm.com>
+ <939f7943-feec-aaa2-3bd3-59a6618330c0@linaro.org>
+ <20180416073729.GA4244@vireshk-i7>
+ <0a3164f9-4738-e24e-6ed0-2c75024c304c@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180315005140.GB12096@localhost.localdomain>
+In-Reply-To: <0a3164f9-4738-e24e-6ed0-2c75024c304c@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Anson Huang <anson.huang@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
-
-On Wed, Mar 14, 2018 at 05:51:42PM -0700, Eduardo Valentin wrote:
-> On Tue, Mar 13, 2018 at 02:51:05PM +0800, Zhang Rui wrote:
-> > yeah, will review it and get back to you later.
+On Mon, Apr 16, 2018 at 09:44:51AM +0200, Daniel Lezcano wrote:
+> On 16/04/2018 09:37, Viresh Kumar wrote:
+> > On 13-04-18, 13:47, Daniel Lezcano wrote:
+> >> Ok, noted. At the first glance, it should not be a problem.
+> > 
+> > Why do you think it wouldn't be a problem ?
 > 
-> This is in my tree now.
+> Because we rely on the number to identify the cluster and flag it
+> 'processed'. The number itself is not important.
+> 
 
-It seems that the patch did not make its way to 4.17-rc1?
+In that case, why can't cpu_possible_mask be used for simplicity if all
+you need is the tracking and that need not be grouped under the "cluster"
+banner.
 
-Shawn
+--
+Regards,
+Sudeep
