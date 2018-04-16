@@ -1,8 +1,8 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
 Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
  idle cooling driver
-Date: Mon, 16 Apr 2018 13:30:20 +0100
-Message-ID: <20180416123019.GA9341@e107981-ln.cambridge.arm.com>
+Date: Mon, 16 Apr 2018 13:31:02 +0100
+Message-ID: <20180416123102.GD3706@e107533-lin>
 References: <3f3b3b7a-3b74-aee2-2fac-f2759babe3f0@arm.com>
  <939f7943-feec-aaa2-3bd3-59a6618330c0@linaro.org>
  <20180416073729.GA4244@vireshk-i7>
@@ -20,7 +20,7 @@ Content-Disposition: inline
 In-Reply-To: <1c61128a-dea6-b12c-4cd8-ef53a5c8628d@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
 On Mon, Apr 16, 2018 at 02:10:30PM +0200, Daniel Lezcano wrote:
@@ -49,20 +49,11 @@ On Mon, Apr 16, 2018 at 02:10:30PM +0200, Daniel Lezcano wrote:
 > 
 > Actually there is no impact with the change Sudeep is referring to. It
 > is for ACPI, we are DT based. Confirmed with Jeremy.
-> 
-> So AFAICT, it is not a problem.
+>
 
-It is a problem - DT or ACPI alike. Sudeep was referring to the notion
-of "cluster" that has no architectural meaning whatsoever and using
-topology_physical_package_id() to detect a "cluster" was/is/will always
-be the wrong thing to do. The notion of cluster must not appear in the
-kernel at all, it has no architectural meaning. I understand you need
-to group CPUs but that has to be done in a different way, through
-cooling devices, thermal domains or power domains DT/ACPI bindings but
-not by using topology masks.
+No, it will change for DT. The aim is to be consistent irrespective of
+h/w or f/w description(i.e ADCPI or DT)
 
-You should be able to figure out this week at OSPM the reasoning behind
-what I am saying above.
-
-Cheers,
-Lorenzo
+--
+Regards,
+Sudeep
