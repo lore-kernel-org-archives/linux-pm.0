@@ -1,117 +1,45 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 02/14] thermal: exynos: Propagate error value from
- tmu_read()
-Date: Mon, 16 Apr 2018 14:41:48 +0200
-Message-ID: <22d7f063-9a69-78cf-e0fd-2043e187244e@linaro.org>
+Subject: Re: [PATCH 03/14] thermal: exynos: Read soc_type from match data
+Date: Mon, 16 Apr 2018 14:47:50 +0200
+Message-ID: <09325238-a050-951a-a5ee-ffcb19813e3e@linaro.org>
 References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
- <1523873525-23718-3-git-send-email-b.zolnierkie@samsung.com>
- <39e461aa-2a60-f3cf-d116-fc7e97f9da2e@linaro.org>
- <CGME20180416123502eucas1p1113fb99938a09a6f425e0ed6bfa6be60@eucas1p1.samsung.com>
- <6993557.YT37RIp4lG@amdc3058>
+ <1523873525-23718-4-git-send-email-b.zolnierkie@samsung.com>
+ <09824e4e-b60a-13eb-36a5-a6f2172b5539@linaro.org>
+ <CGME20180416124129eucas1p1545c737e0feb0f9f2c327b8597c46bce@eucas1p1.samsung.com>
+ <5369056.eM2qptIOQZ@amdc3058>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6993557.YT37RIp4lG@amdc3058>
+In-Reply-To: <5369056.eM2qptIOQZ@amdc3058>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Maciej Purski <m.purski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 16/04/2018 14:35, Bartlomiej Zolnierkiewicz wrote:
-> On Monday, April 16, 2018 02:16:56 PM Daniel Lezcano wrote:
+On 16/04/2018 14:41, Bartlomiej Zolnierkiewicz wrote:
+> On Monday, April 16, 2018 02:19:30 PM Daniel Lezcano wrote:
 >> On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
->>> From: Marek Szyprowski <m.szyprowski@samsung.com>
+>>> From: Maciej Purski <m.purski@samsung.com>
 >>>
->>> tmu_read() in case of Exynos4210 might return error for out of bound
->>> values. Current code ignores such value, what leads to reporting critical
->>> temperature value. Add proper error code propagation to exynos_get_temp()
->>> function.
->>
->> For me the comment in the function exynos4210_tmu_read
->>
->> /* "temp_code" should range between 75 and 175 */
->>
->> ... is strange. I would double check this assertion before dealing with
->> the error value.
-> 
-> static int exynos4210_tmu_read(struct exynos_tmu_data *data)
-> {
-> 	int ret = readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP);
-> 
-> 	/* "temp_code" should range between 75 and 175 */
-> 	return (ret < 75 || ret > 175) ? -ENODATA : ret;
-> }
-> 
-
-But I don't get why it *should* ?
-
-Shouldn't be the same with the 4412, it seems having the same sensor, no?
-
-
-> The value returned by Exynos4210 hardware should be > 75 && < 175 and
-> it is later used as the "temp_code" parameter for code_to_temp():
-> 
-> static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
-> {
-> 	if (data->cal_type == TYPE_ONE_POINT_TRIMMING)
-> 		return temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TRIM;
-> 
-> 	return (temp_code - data->temp_error1) *
-> 		(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) /
-> 		(data->temp_error2 - data->temp_error1) +
-> 		EXYNOS_FIRST_POINT_TRIM;
-> }
-> 
-> so after the current fix the code finally matches the comment.
-> 
->>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>> CC: stable@vger.kernel.org # v4.6+
+>>> Device context's field data->soc is currently obtained by comparing
+>>> of_compatible's. Provide soc_type as .data field in device's match
+>>> table, as it is done in most drivers.
+>>>
+>>> Signed-off-by: Maciej Purski <m.purski@samsung.com>
 >>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 >>> ---
->>>  drivers/thermal/samsung/exynos_tmu.c | 9 +++++++--
->>>  1 file changed, 7 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->>> index 986cbd0..ac83f72 100644
->>> --- a/drivers/thermal/samsung/exynos_tmu.c
->>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>> @@ -892,6 +892,7 @@ static void exynos7_tmu_control(struct platform_device *pdev, bool on)
->>>  static int exynos_get_temp(void *p, int *temp)
->>>  {
->>>  	struct exynos_tmu_data *data = p;
->>> +	int value, ret = 0;
->>>  
->>>  	if (!data || !data->tmu_read || !data->enabled)
->>>  		return -EINVAL;
->>> @@ -899,12 +900,16 @@ static int exynos_get_temp(void *p, int *temp)
->>>  	mutex_lock(&data->lock);
->>>  	clk_enable(data->clk);
->>>  
->>> -	*temp = code_to_temp(data, data->tmu_read(data)) * MCELSIUS;
->>> +	value = data->tmu_read(data);
->>> +	if (value < 0)
->>> +		ret = value;
->>> +	else
->>> +		*temp = code_to_temp(data, value) * MCELSIUS;
->>>  
->>>  	clk_disable(data->clk);
->>>  	mutex_unlock(&data->lock);
->>>  
->>> -	return 0;
->>> +	return ret;
->>>  }
->>>  
->>>  #ifdef CONFIG_THERMAL_EMULATION
+>>
+>> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
+> Zhang & Eduardo are Thermal Maintainers (+ I'm Maintainer for
+> Samsung Thermal) so I assume you meant "Reviewed-by:"?
 
+I meant Acked-by :) I don't have to be a subsystem maintainer to ack a
+patch. The reviewed-by has a stronger statement than the acked-by.
+
+The patch looks good to me.
 
 -- 
  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
