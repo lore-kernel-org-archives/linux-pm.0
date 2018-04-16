@@ -1,106 +1,71 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 00/14] thermal: exynos: pending fixes and cleanups
-Date: Mon, 16 Apr 2018 12:11:51 +0200
-Message-ID: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
-References: <CGME20180416101225epcas2p42e345645d822cd869dbdb449becf1c7a@epcas2p4.samsung.com>
+Subject: [PATCH 01/14] thermal: exynos: Reading temperature makes sense only
+ when TMU is turned on
+Date: Mon, 16 Apr 2018 12:11:52 +0200
+Message-ID: <1523873525-23718-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
+        <CGME20180416101339epcas2p171d462b70a85a6fff3bb939fca6d469d@epcas2p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+From: Marek Szyprowski <m.szyprowski@samsung.com>
 
-Per your request (https://marc.info/?l=linux-pm&m=152378232213070&w=2)
-this patchset contains pending Exynos thermal driver fixes and cleanups.
+When thermal sensor is not yet enabled, reading temperature might return
+random value. This might even result in stopping system booting when such
+temperature is higher than the critical value. Fix this by checking if TMU
+has been actually enabled before reading the temperature.
 
-It is based on:
-- "[PATCH v3] thermal: exynos: Reading temperature makes sense only
-  when TMU is turned on" from Marek Szyprowski
-  (https://www.spinics.net/lists/linux-samsung-soc/msg62248.html)
-- "[PATCH] thermal: exynos: Propagate error value from tmu_read()"
-  from Marek Szyprowski
-  (https://www.spinics.net/lists/linux-samsung-soc/msg62252.html)
-- "[PATCH] thermal: exynos: Read soc_type from match data" from
-  Maciej Purski
-  (https://www.spinics.net/lists/linux-samsung-soc/msg62138.html)
-- "[PATCH 00/12] thermal: exynos: sanitize DeviceTree support"
-  (https://www.spinics.net/lists/linux-samsung-soc/msg62335.html)
+This change fixes booting of Exynos4210-based board with TMU enabled (for
+example Samsung Trats board), which was broken since v4.4 kernel release.
 
-Changes:
-- fix warnings in "thermal: exynos: remove parsing of
-  samsung,tmu_default_temp_offset property" patch
-  (in a way suggested by Daniel Lezcano)
-- split dts changes on ARM & ARM64 parts
-  (as requested by Krzysztof Kozlowski)
-- drop "dt-bindings: thermal: remove no longer needed samsung
-  thermal properties" patch
-  (the patch is already present in linux-soc-thermal-tree)
-- drop "thermal: exynos: remove separate thermal_exynos.h header
-  file" patch
-  (to be resend once dts changes are merged)
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Fixes: 9e4249b40340 ("thermal: exynos: Fix first temperature read after registering sensor")
+CC: stable@vger.kernel.org # v4.6+
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Tested on Exynos4210 based Trats board and Exynos5422 based Odroid-XU3
-Lite board.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (11):
-  thermal: exynos: remove unused "type" field from struct
-    exynos_tmu_platform_data
-  thermal: exynos: remove parsing of samsung,tmu_default_temp_offset
-    property
-  thermal: exynos: remove parsing of
-    samsung,tmu_[first,second]_point_trim properties
-  thermal: exynos: remove parsing of samsung,tmu_noise_cancel_mode
-    property
-  thermal: exynos: remove parsing of samsung,tmu[_min,_max]_efuse_value
-    properties
-  thermal: exynos: remove parsing of samsung,tmu_reference_voltage
-    property
-  thermal: exynos: remove parsing of samsung,tmu_gain property
-  thermal: exynos: remove parsing of samsung,tmu_cal_type property
-  thermal: exynos: remove separate exynos_tmu.h header file
-  ARM: dts: exynos: remove no longer needed samsung thermal properties
-  arm64: dts: exynos: remove no longer needed samsung thermal properties
-
-Maciej Purski (1):
-  thermal: exynos: Read soc_type from match data
-
-Marek Szyprowski (2):
-  thermal: exynos: Reading temperature makes sense only when TMU is
-    turned on
-  thermal: exynos: Propagate error value from tmu_read()
-
- arch/arm/boot/dts/exynos3250.dtsi                  |   2 +-
- arch/arm/boot/dts/exynos4.dtsi                     |   2 +-
- arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi  |  20 --
- arch/arm/boot/dts/exynos5250.dtsi                  |   2 +-
- arch/arm/boot/dts/exynos5410.dtsi                  |   8 +-
- arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi  |  21 --
- arch/arm/boot/dts/exynos5420.dtsi                  |  10 +-
- arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi  |  20 --
- arch/arm/boot/dts/exynos5440.dtsi                  |   6 +-
- .../dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi |  20 --
- .../dts/exynos/exynos5433-tmu-sensor-conf.dtsi     |  19 --
- arch/arm64/boot/dts/exynos/exynos5433.dtsi         |  10 +-
- .../boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi   |  21 --
- arch/arm64/boot/dts/exynos/exynos7.dtsi            |   2 +-
- drivers/thermal/samsung/exynos_tmu.c               | 294 ++++++++++-----------
- drivers/thermal/samsung/exynos_tmu.h               |  75 ------
- 16 files changed, 165 insertions(+), 367 deletions(-)
- delete mode 100644 arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-g3d-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos5433-tmu-sensor-conf.dtsi
- delete mode 100644 arch/arm64/boot/dts/exynos/exynos7-tmu-sensor-conf.dtsi
- delete mode 100644 drivers/thermal/samsung/exynos_tmu.h
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index ed805c7..986cbd0 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -185,6 +185,7 @@
+  * @regulator: pointer to the TMU regulator structure.
+  * @reg_conf: pointer to structure to register with core thermal.
+  * @ntrip: number of supported trip points.
++ * @enabled: current status of TMU device
+  * @tmu_initialize: SoC specific TMU initialization method
+  * @tmu_control: SoC specific TMU control method
+  * @tmu_read: SoC specific TMU temperature read method
+@@ -205,6 +206,7 @@ struct exynos_tmu_data {
+ 	struct regulator *regulator;
+ 	struct thermal_zone_device *tzd;
+ 	unsigned int ntrip;
++	bool enabled;
+ 
+ 	int (*tmu_initialize)(struct platform_device *pdev);
+ 	void (*tmu_control)(struct platform_device *pdev, bool on);
+@@ -398,6 +400,7 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
+ 	data->tmu_control(pdev, on);
++	data->enabled = on;
+ 	clk_disable(data->clk);
+ 	mutex_unlock(&data->lock);
+ }
+@@ -890,7 +893,7 @@ static int exynos_get_temp(void *p, int *temp)
+ {
+ 	struct exynos_tmu_data *data = p;
+ 
+-	if (!data || !data->tmu_read)
++	if (!data || !data->tmu_read || !data->enabled)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&data->lock);
 -- 
 1.9.1
