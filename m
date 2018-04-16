@@ -1,103 +1,56 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 02/14] thermal: exynos: Propagate error value from
- tmu_read()
-Date: Mon, 16 Apr 2018 14:35:01 +0200
-Message-ID: <6993557.YT37RIp4lG@amdc3058>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 01/14] thermal: exynos: Reading temperature makes sense
+ only when TMU is turned on
+Date: Mon, 16 Apr 2018 14:39:00 +0200
+Message-ID: <f7da04ae-da92-062e-1420-76df43700f29@linaro.org>
 References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
-        <1523873525-23718-3-git-send-email-b.zolnierkie@samsung.com>
-        <39e461aa-2a60-f3cf-d116-fc7e97f9da2e@linaro.org>
-        <CGME20180416123502eucas1p1113fb99938a09a6f425e0ed6bfa6be60@eucas1p1.samsung.com>
+ <1523873525-23718-2-git-send-email-b.zolnierkie@samsung.com>
+ <a49d9651-bb52-85bc-ffc0-2ba012e66dd5@linaro.org>
+ <CGME20180416121746eucas1p1de1cf16bcf7d8fdccd87ac41db735ef6@eucas1p1.samsung.com>
+ <60958515.5KCaPvLZ9i@amdc3058>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <39e461aa-2a60-f3cf-d116-fc7e97f9da2e@linaro.org>
+In-Reply-To: <60958515.5KCaPvLZ9i@amdc3058>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 16, 2018 02:16:56 PM Daniel Lezcano wrote:
-> On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
-> > From: Marek Szyprowski <m.szyprowski@samsung.com>
-> > 
-> > tmu_read() in case of Exynos4210 might return error for out of bound
-> > values. Current code ignores such value, what leads to reporting critical
-> > temperature value. Add proper error code propagation to exynos_get_temp()
-> > function.
+On 16/04/2018 14:17, Bartlomiej Zolnierkiewicz wrote:
+> On Monday, April 16, 2018 02:06:41 PM Daniel Lezcano wrote:
+>> On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
+>>> From: Marek Szyprowski <m.szyprowski@samsung.com>
+>>>
+>>> When thermal sensor is not yet enabled, reading temperature might return
+>>> random value. This might even result in stopping system booting when such
+>>> temperature is higher than the critical value. Fix this by checking if TMU
+>>> has been actually enabled before reading the temperature.
+>>>
+>>> This change fixes booting of Exynos4210-based board with TMU enabled (for
+>>> example Samsung Trats board), which was broken since v4.4 kernel release.
+>>
+>> Why not move the thermal_zone_of_sensor_register *after* initializing
+>> the sensor ?
 > 
-> For me the comment in the function exynos4210_tmu_read
+> For initializing the sensor we need data obtained from
+> therm_zone_of_sensor_register() so it cannot be easily
+> done (especially since we also want the fix to be
+> ported to -stable kernels). For more detailed description
+> please see:
 > 
-> /* "temp_code" should range between 75 and 175 */
-> 
-> ... is strange. I would double check this assertion before dealing with
-> the error value.
+> https://lkml.org/lkml/2018/4/10/376
 
-static int exynos4210_tmu_read(struct exynos_tmu_data *data)
-{
-	int ret = readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP);
+I see, a chicken egg problem :/
 
-	/* "temp_code" should range between 75 and 175 */
-	return (ret < 75 || ret > 175) ? -ENODATA : ret;
-}
+Thanks for the pointer.
 
-The value returned by Exynos4210 hardware should be > 75 && < 175 and
-it is later used as the "temp_code" parameter for code_to_temp():
 
-static int code_to_temp(struct exynos_tmu_data *data, u16 temp_code)
-{
-	if (data->cal_type == TYPE_ONE_POINT_TRIMMING)
-		return temp_code - data->temp_error1 + EXYNOS_FIRST_POINT_TRIM;
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-	return (temp_code - data->temp_error1) *
-		(EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) /
-		(data->temp_error2 - data->temp_error1) +
-		EXYNOS_FIRST_POINT_TRIM;
-}
-
-so after the current fix the code finally matches the comment.
-
-> > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> > CC: stable@vger.kernel.org # v4.6+
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > ---
-> >  drivers/thermal/samsung/exynos_tmu.c | 9 +++++++--
-> >  1 file changed, 7 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> > index 986cbd0..ac83f72 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> > @@ -892,6 +892,7 @@ static void exynos7_tmu_control(struct platform_device *pdev, bool on)
-> >  static int exynos_get_temp(void *p, int *temp)
-> >  {
-> >  	struct exynos_tmu_data *data = p;
-> > +	int value, ret = 0;
-> >  
-> >  	if (!data || !data->tmu_read || !data->enabled)
-> >  		return -EINVAL;
-> > @@ -899,12 +900,16 @@ static int exynos_get_temp(void *p, int *temp)
-> >  	mutex_lock(&data->lock);
-> >  	clk_enable(data->clk);
-> >  
-> > -	*temp = code_to_temp(data, data->tmu_read(data)) * MCELSIUS;
-> > +	value = data->tmu_read(data);
-> > +	if (value < 0)
-> > +		ret = value;
-> > +	else
-> > +		*temp = code_to_temp(data, value) * MCELSIUS;
-> >  
-> >  	clk_disable(data->clk);
-> >  	mutex_unlock(&data->lock);
-> >  
-> > -	return 0;
-> > +	return ret;
-> >  }
-> >  
-> >  #ifdef CONFIG_THERMAL_EMULATION
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
