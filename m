@@ -1,40 +1,58 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 01/14] thermal: exynos: Reading temperature makes sense
- only when TMU is turned on
-Date: Mon, 16 Apr 2018 14:06:41 +0200
-Message-ID: <a49d9651-bb52-85bc-ffc0-2ba012e66dd5@linaro.org>
-References: <1523873525-23718-1-git-send-email-b.zolnierkie@samsung.com>
- <CGME20180416101339epcas2p171d462b70a85a6fff3bb939fca6d469d@epcas2p1.samsung.com>
- <1523873525-23718-2-git-send-email-b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Mon, 16 Apr 2018 14:10:30 +0200
+Message-ID: <1c61128a-dea6-b12c-4cd8-ef53a5c8628d@linaro.org>
+References: <1522945005-7165-1-git-send-email-daniel.lezcano@linaro.org>
+ <1522945005-7165-7-git-send-email-daniel.lezcano@linaro.org>
+ <3f3b3b7a-3b74-aee2-2fac-f2759babe3f0@arm.com>
+ <939f7943-feec-aaa2-3bd3-59a6618330c0@linaro.org>
+ <20180416073729.GA4244@vireshk-i7>
+ <0a3164f9-4738-e24e-6ed0-2c75024c304c@linaro.org>
+ <20180416093747.GB4244@vireshk-i7>
+ <4abf0d97-d2b8-46ab-3c05-4a11510ac3fe@linaro.org>
+ <20180416095006.GC4244@vireshk-i7>
+ <b0e7ff16-c947-89a0-6bd9-56ee9a76e7ad@linaro.org>
+ <20180416101021.GD4244@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523873525-23718-2-git-send-email-b.zolnierkie@samsung.com>
+In-Reply-To: <20180416101021.GD4244@vireshk-i7>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 16/04/2018 12:11, Bartlomiej Zolnierkiewicz wrote:
-> From: Marek Szyprowski <m.szyprowski@samsung.com>
+On 16/04/2018 12:10, Viresh Kumar wrote:
+> On 16-04-18, 12:03, Daniel Lezcano wrote:
+>> On 16/04/2018 11:50, Viresh Kumar wrote:
+>>> On 16-04-18, 11:45, Daniel Lezcano wrote:
+>>>> Can you elaborate a bit ? I'm not sure to get the point.
+>>>
+>>> Sure. With your current code on Hikey960 (big/LITTLE), you end up
+>>> creating two cooling devices, one for the big cluster and one for
+>>> small cluster. Which is the right thing to do, as we also have two
+>>> cpufreq cooling devices.
+>>>
+>>> But with the change Sudeep is referring to, the helper you used to get
+>>> cluster id will return 0 (SoC id) for all the 8 CPUs. So your code
+>>> will end up creating a single cpuidle cooling device for all the CPUs.
+>>> Which would be wrong.
+>>
+>> Is the semantic of topology_physical_package_id changing ?
 > 
-> When thermal sensor is not yet enabled, reading temperature might return
-> random value. This might even result in stopping system booting when such
-> temperature is higher than the critical value. Fix this by checking if TMU
-> has been actually enabled before reading the temperature.
+> That's what I understood from his email.
 > 
-> This change fixes booting of Exynos4210-based board with TMU enabled (for
-> example Samsung Trats board), which was broken since v4.4 kernel release.
+>> I don't
+>> understand the change Sudeep is referring to.
 
-Why not move the thermal_zone_of_sensor_register *after* initializing
-the sensor ?
+Actually there is no impact with the change Sudeep is referring to. It
+is for ACPI, we are DT based. Confirmed with Jeremy.
 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Fixes: 9e4249b40340 ("thermal: exynos: Fix first temperature read after registering sensor")
-> CC: stable@vger.kernel.org # v4.6+
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+So AFAICT, it is not a problem.
+
 
 
 -- 
