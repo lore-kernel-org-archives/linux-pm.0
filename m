@@ -1,122 +1,206 @@
-From: Dan Williams <dcbw@redhat.com>
-Subject: Re: linux-next on x60: network manager often complains "network is
- disabled" after resume
-Date: Tue, 17 Apr 2018 10:03:59 -0500
-Message-ID: <3ee2cc80d1ceeee472fe2f8392585e986620d5d9.camel@redhat.com>
-References: <20180318104023.GA10392@amd>
-         <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
-         <20180319092106.GA5683@amd> <1521474008.20208.2.camel@redhat.com>
-         <20180319173356.GA28462@amd> <1521481549.20208.8.camel@redhat.com>
-         <20180320080334.GA31772@amd> <1521551568.16848.5.camel@redhat.com>
-         <20180325061927.GA2148@amd>
-         <95efbba35c3389015d4919a59f8d01bc2d375a19.camel@redhat.com>
-         <20180415161604.GG10802@amd>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Tue, 17 Apr 2018 23:22:13 +0800
+Message-ID: <20180417152213.GC18509@leoy-ThinkPad-X240s>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-5-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180415161604.GG10802@amd>
+Content-Disposition: inline
+In-Reply-To: <20180406153607.17815-5-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2018-04-15 at 18:16 +0200, Pavel Machek wrote:
-> On Mon 2018-03-26 10:33:55, Dan Williams wrote:
-> > On Sun, 2018-03-25 at 08:19 +0200, Pavel Machek wrote:
-> > > > > > Ok, what does 'nmcli dev' and 'nmcli radio' show?
-> > > > > 
-> > > > > Broken state.
-> > > > > 
-> > > > > pavel@amd:~$ nmcli dev
-> > > > > DEVICE  TYPE      STATE        CONNECTION
-> > > > > eth1    ethernet  unavailable  --
-> > > > > lo      loopback  unmanaged    --
-> > > > > wlan0   wifi      unmanaged    --
-> > > > 
-> > > > If the state is "unmanaged" on resume, that would indicate a
-> > > > problem
-> > > > with sleep/wake and likely not a kernel network device issue.
-> > > > 
-> > > > We should probably move this discussion to the NM lists to
-> > > > debug
-> > > > further.  Before you suspend, run "nmcli gen log level trace"
-> > > > to
-> > > > turn
-> > > > on full debug logging, then reproduce the issue, and send a
-> > > > pointer
-> > > > to
-> > > > those logs (scrubbed for anything you consider sensitive) to
-> > > > the NM
-> > > > mailing list.
-> > > 
-> > > Hmm :-)
-> > > 
-> > > root@amd:/data/pavel# nmcli gen log level trace
-> > > Error: Unknown log level 'trace'
-> > 
-> > What NM version?  'trace' is pretty old (since 1.0 from December
-> > 2014)
-> > so unless you're using a really, really old version of Debian I'd
-> > expect you'd have it.  Anyway, debug would do.
+On Fri, Apr 06, 2018 at 04:36:05PM +0100, Dietmar Eggemann wrote:
+> From: Quentin Perret <quentin.perret@arm.com>
 > 
-> Hmm.
+> In preparation for the definition of an energy-aware wakeup path, a
+> helper function is provided to estimate the consequence on system energy
+> when a specific task wakes-up on a specific CPU. compute_energy()
+> estimates the OPPs to be reached by all frequency domains and estimates
+> the consumption of each online CPU according to its energy model and its
+> percentage of busy time.
 > 
-> pavel@duo:~$ /usr/sbin/NetworkManager --version
-> You must be root to run NetworkManager!
-> pavel@duo:~$ sudo /usr/sbin/NetworkManager --version
-> 0.9.10.0
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> ---
+>  include/linux/sched/energy.h | 20 +++++++++++++
+>  kernel/sched/fair.c          | 68 ++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/sched/sched.h         |  2 +-
+>  3 files changed, 89 insertions(+), 1 deletion(-)
 > 
-> So I set the log level, but I still don't see much in the log:
-> 
-> Apr 14 18:14:29 duo dbus[3009]: [system] Successfully activated
-> service 'org.freedesktop.nm_dispatcher'
-> Apr 14 18:14:29 duo nm-dispatcher: Dispatching action 'down' for
-> wlan1
-> Apr 14 18:14:29 duo systemd[1]: Started Network Manager Script
-> Dispatcher Service.
-> Apr 14 18:14:29 duo systemd-sleep[6853]: Suspending system...
+> diff --git a/include/linux/sched/energy.h b/include/linux/sched/energy.h
+> index 941071eec013..b4110b145228 100644
+> --- a/include/linux/sched/energy.h
+> +++ b/include/linux/sched/energy.h
+> @@ -27,6 +27,24 @@ static inline bool sched_energy_enabled(void)
+>  	return static_branch_unlikely(&sched_energy_present);
+>  }
+>  
+> +static inline
+> +struct capacity_state *find_cap_state(int cpu, unsigned long util)
+> +{
+> +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
+> +	struct capacity_state *cs = NULL;
+> +	int i;
+> +
+> +	util += util >> 2;
+> +
+> +	for (i = 0; i < em->nr_cap_states; i++) {
+> +		cs = &em->cap_states[i];
+> +		if (cs->cap >= util)
+> +			break;
+> +	}
+> +
+> +	return cs;
 
-I think if systemd really is handling the suspend/resume, you'll need
-to make sure NM has systemd suspend/resume handling enabled as well. 
-NM 0.9.10 has build-time support for both:
+'cs' is possible to return NULL.
 
-[--with-suspend-resume=upower|systemd]
+> +}
+> +
+>  static inline struct cpumask *freq_domain_span(struct freq_domain *fd)
+>  {
+>  	return &fd->span;
+> @@ -42,6 +60,8 @@ struct freq_domain;
+>  static inline bool sched_energy_enabled(void) { return false; }
+>  static inline struct cpumask
+>  *freq_domain_span(struct freq_domain *fd) { return NULL; }
+> +static inline struct capacity_state
+> +*find_cap_state(int cpu, unsigned long util) { return NULL; }
+>  static inline void init_sched_energy(void) { }
+>  #define for_each_freq_domain(fdom) for (; fdom; fdom = NULL)
+>  #endif
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 6960e5ef3c14..8cb9fb04fff2 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -6633,6 +6633,74 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
+>  }
+>  
+>  /*
+> + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
+> + */
+> +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
+> +{
+> +	unsigned long util, util_est;
+> +	struct cfs_rq *cfs_rq;
+> +
+> +	/* Task is where it should be, or has no impact on cpu */
+> +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
+> +		return cpu_util(cpu);
+> +
+> +	cfs_rq = &cpu_rq(cpu)->cfs;
+> +	util = READ_ONCE(cfs_rq->avg.util_avg);
+> +
+> +	if (dst_cpu == cpu)
+> +		util += task_util(p);
+> +	else
+> +		util = max_t(long, util - task_util(p), 0);
 
-while later versions also support ConsoleKit2 and elogind.
+I tried to understand the logic at here, below code is more clear for
+myself:
 
-Any idea what your NM was compiled with?  Though honestly I'm not sure
-how all the suspend/resume stuff is supposed to work these days on
-different distros that provide the choice between systemd/upower/pm-
-utils/CK2/etc.
+        int prev_cpu = task_cpu(p);
 
-Dan
+        cfs_rq = &cpu_rq(cpu)->cfs;
+        util = READ_ONCE(cfs_rq->avg.util_avg);
 
-> Apr 14 21:27:53 duo systemd[1]: systemd-journald.service watchdog
-> timeout (limit 1min)!
-> pavel@duo:~$ date
-> Sun Apr 15 12:26:32 CEST 2018
-> pavel@duo:~$
+        /* Bail out if src and dst CPUs are the same one */
+        if (prev_cpu == cpu && dst_cpu == cpu)
+                return util;
+
+        /* Remove task utilization for src CPU */
+        if (cpu == prev_cpu)
+                util = max_t(long, util - task_util(p), 0);
+
+        /* Add task utilization for dst CPU */
+        if (dst_cpu == cpu)
+                util += task_util(p);
+
+BTW, CPU utilization is decayed value and task_util() is not decayed
+value, so 'util - task_util(p)' calculates a smaller value than the
+prev CPU pure utilization, right?
+
+Another question is can we reuse the function cpu_util_wake() and
+just compenstate task util for dst cpu?
+
+> +	if (sched_feat(UTIL_EST)) {
+> +		util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> +		if (dst_cpu == cpu)
+> +			util_est += _task_util_est(p);
+> +		else
+> +			util_est = max_t(long, util_est - _task_util_est(p), 0);
+> +		util = max(util, util_est);
+> +	}
+> +
+> +	return min_t(unsigned long, util, capacity_orig_of(cpu));
+> +}
+> +
+> +/*
+> + * Estimates the system level energy assuming that p wakes-up on dst_cpu.
+> + *
+> + * compute_energy() is safe to call only if an energy model is available for
+> + * the platform, which is when sched_energy_enabled() is true.
+> + */
+> +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+> +{
+> +	unsigned long util, max_util, sum_util;
+> +	struct capacity_state *cs;
+> +	unsigned long energy = 0;
+> +	struct freq_domain *fd;
+> +	int cpu;
+> +
+> +	for_each_freq_domain(fd) {
+> +		max_util = sum_util = 0;
+> +		for_each_cpu_and(cpu, freq_domain_span(fd), cpu_online_mask) {
+> +			util = cpu_util_next(cpu, p, dst_cpu);
+> +			util += cpu_util_dl(cpu_rq(cpu));
+> +			max_util = max(util, max_util);
+> +			sum_util += util;
+> +		}
+> +
+> +		/*
+> +		 * Here we assume that the capacity states of CPUs belonging to
+> +		 * the same frequency domains are shared. Hence, we look at the
+> +		 * capacity state of the first CPU and re-use it for all.
+> +		 */
+> +		cpu = cpumask_first(freq_domain_span(fd));
+> +		cs = find_cap_state(cpu, max_util);
+> +		energy += cs->power * sum_util / cs->cap;
+> +	}
+
+This means all CPUs will be iterated for calculation, the complexity is
+O(n)...
+
+Thanks,
+Leo Yan
+
+> +	return energy;
+> +}
+> +
+> +/*
+>   * select_task_rq_fair: Select target runqueue for the waking task in domains
+>   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+>   * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index 5d552c0d7109..6eb38f41d5d9 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -2156,7 +2156,7 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
+>  # define arch_scale_freq_invariant()	false
+>  #endif
+>  
+> -#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+> +#ifdef CONFIG_SMP
+>  static inline unsigned long cpu_util_dl(struct rq *rq)
+>  {
+>  	return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
+> -- 
+> 2.11.0
 > 
-> Is it possible that time handling accross suspend changed in v4.17?
-> 
-> I get some weird effects. With display backlight...
-> 
-> > > Where do I get the logs? I don't see much in the syslog...
-> > > And.. It seems that it is "every other suspend". One resume
-> > > results
-> > > in
-> > > broken network, one in working one, one in broken one...
-> > 
-> > Does your distro use pm-utils, upower, or systemd for
-> > suspend/resume
-> > handling?
-> 
-> upower, I guess:
-> 
-> pavel@duo:/data/l/linux$ ps aux | grep upower
-> root      3820  0.0  0.1  42848  7984 ?        Ssl  Apr14   0:01
-> /usr/lib/upower/upowerd
-> 
-> 									
-> Pavel
