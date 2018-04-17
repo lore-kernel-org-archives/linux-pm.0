@@ -1,134 +1,127 @@
-From: yuankuiz@codeaurora.org
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Tue, 17 Apr 2018 17:07:28 +0800
-Message-ID: <e7cbe275136b86083ff70d9af26f41bf@codeaurora.org>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <20180410123305.GF4082@hirez.programming.kicks-ass.net>
- <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
- <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
- <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
- <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
- <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
- <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
- <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
- <alpine.DEB.2.20.1804120816130.3559@hadrien>
- <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
- <alpine.DEB.2.20.1804142315300.2750@hadrien>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
+ idle cooling driver
+Date: Tue, 17 Apr 2018 11:24:24 +0100
+Message-ID: <20180417102424.GA27279@e107981-ln.cambridge.arm.com>
+References: <20180416093747.GB4244@vireshk-i7>
+ <4abf0d97-d2b8-46ab-3c05-4a11510ac3fe@linaro.org>
+ <20180416095006.GC4244@vireshk-i7>
+ <b0e7ff16-c947-89a0-6bd9-56ee9a76e7ad@linaro.org>
+ <20180416101021.GD4244@vireshk-i7>
+ <1c61128a-dea6-b12c-4cd8-ef53a5c8628d@linaro.org>
+ <20180416123019.GA9341@e107981-ln.cambridge.arm.com>
+ <633cdc63-ce6d-89af-26dd-bdc3a27556ed@linaro.org>
+ <20180416142243.GB32565@red-moon>
+ <845fafa3-f0ab-2050-fe32-1780dc61b8a8@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1804142315300.2750@hadrien>
+Content-Disposition: inline
+In-Reply-To: <845fafa3-f0ab-2050-fe32-1780dc61b8a8@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi julia,
+On Tue, Apr 17, 2018 at 09:17:36AM +0200, Daniel Lezcano wrote:
 
-On 2018-04-15 05:19 AM, Julia Lawall wrote:
-> On Wed, 11 Apr 2018, Joe Perches wrote:
+[...]
+
+> >>>> Actually there is no impact with the change Sudeep is referring to. It
+> >>>> is for ACPI, we are DT based. Confirmed with Jeremy.
+> >>>>
+> >>>> So AFAICT, it is not a problem.
+> >>>
+> >>> It is a problem - DT or ACPI alike. Sudeep was referring to the notion
+> >>> of "cluster" that has no architectural meaning whatsoever and using
+> >>> topology_physical_package_id() to detect a "cluster" was/is/will always
+> >>> be the wrong thing to do. The notion of cluster must not appear in the
+> >>> kernel at all, it has no architectural meaning. I understand you need
+> >>> to group CPUs but that has to be done in a different way, through
+> >>> cooling devices, thermal domains or power domains DT/ACPI bindings but
+> >>> not by using topology masks.
+> >>
+> >> I don't get it. What is the cluster concept defined in the ARM
+> >> documentation?
+> >>
+> >> ARM Cortex-A53 MPCore Processor Technical Reference Manual
+> >>
+> >> 4.5.2. Multiprocessor Affinity Register
+> >>
+> >> I see the documentation says:
+> >>
+> >> A cluster with two cores, three cores, ...
+> >>
+> >> How the kernel can represent that if you kill the
+> >> topology_physical_package_id() ?
+> > 
+> > From an Arm ARM perspective (ARM v8 reference manual), the MPIDR_EL1 has
+> > no notion of cluster which means that a cluster is not architecturally
+> > defined on Arm systems.
 > 
->> On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
->> > On Wed, 11 Apr 2018, Joe Perches wrote:
->> > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
->> > > > We already have some 500 bools-in-structs
->> > >
->> > > I got at least triple that only in include/
->> > > so I expect there are at probably an order
->> > > of magnitude more than 500 in the kernel.
->> > >
->> > > I suppose some cocci script could count the
->> > > actual number of instances.  A regex can not.
->> >
->> > I got 12667.
->> 
->> Could you please post the cocci script?
->> 
->> > I'm not sure to understand the issue.  Will using a bitfield help if there
->> > are no other bitfields in the structure?
->> 
->> IMO, not really.
->> 
->> The primary issue is described by Linus here:
->> https://lkml.org/lkml/2017/11/21/384
->> 
->> I personally do not find a significant issue with
->> uncontrolled sizes of bool in kernel structs as
->> all of the kernel structs are transitory and not
->> written out to storage.
->> 
->> I suppose bool bitfields are also OK, but for the
->> RMW required.
->> 
->> Using unsigned int :1 bitfield instead of bool :1
->> has the negative of truncation so that the uint
->> has to be set with !! instead of a simple assign.
+> Sorry, I'm lost :/ You say the MPIDR_EL1 has no notion of cluster but
+> the documentation describing this register is all talking about cluster.
 > 
-> At least with gcc 5.4.0, a number of structures become larger with
-> unsigned int :1. bool:1 seems to mostly solve this problem.  The 
-> structure
-> ichx_desc, defined in drivers/gpio/gpio-ich.c seems to become larger 
-> with
-> both approaches.
-[ZJ] Hopefully, this could make it better in your environment.
-      IMHO, this is just for double check.
+> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0500g/BABHBJCI.html
 
-diff --git a/drivers/gpio/gpio-ich.c b/drivers/gpio/gpio-ich.c
-index 4f6d643..b46e170 100644
---- a/drivers/gpio/gpio-ich.c
-+++ b/drivers/gpio/gpio-ich.c
-@@ -70,6 +70,18 @@ static const u8 avoton_reglen[3] = {
-  #define ICHX_READ(reg, base_res)       inl((reg) + (base_res)->start)
+I pointed you at the documentation I am referring to. You are referring
+to A53 TRM, I am referring to the Arm architecture reference manual that
+is the reference for all Arm cores.
 
-  struct ichx_desc {
-+       /* GPO_BLINK is available on this chipset */
-+       bool uses_gpe0:1;
-+
-+       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region 
-*/
-+        bool uses_gpe0:1;
-+
-+        /*
-+         * Some chipsets don't let reading output values on GPIO_LVL 
-register
-+         * this option allows driver caching written output values
-+         */
-+        bool use_outlvl_cache:1;
-+
-         /* Max GPIO pins the chipset can have */
-         uint ngpio;
+> > Currently, as Morten explained today, topology_physical_package_id()
+> > is supposed to represent a "cluster" and that's completely wrong
+> > because a "cluster" cannot be defined from an architectural perspective.
+> > 
+> > It was a bodge used as a shortcut, wrongly. We should have never used
+> > that API for that purpose and there must be no code in the kernel
+> > relying on:
+> > 
+> > topology_physical_package_id()
+> > 
+> > to define a cluster; the information you require to group CPUs must
+> > come from something else, which is firmware bindings(DT or ACPI) as
+> > I mentioned.
+> 
+> Why not ?
 
-@@ -77,24 +89,12 @@ struct ichx_desc {
-         const u8 (*regs)[3];
-         const u8 *reglen;
+I explained why not :). A cluster is not defined architecturally on Arm
+- it is as simple as that and you can't rely on a given MPIDR_EL1
+subfield to define what a cluster id is.
 
--       /* GPO_BLINK is available on this chipset */
--       bool have_blink;
--
--       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region 
-*/
--       bool uses_gpe0;
--
-         /* USE_SEL is bogus on some chipsets, eg 3100 */
-         u32 use_sel_ignore[3];
+> diff --git a/arch/arm64/include/asm/topology.h
+> b/arch/arm64/include/asm/topology.h
+> index c4f2d50..ac0776d 100644
+> --- a/arch/arm64/include/asm/topology.h
+> +++ b/arch/arm64/include/asm/topology.h
+> @@ -14,7 +14,8 @@ struct cpu_topology {
+> 
+>  extern struct cpu_topology cpu_topology[NR_CPUS];
+> 
+> -#define topology_physical_package_id(cpu)
+> (cpu_topology[cpu].cluster_id)
+> +#define topology_physical_package_id(cpu)      (0)
+> +#define topology_physical_cluster_id(cpu)
 
-         /* Some chipsets have quirks, let these use their own 
-request/get */
-         int (*request)(struct gpio_chip *chip, unsigned offset);
-         int (*get)(struct gpio_chip *chip, unsigned offset);
--
--       /*
--        * Some chipsets don't let reading output values on GPIO_LVL 
-register
--        * this option allows driver caching written output values
--        */
--       bool use_outlvl_cache;
-  };
+There is no such a thing (and there is no architecturally defined
+package id on Arm either).
 
+> (cpu_topology[cpu].cluster_id)
+>  #define topology_core_id(cpu)          (cpu_topology[cpu].core_id)
+>  #define topology_core_cpumask(cpu)     (&cpu_topology[cpu].core_sibling)
+>  #define topology_sibling_cpumask(cpu)  (&cpu_topology[cpu].thread_sibling)
+> 
+> 
+> > Please speak to Sudeep who will fill you on the reasoning above.
+> 
+> Yes, Sudeep is next to me but I would prefer to keep the discussion on
+> the mailing list so everyone can get the reasoning.
 
-ZJ
+It is not a reasoning - it is the Arm architecture. There is no
+architecturally defined cluster id on Arm. The affinity bits in
+MPIDR_EL1 must be treated as a unique number that represents a given
+core/thread, how the bits are allocated across affinity levels is not
+something that you can rely on architecturally - that's why DT/ACPI
+topology bindings exist to group cpus in a hierarchical topology.
+
+HTH,
+Lorenzo
