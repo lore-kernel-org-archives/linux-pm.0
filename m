@@ -1,98 +1,134 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v4 3/8] dt-bindings: mfd: renesas,rzn1-sysctrl: document
- RZ/N1 sysctrl node
-Date: Tue, 17 Apr 2018 10:31:38 +0200
-Message-ID: <CAMuHMdWoW6QXofvS0Ju5VL1WivmWWMx8c=ppVbKe1+2eO6LsFg@mail.gmail.com>
-References: <1523349015-37985-1-git-send-email-michel.pollet@bp.renesas.com>
- <1523349015-37985-4-git-send-email-michel.pollet@bp.renesas.com>
- <20180413180549.yjzkl2yf7osz7myt@rob-hp-laptop> <OSBPR01MB20548CE7A728549EFA2B9ADBD2B70@OSBPR01MB2054.jpnprd01.prod.outlook.com>
+From: yuankuiz@codeaurora.org
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Tue, 17 Apr 2018 17:07:28 +0800
+Message-ID: <e7cbe275136b86083ff70d9af26f41bf@codeaurora.org>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+ <20180410123305.GF4082@hirez.programming.kicks-ass.net>
+ <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+ <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
+ <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
+ <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
+ <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
+ <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
+ <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
+ <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
+ <alpine.DEB.2.20.1804120816130.3559@hadrien>
+ <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
+ <alpine.DEB.2.20.1804142315300.2750@hadrien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <OSBPR01MB20548CE7A728549EFA2B9ADBD2B70@OSBPR01MB2054.jpnprd01.prod.outlook.com>
+In-Reply-To: <alpine.DEB.2.20.1804142315300.2750@hadrien>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>
-Cc: Rob Herring <robh@kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Phil Edworthy <phil.edworthy@renesas.com>, "buserror+upstream@gmail.com" <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Michel,
+Hi julia,
 
-On Tue, Apr 17, 2018 at 9:56 AM, Michel Pollet
-<michel.pollet@bp.renesas.com> wrote:
-> On 13 April 2018 19:06, Rob Herring:
->> On Tue, Apr 10, 2018 at 09:30:03AM +0100, Michel Pollet wrote:
->> > The Renesas RZ/N1 Family (Part #R9A06G0xx) has a multi-function system
->> > controller. This documents the node used to encapsulate it's sub
->> > drivers.
+On 2018-04-15 05:19 AM, Julia Lawall wrote:
+> On Wed, 11 Apr 2018, Joe Perches wrote:
+> 
+>> On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
+>> > On Wed, 11 Apr 2018, Joe Perches wrote:
+>> > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
+>> > > > We already have some 500 bools-in-structs
+>> > >
+>> > > I got at least triple that only in include/
+>> > > so I expect there are at probably an order
+>> > > of magnitude more than 500 in the kernel.
+>> > >
+>> > > I suppose some cocci script could count the
+>> > > actual number of instances.  A regex can not.
 >> >
->> > Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
->> > ---
->> >  .../bindings/mfd/renesas,rzn1-sysctrl.txt          | 23
->> ++++++++++++++++++++++
->> >  1 file changed, 23 insertions(+)
->> >  create mode 100644
->> > Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
->> >
->> > diff --git
->> > a/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
->> > b/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
->> > new file mode 100644
->> > index 0000000..9897f8f
->> > --- /dev/null
->> > +++ b/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
->> > @@ -0,0 +1,23 @@
->> > +DT bindings for the Renesas RZ/N1 System Controller
->> > +
->> > +== System Controller Node ==
->> > +
->> > +The system controller node currently only hosts a single sub-node to
->> > +handle the rebooting of the CPU. Eventually it will host the clock
->> > +driver, SMP start handler, watchdog etc.
->>
->> Please submit a complete binding for the h/w block.
->>
->> Again, if the only reason you have sub nodes is to define compatible strings
->> and in turn enumerate drivers, then you don't need the nodes in DT. DT is
->> not the only way to instantiate drivers.
->
-> I can't document it before I have the code. There is 0.000% chance of my clock
-> driver for example to be upstreamed the way I would imagine making it -- in
-> fact pretty much any other driver will have to be reworked to fit, so documenting
-> bindings first is impossible.
->
-> So, if I understand correctly, you are telling me to make a 'sysctrl' driver and use
-> platform_device to instantiate my sub-drivers? Isn't that what machine files used
-> to do? And they are now banned?
->
-> Geert, any guidance here?
+>> > I got 12667.
+>> 
+>> Could you please post the cocci script?
+>> 
+>> > I'm not sure to understand the issue.  Will using a bitfield help if there
+>> > are no other bitfields in the structure?
+>> 
+>> IMO, not really.
+>> 
+>> The primary issue is described by Linus here:
+>> https://lkml.org/lkml/2017/11/21/384
+>> 
+>> I personally do not find a significant issue with
+>> uncontrolled sizes of bool in kernel structs as
+>> all of the kernel structs are transitory and not
+>> written out to storage.
+>> 
+>> I suppose bool bitfields are also OK, but for the
+>> RMW required.
+>> 
+>> Using unsigned int :1 bitfield instead of bool :1
+>> has the negative of truncation so that the uint
+>> has to be set with !! instead of a simple assign.
+> 
+> At least with gcc 5.4.0, a number of structures become larger with
+> unsigned int :1. bool:1 seems to mostly solve this problem.  The 
+> structure
+> ichx_desc, defined in drivers/gpio/gpio-ich.c seems to become larger 
+> with
+> both approaches.
+[ZJ] Hopefully, this could make it better in your environment.
+      IMHO, this is just for double check.
 
-It depends on how many and which subnodes you want to add to  the sysctrl
-node. Without a complete binding for the block, we cannot know.
-If the major part will be the clock driver, I would make that the main
-driver for the sysctrl node. The clock driver can easily register
-e.g. a simple reset handler.
+diff --git a/drivers/gpio/gpio-ich.c b/drivers/gpio/gpio-ich.c
+index 4f6d643..b46e170 100644
+--- a/drivers/gpio/gpio-ich.c
++++ b/drivers/gpio/gpio-ich.c
+@@ -70,6 +70,18 @@ static const u8 avoton_reglen[3] = {
+  #define ICHX_READ(reg, base_res)       inl((reg) + (base_res)->start)
 
-Cfr. the renesas-cpg-mssr driver, which also handles (module) resets.
-There are plenty of other examples of drivers providing multiple
-functionalities (e.g. pinctrl drivers also registering GPIO controllers).
+  struct ichx_desc {
++       /* GPO_BLINK is available on this chipset */
++       bool uses_gpe0:1;
++
++       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region 
+*/
++        bool uses_gpe0:1;
++
++        /*
++         * Some chipsets don't let reading output values on GPIO_LVL 
+register
++         * this option allows driver caching written output values
++         */
++        bool use_outlvl_cache:1;
++
+         /* Max GPIO pins the chipset can have */
+         uint ngpio;
 
-If a monolithic driver becomes too large, it can still be split using the
-MFD framework.
-E.g. the BD9571 PMIC driver is split in an MFD core driver, and 2 drivers
-for different functionalities:
+@@ -77,24 +89,12 @@ struct ichx_desc {
+         const u8 (*regs)[3];
+         const u8 *reglen;
 
-   drivers/gpio/gpio-bd9571mwv.c
-   drivers/mfd/bd9571mwv.c
-   drivers/regulator/bd9571mwv-regulator.c
-   include/linux/mfd/bd9571mwv.h
+-       /* GPO_BLINK is available on this chipset */
+-       bool have_blink;
+-
+-       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region 
+*/
+-       bool uses_gpe0;
+-
+         /* USE_SEL is bogus on some chipsets, eg 3100 */
+         u32 use_sel_ignore[3];
 
-Gr{oetje,eeting}s,
+         /* Some chipsets have quirks, let these use their own 
+request/get */
+         int (*request)(struct gpio_chip *chip, unsigned offset);
+         int (*get)(struct gpio_chip *chip, unsigned offset);
+-
+-       /*
+-        * Some chipsets don't let reading output values on GPIO_LVL 
+register
+-        * this option allows driver caching written output values
+-        */
+-       bool use_outlvl_cache;
+  };
 
-                        Geert
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+ZJ
