@@ -1,116 +1,93 @@
-From: Francisco Jerez <currojerez@riseup.net>
-Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
- improvements for the intel_pstate driver.
-Date: Tue, 17 Apr 2018 12:27:32 -0700
-Message-ID: <87efjdy6or.fsf@riseup.net>
-References: <20180328063845.4884-1-currojerez@riseup.net>
- <152397378196.27610.5253114574084892203@mail.alporthouse.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Tue, 17 Apr 2018 23:00:50 +0200
+Message-ID: <20180417210050.GA16170@amd>
+References: <20180318104023.GA10392@amd>
+ <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com>
+ <20180319092106.GA5683@amd>
+ <1521474008.20208.2.camel@redhat.com>
+ <20180319173356.GA28462@amd>
+ <1521481549.20208.8.camel@redhat.com>
+ <20180320080334.GA31772@amd>
+ <1521551568.16848.5.camel@redhat.com>
+ <20180325061927.GA2148@amd>
+ <95efbba35c3389015d4919a59f8d01bc2d375a19.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0920693112=="
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <152397378196.27610.5253114574084892203@mail.alporthouse.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Chris Wilson <chris@chris-wilson.co.uk>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <95efbba35c3389015d4919a59f8d01bc2d375a19.camel@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dan Williams <dcbw@redhat.com>, daniel.lezcano@linaro.org, tglx@linutronix.de
+Cc: Woody Suwalski <terraluna977@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============0920693112==
-Content-Type: multipart/signed; boundary="==-=-=";
-	micalg=pgp-sha256; protocol="application/pgp-signature"
 
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
-
---=-=-=
-Content-Type: text/plain; charset=utf-8
+--qDbXVdCdHGoSgWSk
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey Chris,
+Hi!
+On Mon 2018-03-26 10:33:55, Dan Williams wrote:
+> On Sun, 2018-03-25 at 08:19 +0200, Pavel Machek wrote:
+> > > > > Ok, what does 'nmcli dev' and 'nmcli radio' show?
+> > > >=20
+> > > > Broken state.
+> > > >=20
+> > > > pavel@amd:~$ nmcli dev
+> > > > DEVICE  TYPE      STATE        CONNECTION
+> > > > eth1    ethernet  unavailable  --
+> > > > lo      loopback  unmanaged    --
+> > > > wlan0   wifi      unmanaged    --
+> > >=20
+> > > If the state is "unmanaged" on resume, that would indicate a
+> > > problem
+> > > with sleep/wake and likely not a kernel network device issue.
+> > >=20
+> > > We should probably move this discussion to the NM lists to debug
+> > > further.  Before you suspend, run "nmcli gen log level trace" to
+> > > turn
+> > > on full debug logging, then reproduce the issue, and send a pointer
+> > > to
+> > > those logs (scrubbed for anything you consider sensitive) to the NM
+> > > mailing list.
+> >=20
+> > Hmm :-)
+> >=20
+> > root@amd:/data/pavel# nmcli gen log level trace
+> > Error: Unknown log level 'trace'
+>=20
+> What NM version?  'trace' is pretty old (since 1.0 from December 2014)
+> so unless you're using a really, really old version of Debian I'd
+> expect you'd have it.  Anyway, debug would do.
 
-Chris Wilson <chris@chris-wilson.co.uk> writes:
+=2E..
 
-> I have to ask, if this is all just to work around iowait triggering high
-> frequencies for GPU bound applications, does it all just boil down to
-> i915 incorrectly using iowait. Does this patch set perform better than
->
-> diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i=
-915_request.c
-> index 9ca9c24b4421..7e7c95411bcd 100644
-> --- a/drivers/gpu/drm/i915/i915_request.c
-> +++ b/drivers/gpu/drm/i915/i915_request.c
-> @@ -1267,7 +1267,7 @@ long i915_request_wait(struct i915_request *rq,
->                         goto complete;
->                 }
->=20=20
-> -               timeout =3D io_schedule_timeout(timeout);
-> +               timeout =3D schedule_timeout(timeout);
->         } while (1);
->=20=20
->         GEM_BUG_ON(!intel_wait_has_seqno(&wait));
->
-> Quite clearly the general framework could prove useful in a broader
-> range of situations, but does the above suffice? (And can be backported
-> to stable.)
-> -Chris
+Hmm. I also noticed now screen saver kicks in _right after I resume
+the machine_. That did not use to be the case (and is a bit annoying
+on its own).
 
-Nope...  This hunk is one of the first things I tried when I started
-looking into this.  It didn't cut it, and it seemed to lead to some
-regressions in latency-bound test-cases that were relying on the upward
-bias provided by IOWAIT boosting in combination with the upstream
-P-state governor.
+Do we have any changes with time across suspend/resume in v4.17?
 
-The reason why it's not sufficient is that the bulk of the energy
-efficiency improvement from this series is obtained by dampening
-high-frequency oscillations of the CPU P-state, which occur currently
-for any periodically fluctuating workload (not only i915 rendering)
-regardless of whether IOWAIT boosting kicks in.  i915 using IO waits
-does exacerbate the problem with the upstream governor by amplifying the
-oscillation, but it's not really the ultimate cause.
+								Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-In combination with v2 (you can take a peek at the half-baked patch here
-[1], planning to make a few more changes this week so it isn't quite
-ready for review yet) this hunk will actually cause more serious
-regressions because v2 is able to use the frequent IOWAIT stalls of the
-i915 driver in combination with an IO-underutilized system as a strong
-indication that the workload is latency-bound, which causes it to
-transition to latency-minimizing mode, which significantly improves
-performance of latency-bound rendering (most visible in a handful X11
-test-cases and some GPU/CPU sync test-cases from SynMark2).
-
-[1] https://people.freedesktop.org/~currojerez/intel_pstate-lp/0001-cpufreq=
--intel_pstate-Implement-variably-low-pass-fil-v1.8.patch
-
---=-=-=--
-
---==-=-=
+--qDbXVdCdHGoSgWSk
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCWtZKpAAKCRCDmTidfVK/
-W0yMAPwOn08sLsKWyRD6a1nZnKl9sxKPvcYtojJGxUEEllLvnQD/UZXJHYiIoUEl
-dx+wJpHyaD+tvKlE436Eew9zQybFOs8=
-=Hrvw
+iEYEARECAAYFAlrWYIIACgkQMOfwapXb+vKk9wCcC11R+CHylBGrEcwXKRYbkoqY
+N+IAni0sVwTlQqcBIFtmH4Jg2/EULNkt
+=56Du
 -----END PGP SIGNATURE-----
---==-=-=--
 
---===============0920693112==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
-
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4
-IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
-
---===============0920693112==--
+--qDbXVdCdHGoSgWSk--
