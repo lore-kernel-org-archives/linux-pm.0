@@ -1,27 +1,43 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 3/6] dt-bindings: arm: Document the RZN1D-DB board
-Date: Tue, 17 Apr 2018 08:23:28 -0500
-Message-ID: <20180417132328.g2okcv3akwaxlz2l@rob-hp-laptop>
-References: <1523963101-56725-1-git-send-email-michel.pollet@bp.renesas.com>
- <1523963101-56725-4-git-send-email-michel.pollet@bp.renesas.com>
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Subject: Re: [PATCH 0/9] GPU-bound energy efficiency
+ improvements for the intel_pstate driver.
+Date: Tue, 17 Apr 2018 15:03:01 +0100
+Message-ID: <152397378196.27610.5253114574084892203@mail.alporthouse.com>
+References: <20180328063845.4884-1-currojerez@riseup.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1523963101-56725-4-git-send-email-michel.pollet@bp.renesas.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>
-Cc: linux-renesas-soc@vger.kernel.org, Simon Horman <horms@verge.net.au>, phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <20180328063845.4884-1-currojerez@riseup.net>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Eero Tamminen <eero.t.tamminen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 17, 2018 at 12:04:18PM +0100, Michel Pollet wrote:
-> This documents the RZ/N1 bindings for the RZN1D-DB board.
-> 
-> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
-> ---
->  Documentation/devicetree/bindings/arm/shmobile.txt | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-
-Please add acks/reviewed-bys when posting new versions.
-
-Rob
+SSBoYXZlIHRvIGFzaywgaWYgdGhpcyBpcyBhbGwganVzdCB0byB3b3JrIGFyb3VuZCBpb3dhaXQg
+dHJpZ2dlcmluZyBoaWdoCmZyZXF1ZW5jaWVzIGZvciBHUFUgYm91bmQgYXBwbGljYXRpb25zLCBk
+b2VzIGl0IGFsbCBqdXN0IGJvaWwgZG93biB0bwppOTE1IGluY29ycmVjdGx5IHVzaW5nIGlvd2Fp
+dC4gRG9lcyB0aGlzIHBhdGNoIHNldCBwZXJmb3JtIGJldHRlciB0aGFuCgpkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9yZXF1ZXN0LmMgYi9kcml2ZXJzL2dwdS9kcm0vaTkx
+NS9pOTE1X3JlcXVlc3QuYwppbmRleCA5Y2E5YzI0YjQ0MjEuLjdlN2M5NTQxMWJjZCAxMDA2NDQK
+LS0tIGEvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9yZXF1ZXN0LmMKKysrIGIvZHJpdmVycy9n
+cHUvZHJtL2k5MTUvaTkxNV9yZXF1ZXN0LmMKQEAgLTEyNjcsNyArMTI2Nyw3IEBAIGxvbmcgaTkx
+NV9yZXF1ZXN0X3dhaXQoc3RydWN0IGk5MTVfcmVxdWVzdCAqcnEsCiAgICAgICAgICAgICAgICAg
+ICAgICAgIGdvdG8gY29tcGxldGU7CiAgICAgICAgICAgICAgICB9CiAKLSAgICAgICAgICAgICAg
+IHRpbWVvdXQgPSBpb19zY2hlZHVsZV90aW1lb3V0KHRpbWVvdXQpOworICAgICAgICAgICAgICAg
+dGltZW91dCA9IHNjaGVkdWxlX3RpbWVvdXQodGltZW91dCk7CiAgICAgICAgfSB3aGlsZSAoMSk7
+CiAKICAgICAgICBHRU1fQlVHX09OKCFpbnRlbF93YWl0X2hhc19zZXFubygmd2FpdCkpOwoKUXVp
+dGUgY2xlYXJseSB0aGUgZ2VuZXJhbCBmcmFtZXdvcmsgY291bGQgcHJvdmUgdXNlZnVsIGluIGEg
+YnJvYWRlcgpyYW5nZSBvZiBzaXR1YXRpb25zLCBidXQgZG9lcyB0aGUgYWJvdmUgc3VmZmljZT8g
+KEFuZCBjYW4gYmUgYmFja3BvcnRlZAp0byBzdGFibGUuKQotQ2hyaXMKX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJ
+bnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Au
+b3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
