@@ -1,724 +1,290 @@
-From: Abel Vesa <abel.vesa@nxp.com>
-Subject: [PATCH 2/2] power: pf1550_charger: add pf1550 charger driver
-Date: Tue, 17 Apr 2018 17:20:19 +0300
-Message-ID: <1523974819-8711-2-git-send-email-abel.vesa@nxp.com>
-References: <1523974819-8711-1-git-send-email-abel.vesa@nxp.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [RFC PATCH v2 3/6] sched: Add over-utilization/tipping point
+ indicator
+Date: Tue, 17 Apr 2018 22:25:01 +0800
+Message-ID: <20180417142440.GB18509@leoy-ThinkPad-X240s>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-4-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523974819-8711-1-git-send-email-abel.vesa@nxp.com>
+Content-Disposition: inline
+In-Reply-To: <20180406153607.17815-4-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Robin Gong <yibin.gong@nxp.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-imx@nxp.com, Abel Vesa <abelvesa@linux.com>, Robin Gong <b38343@freescale.com>, Abel Vesa <abel.vesa@nxp.com>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Robin Gong <b38343@freescale.com>
+On Fri, Apr 06, 2018 at 04:36:04PM +0100, Dietmar Eggemann wrote:
+> From: Thara Gopinath <thara.gopinath@linaro.org>
+> 
+> Energy-aware scheduling should only operate when the system is not
+> overutilized. There must be cpu time available to place tasks based on
+> utilization in an energy-aware fashion, i.e. to pack tasks on
+> energy-efficient cpus without harming the overall throughput.
+> 
+> In case the system operates above this tipping point the tasks have to
+> be placed based on task and cpu load in the classical way of spreading
+> tasks across as many cpus as possible.
+> 
+> The point in which a system switches from being not overutilized to
+> being overutilized is called the tipping point.
+> 
+> Such a tipping point indicator on a sched domain as the system
+> boundary is introduced here. As soon as one cpu of a sched domain is
+> overutilized the whole sched domain is declared overutilized as well.
+> A cpu becomes overutilized when its utilization is higher that 80%
+> (capacity_margin) of its capacity.
+> 
+> The implementation takes advantage of the shared sched domain which is
+> shared across all per-cpu views of a sched domain level. The new
+> overutilized flag is placed in this shared sched domain.
+> 
+> Load balancing is skipped in case the energy model is present and the
+> sched domain is not overutilized because under this condition the
+> predominantly load-per-capacity driven load-balancer should not
+> interfere with the energy-aware wakeup placement based on utilization.
+> 
+> In case the total utilization of a sched domain is greater than the
+> total sched domain capacity the overutilized flag is set at the parent
+> sched domain level to let other sched groups help getting rid of the
+> overutilization of cpus.
+> 
+> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> ---
+>  include/linux/sched/topology.h |  1 +
+>  kernel/sched/fair.c            | 62 ++++++++++++++++++++++++++++++++++++++++--
+>  kernel/sched/sched.h           |  1 +
+>  kernel/sched/topology.c        | 12 +++-----
+>  4 files changed, 65 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+> index 26347741ba50..dd001c232646 100644
+> --- a/include/linux/sched/topology.h
+> +++ b/include/linux/sched/topology.h
+> @@ -72,6 +72,7 @@ struct sched_domain_shared {
+>  	atomic_t	ref;
+>  	atomic_t	nr_busy_cpus;
+>  	int		has_idle_cores;
+> +	int		overutilized;
+>  };
+>  
+>  struct sched_domain {
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 0a76ad2ef022..6960e5ef3c14 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -5345,6 +5345,28 @@ static inline void hrtick_update(struct rq *rq)
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_SMP
+> +static inline int cpu_overutilized(int cpu);
+> +
+> +static inline int sd_overutilized(struct sched_domain *sd)
+> +{
+> +	return READ_ONCE(sd->shared->overutilized);
+> +}
+> +
+> +static inline void update_overutilized_status(struct rq *rq)
+> +{
+> +	struct sched_domain *sd;
+> +
+> +	rcu_read_lock();
+> +	sd = rcu_dereference(rq->sd);
+> +	if (sd && !sd_overutilized(sd) && cpu_overutilized(rq->cpu))
+> +		WRITE_ONCE(sd->shared->overutilized, 1);
+> +	rcu_read_unlock();
+> +}
+> +#else
+> +static inline void update_overutilized_status(struct rq *rq) {}
+> +#endif /* CONFIG_SMP */
+> +
+>  /*
+>   * The enqueue_task method is called before nr_running is
+>   * increased. Here we update the fair scheduling stats and
+> @@ -5394,8 +5416,10 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>  		update_cfs_group(se);
+>  	}
+>  
+> -	if (!se)
+> +	if (!se) {
+>  		add_nr_running(rq, 1);
+> +		update_overutilized_status(rq);
+> +	}
 
-Add basic pf1550 charger driver.
+Maybe this isn't a good question, why only update overutilized flag
+for enqueue flow but not for dequeue flow?
 
-Signed-off-by: Robin Gong <yibin.gong@nxp.com>
-Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
----
- drivers/power/supply/Kconfig          |   6 +
- drivers/power/supply/Makefile         |   1 +
- drivers/power/supply/pf1550_charger.c | 660 ++++++++++++++++++++++++++++++++++
- 3 files changed, 667 insertions(+)
- create mode 100644 drivers/power/supply/pf1550_charger.c
+>  	util_est_enqueue(&rq->cfs, p);
+>  	hrtick_update(rq);
+> @@ -6579,6 +6603,11 @@ static inline int util_fits_capacity(unsigned long util, unsigned long capacity)
+>  	return capacity * 1024 > util * capacity_margin;
+>  }
+>  
+> +static inline int cpu_overutilized(int cpu)
+> +{
+> +	return !util_fits_capacity(cpu_util(cpu), capacity_of(cpu));
+> +}
+> +
+>  /*
+>   * Disable WAKE_AFFINE in the case where task @p doesn't fit in the
+>   * capacity of either the waking CPU @cpu or the previous CPU @prev_cpu.
+> @@ -7817,6 +7846,7 @@ struct sd_lb_stats {
+>  	unsigned long total_running;
+>  	unsigned long total_load;	/* Total load of all groups in sd */
+>  	unsigned long total_capacity;	/* Total capacity of all groups in sd */
+> +	unsigned long total_util;	/* Total util of all groups in sd */
+>  	unsigned long avg_load;	/* Average load across all groups in sd */
+>  
+>  	struct sg_lb_stats busiest_stat;/* Statistics of the busiest group */
+> @@ -7837,6 +7867,7 @@ static inline void init_sd_lb_stats(struct sd_lb_stats *sds)
+>  		.total_running = 0UL,
+>  		.total_load = 0UL,
+>  		.total_capacity = 0UL,
+> +		.total_util = 0UL,
+>  		.busiest_stat = {
+>  			.avg_load = 0UL,
+>  			.sum_nr_running = 0,
+> @@ -8133,11 +8164,12 @@ static bool update_nohz_stats(struct rq *rq, bool force)
+>   * @local_group: Does group contain this_cpu.
+>   * @sgs: variable to hold the statistics for this group.
+>   * @overload: Indicate more than one runnable task for any CPU.
+> + * @overutilized: Indicate overutilization for any CPU.
+>   */
+>  static inline void update_sg_lb_stats(struct lb_env *env,
+>  			struct sched_group *group, int load_idx,
+>  			int local_group, struct sg_lb_stats *sgs,
+> -			bool *overload)
+> +			bool *overload, int *overutilized)
+>  {
+>  	unsigned long load;
+>  	int i, nr_running;
+> @@ -8174,6 +8206,9 @@ static inline void update_sg_lb_stats(struct lb_env *env,
+>  		 */
+>  		if (!nr_running && idle_cpu(i))
+>  			sgs->idle_cpus++;
+> +
+> +		if (cpu_overutilized(i))
+> +			*overutilized = 1;
+>  	}
+>  
+>  	/* Adjust by relative CPU capacity of the group */
+> @@ -8301,6 +8336,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+>  	struct sg_lb_stats tmp_sgs;
+>  	int load_idx, prefer_sibling = 0;
+>  	bool overload = false;
+> +	int overutilized = 0;
+>  
+>  	if (child && child->flags & SD_PREFER_SIBLING)
+>  		prefer_sibling = 1;
+> @@ -8327,7 +8363,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+>  		}
+>  
+>  		update_sg_lb_stats(env, sg, load_idx, local_group, sgs,
+> -						&overload);
+> +						&overload, &overutilized);
+>  
+>  		if (local_group)
+>  			goto next_group;
+> @@ -8359,6 +8395,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+>  		sds->total_running += sgs->sum_nr_running;
+>  		sds->total_load += sgs->group_load;
+>  		sds->total_capacity += sgs->group_capacity;
+> +		sds->total_util += sgs->group_util;
+>  
+>  		sg = sg->next;
+>  	} while (sg != env->sd->groups);
+> @@ -8380,6 +8417,17 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+>  		if (env->dst_rq->rd->overload != overload)
+>  			env->dst_rq->rd->overload = overload;
+>  	}
+> +
+> +	if (sd_overutilized(env->sd) != overutilized)
+> +		WRITE_ONCE(env->sd->shared->overutilized, overutilized);
+> +
+> +	/*
+> +	 * If the domain util is greater that domain capacity, load balancing
+> +	 * needs to be done at the next sched domain level as well.
+> +	 */
+> +	if (env->sd->parent &&
+> +	    !util_fits_capacity(sds->total_util, sds->total_capacity))
+> +		WRITE_ONCE(env->sd->parent->shared->overutilized, 1);
+>  }
+>  
+>  /**
+> @@ -9255,6 +9303,9 @@ static void rebalance_domains(struct rq *rq, enum cpu_idle_type idle)
+>  		}
+>  		max_cost += sd->max_newidle_lb_cost;
+>  
+> +		if (sched_energy_enabled() && !sd_overutilized(sd))
+> +			continue;
+> +
+>  		if (!(sd->flags & SD_LOAD_BALANCE))
+>  			continue;
+>  
+> @@ -9822,6 +9873,9 @@ static int idle_balance(struct rq *this_rq, struct rq_flags *rf)
+>  			break;
+>  		}
+>  
+> +		if (sched_energy_enabled() && !sd_overutilized(sd))
+> +			continue;
+> +
+>  		if (sd->flags & SD_BALANCE_NEWIDLE) {
+>  			t0 = sched_clock_cpu(this_cpu);
+>  
+> @@ -9955,6 +10009,8 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
+>  
+>  	if (static_branch_unlikely(&sched_numa_balancing))
+>  		task_tick_numa(rq, curr);
+> +
+> +	update_overutilized_status(rq);
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 428b426..2ebd38c 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -380,6 +380,12 @@ config CHARGER_PCF50633
- 	help
- 	 Say Y to include support for NXP PCF50633 Main Battery Charger.
- 
-+config CHARGER_PF1550
-+	tristate "Freescale PF1550 battery charger driver"
-+	depends on MFD_PF1550
-+	help
-+	 Say Y to enable support for the Freescale PF1550 battery charger.
-+
- config BATTERY_JZ4740
- 	tristate "Ingenic JZ4740 battery"
- 	depends on MACH_JZ4740
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index e83aa84..0b2e424 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
- obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
- obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
-+obj-$(CONFIG_CHARGER_PF1550)	+= pf1550_charger.o
- obj-$(CONFIG_BATTERY_JZ4740)	+= jz4740-battery.o
- obj-$(CONFIG_BATTERY_RX51)	+= rx51_battery.o
- obj-$(CONFIG_AB8500_BM)		+= ab8500_bmdata.o ab8500_charger.o ab8500_fg.o ab8500_btemp.o abx500_chargalg.o pm2301_charger.o
-diff --git a/drivers/power/supply/pf1550_charger.c b/drivers/power/supply/pf1550_charger.c
-new file mode 100644
-index 0000000..c5e0c55
---- /dev/null
-+++ b/drivers/power/supply/pf1550_charger.c
-@@ -0,0 +1,660 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * pf1550_charger.c - regulator driver for the PF1550
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Robin Gong <yibin.gong@freescale.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/pf1550.h>
-+
-+#define PF1550_CHARGER_NAME		"pf1550-charger"
-+#define PF1550_DEFAULT_CONSTANT_VOLT	4200000
-+#define PF1550_DEFAULT_MIN_SYSTEM_VOLT	3500000
-+#define PF1550_DEFAULT_THERMAL_TEMP	75
-+
-+static const char *pf1550_charger_model		= "PF1550";
-+static const char *pf1550_charger_manufacturer	= "Freescale";
-+
-+struct pf1550_charger {
-+	struct device *dev;
-+	struct pf1550_dev *pf1550;
-+	struct power_supply *charger;
-+	struct power_supply_desc psy_desc;
-+	int irq;
-+	struct delayed_work irq_work;
-+	struct mutex mutex;
-+
-+	u32 constant_volt;
-+	u32 min_system_volt;
-+	u32 thermal_regulation_temp;
-+};
-+
-+static struct pf1550_irq_info pf1550_charger_irqs[] = {
-+	{ PF1550_CHARG_IRQ_BAT2SOCI,		"BAT2SOC" },
-+	{ PF1550_CHARG_IRQ_BATI,		"BAT" },
-+	{ PF1550_CHARG_IRQ_CHGI,		"CHG" },
-+	{ PF1550_CHARG_IRQ_VBUSI,		"VBUS" },
-+	{ PF1550_CHARG_IRQ_THMI,		"THM" },
-+};
-+
-+static int pf1550_get_charger_state(struct regmap *regmap, int *val)
-+{
-+	int ret;
-+	unsigned int data;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_CHG_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_CHG_SNS_MASK;
-+
-+	switch (data) {
-+	case PF1550_CHG_PRECHARGE:
-+	case PF1550_CHG_CONSTANT_CURRENT:
-+	case PF1550_CHG_CONSTANT_VOL:
-+	case PF1550_CHG_EOC:
-+		*val = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+	case PF1550_CHG_DONE:
-+		*val = POWER_SUPPLY_STATUS_FULL;
-+		break;
-+	case PF1550_CHG_TIMER_FAULT:
-+	case PF1550_CHG_SUSPEND:
-+		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+	case PF1550_CHG_OFF_INV:
-+	case PF1550_CHG_OFF_TEMP:
-+	case PF1550_CHG_LINEAR_ONLY:
-+		*val = POWER_SUPPLY_STATUS_DISCHARGING;
-+		break;
-+	default:
-+		*val = POWER_SUPPLY_STATUS_UNKNOWN;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pf1550_get_charge_type(struct regmap *regmap, int *val)
-+{
-+	int ret;
-+	unsigned int data;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_CHG_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_CHG_SNS_MASK;
-+
-+	switch (data) {
-+	case PF1550_CHG_SNS_MASK:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-+		break;
-+	case PF1550_CHG_CONSTANT_CURRENT:
-+	case PF1550_CHG_CONSTANT_VOL:
-+	case PF1550_CHG_EOC:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_FAST;
-+		break;
-+	case PF1550_CHG_DONE:
-+	case PF1550_CHG_TIMER_FAULT:
-+	case PF1550_CHG_SUSPEND:
-+	case PF1550_CHG_OFF_INV:
-+	case PF1550_CHG_BAT_OVER:
-+	case PF1550_CHG_OFF_TEMP:
-+	case PF1550_CHG_LINEAR_ONLY:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		break;
-+	default:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * Supported health statuses:
-+ *  - POWER_SUPPLY_HEALTH_DEAD
-+ *  - POWER_SUPPLY_HEALTH_GOOD
-+ *  - POWER_SUPPLY_HEALTH_OVERVOLTAGE
-+ *  - POWER_SUPPLY_HEALTH_UNKNOWN
-+ */
-+static int pf1550_get_battery_health(struct regmap *regmap, int *val)
-+{
-+	int ret;
-+	unsigned int data;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_BATT_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_BAT_SNS_MASK;
-+
-+	switch (data) {
-+	case PF1550_BAT_NO_DETECT:
-+		*val = POWER_SUPPLY_HEALTH_DEAD;
-+		break;
-+	case PF1550_BAT_NO_VBUS:
-+	case PF1550_BAT_LOW_THAN_PRECHARG:
-+	case PF1550_BAT_CHARG_FAIL:
-+	case PF1550_BAT_HIGH_THAN_PRECHARG:
-+		*val = POWER_SUPPLY_HEALTH_GOOD;
-+		break;
-+	case PF1550_BAT_OVER_VOL:
-+		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		break;
-+	default:
-+		*val = POWER_SUPPLY_HEALTH_UNKNOWN;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pf1550_get_present(struct regmap *regmap, int *val)
-+{
-+	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_BATT_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_BAT_SNS_MASK;
-+	*val = (data == PF1550_BAT_NO_DETECT) ? 0 : 1;
-+
-+	return 0;
-+}
-+
-+static int pf1550_get_online(struct regmap *regmap, int *val)
-+{
-+	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_VBUS_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	*val = (data & PF1550_VBUS_VALID) ? 1 : 0;
-+
-+	return 0;
-+}
-+
-+static void pf1550_chg_bat_isr(struct pf1550_charger *chg)
-+{
-+	unsigned int data;
-+
-+	if (regmap_read(chg->pf1550->regmap,
-+			PF1550_CHARG_REG_BATT_SNS, &data)) {
-+		dev_err(chg->dev, "Read BATT_SNS error.\n");
-+		return;
-+	}
-+
-+	switch (data & PF1550_BAT_SNS_MASK) {
-+	case PF1550_BAT_NO_VBUS:
-+		dev_dbg(chg->dev, "No valid VBUS input.\n");
-+		break;
-+	case PF1550_BAT_LOW_THAN_PRECHARG:
-+		dev_dbg(chg->dev, "VBAT < VPRECHG.LB.\n");
-+		break;
-+	case PF1550_BAT_CHARG_FAIL:
-+		dev_dbg(chg->dev, "Battery charging failed.\n");
-+		break;
-+	case PF1550_BAT_HIGH_THAN_PRECHARG:
-+		dev_dbg(chg->dev, "VBAT > VPRECHG.LB.\n");
-+		break;
-+	case PF1550_BAT_OVER_VOL:
-+		dev_dbg(chg->dev, "VBAT > VBATOV.\n");
-+		break;
-+	case PF1550_BAT_NO_DETECT:
-+		dev_dbg(chg->dev, "Battery not detected.\n");
-+		break;
-+	default:
-+		dev_err(chg->dev, "Unknown value read:%x\n",
-+			data & PF1550_CHG_SNS_MASK);
-+	}
-+}
-+
-+static void pf1550_chg_chg_isr(struct pf1550_charger *chg)
-+{
-+	unsigned int data;
-+
-+	if (regmap_read(chg->pf1550->regmap,
-+			PF1550_CHARG_REG_CHG_SNS, &data)) {
-+		dev_err(chg->dev, "Read CHG_SNS error.\n");
-+		return;
-+	}
-+
-+	switch (data & PF1550_CHG_SNS_MASK) {
-+	case PF1550_CHG_PRECHARGE:
-+		dev_dbg(chg->dev, "In pre-charger mode.\n");
-+		break;
-+	case PF1550_CHG_CONSTANT_CURRENT:
-+		dev_dbg(chg->dev, "In fast-charge constant current mode.\n");
-+		break;
-+	case PF1550_CHG_CONSTANT_VOL:
-+		dev_dbg(chg->dev, "In fast-charge constant voltage mode.\n");
-+		break;
-+	case PF1550_CHG_EOC:
-+		dev_dbg(chg->dev, "In EOC mode.\n");
-+		break;
-+	case PF1550_CHG_DONE:
-+		dev_dbg(chg->dev, "In DONE mode.\n");
-+		break;
-+	case PF1550_CHG_TIMER_FAULT:
-+		dev_info(chg->dev, "In timer fault mode.\n");
-+		break;
-+	case PF1550_CHG_SUSPEND:
-+		dev_info(chg->dev, "In thermistor suspend mode.\n");
-+		break;
-+	case PF1550_CHG_OFF_INV:
-+		dev_info(chg->dev, "Input invalid, charger off.\n");
-+		break;
-+	case PF1550_CHG_BAT_OVER:
-+		dev_info(chg->dev, "Battery over-voltage.\n");
-+		break;
-+	case PF1550_CHG_OFF_TEMP:
-+		dev_info(chg->dev, "Temp high, charger off.\n");
-+		break;
-+	case PF1550_CHG_LINEAR_ONLY:
-+		dev_dbg(chg->dev, "In Linear mode, not charging.\n");
-+		break;
-+	default:
-+		dev_err(chg->dev, "Unknown value read:%x\n",
-+			data & PF1550_CHG_SNS_MASK);
-+	}
-+}
-+
-+static void pf1550_chg_vbus_isr(struct pf1550_charger *chg)
-+{
-+	enum power_supply_type old_type;
-+	unsigned int data;
-+
-+	if (regmap_read(chg->pf1550->regmap,
-+			PF1550_CHARG_REG_VBUS_SNS, &data)) {
-+		dev_err(chg->dev, "Read VBUS_SNS error.\n");
-+		return;
-+	}
-+
-+	old_type = chg->psy_desc.type;
-+
-+	if (data & PF1550_VBUS_UVLO) {
-+		chg->psy_desc.type = POWER_SUPPLY_TYPE_BATTERY;
-+		dev_dbg(chg->dev, "VBUS deattached.\n");
-+	}
-+	if (data & PF1550_VBUS_IN2SYS)
-+		dev_dbg(chg->dev, "VBUS_IN2SYS_SNS.\n");
-+	if (data & PF1550_VBUS_OVLO)
-+		dev_dbg(chg->dev, "VBUS_OVLO_SNS.\n");
-+	if (data & PF1550_VBUS_VALID) {
-+		chg->psy_desc.type = POWER_SUPPLY_TYPE_MAINS;
-+		dev_dbg(chg->dev, "VBUS attached.\n");
-+	}
-+
-+	if (old_type != chg->psy_desc.type)
-+		power_supply_changed(chg->charger);
-+}
-+
-+static irqreturn_t pf1550_charger_irq_handler(int irq, void *data)
-+{
-+	struct pf1550_charger *chg = data;
-+
-+	chg->irq = irq;
-+	schedule_delayed_work(&chg->irq_work,  msecs_to_jiffies(10));
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static void pf1550_charger_irq_work(struct work_struct *work)
-+{
-+	struct pf1550_charger *chg = container_of(to_delayed_work(work),
-+						  struct pf1550_charger,
-+						  irq_work);
-+	int i, irq_type = -1;
-+	unsigned int status;
-+
-+	if (!chg->charger)
-+		return;
-+
-+	mutex_lock(&chg->mutex);
-+
-+	for (i = 0; i < ARRAY_SIZE(pf1550_charger_irqs); i++)
-+		if (chg->irq == pf1550_charger_irqs[i].virq)
-+			irq_type = pf1550_charger_irqs[i].irq;
-+
-+	switch (irq_type) {
-+	case PF1550_CHARG_IRQ_BAT2SOCI:
-+		dev_info(chg->dev, "BAT to SYS Overcurrent interrupt.\n");
-+		break;
-+	case PF1550_CHARG_IRQ_BATI:
-+		pf1550_chg_bat_isr(chg);
-+		break;
-+	case PF1550_CHARG_IRQ_CHGI:
-+		pf1550_chg_chg_isr(chg);
-+		break;
-+	case PF1550_CHARG_IRQ_VBUSI:
-+		pf1550_chg_vbus_isr(chg);
-+		break;
-+	case PF1550_CHARG_IRQ_THMI:
-+		dev_info(chg->dev, "Thermal interrupt.\n");
-+		break;
-+	default:
-+		dev_err(chg->dev, "unknown interrupt occurred.\n");
-+	}
-+
-+	if (regmap_read(chg->pf1550->regmap, PF1550_CHARG_REG_CHG_INT, &status))
-+		dev_err(chg->dev, "Read CHG_INT error.\n");
-+	if (regmap_write(chg->pf1550->regmap, PF1550_CHARG_REG_CHG_INT, status))
-+		dev_err(chg->dev, "clear CHG_INT error.\n");
-+
-+	mutex_unlock(&chg->mutex);
-+}
-+
-+static enum power_supply_property pf1550_charger_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
-+static int pf1550_charger_get_property(struct power_supply *psy,
-+			    enum power_supply_property psp,
-+			    union power_supply_propval *val)
-+{
-+	struct pf1550_charger *chg = power_supply_get_drvdata(psy);
-+	struct regmap *regmap = chg->pf1550->regmap;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		ret = pf1550_get_charger_state(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		ret = pf1550_get_charge_type(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		ret = pf1550_get_battery_health(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		ret = pf1550_get_present(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		ret = pf1550_get_online(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = pf1550_charger_model;
-+		break;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = pf1550_charger_manufacturer;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static int pf1550_set_constant_volt(struct pf1550_charger *chg,
-+		unsigned int uvolt)
-+{
-+	unsigned int data;
-+
-+	if (uvolt >= 3500000 && uvolt <= 4440000)
-+		data = 8 + (uvolt - 3500000) / 20000;
-+	else {
-+		dev_err(chg->dev, "Wrong value for constant voltage\n");
-+		return -EINVAL;
-+	}
-+
-+	dev_dbg(chg->dev, "Charging constant voltage: %u (0x%x)\n", uvolt,
-+			data);
-+
-+	return regmap_update_bits(chg->pf1550->regmap,
-+			PF1550_CHARG_REG_BATT_REG,
-+			PF1550_CHARG_REG_BATT_REG_CHGCV_MASK, data);
-+}
-+
-+static int pf1550_set_min_system_volt(struct pf1550_charger *chg,
-+		unsigned int uvolt)
-+{
-+	unsigned int data;
-+
-+	switch (uvolt) {
-+	case 3500000:
-+		data = 0x0;
-+		break;
-+	case 3700000:
-+		data = 0x1;
-+		break;
-+	case 4300000:
-+		data = 0x2;
-+		break;
-+	default:
-+		dev_err(chg->dev, "Wrong value for minimum system voltage\n");
-+		return -EINVAL;
-+	}
-+
-+	data <<= PF1550_CHARG_REG_BATT_REG_VMINSYS_SHIFT;
-+
-+	dev_dbg(chg->dev, "Minimum system regulation voltage: %u (0x%x)\n",
-+			uvolt, data);
-+
-+	return regmap_update_bits(chg->pf1550->regmap,
-+			PF1550_CHARG_REG_BATT_REG,
-+			PF1550_CHARG_REG_BATT_REG_VMINSYS_MASK, data);
-+}
-+
-+static int pf1550_set_thermal_regulation_temp(struct pf1550_charger *chg,
-+		unsigned int cels)
-+{
-+	unsigned int data;
-+
-+	switch (cels) {
-+	case 60:
-+		data = 0x0;
-+		break;
-+	case 75:
-+		data = 0x1;
-+		break;
-+	case 90:
-+		data = 0x2;
-+		break;
-+	case 105:
-+		data = 0x3;
-+		break;
-+	default:
-+		dev_err(chg->dev, "Wrong value for thermal temperature\n");
-+		return -EINVAL;
-+	}
-+
-+	data <<= PF1550_CHARG_REG_THM_REG_CNFG_REGTEMP_SHIFT;
-+
-+	dev_dbg(chg->dev, "Thermal regulation loop temperature: %u (0x%x)\n",
-+			cels, data);
-+
-+	return regmap_update_bits(chg->pf1550->regmap,
-+			PF1550_CHARG_REG_THM_REG_CNFG,
-+			PF1550_CHARG_REG_THM_REG_CNFG_REGTEMP_MASK, data);
-+}
-+
-+/*
-+ * Sets charger registers to proper and safe default values.
-+ */
-+static int pf1550_reg_init(struct pf1550_charger *chg)
-+{
-+	int ret;
-+	unsigned int data;
-+
-+	/* Unmask charger interrupt, mask DPMI and reserved bit */
-+	ret =  regmap_write(chg->pf1550->regmap, PF1550_CHARG_REG_CHG_INT_MASK,
-+				0x51);
-+	if (ret) {
-+		dev_err(chg->dev, "Error unmask charger interrupt: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = regmap_read(chg->pf1550->regmap, PF1550_CHARG_REG_VBUS_SNS,
-+				&data);
-+	if (ret) {
-+		dev_err(chg->dev, "Read charg vbus_sns error: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (data & PF1550_VBUS_VALID)
-+		chg->psy_desc.type = POWER_SUPPLY_TYPE_MAINS;
-+
-+	ret = pf1550_set_constant_volt(chg, chg->constant_volt);
-+	if (ret)
-+		return ret;
-+
-+	ret = pf1550_set_min_system_volt(chg, chg->min_system_volt);
-+	if (ret)
-+		return ret;
-+
-+	ret = pf1550_set_thermal_regulation_temp(chg,
-+			chg->thermal_regulation_temp);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int pf1550_dt_init(struct device *dev, struct pf1550_charger *chg)
-+{
-+	struct device_node *np = dev->of_node;
-+
-+	if (!np) {
-+		dev_err(dev, "no charger OF node\n");
-+		return -EINVAL;
-+	}
-+
-+	if (of_property_read_u32(np, "fsl,constant-microvolt",
-+			&chg->constant_volt))
-+		chg->constant_volt = PF1550_DEFAULT_CONSTANT_VOLT;
-+
-+	if (of_property_read_u32(np, "fsl,min-system-microvolt",
-+			&chg->min_system_volt))
-+		chg->min_system_volt = PF1550_DEFAULT_MIN_SYSTEM_VOLT;
-+
-+	if (of_property_read_u32(np, "fsl,thermal-regulation",
-+			&chg->thermal_regulation_temp))
-+		chg->thermal_regulation_temp = PF1550_DEFAULT_THERMAL_TEMP;
-+
-+	return 0;
-+}
-+
-+static int pf1550_charger_probe(struct platform_device *pdev)
-+{
-+	struct pf1550_charger *chg;
-+	struct power_supply_config psy_cfg = {};
-+	struct pf1550_dev *pf1550 = dev_get_drvdata(pdev->dev.parent);
-+	int i, ret;
-+
-+	chg = devm_kzalloc(&pdev->dev, sizeof(*chg), GFP_KERNEL);
-+	if (!chg)
-+		return -ENOMEM;
-+
-+	chg->dev = &pdev->dev;
-+	chg->pf1550 = pf1550;
-+
-+	platform_set_drvdata(pdev, chg);
-+
-+	ret = pf1550_dt_init(&pdev->dev, chg);
-+	if (ret)
-+		return ret;
-+
-+	mutex_init(&chg->mutex);
-+
-+	INIT_DELAYED_WORK(&chg->irq_work, pf1550_charger_irq_work);
-+
-+	for (i = 0; i < ARRAY_SIZE(pf1550_charger_irqs); i++) {
-+		struct pf1550_irq_info *charger_irq =
-+						&pf1550_charger_irqs[i];
-+		unsigned int virq = 0;
-+
-+		virq = regmap_irq_get_virq(pf1550->irq_data_charger,
-+					charger_irq->irq);
-+		if (!virq)
-+			return -EINVAL;
-+
-+		charger_irq->virq = virq;
-+
-+		ret = devm_request_threaded_irq(&pdev->dev, virq, NULL,
-+					pf1550_charger_irq_handler,
-+					IRQF_NO_SUSPEND,
-+					charger_irq->name, chg);
-+		if (ret) {
-+			dev_err(&pdev->dev,
-+				"failed: irq request (IRQ: %d, error :%d)\n",
-+				charger_irq->irq, ret);
-+			return ret;
-+		}
-+	}
-+
-+	psy_cfg.drv_data = chg;
-+
-+	chg->psy_desc.name = PF1550_CHARGER_NAME;
-+	chg->psy_desc.type = POWER_SUPPLY_TYPE_BATTERY;
-+	chg->psy_desc.get_property = pf1550_charger_get_property;
-+	chg->psy_desc.properties = pf1550_charger_props;
-+	chg->psy_desc.num_properties = ARRAY_SIZE(pf1550_charger_props);
-+
-+	chg->charger = power_supply_register(&pdev->dev, &chg->psy_desc,
-+						&psy_cfg);
-+	if (IS_ERR(chg->charger)) {
-+		dev_err(&pdev->dev, "failed: power supply register\n");
-+		ret = PTR_ERR(chg->charger);
-+		return ret;
-+	}
-+
-+	ret = pf1550_reg_init(chg);
-+
-+	return ret;
-+}
-+
-+static int pf1550_charger_remove(struct platform_device *pdev)
-+{
-+	struct pf1550_charger *chg = platform_get_drvdata(pdev);
-+
-+	cancel_delayed_work_sync(&chg->irq_work);
-+	power_supply_unregister(chg->charger);
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id pf1550_charger_id[] = {
-+	{ "pf1550-charger", 0, },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, pf1550_charger_id);
-+
-+static struct platform_driver pf1550_charger_driver = {
-+	.driver = {
-+		.name	= "pf1550-charger",
-+	},
-+	.probe		= pf1550_charger_probe,
-+	.remove		= pf1550_charger_remove,
-+	.id_table	= pf1550_charger_id,
-+};
-+module_platform_driver(pf1550_charger_driver);
-+
-+MODULE_AUTHOR("Robin Gong <yibin.gong@freescale.com>");
-+MODULE_DESCRIPTION("PF1550 charger driver");
-+MODULE_LICENSE("GPL");
--- 
-2.7.4
+Can sched tick clear overutilized flag if under tipping point?
+
+Thanks,
+Leo Yan
+
+>  }
+>  
+>  /*
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index c3deaee7a7a2..5d552c0d7109 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -11,6 +11,7 @@
+>  #include <linux/sched/cputime.h>
+>  #include <linux/sched/deadline.h>
+>  #include <linux/sched/debug.h>
+> +#include <linux/sched/energy.h>
+>  #include <linux/sched/hotplug.h>
+>  #include <linux/sched/idle.h>
+>  #include <linux/sched/init.h>
+> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+> index 64cc564f5255..c8b7c7665ab2 100644
+> --- a/kernel/sched/topology.c
+> +++ b/kernel/sched/topology.c
+> @@ -1184,15 +1184,11 @@ sd_init(struct sched_domain_topology_level *tl,
+>  		sd->idle_idx = 1;
+>  	}
+>  
+> -	/*
+> -	 * For all levels sharing cache; connect a sched_domain_shared
+> -	 * instance.
+> -	 */
+> -	if (sd->flags & SD_SHARE_PKG_RESOURCES) {
+> -		sd->shared = *per_cpu_ptr(sdd->sds, sd_id);
+> -		atomic_inc(&sd->shared->ref);
+> +	sd->shared = *per_cpu_ptr(sdd->sds, sd_id);
+> +	atomic_inc(&sd->shared->ref);
+> +
+> +	if (sd->flags & SD_SHARE_PKG_RESOURCES)
+>  		atomic_set(&sd->shared->nr_busy_cpus, sd_weight);
+> -	}
+>  
+>  	sd->private = sdd;
+>  
+> -- 
+> 2.11.0
+> 
