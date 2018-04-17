@@ -1,158 +1,133 @@
-From: Michel Pollet <michel.pollet@bp.renesas.com>
-Subject: [PATCH v5 6/6] reset: Renesas RZ/N1 reboot driver
-Date: Tue, 17 Apr 2018 12:04:21 +0100
-Message-ID: <1523963101-56725-7-git-send-email-michel.pollet@bp.renesas.com>
-References: <1523963101-56725-1-git-send-email-michel.pollet@bp.renesas.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [RFC PATCH v2 0/6] Energy Aware Scheduling
+Date: Tue, 17 Apr 2018 20:50:59 +0800
+Message-ID: <20180417125059.GA18509@leoy-ThinkPad-X240s>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523963101-56725-1-git-send-email-michel.pollet@bp.renesas.com>
+Content-Disposition: inline
+In-Reply-To: <20180406153607.17815-1-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-renesas-soc@vger.kernel.org, Simon Horman <horms@verge.net.au>
-Cc: phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Michel Pollet <michel.pollet@bp.renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The Renesas RZ/N1 Family (Part #R9A06G0xx) needs a small driver
-to reboot the Cortex-A7 cores. This driver is a sub driver of
-the sysctrl MFD.
+Hi Dietmar,
 
-Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
----
- drivers/power/reset/Kconfig       |  7 +++
- drivers/power/reset/Makefile      |  1 +
- drivers/power/reset/rzn1-reboot.c | 96 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 104 insertions(+)
- create mode 100644 drivers/power/reset/rzn1-reboot.c
+On Fri, Apr 06, 2018 at 04:36:01PM +0100, Dietmar Eggemann wrote:
+> 1. Overview
+> 
+> The Energy Aware Scheduler (EAS) based on Morten Rasmussen's posting on
+> LKML [1] is currently part of the AOSP Common Kernel and runs on
+> today's smartphones with Arm's big.LITTLE CPUs.
+> Based on the experience gained over the last two and a half years in
+> product development, we propose an energy model based task placement
+> for CPUs with asymmetric core capacities (e.g. Arm big.LITTLE or
+> DynamIQ), to align with the EAS adopted by the AOSP Common Kernel. We
+> have developed a simplified energy model, based on the physical
+> active power/performance curve of each core type using existing
+> SoC power/performance data already known to the kernel. The energy
+> model is used to select the most energy-efficient CPU to place each
+> task, taking utilization into account.
+> 
+> 1.1 Energy Model
+> 
+> A CPU with asymmetric core capacities features cores with significantly
+> different energy and performance characteristics. As the configurations
+> can vary greatly from one SoC to another, designing an energy-efficient
+> scheduling heuristic that performs well on a broad spectrum of platforms
+> appears to be particularly hard.
+> This proposal attempts to solve this issue by providing the scheduler
+> with an energy model of the platform which enables energy impact
+> estimation of scheduling decisions in a generic way. The energy model is
+> kept very simple as it represents only the active power of CPUs at all
+> available P-states and relies on existing data in the kernel (only used
+> by the thermal subsystem so far).
+> This proposal does not include the power consumption of C-states and
+> cluster-level resources which were originally introduced in [1] since
+> firstly, their impact on task placement decisions appears to be
+> neglectable on modern asymmetric platforms and secondly, they require
+> additional infrastructure and data (e.g new DT entries).
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index df58fc8..1416d88 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -144,6 +144,13 @@ config POWER_RESET_RESTART
- 	  Instead they restart, and u-boot holds the SoC until the
- 	  user presses a key. u-boot then boots into Linux.
- 
-+config POWER_RESET_RZN1
-+	bool "Renesas RZ/N1 reboot driver"
-+	depends on ARCH_RZN1
-+	help
-+	  This driver allows rebooting the CA7 cores of the
-+	  Renesas RZ/N1 Family of SoC (Part # R9A06G0xx).
-+
- config POWER_RESET_ST
- 	bool "ST restart driver"
- 	depends on ARCH_STI
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 7778c74..bad9702 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
- obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-+obj-$(CONFIG_POWER_RESET_RZN1) += rzn1-reboot.o
- obj-$(CONFIG_POWER_RESET_ST) += st-poweroff.o
- obj-$(CONFIG_POWER_RESET_VERSATILE) += arm-versatile-reboot.o
- obj-$(CONFIG_POWER_RESET_VEXPRESS) += vexpress-poweroff.o
-diff --git a/drivers/power/reset/rzn1-reboot.c b/drivers/power/reset/rzn1-reboot.c
-new file mode 100644
-index 0000000..43876d5
---- /dev/null
-+++ b/drivers/power/reset/rzn1-reboot.c
-@@ -0,0 +1,96 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * RZ/N1 reboot driver
-+ *
-+ * Copyright (C) 2018 Renesas Electronics Europe Limited
-+ *
-+ * Michel Pollet <michel.pollet@bp.renesas.com>, <buserror@gmail.com>
-+ * Derived from zx-reboot.c
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/notifier.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+
-+/* Definitions from the SDK rzn1-sysctrl.h autogenerated file */
-+#define RZN1_SYSCTRL_REG_RSTEN_MRESET_EN		0
-+#define RZN1_SYSCTRL_REG_RSTEN_WDA7RST_EN		1
-+#define RZN1_SYSCTRL_REG_RSTEN_WDA7RST_EN_MASK		0x6
-+#define RZN1_SYSCTRL_REG_RSTEN_WDM3RST_EN		3
-+#define RZN1_SYSCTRL_REG_RSTEN_CM3LOCKUPRST_EN		4
-+#define RZN1_SYSCTRL_REG_RSTEN_CM3SYSRESET_EN		5
-+#define RZN1_SYSCTRL_REG_RSTEN_SWRST_EN			6
-+#define RZN1_SYSCTRL_REG_RSTCTRL_WDA7RST_REQ		1
-+#define RZN1_SYSCTRL_REG_RSTCTRL_WDA7RST_REQ_MASK	0x6
-+#define RZN1_SYSCTRL_REG_RSTCTRL_WDM3RST_REQ		3
-+#define RZN1_SYSCTRL_REG_RSTCTRL_CM3LOCKUPRST_REQ	4
-+#define RZN1_SYSCTRL_REG_RSTCTRL_CM3SYSRESET_REQ	5
-+#define RZN1_SYSCTRL_REG_RSTCTRL_SWRST_REQ		6
-+
-+static void __iomem *reg_rsten, *reg_rstctrl;
-+
-+static int rzn1_reboot_handler(struct notifier_block *this,
-+			      unsigned long mode, void *cmd)
-+{
-+	writel(readl(reg_rsten) |
-+			BIT(RZN1_SYSCTRL_REG_RSTEN_SWRST_EN) |
-+			BIT(RZN1_SYSCTRL_REG_RSTEN_MRESET_EN),
-+		reg_rsten);
-+	writel(readl(reg_rstctrl) |
-+			BIT(RZN1_SYSCTRL_REG_RSTCTRL_SWRST_REQ),
-+		reg_rstctrl);
-+
-+	mdelay(50);
-+	pr_emerg("Unable to restart system\n");
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block rzn1_reboot_nb = {
-+	.notifier_call = rzn1_reboot_handler,
-+	.priority = 128,
-+};
-+
-+static int rzn1_reboot_probe(struct platform_device *ofdev)
-+{
-+	int err;
-+
-+	reg_rsten = of_iomap(ofdev->dev.of_node, 0);
-+	reg_rstctrl = of_iomap(ofdev->dev.of_node, 1);
-+
-+	if (!reg_rsten || !reg_rstctrl) {
-+		dev_err(&ofdev->dev, "invalid register mapping\n");
-+		return -ENODEV;
-+	}
-+
-+	err = register_restart_handler(&rzn1_reboot_nb);
-+	if (err) {
-+		dev_err(&ofdev->dev, "register restart handler failed(err=%d)\n",
-+			err);
-+	}
-+
-+	return err;
-+}
-+
-+static const struct of_device_id rzn1_reboot_of_match[] = {
-+	{ .compatible = "renesas,rzn1-reboot" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, rzn1_reboot_of_match);
-+
-+static struct platform_driver rzn1_reboot_driver = {
-+	.probe = rzn1_reboot_probe,
-+	.driver = {
-+		.name = "rzn1-reboot",
-+		.of_match_table = rzn1_reboot_of_match,
-+	},
-+};
-+module_platform_driver(rzn1_reboot_driver);
-+
-+MODULE_DESCRIPTION("RZ/N1 reboot driver");
-+MODULE_AUTHOR("Michel Pollet <michel.pollet@bp.renesas.com>, <buserror@gmail.com>");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
+Seems to me, if we move forward a bit for the energy model, we can use
+more simple method by generate power consumption:
+
+  Power(@Freq) = Power(cpu_util=100%@Freq) - Power(cpu_util=%0@Freq)
+
+>From upper formula, the power data includes CPU and cluster level
+power (and includes dynamic power and static leakage) but this is
+quite straightforward for measurement.
+
+I read a bit for Quentin's slides for simplized power modeling
+experiments [1], IIUC the simplized power modeling still bases on the
+distinguished CPU and cluster c-state and p-state power data, and just
+select CPU p-state power data for scheduler.  I wander if we can
+simplize the power measurement, so the power data can be generated in
+single one testing and the power data without any post processing.
+
+This might need more detailed experiment to support this idea, just
+want to know how about you guys think for this?
+
+This is a side topic for this patch series, so whatever the conclusion
+for it, I think this will not impact anything of this patch series
+implementation and upstreaming.
+
+[1] http://connect.linaro.org/resource/hkg18/hkg18-501/
+
+[...]
+
+> 2.1.1 Hikey960
+> 
+> Energy is measured with an ACME Cape on an instrumented board. Numbers
+> include consumption of big and little CPUs, LPDDR memory, GPU and most
+> of the other small components on the board. They do not include
+> consumption of the radio chip (turned-off anyway) and external
+> connectors.
+
+So the measurement point on Hikey960 is for SoC but not for whole board,
+right?
+
+> +----------+-----------------+-------------------------+
+> |          | Without patches | With patches            |
+> +----------+--------+--------+------------------+------+ 
+> | Tasks nb |  Mean  | RSD*   | Mean             | RSD* |
+> +----------+--------+--------+------------------+------+
+> |       10 |  41.14 |  1.4%  |  36.51 (-11.25%) | 1.6% |
+> |       20 |  55.95 |  0.8%  |  50.14 (-10.38%) | 1.9% |
+> |       30 |  74.37 |  0.2%  |  72.89 ( -1.99%) | 5.3% |
+> |       40 |  94.12 |  0.7%  |  87.78 ( -6.74%) | 4.5% |
+> |       50 | 117.88 |  0.2%  | 111.66 ( -5.28%) | 0.9% |
+> +----------+--------+-------+-----------------+--------+
+
+
+> 
+> 2.1.2 Juno r0
+> 
+> Energy is measured with the onboard energy meter. Numbers include
+> consumption of big and little CPUs.
+> 
+> +----------+-----------------+-------------------------+
+> |          | Without patches | With patches            |
+> +----------+--------+--------+------------------+------+
+> | Tasks nb | Mean   | RSD*   | Mean             | RSD* |
+> +----------+--------+--------+------------------+------+
+> |       10 |  11.25 |  3.1%  |   7.07 (-37.16%) | 2.1% |
+> |       20 |  19.18 |  1.1%  |  12.75 (-33.52%) | 2.2% |
+> |       30 |  28.81 |  1.9%  |  21.29 (-26.10%) | 1.5% |
+> |       40 |  36.83 |  1.2%  |  30.72 (-16.59%) | 0.6% |
+> |       50 |  46.41 |  0.6%  |  46.02 ( -0.01%) | 0.5% |
+> +----------+--------+--------+------------------+------+
+> 
+> 2.2 Performance test case
+> 
+> 30 iterations of perf bench sched messaging --pipe --thread --group G
+> --loop L with G=[1 2 4 8] and L=50000 (Hikey960)/16000 (Juno r0).
+
+What's the reason to select different loop number for Hikey960 and
+Juno? Based on the testing time?
+
+[...]
+
+Thanks,
+Leo Yan
