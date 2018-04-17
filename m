@@ -1,139 +1,85 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 6/7] thermal/drivers/cpu_cooling: Introduce the cpu
- idle cooling driver
-Date: Tue, 17 Apr 2018 09:17:36 +0200
-Message-ID: <845fafa3-f0ab-2050-fe32-1780dc61b8a8@linaro.org>
-References: <20180416073729.GA4244@vireshk-i7>
- <0a3164f9-4738-e24e-6ed0-2c75024c304c@linaro.org>
- <20180416093747.GB4244@vireshk-i7>
- <4abf0d97-d2b8-46ab-3c05-4a11510ac3fe@linaro.org>
- <20180416095006.GC4244@vireshk-i7>
- <b0e7ff16-c947-89a0-6bd9-56ee9a76e7ad@linaro.org>
- <20180416101021.GD4244@vireshk-i7>
- <1c61128a-dea6-b12c-4cd8-ef53a5c8628d@linaro.org>
- <20180416123019.GA9341@e107981-ln.cambridge.arm.com>
- <633cdc63-ce6d-89af-26dd-bdc3a27556ed@linaro.org>
- <20180416142243.GB32565@red-moon>
+From: Michel Pollet <michel.pollet@bp.renesas.com>
+Subject: RE: [PATCH v4 3/8] dt-bindings: mfd: renesas,rzn1-sysctrl: document
+ RZ/N1 sysctrl node
+Date: Tue, 17 Apr 2018 07:56:40 +0000
+Message-ID: <OSBPR01MB20548CE7A728549EFA2B9ADBD2B70@OSBPR01MB2054.jpnprd01.prod.outlook.com>
+References: <1523349015-37985-1-git-send-email-michel.pollet@bp.renesas.com>
+ <1523349015-37985-4-git-send-email-michel.pollet@bp.renesas.com>
+ <20180413180549.yjzkl2yf7osz7myt@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180416142243.GB32565@red-moon>
+In-Reply-To: <20180413180549.yjzkl2yf7osz7myt@rob-hp-laptop>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, daniel.thompson@linaro.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+To: Rob Herring <robh@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Phil Edworthy <phil.edworthy@renesas.com>, "buserror+upstream@gmail.com" <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 16/04/2018 16:22, Lorenzo Pieralisi wrote:
-> On Mon, Apr 16, 2018 at 03:57:03PM +0200, Daniel Lezcano wrote:
->> On 16/04/2018 14:30, Lorenzo Pieralisi wrote:
->>> On Mon, Apr 16, 2018 at 02:10:30PM +0200, Daniel Lezcano wrote:
->>>> On 16/04/2018 12:10, Viresh Kumar wrote:
->>>>> On 16-04-18, 12:03, Daniel Lezcano wrote:
->>>>>> On 16/04/2018 11:50, Viresh Kumar wrote:
->>>>>>> On 16-04-18, 11:45, Daniel Lezcano wrote:
->>>>>>>> Can you elaborate a bit ? I'm not sure to get the point.
->>>>>>>
->>>>>>> Sure. With your current code on Hikey960 (big/LITTLE), you end up
->>>>>>> creating two cooling devices, one for the big cluster and one for
->>>>>>> small cluster. Which is the right thing to do, as we also have two
->>>>>>> cpufreq cooling devices.
->>>>>>>
->>>>>>> But with the change Sudeep is referring to, the helper you used to get
->>>>>>> cluster id will return 0 (SoC id) for all the 8 CPUs. So your code
->>>>>>> will end up creating a single cpuidle cooling device for all the CPUs.
->>>>>>> Which would be wrong.
->>>>>>
->>>>>> Is the semantic of topology_physical_package_id changing ?
->>>>>
->>>>> That's what I understood from his email.
->>>>>
->>>>>> I don't
->>>>>> understand the change Sudeep is referring to.
->>>>
->>>> Actually there is no impact with the change Sudeep is referring to. It
->>>> is for ACPI, we are DT based. Confirmed with Jeremy.
->>>>
->>>> So AFAICT, it is not a problem.
->>>
->>> It is a problem - DT or ACPI alike. Sudeep was referring to the notion
->>> of "cluster" that has no architectural meaning whatsoever and using
->>> topology_physical_package_id() to detect a "cluster" was/is/will always
->>> be the wrong thing to do. The notion of cluster must not appear in the
->>> kernel at all, it has no architectural meaning. I understand you need
->>> to group CPUs but that has to be done in a different way, through
->>> cooling devices, thermal domains or power domains DT/ACPI bindings but
->>> not by using topology masks.
->>
->> I don't get it. What is the cluster concept defined in the ARM
->> documentation?
->>
->> ARM Cortex-A53 MPCore Processor Technical Reference Manual
->>
->> 4.5.2. Multiprocessor Affinity Register
->>
->> I see the documentation says:
->>
->> A cluster with two cores, three cores, ...
->>
->> How the kernel can represent that if you kill the
->> topology_physical_package_id() ?
-> 
-> From an Arm ARM perspective (ARM v8 reference manual), the MPIDR_EL1 has
-> no notion of cluster which means that a cluster is not architecturally
-> defined on Arm systems.
+Hi Rob,
 
-Sorry, I'm lost :/ You say the MPIDR_EL1 has no notion of cluster but
-the documentation describing this register is all talking about cluster.
+On 13 April 2018 19:06, Rob Herring:
+> On Tue, Apr 10, 2018 at 09:30:03AM +0100, Michel Pollet wrote:
+> > The Renesas RZ/N1 Family (Part #R9A06G0xx) has a multi-function system
+> > controller. This documents the node used to encapsulate it's sub
+> > drivers.
+> >
+> > Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+> > ---
+> >  .../bindings/mfd/renesas,rzn1-sysctrl.txt          | 23
+> ++++++++++++++++++++++
+> >  1 file changed, 23 insertions(+)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+> >
+> > diff --git
+> > a/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+> > b/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+> > new file mode 100644
+> > index 0000000..9897f8f
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/mfd/renesas,rzn1-sysctrl.txt
+> > @@ -0,0 +1,23 @@
+> > +DT bindings for the Renesas RZ/N1 System Controller
+> > +
+> > +=3D=3D System Controller Node =3D=3D
+> > +
+> > +The system controller node currently only hosts a single sub-node to
+> > +handle the rebooting of the CPU. Eventually it will host the clock
+> > +driver, SMP start handler, watchdog etc.
+>
+> Please submit a complete binding for the h/w block.
+>
+> Again, if the only reason you have sub nodes is to define compatible stri=
+ngs
+> and in turn enumerate drivers, then you don't need the nodes in DT. DT is
+> not the only way to instantiate drivers.
 
-http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0500g/BABHBJCI.html
+I can't document it before I have the code. There is 0.000% chance of my cl=
+ock
+driver for example to be upstreamed the way I would imagine making it -- in
+fact pretty much any other driver will have to be reworked to fit, so docum=
+enting
+bindings first is impossible.
 
-> Currently, as Morten explained today, topology_physical_package_id()
-> is supposed to represent a "cluster" and that's completely wrong
-> because a "cluster" cannot be defined from an architectural perspective.
-> 
-> It was a bodge used as a shortcut, wrongly. We should have never used
-> that API for that purpose and there must be no code in the kernel
-> relying on:
-> 
-> topology_physical_package_id()
-> 
-> to define a cluster; the information you require to group CPUs must
-> come from something else, which is firmware bindings(DT or ACPI) as
-> I mentioned.
+So, if I understand correctly, you are telling me to make a 'sysctrl' drive=
+r and use
+platform_device to instantiate my sub-drivers? Isn't that what machine file=
+s used
+to do? And they are now banned?
 
-Why not ?
+Geert, any guidance here?
 
-diff --git a/arch/arm64/include/asm/topology.h
-b/arch/arm64/include/asm/topology.h
-index c4f2d50..ac0776d 100644
---- a/arch/arm64/include/asm/topology.h
-+++ b/arch/arm64/include/asm/topology.h
-@@ -14,7 +14,8 @@ struct cpu_topology {
+>
+> Rob
 
- extern struct cpu_topology cpu_topology[NR_CPUS];
-
--#define topology_physical_package_id(cpu)
-(cpu_topology[cpu].cluster_id)
-+#define topology_physical_package_id(cpu)      (0)
-+#define topology_physical_cluster_id(cpu)
-(cpu_topology[cpu].cluster_id)
- #define topology_core_id(cpu)          (cpu_topology[cpu].core_id)
- #define topology_core_cpumask(cpu)     (&cpu_topology[cpu].core_sibling)
- #define topology_sibling_cpumask(cpu)  (&cpu_topology[cpu].thread_sibling)
-
-
-> Please speak to Sudeep who will fill you on the reasoning above.
-
-Yes, Sudeep is next to me but I would prefer to keep the discussion on
-the mailing list so everyone can get the reasoning.
+Thanks!
+Michel
 
 
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
+uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
+ No. 04586709.
