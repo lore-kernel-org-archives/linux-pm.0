@@ -1,99 +1,49 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [GIT PULL V3] Thermal SoC management updates for v4.17-rc1
-Date: Wed, 18 Apr 2018 15:51:29 +0800
-Message-ID: <1524037889.2553.13.camel@intel.com>
-References: <20180414183051.GA27921@localhost.localdomain>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH] PM / devfreq: use put_device() instead of kfree()
+Date: Wed, 18 Apr 2018 16:57:35 +0900
+Message-ID: <20180418075735epcms1p3c59f097441aabc6af5d7892298c6fdb2@epcms1p3>
+References: <5AD01937.1070504@samsung.com>
+        <d8d8708d2283349c2c4f3e9f3c9fd5f47126d2bc.1522410143.git.arvind.yadav.cs@gmail.com>
+        <5AD001C5.2040406@samsung.com> <5AD0041D.2050506@samsung.com>
+        <5AD012CB.7030003@gmail.com> <5AD0160E.7050601@samsung.com>
+        <5AD017E8.7020901@gmail.com>
+        <CGME20180330114418epcas5p1affd1c3d97e7422dd33e6d3ca73073be@epcms1p3>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180414183051.GA27921@localhost.localdomain>
+In-Reply-To: <5AD01937.1070504@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>, arvindY <arvind.yadav.cs@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Eduardo,
-
-On 六, 2018-04-14 at 11:30 -0700, Eduardo Valentin wrote:
-> Hello Linus,
-> 
-> Please find thermal-soc changes for v4.17-rc1.
-> Rui asked me to send the pull request directly to you
-> as we are close to the end of the merge window.
-> Essentially this pull removes the series that caused
-> warning regression. I will work with the developer
-> to get that fixed later on, but I am still sending
-> the other few patches that are unrelated to that.
-> Let me know if this causes any issues and can still
-> be pulled.
-> 
-> Changelog:
-> - New i.MX7 thermal sensor
-> - Mediatek driver now supports MT7622 SoC
-> - Removal of min max cpu cooling DT property
-> 
-> Differences in V3:
-> - Rebased on top current linus/master, to avoid and merge issues
-> from previous pulled thermal code.
-> 
-> Differences in V2:
-> - Reordered the patches to drop exynos changes for now until we get
-> agreement on the fix on that driver for the compilation warns
-> caused by the confusing conversion functions.
-> 
-> 
-> The following changes since commit
-> 48023102b7078a6674516b1fe0d639669336049d:
-> 
->   Merge branch 'overlayfs-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs (2018-04-
-> 13 16:55:41 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
-> thermal linus
-> 
-> for you to fetch changes up to
-> 15a32df1918259be6c23fc36014fc26ee66c836c:
-> 
->   dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
-> (2018-04-14 09:37:55 -0700)
-> 
-This pull request does not catch this merge window.
-So do you want to split it into 2 separate pull requests, one for 4.17-
-rc and another for 4.18-rc1?
-
-> ----------------------------------------------------------------
-> Anson Huang (1):
->       thermal: imx: add i.MX7 thermal sensor support
-> 
-> Bartlomiej Zolnierkiewicz (1):
->       dt-bindings: thermal: remove no longer needed samsung thermal
-> properties
-> 
-> Sean Wang (2):
->       dt-bindings: thermal: add binding for MT7622 SoC
->       thermal: mediatek: add support for MT7622 SoC
-> 
-> Viresh Kumar (1):
->       dt-bindings: thermal: Remove "cooling-{min|max}-level"
-> properties
-> 
-IMO, together with the refreshed exynos fixes, the one from Viresh and
-the one from Bartlomiej can be queued for 4.17-rc, and the others have
-to wait until next merge window.
-
-thanks,
-rui
-
-
->  .../devicetree/bindings/thermal/exynos-thermal.txt |  23 +-
->  .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
->  .../bindings/thermal/mediatek-thermal.txt          |   1 +
->  .../devicetree/bindings/thermal/thermal.txt        |  16 +-
->  drivers/thermal/imx_thermal.c                      | 295
-> ++++++++++++++++-----
->  drivers/thermal/mtk_thermal.c                      |  35 +++
->  6 files changed, 281 insertions(+), 98 deletions(-)
+>On 2018=EB=85=84=2004=EC=9B=94=2013=EC=9D=BC=2011:37,=20arvindY=20wrote:=
+=0D=0A>>=20On=20Friday=2013=20April=202018=2007:59=20AM,=20Chanwoo=20Choi=
+=20wrote:=0D=0A>>>=20On=202018=EB=85=84=2004=EC=9B=94=2013=EC=9D=BC=2011:15=
+,=20arvindY=20wrote:=0D=0A>>>>=20On=20Friday=2013=20April=202018=2006:43=20=
+AM,=20Chanwoo=20Choi=20wrote:=0D=0A>>>>>=20On=202018=EB=85=84=2004=EC=9B=94=
+=2013=EC=9D=BC=2010:03,=20Chanwoo=20Choi=20wrote:=0D=0A=5B=5D=0D=0A>>>>>>>=
+=20diff=20--git=20a/drivers/devfreq/devfreq.c=20b/drivers/devfreq/devfreq.c=
+=0D=0A>>>>>>>=20index=20fe2af6a..a225b94=20100644=0D=0A>>>>>>>=20---=20a/dr=
+ivers/devfreq/devfreq.c=0D=0A>>>>>>>=20+++=20b/drivers/devfreq/devfreq.c=0D=
+=0A>>>>>>>=20=40=40=20-625,7=20+625,8=20=40=40=20struct=20devfreq=20*devfre=
+q_add_device(struct=20device=20*dev,=0D=0A>>>>>>>=20=20=20=20=20=20=20=20er=
+r=20=3D=20device_register(&devfreq->dev);=0D=0A>>>>>>>=20=20=20=20=20=20=20=
+=20if=20(err)=20=7B=0D=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20=20=20mutex_u=
+nlock(&devfreq->lock);=0D=0A>>>>>>>=20-=20=20=20=20=20=20=20=20goto=20err_d=
+ev;=0D=0A>>>>>>>=20+=20=20=20=20=20=20=20=20put_device(&devfreq->dev);=0D=
+=0A>>>>>>>=20+=20=20=20=20=20=20=20=20goto=20err_out;=0D=0A>>>>>>>=20=20=20=
+=20=20=20=20=20=7D=0D=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20devfreq->trans=
+_table=20=3D=20=20=20=20devm_kzalloc(&devfreq->dev,=0D=0A>>>>>>>=20=40=40=
+=20-671,6=20+672,7=20=40=40=20struct=20devfreq=20*devfreq_add_device(struct=
+=20device=20*dev,=0D=0A>>>>>>>=20=20=20=20=20=20=20=20mutex_unlock(&devfreq=
+_list_lock);=0D=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20device_unregister(&d=
+evfreq->dev);=0D=0A>>>>>>>=20+=20=20=20=20devfreq=20=3D=20NULL;=0D=0A>>>>>>=
+>=20=20=20=20err_dev:=0D=0A>>>>>>>=20=20=20=20=20=20=20=20if=20(devfreq)=0D=
+=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20=20=20kfree(devfreq);=0D=0A>>>>>>>=
+=0D=0A=0D=0AAh..=20this=20was=20critcal.=20Thanks=21=0D=0A=0D=0AAcked-by:=
+=20MyungJoo=20Ham=20<myungjoo.ham=40samsung.com>=0D=0A=0D=0A>Reviewed-by:=
+=20Chanwoo=20Choi=20<cw00.choi=40samsung.com>=0D=0A=0D=0A=0D=0ACheers,=0D=
+=0AMyungJoo=0D=0A
