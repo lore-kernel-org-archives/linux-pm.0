@@ -1,141 +1,80 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Wed, 18 Apr 2018 11:38:31 -0700
-Message-ID: <5341b3b1945c4c1dbf7b356b1a7a4bd6ce304287.camel@perches.com>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
-         <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
-         <20180410123305.GF4082@hirez.programming.kicks-ass.net>
-         <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
-         <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
-         <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
-         <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
-         <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
-         <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
-         <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
-         <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
-         <alpine.DEB.2.20.1804120816130.3559@hadrien>
-         <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
-         <alpine.DEB.2.20.1804142315300.2750@hadrien>
-         <e7cbe275136b86083ff70d9af26f41bf@codeaurora.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 2/3] dt-bindings: power: supply: qcom_bms: Add bindings
+Date: Wed, 18 Apr 2018 16:16:46 -0500
+Message-ID: <CAL_JsqKKn_GH90kq+JrtRraRkZLvAO0Xd5J3zCWkQWxPv3Akog@mail.gmail.com>
+References: <20180407135934.26122-1-ctatlor97@gmail.com> <20180407175802.29444-1-ctatlor97@gmail.com>
+ <20180407175802.29444-2-ctatlor97@gmail.com> <20180413163527.ludqnnc5nkj4spre@rob-hp-laptop>
+ <20180415125528.GA15803@arch.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e7cbe275136b86083ff70d9af26f41bf@codeaurora.org>
+In-Reply-To: <20180415125528.GA15803@arch.home>
 Sender: linux-kernel-owner@vger.kernel.org
-To: yuankuiz@codeaurora.org, Julia Lawall <julia.lawall@lip6.fr>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
+To: Craig Tatlor <ctatlor97@gmail.com>
+Cc: linux-arm-msm <linux-arm-msm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-04-17 at 17:07 +0800, yuankuiz@codeaurora.org wrote:
-> Hi julia,
-> 
-> On 2018-04-15 05:19 AM, Julia Lawall wrote:
-> > On Wed, 11 Apr 2018, Joe Perches wrote:
-> > 
-> > > On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
-> > > > On Wed, 11 Apr 2018, Joe Perches wrote:
-> > > > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
-> > > > > > We already have some 500 bools-in-structs
-> > > > > 
-> > > > > I got at least triple that only in include/
-> > > > > so I expect there are at probably an order
-> > > > > of magnitude more than 500 in the kernel.
-> > > > > 
-> > > > > I suppose some cocci script could count the
-> > > > > actual number of instances.  A regex can not.
-> > > > 
-> > > > I got 12667.
-> > > 
-> > > Could you please post the cocci script?
-> > > 
-> > > > I'm not sure to understand the issue.  Will using a bitfield help if there
-> > > > are no other bitfields in the structure?
-> > > 
-> > > IMO, not really.
-> > > 
-> > > The primary issue is described by Linus here:
-> > > https://lkml.org/lkml/2017/11/21/384
-> > > 
-> > > I personally do not find a significant issue with
-> > > uncontrolled sizes of bool in kernel structs as
-> > > all of the kernel structs are transitory and not
-> > > written out to storage.
-> > > 
-> > > I suppose bool bitfields are also OK, but for the
-> > > RMW required.
-> > > 
-> > > Using unsigned int :1 bitfield instead of bool :1
-> > > has the negative of truncation so that the uint
-> > > has to be set with !! instead of a simple assign.
-> > 
-> > At least with gcc 5.4.0, a number of structures become larger with
-> > unsigned int :1. bool:1 seems to mostly solve this problem.  The 
-> > structure
-> > ichx_desc, defined in drivers/gpio/gpio-ich.c seems to become larger 
-> > with
-> > both approaches.
-> 
-> [ZJ] Hopefully, this could make it better in your environment.
->       IMHO, this is just for double check.
+On Sun, Apr 15, 2018 at 7:55 AM, Craig Tatlor <ctatlor97@gmail.com> wrote:
+> On Fri, Apr 13, 2018 at 11:35:27AM -0500, Rob Herring wrote:
+>> On Sat, Apr 07, 2018 at 06:57:45PM +0100, Craig Tatlor wrote:
+>> > Add bindings for the Qualcomm Battery Monitoring system.
+>> >
+>> > Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
+>> > ---
+>> >  .../bindings/power/supply/qcom_bms.txt        | 93 +++++++++++++++++++
+>> >  1 file changed, 93 insertions(+)
+>> >  create mode 100644 Documentation/devicetree/bindings/power/supply/qcom_bms.txt
+>> >
+>> > diff --git a/Documentation/devicetree/bindings/power/supply/qcom_bms.txt b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
+>> > new file mode 100644
+>> > index 000000000000..6296399edc09
+>> > --- /dev/null
+>> > +++ b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
+>> > @@ -0,0 +1,93 @@
+>> > +Qualcomm Battery Measurement System
+>> > +
+>> > +The Qualcomm Battery Measurement System is found inside of Qualcomm PM8941
+>>
+>> Is it Monitoring or Measurment?
+>>
+>> > +PMICs. It provides OCV and coulomb counter registers that allow the kernel
+>> > +to infer a capacity level.
+>>
+>> s/kernel/OS/
+>>
+>> OCV?
+>>
+>> > +
+>> > +Required properties:
+>> > +- compatible:               Should contain "qcom,pm8941-bms".
+>> > +- reg:                      Specifies the SPMI address and length of the
+>> > +                       controller's registers.
+>> > +- interrupts:               OCV threshold interrupt.
+>> > +- io-channels:              Should contain IIO channel specifier for the
+>> > +                       ADC channel that reports battery temperature.
+>> > +- io-channel-names:         Should contain "temp".
+>> > +- qcom,fcc-temp-legend:     An array containing the temperature, in degC,
+>> > +                       for each column of the FCC lookup table.
+>>
+>> What's FCC?
+>>
+>> > +- qcom,fcc-lut:             An array of FCC values in mah, one entry for each
+>> > +                       temperature defined in in qcom,fcc-temp-legend.
+>> > +- qcom,ocv-temp-legend:     An array containing the temperature, in degC,
+>> > +                       for each column of the OCV lookup table.
+>> > +- qcom,ocv-capacity-legend: An array containing the capacity for each
+>> > +                       row of the OCV lookup table.
+>> > +- qcom,ocv-lut:             An array of OCV values in mV, one entry for each
+>> > +                       capacity defined in qcom,ocv-capacity-legend.
+>>
+>> Need to specify the sizes of these if not 32-bit.
+>>
+>> All these seem to have units, so add unit suffixes as defined in
+>> property-units.txt.
+> Should i change code to use microamphours & microvolts or add a new
+> suffix?
 
-I doubt this is actually better or smaller code.
+It is preferred to use the existing ones unless you have some
+justification to add new ones.
 
-Check the actual object code using objdump and the
-struct alignment using pahole.
-
-> diff --git a/drivers/gpio/gpio-ich.c b/drivers/gpio/gpio-ich.c
-> index 4f6d643..b46e170 100644
-> --- a/drivers/gpio/gpio-ich.c
-> +++ b/drivers/gpio/gpio-ich.c
-> @@ -70,6 +70,18 @@ static const u8 avoton_reglen[3] = {
->   #define ICHX_READ(reg, base_res)       inl((reg) + (base_res)->start)
-> 
->   struct ichx_desc {
-> +       /* GPO_BLINK is available on this chipset */
-> +       bool uses_gpe0:1;
-> +
-> +       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region 
-> */
-> +        bool uses_gpe0:1;
-> +
-> +        /*
-> +         * Some chipsets don't let reading output values on GPIO_LVL 
-> register
-> +         * this option allows driver caching written output values
-> +         */
-> +        bool use_outlvl_cache:1;
-> +
->          /* Max GPIO pins the chipset can have */
->          uint ngpio;
-> 
-> @@ -77,24 +89,12 @@ struct ichx_desc {
->          const u8 (*regs)[3];
->          const u8 *reglen;
-> 
-> -       /* GPO_BLINK is available on this chipset */
-> -       bool have_blink;
-> -
-> -       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region 
-> */
-> -       bool uses_gpe0;
-> -
->          /* USE_SEL is bogus on some chipsets, eg 3100 */
->          u32 use_sel_ignore[3];
-> 
->          /* Some chipsets have quirks, let these use their own 
-> request/get */
->          int (*request)(struct gpio_chip *chip, unsigned offset);
->          int (*get)(struct gpio_chip *chip, unsigned offset);
-> -
-> -       /*
-> -        * Some chipsets don't let reading output values on GPIO_LVL 
-> register
-> -        * this option allows driver caching written output values
-> -        */
-> -       bool use_outlvl_cache;
->   };
-> 
-> 
-> ZJ
+Rob
