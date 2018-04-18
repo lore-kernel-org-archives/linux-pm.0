@@ -1,197 +1,89 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 18 Apr 2018 20:15:47 +0800
-Message-ID: <20180418121547.GC15682@leoy-ThinkPad-X240s>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-5-dietmar.eggemann@arm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 0/2] regulator: bd9571mwv: Add support for toggle
+ power switches
+Date: Wed, 18 Apr 2018 15:29:36 +0200
+Message-ID: <CAMuHMdXyWs1v_D4EUd-H75Q3cpQv6yD2V_MptjJP7FjYhu5c3g@mail.gmail.com>
+References: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180406153607.17815-5-dietmar.eggemann@arm.com>
+In-Reply-To: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
+Hi all,
 
-On Fri, Apr 06, 2018 at 04:36:05PM +0100, Dietmar Eggemann wrote:
-> From: Quentin Perret <quentin.perret@arm.com>
-> 
-> In preparation for the definition of an energy-aware wakeup path, a
-> helper function is provided to estimate the consequence on system energy
-> when a specific task wakes-up on a specific CPU. compute_energy()
-> estimates the OPPs to be reached by all frequency domains and estimates
-> the consumption of each online CPU according to its energy model and its
-> percentage of busy time.
-> 
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> ---
->  include/linux/sched/energy.h | 20 +++++++++++++
->  kernel/sched/fair.c          | 68 ++++++++++++++++++++++++++++++++++++++++++++
->  kernel/sched/sched.h         |  2 +-
->  3 files changed, 89 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/sched/energy.h b/include/linux/sched/energy.h
-> index 941071eec013..b4110b145228 100644
-> --- a/include/linux/sched/energy.h
-> +++ b/include/linux/sched/energy.h
-> @@ -27,6 +27,24 @@ static inline bool sched_energy_enabled(void)
->  	return static_branch_unlikely(&sched_energy_present);
->  }
->  
-> +static inline
-> +struct capacity_state *find_cap_state(int cpu, unsigned long util)
-> +{
-> +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
-> +	struct capacity_state *cs = NULL;
-> +	int i;
-> +
-> +	util += util >> 2;
-> +
-> +	for (i = 0; i < em->nr_cap_states; i++) {
-> +		cs = &em->cap_states[i];
-> +		if (cs->cap >= util)
-> +			break;
-> +	}
-> +
-> +	return cs;
-> +}
-> +
->  static inline struct cpumask *freq_domain_span(struct freq_domain *fd)
->  {
->  	return &fd->span;
-> @@ -42,6 +60,8 @@ struct freq_domain;
->  static inline bool sched_energy_enabled(void) { return false; }
->  static inline struct cpumask
->  *freq_domain_span(struct freq_domain *fd) { return NULL; }
-> +static inline struct capacity_state
-> +*find_cap_state(int cpu, unsigned long util) { return NULL; }
->  static inline void init_sched_energy(void) { }
->  #define for_each_freq_domain(fdom) for (; fdom; fdom = NULL)
->  #endif
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 6960e5ef3c14..8cb9fb04fff2 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -6633,6 +6633,74 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
->  }
->  
->  /*
-> + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
-> + */
-> +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
-> +{
-> +	unsigned long util, util_est;
-> +	struct cfs_rq *cfs_rq;
-> +
-> +	/* Task is where it should be, or has no impact on cpu */
-> +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
-> +		return cpu_util(cpu);
-> +
-> +	cfs_rq = &cpu_rq(cpu)->cfs;
-> +	util = READ_ONCE(cfs_rq->avg.util_avg);
-> +
-> +	if (dst_cpu == cpu)
-> +		util += task_util(p);
-> +	else
-> +		util = max_t(long, util - task_util(p), 0);
-> +
-> +	if (sched_feat(UTIL_EST)) {
-> +		util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-> +		if (dst_cpu == cpu)
-> +			util_est += _task_util_est(p);
-> +		else
-> +			util_est = max_t(long, util_est - _task_util_est(p), 0);
-> +		util = max(util, util_est);
-> +	}
-> +
-> +	return min_t(unsigned long, util, capacity_orig_of(cpu));
-> +}
-> +
-> +/*
-> + * Estimates the system level energy assuming that p wakes-up on dst_cpu.
-> + *
-> + * compute_energy() is safe to call only if an energy model is available for
-> + * the platform, which is when sched_energy_enabled() is true.
-> + */
-> +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
-> +{
-> +	unsigned long util, max_util, sum_util;
-> +	struct capacity_state *cs;
-> +	unsigned long energy = 0;
-> +	struct freq_domain *fd;
-> +	int cpu;
-> +
-> +	for_each_freq_domain(fd) {
-> +		max_util = sum_util = 0;
-> +		for_each_cpu_and(cpu, freq_domain_span(fd), cpu_online_mask) {
-> +			util = cpu_util_next(cpu, p, dst_cpu);
-> +			util += cpu_util_dl(cpu_rq(cpu));
-> +			max_util = max(util, max_util);
-> +			sum_util += util;
-> +		}
-> +
-> +		/*
-> +		 * Here we assume that the capacity states of CPUs belonging to
-> +		 * the same frequency domains are shared. Hence, we look at the
-> +		 * capacity state of the first CPU and re-use it for all.
-> +		 */
-> +		cpu = cpumask_first(freq_domain_span(fd));
-> +		cs = find_cap_state(cpu, max_util);
-> +		energy += cs->power * sum_util / cs->cap;
-> +	}
+On Wed, Mar 14, 2018 at 12:26 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> The ROHM BD9571MWV PMIC on the Renesas Salvator-X(S) and ULCB
+> development boards supports DDR Backup Power, which means that the DDR
+> power rails can be kept powered while the main SoC is powered down.
+>
+> This patch series extends the support for DDR backup mode[1] to systems
+> with toggle instead of momentary power switches.
+>
+> With a toggle power switch (or level signal), the following steps must
+> be followed exactly:
+>    1. Configure PMIC for backup mode, which changes the role of the
+>       power switch to a wake-up switch,
+>    2. Switch accessory power switch off, to prepare for system suspend,
+>       which is a manual step not controlled by software,
+>    3. Suspend system,
+>    4. Switch accessory power switch on, to resume.
+>
+> Unlike on systems with a momentary toggle switch, an additional step 2
+> must be performed in between step 1 and step 3.  Hence step 1 can no
+> longer be handled in the PMIC's suspend callback.
+>
+> This patch series proposes a new callback for wake-up change
+> notification, which allows performing step 1 when the user writes
+> "enabled" to the PMIC's "wakeup" virtual file in sysfs, e.g.
+>
+>     echo enabled > /sys/devices/platform/soc/e60b0000.i2c/i2c-7/7-0030/bd9571mwv-regulator.2.auto/power/wakeup
+>
+> Conversely, writing "disabled" reverts the role of the accessory switch
+> to a power switch.
+> Note that unlike with momentary switches, backup mode is not enabled by
+> default, as enabling it prevents the board from being powered off using
+> the power switch, which may confuse the user.
+>
+> This has been tested on M3ULCB (thanks Jacopo!), and on Salvator-X(S).
+>
+> For testing, driver and DTS patches are available in the
+> topic/bd9571-ddr-backup-mode-driver-v2 and
+> topic/bd9571-ddr-backup-mode-dt-v2 branches of my renesas-drivers git
+> repository at
+> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
+>
+> Thanks for your comments!
+>
+> [1] https://lkml.org/lkml/2018/3/14/302
+>
+> Geert Uytterhoeven (2):
+>   PM / wakeup: Add callback for wake-up change notification
+>   regulator: bd9571mwv: Add support for toggle power switches
+>
+>  drivers/base/power/wakeup.c             |  4 ++++
+>  drivers/regulator/bd9571mwv-regulator.c | 24 ++++++++++++++++++++++++
+>  include/linux/pm.h                      |  1 +
+>  3 files changed, 29 insertions(+)
 
-Sorry I introduce mess at here to spread my questions in several
-replying, later will try to ask questions in one replying.  Below are
-more questions which it's good to bring up:
+Any comments/suggestions?
 
-The code for energy computation is quite neat and simple, but I think
-the energy computation mixes two concepts for CPU util: one concept is
-the estimated CPU util which is used to select CPU OPP in schedutil,
-another concept is the raw CPU util according to CPU real running time;
-for example, cpu_util_next() predicts CPU util but this value might be
-much higher than cpu_util(), especially after enabled UTIL_EST feature
-(I have shallow understanding for UTIL_EST so correct me as needed);
-but this patch simply computes CPU capacity and energy with the single
-one CPU utilization value (and it will be an inflated value afte enable
-UTIL_EST).  Is this purposed for simple implementation?
+In case you lost the patches from the thread:
+https://www.spinics.net/lists/linux-renesas-soc/msg24955.html
 
-IMHO, cpu_util_next() can be used to predict CPU capacity, on the other
-hand, should we use the CPU util without UTIL_EST capping for 'sum_util',
-this can be more reasonable to reflect the CPU utilization?
+Thanks!
 
-Furthermore, if we consider RT thread is running on CPU and connect with
-'schedutil' governor, the CPU will run at maximum frequency, but we
-cannot say the CPU has 100% utilization.  The RT thread case is not
-handled in this patch.
+Gr{oetje,eeting}s,
 
-> +
-> +	return energy;
-> +}
-> +
-> +/*
->   * select_task_rq_fair: Select target runqueue for the waking task in domains
->   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
->   * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index 5d552c0d7109..6eb38f41d5d9 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -2156,7 +2156,7 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
->  # define arch_scale_freq_invariant()	false
->  #endif
->  
-> -#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-> +#ifdef CONFIG_SMP
->  static inline unsigned long cpu_util_dl(struct rq *rq)
->  {
->  	return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
-> -- 
-> 2.11.0
-> 
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
