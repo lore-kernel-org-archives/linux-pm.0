@@ -1,80 +1,55 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 2/3] dt-bindings: power: supply: qcom_bms: Add bindings
-Date: Wed, 18 Apr 2018 16:16:46 -0500
-Message-ID: <CAL_JsqKKn_GH90kq+JrtRraRkZLvAO0Xd5J3zCWkQWxPv3Akog@mail.gmail.com>
-References: <20180407135934.26122-1-ctatlor97@gmail.com> <20180407175802.29444-1-ctatlor97@gmail.com>
- <20180407175802.29444-2-ctatlor97@gmail.com> <20180413163527.ludqnnc5nkj4spre@rob-hp-laptop>
- <20180415125528.GA15803@arch.home>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH 00/17] thermal: enable/check sensor after its setup is
+ finished
+Date: Thu, 19 Apr 2018 00:26:07 +0200 (CEST)
+Message-ID: <1578244948.69815.1524090367636@email.1und1.de>
+References: <CGME20180410124240epcas2p25c8979583c41f147ac34c49faf30aa14@epcas2p2.samsung.com>
+ <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180415125528.GA15803@arch.home>
+In-Reply-To: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Craig Tatlor <ctatlor97@gmail.com>
-Cc: linux-arm-msm <linux-arm-msm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Markus Mayer <mmayer@broadcom.com>, linux-pm@vger.kernel.org, Eric Anholt <eric@anholt.net>, Keerthy <j-keerthy@ti.com>, bcm-kernel-feedback-list@broadcom.com, Jonathan Hunter <jonathanh@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Shawn Guo <shawnguo@kernel.org>, linux-kernel@vger.kernel.org, Jun Nie <jun.nie@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Baoyou Xie <baoyou.xie@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Apr 15, 2018 at 7:55 AM, Craig Tatlor <ctatlor97@gmail.com> wrote:
-> On Fri, Apr 13, 2018 at 11:35:27AM -0500, Rob Herring wrote:
->> On Sat, Apr 07, 2018 at 06:57:45PM +0100, Craig Tatlor wrote:
->> > Add bindings for the Qualcomm Battery Monitoring system.
->> >
->> > Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
->> > ---
->> >  .../bindings/power/supply/qcom_bms.txt        | 93 +++++++++++++++++++
->> >  1 file changed, 93 insertions(+)
->> >  create mode 100644 Documentation/devicetree/bindings/power/supply/qcom_bms.txt
->> >
->> > diff --git a/Documentation/devicetree/bindings/power/supply/qcom_bms.txt b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
->> > new file mode 100644
->> > index 000000000000..6296399edc09
->> > --- /dev/null
->> > +++ b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
->> > @@ -0,0 +1,93 @@
->> > +Qualcomm Battery Measurement System
->> > +
->> > +The Qualcomm Battery Measurement System is found inside of Qualcomm PM8941
->>
->> Is it Monitoring or Measurment?
->>
->> > +PMICs. It provides OCV and coulomb counter registers that allow the kernel
->> > +to infer a capacity level.
->>
->> s/kernel/OS/
->>
->> OCV?
->>
->> > +
->> > +Required properties:
->> > +- compatible:               Should contain "qcom,pm8941-bms".
->> > +- reg:                      Specifies the SPMI address and length of the
->> > +                       controller's registers.
->> > +- interrupts:               OCV threshold interrupt.
->> > +- io-channels:              Should contain IIO channel specifier for the
->> > +                       ADC channel that reports battery temperature.
->> > +- io-channel-names:         Should contain "temp".
->> > +- qcom,fcc-temp-legend:     An array containing the temperature, in degC,
->> > +                       for each column of the FCC lookup table.
->>
->> What's FCC?
->>
->> > +- qcom,fcc-lut:             An array of FCC values in mah, one entry for each
->> > +                       temperature defined in in qcom,fcc-temp-legend.
->> > +- qcom,ocv-temp-legend:     An array containing the temperature, in degC,
->> > +                       for each column of the OCV lookup table.
->> > +- qcom,ocv-capacity-legend: An array containing the capacity for each
->> > +                       row of the OCV lookup table.
->> > +- qcom,ocv-lut:             An array of OCV values in mV, one entry for each
->> > +                       capacity defined in qcom,ocv-capacity-legend.
->>
->> Need to specify the sizes of these if not 32-bit.
->>
->> All these seem to have units, so add unit suffixes as defined in
->> property-units.txt.
-> Should i change code to use microamphours & microvolts or add a new
-> suffix?
+Hi Bartlomiej,
 
-It is preferred to use the existing ones unless you have some
-justification to add new ones.
+> Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> hat am 10. April 2018 um 14:41 geschrieben:
+> 
+> 
+> Hi,
+> 
+> [devm]_thermal_zone_of_sensor_register() is used to register
+> thermal sensor by thermal drivers using DeviceTree. Besides
+> registering sensor this function also immediately enables it
+> (using ->set_mode method) and then checks it with a update call
+> to the thermal core (which ends up using ->get_temp method).
+> For many DT thermal drivers this causes a problem because
+> [devm]_thermal_zone_of_sensor_register() need to be called in
+> order to obtain data about thermal trips which are then used to
+> finish hardware sensor setup (only after which ->get_temp can
+> be used). The issue has been observed when using Samsung Exynos
+> thermal driver and fixed internally in the driver in commit
+> d8efad71e5b6 ("thermal: exynos: Reading temperature makes sense
+> only when TMU is turned on"). However after this commit there
+> are now following warnings from the thermal core visible:
+> 
+> [    3.453602] thermal thermal_zone0: failed to read out thermal zone (-22)
+> [    3.483468] thermal thermal_zone1: failed to read out thermal zone (-22)
+> [    3.505965] thermal thermal_zone2: failed to read out thermal zone (-22)
+> [    3.528455] thermal thermal_zone3: failed to read out thermal zone (-22)
+> [    3.550939] thermal thermal_zone4: failed to read out thermal zone (-22)
+> 
+> This patchset attempts to directly address the thermal core
+> problem with [devm]_thermal_zone_of_sensor_register() and
+> affected DT thermal drivers. In order to achieve this sensor
+> registration, enable and check operations are separated and
+> corresponding drivers are modified to use the new helpers to
+> enable and check sensor explicitly.
 
-Rob
+i've tested patch 1-5 + 17 on a Raspberry Pi 1 B and didn't see any regressions.
+
+Tested-by: Stefan Wahren <stefan.wahren@i2se.com>
