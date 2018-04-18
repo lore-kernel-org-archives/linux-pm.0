@@ -1,56 +1,223 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v2 5/6] sched/fair: Select an energy-efficient CPU on
- task wake-up
-Date: Wed, 18 Apr 2018 08:57:43 +0100
-Message-ID: <20180418075742.GA3943@e108498-lin.cambridge.arm.com>
+Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Wed, 18 Apr 2018 09:13:39 +0100
+Message-ID: <20180418081339.GB3943@e108498-lin.cambridge.arm.com>
 References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-6-dietmar.eggemann@arm.com>
- <20180417153944.GD18509@leoy-ThinkPad-X240s>
+ <20180406153607.17815-5-dietmar.eggemann@arm.com>
+ <20180417152213.GC18509@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180417153944.GD18509@leoy-ThinkPad-X240s>
+In-Reply-To: <20180417152213.GC18509@leoy-ThinkPad-X240s>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Leo Yan <leo.yan@linaro.org>
 Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Leo,
-
-On Tuesday 17 Apr 2018 at 23:39:44 (+0800), Leo Yan wrote:
-> > +	for_each_freq_domain(fd) {
-> > +		unsigned long spare_cap, max_spare_cap = 0;
-> > +		int max_spare_cap_cpu = -1;
-> > +		unsigned long util;
+On Tuesday 17 Apr 2018 at 23:22:13 (+0800), Leo Yan wrote:
+> On Fri, Apr 06, 2018 at 04:36:05PM +0100, Dietmar Eggemann wrote:
+> > From: Quentin Perret <quentin.perret@arm.com>
+> > 
+> > In preparation for the definition of an energy-aware wakeup path, a
+> > helper function is provided to estimate the consequence on system energy
+> > when a specific task wakes-up on a specific CPU. compute_energy()
+> > estimates the OPPs to be reached by all frequency domains and estimates
+> > the consumption of each online CPU according to its energy model and its
+> > percentage of busy time.
+> > 
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > ---
+> >  include/linux/sched/energy.h | 20 +++++++++++++
+> >  kernel/sched/fair.c          | 68 ++++++++++++++++++++++++++++++++++++++++++++
+> >  kernel/sched/sched.h         |  2 +-
+> >  3 files changed, 89 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/include/linux/sched/energy.h b/include/linux/sched/energy.h
+> > index 941071eec013..b4110b145228 100644
+> > --- a/include/linux/sched/energy.h
+> > +++ b/include/linux/sched/energy.h
+> > @@ -27,6 +27,24 @@ static inline bool sched_energy_enabled(void)
+> >  	return static_branch_unlikely(&sched_energy_present);
+> >  }
+> >  
+> > +static inline
+> > +struct capacity_state *find_cap_state(int cpu, unsigned long util)
+> > +{
+> > +	struct sched_energy_model *em = *per_cpu_ptr(energy_model, cpu);
+> > +	struct capacity_state *cs = NULL;
+> > +	int i;
 > > +
-> > +		/* Find the CPU with the max spare cap in the freq. dom. */
-> > +		for_each_cpu_and(cpu, freq_domain_span(fd), sched_domain_span(sd)) {
-> > +			if (!cpumask_test_cpu(cpu, &p->cpus_allowed))
-> > +				continue;
+> > +	util += util >> 2;
 > > +
-> > +			if (cpu == prev_cpu)
-> > +				continue;
+> > +	for (i = 0; i < em->nr_cap_states; i++) {
+> > +		cs = &em->cap_states[i];
+> > +		if (cs->cap >= util)
+> > +			break;
+> > +	}
 > > +
-> > +			util = cpu_util_wake(cpu, p);
-> > +			cpu_cap = capacity_of(cpu);
-> > +			if (!util_fits_capacity(util + task_util, cpu_cap))
-> > +				continue;
-> > +
-> > +			spare_cap = cpu_cap - util;
-> > +			if (spare_cap > max_spare_cap) {
-> > +				max_spare_cap = spare_cap;
-> > +				max_spare_cap_cpu = cpu;
-> > +			}
-> > +		}
+> > +	return cs;
 > 
-> If have two clusters, and if firstly iterate the big cluster, then
-> max_spare_cap is a big value for big cluster and later LITTLE cluster
-> has no chance to have higher value for spare_cap.  For this case, the
-> LITTLE CPU will be skipped for energy computation?
+> 'cs' is possible to return NULL.
 
-max_spare_cap is reset to 0 at the top of the for_each_freq_domain()
-loop above so that shouldn't happen.
+Only if em-nr_cap_states==0, and that shouldn't be possible if
+sched_energy_present==True, so this code should be safe :-)
 
-Thanks,
-Quentin
+> 
+> > +}
+> > +
+> >  static inline struct cpumask *freq_domain_span(struct freq_domain *fd)
+> >  {
+> >  	return &fd->span;
+> > @@ -42,6 +60,8 @@ struct freq_domain;
+> >  static inline bool sched_energy_enabled(void) { return false; }
+> >  static inline struct cpumask
+> >  *freq_domain_span(struct freq_domain *fd) { return NULL; }
+> > +static inline struct capacity_state
+> > +*find_cap_state(int cpu, unsigned long util) { return NULL; }
+> >  static inline void init_sched_energy(void) { }
+> >  #define for_each_freq_domain(fdom) for (; fdom; fdom = NULL)
+> >  #endif
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 6960e5ef3c14..8cb9fb04fff2 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -6633,6 +6633,74 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
+> >  }
+> >  
+> >  /*
+> > + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
+> > + */
+> > +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
+> > +{
+> > +	unsigned long util, util_est;
+> > +	struct cfs_rq *cfs_rq;
+> > +
+> > +	/* Task is where it should be, or has no impact on cpu */
+> > +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
+> > +		return cpu_util(cpu);
+> > +
+> > +	cfs_rq = &cpu_rq(cpu)->cfs;
+> > +	util = READ_ONCE(cfs_rq->avg.util_avg);
+> > +
+> > +	if (dst_cpu == cpu)
+> > +		util += task_util(p);
+> > +	else
+> > +		util = max_t(long, util - task_util(p), 0);
+> 
+> I tried to understand the logic at here, below code is more clear for
+> myself:
+> 
+>         int prev_cpu = task_cpu(p);
+> 
+>         cfs_rq = &cpu_rq(cpu)->cfs;
+>         util = READ_ONCE(cfs_rq->avg.util_avg);
+> 
+>         /* Bail out if src and dst CPUs are the same one */
+>         if (prev_cpu == cpu && dst_cpu == cpu)
+>                 return util;
+> 
+>         /* Remove task utilization for src CPU */
+>         if (cpu == prev_cpu)
+>                 util = max_t(long, util - task_util(p), 0);
+> 
+>         /* Add task utilization for dst CPU */
+>         if (dst_cpu == cpu)
+>                 util += task_util(p);
+> 
+> BTW, CPU utilization is decayed value and task_util() is not decayed
+> value, so 'util - task_util(p)' calculates a smaller value than the
+> prev CPU pure utilization, right?
+
+task_util() is the raw PELT signal, without UTIL_EST, so I think it's
+fine to do `util - task_util()`.
+
+> 
+> Another question is can we reuse the function cpu_util_wake() and
+> just compenstate task util for dst cpu?
+
+Well it's not that simple. cpu_util_wake() will give you the max between
+the util_avg and the util_est value, so which task_util() should you add
+to it ? The util_avg or the uti_est value ?
+
+Here we are trying to predict what will be the cpu_util signal in the
+future, so the only always-correct implementation of this function has
+to predict what will be the CPU util_avg and util_est signals in
+parallel and take the max of the two.
+
+> 
+> > +	if (sched_feat(UTIL_EST)) {
+> > +		util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> > +		if (dst_cpu == cpu)
+> > +			util_est += _task_util_est(p);
+> > +		else
+> > +			util_est = max_t(long, util_est - _task_util_est(p), 0);
+> > +		util = max(util, util_est);
+> > +	}
+> > +
+> > +	return min_t(unsigned long, util, capacity_orig_of(cpu));
+> > +}
+> > +
+> > +/*
+> > + * Estimates the system level energy assuming that p wakes-up on dst_cpu.
+> > + *
+> > + * compute_energy() is safe to call only if an energy model is available for
+> > + * the platform, which is when sched_energy_enabled() is true.
+> > + */
+> > +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+> > +{
+> > +	unsigned long util, max_util, sum_util;
+> > +	struct capacity_state *cs;
+> > +	unsigned long energy = 0;
+> > +	struct freq_domain *fd;
+> > +	int cpu;
+> > +
+> > +	for_each_freq_domain(fd) {
+> > +		max_util = sum_util = 0;
+> > +		for_each_cpu_and(cpu, freq_domain_span(fd), cpu_online_mask) {
+> > +			util = cpu_util_next(cpu, p, dst_cpu);
+> > +			util += cpu_util_dl(cpu_rq(cpu));
+> > +			max_util = max(util, max_util);
+> > +			sum_util += util;
+> > +		}
+> > +
+> > +		/*
+> > +		 * Here we assume that the capacity states of CPUs belonging to
+> > +		 * the same frequency domains are shared. Hence, we look at the
+> > +		 * capacity state of the first CPU and re-use it for all.
+> > +		 */
+> > +		cpu = cpumask_first(freq_domain_span(fd));
+> > +		cs = find_cap_state(cpu, max_util);
+> > +		energy += cs->power * sum_util / cs->cap;
+> > +	}
+> 
+> This means all CPUs will be iterated for calculation, the complexity is
+> O(n)...
+> 
+> > +	return energy;
+> > +}
+> > +
+> > +/*
+> >   * select_task_rq_fair: Select target runqueue for the waking task in domains
+> >   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+> >   * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
+> > diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> > index 5d552c0d7109..6eb38f41d5d9 100644
+> > --- a/kernel/sched/sched.h
+> > +++ b/kernel/sched/sched.h
+> > @@ -2156,7 +2156,7 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
+> >  # define arch_scale_freq_invariant()	false
+> >  #endif
+> >  
+> > -#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+> > +#ifdef CONFIG_SMP
+> >  static inline unsigned long cpu_util_dl(struct rq *rq)
+> >  {
+> >  	return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
+> > -- 
+> > 2.11.0
+> > 
