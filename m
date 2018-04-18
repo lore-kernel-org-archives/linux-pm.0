@@ -1,99 +1,99 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH 03/11] fs: add frozen sb state helpers
-Date: Tue, 17 Apr 2018 17:59:36 -0700
-Message-ID: <20180418005936.j3fa5rogfm353clf@garbanzo.do-not-panic.com>
-References: <20171129232356.28296-1-mcgrof@kernel.org>
- <20171129232356.28296-4-mcgrof@kernel.org>
- <20171130171310.GG28180@quack2.suse.cz>
- <20171130190548.GJ729@wotan.suse.de>
- <20171201114724.GC8365@quack2.suse.cz>
- <20171201211327.GQ729@wotan.suse.de>
- <20171221110329.GG31584@quack2.suse.cz>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [GIT PULL V3] Thermal SoC management updates for v4.17-rc1
+Date: Wed, 18 Apr 2018 15:51:29 +0800
+Message-ID: <1524037889.2553.13.camel@intel.com>
+References: <20180414183051.GA27921@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171221110329.GG31584@quack2.suse.cz>
+In-Reply-To: <20180414183051.GA27921@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jan Kara <jack@suse.cz>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org, jlayton@redhat.com
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 21, 2017 at 12:03:29PM +0100, Jan Kara wrote:
-> Hello,
+Hi, Eduardo,
+
+On 六, 2018-04-14 at 11:30 -0700, Eduardo Valentin wrote:
+> Hello Linus,
 > 
-> I think I owe you a reply here... Sorry that it took so long.
-
-Took me just as long :)
-
-> On Fri 01-12-17 22:13:27, Luis R. Rodriguez wrote:
-> > 
-> > I'll note that its still not perfectly clear if really the semantics behind
-> > freeze_bdev() match what I described above fully. That still needs to be
-> > vetted for. For instance, does thaw_bdev() keep a superblock frozen if we
-> > an ioctl initiated freeze had occurred before? If so then great. Otherwise
-> > I think we'll need to distinguish the ioctl interface. Worst possible case
-> > is that bdev semantics and in-kernel semantics differ somehow, then that
-> > will really create a holy fucking mess.
+> Please find thermal-soc changes for v4.17-rc1.
+> Rui asked me to send the pull request directly to you
+> as we are close to the end of the merge window.
+> Essentially this pull removes the series that caused
+> warning regression. I will work with the developer
+> to get that fixed later on, but I am still sending
+> the other few patches that are unrelated to that.
+> Let me know if this causes any issues and can still
+> be pulled.
 > 
-> I believe nobody really thought about mixing those two interfaces to fs
-> freezing and so the behavior is basically defined by the implementation.
-> That is:
+> Changelog:
+> - New i.MX7 thermal sensor
+> - Mediatek driver now supports MT7622 SoC
+> - Removal of min max cpu cooling DT property
 > 
-> freeze_bdev() on sb frozen by ioctl_fsfreeze() -> EBUSY
-
-Note below as well on your *future* freeze_super() implementation.
-
-> freeze_bdev() on sb frozen by freeze_bdev() -> success
-> ioctl_fsfreeze() on sb frozen by freeze_bdev() -> EBUSY
-> ioctl_fsfreeze() on sb frozen by ioctl_fsfreeze() -> EBUSY
+> Differences in V3:
+> - Rebased on top current linus/master, to avoid and merge issues
+> from previous pulled thermal code.
 > 
-> thaw_bdev() on sb frozen by ioctl_fsfreeze() -> EINVAL
-
-Phew, so this is what we want for the in-kernel freezing so we're good
-and *can* combine these then.
-
-> ioctl_fsthaw() on sb frozen by freeze_bdev() -> success
+> Differences in V2:
+> - Reordered the patches to drop exynos changes for now until we get
+> agreement on the fix on that driver for the compilation warns
+> caused by the confusing conversion functions.
 > 
-> What I propose is the following API:
 > 
-> freeze_super_excl()
->   - freezes superblock, returns EBUSY if the superblock is already frozen
->     (either by another freeze_super_excl() or by freeze_super())
-> freeze_super()
->   - this function will make sure superblock is frozen when the function
->     returns with success. 
+> The following changes since commit
+> 48023102b7078a6674516b1fe0d639669336049d:
+> 
+>   Merge branch 'overlayfs-linus' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs (2018-04-
+> 13 16:55:41 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
+> thermal linus
+> 
+> for you to fetch changes up to
+> 15a32df1918259be6c23fc36014fc26ee66c836c:
+> 
+>   dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
+> (2018-04-14 09:37:55 -0700)
+> 
+This pull request does not catch this merge window.
+So do you want to split it into 2 separate pull requests, one for 4.17-
+rc and another for 4.18-rc1?
 
-That's straight forward.
+> ----------------------------------------------------------------
+> Anson Huang (1):
+>       thermal: imx: add i.MX7 thermal sensor support
+> 
+> Bartlomiej Zolnierkiewicz (1):
+>       dt-bindings: thermal: remove no longer needed samsung thermal
+> properties
+> 
+> Sean Wang (2):
+>       dt-bindings: thermal: add binding for MT7622 SoC
+>       thermal: mediatek: add support for MT7622 SoC
+> 
+> Viresh Kumar (1):
+>       dt-bindings: thermal: Remove "cooling-{min|max}-level"
+> properties
+> 
+IMO, together with the refreshed exynos fixes, the one from Viresh and
+the one from Bartlomiej can be queued for 4.17-rc, and the others have
+to wait until next merge window.
 
->     It can be nested with other freeze_super() or
->     freeze_super_excl() calls 
+thanks,
+rui
 
-This is where it can get hairy. More below.
 
->     (this second part is different from how
->     freeze_bdev() behaves currently but AFAICT this behavior is actually
->     what all current users of freeze_bdev() really want - just make sure
->     fs cannot be written to)
-
-If we can agree to this, then sure. However there are two types of
-possible nested calls to consider, one where the sb was already frozen
-by an IOCTL, and the other where it was initiated by either another
-freeze_super_excl() or another freeze_super() call which is currently
-being processed. For the first type, its easy to say the device is
-already frozen as such return success. If the freezing is ongoing,
-we may want to wait or not wait, and this will depend on our current
-use cases for freeze_bdev().
-
-As you noted above, freeze_bdev() currently returns EBUSY if we had
-the sb already frozen by ioctl_fsfreeze(). It may be a welcomed
-enhancement to correct the semantics first to address the first case,
-but keep the EBUSY for the other case. A secondary patch could then
-add a completion mechanism and let callers decide to either wait or not.
-*Iff* the caller did not opt-in to wait we keep the EBUSY return.
-
-Seem reasonable?
-
-I'll address the rest of the mail later.
-
-  Luis
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |  23 +-
+>  .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
+>  .../bindings/thermal/mediatek-thermal.txt          |   1 +
+>  .../devicetree/bindings/thermal/thermal.txt        |  16 +-
+>  drivers/thermal/imx_thermal.c                      | 295
+> ++++++++++++++++-----
+>  drivers/thermal/mtk_thermal.c                      |  35 +++
+>  6 files changed, 281 insertions(+), 98 deletions(-)
