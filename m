@@ -1,135 +1,77 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v2 3/6] sched: Add over-utilization/tipping point
- indicator
-Date: Wed, 18 Apr 2018 12:17:29 +0100
-Message-ID: <20180418111729.GB6783@e108498-lin.cambridge.arm.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-4-dietmar.eggemann@arm.com>
- <CAJWu+oqxGkUKzmj6OokRHoQ=1B+618cnLL_SXrnXFOgX1GWdkA@mail.gmail.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v6 20/25] drivers: firmware: psci: Introduce
+ psci_dt_topology_init()
+Date: Wed, 18 Apr 2018 12:32:43 +0100
+Message-ID: <20180418113242.fnpqp3j2ayhclwmj@lakrids.cambridge.arm.com>
+References: <1521046715-30683-1-git-send-email-ulf.hansson@linaro.org>
+ <1521046715-30683-21-git-send-email-ulf.hansson@linaro.org>
+ <20180314173833.dyu7jtweu233rfi4@lakrids.cambridge.arm.com>
+ <CAPDyKFpJQZ87ViwZxX_yBnKPzgRv5YxbLz=qxScBTMCvY6e2vw@mail.gmail.com>
+ <20180410111043.t577a43a3bvjpkc7@lakrids.cambridge.arm.com>
+ <CAPDyKFrVNtv6Z3r5DkVXVooszyJTqaBxwg9wm94aw7v3SyA4tg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJWu+oqxGkUKzmj6OokRHoQ=1B+618cnLL_SXrnXFOgX1GWdkA@mail.gmail.com>
+In-Reply-To: <CAPDyKFrVNtv6Z3r5DkVXVooszyJTqaBxwg9wm94aw7v3SyA4tg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 13 Apr 2018 at 16:56:39 (-0700), Joel Fernandes wrote:
-> Hi,
+On Tue, Apr 10, 2018 at 02:25:52PM +0200, Ulf Hansson wrote:
+> On 10 April 2018 at 13:10, Mark Rutland <mark.rutland@arm.com> wrote:
+> > On Tue, Apr 10, 2018 at 09:19:26AM +0200, Ulf Hansson wrote:
+> >> On 14 March 2018 at 18:38, Mark Rutland <mark.rutland@arm.com> wrote:
+> >> > On Wed, Mar 14, 2018 at 05:58:30PM +0100, Ulf Hansson wrote:
+> >> >> In case the hierarchical layout is used in DT, we want to initialize the
+> >> >> corresponding PM domain topology for the CPUs, by using the generic PM
+> >> >> domain (aka genpd) infrastructure.
+> >> >>
+> >> >> At first glance, it may seem feasible to hook into the existing
+> >> >> psci_dt_init() function, although because it's called quite early in the
+> >> >> boot sequence, allocating the dynamic data structure for a genpd doesn't
+> >> >> work.
+> >> >>
+> >> >> Therefore, let's export a new init function for PSCI,
+> >> >> psci_dt_topology_init(), which the ARM machine code should call from a
+> >> >> suitable initcall.
+> >> >>
+> >> >> Succeeding to initialize the PM domain topology, which means at least one
+> >> >> instance of a genpd becomes created, allows us to continue to enable the
+> >> >> PSCI OS initiated mode for the platform. If everything turns out fine,
+> >> >> let's print a message in log to inform the user about the changed mode.
+> >> >>
+> >> >> In case of any failures, we stick to the default PSCI Platform Coordinated
+> >> >> mode.
+> >> >
+> >> > For kexec/kdump we'll need to explicitly set the suspend mode to
+> >> > platform coordinated if for whatever reason we choose not to use OSI.
+> >>
+> >> Could you please elaborate on this? I am not really understanding what
+> >> you are suggesting me to do and why.
+> >
+> > Sorry for not being clear.
+> >
+> > What I'd like to see is that we always call SET_SUSPEND_MODE before
+> > invoking CPU_SUSPEND. Either deciding early if we can use OSI, or always
+> > setting it to platform co-ordinated early on in boot and later switching
+> > it over.
+> >
+> > That way we can be sure of the suspend mode, even if we've kexec'd from
+> > a kernel that had fiddled with it.
 > 
-> On Fri, Apr 6, 2018 at 8:36 AM, Dietmar Eggemann
-> <dietmar.eggemann@arm.com> wrote:
-> > From: Thara Gopinath <thara.gopinath@linaro.org>
-> >
-> > Energy-aware scheduling should only operate when the system is not
-> > overutilized. There must be cpu time available to place tasks based on
-> > utilization in an energy-aware fashion, i.e. to pack tasks on
-> > energy-efficient cpus without harming the overall throughput.
-> >
-> > In case the system operates above this tipping point the tasks have to
-> > be placed based on task and cpu load in the classical way of spreading
-> > tasks across as many cpus as possible.
-> >
-> > The point in which a system switches from being not overutilized to
-> > being overutilized is called the tipping point.
-> >
-> > Such a tipping point indicator on a sched domain as the system
-> > boundary is introduced here. As soon as one cpu of a sched domain is
-> > overutilized the whole sched domain is declared overutilized as well.
-> > A cpu becomes overutilized when its utilization is higher that 80%
-> > (capacity_margin) of its capacity.
-> >
-> > The implementation takes advantage of the shared sched domain which is
-> > shared across all per-cpu views of a sched domain level. The new
-> > overutilized flag is placed in this shared sched domain.
-> >
-> > Load balancing is skipped in case the energy model is present and the
-> > sched domain is not overutilized because under this condition the
-> > predominantly load-per-capacity driven load-balancer should not
-> > interfere with the energy-aware wakeup placement based on utilization.
-> >
-> > In case the total utilization of a sched domain is greater than the
-> > total sched domain capacity the overutilized flag is set at the parent
-> > sched domain level to let other sched groups help getting rid of the
-> > overutilization of cpus.
-> >
-> > Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > ---
-> >  include/linux/sched/topology.h |  1 +
-> >  kernel/sched/fair.c            | 62 ++++++++++++++++++++++++++++++++++++++++--
-> >  kernel/sched/sched.h           |  1 +
-> >  kernel/sched/topology.c        | 12 +++-----
-> >  4 files changed, 65 insertions(+), 11 deletions(-)
-> >
-> > diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
-> > index 26347741ba50..dd001c232646 100644
-> > --- a/include/linux/sched/topology.h
-> > +++ b/include/linux/sched/topology.h
-> > @@ -72,6 +72,7 @@ struct sched_domain_shared {
-> >         atomic_t        ref;
-> >         atomic_t        nr_busy_cpus;
-> >         int             has_idle_cores;
-> > +       int             overutilized;
-> >  };
-> >
-> >  struct sched_domain {
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 0a76ad2ef022..6960e5ef3c14 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -5345,6 +5345,28 @@ static inline void hrtick_update(struct rq *rq)
-> >  }
-> >  #endif
-> >
-> > +#ifdef CONFIG_SMP
-> > +static inline int cpu_overutilized(int cpu);
-> > +
-> > +static inline int sd_overutilized(struct sched_domain *sd)
-> > +{
-> > +       return READ_ONCE(sd->shared->overutilized);
-> > +}
-> > +
-> > +static inline void update_overutilized_status(struct rq *rq)
-> > +{
-> > +       struct sched_domain *sd;
-> > +
-> > +       rcu_read_lock();
-> > +       sd = rcu_dereference(rq->sd);
-> > +       if (sd && !sd_overutilized(sd) && cpu_overutilized(rq->cpu))
-> > +               WRITE_ONCE(sd->shared->overutilized, 1);
-> > +       rcu_read_unlock();
-> > +}
-> > +#else
-> > +static inline void update_overutilized_status(struct rq *rq) {}
-> > +#endif /* CONFIG_SMP */
-> > +
-> >  /*
-> >   * The enqueue_task method is called before nr_running is
-> >   * increased. Here we update the fair scheduling stats and
-> > @@ -5394,8 +5416,10 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >                 update_cfs_group(se);
-> >         }
-> >
-> > -       if (!se)
-> > +       if (!se) {
-> >                 add_nr_running(rq, 1);
-> > +               update_overutilized_status(rq);
-> > +       }
+> Right, good point. Let's me update the patch to deal with that.
 > 
-> I'm wondering if it makes sense for considering scenarios whether
-> other classes cause CPUs in the domain to go above the tipping point.
-> Then in that case also, it makes sense to not to do EAS in that domain
-> because of the overutilization.
-> 
-> I guess task_fits using cpu_util which is PELT only at the moment...
-> so may require some other method like aggregation of CFS PELT, with
-> RT-PELT and DL running bw or something.
->
+> One thing though, kexec from a "new" kernel having OSI mode enabled
+> into an "old" kernel that doesn't even have the new OSI mode support
+> in psci driver, is going to be difficult to deal with.
+> On the other hand I guess that isn't a very important usecase we need
+> to cover, or is it?
 
-So at the moment in cpu_overutilized() we comapre cpu_util() to
-capacity_of() which should include RT and IRQ pressure IIRC. But
-you're right, we might be able to do more here... Perhaps we
-could also use cpu_util_dl() which is available in sched.h now ?
+I think we can also transition back to platform-coordinated in a reboot
+notifier, which should cater for kexec to an old kernel. I agree it
+shouldn't be a big deal, though.
+
+Thanks,
+Mark.
