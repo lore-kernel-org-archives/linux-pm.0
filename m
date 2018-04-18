@@ -1,49 +1,56 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: Re: [PATCH] PM / devfreq: use put_device() instead of kfree()
-Date: Wed, 18 Apr 2018 16:57:35 +0900
-Message-ID: <20180418075735epcms1p3c59f097441aabc6af5d7892298c6fdb2@epcms1p3>
-References: <5AD01937.1070504@samsung.com>
-        <d8d8708d2283349c2c4f3e9f3c9fd5f47126d2bc.1522410143.git.arvind.yadav.cs@gmail.com>
-        <5AD001C5.2040406@samsung.com> <5AD0041D.2050506@samsung.com>
-        <5AD012CB.7030003@gmail.com> <5AD0160E.7050601@samsung.com>
-        <5AD017E8.7020901@gmail.com>
-        <CGME20180330114418epcas5p1affd1c3d97e7422dd33e6d3ca73073be@epcms1p3>
-Reply-To: myungjoo.ham@samsung.com
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v2 5/6] sched/fair: Select an energy-efficient CPU on
+ task wake-up
+Date: Wed, 18 Apr 2018 08:57:43 +0100
+Message-ID: <20180418075742.GA3943@e108498-lin.cambridge.arm.com>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-6-dietmar.eggemann@arm.com>
+ <20180417153944.GD18509@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5AD01937.1070504@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20180417153944.GD18509@leoy-ThinkPad-X240s>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, arvindY <arvind.yadav.cs@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
->On 2018=EB=85=84=2004=EC=9B=94=2013=EC=9D=BC=2011:37,=20arvindY=20wrote:=
-=0D=0A>>=20On=20Friday=2013=20April=202018=2007:59=20AM,=20Chanwoo=20Choi=
-=20wrote:=0D=0A>>>=20On=202018=EB=85=84=2004=EC=9B=94=2013=EC=9D=BC=2011:15=
-,=20arvindY=20wrote:=0D=0A>>>>=20On=20Friday=2013=20April=202018=2006:43=20=
-AM,=20Chanwoo=20Choi=20wrote:=0D=0A>>>>>=20On=202018=EB=85=84=2004=EC=9B=94=
-=2013=EC=9D=BC=2010:03,=20Chanwoo=20Choi=20wrote:=0D=0A=5B=5D=0D=0A>>>>>>>=
-=20diff=20--git=20a/drivers/devfreq/devfreq.c=20b/drivers/devfreq/devfreq.c=
-=0D=0A>>>>>>>=20index=20fe2af6a..a225b94=20100644=0D=0A>>>>>>>=20---=20a/dr=
-ivers/devfreq/devfreq.c=0D=0A>>>>>>>=20+++=20b/drivers/devfreq/devfreq.c=0D=
-=0A>>>>>>>=20=40=40=20-625,7=20+625,8=20=40=40=20struct=20devfreq=20*devfre=
-q_add_device(struct=20device=20*dev,=0D=0A>>>>>>>=20=20=20=20=20=20=20=20er=
-r=20=3D=20device_register(&devfreq->dev);=0D=0A>>>>>>>=20=20=20=20=20=20=20=
-=20if=20(err)=20=7B=0D=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20=20=20mutex_u=
-nlock(&devfreq->lock);=0D=0A>>>>>>>=20-=20=20=20=20=20=20=20=20goto=20err_d=
-ev;=0D=0A>>>>>>>=20+=20=20=20=20=20=20=20=20put_device(&devfreq->dev);=0D=
-=0A>>>>>>>=20+=20=20=20=20=20=20=20=20goto=20err_out;=0D=0A>>>>>>>=20=20=20=
-=20=20=20=20=20=7D=0D=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20devfreq->trans=
-_table=20=3D=20=20=20=20devm_kzalloc(&devfreq->dev,=0D=0A>>>>>>>=20=40=40=
-=20-671,6=20+672,7=20=40=40=20struct=20devfreq=20*devfreq_add_device(struct=
-=20device=20*dev,=0D=0A>>>>>>>=20=20=20=20=20=20=20=20mutex_unlock(&devfreq=
-_list_lock);=0D=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20device_unregister(&d=
-evfreq->dev);=0D=0A>>>>>>>=20+=20=20=20=20devfreq=20=3D=20NULL;=0D=0A>>>>>>=
->=20=20=20=20err_dev:=0D=0A>>>>>>>=20=20=20=20=20=20=20=20if=20(devfreq)=0D=
-=0A>>>>>>>=20=20=20=20=20=20=20=20=20=20=20=20kfree(devfreq);=0D=0A>>>>>>>=
-=0D=0A=0D=0AAh..=20this=20was=20critcal.=20Thanks=21=0D=0A=0D=0AAcked-by:=
-=20MyungJoo=20Ham=20<myungjoo.ham=40samsung.com>=0D=0A=0D=0A>Reviewed-by:=
-=20Chanwoo=20Choi=20<cw00.choi=40samsung.com>=0D=0A=0D=0A=0D=0ACheers,=0D=
-=0AMyungJoo=0D=0A
+Hi Leo,
+
+On Tuesday 17 Apr 2018 at 23:39:44 (+0800), Leo Yan wrote:
+> > +	for_each_freq_domain(fd) {
+> > +		unsigned long spare_cap, max_spare_cap = 0;
+> > +		int max_spare_cap_cpu = -1;
+> > +		unsigned long util;
+> > +
+> > +		/* Find the CPU with the max spare cap in the freq. dom. */
+> > +		for_each_cpu_and(cpu, freq_domain_span(fd), sched_domain_span(sd)) {
+> > +			if (!cpumask_test_cpu(cpu, &p->cpus_allowed))
+> > +				continue;
+> > +
+> > +			if (cpu == prev_cpu)
+> > +				continue;
+> > +
+> > +			util = cpu_util_wake(cpu, p);
+> > +			cpu_cap = capacity_of(cpu);
+> > +			if (!util_fits_capacity(util + task_util, cpu_cap))
+> > +				continue;
+> > +
+> > +			spare_cap = cpu_cap - util;
+> > +			if (spare_cap > max_spare_cap) {
+> > +				max_spare_cap = spare_cap;
+> > +				max_spare_cap_cpu = cpu;
+> > +			}
+> > +		}
+> 
+> If have two clusters, and if firstly iterate the big cluster, then
+> max_spare_cap is a big value for big cluster and later LITTLE cluster
+> has no chance to have higher value for spare_cap.  For this case, the
+> LITTLE CPU will be skipped for energy computation?
+
+max_spare_cap is reset to 0 at the top of the for_each_freq_domain()
+loop above so that shouldn't happen.
+
+Thanks,
+Quentin
