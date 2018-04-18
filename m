@@ -1,55 +1,135 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 18 Apr 2018 12:06:35 +0100
-Message-ID: <20180418110635.GA6783@e108498-lin.cambridge.arm.com>
+Subject: Re: [RFC PATCH v2 3/6] sched: Add over-utilization/tipping point
+ indicator
+Date: Wed, 18 Apr 2018 12:17:29 +0100
+Message-ID: <20180418111729.GB6783@e108498-lin.cambridge.arm.com>
 References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-5-dietmar.eggemann@arm.com>
- <20180417152213.GC18509@leoy-ThinkPad-X240s>
- <20180418081339.GB3943@e108498-lin.cambridge.arm.com>
- <20180418091928.GA15682@leoy-ThinkPad-X240s>
+ <20180406153607.17815-4-dietmar.eggemann@arm.com>
+ <CAJWu+oqxGkUKzmj6OokRHoQ=1B+618cnLL_SXrnXFOgX1GWdkA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180418091928.GA15682@leoy-ThinkPad-X240s>
+In-Reply-To: <CAJWu+oqxGkUKzmj6OokRHoQ=1B+618cnLL_SXrnXFOgX1GWdkA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Joel Fernandes <joelaf@google.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 18 Apr 2018 at 17:19:28 (+0800), Leo Yan wrote:
-> > > BTW, CPU utilization is decayed value and task_util() is not decayed
-> > > value, so 'util - task_util(p)' calculates a smaller value than the
-> > > prev CPU pure utilization, right?
-> > 
-> > task_util() is the raw PELT signal, without UTIL_EST, so I think it's
-> > fine to do `util - task_util()`.
-> > 
-> > > 
-> > > Another question is can we reuse the function cpu_util_wake() and
-> > > just compenstate task util for dst cpu?
-> > 
-> > Well it's not that simple. cpu_util_wake() will give you the max between
-> > the util_avg and the util_est value, so which task_util() should you add
-> > to it ? The util_avg or the uti_est value ?
+On Friday 13 Apr 2018 at 16:56:39 (-0700), Joel Fernandes wrote:
+> Hi,
 > 
-> If feature 'UTIL_EST' is enabled, then add task's util_est; otherwise
-> add task util_avg value.
-
-I don't think this is correct. If UTIL_EST is enabled, cpu_util_wake()
-will return the max between the util_avg and the util_est. When you call
-it, you don't know what you get. Adding the _task_util_est() to
-cpu_util_wake() is wrong if cpu_util_avg > cpu_util_est for example.
-
+> On Fri, Apr 6, 2018 at 8:36 AM, Dietmar Eggemann
+> <dietmar.eggemann@arm.com> wrote:
+> > From: Thara Gopinath <thara.gopinath@linaro.org>
+> >
+> > Energy-aware scheduling should only operate when the system is not
+> > overutilized. There must be cpu time available to place tasks based on
+> > utilization in an energy-aware fashion, i.e. to pack tasks on
+> > energy-efficient cpus without harming the overall throughput.
+> >
+> > In case the system operates above this tipping point the tasks have to
+> > be placed based on task and cpu load in the classical way of spreading
+> > tasks across as many cpus as possible.
+> >
+> > The point in which a system switches from being not overutilized to
+> > being overutilized is called the tipping point.
+> >
+> > Such a tipping point indicator on a sched domain as the system
+> > boundary is introduced here. As soon as one cpu of a sched domain is
+> > overutilized the whole sched domain is declared overutilized as well.
+> > A cpu becomes overutilized when its utilization is higher that 80%
+> > (capacity_margin) of its capacity.
+> >
+> > The implementation takes advantage of the shared sched domain which is
+> > shared across all per-cpu views of a sched domain level. The new
+> > overutilized flag is placed in this shared sched domain.
+> >
+> > Load balancing is skipped in case the energy model is present and the
+> > sched domain is not overutilized because under this condition the
+> > predominantly load-per-capacity driven load-balancer should not
+> > interfere with the energy-aware wakeup placement based on utilization.
+> >
+> > In case the total utilization of a sched domain is greater than the
+> > total sched domain capacity the overutilized flag is set at the parent
+> > sched domain level to let other sched groups help getting rid of the
+> > overutilization of cpus.
+> >
+> > Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > ---
+> >  include/linux/sched/topology.h |  1 +
+> >  kernel/sched/fair.c            | 62 ++++++++++++++++++++++++++++++++++++++++--
+> >  kernel/sched/sched.h           |  1 +
+> >  kernel/sched/topology.c        | 12 +++-----
+> >  4 files changed, 65 insertions(+), 11 deletions(-)
+> >
+> > diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+> > index 26347741ba50..dd001c232646 100644
+> > --- a/include/linux/sched/topology.h
+> > +++ b/include/linux/sched/topology.h
+> > @@ -72,6 +72,7 @@ struct sched_domain_shared {
+> >         atomic_t        ref;
+> >         atomic_t        nr_busy_cpus;
+> >         int             has_idle_cores;
+> > +       int             overutilized;
+> >  };
+> >
+> >  struct sched_domain {
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 0a76ad2ef022..6960e5ef3c14 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -5345,6 +5345,28 @@ static inline void hrtick_update(struct rq *rq)
+> >  }
+> >  #endif
+> >
+> > +#ifdef CONFIG_SMP
+> > +static inline int cpu_overutilized(int cpu);
+> > +
+> > +static inline int sd_overutilized(struct sched_domain *sd)
+> > +{
+> > +       return READ_ONCE(sd->shared->overutilized);
+> > +}
+> > +
+> > +static inline void update_overutilized_status(struct rq *rq)
+> > +{
+> > +       struct sched_domain *sd;
+> > +
+> > +       rcu_read_lock();
+> > +       sd = rcu_dereference(rq->sd);
+> > +       if (sd && !sd_overutilized(sd) && cpu_overutilized(rq->cpu))
+> > +               WRITE_ONCE(sd->shared->overutilized, 1);
+> > +       rcu_read_unlock();
+> > +}
+> > +#else
+> > +static inline void update_overutilized_status(struct rq *rq) {}
+> > +#endif /* CONFIG_SMP */
+> > +
+> >  /*
+> >   * The enqueue_task method is called before nr_running is
+> >   * increased. Here we update the fair scheduling stats and
+> > @@ -5394,8 +5416,10 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+> >                 update_cfs_group(se);
+> >         }
+> >
+> > -       if (!se)
+> > +       if (!se) {
+> >                 add_nr_running(rq, 1);
+> > +               update_overutilized_status(rq);
+> > +       }
 > 
-> I think cpu_util_wake() has similiar logic with here, it merely returns
-> CPU level util; but here needs to accumulate CPU level util + task level
-> util.  So seems to me, the logic is:
+> I'm wondering if it makes sense for considering scenarios whether
+> other classes cause CPUs in the domain to go above the tipping point.
+> Then in that case also, it makes sense to not to do EAS in that domain
+> because of the overutilization.
 > 
->   cpu_util_wake() + task_util_wake()
+> I guess task_fits using cpu_util which is PELT only at the moment...
+> so may require some other method like aggregation of CFS PELT, with
+> RT-PELT and DL running bw or something.
+>
 
-I'm not sure to get that one ... What is task_util_wake() ?
-
-Thanks,
-Quentin
+So at the moment in cpu_overutilized() we comapre cpu_util() to
+capacity_of() which should include RT and IRQ pressure IIRC. But
+you're right, we might be able to do more here... Perhaps we
+could also use cpu_util_dl() which is available in sched.h now ?
