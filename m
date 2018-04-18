@@ -1,105 +1,66 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL V3] Thermal SoC management updates for v4.17-rc1
-Date: Wed, 18 Apr 2018 07:10:30 -0700
-Message-ID: <20180418141027.GA3303@localhost.localdomain>
-References: <20180414183051.GA27921@localhost.localdomain>
- <1524037889.2553.13.camel@intel.com>
+From: =?UTF-8?q?S=C3=A9bastien=20Szymanski?= <sebastien.szymanski@armadeus.com>
+Subject: [PATCH 1/2] cpufreq: imx6q: check speed grades for i.MX6ULL
+Date: Wed, 18 Apr 2018 16:52:29 +0200
+Message-ID: <20180418145230.10249-1-sebastien.szymanski@armadeus.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1524037889.2553.13.camel@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-
-On Wed, Apr 18, 2018 at 03:51:29PM +0800, Zhang Rui wrote:
-> Hi, Eduardo,
-> 
-> On 六, 2018-04-14 at 11:30 -0700, Eduardo Valentin wrote:
-> > Hello Linus,
-> > 
-> > Please find thermal-soc changes for v4.17-rc1.
-> > Rui asked me to send the pull request directly to you
-> > as we are close to the end of the merge window.
-> > Essentially this pull removes the series that caused
-> > warning regression. I will work with the developer
-> > to get that fixed later on, but I am still sending
-> > the other few patches that are unrelated to that.
-> > Let me know if this causes any issues and can still
-> > be pulled.
-> > 
-> > Changelog:
-> > - New i.MX7 thermal sensor
-> > - Mediatek driver now supports MT7622 SoC
-> > - Removal of min max cpu cooling DT property
-> > 
-> > Differences in V3:
-> > - Rebased on top current linus/master, to avoid and merge issues
-> > from previous pulled thermal code.
-> > 
-> > Differences in V2:
-> > - Reordered the patches to drop exynos changes for now until we get
-> > agreement on the fix on that driver for the compilation warns
-> > caused by the confusing conversion functions.
-> > 
-> > 
-> > The following changes since commit
-> > 48023102b7078a6674516b1fe0d639669336049d:
-> > 
-> >   Merge branch 'overlayfs-linus' of
-> > git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs (2018-04-
-> > 13 16:55:41 -0700)
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
-> > thermal linus
-> > 
-> > for you to fetch changes up to
-> > 15a32df1918259be6c23fc36014fc26ee66c836c:
-> > 
-> >   dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
-> > (2018-04-14 09:37:55 -0700)
-> > 
-> This pull request does not catch this merge window.
-> So do you want to split it into 2 separate pull requests, one for 4.17-
-> rc and another for 4.18-rc1?
-
-OK. Yeah, I am fine with that.
-
-> 
-> > ----------------------------------------------------------------
-> > Anson Huang (1):
-> >       thermal: imx: add i.MX7 thermal sensor support
-> > 
-> > Bartlomiej Zolnierkiewicz (1):
-> >       dt-bindings: thermal: remove no longer needed samsung thermal
-> > properties
-> > 
-> > Sean Wang (2):
-> >       dt-bindings: thermal: add binding for MT7622 SoC
-> >       thermal: mediatek: add support for MT7622 SoC
-> > 
-> > Viresh Kumar (1):
-> >       dt-bindings: thermal: Remove "cooling-{min|max}-level"
-> > properties
-> > 
-> IMO, together with the refreshed exynos fixes, the one from Viresh and
-> the one from Bartlomiej can be queued for 4.17-rc, and the others have
-> to wait until next merge window.
-> 
-
-Correct, the new chip support will need to wait for the next merge
-window. I have already split the patches into the two categories.
-The patches removing stuff are in my -fixes branch. All the other adding
-new chip support are in my -linus branch.
-
-Now, Do you have anything for this -rc2 ? If not, I will send directly
-to Linus the stuff in my -fixes branch. Let me know.
-
-Eduardo
+Q2hlY2sgdGhlIG1heCBzcGVlZCBzdXBwb3J0ZWQgZnJvbSB0aGUgZnVzZXMgZm9yIGkuTVg2VUxM
+IGFuZCB1cGRhdGUgdGhlCm9wZXJhdGluZyBwb2ludHMgdGFibGUgYWNjb3JkaW5nbHkuCgpTaWdu
+ZWQtb2ZmLWJ5OiBTw6liYXN0aWVuIFN6eW1hbnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1h
+ZGV1cy5jb20+Ci0tLQogZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyB8IDI5ICsrKysr
+KysrKysrKysrKysrKysrKysrLS0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgMjMgaW5zZXJ0aW9ucygr
+KSwgNiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1
+ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYwppbmRleCA4M2NmNjMxZmM5
+YmMuLmYwOTQ2ODdjYWU1MiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZy
+ZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jCkBAIC0yNjYsNiArMjY2
+LDggQEAgc3RhdGljIHZvaWQgaW14NnFfb3BwX2NoZWNrX3NwZWVkX2dyYWRpbmcoc3RydWN0IGRl
+dmljZSAqZGV2KQogfQogCiAjZGVmaW5lIE9DT1RQX0NGRzNfNlVMX1NQRUVEXzY5Nk1IWgkweDIK
+KyNkZWZpbmUgT0NPVFBfQ0ZHM182VUxMX1NQRUVEXzc5Mk1IWgkweDIKKyNkZWZpbmUgT0NPVFBf
+Q0ZHM182VUxMX1NQRUVEXzkwME1IWgkweDMKIAogc3RhdGljIHZvaWQgaW14NnVsX29wcF9jaGVj
+a19zcGVlZF9ncmFkaW5nKHN0cnVjdCBkZXZpY2UgKmRldikKIHsKQEAgLTI4NywxNiArMjg5LDMw
+IEBAIHN0YXRpYyB2b2lkIGlteDZ1bF9vcHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhzdHJ1Y3QgZGV2
+aWNlICpkZXYpCiAJICogU3BlZWQgR1JBRElOR1sxOjBdIGRlZmluZXMgdGhlIG1heCBzcGVlZCBv
+ZiBBUk06CiAJICogMmInMDA6IFJlc2VydmVkOwogCSAqIDJiJzAxOiA1MjgwMDAwMDBIejsKLQkg
+KiAyYicxMDogNjk2MDAwMDAwSHo7Ci0JICogMmInMTE6IFJlc2VydmVkOworCSAqIDJiJzEwOiA2
+OTYwMDAwMDBIeiBvbiBpLk1YNlVMLCA3OTIwMDAwMDBIeiBvbiBpLk1YNlVMTDsKKwkgKiAyYicx
+MTogOTAwMDAwMDAwSHogb24gaS5NWDZVTEwgb25seTsKIAkgKiBXZSBuZWVkIHRvIHNldCB0aGUg
+bWF4IHNwZWVkIG9mIEFSTSBhY2NvcmRpbmcgdG8gZnVzZSBtYXAuCiAJICovCiAJdmFsID0gcmVh
+ZGxfcmVsYXhlZChiYXNlICsgT0NPVFBfQ0ZHMyk7CiAJdmFsID4+PSBPQ09UUF9DRkczX1NQRUVE
+X1NISUZUOwogCXZhbCAmPSAweDM7Ci0JaWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTF9TUEVFRF82
+OTZNSFopCi0JCWlmIChkZXZfcG1fb3BwX2Rpc2FibGUoZGV2LCA2OTYwMDAwMDApKQotCQkJZGV2
+X3dhcm4oZGV2LCAiZmFpbGVkIHRvIGRpc2FibGUgNjk2TUh6IE9QUFxuIik7CisKKwlpZiAob2Zf
+bWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsIikpIHsKKwkJaWYgKHZhbCAhPSBPQ09U
+UF9DRkczXzZVTF9TUEVFRF82OTZNSFopCisJCQlpZiAoZGV2X3BtX29wcF9kaXNhYmxlKGRldiwg
+Njk2MDAwMDAwKSkKKwkJCQlkZXZfd2FybihkZXYsICJmYWlsZWQgdG8gZGlzYWJsZSA2OTZNSHog
+T1BQXG4iKTsKKwl9CisKKwlpZiAob2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVs
+bCIpKSB7CisJCWlmICh2YWwgIT0gT0NPVFBfQ0ZHM182VUxMX1NQRUVEXzc5Mk1IWikKKwkJCWlm
+IChkZXZfcG1fb3BwX2Rpc2FibGUoZGV2LCA3OTIwMDAwMDApKQorCQkJCWRldl93YXJuKGRldiwg
+ImZhaWxlZCB0byBkaXNhYmxlIDc5Mk1IeiBPUFBcbiIpOworCisJCWlmICh2YWwgIT0gT0NPVFBf
+Q0ZHM182VUxMX1NQRUVEXzkwME1IWikKKwkJCWlmIChkZXZfcG1fb3BwX2Rpc2FibGUoZGV2LCA5
+MDAwMDAwMDApKQorCQkJCWRldl93YXJuKGRldiwgImZhaWxlZCB0byBkaXNhYmxlIDkwME1IeiBP
+UFBcbiIpOworCX0KKwogCWlvdW5tYXAoYmFzZSk7CiBwdXRfbm9kZToKIAlvZl9ub2RlX3B1dChu
+cCk7CkBAIC0zNTYsNyArMzcyLDggQEAgc3RhdGljIGludCBpbXg2cV9jcHVmcmVxX3Byb2JlKHN0
+cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAJCWdvdG8gcHV0X3JlZzsKIAl9CiAKLQlpZiAo
+b2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsIikpCisJaWYgKG9mX21hY2hpbmVf
+aXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bCIpIHx8CisJICAgIG9mX21hY2hpbmVfaXNfY29tcGF0
+aWJsZSgiZnNsLGlteDZ1bGwiKSkKIAkJaW14NnVsX29wcF9jaGVja19zcGVlZF9ncmFkaW5nKGNw
+dV9kZXYpOwogCWVsc2UKIAkJaW14NnFfb3BwX2NoZWNrX3NwZWVkX2dyYWRpbmcoY3B1X2Rldik7
+Ci0tIAoyLjE2LjEKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3Rz
+LmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9saW51eC1hcm0ta2VybmVsCg==
