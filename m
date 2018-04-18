@@ -1,13 +1,11 @@
-From: Stefan Agner <stefan@agner.ch>
-Subject: Re: [PATCH 1/2] cpufreq: imx6q: check speed grades for i.MX6ULL
-Date: Wed, 18 Apr 2018 17:43:14 +0200
-Message-ID: <3b01e6f282514aa10b083a3d0f8400f9@agner.ch>
-References: <20180418145230.10249-1-sebastien.szymanski@armadeus.com>
+From: Markus Mayer <code@mmayer.net>
+Subject: [PATCH 0/2] brcmstb-avs-cpufreq changes
+Date: Wed, 18 Apr 2018 08:56:41 -0700
+Message-ID: <20180418155643.36464-1-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180418145230.10249-1-sebastien.szymanski@armadeus.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,61 +15,28 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?UTF-8?Q?S=C3=A9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Markus Mayer <mmayer@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTguMDQuMjAxOCAxNjo1MiwgU8OpYmFzdGllbiBTenltYW5za2kgd3JvdGU6Cj4gQ2hlY2sg
-dGhlIG1heCBzcGVlZCBzdXBwb3J0ZWQgZnJvbSB0aGUgZnVzZXMgZm9yIGkuTVg2VUxMIGFuZCB1
-cGRhdGUgdGhlCj4gb3BlcmF0aW5nIHBvaW50cyB0YWJsZSBhY2NvcmRpbmdseS4KClRoYW5rcyBm
-b3Igd29ya2luZyBvbiB0aGlzLgoKRHVlIHRvIGxhY2sgb2YgdGhpcyBmZWF0dXJlIHdlIGFkZGVk
-IG9wZXJhdGluZyBwb2ludHMgZGlyZWN0bHkgdG8gdGhlCmJvYXJkIGxldmVsIGRldmljZSB0cmVl
-OgphcmNoL2FybS9ib290L2R0cy9pbXg2dWxsLWNvbGlicmktd2lmaS5kdHNpCgo+IAo+IFNpZ25l
-ZC1vZmYtYnk6IFPDqWJhc3RpZW4gU3p5bWFuc2tpIDxzZWJhc3RpZW4uc3p5bWFuc2tpQGFybWFk
-ZXVzLmNvbT4KPiAtLS0KPiAgZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyB8IDI5ICsr
-KysrKysrKysrKysrKysrKysrKysrLS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAyMyBpbnNlcnRp
-b25zKCspLCA2IGRlbGV0aW9ucygtKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEv
-aW14NnEtY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYwo+IGluZGV4
-IDgzY2Y2MzFmYzliYy4uZjA5NDY4N2NhZTUyIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvY3B1ZnJl
-cS9pbXg2cS1jcHVmcmVxLmMKPiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5j
-Cj4gQEAgLTI2Niw2ICsyNjYsOCBAQCBzdGF0aWMgdm9pZCBpbXg2cV9vcHBfY2hlY2tfc3BlZWRf
-Z3JhZGluZyhzdHJ1Y3QKPiBkZXZpY2UgKmRldikKPiAgfQo+ICAKPiAgI2RlZmluZSBPQ09UUF9D
-RkczXzZVTF9TUEVFRF82OTZNSFoJMHgyCj4gKyNkZWZpbmUgT0NPVFBfQ0ZHM182VUxMX1NQRUVE
-Xzc5Mk1IWgkweDIKPiArI2RlZmluZSBPQ09UUF9DRkczXzZVTExfU1BFRURfOTAwTUhaCTB4Mwo+
-ICAKPiAgc3RhdGljIHZvaWQgaW14NnVsX29wcF9jaGVja19zcGVlZF9ncmFkaW5nKHN0cnVjdCBk
-ZXZpY2UgKmRldikKPiAgewo+IEBAIC0yODcsMTYgKzI4OSwzMCBAQCBzdGF0aWMgdm9pZAo+IGlt
-eDZ1bF9vcHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gIAkgKiBT
-cGVlZCBHUkFESU5HWzE6MF0gZGVmaW5lcyB0aGUgbWF4IHNwZWVkIG9mIEFSTToKPiAgCSAqIDJi
-JzAwOiBSZXNlcnZlZDsKPiAgCSAqIDJiJzAxOiA1MjgwMDAwMDBIejsKPiAtCSAqIDJiJzEwOiA2
-OTYwMDAwMDBIejsKPiAtCSAqIDJiJzExOiBSZXNlcnZlZDsKPiArCSAqIDJiJzEwOiA2OTYwMDAw
-MDBIeiBvbiBpLk1YNlVMLCA3OTIwMDAwMDBIeiBvbiBpLk1YNlVMTDsKPiArCSAqIDJiJzExOiA5
-MDAwMDAwMDBIeiBvbiBpLk1YNlVMTCBvbmx5Owo+ICAJICogV2UgbmVlZCB0byBzZXQgdGhlIG1h
-eCBzcGVlZCBvZiBBUk0gYWNjb3JkaW5nIHRvIGZ1c2UgbWFwLgo+ICAJICovCj4gIAl2YWwgPSBy
-ZWFkbF9yZWxheGVkKGJhc2UgKyBPQ09UUF9DRkczKTsKPiAgCXZhbCA+Pj0gT0NPVFBfQ0ZHM19T
-UEVFRF9TSElGVDsKPiAgCXZhbCAmPSAweDM7Cj4gLQlpZiAodmFsICE9IE9DT1RQX0NGRzNfNlVM
-X1NQRUVEXzY5Nk1IWikKPiAtCQlpZiAoZGV2X3BtX29wcF9kaXNhYmxlKGRldiwgNjk2MDAwMDAw
-KSkKPiAtCQkJZGV2X3dhcm4oZGV2LCAiZmFpbGVkIHRvIGRpc2FibGUgNjk2TUh6IE9QUFxuIik7
-Cj4gKwo+ICsJaWYgKG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bCIpKSB7Cj4g
-KwkJaWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTF9TUEVFRF82OTZNSFopCj4gKwkJCWlmIChkZXZf
-cG1fb3BwX2Rpc2FibGUoZGV2LCA2OTYwMDAwMDApKQo+ICsJCQkJZGV2X3dhcm4oZGV2LCAiZmFp
-bGVkIHRvIGRpc2FibGUgNjk2TUh6IE9QUFxuIik7Cj4gKwl9Cj4gKwo+ICsJaWYgKG9mX21hY2hp
-bmVfaXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bGwiKSkgewo+ICsJCWlmICh2YWwgIT0gT0NPVFBf
-Q0ZHM182VUxMX1NQRUVEXzc5Mk1IWikKPiArCQkJaWYgKGRldl9wbV9vcHBfZGlzYWJsZShkZXYs
-IDc5MjAwMDAwMCkpCj4gKwkJCQlkZXZfd2FybihkZXYsICJmYWlsZWQgdG8gZGlzYWJsZSA3OTJN
-SHogT1BQXG4iKTsKPiArCj4gKwkJaWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTExfU1BFRURfOTAw
-TUhaKQo+ICsJCQlpZiAoZGV2X3BtX29wcF9kaXNhYmxlKGRldiwgOTAwMDAwMDAwKSkKPiArCQkJ
-CWRldl93YXJuKGRldiwgImZhaWxlZCB0byBkaXNhYmxlIDkwME1IeiBPUFBcbiIpOwoKCldlIHVz
-ZSB0aGUgODAwTUh6IFNLVSwgc28gb3VyIGRldmljZSB0cmVlIGhhcyBubyA5MDBNSHogc2V0cG9p
-bnQuIAoKSSBndWVzcyB3ZSBzaG91bGQgcmVtb3ZlIHRoZSBvcGVyYXRpbmcgcG9pbnRzIGluIHRo
-ZSBib2FyZCBsZXZlbCBkZXZpY2UKdHJlZSB0aGVuIHRvIGF2b2lkIHdhcm5pbmdzIG9uIGJvb3Qt
-dXAuLi4/CgotLQpTdGVmYW4KCj4gKwl9Cj4gKwo+ICAJaW91bm1hcChiYXNlKTsKPiAgcHV0X25v
-ZGU6Cj4gIAlvZl9ub2RlX3B1dChucCk7Cj4gQEAgLTM1Niw3ICszNzIsOCBAQCBzdGF0aWMgaW50
-IGlteDZxX2NwdWZyZXFfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPiAgCQln
-b3RvIHB1dF9yZWc7Cj4gIAl9Cj4gIAo+IC0JaWYgKG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgi
-ZnNsLGlteDZ1bCIpKQo+ICsJaWYgKG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1
-bCIpIHx8Cj4gKwkgICAgb2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsbCIpKQo+
-ICAJCWlteDZ1bF9vcHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhjcHVfZGV2KTsKPiAgCWVsc2UKPiAg
-CQlpbXg2cV9vcHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhjcHVfZGV2KTsKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGlu
-ZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMu
-aW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+From: Markus Mayer <mmayer@broadcom.com>
+
+These changes are based on v4.17-rc1. The two patches are unrelated.
+
+Patch 1/2 removes unused code that was only useful during driver
+development and that has been disabled by default for a long time.
+
+Patch 2/2 allows the driver to detect if the system supports SCMI cpufreq
+
+Jim Quinlan (1):
+  cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if supported
+
+Markus Mayer (1):
+  cpufreq: brcmstb-avs-cpufreq: remove development debug support
+
+ drivers/cpufreq/Kconfig.arm           |  10 -
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 339 ++--------------------------------
+ 2 files changed, 17 insertions(+), 332 deletions(-)
+
+-- 
+2.7.4
