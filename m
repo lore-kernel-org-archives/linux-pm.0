@@ -1,59 +1,105 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH/RFC 0/2] regulator: bd9571mwv: Add support for toggle
- power switches
-Date: Wed, 18 Apr 2018 15:00:41 +0100
-Message-ID: <20180418140041.GD10061@sirena.org.uk>
-References: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
- <CAMuHMdXyWs1v_D4EUd-H75Q3cpQv6yD2V_MptjJP7FjYhu5c3g@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL V3] Thermal SoC management updates for v4.17-rc1
+Date: Wed, 18 Apr 2018 07:10:30 -0700
+Message-ID: <20180418141027.GA3303@localhost.localdomain>
+References: <20180414183051.GA27921@localhost.localdomain>
+ <1524037889.2553.13.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="d01dLTUuW90fS44H"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdXyWs1v_D4EUd-H75Q3cpQv6yD2V_MptjJP7FjYhu5c3g@mail.gmail.com>
+In-Reply-To: <1524037889.2553.13.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hello,
 
---d01dLTUuW90fS44H
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Apr 18, 2018 at 03:51:29PM +0800, Zhang Rui wrote:
+> Hi, Eduardo,
+> 
+> On 六, 2018-04-14 at 11:30 -0700, Eduardo Valentin wrote:
+> > Hello Linus,
+> > 
+> > Please find thermal-soc changes for v4.17-rc1.
+> > Rui asked me to send the pull request directly to you
+> > as we are close to the end of the merge window.
+> > Essentially this pull removes the series that caused
+> > warning regression. I will work with the developer
+> > to get that fixed later on, but I am still sending
+> > the other few patches that are unrelated to that.
+> > Let me know if this causes any issues and can still
+> > be pulled.
+> > 
+> > Changelog:
+> > - New i.MX7 thermal sensor
+> > - Mediatek driver now supports MT7622 SoC
+> > - Removal of min max cpu cooling DT property
+> > 
+> > Differences in V3:
+> > - Rebased on top current linus/master, to avoid and merge issues
+> > from previous pulled thermal code.
+> > 
+> > Differences in V2:
+> > - Reordered the patches to drop exynos changes for now until we get
+> > agreement on the fix on that driver for the compilation warns
+> > caused by the confusing conversion functions.
+> > 
+> > 
+> > The following changes since commit
+> > 48023102b7078a6674516b1fe0d639669336049d:
+> > 
+> >   Merge branch 'overlayfs-linus' of
+> > git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs (2018-04-
+> > 13 16:55:41 -0700)
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
+> > thermal linus
+> > 
+> > for you to fetch changes up to
+> > 15a32df1918259be6c23fc36014fc26ee66c836c:
+> > 
+> >   dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
+> > (2018-04-14 09:37:55 -0700)
+> > 
+> This pull request does not catch this merge window.
+> So do you want to split it into 2 separate pull requests, one for 4.17-
+> rc and another for 4.18-rc1?
 
-On Wed, Apr 18, 2018 at 03:29:36PM +0200, Geert Uytterhoeven wrote:
+OK. Yeah, I am fine with that.
 
-> Any comments/suggestions?
+> 
+> > ----------------------------------------------------------------
+> > Anson Huang (1):
+> >       thermal: imx: add i.MX7 thermal sensor support
+> > 
+> > Bartlomiej Zolnierkiewicz (1):
+> >       dt-bindings: thermal: remove no longer needed samsung thermal
+> > properties
+> > 
+> > Sean Wang (2):
+> >       dt-bindings: thermal: add binding for MT7622 SoC
+> >       thermal: mediatek: add support for MT7622 SoC
+> > 
+> > Viresh Kumar (1):
+> >       dt-bindings: thermal: Remove "cooling-{min|max}-level"
+> > properties
+> > 
+> IMO, together with the refreshed exynos fixes, the one from Viresh and
+> the one from Bartlomiej can be queued for 4.17-rc, and the others have
+> to wait until next merge window.
+> 
 
-> In case you lost the patches from the thread:
-> https://www.spinics.net/lists/linux-renesas-soc/msg24955.html
+Correct, the new chip support will need to wait for the next merge
+window. I have already split the patches into the two categories.
+The patches removing stuff are in my -fixes branch. All the other adding
+new chip support are in my -linus branch.
 
-Please don't send content free pings and please allow a reasonable time
-for review.  People get busy, go on holiday, attend conferences and so=20
-on so unless there is some reason for urgency (like critical bug fixes)
-please allow at least a couple of weeks for review.  If there have been
-review comments then people may be waiting for those to be addressed.
+Now, Do you have anything for this -rc2 ? If not, I will send directly
+to Linus the stuff in my -fixes branch. Let me know.
 
-Sending content free pings adds to the mail volume (if they are seen at
-all) which is often the problem and since they can't be reviewed
-directly if something has gone wrong you'll have to resend the patches
-anyway, though there are some other maintainers who like them - if in
-doubt look at how patches for the subsystem are normally handled.
-
---d01dLTUuW90fS44H
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlrXT4gACgkQJNaLcl1U
-h9BGRgf/UK0584WhI/uF11UE360O9nzjxeZ0V49GOZeeNGdDKuEocD8E0WDJyjsC
-7fS3e1O65HWrpo41ZwNKxPrlZJjjXLkpKc6K48RYKqSnJXHvrFFDkUXQcRDDfTl5
-yJmxcpR08MUNvktu/Hnok7dMMN4G5p91uYEQX9PzNQriUkHLNAS/OXYlTQV+Ilig
-Cls2T6V0KUSZeSRKyvyEaBrQWQ6BSHSXeGozmyCpZtgzhjW966HVvlEBOzHaaldd
-vyeU+LWpKR1n8S0SPIeEJyXKzC/c3QNiof2p1G2DpHL5TbjdObm8cItiR1257lbC
-ZP/hE90KJKrHZs7L5GM0LkJM2Pf5iw==
-=GAQa
------END PGP SIGNATURE-----
-
---d01dLTUuW90fS44H--
+Eduardo
