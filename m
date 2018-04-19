@@ -1,66 +1,140 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if
- supported
-Date: Thu, 19 Apr 2018 09:46:32 +0530
-Message-ID: <20180419041632.GF24576@vireshk-i7>
-References: <20180418155643.36464-1-code@mmayer.net>
- <20180418155643.36464-3-code@mmayer.net>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
+ member definitions
+Date: Thu, 19 Apr 2018 06:40:56 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1804190639410.2830@hadrien>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>  <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>  <20180410123305.GF4082@hirez.programming.kicks-ass.net>  <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
+ <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>  <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>  <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>  <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
+ <20180411081502.GJ4082@hirez.programming.kicks-ass.net>  <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>  <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>  <alpine.DEB.2.20.1804120816130.3559@hadrien>
+ <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>  <alpine.DEB.2.20.1804142315300.2750@hadrien>  <e7cbe275136b86083ff70d9af26f41bf@codeaurora.org> <5341b3b1945c4c1dbf7b356b1a7a4bd6ce304287.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180418155643.36464-3-code@mmayer.net>
+In-Reply-To: <5341b3b1945c4c1dbf7b356b1a7a4bd6ce304287.camel@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <code@mmayer.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+To: Joe Perches <joe@perches.com>
+Cc: yuankuiz@codeaurora.org, Julia Lawall <julia.lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18-04-18, 08:56, Markus Mayer wrote:
-> From: Jim Quinlan <jim2101024@gmail.com>
-> 
-> If the SCMI cpufreq driver is supported, we bail, so that the new
-> approach can be used.
-> 
-> Signed-off-by: Jim Quinlan <jim2101024@gmail.com>
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> ---
->  drivers/cpufreq/brcmstb-avs-cpufreq.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> index b07559b9ed99..b4861a730162 100644
-> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> @@ -164,6 +164,8 @@
->  #define BRCM_AVS_CPU_INTR	"brcm,avs-cpu-l2-intr"
->  #define BRCM_AVS_HOST_INTR	"sw_intr"
->  
-> +#define ARM_SCMI_COMPAT		"arm,scmi"
-> +
->  struct pmap {
->  	unsigned int mode;
->  	unsigned int p1;
-> @@ -511,6 +513,20 @@ static int brcm_avs_prepare_init(struct platform_device *pdev)
->  	struct device *dev;
->  	int host_irq, ret;
->  
-> +	/*
-> +	 * If the SCMI cpufreq driver is supported, we bail, so that the more
-> +	 * modern approach can be used.
-> +	 */
-> +	if (IS_ENABLED(CONFIG_ARM_SCMI_PROTOCOL)) {
-> +		struct device_node *np;
-> +
-> +		np = of_find_compatible_node(NULL, NULL, ARM_SCMI_COMPAT);
-> +		if (np) {
-> +			of_node_put(np);
-> +			return -ENXIO;
-> +		}
-> +	}
-> +
 
-What about adding !CONFIG_ARM_SCMI_PROTOCOL in Kconfig dependency and don't
-compile the driver at all ?
 
--- 
-viresh
+On Wed, 18 Apr 2018, Joe Perches wrote:
+
+> On Tue, 2018-04-17 at 17:07 +0800, yuankuiz@codeaurora.org wrote:
+> > Hi julia,
+> >
+> > On 2018-04-15 05:19 AM, Julia Lawall wrote:
+> > > On Wed, 11 Apr 2018, Joe Perches wrote:
+> > >
+> > > > On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
+> > > > > On Wed, 11 Apr 2018, Joe Perches wrote:
+> > > > > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
+> > > > > > > We already have some 500 bools-in-structs
+> > > > > >
+> > > > > > I got at least triple that only in include/
+> > > > > > so I expect there are at probably an order
+> > > > > > of magnitude more than 500 in the kernel.
+> > > > > >
+> > > > > > I suppose some cocci script could count the
+> > > > > > actual number of instances.  A regex can not.
+> > > > >
+> > > > > I got 12667.
+> > > >
+> > > > Could you please post the cocci script?
+> > > >
+> > > > > I'm not sure to understand the issue.  Will using a bitfield help if there
+> > > > > are no other bitfields in the structure?
+> > > >
+> > > > IMO, not really.
+> > > >
+> > > > The primary issue is described by Linus here:
+> > > > https://lkml.org/lkml/2017/11/21/384
+> > > >
+> > > > I personally do not find a significant issue with
+> > > > uncontrolled sizes of bool in kernel structs as
+> > > > all of the kernel structs are transitory and not
+> > > > written out to storage.
+> > > >
+> > > > I suppose bool bitfields are also OK, but for the
+> > > > RMW required.
+> > > >
+> > > > Using unsigned int :1 bitfield instead of bool :1
+> > > > has the negative of truncation so that the uint
+> > > > has to be set with !! instead of a simple assign.
+> > >
+> > > At least with gcc 5.4.0, a number of structures become larger with
+> > > unsigned int :1. bool:1 seems to mostly solve this problem.  The
+> > > structure
+> > > ichx_desc, defined in drivers/gpio/gpio-ich.c seems to become larger
+> > > with
+> > > both approaches.
+> >
+> > [ZJ] Hopefully, this could make it better in your environment.
+> >       IMHO, this is just for double check.
+>
+> I doubt this is actually better or smaller code.
+>
+> Check the actual object code using objdump and the
+> struct alignment using pahole.
+
+I didn't have a chance to try it, but it looks quite likely to result in a
+smaller data structure based on the other examples that I looked at.
+
+julia
+
+>
+> > diff --git a/drivers/gpio/gpio-ich.c b/drivers/gpio/gpio-ich.c
+> > index 4f6d643..b46e170 100644
+> > --- a/drivers/gpio/gpio-ich.c
+> > +++ b/drivers/gpio/gpio-ich.c
+> > @@ -70,6 +70,18 @@ static const u8 avoton_reglen[3] = {
+> >   #define ICHX_READ(reg, base_res)       inl((reg) + (base_res)->start)
+> >
+> >   struct ichx_desc {
+> > +       /* GPO_BLINK is available on this chipset */
+> > +       bool uses_gpe0:1;
+> > +
+> > +       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region
+> > */
+> > +        bool uses_gpe0:1;
+> > +
+> > +        /*
+> > +         * Some chipsets don't let reading output values on GPIO_LVL
+> > register
+> > +         * this option allows driver caching written output values
+> > +         */
+> > +        bool use_outlvl_cache:1;
+> > +
+> >          /* Max GPIO pins the chipset can have */
+> >          uint ngpio;
+> >
+> > @@ -77,24 +89,12 @@ struct ichx_desc {
+> >          const u8 (*regs)[3];
+> >          const u8 *reglen;
+> >
+> > -       /* GPO_BLINK is available on this chipset */
+> > -       bool have_blink;
+> > -
+> > -       /* Whether the chipset has GPIO in GPE0_STS in the PM IO region
+> > */
+> > -       bool uses_gpe0;
+> > -
+> >          /* USE_SEL is bogus on some chipsets, eg 3100 */
+> >          u32 use_sel_ignore[3];
+> >
+> >          /* Some chipsets have quirks, let these use their own
+> > request/get */
+> >          int (*request)(struct gpio_chip *chip, unsigned offset);
+> >          int (*get)(struct gpio_chip *chip, unsigned offset);
+> > -
+> > -       /*
+> > -        * Some chipsets don't let reading output values on GPIO_LVL
+> > register
+> > -        * this option allows driver caching written output values
+> > -        */
+> > -       bool use_outlvl_cache;
+> >   };
+> >
+> >
+> > ZJ
+>
