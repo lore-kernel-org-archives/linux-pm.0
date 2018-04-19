@@ -1,72 +1,82 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH/RFC 0/2] regulator: bd9571mwv: Add support for toggle
- power switches
-Date: Thu, 19 Apr 2018 22:13:56 +0200
-Message-ID: <20180419201356.GC25034@amd>
-References: <1521026785-26456-1-git-send-email-geert+renesas@glider.be>
- <CAMuHMdXyWs1v_D4EUd-H75Q3cpQv6yD2V_MptjJP7FjYhu5c3g@mail.gmail.com>
- <20180418140041.GD10061@sirena.org.uk>
+From: Markus Mayer <mmayer@broadcom.com>
+Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if supported
+Date: Thu, 19 Apr 2018 15:10:45 -0700
+Message-ID: <CAGt4E5voQJO6RaO64Z90EL5CzRF-AWtswzDQgYuOZTmpapzG-g@mail.gmail.com>
+References: <20180418155643.36464-1-code@mmayer.net> <20180418155643.36464-3-code@mmayer.net>
+ <c20dc303-8753-5684-1fff-62f363a37a4c@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="Clx92ZfkiYIKRjnr"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180418140041.GD10061@sirena.org.uk>
+In-Reply-To: <c20dc303-8753-5684-1fff-62f363a37a4c@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 18 April 2018 at 09:37, Florian Fainelli <f.fainelli@gmail.com> wrote:
+> On 04/18/2018 08:56 AM, Markus Mayer wrote:
+>> From: Jim Quinlan <jim2101024@gmail.com>
+>>
+>> If the SCMI cpufreq driver is supported, we bail, so that the new
+>> approach can be used.
+>>
+>> Signed-off-by: Jim Quinlan <jim2101024@gmail.com>
+>> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+>> ---
+>>  drivers/cpufreq/brcmstb-avs-cpufreq.c | 16 ++++++++++++++++
+>>  1 file changed, 16 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> index b07559b9ed99..b4861a730162 100644
+>> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> @@ -164,6 +164,8 @@
+>>  #define BRCM_AVS_CPU_INTR    "brcm,avs-cpu-l2-intr"
+>>  #define BRCM_AVS_HOST_INTR   "sw_intr"
+>>
+>> +#define ARM_SCMI_COMPAT              "arm,scmi"
+>> +
+>>  struct pmap {
+>>       unsigned int mode;
+>>       unsigned int p1;
+>> @@ -511,6 +513,20 @@ static int brcm_avs_prepare_init(struct platform_device *pdev)
+>>       struct device *dev;
+>>       int host_irq, ret;
+>>
+>> +     /*
+>> +      * If the SCMI cpufreq driver is supported, we bail, so that the more
+>> +      * modern approach can be used.
+>> +      */
+>> +     if (IS_ENABLED(CONFIG_ARM_SCMI_PROTOCOL)) {
+>> +             struct device_node *np;
+>> +
+>> +             np = of_find_compatible_node(NULL, NULL, ARM_SCMI_COMPAT);
+>> +             if (np) {
+>> +                     of_node_put(np);
+>> +                     return -ENXIO;
+>> +             }
+>
+> We would probably want to make sure that the node is also enabled (that
+> is, does not have a status = "disabled" property) otherwise the check
+> can be defeated. Something like:
+>
+>                 if (np && of_device_is_available(np))
 
---Clx92ZfkiYIKRjnr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Would we want something like this instead?
 
-On Wed 2018-04-18 15:00:41, Mark Brown wrote:
-> On Wed, Apr 18, 2018 at 03:29:36PM +0200, Geert Uytterhoeven wrote:
->=20
-> > Any comments/suggestions?
->=20
-> > In case you lost the patches from the thread:
-> > https://www.spinics.net/lists/linux-renesas-soc/msg24955.html
->=20
-> Please don't send content free pings and please allow a reasonable time
-> for review.  People get busy, go on holiday, attend conferences and so=20
-> on so unless there is some reason for urgency (like critical bug fixes)
-> please allow at least a couple of weeks for review.  If there have been
-> review comments then people may be waiting for those to be
+                 if (np) {
+                                  bool bail_early =
+(of_device_is_available(np) > 0);
 
-If I follow the logs right, there was one month before ping. That
-seems pretty reasonable time.
+                                  of_node_put(np);
+                                  if (bail_early)
+                                          return -ENXIO;
+                 }
 
-> Sending content free pings adds to the mail volume (if they are seen at
-> all) which is often the problem and since they can't be reviewed
+To ensure of_node_put() is called?
 
-Yep, and sending content free complains about pings also adds to the
-main volume :-(.
-
-Anyway, last time I sent you a patch... you _had_ time to complain
-that I'm pinging too often, but you apparently did not have time to
-look at the patch. That patch would have been in time for v4.16-rc1
-IIRC.
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---Clx92ZfkiYIKRjnr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlrY+IQACgkQMOfwapXb+vLzqgCeL7ZTf7fKhjiIrRwjNAwROwiz
-kdsAni5RaYPZ16cP2+bhWpf5juj0RsL5
-=aa5D
------END PGP SIGNATURE-----
-
---Clx92ZfkiYIKRjnr--
+> should be good for that.
+>
+> Thanks!
+> --
+> Florian
