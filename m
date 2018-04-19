@@ -1,13 +1,13 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 51/61] thermal: int340x_thermal: simplify getting .drvdata
-Date: Thu, 19 Apr 2018 16:06:21 +0200
-Message-ID: <20180419140641.27926-52-wsa+renesas@sang-engineering.com>
+Subject: [PATCH 41/61] power: supply: simplify getting .drvdata
+Date: Thu, 19 Apr 2018 16:06:11 +0200
+Message-ID: <20180419140641.27926-42-wsa+renesas@sang-engineering.com>
 References: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, kernel-janitors@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, kernel-janitors@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 We should get drvdata from struct device directly. Going via
@@ -18,42 +18,22 @@ Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
 Build tested only. buildbot is happy. Please apply individually.
 
- drivers/thermal/int340x_thermal/int3400_thermal.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/power/supply/gpio-charger.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index e26b01c05e82..61ca7ce3624e 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -48,8 +48,7 @@ static ssize_t available_uuids_show(struct device *dev,
- 				    struct device_attribute *attr,
- 				    char *buf)
+diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
+index bd2468ca6b63..c3f2a9479468 100644
+--- a/drivers/power/supply/gpio-charger.c
++++ b/drivers/power/supply/gpio-charger.c
+@@ -212,8 +212,7 @@ static int gpio_charger_suspend(struct device *dev)
+ 
+ static int gpio_charger_resume(struct device *dev)
  {
 -	struct platform_device *pdev = to_platform_device(dev);
--	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
- 	int i;
- 	int length = 0;
+-	struct gpio_charger *gpio_charger = platform_get_drvdata(pdev);
++	struct gpio_charger *gpio_charger = dev_get_drvdata(dev);
  
-@@ -68,8 +67,7 @@ static ssize_t available_uuids_show(struct device *dev,
- static ssize_t current_uuid_show(struct device *dev,
- 				 struct device_attribute *devattr, char *buf)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
- 
- 	if (priv->uuid_bitmap & (1 << priv->current_uuid_index))
- 		return sprintf(buf, "%s\n",
-@@ -82,8 +80,7 @@ static ssize_t current_uuid_store(struct device *dev,
- 				  struct device_attribute *attr,
- 				  const char *buf, size_t count)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
- 	int i;
- 
- 	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
+ 	if (device_may_wakeup(dev) && gpio_charger->wakeup_enabled)
+ 		disable_irq_wake(gpio_charger->irq);
 -- 
 2.11.0
