@@ -1,127 +1,46 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 3/6] devfreq: rk3399_dmc: remove wait for dcf irq event.
-Date: Thu, 19 Apr 2018 12:40:16 +0200
-Message-ID: <20180419104019.24406-4-enric.balletbo@collabora.com>
+Subject: [PATCH 4/6] dt-bindings: devfreq: rk3399_dmc: remove interrupts as is not required.
+Date: Thu, 19 Apr 2018 12:40:17 +0200
+Message-ID: <20180419104019.24406-5-enric.balletbo@collabora.com>
 References: <20180419104019.24406-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180419104019.24406-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groek@google.com, kernel@collabora.com, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: devicetree@vger.kernel.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groek@google.com, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-We have already wait dcf done in ATF, so don't need wait dcf irq
-in kernel, besides, clear dcf irq in kernel will import competiton
-between kernel and ATF, only handle dcf irq in ATF is a better way.
+In ATF we already wait for DDR dvfs finish, so don't need to do this in
+kernel, so remove the interrupts properties as is not longer required.
 
-Signed-off-by: Lin Huang <hl@rock-chips.com>
 Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
 
- drivers/devfreq/rk3399_dmc.c | 53 +-----------------------------------
- 1 file changed, 1 insertion(+), 52 deletions(-)
+ Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index 5dfbfa3cc878..44a379657cd5 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -68,15 +68,6 @@ struct rk3399_dmcfreq {
- 	struct devfreq_event_dev *edev;
- 	struct mutex lock;
- 	struct dram_timing timing;
--
--	/*
--	 * DDR Converser of Frequency (DCF) is used to implement DDR frequency
--	 * conversion without the participation of CPU, we will implement and
--	 * control it in arm trust firmware.
--	 */
--	wait_queue_head_t	wait_dcf_queue;
--	int irq;
--	int wait_dcf_flag;
- 	struct regulator *vdd_center;
- 	unsigned long rate, target_rate;
- 	unsigned long volt, target_volt;
-@@ -117,7 +108,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 			goto out;
- 		}
- 	}
--	dmcfreq->wait_dcf_flag = 1;
- 
- 	err = clk_set_rate(dmcfreq->dmc_clk, target_rate);
- 	if (err) {
-@@ -128,14 +118,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 		goto out;
- 	}
- 
--	/*
--	 * Wait until bcf irq happen, it means freq scaling finish in
--	 * arm trust firmware, use 100ms as timeout time.
--	 */
--	if (!wait_event_timeout(dmcfreq->wait_dcf_queue,
--				!dmcfreq->wait_dcf_flag, HZ / 10))
--		dev_warn(dev, "Timeout waiting for dcf interrupt\n");
--
- 	/*
- 	 * Check the dpll rate,
- 	 * There only two result we will get,
-@@ -241,22 +223,6 @@ static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
- static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
- 			 rk3399_dmcfreq_resume);
- 
--static irqreturn_t rk3399_dmc_irq(int irq, void *dev_id)
--{
--	struct rk3399_dmcfreq *dmcfreq = dev_id;
--	struct arm_smccc_res res;
--
--	dmcfreq->wait_dcf_flag = 0;
--	wake_up(&dmcfreq->wait_dcf_queue);
--
--	/* Clear the DCF interrupt */
--	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
--		      ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ,
--		      0, 0, 0, 0, &res);
--
--	return IRQ_HANDLED;
--}
--
- static int of_get_ddr_timings(struct dram_timing *timing,
- 			      struct device_node *np)
- {
-@@ -330,16 +296,10 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct device_node *np = pdev->dev.of_node;
- 	struct rk3399_dmcfreq *data;
--	int ret, irq, index, size;
-+	int ret, index, size;
- 	uint32_t *timing;
- 	struct dev_pm_opp *opp;
- 
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0) {
--		dev_err(&pdev->dev,
--			"Cannot get the dmc interrupt resource: %d\n", irq);
--		return irq;
--	}
- 	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
- 	if (!data)
- 		return -ENOMEM;
-@@ -358,17 +318,6 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(data->dmc_clk);
- 	};
- 
--	data->irq = irq;
--	ret = devm_request_irq(dev, irq, rk3399_dmc_irq, 0,
--			       dev_name(dev), data);
--	if (ret) {
--		dev_err(dev, "Failed to request dmc irq: %d\n", ret);
--		return ret;
--	}
--
--	init_waitqueue_head(&data->wait_dcf_queue);
--	data->wait_dcf_flag = 0;
--
- 	data->edev = devfreq_event_get_edev_by_phandle(dev, 0);
- 	if (IS_ERR(data->edev))
- 		return -EPROBE_DEFER;
+diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+index d83ef821d282..e5307155e901 100644
+--- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
++++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+@@ -5,10 +5,6 @@ Required properties:
+ - devfreq-events:	 Node to get DDR loading, Refer to
+ 			 Documentation/devicetree/bindings/devfreq/event/
+ 			 rockchip-dfi.txt
+-- interrupts:		 The CPU interrupt number. The interrupt specifier
+-			 format depends on the interrupt controller.
+-			 It should be a DCF interrupt. When DDR DVFS finishes
+-			 a DCF interrupt is triggered.
+ - clocks:		 Phandles for clock specified in "clock-names" property
+ - clock-names :		 The name of clock used by the DFI, must be
+ 			 "pclk_ddr_mon";
+@@ -172,7 +168,6 @@ Example:
+ 	dmc: dmc {
+ 		compatible = "rockchip,rk3399-dmc";
+ 		devfreq-events = <&dfi>;
+-		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&cru SCLK_DDRCLK>;
+ 		clock-names = "dmc_clk";
+ 		operating-points-v2 = <&dmc_opp_table>;
 -- 
 2.17.0
