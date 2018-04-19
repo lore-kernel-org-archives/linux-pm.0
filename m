@@ -1,161 +1,66 @@
-From: yuankuiz@codeaurora.org
-Subject: Re: [PATCH] checkpatch: Add a --strict test for structs with bool
- member definitions
-Date: Thu, 19 Apr 2018 14:48:42 +0800
-Message-ID: <473cf88b25731a3729a3566abbebd0b6@codeaurora.org>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <20180410123305.GF4082@hirez.programming.kicks-ass.net>
- <e22fb871b1b7f2fda4b22f3a24e0d7f092eb612c.camel@perches.com>
- <95477c93db187bab6da8a8ba7c57836868446179.camel@perches.com>
- <20180410143950.4b8526073b4e3e34689f68cb@linux-foundation.org>
- <b3d75281c3a7b4b217b612913894b346eaa3288b.camel@perches.com>
- <20180410150011.df9e036f57b5bcac7ac19686@linux-foundation.org>
- <20180411081502.GJ4082@hirez.programming.kicks-ass.net>
- <20180411092959.e666ec443e4d3bb6f43901d7@linux-foundation.org>
- <1c9f185f6086e9d89659f93720a27b660ee17c13.camel@perches.com>
- <alpine.DEB.2.20.1804120816130.3559@hadrien>
- <b2087cac13c3a1d01ebe1a17e66351f3777bc397.camel@perches.com>
- <alpine.DEB.2.20.1804142315300.2750@hadrien>
- <e7cbe275136b86083ff70d9af26f41bf@codeaurora.org>
- <5341b3b1945c4c1dbf7b356b1a7a4bd6ce304287.camel@perches.com>
- <alpine.DEB.2.20.1804190639410.2830@hadrien>
- <b17a1d0de54ca0db12bd38a0b7fb20a5befb6778.camel@perches.com>
- <alpine.DEB.2.20.1804190705580.2830@hadrien>
+From: =?UTF-8?q?S=C3=A9bastien=20Szymanski?= <sebastien.szymanski@armadeus.com>
+Subject: [PATCH v2 1/2] cpufreq: imx6q: check speed grades for i.MX6ULL
+Date: Thu, 19 Apr 2018 09:19:41 +0200
+Message-ID: <20180419071942.14828-1-sebastien.szymanski@armadeus.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1804190705580.2830@hadrien>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Andy Whitcroft <apw@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Stefan Agner <stefan@agner.ch>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-04-19 01:16 PM, Julia Lawall wrote:
-> On Wed, 18 Apr 2018, Joe Perches wrote:
-> 
->> On Thu, 2018-04-19 at 06:40 +0200, Julia Lawall wrote:
->> >
->> > On Wed, 18 Apr 2018, Joe Perches wrote:
->> >
->> > > On Tue, 2018-04-17 at 17:07 +0800, yuankuiz@codeaurora.org wrote:
->> > > > Hi julia,
->> > > >
->> > > > On 2018-04-15 05:19 AM, Julia Lawall wrote:
->> > > > > On Wed, 11 Apr 2018, Joe Perches wrote:
->> > > > >
->> > > > > > On Thu, 2018-04-12 at 08:22 +0200, Julia Lawall wrote:
->> > > > > > > On Wed, 11 Apr 2018, Joe Perches wrote:
->> > > > > > > > On Wed, 2018-04-11 at 09:29 -0700, Andrew Morton wrote:
->> > > > > > > > > We already have some 500 bools-in-structs
->> > > > > > > >
->> > > > > > > > I got at least triple that only in include/
->> > > > > > > > so I expect there are at probably an order
->> > > > > > > > of magnitude more than 500 in the kernel.
->> > > > > > > >
->> > > > > > > > I suppose some cocci script could count the
->> > > > > > > > actual number of instances.  A regex can not.
->> > > > > > >
->> > > > > > > I got 12667.
->> > > > > >
->> > > > > > Could you please post the cocci script?
->> > > > > >
->> > > > > > > I'm not sure to understand the issue.  Will using a bitfield help if there
->> > > > > > > are no other bitfields in the structure?
->> > > > > >
->> > > > > > IMO, not really.
->> > > > > >
->> > > > > > The primary issue is described by Linus here:
->> > > > > > https://lkml.org/lkml/2017/11/21/384
->> > > > > >
->> > > > > > I personally do not find a significant issue with
->> > > > > > uncontrolled sizes of bool in kernel structs as
->> > > > > > all of the kernel structs are transitory and not
->> > > > > > written out to storage.
->> > > > > >
->> > > > > > I suppose bool bitfields are also OK, but for the
->> > > > > > RMW required.
->> > > > > >
->> > > > > > Using unsigned int :1 bitfield instead of bool :1
->> > > > > > has the negative of truncation so that the uint
->> > > > > > has to be set with !! instead of a simple assign.
->> > > > >
->> > > > > At least with gcc 5.4.0, a number of structures become larger with
->> > > > > unsigned int :1. bool:1 seems to mostly solve this problem.  The
->> > > > > structure
->> > > > > ichx_desc, defined in drivers/gpio/gpio-ich.c seems to become larger
->> > > > > with
->> > > > > both approaches.
->> > > >
->> > > > [ZJ] Hopefully, this could make it better in your environment.
->> > > >       IMHO, this is just for double check.
->> > >
->> > > I doubt this is actually better or smaller code.
->> > >
->> > > Check the actual object code using objdump and the
->> > > struct alignment using pahole.
->> >
->> > I didn't have a chance to try it, but it looks quite likely to result in a
->> > smaller data structure based on the other examples that I looked at.
->> 
->> I _really_ doubt there is any difference in size between the
->> below in any architecture
->> 
->> struct foo {
->> 	int bar;
->> 	bool baz:1;
->> 	int qux;
->> };
->> 
->> and
->> 
->> struct foo {
->> 	int bar;
->> 	bool baz;
->> 	int qux;
->> };
->> 
->> Where there would be a difference in size is
->> 
->> struct foo {
->> 	int bar;
->> 	bool baz1:1;
->> 	bool baz2:1;
->> 	int qux;
->> };
->> 
->> and
->> 
->> struct foo {
->> 	int bar;
->> 	bool baz1;
->> 	bool baz2;
->> 
->> int qux;
->> };
-> 
-> In the situation of the example there are two bools together in the 
-> middle
-> of the structure and one at the end.  Somehow, even converting to 
-> bool:1
-> increases the size.  But it seems plausible that putting all three 
-> bools
-> together and converting them all to :1 would reduce the size.  I don't
-> know.  The size increase (more than 8 bytes) seems out of proportion 
-> for 3
-> bools.
-[ZJ] Typically, addition saving is due for difference padding.
-> 
-> I was able to check around 3000 structures that were not declared with 
-> any
-> attributes, that don't declare named types internally, and that are
-> compiled for x86.  Around 10% become smaller whn using bool:1, 
-> typically
-> by at most 8 bytes.
-> 
-> julia
-> 
->> 
->> 
+Q2hlY2sgdGhlIG1heCBzcGVlZCBzdXBwb3J0ZWQgZnJvbSB0aGUgZnVzZXMgZm9yIGkuTVg2VUxM
+IGFuZCB1cGRhdGUgdGhlCm9wZXJhdGluZyBwb2ludHMgdGFibGUgYWNjb3JkaW5nbHkuCgpTaWdu
+ZWQtb2ZmLWJ5OiBTw6liYXN0aWVuIFN6eW1hbnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1h
+ZGV1cy5jb20+Ci0tLQoKQ2hhbmdlcyBmb3IgdjI6CiAtIG5vbmUKCiBkcml2ZXJzL2NwdWZyZXEv
+aW14NnEtY3B1ZnJlcS5jIHwgMjkgKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0KIDEgZmls
+ZSBjaGFuZ2VkLCAyMyBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEt
+Y3B1ZnJlcS5jCmluZGV4IDgzY2Y2MzFmYzliYy4uZjA5NDY4N2NhZTUyIDEwMDY0NAotLS0gYS9k
+cml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9pbXg2
+cS1jcHVmcmVxLmMKQEAgLTI2Niw2ICsyNjYsOCBAQCBzdGF0aWMgdm9pZCBpbXg2cV9vcHBfY2hl
+Y2tfc3BlZWRfZ3JhZGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpCiB9CiAKICNkZWZpbmUgT0NPVFBf
+Q0ZHM182VUxfU1BFRURfNjk2TUhaCTB4MgorI2RlZmluZSBPQ09UUF9DRkczXzZVTExfU1BFRURf
+NzkyTUhaCTB4MgorI2RlZmluZSBPQ09UUF9DRkczXzZVTExfU1BFRURfOTAwTUhaCTB4MwogCiBz
+dGF0aWMgdm9pZCBpbXg2dWxfb3BwX2NoZWNrX3NwZWVkX2dyYWRpbmcoc3RydWN0IGRldmljZSAq
+ZGV2KQogewpAQCAtMjg3LDE2ICsyODksMzAgQEAgc3RhdGljIHZvaWQgaW14NnVsX29wcF9jaGVj
+a19zcGVlZF9ncmFkaW5nKHN0cnVjdCBkZXZpY2UgKmRldikKIAkgKiBTcGVlZCBHUkFESU5HWzE6
+MF0gZGVmaW5lcyB0aGUgbWF4IHNwZWVkIG9mIEFSTToKIAkgKiAyYicwMDogUmVzZXJ2ZWQ7CiAJ
+ICogMmInMDE6IDUyODAwMDAwMEh6OwotCSAqIDJiJzEwOiA2OTYwMDAwMDBIejsKLQkgKiAyYicx
+MTogUmVzZXJ2ZWQ7CisJICogMmInMTA6IDY5NjAwMDAwMEh6IG9uIGkuTVg2VUwsIDc5MjAwMDAw
+MEh6IG9uIGkuTVg2VUxMOworCSAqIDJiJzExOiA5MDAwMDAwMDBIeiBvbiBpLk1YNlVMTCBvbmx5
+OwogCSAqIFdlIG5lZWQgdG8gc2V0IHRoZSBtYXggc3BlZWQgb2YgQVJNIGFjY29yZGluZyB0byBm
+dXNlIG1hcC4KIAkgKi8KIAl2YWwgPSByZWFkbF9yZWxheGVkKGJhc2UgKyBPQ09UUF9DRkczKTsK
+IAl2YWwgPj49IE9DT1RQX0NGRzNfU1BFRURfU0hJRlQ7CiAJdmFsICY9IDB4MzsKLQlpZiAodmFs
+ICE9IE9DT1RQX0NGRzNfNlVMX1NQRUVEXzY5Nk1IWikKLQkJaWYgKGRldl9wbV9vcHBfZGlzYWJs
+ZShkZXYsIDY5NjAwMDAwMCkpCi0JCQlkZXZfd2FybihkZXYsICJmYWlsZWQgdG8gZGlzYWJsZSA2
+OTZNSHogT1BQXG4iKTsKKworCWlmIChvZl9tYWNoaW5lX2lzX2NvbXBhdGlibGUoImZzbCxpbXg2
+dWwiKSkgeworCQlpZiAodmFsICE9IE9DT1RQX0NGRzNfNlVMX1NQRUVEXzY5Nk1IWikKKwkJCWlm
+IChkZXZfcG1fb3BwX2Rpc2FibGUoZGV2LCA2OTYwMDAwMDApKQorCQkJCWRldl93YXJuKGRldiwg
+ImZhaWxlZCB0byBkaXNhYmxlIDY5Nk1IeiBPUFBcbiIpOworCX0KKworCWlmIChvZl9tYWNoaW5l
+X2lzX2NvbXBhdGlibGUoImZzbCxpbXg2dWxsIikpIHsKKwkJaWYgKHZhbCAhPSBPQ09UUF9DRkcz
+XzZVTExfU1BFRURfNzkyTUhaKQorCQkJaWYgKGRldl9wbV9vcHBfZGlzYWJsZShkZXYsIDc5MjAw
+MDAwMCkpCisJCQkJZGV2X3dhcm4oZGV2LCAiZmFpbGVkIHRvIGRpc2FibGUgNzkyTUh6IE9QUFxu
+Iik7CisKKwkJaWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTExfU1BFRURfOTAwTUhaKQorCQkJaWYg
+KGRldl9wbV9vcHBfZGlzYWJsZShkZXYsIDkwMDAwMDAwMCkpCisJCQkJZGV2X3dhcm4oZGV2LCAi
+ZmFpbGVkIHRvIGRpc2FibGUgOTAwTUh6IE9QUFxuIik7CisJfQorCiAJaW91bm1hcChiYXNlKTsK
+IHB1dF9ub2RlOgogCW9mX25vZGVfcHV0KG5wKTsKQEAgLTM1Niw3ICszNzIsOCBAQCBzdGF0aWMg
+aW50IGlteDZxX2NwdWZyZXFfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKIAkJ
+Z290byBwdXRfcmVnOwogCX0KIAotCWlmIChvZl9tYWNoaW5lX2lzX2NvbXBhdGlibGUoImZzbCxp
+bXg2dWwiKSkKKwlpZiAob2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsIikgfHwK
+KwkgICAgb2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsbCIpKQogCQlpbXg2dWxf
+b3BwX2NoZWNrX3NwZWVkX2dyYWRpbmcoY3B1X2Rldik7CiAJZWxzZQogCQlpbXg2cV9vcHBfY2hl
+Y2tfc3BlZWRfZ3JhZGluZyhjcHVfZGV2KTsKLS0gCjIuMTYuMQoKCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBs
+aXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5m
+cmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
