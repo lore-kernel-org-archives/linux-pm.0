@@ -1,95 +1,74 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v5 2/6] dt-bindings: reset: renesas,rzn1-reboot: document
- RZ/N1 reboot driver
-Date: Thu, 19 Apr 2018 11:10:50 +0200
-Message-ID: <CAMuHMdU0rR9xcQtuoHXywv_7qpwRsPRyh8+AtHAoyY29BkiHHg@mail.gmail.com>
-References: <1523963101-56725-1-git-send-email-michel.pollet@bp.renesas.com> <1523963101-56725-3-git-send-email-michel.pollet@bp.renesas.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if
+ supported
+Date: Thu, 19 Apr 2018 11:35:59 +0100
+Message-ID: <0f011724-85fe-d411-b99d-dfd33e206052@arm.com>
+References: <20180418155643.36464-1-code@mmayer.net>
+ <20180418155643.36464-3-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523963101-56725-3-git-send-email-michel.pollet@bp.renesas.com>
+In-Reply-To: <20180418155643.36464-3-code@mmayer.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>
-Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Phil Edworthy <phil.edworthy@renesas.com>, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Markus Mayer <code@mmayer.net>, Florian Fainelli <f.fainelli@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jim Quinlan <jim2101024@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Markus Mayer <mmayer@broadcom.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Michel,
 
-On Tue, Apr 17, 2018 at 1:04 PM, Michel Pollet
-<michel.pollet@bp.renesas.com> wrote:
-> The Renesas RZ/N1 Family (Part #R9A06G0xx) requires a driver
-> as part of the sysctrl MFD to handle rebooting the CA7 cores.
-> This documents the driver bindings.
->
-> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+
+On 18/04/18 16:56, Markus Mayer wrote:
+> From: Jim Quinlan <jim2101024@gmail.com>
+> 
+> If the SCMI cpufreq driver is supported, we bail, so that the new
+> approach can be used.
+> 
+> Signed-off-by: Jim Quinlan <jim2101024@gmail.com>
+> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
 > ---
->  .../devicetree/bindings/power/renesas,rzn1-reboot.txt   | 17 +++++++++++=
-++++++
->  1 file changed, 17 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/renesas,rzn1-=
-reboot.txt
->
-> diff --git a/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.=
-txt b/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
-> new file mode 100644
-> index 0000000..a553864
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
-> @@ -0,0 +1,17 @@
-> +DT bindings for the Renesas RZ/N1 Reboot Driver
+>  drivers/cpufreq/brcmstb-avs-cpufreq.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+> index b07559b9ed99..b4861a730162 100644
+> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
+> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+> @@ -164,6 +164,8 @@
+>  #define BRCM_AVS_CPU_INTR	"brcm,avs-cpu-l2-intr"
+>  #define BRCM_AVS_HOST_INTR	"sw_intr"
+>  
+> +#define ARM_SCMI_COMPAT		"arm,scmi"
 > +
-> +=3D=3D Reboot Driver Node =3D=3D
+>  struct pmap {
+>  	unsigned int mode;
+>  	unsigned int p1;
+> @@ -511,6 +513,20 @@ static int brcm_avs_prepare_init(struct platform_device *pdev)
+>  	struct device *dev;
+>  	int host_irq, ret;
+>  
+
+Will this platform have both SCMI and BRCM_AVS_CPU_DATA nodes enabled ?
+If so, is it not better to just keep only the preferred node enabled
+instead ?
+
+> +	/*
+> +	 * If the SCMI cpufreq driver is supported, we bail, so that the more
+> +	 * modern approach can be used.
+> +	 */
+> +	if (IS_ENABLED(CONFIG_ARM_SCMI_PROTOCOL)) {
+> +		struct device_node *np;
 > +
-> +The reboot driver allows restarting the RZ/N1.
+> +		np = of_find_compatible_node(NULL, NULL, ARM_SCMI_COMPAT);
+> +		if (np) {
+> +			of_node_put(np);
+> +			return -ENXIO;
+> +		}
+> +	}
 > +
-> +Bindings:
-> ++ Required:
-> +       compatible =3D "renesas,r9a06g032-reboot", "renesas,rzn1-reboot";
-> +
-> +Example:
-> +       reboot@4000c120 {
-> +               compatible =3D "renesas,r9a06g032-reboot",
-> +                               "renesas,rzn1-reboot";
-> +               reg =3D <0x4000c120 4>,
-> +                       <0x4000c198 4>;
-> +       };
 
-I'm afraid this will become a messy DT structure, once device nodes for the
-registers just before, between, and after these 2 registers will be added..=
-.
+Clearly not a good approach.
 
-There's really only a single multi-function sysctrl device here, using a 4 =
-KiB
-block at 0x4000c000, containing a mix of:
-  1. Clock Control Registers (Table 6.1 [*]),
-  2. Reset Control (Table 6.2 [*]),
-  3. System Configuration (Table 6.3 [*]).
-
-Looks a lot like the mix used in the Amiga's custom chip block at 0xdff000,
-which also cannot be separated into logical blocks without listing individu=
-al
-registers ;-)
-
-So I suggest to have a DT binding for the whole block, and a clock driver
-matching against the whole block, registering all clocks and a small reset
-controller driver.
-
-[*] RZ/N1D Group, RZ/N1S Group, RZ/N1L Group User=E2=80=99s Manual: System
-    Introduction, Multiplexing, Electrical and Mechanical Information.
-    https://www.renesas.com/en-eu/doc/products/mpumcu/doc/rz/r01uh0750ej009=
-0-rzn1-introduction.pdf
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+-- 
+Regards,
+Sudeep
