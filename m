@@ -1,65 +1,47 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if
- supported
-Date: Thu, 19 Apr 2018 09:21:31 -0700
-Message-ID: <0a0e6a96-fe06-38fa-1551-272021116367@gmail.com>
-References: <20180418155643.36464-1-code@mmayer.net>
- <20180418155643.36464-3-code@mmayer.net>
- <0f011724-85fe-d411-b99d-dfd33e206052@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+From: Joerg Roedel <joro@8bytes.org>
+Subject: [PATCH] x86/power/64: Fix page-table setup for temporary text mapping
+Date: Thu, 19 Apr 2018 20:26:00 +0200
+Message-ID: <1524162360-26179-1-git-send-email-joro@8bytes.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0f011724-85fe-d411-b99d-dfd33e206052@arm.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Markus Mayer <code@mmayer.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jim Quinlan <jim2101024@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Markus Mayer <mmayer@broadcom.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, hpa@zytor.com, Michal Kubecek <mkubecek@suse.cz>, Borislav Petkov <bp@suse.de>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
+From: Joerg Roedel <jroedel@suse.de>
 
+When we have a 4-level page-table there is no p4d, so we map
+the pud in the pgd. The old code before commit fb43d6cb91ef
+already did that.
 
-On 04/19/2018 03:35 AM, Sudeep Holla wrote:
-> 
-> 
-> On 18/04/18 16:56, Markus Mayer wrote:
->> From: Jim Quinlan <jim2101024@gmail.com>
->>
->> If the SCMI cpufreq driver is supported, we bail, so that the new
->> approach can be used.
->>
->> Signed-off-by: Jim Quinlan <jim2101024@gmail.com>
->> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
->> ---
->>  drivers/cpufreq/brcmstb-avs-cpufreq.c | 16 ++++++++++++++++
->>  1 file changed, 16 insertions(+)
->>
->> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
->> index b07559b9ed99..b4861a730162 100644
->> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
->> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
->> @@ -164,6 +164,8 @@
->>  #define BRCM_AVS_CPU_INTR	"brcm,avs-cpu-l2-intr"
->>  #define BRCM_AVS_HOST_INTR	"sw_intr"
->>  
->> +#define ARM_SCMI_COMPAT		"arm,scmi"
->> +
->>  struct pmap {
->>  	unsigned int mode;
->>  	unsigned int p1;
->> @@ -511,6 +513,20 @@ static int brcm_avs_prepare_init(struct platform_device *pdev)
->>  	struct device *dev;
->>  	int host_irq, ret;
->>  
-> 
-> Will this platform have both SCMI and BRCM_AVS_CPU_DATA nodes enabled ?
-> If so, is it not better to just keep only the preferred node enabled
-> instead ?
+With the change from above commit we end up with an invalid
+page-table which causes undefined behavior. In one report it
+caused triple faults.
 
-The kernel image has both drivers enabled, the Device Tree blob we pass
-contains both nodes, and should flip the status properties based on what
-is available. We had some internal discussion about that specific
-change, and we ended up having the patch being submitted to seek
-external advice, I guess we have an answer now this is not desired.
+Fix it by changing the p4d back to pud so that we have a
+correct page-table.
+
+Reported-by: Borislav Petkov <bp@suse.de>
+Fixes: fb43d6cb91ef ('x86/mm: Do not auto-massage page protections')
+Tested-by: Michal Kubecek <mkubecek@suse.cz>
+Tested-by: Borislav Petkov <bp@suse.de>
+Signed-off-by: Joerg Roedel <jroedel@suse.de>
+---
+ arch/x86/power/hibernate_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index 48b14b534897..ccf4a49bb065 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -98,7 +98,7 @@ static int set_up_temporary_text_mapping(pgd_t *pgd)
+ 		set_pgd(pgd + pgd_index(restore_jump_address), new_pgd);
+ 	} else {
+ 		/* No p4d for 4-level paging: point the pgd to the pud page table */
+-		pgd_t new_pgd = __pgd(__pa(p4d) | pgprot_val(pgtable_prot));
++		pgd_t new_pgd = __pgd(__pa(pud) | pgprot_val(pgtable_prot));
+ 		set_pgd(pgd + pgd_index(restore_jump_address), new_pgd);
+ 	}
+ 
 -- 
-Florian
+2.13.6
