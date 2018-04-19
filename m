@@ -1,13 +1,16 @@
-From: =?UTF-8?q?S=C3=A9bastien=20Szymanski?= <sebastien.szymanski@armadeus.com>
-Subject: [PATCH v2 2/2] ARM: dts: imx6ull: add operating points
-Date: Thu, 19 Apr 2018 09:19:42 +0200
-Message-ID: <20180419071942.14828-2-sebastien.szymanski@armadeus.com>
-References: <20180419071942.14828-1-sebastien.szymanski@armadeus.com>
+From: =?UTF-8?Q?S=c3=a9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
+Subject: Re: [PATCH 2/2] ARM: dts: imx6ull: add operating points
+Date: Thu, 19 Apr 2018 09:27:03 +0200
+Message-ID: <265f4635-bf67-48a9-4ad5-caaba752be8d@armadeus.com>
+References: <20180418145230.10249-1-sebastien.szymanski@armadeus.com>
+ <20180418145230.10249-2-sebastien.szymanski@armadeus.com>
+ <c5d92c4e36973e3e18980d410e11ec4f@agner.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180419071942.14828-1-sebastien.szymanski@armadeus.com>
+In-Reply-To: <c5d92c4e36973e3e18980d410e11ec4f@agner.ch>
+Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,29 +20,40 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Stefan Agner <stefan@agner.ch>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
+To: Stefan Agner <stefan@agner.ch>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-aS5NWDZVTEwgaGFzIGRpZmZlcmVudCBvcGVyYXRpbmcgcmFuZ2VzIHRoYW4gaS5NWDZVTCBzbyBh
-ZGQgdGhlCm9wZXJhdGluZyBwb2ludHMgZm9yIHRoZSBpLk1YNlVMTC4gQSAyNW1WIG9mZnNldCBp
-cyBhZGRlZCB0byB0aGUgbWluaW11bQphbGxvd2VkIHZhbHVlcyBsaWtlIGZvciB0aGUgaS5NWDZV
-TC4KClNpZ25lZC1vZmYtYnk6IFPDqWJhc3RpZW4gU3p5bWFuc2tpIDxzZWJhc3RpZW4uc3p5bWFu
-c2tpQGFybWFkZXVzLmNvbT4KLS0tCgpDaGFuZ2VzIGZvciB2MjoKIC0gRml4IHNvYy1vcGVyYXRp
-bmctcG9pbnRzIHZvbHRhZ2UgZm9yIDc5Mk1IeiBhbmQgOTAwTUh6CgogYXJjaC9hcm0vYm9vdC9k
-dHMvaW14NnVsbC5kdHNpIHwgMTkgKysrKysrKysrKysrKysrKysrKwogMSBmaWxlIGNoYW5nZWQs
-IDE5IGluc2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9pbXg2dWxs
-LmR0c2kgYi9hcmNoL2FybS9ib290L2R0cy9pbXg2dWxsLmR0c2kKaW5kZXggNTcxZGRkNzFjZGJh
-Li41MzBkNTUyNmI4OTAgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDZ1bGwuZHRz
-aQorKysgYi9hcmNoL2FybS9ib290L2R0cy9pbXg2dWxsLmR0c2kKQEAgLTQ2LDYgKzQ2LDI1IEBA
-CiAvKiBEZWxldGUgVUFSVDggaW4gQUlQUy0xIChpLk1YNlVMIHNwZWNpZmljKSAqLwogL2RlbGV0
-ZS1ub2RlLyAmdWFydDg7CiAKKyZjcHUwIHsKKwlvcGVyYXRpbmctcG9pbnRzID0gPAorCQkvKiBr
-SHoJdVYgKi8KKwkJOTAwMDAwCTEyNzUwMDAKKwkJNzkyMDAwCTEyMjUwMDAKKwkJNTI4MDAwCTEx
-NzUwMDAKKwkJMzk2MDAwCTEwMjUwMDAKKwkJMTk4MDAwCTk1MDAwMAorCT47CisJZnNsLHNvYy1v
-cGVyYXRpbmctcG9pbnRzID0gPAorCQkvKiBLSHoJdVYgKi8KKwkJOTAwMDAwCTExNzUwMDAKKwkJ
-NzkyMDAwCTExNzUwMDAKKwkJNTI4MDAwCTExNzUwMDAKKwkJMzk2MDAwCTExNzUwMDAKKwkJMTk4
-MDAwCTExNzUwMDAKKwk+OworfTsKKwogLyB7CiAJc29jIHsKIAkJYWlwczM6IGFpcHMtYnVzQDIy
-MDAwMDAgewotLSAKMi4xNi4xCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5l
-bEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4v
-bGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+SGkgU3RlZmFuLAoKT24gMDQvMTgvMjAxOCAwNTozNSBQTSwgU3RlZmFuIEFnbmVyIHdyb3RlOgo+
+IE9uIDE4LjA0LjIwMTggMTY6NTIsIFPDqWJhc3RpZW4gU3p5bWFuc2tpIHdyb3RlOgo+PiBpLk1Y
+NlVMTCBoYXMgZGlmZmVyZW50IG9wZXJhdGluZyByYW5nZXMgdGhhbiBpLk1YNlVMIHNvIGFkZCB0
+aGUKPj4gb3BlcmF0aW5nIHBvaW50cyBmb3IgdGhlIGkuTVg2VUxMLiBBIDI1bVYgb2Zmc2V0IGlz
+IGFkZGVkIHRvIHRoZSBtaW5pbXVtCj4+IGFsbG93ZWQgdmFsdWVzIGxpa2UgZm9yIHRoZSBpLk1Y
+NlVMLgo+IAo+IEhpIFPDqWJhc3RpZW4sCj4gCj4gTGFzdCB0aW1lIEkgY2hlY2tlZCB0aGVyZSB3
+YXMgYSBEQyBjb250cm9sbGVyIG1pc3NpbmcgZm9yIHRoZSBFVkssIHNvIEkKPiB0aGluayBpdCB3
+YXMgbm90IHBvc3NpYmxlIHRvIGdvIHRvIHRoZSBoaWdoZXN0IG9wZXJhdGluZyBwb2ludHMgeWV0
+Lgo+IEhhdmUgeW91IHRlc3RlZCB0aGlzIG9uIHRoZSBFVks/CgpObywgSSBoYXZlIHRlc3RlZCBv
+biBhbiBPUE9TNlVMRGV2IGJvYXJkLgoKSSd2ZSBqdXN0IG5vdGljZWQgdGhhdCB0aGUgc29jLW9w
+ZXJhdGluZy1wb2ludHMgdmFsdWVzIGFyZSB3cm9uZyBpbiB0aGlzCnBhdGNoLCBJJ3ZlIHNlbnQg
+YSB2Mi4KClJlZ2FyZHMsCgo+IAo+IC0tCj4gU3RlZmFuCj4gCj4+Cj4+IFNpZ25lZC1vZmYtYnk6
+IFPDqWJhc3RpZW4gU3p5bWFuc2tpIDxzZWJhc3RpZW4uc3p5bWFuc2tpQGFybWFkZXVzLmNvbT4K
+Pj4gLS0tCj4+ICBhcmNoL2FybS9ib290L2R0cy9pbXg2dWxsLmR0c2kgfCAxOSArKysrKysrKysr
+KysrKysrKysrCj4+ICAxIGZpbGUgY2hhbmdlZCwgMTkgaW5zZXJ0aW9ucygrKQo+Pgo+PiBkaWZm
+IC0tZ2l0IGEvYXJjaC9hcm0vYm9vdC9kdHMvaW14NnVsbC5kdHNpIGIvYXJjaC9hcm0vYm9vdC9k
+dHMvaW14NnVsbC5kdHNpCj4+IGluZGV4IDU3MWRkZDcxY2RiYS4uN2U2MjczYmUwMjkxIDEwMDY0
+NAo+PiAtLS0gYS9hcmNoL2FybS9ib290L2R0cy9pbXg2dWxsLmR0c2kKPj4gKysrIGIvYXJjaC9h
+cm0vYm9vdC9kdHMvaW14NnVsbC5kdHNpCj4+IEBAIC00Niw2ICs0NiwyNSBAQAo+PiAgLyogRGVs
+ZXRlIFVBUlQ4IGluIEFJUFMtMSAoaS5NWDZVTCBzcGVjaWZpYykgKi8KPj4gIC9kZWxldGUtbm9k
+ZS8gJnVhcnQ4Owo+PiAgCj4+ICsmY3B1MCB7Cj4+ICsJb3BlcmF0aW5nLXBvaW50cyA9IDwKPj4g
+KwkJLyoga0h6CXVWICovCj4+ICsJCTkwMDAwMAkxMjc1MDAwCj4+ICsJCTc5MjAwMAkxMjI1MDAw
+Cj4+ICsJCTUyODAwMAkxMTc1MDAwCj4+ICsJCTM5NjAwMAkxMDI1MDAwCj4+ICsJCTE5ODAwMAk5
+NTAwMDAKPj4gKwk+Owo+PiArCWZzbCxzb2Mtb3BlcmF0aW5nLXBvaW50cyA9IDwKPj4gKwkJLyog
+S0h6CXVWICovCj4+ICsJCTkwMDAwMAkxNDAwMDAwCj4+ICsJCTc5MjAwMAkxMzUwMDAwCj4+ICsJ
+CTUyODAwMAkxMTc1MDAwCj4+ICsJCTM5NjAwMAkxMTc1MDAwCj4+ICsJCTE5ODAwMAkxMTc1MDAw
+Cj4+ICsJPjsKPj4gK307Cj4+ICsKPj4gIC8gewo+PiAgCXNvYyB7Cj4+ICAJCWFpcHMzOiBhaXBz
+LWJ1c0AyMjAwMDAwIHsKCgotLSAKU8OpYmFzdGllbiBTenltYW5za2kKU29mdHdhcmUgZW5naW5l
+ZXIsIEFybWFkZXVzIFN5c3RlbXMKVGVsOiArMzMgKDApOSA3MiAyOSA0MSA0NApGYXg6ICszMyAo
+MCk5IDcyIDI4IDc5IDI2CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxp
+c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1hcm0ta2VybmVsCg==
