@@ -1,85 +1,95 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 1/2] cpufreq: imx6q: check speed grades for i.MX6ULL
-Date: Thu, 19 Apr 2018 14:39:31 +0530
-Message-ID: <CAOh2x==MCPnANhww2JYhGkaALcAPZe_qAUcbZmhyCDwPjOjT2Q@mail.gmail.com>
-References: <20180419071942.14828-1-sebastien.szymanski@armadeus.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v5 2/6] dt-bindings: reset: renesas,rzn1-reboot: document
+ RZ/N1 reboot driver
+Date: Thu, 19 Apr 2018 11:10:50 +0200
+Message-ID: <CAMuHMdU0rR9xcQtuoHXywv_7qpwRsPRyh8+AtHAoyY29BkiHHg@mail.gmail.com>
+References: <1523963101-56725-1-git-send-email-michel.pollet@bp.renesas.com> <1523963101-56725-3-git-send-email-michel.pollet@bp.renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180419071942.14828-1-sebastien.szymanski@armadeus.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?UTF-8?Q?S=C3=A9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Stefan Agner <stefan@agner.ch>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1523963101-56725-3-git-send-email-michel.pollet@bp.renesas.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Michel Pollet <michel.pollet@bp.renesas.com>
+Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Phil Edworthy <phil.edworthy@renesas.com>, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBcHIgMTksIDIwMTggYXQgMTI6NDkgUE0sIFPDqWJhc3RpZW4gU3p5bWFuc2tpCjxz
-ZWJhc3RpZW4uc3p5bWFuc2tpQGFybWFkZXVzLmNvbT4gd3JvdGU6Cj4gQ2hlY2sgdGhlIG1heCBz
-cGVlZCBzdXBwb3J0ZWQgZnJvbSB0aGUgZnVzZXMgZm9yIGkuTVg2VUxMIGFuZCB1cGRhdGUgdGhl
-Cj4gb3BlcmF0aW5nIHBvaW50cyB0YWJsZSBhY2NvcmRpbmdseS4KPgo+IFNpZ25lZC1vZmYtYnk6
-IFPDqWJhc3RpZW4gU3p5bWFuc2tpIDxzZWJhc3RpZW4uc3p5bWFuc2tpQGFybWFkZXVzLmNvbT4K
-PiAtLS0KPgo+IENoYW5nZXMgZm9yIHYyOgo+ICAtIG5vbmUKClBsZWFzZSBjYyBhbGwgdGhlIG1h
-aW50YWluZXJzIHByZXNlbnQgaW4gTUFJTlRBSU5FUlMgZmlsZS4gWW91IG1pc3NlZCBjYydpbmcg
-bWUKYW5kIEkgbWlzc2VkIFYxIGVhcmxpZXIuCgo+ICBkcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1
-ZnJlcS5jIHwgMjkgKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0KPiAgMSBmaWxlIGNoYW5n
-ZWQsIDIzIGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVm
-cmVxLmMKPiBpbmRleCA4M2NmNjMxZmM5YmMuLmYwOTQ2ODdjYWU1MiAxMDA2NDQKPiAtLS0gYS9k
-cml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2lt
-eDZxLWNwdWZyZXEuYwo+IEBAIC0yNjYsNiArMjY2LDggQEAgc3RhdGljIHZvaWQgaW14NnFfb3Bw
-X2NoZWNrX3NwZWVkX2dyYWRpbmcoc3RydWN0IGRldmljZSAqZGV2KQo+ICB9Cj4KPiAgI2RlZmlu
-ZSBPQ09UUF9DRkczXzZVTF9TUEVFRF82OTZNSFogICAgMHgyCj4gKyNkZWZpbmUgT0NPVFBfQ0ZH
-M182VUxMX1NQRUVEXzc5Mk1IWiAgIDB4Mgo+ICsjZGVmaW5lIE9DT1RQX0NGRzNfNlVMTF9TUEVF
-RF85MDBNSFogICAweDMKCkxvb2tpbmcgYXQgdGhlIHdvcmRpbmcgZXZlcnl3aGVyZSwgdGhpcyBy
-ZXByZXNlbnRzIHRoZSBtYXhpbXVtCnN1cHBvcnRlZCBmcmVxdWVuY3kgPwpJbiB0aGF0IGNhc2Ug
-Li4uCgo+Cj4gIHN0YXRpYyB2b2lkIGlteDZ1bF9vcHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhzdHJ1
-Y3QgZGV2aWNlICpkZXYpCj4gIHsKPiBAQCAtMjg3LDE2ICsyODksMzAgQEAgc3RhdGljIHZvaWQg
-aW14NnVsX29wcF9jaGVja19zcGVlZF9ncmFkaW5nKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgICAg
-ICAgICAqIFNwZWVkIEdSQURJTkdbMTowXSBkZWZpbmVzIHRoZSBtYXggc3BlZWQgb2YgQVJNOgo+
-ICAgICAgICAgICogMmInMDA6IFJlc2VydmVkOwo+ICAgICAgICAgICogMmInMDE6IDUyODAwMDAw
-MEh6Owo+IC0gICAgICAgICogMmInMTA6IDY5NjAwMDAwMEh6Owo+IC0gICAgICAgICogMmInMTE6
-IFJlc2VydmVkOwo+ICsgICAgICAgICogMmInMTA6IDY5NjAwMDAwMEh6IG9uIGkuTVg2VUwsIDc5
-MjAwMDAwMEh6IG9uIGkuTVg2VUxMOwo+ICsgICAgICAgICogMmInMTE6IDkwMDAwMDAwMEh6IG9u
-IGkuTVg2VUxMIG9ubHk7Cj4gICAgICAgICAgKiBXZSBuZWVkIHRvIHNldCB0aGUgbWF4IHNwZWVk
-IG9mIEFSTSBhY2NvcmRpbmcgdG8gZnVzZSBtYXAuCj4gICAgICAgICAgKi8KPiAgICAgICAgIHZh
-bCA9IHJlYWRsX3JlbGF4ZWQoYmFzZSArIE9DT1RQX0NGRzMpOwo+ICAgICAgICAgdmFsID4+PSBP
-Q09UUF9DRkczX1NQRUVEX1NISUZUOwo+ICAgICAgICAgdmFsICY9IDB4MzsKPiAtICAgICAgIGlm
-ICh2YWwgIT0gT0NPVFBfQ0ZHM182VUxfU1BFRURfNjk2TUhaKQo+IC0gICAgICAgICAgICAgICBp
-ZiAoZGV2X3BtX29wcF9kaXNhYmxlKGRldiwgNjk2MDAwMDAwKSkKPiAtICAgICAgICAgICAgICAg
-ICAgICAgICBkZXZfd2FybihkZXYsICJmYWlsZWQgdG8gZGlzYWJsZSA2OTZNSHogT1BQXG4iKTsK
-PiArCj4gKyAgICAgICBpZiAob2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsIikp
-IHsKPiArICAgICAgICAgICAgICAgaWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTF9TUEVFRF82OTZN
-SFopCj4gKyAgICAgICAgICAgICAgICAgICAgICAgaWYgKGRldl9wbV9vcHBfZGlzYWJsZShkZXYs
-IDY5NjAwMDAwMCkpCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXZfd2Fybihk
-ZXYsICJmYWlsZWQgdG8gZGlzYWJsZSA2OTZNSHogT1BQXG4iKTsKPiArICAgICAgIH0KPiArCj4g
-KyAgICAgICBpZiAob2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsbCIpKSB7Cj4g
-KyAgICAgICAgICAgICAgIGlmICh2YWwgIT0gT0NPVFBfQ0ZHM182VUxMX1NQRUVEXzc5Mk1IWikK
-PiArICAgICAgICAgICAgICAgICAgICAgICBpZiAoZGV2X3BtX29wcF9kaXNhYmxlKGRldiwgNzky
-MDAwMDAwKSkKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRldl93YXJuKGRldiwg
-ImZhaWxlZCB0byBkaXNhYmxlIDc5Mk1IeiBPUFBcbiIpOwo+ICsKPiArICAgICAgICAgICAgICAg
-aWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTExfU1BFRURfOTAwTUhaKQo+ICsgICAgICAgICAgICAg
-ICAgICAgICAgIGlmIChkZXZfcG1fb3BwX2Rpc2FibGUoZGV2LCA5MDAwMDAwMDApKQo+ICsgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgZGV2X3dhcm4oZGV2LCAiZmFpbGVkIHRvIGRpc2Fi
-bGUgOTAwTUh6IE9QUFxuIik7CgouLi4gdGhpcyBsb29rcyB3cm9uZyB0byBtZSBhcyB5b3Ugd2ls
-bCBlbmQgdXAgZGlzYWJsaW5nIDc5MiBNSHogaWYgbWF4IHNwZWVkIGlzCjkwMCBNSHouCgo+ICsg
-ICAgICAgfQo+ICsKPiAgICAgICAgIGlvdW5tYXAoYmFzZSk7Cj4gIHB1dF9ub2RlOgo+ICAgICAg
-ICAgb2Zfbm9kZV9wdXQobnApOwo+IEBAIC0zNTYsNyArMzcyLDggQEAgc3RhdGljIGludCBpbXg2
-cV9jcHVmcmVxX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gICAgICAgICAg
-ICAgICAgIGdvdG8gcHV0X3JlZzsKPiAgICAgICAgIH0KPgo+IC0gICAgICAgaWYgKG9mX21hY2hp
-bmVfaXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bCIpKQo+ICsgICAgICAgaWYgKG9mX21hY2hpbmVf
-aXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bCIpIHx8Cj4gKyAgICAgICAgICAgb2ZfbWFjaGluZV9p
-c19jb21wYXRpYmxlKCJmc2wsaW14NnVsbCIpKQo+ICAgICAgICAgICAgICAgICBpbXg2dWxfb3Bw
-X2NoZWNrX3NwZWVkX2dyYWRpbmcoY3B1X2Rldik7Cj4gICAgICAgICBlbHNlCj4gICAgICAgICAg
-ICAgICAgIGlteDZxX29wcF9jaGVja19zcGVlZF9ncmFkaW5nKGNwdV9kZXYpOwo+IC0tCj4gMi4x
-Ni4xCj4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
-ZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
-LWFybS1rZXJuZWwK
+Hi Michel,
+
+On Tue, Apr 17, 2018 at 1:04 PM, Michel Pollet
+<michel.pollet@bp.renesas.com> wrote:
+> The Renesas RZ/N1 Family (Part #R9A06G0xx) requires a driver
+> as part of the sysctrl MFD to handle rebooting the CA7 cores.
+> This documents the driver bindings.
+>
+> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+> ---
+>  .../devicetree/bindings/power/renesas,rzn1-reboot.txt   | 17 +++++++++++=
+++++++
+>  1 file changed, 17 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/renesas,rzn1-=
+reboot.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.=
+txt b/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
+> new file mode 100644
+> index 0000000..a553864
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/renesas,rzn1-reboot.txt
+> @@ -0,0 +1,17 @@
+> +DT bindings for the Renesas RZ/N1 Reboot Driver
+> +
+> +=3D=3D Reboot Driver Node =3D=3D
+> +
+> +The reboot driver allows restarting the RZ/N1.
+> +
+> +Bindings:
+> ++ Required:
+> +       compatible =3D "renesas,r9a06g032-reboot", "renesas,rzn1-reboot";
+> +
+> +Example:
+> +       reboot@4000c120 {
+> +               compatible =3D "renesas,r9a06g032-reboot",
+> +                               "renesas,rzn1-reboot";
+> +               reg =3D <0x4000c120 4>,
+> +                       <0x4000c198 4>;
+> +       };
+
+I'm afraid this will become a messy DT structure, once device nodes for the
+registers just before, between, and after these 2 registers will be added..=
+.
+
+There's really only a single multi-function sysctrl device here, using a 4 =
+KiB
+block at 0x4000c000, containing a mix of:
+  1. Clock Control Registers (Table 6.1 [*]),
+  2. Reset Control (Table 6.2 [*]),
+  3. System Configuration (Table 6.3 [*]).
+
+Looks a lot like the mix used in the Amiga's custom chip block at 0xdff000,
+which also cannot be separated into logical blocks without listing individu=
+al
+registers ;-)
+
+So I suggest to have a DT binding for the whole block, and a clock driver
+matching against the whole block, registering all clocks and a small reset
+controller driver.
+
+[*] RZ/N1D Group, RZ/N1S Group, RZ/N1L Group User=E2=80=99s Manual: System
+    Introduction, Multiplexing, Electrical and Mechanical Information.
+    https://www.renesas.com/en-eu/doc/products/mpumcu/doc/rz/r01uh0750ej009=
+0-rzn1-introduction.pdf
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
