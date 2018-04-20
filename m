@@ -1,42 +1,53 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
-Date: Fri, 20 Apr 2018 12:24:32 -0700
-Message-ID: <9447358d3f7cda9032b24d62dd79dacfca73fc30.camel@perches.com>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
-         <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
-         <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
-         <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
-         <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
-         <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
-         <2f7755fae34bb65ef0a4b5a11c67f431@codeaurora.org>
-         <c3e05a4aad4895046401519dc83fa623@codeaurora.org>
-         <a98928c4a1ee719aba5f00932a41a2c3@codeaurora.org>
-         <c08f28e5c0461384c8d9a9d2d8b04799@codeaurora.org>
-         <aaa5ae49ff33ce9c83c6cf520cc83c0b@codeaurora.org>
-         <41aec3337f05316de118357fcbd9d175@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: [PATCH 1/3] fs: move documentation for thaw_super() where appropriate
+Date: Fri, 20 Apr 2018 16:59:02 -0700
+Message-ID: <20180420235904.27496-2-mcgrof@kernel.org>
+References: <20180420235904.27496-1-mcgrof@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <41aec3337f05316de118357fcbd9d175@codeaurora.org>
+In-Reply-To: <20180420235904.27496-1-mcgrof@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: yuankuiz@codeaurora.org, Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org, akpm@linux-foundation.org
+To: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org
+Cc: jack@suse.cz, bart.vanassche@wdc.com, ming.lei@redhat.com, rjw@rjwysocki.net, mguzik@redhat.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-04-20 at 14:44 +0800, yuankuiz@codeaurora.org wrote:
-> On 2018-04-20 09:47 AM, yuankuiz@codeaurora.org wrote:
-[]
-> > [ZJ] Further prototyping has been given based on gcc for both of
-> > x86_64 and armv8-a,
-> >      unsigned int and bool share the same 1 bytes without the
-> > addtional storage for sure.
-> >      Open this and welcome if any other difference behaviour could be 
-> > captured.
-> 
-> [ZJ] Typo.. change 4 bytes above to 1 byte actually.
+On commit 08fdc8a0138a ("buffer.c: call thaw_super during emergency thaw")
+Mateusz added thaw_super_locked() and made thaw_super() use it, but
+forgot to move the documentation.
 
-Not really.
+Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
+---
+ fs/super.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-unsigned int is 4 and bool is generally 1.
-Alignment padding after a bool may exist.
+diff --git a/fs/super.c b/fs/super.c
+index 5fa9a8d8d865..9d0eb5e20a1f 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -1532,12 +1532,6 @@ int freeze_super(struct super_block *sb)
+ }
+ EXPORT_SYMBOL(freeze_super);
+ 
+-/**
+- * thaw_super -- unlock filesystem
+- * @sb: the super to thaw
+- *
+- * Unlocks the filesystem and marks it writeable again after freeze_super().
+- */
+ static int thaw_super_locked(struct super_block *sb)
+ {
+ 	int error;
+@@ -1573,6 +1567,12 @@ static int thaw_super_locked(struct super_block *sb)
+ 	return 0;
+ }
+ 
++/**
++ * thaw_super -- unlock filesystem
++ * @sb: the super to thaw
++ *
++ * Unlocks the filesystem and marks it writeable again after freeze_super().
++ */
+ int thaw_super(struct super_block *sb)
+ {
+ 	down_write(&sb->s_umount);
+-- 
+2.16.3
