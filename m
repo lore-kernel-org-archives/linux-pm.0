@@ -1,47 +1,80 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if
- supported
-Date: Fri, 20 Apr 2018 09:50:16 -0700
-Message-ID: <52044000-513b-b5a1-27db-fb7fdb5ee04f@gmail.com>
-References: <20180418155643.36464-1-code@mmayer.net>
- <20180418155643.36464-3-code@mmayer.net> <20180419041632.GF24576@vireshk-i7>
- <74b70865-dfa9-25c8-20f8-3d2f722b9b2d@arm.com>
- <20180420044259.GA2873@vireshk-i7>
- <d09b1f87-d467-72d0-cb5d-fd747c7e30c8@arm.com>
- <20180420093548.GA2989@vireshk-i7>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [PATCH 03/11] fs: add frozen sb state helpers
+Date: Fri, 20 Apr 2018 11:49:32 -0700
+Message-ID: <20180420184932.57as7jup75nx463v@garbanzo.do-not-panic.com>
+References: <20171129232356.28296-1-mcgrof@kernel.org>
+ <20171129232356.28296-4-mcgrof@kernel.org>
+ <20171130171310.GG28180@quack2.suse.cz>
+ <20171130190548.GJ729@wotan.suse.de>
+ <20171201114724.GC8365@quack2.suse.cz>
+ <20171201211327.GQ729@wotan.suse.de>
+ <20171221110329.GG31584@quack2.suse.cz>
+ <20180418005936.j3fa5rogfm353clf@garbanzo.do-not-panic.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180420093548.GA2989@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180418005936.j3fa5rogfm353clf@garbanzo.do-not-panic.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
-Cc: Markus Mayer <code@mmayer.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Jan Kara <jack@suse.cz>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org, jlayton@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-On 04/20/2018 02:35 AM, Viresh Kumar wrote:
-> On 20-04-18, 10:15, Sudeep Holla wrote:
->> It still doesn't give the flexibility to switch between the two
->> implementations boot time based on some firmware config(e.g. DT status
->> property).
+On Tue, Apr 17, 2018 at 05:59:36PM -0700, Luis R. Rodriguez wrote:
+> On Thu, Dec 21, 2017 at 12:03:29PM +0100, Jan Kara wrote:
+> > Hello,
+> > 
+> > I think I owe you a reply here... Sorry that it took so long.
 > 
-> I agree, but it didn't look like they need flexibility :)
+> Took me just as long :)
 > 
-> Lets see how the intend to use it. If they are *always* going to use SCPI if
-> that is available, then it should be solved at Kconfig level only. Else they
-> shouldn't put such code in the driver to quit early.
+> > On Fri 01-12-17 22:13:27, Luis R. Rodriguez wrote:
+> > > 
+> > > I'll note that its still not perfectly clear if really the semantics behind
+> > > freeze_bdev() match what I described above fully. That still needs to be
+> > > vetted for. For instance, does thaw_bdev() keep a superblock frozen if we
+> > > an ioctl initiated freeze had occurred before? If so then great. Otherwise
+> > > I think we'll need to distinguish the ioctl interface. Worst possible case
+> > > is that bdev semantics and in-kernel semantics differ somehow, then that
+> > > will really create a holy fucking mess.
+> > 
+> > I believe nobody really thought about mixing those two interfaces to fs
+> > freezing and so the behavior is basically defined by the implementation.
+> > That is:
+> > 
+> > freeze_bdev() on sb frozen by ioctl_fsfreeze() -> EBUSY
+> > freeze_bdev() on sb frozen by freeze_bdev() -> success
+> > ioctl_fsfreeze() on sb frozen by freeze_bdev() -> EBUSY
+> > ioctl_fsfreeze() on sb frozen by ioctl_fsfreeze() -> EBUSY
+> > 
+> > thaw_bdev() on sb frozen by ioctl_fsfreeze() -> EINVAL
+> 
+> Phew, so this is what we want for the in-kernel freezing so we're good
+> and *can* combine these then.
 
-We have both drivers (brcmstb-avs-cpufreq and scmi-cpufreq) enabled in
-our kernel configuration, however, depending on the firmware version, we
-may have a number of combinations:
+I double checked, and I don't see where you get EINVAL for this case.
+We *do* keep the sb frozen though, which is good, and the worst fear
+I had was that we did not. However we return 0 if there was already
+a prior freeze_bdev() or ioctl_fsfreeze() other than the context that
+started the prior freeze (--bdev->bd_fsfreeze_count > 0).
 
-- arm,scmi DT node is present and enabled (status = okay) as well as
-brcmstb-avs-cpufreq being present and enabled
-- arm,scmi DT node is present but disabled (status = disabled) and
-brcmstb-avs-cpufreq is being present and enabled
+The -EINVAL is only returned currently if there were no freezers.
 
-If you think this is a self inflicted, downstream and backwards/forwards
-compatible relevant only change, I suppose we are fine with that too.
--- 
-Florian
+int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+{
+	int error = -EINVAL;
+
+	mutex_lock(&bdev->bd_fsfreeze_mutex);
+	if (!bdev->bd_fsfreeze_count)
+		goto out;
+
+	error = 0;
+	if (--bdev->bd_fsfreeze_count > 0)
+		goto out;
+	...
+out:
+	mutex_unlock(&bdev->bd_fsfreeze_mutex);
+	return error;
+}
+
+  Luis
