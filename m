@@ -1,34 +1,106 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if
- supported
-Date: Fri, 20 Apr 2018 15:05:48 +0530
-Message-ID: <20180420093548.GA2989@vireshk-i7>
-References: <20180418155643.36464-1-code@mmayer.net>
- <20180418155643.36464-3-code@mmayer.net>
- <20180419041632.GF24576@vireshk-i7>
- <74b70865-dfa9-25c8-20f8-3d2f722b9b2d@arm.com>
- <20180420044259.GA2873@vireshk-i7>
- <d09b1f87-d467-72d0-cb5d-fd747c7e30c8@arm.com>
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [PATCH 2/6] dt-bindings: clock: add DDR3 standard speed bins.
+Date: Fri, 20 Apr 2018 12:58:10 +0200
+Message-ID: <39099779.d2GlTJ02DA@phil>
+References: <20180419104019.24406-1-enric.balletbo@collabora.com> <5662116.zj93FbmDPb@phil> <62c4b6f0-e67c-8e25-a129-bf0c06c5157b@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d09b1f87-d467-72d0-cb5d-fd747c7e30c8@arm.com>
+In-Reply-To: <62c4b6f0-e67c-8e25-a129-bf0c06c5157b@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Markus Mayer <code@mmayer.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, robh+dt@kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@google.com, kernel@collabora.com, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20-04-18, 10:15, Sudeep Holla wrote:
-> It still doesn't give the flexibility to switch between the two
-> implementations boot time based on some firmware config(e.g. DT status
-> property).
+Hi Enric,
 
-I agree, but it didn't look like they need flexibility :)
+Am Donnerstag, 19. April 2018, 13:30:16 CEST schrieb Enric Balletbo i Serra:
+> On 19/04/18 13:10, Heiko Stuebner wrote:
+> > Am Donnerstag, 19. April 2018, 12:40:15 CEST schrieb Enric Balletbo i Serra:
+> >> DDR3 SDRAM Standard (JESD79-3F) defines some standard speed bins for
+> >> DDR3 memories. The devfreq/rk3399_dmc.txt binding refers to this file
+> >> which does not exist, so add a ddr.h file with the standard speed bins
+> >> for DDR3.
+> >>
+> >> Fixes: c1ceb8f7c167 (Documentation: bindings: add dt documentation for rk3399 dmc)
+> >> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> >> ---
+> >>
+> >>  include/dt-bindings/clock/ddr.h | 34 +++++++++++++++++++++++++++++++++
+> >>  1 file changed, 34 insertions(+)
+> >>  create mode 100644 include/dt-bindings/clock/ddr.h
+> >>
+> >> diff --git a/include/dt-bindings/clock/ddr.h b/include/dt-bindings/clock/ddr.h
+> >> new file mode 100644
+> >> index 000000000000..506aef7e609e
+> >> --- /dev/null
+> >> +++ b/include/dt-bindings/clock/ddr.h
+> >> @@ -0,0 +1,34 @@
+> >> +/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
+> >> +
+> >> +#ifndef DT_BINDINGS_DDR_H
+> >> +#define DT_BINDINGS_DDR_H
+> >> +
+> >> +/* DDR3-800 Standard Speed Bins */
+> >> +#define DDR3_800D	15
+> >> +#define DDR3_800E		18
+> >> +/* DDR3-1066 Standard Speed Bins */
+> >> +#define DDR3_1066E	18
+> >> +#define DDR3_1066F	21
+> >> +#define DDR3_1066G	24
+> > 
+> > looking at the mentioned jedec standard, I don't see where these numerical
+> > values are defined in the standard itself. [I may be blind though]
+> > 
+> 
+> Damm it. No, you're not blind. I did an horrible mistake adding an old version
+> of this file. It's wrong, that is supposed to be there is DDR3 table available
+> in the ATF [1] not this.
 
-Lets see how the intend to use it. If they are *always* going to use SCPI if
-that is available, then it should be solved at Kconfig level only. Else they
-shouldn't put such code in the driver to quit early.
+Mistakes can always happen ... so no problem :-) .
 
--- 
-viresh
+
+>         /* 5-5-5 */
+> 	DDR3_800D = 0,
+> 	/* 6-6-6 */
+> 	DDR3_800E = 1,
+> 	/* 6-6-6 */
+> 	DDR3_1066E = 2,
+> 	/* 7-7-7 */
+> 	DDR3_1066F = 3,
+>         ...
+> 
+> The value is passed directly to the ATF so the above values are the correct.
+> 
+> One question that I have on my mind is if this file should be called as is or if
+> will be better name as atf-ddr.h or something like that.
+> ddr.h -> atf-ddr.h
+
+The more interesting question would be if this isn't a very much rockchip
+or even rk3399-specific scheme. So such a generic header name looks very
+much out of place (also including the very generic constant names).
+
+So far the only upstream ATF implementation is for the rk3399.
+
+
+Heiko
+
+> 
+> [1]
+> https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/rockchip/rk3399/drivers/dram/dram_spec_timing.h
+>
+> Sorry about that. Guess it's needed a v2 but let's wait a little bit for if more
+> discussion arises.
+> 
+> Best regards,
+>   Enric
+> 
+> > Could you explain a bit more where these numerical values are coming from?
+> > 
+> > 
+> > Thanks
+> > Heiko
+> > 
+> 
+> 
