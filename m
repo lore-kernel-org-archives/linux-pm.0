@@ -1,98 +1,47 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Sat, 21 Apr 2018 00:27:53 +0800
-Message-ID: <20180420162753.GA5254@leoy-ThinkPad-X240s>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-5-dietmar.eggemann@arm.com>
- <20180418121547.GC15682@leoy-ThinkPad-X240s>
- <20180420144245.GB14391@e108498-lin.cambridge.arm.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: prefer SCMI cpufreq if
+ supported
+Date: Fri, 20 Apr 2018 09:50:16 -0700
+Message-ID: <52044000-513b-b5a1-27db-fb7fdb5ee04f@gmail.com>
+References: <20180418155643.36464-1-code@mmayer.net>
+ <20180418155643.36464-3-code@mmayer.net> <20180419041632.GF24576@vireshk-i7>
+ <74b70865-dfa9-25c8-20f8-3d2f722b9b2d@arm.com>
+ <20180420044259.GA2873@vireshk-i7>
+ <d09b1f87-d467-72d0-cb5d-fd747c7e30c8@arm.com>
+ <20180420093548.GA2989@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180420144245.GB14391@e108498-lin.cambridge.arm.com>
+In-Reply-To: <20180420093548.GA2989@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Markus Mayer <code@mmayer.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 20, 2018 at 03:42:45PM +0100, Quentin Perret wrote:
-> Hi Leo,
+On 04/20/2018 02:35 AM, Viresh Kumar wrote:
+> On 20-04-18, 10:15, Sudeep Holla wrote:
+>> It still doesn't give the flexibility to switch between the two
+>> implementations boot time based on some firmware config(e.g. DT status
+>> property).
 > 
-> On Wednesday 18 Apr 2018 at 20:15:47 (+0800), Leo Yan wrote:
-> > Sorry I introduce mess at here to spread my questions in several
-> > replying, later will try to ask questions in one replying.  Below are
-> > more questions which it's good to bring up:
-> > 
-> > The code for energy computation is quite neat and simple, but I think
-> > the energy computation mixes two concepts for CPU util: one concept is
-> > the estimated CPU util which is used to select CPU OPP in schedutil,
-> > another concept is the raw CPU util according to CPU real running time;
-> > for example, cpu_util_next() predicts CPU util but this value might be
-> > much higher than cpu_util(), especially after enabled UTIL_EST feature
-> > (I have shallow understanding for UTIL_EST so correct me as needed);
+> I agree, but it didn't look like they need flexibility :)
 > 
-> I'm not not sure to understand what you mean by higher than cpu_util()
-> here ... In which case would that happen ?
+> Lets see how the intend to use it. If they are *always* going to use SCPI if
+> that is available, then it should be solved at Kconfig level only. Else they
+> shouldn't put such code in the driver to quit early.
 
-After UTIL_EST feature is enabled, cpu_util_next() returns higher value
-than cpu_util(), see below code 'util = max(util, util_est);';  as
-result cpu_util_next() takes consideration for extra compensention
-introduced by UTIL_EST.
+We have both drivers (brcmstb-avs-cpufreq and scmi-cpufreq) enabled in
+our kernel configuration, however, depending on the firmware version, we
+may have a number of combinations:
 
-	if (sched_feat(UTIL_EST)) {
-	        util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-	        if (dst_cpu == cpu)
-	                util_est += _task_util_est(p);
-	        else
-	                util_est = max_t(long, util_est - _task_util_est(p), 0);
-	        util = max(util, util_est);
-	}
+- arm,scmi DT node is present and enabled (status = okay) as well as
+brcmstb-avs-cpufreq being present and enabled
+- arm,scmi DT node is present but disabled (status = disabled) and
+brcmstb-avs-cpufreq is being present and enabled
 
-> cpu_util_next() is basically used to figure out what will be the
-> cpu_util() of CPU A after task p has been enqueued on CPU B (no matter
-> what A and B are).
-
-Same with upper description, cpu_util_next() is not the same thing
-with cpu_util(), cpu_util_next() takes consideration for extra
-compensention introduced by UTIL_EST.
-
-> > but this patch simply computes CPU capacity and energy with the single
-> > one CPU utilization value (and it will be an inflated value afte enable
-> > UTIL_EST).  Is this purposed for simple implementation?
-> > 
-> > IMHO, cpu_util_next() can be used to predict CPU capacity, on the other
-> > hand, should we use the CPU util without UTIL_EST capping for 'sum_util',
-> > this can be more reasonable to reflect the CPU utilization?
-> 
-> Why would a decayed utilisation be a better estimate of the time that
-> a task is going to spend on a CPU ?
-
-IIUC, in the scheduler waken up path task_util() is the task utilisation
-before task sleeping, so it's not a decayed value.  cpu_util() is
-decayed value, but is this just we want to reflect cpu historic
-utilisation at the recent past time?  This is the reason I bring up to
-use 'cpu_util() + task_util()' as estimation.
-
-I understand this patch tries to use pre-decayed value, please review
-below example has issue or not:
-if one CPU's cfs_rq->avg.util_est.enqueued is quite high value, then this
-CPU enter idle state and sleep for long while, if we use
-cfs_rq->avg.util_est.enqueued to estimate CPU utilisation, this might
-have big deviation than the CPU run time if place wake task on it?  On
-the other hand, cpu_util() can decay for CPU idle time...
-
-> > Furthermore, if we consider RT thread is running on CPU and connect with
-> > 'schedutil' governor, the CPU will run at maximum frequency, but we
-> > cannot say the CPU has 100% utilization.  The RT thread case is not
-> > handled in this patch.
-> 
-> Right, we don't account for RT tasks in the OPP prediction for now.
-> Vincent's patches to have a util_avg for RT runqueues could help us
-> do that I suppose ...
-
-Good to know this.
-
-> Thanks !
-> Quentin
+If you think this is a self inflicted, downstream and backwards/forwards
+compatible relevant only change, I suppose we are fine with that too.
+-- 
+Florian
