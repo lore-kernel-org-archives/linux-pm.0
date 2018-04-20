@@ -1,130 +1,68 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL V3] Thermal SoC management updates for v4.17-rc1
-Date: Fri, 20 Apr 2018 07:48:31 -0700
-Message-ID: <20180420144829.GA20978@localhost.localdomain>
-References: <20180414183051.GA27921@localhost.localdomain>
- <1524037889.2553.13.camel@intel.com>
- <20180418141027.GA3303@localhost.localdomain>
- <CGME20180419104145eucas1p2e64408e3340d5af7731765df0e82f1cd@eucas1p2.samsung.com>
- <13169679.AINr0uuryx@amdc3058>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Fri, 20 Apr 2018 15:51:20 +0100
+Message-ID: <20180420145120.GC14391@e108498-lin.cambridge.arm.com>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-5-dietmar.eggemann@arm.com>
+ <20180418092316.GB15682@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <13169679.AINr0uuryx@amdc3058>
+In-Reply-To: <20180418092316.GB15682@leoy-ThinkPad-X240s>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Bartlomiej,
-
-On Thu, Apr 19, 2018 at 12:41:42PM +0200, Bartlomiej Zolnierkiewicz wrote:
+On Wednesday 18 Apr 2018 at 17:23:16 (+0800), Leo Yan wrote:
+> On Fri, Apr 06, 2018 at 04:36:05PM +0100, Dietmar Eggemann wrote:
 > 
-> Hi,
+> [...]
 > 
-> On Wednesday, April 18, 2018 07:10:30 AM Eduardo Valentin wrote:
-> > Hello,
-> > 
-> > On Wed, Apr 18, 2018 at 03:51:29PM +0800, Zhang Rui wrote:
-> > > Hi, Eduardo,
-> > > 
-> > > On å…­, 2018-04-14 at 11:30 -0700, Eduardo Valentin wrote:
-> > > > Hello Linus,
-> > > > 
-> > > > Please find thermal-soc changes for v4.17-rc1.
-> > > > Rui asked me to send the pull request directly to you
-> > > > as we are close to the end of the merge window.
-> > > > Essentially this pull removes the series that caused
-> > > > warning regression. I will work with the developer
-> > > > to get that fixed later on, but I am still sending
-> > > > the other few patches that are unrelated to that.
-> > > > Let me know if this causes any issues and can still
-> > > > be pulled.
-> > > > 
-> > > > Changelog:
-> > > > - New i.MX7 thermal sensor
-> > > > - Mediatek driver now supports MT7622 SoC
-> > > > - Removal of min max cpu cooling DT property
-> > > > 
-> > > > Differences in V3:
-> > > > - Rebased on top current linus/master, to avoid and merge issues
-> > > > from previous pulled thermal code.
-> > > > 
-> > > > Differences in V2:
-> > > > - Reordered the patches to drop exynos changes for now until we get
-> > > > agreement on the fix on that driver for the compilation warns
-> > > > caused by the confusing conversion functions.
-> > > > 
-> > > > 
-> > > > The following changes since commit
-> > > > 48023102b7078a6674516b1fe0d639669336049d:
-> > > > 
-> > > > Â  Merge branch 'overlayfs-linus' of
-> > > > git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs (2018-04-
-> > > > 13 16:55:41 -0700)
-> > > > 
-> > > > are available in the git repository at:
-> > > > 
-> > > > Â  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
-> > > > thermal linus
-> > > > 
-> > > > for you to fetch changes up to
-> > > > 15a32df1918259be6c23fc36014fc26ee66c836c:
-> > > > 
-> > > > Â  dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
-> > > > (2018-04-14 09:37:55 -0700)
-> > > > 
-> > > This pull request does not catch this merge window.
-> > > So do you want to split it into 2 separate pull requests, one for 4.17-
-> > > rc and another for 4.18-rc1?
-> > 
-> > OK. Yeah, I am fine with that.
-> > 
-> > > 
-> > > > ----------------------------------------------------------------
-> > > > Anson Huang (1):
-> > > > Â Â Â Â Â Â thermal: imx: add i.MX7 thermal sensor support
-> > > > 
-> > > > Bartlomiej Zolnierkiewicz (1):
-> > > > Â Â Â Â Â Â dt-bindings: thermal: remove no longer needed samsung thermal
-> > > > properties
-> > > > 
-> > > > Sean Wang (2):
-> > > > Â Â Â Â Â Â dt-bindings: thermal: add binding for MT7622 SoC
-> > > > Â Â Â Â Â Â thermal: mediatek: add support for MT7622 SoC
-> > > > 
-> > > > Viresh Kumar (1):
-> > > > Â Â Â Â Â Â dt-bindings: thermal: Remove "cooling-{min|max}-level"
-> > > > properties
-> > > > 
-> > > IMO, together with the refreshed exynos fixes, the one from Viresh and
-> > > the one fromÂ Bartlomiej can be queued for 4.17-rc, and the others have
-> > > to wait until next merge window.
-> > > 
-> > 
-> > Correct, the new chip support will need to wait for the next merge
-> > window. I have already split the patches into the two categories.
-> > The patches removing stuff are in my -fixes branch. All the other adding
-> > new chip support are in my -linus branch.
-> > 
-> > Now, Do you have anything for this -rc2 ? If not, I will send directly
-> > to Linus the stuff in my -fixes branch. Let me know.
+> > +/*
+> > + * Estimates the system level energy assuming that p wakes-up on dst_cpu.
+> > + *
+> > + * compute_energy() is safe to call only if an energy model is available for
+> > + * the platform, which is when sched_energy_enabled() is true.
+> > + */
+> > +static unsigned long compute_energy(struct task_struct *p, int dst_cpu)
+> > +{
+> > +	unsigned long util, max_util, sum_util;
+> > +	struct capacity_state *cs;
+> > +	unsigned long energy = 0;
+> > +	struct freq_domain *fd;
+> > +	int cpu;
+> > +
+> > +	for_each_freq_domain(fd) {
+> > +		max_util = sum_util = 0;
+> > +		for_each_cpu_and(cpu, freq_domain_span(fd), cpu_online_mask) {
+> > +			util = cpu_util_next(cpu, p, dst_cpu);
+> > +			util += cpu_util_dl(cpu_rq(cpu));
+> > +			max_util = max(util, max_util);
+> > +			sum_util += util;
+> > +		}
+> > +
+> > +		/*
+> > +		 * Here we assume that the capacity states of CPUs belonging to
+> > +		 * the same frequency domains are shared. Hence, we look at the
+> > +		 * capacity state of the first CPU and re-use it for all.
+> > +		 */
+> > +		cpu = cpumask_first(freq_domain_span(fd));
+> > +		cs = find_cap_state(cpu, max_util);
+> > +		energy += cs->power * sum_util / cs->cap;
 > 
-> What about refreshed Exynos patches (https://lkml.org/lkml/2018/4/16/256)?
+> I am a bit worry about the resolution issue, especially when the
+> capacity value is a quite high value and sum_util is a minor value.
 
-Cool! Thanks for fixing that warning.
+Good point. As of now, the cs->power values happen to be in micro-watts
+for the platforms we've been testing with, so they're typically high
+enough to avoid significant resolution problem I guess.
 
-> 
-> Fixes from Marek (first two patches) are quite critical (without them
-> booting with thermal enabled triggers critical temperature handling on
-> Exynos4210 SoC).
+Now, the energy model code has to be reworked significantly as we have
+to remove the dependency on PM_OPP, so I'll try to make sure to keep
+this issue in mind for the next version.
 
-I will include those two fixes in rc3. The other of that patch series
-will go into the next merge window.
-
-Thanks for helping me to keep track of the patches.
-
-BR,
-Eduardo
+Thanks,
+Quentin
