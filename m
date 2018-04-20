@@ -1,106 +1,63 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH 2/6] dt-bindings: clock: add DDR3 standard speed bins.
-Date: Fri, 20 Apr 2018 12:58:10 +0200
-Message-ID: <39099779.d2GlTJ02DA@phil>
-References: <20180419104019.24406-1-enric.balletbo@collabora.com> <5662116.zj93FbmDPb@phil> <62c4b6f0-e67c-8e25-a129-bf0c06c5157b@collabora.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Fri, 20 Apr 2018 15:42:45 +0100
+Message-ID: <20180420144245.GB14391@e108498-lin.cambridge.arm.com>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-5-dietmar.eggemann@arm.com>
+ <20180418121547.GC15682@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <62c4b6f0-e67c-8e25-a129-bf0c06c5157b@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <20180418121547.GC15682@leoy-ThinkPad-X240s>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, robh+dt@kernel.org
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@google.com, kernel@collabora.com, Mark Rutland <mark.rutland@arm.com>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
+Hi Leo,
 
-Am Donnerstag, 19. April 2018, 13:30:16 CEST schrieb Enric Balletbo i Serra:
-> On 19/04/18 13:10, Heiko Stuebner wrote:
-> > Am Donnerstag, 19. April 2018, 12:40:15 CEST schrieb Enric Balletbo i Serra:
-> >> DDR3 SDRAM Standard (JESD79-3F) defines some standard speed bins for
-> >> DDR3 memories. The devfreq/rk3399_dmc.txt binding refers to this file
-> >> which does not exist, so add a ddr.h file with the standard speed bins
-> >> for DDR3.
-> >>
-> >> Fixes: c1ceb8f7c167 (Documentation: bindings: add dt documentation for rk3399 dmc)
-> >> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> >> ---
-> >>
-> >>  include/dt-bindings/clock/ddr.h | 34 +++++++++++++++++++++++++++++++++
-> >>  1 file changed, 34 insertions(+)
-> >>  create mode 100644 include/dt-bindings/clock/ddr.h
-> >>
-> >> diff --git a/include/dt-bindings/clock/ddr.h b/include/dt-bindings/clock/ddr.h
-> >> new file mode 100644
-> >> index 000000000000..506aef7e609e
-> >> --- /dev/null
-> >> +++ b/include/dt-bindings/clock/ddr.h
-> >> @@ -0,0 +1,34 @@
-> >> +/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
-> >> +
-> >> +#ifndef DT_BINDINGS_DDR_H
-> >> +#define DT_BINDINGS_DDR_H
-> >> +
-> >> +/* DDR3-800 Standard Speed Bins */
-> >> +#define DDR3_800D	15
-> >> +#define DDR3_800E		18
-> >> +/* DDR3-1066 Standard Speed Bins */
-> >> +#define DDR3_1066E	18
-> >> +#define DDR3_1066F	21
-> >> +#define DDR3_1066G	24
-> > 
-> > looking at the mentioned jedec standard, I don't see where these numerical
-> > values are defined in the standard itself. [I may be blind though]
-> > 
+On Wednesday 18 Apr 2018 at 20:15:47 (+0800), Leo Yan wrote:
+> Sorry I introduce mess at here to spread my questions in several
+> replying, later will try to ask questions in one replying.  Below are
+> more questions which it's good to bring up:
 > 
-> Damm it. No, you're not blind. I did an horrible mistake adding an old version
-> of this file. It's wrong, that is supposed to be there is DDR3 table available
-> in the ATF [1] not this.
+> The code for energy computation is quite neat and simple, but I think
+> the energy computation mixes two concepts for CPU util: one concept is
+> the estimated CPU util which is used to select CPU OPP in schedutil,
+> another concept is the raw CPU util according to CPU real running time;
+> for example, cpu_util_next() predicts CPU util but this value might be
+> much higher than cpu_util(), especially after enabled UTIL_EST feature
+> (I have shallow understanding for UTIL_EST so correct me as needed);
 
-Mistakes can always happen ... so no problem :-) .
+I'm not not sure to understand what you mean by higher than cpu_util()
+here ... In which case would that happen ?
 
+cpu_util_next() is basically used to figure out what will be the
+cpu_util() of CPU A after task p has been enqueued on CPU B (no matter
+what A and B are).
 
->         /* 5-5-5 */
-> 	DDR3_800D = 0,
-> 	/* 6-6-6 */
-> 	DDR3_800E = 1,
-> 	/* 6-6-6 */
-> 	DDR3_1066E = 2,
-> 	/* 7-7-7 */
-> 	DDR3_1066F = 3,
->         ...
+> but this patch simply computes CPU capacity and energy with the single
+> one CPU utilization value (and it will be an inflated value afte enable
+> UTIL_EST).  Is this purposed for simple implementation?
 > 
-> The value is passed directly to the ATF so the above values are the correct.
-> 
-> One question that I have on my mind is if this file should be called as is or if
-> will be better name as atf-ddr.h or something like that.
-> ddr.h -> atf-ddr.h
+> IMHO, cpu_util_next() can be used to predict CPU capacity, on the other
+> hand, should we use the CPU util without UTIL_EST capping for 'sum_util',
+> this can be more reasonable to reflect the CPU utilization?
 
-The more interesting question would be if this isn't a very much rockchip
-or even rk3399-specific scheme. So such a generic header name looks very
-much out of place (also including the very generic constant names).
-
-So far the only upstream ATF implementation is for the rk3399.
-
-
-Heiko
+Why would a decayed utilisation be a better estimate of the time that
+a task is going to spend on a CPU ?
 
 > 
-> [1]
-> https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/rockchip/rk3399/drivers/dram/dram_spec_timing.h
->
-> Sorry about that. Guess it's needed a v2 but let's wait a little bit for if more
-> discussion arises.
-> 
-> Best regards,
->   Enric
-> 
-> > Could you explain a bit more where these numerical values are coming from?
-> > 
-> > 
-> > Thanks
-> > Heiko
-> > 
-> 
-> 
+> Furthermore, if we consider RT thread is running on CPU and connect with
+> 'schedutil' governor, the CPU will run at maximum frequency, but we
+> cannot say the CPU has 100% utilization.  The RT thread case is not
+> handled in this patch.
+
+Right, we don't account for RT tasks in the OPP prediction for now.
+Vincent's patches to have a util_avg for RT runqueues could help us
+do that I suppose ...
+
+Thanks !
+Quentin
