@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 20/27] dt-bindings: thermal: armada: add reference to new
- bindings
-Date: Sat, 21 Apr 2018 17:12:48 +0200
-Message-ID: <20180421151255.29929-21-miquel.raynal@bootlin.com>
+Subject: [PATCH 26/27] arm64: dts: marvell: add interrupt support to ap806
+ thermal node
+Date: Sat, 21 Apr 2018 17:12:54 +0200
+Message-ID: <20180421151255.29929-27-miquel.raynal@bootlin.com>
 References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,30 +22,56 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-New bindings (with the syscon and the overheat interrupt) are available
-for AP806 and CP110 compatibles. Add a reference to these files from the
-original documentation.
+Add interrupt properties in the thermal node as well as a critical trip
+point in the thermal-zone.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- Documentation/devicetree/bindings/thermal/armada-thermal.txt | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-index e0d013a2e66d..f3b441100890 100644
---- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-@@ -10,6 +10,11 @@ Required properties:
-     * marvell,armada-ap806-thermal
-     * marvell,armada-cp110-thermal
+diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+index a6fee3ccbc11..d5a7448896b2 100644
+--- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+@@ -273,6 +273,8 @@
  
-+Note: these bindings are deprecated for AP806/CP110 and should instead
-+follow the rules described in:
-+Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-+Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+ 				ap_thermal: ap-thermal {
+ 					compatible = "marvell,armada-ap806-thermal";
++					interrupt-parent = <&sei_wired_controller>;
++					interrupts = <18>;
+ 					#thermal-sensor-cells = <1>;
+ 				};
+ 			};
+@@ -283,16 +285,26 @@
+ 	 * The thermal IP features one internal sensor plus, if applicable, one
+ 	 * remote channel wired to one sensor per CPU.
+ 	 *
++	 * Only one thermal zone per AP/CP may trigger interrupts at a time, the
++	 * first one that will have a critical trip point will be chosen.
++	 *
+ 	 * The cooling maps are always empty as there are no cooling devices.
+ 	 */
+ 	thermal-zones {
+ 		ap_thermal_ic: ap-thermal-ic {
+-			polling-delay-passive = <1000>;
+-			polling-delay = <1000>;
++			polling-delay-passive = <0>; /* Interrupt driven */
++			polling-delay = <0>; /* Interrupt driven */
+ 
+ 			thermal-sensors = <&ap_thermal 0>;
+ 
+-			trips {	};
++			trips {
++				ap_crit: ap-crit {
++					temperature = <100000>; /* mC degrees */
++					hysteresis = <2000>; /* mC degrees */
++					type = "critical";
++				};
++			};
 +
- - reg: Device's register space.
-   Two entries are expected, see the examples below. The first one points
-   to the status register (4B). The second one points to the control
+ 			cooling-maps { };
+ 		};
+ 
 -- 
 2.14.1
