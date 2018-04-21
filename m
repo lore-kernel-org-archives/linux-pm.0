@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 15/27] dt-bindings: ap806: prepare the syscon file to list
- other syscons nodes
-Date: Sat, 21 Apr 2018 17:12:43 +0200
-Message-ID: <20180421151255.29929-16-miquel.raynal@bootlin.com>
+Subject: [PATCH 24/27] arm64: dts: marvell: add macro to make distinction
+ between node names
+Date: Sat, 21 Apr 2018 17:12:52 +0200
+Message-ID: <20180421151255.29929-25-miquel.raynal@bootlin.com>
 References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,38 +22,30 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-There are multiple system controllers in AP806. Because all syscon nodes
-use the same compatible, it is pertinent to use this same file to list
-IPs inside it. Thus, change the header to be more generic.
+Because the label is different between CPs, the full path of a node is
+unique. However, when referring to the end of the path only (the node
+name), this name is not unique anymore.
+
+The *thermal_zone_of_sensor_register() functions of the thermal core
+present this limitation and prevent having a thermal-zone per CP.
+
+Add a macro to make the distinction between node names to solve this
+situation.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- .../bindings/arm/marvell/ap806-system-controller.txt           | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/arm64/boot/dts/marvell/armada-common.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-index 0b887440e08a..a856eb9a4e05 100644
---- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-+++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-@@ -2,14 +2,14 @@ Marvell Armada AP806 System Controller
- ======================================
- 
- The AP806 is one of the two core HW blocks of the Marvell Armada 7K/8K
--SoCs. It contains a system controller, which provides a number
--registers giving access to numerous features: clocks, pin-muxing and
--many other SoC configuration items. This DT binding allows to describe
--this system controller.
-+SoCs. It contains system controllers, which provide several registers
-+giving access to numerous features: clocks, pin-muxing and many other
-+SoC configuration items. This DT binding allows to describe these
-+system controllers.
- 
- For the top level node:
-  - compatible: must be: "syscon", "simple-mfd";
--  - reg: register area of the AP806 system controller
-+ - reg: register area of the AP806 system controller
- 
- Clocks:
- -------
+diff --git a/arch/arm64/boot/dts/marvell/armada-common.dtsi b/arch/arm64/boot/dts/marvell/armada-common.dtsi
+index d5e8aedec188..b29c6405d214 100644
+--- a/arch/arm64/boot/dts/marvell/armada-common.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-common.dtsi
+@@ -7,4 +7,5 @@
+ #define PASTER(x, y) x ## y
+ #define EVALUATOR(x, y) PASTER(x, y)
+ #define CP110_LABEL(name) EVALUATOR(CP110_NAME, EVALUATOR(_, name))
++#define CP110_NODE_NAME(name) EVALUATOR(CP110_NAME, EVALUATOR(-, name))
+ #define ADDRESSIFY(addr) EVALUATOR(0x, addr)
 -- 
 2.14.1
