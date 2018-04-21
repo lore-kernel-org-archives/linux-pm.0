@@ -1,7 +1,7 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 03/27] thermal: armada: remove misleading comments
-Date: Sat, 21 Apr 2018 17:12:31 +0200
-Message-ID: <20180421151255.29929-4-miquel.raynal@bootlin.com>
+Subject: [PATCH 02/27] thermal: armada: remove useless register accesses
+Date: Sat, 21 Apr 2018 17:12:30 +0200
+Message-ID: <20180421151255.29929-3-miquel.raynal@bootlin.com>
 References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,33 +21,52 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On older versions of this thermal IP, TSEN referred as the internal
-sensor in the thermal IP while EXT_TSEN referred as sensors outside of
-this IP, ie in the CPUs most of the time. The bit names in the
-specifications do not follow this rule anymore, so remove these comments
-that are misleading.
+Prepare the migration to use regmaps by first simplifying the
+initialization functions: avoid unnecessary write/read cycles on
+configuration registers.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/thermal/armada_thermal.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 6fdb90b3c001..18155e43e67f 100644
+index 077e8e562306..6fdb90b3c001 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -51,12 +51,10 @@
- #define CONTROL0_TSEN_TC_TRIM_MASK	0x7
- #define CONTROL0_TSEN_TC_TRIM_VAL	0x3
+@@ -103,16 +103,13 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
  
--/* TSEN refers to the temperature sensors within the AP */
- #define CONTROL0_TSEN_START		BIT(0)
- #define CONTROL0_TSEN_RESET		BIT(1)
- #define CONTROL0_TSEN_ENABLE		BIT(2)
+ 	reg = readl_relaxed(priv->control1);
+ 	reg |= PMU_TDC0_OTF_CAL_MASK;
+-	writel(reg, priv->control1);
  
--/* EXT_TSEN refers to the external temperature sensors, out of the AP */
- #define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
- #define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
+ 	/* Reference calibration value */
+ 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+ 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+-	writel(reg, priv->control1);
  
+ 	/* Reset the sensor */
+-	reg = readl_relaxed(priv->control1);
+-	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control1);
++	reg |= PMU_TDC0_SW_RST_MASK;
+ 
+ 	writel(reg, priv->control1);
+ 
+@@ -129,14 +126,13 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 
+ 	reg = readl_relaxed(priv->control1);
+ 	reg |= PMU_TDC0_OTF_CAL_MASK;
+-	writel(reg, priv->control1);
+ 
+ 	/* Reference calibration value */
+ 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+ 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+-	writel(reg, priv->control1);
+ 
+ 	reg &= ~PMU_TDC0_START_CAL_MASK;
++
+ 	writel(reg, priv->control1);
+ 
+ 	msleep(10);
 -- 
 2.14.1
