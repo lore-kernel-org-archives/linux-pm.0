@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 27/27] arm64: dts: marvell: add interrupt support to cp110
- thermal node
-Date: Sat, 21 Apr 2018 17:12:55 +0200
-Message-ID: <20180421151255.29929-28-miquel.raynal@bootlin.com>
+Subject: [PATCH 15/27] dt-bindings: ap806: prepare the syscon file to list
+ other syscons nodes
+Date: Sat, 21 Apr 2018 17:12:43 +0200
+Message-ID: <20180421151255.29929-16-miquel.raynal@bootlin.com>
 References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,58 +22,38 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add interrupt properties in the thermal node as well as a critical trip
-point in the thermal-zone.
+There are multiple system controllers in AP806. Because all syscon nodes
+use the same compatible, it is pertinent to use this same file to list
+IPs inside it. Thus, change the header to be more generic.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-cp110.dtsi | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ .../bindings/arm/marvell/ap806-system-controller.txt           | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-index 8d0fc1bfe291..06f265d61352 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-@@ -28,12 +28,19 @@
- 	 */
- 	thermal-zones {
- 		CP110_LABEL(thermal_ic): CP110_NODE_NAME(thermal-ic) {
--			polling-delay-passive = <1000>;
--			polling-delay = <1000>;
-+			polling-delay-passive = <0>; /* Interrupt driven */
-+			polling-delay = <0>; /* Interrupt driven */
+diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+index 0b887440e08a..a856eb9a4e05 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+@@ -2,14 +2,14 @@ Marvell Armada AP806 System Controller
+ ======================================
  
- 			thermal-sensors = <&CP110_LABEL(thermal) 0>;
+ The AP806 is one of the two core HW blocks of the Marvell Armada 7K/8K
+-SoCs. It contains a system controller, which provides a number
+-registers giving access to numerous features: clocks, pin-muxing and
+-many other SoC configuration items. This DT binding allows to describe
+-this system controller.
++SoCs. It contains system controllers, which provide several registers
++giving access to numerous features: clocks, pin-muxing and many other
++SoC configuration items. This DT binding allows to describe these
++system controllers.
  
--			trips {	};
-+			trips {
-+				CP110_LABEL(crit): crit {
-+					temperature = <100000>; /* mC degrees */
-+					hysteresis = <2000>; /* mC degrees */
-+					type = "critical";
-+				};
-+			};
-+
- 			cooling-maps { };
- 		};
- 	};
-@@ -177,7 +184,7 @@
- 				compatible = "marvell,cp110-icu-sei";
- 				#interrupt-cells = <2>;
- 				interrupt-controller;
--				msi-parent = <&sei>;
-+				msi-parent = <&sei_msi_controller>;
- 			};
- 		};
+ For the top level node:
+  - compatible: must be: "syscon", "simple-mfd";
+-  - reg: register area of the AP806 system controller
++ - reg: register area of the AP806 system controller
  
-@@ -234,6 +241,8 @@
- 
- 			CP110_LABEL(thermal): thermal@400070 {
- 				compatible = "marvell,armada-cp110-thermal";
-+				interrupts-extended =
-+					<&CP110_LABEL(icu_sei) 116 IRQ_TYPE_LEVEL_HIGH>;
- 				#thermal-sensor-cells = <1>;
- 			};
- 		};
+ Clocks:
+ -------
 -- 
 2.14.1
