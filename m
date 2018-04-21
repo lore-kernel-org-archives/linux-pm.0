@@ -1,113 +1,81 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH] power: supply: bq27xxx: Add support for BQ27426
-Date: Sat, 21 Apr 2018 18:12:49 -0500
-Message-ID: <20180421231249.9517-1-afd@ti.com>
+From: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 03/11] fs: add frozen sb state helpers
+Date: Sun, 22 Apr 2018 01:53:23 +0200
+Message-ID: <20180421235323.ndj3gx65n7kmv5ta@quack2.suse.cz>
+References: <20171129232356.28296-1-mcgrof@kernel.org>
+ <20171129232356.28296-4-mcgrof@kernel.org>
+ <20171130171310.GG28180@quack2.suse.cz>
+ <20171130190548.GJ729@wotan.suse.de>
+ <20171201114724.GC8365@quack2.suse.cz>
+ <20171201211327.GQ729@wotan.suse.de>
+ <20171221110329.GG31584@quack2.suse.cz>
+ <20180418005936.j3fa5rogfm353clf@garbanzo.do-not-panic.com>
+ <20180420184932.57as7jup75nx463v@garbanzo.do-not-panic.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180420184932.57as7jup75nx463v@garbanzo.do-not-panic.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Jan Kara <jack@suse.cz>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org, jlayton@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-This device is software similar to the BQ27426 except it has
-different data memory offsets. Add support here.
+On Fri 20-04-18 11:49:32, Luis R. Rodriguez wrote:
+> On Tue, Apr 17, 2018 at 05:59:36PM -0700, Luis R. Rodriguez wrote:
+> > On Thu, Dec 21, 2017 at 12:03:29PM +0100, Jan Kara wrote:
+> > > Hello,
+> > > 
+> > > I think I owe you a reply here... Sorry that it took so long.
+> > 
+> > Took me just as long :)
+> > 
+> > > On Fri 01-12-17 22:13:27, Luis R. Rodriguez wrote:
+> > > > 
+> > > > I'll note that its still not perfectly clear if really the semantics behind
+> > > > freeze_bdev() match what I described above fully. That still needs to be
+> > > > vetted for. For instance, does thaw_bdev() keep a superblock frozen if we
+> > > > an ioctl initiated freeze had occurred before? If so then great. Otherwise
+> > > > I think we'll need to distinguish the ioctl interface. Worst possible case
+> > > > is that bdev semantics and in-kernel semantics differ somehow, then that
+> > > > will really create a holy fucking mess.
+> > > 
+> > > I believe nobody really thought about mixing those two interfaces to fs
+> > > freezing and so the behavior is basically defined by the implementation.
+> > > That is:
+> > > 
+> > > freeze_bdev() on sb frozen by ioctl_fsfreeze() -> EBUSY
+> > > freeze_bdev() on sb frozen by freeze_bdev() -> success
+> > > ioctl_fsfreeze() on sb frozen by freeze_bdev() -> EBUSY
+> > > ioctl_fsfreeze() on sb frozen by ioctl_fsfreeze() -> EBUSY
+> > > 
+> > > thaw_bdev() on sb frozen by ioctl_fsfreeze() -> EINVAL
+> > 
+> > Phew, so this is what we want for the in-kernel freezing so we're good
+> > and *can* combine these then.
+> 
+> I double checked, and I don't see where you get EINVAL for this case.
+> We *do* keep the sb frozen though, which is good, and the worst fear
+> I had was that we did not. However we return 0 if there was already
+> a prior freeze_bdev() or ioctl_fsfreeze() other than the context that
+> started the prior freeze (--bdev->bd_fsfreeze_count > 0).
+> 
+> The -EINVAL is only returned currently if there were no freezers.
+> 
+> int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+> {
+> 	int error = -EINVAL;
+> 
+> 	mutex_lock(&bdev->bd_fsfreeze_mutex);
+> 	if (!bdev->bd_fsfreeze_count)
+> 		goto out;
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
----
- .../devicetree/bindings/power/supply/bq27xxx.txt         | 1 +
- drivers/power/supply/bq27xxx_battery.c                   | 9 +++++++++
- drivers/power/supply/bq27xxx_battery_i2c.c               | 2 ++
- include/linux/power/bq27xxx_battery.h                    | 3 ++-
- 4 files changed, 14 insertions(+), 1 deletion(-)
+But this is precisely where we'd bail if we freeze sb by ioctl_fsfreeze()
+but try to thaw by thaw_bdev(). ioctl_fsfreeze() does not touch
+bd_fsfreeze_count...
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-index 615c1cb6889f..37994fdb18ca 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-@@ -25,6 +25,7 @@ Required properties:
-  * "ti,bq27545" - BQ27545
-  * "ti,bq27421" - BQ27421
-  * "ti,bq27425" - BQ27425
-+ * "ti,bq27426" - BQ27426
-  * "ti,bq27441" - BQ27441
-  * "ti,bq27621" - BQ27621
- - reg: integer, I2C address of the fuel gauge.
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 7ce60519b1bc..d44ed8e17c47 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -432,6 +432,7 @@ static u8
- 		BQ27XXX_DM_REG_ROWS,
- 	};
- #define bq27425_regs bq27421_regs
-+#define bq27426_regs bq27421_regs
- #define bq27441_regs bq27421_regs
- #define bq27621_regs bq27421_regs
- 
-@@ -664,6 +665,7 @@ static enum power_supply_property bq27421_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- };
- #define bq27425_props bq27421_props
-+#define bq27426_props bq27421_props
- #define bq27441_props bq27421_props
- #define bq27621_props bq27421_props
- 
-@@ -734,6 +736,12 @@ static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
- 	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
- };
- 
-+static struct bq27xxx_dm_reg bq27426_dm_regs[] = {
-+	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82,  6, 2,    0,  8000 },
-+	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82,  8, 2,    0, 32767 },
-+	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 10, 2, 2500,  3700 },
-+};
-+
- #if 0 /* not yet tested */
- #define bq27441_dm_regs bq27421_dm_regs
- #else
-@@ -795,6 +803,7 @@ static struct {
- 	[BQ27545]   = BQ27XXX_DATA(bq27545,   0x04143672, BQ27XXX_O_OTDC),
- 	[BQ27421]   = BQ27XXX_DATA(bq27421,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27425]   = BQ27XXX_DATA(bq27425,   0x04143672, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP),
-+	[BQ27426]   = BQ27XXX_DATA(bq27426,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27441]   = BQ27XXX_DATA(bq27441,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27621]   = BQ27XXX_DATA(bq27621,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- };
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 6b25e5f2337e..40069128ad44 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -249,6 +249,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27545", BQ27545 },
- 	{ "bq27421", BQ27421 },
- 	{ "bq27425", BQ27425 },
-+	{ "bq27426", BQ27426 },
- 	{ "bq27441", BQ27441 },
- 	{ "bq27621", BQ27621 },
- 	{},
-@@ -280,6 +281,7 @@ static const struct of_device_id bq27xxx_battery_i2c_of_match_table[] = {
- 	{ .compatible = "ti,bq27545" },
- 	{ .compatible = "ti,bq27421" },
- 	{ .compatible = "ti,bq27425" },
-+	{ .compatible = "ti,bq27426" },
- 	{ .compatible = "ti,bq27441" },
- 	{ .compatible = "ti,bq27621" },
- 	{},
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 01fbf1b16258..d6355f49fbae 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -24,8 +24,9 @@ enum bq27xxx_chip {
- 	BQ27546,
- 	BQ27742,
- 	BQ27545, /* bq27545 */
--	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-+	BQ27421, /* bq27421, bq27441, bq27621 */
- 	BQ27425,
-+	BQ27426,
- 	BQ27441,
- 	BQ27621,
- };
+								Honza
+
 -- 
-2.17.0
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
