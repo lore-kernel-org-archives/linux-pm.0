@@ -1,48 +1,26 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: [PATCH 3/3] fs: fix corner case race on freeze_bdev() when sb disappears
-Date: Fri, 20 Apr 2018 16:59:04 -0700
-Message-ID: <20180420235904.27496-4-mcgrof@kernel.org>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Subject: Re: [PATCH 1/3] fs: move documentation for thaw_super() where
+ appropriate
+Date: Sat, 21 Apr 2018 00:01:31 +0000
+Message-ID: <0e6973564f4b2c503f343f63ca1209687f53b312.camel@wdc.com>
 References: <20180420235904.27496-1-mcgrof@kernel.org>
+         <20180420235904.27496-2-mcgrof@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180420235904.27496-1-mcgrof@kernel.org>
+In-Reply-To: <20180420235904.27496-2-mcgrof@kernel.org>
+Content-Language: en-US
+Content-ID: <C980649F5A3A2047A229F315F36D8B47@namprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org
-Cc: jack@suse.cz, bart.vanassche@wdc.com, ming.lei@redhat.com, rjw@rjwysocki.net, mguzik@redhat.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>
+To: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "mcgrof@kernel.org" <mcgrof@kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Cc: "mguzik@redhat.com" <mguzik@redhat.com>, "jack@suse.cz" <jack@suse.cz>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "ming.lei@redhat.com" <ming.lei@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-freeze_bdev() will bail but leave the bd_fsfreeze_count incremented
-if the get_active_super() does not find the superblock on our
-super_blocks list to match.
-
-This issue has been present since v2.6.29 during the introduction of the
-ioctl_fsfreeze() and ioctl_fsthaw() via commit fcccf502540e3 ("filesystem
-freeze: implement generic freeze feature").
-
-I am not aware of any existing races which have triggered this
-situation, however, if it does trigger it could mean leaving a
-superblock with bd_fsfreeze_count always positive.
-
-Fixes: fcccf502540e3 ("filesystem freeze: implement generic freeze feature")
-Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
----
- fs/block_dev.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index b54966679833..7a532aa58c07 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -507,8 +507,10 @@ struct super_block *freeze_bdev(struct block_device *bdev)
- 	}
- 
- 	sb = get_active_super(bdev);
--	if (!sb)
-+	if (!sb) {
-+		bdev->bd_fsfreeze_count--;
- 		goto out;
-+	}
- 	if (sb->s_op->freeze_super)
- 		error = sb->s_op->freeze_super(sb);
- 	else
--- 
-2.16.3
+T24gRnJpLCAyMDE4LTA0LTIwIGF0IDE2OjU5IC0wNzAwLCBMdWlzIFIuIFJvZHJpZ3VleiB3cm90
+ZToNCj4gKy8qKg0KPiArICogdGhhd19zdXBlciAtLSB1bmxvY2sgZmlsZXN5c3RlbQ0KPiArICog
+QHNiOiB0aGUgc3VwZXIgdG8gdGhhdw0KPiArICoNCj4gKyAqIFVubG9ja3MgdGhlIGZpbGVzeXN0
+ZW0gYW5kIG1hcmtzIGl0IHdyaXRlYWJsZSBhZ2FpbiBhZnRlciBmcmVlemVfc3VwZXIoKS4NCj4g
+KyAqLw0KDQpIYXZlIHlvdSB2ZXJpZmllZCB0aGUgb3V0cHV0IGdlbmVyYXRlZCBieSBzY3JpcHRz
+L2tlcm5lbC1kb2M/IExhc3QNCnRpbWUgSSBjaGVja2VkIHRoZSBvdXRwdXQgZm9yIGhlYWRlcnMg
+Y29udGFpbmluZyBhIGRvdWJsZSBkYXNoIGxvb2tlZA0Kd2VpcmQuDQoNCkJhcnQuDQoNCg0KDQo=
