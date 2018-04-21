@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 24/27] arm64: dts: marvell: add macro to make distinction
- between node names
-Date: Sat, 21 Apr 2018 17:12:52 +0200
-Message-ID: <20180421151255.29929-25-miquel.raynal@bootlin.com>
+Subject: [PATCH 18/27] dt-bindings: cp110: update documentation since DT
+ de-duplication
+Date: Sat, 21 Apr 2018 17:12:46 +0200
+Message-ID: <20180421151255.29929-19-miquel.raynal@bootlin.com>
 References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,30 +22,50 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Because the label is different between CPs, the full path of a node is
-unique. However, when referring to the end of the path only (the node
-name), this name is not unique anymore.
-
-The *thermal_zone_of_sensor_register() functions of the thermal core
-present this limitation and prevent having a thermal-zone per CP.
-
-Add a macro to make the distinction between node names to solve this
-situation.
+CP110 master/slave DT files have been merged in a DT de-duplication work
+merged in v4.16. Update the syscon documentation accordingly to match
+the current state of the DT nodes.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-common.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+ .../bindings/arm/marvell/cp110-system-controller.txt           | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-common.dtsi b/arch/arm64/boot/dts/marvell/armada-common.dtsi
-index d5e8aedec188..b29c6405d214 100644
---- a/arch/arm64/boot/dts/marvell/armada-common.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-common.dtsi
-@@ -7,4 +7,5 @@
- #define PASTER(x, y) x ## y
- #define EVALUATOR(x, y) PASTER(x, y)
- #define CP110_LABEL(name) EVALUATOR(CP110_NAME, EVALUATOR(_, name))
-+#define CP110_NODE_NAME(name) EVALUATOR(CP110_NAME, EVALUATOR(-, name))
- #define ADDRESSIFY(addr) EVALUATOR(0x, addr)
+diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+index 56e7fb1153e7..54b0d64ce819 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+@@ -163,26 +163,26 @@ Required properties:
+ 
+ Example:
+ 
+-cpm_syscon0: system-controller@440000 {
++CP110_LABEL(syscon0): system-controller@440000 {
+ 	compatible = "syscon", "simple-mfd";
+ 	reg = <0x440000 0x1000>;
+ 
+-	cpm_clk: clock {
++	CP110_LABEL(clk): clock {
+ 		compatible = "marvell,cp110-clock";
+ 		#clock-cells = <2>;
+ 	};
+ 
+-	cpm_pinctrl: pinctrl {
++	CP110_LABEL(pinctrl): pinctrl {
+ 		compatible = "marvell,armada-8k-cpm-pinctrl";
+ 	};
+ 
+-	cpm_gpio1: gpio@100 {
++	CP110_LABEL(gpio1): gpio@100 {
+ 		compatible = "marvell,armada-8k-gpio";
+ 		offset = <0x100>;
+ 		ngpios = <32>;
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+-		gpio-ranges = <&cpm_pinctrl 0 0 32>;
++		gpio-ranges = <&CP110_LABEL(pinctrl) 0 0 32>;
+ 	};
+ 
+ };
 -- 
 2.14.1
