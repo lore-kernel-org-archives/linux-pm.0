@@ -1,77 +1,88 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 26/27] arm64: dts: marvell: add interrupt support to ap806
- thermal node
-Date: Sat, 21 Apr 2018 17:12:54 +0200
-Message-ID: <20180421151255.29929-27-miquel.raynal@bootlin.com>
-References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
+From: Joel Fernandes <joel.opensrc@gmail.com>
+Subject: Re: [PATCH 4/7] sched/core: uclamp: add utilization clamping to the
+ CPU controller
+Date: Sat, 21 Apr 2018 14:08:30 -0700
+Message-ID: <CAEi0qNmwT0h0R5GM0X71CzYyd_VmykxgrT0rPZgnGBw3pSQJNQ@mail.gmail.com>
+References: <20180409165615.2326-1-patrick.bellasi@arm.com>
+ <20180409165615.2326-5-patrick.bellasi@arm.com> <20180409222417.GK3126663@devbig577.frc2.facebook.com>
+ <20180410171612.GJ14248@e110439-lin> <20180410200514.GA793541@devbig577.frc2.facebook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180421151255.29929-1-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180410200514.GA793541@devbig577.frc2.facebook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add interrupt properties in the thermal node as well as a critical trip
-point in the thermal-zone.
+Hi Tejun,
 
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+On Tue, Apr 10, 2018 at 1:05 PM, Tejun Heo <tj@kernel.org> wrote:
+> Hello,
+>
+> On Tue, Apr 10, 2018 at 06:16:12PM +0100, Patrick Bellasi wrote:
+>> > I'm not too enthusiastic about util_min/max given that it can easily
+>> > be read as actual utilization based bandwidth control when what's
+>> > actually implemented, IIUC, is affecting CPU frequency selection.
+>>
+>> Right now we are basically affecting the frequency selection.
+>> However, the next step is to use this same interface to possibly bias
+>> task placement.
+>>
+>> The idea is that:
+>>
+>> - the util_min value can be used to possibly avoid CPUs which have
+>>   a (maybe temporarily) limited capacity, for example, due to thermal
+>>   pressure.
+>>
+>> - a util_max value can use used to possibly identify tasks which can
+>>   be co-scheduled together in a (maybe) limited capacity CPU since
+>>   they are more likely "less important" tasks.
+>>
+>> Thus, since this is a new user-space API, we would like to find a
+>> concept which is generic enough to express the current requirement but
+>> also easily accommodate future extensions.
+>
+> I'm not sure we can overload the meanings like that on the same
+> interface.  Right now, it doesn't say anything about bandwidth (or
+> utilization) allocation.  It just limits the frequency range the
+> particular cpu that the task ended up on can be in and what you're
+> describing above is the third different thing.  It doesn't seem clear
+> that they're something which can be overloaded onto the same
+> interface.
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index a6fee3ccbc11..d5a7448896b2 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -273,6 +273,8 @@
- 
- 				ap_thermal: ap-thermal {
- 					compatible = "marvell,armada-ap806-thermal";
-+					interrupt-parent = <&sei_wired_controller>;
-+					interrupts = <18>;
- 					#thermal-sensor-cells = <1>;
- 				};
- 			};
-@@ -283,16 +285,26 @@
- 	 * The thermal IP features one internal sensor plus, if applicable, one
- 	 * remote channel wired to one sensor per CPU.
- 	 *
-+	 * Only one thermal zone per AP/CP may trigger interrupts at a time, the
-+	 * first one that will have a critical trip point will be chosen.
-+	 *
- 	 * The cooling maps are always empty as there are no cooling devices.
- 	 */
- 	thermal-zones {
- 		ap_thermal_ic: ap-thermal-ic {
--			polling-delay-passive = <1000>;
--			polling-delay = <1000>;
-+			polling-delay-passive = <0>; /* Interrupt driven */
-+			polling-delay = <0>; /* Interrupt driven */
- 
- 			thermal-sensors = <&ap_thermal 0>;
- 
--			trips {	};
-+			trips {
-+				ap_crit: ap-crit {
-+					temperature = <100000>; /* mC degrees */
-+					hysteresis = <2000>; /* mC degrees */
-+					type = "critical";
-+				};
-+			};
-+
- 			cooling-maps { };
- 		};
- 
--- 
-2.14.1
+Actually no, its not about overloading them. What's Patrick is
+defining here is a property/attribute. What that attribute is used for
+(the algorithms that use it) are a different topic. Like, it can be
+used by the frequency selection algorithms or the task placement
+algorithm. There are multiple algorithms that can use the property. To
+me, this part of the patch makes sense. Maybe it should really be
+called "task_size" or something, since that's what it really is.
+
+[...]
+>> > > Tasks on a subgroup can only be more boosted and/or capped, which is
+>> >
+>> > Less boosted.  .low at a parent level must set the upper bound of .low
+>> > that all its descendants can have.
+>>
+>> Is that a mandatory requirement? Or based on a proper justification
+>> you can also accept what I'm proposing?
+>>
+>> I've always been more of the idea that what I'm proposing could make
+>> more sense for a general case but perhaps I just need to go back and
+>> better check the use-cases we have on hand to see if it's really
+>> required or not.
+>
+> Yeah, I think we want to stick to that semantics.  That's what memory
+> controller does and it'd be really confusing to flip the directions on
+> different controllers.
+>
+
+What about the .high ? I think there was some confusion about how to
+define that for subgroups. It could perhaps be such that the .high of
+parent is the lower bound of the .high on child but then I'm not sure
+if that fits well with the delegation policies...
+
+thanks,
+
+- Joel
