@@ -1,7 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 06/27] thermal: armada: average over samples to avoid glitches
-Date: Sat, 21 Apr 2018 17:12:34 +0200
-Message-ID: <20180421151255.29929-7-miquel.raynal@bootlin.com>
+Subject: [PATCH 10/27] thermal: armada: remove sensors validity from the IP
+ initialization
+Date: Sat, 21 Apr 2018 17:12:38 +0200
+Message-ID: <20180421151255.29929-11-miquel.raynal@bootlin.com>
 References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,70 +22,50 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Configure the sample frequency and number of averaged samples.
+When using new bindings with multiple sensors, sensor validity is
+checked twice because sensor selection also checks for the validity.
 
-This is needed for two reasons:
-1/ To be bootloader independent.
-2/ To prepare the introduction of multi-sensors support by preventing
-   inconsistencies when reading temperatures that could be a mean of
-   samples took from different sensors.
+Remove the redundant call from the IP initialization helper and move it
+to the legacy probe section where it is still needed.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/thermal/armada_thermal.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 9291ea3ad2f7..1f9706d96a0d 100644
+index 2b11bf929b64..3d5b29133d3a 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -54,7 +54,12 @@
- #define CONTROL0_TSEN_START		BIT(0)
- #define CONTROL0_TSEN_RESET		BIT(1)
- #define CONTROL0_TSEN_ENABLE		BIT(2)
-+#define CONTROL0_TSEN_AVG_BYPASS	BIT(6)
-+#define CONTROL0_TSEN_OSR_SHIFT		24
-+#define CONTROL0_TSEN_OSR_MAX		0x3
- 
-+#define CONTROL1_TSEN_AVG_SHIFT		0
-+#define CONTROL1_TSEN_AVG_MASK		0x7
- #define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
- #define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
- 
-@@ -194,6 +199,13 @@ static void armada_ap806_init(struct platform_device *pdev,
- 	reg = readl_relaxed(priv->control0);
- 	reg &= ~CONTROL0_TSEN_RESET;
- 	reg |= CONTROL0_TSEN_START | CONTROL0_TSEN_ENABLE;
-+
-+	/* Sample every ~2ms */
-+	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
-+
-+	/* Enable average (2 samples by default) */
-+	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
-+
- 	writel(reg, priv->control0);
- 
- 	/* Wait the sensors to be valid or the core will warn the user */
-@@ -203,7 +215,20 @@ static void armada_ap806_init(struct platform_device *pdev,
- static void armada_cp110_init(struct platform_device *pdev,
- 			      struct armada_thermal_priv *priv)
- {
-+	u32 reg;
-+
- 	armada380_init(pdev, priv);
-+
-+	/* Sample every ~2ms */
-+	reg = readl_relaxed(priv->control0);
-+	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
-+	writel(reg, priv->control0);
-+
-+	/* Average the output value over 2^1 = 2 samples */
-+	reg = readl_relaxed(priv->control1);
-+	reg &= ~CONTROL1_TSEN_AVG_MASK << CONTROL1_TSEN_AVG_SHIFT;
-+	reg |= 1 << CONTROL1_TSEN_AVG_SHIFT;
-+	writel(reg, priv->control1);
+@@ -221,9 +221,6 @@ static void armada380_init(struct platform_device *pdev,
+ 	reg &= ~CONTROL0_TSEN_TC_TRIM_MASK;
+ 	reg |= CONTROL0_TSEN_TC_TRIM_VAL;
+ 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
+-
+-	/* Wait the sensors to be valid or the core will warn the user */
+-	armada_wait_sensor_validity(priv);
  }
  
- static bool armada_is_valid(struct armada_thermal_priv *priv)
+ static void armada_ap806_init(struct platform_device *pdev,
+@@ -243,9 +240,6 @@ static void armada_ap806_init(struct platform_device *pdev,
+ 	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
+ 
+ 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
+-
+-	/* Wait the sensors to be valid or the core will warn the user */
+-	armada_wait_sensor_validity(priv);
+ }
+ 
+ static void armada_cp110_init(struct platform_device *pdev,
+@@ -657,6 +651,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 
+ 		priv->data->init(pdev, priv);
+ 
++		/* Wait the sensors to be valid */
++		armada_wait_sensor_validity(priv);
++
+ 		tz = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
+ 						  &legacy_ops, NULL, 0, 0);
+ 		if (IS_ERR(tz)) {
 -- 
 2.14.1
