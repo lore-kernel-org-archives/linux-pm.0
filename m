@@ -1,8 +1,7 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 01/27] thermal: armada: add a function that sanitizes the
- thermal zone name
-Date: Sat, 21 Apr 2018 17:12:29 +0200
-Message-ID: <20180421151255.29929-2-miquel.raynal@bootlin.com>
+Subject: [PATCH 04/27] thermal: armada: rename the initialization routine
+Date: Sat, 21 Apr 2018 17:12:32 +0200
+Message-ID: <20180421151255.29929-5-miquel.raynal@bootlin.com>
 References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,83 +21,149 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Thermal zone names must follow certain rules imposed by the framework.
-They are limited in length and shall not have any hyphen '-'.
-
-This is done in a separate function for future use in another location.
+Calling a hook ->init_sensor() while what is initialized is the IP
+itself and not the sensors is misleading. Rename the hook ->init() to
+avoid any confusion in later work bringing multi-sensors support.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 36 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 35 insertions(+), 1 deletion(-)
+ drivers/thermal/armada_thermal.c | 40 ++++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 4c275ec10ac5..077e8e562306 100644
+index 18155e43e67f..3d22a6016b04 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -70,6 +70,7 @@ struct armada_thermal_priv {
- 	void __iomem *status;
- 	void __iomem *control0;
- 	void __iomem *control1;
-+	char zone_name[THERMAL_NAME_LENGTH];
- 	struct armada_thermal_data *data;
+@@ -73,9 +73,9 @@ struct armada_thermal_priv {
  };
  
-@@ -353,6 +354,36 @@ static const struct of_device_id armada_thermal_id_table[] = {
- };
- MODULE_DEVICE_TABLE(of, armada_thermal_id_table);
+ struct armada_thermal_data {
+-	/* Initialize the sensor */
+-	void (*init_sensor)(struct platform_device *pdev,
+-			    struct armada_thermal_priv *);
++	/* Initialize the thermal IC */
++	void (*init)(struct platform_device *pdev,
++		     struct armada_thermal_priv *priv);
  
-+static void armada_set_sane_name(struct platform_device *pdev,
-+				 struct armada_thermal_priv *priv)
-+{
-+	const char *name = dev_name(&pdev->dev);
-+	char *insane_char;
-+
-+	if (strlen(name) > THERMAL_NAME_LENGTH) {
-+		/*
-+		 * When inside a system controller, the device name has the
-+		 * form: f06f8000.system-controller:ap-thermal so stripping
-+		 * after the ':' should give us a shorter but meaningful name.
-+		 */
-+		name = strrchr(name, ':');
-+		if (!name)
-+			name = "armada_thermal";
-+		else
-+			name++;
-+	}
-+
-+	/* Save the name locally */
-+	strncpy(priv->zone_name, name, THERMAL_NAME_LENGTH);
-+
-+	/* Then check there are no '-' or hwmon core will complain */
-+	do {
-+		insane_char = strpbrk(priv->zone_name, "-");
-+		if (insane_char)
-+			*insane_char = '_';
-+	} while (insane_char);
-+}
-+
- static int armada_thermal_probe(struct platform_device *pdev)
+ 	/* Test for a valid sensor value (optional) */
+ 	bool (*is_valid)(struct armada_thermal_priv *);
+@@ -94,8 +94,8 @@ struct armada_thermal_data {
+ 	bool needs_control0;
+ };
+ 
+-static void armadaxp_init_sensor(struct platform_device *pdev,
+-				 struct armada_thermal_priv *priv)
++static void armadaxp_init(struct platform_device *pdev,
++			  struct armada_thermal_priv *priv)
  {
- 	void __iomem *control = NULL;
-@@ -381,6 +412,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 	u32 reg;
  
- 	priv->data = (struct armada_thermal_data *)match->data;
+@@ -117,8 +117,8 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
+ 	writel(reg, priv->status);
+ }
  
-+	/* Ensure device name is correct for the thermal core */
-+	armada_set_sane_name(pdev, priv);
-+
- 	/*
- 	 * Legacy DT bindings only described "control1" register (also referred
- 	 * as "control MSB" on old documentation). New bindings cover
-@@ -402,7 +436,7 @@ static int armada_thermal_probe(struct platform_device *pdev)
+-static void armada370_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada370_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
  
- 	priv->data->init_sensor(pdev, priv);
+@@ -136,8 +136,8 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 	msleep(10);
+ }
  
--	thermal = thermal_zone_device_register(dev_name(&pdev->dev), 0, 0, priv,
-+	thermal = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
+-static void armada375_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada375_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -164,8 +164,8 @@ static void armada_wait_sensor_validity(struct armada_thermal_priv *priv)
+ 				   STATUS_POLL_TIMEOUT_US);
+ }
+ 
+-static void armada380_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada380_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg = readl_relaxed(priv->control1);
+ 
+@@ -186,8 +186,8 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	armada_wait_sensor_validity(priv);
+ }
+ 
+-static void armada_ap806_init_sensor(struct platform_device *pdev,
+-				     struct armada_thermal_priv *priv)
++static void armada_ap806_init(struct platform_device *pdev,
++			      struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -247,7 +247,7 @@ static struct thermal_zone_device_ops ops = {
+ };
+ 
+ static const struct armada_thermal_data armadaxp_data = {
+-	.init_sensor = armadaxp_init_sensor,
++	.init = armadaxp_init,
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+ 	.coef_b = 3153000000ULL,
+@@ -257,7 +257,7 @@ static const struct armada_thermal_data armadaxp_data = {
+ 
+ static const struct armada_thermal_data armada370_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada370_init_sensor,
++	.init = armada370_init,
+ 	.is_valid_bit = BIT(9),
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+@@ -268,7 +268,7 @@ static const struct armada_thermal_data armada370_data = {
+ 
+ static const struct armada_thermal_data armada375_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada375_init_sensor,
++	.init = armada375_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x1ff,
+@@ -280,7 +280,7 @@ static const struct armada_thermal_data armada375_data = {
+ 
+ static const struct armada_thermal_data armada380_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada380_init_sensor,
++	.init = armada380_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -292,7 +292,7 @@ static const struct armada_thermal_data armada380_data = {
+ 
+ static const struct armada_thermal_data armada_ap806_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada_ap806_init_sensor,
++	.init = armada_ap806_init,
+ 	.is_valid_bit = BIT(16),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -306,7 +306,7 @@ static const struct armada_thermal_data armada_ap806_data = {
+ 
+ static const struct armada_thermal_data armada_cp110_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada380_init_sensor,
++	.init = armada380_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -428,7 +428,7 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 		priv->control1 = control + CONTROL1_OFFSET;
+ 	}
+ 
+-	priv->data->init_sensor(pdev, priv);
++	priv->data->init(pdev, priv);
+ 
+ 	thermal = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
  					       &ops, NULL, 0, 0);
- 	if (IS_ERR(thermal)) {
- 		dev_err(&pdev->dev,
 -- 
 2.14.1
