@@ -1,12 +1,14 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 00/27] Add multi-channel and overheat IRQ support to Armada
- thermal driver
-Date: Sat, 21 Apr 2018 17:12:28 +0200
-Message-ID: <20180421151255.29929-1-miquel.raynal@bootlin.com>
+Subject: [PATCH 11/27] thermal: armada: move validity check out of the read
+ function
+Date: Sat, 21 Apr 2018 17:12:39 +0200
+Message-ID: <20180421151255.29929-12-miquel.raynal@bootlin.com>
+References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,66 +22,46 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIG9ubHkgY2FwYWJpbGl0eSBvZiB0aGUgQXJtYWRhIHRoZXJtYWwgZHJpdmVyIGlzIGN1cnJl
-bnRseSBqdXN0IHRvCnJlYWQgb25lIHNlbnNvciAodGhlIGRlZmF1bHQgb25lKSBwZXIgQVAgYW5k
-IG9uZSBwZXIgQ1AuCgpBY3R1YWxseSwgdGhlcmUgaXMgb25lIHNlbnNvciBwZXIgY29yZSBpbiB0
-aGUgQVA4MDYgcGx1cyBvbmUgc2Vuc29yIGluCnRoZSB0aGVybWFsIElQIGl0c2VsZi4gVGhlIENQ
-MTEwIGp1c3QgZmVhdHVyZXMgb25lIHRoZXJtYWwgc2Vuc29yIGluIGl0cwpvd24gdGhlcm1hbCBJ
-UC4KCkFsc28sIHRoZXJlIGlzIG5vIG5lZWQgZm9yIHRoZSB0aGVybWFsIGNvcmUgdG8gcG9sbCB0
-aGUgdGVtcGVyYXR1cmUgb2YKZWFjaCBzZW5zb3IgYnkgc29mdHdhcmUgYXMgdGhpcyBJUCAoYXQg
-bGVhc3QgZm9yIEFQODA2IGFuZCBDUDExMApjb21wYXRpYmxlcykgZmVhdHVyZXMgYW4gaGFyZHdh
-cmUgb3ZlcmhlYXQgaW50ZXJydXB0LgoKVGhpcyBzZXJpZXMgZmlyc3QgaW1wcm92ZXMgdGhlIHJl
-YWRhYmlsaXR5IG9mIHRoaXMgZHJpdmVyLCB0aGVuIGFkZHMKc3VwcG9ydCBmb3IgbXVsdGktY2hh
-bm5lbCB0aGVybWFsIElQcywgYW5kIGZpbmFsbHkgYWRkcyBzdXBwb3J0IGZvciB0aGUKaGFyZHdh
-cmUgb3ZlcmhlYXQgaW50ZXJydXB0LiBUaGUgYmluZGluZ3MgYW5kIHRoZSBkZXZpY2UtdHJlZXMg
-YXJlCnVwZGF0ZWQgYWNjb3JkaW5nbHkuCgpQbGVhc2Ugbm90ZSB0aGF0IHRoZSB0aGVybWFsIElQ
-IHJhaXNlcyBTRUkgaW50ZXJydXB0cywgZnJvbSB3aGljaCB0aGUKc3VwcG9ydCBhcyBqdXN0IGJl
-ZW4gY29udHJpYnV0ZWQgYW5kIG5vdCBtZXJnZWQgeWV0LiBBcHBseWluZyB0aGUgbGFzdApEVCBw
-YXRjaGVzIHJlZmVycmluZyB0byB0aGUgJ3NlaScgYW5kICdpY3Vfc2VpJyBub2RlcyB3aWxsIHJl
-cXVpcmUgdGhpcwpmZWF0dXJlIFsxXSB0byBoYXZlIGJlZW4gYWNjZXB0ZWQgZmlyc3QuCgpbMV0g
-aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvcGlwZXJtYWlsL2xpbnV4LWFybS1rZXJuZWwvMjAx
-OC1BcHJpbC81NzI4NTIuaHRtbAoKVGhhbmsgeW91LApNaXF1w6hsCgoKTWlxdWVsIFJheW5hbCAo
-MjcpOgogIHRoZXJtYWw6IGFybWFkYTogYWRkIGEgZnVuY3Rpb24gdGhhdCBzYW5pdGl6ZXMgdGhl
-IHRoZXJtYWwgem9uZSBuYW1lCiAgdGhlcm1hbDogYXJtYWRhOiByZW1vdmUgdXNlbGVzcyByZWdp
-c3RlciBhY2Nlc3NlcwogIHRoZXJtYWw6IGFybWFkYTogcmVtb3ZlIG1pc2xlYWRpbmcgY29tbWVu
-dHMKICB0aGVybWFsOiBhcm1hZGE6IHJlbmFtZSB0aGUgaW5pdGlhbGl6YXRpb24gcm91dGluZQog
-IHRoZXJtYWw6IGFybWFkYTogZGlzc29jaWF0ZSBhMzgwIGFuZCBjcDExMCAtPmluaXQoKSBob29r
-cwogIHRoZXJtYWw6IGFybWFkYTogYXZlcmFnZSBvdmVyIHNhbXBsZXMgdG8gYXZvaWQgZ2xpdGNo
-ZXMKICB0aGVybWFsOiBhcm1hZGE6IGNvbnZlcnQgZHJpdmVyIHRvIHN5c2NvbiByZWdpc3RlciBh
-Y2Nlc3NlcwogIHRoZXJtYWw6IGFybWFkYTogdXNlIHRoZSByZXNvdXJjZSBtYW5hZ2VkIHJlZ2lz
-dHJhdGlvbiBoZWxwZXIKICAgIGFsdGVybmF0aXZlCiAgdGhlcm1hbDogYXJtYWRhOiBhZGQgbXVs
-dGktY2hhbm5lbCBzZW5zb3JzIHN1cHBvcnQKICB0aGVybWFsOiBhcm1hZGE6IHJlbW92ZSBzZW5z
-b3JzIHZhbGlkaXR5IGZyb20gdGhlIElQIGluaXRpYWxpemF0aW9uCiAgdGhlcm1hbDogYXJtYWRh
-OiBtb3ZlIHZhbGlkaXR5IGNoZWNrIG91dCBvZiB0aGUgcmVhZCBmdW5jdGlvbgogIHRoZXJtYWw6
-IGFybWFkYTogZ2V0IHJpZCBvZiB0aGUgLT5pc192YWxpZCgpIHBvaW50ZXIKICB0aGVybWFsOiBh
-cm1hZGE6IGFkZCBvdmVyaGVhdCBpbnRlcnJ1cHQgc3VwcG9ydAogIGR0LWJpbmRpbmdzOiBjcDEx
-MDogcmVuYW1lIGNwMTEwIHN5c2NvbiBmaWxlCiAgZHQtYmluZGluZ3M6IGFwODA2OiBwcmVwYXJl
-IHRoZSBzeXNjb24gZmlsZSB0byBsaXN0IG90aGVyIHN5c2NvbnMKICAgIG5vZGVzCiAgZHQtYmlu
-ZGluZ3M6IGNwMTEwOiBwcmVwYXJlIHRoZSBzeXNjb24gZmlsZSB0byBsaXN0IG90aGVyIHN5c2Nv
-bnMKICAgIG5vZGVzCiAgZHQtYmluZGluZ3M6IGFwODA2OiBhZGQgdGhlIHRoZXJtYWwgbm9kZSBp
-biB0aGUgc3lzY29uIGZpbGUKICBkdC1iaW5kaW5nczogY3AxMTA6IHVwZGF0ZSBkb2N1bWVudGF0
-aW9uIHNpbmNlIERUIGRlLWR1cGxpY2F0aW9uCiAgZHQtYmluZGluZ3M6IGNwMTEwOiBhZGQgdGhl
-IHRoZXJtYWwgbm9kZSBpbiB0aGUgc3lzY29uIGZpbGUKICBkdC1iaW5kaW5nczogdGhlcm1hbDog
-YXJtYWRhOiBhZGQgcmVmZXJlbmNlIHRvIG5ldyBiaW5kaW5ncwogIGFybTY0OiBkdHM6IG1hcnZl
-bGw6IHJlbmFtZSBhcDgwNiBzeXNjb24gbm9kZQogIGFybTY0OiBkdHM6IG1hcnZlbGw6IG1vdmUg
-QVA4MDYvQ1AxMTAgdGhlcm1hbCBub2RlcyBpbnRvIGEgbmV3IHN5c2NvbgogIGFybTY0OiBkdHM6
-IG1hcnZlbGw6IGFkZCB0aGVybWFsLXpvbmUgbm9kZSBpbiBhcDgwNiBEVFNJIGZpbGUKICBhcm02
-NDogZHRzOiBtYXJ2ZWxsOiBhZGQgbWFjcm8gdG8gbWFrZSBkaXN0aW5jdGlvbiBiZXR3ZWVuIG5v
-ZGUgbmFtZXMKICBhcm02NDogZHRzOiBtYXJ2ZWxsOiBhZGQgdGhlcm1hbC16b25lIG5vZGUgaW4g
-Y3AxMTAgRFRTSSBmaWxlCiAgYXJtNjQ6IGR0czogbWFydmVsbDogYWRkIGludGVycnVwdCBzdXBw
-b3J0IHRvIGFwODA2IHRoZXJtYWwgbm9kZQogIGFybTY0OiBkdHM6IG1hcnZlbGw6IGFkZCBpbnRl
-cnJ1cHQgc3VwcG9ydCB0byBjcDExMCB0aGVybWFsIG5vZGUKCiAuLi4vYXJtL21hcnZlbGwvYXA4
-MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0ICAgICAgICB8ICA1NSArLQogLi4uY29udHJvbGxlcjAu
-dHh0ID0+IGNwMTEwLXN5c3RlbS1jb250cm9sbGVyLnR4dH0gfCAgNjYgKy0KIC4uLi9kZXZpY2V0
-cmVlL2JpbmRpbmdzL3RoZXJtYWwvYXJtYWRhLXRoZXJtYWwudHh0IHwgICA1ICsKIGFyY2gvYXJt
-NjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEtYXA4MDYuZHRzaSAgICAgIHwgIDg1ICstCiBhcmNo
-L2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWNvbW1vbi5kdHNpICAgICB8ICAgMSArCiBh
-cmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWNwMTEwLmR0c2kgICAgICB8ICA0NSAr
-LQogZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLmMgICAgICAgICAgICAgICAgICAgfCA4
-NzUgKysrKysrKysrKysrKysrKysrLS0tCiA3IGZpbGVzIGNoYW5nZWQsIDk3NiBpbnNlcnRpb25z
-KCspLCAxNTYgZGVsZXRpb25zKC0pCiByZW5hbWUgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL2FybS9tYXJ2ZWxsL3tjcDExMC1zeXN0ZW0tY29udHJvbGxlcjAudHh0ID0+IGNwMTEw
-LXN5c3RlbS1jb250cm9sbGVyLnR4dH0gKDgzJSkKCi0tIAoyLjE0LjEKCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
-bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+Sensor selection when using multiple sensors already checks for the
+sensor validity. Move it to the legacy ->get_temp() hook, where it is
+still needed.
+
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/thermal/armada_thermal.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 3d5b29133d3a..4e9f947a0f5f 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -328,13 +328,6 @@ static int armada_read_sensor(struct armada_thermal_priv *priv, long *temp)
+ 	u32 reg, div;
+ 	s64 sample, b, m;
+ 
+-	/* Valid check */
+-	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
+-		dev_err(priv->dev,
+-			"Temperature sensor reading not valid\n");
+-		return -EIO;
+-	}
+-
+ 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
+ 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
+ 	if (priv->data->signed_sample)
+@@ -363,6 +356,13 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
+ 	long temperature;
+ 	int ret;
+ 
++	/* Valid check */
++	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
++		dev_err(priv->dev,
++			"Temperature sensor reading not valid\n");
++		return -EIO;
++	}
++
+ 	/* Do the actual reading */
+ 	ret = armada_read_sensor(priv, &temperature);
+ 	*temp = temperature;
+-- 
+2.14.1
