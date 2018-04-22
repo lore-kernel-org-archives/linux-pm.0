@@ -1,157 +1,76 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] power: supply: bq27xxx: Add support for BQ27426
-Date: Sun, 22 Apr 2018 10:07:40 +0200
-Message-ID: <20180422080740.uwd5tock6ztsaa6l@pali>
-References: <20180421231249.9517-1-afd@ti.com>
+From: Woody Suwalski <terraluna977@gmail.com>
+Subject: Re: linux-next on x60: network manager often complains "network is
+ disabled" after resume
+Date: Sun, 22 Apr 2018 08:19:14 -0400
+Message-ID: <01331018-8c62-30b2-673c-11b0bcd38c0e@gmail.com>
+References: <20180318104023.GA10392@amd>
+ <70721f83-344a-0f23-223b-9c81f6e9e32a@gmail.com> <20180319092106.GA5683@amd>
+ <6e43123a-5227-96c4-a1f5-4416bdb5b0db@gmail.com>
+ <c7d96582-e2e6-d9c8-1140-3f1dab836132@gmail.com> <20180415161551.GF10802@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="z2y5zluhf67einid"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180421231249.9517-1-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20180415161551.GF10802@amd>
+Sender: netdev-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Netdev list <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Pavel Machek wrote:
+> On Tue 2018-03-20 21:11:54, Woody Suwalski wrote:
+>> Woody Suwalski wrote:
+>>> Pavel Machek wrote:
+>>>> On Mon 2018-03-19 05:17:45, Woody Suwalski wrote:
+>>>>> Pavel Machek wrote:
+>>>>>> Hi!
+>>>>>>
+>>>>>> With recent linux-next, after resume networkmanager often claims that
+>>>>>> "network is disabled". Sometimes suspend/resume clears that.
+>>>>>>
+>>>>>> Any ideas? Does it work for you?
+>>>>>>                                      Pavel
+>>>>> Tried the 4.16-rc6 with nm 1.4.4 - I do not see the issue.
+>>>> Thanks for testing... but yes, 4.16 should be ok. If not fixed,
+>>>> problem will appear in 4.17-rc1.
+>>>>
+>>> Works here OK. Tried ~10 suspends, all restarted OK.
+>>> kernel next-20180320
+>>> nmcli shows that Wifi always connects OK
+>>>
+>>> Woody
+>>>
+>> Contrary, it just happened to me on a 64-bit build 4.16-rc5 on T440.
+>> I think that Dan's suspicion is correct - it is a snafu in the PM: trying to
+>> hibernate results in a message:
+>> Failed to hibernate system via logind: There's already a shutdown or sleep
+>> operation in progress.
+>>
+>> And ps shows "Ds /lib/systemd/systemd-sleep suspend"...
+> Problem now seems to be in the mainline.
+>
+> But no, I don't see systemd-sleep in my process list :-(.
+>
+> I guess you can't reproduce it easily? I tried bisecting, but while it
+> happens often enough to make v4.17 hard to use, it does not permit
+> reliable bisect.
+>
+> These should be bad according to my notes
+>
+> b04240a33b99b32cf6fbdf5c943c04e505a0cb07
+>   ed80dc19e4dd395c951f745acd1484d61c4cfb20
+>   52113a0d3889d6e2738cf09bf79bc9cac7b5e1c6
+>   4fc97ef94bbfa185d16b3e44199b7559d0668747
+>   14ebdb2c814f508936fe178a2abc906a16a3ab48
+>   639adbeef5ae1bb8eeebbb0cde0b885397bde192
+>
+> bisection claimed
+>
+> c16add24522547bf52c189b3c0d1ab6f5c2b4375
+>
+> is first bad commit, but I'm not sure if I trust that.
+> 									Pavel
+It has not happen on any of my systems in the last month. Good, but bad 
+for getting more info :-(
 
---z2y5zluhf67einid
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Saturday 21 April 2018 18:12:49 Andrew F. Davis wrote:
-> This device is software similar to the BQ27426 except it has
-> different data memory offsets. Add support here.
->=20
-> Signed-off-by: Andrew F. Davis <afd@ti.com>
-
-Acked-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-
-> ---
->  .../devicetree/bindings/power/supply/bq27xxx.txt         | 1 +
->  drivers/power/supply/bq27xxx_battery.c                   | 9 +++++++++
->  drivers/power/supply/bq27xxx_battery_i2c.c               | 2 ++
->  include/linux/power/bq27xxx_battery.h                    | 3 ++-
->  4 files changed, 14 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b=
-/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-> index 615c1cb6889f..37994fdb18ca 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-> @@ -25,6 +25,7 @@ Required properties:
->   * "ti,bq27545" - BQ27545
->   * "ti,bq27421" - BQ27421
->   * "ti,bq27425" - BQ27425
-> + * "ti,bq27426" - BQ27426
->   * "ti,bq27441" - BQ27441
->   * "ti,bq27621" - BQ27621
->  - reg: integer, I2C address of the fuel gauge.
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
-y/bq27xxx_battery.c
-> index 7ce60519b1bc..d44ed8e17c47 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -432,6 +432,7 @@ static u8
->  		BQ27XXX_DM_REG_ROWS,
->  	};
->  #define bq27425_regs bq27421_regs
-> +#define bq27426_regs bq27421_regs
->  #define bq27441_regs bq27421_regs
->  #define bq27621_regs bq27421_regs
-> =20
-> @@ -664,6 +665,7 @@ static enum power_supply_property bq27421_props[] =3D=
- {
->  	POWER_SUPPLY_PROP_MANUFACTURER,
->  };
->  #define bq27425_props bq27421_props
-> +#define bq27426_props bq27421_props
->  #define bq27441_props bq27421_props
->  #define bq27621_props bq27421_props
-> =20
-> @@ -734,6 +736,12 @@ static struct bq27xxx_dm_reg bq27425_dm_regs[] =3D {
->  	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 82, 18, 2, 2800,  3700 },
->  };
-> =20
-> +static struct bq27xxx_dm_reg bq27426_dm_regs[] =3D {
-> +	[BQ27XXX_DM_DESIGN_CAPACITY]   =3D { 82,  6, 2,    0,  8000 },
-> +	[BQ27XXX_DM_DESIGN_ENERGY]     =3D { 82,  8, 2,    0, 32767 },
-> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 82, 10, 2, 2500,  3700 },
-> +};
-> +
->  #if 0 /* not yet tested */
->  #define bq27441_dm_regs bq27421_dm_regs
->  #else
-> @@ -795,6 +803,7 @@ static struct {
->  	[BQ27545]   =3D BQ27XXX_DATA(bq27545,   0x04143672, BQ27XXX_O_OTDC),
->  	[BQ27421]   =3D BQ27XXX_DATA(bq27421,   0x80008000, BQ27XXX_O_UTOT | BQ=
-27XXX_O_CFGUP | BQ27XXX_O_RAM),
->  	[BQ27425]   =3D BQ27XXX_DATA(bq27425,   0x04143672, BQ27XXX_O_UTOT | BQ=
-27XXX_O_CFGUP),
-> +	[BQ27426]   =3D BQ27XXX_DATA(bq27426,   0x80008000, BQ27XXX_O_UTOT | BQ=
-27XXX_O_CFGUP | BQ27XXX_O_RAM),
->  	[BQ27441]   =3D BQ27XXX_DATA(bq27441,   0x80008000, BQ27XXX_O_UTOT | BQ=
-27XXX_O_CFGUP | BQ27XXX_O_RAM),
->  	[BQ27621]   =3D BQ27XXX_DATA(bq27621,   0x80008000, BQ27XXX_O_UTOT | BQ=
-27XXX_O_CFGUP | BQ27XXX_O_RAM),
->  };
-> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/s=
-upply/bq27xxx_battery_i2c.c
-> index 6b25e5f2337e..40069128ad44 100644
-> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
-> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-> @@ -249,6 +249,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_tabl=
-e[] =3D {
->  	{ "bq27545", BQ27545 },
->  	{ "bq27421", BQ27421 },
->  	{ "bq27425", BQ27425 },
-> +	{ "bq27426", BQ27426 },
->  	{ "bq27441", BQ27441 },
->  	{ "bq27621", BQ27621 },
->  	{},
-> @@ -280,6 +281,7 @@ static const struct of_device_id bq27xxx_battery_i2c_=
-of_match_table[] =3D {
->  	{ .compatible =3D "ti,bq27545" },
->  	{ .compatible =3D "ti,bq27421" },
->  	{ .compatible =3D "ti,bq27425" },
-> +	{ .compatible =3D "ti,bq27426" },
->  	{ .compatible =3D "ti,bq27441" },
->  	{ .compatible =3D "ti,bq27621" },
->  	{},
-> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/=
-bq27xxx_battery.h
-> index 01fbf1b16258..d6355f49fbae 100644
-> --- a/include/linux/power/bq27xxx_battery.h
-> +++ b/include/linux/power/bq27xxx_battery.h
-> @@ -24,8 +24,9 @@ enum bq27xxx_chip {
->  	BQ27546,
->  	BQ27742,
->  	BQ27545, /* bq27545 */
-> -	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-> +	BQ27421, /* bq27421, bq27441, bq27621 */
-
-In future I would propose to put such changes into separate patches...
-as it is not relevant for BQ27426.
-
->  	BQ27425,
-> +	BQ27426,
->  	BQ27441,
->  	BQ27621,
->  };
-
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---z2y5zluhf67einid
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iF0EABECAB0WIQS4VrIQdKium2krgIWL8Mk9A+RDUgUCWtxCygAKCRCL8Mk9A+RD
-UrflAJ96PudqYDYIHifCFw337UsxglLhtQCeIghbagsTv3BMj8vJ6iKUN1d93ks=
-=ia2Q
------END PGP SIGNATURE-----
-
---z2y5zluhf67einid--
+Woody
