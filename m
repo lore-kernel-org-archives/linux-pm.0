@@ -1,37 +1,35 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH/RFC 1/2] PM / wakeup: Add callback for wake-up change notification
-Date: Mon, 23 Apr 2018 11:18:17 +0200
-Message-ID: <1792056.cK5O20Fh4U@aspire.rjw.lan>
-References: <1521026785-26456-1-git-send-email-geert+renesas@glider.be> <1521026785-26456-2-git-send-email-geert+renesas@glider.be>
+Subject: Re: Experiencing freezes with kernel 4.16.3 on a desktop with E5500 CPU (bisect included)
+Date: Mon, 23 Apr 2018 11:27:36 +0200
+Message-ID: <2120072.1825pzNyX4@aspire.rjw.lan>
+References: <CA+ToGPE59B0EKYkRbMcoddEtWwe50nXNu-91UMdjamz+s8nKfg@mail.gmail.com> <20180423091633.GU4064@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521026785-26456-2-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <20180423091633.GU4064@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Diego Viola <diego.viola@gmail.com>, linux-kernel@vger.kernel.org, tglx@linutronix.de, len.brown@intel.com, rui.zhang@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-First, sorry for the huge delay.
-
-On Wednesday, March 14, 2018 12:26:24 PM CEST Geert Uytterhoeven wrote:
-> Add a callback to inform a device that his wake-up setting has been
-> changed.  This allows a device to synchronize device configuration with
-> an external user action.
+On Monday, April 23, 2018 11:16:33 AM CEST Peter Zijlstra wrote:
+> On Sat, Apr 21, 2018 at 11:19:55PM -0300, Diego Viola wrote:
 > 
-> E.g. on systems using a Rohm BD9571MWV PMIC and a toggle accessory power
-> switch, the system suspend procedure is:
->   1. Configure PMIC for DDR backup mode, which changes the role of the
->      accessory power switch from a power to a wake-up switch,
->   2. Switch accessory power switch off, to prepare for system suspend,
->   3. Suspend system.
+> > The problem only happens *after* resuming from suspend, in normal S0
+> > state it never happens.
 > 
-> Hence step 1 cannot be done in the PMIC's suspend callback,
+> What kind of suspend are you doing? s2disk, s2ram ?
+> 
+> > My machine is a desktop and has a dual core E5500 CPU with 2GB of RAM,
+> > I run Arch Linux and I use the i3wm.
+> 
+> That's a Core2 era chip; does it actually have stable TSC ?
+> 
+> > aa83c45762a242acce9b35020363225a7b59d7c9 is the first bad commit
+> 
+> That is most curious; that was supposed to only affect early boot. I'll
+> try and figure out of there's some intersection with suspend.
 
-I don't quite understand this, so can you please explain?
-
-What can't it be done from ->prepare() or even from a suspend notifier?
-
-> but it can be done in the new callback, in response to the user writing "enabled"
-> to the PMIC's wakeup virtual file in sysfs.
+Well, FWIW, I wonder if the flags that were set in init_tsc_clocksource() for
+unstable TSC before the above commit may be involved in this somehow.
