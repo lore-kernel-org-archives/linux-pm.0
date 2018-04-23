@@ -1,67 +1,63 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/6] devfreq: rk3399_dmc: improve rk3399_dmc driver and
- it's documentation
-Date: Mon, 23 Apr 2018 12:53:12 +0200
-Message-ID: <CAPDyKFr_NPNqCmyD0XHa=vy_--kOCzgwUjNqkvXO0uUOdFM=tQ@mail.gmail.com>
-References: <20180419104019.24406-1-enric.balletbo@collabora.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v7 1/6] typec: tcpm: Add core support for sink side PPS
+Date: Mon, 23 Apr 2018 11:06:25 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E6D67@SW-EX-MBX01.diasemi.com>
+References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <daf72dd237653e55c0485e930108c19a4996aa4f.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180422140508.GA21446@kroah.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1E6AAD@SW-EX-MBX01.diasemi.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1E6B41@SW-EX-MBX01.diasemi.com>
+ <20180423082528.GA20868@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180419104019.24406-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180423082528.GA20868@kroah.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Linux PM <linux-pm@vger.kernel.org>, Derek Basehore <dbasehore@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@google.com>, groek@google.com, kernel@collabora.com, Elaine Zhang <zhangqing@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Mark Rutland <mark.rutland@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Lin Huang <hl@rock-chips.com>, Jeffy Chen <jeffy.chen@rock-chips.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 April 2018 at 12:40, Enric Balletbo i Serra
-<enric.balletbo@collabora.com> wrote:
-> Dear all,
->
-> These patches is an attempt to improve a little bit the rk3399_dmc
-> driver and it's documentation in order to have all in a better shape for
-> a future work I am doing. My final intention is add ddrfreq support for
-> rockchip drm driver, but the patches for this are still
-> work-in-progress. So let's start with this first patchset that is
-> basically some fixes/improvements for the rk3399_dmc driver.
+On 23 April 2018 09:25, Greg Kroah-Hartman wrote:
 
-I didn't get cc:ed the series, but only the last part, which makes it
-bit hard to get the full context.
+> On Mon, Apr 23, 2018 at 07:49:38AM +0000, Adam Thomson wrote:
+> > On 22 April 2018 21:58, Adam Thomson wrote:
+> >
+> > > On 22 April 2018 15:05, Greg Kroah-Hartman wrote:
+> > >
+> > > > On Fri, Mar 23, 2018 at 10:12:20AM +0000, Adam Thomson wrote:
+> > > > > This commit adds code to handle requesting of PPS APDOs. Switching
+> > > > > between standard PDOs and APDOs, and re-requesting an APDO to
+> > > > > modify operating voltage/current will be triggered by an
+> > > > > external call into TCPM.
+> > > > >
+> > > > > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > > > > Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+> > > > > Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> > > > > ---
+> > > > >  drivers/usb/typec/tcpm.c | 517
+> > > > ++++++++++++++++++++++++++++++++++++++++++++++-
+> > > > >  include/linux/usb/pd.h   |   4 +-
+> > > > >  include/linux/usb/tcpm.h |   1 +
+> > > > >  3 files changed, 509 insertions(+), 13 deletions(-)
+> > > >
+> > > > This patch adds build warnings to the tree, so I can't take it, sorry.
+> > > > Please fix up and resend.
+> > >
+> > > No problem. Sorry for that. Will take a look and resolve the warnings.
+> >
+> > Sadly this is going to be a bit more than 'resolve the warnings' task now as Jun
+> > Li's patch set has now made it in before me which means I need to rebase PDO
+> > Selection because of his changes. :(
+> 
+> Someone was going to have to do that, sorry :(
 
-Moreover, it would be good if you explained a bit more on what the
-above series actually does and why. Also I don't get why is the PM
-domain changes is in the series, as this seems to be about devfreq.
+Just as an FYI, this patch will produce warnings until the associated
+power_supply interface patch (number 5 in the series previously sent) is
+included as that makes use of the new API. Not sure how I can get around that
+so I guess we have to wait on Sebastian to give the nod for the rest of the
+power_supply patches before this can make it through.
 
-My point is, if you want me to review, please try to be more precise
-so I know what to review.
-
->
-> Best regards,
->
-> Enric Balletbo i Serra (3):
->   dt-bindings: clock: add DDR3 standard speed bins.
->   devfreq: rk3399_dmc: remove wait for dcf irq event.
->   dt-bindings: devfreq: rk3399_dmc: remove interrupts as is not
->     required.
->
-> Lin Huang (2):
->   devfreq: rk3399_dmc: do not print error when get supply and clk defer.
->   devfreq: rk3399_dmc: register devfreq notification to dmc driver.
->
-> Nick Milner (1):
->   dt-bindings: devfreq: rk3399_dmc: improve binding documentation.
->
->  .../bindings/devfreq/rk3399_dmc.txt           | 204 +++++++++---------
->  drivers/devfreq/rk3399_dmc.c                  | 106 +--------
->  drivers/soc/rockchip/pm_domains.c             |  31 +++
->  include/dt-bindings/clock/ddr.h               |  34 +++
->  include/soc/rockchip/rk3399_dmc.h             |  63 ++++++
->  5 files changed, 238 insertions(+), 200 deletions(-)
->  create mode 100644 include/dt-bindings/clock/ddr.h
->  create mode 100644 include/soc/rockchip/rk3399_dmc.h
->
-> --
-> 2.17.0
->
-
-Kind regards
-Uffe
+Anyway, will rebase and resend, and will further highlight this reliance in the
+cover letter.
