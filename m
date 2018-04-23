@@ -1,126 +1,119 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: add suspend/resume support in Armada 37xx DVFS
- driver
-Date: Mon, 23 Apr 2018 09:57:03 +0530
-Message-ID: <20180423042703.GC2989@vireshk-i7>
-References: <20180421141943.25705-1-miquel.raynal@bootlin.com>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH v2 2/2] soc: mediatek: reuse regmap_read_poll_timeout helpers
+Date: Mon, 23 Apr 2018 14:42:45 +0800
+Message-ID: <ed866d3345a27b2c87b570562d9ad9132bca6062.1524465345.git.sean.wang@mediatek.com>
+References: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20180421141943.25705-1-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
+Cc: ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-04-18, 16:19, Miquel Raynal wrote:
-> Add suspend/resume hooks in Armada 37xx DVFS driver to handle S2RAM
-> operations. As there is currently no 'driver' structure, create one
-> to store both the regmap and the register values during suspend
-> operation.
-> 
-> A syscore_ops is used to export the suspend/resume hooks.
-> 
-> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
-> ---
->  drivers/cpufreq/armada-37xx-cpufreq.c | 73 ++++++++++++++++++++++++++++++++++-
->  1 file changed, 71 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-> index 72a2975499db..9c9c3673cbbe 100644
-> --- a/drivers/cpufreq/armada-37xx-cpufreq.c
-> +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-> @@ -22,6 +22,7 @@
->  #include <linux/pm_opp.h>
->  #include <linux/regmap.h>
->  #include <linux/slab.h>
-> +#include <linux/syscore_ops.h>
->  
->  /* Power management in North Bridge register set */
->  #define ARMADA_37XX_NB_L0L1	0x18
-> @@ -56,6 +57,18 @@
->   */
->  #define LOAD_LEVEL_NR	4
->  
-> +#if defined(CONFIG_PM)
-> +struct armada37xx_cpufreq_state {
-> +	struct regmap *regmap;
-> +	u32 nb_l0l1;
-> +	u32 nb_l2l3;
-> +	u32 nb_dyn_mod;
-> +	u32 nb_cpu_load;
-> +};
-> +
-> +static struct armada37xx_cpufreq_state *armada37xx_cpufreq_state;
-> +#endif /* CONFIG_PM */
-> +
->  struct armada_37xx_dvfs {
->  	u32 cpu_freq_max;
->  	u8 divider[LOAD_LEVEL_NR];
-> @@ -136,7 +149,7 @@ static void __init armada37xx_cpufreq_dvfs_setup(struct regmap *base,
->  	clk_set_parent(clk, parent);
->  }
->  
-> -static void __init armada37xx_cpufreq_disable_dvfs(struct regmap *base)
-> +static void armada37xx_cpufreq_disable_dvfs(struct regmap *base)
->  {
->  	unsigned int reg = ARMADA_37XX_NB_DYN_MOD,
->  		mask = ARMADA_37XX_NB_DFS_EN;
-> @@ -162,6 +175,46 @@ static void __init armada37xx_cpufreq_enable_dvfs(struct regmap *base)
->  	regmap_update_bits(base, reg, mask, mask);
->  }
->  
-> +#if defined(CONFIG_PM)
-> +static int armada37xx_cpufreq_suspend(void)
-> +{
-> +	struct armada37xx_cpufreq_state *state = armada37xx_cpufreq_state;
-> +
-> +	regmap_read(state->regmap, ARMADA_37XX_NB_L0L1, &state->nb_l0l1);
-> +	regmap_read(state->regmap, ARMADA_37XX_NB_L2L3, &state->nb_l2l3);
-> +	regmap_read(state->regmap, ARMADA_37XX_NB_CPU_LOAD,
-> +		    &state->nb_cpu_load);
-> +	regmap_read(state->regmap, ARMADA_37XX_NB_DYN_MOD, &state->nb_dyn_mod);
-> +
-> +	return 0;
-> +}
-> +
-> +static void armada37xx_cpufreq_resume(void)
-> +{
-> +	struct armada37xx_cpufreq_state *state = armada37xx_cpufreq_state;
-> +
-> +	/* Ensure DVFS is disabled otherwise the following registers are RO */
-> +	armada37xx_cpufreq_disable_dvfs(state->regmap);
-> +
-> +	regmap_write(state->regmap, ARMADA_37XX_NB_L0L1, state->nb_l0l1);
-> +	regmap_write(state->regmap, ARMADA_37XX_NB_L2L3, state->nb_l2l3);
-> +	regmap_write(state->regmap, ARMADA_37XX_NB_CPU_LOAD,
-> +		     state->nb_cpu_load);
-> +
-> +	/*
-> +	 * NB_DYN_MOD register is the one that actually enable back DVFS if it
-> +	 * was enabled before the suspend operation. This must be done last
-> +	 * otherwise other registers are not writable.
-> +	 */
-> +	regmap_write(state->regmap, ARMADA_37XX_NB_DYN_MOD, state->nb_dyn_mod);
-> +}
-> +
-> +static struct syscore_ops armada37xx_cpufreq_syscore_pm_ops = {
-> +	.suspend = armada37xx_cpufreq_suspend,
-> +	.resume = armada37xx_cpufreq_resume,
-> +};
+From: Sean Wang <sean.wang@mediatek.com>
 
-And why can't you use the suspend/resume callbacks present in the struct
-cpufreq_driver ?
+Reuse the common helpers regmap_read_poll_timeout provided by Linux core
+instead of an open-coded handling.
 
+v1 -> v2:
+ - use macro definitions MTK_POLL_DELAY_US and MTK_POLL_TIMEOUT for
+   arguments sleep_us and timeout_us passing in regmap_read_poll_timeout.
+ - remove unnecessary linux/iopoll.h being included in.
+
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Weiyi Lu <weiyi.lu@mediatek.com>
+---
+ drivers/soc/mediatek/mtk-infracfg.c | 46 ++++++++++---------------------------
+ 1 file changed, 12 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/soc/mediatek/mtk-infracfg.c b/drivers/soc/mediatek/mtk-infracfg.c
+index 8c310de..958861c 100644
+--- a/drivers/soc/mediatek/mtk-infracfg.c
++++ b/drivers/soc/mediatek/mtk-infracfg.c
+@@ -17,6 +17,9 @@
+ #include <linux/soc/mediatek/infracfg.h>
+ #include <asm/processor.h>
+ 
++#define MTK_POLL_DELAY_US   10
++#define MTK_POLL_TIMEOUT    (jiffies_to_usecs(HZ))
++
+ #define INFRA_TOPAXI_PROTECTEN		0x0220
+ #define INFRA_TOPAXI_PROTECTSTA1	0x0228
+ #define INFRA_TOPAXI_PROTECTEN_SET	0x0260
+@@ -37,7 +40,6 @@
+ int mtk_infracfg_set_bus_protection(struct regmap *infracfg, u32 mask,
+ 		bool reg_update)
+ {
+-	unsigned long expired;
+ 	u32 val;
+ 	int ret;
+ 
+@@ -47,22 +49,11 @@ int mtk_infracfg_set_bus_protection(struct regmap *infracfg, u32 mask,
+ 	else
+ 		regmap_write(infracfg, INFRA_TOPAXI_PROTECTEN_SET, mask);
+ 
+-	expired = jiffies + HZ;
+-
+-	while (1) {
+-		ret = regmap_read(infracfg, INFRA_TOPAXI_PROTECTSTA1, &val);
+-		if (ret)
+-			return ret;
+-
+-		if ((val & mask) == mask)
+-			break;
++	ret = regmap_read_poll_timeout(infracfg, INFRA_TOPAXI_PROTECTSTA1,
++				       val, (val & mask) == mask,
++				       MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+ 
+-		cpu_relax();
+-		if (time_after(jiffies, expired))
+-			return -EIO;
+-	}
+-
+-	return 0;
++	return ret;
+ }
+ 
+ /**
+@@ -80,30 +71,17 @@ int mtk_infracfg_set_bus_protection(struct regmap *infracfg, u32 mask,
+ int mtk_infracfg_clear_bus_protection(struct regmap *infracfg, u32 mask,
+ 		bool reg_update)
+ {
+-	unsigned long expired;
+ 	int ret;
++	u32 val;
+ 
+ 	if (reg_update)
+ 		regmap_update_bits(infracfg, INFRA_TOPAXI_PROTECTEN, mask, 0);
+ 	else
+ 		regmap_write(infracfg, INFRA_TOPAXI_PROTECTEN_CLR, mask);
+ 
+-	expired = jiffies + HZ;
+-
+-	while (1) {
+-		u32 val;
+-
+-		ret = regmap_read(infracfg, INFRA_TOPAXI_PROTECTSTA1, &val);
+-		if (ret)
+-			return ret;
+-
+-		if (!(val & mask))
+-			break;
+-
+-		cpu_relax();
+-		if (time_after(jiffies, expired))
+-			return -EIO;
+-	}
++	ret = regmap_read_poll_timeout(infracfg, INFRA_TOPAXI_PROTECTSTA1,
++				       val, !(val & mask),
++				       MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+ 
+-	return 0;
++	return ret;
+ }
 -- 
-viresh
+2.7.4
