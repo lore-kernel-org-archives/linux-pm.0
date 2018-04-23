@@ -1,143 +1,65 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v5 4/6] ARM: dts: Renesas RZ/N1 SoC base device tree file
-Date: Mon, 23 Apr 2018 12:14:06 +0200
-Message-ID: <20180423101406.7vfx4yb525ycbk57@verge.net.au>
-References: <1523963101-56725-1-git-send-email-michel.pollet@bp.renesas.com>
- <1523963101-56725-5-git-send-email-michel.pollet@bp.renesas.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 5/6] devfreq: rk3399_dmc: do not print error when get
+ supply and clk defer.
+Date: Mon, 23 Apr 2018 12:44:52 +0200
+Message-ID: <CAPDyKFpQUFSoUC=FjAjfk5An0yCKWEcwjrBxqXYv8GakvWe4mA@mail.gmail.com>
+References: <20180419104019.24406-1-enric.balletbo@collabora.com> <20180419104019.24406-6-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1523963101-56725-5-git-send-email-michel.pollet@bp.renesas.com>
+In-Reply-To: <20180419104019.24406-6-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>
-Cc: linux-renesas-soc@vger.kernel.org, phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Linux PM <linux-pm@vger.kernel.org>, Derek Basehore <dbasehore@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@google.com>, groek@google.com, kernel@collabora.com, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 17, 2018 at 12:04:19PM +0100, Michel Pollet wrote:
-> This adds the Renesas RZ/N1D (Part #R9A06G032) SoC bare
-> bone support.
-> 
-> This currently only handles generic parts (gic, architected timer)
-> and a UART.
-> For simplicity sake, this also relies on the bootloader to set the
-> pinctrl and clocks.
-> 
-> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+On 19 April 2018 at 12:40, Enric Balletbo i Serra
+<enric.balletbo@collabora.com> wrote:
+> From: Lin Huang <hl@rock-chips.com>
+>
+> We just return -EPROBE_DEFER error code to caller and do not
+> print error message when try to get center logic regulator
+> and DMC clock defer.
+>
+> Signed-off-by: Lin Huang <hl@rock-chips.com>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
->  arch/arm/boot/dts/r9a06g032.dtsi | 89 ++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 89 insertions(+)
->  create mode 100644 arch/arm/boot/dts/r9a06g032.dtsi
-> 
-> diff --git a/arch/arm/boot/dts/r9a06g032.dtsi b/arch/arm/boot/dts/r9a06g032.dtsi
-> new file mode 100644
-> index 0000000..23c56d7
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/r9a06g032.dtsi
-> @@ -0,0 +1,89 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Base Device Tree Source for the Renesas RZ/N1D (R9A06G032)
-> + *
-> + * Copyright (C) 2018 Renesas Electronics Europe Limited
-> + *
-> + */
+>
+>  drivers/devfreq/rk3399_dmc.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> index 44a379657cd5..5bfca028eaaf 100644
+> --- a/drivers/devfreq/rk3399_dmc.c
+> +++ b/drivers/devfreq/rk3399_dmc.c
+> @@ -308,12 +308,18 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>
+>         data->vdd_center = devm_regulator_get(dev, "center");
+>         if (IS_ERR(data->vdd_center)) {
+> +               if (PTR_ERR(data->vdd_center) == -EPROBE_DEFER)
+> +                       return -EPROBE_DEFER;
 > +
-> +#include <dt-bindings/interrupt-controller/arm-gic.h>
-> +
-> +/ {
-> +	compatible = "renesas,r9a06g032", "renesas,rzn1";
+>                 dev_err(dev, "Cannot get the regulator \"center\"\n");
 
-As discussed elsewhere, please drop "renesas,rzn1".
+Doesn't the clock core already print an error message for this?
 
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +
-> +	clkuarts: clkuarts {
-> +		#clock-cells = <0>;
-> +		compatible = "fixed-clock";
-> +		clock-frequency = <47619047>;
-> +	};
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a7";
-> +			reg = <0>;
-> +		};
-> +
-> +		cpu@1 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a7";
-> +			reg = <1>;
-> +		};
-> +	};
-> +
-> +	soc {
-> +		compatible = "simple-bus";
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		interrupt-parent = <&gic>;
-> +		ranges;
-> +
-> +		reboot@4000c120 {
-> +			compatible = "renesas,r9a06g032-reboot",
-> +					"renesas,rzn1-reboot";
-> +			reg = <0x4000c120 4>,
-> +				<0x4000c198 4>;
-> +		};
-> +
-> +		uart0: serial@40060000 {
-> +			compatible = "snps,dw-apb-uart";
-> +			reg = <0x40060000 0x400>;
-> +			interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
-> +			reg-shift = <2>;
-> +			reg-io-width = <4>;
-> +			clocks = <&clkuarts>;
-> +			clock-names = "baudclk";
-> +			status = "disabled";
-> +		};
-> +
-> +		gic: gic@44101000 {
-> +			compatible = "arm,cortex-a7-gic", "arm,gic-400";
-> +			interrupt-controller;
-> +			#interrupt-cells = <3>;
-> +			reg = <0x44101000 0x1000>, /* Distributer */
-> +			      <0x44102000 0x2000>, /* CPU interface */
-> +			      <0x44104000 0x2000>, /* Virt interface control */
-> +			      <0x44106000 0x2000>; /* Virt CPU interface */
-> +			interrupts =
-> +				<GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_HIGH)>;
-> +		};
-> +	};
-> +
-> +	timer {
-> +		compatible = "arm,cortex-a7-timer",
-> +			     "arm,armv7-timer";
-> +		interrupt-parent = <&gic>;
-> +		arm,cpu-registers-not-fw-configured;
-> +		always-on;
-> +		interrupts =
-> +			<GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-> +			<GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-> +			<GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-> +			<GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
+Maybe a better way is simply to drop the printing instead of trying to
+have a special case for it?
 
-Rather than using interrupt-parent, please use interrupts-extended,
-something like this:
+>                 return PTR_ERR(data->vdd_center);
+>         }
+>
+>         data->dmc_clk = devm_clk_get(dev, "dmc_clk");
+>         if (IS_ERR(data->dmc_clk)) {
+> +               if (PTR_ERR(data->dmc_clk) == -EPROBE_DEFER)
+> +                       return -EPROBE_DEFER;
+> +
+>                 dev_err(dev, "Cannot get the clk dmc_clk\n");
+>                 return PTR_ERR(data->dmc_clk);
+>         };
+> --
+> 2.17.0
+>
 
-		interrupts-extended =
-			<&gic GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-			<&gic GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-			<&gic GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
-			<&gic GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
-
-
-> +	};
-> +};
-> -- 
-> 2.7.4
-> 
+Kind regards
+Uffe
