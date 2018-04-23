@@ -1,53 +1,47 @@
-From: <sean.wang@mediatek.com>
-Subject: [PATCH v2 1/2] regmap: include <linux/ktime.h> from include/linux/regmap.h
-Date: Mon, 23 Apr 2018 14:42:44 +0800
-Message-ID: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v7 1/6] typec: tcpm: Add core support for sink side PPS
+Date: Mon, 23 Apr 2018 07:49:38 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E6B41@SW-EX-MBX01.diasemi.com>
+References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <daf72dd237653e55c0485e930108c19a4996aa4f.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180422140508.GA21446@kroah.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1E6AAD@SW-EX-MBX01.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1E6AAD@SW-EX-MBX01.diasemi.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
-Cc: ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>, Mark Brown <broonie@kernel.org>
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang@mediatek.com>
+On 22 April 2018 21:58, Adam Thomson wrote:
 
-Similar to the readx_poll_timeout() macro calling ktime_* and using
-ktime_t type, which is declared in <linux/ktime.h>. So, make
-include/linux/regmap.h explicitly include <linux/ktime.h>, like
-include/linux/iopoll.h does.  Otherwise, users of the macro will see
-below errors.
+> On 22 April 2018 15:05, Greg Kroah-Hartman wrote:
+> 
+> > On Fri, Mar 23, 2018 at 10:12:20AM +0000, Adam Thomson wrote:
+> > > This commit adds code to handle requesting of PPS APDOs. Switching
+> > > between standard PDOs and APDOs, and re-requesting an APDO to
+> > > modify operating voltage/current will be triggered by an
+> > > external call into TCPM.
+> > >
+> > > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > > Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+> > > Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> > > ---
+> > >  drivers/usb/typec/tcpm.c | 517
+> > ++++++++++++++++++++++++++++++++++++++++++++++-
+> > >  include/linux/usb/pd.h   |   4 +-
+> > >  include/linux/usb/tcpm.h |   1 +
+> > >  3 files changed, 509 insertions(+), 13 deletions(-)
+> >
+> > This patch adds build warnings to the tree, so I can't take it, sorry.
+> > Please fix up and resend.
+> 
+> No problem. Sorry for that. Will take a look and resolve the warnings.
 
-error: implicit declaration of function ‘ktime_add_us’
-[-Werror=implicit-function-declaration]
-
-error: implicit declaration of function ‘ktime_get’
-[-Werror=implicit-function-declaration]
-
-error: implicit declaration of function ‘ktime_compare’
-[-Werror=implicit-function-declaration]
-
-include/linux/regmap.h:128:2: error: unknown type name ‘ktime_t’
-  ktime_t __timeout = ktime_add_us(ktime_get(), __timeout_us); \
-
-Cc: Mark Brown <broonie@kernel.org>
-Signed-off-by: Sean Wang <sean.wang@mediatek.com>
----
- include/linux/regmap.h | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/include/linux/regmap.h b/include/linux/regmap.h
-index 5f7ad05..b6865f0 100644
---- a/include/linux/regmap.h
-+++ b/include/linux/regmap.h
-@@ -15,6 +15,7 @@
- 
- #include <linux/list.h>
- #include <linux/rbtree.h>
-+#include <linux/ktime.h>
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/bug.h>
--- 
-2.7.4
+Sadly this is going to be a bit more than 'resolve the warnings' task now as Jun
+Li's patch set has now made it in before me which means I need to rebase PDO
+Selection because of his changes. :(
