@@ -1,7 +1,7 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v7 1/6] typec: tcpm: Add core support for sink side PPS
-Date: Mon, 23 Apr 2018 12:47:47 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E6D83@SW-EX-MBX01.diasemi.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v7 1/6] typec: tcpm: Add core support for sink side PPS
+Date: Mon, 23 Apr 2018 15:20:14 +0200
+Message-ID: <20180423132014.GB24093@kroah.com>
 References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
  <daf72dd237653e55c0485e930108c19a4996aa4f.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
  <20180422140508.GA21446@kroah.com>
@@ -10,63 +10,67 @@ References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
  <20180423082528.GA20868@kroah.com>
  <2E89032DDAA8B9408CB92943514A0337014C1E6D67@SW-EX-MBX01.diasemi.com>
  <20180423112818.GA22932@kroah.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1E6D83@SW-EX-MBX01.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180423112818.GA22932@kroah.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1E6D83@SW-EX-MBX01.diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 23 April 2018 12:28, Greg Kroah-Hartman wrote:
-
-> On Mon, Apr 23, 2018 at 11:06:25AM +0000, Adam Thomson wrote:
-> > On 23 April 2018 09:25, Greg Kroah-Hartman wrote:
-> >
-> > > On Mon, Apr 23, 2018 at 07:49:38AM +0000, Adam Thomson wrote:
-> > > > On 22 April 2018 21:58, Adam Thomson wrote:
-> > > >
-> > > > > On 22 April 2018 15:05, Greg Kroah-Hartman wrote:
-> > > > >
-> > > > > > On Fri, Mar 23, 2018 at 10:12:20AM +0000, Adam Thomson wrote:
-> > > > > > > This commit adds code to handle requesting of PPS APDOs. Switching
-> > > > > > > between standard PDOs and APDOs, and re-requesting an APDO to
-> > > > > > > modify operating voltage/current will be triggered by an
-> > > > > > > external call into TCPM.
-> > > > > > >
-> > > > > > > Signed-off-by: Adam Thomson
-> <Adam.Thomson.Opensource@diasemi.com>
-> > > > > > > Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> > > > > > > Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-> > > > > > > ---
-> > > > > > >  drivers/usb/typec/tcpm.c | 517
-> > > > > > ++++++++++++++++++++++++++++++++++++++++++++++-
-> > > > > > >  include/linux/usb/pd.h   |   4 +-
-> > > > > > >  include/linux/usb/tcpm.h |   1 +
-> > > > > > >  3 files changed, 509 insertions(+), 13 deletions(-)
-> > > > > >
-> > > > > > This patch adds build warnings to the tree, so I can't take it, sorry.
-> > > > > > Please fix up and resend.
-> > > > >
-> > > > > No problem. Sorry for that. Will take a look and resolve the warnings.
-> > > >
-> > > > Sadly this is going to be a bit more than 'resolve the warnings' task now as Jun
-> > > > Li's patch set has now made it in before me which means I need to rebase PDO
-> > > > Selection because of his changes. :(
-> > >
-> > > Someone was going to have to do that, sorry :(
-> >
-> > Just as an FYI, this patch will produce warnings until the associated
-> > power_supply interface patch (number 5 in the series previously sent) is
-> > included as that makes use of the new API. Not sure how I can get around that
-> > so I guess we have to wait on Sebastian to give the nod for the rest of the
-> > power_supply patches before this can make it through.
+On Mon, Apr 23, 2018 at 12:47:47PM +0000, Adam Thomson wrote:
+> On 23 April 2018 12:28, Greg Kroah-Hartman wrote:
 > 
-> That's not good.  There has to be a way to prevent a build warning from
-> happening...
+> > On Mon, Apr 23, 2018 at 11:06:25AM +0000, Adam Thomson wrote:
+> > > On 23 April 2018 09:25, Greg Kroah-Hartman wrote:
+> > >
+> > > > On Mon, Apr 23, 2018 at 07:49:38AM +0000, Adam Thomson wrote:
+> > > > > On 22 April 2018 21:58, Adam Thomson wrote:
+> > > > >
+> > > > > > On 22 April 2018 15:05, Greg Kroah-Hartman wrote:
+> > > > > >
+> > > > > > > On Fri, Mar 23, 2018 at 10:12:20AM +0000, Adam Thomson wrote:
+> > > > > > > > This commit adds code to handle requesting of PPS APDOs. Switching
+> > > > > > > > between standard PDOs and APDOs, and re-requesting an APDO to
+> > > > > > > > modify operating voltage/current will be triggered by an
+> > > > > > > > external call into TCPM.
+> > > > > > > >
+> > > > > > > > Signed-off-by: Adam Thomson
+> > <Adam.Thomson.Opensource@diasemi.com>
+> > > > > > > > Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+> > > > > > > > Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> > > > > > > > ---
+> > > > > > > >  drivers/usb/typec/tcpm.c | 517
+> > > > > > > ++++++++++++++++++++++++++++++++++++++++++++++-
+> > > > > > > >  include/linux/usb/pd.h   |   4 +-
+> > > > > > > >  include/linux/usb/tcpm.h |   1 +
+> > > > > > > >  3 files changed, 509 insertions(+), 13 deletions(-)
+> > > > > > >
+> > > > > > > This patch adds build warnings to the tree, so I can't take it, sorry.
+> > > > > > > Please fix up and resend.
+> > > > > >
+> > > > > > No problem. Sorry for that. Will take a look and resolve the warnings.
+> > > > >
+> > > > > Sadly this is going to be a bit more than 'resolve the warnings' task now as Jun
+> > > > > Li's patch set has now made it in before me which means I need to rebase PDO
+> > > > > Selection because of his changes. :(
+> > > >
+> > > > Someone was going to have to do that, sorry :(
+> > >
+> > > Just as an FYI, this patch will produce warnings until the associated
+> > > power_supply interface patch (number 5 in the series previously sent) is
+> > > included as that makes use of the new API. Not sure how I can get around that
+> > > so I guess we have to wait on Sebastian to give the nod for the rest of the
+> > > power_supply patches before this can make it through.
+> > 
+> > That's not good.  There has to be a way to prevent a build warning from
+> > happening...
+> 
+> If we're ok with '__maybe_unused' then I can add that. Wasn't sure if something
+> like that would be acceptable for this scenario.
 
-If we're ok with '__maybe_unused' then I can add that. Wasn't sure if something
-like that would be acceptable for this scenario.
+I don't remember what the warning was, or what the code was either,
+sorry...
