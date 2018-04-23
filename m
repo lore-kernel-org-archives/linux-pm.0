@@ -1,23 +1,54 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v5 1/6] arm: shmobile: Add the RZ/N1D (R9A06G032) to the
- shmobile Kconfig
-Date: Mon, 23 Apr 2018 12:08:10 +0200
-Message-ID: <20180423100810.g2tucr5bd6ftubmo@verge.net.au>
-References: <1523963101-56725-1-git-send-email-michel.pollet@bp.renesas.com>
- <1523963101-56725-2-git-send-email-michel.pollet@bp.renesas.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v2 1/2] regmap: include <linux/ktime.h> from
+ include/linux/regmap.h
+Date: Mon, 23 Apr 2018 12:11:01 +0200
+Message-ID: <d3e10dc5-55d3-40b8-a8de-d48aaaecf019@gmail.com>
+References: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
+ <20180423100318.GA19834@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1523963101-56725-2-git-send-email-michel.pollet@bp.renesas.com>
+In-Reply-To: <20180423100318.GA19834@sirena.org.uk>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michel Pollet <michel.pollet@bp.renesas.com>
-Cc: linux-renesas-soc@vger.kernel.org, phil.edworthy@renesas.com, Michel Pollet <buserror+upstream@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>, sean.wang@mediatek.com
+Cc: rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 17, 2018 at 12:04:16PM +0100, Michel Pollet wrote:
-> Add the RZ/N1D SoC to the reset of the Renesas SoC Collection.
-> 
-> Signed-off-by: Michel Pollet <michel.pollet@bp.renesas.com>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Thanks, applied.
+
+
+On 04/23/2018 12:03 PM, Mark Brown wrote:
+> On Mon, Apr 23, 2018 at 02:42:44PM +0800, sean.wang@mediatek.com wrote:
+>> From: Sean Wang <sean.wang@mediatek.com>
+>> 
+>> Similar to the readx_poll_timeout() macro calling ktime_* and using 
+>> ktime_t type, which is declared in <linux/ktime.h>. So, make
+> 
+> I'm missing patch 2 here - what's the story, are there any dependencies?
+> 
+
+You can find the second patch here:
+https://patchwork.kernel.org/patch/10356237/
+
+Regards,
+Matthias
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEiUuSfQSYnG8EMsBltDliWyzx00MFAlrdsS4ACgkQtDliWyzx
+00PC6Q/9EqSQ24OeBB6lqD/V58ZEwRP/w6fE9viRP/T0xsa+7NAw3oT5W79ULFYT
+TSjllZ3yytjRCx5UUnLlkNgEN5UPrUUxkmqJH/q2JMuMgmxn1uRWQuyuqWD78RDG
+FQqchWWuOhAf8PNR9ZeHhyRrp2E2RQWzYQ4wj49ZPU/eDFP7IiE8O/wcQ9hU/zNe
+O0r7lnCi7mHHkcns2biOl4WDlkuYVRAQkMYO2w632lO0EiNrKIwyULCzy1s3r21i
+C/9AMi42hAqtGYtfIEPedNvGpJllyitRmZcK0DQCXQJ8z7UKlAHhvU2GRhkHdERR
+bQr/cuFXdUMaiOG6yBYSLOYIsCcXqI1NOLK0j8e7IxN36Lq+3fcyp5O6uTheHBGF
+N/6Kp/fmV+v1dPsWGPOOe5Zxa0yOUSiZglhtEV+YwDrOsUyANMeLkZIeKXERA1WX
+FI6uPF3eJvThMy5uEmAkmfCSlVIGCqyITg6lIOKiC/dY23H4HFrUlzf3+I8Qmmuy
+In4Hk61bS1jQWFU5sWMy6/ptG2TV30sf/PJtWjGYONS4DrN6vXwTE+Sdgz1793cO
+jzo1KHuGjfN7efBwlFykJZ8NLU3EAyStini+uXS24W0Rv6M/wcfNpjELIEnEw9db
+rNqkp/ySzkV+uJf/4Fvpt6ysQgofuJpkM6bWDfbrg8jKpYfwid0=
+=mFXy
+-----END PGP SIGNATURE-----
