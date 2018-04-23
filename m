@@ -1,105 +1,76 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH] cpufreq: add suspend/resume support in Armada 37xx DVFS
- driver
-Date: Mon, 23 Apr 2018 16:38:43 +0200
-Message-ID: <20180423163843.2b9e18b2@xps13>
-References: <20180421141943.25705-1-miquel.raynal@bootlin.com>
- <20180423042703.GC2989@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180423042703.GC2989@vireshk-i7>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Applied "mfd: bd9571mwv: Allow DDR Backup Power register access" to the regulator tree
+Date: Mon, 23 Apr 2018 19:05:04 +0100
+Message-ID: <E1fAfpo-0004D5-5n@debutante>
+References: <1507649178-31473-4-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1507649178-31473-4-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Liam Girdwood <lgirdwood@gmail.com>Mark Brown <broonie@kernel.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>Lee Jones <lee.jones@linaro.org>, linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.orglinux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgVmlyZXNoLAoKT24gTW9uLCAyMyBBcHIgMjAxOCAwOTo1NzowMyArMDUzMCwgVmlyZXNoIEt1
-bWFyCjx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cgo+IE9uIDIxLTA0LTE4LCAxNjox
-OSwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiA+IEFkZCBzdXNwZW5kL3Jlc3VtZSBob29rcyBpbiBB
-cm1hZGEgMzd4eCBEVkZTIGRyaXZlciB0byBoYW5kbGUgUzJSQU0KPiA+IG9wZXJhdGlvbnMuIEFz
-IHRoZXJlIGlzIGN1cnJlbnRseSBubyAnZHJpdmVyJyBzdHJ1Y3R1cmUsIGNyZWF0ZSBvbmUKPiA+
-IHRvIHN0b3JlIGJvdGggdGhlIHJlZ21hcCBhbmQgdGhlIHJlZ2lzdGVyIHZhbHVlcyBkdXJpbmcg
-c3VzcGVuZAo+ID4gb3BlcmF0aW9uLgo+ID4gCj4gPiBBIHN5c2NvcmVfb3BzIGlzIHVzZWQgdG8g
-ZXhwb3J0IHRoZSBzdXNwZW5kL3Jlc3VtZSBob29rcy4KPiA+IAo+ID4gU2lnbmVkLW9mZi1ieTog
-TWlxdWVsIFJheW5hbCA8bWlxdWVsLnJheW5hbEBib290bGluLmNvbT4KPiA+IC0tLQo+ID4gIGRy
-aXZlcnMvY3B1ZnJlcS9hcm1hZGEtMzd4eC1jcHVmcmVxLmMgfCA3MyArKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrLQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA3MSBpbnNlcnRpb25zKCsp
-LCAyIGRlbGV0aW9ucygtKQo+ID4gCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2Fy
-bWFkYS0zN3h4LWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9hcm1hZGEtMzd4eC1jcHVmcmVx
-LmMKPiA+IGluZGV4IDcyYTI5NzU0OTlkYi4uOWM5YzM2NzNjYmJlIDEwMDY0NAo+ID4gLS0tIGEv
-ZHJpdmVycy9jcHVmcmVxL2FybWFkYS0zN3h4LWNwdWZyZXEuYwo+ID4gKysrIGIvZHJpdmVycy9j
-cHVmcmVxL2FybWFkYS0zN3h4LWNwdWZyZXEuYwo+ID4gQEAgLTIyLDYgKzIyLDcgQEAKPiA+ICAj
-aW5jbHVkZSA8bGludXgvcG1fb3BwLmg+Cj4gPiAgI2luY2x1ZGUgPGxpbnV4L3JlZ21hcC5oPgo+
-ID4gICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+Cj4gPiArI2luY2x1ZGUgPGxpbnV4L3N5c2NvcmVf
-b3BzLmg+Cj4gPiAgCj4gPiAgLyogUG93ZXIgbWFuYWdlbWVudCBpbiBOb3J0aCBCcmlkZ2UgcmVn
-aXN0ZXIgc2V0ICovCj4gPiAgI2RlZmluZSBBUk1BREFfMzdYWF9OQl9MMEwxCTB4MTgKPiA+IEBA
-IC01Niw2ICs1NywxOCBAQAo+ID4gICAqLwo+ID4gICNkZWZpbmUgTE9BRF9MRVZFTF9OUgk0Cj4g
-PiAgCj4gPiArI2lmIGRlZmluZWQoQ09ORklHX1BNKQo+ID4gK3N0cnVjdCBhcm1hZGEzN3h4X2Nw
-dWZyZXFfc3RhdGUgewo+ID4gKwlzdHJ1Y3QgcmVnbWFwICpyZWdtYXA7Cj4gPiArCXUzMiBuYl9s
-MGwxOwo+ID4gKwl1MzIgbmJfbDJsMzsKPiA+ICsJdTMyIG5iX2R5bl9tb2Q7Cj4gPiArCXUzMiBu
-Yl9jcHVfbG9hZDsKPiA+ICt9Owo+ID4gKwo+ID4gK3N0YXRpYyBzdHJ1Y3QgYXJtYWRhMzd4eF9j
-cHVmcmVxX3N0YXRlICphcm1hZGEzN3h4X2NwdWZyZXFfc3RhdGU7Cj4gPiArI2VuZGlmIC8qIENP
-TkZJR19QTSAqLwo+ID4gKwo+ID4gIHN0cnVjdCBhcm1hZGFfMzd4eF9kdmZzIHsKPiA+ICAJdTMy
-IGNwdV9mcmVxX21heDsKPiA+ICAJdTggZGl2aWRlcltMT0FEX0xFVkVMX05SXTsKPiA+IEBAIC0x
-MzYsNyArMTQ5LDcgQEAgc3RhdGljIHZvaWQgX19pbml0IGFybWFkYTM3eHhfY3B1ZnJlcV9kdmZz
-X3NldHVwKHN0cnVjdCByZWdtYXAgKmJhc2UsCj4gPiAgCWNsa19zZXRfcGFyZW50KGNsaywgcGFy
-ZW50KTsKPiA+ICB9Cj4gPiAgCj4gPiAtc3RhdGljIHZvaWQgX19pbml0IGFybWFkYTM3eHhfY3B1
-ZnJlcV9kaXNhYmxlX2R2ZnMoc3RydWN0IHJlZ21hcCAqYmFzZSkKPiA+ICtzdGF0aWMgdm9pZCBh
-cm1hZGEzN3h4X2NwdWZyZXFfZGlzYWJsZV9kdmZzKHN0cnVjdCByZWdtYXAgKmJhc2UpCj4gPiAg
-ewo+ID4gIAl1bnNpZ25lZCBpbnQgcmVnID0gQVJNQURBXzM3WFhfTkJfRFlOX01PRCwKPiA+ICAJ
-CW1hc2sgPSBBUk1BREFfMzdYWF9OQl9ERlNfRU47Cj4gPiBAQCAtMTYyLDYgKzE3NSw0NiBAQCBz
-dGF0aWMgdm9pZCBfX2luaXQgYXJtYWRhMzd4eF9jcHVmcmVxX2VuYWJsZV9kdmZzKHN0cnVjdCBy
-ZWdtYXAgKmJhc2UpCj4gPiAgCXJlZ21hcF91cGRhdGVfYml0cyhiYXNlLCByZWcsIG1hc2ssIG1h
-c2spOwo+ID4gIH0KPiA+ICAKPiA+ICsjaWYgZGVmaW5lZChDT05GSUdfUE0pCj4gPiArc3RhdGlj
-IGludCBhcm1hZGEzN3h4X2NwdWZyZXFfc3VzcGVuZCh2b2lkKQo+ID4gK3sKPiA+ICsJc3RydWN0
-IGFybWFkYTM3eHhfY3B1ZnJlcV9zdGF0ZSAqc3RhdGUgPSBhcm1hZGEzN3h4X2NwdWZyZXFfc3Rh
-dGU7Cj4gPiArCj4gPiArCXJlZ21hcF9yZWFkKHN0YXRlLT5yZWdtYXAsIEFSTUFEQV8zN1hYX05C
-X0wwTDEsICZzdGF0ZS0+bmJfbDBsMSk7Cj4gPiArCXJlZ21hcF9yZWFkKHN0YXRlLT5yZWdtYXAs
-IEFSTUFEQV8zN1hYX05CX0wyTDMsICZzdGF0ZS0+bmJfbDJsMyk7Cj4gPiArCXJlZ21hcF9yZWFk
-KHN0YXRlLT5yZWdtYXAsIEFSTUFEQV8zN1hYX05CX0NQVV9MT0FELAo+ID4gKwkJICAgICZzdGF0
-ZS0+bmJfY3B1X2xvYWQpOwo+ID4gKwlyZWdtYXBfcmVhZChzdGF0ZS0+cmVnbWFwLCBBUk1BREFf
-MzdYWF9OQl9EWU5fTU9ELCAmc3RhdGUtPm5iX2R5bl9tb2QpOwo+ID4gKwo+ID4gKwlyZXR1cm4g
-MDsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHZvaWQgYXJtYWRhMzd4eF9jcHVmcmVxX3Jlc3Vt
-ZSh2b2lkKQo+ID4gK3sKPiA+ICsJc3RydWN0IGFybWFkYTM3eHhfY3B1ZnJlcV9zdGF0ZSAqc3Rh
-dGUgPSBhcm1hZGEzN3h4X2NwdWZyZXFfc3RhdGU7Cj4gPiArCj4gPiArCS8qIEVuc3VyZSBEVkZT
-IGlzIGRpc2FibGVkIG90aGVyd2lzZSB0aGUgZm9sbG93aW5nIHJlZ2lzdGVycyBhcmUgUk8gKi8K
-PiA+ICsJYXJtYWRhMzd4eF9jcHVmcmVxX2Rpc2FibGVfZHZmcyhzdGF0ZS0+cmVnbWFwKTsKPiA+
-ICsKPiA+ICsJcmVnbWFwX3dyaXRlKHN0YXRlLT5yZWdtYXAsIEFSTUFEQV8zN1hYX05CX0wwTDEs
-IHN0YXRlLT5uYl9sMGwxKTsKPiA+ICsJcmVnbWFwX3dyaXRlKHN0YXRlLT5yZWdtYXAsIEFSTUFE
-QV8zN1hYX05CX0wyTDMsIHN0YXRlLT5uYl9sMmwzKTsKPiA+ICsJcmVnbWFwX3dyaXRlKHN0YXRl
-LT5yZWdtYXAsIEFSTUFEQV8zN1hYX05CX0NQVV9MT0FELAo+ID4gKwkJICAgICBzdGF0ZS0+bmJf
-Y3B1X2xvYWQpOwo+ID4gKwo+ID4gKwkvKgo+ID4gKwkgKiBOQl9EWU5fTU9EIHJlZ2lzdGVyIGlz
-IHRoZSBvbmUgdGhhdCBhY3R1YWxseSBlbmFibGUgYmFjayBEVkZTIGlmIGl0Cj4gPiArCSAqIHdh
-cyBlbmFibGVkIGJlZm9yZSB0aGUgc3VzcGVuZCBvcGVyYXRpb24uIFRoaXMgbXVzdCBiZSBkb25l
-IGxhc3QKPiA+ICsJICogb3RoZXJ3aXNlIG90aGVyIHJlZ2lzdGVycyBhcmUgbm90IHdyaXRhYmxl
-Lgo+ID4gKwkgKi8KPiA+ICsJcmVnbWFwX3dyaXRlKHN0YXRlLT5yZWdtYXAsIEFSTUFEQV8zN1hY
-X05CX0RZTl9NT0QsIHN0YXRlLT5uYl9keW5fbW9kKTsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGlj
-IHN0cnVjdCBzeXNjb3JlX29wcyBhcm1hZGEzN3h4X2NwdWZyZXFfc3lzY29yZV9wbV9vcHMgPSB7
-Cj4gPiArCS5zdXNwZW5kID0gYXJtYWRhMzd4eF9jcHVmcmVxX3N1c3BlbmQsCj4gPiArCS5yZXN1
-bWUgPSBhcm1hZGEzN3h4X2NwdWZyZXFfcmVzdW1lLAo+ID4gK307ICAKPiAKPiBBbmQgd2h5IGNh
-bid0IHlvdSB1c2UgdGhlIHN1c3BlbmQvcmVzdW1lIGNhbGxiYWNrcyBwcmVzZW50IGluIHRoZSBz
-dHJ1Y3QKPiBjcHVmcmVxX2RyaXZlciA/Cj4gCgpJIGRpZCBub3Qga25ldyBhYm91dCB0aGlzIHN0
-cnVjdHVyZSAobm90IHVzZWQgaW4gdGhpcyBkcml2ZXIpLgoKSSBjaGVja2VkIHRoZSBEb2N1bWVu
-dGF0aW9uIGFuZCB3cm90ZSBzb21ldGhpbmcgdG8gaW50cm9kdWNlIHRoZSB1c2UKb2Ygc3RydWN0
-IGNwdWZyZXFfZHJpdmVyIGJ1dCB0aGlzIG1lYW5zIHRoYXQgdGhlIGRyaXZlciBoYXMgdGhpbmdz
-CnRvIGRvIGR1cmluZyBmcmVxdWVuY3kgc3dpdGNoZXMsIHdoaWNoIGlzIG5vdCB0aGUgY2FzZSBo
-ZXJlLCBleHBsYWluaW5nCihJIGd1ZXNzKSB0aGUgdXNlIG9mIGNwdWZyZXEtZHQuCgpIb3cgd291
-bGQgeW91IHByb2NlZWQgdGhlbj8gU2hhbGwgSSBjb250aW51ZSBpbiB0aGlzIHBhdGg/IEkgY2hl
-Y2tlZAphbGwgdGhlIGRyaXZlcnMgY3VycmVudGx5IHJlZ2lzdGVyaW5nIHRoZSBjcHVmcmVxLWR0
-IGRyaXZlciwgbm9uZSBvZgp0aGVtIHVzZSB0aGlzIHN0cnVjdHVyZSwgc28gSSBhbSBvcGVuIHRv
-IHN1Z2dlc3Rpb25zLgoKVGhhbmtzLApNaXF1w6hsCgotLSAKTWlxdWVsIFJheW5hbCwgQm9vdGxp
-biAoZm9ybWVybHkgRnJlZSBFbGVjdHJvbnMpCkVtYmVkZGVkIExpbnV4IGFuZCBLZXJuZWwgZW5n
-aW5lZXJpbmcKaHR0cHM6Ly9ib290bGluLmNvbQoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgt
-YXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+The patch
+
+   mfd: bd9571mwv: Allow DDR Backup Power register access
+
+has been applied to the regulator tree at
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git 
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+>From 7b569bcb2a2f985fe2d1407aed705882af30cb77 Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Wed, 18 Apr 2018 15:18:03 +0200
+Subject: [PATCH] mfd: bd9571mwv: Allow DDR Backup Power register access
+
+Enable read/write access to the BD9571MWV_BKUP_MODE_CNT register, which
+is amongst others used to configure DDR Backup Power.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ drivers/mfd/bd9571mwv.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/mfd/bd9571mwv.c b/drivers/mfd/bd9571mwv.c
+index 64e088dfe7b0..503979c81dae 100644
+--- a/drivers/mfd/bd9571mwv.c
++++ b/drivers/mfd/bd9571mwv.c
+@@ -29,6 +29,7 @@ static const struct mfd_cell bd9571mwv_cells[] = {
+ 
+ static const struct regmap_range bd9571mwv_readable_yes_ranges[] = {
+ 	regmap_reg_range(BD9571MWV_VENDOR_CODE, BD9571MWV_PRODUCT_REVISION),
++	regmap_reg_range(BD9571MWV_BKUP_MODE_CNT, BD9571MWV_BKUP_MODE_CNT),
+ 	regmap_reg_range(BD9571MWV_AVS_SET_MONI, BD9571MWV_AVS_DVFS_VID(3)),
+ 	regmap_reg_range(BD9571MWV_VD18_VID, BD9571MWV_VD33_VID),
+ 	regmap_reg_range(BD9571MWV_DVFS_VINIT, BD9571MWV_DVFS_VINIT),
+@@ -44,6 +45,7 @@ static const struct regmap_access_table bd9571mwv_readable_table = {
+ };
+ 
+ static const struct regmap_range bd9571mwv_writable_yes_ranges[] = {
++	regmap_reg_range(BD9571MWV_BKUP_MODE_CNT, BD9571MWV_BKUP_MODE_CNT),
+ 	regmap_reg_range(BD9571MWV_AVS_VD09_VID(0), BD9571MWV_AVS_VD09_VID(3)),
+ 	regmap_reg_range(BD9571MWV_DVFS_SETVID, BD9571MWV_DVFS_SETVID),
+ 	regmap_reg_range(BD9571MWV_GPIO_DIR, BD9571MWV_GPIO_OUT),
+-- 
+2.17.0
