@@ -1,76 +1,83 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v7 1/6] typec: tcpm: Add core support for sink side PPS
-Date: Mon, 23 Apr 2018 15:20:14 +0200
-Message-ID: <20180423132014.GB24093@kroah.com>
-References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
- <daf72dd237653e55c0485e930108c19a4996aa4f.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
- <20180422140508.GA21446@kroah.com>
- <2E89032DDAA8B9408CB92943514A0337014C1E6AAD@SW-EX-MBX01.diasemi.com>
- <2E89032DDAA8B9408CB92943514A0337014C1E6B41@SW-EX-MBX01.diasemi.com>
- <20180423082528.GA20868@kroah.com>
- <2E89032DDAA8B9408CB92943514A0337014C1E6D67@SW-EX-MBX01.diasemi.com>
- <20180423112818.GA22932@kroah.com>
- <2E89032DDAA8B9408CB92943514A0337014C1E6D83@SW-EX-MBX01.diasemi.com>
+From: Ezequiel Garcia <ezequiel@collabora.com>
+Subject: Re: [PATCH 5/6] devfreq: rk3399_dmc: do not print error when get
+ supply and clk defer.
+Date: Mon, 23 Apr 2018 10:37:28 -0300
+Message-ID: <34cd09b249cc302d7f2867d0d663321021328cbf.camel@collabora.com>
+References: <20180419104019.24406-1-enric.balletbo@collabora.com>
+         <20180419104019.24406-6-enric.balletbo@collabora.com>
+         <CAPDyKFpQUFSoUC=FjAjfk5An0yCKWEcwjrBxqXYv8GakvWe4mA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1E6D83@SW-EX-MBX01.diasemi.com>
+In-Reply-To: <CAPDyKFpQUFSoUC=FjAjfk5An0yCKWEcwjrBxqXYv8GakvWe4mA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Linux PM <linux-pm@vger.kernel.org>, Derek Basehore <dbasehore@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@google.com>, groek@google.com, kernel@collabora.com, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 23, 2018 at 12:47:47PM +0000, Adam Thomson wrote:
-> On 23 April 2018 12:28, Greg Kroah-Hartman wrote:
-> 
-> > On Mon, Apr 23, 2018 at 11:06:25AM +0000, Adam Thomson wrote:
-> > > On 23 April 2018 09:25, Greg Kroah-Hartman wrote:
-> > >
-> > > > On Mon, Apr 23, 2018 at 07:49:38AM +0000, Adam Thomson wrote:
-> > > > > On 22 April 2018 21:58, Adam Thomson wrote:
-> > > > >
-> > > > > > On 22 April 2018 15:05, Greg Kroah-Hartman wrote:
-> > > > > >
-> > > > > > > On Fri, Mar 23, 2018 at 10:12:20AM +0000, Adam Thomson wrote:
-> > > > > > > > This commit adds code to handle requesting of PPS APDOs. Switching
-> > > > > > > > between standard PDOs and APDOs, and re-requesting an APDO to
-> > > > > > > > modify operating voltage/current will be triggered by an
-> > > > > > > > external call into TCPM.
-> > > > > > > >
-> > > > > > > > Signed-off-by: Adam Thomson
-> > <Adam.Thomson.Opensource@diasemi.com>
-> > > > > > > > Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> > > > > > > > Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-> > > > > > > > ---
-> > > > > > > >  drivers/usb/typec/tcpm.c | 517
-> > > > > > > ++++++++++++++++++++++++++++++++++++++++++++++-
-> > > > > > > >  include/linux/usb/pd.h   |   4 +-
-> > > > > > > >  include/linux/usb/tcpm.h |   1 +
-> > > > > > > >  3 files changed, 509 insertions(+), 13 deletions(-)
-> > > > > > >
-> > > > > > > This patch adds build warnings to the tree, so I can't take it, sorry.
-> > > > > > > Please fix up and resend.
-> > > > > >
-> > > > > > No problem. Sorry for that. Will take a look and resolve the warnings.
-> > > > >
-> > > > > Sadly this is going to be a bit more than 'resolve the warnings' task now as Jun
-> > > > > Li's patch set has now made it in before me which means I need to rebase PDO
-> > > > > Selection because of his changes. :(
-> > > >
-> > > > Someone was going to have to do that, sorry :(
-> > >
-> > > Just as an FYI, this patch will produce warnings until the associated
-> > > power_supply interface patch (number 5 in the series previously sent) is
-> > > included as that makes use of the new API. Not sure how I can get around that
-> > > so I guess we have to wait on Sebastian to give the nod for the rest of the
-> > > power_supply patches before this can make it through.
+On Mon, 2018-04-23 at 12:44 +0200, Ulf Hansson wrote:
+> On 19 April 2018 at 12:40, Enric Balletbo i Serra
+> <enric.balletbo@collabora.com> wrote:
+> > From: Lin Huang <hl@rock-chips.com>
 > > 
-> > That's not good.  There has to be a way to prevent a build warning from
-> > happening...
+> > We just return -EPROBE_DEFER error code to caller and do not
+> > print error message when try to get center logic regulator
+> > and DMC clock defer.
+> > 
+> > Signed-off-by: Lin Huang <hl@rock-chips.com>
+> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> > ---
+> > 
+> >  drivers/devfreq/rk3399_dmc.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> > 
+> > diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> > index 44a379657cd5..5bfca028eaaf 100644
+> > --- a/drivers/devfreq/rk3399_dmc.c
+> > +++ b/drivers/devfreq/rk3399_dmc.c
+> > @@ -308,12 +308,18 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+> > 
+> >         data->vdd_center = devm_regulator_get(dev, "center");
+> >         if (IS_ERR(data->vdd_center)) {
+> > +               if (PTR_ERR(data->vdd_center) == -EPROBE_DEFER)
+> > +                       return -EPROBE_DEFER;
+> > +
+> >                 dev_err(dev, "Cannot get the regulator \"center\"\n");
 > 
-> If we're ok with '__maybe_unused' then I can add that. Wasn't sure if something
-> like that would be acceptable for this scenario.
+> Doesn't the clock core already print an error message for this?
+> 
 
-I don't remember what the warning was, or what the code was either,
-sorry...
+s/clock/regulator?
+
+> Maybe a better way is simply to drop the printing instead of trying to
+> have a special case for it?
+> 
+
+I don't think so.
+
+If you remove this print you: i) might get a print from the core,
+or ii) maybe not because of some path without a print.
+
+And even if you do get an error, it might not relate exactly to the
+driver that requested the resource, because you might be printing
+via pr_xxx, from a context without a struct dev to use dev_xxx.
+
+> >                 return PTR_ERR(data->vdd_center);
+> >         }
+> > 
+> >         data->dmc_clk = devm_clk_get(dev, "dmc_clk");
+> >         if (IS_ERR(data->dmc_clk)) {
+> > +               if (PTR_ERR(data->dmc_clk) == -EPROBE_DEFER)
+> > +                       return -EPROBE_DEFER;
+> > +
+> >                 dev_err(dev, "Cannot get the clk dmc_clk\n");
+> >                 return PTR_ERR(data->dmc_clk);
+> >         };
+> > --
+> > 2.17.0
+> > 
+> 
+> Kind regards
+> Uffe
+> 
