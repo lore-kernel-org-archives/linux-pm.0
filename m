@@ -1,83 +1,68 @@
-From: Ezequiel Garcia <ezequiel@collabora.com>
-Subject: Re: [PATCH 5/6] devfreq: rk3399_dmc: do not print error when get
- supply and clk defer.
-Date: Mon, 23 Apr 2018 10:37:28 -0300
-Message-ID: <34cd09b249cc302d7f2867d0d663321021328cbf.camel@collabora.com>
-References: <20180419104019.24406-1-enric.balletbo@collabora.com>
-         <20180419104019.24406-6-enric.balletbo@collabora.com>
-         <CAPDyKFpQUFSoUC=FjAjfk5An0yCKWEcwjrBxqXYv8GakvWe4mA@mail.gmail.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v2 1/2] regmap: include <linux/ktime.h> from
+ include/linux/regmap.h
+Date: Mon, 23 Apr 2018 16:07:10 +0200
+Message-ID: <f4025431-be9a-32f9-06e1-9c6ac185c96a@gmail.com>
+References: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
+ <20180423100318.GA19834@sirena.org.uk>
+ <d3e10dc5-55d3-40b8-a8de-d48aaaecf019@gmail.com>
+ <20180423115043.GD19834@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpQUFSoUC=FjAjfk5An0yCKWEcwjrBxqXYv8GakvWe4mA@mail.gmail.com>
+In-Reply-To: <20180423115043.GD19834@sirena.org.uk>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Linux PM <linux-pm@vger.kernel.org>, Derek Basehore <dbasehore@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@google.com>, groek@google.com, kernel@collabora.com, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>
+To: Mark Brown <broonie@kernel.org>
+Cc: sean.wang@mediatek.com, rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-04-23 at 12:44 +0200, Ulf Hansson wrote:
-> On 19 April 2018 at 12:40, Enric Balletbo i Serra
-> <enric.balletbo@collabora.com> wrote:
-> > From: Lin Huang <hl@rock-chips.com>
-> > 
-> > We just return -EPROBE_DEFER error code to caller and do not
-> > print error message when try to get center logic regulator
-> > and DMC clock defer.
-> > 
-> > Signed-off-by: Lin Huang <hl@rock-chips.com>
-> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> > ---
-> > 
-> >  drivers/devfreq/rk3399_dmc.c | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> > 
-> > diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-> > index 44a379657cd5..5bfca028eaaf 100644
-> > --- a/drivers/devfreq/rk3399_dmc.c
-> > +++ b/drivers/devfreq/rk3399_dmc.c
-> > @@ -308,12 +308,18 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
-> > 
-> >         data->vdd_center = devm_regulator_get(dev, "center");
-> >         if (IS_ERR(data->vdd_center)) {
-> > +               if (PTR_ERR(data->vdd_center) == -EPROBE_DEFER)
-> > +                       return -EPROBE_DEFER;
-> > +
-> >                 dev_err(dev, "Cannot get the regulator \"center\"\n");
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+
+
+On 04/23/2018 01:50 PM, Mark Brown wrote:
+> On Mon, Apr 23, 2018 at 12:11:01PM +0200, Matthias Brugger wrote:
 > 
-> Doesn't the clock core already print an error message for this?
+>> On 04/23/2018 12:03 PM, Mark Brown wrote:
+>>> On Mon, Apr 23, 2018 at 02:42:44PM +0800, sean.wang@mediatek.com
+>>> wrote:
+>>>> From: Sean Wang <sean.wang@mediatek.com>
+> 
+>>>> Similar to the readx_poll_timeout() macro calling ktime_* and using 
+>>>> ktime_t type, which is declared in <linux/ktime.h>. So, make
+> 
+>>> I'm missing patch 2 here - what's the story, are there any
+>>> dependencies?
+> 
+>> You can find the second patch here: 
+>> https://patchwork.kernel.org/patch/10356237/
+> 
+> So it looks like there is a dependency here...?
 > 
 
-s/clock/regulator?
+Yes, regmap_read_poll_timeout macro uses for example ktime_compare which is
+defined in linux/ktime.h
 
-> Maybe a better way is simply to drop the printing instead of trying to
-> have a special case for it?
-> 
+That's my understanding.
 
-I don't think so.
+Regards,
+Matthias
+-----BEGIN PGP SIGNATURE-----
 
-If you remove this print you: i) might get a print from the core,
-or ii) maybe not because of some path without a print.
-
-And even if you do get an error, it might not relate exactly to the
-driver that requested the resource, because you might be printing
-via pr_xxx, from a context without a struct dev to use dev_xxx.
-
-> >                 return PTR_ERR(data->vdd_center);
-> >         }
-> > 
-> >         data->dmc_clk = devm_clk_get(dev, "dmc_clk");
-> >         if (IS_ERR(data->dmc_clk)) {
-> > +               if (PTR_ERR(data->dmc_clk) == -EPROBE_DEFER)
-> > +                       return -EPROBE_DEFER;
-> > +
-> >                 dev_err(dev, "Cannot get the clk dmc_clk\n");
-> >                 return PTR_ERR(data->dmc_clk);
-> >         };
-> > --
-> > 2.17.0
-> > 
-> 
-> Kind regards
-> Uffe
-> 
+iQIzBAEBCAAdFiEEiUuSfQSYnG8EMsBltDliWyzx00MFAlrd6IYACgkQtDliWyzx
+00MiNQ/5ASP4bK0FTkrulj6hCQbOaDXQcYB6wmrZGeWse4PXhAaehGBjursRlE96
+SjkAa/ZDXjDIhEDHNjO2QONdkDCBiUKp1/Mp8HJeeOTne5yy9V7mFrVxxLCIoqrk
+nlu8I9AY608fjUMiWHtt/nNa91QCjjYUfz/S74FhO0bB4tKBvIQb3zV0HGmqM2s2
+HSxPJhXhlfQIBO5rUcVPsrndfNMDMyCHdxWF7fjN8Gm9aSDIq/j0BvUlxJXm3CmP
+P3AsW1Wdom86IoLJAwCo8dAaPsHos3u7kCK1IWLxDIxl0x9ruHSTKrML01e9o0M9
+VlhqdM8GfoTG4cegRHiBQRVuHNbySpSw15WmuQtvPMKfHRpUThzHFiKawhpLvN5G
+Q/lnNehJvLQ/L7vaiy4kkq4PkppBGutIGobRmG5WU0NwI3sGzrAGev5IBUgkMn5w
+YfMyk/Yxn39aXdOZFSViA1zOYiEfjOnxkDQoxyW/TkyA5NCBG4tAn8Mz8qRH9Z5N
+G8lQ2UiLzxvhe007Ce0PXofkO6TbYoup4YebyOh7RIo13L5xsmmyenQxDb0DqpXH
+g1KDhz+hijenE6/ppEKBSFg8z1NMY+ZWjFWfTV6NB96WrG8Qh+EJ4gODIQCbvYY1
+xEGs3TLuyPuXAz+2pFOK5FEExskrzLnlJ+Mg1wXrJfqs3OWS2EE=
+=fHpR
+-----END PGP SIGNATURE-----
