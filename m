@@ -1,57 +1,72 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 1/2] regmap: include <linux/ktime.h> from
- include/linux/regmap.h
-Date: Mon, 23 Apr 2018 12:50:43 +0100
-Message-ID: <20180423115043.GD19834@sirena.org.uk>
-References: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
- <20180423100318.GA19834@sirena.org.uk>
- <d3e10dc5-55d3-40b8-a8de-d48aaaecf019@gmail.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v7 1/6] typec: tcpm: Add core support for sink side PPS
+Date: Mon, 23 Apr 2018 12:47:47 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1E6D83@SW-EX-MBX01.diasemi.com>
+References: <cover.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <daf72dd237653e55c0485e930108c19a4996aa4f.1521799705.git.Adam.Thomson.Opensource@diasemi.com>
+ <20180422140508.GA21446@kroah.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1E6AAD@SW-EX-MBX01.diasemi.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1E6B41@SW-EX-MBX01.diasemi.com>
+ <20180423082528.GA20868@kroah.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1E6D67@SW-EX-MBX01.diasemi.com>
+ <20180423112818.GA22932@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="tEFtbjk+mNEviIIX"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d3e10dc5-55d3-40b8-a8de-d48aaaecf019@gmail.com>
+In-Reply-To: <20180423112818.GA22932@kroah.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Brugger <matthias.bgg@gmail.com>
-Cc: sean.wang@mediatek.com, rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 23 April 2018 12:28, Greg Kroah-Hartman wrote:
 
---tEFtbjk+mNEviIIX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Mon, Apr 23, 2018 at 11:06:25AM +0000, Adam Thomson wrote:
+> > On 23 April 2018 09:25, Greg Kroah-Hartman wrote:
+> >
+> > > On Mon, Apr 23, 2018 at 07:49:38AM +0000, Adam Thomson wrote:
+> > > > On 22 April 2018 21:58, Adam Thomson wrote:
+> > > >
+> > > > > On 22 April 2018 15:05, Greg Kroah-Hartman wrote:
+> > > > >
+> > > > > > On Fri, Mar 23, 2018 at 10:12:20AM +0000, Adam Thomson wrote:
+> > > > > > > This commit adds code to handle requesting of PPS APDOs. Switching
+> > > > > > > between standard PDOs and APDOs, and re-requesting an APDO to
+> > > > > > > modify operating voltage/current will be triggered by an
+> > > > > > > external call into TCPM.
+> > > > > > >
+> > > > > > > Signed-off-by: Adam Thomson
+> <Adam.Thomson.Opensource@diasemi.com>
+> > > > > > > Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+> > > > > > > Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> > > > > > > ---
+> > > > > > >  drivers/usb/typec/tcpm.c | 517
+> > > > > > ++++++++++++++++++++++++++++++++++++++++++++++-
+> > > > > > >  include/linux/usb/pd.h   |   4 +-
+> > > > > > >  include/linux/usb/tcpm.h |   1 +
+> > > > > > >  3 files changed, 509 insertions(+), 13 deletions(-)
+> > > > > >
+> > > > > > This patch adds build warnings to the tree, so I can't take it, sorry.
+> > > > > > Please fix up and resend.
+> > > > >
+> > > > > No problem. Sorry for that. Will take a look and resolve the warnings.
+> > > >
+> > > > Sadly this is going to be a bit more than 'resolve the warnings' task now as Jun
+> > > > Li's patch set has now made it in before me which means I need to rebase PDO
+> > > > Selection because of his changes. :(
+> > >
+> > > Someone was going to have to do that, sorry :(
+> >
+> > Just as an FYI, this patch will produce warnings until the associated
+> > power_supply interface patch (number 5 in the series previously sent) is
+> > included as that makes use of the new API. Not sure how I can get around that
+> > so I guess we have to wait on Sebastian to give the nod for the rest of the
+> > power_supply patches before this can make it through.
+> 
+> That's not good.  There has to be a way to prevent a build warning from
+> happening...
 
-On Mon, Apr 23, 2018 at 12:11:01PM +0200, Matthias Brugger wrote:
-
-> On 04/23/2018 12:03 PM, Mark Brown wrote:
-> > On Mon, Apr 23, 2018 at 02:42:44PM +0800, sean.wang@mediatek.com wrote:
-> >> From: Sean Wang <sean.wang@mediatek.com>
-
-> >> Similar to the readx_poll_timeout() macro calling ktime_* and using=20
-> >> ktime_t type, which is declared in <linux/ktime.h>. So, make
-
-> > I'm missing patch 2 here - what's the story, are there any dependencies?
-
-> You can find the second patch here:
-> https://patchwork.kernel.org/patch/10356237/
-
-So it looks like there is a dependency here...?
-
---tEFtbjk+mNEviIIX
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlrdyJMACgkQJNaLcl1U
-h9DMMgf+Mq4XuE2uTjJ3RczmwV7XtbZbOyfz9skBzZlxHIMLgev1gD4PsrI5xDiC
-tSdlZKU7hE7+K+h2ZQ+LT95qpf4V8xK39zALPjqy+24FJuNkfKG6kb1AROqta+dX
-LQ5dlTIz0xmLfZ7zkCOWmm0oyeCbc/k/d9nW815ULWk0vRTOgjUmVShy9ARpj3z7
-YZGijwLH2MEaMFr7LBmk+SJiYvsmkSY5/Ie5umu3VWiHta7r05tmcI/kg9ugggt1
-CwUk3T3s787dJLoVvhFPJVdRgG+2SL0ciDq2WkI4geMZ5EWuj0d6zY4I5AYEJ7sD
-gL0OnsG348CnPSKl6TWMfb4wfiCWcQ==
-=oz9q
------END PGP SIGNATURE-----
-
---tEFtbjk+mNEviIIX--
+If we're ok with '__maybe_unused' then I can add that. Wasn't sure if something
+like that would be acceptable for this scenario.
