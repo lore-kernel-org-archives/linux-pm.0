@@ -1,68 +1,265 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v2 1/2] regmap: include <linux/ktime.h> from
- include/linux/regmap.h
-Date: Mon, 23 Apr 2018 16:07:10 +0200
-Message-ID: <f4025431-be9a-32f9-06e1-9c6ac185c96a@gmail.com>
-References: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
- <20180423100318.GA19834@sirena.org.uk>
- <d3e10dc5-55d3-40b8-a8de-d48aaaecf019@gmail.com>
- <20180423115043.GD19834@sirena.org.uk>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v8 6/6] typec: tcpm: Add support for sink PPS related messages
+Date: Mon, 23 Apr 2018 15:11:01 +0100
+Message-ID: <53be031004d3178dca11aaba38dbe4de2ac0c0d9.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180423115043.GD19834@sirena.org.uk>
-Content-Language: en-US
+In-Reply-To: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: sean.wang@mediatek.com, rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+This commit adds sink side support for Get_Status, Status,
+Get_PPS_Status and PPS_Status handling. As there's the
+potential for a partner to respond with Not_Supported,
+handling of this message is also added. Sending of
+Not_Supported is added to handle messagescreceived but not
+yet handled.
 
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/usb/typec/tcpm.c | 143 ++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 134 insertions(+), 9 deletions(-)
 
-
-On 04/23/2018 01:50 PM, Mark Brown wrote:
-> On Mon, Apr 23, 2018 at 12:11:01PM +0200, Matthias Brugger wrote:
-> 
->> On 04/23/2018 12:03 PM, Mark Brown wrote:
->>> On Mon, Apr 23, 2018 at 02:42:44PM +0800, sean.wang@mediatek.com
->>> wrote:
->>>> From: Sean Wang <sean.wang@mediatek.com>
-> 
->>>> Similar to the readx_poll_timeout() macro calling ktime_* and using 
->>>> ktime_t type, which is declared in <linux/ktime.h>. So, make
-> 
->>> I'm missing patch 2 here - what's the story, are there any
->>> dependencies?
-> 
->> You can find the second patch here: 
->> https://patchwork.kernel.org/patch/10356237/
-> 
-> So it looks like there is a dependency here...?
-> 
-
-Yes, regmap_read_poll_timeout macro uses for example ktime_compare which is
-defined in linux/ktime.h
-
-That's my understanding.
-
-Regards,
-Matthias
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEiUuSfQSYnG8EMsBltDliWyzx00MFAlrd6IYACgkQtDliWyzx
-00MiNQ/5ASP4bK0FTkrulj6hCQbOaDXQcYB6wmrZGeWse4PXhAaehGBjursRlE96
-SjkAa/ZDXjDIhEDHNjO2QONdkDCBiUKp1/Mp8HJeeOTne5yy9V7mFrVxxLCIoqrk
-nlu8I9AY608fjUMiWHtt/nNa91QCjjYUfz/S74FhO0bB4tKBvIQb3zV0HGmqM2s2
-HSxPJhXhlfQIBO5rUcVPsrndfNMDMyCHdxWF7fjN8Gm9aSDIq/j0BvUlxJXm3CmP
-P3AsW1Wdom86IoLJAwCo8dAaPsHos3u7kCK1IWLxDIxl0x9ruHSTKrML01e9o0M9
-VlhqdM8GfoTG4cegRHiBQRVuHNbySpSw15WmuQtvPMKfHRpUThzHFiKawhpLvN5G
-Q/lnNehJvLQ/L7vaiy4kkq4PkppBGutIGobRmG5WU0NwI3sGzrAGev5IBUgkMn5w
-YfMyk/Yxn39aXdOZFSViA1zOYiEfjOnxkDQoxyW/TkyA5NCBG4tAn8Mz8qRH9Z5N
-G8lQ2UiLzxvhe007Ce0PXofkO6TbYoup4YebyOh7RIo13L5xsmmyenQxDb0DqpXH
-g1KDhz+hijenE6/ppEKBSFg8z1NMY+ZWjFWfTV6NB96WrG8Qh+EJ4gODIQCbvYY1
-xEGs3TLuyPuXAz+2pFOK5FEExskrzLnlJ+Mg1wXrJfqs3OWS2EE=
-=fHpR
------END PGP SIGNATURE-----
+diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
+index 7547097..4483dc4 100644
+--- a/drivers/usb/typec/tcpm.c
++++ b/drivers/usb/typec/tcpm.c
+@@ -19,7 +19,9 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/usb/pd.h>
++#include <linux/usb/pd_ado.h>
+ #include <linux/usb/pd_bdo.h>
++#include <linux/usb/pd_ext_sdb.h>
+ #include <linux/usb/pd_vdo.h>
+ #include <linux/usb/role.h>
+ #include <linux/usb/tcpm.h>
+@@ -114,6 +116,11 @@
+ 	S(SNK_TRYWAIT_VBUS),			\
+ 	S(BIST_RX),				\
+ 						\
++	S(GET_STATUS_SEND),			\
++	S(GET_STATUS_SEND_TIMEOUT),		\
++	S(GET_PPS_STATUS_SEND),			\
++	S(GET_PPS_STATUS_SEND_TIMEOUT),		\
++						\
+ 	S(ERROR_RECOVERY),			\
+ 	S(PORT_RESET),				\
+ 	S(PORT_RESET_WAIT_OFF)
+@@ -144,6 +151,7 @@ enum pd_msg_request {
+ 	PD_MSG_NONE = 0,
+ 	PD_MSG_CTRL_REJECT,
+ 	PD_MSG_CTRL_WAIT,
++	PD_MSG_CTRL_NOT_SUPP,
+ 	PD_MSG_DATA_SINK_CAP,
+ 	PD_MSG_DATA_SOURCE_CAP,
+ };
+@@ -1411,10 +1419,42 @@ static int tcpm_validate_caps(struct tcpm_port *port, const u32 *pdo,
+ /*
+  * PD (data, control) command handling functions
+  */
++static inline enum tcpm_state ready_state(struct tcpm_port *port)
++{
++	if (port->pwr_role == TYPEC_SOURCE)
++		return SRC_READY;
++	else
++		return SNK_READY;
++}
+ 
+ static int tcpm_pd_send_control(struct tcpm_port *port,
+ 				enum pd_ctrl_msg_type type);
+ 
++static void tcpm_handle_alert(struct tcpm_port *port, const __le32 *payload,
++			      int cnt)
++{
++	u32 p0 = le32_to_cpu(payload[0]);
++	unsigned int type = usb_pd_ado_type(p0);
++
++	if (!type) {
++		tcpm_log(port, "Alert message received with no type");
++		return;
++	}
++
++	/* Just handling non-battery alerts for now */
++	if (!(type & USB_PD_ADO_TYPE_BATT_STATUS_CHANGE)) {
++		switch (port->state) {
++		case SRC_READY:
++		case SNK_READY:
++			tcpm_set_state(port, GET_STATUS_SEND, 0);
++			break;
++		default:
++			tcpm_queue_message(port, PD_MSG_CTRL_WAIT);
++			break;
++		}
++	}
++}
++
+ static void tcpm_pd_data_request(struct tcpm_port *port,
+ 				 const struct pd_message *msg)
+ {
+@@ -1502,6 +1542,14 @@ static void tcpm_pd_data_request(struct tcpm_port *port,
+ 			tcpm_set_state(port, BIST_RX, 0);
+ 		}
+ 		break;
++	case PD_DATA_ALERT:
++		tcpm_handle_alert(port, msg->payload, cnt);
++		break;
++	case PD_DATA_BATT_STATUS:
++	case PD_DATA_GET_COUNTRY_INFO:
++		/* Currently unsupported */
++		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
++		break;
+ 	default:
+ 		tcpm_log(port, "Unhandled data message type %#x", type);
+ 		break;
+@@ -1584,6 +1632,7 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
+ 		break;
+ 	case PD_CTRL_REJECT:
+ 	case PD_CTRL_WAIT:
++	case PD_CTRL_NOT_SUPP:
+ 		switch (port->state) {
+ 		case SNK_NEGOTIATE_CAPABILITIES:
+ 			/* USB PD specification, Figure 8-43 */
+@@ -1703,12 +1752,75 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
+ 			break;
+ 		}
+ 		break;
++	case PD_CTRL_GET_SOURCE_CAP_EXT:
++	case PD_CTRL_GET_STATUS:
++	case PD_CTRL_FR_SWAP:
++	case PD_CTRL_GET_PPS_STATUS:
++	case PD_CTRL_GET_COUNTRY_CODES:
++		/* Currently not supported */
++		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
++		break;
+ 	default:
+ 		tcpm_log(port, "Unhandled ctrl message type %#x", type);
+ 		break;
+ 	}
+ }
+ 
++static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
++				    const struct pd_message *msg)
++{
++	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
++	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
++
++	if (!(msg->ext_msg.header && PD_EXT_HDR_CHUNKED)) {
++		tcpm_log(port, "Unchunked extended messages unsupported");
++		return;
++	}
++
++	if (data_size > PD_EXT_MAX_CHUNK_DATA) {
++		tcpm_log(port, "Chunk handling not yet supported");
++		return;
++	}
++
++	switch (type) {
++	case PD_EXT_STATUS:
++		/*
++		 * If PPS related events raised then get PPS status to clear
++		 * (see USB PD 3.0 Spec, 6.5.2.4)
++		 */
++		if (msg->ext_msg.data[USB_PD_EXT_SDB_EVENT_FLAGS] &
++		    USB_PD_EXT_SDB_PPS_EVENTS)
++			tcpm_set_state(port, GET_PPS_STATUS_SEND, 0);
++		else
++			tcpm_set_state(port, ready_state(port), 0);
++		break;
++	case PD_EXT_PPS_STATUS:
++		/*
++		 * For now the PPS status message is used to clear events
++		 * and nothing more.
++		 */
++		tcpm_set_state(port, ready_state(port), 0);
++		break;
++	case PD_EXT_SOURCE_CAP_EXT:
++	case PD_EXT_GET_BATT_CAP:
++	case PD_EXT_GET_BATT_STATUS:
++	case PD_EXT_BATT_CAP:
++	case PD_EXT_GET_MANUFACTURER_INFO:
++	case PD_EXT_MANUFACTURER_INFO:
++	case PD_EXT_SECURITY_REQUEST:
++	case PD_EXT_SECURITY_RESPONSE:
++	case PD_EXT_FW_UPDATE_REQUEST:
++	case PD_EXT_FW_UPDATE_RESPONSE:
++	case PD_EXT_COUNTRY_INFO:
++	case PD_EXT_COUNTRY_CODES:
++		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
++		break;
++	default:
++		tcpm_log(port, "Unhandled extended message type %#x", type);
++		break;
++	}
++}
++
+ static void tcpm_pd_rx_handler(struct work_struct *work)
+ {
+ 	struct pd_rx_event *event = container_of(work,
+@@ -1749,7 +1861,9 @@ static void tcpm_pd_rx_handler(struct work_struct *work)
+ 				 "Data role mismatch, initiating error recovery");
+ 			tcpm_set_state(port, ERROR_RECOVERY, 0);
+ 		} else {
+-			if (cnt)
++			if (msg->header & PD_HEADER_EXT_HDR)
++				tcpm_pd_ext_msg_request(port, msg);
++			else if (cnt)
+ 				tcpm_pd_data_request(port, msg);
+ 			else
+ 				tcpm_pd_ctrl_request(port, msg);
+@@ -1810,6 +1924,9 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
+ 		case PD_MSG_CTRL_REJECT:
+ 			tcpm_pd_send_control(port, PD_CTRL_REJECT);
+ 			break;
++		case PD_MSG_CTRL_NOT_SUPP:
++			tcpm_pd_send_control(port, PD_CTRL_NOT_SUPP);
++			break;
+ 		case PD_MSG_DATA_SINK_CAP:
+ 			tcpm_pd_send_sink_caps(port);
+ 			break;
+@@ -2572,14 +2689,6 @@ static inline enum tcpm_state hard_reset_state(struct tcpm_port *port)
+ 	return SNK_UNATTACHED;
+ }
+ 
+-static inline enum tcpm_state ready_state(struct tcpm_port *port)
+-{
+-	if (port->pwr_role == TYPEC_SOURCE)
+-		return SRC_READY;
+-	else
+-		return SNK_READY;
+-}
+-
+ static inline enum tcpm_state unattached_state(struct tcpm_port *port)
+ {
+ 	if (port->port_type == TYPEC_PORT_DRP) {
+@@ -3279,6 +3388,22 @@ static void run_state_machine(struct tcpm_port *port)
+ 		/* Always switch to unattached state */
+ 		tcpm_set_state(port, unattached_state(port), 0);
+ 		break;
++	case GET_STATUS_SEND:
++		tcpm_pd_send_control(port, PD_CTRL_GET_STATUS);
++		tcpm_set_state(port, GET_STATUS_SEND_TIMEOUT,
++			       PD_T_SENDER_RESPONSE);
++		break;
++	case GET_STATUS_SEND_TIMEOUT:
++		tcpm_set_state(port, ready_state(port), 0);
++		break;
++	case GET_PPS_STATUS_SEND:
++		tcpm_pd_send_control(port, PD_CTRL_GET_PPS_STATUS);
++		tcpm_set_state(port, GET_PPS_STATUS_SEND_TIMEOUT,
++			       PD_T_SENDER_RESPONSE);
++		break;
++	case GET_PPS_STATUS_SEND_TIMEOUT:
++		tcpm_set_state(port, ready_state(port), 0);
++		break;
+ 	case ERROR_RECOVERY:
+ 		tcpm_swap_complete(port, -EPROTO);
+ 		tcpm_pps_complete(port, -EPROTO);
+-- 
+1.9.1
