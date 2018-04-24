@@ -1,102 +1,97 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: Re: [PATCH 1/3] PM / devfreq: Actually support providing
- freq_table
-Date: Tue, 24 Apr 2018 15:09:14 +0900
-Message-ID: <529236451.01524550500717.JavaMail.epsvc@epcpmgr01>
-References: <20180424052916.GD2052@tuxbook-pro>
-        <20180424002016.9205-1-bjorn.andersson@linaro.org>
-        <20180424002016.9205-2-bjorn.andersson@linaro.org>
-        <5ADE9AE6.9090601@samsung.com>
-        <CGME20180424002041epcas5p11439bec6de910c2a465c5cf3acb45a3b@epcms1p5>
-Reply-To: myungjoo.ham@samsung.com
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: powernv: Fix the hardlockup by synchronus
+ smp_call in timer interrupt
+Date: Tue, 24 Apr 2018 12:47:32 +0530
+Message-ID: <c88d51af-9eb8-6bb3-4201-8909cda0241b@linux.vnet.ibm.com>
+References: <1524544906-31512-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180424160034.6e9d2274@roar.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180424052916.GD2052@tuxbook-pro>
+In-Reply-To: <20180424160034.6e9d2274@roar.ozlabs.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Vivek Gautam <vivek.gautam@codeaurora.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, ppaidipe@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
->On Mon 23 Apr 19:48 PDT 2018, Chanwoo Choi wrote:
->
->> Hi,
->> 
->> On 2018??? 04??? 24??? 09:20, Bjorn Andersson wrote:
->> > The code in devfreq_add_device() handles the case where a freq_table is
->> > passed by the client, but then requests min and max frequences from
->> > the, in this case absent, opp tables.
->> > 
->> > Read the min and max frequencies from the frequency table, which has
->> > been built from the opp table if one exists, instead of querying the
->> > opp table.
->> > 
->> > Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
->> > ---
->> > 
->> > An alternative approach is to clarify in the devfreq code that it's not
->> > possible to pass a freq_table and then in patch 3 create an opp table for the
->> > device in runtime; although the error handling of this becomes non-trivial.
->> > 
->> > Transitioning the UFSHCD to use opp tables directly is hindered by the fact
->> > that the Qualcomm UFS hardware has two different clocks that needs to be
->> > running at different rates, so we would need a way to describe the two rates in
->> > the opp table. (And would force us to change the DT binding)
->> > 
->> >  drivers/devfreq/devfreq.c | 22 ++++------------------
->> >  1 file changed, 4 insertions(+), 18 deletions(-)
->> > 
->> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> > index fe2af6aa88fc..086ced50a13d 100644
->> > --- a/drivers/devfreq/devfreq.c
->> > +++ b/drivers/devfreq/devfreq.c
->> > @@ -74,30 +74,16 @@ static struct devfreq *find_device_devfreq(struct device *dev)
->> >  
->> >  static unsigned long find_available_min_freq(struct devfreq *devfreq)
->> >  {
->> > -	struct dev_pm_opp *opp;
->> > -	unsigned long min_freq = 0;
->> > -
->> > -	opp = dev_pm_opp_find_freq_ceil(devfreq->dev.parent, &min_freq);
->> > -	if (IS_ERR(opp))
->> > -		min_freq = 0;
->> > -	else
->> > -		dev_pm_opp_put(opp);
->> > +	struct devfreq_dev_profile *profile = devfreq->profile;
->> >  
->> > -	return min_freq;
->> > +	return profile->freq_table[0];
->> 
->> It is wrong. The thermal framework support the devfreq-cooling device
->> which uses the dev_pm_opp_enable/disable().
->> 
->
->Okay, that makes sense. So rather than registering a custom freq_table I
->should register the min and max frequency using dev_pm_opp_add().
->
->> In order to find the correct available min frequency,
->> the devfreq have to use the OPP function instead of using the first entry
->> of the freq_table array.
->> 
->
->Based on this there seems to be room for cleaning out the freq_table
->from devfreq, to reduce the confusion. I will review this further.
+Hi,
 
-Could you please check if the bug suffering you gets resolved by
-replacing 0 with ULONG_MAX in the function find_available_max_freq?
+On 04/24/2018 11:30 AM, Nicholas Piggin wrote:
+> On Tue, 24 Apr 2018 10:11:46 +0530
+> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> wrote:
+> 
+>> gpstate_timer_handler() uses synchronous smp_call to set the pstate
+>> on the requested core. This causes the below hard lockup:
+>>
+>> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
+>> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
+>> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
+>> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
+>> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
+>> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
+>> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
+>> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
+>> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
+>> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
+>> --- interrupt: 901 at doorbell_global_ipi+0x34/0x50
+>> LR = arch_send_call_function_ipi_mask+0x120/0x130
+>> [c000003fe566ba50] [c00000000004876c] arch_send_call_function_ipi_mask+0x4c/0x130 (unreliable)
+>> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
+>> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
+>> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
+>> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
+>> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
+>> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
+>> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+>>
+>> Fix this by using the asynchronus smp_call in the timer interrupt handler.
+>> We don't have to wait in this handler until the pstates are changed on
+>> the core. This change will not have any impact on the global pstate
+>> ramp-down algorithm.
+>>
+>> Reported-by: Nicholas Piggin <npiggin@gmail.com>
+>> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> ---
+>>  drivers/cpufreq/powernv-cpufreq.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index 0591874..7e0c752 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -721,7 +721,7 @@ void gpstate_timer_handler(struct timer_list *t)
+>>  	spin_unlock(&gpstates->gpstate_lock);
+>>  
+>>  	/* Timer may get migrated to a different cpu on cpu hot unplug */
+>> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>> +	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 0);
+>>  }
+>>  
+>>  /*
+> 
+> This can still deadlock because !wait case still ends up having to wait
+> if another !wait smp_call_function caller had previously used the
+> call single data for this cpu.
+> 
+> If you go this way you would have to use smp_call_function_async, which
+> is more work.
+> 
+> As a rule it would be better to avoid smp_call_function entirely if
+> possible. Can you ensure the timer is running on the right CPU? Use
+> add_timer_on and try again if the timer is on the wrong CPU, perhaps?
+> 
 
--                max_freq = 0;
-+                max_freq = ULONG_MAX;
+Yeah that is doable we can check for the cpu and re-queue it. We will only
+ramp-down slower in that case which is no harm.
 
-Even if you are not using OPP, these functions should provide somewhat
-"compatible" values.
+(If the targeted core turns out to be offline then we will not queue the timer
+again as we would have already set the pstate to min in the cpu-down path.)
 
-Cheers,
-MyungJoo
+Thanks and Regards,
+Shilpa
 
-
->
->Thanks,
->Bjorn
->
+> Thanks,
+> Nick
+> 
