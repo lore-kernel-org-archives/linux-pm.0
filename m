@@ -1,16 +1,12 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 3/3] cpufreq: add suspend/resume support in Armada 37xx
- DVFS driver
-Date: Tue, 24 Apr 2018 15:09:47 +0530
-Message-ID: <e98965068836e673ea826e8a03fd01e168fce3ed.1524561482.git.viresh.kumar@linaro.org>
-References: <cover.1524561482.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 0/3] cpufreq: dt: Allow platforms to provide suspend/resume
+ hooks
+Date: Tue, 24 Apr 2018 15:09:44 +0530
+Message-ID: <cover.1524561482.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cover.1524561482.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1524561482.git.viresh.kumar@linaro.org>
-References: <cover.1524561482.git.viresh.kumar@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,144 +16,44 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Miquel Raynal <miquel.raynal@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Miquel Raynal <miquel.raynal@bootlin.com>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Miquel Raynal <miquel.raynal@bootlin.com>
+Hi Rafael,
 
-Add suspend/resume hooks in Armada 37xx DVFS driver to handle S2RAM
-operations. As there is currently no 'driver' structure, create one
-to store both the regmap and the register values during suspend
-operation.
+These patches are already tested by Miquel and are ready to get merged.
+Please pick them as part of 4.18 stuff whenever you do that.
 
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/armada-37xx-cpufreq.c | 67 +++++++++++++++++++++++++++++++++--
- 1 file changed, 65 insertions(+), 2 deletions(-)
+I have updated the cpufreq-dt driver to allow platform specific
+suspend/resume hooks and done some minor cleanup in the driver. I have
+updated Miquel's patch and applied that on top of all this.
 
-diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-index 1d5db6f6ace9..5b808882ac8b 100644
---- a/drivers/cpufreq/armada-37xx-cpufreq.c
-+++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-@@ -23,6 +23,8 @@
- #include <linux/regmap.h>
- #include <linux/slab.h>
- 
-+#include "cpufreq-dt.h"
-+
- /* Power management in North Bridge register set */
- #define ARMADA_37XX_NB_L0L1	0x18
- #define ARMADA_37XX_NB_L2L3	0x1C
-@@ -56,6 +58,16 @@
-  */
- #define LOAD_LEVEL_NR	4
- 
-+struct armada37xx_cpufreq_state {
-+	struct regmap *regmap;
-+	u32 nb_l0l1;
-+	u32 nb_l2l3;
-+	u32 nb_dyn_mod;
-+	u32 nb_cpu_load;
-+};
-+
-+static struct armada37xx_cpufreq_state *armada37xx_cpufreq_state;
-+
- struct armada_37xx_dvfs {
- 	u32 cpu_freq_max;
- 	u8 divider[LOAD_LEVEL_NR];
-@@ -136,7 +148,7 @@ static void __init armada37xx_cpufreq_dvfs_setup(struct regmap *base,
- 	clk_set_parent(clk, parent);
- }
- 
--static void __init armada37xx_cpufreq_disable_dvfs(struct regmap *base)
-+static void armada37xx_cpufreq_disable_dvfs(struct regmap *base)
- {
- 	unsigned int reg = ARMADA_37XX_NB_DYN_MOD,
- 		mask = ARMADA_37XX_NB_DFS_EN;
-@@ -162,8 +174,44 @@ static void __init armada37xx_cpufreq_enable_dvfs(struct regmap *base)
- 	regmap_update_bits(base, reg, mask, mask);
- }
- 
-+static int armada37xx_cpufreq_suspend(struct cpufreq_policy *policy)
-+{
-+	struct armada37xx_cpufreq_state *state = armada37xx_cpufreq_state;
-+
-+	regmap_read(state->regmap, ARMADA_37XX_NB_L0L1, &state->nb_l0l1);
-+	regmap_read(state->regmap, ARMADA_37XX_NB_L2L3, &state->nb_l2l3);
-+	regmap_read(state->regmap, ARMADA_37XX_NB_CPU_LOAD,
-+		    &state->nb_cpu_load);
-+	regmap_read(state->regmap, ARMADA_37XX_NB_DYN_MOD, &state->nb_dyn_mod);
-+
-+	return 0;
-+}
-+
-+static int armada37xx_cpufreq_resume(struct cpufreq_policy *policy)
-+{
-+	struct armada37xx_cpufreq_state *state = armada37xx_cpufreq_state;
-+
-+	/* Ensure DVFS is disabled otherwise the following registers are RO */
-+	armada37xx_cpufreq_disable_dvfs(state->regmap);
-+
-+	regmap_write(state->regmap, ARMADA_37XX_NB_L0L1, state->nb_l0l1);
-+	regmap_write(state->regmap, ARMADA_37XX_NB_L2L3, state->nb_l2l3);
-+	regmap_write(state->regmap, ARMADA_37XX_NB_CPU_LOAD,
-+		     state->nb_cpu_load);
-+
-+	/*
-+	 * NB_DYN_MOD register is the one that actually enable back DVFS if it
-+	 * was enabled before the suspend operation. This must be done last
-+	 * otherwise other registers are not writable.
-+	 */
-+	regmap_write(state->regmap, ARMADA_37XX_NB_DYN_MOD, state->nb_dyn_mod);
-+
-+	return 0;
-+}
-+
- static int __init armada37xx_cpufreq_driver_init(void)
- {
-+	struct cpufreq_dt_platform_data pdata;
- 	struct armada_37xx_dvfs *dvfs;
- 	struct platform_device *pdev;
- 	unsigned long freq;
-@@ -213,6 +261,15 @@ static int __init armada37xx_cpufreq_driver_init(void)
- 		return -EINVAL;
- 	}
- 
-+	armada37xx_cpufreq_state = kmalloc(sizeof(*armada37xx_cpufreq_state),
-+					   GFP_KERNEL);
-+	if (!armada37xx_cpufreq_state) {
-+		ret = -ENOMEM;
-+		goto put_clk;
-+	}
-+
-+	armada37xx_cpufreq_state->regmap = nb_pm_base;
-+
- 	armada37xx_cpufreq_dvfs_setup(nb_pm_base, clk, dvfs->divider);
- 	clk_put(clk);
- 
-@@ -228,7 +285,11 @@ static int __init armada37xx_cpufreq_driver_init(void)
- 	/* Now that everything is setup, enable the DVFS at hardware level */
- 	armada37xx_cpufreq_enable_dvfs(nb_pm_base);
- 
--	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-+	pdata.suspend = armada37xx_cpufreq_suspend;
-+	pdata.resume = armada37xx_cpufreq_resume;
-+
-+	pdev = platform_device_register_data(NULL, "cpufreq-dt", -1, &pdata,
-+					     sizeof(pdata));
- 	ret = PTR_ERR_OR_ZERO(pdev);
- 	if (ret)
- 		goto disable_dvfs;
-@@ -244,6 +305,8 @@ static int __init armada37xx_cpufreq_driver_init(void)
- 		dev_pm_opp_remove(cpu_dev, freq);
- 	}
- 
-+	kfree(armada37xx_cpufreq_state);
-+
- 	return ret;
- }
- /* late_initcall, to guarantee the driver is loaded after A37xx clock driver */
+Thanks.
+
+V2->V3:
+- Don't double put the clock.
+- Fix commit log of 3/3.
+- Add tested-by from Miquel.
+- There was no V2 of 1-2/3 but only 3/3 on the lists. All are marked as
+  V3 to clear things out.
+
+--
+viresh
+
+[1] https://lkml.kernel.org/r/20180421141943.25705-1-miquel.raynal@bootlin.com
+
+Miquel Raynal (1):
+  cpufreq: add suspend/resume support in Armada 37xx DVFS driver
+
+Viresh Kumar (2):
+  cpufreq: dt: Allow platform specific suspend/resume callbacks
+  cpufreq: armada: Free resources on error paths
+
+ drivers/cpufreq/armada-37xx-cpufreq.c | 100 +++++++++++++++++++++++++++++-----
+ drivers/cpufreq/cpufreq-dt.c          |  10 +++-
+ drivers/cpufreq/cpufreq-dt.h          |   5 ++
+ 3 files changed, 100 insertions(+), 15 deletions(-)
+
 -- 
 2.15.0.194.g9af6a3dea062
