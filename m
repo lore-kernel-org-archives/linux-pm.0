@@ -1,98 +1,62 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 1/3] PM / devfreq: Actually support providing freq_table
-Date: Tue, 24 Apr 2018 11:48:06 +0900
-Message-ID: <5ADE9AE6.9090601@samsung.com>
-References: <20180424002016.9205-1-bjorn.andersson@linaro.org>
-        <CGME20180424002041epcas5p11439bec6de910c2a465c5cf3acb45a3b@epcas5p1.samsung.com>
-        <20180424002016.9205-2-bjorn.andersson@linaro.org>
+Subject: Re: [PATCH 5/6] devfreq: rk3399_dmc: do not print error when get
+ supply and clk defer.
+Date: Tue, 24 Apr 2018 12:55:05 +0900
+Message-ID: <5ADEAA99.1040903@samsung.com>
+References: <20180419104019.24406-1-enric.balletbo@collabora.com>
+        <CGME20180419104226epcas4p42e5d6a66c909325cedcdc1e24bd9007d@epcas4p4.samsung.com>
+        <20180419104019.24406-6-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180424002016.9205-2-bjorn.andersson@linaro.org>
+In-reply-to: <20180419104019.24406-6-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Vivek Gautam <vivek.gautam@codeaurora.org>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
+Cc: devicetree@vger.kernel.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, kernel@collabora.com, Lin Huang <hl@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 2018년 04월 24일 09:20, Bjorn Andersson wrote:
-> The code in devfreq_add_device() handles the case where a freq_table is
-> passed by the client, but then requests min and max frequences from
-> the, in this case absent, opp tables.
+On 2018년 04월 19일 19:40, Enric Balletbo i Serra wrote:
+> From: Lin Huang <hl@rock-chips.com>
 > 
-> Read the min and max frequencies from the frequency table, which has
-> been built from the opp table if one exists, instead of querying the
-> opp table.
+> We just return -EPROBE_DEFER error code to caller and do not
+> print error message when try to get center logic regulator
+> and DMC clock defer.
 > 
-> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+> Signed-off-by: Lin Huang <hl@rock-chips.com>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
 > 
-> An alternative approach is to clarify in the devfreq code that it's not
-> possible to pass a freq_table and then in patch 3 create an opp table for the
-> device in runtime; although the error handling of this becomes non-trivial.
+>  drivers/devfreq/rk3399_dmc.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> Transitioning the UFSHCD to use opp tables directly is hindered by the fact
-> that the Qualcomm UFS hardware has two different clocks that needs to be
-> running at different rates, so we would need a way to describe the two rates in
-> the opp table. (And would force us to change the DT binding)
-> 
->  drivers/devfreq/devfreq.c | 22 ++++------------------
->  1 file changed, 4 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index fe2af6aa88fc..086ced50a13d 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -74,30 +74,16 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> index 44a379657cd5..5bfca028eaaf 100644
+> --- a/drivers/devfreq/rk3399_dmc.c
+> +++ b/drivers/devfreq/rk3399_dmc.c
+> @@ -308,12 +308,18 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
 >  
->  static unsigned long find_available_min_freq(struct devfreq *devfreq)
->  {
-> -	struct dev_pm_opp *opp;
-> -	unsigned long min_freq = 0;
-> -
-> -	opp = dev_pm_opp_find_freq_ceil(devfreq->dev.parent, &min_freq);
-> -	if (IS_ERR(opp))
-> -		min_freq = 0;
-> -	else
-> -		dev_pm_opp_put(opp);
-> +	struct devfreq_dev_profile *profile = devfreq->profile;
+>  	data->vdd_center = devm_regulator_get(dev, "center");
+>  	if (IS_ERR(data->vdd_center)) {
+> +		if (PTR_ERR(data->vdd_center) == -EPROBE_DEFER)
+> +			return -EPROBE_DEFER;
+> +
+>  		dev_err(dev, "Cannot get the regulator \"center\"\n");
+>  		return PTR_ERR(data->vdd_center);
+>  	}
 >  
-> -	return min_freq;
-> +	return profile->freq_table[0];
-
-It is wrong. The thermal framework support the devfreq-cooling device
-which uses the dev_pm_opp_enable/disable().
-
-In order to find the correct available min frequency,
-the devfreq have to use the OPP function instead of using the first entry
-of the freq_table array.
-
->  }
->  
->  static unsigned long find_available_max_freq(struct devfreq *devfreq)
->  {
-> -	struct dev_pm_opp *opp;
-> -	unsigned long max_freq = ULONG_MAX;
-> -
-> -	opp = dev_pm_opp_find_freq_floor(devfreq->dev.parent, &max_freq);
-> -	if (IS_ERR(opp))
-> -		max_freq = 0;
-> -	else
-> -		dev_pm_opp_put(opp);
-> +	struct devfreq_dev_profile *profile = devfreq->profile;
->  
-> -	return max_freq;
-> +	return profile->freq_table[profile->max_state - 1];
->  }
-
-ditto.
-
->  
->  /**
+>  	data->dmc_clk = devm_clk_get(dev, "dmc_clk");
+>  	if (IS_ERR(data->dmc_clk)) {
+> +		if (PTR_ERR(data->dmc_clk) == -EPROBE_DEFER)
+> +			return -EPROBE_DEFER;
+> +
+>  		dev_err(dev, "Cannot get the clk dmc_clk\n");
+>  		return PTR_ERR(data->dmc_clk);
+>  	};
 > 
 
+Looks good to me.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
 Best Regards,
