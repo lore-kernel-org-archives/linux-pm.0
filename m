@@ -1,63 +1,59 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH] PM / devfreq: Drop custom MIN/MAX macros
-Date: Tue, 24 Apr 2018 12:46:39 -0700
-Message-ID: <20180424194639.22804-1-bjorn.andersson@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC 00/10] ARM: Remove support for Exynos5440
+Date: Tue, 24 Apr 2018 22:50:58 +0200
+Message-ID: <CAK8P3a2CZU1CYFt0fdVSFFnj2Wg=mUcC=yuWAW7zDO0u2Q2dUQ@mail.gmail.com>
+References: <20180424203239.21885-1-krzk@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180424203239.21885-1-krzk@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Greg
 List-Id: linux-pm@vger.kernel.org
 
-Drop the custom MIN/MAX macros in favour of the standard min/max from
-kernel.h
+On Tue, Apr 24, 2018 at 10:32 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> Hi,
+>
+>
+> Overview
+> ========
+> Let's continue the removal of old platforms. We already get rid of Exynos4212.
+> Now it's time for Exynos5440.
+>
+> The Exynos5440 (quad-core A15 with GMAC, PCIe, SATA) was targeting
+> server platforms but it did not make it to the market really.  There are
+> no development boards with it and probably there are no real products
+> neither.  The development for Exynos5440 ended in 2013 and since then
+> the platform is in maintenance mode.
+>
+> The only development happening around it is the PCIe driver for Exynos5433
+> (ARMv8). [1]
+>
+> Removing Exynos5440, makes our life slightly easier:
+> 1. Less maintenance,
+> 2. Smaller code, less quirks,
+> 3. No need to preserve (imaginary) backward-compatibility for Exynos PCIe
+>    driver (so it is easier to add support for Exynos5433).
+>
+>
+> Because of point (3) above - I left the PCIe and PCIe PHY drivers intact.
+>
+>
+> Dependencies
+> ============
+> I think about starting with removal of DTS in some kernel release (patch 1/10).
+> Then all drivers can be removed/updated - subsystem maintainers can pick their
+> patches freely.
+>
+> Finally, after getting rid of all Exynos5440 symbols, the last patch (10/10) will
+> end in arm-soc tree.
+>
+>
+> Any comments?
 
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
----
- drivers/devfreq/devfreq.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+I don't see any hard dependency here, if this is all unused, I think we
+can apply both patches 1 and 10 into arm-soc at the same time as merging
+the other patches through the respective subsystem trees.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index fe2af6aa88fc..2067cd229ce3 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -28,9 +28,6 @@
- #include <linux/of.h>
- #include "governor.h"
- 
--#define MAX(a,b)	((a > b) ? a : b)
--#define MIN(a,b)	((a < b) ? a : b)
--
- static struct class *devfreq_class;
- 
- /*
-@@ -280,8 +277,8 @@ int update_devfreq(struct devfreq *devfreq)
- 	 * max_freq
- 	 * min_freq
- 	 */
--	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
--	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
-+	max_freq = min(devfreq->scaling_max_freq, devfreq->max_freq);
-+	min_freq = max(devfreq->scaling_min_freq, devfreq->min_freq);
- 
- 	if (min_freq && freq < min_freq) {
- 		freq = min_freq;
-@@ -1149,7 +1146,7 @@ static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 
--	return sprintf(buf, "%lu\n", MAX(df->scaling_min_freq, df->min_freq));
-+	return sprintf(buf, "%lu\n", max(df->scaling_min_freq, df->min_freq));
- }
- 
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
-@@ -1185,7 +1182,7 @@ static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 
--	return sprintf(buf, "%lu\n", MIN(df->scaling_max_freq, df->max_freq));
-+	return sprintf(buf, "%lu\n", min(df->scaling_max_freq, df->max_freq));
- }
- static DEVICE_ATTR_RW(max_freq);
- 
--- 
-2.16.2
+      Arnd
