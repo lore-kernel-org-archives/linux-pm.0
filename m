@@ -1,7 +1,7 @@
 From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH 3/6] PM / devfreq: Reorder devfreq_add_device()
-Date: Tue, 24 Apr 2018 15:35:18 -0700
-Message-ID: <20180424223521.28193-4-bjorn.andersson@linaro.org>
+Subject: [PATCH 6/6] PM / devfreq: Reject client provided freq_table
+Date: Tue, 24 Apr 2018 15:35:21 -0700
+Message-ID: <20180424223521.28193-7-bjorn.andersson@linaro.org>
 References: <20180424223521.28193-1-bjorn.andersson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180424223521.28193-1-bjorn.andersson@linaro.org>
@@ -10,82 +10,51 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsun
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The devfreq lock is used to ensure that the devfreq object is fully
-initialized before e.g. the sysfs interface is accessing it. Moving all
-these operations before the device_register() call ensures the same
-thing without a lock; as it's yet to be shared outside the current
-context.
+The devfreq profile's freq_table is an internal resource used to keep
+track of all levels described in the associated opp table, in order to
+support levels being enabled and disabled in runtime by e.g.
+devfreq_cooling.
 
-This allows us to simplify the locking done in devfreq_add_device().
+As it is required by the implementation that the device has an
+associated opp table and expected that the freq_table matches this, it
+is not possible for clients to provide a freq_table through the devfreq
+profile.
 
-Instead of using devres for trans_table and time_in_state we use the
-release function to free them as the devfreq device is released.
+Check for this in devfreq_add_device() and remove the unnecessary
+conditional generation of the internal freq_table.
 
 Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- drivers/devfreq/devfreq.c | 29 ++++++++++++++++-------------
- 1 file changed, 16 insertions(+), 13 deletions(-)
+ drivers/devfreq/devfreq.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index d5b278b8f20e..2e50f5d9d92a 100644
+index c804bd72a644..3d1f6a2edf68 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -539,6 +539,8 @@ static void devfreq_dev_release(struct device *dev)
- 		devfreq->profile->exit(devfreq->dev.parent);
+@@ -557,7 +557,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	static atomic_t devfreq_no = ATOMIC_INIT(-1);
+ 	int err = 0;
  
- 	mutex_destroy(&devfreq->lock);
-+	kfree(devfreq->time_in_state);
-+	kfree(devfreq->trans_table);
- 	kfree(devfreq);
- }
- 
-@@ -617,6 +619,18 @@ struct devfreq *devfreq_add_device(struct device *dev,
+-	if (!dev || !profile || !governor_name) {
++	if (!dev || !profile || !governor_name || profile->freq_table) {
+ 		dev_err(dev, "%s: Invalid parameters.\n", __func__);
+ 		return ERR_PTR(-EINVAL);
  	}
- 	devfreq->scaling_max_freq = devfreq->max_freq;
+@@ -590,11 +590,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->data = data;
+ 	devfreq->nb.notifier_call = devfreq_notifier_call;
  
-+	devfreq->trans_table =	kcalloc(devfreq->profile->max_state *
-+					devfreq->profile->max_state,
-+					sizeof(unsigned int),
-+					GFP_KERNEL);
-+	devfreq->time_in_state = kcalloc(devfreq->profile->max_state,
-+					 sizeof(unsigned long),
-+					 GFP_KERNEL);
-+
-+	devfreq->last_stat_updated = jiffies;
-+
-+	srcu_init_notifier_head(&devfreq->transition_notifier_list);
-+
- 	dev_set_name(&devfreq->dev, "devfreq%d",
- 				atomic_inc_return(&devfreq_no));
- 	err = device_register(&devfreq->dev);
-@@ -625,19 +639,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_dev;
- 	}
+-	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
+-		err = set_freq_table(devfreq);
+-		if (err < 0)
+-			goto err_dev;
+-	}
++	err = set_freq_table(devfreq);
++	if (err < 0)
++		goto err_dev;
  
--	devfreq->trans_table =	devm_kzalloc(&devfreq->dev,
--						sizeof(unsigned int) *
--						devfreq->profile->max_state *
--						devfreq->profile->max_state,
--						GFP_KERNEL);
--	devfreq->time_in_state = devm_kzalloc(&devfreq->dev,
--						sizeof(unsigned long) *
--						devfreq->profile->max_state,
--						GFP_KERNEL);
--	devfreq->last_stat_updated = jiffies;
--
--	srcu_init_notifier_head(&devfreq->transition_notifier_list);
--
- 	mutex_unlock(&devfreq->lock);
- 
- 	mutex_lock(&devfreq_list_lock);
-@@ -669,6 +670,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- err_dev:
- 	mutex_destroy(&devfreq->lock);
-+	kfree(devfreq->time_in_state);
-+	kfree(devfreq->trans_table);
- 	kfree(devfreq);
- err_out:
- 	return ERR_PTR(err);
+ 	devfreq->min_freq = find_available_min_freq(devfreq);
+ 	if (!devfreq->min_freq) {
 -- 
 2.16.2
