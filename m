@@ -1,35 +1,102 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: add suspend/resume support in Armada 37xx DVFS
- driver
-Date: Tue, 24 Apr 2018 11:39:22 +0530
-Message-ID: <20180424060922.GE2989@vireshk-i7>
-References: <20180421141943.25705-1-miquel.raynal@bootlin.com>
- <20180423042703.GC2989@vireshk-i7> <20180423163843.2b9e18b2@xps13>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH 1/3] PM / devfreq: Actually support providing
+ freq_table
+Date: Tue, 24 Apr 2018 15:09:14 +0900
+Message-ID: <529236451.01524550500717.JavaMail.epsvc@epcpmgr01>
+References: <20180424052916.GD2052@tuxbook-pro>
+        <20180424002016.9205-1-bjorn.andersson@linaro.org>
+        <20180424002016.9205-2-bjorn.andersson@linaro.org>
+        <5ADE9AE6.9090601@samsung.com>
+        <CGME20180424002041epcas5p11439bec6de910c2a465c5cf3acb45a3b@epcms1p5>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20180423163843.2b9e18b2@xps13>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180424052916.GD2052@tuxbook-pro>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Vivek Gautam <vivek.gautam@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 23-04-18, 16:38, Miquel Raynal wrote:
-> How would you proceed then? Shall I continue in this path? I checked
-> all the drivers currently registering the cpufreq-dt driver, none of
-> them use this structure, so I am open to suggestions.
+>On Mon 23 Apr 19:48 PDT 2018, Chanwoo Choi wrote:
+>
+>> Hi,
+>> 
+>> On 2018??? 04??? 24??? 09:20, Bjorn Andersson wrote:
+>> > The code in devfreq_add_device() handles the case where a freq_table is
+>> > passed by the client, but then requests min and max frequences from
+>> > the, in this case absent, opp tables.
+>> > 
+>> > Read the min and max frequencies from the frequency table, which has
+>> > been built from the opp table if one exists, instead of querying the
+>> > opp table.
+>> > 
+>> > Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+>> > ---
+>> > 
+>> > An alternative approach is to clarify in the devfreq code that it's not
+>> > possible to pass a freq_table and then in patch 3 create an opp table for the
+>> > device in runtime; although the error handling of this becomes non-trivial.
+>> > 
+>> > Transitioning the UFSHCD to use opp tables directly is hindered by the fact
+>> > that the Qualcomm UFS hardware has two different clocks that needs to be
+>> > running at different rates, so we would need a way to describe the two rates in
+>> > the opp table. (And would force us to change the DT binding)
+>> > 
+>> >  drivers/devfreq/devfreq.c | 22 ++++------------------
+>> >  1 file changed, 4 insertions(+), 18 deletions(-)
+>> > 
+>> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> > index fe2af6aa88fc..086ced50a13d 100644
+>> > --- a/drivers/devfreq/devfreq.c
+>> > +++ b/drivers/devfreq/devfreq.c
+>> > @@ -74,30 +74,16 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+>> >  
+>> >  static unsigned long find_available_min_freq(struct devfreq *devfreq)
+>> >  {
+>> > -	struct dev_pm_opp *opp;
+>> > -	unsigned long min_freq = 0;
+>> > -
+>> > -	opp = dev_pm_opp_find_freq_ceil(devfreq->dev.parent, &min_freq);
+>> > -	if (IS_ERR(opp))
+>> > -		min_freq = 0;
+>> > -	else
+>> > -		dev_pm_opp_put(opp);
+>> > +	struct devfreq_dev_profile *profile = devfreq->profile;
+>> >  
+>> > -	return min_freq;
+>> > +	return profile->freq_table[0];
+>> 
+>> It is wrong. The thermal framework support the devfreq-cooling device
+>> which uses the dev_pm_opp_enable/disable().
+>> 
+>
+>Okay, that makes sense. So rather than registering a custom freq_table I
+>should register the min and max frequency using dev_pm_opp_add().
+>
+>> In order to find the correct available min frequency,
+>> the devfreq have to use the OPP function instead of using the first entry
+>> of the freq_table array.
+>> 
+>
+>Based on this there seems to be room for cleaning out the freq_table
+>from devfreq, to reduce the confusion. I will review this further.
 
-I have sent you a series, please test that one.
+Could you please check if the bug suffering you gets resolved by
+replacing 0 with ULONG_MAX in the function find_available_max_freq?
 
--- 
-viresh
+-                max_freq = 0;
++                max_freq = ULONG_MAX;
+
+Even if you are not using OPP, these functions should provide somewhat
+"compatible" values.
+
+Cheers,
+MyungJoo
+
+
+>
+>Thanks,
+>Bjorn
+>
