@@ -1,62 +1,34 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [GIT PULL] Thermal management updates for v4.17-rc2
-Date: Tue, 24 Apr 2018 21:25:45 +0800
-Message-ID: <1524576345.2597.31.camel@intel.com>
-References: <20180420161834.GA22776@localhost.localdomain>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v8 0/6] typec: tcpm: Add sink side support for PPS
+Date: Tue, 24 Apr 2018 15:57:49 +0200
+Message-ID: <20180424135749.GA21610@kroah.com>
+References: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180420161834.GA22776@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Eduardo,
+On Mon, Apr 23, 2018 at 03:10:55PM +0100, Adam Thomson wrote:
+> This patch set adds sink side support for the PPS feature introduced in the
+> USB PD 3.0 specification.
+> 
+> The source PPS supply is represented using the Power Supply framework to provide
+> access and control APIs for dealing with it's operating voltage and current,
+> and switching between a standard PDO and PPS APDO operation. During standard PDO
+> operation the voltage and current is read-only, but for APDO PPS these are
+> writable as well to allow for control.
+> 
+> It should be noted that the keepalive for PPS is not handled within TCPM. The
+> expectation is that the external user will be required to ensure re-requests
+> occur regularly to ensure PPS remains and the source does not hard reset.
 
-On 五, 2018-04-20 at 09:18 -0700, Eduardo Valentin wrote:
-> Hello Linus,
-> 
-> Here are a couple of fixes on thermal subsystem.
-> Please consider pulling from
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
-> thermal fixes
-> 
-> to receive Thermal Management updates for v4.17-rc2 with top-most
-> 
-> e04907dbc25930b88ee2328fe692c776f63ddf2c:
-> 
->   dt-bindings: thermal: Remove "cooling-{min|max}-level" properties
-> (2018-04-18 07:04:28 -0700)
-> 
-> on top of commit 60cc43fc888428bb2f18f08997432d426a243338:
-> 
->   Linux 4.17-rc1 (2018-04-15 18:24:20 -0700)
-> 
-As this does not hit 4.17-rc2, and I have some thermal core fixes now,
-would you mind rebase the patches on top of 4.17-rc2, and send the pull
-request to me, including the exynos fixes, so that I can pull and queue
-for next -rc?
+Sebastian, any objection from me taking this series through my USB tree?
 
 thanks,
-rui
-> BR,
-> 
-> Eduardo Valentin
-> 
-> ----------------------------------------------------------------
-> Bartlomiej Zolnierkiewicz (1):
->       dt-bindings: thermal: remove no longer needed samsung thermal
-> properties
-> 
-> Viresh Kumar (1):
->       dt-bindings: thermal: Remove "cooling-{min|max}-level"
-> properties
-> 
->  .../devicetree/bindings/thermal/exynos-thermal.txt | 23 +++++-------
-> ----------
->  .../devicetree/bindings/thermal/thermal.txt        | 16 +-----------
-> ---
->  2 files changed, 6 insertions(+), 33 deletions(-)
+
+greg k-h
