@@ -1,7 +1,8 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/3] cpufreq: armada: Free resources on error paths
-Date: Tue, 24 Apr 2018 11:37:35 +0530
-Message-ID: <f1c51daa2b6f932107bf933247cb659713989a98.1524549644.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 3/3] cpufreq: add suspend/resume support in Armada 37xx
+ DVFS driver
+Date: Tue, 24 Apr 2018 11:37:36 +0530
+Message-ID: <4ca19364ff10083c3912ce428207c3f713f973b9.1524549644.git.viresh.kumar@linaro.org>
 References: <cover.1524549644.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,88 +24,145 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, Miquel Raynal <miquel.raynal@bootlin.com
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The resources weren't freed on failures, free them properly.
+From: Miquel Raynal <miquel.raynal@bootlin.com>
 
+Add suspend/resume hooks in Armada 37xx DVFS driver to handle S2RAM
+operations. As there is currently no 'driver' structure, create one
+to store both the regmap and the register values during suspend
+operation.
+
+A syscore_ops is used to export the suspend/resume hooks.
+
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/armada-37xx-cpufreq.c | 40 +++++++++++++++++++++++------------
- 1 file changed, 26 insertions(+), 14 deletions(-)
+V1->V2:
+- Updated patch based on cpufreq-dt suspend/resume hooks.
+
+ drivers/cpufreq/armada-37xx-cpufreq.c | 67 +++++++++++++++++++++++++++++++++--
+ 1 file changed, 65 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-index 72a2975499db..9dafb3bbc334 100644
+index 9dafb3bbc334..c827d2437246 100644
 --- a/drivers/cpufreq/armada-37xx-cpufreq.c
 +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-@@ -166,6 +166,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
+@@ -23,6 +23,8 @@
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+ 
++#include "cpufreq-dt.h"
++
+ /* Power management in North Bridge register set */
+ #define ARMADA_37XX_NB_L0L1	0x18
+ #define ARMADA_37XX_NB_L2L3	0x1C
+@@ -56,6 +58,16 @@
+  */
+ #define LOAD_LEVEL_NR	4
+ 
++struct armada37xx_cpufreq_state {
++	struct regmap *regmap;
++	u32 nb_l0l1;
++	u32 nb_l2l3;
++	u32 nb_dyn_mod;
++	u32 nb_cpu_load;
++};
++
++static struct armada37xx_cpufreq_state *armada37xx_cpufreq_state;
++
+ struct armada_37xx_dvfs {
+ 	u32 cpu_freq_max;
+ 	u8 divider[LOAD_LEVEL_NR];
+@@ -136,7 +148,7 @@ static void __init armada37xx_cpufreq_dvfs_setup(struct regmap *base,
+ 	clk_set_parent(clk, parent);
+ }
+ 
+-static void __init armada37xx_cpufreq_disable_dvfs(struct regmap *base)
++static void armada37xx_cpufreq_disable_dvfs(struct regmap *base)
  {
+ 	unsigned int reg = ARMADA_37XX_NB_DYN_MOD,
+ 		mask = ARMADA_37XX_NB_DFS_EN;
+@@ -162,8 +174,44 @@ static void __init armada37xx_cpufreq_enable_dvfs(struct regmap *base)
+ 	regmap_update_bits(base, reg, mask, mask);
+ }
+ 
++static int armada37xx_cpufreq_suspend(struct cpufreq_policy *policy)
++{
++	struct armada37xx_cpufreq_state *state = armada37xx_cpufreq_state;
++
++	regmap_read(state->regmap, ARMADA_37XX_NB_L0L1, &state->nb_l0l1);
++	regmap_read(state->regmap, ARMADA_37XX_NB_L2L3, &state->nb_l2l3);
++	regmap_read(state->regmap, ARMADA_37XX_NB_CPU_LOAD,
++		    &state->nb_cpu_load);
++	regmap_read(state->regmap, ARMADA_37XX_NB_DYN_MOD, &state->nb_dyn_mod);
++
++	return 0;
++}
++
++static int armada37xx_cpufreq_resume(struct cpufreq_policy *policy)
++{
++	struct armada37xx_cpufreq_state *state = armada37xx_cpufreq_state;
++
++	/* Ensure DVFS is disabled otherwise the following registers are RO */
++	armada37xx_cpufreq_disable_dvfs(state->regmap);
++
++	regmap_write(state->regmap, ARMADA_37XX_NB_L0L1, state->nb_l0l1);
++	regmap_write(state->regmap, ARMADA_37XX_NB_L2L3, state->nb_l2l3);
++	regmap_write(state->regmap, ARMADA_37XX_NB_CPU_LOAD,
++		     state->nb_cpu_load);
++
++	/*
++	 * NB_DYN_MOD register is the one that actually enable back DVFS if it
++	 * was enabled before the suspend operation. This must be done last
++	 * otherwise other registers are not writable.
++	 */
++	regmap_write(state->regmap, ARMADA_37XX_NB_DYN_MOD, state->nb_dyn_mod);
++
++	return 0;
++}
++
+ static int __init armada37xx_cpufreq_driver_init(void)
+ {
++	struct cpufreq_dt_platform_data pdata;
  	struct armada_37xx_dvfs *dvfs;
  	struct platform_device *pdev;
-+	unsigned long freq;
- 	unsigned int cur_frequency;
- 	struct regmap *nb_pm_base;
- 	struct device *cpu_dev;
-@@ -202,38 +203,49 @@ static int __init armada37xx_cpufreq_driver_init(void)
- 	cur_frequency = clk_get_rate(clk);
- 	if (!cur_frequency) {
- 		dev_err(cpu_dev, "Failed to get clock rate for CPU\n");
--		clk_put(clk);
--		return -EINVAL;
-+		ret = -EINVAL;
-+		goto put_clk;
+ 	unsigned long freq;
+@@ -213,6 +261,15 @@ static int __init armada37xx_cpufreq_driver_init(void)
+ 		goto put_clk;
  	}
  
- 	dvfs = armada_37xx_cpu_freq_info_get(cur_frequency);
--	if (!dvfs)
--		return -EINVAL;
-+	if (!dvfs) {
-+		ret = -EINVAL;
++	armada37xx_cpufreq_state = kmalloc(sizeof(*armada37xx_cpufreq_state),
++					   GFP_KERNEL);
++	if (!armada37xx_cpufreq_state) {
++		ret = -ENOMEM;
 +		goto put_clk;
 +	}
- 
++
++	armada37xx_cpufreq_state->regmap = nb_pm_base;
++
  	armada37xx_cpufreq_dvfs_setup(nb_pm_base, clk, dvfs->divider);
  	clk_put(clk);
  
- 	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
- 	     load_lvl++) {
--		unsigned long freq = cur_frequency / dvfs->divider[load_lvl];
-+		freq = cur_frequency / dvfs->divider[load_lvl];
- 
- 		ret = dev_pm_opp_add(cpu_dev, freq, 0);
--		if (ret) {
--			/* clean-up the already added opp before leaving */
--			while (load_lvl-- > ARMADA_37XX_DVFS_LOAD_0) {
--				freq = cur_frequency / dvfs->divider[load_lvl];
--				dev_pm_opp_remove(cpu_dev, freq);
--			}
--			return ret;
--		}
-+		if (ret)
-+			goto remove_opp;
- 	}
- 
+@@ -228,7 +285,11 @@ static int __init armada37xx_cpufreq_driver_init(void)
  	/* Now that everything is setup, enable the DVFS at hardware level */
  	armada37xx_cpufreq_enable_dvfs(nb_pm_base);
  
- 	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-+	ret = PTR_ERR_OR_ZERO(pdev);
-+	if (ret)
-+		goto disable_dvfs;
+-	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
++	pdata.suspend = armada37xx_cpufreq_suspend;
++	pdata.resume = armada37xx_cpufreq_resume;
 +
-+	return 0;
- 
--	return PTR_ERR_OR_ZERO(pdev);
-+disable_dvfs:
-+	armada37xx_cpufreq_disable_dvfs(nb_pm_base);
-+remove_opp:
-+	/* clean-up the already added opp before leaving */
-+	while (load_lvl-- > ARMADA_37XX_DVFS_LOAD_0) {
-+		freq = cur_frequency / dvfs->divider[load_lvl];
-+		dev_pm_opp_remove(cpu_dev, freq);
-+	}
-+put_clk:
-+	clk_put(clk);
-+	return ret;
- }
- /* late_initcall, to guarantee the driver is loaded after A37xx clock driver */
- late_initcall(armada37xx_cpufreq_driver_init);
++	pdev = platform_device_register_data(NULL, "cpufreq-dt", -1, &pdata,
++					     sizeof(pdata));
+ 	ret = PTR_ERR_OR_ZERO(pdev);
+ 	if (ret)
+ 		goto disable_dvfs;
+@@ -243,6 +304,8 @@ static int __init armada37xx_cpufreq_driver_init(void)
+ 		freq = cur_frequency / dvfs->divider[load_lvl];
+ 		dev_pm_opp_remove(cpu_dev, freq);
+ 	}
++
++	kfree(armada37xx_cpufreq_state);
+ put_clk:
+ 	clk_put(clk);
+ 	return ret;
 -- 
 2.15.0.194.g9af6a3dea062
