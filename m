@@ -1,79 +1,42 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH 2/3] scsi: ufs: Extract devfreq registration
-Date: Mon, 23 Apr 2018 17:20:15 -0700
-Message-ID: <20180424002016.9205-3-bjorn.andersson@linaro.org>
-References: <20180424002016.9205-1-bjorn.andersson@linaro.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH 1/6] dt-bindings: devfreq: rk3399_dmc: improve binding
+ documentation.
+Date: Tue, 24 Apr 2018 10:53:43 +0900
+Message-ID: <20180424015343epcms1p30dd08ebdea1e25582012711470cf7cdf@epcms1p3>
+References: <20180419104019.24406-2-enric.balletbo@collabora.com>
+        <20180419104019.24406-1-enric.balletbo@collabora.com>
+        <CGME20180419104054epcas5p49612174afb26493bcd937a0232b9b1df@epcms1p3>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180424002016.9205-1-bjorn.andersson@linaro.org>
+In-Reply-To: <20180419104019.24406-2-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Vivek Gautam <vivek.gautam@codeaurora.org>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Kyungmin Park <kyungmin.park@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "heiko@sntech.de" <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dianders@google.com" <dianders@google.com>, "groek@google.com" <groek@google.com>, "kernel@collabora.com" <kernel@collabora.com>, Nick Milner <nick.milner@collabora.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Failing to register with devfreq leaves hba->devfreq assigned, which
-causes the error path to dereference the ERR_PTR(). Rather than bolting
-on more conditionals, move the call of devm_devfreq_add_device() into
-it's own function and only update hba->devfreq once it's successfully
-registered.
+>From: Nick Milner <nick.milner@collabora.com>
+>
+>There are several typos, references to non existent files, grammar and
+>punctuation mistakes in the rk3399_dmc.txt binding. This patch tries
+>to improve the binding documentation and fix these mistakes.
+>
+>Signed-off-by: Nick Milner <nick.milner@collabora.com>
+>Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-The subsequent patch builds upon this to make UFS actually work again,
-as it's been broken since f1d981eaecf8 ("PM / devfreq: Use the available
-min/max frequency")
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
----
- drivers/scsi/ufs/ufshcd.c | 31 ++++++++++++++++++++++---------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+CC (The original author of this doc): Lin Huang <hl@rock-chips.com>
 
-diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
-index 8f22a980b1a7..2253f24309ec 100644
---- a/drivers/scsi/ufs/ufshcd.c
-+++ b/drivers/scsi/ufs/ufshcd.c
-@@ -1255,6 +1255,26 @@ static struct devfreq_dev_profile ufs_devfreq_profile = {
- 	.get_dev_status	= ufshcd_devfreq_get_dev_status,
- };
- 
-+static int ufshcd_devfreq_init(struct ufs_hba *hba)
-+{
-+	struct devfreq *devfreq;
-+	int ret;
-+
-+	devfreq = devm_devfreq_add_device(hba->dev,
-+			&ufs_devfreq_profile,
-+			"simple_ondemand",
-+			NULL);
-+	if (IS_ERR(devfreq)) {
-+		ret = PTR_ERR(devfreq);
-+		dev_err(hba->dev, "Unable to register with devfreq %d\n", ret);
-+		return ret;
-+	}
-+
-+	hba->devfreq = devfreq;
-+
-+	return 0;
-+}
-+
- static void __ufshcd_suspend_clkscaling(struct ufs_hba *hba)
- {
- 	unsigned long flags;
-@@ -6399,16 +6419,9 @@ static int ufshcd_probe_hba(struct ufs_hba *hba)
- 				sizeof(struct ufs_pa_layer_attr));
- 			hba->clk_scaling.saved_pwr_info.is_valid = true;
- 			if (!hba->devfreq) {
--				hba->devfreq = devm_devfreq_add_device(hba->dev,
--							&ufs_devfreq_profile,
--							"simple_ondemand",
--							NULL);
--				if (IS_ERR(hba->devfreq)) {
--					ret = PTR_ERR(hba->devfreq);
--					dev_err(hba->dev, "Unable to register with devfreq %d\n",
--							ret);
-+				ret = ufshcd_devfreq_init(hba);
-+				if (ret)
- 					goto out;
--				}
- 			}
- 			hba->clk_scaling.is_allowed = true;
- 		}
--- 
-2.16.2
+
+Cheers,
+MyungJoo.
+
+>---
+>
+> .../bindings/devfreq/rk3399_dmc.txt           | 207 +++++++++---------
+> 1 file changed, 105 insertions(+), 102 deletions(-)
+>
+>diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
