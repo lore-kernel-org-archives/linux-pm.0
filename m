@@ -1,7 +1,7 @@
 From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH 6/6] PM / devfreq: Reject client provided freq_table
-Date: Tue, 24 Apr 2018 15:35:21 -0700
-Message-ID: <20180424223521.28193-7-bjorn.andersson@linaro.org>
+Subject: [PATCH 5/6] PM / devfreq: Use put_device() on device_register error
+Date: Tue, 24 Apr 2018 15:35:20 -0700
+Message-ID: <20180424223521.28193-6-bjorn.andersson@linaro.org>
 References: <20180424223521.28193-1-bjorn.andersson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180424223521.28193-1-bjorn.andersson@linaro.org>
@@ -10,51 +10,56 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsun
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The devfreq profile's freq_table is an internal resource used to keep
-track of all levels described in the associated opp table, in order to
-support levels being enabled and disabled in runtime by e.g.
-devfreq_cooling.
+After calling device_register() the dev must be released using
+put_device() rather than just freeing the carrying object.
 
-As it is required by the implementation that the device has an
-associated opp table and expected that the freq_table matches this, it
-is not possible for clients to provide a freq_table through the devfreq
-profile.
+The release function of the devfreq device will be called in this case,
+but as we're yet to add the devfreq instance to the devfreq_list the
+release function would print a warning and return.
 
-Check for this in devfreq_add_device() and remove the unnecessary
-conditional generation of the internal freq_table.
+But as the error path of devfreq_add_device() has been cleaned up the
+release function is now the only function taking the devfreq off the
+list, so we do not need to safe guard against the devfreq not being on
+the list.
 
 Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- drivers/devfreq/devfreq.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/devfreq/devfreq.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index c804bd72a644..3d1f6a2edf68 100644
+index 70588dc2032c..c804bd72a644 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -557,7 +557,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	static atomic_t devfreq_no = ATOMIC_INIT(-1);
- 	int err = 0;
+@@ -523,11 +523,6 @@ static void devfreq_dev_release(struct device *dev)
+ 	struct devfreq *devfreq = to_devfreq(dev);
  
--	if (!dev || !profile || !governor_name) {
-+	if (!dev || !profile || !governor_name || profile->freq_table) {
- 		dev_err(dev, "%s: Invalid parameters.\n", __func__);
- 		return ERR_PTR(-EINVAL);
- 	}
-@@ -590,11 +590,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->data = data;
- 	devfreq->nb.notifier_call = devfreq_notifier_call;
- 
--	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
--		err = set_freq_table(devfreq);
--		if (err < 0)
--			goto err_dev;
+ 	mutex_lock(&devfreq_list_lock);
+-	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
+-		mutex_unlock(&devfreq_list_lock);
+-		dev_warn(&devfreq->dev, "releasing devfreq which doesn't exist\n");
+-		return;
 -	}
-+	err = set_freq_table(devfreq);
-+	if (err < 0)
-+		goto err_dev;
+ 	list_del(&devfreq->node);
+ 	mutex_unlock(&devfreq_list_lock);
  
- 	devfreq->min_freq = find_available_min_freq(devfreq);
- 	if (!devfreq->min_freq) {
+@@ -583,6 +578,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		goto err_out;
+ 	}
+ 
++	INIT_LIST_HEAD(&devfreq->node);
+ 	mutex_init(&devfreq->lock);
+ 	devfreq->dev.parent = dev;
+ 	devfreq->dev.class = devfreq_class;
+@@ -630,7 +626,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 				atomic_inc_return(&devfreq_no));
+ 	err = device_register(&devfreq->dev);
+ 	if (err) {
+-		goto err_dev;
++		put_device(&devfreq->dev);
++		goto err_out;
+ 	}
+ 
+ 	mutex_lock(&devfreq_list_lock);
 -- 
 2.16.2
