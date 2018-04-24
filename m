@@ -1,34 +1,35 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v8 0/6] typec: tcpm: Add sink side support for PPS
-Date: Tue, 24 Apr 2018 15:57:49 +0200
-Message-ID: <20180424135749.GA21610@kroah.com>
-References: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+Subject: [PATCH] cpufreq: fix speedstep_detect_processor()'s return type
+Date: Tue, 24 Apr 2018 15:14:13 +0200
+Message-ID: <20180424131414.1653-1-luc.vanoostenryck@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: linux-kernel@vger.kernel.org
+Cc: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 23, 2018 at 03:10:55PM +0100, Adam Thomson wrote:
-> This patch set adds sink side support for the PPS feature introduced in the
-> USB PD 3.0 specification.
-> 
-> The source PPS supply is represented using the Power Supply framework to provide
-> access and control APIs for dealing with it's operating voltage and current,
-> and switching between a standard PDO and PPS APDO operation. During standard PDO
-> operation the voltage and current is read-only, but for APDO PPS these are
-> writable as well to allow for control.
-> 
-> It should be noted that the keepalive for PPS is not handled within TCPM. The
-> expectation is that the external user will be required to ensure re-requests
-> occur regularly to ensure PPS remains and the source does not hard reset.
+speedstep_detect_processor() is declared as returing an
+'enum speedstep_processor' but use an 'int' in its definition.
 
-Sebastian, any objection from me taking this series through my USB tree?
+Fix this by using 'enum speedstep_processor' in its definition too.
 
-thanks,
+Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+---
+ drivers/cpufreq/speedstep-lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-greg k-h
+diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
+index e3a9962ee..cabb6f48e 100644
+--- a/drivers/cpufreq/speedstep-lib.c
++++ b/drivers/cpufreq/speedstep-lib.c
+@@ -252,7 +252,7 @@ EXPORT_SYMBOL_GPL(speedstep_get_frequency);
+  *********************************************************************/
+ 
+ /* Keep in sync with the x86_cpu_id tables in the different modules */
+-unsigned int speedstep_detect_processor(void)
++enum speedstep_processor speedstep_detect_processor(void)
+ {
+ 	struct cpuinfo_x86 *c = &cpu_data(0);
+ 	u32 ebx, msr_lo, msr_hi;
+-- 
+2.17.0
