@@ -1,111 +1,85 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 1/2] regmap: include <linux/ktime.h> from
- include/linux/regmap.h
-Date: Tue, 24 Apr 2018 18:31:06 +0100
-Message-ID: <20180424173106.GE22073@sirena.org.uk>
+From: Mark Brown <broonie@kernel.org>
+Subject: Applied "regmap: include <linux/ktime.h> from include/linux/regmap.h" to the regmap tree
+Date: Tue, 24 Apr 2018 18:46:14 +0100
+Message-ID: <E1fB218-0003Z3-Qt@debutante>
 References: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
- <20180423100318.GA19834@sirena.org.uk>
- <d3e10dc5-55d3-40b8-a8de-d48aaaecf019@gmail.com>
- <20180423115043.GD19834@sirena.org.uk>
- <f4025431-be9a-32f9-06e1-9c6ac185c96a@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2666023413235501595=="
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <f4025431-be9a-32f9-06e1-9c6ac185c96a-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <ccea364eeb830b2092987d271c8308b97fe59d8f.1524465345.git.sean.wang@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sean Wang <sean.wang@mediatek.com>
+Cc: Mark Brown <broonie@kernel.org>, matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.orgMark Brown <broonie@kernel.org>linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+The patch
 
---===============2666023413235501595==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wchHw8dVAp53YPj8"
-Content-Disposition: inline
+   regmap: include <linux/ktime.h> from include/linux/regmap.h
 
+has been applied to the regmap tree at
 
---wchHw8dVAp53YPj8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap.git 
 
-On Mon, Apr 23, 2018 at 04:07:10PM +0200, Matthias Brugger wrote:
-> On 04/23/2018 01:50 PM, Mark Brown wrote:
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-> > So it looks like there is a dependency here...?
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-> Yes, regmap_read_poll_timeout macro uses for example ktime_compare which =
-is
-> defined in linux/ktime.h
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-> That's my understanding.
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
-OK, it's important to make sure that people getting a patch series know
-about stuff like this as it will affect how things are reviewed and
-applied. =20
+Thanks,
+Mark
 
-The following changes since commit e241e3f2bf975788a1b70dff2eb5180ca395b28e:
+>From f15cd6d99198e9c15229aefec639a34a6e8174c6 Mon Sep 17 00:00:00 2001
+From: Sean Wang <sean.wang@mediatek.com>
+Date: Mon, 23 Apr 2018 14:42:44 +0800
+Subject: [PATCH] regmap: include <linux/ktime.h> from include/linux/regmap.h
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-  Merge tag 'for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ms=
-t/vhost (2018-04-11 18:58:27 -0700)
+Similar to the readx_poll_timeout() macro calling ktime_* and using
+ktime_t type, which is declared in <linux/ktime.h>. So, make
+include/linux/regmap.h explicitly include <linux/ktime.h>, like
+include/linux/iopoll.h does.  Otherwise, users of the macro will see
+below errors.
 
-are available in the Git repository at:
+error: implicit declaration of function ‘ktime_add_us’
+[-Werror=implicit-function-declaration]
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap.git tags/r=
-egmap-ktime-fix
+error: implicit declaration of function ‘ktime_get’
+[-Werror=implicit-function-declaration]
 
-for you to fetch changes up to f15cd6d99198e9c15229aefec639a34a6e8174c6:
+error: implicit declaration of function ‘ktime_compare’
+[-Werror=implicit-function-declaration]
 
-  regmap: include <linux/ktime.h> from include/linux/regmap.h (2018-04-24 1=
-8:11:50 +0100)
+include/linux/regmap.h:128:2: error: unknown type name ‘ktime_t’
+  ktime_t __timeout = ktime_add_us(ktime_get(), __timeout_us); \
 
-----------------------------------------------------------------
-regmap: Fix missing include of ktime.h
-
-Required for some dependencies.
-
-----------------------------------------------------------------
-Sean Wang (1):
-      regmap: include <linux/ktime.h> from include/linux/regmap.h
-
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
  include/linux/regmap.h | 1 +
  1 file changed, 1 insertion(+)
 
---wchHw8dVAp53YPj8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlrfadkACgkQJNaLcl1U
-h9AlHQf/bC6mn12CND4+25wXDK/guAEy3YpckmZXliCZ67oYASB1lLcKxu1OqQjN
-U/QLwp1Xbo0HhKmvT3OQBZAEtPPUOJOEHWCevu/jVi+9j3W793P5hW3+vzAhYvVc
-MlD1/9xSqskL8pSVIfiQMRa133zKUPN7Yb1VmP/Y2I+kksgB0llJakMegX1ljpka
-uHKCweP0yli6KmZL6um29miFw6NZ0GOhVBrYucPPe8ovmJmrfQFT5B/zPRAqlJmu
-eWi1+hXjk0o7KHXx3J3wHgDk9hXGO2eJlyKghOX0efIWWw9Jznir1BZg4V+dpVdh
-OMaPVaup5ztQWdB+vNK33I1jZxd3Ig==
-=aChS
------END PGP SIGNATURE-----
-
---wchHw8dVAp53YPj8--
-
-
---===============2666023413235501595==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-mediatek mailing list
-Linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-http://lists.infradead.org/mailman/listinfo/linux-mediatek
-
---===============2666023413235501595==--
+diff --git a/include/linux/regmap.h b/include/linux/regmap.h
+index 5f7ad0552c03..b6865f070464 100644
+--- a/include/linux/regmap.h
++++ b/include/linux/regmap.h
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
++#include <linux/ktime.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/bug.h>
+-- 
+2.17.0
