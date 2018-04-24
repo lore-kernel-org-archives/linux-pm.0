@@ -1,92 +1,29 @@
-From: Subhash Jadavani <subhashj@codeaurora.org>
-Subject: Re: [PATCH 2/3] scsi: ufs: Extract devfreq registration
-Date: Tue, 24 Apr 2018 14:08:09 -0700
-Message-ID: <41c6fd36826ee853c86b3fb3e069903c@codeaurora.org>
-References: <20180424002016.9205-1-bjorn.andersson@linaro.org>
- <20180424002016.9205-3-bjorn.andersson@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC 00/10] ARM: Remove support for Exynos5440
+Date: Tue, 24 Apr 2018 23:12:15 +0200
+Message-ID: <CAK8P3a1Az9acSZwdhPz+Gwy6nSL=WAB6-z6Cq9m=nPLzF240_A@mail.gmail.com>
+References: <20180424203239.21885-1-krzk@kernel.org> <CAK8P3a2CZU1CYFt0fdVSFFnj2Wg=mUcC=yuWAW7zDO0u2Q2dUQ@mail.gmail.com>
+ <20180424205636.cdp4czq6hhs5gu5a@kozik-lap>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180424002016.9205-3-bjorn.andersson@linaro.org>
+In-Reply-To: <20180424205636.cdp4czq6hhs5gu5a@kozik-lap>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Vivek Gautam <vivek.gautam@codeaurora.org>, linux-scsi-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Greg
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-04-23 17:20, Bjorn Andersson wrote:
-> Failing to register with devfreq leaves hba->devfreq assigned, which
-> causes the error path to dereference the ERR_PTR(). Rather than bolting
-> on more conditionals, move the call of devm_devfreq_add_device() into
-> it's own function and only update hba->devfreq once it's successfully
-> registered.
-> 
-> The subsequent patch builds upon this to make UFS actually work again,
-> as it's been broken since f1d981eaecf8 ("PM / devfreq: Use the 
-> available
-> min/max frequency")
-> 
-> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> ---
->  drivers/scsi/ufs/ufshcd.c | 31 ++++++++++++++++++++++---------
->  1 file changed, 22 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
-> index 8f22a980b1a7..2253f24309ec 100644
-> --- a/drivers/scsi/ufs/ufshcd.c
-> +++ b/drivers/scsi/ufs/ufshcd.c
-> @@ -1255,6 +1255,26 @@ static struct devfreq_dev_profile 
-> ufs_devfreq_profile = {
->  	.get_dev_status	= ufshcd_devfreq_get_dev_status,
->  };
-> 
-> +static int ufshcd_devfreq_init(struct ufs_hba *hba)
-> +{
-> +	struct devfreq *devfreq;
-> +	int ret;
-> +
-> +	devfreq = devm_devfreq_add_device(hba->dev,
-> +			&ufs_devfreq_profile,
-> +			"simple_ondemand",
-> +			NULL);
-> +	if (IS_ERR(devfreq)) {
-> +		ret = PTR_ERR(devfreq);
-> +		dev_err(hba->dev, "Unable to register with devfreq %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	hba->devfreq = devfreq;
-> +
-> +	return 0;
-> +}
-> +
->  static void __ufshcd_suspend_clkscaling(struct ufs_hba *hba)
->  {
->  	unsigned long flags;
-> @@ -6399,16 +6419,9 @@ static int ufshcd_probe_hba(struct ufs_hba *hba)
->  				sizeof(struct ufs_pa_layer_attr));
->  			hba->clk_scaling.saved_pwr_info.is_valid = true;
->  			if (!hba->devfreq) {
-> -				hba->devfreq = devm_devfreq_add_device(hba->dev,
-> -							&ufs_devfreq_profile,
-> -							"simple_ondemand",
-> -							NULL);
-> -				if (IS_ERR(hba->devfreq)) {
-> -					ret = PTR_ERR(hba->devfreq);
-> -					dev_err(hba->dev, "Unable to register with devfreq %d\n",
-> -							ret);
-> +				ret = ufshcd_devfreq_init(hba);
-> +				if (ret)
->  					goto out;
-> -				}
->  			}
->  			hba->clk_scaling.is_allowed = true;
->  		}
+On Tue, Apr 24, 2018 at 10:56 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On Tue, Apr 24, 2018 at 10:50:58PM +0200, Arnd Bergmann wrote:
+>> On Tue, Apr 24, 2018 at 10:32 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> The only dependency is through Kconfig symbol (SOC_EXYNOS5440).  After
+> applying 10/10, which removes SOC_EXYNOS5440, some automatic code
+> testers can complain about non-existing Kconfig option.  That's not big
+> issue because all this will go away so indeed we could take everything
+> in one release.
 
-Looks good to me.
-Reviewed-by: Subhash Jadavani <subhashj@codeaurora.org>
+Right, I wouldn't worry about that. Kbuild itself doesn't warn about missing
+symbols, so this is only for helpful automated checks that tell us that there
+is still some pending work.
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+       Arnd
