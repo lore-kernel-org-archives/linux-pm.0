@@ -1,33 +1,115 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [RFC 06/10] thermal: samsung: Remove support for Exynos5440
-Date: Wed, 25 Apr 2018 15:18:51 +0200
-Message-ID: <1951102.VLysaozMLK@amdc3058>
-References: <20180424203239.21885-1-krzk@kernel.org>
-        <CGME20180424203356epcas4p44b884a8d409d0faa188a0ecdf4945c11@epcas4p4.samsung.com>
-        <20180424203239.21885-7-krzk@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180424203239.21885-7-krzk@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm
+From: Prashanth Prakash <pprakash@codeaurora.org>
+Subject: [PATCH v2][for 4.17-rc3] cpufreq / CPPC: Set platform specific transition_delay_us
+Date: Wed, 25 Apr 2018 10:26:12 -0600
+Message-ID: <1524673572-27941-1-git-send-email-pprakash@codeaurora.org>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, Prashanth Prakash <pprakash@codeaurora.org>, "4.14+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 24, 2018 10:32:35 PM Krzysztof Kozlowski wrote:
-> The Exynos5440 is not actively developed, there are no development
-> boards available and probably there are no real products with it.
-> Remove wide-tree support for Exynos5440.
+Add support to specify platform specific transition_delay_us instead
+of using the transition delay derived from PCC.
 
-Thanks for doing this.
+With commit "3d41386d556d: cpufreq: CPPC: Use transition_delay_us
+depending transition_latency" we are setting transition_delay_us
+directly and not applying the LATENCY_MULTIPLIER. With this on Qualcomm
+Centriq we can end up with a very high rate of frequency change requests
+when using schedutil governor (default rate_limit_us=10 compared to an
+earlier value of 10000).
 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+The PCC subspace describes the rate at which the platform can accept
+commands on the CPPC's PCC channel. This includes read and write
+command on the PCC channel that can be used for reasons other than
+frequency transitions. Moreover the same PCC subspace can be used by
+multiple freq domains and deriving transition_delay_us from it as we do
+now can be sub-optimal.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Moreover if a platform does not use PCC for desired_perf register then
+there is no way to compute the transition latency or the delay_us.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+CPPC does not have a standard defined mechanism to get the transition
+rate or the latency at the moment.
+
+Given the above limitations, it is simpler to have a platform specific
+transition_delay_us and rely on PCC derived value only if a platform
+specific value is not available.
+
+Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: 4.14+ <stable@vger.kernel.org>
+Fixes: 3d41386d556d ("cpufreq: CPPC: Use transition_delay_us depending
+transition_latency)
+---
+v2:
+* Return final delay_us from cppc_cpufreq_get_transition_delay_us (Viresh)
+---
+ drivers/cpufreq/cppc_cpufreq.c | 43 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index bc5fc16..b1e32ad 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -126,6 +126,46 @@ static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ 				cpu->perf_caps.lowest_perf, cpu_num, ret);
+ }
+ 
++/*
++ * The PCC subspace describes the rate at which platform can accept commands
++ * on the shared PCC channel (including READs which do not count towards freq
++ * trasition requests), so ideally we need to use the PCC values as a fallback
++ * if we don't have a platform specific transition_delay_us
++ */
++#if defined(CONFIG_ARM64)
++#include <asm/cputype.h>
++
++static unsigned int cppc_cpufreq_get_transition_delay_us(int cpu)
++{
++	unsigned long implementor = read_cpuid_implementor();
++	unsigned long part_num = read_cpuid_part_number();
++	unsigned int delay_us = 0;
++
++	switch (implementor) {
++	case ARM_CPU_IMP_QCOM:
++		switch (part_num) {
++		case QCOM_CPU_PART_FALKOR_V1:
++		case QCOM_CPU_PART_FALKOR:
++			delay_us = 10000;
++			break;
++		}
++		break;
++	}
++
++	if (!delay_us)
++		delay_us = cppc_get_transition_latency(cpu) / NSEC_PER_USEC;
++
++	return delay_us;
++}
++
++#else
++
++static unsigned int cppc_cpufreq_get_transition_delay_us(int cpu)
++{
++	return cppc_get_transition_latency(cpu) / NSEC_PER_USEC;
++}
++#endif
++
+ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct cppc_cpudata *cpu;
+@@ -162,8 +202,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		cpu->perf_caps.highest_perf;
+ 	policy->cpuinfo.max_freq = cppc_dmi_max_khz;
+ 
+-	policy->transition_delay_us = cppc_get_transition_latency(cpu_num) /
+-		NSEC_PER_USEC;
++	policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu_num);
+ 	policy->shared_type = cpu->shared_type;
+ 
+ 	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+-- 
+Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
