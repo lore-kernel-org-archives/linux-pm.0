@@ -1,7 +1,7 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH v2 07/17] mfd: mt6397: reuse DEFINE_RES_* helpers
-Date: Wed, 25 Apr 2018 17:32:33 +0800
-Message-ID: <d9931275ceb41d80fff494112077758500e455ad.1524646231.git.sean.wang@mediatek.com>
+Subject: [PATCH v2 01/17] dt-bindings: power: reset: mt6323: add bindings for MT6323 power controller
+Date: Wed, 25 Apr 2018 17:32:27 +0800
+Message-ID: <0b3123e42c8a47e3fa8b21aa2e139e6d3dc69f41.1524646231.git.sean.wang@mediatek.com>
 References: <cover.1524646231.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,35 +14,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-Reuse DEFINE_RES_* helpers instead of an open-coded handling.
+Adding device-tree binding for the power controller which is a tiny
+circuit block present as a part of MT6323 PMIC and is responsible for
+externally powering off or on a remote SoC the PMIC is connected to.
 
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 ---
- drivers/mfd/mt6397-core.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ .../bindings/power/reset/mt6323-poweroff.txt         | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
 
-diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
-index c4ad5c3..e0012e2 100644
---- a/drivers/mfd/mt6397-core.c
-+++ b/drivers/mfd/mt6397-core.c
-@@ -43,16 +43,8 @@ static const struct resource mt6323_rtc_resources[] = {
- };
- 
- static const struct resource mt6397_rtc_resources[] = {
--	{
--		.start = MT6397_RTC_BASE,
--		.end   = MT6397_RTC_BASE + MT6397_RTC_SIZE,
--		.flags = IORESOURCE_MEM,
--	},
--	{
--		.start = MT6397_IRQ_RTC,
--		.end   = MT6397_IRQ_RTC,
--		.flags = IORESOURCE_IRQ,
--	},
-+	DEFINE_RES_MEM(MT6397_RTC_BASE, MT6397_RTC_SIZE),
-+	DEFINE_RES_IRQ(MT6397_IRQ_RTC),
- };
- 
- static const struct resource mt6323_keys_resources[] = {
+diff --git a/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
+new file mode 100644
+index 0000000..6f7c590
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
+@@ -0,0 +1,20 @@
++Device Tree Bindings for Power Controller on MediaTek PMIC
++
++The power controller which could be found on PMIC is responsible for externally
++powering off or on the remote MediaTek SoC through the circuit BBPU.
++
++Required properties:
++- compatible: Should be one of follows
++	"mediatek,mt6323-pwrc": for MT6323 PMIC
++
++Example:
++
++	pmic {
++		compatible = "mediatek,mt6323";
++
++		...
++
++		power-controller {
++			compatible = "mediatek,mt6323-pwrc";
++		};
++	}
 -- 
 2.7.4
