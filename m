@@ -1,187 +1,56 @@
-From: <sean.wang@mediatek.com>
-Subject: [PATCH v2 15/17] power: reset: mt6323: add a driver for MT6323 power controller
-Date: Wed, 25 Apr 2018 17:32:41 +0800
-Message-ID: <51d4fbe0d6a22986ddd2df66c9db39aa1eaab74a.1524646231.git.sean.wang@mediatek.com>
-References: <cover.1524646231.git.sean.wang@mediatek.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT patch 0/7] timekeeping: Unify clock MONOTONIC and clock BOOTTIME
+Date: Wed, 25 Apr 2018 11:49:51 +0200
+Message-ID: <1858767.c2KKoU8fl2@aspire.rjw.lan>
+References: <CANq1E4QppGAaU5PYbGpuC00S6wGQcAt70Z7CntZHiLC6748z2A@mail.gmail.com> <alpine.DEB.2.21.1804241007410.5261@nanos.tec.linutronix.de> <1996930.B4PaKZ6i1F@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1524646231.git.sean.wang@mediatek.com>
+In-Reply-To: <1996930.B4PaKZ6i1F@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, matthias.bgg@gmail.com, eddie.huang@mediatek.com
-Cc: devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
+To: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
+Cc: Genki Sky <sky@genki.is>, David Herrmann <dh.herrmann@gmail.com>, lkml <linux-kernel@vger.kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang@mediatek.com>
+On Wednesday, April 25, 2018 10:52:18 AM CEST Rafael J. Wysocki wrote:
+> On Tuesday, April 24, 2018 10:09:28 AM CEST Thomas Gleixner wrote:
+> > On Mon, 23 Apr 2018, John Stultz wrote:
+> > 
+> > > On Mon, Apr 23, 2018 at 7:45 PM, Genki Sky <sky@genki.is> wrote:
+> > > > Quoting Genki Sky (2018/04/23 20:40:36 -0400)
+> > > >> I came across this thread for same reason as [0]: Daemons getting
+> > > >> killed by systemd on resume (after >WatchdogSec seconds of
+> > > >> suspending). I'm using master branch of systemd and the kernel. As
+> > > >> mentioned, systemd uses CLOCK_MONOTONIC, originally expecting it to
+> > > >> not include suspend time.
+> > > >>
+> > > >> Correct me if I'm mistaken, but I don't see the ambiguity of whether
+> > > >> this patch series breaks systemd. If it's implemented correctly, you'd
+> > > >> hope it *would* break it!
+> > > >
+> > > > This sounded a little weak on re-reading, sorry. So, I just confirmed
+> > > > that after booting a "git revert -m 1 680014d6d1da", the issue no
+> > > > longer appears. (I.e., a suspend for >WatchDog sec doesn't result in
+> > > > any daemon getting killed).
+> > > >
+> > > > Let me know if I can help in any way.
+> > > 
+> > > Yea, this is the sort of thing I was worried about.
+> > > 
+> > > Thomas: I think reverting this change is needed.
+> > 
+> > Sigh. I hoped that something like this would be catched before I sent the
+> > pull request by those who were actually interested in this change...
+> 
+> The "git revert -m 1 680014d6d1da" makes resume issues on my Aspire S5
+> go away (cf. https://marc.info/?l=linux-kernel&m=152460804018920&w=2).
+> 
+> I'll try with just the "monotonic" vs "boottime" clock changes reverted.
 
-The power device is responsible for externally down or up the power
-of the remote MediaTek SoC through the tiny circuit BBPU inside PMIC RTC.
-
-Though it's a part of RTC device, it would be better to be a standalone
-driver than to be a part of existent RTC driver so as to let us make
-concentration on works about power-controlling topic and to obtain
-improvements while the subsystem power/reset constantly growing.
-
-Currently, the most basic functionality supported is to just power off
-the system by writing to a special bit field in BBPU register after the
-system has reached pm_poweroff.
-
-Signed-off-by: Sean Wang <sean.wang@mediatek.com>
----
- drivers/power/reset/Kconfig           | 10 ++++
- drivers/power/reset/Makefile          |  1 +
- drivers/power/reset/mt6323-poweroff.c | 97 +++++++++++++++++++++++++++++++++++
- include/linux/mfd/mt6397/rtc.h        |  1 +
- 4 files changed, 109 insertions(+)
- create mode 100644 drivers/power/reset/mt6323-poweroff.c
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index df58fc8..7b49d71 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -128,6 +128,16 @@ config POWER_RESET_LTC2952
- 	  This driver supports an external powerdown trigger and board power
- 	  down via the LTC2952. Bindings are made in the device tree.
- 
-+config POWER_RESET_MT6323
-+	bool "MediaTek MT6323 power-off driver"
-+	depends on MFD_MT6397
-+	help
-+	  The power-off driver is responsible for externally shutdown down
-+	  the power of a remote MediaTek SoC MT6323 is connected to through
-+	  controlling a tiny circuit BBPU inside MT6323 RTC.
-+
-+	  Say Y if you have a board where MT6323 could be found.
-+
- config POWER_RESET_QNAP
- 	bool "QNAP power-off driver"
- 	depends on OF_GPIO && PLAT_ORION
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 7778c74..8836172 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
-+obj-$(CONFIG_POWER_RESET_MT6323) += mt6323-poweroff.o
- obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
- obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
-diff --git a/drivers/power/reset/mt6323-poweroff.c b/drivers/power/reset/mt6323-poweroff.c
-new file mode 100644
-index 0000000..c195766
---- /dev/null
-+++ b/drivers/power/reset/mt6323-poweroff.c
-@@ -0,0 +1,97 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Power off through MediaTek PMIC
-+ *
-+ * Copyright (C) 2018 MediaTek Inc.
-+ *
-+ * Author: Sean Wang <sean.wang@mediatek.com>
-+ *
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/mfd/mt6397/core.h>
-+#include <linux/mfd/mt6397/rtc.h>
-+
-+struct mt6323_pwrc {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	u32 base;
-+};
-+
-+static struct mt6323_pwrc *mt_pwrc;
-+
-+static void mt6323_do_pwroff(void)
-+{
-+	struct mt6323_pwrc *pwrc = mt_pwrc;
-+	unsigned int val;
-+	int ret;
-+
-+	regmap_write(pwrc->regmap, pwrc->base + RTC_BBPU, RTC_BBPU_KEY);
-+	regmap_write(pwrc->regmap, pwrc->base + RTC_WRTGR, 1);
-+
-+	ret = regmap_read_poll_timeout(pwrc->regmap,
-+				       pwrc->base + RTC_BBPU, val,
-+				       !(val & RTC_BBPU_CBUSY),
-+				       MTK_RTC_POLL_DELAY_US,
-+				       MTK_RTC_POLL_TIMEOUT);
-+	if (ret)
-+		dev_err(pwrc->dev, "failed to write BBPU: %d\n", ret);
-+
-+	/* Wait some time until system down, otherwise, notice with a warn */
-+	mdelay(1000);
-+
-+	WARN_ONCE(1, "Unable to power off system\n");
-+}
-+
-+static int mt6323_pwrc_probe(struct platform_device *pdev)
-+{
-+	struct mt6397_chip *mt6397_chip = dev_get_drvdata(pdev->dev.parent);
-+	struct mt6323_pwrc *pwrc;
-+	struct resource *res;
-+
-+	pwrc = devm_kzalloc(&pdev->dev, sizeof(*pwrc), GFP_KERNEL);
-+	if (!pwrc)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	pwrc->base = res->start;
-+	pwrc->regmap = mt6397_chip->regmap;
-+	pwrc->dev = &pdev->dev;
-+	mt_pwrc = pwrc;
-+
-+	pm_power_off = &mt6323_do_pwroff;
-+
-+	return 0;
-+}
-+
-+static int mt6323_pwrc_remove(struct platform_device *pdev)
-+{
-+	if (pm_power_off == &mt6323_do_pwroff)
-+		pm_power_off = NULL;
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id mt6323_pwrc_dt_match[] = {
-+	{ .compatible = "mediatek,mt6323-pwrc" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mt6323_pwrc_dt_match);
-+
-+static struct platform_driver mt6323_pwrc_driver = {
-+	.probe		= mt6323_pwrc_probe,
-+	.remove		= mt6323_pwrc_remove,
-+	.driver		= {
-+		.name	= "mt6323-pwrc",
-+		.of_match_table = mt6323_pwrc_dt_match,
-+	},
-+};
-+
-+module_platform_driver(mt6323_pwrc_driver);
-+
-+MODULE_DESCRIPTION("Poweroff driver for MT6323 PMIC");
-+MODULE_AUTHOR("Sean Wang <sean.wang@mediatek.com>");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rtc.h
-index 480977c..ac932c9 100644
---- a/include/linux/mfd/mt6397/rtc.h
-+++ b/include/linux/mfd/mt6397/rtc.h
-@@ -16,6 +16,7 @@
- 
- #define RTC_BBPU		0x0000
- #define RTC_BBPU_CBUSY		BIT(6)
-+#define RTC_BBPU_KEY            (0x43 << 8)
- 
- #define RTC_WRTGR		0x003c
- 
--- 
-2.7.4
+FWICS (so far) system resume still works here with the commits between
+d6ed449afdb3 (timekeeping: Make the MONOTONIC clock behave like the BOOTTIME
+clock) and 127bfa5f4342 (hrtimer: Unify MONOTONIC and BOOTTIME clock behavior)
+inclusive reverted on top of 4.17-rc2.  [I probably should revert commit
+92af4dcb4e1c (tracing: Unify the "boot" and "mono" tracing clocks) too, but
+it doesn't revert cleanly and it doesn't apprear to affect things here too.]
