@@ -1,60 +1,33 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v8 0/6] typec: tcpm: Add sink side support for PPS
-Date: Wed, 25 Apr 2018 14:30:45 +0200
-Message-ID: <20180425123045.GA22950@kroah.com>
-References: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
- <20180424135749.GA21610@kroah.com>
- <20180424232633.s475bsccxjhm7lpy@earth.universe>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [RFC 04/10] clk: samsung: Remove support for Exynos5440
+Date: Wed, 25 Apr 2018 14:49:24 +0200
+Message-ID: <8e4e4712-4b21-83f8-fa06-142e9557a251@samsung.com>
+References: <20180424203239.21885-1-krzk@kernel.org>
+        <CGME20180424203341epcas5p3a6db7d58b0ce8940d03711823fbf6e41@epcas5p3.samsung.com>
+        <20180424203239.21885-5-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180424232633.s475bsccxjhm7lpy@earth.universe>
+In-reply-to: <20180424203239.21885-5-krzk@kernel.org>
+Content-language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 25, 2018 at 01:26:33AM +0200, Sebastian Reichel wrote:
-> Hi Greg,
-> 
-> On Tue, Apr 24, 2018 at 03:57:49PM +0200, Greg Kroah-Hartman wrote:
-> > On Mon, Apr 23, 2018 at 03:10:55PM +0100, Adam Thomson wrote:
-> > > This patch set adds sink side support for the PPS feature introduced in the
-> > > USB PD 3.0 specification.
-> > > 
-> > > The source PPS supply is represented using the Power Supply framework to provide
-> > > access and control APIs for dealing with it's operating voltage and current,
-> > > and switching between a standard PDO and PPS APDO operation. During standard PDO
-> > > operation the voltage and current is read-only, but for APDO PPS these are
-> > > writable as well to allow for control.
-> > > 
-> > > It should be noted that the keepalive for PPS is not handled within TCPM. The
-> > > expectation is that the external user will be required to ensure re-requests
-> > > occur regularly to ensure PPS remains and the source does not hard reset.
-> > 
-> > Sebastian, any objection from me taking this series through my USB tree?
-> 
-> I currently have the power-supply bits in a local branch for
-> testing. I would like to have this in the power-supply
-> tree, since there is at least one pending driver which could
-> directly use the newly introduced usb_type.
-> 
-> I can either provide an immutable branch with a signed tag, or
-> you can merged it and provide me an immutable branch.
-> 
-> If you merge it via the USB tree patch 2-4 are
-> 
-> Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Jingoo Han
 
-I've applied these to a testing branch in my usb tree, and if they
-survive the 0-day bot, I'll move them to a branch that you can pull from
-that will not change.
+On 04/24/2018 10:32 PM, Krzysztof Kozlowski wrote:
+> The Exynos5440 is not actively developed, there are no development
+> boards available and probably there are no real products with it.
+> Remove wide-tree support for Exynos5440.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Oh, I had to add a follow-on patch to fix up a gcc warning that really
-wasn't a warning, but it saves us problems of people complaining about
-it.
+Thanks Krzysztof, patch applied, assuming there is no issues with applying 
+patches from this series individually through the subsystem trees.
 
-thanks,
-
-greg k-h
+-- 
+Regards,
+Sylwester
