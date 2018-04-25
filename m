@@ -1,101 +1,114 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.14 127/183] x86/power: Fix swsusp_arch_resume prototype
-Date: Wed, 25 Apr 2018 12:35:47 +0200
-Message-ID: <20180425103247.536189965@linuxfoundation.org>
-References: <20180425103242.532713678@linuxfoundation.org>
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH V3] cpufreq: powernv: Fix the hardlockup by synchronus
+ smp_call in timer interrupt
+Date: Wed, 25 Apr 2018 21:26:13 +1000
+Message-ID: <20180425212613.1fc2c468@roar.ozlabs.ibm.com>
+References: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180425103242.532713678@linuxfoundation.org>
+In-Reply-To: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, Nicolas Pitre <nico@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Bart Van Assche <bart.vanassche@wdc.com>, Sasha Levin <alexander.levin@microsoft.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, ppaidipe@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-4.14-stable review patch.  If anyone has any objections, please let me know.
+On Wed, 25 Apr 2018 16:29:31 +0530
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> wrote:
 
-------------------
+> gpstate_timer_handler() uses synchronous smp_call to set the pstate
+> on the requested core. This causes the below hard lockup:
+> 
+> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
+> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
+> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
+> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
+> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
+> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
+> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
+> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
+> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
+> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
+> -- interrupt: 901 at doorbell_global_ipi+0x34/0x50
+> LR = arch_send_call_function_ipi_mask+0x120/0x130
+> [c000003fe566ba50] [c00000000004876c]
+> arch_send_call_function_ipi_mask+0x4c/0x130
+> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
+> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
+> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
+> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
+> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
+> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
+> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+> 
+> One way to avoid this is removing the smp-call. We can ensure that the timer
+> always runs on one of the policy-cpus. If the timer gets migrated to a
+> cpu outside the policy then re-queue it back on the policy->cpus. This way
+> we can get rid of the smp-call which was being used to set the pstate
+> on the policy->cpus.
+> 
+> Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
+> Cc: <stable@vger.kernel.org>        [4.8+]
+> Reported-by: Nicholas Piggin <npiggin@gmail.com>
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-From: Arnd Bergmann <arnd@arndb.de>
+Thanks, this looks good to me. I don't know the code though, so
+
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
+
+> ---
+> Changes from V2:
+> - Remove the check for active policy while requeing the migrated timer
+> Changes from V1:
+> - Remove smp_call in the pstate handler.
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 71f8682..e368e1f 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -679,6 +679,16 @@ void gpstate_timer_handler(struct timer_list *t)
+>  
+>  	if (!spin_trylock(&gpstates->gpstate_lock))
+>  		return;
+
+I still think it would be good to do something about the trylock failure.
+It may be rare, but if it happens it could stop the timer and lead to
+some rare unpredictable behaviour? Not for this patch, but while you're
+looking at the code it would be good to consider it. Just queueing up
+another timer seems like it should be enough.
+
+> +	/*
+> +	 * If the timer has migrated to the different cpu then bring
+> +	 * it back to one of the policy->cpus
+> +	 */
+> +	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
+> +		gpstates->timer.expires = jiffies + msecs_to_jiffies(1);
+> +		add_timer_on(&gpstates->timer, cpumask_first(policy->cpus));
+> +		spin_unlock(&gpstates->gpstate_lock);
+> +		return;
+> +	}
+
+Really small nitpick, but you could use cpumask_any there.
+
+Thanks,
+Nick
 
 
-[ Upstream commit 328008a72d38b5bde6491e463405c34a81a65d3e ]
-
-The declaration for swsusp_arch_resume marks it as 'asmlinkage', but the
-definition in x86-32 does not, and it fails to include the header with the
-declaration. This leads to a warning when building with
-link-time-optimizations:
-
-kernel/power/power.h:108:23: error: type of 'swsusp_arch_resume' does not match original declaration [-Werror=lto-type-mismatch]
- extern asmlinkage int swsusp_arch_resume(void);
-                       ^
-arch/x86/power/hibernate_32.c:148:0: note: 'swsusp_arch_resume' was previously declared here
- int swsusp_arch_resume(void)
-
-This moves the declaration into a globally visible header file and fixes up
-both x86 definitions to match it.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Nicolas Pitre <nico@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Bart Van Assche <bart.vanassche@wdc.com>
-Link: https://lkml.kernel.org/r/20180202145634.200291-2-arnd@arndb.de
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- arch/x86/power/hibernate_32.c |    2 +-
- arch/x86/power/hibernate_64.c |    2 +-
- include/linux/suspend.h       |    2 ++
- kernel/power/power.h          |    3 ---
- 4 files changed, 4 insertions(+), 5 deletions(-)
-
---- a/arch/x86/power/hibernate_32.c
-+++ b/arch/x86/power/hibernate_32.c
-@@ -145,7 +145,7 @@ static inline void resume_init_first_lev
- #endif
- }
- 
--int swsusp_arch_resume(void)
-+asmlinkage int swsusp_arch_resume(void)
- {
- 	int error;
- 
---- a/arch/x86/power/hibernate_64.c
-+++ b/arch/x86/power/hibernate_64.c
-@@ -174,7 +174,7 @@ out:
- 	return 0;
- }
- 
--int swsusp_arch_resume(void)
-+asmlinkage int swsusp_arch_resume(void)
- {
- 	int error;
- 
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -384,6 +384,8 @@ extern int swsusp_page_is_forbidden(stru
- extern void swsusp_set_page_free(struct page *);
- extern void swsusp_unset_page_free(struct page *);
- extern unsigned long get_safe_page(gfp_t gfp_mask);
-+extern asmlinkage int swsusp_arch_suspend(void);
-+extern asmlinkage int swsusp_arch_resume(void);
- 
- extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
- extern int hibernate(void);
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -104,9 +104,6 @@ extern int in_suspend;
- extern dev_t swsusp_resume_device;
- extern sector_t swsusp_resume_block;
- 
--extern asmlinkage int swsusp_arch_suspend(void);
--extern asmlinkage int swsusp_arch_resume(void);
--
- extern int create_basic_memory_bitmaps(void);
- extern void free_basic_memory_bitmaps(void);
- extern int hibernate_preallocate_memory(void);
+>  
+>  	/*
+>  	 * If PMCR was last updated was using fast_swtich then
+> @@ -718,10 +728,8 @@ void gpstate_timer_handler(struct timer_list *t)
+>  	if (gpstate_idx != gpstates->last_lpstate_idx)
+>  		queue_gpstate_timer(gpstates);
+>  
+> +	set_pstate(&freq_data);
+>  	spin_unlock(&gpstates->gpstate_lock);
+> -
+> -	/* Timer may get migrated to a different cpu on cpu hot unplug */
+> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>  }
