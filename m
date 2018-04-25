@@ -1,26 +1,63 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [RFC 05/10] i2c: s3c2410: Remove support for Exynos5440
-Date: Wed, 25 Apr 2018 14:56:48 +0200
-Message-ID: <fe4ac171-e7dd-a643-35b6-7beebee81bdb@samsung.com>
-References: <20180424203239.21885-1-krzk@kernel.org>
-        <CGME20180424203349epcas2p1a47060486c2e349b27fd0b2c4ea0394c@epcas2p1.samsung.com>
-        <20180424203239.21885-6-krzk@kernel.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC/RFT patch 0/7] timekeeping: Unify clock MONOTONIC and clock
+ BOOTTIME
+Date: Wed, 25 Apr 2018 15:03:13 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1804251502310.2082@nanos.tec.linutronix.de>
+References: <CANq1E4QppGAaU5PYbGpuC00S6wGQcAt70Z7CntZHiLC6748z2A@mail.gmail.com> <alpine.DEB.2.21.1804241007410.5261@nanos.tec.linutronix.de> <1996930.B4PaKZ6i1F@aspire.rjw.lan> <1858767.c2KKoU8fl2@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180424203239.21885-6-krzk@kernel.org>
-Content-language: en-GB
+In-Reply-To: <1858767.c2KKoU8fl2@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-i2c@vger.kernel.org
-Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: John Stultz <john.stultz@linaro.org>, Genki Sky <sky@genki.is>, David Herrmann <dh.herrmann@gmail.com>, lkml <linux-kernel@vger.kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/24/2018 10:32 PM, Krzysztof Kozlowski wrote:
-> The Exynos5440 is not actively developed, there are no development
-> boards available and probably there are no real products with it.
-> Remove wide-tree support for Exynos5440.
+On Wed, 25 Apr 2018, Rafael J. Wysocki wrote:
+> On Wednesday, April 25, 2018 10:52:18 AM CEST Rafael J. Wysocki wrote:
+> > On Tuesday, April 24, 2018 10:09:28 AM CEST Thomas Gleixner wrote:
+> > > On Mon, 23 Apr 2018, John Stultz wrote:
+> > > 
+> > > > On Mon, Apr 23, 2018 at 7:45 PM, Genki Sky <sky@genki.is> wrote:
+> > > > > Quoting Genki Sky (2018/04/23 20:40:36 -0400)
+> > > > >> I came across this thread for same reason as [0]: Daemons getting
+> > > > >> killed by systemd on resume (after >WatchdogSec seconds of
+> > > > >> suspending). I'm using master branch of systemd and the kernel. As
+> > > > >> mentioned, systemd uses CLOCK_MONOTONIC, originally expecting it to
+> > > > >> not include suspend time.
+> > > > >>
+> > > > >> Correct me if I'm mistaken, but I don't see the ambiguity of whether
+> > > > >> this patch series breaks systemd. If it's implemented correctly, you'd
+> > > > >> hope it *would* break it!
+> > > > >
+> > > > > This sounded a little weak on re-reading, sorry. So, I just confirmed
+> > > > > that after booting a "git revert -m 1 680014d6d1da", the issue no
+> > > > > longer appears. (I.e., a suspend for >WatchDog sec doesn't result in
+> > > > > any daemon getting killed).
+> > > > >
+> > > > > Let me know if I can help in any way.
+> > > > 
+> > > > Yea, this is the sort of thing I was worried about.
+> > > > 
+> > > > Thomas: I think reverting this change is needed.
+> > > 
+> > > Sigh. I hoped that something like this would be catched before I sent the
+> > > pull request by those who were actually interested in this change...
+> > 
+> > The "git revert -m 1 680014d6d1da" makes resume issues on my Aspire S5
+> > go away (cf. https://marc.info/?l=linux-kernel&m=152460804018920&w=2).
+> > 
+> > I'll try with just the "monotonic" vs "boottime" clock changes reverted.
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> FWICS (so far) system resume still works here with the commits between
+> d6ed449afdb3 (timekeeping: Make the MONOTONIC clock behave like the BOOTTIME
+> clock) and 127bfa5f4342 (hrtimer: Unify MONOTONIC and BOOTTIME clock behavior)
+> inclusive reverted on top of 4.17-rc2.  [I probably should revert commit
+> 92af4dcb4e1c (tracing: Unify the "boot" and "mono" tracing clocks) too, but
+> it doesn't revert cleanly and it doesn't apprear to affect things here too.]
 
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Right, it does not matter. The real interesting one is d6ed449afdb3.
+
+Thanks,
+
+	tglx
