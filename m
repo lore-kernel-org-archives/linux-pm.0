@@ -1,7 +1,7 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH v2 08/17] rtc: mt6397: add MT6323 support to RTC driver
-Date: Wed, 25 Apr 2018 17:32:34 +0800
-Message-ID: <f49c2f3d20f54859603cfa40f0ff184eed2d4e4a.1524646231.git.sean.wang@mediatek.com>
+Subject: [PATCH v2 10/17] rtc: mt6397: remove unnecessary irq_dispose_mapping
+Date: Wed, 25 Apr 2018 17:32:36 +0800
+Message-ID: <6354082fb42b560b4f0a7d8ed32e7ae274d624a9.1524646231.git.sean.wang@mediatek.com>
 References: <cover.1524646231.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,24 +14,55 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-Just to add MT6323 support to existing RTC driver
+With the patch [1], the job irq_create_mapping had been moved from the
+rtc driver to mfd core, so it should be unnecessary to keep
+irq_dispose_mapping in all paths of the leaf driver.
+
+[1] http://lists.infradead.org/pipermail/linux-mediatek/2017-September/010455.html
 
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 ---
- drivers/rtc/rtc-mt6397.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/rtc/rtc-mt6397.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-index 385f830..0df7ccd 100644
+index efb9370..398bae5 100644
 --- a/drivers/rtc/rtc-mt6397.c
 +++ b/drivers/rtc/rtc-mt6397.c
-@@ -398,6 +398,7 @@ static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_suspend,
- 			mt6397_rtc_resume);
+@@ -17,7 +17,6 @@
+ #include <linux/module.h>
+ #include <linux/regmap.h>
+ #include <linux/rtc.h>
+-#include <linux/irqdomain.h>
+ #include <linux/jiffies.h>
+ #include <linux/platform_device.h>
+ #include <linux/of_address.h>
+@@ -336,7 +335,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
+ 			rtc->irq, ret);
+-		goto out_dispose_irq;
++		return ret;
+ 	}
  
- static const struct of_device_id mt6397_rtc_of_match[] = {
-+	{ .compatible = "mediatek,mt6323-rtc", },
- 	{ .compatible = "mediatek,mt6397-rtc", },
- 	{ }
- };
+ 	device_init_wakeup(&pdev->dev, 1);
+@@ -353,8 +352,7 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+ 
+ out_free_irq:
+ 	free_irq(rtc->irq, rtc->rtc_dev);
+-out_dispose_irq:
+-	irq_dispose_mapping(rtc->irq);
++
+ 	return ret;
+ }
+ 
+@@ -364,7 +362,6 @@ static int mtk_rtc_remove(struct platform_device *pdev)
+ 
+ 	rtc_device_unregister(rtc->rtc_dev);
+ 	free_irq(rtc->irq, rtc->rtc_dev);
+-	irq_dispose_mapping(rtc->irq);
+ 
+ 	return 0;
+ }
 -- 
 2.7.4
