@@ -1,141 +1,54 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 25 Apr 2018 09:23:12 +0100
-Message-ID: <20180425082311.GH14391@e108498-lin.cambridge.arm.com>
-References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
- <20180406153607.17815-5-dietmar.eggemann@arm.com>
- <20180418121547.GC15682@leoy-ThinkPad-X240s>
- <20180420144245.GB14391@e108498-lin.cambridge.arm.com>
- <20180420162753.GA5254@leoy-ThinkPad-X240s>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT patch 0/7] timekeeping: Unify clock MONOTONIC and clock BOOTTIME
+Date: Wed, 25 Apr 2018 10:52:18 +0200
+Message-ID: <1996930.B4PaKZ6i1F@aspire.rjw.lan>
+References: <CANq1E4QppGAaU5PYbGpuC00S6wGQcAt70Z7CntZHiLC6748z2A@mail.gmail.com> <CALAqxLWmcmiOgbH1Ri+Ki-OGFvgzRzRDzX3FZdUhcqu1OoCWiA@mail.gmail.com> <alpine.DEB.2.21.1804241007410.5261@nanos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180420162753.GA5254@leoy-ThinkPad-X240s>
+In-Reply-To: <alpine.DEB.2.21.1804241007410.5261@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
+Cc: Genki Sky <sky@genki.is>, David Herrmann <dh.herrmann@gmail.com>, lkml <linux-kernel@vger.kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Leo,
-
-Sorry for the delay in responding...
-
-On Saturday 21 Apr 2018 at 00:27:53 (+0800), Leo Yan wrote:
-> On Fri, Apr 20, 2018 at 03:42:45PM +0100, Quentin Perret wrote:
-> > Hi Leo,
+On Tuesday, April 24, 2018 10:09:28 AM CEST Thomas Gleixner wrote:
+> On Mon, 23 Apr 2018, John Stultz wrote:
+> 
+> > On Mon, Apr 23, 2018 at 7:45 PM, Genki Sky <sky@genki.is> wrote:
+> > > Quoting Genki Sky (2018/04/23 20:40:36 -0400)
+> > >> I came across this thread for same reason as [0]: Daemons getting
+> > >> killed by systemd on resume (after >WatchdogSec seconds of
+> > >> suspending). I'm using master branch of systemd and the kernel. As
+> > >> mentioned, systemd uses CLOCK_MONOTONIC, originally expecting it to
+> > >> not include suspend time.
+> > >>
+> > >> Correct me if I'm mistaken, but I don't see the ambiguity of whether
+> > >> this patch series breaks systemd. If it's implemented correctly, you'd
+> > >> hope it *would* break it!
+> > >
+> > > This sounded a little weak on re-reading, sorry. So, I just confirmed
+> > > that after booting a "git revert -m 1 680014d6d1da", the issue no
+> > > longer appears. (I.e., a suspend for >WatchDog sec doesn't result in
+> > > any daemon getting killed).
+> > >
+> > > Let me know if I can help in any way.
 > > 
-> > On Wednesday 18 Apr 2018 at 20:15:47 (+0800), Leo Yan wrote:
-> > > Sorry I introduce mess at here to spread my questions in several
-> > > replying, later will try to ask questions in one replying.  Below are
-> > > more questions which it's good to bring up:
-> > > 
-> > > The code for energy computation is quite neat and simple, but I think
-> > > the energy computation mixes two concepts for CPU util: one concept is
-> > > the estimated CPU util which is used to select CPU OPP in schedutil,
-> > > another concept is the raw CPU util according to CPU real running time;
-> > > for example, cpu_util_next() predicts CPU util but this value might be
-> > > much higher than cpu_util(), especially after enabled UTIL_EST feature
-> > > (I have shallow understanding for UTIL_EST so correct me as needed);
+> > Yea, this is the sort of thing I was worried about.
 > > 
-> > I'm not not sure to understand what you mean by higher than cpu_util()
-> > here ... In which case would that happen ?
+> > Thomas: I think reverting this change is needed.
 > 
-> After UTIL_EST feature is enabled, cpu_util_next() returns higher value
-> than cpu_util(), see below code 'util = max(util, util_est);';  as
-> result cpu_util_next() takes consideration for extra compensention
-> introduced by UTIL_EST.
-> 
-> 	if (sched_feat(UTIL_EST)) {
-> 	        util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
-> 	        if (dst_cpu == cpu)
-> 	                util_est += _task_util_est(p);
-> 	        else
-> 	                util_est = max_t(long, util_est - _task_util_est(p), 0);
-> 	        util = max(util, util_est);
-> 	}
+> Sigh. I hoped that something like this would be catched before I sent the
+> pull request by those who were actually interested in this change...
 
-So, cpu_util() accounts for the UTIL_EST compensation:
+The "git revert -m 1 680014d6d1da" makes resume issues on my Aspire S5
+go away (cf. https://marc.info/?l=linux-kernel&m=152460804018920&w=2).
 
-	static inline unsigned long cpu_util(int cpu)
-	{
-		struct cfs_rq *cfs_rq;
-		unsigned int util;
+I'll try with just the "monotonic" vs "boottime" clock changes reverted.
 
-		cfs_rq = &cpu_rq(cpu)->cfs;
-		util = READ_ONCE(cfs_rq->avg.util_avg);
+> I'll try to distangle it.
 
-		if (sched_feat(UTIL_EST))
-			util = max(util, READ_ONCE(cfs_rq->avg.util_est.enqueued));
+Cool.
 
-		return min_t(unsigned long, util, capacity_orig_of(cpu));
-	}
-
-So cpu_util_next() just mimics that.
-
-> 
-> > cpu_util_next() is basically used to figure out what will be the
-> > cpu_util() of CPU A after task p has been enqueued on CPU B (no matter
-> > what A and B are).
-> 
-> Same with upper description, cpu_util_next() is not the same thing
-> with cpu_util(), cpu_util_next() takes consideration for extra
-> compensention introduced by UTIL_EST.
-> 
-> > > but this patch simply computes CPU capacity and energy with the single
-> > > one CPU utilization value (and it will be an inflated value afte enable
-> > > UTIL_EST).  Is this purposed for simple implementation?
-> > > 
-> > > IMHO, cpu_util_next() can be used to predict CPU capacity, on the other
-> > > hand, should we use the CPU util without UTIL_EST capping for 'sum_util',
-> > > this can be more reasonable to reflect the CPU utilization?
-> > 
-> > Why would a decayed utilisation be a better estimate of the time that
-> > a task is going to spend on a CPU ?
-> 
-> IIUC, in the scheduler waken up path task_util() is the task utilisation
-> before task sleeping, so it's not a decayed value.
-
-I don't think this is correct. sync_entity_load_avg() is called in
-select_task_rq_fair() so task_util() *is* decayed upon wakeup.
-
-> cpu_util() is
-> decayed value,
-
-This is not necessarily correct either. As mentioned above, cpu_util()
-includes the UTIL_EST compensation, so the value isn't necessarily
-decayed.
-
-> but is this just we want to reflect cpu historic
-> utilisation at the recent past time?  This is the reason I bring up to
-> use 'cpu_util() + task_util()' as estimation.
-> 
-> I understand this patch tries to use pre-decayed value,
-
-No, this patch tries to estimate what will be the return value of
-cpu_util() if the task is enqueued on a specific CPU. This value can be
-the util_avg (decayed) or the util_est (non-decayed) depending on the
-conditions.
-
-> please review
-> below example has issue or not:
-> if one CPU's cfs_rq->avg.util_est.enqueued is quite high value, then this
-> CPU enter idle state and sleep for long while, if we use
-> cfs_rq->avg.util_est.enqueued to estimate CPU utilisation, this might
-> have big deviation than the CPU run time if place wake task on it?  On
-> the other hand, cpu_util() can decay for CPU idle time...
-> 
-> > > Furthermore, if we consider RT thread is running on CPU and connect with
-> > > 'schedutil' governor, the CPU will run at maximum frequency, but we
-> > > cannot say the CPU has 100% utilization.  The RT thread case is not
-> > > handled in this patch.
-> > 
-> > Right, we don't account for RT tasks in the OPP prediction for now.
-> > Vincent's patches to have a util_avg for RT runqueues could help us
-> > do that I suppose ...
-> 
-> Good to know this.
-> 
-> > Thanks !
-> > Quentin
+Please let me know if you need any help.
