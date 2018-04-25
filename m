@@ -1,54 +1,141 @@
-From: yuankuiz@codeaurora.org
-Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
-Date: Wed, 25 Apr 2018 15:01:46 +0800
-Message-ID: <2c7c90722795ecfbe4e3e907f725549c@codeaurora.org>
-References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
- <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
- <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
- <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
- <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
- <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
- <2f7755fae34bb65ef0a4b5a11c67f431@codeaurora.org>
- <c3e05a4aad4895046401519dc83fa623@codeaurora.org>
- <a98928c4a1ee719aba5f00932a41a2c3@codeaurora.org>
- <c08f28e5c0461384c8d9a9d2d8b04799@codeaurora.org>
- <aaa5ae49ff33ce9c83c6cf520cc83c0b@codeaurora.org>
- <41aec3337f05316de118357fcbd9d175@codeaurora.org>
- <9447358d3f7cda9032b24d62dd79dacfca73fc30.camel@perches.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v2 4/6] sched/fair: Introduce an energy estimation
+ helper function
+Date: Wed, 25 Apr 2018 09:23:12 +0100
+Message-ID: <20180425082311.GH14391@e108498-lin.cambridge.arm.com>
+References: <20180406153607.17815-1-dietmar.eggemann@arm.com>
+ <20180406153607.17815-5-dietmar.eggemann@arm.com>
+ <20180418121547.GC15682@leoy-ThinkPad-X240s>
+ <20180420144245.GB14391@e108498-lin.cambridge.arm.com>
+ <20180420162753.GA5254@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9447358d3f7cda9032b24d62dd79dacfca73fc30.camel@perches.com>
+Content-Disposition: inline
+In-Reply-To: <20180420162753.GA5254@leoy-ThinkPad-X240s>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org, akpm@linux-foundation.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@redhat.com>, Steve Muckle <smuckle@google.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-04-21 03:24 AM, Joe Perches wrote:
-> On Fri, 2018-04-20 at 14:44 +0800, yuankuiz@codeaurora.org wrote:
->> On 2018-04-20 09:47 AM, yuankuiz@codeaurora.org wrote:
-> []
->> > [ZJ] Further prototyping has been given based on gcc for both of
->> > x86_64 and armv8-a,
->> >      unsigned int and bool share the same 1 bytes without the
->> > addtional storage for sure.
->> >      Open this and welcome if any other difference behaviour could be
->> > captured.
->> 
->> [ZJ] Typo.. change 4 bytes above to 1 byte actually.
+Hi Leo,
+
+Sorry for the delay in responding...
+
+On Saturday 21 Apr 2018 at 00:27:53 (+0800), Leo Yan wrote:
+> On Fri, Apr 20, 2018 at 03:42:45PM +0100, Quentin Perret wrote:
+> > Hi Leo,
+> > 
+> > On Wednesday 18 Apr 2018 at 20:15:47 (+0800), Leo Yan wrote:
+> > > Sorry I introduce mess at here to spread my questions in several
+> > > replying, later will try to ask questions in one replying.  Below are
+> > > more questions which it's good to bring up:
+> > > 
+> > > The code for energy computation is quite neat and simple, but I think
+> > > the energy computation mixes two concepts for CPU util: one concept is
+> > > the estimated CPU util which is used to select CPU OPP in schedutil,
+> > > another concept is the raw CPU util according to CPU real running time;
+> > > for example, cpu_util_next() predicts CPU util but this value might be
+> > > much higher than cpu_util(), especially after enabled UTIL_EST feature
+> > > (I have shallow understanding for UTIL_EST so correct me as needed);
+> > 
+> > I'm not not sure to understand what you mean by higher than cpu_util()
+> > here ... In which case would that happen ?
 > 
-> Not really.
+> After UTIL_EST feature is enabled, cpu_util_next() returns higher value
+> than cpu_util(), see below code 'util = max(util, util_est);';  as
+> result cpu_util_next() takes consideration for extra compensention
+> introduced by UTIL_EST.
 > 
-> unsigned int is 4 and bool is generally 1.
-> Alignment padding after a bool may exist.
-[ZJ] Depending on how to pack, the size was padded is variance. For 
-example.
-      In case of the "unsigned char" at the following, pack is happened 
-and result 1 bytes.(if no more than 8 bits are used)
-      In case of the "int" at the following, pack is happened but result 
-4 bytes.
-      I mean, I demo it but use the 1# case due for another thread 
-discussion on the ichx_desc() so move a little bit from the tick_sched 
-struct.
+> 	if (sched_feat(UTIL_EST)) {
+> 	        util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> 	        if (dst_cpu == cpu)
+> 	                util_est += _task_util_est(p);
+> 	        else
+> 	                util_est = max_t(long, util_est - _task_util_est(p), 0);
+> 	        util = max(util, util_est);
+> 	}
+
+So, cpu_util() accounts for the UTIL_EST compensation:
+
+	static inline unsigned long cpu_util(int cpu)
+	{
+		struct cfs_rq *cfs_rq;
+		unsigned int util;
+
+		cfs_rq = &cpu_rq(cpu)->cfs;
+		util = READ_ONCE(cfs_rq->avg.util_avg);
+
+		if (sched_feat(UTIL_EST))
+			util = max(util, READ_ONCE(cfs_rq->avg.util_est.enqueued));
+
+		return min_t(unsigned long, util, capacity_orig_of(cpu));
+	}
+
+So cpu_util_next() just mimics that.
+
+> 
+> > cpu_util_next() is basically used to figure out what will be the
+> > cpu_util() of CPU A after task p has been enqueued on CPU B (no matter
+> > what A and B are).
+> 
+> Same with upper description, cpu_util_next() is not the same thing
+> with cpu_util(), cpu_util_next() takes consideration for extra
+> compensention introduced by UTIL_EST.
+> 
+> > > but this patch simply computes CPU capacity and energy with the single
+> > > one CPU utilization value (and it will be an inflated value afte enable
+> > > UTIL_EST).  Is this purposed for simple implementation?
+> > > 
+> > > IMHO, cpu_util_next() can be used to predict CPU capacity, on the other
+> > > hand, should we use the CPU util without UTIL_EST capping for 'sum_util',
+> > > this can be more reasonable to reflect the CPU utilization?
+> > 
+> > Why would a decayed utilisation be a better estimate of the time that
+> > a task is going to spend on a CPU ?
+> 
+> IIUC, in the scheduler waken up path task_util() is the task utilisation
+> before task sleeping, so it's not a decayed value.
+
+I don't think this is correct. sync_entity_load_avg() is called in
+select_task_rq_fair() so task_util() *is* decayed upon wakeup.
+
+> cpu_util() is
+> decayed value,
+
+This is not necessarily correct either. As mentioned above, cpu_util()
+includes the UTIL_EST compensation, so the value isn't necessarily
+decayed.
+
+> but is this just we want to reflect cpu historic
+> utilisation at the recent past time?  This is the reason I bring up to
+> use 'cpu_util() + task_util()' as estimation.
+> 
+> I understand this patch tries to use pre-decayed value,
+
+No, this patch tries to estimate what will be the return value of
+cpu_util() if the task is enqueued on a specific CPU. This value can be
+the util_avg (decayed) or the util_est (non-decayed) depending on the
+conditions.
+
+> please review
+> below example has issue or not:
+> if one CPU's cfs_rq->avg.util_est.enqueued is quite high value, then this
+> CPU enter idle state and sleep for long while, if we use
+> cfs_rq->avg.util_est.enqueued to estimate CPU utilisation, this might
+> have big deviation than the CPU run time if place wake task on it?  On
+> the other hand, cpu_util() can decay for CPU idle time...
+> 
+> > > Furthermore, if we consider RT thread is running on CPU and connect with
+> > > 'schedutil' governor, the CPU will run at maximum frequency, but we
+> > > cannot say the CPU has 100% utilization.  The RT thread case is not
+> > > handled in this patch.
+> > 
+> > Right, we don't account for RT tasks in the OPP prediction for now.
+> > Vincent's patches to have a util_avg for RT runqueues could help us
+> > do that I suppose ...
+> 
+> Good to know this.
+> 
+> > Thanks !
+> > Quentin
