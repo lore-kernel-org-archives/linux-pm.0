@@ -1,100 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernv: Remove global pstate ramp-down timer
- in POWER9
-Date: Wed, 25 Apr 2018 11:55:52 +0530
-Message-ID: <20180425062552.udhulffnd7gq564j@vireshk-i7>
-References: <1524636895-27185-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: yuankuiz@codeaurora.org
+Subject: Re: [PATCH] time: tick-sched: use bool for tick_stopped
+Date: Wed, 25 Apr 2018 15:01:46 +0800
+Message-ID: <2c7c90722795ecfbe4e3e907f725549c@codeaurora.org>
+References: <891d4f632fbff5052e11f2d0b6fac35d@codeaurora.org>
+ <CAJZ5v0h=Jeb5JjjE9vNQM29xYAy-Ogmx1mycRv-hPJ1+m=edzw@mail.gmail.com>
+ <f253686d26b3470f0e9b60502eb62315@codeaurora.org>
+ <alpine.DEB.2.21.1804101110080.2058@nanos.tec.linutronix.de>
+ <a7d6dddd7d4f9fdc0be8f94251af237f@codeaurora.org>
+ <alpine.DEB.2.21.1804101242110.2058@nanos.tec.linutronix.de>
+ <2f7755fae34bb65ef0a4b5a11c67f431@codeaurora.org>
+ <c3e05a4aad4895046401519dc83fa623@codeaurora.org>
+ <a98928c4a1ee719aba5f00932a41a2c3@codeaurora.org>
+ <c08f28e5c0461384c8d9a9d2d8b04799@codeaurora.org>
+ <aaa5ae49ff33ce9c83c6cf520cc83c0b@codeaurora.org>
+ <41aec3337f05316de118357fcbd9d175@codeaurora.org>
+ <9447358d3f7cda9032b24d62dd79dacfca73fc30.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1524636895-27185-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <9447358d3f7cda9032b24d62dd79dacfca73fc30.camel@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com
+To: Joe Perches <joe@perches.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm-owner@vger.kernel.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25-04-18, 11:44, Shilpasri G Bhat wrote:
-> POWER9 doesnot support global pstate requests for the chip. So remove
-> the timer logic which slowly ramps down the global pstate in P9
-> platforms.
+On 2018-04-21 03:24 AM, Joe Perches wrote:
+> On Fri, 2018-04-20 at 14:44 +0800, yuankuiz@codeaurora.org wrote:
+>> On 2018-04-20 09:47 AM, yuankuiz@codeaurora.org wrote:
+> []
+>> > [ZJ] Further prototyping has been given based on gcc for both of
+>> > x86_64 and armv8-a,
+>> >      unsigned int and bool share the same 1 bytes without the
+>> > addtional storage for sure.
+>> >      Open this and welcome if any other difference behaviour could be
+>> > captured.
+>> 
+>> [ZJ] Typo.. change 4 bytes above to 1 byte actually.
 > 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 23 ++++++++++++++++++-----
->  1 file changed, 18 insertions(+), 5 deletions(-)
+> Not really.
 > 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 0591874..71f8682 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -750,8 +750,13 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  	cur_msec = jiffies_to_msecs(get_jiffies_64());
->  
-> -	spin_lock(&gpstates->gpstate_lock);
->  	freq_data.pstate_id = idx_to_pstate(new_index);
-> +	if (!gpstates) {
-> +		freq_data.gpstate_id = freq_data.pstate_id;
-> +		goto no_gpstate;
-> +	}
-> +
-> +	spin_lock(&gpstates->gpstate_lock);
->  
->  	if (!gpstates->last_sampled_time) {
->  		gpstate_idx = new_index;
-> @@ -801,6 +806,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  	spin_unlock(&gpstates->gpstate_lock);
->  
-> +no_gpstate:
->  	/*
->  	 * Use smp_call_function to send IPI and execute the
->  	 * mtspr on target CPU.  We could do that without IPI
-> @@ -835,6 +841,13 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  		kernfs_put(kn);
->  	}
->  
-> +	policy->freq_table = powernv_freqs;
-> +	policy->fast_switch_possible = true;
-> +
-> +	if (pvr_version_is(PVR_POWER9))
-> +		return 0;
-> +
-> +	/* Initialise Gpstate ramp-down timer only on POWER8 */
->  	gpstates =  kzalloc(sizeof(*gpstates), GFP_KERNEL);
->  	if (!gpstates)
->  		return -ENOMEM;
-> @@ -849,15 +862,14 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
->  	spin_lock_init(&gpstates->gpstate_lock);
->  
-> -	policy->freq_table = powernv_freqs;
-> -	policy->fast_switch_possible = true;
->  	return 0;
->  }
->  
->  static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
->  {
->  	/* timer is deleted in cpufreq_cpu_stop() */
-> -	kfree(policy->driver_data);
-> +	if (policy->driver_data)
-> +		kfree(policy->driver_data);
->  
->  	return 0;
->  }
-> @@ -990,7 +1002,8 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
->  	freq_data.pstate_id = idx_to_pstate(powernv_pstate_info.min);
->  	freq_data.gpstate_id = idx_to_pstate(powernv_pstate_info.min);
->  	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
-> -	del_timer_sync(&gpstates->timer);
-> +	if (gpstates)
-> +		del_timer_sync(&gpstates->timer);
->  }
->  
->  static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+> unsigned int is 4 and bool is generally 1.
+> Alignment padding after a bool may exist.
+[ZJ] Depending on how to pack, the size was padded is variance. For 
+example.
+      In case of the "unsigned char" at the following, pack is happened 
+and result 1 bytes.(if no more than 8 bits are used)
+      In case of the "int" at the following, pack is happened but result 
+4 bytes.
+      I mean, I demo it but use the 1# case due for another thread 
+discussion on the ichx_desc() so move a little bit from the tick_sched 
+struct.
