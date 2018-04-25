@@ -1,7 +1,7 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH v2 01/17] dt-bindings: power: reset: mt6323: add bindings for MT6323 power controller
-Date: Wed, 25 Apr 2018 17:32:27 +0800
-Message-ID: <0b3123e42c8a47e3fa8b21aa2e139e6d3dc69f41.1524646231.git.sean.wang@mediatek.com>
+Subject: [PATCH v2 14/17] rtc: mt6397: update license converting to using SPDX identifiers
+Date: Wed, 25 Apr 2018 17:32:40 +0800
+Message-ID: <b1d290e72ee060e70cac8a64ffedc16761efafe3.1524646231.git.sean.wang@mediatek.com>
 References: <cover.1524646231.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,42 +14,41 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-Adding device-tree binding for the power controller which is a tiny
-circuit block present as a part of MT6323 PMIC and is responsible for
-externally powering off or on a remote SoC the PMIC is connected to.
+update the license and convert to using SPDX identifiers
 
-Cc: devicetree@vger.kernel.org
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 ---
- .../bindings/power/reset/mt6323-poweroff.txt         | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
+ drivers/rtc/rtc-mt6397.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
-new file mode 100644
-index 0000000..6f7c590
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
-@@ -0,0 +1,20 @@
-+Device Tree Bindings for Power Controller on MediaTek PMIC
-+
-+The power controller which could be found on PMIC is responsible for externally
-+powering off or on the remote MediaTek SoC through the circuit BBPU.
-+
-+Required properties:
-+- compatible: Should be one of follows
-+	"mediatek,mt6323-pwrc": for MT6323 PMIC
-+
-+Example:
-+
-+	pmic {
-+		compatible = "mediatek,mt6323";
-+
-+		...
-+
-+		power-controller {
-+			compatible = "mediatek,mt6323-pwrc";
-+		};
-+	}
+diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+index 3672d622..1ebeaaf 100644
+--- a/drivers/rtc/rtc-mt6397.c
++++ b/drivers/rtc/rtc-mt6397.c
+@@ -1,16 +1,12 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+-* Copyright (c) 2014-2015 MediaTek Inc.
+-* Author: Tianping.Fang <tianping.fang@mediatek.com>
+-*
+-* This program is free software; you can redistribute it and/or modify
+-* it under the terms of the GNU General Public License version 2 as
+-* published by the Free Software Foundation.
+-*
+-* This program is distributed in the hope that it will be useful,
+-* but WITHOUT ANY WARRANTY; without even the implied warranty of
+-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-* GNU General Public License for more details.
+-*/
++ * MediaTek PMIC RTC driver
++ *
++ * Copyright (C) 2014-2018 MediaTek Inc.
++ *
++ * Author: Tianping.Fang <tianping.fang@mediatek.com>
++ *	   Sean Wang <sean.wang@mediatek.com>
++ */
+ 
+ #include <linux/err.h>
+ #include <linux/interrupt.h>
 -- 
 2.7.4
