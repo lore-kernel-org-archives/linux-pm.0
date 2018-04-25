@@ -1,54 +1,97 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT patch 0/7] timekeeping: Unify clock MONOTONIC and clock BOOTTIME
-Date: Wed, 25 Apr 2018 10:52:18 +0200
-Message-ID: <1996930.B4PaKZ6i1F@aspire.rjw.lan>
-References: <CANq1E4QppGAaU5PYbGpuC00S6wGQcAt70Z7CntZHiLC6748z2A@mail.gmail.com> <CALAqxLWmcmiOgbH1Ri+Ki-OGFvgzRzRDzX3FZdUhcqu1OoCWiA@mail.gmail.com> <alpine.DEB.2.21.1804241007410.5261@nanos.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.21.1804241007410.5261@nanos.tec.linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
-Cc: Genki Sky <sky@genki.is>, David Herrmann <dh.herrmann@gmail.com>, lkml <linux-kernel@vger.kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH V2] cpufreq: powernv: Fix the hardlockup by synchronus smp_call in timer interrupt
+Date: Wed, 25 Apr 2018 14:32:48 +0530
+Message-ID: <1524646968-526-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, npiggin@gmail.com
+Cc: linux-pm@vger.kernel.org, ppaidipe@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 24, 2018 10:09:28 AM CEST Thomas Gleixner wrote:
-> On Mon, 23 Apr 2018, John Stultz wrote:
-> 
-> > On Mon, Apr 23, 2018 at 7:45 PM, Genki Sky <sky@genki.is> wrote:
-> > > Quoting Genki Sky (2018/04/23 20:40:36 -0400)
-> > >> I came across this thread for same reason as [0]: Daemons getting
-> > >> killed by systemd on resume (after >WatchdogSec seconds of
-> > >> suspending). I'm using master branch of systemd and the kernel. As
-> > >> mentioned, systemd uses CLOCK_MONOTONIC, originally expecting it to
-> > >> not include suspend time.
-> > >>
-> > >> Correct me if I'm mistaken, but I don't see the ambiguity of whether
-> > >> this patch series breaks systemd. If it's implemented correctly, you'd
-> > >> hope it *would* break it!
-> > >
-> > > This sounded a little weak on re-reading, sorry. So, I just confirmed
-> > > that after booting a "git revert -m 1 680014d6d1da", the issue no
-> > > longer appears. (I.e., a suspend for >WatchDog sec doesn't result in
-> > > any daemon getting killed).
-> > >
-> > > Let me know if I can help in any way.
-> > 
-> > Yea, this is the sort of thing I was worried about.
-> > 
-> > Thomas: I think reverting this change is needed.
-> 
-> Sigh. I hoped that something like this would be catched before I sent the
-> pull request by those who were actually interested in this change...
+gpstate_timer_handler() uses synchronous smp_call to set the pstate
+on the requested core. This causes the below hard lockup:
 
-The "git revert -m 1 680014d6d1da" makes resume issues on my Aspire S5
-go away (cf. https://marc.info/?l=linux-kernel&m=152460804018920&w=2).
+[c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
+[c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
+[c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
+[c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
+[c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
+[c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
+[c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
+[c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
+[c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
+[c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
+-- interrupt: 901 at doorbell_global_ipi+0x34/0x50
+LR = arch_send_call_function_ipi_mask+0x120/0x130
+[c000003fe566ba50] [c00000000004876c]
+arch_send_call_function_ipi_mask+0x4c/0x130
+[c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
+[c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
+[c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
+[c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
+[c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
+[c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
+[c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
 
-I'll try with just the "monotonic" vs "boottime" clock changes reverted.
+One way to avoid this is removing the smp-call. We can ensure that the timer
+always runs on one of the policy-cpus. If the timer gets migrated to a
+cpu outside the policy then re-queue it back on the policy->cpus. This way
+we can get rid of the smp-call which was being used to set the pstate
+on the policy->cpus.
 
-> I'll try to distangle it.
+Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
+Cc: <stable@vger.kernel.org>        [4.8+]
+Reported-by: Nicholas Piggin <npiggin@gmail.com>
+Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+Changes from V1:
+- Remove smp_call in the pstate handler.
 
-Cool.
+ drivers/cpufreq/powernv-cpufreq.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-Please let me know if you need any help.
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 71f8682..dc8ffb5 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -679,6 +679,25 @@ void gpstate_timer_handler(struct timer_list *t)
+ 
+ 	if (!spin_trylock(&gpstates->gpstate_lock))
+ 		return;
++	/*
++	 * If the timer has migrated to the different cpu then bring
++	 * it back to one of the policy->cpus
++	 */
++	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
++		/*
++		 * Timer should be deleted if policy is inactive.
++		 * If policy is active then re-queue on one of the
++		 * policy->cpus.
++		 */
++		if (!cpumask_empty(policy->cpus)) {
++			gpstates->timer.expires = jiffies +
++						msecs_to_jiffies(1);
++			add_timer_on(&gpstates->timer,
++					cpumask_first(policy->cpus));
++		}
++		spin_unlock(&gpstates->gpstate_lock);
++		return;
++	}
+ 
+ 	/*
+ 	 * If PMCR was last updated was using fast_swtich then
+@@ -718,10 +737,8 @@ void gpstate_timer_handler(struct timer_list *t)
+ 	if (gpstate_idx != gpstates->last_lpstate_idx)
+ 		queue_gpstate_timer(gpstates);
+ 
++	set_pstate(&freq_data);
+ 	spin_unlock(&gpstates->gpstate_lock);
+-
+-	/* Timer may get migrated to a different cpu on cpu hot unplug */
+-	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+ }
+ 
+ /*
+-- 
+1.8.3.1
