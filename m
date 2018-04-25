@@ -1,88 +1,101 @@
-From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
-Date: Wed, 25 Apr 2018 19:01:16 +0800
-Message-ID: <CADAEsF_tThkn=hZYaFZ5VaeK6vZKce0j_8T4BpxeGFefRKO+Nw@mail.gmail.com>
-References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
- <2654052.UvzeiuBsVA@aspire.rjw.lan> <CAMuHMdXqLmyJF6qhyzgnPeU=T0TyxDpsw1PD8BiYiSXCZeTz=g@mail.gmail.com>
- <CADAEsF89WyoBA2vEadOUL6qeEQtGGMm5XFNpXRJh7FpZpJUneQ@mail.gmail.com> <CAMuHMdV42sNybiCv7kE+AjKCr1P4Zdw66S1xRxA+d-86nrNQMw@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.14 127/183] x86/power: Fix swsusp_arch_resume prototype
+Date: Wed, 25 Apr 2018 12:35:47 +0200
+Message-ID: <20180425103247.536189965@linuxfoundation.org>
+References: <20180425103242.532713678@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdV42sNybiCv7kE+AjKCr1P4Zdw66S1xRxA+d-86nrNQMw@mail.gmail.com>
+In-Reply-To: <20180425103242.532713678@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, Nicolas Pitre <nico@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Bart Van Assche <bart.vanassche@wdc.com>, Sasha Levin <alexander.levin@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
 
-2018-04-02 14:46 GMT+08:00 Geert Uytterhoeven <geert@linux-m68k.org>:
-> Hi Ganesh,
->
-> On Mon, Apr 2, 2018 at 3:33 AM, Ganesh Mahendran
-> <opensource.ganesh@gmail.com> wrote:
->> 2018-03-30 19:00 GMT+08:00 Geert Uytterhoeven <geert@linux-m68k.org>:
->>> On Fri, Mar 30, 2018 at 12:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>> On Monday, March 5, 2018 9:47:46 AM CEST Ganesh Mahendran wrote:
->>>>> single_open() interface requires that the whole output must
->>>>> fit into a single buffer. This will lead to timeout when
->>>>> system memory is not in a good situation.
->>>>>
->>>>> This patch use seq_open() to show wakeup stats. This method
->>>>> need only one page, so timeout will not be observed.
->
->>>>> --- a/drivers/base/power/wakeup.c
->>>>> +++ b/drivers/base/power/wakeup.c
->>>>> @@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
->>>>>       return 0;
->>>>>  }
->>>>>
->>>>> -/**
->>>>> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
->>>>> - * @m: seq_file to print the statistics into.
->>>>> - */
->>>>> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
->>>>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
->>>>> +                                     loff_t *pos)
->>>>>  {
->
->>>>> +     list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
->>>>> +             if (n-- > 0)
->>>>> +                     continue;
->>>>> +             goto out;
->>>>> +     }
->>>>> +     ws = NULL;
->>>>> +out:
->>>>> +     return ws;
->>>>> +}
->>>>
->>>> Please clean up the above at least.
->>>>
->>>> If I'm not mistaken, you don't need the label and the goto here.
->>>
->>> The continue is also not needed, if the test condition is inverted.
->>
->> Hi, Geert
->>
->> We need to locate to the last read item. What is your suggestion here?
->
-> I didn't mean to get rid of that logic, but to reorganize the code to make it
-> simpler:
->
->         list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
->                 if (n-- <= 0)
->                         return ws;
->         }
+4.14-stable review patch.  If anyone has any objections, please let me know.
 
-I send a v3 patch.
-Thanks for your review.
+------------------
 
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+From: Arnd Bergmann <arnd@arndb.de>
+
+
+[ Upstream commit 328008a72d38b5bde6491e463405c34a81a65d3e ]
+
+The declaration for swsusp_arch_resume marks it as 'asmlinkage', but the
+definition in x86-32 does not, and it fails to include the header with the
+declaration. This leads to a warning when building with
+link-time-optimizations:
+
+kernel/power/power.h:108:23: error: type of 'swsusp_arch_resume' does not match original declaration [-Werror=lto-type-mismatch]
+ extern asmlinkage int swsusp_arch_resume(void);
+                       ^
+arch/x86/power/hibernate_32.c:148:0: note: 'swsusp_arch_resume' was previously declared here
+ int swsusp_arch_resume(void)
+
+This moves the declaration into a globally visible header file and fixes up
+both x86 definitions to match it.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Nicolas Pitre <nico@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Bart Van Assche <bart.vanassche@wdc.com>
+Link: https://lkml.kernel.org/r/20180202145634.200291-2-arnd@arndb.de
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/x86/power/hibernate_32.c |    2 +-
+ arch/x86/power/hibernate_64.c |    2 +-
+ include/linux/suspend.h       |    2 ++
+ kernel/power/power.h          |    3 ---
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+
+--- a/arch/x86/power/hibernate_32.c
++++ b/arch/x86/power/hibernate_32.c
+@@ -145,7 +145,7 @@ static inline void resume_init_first_lev
+ #endif
+ }
+ 
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
+ 
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -174,7 +174,7 @@ out:
+ 	return 0;
+ }
+ 
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
+ 
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -384,6 +384,8 @@ extern int swsusp_page_is_forbidden(stru
+ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+ extern unsigned long get_safe_page(gfp_t gfp_mask);
++extern asmlinkage int swsusp_arch_suspend(void);
++extern asmlinkage int swsusp_arch_resume(void);
+ 
+ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -104,9 +104,6 @@ extern int in_suspend;
+ extern dev_t swsusp_resume_device;
+ extern sector_t swsusp_resume_block;
+ 
+-extern asmlinkage int swsusp_arch_suspend(void);
+-extern asmlinkage int swsusp_arch_resume(void);
+-
+ extern int create_basic_memory_bitmaps(void);
+ extern void free_basic_memory_bitmaps(void);
+ extern int hibernate_preallocate_memory(void);
