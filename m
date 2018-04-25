@@ -1,131 +1,88 @@
 From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Subject: [PATCH v3] PM / wakeup: use seq_open() to show wakeup stats
-Date: Wed, 25 Apr 2018 18:59:31 +0800
-Message-ID: <1524653971-10425-1-git-send-email-opensource.ganesh@gmail.com>
+Subject: Re: [PATCH v2] PM / wakeup: use seq_open() to show wakeup stats
+Date: Wed, 25 Apr 2018 19:01:16 +0800
+Message-ID: <CADAEsF_tThkn=hZYaFZ5VaeK6vZKce0j_8T4BpxeGFefRKO+Nw@mail.gmail.com>
+References: <1520239666-2964-1-git-send-email-opensource.ganesh@gmail.com>
+ <2654052.UvzeiuBsVA@aspire.rjw.lan> <CAMuHMdXqLmyJF6qhyzgnPeU=T0TyxDpsw1PD8BiYiSXCZeTz=g@mail.gmail.com>
+ <CADAEsF89WyoBA2vEadOUL6qeEQtGGMm5XFNpXRJh7FpZpJUneQ@mail.gmail.com> <CAMuHMdV42sNybiCv7kE+AjKCr1P4Zdw66S1xRxA+d-86nrNQMw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdV42sNybiCv7kE+AjKCr1P4Zdw66S1xRxA+d-86nrNQMw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, rafael@kernel.org, gregkh@linuxfoundation.org, geert@linux-m68k.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ganesh Mahendran <opensource.ganesh@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-single_open() interface requires that the whole output must
-fit into a single buffer. This will lead to timeout when
-system memory is not in a good situation.
+2018-04-02 14:46 GMT+08:00 Geert Uytterhoeven <geert@linux-m68k.org>:
+> Hi Ganesh,
+>
+> On Mon, Apr 2, 2018 at 3:33 AM, Ganesh Mahendran
+> <opensource.ganesh@gmail.com> wrote:
+>> 2018-03-30 19:00 GMT+08:00 Geert Uytterhoeven <geert@linux-m68k.org>:
+>>> On Fri, Mar 30, 2018 at 12:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>> On Monday, March 5, 2018 9:47:46 AM CEST Ganesh Mahendran wrote:
+>>>>> single_open() interface requires that the whole output must
+>>>>> fit into a single buffer. This will lead to timeout when
+>>>>> system memory is not in a good situation.
+>>>>>
+>>>>> This patch use seq_open() to show wakeup stats. This method
+>>>>> need only one page, so timeout will not be observed.
+>
+>>>>> --- a/drivers/base/power/wakeup.c
+>>>>> +++ b/drivers/base/power/wakeup.c
+>>>>> @@ -1029,32 +1029,77 @@ static int print_wakeup_source_stats(struct seq_file *m,
+>>>>>       return 0;
+>>>>>  }
+>>>>>
+>>>>> -/**
+>>>>> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
+>>>>> - * @m: seq_file to print the statistics into.
+>>>>> - */
+>>>>> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+>>>>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
+>>>>> +                                     loff_t *pos)
+>>>>>  {
+>
+>>>>> +     list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+>>>>> +             if (n-- > 0)
+>>>>> +                     continue;
+>>>>> +             goto out;
+>>>>> +     }
+>>>>> +     ws = NULL;
+>>>>> +out:
+>>>>> +     return ws;
+>>>>> +}
+>>>>
+>>>> Please clean up the above at least.
+>>>>
+>>>> If I'm not mistaken, you don't need the label and the goto here.
+>>>
+>>> The continue is also not needed, if the test condition is inverted.
+>>
+>> Hi, Geert
+>>
+>> We need to locate to the last read item. What is your suggestion here?
+>
+> I didn't mean to get rid of that logic, but to reorganize the code to make it
+> simpler:
+>
+>         list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+>                 if (n-- <= 0)
+>                         return ws;
+>         }
 
-This patch use seq_open() to show wakeup stats. This method
-need only one page, so timeout will not be observed.
+I send a v3 patch.
+Thanks for your review.
 
-Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
-----
-v3: simplify wakeup_sources_stats_seq_start
-v2: use srcu_read_lock instead of rcu_read_lock
----
- drivers/base/power/wakeup.c | 75 +++++++++++++++++++++++++++++++++++----------
- 1 file changed, 59 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index ea01621..5872705 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -1029,32 +1029,75 @@ static int print_wakeup_source_stats(struct seq_file *m,
- 	return 0;
- }
- 
--/**
-- * wakeup_sources_stats_show - Print wakeup sources statistics information.
-- * @m: seq_file to print the statistics into.
-- */
--static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
-+static void *wakeup_sources_stats_seq_start(struct seq_file *m,
-+					loff_t *pos)
- {
- 	struct wakeup_source *ws;
--	int srcuidx;
-+	loff_t n = *pos;
-+	int *srcuidx = m->private;
- 
--	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
--		"expire_count\tactive_since\ttotal_time\tmax_time\t"
--		"last_change\tprevent_suspend_time\n");
-+	if (n == 0) {
-+		seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-+			"expire_count\tactive_since\ttotal_time\tmax_time\t"
-+			"last_change\tprevent_suspend_time\n");
-+	}
- 
--	srcuidx = srcu_read_lock(&wakeup_srcu);
--	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
--		print_wakeup_source_stats(m, ws);
--	srcu_read_unlock(&wakeup_srcu, srcuidx);
-+	*srcuidx = srcu_read_lock(&wakeup_srcu);
-+	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-+		if (n-- <= 0)
-+			return ws;
-+	}
-+
-+	return NULL;
-+}
-+
-+static void *wakeup_sources_stats_seq_next(struct seq_file *m,
-+					void *v, loff_t *pos)
-+{
-+	struct wakeup_source *ws = v;
-+	struct wakeup_source *next_ws = NULL;
-+
-+	++(*pos);
- 
--	print_wakeup_source_stats(m, &deleted_ws);
-+	list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
-+		next_ws = ws;
-+		break;
-+	}
-+
-+	return next_ws;
-+}
-+
-+static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
-+{
-+	int *srcuidx = m->private;
-+
-+	srcu_read_unlock(&wakeup_srcu, *srcuidx);
-+}
-+
-+/**
-+ * wakeup_sources_stats_seq_show - Print wakeup sources statistics information.
-+ * @m: seq_file to print the statistics into.
-+ * @v: wakeup_source of each iteration
-+ */
-+static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
-+{
-+	struct wakeup_source *ws = v;
-+
-+	print_wakeup_source_stats(m, ws);
- 
- 	return 0;
- }
- 
-+static const struct seq_operations wakeup_sources_stats_seq_ops = {
-+	.start = wakeup_sources_stats_seq_start,
-+	.next  = wakeup_sources_stats_seq_next,
-+	.stop  = wakeup_sources_stats_seq_stop,
-+	.show  = wakeup_sources_stats_seq_show,
-+};
-+
- static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
- {
--	return single_open(file, wakeup_sources_stats_show, NULL);
-+	return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
- }
- 
- static const struct file_operations wakeup_sources_stats_fops = {
-@@ -1062,7 +1105,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
- 	.open = wakeup_sources_stats_open,
- 	.read = seq_read,
- 	.llseek = seq_lseek,
--	.release = single_release,
-+	.release = seq_release_private,
- };
- 
- static int __init wakeup_sources_debugfs_init(void)
--- 
-1.9.1
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
