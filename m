@@ -1,90 +1,131 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V3] cpufreq: powernv: Fix the hardlockup by synchronus smp_call in timer interrupt
-Date: Wed, 25 Apr 2018 16:29:31 +0530
-Message-ID: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: npiggin@gmail.com, benh@kernel.crashing.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, ppaidipe@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, stable@vger.kernel.org
+From: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Subject: [PATCH v3] PM / wakeup: use seq_open() to show wakeup stats
+Date: Wed, 25 Apr 2018 18:59:31 +0800
+Message-ID: <1524653971-10425-1-git-send-email-opensource.ganesh@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, rafael@kernel.org, gregkh@linuxfoundation.org, geert@linux-m68k.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ganesh Mahendran <opensource.ganesh@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-gpstate_timer_handler() uses synchronous smp_call to set the pstate
-on the requested core. This causes the below hard lockup:
+single_open() interface requires that the whole output must
+fit into a single buffer. This will lead to timeout when
+system memory is not in a good situation.
 
-[c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
-[c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
-[c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
-[c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
-[c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
-[c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
-[c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
-[c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
-[c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
-[c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
--- interrupt: 901 at doorbell_global_ipi+0x34/0x50
-LR = arch_send_call_function_ipi_mask+0x120/0x130
-[c000003fe566ba50] [c00000000004876c]
-arch_send_call_function_ipi_mask+0x4c/0x130
-[c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
-[c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
-[c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
-[c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
-[c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
-[c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
-[c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+This patch use seq_open() to show wakeup stats. This method
+need only one page, so timeout will not be observed.
 
-One way to avoid this is removing the smp-call. We can ensure that the timer
-always runs on one of the policy-cpus. If the timer gets migrated to a
-cpu outside the policy then re-queue it back on the policy->cpus. This way
-we can get rid of the smp-call which was being used to set the pstate
-on the policy->cpus.
-
-Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
-Cc: <stable@vger.kernel.org>        [4.8+]
-Reported-by: Nicholas Piggin <npiggin@gmail.com>
-Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
+----
+v3: simplify wakeup_sources_stats_seq_start
+v2: use srcu_read_lock instead of rcu_read_lock
 ---
-Changes from V2:
-- Remove the check for active policy while requeing the migrated timer
-Changes from V1:
-- Remove smp_call in the pstate handler.
+ drivers/base/power/wakeup.c | 75 +++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 59 insertions(+), 16 deletions(-)
 
- drivers/cpufreq/powernv-cpufreq.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 71f8682..e368e1f 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -679,6 +679,16 @@ void gpstate_timer_handler(struct timer_list *t)
- 
- 	if (!spin_trylock(&gpstates->gpstate_lock))
- 		return;
-+	/*
-+	 * If the timer has migrated to the different cpu then bring
-+	 * it back to one of the policy->cpus
-+	 */
-+	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
-+		gpstates->timer.expires = jiffies + msecs_to_jiffies(1);
-+		add_timer_on(&gpstates->timer, cpumask_first(policy->cpus));
-+		spin_unlock(&gpstates->gpstate_lock);
-+		return;
-+	}
- 
- 	/*
- 	 * If PMCR was last updated was using fast_swtich then
-@@ -718,10 +728,8 @@ void gpstate_timer_handler(struct timer_list *t)
- 	if (gpstate_idx != gpstates->last_lpstate_idx)
- 		queue_gpstate_timer(gpstates);
- 
-+	set_pstate(&freq_data);
- 	spin_unlock(&gpstates->gpstate_lock);
--
--	/* Timer may get migrated to a different cpu on cpu hot unplug */
--	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index ea01621..5872705 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -1029,32 +1029,75 @@ static int print_wakeup_source_stats(struct seq_file *m,
+ 	return 0;
  }
  
- /*
+-/**
+- * wakeup_sources_stats_show - Print wakeup sources statistics information.
+- * @m: seq_file to print the statistics into.
+- */
+-static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
++static void *wakeup_sources_stats_seq_start(struct seq_file *m,
++					loff_t *pos)
+ {
+ 	struct wakeup_source *ws;
+-	int srcuidx;
++	loff_t n = *pos;
++	int *srcuidx = m->private;
+ 
+-	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
+-		"expire_count\tactive_since\ttotal_time\tmax_time\t"
+-		"last_change\tprevent_suspend_time\n");
++	if (n == 0) {
++		seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
++			"expire_count\tactive_since\ttotal_time\tmax_time\t"
++			"last_change\tprevent_suspend_time\n");
++	}
+ 
+-	srcuidx = srcu_read_lock(&wakeup_srcu);
+-	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+-		print_wakeup_source_stats(m, ws);
+-	srcu_read_unlock(&wakeup_srcu, srcuidx);
++	*srcuidx = srcu_read_lock(&wakeup_srcu);
++	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
++		if (n-- <= 0)
++			return ws;
++	}
++
++	return NULL;
++}
++
++static void *wakeup_sources_stats_seq_next(struct seq_file *m,
++					void *v, loff_t *pos)
++{
++	struct wakeup_source *ws = v;
++	struct wakeup_source *next_ws = NULL;
++
++	++(*pos);
+ 
+-	print_wakeup_source_stats(m, &deleted_ws);
++	list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
++		next_ws = ws;
++		break;
++	}
++
++	return next_ws;
++}
++
++static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
++{
++	int *srcuidx = m->private;
++
++	srcu_read_unlock(&wakeup_srcu, *srcuidx);
++}
++
++/**
++ * wakeup_sources_stats_seq_show - Print wakeup sources statistics information.
++ * @m: seq_file to print the statistics into.
++ * @v: wakeup_source of each iteration
++ */
++static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
++{
++	struct wakeup_source *ws = v;
++
++	print_wakeup_source_stats(m, ws);
+ 
+ 	return 0;
+ }
+ 
++static const struct seq_operations wakeup_sources_stats_seq_ops = {
++	.start = wakeup_sources_stats_seq_start,
++	.next  = wakeup_sources_stats_seq_next,
++	.stop  = wakeup_sources_stats_seq_stop,
++	.show  = wakeup_sources_stats_seq_show,
++};
++
+ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+ {
+-	return single_open(file, wakeup_sources_stats_show, NULL);
++	return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
+ }
+ 
+ static const struct file_operations wakeup_sources_stats_fops = {
+@@ -1062,7 +1105,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
+ 	.open = wakeup_sources_stats_open,
+ 	.read = seq_read,
+ 	.llseek = seq_lseek,
+-	.release = single_release,
++	.release = seq_release_private,
+ };
+ 
+ static int __init wakeup_sources_debugfs_init(void)
 -- 
-1.8.3.1
+1.9.1
