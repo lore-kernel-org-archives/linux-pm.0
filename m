@@ -1,333 +1,317 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] thermal: samsung: Remove support for Exynos5440
-Date: Thu, 26 Apr 2018 13:21:12 +0200
-Message-ID: <2734003.UHSMxVLybj@amdc3058>
-References: <20180424203239.21885-1-krzk@kernel.org>
-        <20180424203239.21885-7-krzk@kernel.org> <1951102.VLysaozMLK@amdc3058>
-        <CGME20180426112113eucas1p1b5bf6f093442154e29f5541b4aba6b00@eucas1p1.samsung.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v4 1/3] power: supply: Add support for the Qualcomm
+ Battery Monitoring System
+Date: Thu, 26 Apr 2018 13:34:00 +0200
+Message-ID: <CACRpkdZGtD4dP9UzVsb_peRGjdB6nfzUy79Ep-Su6ZEeWKw=ig@mail.gmail.com>
+References: <20180407135934.26122-1-ctatlor97@gmail.com> <20180407175802.29444-1-ctatlor97@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1951102.VLysaozMLK@amdc3058>
+In-Reply-To: <20180407175802.29444-1-ctatlor97@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, linux-samsu
+To: Craig Tatlor <ctatlor97@gmail.com>, Antonio Ospite <ospite@studenti.unina.it>, Hans Verkuil <hans.verkuil@cisco.com>, Jonathan Cameron <jic23@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH] thermal: samsung: Remove support for Exynos5440
+On Sat, Apr 7, 2018 at 7:57 PM, Craig Tatlor <ctatlor97@gmail.com> wrote:
 
-The Exynos5440 is not actively developed, there are no development
-boards available and probably there are no real products with it.
-Remove wide-tree support for Exynos5440.
+Hi Craig! Thanks for your patch!
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-[b.zolnierkie: ported over driver changes]
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
-Eduardo, here is a version which applies on top of pending Exynos
-thermal changes (https://lkml.org/lkml/2018/4/16/256).
+> This patch adds a driver for the BMS (Battery Monitoring System)
+> block of the PM8941 PMIC, it uses a lookup table defined in the
+> device tree to generate a capacity from the BMS supplied OCV, it
+> then ammends the coulomb counter to that to increase the accuracy
+> of the estimated capacity.
+>
+> Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
 
- Documentation/devicetree/bindings/thermal/exynos-thermal.txt |   14 
- drivers/thermal/samsung/exynos_tmu.c                         |  161 -----------
- 2 files changed, 4 insertions(+), 171 deletions(-)
+Just some minor remarks.
 
-Index: b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-===================================================================
---- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt	2018-04-26 12:29:42.716294204 +0200
-+++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt	2018-04-26 12:29:42.716294204 +0200
-@@ -12,7 +12,6 @@
- 	       "samsung,exynos5420-tmu-ext-triminfo" for TMU channels 2, 3 and 4
- 			Exynos5420 (Must pass triminfo base and triminfo clock)
-                "samsung,exynos5433-tmu"
--	       "samsung,exynos5440-tmu"
- 	       "samsung,exynos7-tmu"
- - interrupt-parent : The phandle for the interrupt controller
- - reg : Address range of the thermal registers. For soc's which has multiple
-@@ -68,18 +67,7 @@ Example 1):
- 		#thermal-sensor-cells = <0>;
- 	};
- 
--Example 2):
--
--	tmuctrl_0: tmuctrl@160118 {
--		compatible = "samsung,exynos5440-tmu";
--		reg = <0x160118 0x230>, <0x160368 0x10>;
--		interrupts = <0 58 0>;
--		clocks = <&clock 21>;
--		clock-names = "tmu_apbif";
--		#thermal-sensor-cells = <0>;
--	};
--
--Example 3): (In case of Exynos5420 "with misplaced TRIMINFO register")
-+Example 2): (In case of Exynos5420 "with misplaced TRIMINFO register")
- 	tmu_cpu2: tmu@10068000 {
- 		compatible = "samsung,exynos5420-tmu-ext-triminfo";
- 		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-Index: b/drivers/thermal/samsung/exynos_tmu.c
-===================================================================
---- a/drivers/thermal/samsung/exynos_tmu.c	2018-04-26 12:29:42.716294204 +0200
-+++ b/drivers/thermal/samsung/exynos_tmu.c	2018-04-26 12:30:52.648295965 +0200
-@@ -126,28 +126,6 @@
- 
- #define EXYNOS5433_G3D_BASE			0x10070000
- 
--/*exynos5440 specific registers*/
--#define EXYNOS5440_TMU_S0_7_TRIM		0x000
--#define EXYNOS5440_TMU_S0_7_CTRL		0x020
--#define EXYNOS5440_TMU_S0_7_DEBUG		0x040
--#define EXYNOS5440_TMU_S0_7_TEMP		0x0f0
--#define EXYNOS5440_TMU_S0_7_TH0			0x110
--#define EXYNOS5440_TMU_S0_7_TH1			0x130
--#define EXYNOS5440_TMU_S0_7_TH2			0x150
--#define EXYNOS5440_TMU_S0_7_IRQEN		0x210
--#define EXYNOS5440_TMU_S0_7_IRQ			0x230
--/* exynos5440 common registers */
--#define EXYNOS5440_TMU_IRQ_STATUS		0x000
--#define EXYNOS5440_TMU_PMIN			0x004
--
--#define EXYNOS5440_TMU_INTEN_RISE0_SHIFT	0
--#define EXYNOS5440_TMU_INTEN_RISE1_SHIFT	1
--#define EXYNOS5440_TMU_INTEN_RISE2_SHIFT	2
--#define EXYNOS5440_TMU_INTEN_RISE3_SHIFT	3
--#define EXYNOS5440_TMU_INTEN_FALL0_SHIFT	4
--#define EXYNOS5440_TMU_TH_RISE4_SHIFT		24
--#define EXYNOS5440_EFUSE_SWAP_OFFSET		8
--
- /* Exynos7 specific registers */
- #define EXYNOS7_THD_TEMP_RISE7_6		0x50
- #define EXYNOS7_THD_TEMP_FALL7_6		0x60
-@@ -184,7 +162,6 @@ enum soc_type {
- 	SOC_ARCH_EXYNOS5420,
- 	SOC_ARCH_EXYNOS5420_TRIMINFO,
- 	SOC_ARCH_EXYNOS5433,
--	SOC_ARCH_EXYNOS5440,
- 	SOC_ARCH_EXYNOS7,
- };
- 
-@@ -619,57 +596,6 @@ out:
- 	return ret;
- }
- 
--static int exynos5440_tmu_initialize(struct platform_device *pdev)
--{
--	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--	unsigned int trim_info = 0, con, rising_threshold;
--	int threshold_code;
--	int crit_temp = 0;
--
--	/*
--	 * For exynos5440 soc triminfo value is swapped between TMU0 and
--	 * TMU2, so the below logic is needed.
--	 */
--	switch (data->id) {
--	case 0:
--		trim_info = readl(data->base + EXYNOS5440_EFUSE_SWAP_OFFSET +
--				 EXYNOS5440_TMU_S0_7_TRIM);
--		break;
--	case 1:
--		trim_info = readl(data->base + EXYNOS5440_TMU_S0_7_TRIM);
--		break;
--	case 2:
--		trim_info = readl(data->base - EXYNOS5440_EFUSE_SWAP_OFFSET +
--				  EXYNOS5440_TMU_S0_7_TRIM);
--	}
--	sanitize_temp_error(data, trim_info);
--
--	/* Write temperature code for rising and falling threshold */
--	rising_threshold = readl(data->base + EXYNOS5440_TMU_S0_7_TH0);
--	rising_threshold = get_th_reg(data, rising_threshold, false);
--	writel(rising_threshold, data->base + EXYNOS5440_TMU_S0_7_TH0);
--	writel(0, data->base + EXYNOS5440_TMU_S0_7_TH1);
--
--	data->tmu_clear_irqs(data);
--
--	/* if last threshold limit is also present */
--	if (!data->tzd->ops->get_crit_temp(data->tzd, &crit_temp)) {
--		threshold_code = temp_to_code(data, crit_temp / MCELSIUS);
--		/* 5th level to be assigned in th2 reg */
--		rising_threshold =
--			threshold_code << EXYNOS5440_TMU_TH_RISE4_SHIFT;
--		writel(rising_threshold, data->base + EXYNOS5440_TMU_S0_7_TH2);
--		con = readl(data->base + EXYNOS5440_TMU_S0_7_CTRL);
--		con |= (1 << EXYNOS_TMU_THERM_TRIP_EN_SHIFT);
--		writel(con, data->base + EXYNOS5440_TMU_S0_7_CTRL);
--	}
--	/* Clear the PMIN in the common TMU register */
--	if (!data->id)
--		writel(0, data->base_second + EXYNOS5440_TMU_PMIN);
--
--	return 0;
--}
--
- static int exynos7_tmu_initialize(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-@@ -820,35 +746,6 @@ static void exynos5433_tmu_control(struc
- 	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
- }
- 
--static void exynos5440_tmu_control(struct platform_device *pdev, bool on)
--{
--	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--	struct thermal_zone_device *tz = data->tzd;
--	unsigned int con, interrupt_en;
--
--	con = get_con_reg(data, readl(data->base + EXYNOS5440_TMU_S0_7_CTRL));
--
--	if (on) {
--		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
--		interrupt_en =
--			(of_thermal_is_trip_valid(tz, 3)
--			 << EXYNOS5440_TMU_INTEN_RISE3_SHIFT) |
--			(of_thermal_is_trip_valid(tz, 2)
--			 << EXYNOS5440_TMU_INTEN_RISE2_SHIFT) |
--			(of_thermal_is_trip_valid(tz, 1)
--			 << EXYNOS5440_TMU_INTEN_RISE1_SHIFT) |
--			(of_thermal_is_trip_valid(tz, 0)
--			 << EXYNOS5440_TMU_INTEN_RISE0_SHIFT);
--		interrupt_en |=
--			interrupt_en << EXYNOS5440_TMU_INTEN_FALL0_SHIFT;
--	} else {
--		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
--		interrupt_en = 0; /* Disable all interrupts */
--	}
--	writel(interrupt_en, data->base + EXYNOS5440_TMU_S0_7_IRQEN);
--	writel(con, data->base + EXYNOS5440_TMU_S0_7_CTRL);
--}
--
- static void exynos7_tmu_control(struct platform_device *pdev, bool on)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-@@ -920,10 +817,8 @@ static u32 get_emul_con_reg(struct exyno
- 	if (temp) {
- 		temp /= MCELSIUS;
- 
--		if (data->soc != SOC_ARCH_EXYNOS5440) {
--			val &= ~(EXYNOS_EMUL_TIME_MASK << EXYNOS_EMUL_TIME_SHIFT);
--			val |= (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT);
--		}
-+		val &= ~(EXYNOS_EMUL_TIME_MASK << EXYNOS_EMUL_TIME_SHIFT);
-+		val |= (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT);
- 		if (data->soc == SOC_ARCH_EXYNOS7) {
- 			val &= ~(EXYNOS7_EMUL_DATA_MASK <<
- 				EXYNOS7_EMUL_DATA_SHIFT);
-@@ -964,16 +859,6 @@ static void exynos4412_tmu_set_emulation
- 	writel(val, data->base + emul_con);
- }
- 
--static void exynos5440_tmu_set_emulation(struct exynos_tmu_data *data,
--					 int temp)
--{
--	unsigned int val;
--
--	val = readl(data->base + EXYNOS5440_TMU_S0_7_DEBUG);
--	val = get_emul_con_reg(data, val, temp);
--	writel(val, data->base + EXYNOS5440_TMU_S0_7_DEBUG);
--}
--
- static int exynos_tmu_set_emulation(void *drv_data, int temp)
- {
- 	struct exynos_tmu_data *data = drv_data;
-@@ -996,7 +881,6 @@ out:
- }
- #else
- #define exynos4412_tmu_set_emulation NULL
--#define exynos5440_tmu_set_emulation NULL
- static int exynos_tmu_set_emulation(void *drv_data, int temp)
- 	{ return -EINVAL; }
- #endif /* CONFIG_THERMAL_EMULATION */
-@@ -1014,11 +898,6 @@ static int exynos4412_tmu_read(struct ex
- 	return readb(data->base + EXYNOS_TMU_REG_CURRENT_TEMP);
- }
- 
--static int exynos5440_tmu_read(struct exynos_tmu_data *data)
--{
--	return readb(data->base + EXYNOS5440_TMU_S0_7_TEMP);
--}
--
- static int exynos7_tmu_read(struct exynos_tmu_data *data)
- {
- 	return readw(data->base + EXYNOS_TMU_REG_CURRENT_TEMP) &
-@@ -1029,16 +908,9 @@ static void exynos_tmu_work(struct work_
- {
- 	struct exynos_tmu_data *data = container_of(work,
- 			struct exynos_tmu_data, irq_work);
--	unsigned int val_type;
- 
- 	if (!IS_ERR(data->clk_sec))
- 		clk_enable(data->clk_sec);
--	/* Find which sensor generated this interrupt */
--	if (data->soc == SOC_ARCH_EXYNOS5440) {
--		val_type = readl(data->base_second + EXYNOS5440_TMU_IRQ_STATUS);
--		if (!((val_type >> data->id) & 0x1))
--			goto out;
--	}
- 	if (!IS_ERR(data->clk_sec))
- 		clk_disable(data->clk_sec);
- 
-@@ -1051,7 +923,6 @@ static void exynos_tmu_work(struct work_
- 
- 	clk_disable(data->clk);
- 	mutex_unlock(&data->lock);
--out:
- 	enable_irq(data->irq);
- }
- 
-@@ -1086,15 +957,6 @@ static void exynos4210_tmu_clear_irqs(st
- 	writel(val_irq, data->base + tmu_intclear);
- }
- 
--static void exynos5440_tmu_clear_irqs(struct exynos_tmu_data *data)
--{
--	unsigned int val_irq;
--
--	val_irq = readl(data->base + EXYNOS5440_TMU_S0_7_IRQ);
--	/* clear the interrupts */
--	writel(val_irq, data->base + EXYNOS5440_TMU_S0_7_IRQ);
--}
--
- static irqreturn_t exynos_tmu_irq(int irq, void *id)
- {
- 	struct exynos_tmu_data *data = id;
-@@ -1131,9 +993,6 @@ static const struct of_device_id exynos_
- 		.compatible = "samsung,exynos5433-tmu",
- 		.data = (const void *)SOC_ARCH_EXYNOS5433,
- 	}, {
--		.compatible = "samsung,exynos5440-tmu",
--		.data = (const void *)SOC_ARCH_EXYNOS5440,
--	}, {
- 		.compatible = "samsung,exynos7-tmu",
- 		.data = (const void *)SOC_ARCH_EXYNOS7,
- 	},
-@@ -1223,19 +1082,6 @@ static int exynos_map_dt_data(struct pla
- 		data->min_efuse_value = 40;
- 		data->max_efuse_value = 150;
- 		break;
--	case SOC_ARCH_EXYNOS5440:
--		data->tmu_initialize = exynos5440_tmu_initialize;
--		data->tmu_control = exynos5440_tmu_control;
--		data->tmu_read = exynos5440_tmu_read;
--		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
--		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
--		data->ntrip = 4;
--		data->gain = 5;
--		data->reference_voltage = 16;
--		data->efuse_value = 0x5d2d;
--		data->min_efuse_value = 16;
--		data->max_efuse_value = 76;
--		break;
- 	case SOC_ARCH_EXYNOS7:
- 		data->tmu_initialize = exynos7_tmu_initialize;
- 		data->tmu_control = exynos7_tmu_control;
-@@ -1260,8 +1106,7 @@ static int exynos_map_dt_data(struct pla
- 	 * Check if the TMU shares some registers and then try to map the
- 	 * memory of common registers.
- 	 */
--	if (data->soc != SOC_ARCH_EXYNOS5420_TRIMINFO &&
--	    data->soc != SOC_ARCH_EXYNOS5440)
-+	if (data->soc != SOC_ARCH_EXYNOS5420_TRIMINFO)
- 		return 0;
- 
- 	if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
+NB: I see that you are writing from a private email address
+so if you're working as a hobbyist on your precious sparetime
+I have lower expectation on how much work you will put into
+this, so see it more as suggestions than demands.
+
+My overall feedback is that for algorithmic charger what
+we need is infrastructure. What is currently piling up in
+drivers/power/supply scares me a bit in it's lack of
+framework and code reuse.
+
+It also scares me because this is vital technology dealing
+with physical devices and as such really need to have
+modularized reusable reviewed code with several users
+and deployments.
+
+Code reuse would include:
+
+- Mathematical helpers such as interpolation of
+  values from absolute values or tables
+  Suggestions below!
+- State machines and transitions
+- CC/CV alorithms (using the above)
+- Many other things
+
+Not that *I* can make the situation much better, I'm just
+sharing my fears,
+
+> +static s64 sign_extend_s36(uint64_t raw)
+> +{
+> +       raw = raw & CC_36_BIT_MASK;
+> +
+> +       return (raw >> 35) == 0LL ?
+> +               raw : (SIGN_EXTEND_36_TO_64_MASK | raw);
+> +}
+
+#include <linux/bitops.h>
+
+Use sign_extend32()
+
+> +static unsigned int interpolate(int y0, int x0, int y1, int x1, int x)
+> +{
+> +       if (y0 == y1 || x == x0)
+> +               return y0;
+> +       if (x1 == x0 || x == x1)
+> +               return y1;
+> +
+> +       return y0 + ((y1 - y0) * (x - x0) / (x1 - x0));
+> +}
+> +
+> +static unsigned int between(int left, int right, int val)
+> +{
+> +       if (left <= val && val <= right)
+> +               return 1;
+> +
+> +       return 0;
+> +}
+
+How are these things not library functions?
+
+Every cell of my brain says this code should be reusable.
+
+Can you put this in <linux/fixp-arith.h>?
+
+I bet a million to one that the video people will sooner or later
+need linear interpolation and there are more users in the kernel
+than drivers/power/, certainly drivers/iio as well.
+
+If noone else says anything I vote to put at least the linear
+interpolation into <linux/fixp-arith.h> with a bonus if you
+move some of the current users in drivers/power over
+while you're at it.
+
+> +static unsigned int interpolate_capacity(int temp, u16 ocv,
+> +                               struct bms_ocv_lut ocv_lut)
+> +{
+> +       unsigned int pcj_minus_one = 0, pcj = 0;
+> +       int i, j;
+> +
+> +       for (j = 0; j < TEMPERATURE_COLS; j++)
+> +               if (temp <= ocv_lut.temp_legend[j])
+> +                       break;
+> +
+> +       if (ocv >= ocv_lut.lut[0][j])
+> +               return ocv_lut.capacity_legend[0];
+> +
+> +       if (ocv <= ocv_lut.lut[ocv_lut.rows - 1][j - 1])
+> +               return ocv_lut.capacity_legend[ocv_lut.rows - 1];
+> +
+> +       for (i = 0; i < ocv_lut.rows - 1; i++) {
+> +               if (pcj == 0 && between(ocv_lut.lut[i][j],
+> +                                       ocv_lut.lut[i+1][j], ocv))
+> +                       pcj = interpolate(ocv_lut.capacity_legend[i],
+> +                                         ocv_lut.lut[i][j],
+> +                                         ocv_lut.capacity_legend[i + 1],
+> +                                         ocv_lut.lut[i+1][j],
+> +                                         ocv);
+> +
+> +               if (pcj_minus_one == 0 && between(ocv_lut.lut[i][j-1],
+> +                                                 ocv_lut.lut[i+1][j-1], ocv))
+> +                       pcj_minus_one = interpolate(ocv_lut.capacity_legend[i],
+> +                                                   ocv_lut.lut[i][j-1],
+> +                                                   ocv_lut.capacity_legend[i + 1],
+> +                                                   ocv_lut.lut[i+1][j-1],
+> +                                                   ocv);
+> +
+> +               if (pcj && pcj_minus_one)
+> +                       return interpolate(pcj_minus_one,
+> +                                          ocv_lut.temp_legend[j-1],
+> +                                          pcj,
+> +                                          ocv_lut.temp_legend[j],
+> +                                          temp);
+> +       }
+
+This code really needs some comments to tell what is going on
+here. Also I sense that you can break out a smaller function
+for interpolation based on table values, such as a function
+that would take a standard format of tables, look up where we
+are in that table and interpolate from the neighboring values.
+
+People can then later go in and refine the algorithms if they
+e.g. want to introduce spline or RMS interpolation instead
+and we can get better interpolation for everybody.
+
+> +static unsigned long interpolate_fcc(int temp, struct bms_fcc_lut fcc_lut)
+> +{
+> +       int i, fcc_mv;
+> +
+> +       for (i = 0; i < TEMPERATURE_COLS; i++)
+> +               if (temp <= fcc_lut.temp_legend[i])
+> +                       break;
+> +
+> +       fcc_mv = interpolate(fcc_lut.lut[i - 1],
+> +                            fcc_lut.temp_legend[i - 1],
+> +                            fcc_lut.lut[i],
+> +                            fcc_lut.temp_legend[i],
+> +                            temp);
+> +
+> +       return fcc_mv * 10000;
+> +}
+
+So then only this would really remain: pass a table and interpolate.
+
+> +static int bms_lock_output_data(struct bms_device_info *di)
+> +{
+> +       int ret;
+> +
+> +       ret = regmap_update_bits(di->regmap, di->base_addr +
+> +                                REG_BMS_CC_DATA_CTL,
+> +                                BMS_HOLD_OREG_DATA, BMS_HOLD_OREG_DATA);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "failed to lock bms output: %d", ret);
+> +               return ret;
+> +       }
+
+Reuse of regmap is very nice, thanks for doing it this way.
+
+> +static int bms_read_cc(struct bms_device_info *di, s64 *cc_uah)
+> +static void bms_reset_cc(struct bms_device_info *di)
+
+These indeed need to be mostly hardware-specific so they
+are fine.
+
+> +static int bms_calculate_capacity(struct bms_device_info *di, int *capacity)
+> +{
+> +       unsigned long ocv_capacity, fcc;
+> +       int ret, temp, temp_degc;
+> +       s64 cc, capacity_nodiv;
+> +
+> +       ret = iio_read_channel_raw(di->adc, &temp);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "failed to read temperature: %d", ret);
+> +               return ret;
+> +       }
+
+Very nice that you use IIO ADC as a back-end.
+
+> +       temp_degc = (temp + 500) / 1000;
+
+That deserves a comment I think. Like what the manual
+says about this and why the raw temperature is given
+like this.
+
+Maybe you want to use DIV_ROUND_CLOSEST()
+or DIV_ROUND_UP() from <linux/kernel.h> instead
+of just "/"?
+
+Maybe you want to use that in other places too like
+the below divisions.
+
+> +       ret = bms_read_cc(di, &cc);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "failed to read coulomb counter: %d", ret);
+> +               return ret;
+> +       }
+> +
+> +       ocv_capacity = interpolate_capacity(temp_degc, (di->ocv + 5) / 10,
+> +                                           di->ocv_lut);
+> +       fcc = interpolate_fcc(temp_degc, di->fcc_lut);
+> +
+> +       capacity_nodiv = ((fcc * ocv_capacity) / 100 - cc) * 100;
+> +       *capacity = div64_ul(capacity_nodiv, fcc);
+
+So I guess you fit the capacity between 0..100, please
+add some comment on what's going on here.
+
+> +static irqreturn_t bms_ocv_thr_irq_handler(int irq, void *dev_id)
+> +{
+> +       struct bms_device_info *di = dev_id;
+> +
+> +       if (bms_read_ocv(di, &di->ocv) < 0)
+> +               return IRQ_HANDLED;
+> +
+> +       bms_reset_cc(di);
+> +       return IRQ_HANDLED;
+> +}
+
+So that is a coloumb counter interrupt? Please add some
+comment on when this gets called. Is it called whenever
+a coloumb is added/removed from the battery?
+
+> +       ret = of_property_read_u8_array(di->dev->of_node,
+> +                                                "qcom,ocv-temp-legend",
+> +                                                (u8 *)di->ocv_lut.temp_legend,
+> +                                                TEMPERATURE_COLS);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "no ocv temperature legend found");
+> +               return ret;
+> +       }
+> +
+> +       di->ocv_lut.rows = of_property_read_variable_u8_array(di->dev->of_node,
+> +                                                "qcom,ocv-capacity-legend",
+> +                                                di->ocv_lut.capacity_legend, 0,
+> +                                                MAX_CAPACITY_ROWS);
+> +       if (di->ocv_lut.rows < 0) {
+> +               dev_err(di->dev, "no ocv capacity legend found");
+> +               return ret;
+> +       }
+> +
+> +       ret = of_property_read_variable_u16_array(di->dev->of_node,
+> +                                                 "qcom,ocv-lut",
+> +                                                 (u16 *)di->ocv_lut.lut,
+> +                                                 TEMPERATURE_COLS,
+> +                                                 TEMPERATURE_COLS *
+> +                                                 MAX_CAPACITY_ROWS);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "no ocv lut array found");
+> +               return ret;
+> +       }
+> +
+> +       ret = of_property_read_u8_array(di->dev->of_node,
+> +                                                "qcom,fcc-temp-legend",
+> +                                                (u8 *)di->fcc_lut.temp_legend,
+> +                                                TEMPERATURE_COLS);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "no fcc temperature legend found");
+> +               return ret;
+> +       }
+> +
+> +       ret = of_property_read_u16_array(di->dev->of_node,
+> +                                                 "qcom,fcc-lut",
+> +                                                 di->fcc_lut.lut,
+> +                                                 TEMPERATURE_COLS);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "no fcc lut array found");
+> +               return ret;
+> +       }
+
+These tables (that I also suggest to use libraries to parse)
+should probably have standardized DT names so other
+battery drivers can use the same properties and we can
+use the same DT parsing code for all.
+
+> +       ret = bms_read_ocv(di, &di->ocv);
+> +       if (ret < 0) {
+> +               dev_err(di->dev, "failed to read initial ocv: %d", ret);
+> +               return ret;
+> +       }
+
+OCV = original coloumb counter value?
+
+Please expand the acronym somewhere because I get
+a bit lost.
+
+Overall it is a very nicely coded driver. My worries are
+all about code reuse, not code quality per se.
+
+Yours,
+Linus Walleij
