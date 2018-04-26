@@ -1,69 +1,47 @@
-From: Doug Berger <opendmb@gmail.com>
-Subject: [PATCH] PM / Sleep: only update last time for active wakeup sources
-Date: Wed, 25 Apr 2018 16:40:30 -0700
-Message-ID: <1524699630-30573-1-git-send-email-opendmb@gmail.com>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH][v5] tools/power turbostat: if --iterations, print for
+ specific count of iterations
+Date: Thu, 26 Apr 2018 08:08:48 +0800
+Message-ID: <20180426000847.GA20079@sandybridge-desktop>
+References: <20180414041055.10159-1-yu.c.chen@intel.com>
+ <1840879.edVvmFFlsp@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1840879.edVvmFFlsp@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Doug Berger <opendmb@gmail.com>
+Cc: Len Brown <lenb@kernel.org>, Artem Bityutskiy <artem.bityutskiy@intel.com>, Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When wakelock support was added, the wakeup_source_add() function
-was updated to set the last_time value of the wakeup source. This
-has the unintended side effect of producing confusing output from
-pm_print_active_wakeup_sources() when a wakeup source is added
-prior to a sleep that is blocked by a different wakeup source.
-
-The function pm_print_active_wakeup_sources() will search for the
-most recently active wakeup source when no active source is found.
-If a wakeup source is added after a different wakeup source blocks
-the system from going to sleep it may have a later last_time value
-than the blocking source and be output as the last active wakeup
-source even if it has never actually been active.
-
-It looks to me like the change to wakeup_source_add() was made to
-prevent the wakelock garbage collection from accidentally dropping
-a wakelock during the narrow window between adding the wakelock to
-the wakelock list in wakelock_lookup_add() and the activation of
-the wakeup source in pm_wake_lock().
-
-This commit changes the behavior so that only the last_time of the
-wakeup source used by a wakelock is initialized prior to adding it
-to the wakeup source list. This preserves the meaning of the
-last_time value as the last time the wakeup source was active and
-allows a wakeup source that has never been active to have a
-last_time value of 0.
-
-Fixes: b86ff982 ("PM / Sleep: Add user space interface for manipulating wakeup sources, v3")
-Signed-off-by: Doug Berger <opendmb@gmail.com>
----
- drivers/base/power/wakeup.c | 1 -
- kernel/power/wakelock.c     | 1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index ea01621..230160e 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -183,7 +183,6 @@ void wakeup_source_add(struct wakeup_source *ws)
- 	spin_lock_init(&ws->lock);
- 	timer_setup(&ws->timer, pm_wakeup_timer_fn, 0);
- 	ws->active = false;
--	ws->last_time = ktime_get();
- 
- 	spin_lock_irqsave(&events_lock, flags);
- 	list_add_rcu(&ws->entry, &wakeup_sources);
-diff --git a/kernel/power/wakelock.c b/kernel/power/wakelock.c
-index dfba59b..4210152 100644
---- a/kernel/power/wakelock.c
-+++ b/kernel/power/wakelock.c
-@@ -188,6 +188,7 @@ static struct wakelock *wakelock_lookup_add(const char *name, size_t len,
- 		return ERR_PTR(-ENOMEM);
- 	}
- 	wl->ws.name = wl->name;
-+	wl->ws.last_time = ktime_get();
- 	wakeup_source_add(&wl->ws);
- 	rb_link_node(&wl->node, parent, node);
- 	rb_insert_color(&wl->node, &wakelocks_tree);
--- 
-2.7.4
+On Mon, Apr 23, 2018 at 10:48:39AM +0200, Rafael J. Wysocki wrote:
+> On Saturday, April 14, 2018 6:10:55 AM CEST Yu Chen wrote:
+> > From: Chen Yu <yu.c.chen@intel.com>
+> > 
+> > There's a use case during test to only print specific round of iterations
+> > if --iterations is specified, for example, with this patch applied:
+> > 
+> > turbostat -i 5 -r 4
+> > will capture 4 samples with 5 seconds interval.
+> > 
+> > Cc: Len Brown <lenb@kernel.org>
+> > Cc: Rafael J Wysocki <rjw@rjwysocki.net>
+> > Cc: Artem Bityutskiy <artem.bityutskiy@intel.com>
+> > Cc: Doug Smythies <dsmythies@telus.net>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+[cut]...
+> > +		if (iterations && (++done_iters >= iterations))
+> 
+> The inner parens are not needed here (and similarly below).
+> 
+> If you fix this little one, please feel free to add
+> 
+> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> to the patch (FWIW). 
+> 
+OK, will do, thanks!
+Yu
