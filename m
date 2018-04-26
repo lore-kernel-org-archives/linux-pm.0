@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 09/11] mmc: sdio: Respect all error codes from dev_pm_domain_attach()
-Date: Thu, 26 Apr 2018 10:53:08 +0200
-Message-ID: <1524732790-2234-10-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 08/11] i2c: Respect all error codes from dev_pm_domain_attach()
+Date: Thu, 26 Apr 2018 10:53:07 +0200
+Message-ID: <1524732790-2234-9-git-send-email-ulf.hansson@linaro.org>
 References: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
@@ -14,23 +14,24 @@ The limitation of being able to check only for -EPROBE_DEFER from
 dev_pm_domain_attach() has been removed. Hence let's respect all error
 codes and bail out accordingly.
 
+Cc: Wolfram Sang <wsa@the-dreams.de>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/mmc/core/sdio_bus.c | 2 +-
+ drivers/i2c/i2c-core-base.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
-index 2b32b88..b6d8203 100644
---- a/drivers/mmc/core/sdio_bus.c
-+++ b/drivers/mmc/core/sdio_bus.c
-@@ -139,7 +139,7 @@ static int sdio_bus_probe(struct device *dev)
- 		return -ENODEV;
+diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
+index 1ba40bb..a17f46a 100644
+--- a/drivers/i2c/i2c-core-base.c
++++ b/drivers/i2c/i2c-core-base.c
+@@ -363,7 +363,7 @@ static int i2c_device_probe(struct device *dev)
+ 		goto err_clear_wakeup_irq;
  
- 	ret = dev_pm_domain_attach(dev, false);
--	if (ret == -EPROBE_DEFER)
-+	if (ret)
- 		return ret;
+ 	status = dev_pm_domain_attach(&client->dev, true);
+-	if (status == -EPROBE_DEFER)
++	if (status)
+ 		goto err_clear_wakeup_irq;
  
- 	/* Unbound SDIO functions are always suspended.
+ 	/*
 -- 
 2.7.4
