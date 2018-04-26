@@ -1,83 +1,30 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / Sleep: only update last time for active wakeup sources
-Date: Thu, 26 Apr 2018 08:30:52 +0200
-Message-ID: <CAJZ5v0i8ACi_Vw0iFKKFTn0pe6gi-YV8aACp9TyRmP3ab8wxqg@mail.gmail.com>
-References: <1524699630-30573-1-git-send-email-opendmb@gmail.com>
+From: Mike Galbraith <efault@gmx.de>
+Subject: Re: [RFC/RFT patch 0/7] timekeeping: Unify clock MONOTONIC and
+ clock BOOTTIME
+Date: Thu, 26 Apr 2018 09:03:56 +0200
+Message-ID: <1524726236.7572.1.camel@gmx.de>
+References: <CANq1E4QppGAaU5PYbGpuC00S6wGQcAt70Z7CntZHiLC6748z2A@mail.gmail.com>
+         <alpine.DEB.2.21.1804241007410.5261@nanos.tec.linutronix.de>
+         <1996930.B4PaKZ6i1F@aspire.rjw.lan> <1858767.c2KKoU8fl2@aspire.rjw.lan>
+         <alpine.DEB.2.21.1804251502310.2082@nanos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1524699630-30573-1-git-send-email-opendmb@gmail.com>
+In-Reply-To: <alpine.DEB.2.21.1804251502310.2082@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Berger <opendmb@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: John Stultz <john.stultz@linaro.org>, Genki Sky <sky@genki.is>, David Herrmann <dh.herrmann@gmail.com>, lkml <linux-kernel@vger.kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 26, 2018 at 1:40 AM, Doug Berger <opendmb@gmail.com> wrote:
-> When wakelock support was added, the wakeup_source_add() function
-> was updated to set the last_time value of the wakeup source. This
-> has the unintended side effect of producing confusing output from
-> pm_print_active_wakeup_sources() when a wakeup source is added
-> prior to a sleep that is blocked by a different wakeup source.
->
-> The function pm_print_active_wakeup_sources() will search for the
-> most recently active wakeup source when no active source is found.
-> If a wakeup source is added after a different wakeup source blocks
-> the system from going to sleep it may have a later last_time value
-> than the blocking source and be output as the last active wakeup
-> source even if it has never actually been active.
->
-> It looks to me like the change to wakeup_source_add() was made to
-> prevent the wakelock garbage collection from accidentally dropping
-> a wakelock during the narrow window between adding the wakelock to
-> the wakelock list in wakelock_lookup_add() and the activation of
-> the wakeup source in pm_wake_lock().
->
-> This commit changes the behavior so that only the last_time of the
-> wakeup source used by a wakelock is initialized prior to adding it
-> to the wakeup source list. This preserves the meaning of the
-> last_time value as the last time the wakeup source was active and
-> allows a wakeup source that has never been active to have a
-> last_time value of 0.
->
-> Fixes: b86ff982 ("PM / Sleep: Add user space interface for manipulating wakeup sources, v3")
-> Signed-off-by: Doug Berger <opendmb@gmail.com>
-> ---
->  drivers/base/power/wakeup.c | 1 -
->  kernel/power/wakelock.c     | 1 +
->  2 files changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index ea01621..230160e 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -183,7 +183,6 @@ void wakeup_source_add(struct wakeup_source *ws)
->         spin_lock_init(&ws->lock);
->         timer_setup(&ws->timer, pm_wakeup_timer_fn, 0);
->         ws->active = false;
-> -       ws->last_time = ktime_get();
+On Wed, 2018-04-25 at 15:03 +0200, Thomas Gleixner wrote:
+> Right, it does not matter. The real interesting one is d6ed449afdb3.
 
-If it is not initialized here, max_time may not be updated correctly later on.
+FWIW, three boxen here suspend/resume fine, but repeatably exhibit the
+below after a very few minute suspend, and a short bisect fingered your
+suspect.  Distro is opensuse 42.3.
 
-If you don't want to initialize it to ktime_get() (to avoid the issue
-you're trying to avoid), initialize it to something special and then
-check for that explicitly in wakeup_source_deactivate() when computing
-max_time.
-
->
->         spin_lock_irqsave(&events_lock, flags);
->         list_add_rcu(&ws->entry, &wakeup_sources);
-> diff --git a/kernel/power/wakelock.c b/kernel/power/wakelock.c
-> index dfba59b..4210152 100644
-> --- a/kernel/power/wakelock.c
-> +++ b/kernel/power/wakelock.c
-> @@ -188,6 +188,7 @@ static struct wakelock *wakelock_lookup_add(const char *name, size_t len,
->                 return ERR_PTR(-ENOMEM);
->         }
->         wl->ws.name = wl->name;
-> +       wl->ws.last_time = ktime_get();
->         wakeup_source_add(&wl->ws);
->         rb_link_node(&wl->node, parent, node);
->         rb_insert_color(&wl->node, &wakelocks_tree);
-> --
-> 2.7.4
->
+[  211.113902] Restarting tasks ... done.
+[  211.114817] PM: suspend exit
+[  212.312993] systemd-journald[7266]: File /var/log/journal/016627c3c4784cd4812d4b7e96a34226/system.journal corrupted or uncleanly shut down, renaming and replacing.
+[  212.313363] systemd-coredump[7264]: Detected coredump of the journal daemon itself, diverted to /var/lib/systemd/coredump/core.systemd-journal.0.0aa39276decf4f1ab6fda3464e31f9dd.582.1524720954000000.
