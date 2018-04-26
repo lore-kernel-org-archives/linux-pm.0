@@ -1,10 +1,9 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 15/18] thermal: exynos: check return values of
- ->get_trip_[temp,hyst] methods
-Date: Thu, 26 Apr 2018 13:51:30 +0200
-Message-ID: <1524743493-28113-16-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 18/18] thermal: exynos: remove trip reporting to user-space
+Date: Thu, 26 Apr 2018 13:51:33 +0200
+Message-ID: <1524743493-28113-19-git-send-email-b.zolnierkie@samsung.com>
 References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180426115236epcas2p3764927b3c23113fb4c3771b753a51199@epcas2p3.samsung.com>
+        <CGME20180426115244epcas2p36d0d44d1a0b2c3c4edff33187046caac@epcas2p3.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -12,44 +11,62 @@ To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Check return values of ->get_trip_[temp,hyst] methods in
-exynos_tmu_initialize().
+Remove trip reporting to user-space - I'm not aware of any user-space
+program which relies on it and there is a thermal user-space governor
+which does it in proper way nowadays.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 30 ++----------------------------
+ 1 file changed, 2 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 244aaf6..abe0737 100644
+index ed02b40..f785e6a 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -357,19 +357,23 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 		/* Write temperature code for rising and falling threshold */
- 		for (i = 0; i < ntrips; i++) {
- 			/* Write temperature code for rising threshold */
--			tzd->ops->get_trip_temp(tzd, i, &temp);
-+			ret = tzd->ops->get_trip_temp(tzd, i, &temp);
-+			if (ret)
-+				goto err;
- 			temp /= MCELSIUS;
- 			data->tmu_set_trip_temp(data, i, temp);
+@@ -216,33 +216,6 @@ struct exynos_tmu_data {
+ 	void (*tmu_clear_irqs)(struct exynos_tmu_data *data);
+ };
  
- 			/* Write temperature code for falling threshold */
--			tzd->ops->get_trip_hyst(tzd, i, &hyst);
-+			ret = tzd->ops->get_trip_hyst(tzd, i, &hyst);
-+			if (ret)
-+				goto err;
- 			hyst /= MCELSIUS;
- 			data->tmu_set_trip_hyst(data, i, temp, hyst);
- 		}
- 
- 		data->tmu_clear_irqs(data);
- 	}
+-static void exynos_report_trigger(struct exynos_tmu_data *p)
+-{
+-	char data[10], *envp[] = { data, NULL };
+-	struct thermal_zone_device *tz = p->tzd;
+-	int temp;
+-	unsigned int i;
 -
-+err:
- 	clk_disable(data->clk);
- 	mutex_unlock(&data->lock);
+-	if (!tz) {
+-		pr_err("No thermal zone device defined\n");
+-		return;
+-	}
+-
+-	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+-
+-	mutex_lock(&tz->lock);
+-	/* Find the level for which trip happened */
+-	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
+-		tz->ops->get_trip_temp(tz, i, &temp);
+-		if (tz->last_temperature < temp)
+-			break;
+-	}
+-
+-	snprintf(data, sizeof(data), "%u", i);
+-	kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, envp);
+-	mutex_unlock(&tz->lock);
+-}
+-
+ /*
+  * TMU treats temperature as a mapped temperature code.
+  * The temperature is converted differently depending on the calibration type.
+@@ -814,7 +787,8 @@ static void exynos_tmu_work(struct work_struct *work)
  	if (!IS_ERR(data->clk_sec))
+ 		clk_disable(data->clk_sec);
+ 
+-	exynos_report_trigger(data);
++	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
++
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
+ 
 -- 
 1.9.1
