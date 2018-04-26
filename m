@@ -1,110 +1,95 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v8 0/6] typec: tcpm: Add sink side support for PPS
-Date: Thu, 26 Apr 2018 12:54:27 +0200
-Message-ID: <20180426105427.kewn6s4kmnzuwtn6@earth.universe>
-References: <cover.1524490253.git.Adam.Thomson.Opensource@diasemi.com>
- <20180424135749.GA21610@kroah.com>
- <20180424232633.s475bsccxjhm7lpy@earth.universe>
- <20180425123045.GA22950@kroah.com>
- <20180426073326.GA12261@kroah.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info
+ available
+Date: Thu, 26 Apr 2018 12:15:33 +0100
+Message-ID: <20180426111533.GX14248@e110439-lin>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+ <20180410110412.GG14248@e110439-lin>
+ <20180411151450.GK4043@hirez.programming.kicks-ass.net>
+ <CAKfTPtC+-FR3ZD_t1vkGR2gVoUyxXpE=i4g9zqqLXu4jKKqgUA@mail.gmail.com>
+ <20180411153710.GN4082@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="7loneb5mrk3j6aec"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180426073326.GA12261@kroah.com>
+In-Reply-To: <20180411153710.GN4082@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Hans de Goede <hdegoede@redhat.com>, Jun Li <jun.li@nxp.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 11-Apr 17:37, Peter Zijlstra wrote:
+> On Wed, Apr 11, 2018 at 05:29:01PM +0200, Vincent Guittot wrote:
+> > On 11 April 2018 at 17:14, Peter Zijlstra <peterz@infradead.org> wrote:
+> > > On Tue, Apr 10, 2018 at 12:04:12PM +0100, Patrick Bellasi wrote:
+> > >> On 09-Apr 10:51, Vincent Guittot wrote:
+> > >
+> > >> > Peter,
+> > >> > what was your goal with adding the condition "if
+> > >> > (rq->cfs.h_nr_running)" for the aggragation of CFS utilization
+> > >>
+> > >> The original intent was to get rid of sched class flags, used to track
+> > >> which class has tasks runnable from within schedutil. The reason was
+> > >> to solve some misalignment between scheduler class status and
+> > >> schedutil status.
+> > >>
+> > >> The solution, initially suggested by Viresh, and finally proposed by
+> > >> Peter was to exploit RQ knowledges directly from within schedutil.
+> > >>
+> > >> The problem is that now schedutil updated depends on two information:
+> > >> utilization changes and number of RT and CFS runnable tasks.
+> > >>
+> > >> Thus, using cfs_rq::h_nr_running is not the problem... it's actually
+> > >> part of a much more clean solution of the code we used to have.
+> > >>
+> > >> The problem, IMO is that we now depend on other information which
+> > >> needs to be in sync before calling schedutil... and the patch I
+> > >> proposed is meant to make it less likely that all the information
+> > >> required are not aligned (also in the future).
+> > >
+> > > Specifically, the h_nr_running test was get rid of
+> > >
+> > >                 if (delta_ns > TICK_NSEC) {
+> > >                         j_sg_cpu->iowait_boost = 0;
+> > >                         j_sg_cpu->iowait_boost_pending = false;
+> > > -                       j_sg_cpu->util_cfs = 0;
+> > >
+> > >                         ^^^^^^^^^^^^^^^^^^^^^^^ that..
+> > >
+> > > -                       if (j_sg_cpu->util_dl == 0)
+> > > -                               continue;
+> > >                 }
+> > >
+> > >
+> > > because that felt rather arbitrary.
+> > 
+> > yes I agree.
+> > 
+> > With the patch that updates blocked idle load, we should not have the
+> > problem of blocked utilization anymore and get rid of the code above
+> > and h_nr_running test
+> 
+> Yes, these patches predate those, but indeed, now that we age the
+> blocked load consistently it should no longer be required.
 
---7loneb5mrk3j6aec
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+After this discussion, I think there is a general consensus about
+always add sg_cpu->util_cfs in cpufreq_schedutil.c::sugov_aggregate_util.
 
-Hi,
+Is that right?
 
-On Thu, Apr 26, 2018 at 09:33:26AM +0200, Greg Kroah-Hartman wrote:
-> On Wed, Apr 25, 2018 at 02:30:45PM +0200, Greg Kroah-Hartman wrote:
-> > On Wed, Apr 25, 2018 at 01:26:33AM +0200, Sebastian Reichel wrote:
-> > > Hi Greg,
-> > >=20
-> > > On Tue, Apr 24, 2018 at 03:57:49PM +0200, Greg Kroah-Hartman wrote:
-> > > > On Mon, Apr 23, 2018 at 03:10:55PM +0100, Adam Thomson wrote:
-> > > > > This patch set adds sink side support for the PPS feature introdu=
-ced in the
-> > > > > USB PD 3.0 specification.
-> > > > >=20
-> > > > > The source PPS supply is represented using the Power Supply frame=
-work to provide
-> > > > > access and control APIs for dealing with it's operating voltage a=
-nd current,
-> > > > > and switching between a standard PDO and PPS APDO operation. Duri=
-ng standard PDO
-> > > > > operation the voltage and current is read-only, but for APDO PPS =
-these are
-> > > > > writable as well to allow for control.
-> > > > >=20
-> > > > > It should be noted that the keepalive for PPS is not handled with=
-in TCPM. The
-> > > > > expectation is that the external user will be required to ensure =
-re-requests
-> > > > > occur regularly to ensure PPS remains and the source does not har=
-d reset.
-> > > >=20
-> > > > Sebastian, any objection from me taking this series through my USB =
-tree?
-> > >=20
-> > > I currently have the power-supply bits in a local branch for
-> > > testing. I would like to have this in the power-supply
-> > > tree, since there is at least one pending driver which could
-> > > directly use the newly introduced usb_type.
-> > >=20
-> > > I can either provide an immutable branch with a signed tag, or
-> > > you can merged it and provide me an immutable branch.
-> > >=20
-> > > If you merge it via the USB tree patch 2-4 are
-> > >=20
-> > > Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-> >=20
-> > I've applied these to a testing branch in my usb tree, and if they
-> > survive the 0-day bot, I'll move them to a branch that you can pull from
-> > that will not change.
-> >=20
-> > Oh, I had to add a follow-on patch to fix up a gcc warning that really
-> > wasn't a warning, but it saves us problems of people complaining about
-> > it.
->=20
-> All looks good now.
->=20
-> Here's the signed tag you can pull from, with the full information of
-> all of the other USB patches that you are going to be getting here
-> (sorry about that).
+For the rest, what this patch proposes is a code reorganization which
+is not required anymore to fix this specific issue but, it's still
+required to fix the other issue reported by Vincent: i.e. util_est is
+not updated before schedutil.
 
-Thanks, merged.
+Thus, I would propose to still keep this refactoring but in the
+context of a different patch to specifically fixes the util_est case.
 
--- Sebastian
+If there are not major complains, I'll post a new series in the next
+few days.
 
---7loneb5mrk3j6aec
-Content-Type: application/pgp-signature; name="signature.asc"
+-- 
+#include <best/regards.h>
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlrhr+EACgkQ2O7X88g7
-+po0nxAAh5JHbqs4WFnbr0TSQH+y/cBcOFv9SHvCPekhiK93DEujAhF4WvqjYAMW
-3LukRNDJd/D7UtcBTHJqDsP6p2AXCPCZ+AuX2Qt95fniOQUEKXH6sC9MakAYQU4G
-+3CVzrx4K8Q1voXAn4N6RT9Y2BEEs3Ma74h25gZuQe4e1Ms0pvMRcPbqTmwCE0Du
-ZGLIUQtaXhebkHNkxglAekbW2Lw2rGztwLoA+q+TATZG4bGWOCqHEgbGnnysiMee
-yW5YJ9D16+zzolM02QF8Th29T2Qa0gGMpLUZc6D/npG0Elhdd3v+xF0ZrUY6Zcsb
-GBmAXlcbwsINSItSXm0a9P+S1CqFAgawGJWpL84x8yCgH/rFxRy6p9Em5r1ESlzC
-C5GIhaC1UMqdS37dL/CE9RjQdWhYbKfo6E2xePICBgUo3EciihmgD7psdFp38dN1
-Po/W/U5gPa78AM/Uj2r7fmzll+zVp0foaOsdZs29apLfQFNEyG51J8lfrxenpsTs
-3m/ZxeZoT9nMni3ZxuhhhPfvnyTa5XnDKa/QG9A3SnzIrkE4BHWbwsI8ny9VVlys
-J5jwT/we0FuZ2/WtfIJ/7gskALBng7DFvLTIxWAdZ+tpDd4UXtr0/KGJGAh5yeAT
-B7IcJf8Ct3o+3+rPahiXTcJ40Z5c0UB+Wqa3SiPaGekmgYT+kqM=
-=+2Tj
------END PGP SIGNATURE-----
-
---7loneb5mrk3j6aec--
+Patrick Bellasi
