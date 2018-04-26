@@ -1,46 +1,66 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 11/11] spi: Respect all error codes from
- dev_pm_domain_attach()
-Date: Thu, 26 Apr 2018 12:39:34 +0100
-Message-ID: <20180426113934.GB21755@sirena.org.uk>
-References: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
- <1524732790-2234-12-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="RASg3xLB4tUQ4RcS"
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 00/18] thermal: exynos: further fixes and cleanups
+Date: Thu, 26 Apr 2018 13:51:15 +0200
+Message-ID: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
+References: <CGME20180426115159epcas2p3b8d995ba552b403b5052f74970fdef0f@epcas2p3.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1524732790-2234-12-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Vinod Koul <vinod.koul@intel.com>, Sanyog Kale <sanyog.r.kale@intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---RASg3xLB4tUQ4RcS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This patchset contains Exynos thermal driver fixes and cleanups.
 
-On Thu, Apr 26, 2018 at 10:53:10AM +0200, Ulf Hansson wrote:
-> The limitation of being able to check only for -EPROBE_DEFER from
-> dev_pm_domain_attach() has been removed. Hence let's respect all error
-> codes and bail out accordingly.
+Highlights:
+* Move code valid for all SoCs from ->tmu_initialize method
+  to exynos_tmu_initialize().
+* Add ->set_trip_[temp,hyst] methods and convert ->tmu_initialize
+  method implementations to use them.
+* Remove bogus trip reporting to user-space.
 
-Acked-by: Mark Brown <broonie@kernel.org>
+The patchset is based on top of:
+- "[PATCH 00/14] thermal: exynos: pending fixes and cleanups"
+  (https://lkml.org/lkml/2018/4/16/256))
+- "[PATCH] thermal: samsung: Remove support for Exynos5440"
+  (https://lkml.org/lkml/2018/4/26/405)
 
---RASg3xLB4tUQ4RcS
-Content-Type: application/pgp-signature; name="signature.asc"
+Tested on Exynos4210 based Trats board and Exynos5422 based Odroid-XU3
+Lite board.
 
------BEGIN PGP SIGNATURE-----
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlrhunUACgkQJNaLcl1U
-h9CMmQf+KRWcQQKCEHfr+D2f1485UVJqBCyZrLuN8vRgon7ZNa3S1sq72ZQvrN8x
-4vFBqF9p9kKoHo/MzgyBQXITYk0mpk3gLtgIQSGBnIog9DtKA6MDY2D/OtvGjMob
-g4+Lml0u5ZmcysNOpa7vzipvBeuoOC5KkMuL5vrCGxp1UFZnFxCg76sDUccVeqVr
-zSpkopLF2ZW68v9x+XJmhpKl5hNdu4xFUoVU4oaVHSUwIjMYt6goVSo4WZjf5cGa
-zhx0HETAwL1iNX5Nurw51g6e3WaiLeHHSmtv6dgFlg1pac/kEeL3Cj23T8Q9d1oq
-d466W6BB/El+rPkU5UN8ci96SVWPOA==
-=b7nj
------END PGP SIGNATURE-----
 
---RASg3xLB4tUQ4RcS--
+Bartlomiej Zolnierkiewicz (18):
+  thermal: exynos: fix setting rising_threshold for Exynos5433
+  thermal: exynos: always check for trips points existence
+  thermal: exynos: always check for critical trip points existence
+  thermal: exynos: check STATUS register in exynos_tmu_initialize()
+  thermal: exynos: use sanitize_temp_error() in exynos7_tmu_initialize()
+  thermal: exynos: fix trips limit checking in get_th_reg()
+  thermal: exynos: remove threshold_code checking from
+    exynos4210_tmu_initialize()
+  thermal: exynos: make ->tmu_initialize method void
+  thermal: exynos: clear IRQs later in exynos4412_tmu_initialize()
+  thermal: exynos: move IRQs clearing to exynos_tmu_initialize()
+  thermal: exynos: add exynos*_tmu_set_[trip,hyst]() helpers
+  thermal: exynos: do not use trips structure directly in
+    ->tmu_initialize
+  thermal: exynos: set trips in ascending order in
+    exynos7_tmu_initialize()
+  thermal: exynos: move trips setting to exynos_tmu_initialize()
+  thermal: exynos: check return values of ->get_trip_[temp,hyst] methods
+  thermal: exynos: cleanup code for enabling threshold interrupts
+  thermal: exynos: remove unused defines for Exynos5433
+  thermal: exynos: remove trip reporting to user-space
+
+ drivers/thermal/samsung/exynos_tmu.c | 548 ++++++++++++++---------------------
+ 1 file changed, 215 insertions(+), 333 deletions(-)
+
+-- 
+1.9.1
