@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 11/11] spi: Respect all error codes from dev_pm_domain_attach()
-Date: Thu, 26 Apr 2018 10:53:10 +0200
-Message-ID: <1524732790-2234-12-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 09/11] mmc: sdio: Respect all error codes from dev_pm_domain_attach()
+Date: Thu, 26 Apr 2018 10:53:08 +0200
+Message-ID: <1524732790-2234-10-git-send-email-ulf.hansson@linaro.org>
 References: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
@@ -14,33 +14,23 @@ The limitation of being able to check only for -EPROBE_DEFER from
 dev_pm_domain_attach() has been removed. Hence let's respect all error
 codes and bail out accordingly.
 
-Cc: Mark Brown <broonie@kernel.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/spi/spi.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/mmc/core/sdio_bus.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 7b213fa..eeab67f 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -356,11 +356,12 @@ static int spi_drv_probe(struct device *dev)
- 	}
+diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+index 2b32b88..b6d8203 100644
+--- a/drivers/mmc/core/sdio_bus.c
++++ b/drivers/mmc/core/sdio_bus.c
+@@ -139,7 +139,7 @@ static int sdio_bus_probe(struct device *dev)
+ 		return -ENODEV;
  
- 	ret = dev_pm_domain_attach(dev, true);
--	if (ret != -EPROBE_DEFER) {
--		ret = sdrv->probe(spi);
--		if (ret)
--			dev_pm_domain_detach(dev, true);
--	}
+ 	ret = dev_pm_domain_attach(dev, false);
+-	if (ret == -EPROBE_DEFER)
 +	if (ret)
-+		return ret;
-+
-+	ret = sdrv->probe(spi);
-+	if (ret)
-+		dev_pm_domain_detach(dev, true);
+ 		return ret;
  
- 	return ret;
- }
+ 	/* Unbound SDIO functions are always suspended.
 -- 
 2.7.4
