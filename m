@@ -1,88 +1,68 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 02/18] thermal: exynos: always check for trips points
- existence
-Date: Thu, 26 Apr 2018 13:51:17 +0200
-Message-ID: <1524743493-28113-3-git-send-email-b.zolnierkie@samsung.com>
-References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180426115204epcas2p3a0b53d8b2bdd687b1acc19db98f30227@epcas2p3.samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.17-rc3
+Date: Thu, 26 Apr 2018 16:42:42 +0200
+Message-ID: <CAJZ5v0isQnkPq-47G4n5C3vyNoY2xWokzVTC35MBSPGivfxqjQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Check for trip points existence in exynos_tmu_initialize() so it is
-  checked on all SoCs.
+Hi Linus,
 
-* Use dev_err() instead of pr_err().
+Please pull from the tag
 
-* Fix dev_err() to reference "device tree" not "of-thermal.c".
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.17-rc3
 
-* Remove no longer needed checks from exynos4210_tmu_initialize() and
-  get_th_reg().
+with top-most commit e140c4af1b63125dff629e8339793390201e2470
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 26 +++++++++++---------------
- 1 file changed, 11 insertions(+), 15 deletions(-)
+ Merge branches 'acpi-pm' and 'pm-cpufreq'
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 523d26e..9e040eb 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -309,12 +309,6 @@ static u32 get_th_reg(struct exynos_tmu_data *data, u32 threshold, bool falling)
- 	unsigned long temp;
- 	int i;
- 
--	if (!trips) {
--		pr_err("%s: Cannot get trip points from of-thermal.c!\n",
--		       __func__);
--		return 0;
--	}
--
- 	for (i = 0; i < of_thermal_get_ntrips(tz); i++) {
- 		if (trips[i].type == THERMAL_TRIP_CRITICAL)
- 			continue;
-@@ -334,14 +328,23 @@ static u32 get_th_reg(struct exynos_tmu_data *data, u32 threshold, bool falling)
- static int exynos_tmu_initialize(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-+	struct thermal_zone_device *tzd = data->tzd;
-+	const struct thermal_trip * const trips =
-+		of_thermal_get_trip_points(tzd);
- 	int ret;
- 
--	if (of_thermal_get_ntrips(data->tzd) > data->ntrip) {
-+	if (!trips) {
-+		dev_err(&pdev->dev,
-+			"Cannot get trip points from device tree!\n");
-+		return -ENODEV;
-+	}
-+
-+	if (of_thermal_get_ntrips(tzd) > data->ntrip) {
- 		dev_info(&pdev->dev,
- 			 "More trip points than supported by this TMU.\n");
- 		dev_info(&pdev->dev,
- 			 "%d trip points should be configured in polling mode.\n",
--			 (of_thermal_get_ntrips(data->tzd) - data->ntrip));
-+			 (of_thermal_get_ntrips(tzd) - data->ntrip));
- 	}
- 
- 	mutex_lock(&data->lock);
-@@ -397,13 +400,6 @@ static int exynos4210_tmu_initialize(struct platform_device *pdev)
- 	unsigned long reference, temp;
- 	unsigned int status;
- 
--	if (!trips) {
--		pr_err("%s: Cannot get trip points from of-thermal.c!\n",
--		       __func__);
--		ret = -ENODEV;
--		goto out;
--	}
--
- 	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
- 	if (!status) {
- 		ret = -EBUSY;
--- 
-1.9.1
+on top of commit 6d08b06e67cd117f6992c46611dfb4ce267cd71e
+
+ Linux 4.17-rc2
+
+to receive power management fixes for 4.17-rc3.
+
+These are a Low Power S0 Idle quirk, a hibernation handling fix for
+the PCI bus type and a brcmstb-avs-cpufreq driver fixup removing
+development debug code from it.
+
+Specifics:
+
+ - Blacklist the Low Power S0 Idle _DSM on ThinkPad X1 Tablet(2016)
+   where it causes issues and make it use ACPI S3 which works instead
+   of the non-working suspend-to-idle by default (Chen Yu).
+
+ - Fix the handling of hibernation in the PCI core for devices with
+   the DPM_FLAG_SMART_SUSPEND flag set to fix a regression affecting
+   intel-lpss I2C devices (Mika Westerberg).
+
+ - Drop development debug code from the brcmstb-avs-cpufreq driver
+   (Markus Mayer).
+
+Thanks!
+
+
+---------------
+
+Chen Yu (1):
+      ACPI / PM: Blacklist Low Power S0 Idle _DSM for ThinkPad X1 Tablet(2016)
+
+Markus Mayer (1):
+      cpufreq: brcmstb-avs-cpufreq: remove development debug support
+
+Mika Westerberg (1):
+      PCI / PM: Do not clear state_saved in pci_pm_freeze() when smart
+suspend is set
+
+---------------
+
+ drivers/acpi/sleep.c                  |  13 ++
+ drivers/cpufreq/Kconfig.arm           |  10 --
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 323 +---------------------------------
+ drivers/pci/pci-driver.c              |   5 +-
+ 4 files changed, 17 insertions(+), 334 deletions(-)
