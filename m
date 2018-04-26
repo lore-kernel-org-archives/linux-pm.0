@@ -1,66 +1,36 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 00/18] thermal: exynos: further fixes and cleanups
-Date: Thu, 26 Apr 2018 13:51:15 +0200
-Message-ID: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
-References: <CGME20180426115159epcas2p3b8d995ba552b403b5052f74970fdef0f@epcas2p3.samsung.com>
+Subject: [PATCH 01/18] thermal: exynos: fix setting rising_threshold for
+ Exynos5433
+Date: Thu, 26 Apr 2018 13:51:16 +0200
+Message-ID: <1524743493-28113-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
+        <CGME20180426115201epcas2p17e5cdb0f79927903880e58c290b663e6@epcas2p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Add missing clearing of the previous value when setting rising
+temperature threshold.
 
-This patchset contains Exynos thermal driver fixes and cleanups.
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Highlights:
-* Move code valid for all SoCs from ->tmu_initialize method
-  to exynos_tmu_initialize().
-* Add ->set_trip_[temp,hyst] methods and convert ->tmu_initialize
-  method implementations to use them.
-* Remove bogus trip reporting to user-space.
-
-The patchset is based on top of:
-- "[PATCH 00/14] thermal: exynos: pending fixes and cleanups"
-  (https://lkml.org/lkml/2018/4/16/256))
-- "[PATCH] thermal: samsung: Remove support for Exynos5440"
-  (https://lkml.org/lkml/2018/4/26/405)
-
-Tested on Exynos4210 based Trats board and Exynos5422 based Odroid-XU3
-Lite board.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (18):
-  thermal: exynos: fix setting rising_threshold for Exynos5433
-  thermal: exynos: always check for trips points existence
-  thermal: exynos: always check for critical trip points existence
-  thermal: exynos: check STATUS register in exynos_tmu_initialize()
-  thermal: exynos: use sanitize_temp_error() in exynos7_tmu_initialize()
-  thermal: exynos: fix trips limit checking in get_th_reg()
-  thermal: exynos: remove threshold_code checking from
-    exynos4210_tmu_initialize()
-  thermal: exynos: make ->tmu_initialize method void
-  thermal: exynos: clear IRQs later in exynos4412_tmu_initialize()
-  thermal: exynos: move IRQs clearing to exynos_tmu_initialize()
-  thermal: exynos: add exynos*_tmu_set_[trip,hyst]() helpers
-  thermal: exynos: do not use trips structure directly in
-    ->tmu_initialize
-  thermal: exynos: set trips in ascending order in
-    exynos7_tmu_initialize()
-  thermal: exynos: move trips setting to exynos_tmu_initialize()
-  thermal: exynos: check return values of ->get_trip_[temp,hyst] methods
-  thermal: exynos: cleanup code for enabling threshold interrupts
-  thermal: exynos: remove unused defines for Exynos5433
-  thermal: exynos: remove trip reporting to user-space
-
- drivers/thermal/samsung/exynos_tmu.c | 548 ++++++++++++++---------------------
- 1 file changed, 215 insertions(+), 333 deletions(-)
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index cda716c..523d26e 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -577,6 +577,7 @@ static int exynos5433_tmu_initialize(struct platform_device *pdev)
+ 		threshold_code = temp_to_code(data, temp);
+ 
+ 		rising_threshold = readl(data->base + rising_reg_offset);
++		rising_threshold &= ~(0xff << j * 8);
+ 		rising_threshold |= (threshold_code << j * 8);
+ 		writel(rising_threshold, data->base + rising_reg_offset);
+ 
 -- 
 1.9.1
