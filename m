@@ -1,99 +1,83 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3] cpufreq: powernv: Fix the hardlockup by synchronus
- smp_call in timer interrupt
-Date: Thu, 26 Apr 2018 11:02:03 +0530
-Message-ID: <20180426053203.GA13662@drishya.in.ibm.com>
-References: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / Sleep: only update last time for active wakeup sources
+Date: Thu, 26 Apr 2018 08:30:52 +0200
+Message-ID: <CAJZ5v0i8ACi_Vw0iFKKFTn0pe6gi-YV8aACp9TyRmP3ab8wxqg@mail.gmail.com>
+References: <1524699630-30573-1-git-send-email-opendmb@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: stable-owner@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, npiggin@gmail.com, benh@kernel.crashing.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, ppaidipe@linux.vnet.ibm.com, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1524699630-30573-1-git-send-email-opendmb@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Berger <opendmb@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Shilpa Bhat <shilpa.bhat@linux.vnet.ibm.com> [2018-04-25 16:29:31]:
-
-> gpstate_timer_handler() uses synchronous smp_call to set the pstate
-> on the requested core. This causes the below hard lockup:
-> 
-> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
-> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
-> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
-> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
-> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
-> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
-> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
-> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
-> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
-> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
-> -- interrupt: 901 at doorbell_global_ipi+0x34/0x50
-> LR = arch_send_call_function_ipi_mask+0x120/0x130
-> [c000003fe566ba50] [c00000000004876c]
-> arch_send_call_function_ipi_mask+0x4c/0x130
-> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
-> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
-> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
-> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
-> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
-> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
-> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
-> 
-> One way to avoid this is removing the smp-call. We can ensure that the timer
-> always runs on one of the policy-cpus. If the timer gets migrated to a
-> cpu outside the policy then re-queue it back on the policy->cpus. This way
-> we can get rid of the smp-call which was being used to set the pstate
-> on the policy->cpus.
-> 
-> Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
-> Cc: <stable@vger.kernel.org>        [4.8+]
-> Reported-by: Nicholas Piggin <npiggin@gmail.com>
-> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+On Thu, Apr 26, 2018 at 1:40 AM, Doug Berger <opendmb@gmail.com> wrote:
+> When wakelock support was added, the wakeup_source_add() function
+> was updated to set the last_time value of the wakeup source. This
+> has the unintended side effect of producing confusing output from
+> pm_print_active_wakeup_sources() when a wakeup source is added
+> prior to a sleep that is blocked by a different wakeup source.
+>
+> The function pm_print_active_wakeup_sources() will search for the
+> most recently active wakeup source when no active source is found.
+> If a wakeup source is added after a different wakeup source blocks
+> the system from going to sleep it may have a later last_time value
+> than the blocking source and be output as the last active wakeup
+> source even if it has never actually been active.
+>
+> It looks to me like the change to wakeup_source_add() was made to
+> prevent the wakelock garbage collection from accidentally dropping
+> a wakelock during the narrow window between adding the wakelock to
+> the wakelock list in wakelock_lookup_add() and the activation of
+> the wakeup source in pm_wake_lock().
+>
+> This commit changes the behavior so that only the last_time of the
+> wakeup source used by a wakelock is initialized prior to adding it
+> to the wakeup source list. This preserves the meaning of the
+> last_time value as the last time the wakeup source was active and
+> allows a wakeup source that has never been active to have a
+> last_time value of 0.
+>
+> Fixes: b86ff982 ("PM / Sleep: Add user space interface for manipulating wakeup sources, v3")
+> Signed-off-by: Doug Berger <opendmb@gmail.com>
 > ---
-> Changes from V2:
-> - Remove the check for active policy while requeing the migrated timer
-> Changes from V1:
-> - Remove smp_call in the pstate handler.
-> 
->  drivers/cpufreq/powernv-cpufreq.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 71f8682..e368e1f 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -679,6 +679,16 @@ void gpstate_timer_handler(struct timer_list *t)
-> 
->  	if (!spin_trylock(&gpstates->gpstate_lock))
->  		return;
-> +	/*
-> +	 * If the timer has migrated to the different cpu then bring
-> +	 * it back to one of the policy->cpus
-> +	 */
-> +	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
-> +		gpstates->timer.expires = jiffies + msecs_to_jiffies(1);
-> +		add_timer_on(&gpstates->timer, cpumask_first(policy->cpus));
-> +		spin_unlock(&gpstates->gpstate_lock);
-> +		return;
-> +	}
-> 
->  	/*
->  	 * If PMCR was last updated was using fast_swtich then
-> @@ -718,10 +728,8 @@ void gpstate_timer_handler(struct timer_list *t)
->  	if (gpstate_idx != gpstates->last_lpstate_idx)
->  		queue_gpstate_timer(gpstates);
-> 
-> +	set_pstate(&freq_data);
->  	spin_unlock(&gpstates->gpstate_lock);
-> -
-> -	/* Timer may get migrated to a different cpu on cpu hot unplug */
-> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
->  }
+>  drivers/base/power/wakeup.c | 1 -
+>  kernel/power/wakelock.c     | 1 +
+>  2 files changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index ea01621..230160e 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -183,7 +183,6 @@ void wakeup_source_add(struct wakeup_source *ws)
+>         spin_lock_init(&ws->lock);
+>         timer_setup(&ws->timer, pm_wakeup_timer_fn, 0);
+>         ws->active = false;
+> -       ws->last_time = ktime_get();
 
-Fix looks good. 
+If it is not initialized here, max_time may not be updated correctly later on.
 
-Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+If you don't want to initialize it to ktime_get() (to avoid the issue
+you're trying to avoid), initialize it to something special and then
+check for that explicitly in wakeup_source_deactivate() when computing
+max_time.
+
+>
+>         spin_lock_irqsave(&events_lock, flags);
+>         list_add_rcu(&ws->entry, &wakeup_sources);
+> diff --git a/kernel/power/wakelock.c b/kernel/power/wakelock.c
+> index dfba59b..4210152 100644
+> --- a/kernel/power/wakelock.c
+> +++ b/kernel/power/wakelock.c
+> @@ -188,6 +188,7 @@ static struct wakelock *wakelock_lookup_add(const char *name, size_t len,
+>                 return ERR_PTR(-ENOMEM);
+>         }
+>         wl->ws.name = wl->name;
+> +       wl->ws.last_time = ktime_get();
+>         wakeup_source_add(&wl->ws);
+>         rb_link_node(&wl->node, parent, node);
+>         rb_insert_color(&wl->node, &wakelocks_tree);
+> --
+> 2.7.4
+>
