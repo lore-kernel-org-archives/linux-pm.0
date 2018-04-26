@@ -1,40 +1,49 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 17/18] thermal: exynos: remove unused defines for Exynos5433
-Date: Thu, 26 Apr 2018 13:51:32 +0200
-Message-ID: <1524743493-28113-18-git-send-email-b.zolnierkie@samsung.com>
-References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180426115241epcas1p4472048bd1647d9151718f573e6f1025a@epcas1p4.samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] sched/fair: schedutil: update only with all info
+ available
+Date: Thu, 26 Apr 2018 13:52:43 +0200
+Message-ID: <20180426115243.GK4064@hirez.programming.kicks-ass.net>
+References: <20180406172835.20078-1-patrick.bellasi@arm.com>
+ <CAKfTPtCkZ1x-LS7sfJ7K2cgsKK=hYnDo1Fi3toPcGT0331Vpog@mail.gmail.com>
+ <20180410110412.GG14248@e110439-lin>
+ <20180411151450.GK4043@hirez.programming.kicks-ass.net>
+ <CAKfTPtC+-FR3ZD_t1vkGR2gVoUyxXpE=i4g9zqqLXu4jKKqgUA@mail.gmail.com>
+ <20180411153710.GN4082@hirez.programming.kicks-ass.net>
+ <20180426111533.GX14248@e110439-lin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20180426111533.GX14248@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Remove unused defines for Exynos5433.
+On Thu, Apr 26, 2018 at 12:15:33PM +0100, Patrick Bellasi wrote:
+> > Yes, these patches predate those, but indeed, now that we age the
+> > blocked load consistently it should no longer be required.
+> 
+> After this discussion, I think there is a general consensus about
+> always add sg_cpu->util_cfs in cpufreq_schedutil.c::sugov_aggregate_util.
+> 
+> Is that right?
 
-There should be no functional changes caused by this patch.
+Yes I think so. I've been waiting to see the problem with the blocked
+load aging patches sorted though. Because if we'd have to revert those
+we'd be back to needing the current stuff again.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu.c | 5 -----
- 1 file changed, 5 deletions(-)
+Luckily it appears Vincent found something there, so fingers crossed.
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 9639acf..ed02b40 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -96,11 +96,6 @@
- #define EXYNOS4412_MUX_ADDR_SHIFT          20
- 
- /* Exynos5433 specific registers */
--#define EXYNOS5433_TMU_REG_CONTROL1		0x024
--#define EXYNOS5433_TMU_SAMPLING_INTERVAL	0x02c
--#define EXYNOS5433_TMU_COUNTER_VALUE0		0x030
--#define EXYNOS5433_TMU_COUNTER_VALUE1		0x034
--#define EXYNOS5433_TMU_REG_CURRENT_TEMP1	0x044
- #define EXYNOS5433_THD_TEMP_RISE3_0		0x050
- #define EXYNOS5433_THD_TEMP_RISE7_4		0x054
- #define EXYNOS5433_THD_TEMP_FALL3_0		0x060
--- 
-1.9.1
+> For the rest, what this patch proposes is a code reorganization which
+> is not required anymore to fix this specific issue but, it's still
+> required to fix the other issue reported by Vincent: i.e. util_est is
+> not updated before schedutil.
+> 
+> Thus, I would propose to still keep this refactoring but in the
+> context of a different patch to specifically fixes the util_est case.
+> 
+> If there are not major complains, I'll post a new series in the next
+> few days.
+
+Fair enough..
