@@ -1,41 +1,121 @@
-From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH 1/4] regulator: max8998: Fix platform data retrieval.
-Date: Fri, 27 Apr 2018 18:02:59 +0200
-Message-ID: <1524844982-4714-2-git-send-email-pawel.mikolaj.chmiel@gmail.com>
-References: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
+From: Prashanth Prakash <pprakash@codeaurora.org>
+Subject: [PATCH v4][for 4.17-rc3] cpufreq / CPPC: Set platform specific transition_delay_us
+Date: Fri, 27 Apr 2018 11:35:27 -0600
+Message-ID: <1524850527-31720-1-git-send-email-pprakash@codeaurora.org>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, Prashanth Prakash <pprakash@codeaurora.org>, "4.14+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Since the max8998 MFD driver supports instantiation by DT, platform data
-retrieval is handled in MFD probe and cell drivers should get use
-the pdata field of max8998_dev struct to obtain them.
+Add support to specify platform specific transition_delay_us instead
+of using the transition delay derived from PCC.
 
-Fixes: ee999fb3f17f ("mfd: max8998: Add support for Device Tree")
-Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
+With commit "3d41386d556d: cpufreq: CPPC: Use transition_delay_us
+depending transition_latency" we are setting transition_delay_us
+directly and not applying the LATENCY_MULTIPLIER. With this on Qualcomm
+Centriq we can end up with a very high rate of frequency change requests
+when using schedutil governor (default rate_limit_us=10 compared to an
+earlier value of 10000).
+
+The PCC subspace describes the rate at which the platform can accept
+commands on the CPPC's PCC channel. This includes read and write
+command on the PCC channel that can be used for reasons other than
+frequency transitions. Moreover the same PCC subspace can be used by
+multiple freq domains and deriving transition_delay_us from it as we do
+now can be sub-optimal.
+
+Moreover if a platform does not use PCC for desired_perf register then
+there is no way to compute the transition latency or the delay_us.
+
+CPPC does not have a standard defined mechanism to get the transition
+rate or the latency at the moment.
+
+Given the above limitations, it is simpler to have a platform specific
+transition_delay_us and rely on PCC derived value only if a platform
+specific value is not available.
+
+Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: 4.14+ <stable@vger.kernel.org>
+Fixes: 3d41386d556d ("cpufreq: CPPC: Use transition_delay_us depending
+transition_latency)
 ---
- drivers/regulator/max8998.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+v2:
+* Return final delay_us from cppc_cpufreq_get_transition_delay_us (Viresh)
+v3 and v4:
+* code style changes (Viresh)
+---
+ drivers/cpufreq/cppc_cpufreq.c | 47 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 45 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/regulator/max8998.c b/drivers/regulator/max8998.c
-index 3027e7ce100b..6a2b61c012b5 100644
---- a/drivers/regulator/max8998.c
-+++ b/drivers/regulator/max8998.c
-@@ -309,8 +309,7 @@ static int max8998_set_voltage_buck_sel(struct regulator_dev *rdev,
- 					unsigned selector)
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index bc5fc16..1b690f4 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -126,6 +126,50 @@ static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ 				cpu->perf_caps.lowest_perf, cpu_num, ret);
+ }
+ 
++/*
++ * The PCC subspace describes the rate at which platform can accept commands
++ * on the shared PCC channel (including READs which do not count towards freq
++ * trasition requests), so ideally we need to use the PCC values as a fallback
++ * if we don't have a platform specific transition_delay_us
++ */
++#ifdef CONFIG_ARM64
++#include <asm/cputype.h>
++
++static unsigned int cppc_cpufreq_get_transition_delay_us(int cpu)
++{
++	unsigned long implementor = read_cpuid_implementor();
++	unsigned long part_num = read_cpuid_part_number();
++	unsigned int delay_us = 0;
++
++	switch (implementor) {
++	case ARM_CPU_IMP_QCOM:
++		switch (part_num) {
++		case QCOM_CPU_PART_FALKOR_V1:
++		case QCOM_CPU_PART_FALKOR:
++			delay_us = 10000;
++			break;
++		default:
++			delay_us = cppc_get_transition_latency(cpu) /
++				NSEC_PER_USEC;
++			break;
++		}
++		break;
++	default:
++		delay_us = cppc_get_transition_latency(cpu) / NSEC_PER_USEC;
++		break;
++	}
++
++	return delay_us;
++}
++
++#else
++
++static unsigned int cppc_cpufreq_get_transition_delay_us(int cpu)
++{
++	return cppc_get_transition_latency(cpu) / NSEC_PER_USEC;
++}
++#endif
++
+ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
  {
- 	struct max8998_data *max8998 = rdev_get_drvdata(rdev);
--	struct max8998_platform_data *pdata =
--		dev_get_platdata(max8998->iodev->dev);
-+	struct max8998_platform_data *pdata = max8998->iodev->pdata;
- 	struct i2c_client *i2c = max8998->iodev->i2c;
- 	int buck = rdev_get_id(rdev);
- 	int reg, shift = 0, mask, ret, j;
+ 	struct cppc_cpudata *cpu;
+@@ -162,8 +206,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		cpu->perf_caps.highest_perf;
+ 	policy->cpuinfo.max_freq = cppc_dmi_max_khz;
+ 
+-	policy->transition_delay_us = cppc_get_transition_latency(cpu_num) /
+-		NSEC_PER_USEC;
++	policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu_num);
+ 	policy->shared_type = cpu->shared_type;
+ 
+ 	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
 -- 
-2.7.4
+Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
