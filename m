@@ -1,66 +1,38 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 01/17] dt-bindings: power: reset: mt6323: add bindings
- for MT6323 power controller
-Date: Fri, 27 Apr 2018 15:02:25 -0500
-Message-ID: <20180427200225.lq63ex7eiukc6egl@rob-hp-laptop>
-References: <cover.1524646231.git.sean.wang@mediatek.com>
- <0b3123e42c8a47e3fa8b21aa2e139e6d3dc69f41.1524646231.git.sean.wang@mediatek.com>
+Subject: Re: [PATCH 14/27] dt-bindings: cp110: rename cp110 syscon file
+Date: Fri, 27 Apr 2018 15:51:33 -0500
+Message-ID: <20180427205133.vwbvnwdhjhik5f54@rob-hp-laptop>
+References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
+ <20180421151255.29929-15-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <0b3123e42c8a47e3fa8b21aa2e139e6d3dc69f41.1524646231.git.sean.wang@mediatek.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, matthias.bgg@gmail.com, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20180421151255.29929-15-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 25, 2018 at 05:32:27PM +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
+On Sat, Apr 21, 2018 at 05:12:42PM +0200, Miquel Raynal wrote:
+> There is no need to give numbers to system controllers inside the
+> documentation as the syscons use the same compatibles. Furthermore, this
+> approach does not scale very well and would force the creation of a new
+> file each time a new syscon is added in the device tree.
 > 
-> Adding device-tree binding for the power controller which is a tiny
-> circuit block present as a part of MT6323 PMIC and is responsible for
-> externally powering off or on a remote SoC the PMIC is connected to.
-> 
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 > ---
->  .../bindings/power/reset/mt6323-poweroff.txt         | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
-> new file mode 100644
-> index 0000000..6f7c590
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
-> @@ -0,0 +1,20 @@
-> +Device Tree Bindings for Power Controller on MediaTek PMIC
-> +
-> +The power controller which could be found on PMIC is responsible for externally
-> +powering off or on the remote MediaTek SoC through the circuit BBPU.
-> +
-> +Required properties:
-> +- compatible: Should be one of follows
-> +	"mediatek,mt6323-pwrc": for MT6323 PMIC
-> +
-> +Example:
-> +
-> +	pmic {
-> +		compatible = "mediatek,mt6323";
-> +
-> +		...
-> +
-> +		power-controller {
-> +			compatible = "mediatek,mt6323-pwrc";
+>  .../marvell/{cp110-system-controller0.txt => cp110-system-controller.txt} | 0
+>  1 file changed, 0 insertions(+), 0 deletions(-)
+>  rename Documentation/devicetree/bindings/arm/marvell/{cp110-system-controller0.txt => cp110-system-controller.txt} (100%)
 
-Why do you need this in DT? It doesn't define any resources. The parent 
-can just as well register a reset or poweroff handler.
-
-Rob
-
-> +		};
-> +	}
-> -- 
-> 2.7.4
-> 
+Reviewed-by: Rob Herring <robh@kernel.org>
