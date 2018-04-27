@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH 4/4] dt-bindings: mfd: max8998: Add charger subnode binding
-Date: Fri, 27 Apr 2018 18:03:02 +0200
-Message-ID: <1524844982-4714-5-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+Subject: [PATCH 3/4] power: supply: max8998-charger: Parse device tree for required data.
+Date: Fri, 27 Apr 2018 18:03:01 +0200
+Message-ID: <1524844982-4714-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 References: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -13,55 +13,89 @@ To: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.or
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds devicetree bindings documentation for
-battery charging controller as the subnode of MAX8998 PMIC.
-It's based on current behavior of driver.
+This patch adds missing code for reading charger configuration
+from devicetree.
 
 Fixes: ee999fb3f17f ("mfd: max8998: Add support for Device Tree")
 Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
 ---
- Documentation/devicetree/bindings/mfd/max8998.txt | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ drivers/power/supply/max8998_charger.c | 50 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Documentation/devicetree/bindings/mfd/max8998.txt
-index 23a3650ff2a2..f95610afb57f 100644
---- a/Documentation/devicetree/bindings/mfd/max8998.txt
-+++ b/Documentation/devicetree/bindings/mfd/max8998.txt
-@@ -50,6 +50,21 @@ Additional properties required if max8998,pmic-buck2-dvs-gpio is defined:
- - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in microvolts
-   for buck2 regulator that can be selected using dvs gpio.
+diff --git a/drivers/power/supply/max8998_charger.c b/drivers/power/supply/max8998_charger.c
+index 66438029bdd0..8fa0c3357625 100644
+--- a/drivers/power/supply/max8998_charger.c
++++ b/drivers/power/supply/max8998_charger.c
+@@ -21,6 +21,7 @@
  
-+Charger: Configuration for battery charging controller should be added
-+inside a child node named 'charger'.
-+  Required properties:
-+  - max8998,charge-eoc: Setup "End of Charge". If value equals 0,
-+    remain value set from bootloader or default value will be used.
-+    Valid values: 0, 10 - 45
-+
-+  - max8998,charge-restart: Setup "Charge Restart Level". If value equals 0,
-+    remain value set from bootloader or default value will be used.
-+    Valid values: -1, 0, 100, 150, 200
-+
-+  - max8998,charge-timeout: Setup "Charge Full Timeout". If value equals 0,
-+    remain value set from bootloader or default value will be used.
-+    Valid values: -1, 0, 5, 6, 7
-+
- Regulators: All the regulators of MAX8998 to be instantiated shall be
- listed in a child node named 'regulators'. Each regulator is represented
- by a child node of the 'regulators' node.
-@@ -99,6 +114,13 @@ Example:
- 		max8998,pmic-buck2-dvs-gpio = <&gpx0 0 3 0 0>; /* SET3 */
- 		max8998,pmic-buck2-dvs-voltage = <1350000>, <1300000>;
+ #include <linux/err.h>
+ #include <linux/module.h>
++#include <linux/of.h>
+ #include <linux/slab.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+@@ -82,6 +83,49 @@ static const struct power_supply_desc max8998_battery_desc = {
+ 	.num_properties	= ARRAY_SIZE(max8998_battery_props),
+ };
  
-+		/* Charger configuration */
-+		charger {
-+			max8998,charge-eoc = <0>;
-+			max8998,charge-restart = <(-1)>;
-+			max8998,charge-timeout = <7>;
-+		};
++static int max8998_pmic_dt_parse_pdata(struct max8998_dev *iodev,
++					struct max8998_platform_data *pdata)
++{
++	struct device_node *pmic_np = iodev->dev->of_node;
++	struct device_node *charger_np;
++	int ret;
 +
- 		/* Regulators to instantiate */
- 		regulators {
- 			ldo2_reg: LDO2 {
++	charger_np = of_get_child_by_name(pmic_np, "charger");
++	if (!charger_np) {
++		dev_err(iodev->dev, "could not find charger sub-node\n");
++		return -EINVAL;
++	}
++
++	ret = of_property_read_u32(charger_np,
++					"max8998,charge-eoc",
++					&pdata->eoc);
++	if (ret < 0) {
++		dev_err(iodev->dev,
++			"Could not find max8998,charge-eoc in devicetree\n");
++		return ret;
++	}
++
++	ret = of_property_read_u32(charger_np,
++					"max8998,charge-restart",
++					&pdata->restart);
++	if (ret < 0) {
++		dev_err(iodev->dev,
++			"Could not find max8998,charge-restart in devicetree\n");
++		return ret;
++	}
++
++	ret = of_property_read_u32(charger_np,
++					"max8998,charge-timeout",
++					&pdata->timeout);
++	if (ret < 0) {
++		dev_err(iodev->dev,
++			"Could not find max8998,charge-timeout in devicetree\n");
++		return ret;
++	}
++
++	return 0;
++}
++
+ static int max8998_battery_probe(struct platform_device *pdev)
+ {
+ 	struct max8998_dev *iodev = dev_get_drvdata(pdev->dev.parent);
+@@ -96,6 +140,12 @@ static int max8998_battery_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	if (IS_ENABLED(CONFIG_OF) && iodev->dev->of_node) {
++		ret = max8998_pmic_dt_parse_pdata(iodev, pdata);
++		if (ret)
++			return ret;
++	}
++
+ 	max8998 = devm_kzalloc(&pdev->dev, sizeof(struct max8998_battery_data),
+ 				GFP_KERNEL);
+ 	if (!max8998)
 -- 
 2.7.4
