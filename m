@@ -1,119 +1,55 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v2 2/2] soc: mediatek: add a fixed wait for SRAM stable
-Date: Fri, 27 Apr 2018 11:46:14 +0200
-Message-ID: <0ec15c8a-ca90-26c3-1ea6-00bf0d48b62a@gmail.com>
-References: <2e16481e1477dfae0cfb24568d8111da81d92628.1524472331.git.sean.wang@mediatek.com>
- <0ef8e87ba7156e626d1a1a48388f222ce917099b.1524472331.git.sean.wang@mediatek.com>
- <51840588-96e4-2520-f3d7-a61e74da6814@gmail.com>
- <1524476340.12322.14.camel@mtkswgap22>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal SoC management updates for v4.17-rc3
+Date: Fri, 27 Apr 2018 07:25:34 -0700
+Message-ID: <20180427142531.GD30803@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1524476340.12322.14.camel@mtkswgap22>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sean Wang <sean.wang@mediatek.com>
-Cc: rjw@rjwysocki.net, khilman@baylibre.com, ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Weiyi Lu <weiyi.lu@mediatek.com>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sean,
+Hello Rui,
 
-On 04/23/2018 11:39 AM, Sean Wang wrote:
-> On Mon, 2018-04-23 at 11:31 +0200, Matthias Brugger wrote:
->>
->> On 04/23/2018 10:36 AM, sean.wang@mediatek.com wrote:
->>> From: Sean Wang <sean.wang@mediatek.com>
->>>
->>> MT7622_POWER_DOMAIN_WB doesn't send an ACK when its managed SRAM becomes
->>> stable, which is not like the behavior the other power domains should
->>> have. Therefore, it's necessary for such a power domain to have a fixed
->>> and well-predefined duration to wait until its managed SRAM can be allowed
->>> to access by all functions running on the top.
->>>
->>> v1 -> v2:
->>>  - use MTK_SCPD_FWAIT_SRAM flag as an indication requiring force waiting.
->>>
->>> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
->>> Cc: Matthias Brugger <matthias.bgg@gmail.com>
->>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->>> Cc: Weiyi Lu <weiyi.lu@mediatek.com>
->>> ---
->>>  drivers/soc/mediatek/mtk-scpsys.c | 24 ++++++++++++++++++------
->>>  1 file changed, 18 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/drivers/soc/mediatek/mtk-scpsys.c b/drivers/soc/mediatek/mtk-scpsys.c
->>> index b1b45e4..d4f1a63 100644
->>> --- a/drivers/soc/mediatek/mtk-scpsys.c
->>> +++ b/drivers/soc/mediatek/mtk-scpsys.c
->>> @@ -32,6 +32,7 @@
->>>  #define MTK_POLL_TIMEOUT    (jiffies_to_usecs(HZ))
->>>  
->>>  #define MTK_SCPD_ACTIVE_WAKEUP		BIT(0)
->>> +#define MTK_SCPD_FWAIT_SRAM		BIT(1)
->>>  #define MTK_SCPD_CAPS(_scpd, _x)	((_scpd)->data->caps & (_x))
->>>  
->>>  #define SPM_VDE_PWR_CON			0x0210
->>> @@ -237,11 +238,22 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
->>>  	val &= ~scpd->data->sram_pdn_bits;
->>>  	writel(val, ctl_addr);
->>>  
->>> -	/* wait until SRAM_PDN_ACK all 0 */
->>> -	ret = readl_poll_timeout(ctl_addr, tmp, (tmp & pdn_ack) == 0,
->>> -				 MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
->>> -	if (ret < 0)
->>> -		goto err_pwr_ack;
->>> +	/* Either wait until SRAM_PDN_ACK all 0 or have a force wait */
->>> +	if (!MTK_SCPD_CAPS(scpd, MTK_SCPD_FWAIT_SRAM)) {
+Please consider pulling these fixes on Thermal SoC
+management for v4.17-rc3.
 
-After having another look on the patch, could you change the order of the if:
-So that we check for the existence of the MTK_SCPD_FWAIT_SRAM and sleep and in
-the else branch we to the readl_poll_timeout.
+This has only a couple of fixes on exynos driver that
+were causing emergency shutdown. 
 
-I think in the future this will make the code easier to understand as you can
-easily oversee the '!' negation in the if.
+Here is what kernelci has to say about it:
+Full Boot Summary: https://kernelci.org/boot/all/job/evalenti/branch/for-kernelci/kernel/v4.17-rc2-106-g5a6de8f70639/
+Full Build Summary: https://kernelci.org/build/evalenti/branch/for-kernelci/kernel/v4.17-rc2-106-g5a6de8f70639/
 
-Regards,
-Matthias
+However, keep in mind that the above kernel CI results
+are on top of my previous branch, which was based on
+latest linus/master.  I have rebased my branch on top of 
+v4.17-rc2 specifically so you don't have merging issues. 
+
+BR,
 
 
->>> +		ret = readl_poll_timeout(ctl_addr, tmp, (tmp & pdn_ack) == 0,
->>> +					 MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
->>> +		if (ret < 0)
->>> +			goto err_pwr_ack;
->>> +	} else {
->>> +		/*
->>> +		 * Currently, MTK_SCPD_FWAIT_SRAM is necessary only for
->>> +		 * MT7622_POWER_DOMAIN_WB and thus just a trivial setup is
->>> +		 * applied here. If there're more domains which need to force
->>> +		 * waiting for its own pre-defined value, the duration should
->>> +		 * be coded in the caps field.
->>> +		 */
->>
->> I would say, if necessary in the future we can add a switch statement here.
->> Other then that the patches look good. If you are OK, I'll just delete the last
->> sentence when applying the patch.
->>
-> 
-> yes, it's okay for me. 
-> 
->> Regards,
->> Matthias
->>
->>> +		usleep_range(12000, 12100);
->>> +	};
->>>  
->>>  	if (scpd->data->bus_prot_mask) {
->>>  		ret = mtk_infracfg_clear_bus_protection(scp->infracfg,
->>> @@ -785,7 +797,7 @@ static const struct scp_domain_data scp_domain_data_mt7622[] = {
->>>  		.sram_pdn_ack_bits = 0,
->>>  		.clk_id = {CLK_NONE},
->>>  		.bus_prot_mask = MT7622_TOP_AXI_PROT_EN_WB,
->>> -		.caps = MTK_SCPD_ACTIVE_WAKEUP,
->>> +		.caps = MTK_SCPD_ACTIVE_WAKEUP | MTK_SCPD_FWAIT_SRAM,
->>>  	},
->>>  };
->>>  
->>>
-> 
-> 
+The following changes since commit 6d08b06e67cd117f6992c46611dfb4ce267cd71e:
+
+  Linux 4.17-rc2 (2018-04-22 19:20:09 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+
+for you to fetch changes up to c8da6cdef57b459ac0fd5d9d348f8460a575ae90:
+
+  thermal: exynos: Propagate error value from tmu_read() (2018-04-27 06:17:30 -0700)
+
+BR,
+
+Eduardo
+----------------------------------------------------------------
+Marek Szyprowski (2):
+      thermal: exynos: Reading temperature makes sense only when TMU is turned on
+      thermal: exynos: Propagate error value from tmu_read()
+
+ drivers/thermal/samsung/exynos_tmu.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
