@@ -1,101 +1,45 @@
 From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH 3/4] power: supply: max8998-charger: Parse device tree for required data.
-Date: Fri, 27 Apr 2018 18:03:01 +0200
-Message-ID: <1524844982-4714-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
-References: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+Subject: [PATCH 0/4] mfd: max8998: Device Tree support fixes
+Date: Fri, 27 Apr 2018 18:02:58 +0200
+Message-ID: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds missing code for reading charger configuration
-from devicetree.
+This patch series compose of 4 patches.
 
-Fixes: ee999fb3f17f ("mfd: max8998: Add support for Device Tree")
-Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
----
- drivers/power/supply/max8998_charger.c | 50 ++++++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
+First patch, fixes platform data retrieval issue in max8998 regulator
+driver, which could cause NULL pointer dereference.
 
-diff --git a/drivers/power/supply/max8998_charger.c b/drivers/power/supply/max8998_charger.c
-index 66438029bdd0..8fa0c3357625 100644
---- a/drivers/power/supply/max8998_charger.c
-+++ b/drivers/power/supply/max8998_charger.c
-@@ -21,6 +21,7 @@
- 
- #include <linux/err.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- #include <linux/slab.h>
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
-@@ -82,6 +83,49 @@ static const struct power_supply_desc max8998_battery_desc = {
- 	.num_properties	= ARRAY_SIZE(max8998_battery_props),
- };
- 
-+static int max8998_pmic_dt_parse_pdata(struct max8998_dev *iodev,
-+					struct max8998_platform_data *pdata)
-+{
-+	struct device_node *pmic_np = iodev->dev->of_node;
-+	struct device_node *charger_np;
-+	int ret;
-+
-+	charger_np = of_get_child_by_name(pmic_np, "charger");
-+	if (!charger_np) {
-+		dev_err(iodev->dev, "could not find charger sub-node\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = of_property_read_u32(charger_np,
-+					"max8998,charge-eoc",
-+					&pdata->eoc);
-+	if (ret < 0) {
-+		dev_err(iodev->dev,
-+			"Could not find max8998,charge-eoc in devicetree\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(charger_np,
-+					"max8998,charge-restart",
-+					&pdata->restart);
-+	if (ret < 0) {
-+		dev_err(iodev->dev,
-+			"Could not find max8998,charge-restart in devicetree\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(charger_np,
-+					"max8998,charge-timeout",
-+					&pdata->timeout);
-+	if (ret < 0) {
-+		dev_err(iodev->dev,
-+			"Could not find max8998,charge-timeout in devicetree\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
- static int max8998_battery_probe(struct platform_device *pdev)
- {
- 	struct max8998_dev *iodev = dev_get_drvdata(pdev->dev.parent);
-@@ -96,6 +140,12 @@ static int max8998_battery_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
-+	if (IS_ENABLED(CONFIG_OF) && iodev->dev->of_node) {
-+		ret = max8998_pmic_dt_parse_pdata(iodev, pdata);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	max8998 = devm_kzalloc(&pdev->dev, sizeof(struct max8998_battery_data),
- 				GFP_KERNEL);
- 	if (!max8998)
+Second patch, fixes platform data retrieval issue in max8998 charger
+driver, which could cause NULL pointer dereference.
+
+Third patch, updates max8998 charger driver, so it's possible to parse
+devicetree for configuration.
+
+Fourth patch, updates max8998 documentation, so it includes new node 
+and properties, needed for charger.
+
+All patches has been tested on (not yet mainlined), an S5PV210 based
+Samsung Galaxy S (i9000) phone.
+
+Paweł Chmiel (3):
+  regulator: max8998: Fix platform data retrieval.
+  power: supply: max8998-charger: Parse device tree for required data.
+  dt-bindings: mfd: max8998: Add charger subnode binding
+
+Tomasz Figa (1):
+  power: supply: max8998-charger: Fix platform data retrieval
+
+ Documentation/devicetree/bindings/mfd/max8998.txt | 22 ++++++++++
+ drivers/power/supply/max8998_charger.c            | 52 ++++++++++++++++++++++-
+ drivers/regulator/max8998.c                       |  3 +-
+ 3 files changed, 74 insertions(+), 3 deletions(-)
+
 -- 
 2.7.4
