@@ -1,62 +1,31 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 3/3] thermal: armada_thermal: Replace mdelay with
- usleep_range in armada380_init_sensor
-Date: Thu, 26 Apr 2018 19:13:53 -0700
-Message-ID: <20180427021352.GC30803@localhost.localdomain>
-References: <1523348008-29461-1-git-send-email-baijiaju1990@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2][for 4.17-rc3] cpufreq / CPPC: Set platform specific
+ transition_delay_us
+Date: Fri, 27 Apr 2018 10:22:48 +0530
+Message-ID: <20180427045248.sugty3eng7o5bgbv@vireshk-i7>
+References: <1524673572-27941-1-git-send-email-pprakash@codeaurora.org>
+ <20180426052525.snsw3hzflabvfer3@vireshk-i7>
+ <d65edca1-616d-7766-5aca-b8942bc971b1@codeaurora.org>
+ <04fdd4d1-fd78-f6c9-4852-45a0c6235e7f@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1523348008-29461-1-git-send-email-baijiaju1990@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jia-Ju Bai <baijiaju1990@gmail.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <04fdd4d1-fd78-f6c9-4852-45a0c6235e7f@codeaurora.org>
+Sender: stable-owner@vger.kernel.org
+To: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, "4.14+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 10, 2018 at 04:13:28PM +0800, Jia-Ju Bai wrote:
-> armada380_init_sensor() is never called in atomic context.
-> 
-> armada380_init_sensor() is set as ".init_sensor" in
-> struct armada_thermal_data.
-> ".init_sensor" is called armada_thermal_probe().
-> armada_thermal_probe() is set as ".probe" in struct platform_driver.
-> This function is not called in atomic context.
-> 
-> Despite never getting called from atomic context, armada380_init_sensor()
-> calls mdelay() to busily wait.
-> This is not necessary and can be replaced with usleep_range() to
-> avoid busy waiting.
-> 
-> This is found by a static analysis tool named DCNS written by myself.
-> And I also manually check it.
-> 
-> Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
-> ---
->  drivers/thermal/armada_thermal.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index ae75328..c289ae4 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -143,7 +143,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
->  	if (!(reg & A380_HW_RESET)) {
->  		reg |= A380_HW_RESET;
->  		writel(reg, priv->control);
-> -		mdelay(10);
-> +		usleep_range(10000, 11000);
+On 26-04-18, 09:50, Prakash, Prashanth wrote:
+> On second thoughts, If we have a scenario where we have a platform on which the
+> "implementor" matches a case statement, but the "part_num" does not have a
+> corresponding case statement. In this case we would need multiple levels of default,
+> so I think the current implementation is simpler. 
 
-This does not apply:
-checking file drivers/thermal/armada_thermal.c
-Hunk #1 FAILED at 143.
-1 out of 1 hunk FAILED
+You already have multiple level of switches, multiple level of
+defaults shouldn't make it any worse :)
 
-That mdelay() is not existing anymore.
-
->  	}
->  }
->  
-> -- 
-> 1.9.1
-> 
+-- 
+viresh
