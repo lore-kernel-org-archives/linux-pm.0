@@ -1,58 +1,71 @@
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [V3] cpufreq: powernv: Fix the hardlockup by synchronus smp_call in timer interrupt
-Date: Sat, 28 Apr 2018 21:12:43 +1000 (AEST)
-Message-ID: <40Y7SX0BHHz9s0x@ozlabs.org>
-References: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: stable-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, ppaidipe@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, stable@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH 16/27] dt-bindings: cp110: prepare the syscon file to
+ list other syscons nodes
+Date: Sat, 28 Apr 2018 13:20:21 +0200
+Message-ID: <20180428132021.46883eb8@xps13>
+References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
+ <20180421151255.29929-17-miquel.raynal@bootlin.com>
+ <20180427210603.fkcuxnug3rgq3wjl@rob-hp-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180427210603.fkcuxnug3rgq3wjl@rob-hp-laptop>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2018-04-25 at 10:59:31 UTC, Shilpasri G Bhat wrote:
-> gpstate_timer_handler() uses synchronous smp_call to set the pstate
-> on the requested core. This causes the below hard lockup:
-> 
-> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
-> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
-> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
-> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
-> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
-> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
-> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
-> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
-> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
-> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
-> -- interrupt: 901 at doorbell_global_ipi+0x34/0x50
-> LR = arch_send_call_function_ipi_mask+0x120/0x130
-> [c000003fe566ba50] [c00000000004876c]
-> arch_send_call_function_ipi_mask+0x4c/0x130
-> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
-> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
-> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
-> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
-> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
-> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
-> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
-> 
-> One way to avoid this is removing the smp-call. We can ensure that the timer
-> always runs on one of the policy-cpus. If the timer gets migrated to a
-> cpu outside the policy then re-queue it back on the policy->cpus. This way
-> we can get rid of the smp-call which was being used to set the pstate
-> on the policy->cpus.
-> 
-> Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
-> Cc: <stable@vger.kernel.org>        [4.8+]
-> Reported-by: Nicholas Piggin <npiggin@gmail.com>
-> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Acked-by: Nicholas Piggin <npiggin@gmail.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-
-Applied to powerpc fixes, thanks.
-
-https://git.kernel.org/powerpc/c/c0f7f5b6c69107ca92909512533e70
-
-cheers
+SGkgUm9iLAoKT24gRnJpLCAyNyBBcHIgMjAxOCAxNjowNjowMyAtMDUwMCwgUm9iIEhlcnJpbmcg
+PHJvYmhAa2VybmVsLm9yZz4gd3JvdGU6Cgo+IE9uIFNhdCwgQXByIDIxLCAyMDE4IGF0IDA1OjEy
+OjQ0UE0gKzAyMDAsIE1pcXVlbCBSYXluYWwgd3JvdGU6Cj4gPiBUaGVyZSBhcmUgbXVsdGlwbGUg
+c3lzdGVtIGNvbnRyb2xsZXJzIGluIENQMTEwLiBCZWNhdXNlIGFsbCBzeXNjb24gbm9kZXMKPiA+
+IHVzZSB0aGUgc2FtZSBjb21wYXRpYmxlLCBpdCBpcyBwZXJ0aW5lbnQgdG8gdXNlIHRoaXMgc2Ft
+ZSBmaWxlIHRvIGxpc3QKPiA+IElQcyBpbnNpZGUgaXQuIFRodXMsIGNoYW5nZSB0aGUgaGVhZGVy
+IHRvIGJlIG1vcmUgZ2VuZXJpYywgYW5kIGFsaWduCj4gPiB3aXRoIEFQODA2IGZpbGUuCj4gPiAK
+PiA+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXluYWwgPG1pcXVlbC5yYXluYWxAYm9vdGxpbi5j
+b20+Cj4gPiAtLS0KPiA+ICAuLi4vYmluZGluZ3MvYXJtL21hcnZlbGwvY3AxMTAtc3lzdGVtLWNv
+bnRyb2xsZXIudHh0ICAgICAgIHwgMTQgKysrKysrKy0tLS0tLS0KPiA+ICAxIGZpbGUgY2hhbmdl
+ZCwgNyBpbnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygtKQo+ID4gCj4gPiBkaWZmIC0tZ2l0IGEv
+RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2NwMTEwLXN5c3Rl
+bS1jb250cm9sbGVyLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0v
+bWFydmVsbC9jcDExMC1zeXN0ZW0tY29udHJvbGxlci50eHQKPiA+IGluZGV4IDI5Y2RiYWU2YzVh
+Yy4uNTZlN2ZiMTE1M2U3IDEwMDY0NAo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2NwMTEwLXN5c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gKysr
+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2NwMTEwLXN5
+c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gQEAgLTEsMTUgKzEsMTUgQEAKPiA+IC1NYXJ2ZWxsIEFy
+bWFkYSBDUDExMCBTeXN0ZW0gQ29udHJvbGxlciAwCj4gPiAtPT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PQo+ID4gK01hcnZlbGwgQXJtYWRhIENQMTEwIFN5c3RlbSBDb250
+cm9sbGVyCj4gPiArPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiA+ICAK
+PiA+ICBUaGUgQ1AxMTAgaXMgb25lIG9mIHRoZSB0d28gY29yZSBIVyBibG9ja3Mgb2YgdGhlIE1h
+cnZlbGwgQXJtYWRhIDdLLzhLCj4gPiAtU29Dcy4gSXQgY29udGFpbnMgdHdvIHNldHMgb2Ygc3lz
+dGVtIGNvbnRyb2wgcmVnaXN0ZXJzLCBTeXN0ZW0KPiA+IC1Db250cm9sbGVyIDAgYW5kIFN5c3Rl
+bSBDb250cm9sbGVyIDEuIFRoaXMgRGV2aWNlIFRyZWUgYmluZGluZyBhbGxvd3MKPiA+IC10byBk
+ZXNjcmliZSB0aGUgZmlyc3Qgc3lzdGVtIGNvbnRyb2xsZXIsIHdoaWNoIHByb3ZpZGVzIHJlZ2lz
+dGVycyB0bwo+ID4gLWNvbmZpZ3VyZSB2YXJpb3VzIGFzcGVjdHMgb2YgdGhlIFNvQy4KPiA+ICtT
+b0NzLiBJdCBjb250YWlucyBzeXN0ZW0gY29udHJvbGxlcnMsIHdoaWNoIHByb3ZpZGUgc2V2ZXJh
+bCByZWdpc3RlcnMgIAo+IAo+IElzIHRoaXMgcmVhbGx5IG11bHRpcGxlIGRpc2NyZXRlIGJsb2Nr
+cz8KCkkgY2FuJ3QgdGVsbCBmb3Igc3VyZSwgYnV0IHRoZSBzcGVjaWZpY2F0aW9uIGNsZWFybHkg
+bmFtZXMgdGhlCiM2ZjgwMDAtIzZmOTAwMCByZWdpb24gYXMgIkFQIEdlbmVyYWwgTWFuYWdlbWVu
+dCBSZWdpc3RlcnMiIGFuZCBkb2VzCm5vdCByZWZlciBpbiBhbnkgbWFubmVyIHRvIHRoZSBvdGhl
+ciAoYWxyZWFkeSBkZXNjcmliZWQpIHN5c2NvbiBhdAojNmY0MDAwLSM2ZjYwMDAgd2hpY2ggaXMg
+dXNlZCBmb3IgY2xvY2tzIGFuZCBwaW5jdHJsIG1hbmFnZW1lbnQKYWxyZWFkeS4KCj4gCj4gPiAr
+Z2l2aW5nIGFjY2VzcyB0byBudW1lcm91cyBmZWF0dXJlczogY2xvY2tzLCBwaW4tbXV4aW5nIGFu
+ZCBtYW55IG90aGVyCj4gPiArU29DIGNvbmZpZ3VyYXRpb24gaXRlbXMuIFRoaXMgRFQgYmluZGlu
+ZyBhbGxvd3MgdG8gZGVzY3JpYmUgdGhlc2UKPiA+ICtzeXN0ZW0gY29udHJvbGxlcnMuCj4gPiAg
+Cj4gPiAgRm9yIHRoZSB0b3AgbGV2ZWwgbm9kZToKPiA+ICAgLSBjb21wYXRpYmxlOiBtdXN0IGJl
+OiAic3lzY29uIiwgInNpbXBsZS1tZmQiOwo+ID4gLSAtIHJlZzogcmVnaXN0ZXIgYXJlYSBvZiB0
+aGUgQ1AxMTAgc3lzdGVtIGNvbnRyb2xsZXIgMAo+ID4gKyAtIHJlZzogcmVnaXN0ZXIgYXJlYSBv
+ZiB0aGUgQ1AxMTAgc3lzdGVtIGNvbnRyb2xsZXIKPiA+ICAKPiA+ICBDbG9ja3M6Cj4gPiAgLS0t
+LS0tLQo+ID4gLS0gCj4gPiAyLjE0LjEKPiA+ICAgCgpSZWdhcmRzLApNaXF1w6hsCgoKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5l
+bCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6
+Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
