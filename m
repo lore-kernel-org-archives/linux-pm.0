@@ -1,71 +1,54 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH 16/27] dt-bindings: cp110: prepare the syscon file to
- list other syscons nodes
-Date: Sat, 28 Apr 2018 13:20:21 +0200
-Message-ID: <20180428132021.46883eb8@xps13>
-References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
- <20180421151255.29929-17-miquel.raynal@bootlin.com>
- <20180427210603.fkcuxnug3rgq3wjl@rob-hp-laptop>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [RFC 05/10] i2c: s3c2410: Remove support for Exynos5440
+Date: Sat, 28 Apr 2018 14:44:07 +0200
+Message-ID: <20180428124407.bpc47bo7ojebahpz@ninjato>
+References: <20180424203239.21885-1-krzk@kernel.org>
+ <20180424203239.21885-6-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180427210603.fkcuxnug3rgq3wjl@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="2ub5o5uu6wk62jsg"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180424203239.21885-6-krzk@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Greg
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9iLAoKT24gRnJpLCAyNyBBcHIgMjAxOCAxNjowNjowMyAtMDUwMCwgUm9iIEhlcnJpbmcg
-PHJvYmhAa2VybmVsLm9yZz4gd3JvdGU6Cgo+IE9uIFNhdCwgQXByIDIxLCAyMDE4IGF0IDA1OjEy
-OjQ0UE0gKzAyMDAsIE1pcXVlbCBSYXluYWwgd3JvdGU6Cj4gPiBUaGVyZSBhcmUgbXVsdGlwbGUg
-c3lzdGVtIGNvbnRyb2xsZXJzIGluIENQMTEwLiBCZWNhdXNlIGFsbCBzeXNjb24gbm9kZXMKPiA+
-IHVzZSB0aGUgc2FtZSBjb21wYXRpYmxlLCBpdCBpcyBwZXJ0aW5lbnQgdG8gdXNlIHRoaXMgc2Ft
-ZSBmaWxlIHRvIGxpc3QKPiA+IElQcyBpbnNpZGUgaXQuIFRodXMsIGNoYW5nZSB0aGUgaGVhZGVy
-IHRvIGJlIG1vcmUgZ2VuZXJpYywgYW5kIGFsaWduCj4gPiB3aXRoIEFQODA2IGZpbGUuCj4gPiAK
-PiA+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXluYWwgPG1pcXVlbC5yYXluYWxAYm9vdGxpbi5j
-b20+Cj4gPiAtLS0KPiA+ICAuLi4vYmluZGluZ3MvYXJtL21hcnZlbGwvY3AxMTAtc3lzdGVtLWNv
-bnRyb2xsZXIudHh0ICAgICAgIHwgMTQgKysrKysrKy0tLS0tLS0KPiA+ICAxIGZpbGUgY2hhbmdl
-ZCwgNyBpbnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygtKQo+ID4gCj4gPiBkaWZmIC0tZ2l0IGEv
-RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2NwMTEwLXN5c3Rl
-bS1jb250cm9sbGVyLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0v
-bWFydmVsbC9jcDExMC1zeXN0ZW0tY29udHJvbGxlci50eHQKPiA+IGluZGV4IDI5Y2RiYWU2YzVh
-Yy4uNTZlN2ZiMTE1M2U3IDEwMDY0NAo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
-L2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2NwMTEwLXN5c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gKysr
-IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2NwMTEwLXN5
-c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gQEAgLTEsMTUgKzEsMTUgQEAKPiA+IC1NYXJ2ZWxsIEFy
-bWFkYSBDUDExMCBTeXN0ZW0gQ29udHJvbGxlciAwCj4gPiAtPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PQo+ID4gK01hcnZlbGwgQXJtYWRhIENQMTEwIFN5c3RlbSBDb250
-cm9sbGVyCj4gPiArPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiA+ICAK
-PiA+ICBUaGUgQ1AxMTAgaXMgb25lIG9mIHRoZSB0d28gY29yZSBIVyBibG9ja3Mgb2YgdGhlIE1h
-cnZlbGwgQXJtYWRhIDdLLzhLCj4gPiAtU29Dcy4gSXQgY29udGFpbnMgdHdvIHNldHMgb2Ygc3lz
-dGVtIGNvbnRyb2wgcmVnaXN0ZXJzLCBTeXN0ZW0KPiA+IC1Db250cm9sbGVyIDAgYW5kIFN5c3Rl
-bSBDb250cm9sbGVyIDEuIFRoaXMgRGV2aWNlIFRyZWUgYmluZGluZyBhbGxvd3MKPiA+IC10byBk
-ZXNjcmliZSB0aGUgZmlyc3Qgc3lzdGVtIGNvbnRyb2xsZXIsIHdoaWNoIHByb3ZpZGVzIHJlZ2lz
-dGVycyB0bwo+ID4gLWNvbmZpZ3VyZSB2YXJpb3VzIGFzcGVjdHMgb2YgdGhlIFNvQy4KPiA+ICtT
-b0NzLiBJdCBjb250YWlucyBzeXN0ZW0gY29udHJvbGxlcnMsIHdoaWNoIHByb3ZpZGUgc2V2ZXJh
-bCByZWdpc3RlcnMgIAo+IAo+IElzIHRoaXMgcmVhbGx5IG11bHRpcGxlIGRpc2NyZXRlIGJsb2Nr
-cz8KCkkgY2FuJ3QgdGVsbCBmb3Igc3VyZSwgYnV0IHRoZSBzcGVjaWZpY2F0aW9uIGNsZWFybHkg
-bmFtZXMgdGhlCiM2ZjgwMDAtIzZmOTAwMCByZWdpb24gYXMgIkFQIEdlbmVyYWwgTWFuYWdlbWVu
-dCBSZWdpc3RlcnMiIGFuZCBkb2VzCm5vdCByZWZlciBpbiBhbnkgbWFubmVyIHRvIHRoZSBvdGhl
-ciAoYWxyZWFkeSBkZXNjcmliZWQpIHN5c2NvbiBhdAojNmY0MDAwLSM2ZjYwMDAgd2hpY2ggaXMg
-dXNlZCBmb3IgY2xvY2tzIGFuZCBwaW5jdHJsIG1hbmFnZW1lbnQKYWxyZWFkeS4KCj4gCj4gPiAr
-Z2l2aW5nIGFjY2VzcyB0byBudW1lcm91cyBmZWF0dXJlczogY2xvY2tzLCBwaW4tbXV4aW5nIGFu
-ZCBtYW55IG90aGVyCj4gPiArU29DIGNvbmZpZ3VyYXRpb24gaXRlbXMuIFRoaXMgRFQgYmluZGlu
-ZyBhbGxvd3MgdG8gZGVzY3JpYmUgdGhlc2UKPiA+ICtzeXN0ZW0gY29udHJvbGxlcnMuCj4gPiAg
-Cj4gPiAgRm9yIHRoZSB0b3AgbGV2ZWwgbm9kZToKPiA+ICAgLSBjb21wYXRpYmxlOiBtdXN0IGJl
-OiAic3lzY29uIiwgInNpbXBsZS1tZmQiOwo+ID4gLSAtIHJlZzogcmVnaXN0ZXIgYXJlYSBvZiB0
-aGUgQ1AxMTAgc3lzdGVtIGNvbnRyb2xsZXIgMAo+ID4gKyAtIHJlZzogcmVnaXN0ZXIgYXJlYSBv
-ZiB0aGUgQ1AxMTAgc3lzdGVtIGNvbnRyb2xsZXIKPiA+ICAKPiA+ICBDbG9ja3M6Cj4gPiAgLS0t
-LS0tLQo+ID4gLS0gCj4gPiAyLjE0LjEKPiA+ICAgCgpSZWdhcmRzLApNaXF1w6hsCgoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5l
-bCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6
-Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+
+--2ub5o5uu6wk62jsg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Apr 24, 2018 at 10:32:34PM +0200, Krzysztof Kozlowski wrote:
+> The Exynos5440 is not actively developed, there are no development
+> boards available and probably there are no real products with it.
+> Remove wide-tree support for Exynos5440.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Applied to for-next, thanks!
+
+
+--2ub5o5uu6wk62jsg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlrkbJcACgkQFA3kzBSg
+KbY0oBAAp5AZ22Iwc3g476LI/homGu6AP+TvzJ14ZHvvKXmBhKLST+eTqjibgy8y
+ezyaVsMGoTAqZXpFAoPhMWB/ktsDNOM6QhshTyAR5EI634GhnTZ8j5quAXYwgPsL
+Iugkw/DxGYGz+0iaPwvd7L4OnCHpufRomudIkx7wO5IObmbuFIAYiAvZIp6873Hq
+UFWUlW4k67D+BcoYc+uVcvTteewzffXS/qyRim6TF4Xg2FKTPp9KRUjmL86xLHvl
+FXDKa4djARTZz+HD0aQ27aOuv+g7yxLS9mfL4wSckymohGCtmDhHI6xdw3hyCDwM
+yPElg4JICJDm4EuDjzYdYrcZlFjsXeuHN3RGaJfIRFnIhwC/CxiUnwtMosGCuWSK
+BDU+esBF7qEXxherzLPJEJVPYW1z3XqLphkxoJ8Ma/9DpLDmItGythWIuMblLHWP
+jWpb3DOgATifO3ZLkyNEp/6m4GMEZN29Xc81BLRgy+NMzaNPofgSflzW1QAHz8H8
+qMtjIHp9zH9h4jn7LoUng1AsEBs4AW/xv5Bul8l4FhrfjSpzTCfb1+kF7QKAr8IW
+0xuLrzW3GSd1/WC7BTnQMDD41d8sgd8YL8RyfFBYsst0L0TXvhgWLCLt7M40X42q
+pUXIKPw/t0MR4uIsD8nQ9ZnWhb4chO2pzGSMabmZQDLeZQvGRBI=
+=ObTl
+-----END PGP SIGNATURE-----
+
+--2ub5o5uu6wk62jsg--
