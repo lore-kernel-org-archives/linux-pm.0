@@ -1,78 +1,58 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH 17/27] dt-bindings: ap806: add the thermal node in the
- syscon file
-Date: Sat, 28 Apr 2018 13:07:14 +0200
-Message-ID: <20180428130714.3ee3883b@xps13>
-References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
- <20180421151255.29929-18-miquel.raynal@bootlin.com>
- <20180427210722.obyujepjvqc5hwcd@rob-hp-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180427210722.obyujepjvqc5hwcd@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [V3] cpufreq: powernv: Fix the hardlockup by synchronus smp_call in timer interrupt
+Date: Sat, 28 Apr 2018 21:12:43 +1000 (AEST)
+Message-ID: <40Y7SX0BHHz9s0x@ozlabs.org>
+References: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: stable-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, ppaidipe@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, stable@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9iLAoKT24gRnJpLCAyNyBBcHIgMjAxOCAxNjowNzoyMiAtMDUwMCwgUm9iIEhlcnJpbmcg
-PHJvYmhAa2VybmVsLm9yZz4gd3JvdGU6Cgo+IE9uIFNhdCwgQXByIDIxLCAyMDE4IGF0IDA1OjEy
-OjQ1UE0gKzAyMDAsIE1pcXVlbCBSYXluYWwgd3JvdGU6Cj4gPiBFeHBsYWluIHRoZSB0aGVybWFs
-IGJpbmRpbmdzIG5vdyB0aGF0IHRoZSB0aGVybWFsIElQIGlzIGRlc2NyaWJlZCBiZWluZwo+ID4g
-aW5zaWRlIG9mIGEgc3lzdGVtIGNvbnRyb2xsZXIuIEFkZCBhIHJlZmVyZW5jZSB0byB0aGUgdGhl
-cm1hbC16b25lIG5vZGUuCj4gPiAKPiA+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXluYWwgPG1p
-cXVlbC5yYXluYWxAYm9vdGxpbi5jb20+Cj4gPiAtLS0KPiA+ICAuLi4vYXJtL21hcnZlbGwvYXA4
-MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0ICAgICAgICB8IDQzICsrKysrKysrKysrKysrKysrKysr
-KysKPiA+ICAxIGZpbGUgY2hhbmdlZCwgNDMgaW5zZXJ0aW9ucygrKQo+ID4gCj4gPiBkaWZmIC0t
-Z2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2FwODA2
-LXN5c3RlbS1jb250cm9sbGVyLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
-cy9hcm0vbWFydmVsbC9hcDgwNi1zeXN0ZW0tY29udHJvbGxlci50eHQKPiA+IGluZGV4IGE4NTZl
-YjlhNGUwNS4uYzk1ZjNhYzVjNzI4IDEwMDY0NAo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2FwODA2LXN5c3RlbS1jb250cm9sbGVyLnR4dAo+
-ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2Fw
-ODA2LXN5c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gQEAgLTExLDYgKzExLDkgQEAgRm9yIHRoZSB0
-b3AgbGV2ZWwgbm9kZToKPiA+ICAgLSBjb21wYXRpYmxlOiBtdXN0IGJlOiAic3lzY29uIiwgInNp
-bXBsZS1tZmQiOwo+ID4gICAtIHJlZzogcmVnaXN0ZXIgYXJlYSBvZiB0aGUgQVA4MDYgc3lzdGVt
-IGNvbnRyb2xsZXIKPiA+ICAKPiA+ICtTWVNURU0gQ09OVFJPTExFUiAwCj4gPiArPT09PT09PT09
-PT09PT09PT09PQo+ID4gKwo+ID4gIENsb2NrczoKPiA+ICAtLS0tLS0tCj4gPiAgCj4gPiBAQCAt
-OTgsMyArMTAxLDQzIEBAIGFwX3N5c2Nvbjogc3lzdGVtLWNvbnRyb2xsZXJANmY0MDAwIHsKPiA+
-ICAJCWdwaW8tcmFuZ2VzID0gPCZhcF9waW5jdHJsIDAgMCAxOT47Cj4gPiAgCX07Cj4gPiAgfTsK
-PiA+ICsKPiA+ICtTWVNURU0gQ09OVFJPTExFUiAxCj4gPiArPT09PT09PT09PT09PT09PT09PQo+
-ID4gKwo+ID4gK1RoZXJtYWw6Cj4gPiArLS0tLS0tLS0KPiA+ICsKPiA+ICtGb3IgY29tbW9uIGJp
-bmRpbmcgcGFydCBhbmQgdXNhZ2UsIHJlZmVyIHRvCj4gPiArRG9jdW1lbnRhdGlvbi9kZXZpY2V0
-cmVlL2JpbmRpbmdzL3RoZXJtYWwvdGhlcm1hbC50eHQKPiA+ICsKPiA+ICtUaGUgdGhlcm1hbCBJ
-UCBjYW4gcHJvYmUgdGhlIHRlbXBlcmF0dXJlIGFsbCBhcm91bmQgdGhlIHByb2Nlc3Nvci4gSXQK
-PiA+ICttYXkgZmVhdHVyZSBzZXZlcmFsIGNoYW5uZWxzLCBlYWNoIG9mIHRoZW0gd2lyZWQgdG8g
-b25lIHNlbnNvci4KPiA+ICsKPiA+ICtJdCBpcyBwb3NzaWJsZSB0byBzZXR1cCBhbiBvdmVyaGVh
-dCBpbnRlcnJ1cHQgYnkgZ2l2aW5nIGF0IGxlYXN0IG9uZQo+ID4gK2NyaXRpY2FsIHBvaW50IHRv
-IGFueSBzdWJub2RlIG9mIHRoZSB0aGVybWFsLXpvbmUgbm9kZS4KPiA+ICsKPiA+ICtSZXF1aXJl
-ZCBwcm9wZXJ0aWVzOgo+ID4gKy0gY29tcGF0aWJsZTogIm1hcnZlbGwsYXJtYWRhLWFwODA2LXRo
-ZXJtYWwiCj4gPiArCj4gPiArT3B0aW9uYWwgcHJvcGVydGllczoKPiA+ICstIGludGVycnVwdC1w
-YXJlbnQvaW50ZXJydXB0czogb3ZlcmhlYXQgaW50ZXJydXB0IGhhbmRsZS4gU2hvdWxkIHBvaW50
-IHRvCj4gPiArICBsaW5lIDE4IG9mIHRoZSBTRUkgaXJxY2hpcC4KPiA+ICsgIFNlZSBpbnRlcnJ1
-cHQtY29udHJvbGxlci9pbnRlcnJ1cHRzLnR4dAo+ID4gKy0gI3RoZXJtYWwtc2Vuc29yLWNlbGxz
-OiBzaGFsbCBiZSA8MT4gd2hlbiB0aGVybWFsLXpvbmVzIHN1Ym5vZGVzIHJlZmVyCj4gPiArICB0
-byB0aGlzIElQIGFuZCByZXByZXNlbnRzIHRoZSBjaGFubmVsIElELiBUaGVyZSBpcyBvbmUgc2Vu
-c29yIHBlcgo+ID4gKyAgY2hhbm5lbC4gTyByZWZlcnMgdG8gdGhlIHRoZXJtYWwgSVAgaW50ZXJu
-YWwgY2hhbm5lbCwgd2hpbGUgcG9zaXRpdmUKPiA+ICsgIElEcyByZWZlciB0byBlYWNoIENQVS4K
-PiA+ICsKPiA+ICtFeGFtcGxlOgo+ID4gK2FwX3N5c2NvbjE6IHN5c3RlbS1jb250cm9sbGVyQDZm
-ODAwMCB7Cj4gPiArCWNvbXBhdGlibGUgPSAic3lzY29uIiwgInNpbXBsZS1tZmQiOwo+ID4gKwly
-ZWcgPSA8MHg2ZjgwMDAgMHgxMDAwPjsKPiA+ICsKPiA+ICsJYXBfdGhlcm1hbDogYXAtdGhlcm1h
-bCB7Cj4gPiArCQljb21wYXRpYmxlID0gIm1hcnZlbGwsYXJtYWRhLWFwODA2LXRoZXJtYWwiOyAg
-Cj4gCj4gSXMgdGhlcmUgYSByZWdpc3RlciByYW5nZSBhc3NvY2lhdGVkIHdpdGggdGhlIHRoZXJt
-YWwgZnVuY3Rpb25zPwoKWWVzLCBJIHdpbGwgYWRkIGl0LgoKVGhhbmtzLApNaXF1w6hsCgo+IAo+
-ID4gKwkJaW50ZXJydXB0LXBhcmVudCA9IDwmc2VpPjsKPiA+ICsJCWludGVycnVwdHMgPSA8MTg+
-Owo+ID4gKwkJI3RoZXJtYWwtc2Vuc29yLWNlbGxzID0gPDE+Owo+ID4gKwl9Owo+ID4gK307Cj4g
-PiAtLSAKPiA+IDIuMTQuMQo+ID4gICAKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1r
-ZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Wed, 2018-04-25 at 10:59:31 UTC, Shilpasri G Bhat wrote:
+> gpstate_timer_handler() uses synchronous smp_call to set the pstate
+> on the requested core. This causes the below hard lockup:
+> 
+> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
+> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
+> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
+> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
+> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
+> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
+> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
+> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
+> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
+> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
+> -- interrupt: 901 at doorbell_global_ipi+0x34/0x50
+> LR = arch_send_call_function_ipi_mask+0x120/0x130
+> [c000003fe566ba50] [c00000000004876c]
+> arch_send_call_function_ipi_mask+0x4c/0x130
+> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
+> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
+> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
+> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
+> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
+> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
+> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+> 
+> One way to avoid this is removing the smp-call. We can ensure that the timer
+> always runs on one of the policy-cpus. If the timer gets migrated to a
+> cpu outside the policy then re-queue it back on the policy->cpus. This way
+> we can get rid of the smp-call which was being used to set the pstate
+> on the policy->cpus.
+> 
+> Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
+> Cc: <stable@vger.kernel.org>        [4.8+]
+> Reported-by: Nicholas Piggin <npiggin@gmail.com>
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+
+Applied to powerpc fixes, thanks.
+
+https://git.kernel.org/powerpc/c/c0f7f5b6c69107ca92909512533e70
+
+cheers
