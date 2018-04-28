@@ -1,54 +1,74 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [RFC 05/10] i2c: s3c2410: Remove support for Exynos5440
-Date: Sat, 28 Apr 2018 14:44:07 +0200
-Message-ID: <20180428124407.bpc47bo7ojebahpz@ninjato>
-References: <20180424203239.21885-1-krzk@kernel.org>
- <20180424203239.21885-6-krzk@kernel.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="2ub5o5uu6wk62jsg"
+From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Subject: [PATCH] power: supply: ltc2941-battery-gauge: Release device_node in ltc294x_i2c_probe()
+Date: Sun, 29 Apr 2018 01:35:55 +0300
+Message-ID: <1524954955-22107-1-git-send-email-khoroshilov@ispras.ru>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180424203239.21885-6-krzk@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Greg
+To: Sebastian Reichel <sre@kernel.org>, Mike Looijmans <mike.looijmans@topic.nl>
+Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org, Julia Lawall <julia.lawall@lip6.fr>, sil2review@lists.osadl.org
 List-Id: linux-pm@vger.kernel.org
 
+There is of_node_get(client->dev.of_node) in ltc294x_i2c_probe(),
+but these is no of_node_put() somethere in the driver.
 
---2ub5o5uu6wk62jsg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The patch adds one on error and normal paths.
 
-On Tue, Apr 24, 2018 at 10:32:34PM +0200, Krzysztof Kozlowski wrote:
-> The Exynos5440 is not actively developed, there are no development
-> boards available and probably there are no real products with it.
-> Remove wide-tree support for Exynos5440.
->=20
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Found by Linux Driver Verification project (linuxtesting.org).
 
-Applied to for-next, thanks!
+Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+---
+ drivers/power/supply/ltc2941-battery-gauge.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-
---2ub5o5uu6wk62jsg
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlrkbJcACgkQFA3kzBSg
-KbY0oBAAp5AZ22Iwc3g476LI/homGu6AP+TvzJ14ZHvvKXmBhKLST+eTqjibgy8y
-ezyaVsMGoTAqZXpFAoPhMWB/ktsDNOM6QhshTyAR5EI634GhnTZ8j5quAXYwgPsL
-Iugkw/DxGYGz+0iaPwvd7L4OnCHpufRomudIkx7wO5IObmbuFIAYiAvZIp6873Hq
-UFWUlW4k67D+BcoYc+uVcvTteewzffXS/qyRim6TF4Xg2FKTPp9KRUjmL86xLHvl
-FXDKa4djARTZz+HD0aQ27aOuv+g7yxLS9mfL4wSckymohGCtmDhHI6xdw3hyCDwM
-yPElg4JICJDm4EuDjzYdYrcZlFjsXeuHN3RGaJfIRFnIhwC/CxiUnwtMosGCuWSK
-BDU+esBF7qEXxherzLPJEJVPYW1z3XqLphkxoJ8Ma/9DpLDmItGythWIuMblLHWP
-jWpb3DOgATifO3ZLkyNEp/6m4GMEZN29Xc81BLRgy+NMzaNPofgSflzW1QAHz8H8
-qMtjIHp9zH9h4jn7LoUng1AsEBs4AW/xv5Bul8l4FhrfjSpzTCfb1+kF7QKAr8IW
-0xuLrzW3GSd1/WC7BTnQMDD41d8sgd8YL8RyfFBYsst0L0TXvhgWLCLt7M40X42q
-pUXIKPw/t0MR4uIsD8nQ9ZnWhb4chO2pzGSMabmZQDLeZQvGRBI=
-=ObTl
------END PGP SIGNATURE-----
-
---2ub5o5uu6wk62jsg--
+diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+index 4f129bb4c972..7854a89b3332 100644
+--- a/drivers/power/supply/ltc2941-battery-gauge.c
++++ b/drivers/power/supply/ltc2941-battery-gauge.c
+@@ -481,7 +481,7 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 	if (ret < 0) {
+ 		dev_err(&client->dev,
+ 			"Could not find lltc,resistor-sense in devicetree\n");
+-		return ret;
++		goto err_node_put;
+ 	}
+ 	info->r_sense = r_sense;
+ 
+@@ -511,7 +511,7 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 		if (ret < 0) {
+ 			dev_err(&client->dev,
+ 				"Could not read status register\n");
+-			return ret;
++			goto err_node_put;
+ 		}
+ 		if (status & LTC2941_REG_STATUS_CHIP_ID)
+ 			info->id = LTC2941_ID;
+@@ -550,19 +550,25 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 	ret = ltc294x_reset(info, prescaler_exp);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "Communication with chip failed\n");
+-		return ret;
++		goto err_node_put;
+ 	}
+ 
+ 	info->supply = power_supply_register(&client->dev, &info->supply_desc,
+ 					     &psy_cfg);
+ 	if (IS_ERR(info->supply)) {
+ 		dev_err(&client->dev, "failed to register ltc2941\n");
+-		return PTR_ERR(info->supply);
++		ret = PTR_ERR(info->supply);
++		goto err_node_put;
+ 	} else {
+ 		schedule_delayed_work(&info->work, LTC294X_WORK_DELAY * HZ);
+ 	}
+ 
++	of_node_put(np);
+ 	return 0;
++
++err_node_put:
++	of_node_put(np);
++	return ret;
+ }
+ 
+ static void ltc294x_i2c_shutdown(struct i2c_client *client)
+-- 
+2.7.4
