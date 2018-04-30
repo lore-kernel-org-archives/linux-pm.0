@@ -1,61 +1,60 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v2 0/3] mfd/power: cros_ec: add support for USBPD charger driver.
-Date: Mon, 30 Apr 2018 15:14:00 +0200
-Message-ID: <20180430131403.14296-1-enric.balletbo@collabora.com>
+Subject: [PATCH v2 3/3] mfd: cros_ec_dev: Register cros_usbpd-charger driver as a subdevice.
+Date: Mon, 30 Apr 2018 15:14:03 +0200
+Message-ID: <20180430131403.14296-4-enric.balletbo@collabora.com>
+References: <20180430131403.14296-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180430131403.14296-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
 Cc: Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
+Check whether this EC instance has USBPD host command support and
+instatiate the cros_usbpd-charger driver as a subdevice in such case.
 
-Dear all,
-
-This is a second version of a patched to add support for the ChromeOS EC
-USBPD charger driver, the driver has been used on Chromebooks kernel for
-long time and has been ported now to mainline. The patches were tested
-successfully with a Samsung Chromebook Plus and an Pixel 2 Chromebook.
-
-This version is a rework with respect the first version, some features
-like the PD log have been removed and will be send as follow up patches
-for further discuss.
-
-The second patch of this series depends on these series that are queued
-for 4.18:
-
-- https://lkml.org/lkml/2018/4/23/602 ([PATCH v8 0/6] typec: tcpm: Add
-  sink side support for PPS)
-
-The third patch of this series depends on the following patch to apply
-cleanly:
-
-- https://lkml.org/lkml/2018/4/18/229 ([RESEND PATCH v5 4/7] mfd:
-  cros_ec_dev: Register cros-ec-rtc driver as a subdevice.)
-
-Best regards,
- Enric
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
 
 Changes in v2:
-- [2/3] Add SPDX header, use devm_ variant and drop .owner
-- [2/3] Removed the PD log functionality (will be send on a follow up patch)
-- [2/3] Removed the extra custom sysfs attributes (will be send on a follow up patch)
 - [3/3] Use ARRAY_SIZE instead of hardcoded 1.
 
-Enric Balletbo i Serra (1):
-  mfd: cros_ec_dev: Register cros_usbpd-charger driver as a subdevice.
+ drivers/mfd/cros_ec_dev.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-Sameer Nanda (2):
-  mfd: cros_ec: Add USBPD charger commands and struct definitions.
-  power: supply: add cros-ec USBPD charger driver.
-
- drivers/mfd/cros_ec_dev.c                 |  16 +
- drivers/power/supply/Kconfig              |  10 +
- drivers/power/supply/Makefile             |   1 +
- drivers/power/supply/cros_usbpd-charger.c | 511 ++++++++++++++++++++++
- include/linux/mfd/cros_ec.h               |   2 +
- include/linux/mfd/cros_ec_commands.h      | 132 +++++-
- 6 files changed, 668 insertions(+), 4 deletions(-)
- create mode 100644 drivers/power/supply/cros_usbpd-charger.c
-
+diff --git a/drivers/mfd/cros_ec_dev.c b/drivers/mfd/cros_ec_dev.c
+index 1d6dc5c7a19d..d06870da3a2e 100644
+--- a/drivers/mfd/cros_ec_dev.c
++++ b/drivers/mfd/cros_ec_dev.c
+@@ -387,6 +387,10 @@ static const struct mfd_cell cros_ec_rtc_cells[] = {
+ 	{ .name = "cros-ec-rtc" }
+ };
+ 
++static const struct mfd_cell cros_usbpd_charger_cells[] = {
++	{ .name = "cros-usbpd-charger" }
++};
++
+ static int ec_device_probe(struct platform_device *pdev)
+ {
+ 	int retval = -ENOMEM;
+@@ -438,6 +442,18 @@ static int ec_device_probe(struct platform_device *pdev)
+ 				retval);
+ 	}
+ 
++	/* Check whether this EC instance has the PD charge manager */
++	if (cros_ec_check_features(ec, EC_FEATURE_USB_PD)) {
++		retval = mfd_add_devices(ec->dev, PLATFORM_DEVID_AUTO,
++					 cros_usbpd_charger_cells,
++					 ARRAY_SIZE(cros_usbpd_charger_cells),
++					 NULL, 0, NULL);
++		if (retval)
++			dev_err(ec->dev,
++				"failed to add cros-usbpd-charger device: %d\n",
++				retval);
++	}
++
+ 	/* Take control of the lightbar from the EC. */
+ 	lb_manual_suspend_ctrl(ec, 1);
+ 
 -- 
 2.17.0
