@@ -1,34 +1,38 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 03/18] thermal: exynos: always check for critical trip
- points existence
-Date: Mon, 30 Apr 2018 17:24:15 +0200
-Message-ID: <5229331.iYYXeBBCxK@amdc3058>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 05/18] thermal: exynos: use sanitize_temp_error() in
+ exynos7_tmu_initialize()
+Date: Mon, 30 Apr 2018 17:30:53 +0200
+Message-ID: <20180430153053.GA27619@mai>
 References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
-        <1524743493-28113-4-git-send-email-b.zolnierkie@samsung.com>
-        <20180430144450.GI11457@mai>
-        <CGME20180430152416eucas1p10bde2c1501e7f5f4b284caca3b630ea3@eucas1p1.samsung.com>
+ <CGME20180426115211epcas1p3db7cbe215a3dfb49567a771931574a2f@epcas1p3.samsung.com>
+ <1524743493-28113-6-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180430144450.GI11457@mai>
+Content-Disposition: inline
+In-Reply-To: <1524743493-28113-6-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 30, 2018 04:44:50 PM Daniel Lezcano wrote:
-> On Thu, Apr 26, 2018 at 01:51:18PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > * Check for critical trip point existence in exynos_tmu_initialize()
-> >   so it is checked on all SoCs (except Exynos5433 for now).
+On Thu, Apr 26, 2018 at 01:51:20PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> Fix sanitize_temp_error() to handle Exynos7 SoCs and then use it in
+> exynos7_tmu_initialize().
 > 
-> Why "except Exynos5433" ?
+> There should be no functional changes caused by this patch.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
 
-I was a bit vague here - Exynos5433 DTS needs to be fixed first to define
-critical trip points.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+-- 
+
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
