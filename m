@@ -1,88 +1,95 @@
-From: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
-Subject: Re: [PATCH 4/4] dt-bindings: mfd: max8998: Add charger subnode binding
-Date: Mon, 30 Apr 2018 16:59:48 +0200
-Message-ID: <2163655.V5BWH1NDss@acerlaptop>
-References: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com> <1524844982-4714-5-git-send-email-pawel.mikolaj.chmiel@gmail.com> <20180430123036.GH5147@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 01/18] thermal: exynos: fix setting rising_threshold for
+ Exynos5433
+Date: Mon, 30 Apr 2018 17:21:40 +0200
+Message-ID: <1562606.5jxUSbM0dm@amdc3058>
+References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
+        <1524743493-28113-2-git-send-email-b.zolnierkie@samsung.com>
+        <20180430143656.GH11457@mai>
+        <CGME20180430152141eucas1p2f39d7e8ee83a1fa66ccd19f74442357f@eucas1p2.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180430123036.GH5147@dell>
+In-reply-to: <20180430143656.GH11457@mai>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 30, 2018 1:30:36 PM CEST Lee Jones wrote:
-> On Fri, 27 Apr 2018, Pawe=C5=82 Chmiel wrote:
->=20
-> > This patch adds devicetree bindings documentation for
-> > battery charging controller as the subnode of MAX8998 PMIC.
-> > It's based on current behavior of driver.
-> >=20
-> > Fixes: ee999fb3f17f ("mfd: max8998: Add support for Device Tree")
->=20
-> Why is this here?  This patch doesn't look like a fix to me.
-Hi
-I though that if previous patch, which is adding missing device tree parsin=
-g into charger driver,
-has fixes tag, this patch (which is documenting it), should also contain th=
-at tag.
-If it shouldn't be here, i can fix this in v2.
-
-Thanks for feedback (this is my second patchset for Linux Kernel)
->=20
-> > Signed-off-by: Pawe=C5=82 Chmiel <pawel.mikolaj.chmiel@gmail.com>
+On Monday, April 30, 2018 04:36:56 PM Daniel Lezcano wrote:
+> On Thu, Apr 26, 2018 at 01:51:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > Add missing clearing of the previous value when setting rising
+> > temperature threshold.
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > > ---
-> >  Documentation/devicetree/bindings/mfd/max8998.txt | 22 +++++++++++++++=
-+++++++
-> >  1 file changed, 22 insertions(+)
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Docume=
-ntation/devicetree/bindings/mfd/max8998.txt
-> > index 23a3650ff2a2..f95610afb57f 100644
-> > --- a/Documentation/devicetree/bindings/mfd/max8998.txt
-> > +++ b/Documentation/devicetree/bindings/mfd/max8998.txt
-> > @@ -50,6 +50,21 @@ Additional properties required if max8998,pmic-buck2=
-=2Ddvs-gpio is defined:
-> >  - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in micr=
-ovolts
-> >    for buck2 regulator that can be selected using dvs gpio.
-> > =20
-> > +Charger: Configuration for battery charging controller should be added
-> > +inside a child node named 'charger'.
-> > +  Required properties:
-> > +  - max8998,charge-eoc: Setup "End of Charge". If value equals 0,
-> > +    remain value set from bootloader or default value will be used.
-> > +    Valid values: 0, 10 - 45
-> > +
-> > +  - max8998,charge-restart: Setup "Charge Restart Level". If value equ=
-als 0,
-> > +    remain value set from bootloader or default value will be used.
-> > +    Valid values: -1, 0, 100, 150, 200
-> > +
-> > +  - max8998,charge-timeout: Setup "Charge Full Timeout". If value equa=
-ls 0,
-> > +    remain value set from bootloader or default value will be used.
-> > +    Valid values: -1, 0, 5, 6, 7
-> > +
-> >  Regulators: All the regulators of MAX8998 to be instantiated shall be
-> >  listed in a child node named 'regulators'. Each regulator is represent=
-ed
-> >  by a child node of the 'regulators' node.
-> > @@ -99,6 +114,13 @@ Example:
-> >  		max8998,pmic-buck2-dvs-gpio =3D <&gpx0 0 3 0 0>; /* SET3 */
-> >  		max8998,pmic-buck2-dvs-voltage =3D <1350000>, <1300000>;
-> > =20
-> > +		/* Charger configuration */
-> > +		charger {
-> > +			max8998,charge-eoc =3D <0>;
-> > +			max8998,charge-restart =3D <(-1)>;
-> > +			max8998,charge-timeout =3D <7>;
-> > +		};
-> > +
-> >  		/* Regulators to instantiate */
-> >  		regulators {
-> >  			ldo2_reg: LDO2 {
->=20
->=20
+> >  drivers/thermal/samsung/exynos_tmu.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> > index cda716c..523d26e 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > @@ -577,6 +577,7 @@ static int exynos5433_tmu_initialize(struct platform_device *pdev)
+> >  		threshold_code = temp_to_code(data, temp);
+> >  
+> >  		rising_threshold = readl(data->base + rising_reg_offset);
+> > +		rising_threshold &= ~(0xff << j * 8);
+> >  		rising_threshold |= (threshold_code << j * 8);
+> 
+> Bartlomiej,
+> 
+> I see this code is duplicated all around the driver, so I can't blame you to
+> fix it in the same way it is written today but this is not how to deal with
+
+This patch is a bugfix (which may be backported later) and it shouldn't be
+mixed with cleanups.
+
+> fields in a register mapping. Can you fix it by adding correct macros with
+> masks?
+
+After my patch series we still have following occurrences of "RMW" code:
+
+        th = readl(data->base + EXYNOS_THD_TEMP_RISE);
+        th &= ~(0xff << 8 * trip);
+        th |= temp_to_code(data, temp) << 8 * trip;
+        writel(th, data->base + EXYNOS_THD_TEMP_RISE);
+
+        th = readl(data->base + EXYNOS_THD_TEMP_FALL);
+        th &= ~(0xff << 8 * trip);
+        if (hyst)
+                th |= temp_to_code(data, temp - hyst) << 8 * trip;
+        writel(th, data->base + EXYNOS_THD_TEMP_FALL);
+
+        th = readl(data->base + reg_off);
+        th &= ~(0xff << j * 8);
+        th |= (temp_to_code(data, temp) << j * 8);
+        writel(th, data->base + reg_off);
+
+        th = readl(data->base + reg_off);
+        th &= ~(0xff << j * 8);
+        th |= (temp_to_code(data, temp - hyst) << j * 8);
+        writel(th, data->base + reg_off);
+
+        th = readl(data->base + EXYNOS7_THD_TEMP_RISE7_6 + reg_off);
+        th &= ~(EXYNOS7_TMU_TEMP_MASK << (16 * bit_off));
+        th |= temp_to_code(data, temp) << (16 * bit_off);
+        writel(th, data->base + EXYNOS7_THD_TEMP_RISE7_6 + reg_off);
+
+        th = readl(data->base + EXYNOS7_THD_TEMP_FALL7_6 + reg_off);
+        th &= ~(EXYNOS7_TMU_TEMP_MASK << (16 * bit_off));
+        th |= temp_to_code(data, temp - hyst) << (16 * bit_off);
+        writel(th, data->base + EXYNOS7_THD_TEMP_FALL7_6 + reg_off);
+
+My personal opinion is that adding new macro for the code above will
+only obfuscate it and make it harder to understand,
+
+Anyway how would you like this new macro to look like (how generic or
+specific it should be etc.)?
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
