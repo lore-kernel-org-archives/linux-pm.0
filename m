@@ -1,91 +1,105 @@
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
 Subject: Re: [PATCH v2 2/3] power: supply: add cros-ec USBPD charger driver.
-Date: Mon, 30 Apr 2018 15:20:27 +0200
-Message-ID: <CANiq72=CcaLadgp3NDa_rZ_DGeLUu3ZPhKZ5CCHJGypMfKrn-g@mail.gmail.com>
-References: <20180430131403.14296-1-enric.balletbo@collabora.com> <20180430131403.14296-3-enric.balletbo@collabora.com>
+Date: Mon, 30 Apr 2018 15:37:23 +0200
+Message-ID: <CAFqH_505=0trAq_td-qiN5Ya9Y3p720YhRgzgc6pQoz5BJLBGg@mail.gmail.com>
+References: <20180430131403.14296-1-enric.balletbo@collabora.com>
+ <20180430131403.14296-3-enric.balletbo@collabora.com> <CANiq72=CcaLadgp3NDa_rZ_DGeLUu3ZPhKZ5CCHJGypMfKrn-g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180430131403.14296-3-enric.balletbo@collabora.com>
+In-Reply-To: <CANiq72=CcaLadgp3NDa_rZ_DGeLUu3ZPhKZ5CCHJGypMfKrn-g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Benson Leung <bleung@chromium.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, Linux PM list <linux-pm@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Benson Leung <bleung@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 30, 2018 at 3:14 PM, Enric Balletbo i Serra
-<enric.balletbo@collabora.com> wrote:
-> From: Sameer Nanda <snanda@chromium.org>
->
-> This driver gets various bits of information about what is connected to
-> USB PD ports from the EC and converts that into power_supply properties.
->
-> Signed-off-by: Sameer Nanda <snanda@chromium.org>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
->
-> Changes in v2:
-> - [2/3] Add SPDX header, use devm_ variant and drop .owner
-> - [2/3] Removed the PD log functionality (will be send on a follow up patch)
-> - [2/3] Removed the extra custom sysfs attributes (will be send on a follow up patch)
->
->  drivers/power/supply/Kconfig              |  10 +
->  drivers/power/supply/Makefile             |   1 +
->  drivers/power/supply/cros_usbpd-charger.c | 511 ++++++++++++++++++++++
->  include/linux/mfd/cros_ec.h               |   2 +
->  4 files changed, 524 insertions(+)
->  create mode 100644 drivers/power/supply/cros_usbpd-charger.c
->
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index 428b426842f4..046eb23ba6f0 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -624,4 +624,14 @@ config CHARGER_RT9455
->         help
->           Say Y to enable support for Richtek RT9455 battery charger.
->
-> +config CHARGER_CROS_USBPD
-> +       tristate "ChromeOS EC based USBPD charger"
-> +       depends on MFD_CROS_EC
-> +       default n
-> +       help
-> +         Say Y here to enable ChromeOS EC based USBPD charger
-> +         driver. This driver gets various bits of information about
-> +         what is connected to USB PD ports from the EC and converts
-> +         that into power_supply properties.
-> +
->  endif # POWER_SUPPLY
-> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> index e83aa843bcc6..907e26f824b2 100644
-> --- a/drivers/power/supply/Makefile
-> +++ b/drivers/power/supply/Makefile
-> @@ -83,3 +83,4 @@ obj-$(CONFIG_CHARGER_TPS65090)        += tps65090-charger.o
->  obj-$(CONFIG_CHARGER_TPS65217) += tps65217_charger.o
->  obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
->  obj-$(CONFIG_AXP288_CHARGER)   += axp288_charger.o
-> +obj-$(CONFIG_CHARGER_CROS_USBPD)       += cros_usbpd-charger.o
-> diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
-> new file mode 100644
-> index 000000000000..c57d1c41828c
-> --- /dev/null
-> +++ b/drivers/power/supply/cros_usbpd-charger.c
-> @@ -0,0 +1,511 @@
-> +// SPDX-License-Identifier: GPL-2.0
+Hi Miguel,
 
-If this is GPL-2.0...
+2018-04-30 15:20 GMT+02:00 Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>:
+> On Mon, Apr 30, 2018 at 3:14 PM, Enric Balletbo i Serra
+> <enric.balletbo@collabora.com> wrote:
+>> From: Sameer Nanda <snanda@chromium.org>
+>>
+>> This driver gets various bits of information about what is connected to
+>> USB PD ports from the EC and converts that into power_supply properties.
+>>
+>> Signed-off-by: Sameer Nanda <snanda@chromium.org>
+>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>> ---
+>>
+>> Changes in v2:
+>> - [2/3] Add SPDX header, use devm_ variant and drop .owner
+>> - [2/3] Removed the PD log functionality (will be send on a follow up patch)
+>> - [2/3] Removed the extra custom sysfs attributes (will be send on a follow up patch)
+>>
+>>  drivers/power/supply/Kconfig              |  10 +
+>>  drivers/power/supply/Makefile             |   1 +
+>>  drivers/power/supply/cros_usbpd-charger.c | 511 ++++++++++++++++++++++
+>>  include/linux/mfd/cros_ec.h               |   2 +
+>>  4 files changed, 524 insertions(+)
+>>  create mode 100644 drivers/power/supply/cros_usbpd-charger.c
+>>
+>> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+>> index 428b426842f4..046eb23ba6f0 100644
+>> --- a/drivers/power/supply/Kconfig
+>> +++ b/drivers/power/supply/Kconfig
+>> @@ -624,4 +624,14 @@ config CHARGER_RT9455
+>>         help
+>>           Say Y to enable support for Richtek RT9455 battery charger.
+>>
+>> +config CHARGER_CROS_USBPD
+>> +       tristate "ChromeOS EC based USBPD charger"
+>> +       depends on MFD_CROS_EC
+>> +       default n
+>> +       help
+>> +         Say Y here to enable ChromeOS EC based USBPD charger
+>> +         driver. This driver gets various bits of information about
+>> +         what is connected to USB PD ports from the EC and converts
+>> +         that into power_supply properties.
+>> +
+>>  endif # POWER_SUPPLY
+>> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+>> index e83aa843bcc6..907e26f824b2 100644
+>> --- a/drivers/power/supply/Makefile
+>> +++ b/drivers/power/supply/Makefile
+>> @@ -83,3 +83,4 @@ obj-$(CONFIG_CHARGER_TPS65090)        += tps65090-charger.o
+>>  obj-$(CONFIG_CHARGER_TPS65217) += tps65217_charger.o
+>>  obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
+>>  obj-$(CONFIG_AXP288_CHARGER)   += axp288_charger.o
+>> +obj-$(CONFIG_CHARGER_CROS_USBPD)       += cros_usbpd-charger.o
+>> diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
+>> new file mode 100644
+>> index 000000000000..c57d1c41828c
+>> --- /dev/null
+>> +++ b/drivers/power/supply/cros_usbpd-charger.c
+>> @@ -0,0 +1,511 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>
+> If this is GPL-2.0...
+>
 
-> +/*
-> + * Power supply driver for ChromeOS EC based USB PD Charger.
-> + *
-> + * Copyright (c) 2014 - 2018 Google, Inc
-> + */
-> +
-> +
-> +module_platform_driver(cros_usbpd_charger_driver);
-> +
-> +MODULE_LICENSE("GPL");
+Good catch, I think that this should be
 
-...then this should be "GPL v2":
-https://elixir.bootlin.com/linux/v4.17-rc3/source/include/linux/module.h#L175
+SPDX-License-Identifier: GPL-2.0+
 
-Cheers,
-Miguel
+I will change in next version when I get more review.
+
+>> +/*
+>> + * Power supply driver for ChromeOS EC based USB PD Charger.
+>> + *
+>> + * Copyright (c) 2014 - 2018 Google, Inc
+>> + */
+>> +
+>> +
+>> +module_platform_driver(cros_usbpd_charger_driver);
+>> +
+>> +MODULE_LICENSE("GPL");
+>
+> ...then this should be "GPL v2":
+> https://elixir.bootlin.com/linux/v4.17-rc3/source/include/linux/module.h#L175
+>
+> Cheers,
+> Miguel
+
+Thanks,
+Enric
