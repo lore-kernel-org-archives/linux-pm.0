@@ -1,39 +1,54 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] thermal: samsung: Remove support for Exynos5440
-Date: Tue, 1 May 2018 09:45:16 -0500
-Message-ID: <20180501144516.GA519@rob-hp-laptop>
-References: <20180424203239.21885-1-krzk@kernel.org>
- <20180424203239.21885-7-krzk@kernel.org>
- <1951102.VLysaozMLK@amdc3058>
- <CGME20180426112113eucas1p1b5bf6f093442154e29f5541b4aba6b00@eucas1p1.samsung.com>
- <2734003.UHSMxVLybj@amdc3058>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/3] PM / core: Clean up suspend/resume diagnostic
+ messages
+Date: Tue, 1 May 2018 23:01:15 +0200
+Message-ID: <20180501210115.GB9637@amd>
+References: <152477804633.202432.12678470890830085798.stgit@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="LpQ9ahxlCli8rRTG"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2734003.UHSMxVLybj@amdc3058>
+In-Reply-To: <152477804633.202432.12678470890830085798.stgit@bhelgaas-glaptop.roam.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tejun Heo <tj@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Russell King <linux@armlinux.org.uk>, Hans de Goede <hdegoede@redhat.com>, Linus Walleij <linus.walleij@linaro.org>, Andi Shyti <andi@etezian.org>, Mark Brown <broonie@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 26, 2018 at 01:21:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> From: Krzysztof Kozlowski <krzk@kernel.org>
-> Subject: [PATCH] thermal: samsung: Remove support for Exynos5440
-> 
-> The Exynos5440 is not actively developed, there are no development
-> boards available and probably there are no real products with it.
-> Remove wide-tree support for Exynos5440.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> [b.zolnierkie: ported over driver changes]
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
-> Eduardo, here is a version which applies on top of pending Exynos
-> thermal changes (https://lkml.org/lkml/2018/4/16/256).
-> 
->  Documentation/devicetree/bindings/thermal/exynos-thermal.txt |   14 
->  drivers/thermal/samsung/exynos_tmu.c                         |  161 -----------
->  2 files changed, 4 insertions(+), 171 deletions(-)
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+--LpQ9ahxlCli8rRTG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu 2018-04-26 16:36:20, Bjorn Helgaas wrote:
+> These are pretty minor cleanups to the suspend/resume diagnostic messages.
+>=20
+> The first two are trivial.  The third may break scripts that parse dmesg
+> output.  I looked at scripts/bootgraph.pl, and I don't think it is
+> affected, but there may be others I don't know about.  Let me know if the=
+re
+> are.
+
+Looks good.
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--LpQ9ahxlCli8rRTG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlro1ZsACgkQMOfwapXb+vICHQCfepsrP/0TGbrVIm9yHq5lZrU5
+8wgAoJCeACqeBpJgMMQs2sr8zplvkPAp
+=dICQ
+-----END PGP SIGNATURE-----
+
+--LpQ9ahxlCli8rRTG--
