@@ -1,111 +1,235 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 4/4] dt-bindings: mfd: max8998: Add charger subnode
- binding
-Date: Tue, 1 May 2018 14:45:40 +0200
-Message-ID: <20180501124540.3icpjevaxp44ew2e@earth.universe>
-References: <1524844982-4714-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
- <1524844982-4714-5-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+Subject: Re: [PATCH v2 15/17] power: reset: mt6323: add a driver for MT6323
+ power controller
+Date: Tue, 1 May 2018 14:56:28 +0200
+Message-ID: <20180501125628.44nyx25tqsrxkvsl@earth.universe>
+References: <cover.1524646231.git.sean.wang@mediatek.com>
+ <51d4fbe0d6a22986ddd2df66c9db39aa1eaab74a.1524646231.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="wwovjhgx53obeehm"
+        protocol="application/pgp-signature"; boundary="2xjqcbc7ra2xrdtp"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1524844982-4714-5-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+In-Reply-To: <51d4fbe0d6a22986ddd2df66c9db39aa1eaab74a.1524646231.git.sean.wang@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
-Cc: lgirdwood@gmail.com, broonie@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: sean.wang@mediatek.com
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, lee.jones@linaro.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, matthias.bgg@gmail.com, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---wwovjhgx53obeehm
-Content-Type: text/plain; charset=utf-8
+--2xjqcbc7ra2xrdtp
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 27, 2018 at 06:03:02PM +0200, Pawe=C5=82 Chmiel wrote:
-> This patch adds devicetree bindings documentation for
-> battery charging controller as the subnode of MAX8998 PMIC.
-> It's based on current behavior of driver.
+On Wed, Apr 25, 2018 at 05:32:41PM +0800, sean.wang@mediatek.com wrote:
+> From: Sean Wang <sean.wang@mediatek.com>
 >=20
-> Fixes: ee999fb3f17f ("mfd: max8998: Add support for Device Tree")
-> Signed-off-by: Pawe=C5=82 Chmiel <pawel.mikolaj.chmiel@gmail.com>
+> The power device is responsible for externally down or up the power
+> of the remote MediaTek SoC through the tiny circuit BBPU inside PMIC RTC.
+>=20
+> Though it's a part of RTC device, it would be better to be a standalone
+> driver than to be a part of existent RTC driver so as to let us make
+> concentration on works about power-controlling topic and to obtain
+> improvements while the subsystem power/reset constantly growing.
+
+I don't understand the above sentence. (I'm fine with adding the
+driver)
+
+> Currently, the most basic functionality supported is to just power off
+> the system by writing to a special bit field in BBPU register after the
+> system has reached pm_poweroff.
+>=20
+> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 > ---
->  Documentation/devicetree/bindings/mfd/max8998.txt | 22 +++++++++++++++++=
-+++++
->  1 file changed, 22 insertions(+)
+>  drivers/power/reset/Kconfig           | 10 ++++
+>  drivers/power/reset/Makefile          |  1 +
+>  drivers/power/reset/mt6323-poweroff.c | 97 +++++++++++++++++++++++++++++=
+++++++
+>  include/linux/mfd/mt6397/rtc.h        |  1 +
+>  4 files changed, 109 insertions(+)
+>  create mode 100644 drivers/power/reset/mt6323-poweroff.c
 >=20
-> diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Document=
-ation/devicetree/bindings/mfd/max8998.txt
-> index 23a3650ff2a2..f95610afb57f 100644
-> --- a/Documentation/devicetree/bindings/mfd/max8998.txt
-> +++ b/Documentation/devicetree/bindings/mfd/max8998.txt
-> @@ -50,6 +50,21 @@ Additional properties required if max8998,pmic-buck2-d=
-vs-gpio is defined:
->  - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in microv=
-olts
->    for buck2 regulator that can be selected using dvs gpio.
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index df58fc8..7b49d71 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -128,6 +128,16 @@ config POWER_RESET_LTC2952
+>  	  This driver supports an external powerdown trigger and board power
+>  	  down via the LTC2952. Bindings are made in the device tree.
 > =20
-> +Charger: Configuration for battery charging controller should be added
-> +inside a child node named 'charger'.
-> +  Required properties:
-> +  - max8998,charge-eoc: Setup "End of Charge". If value equals 0,
-> +    remain value set from bootloader or default value will be used.
-> +    Valid values: 0, 10 - 45
+> +config POWER_RESET_MT6323
+> +	bool "MediaTek MT6323 power-off driver"
+> +	depends on MFD_MT6397
+> +	help
+> +	  The power-off driver is responsible for externally shutdown down
+> +	  the power of a remote MediaTek SoC MT6323 is connected to through
+> +	  controlling a tiny circuit BBPU inside MT6323 RTC.
 > +
-> +  - max8998,charge-restart: Setup "Charge Restart Level". If value equal=
-s 0,
-> +    remain value set from bootloader or default value will be used.
-> +    Valid values: -1, 0, 100, 150, 200
+> +	  Say Y if you have a board where MT6323 could be found.
 > +
-> +  - max8998,charge-timeout: Setup "Charge Full Timeout". If value equals=
- 0,
-> +    remain value set from bootloader or default value will be used.
-> +    Valid values: -1, 0, 5, 6, 7
+>  config POWER_RESET_QNAP
+>  	bool "QNAP power-off driver"
+>  	depends on OF_GPIO && PLAT_ORION
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index 7778c74..8836172 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -11,6 +11,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) +=3D gpio-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restart.o
+>  obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
+>  obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
+> +obj-$(CONFIG_POWER_RESET_MT6323) +=3D mt6323-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_OCELOT_RESET) +=3D ocelot-reset.o
+>  obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) +=3D piix4-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_LTC2952) +=3D ltc2952-poweroff.o
+> diff --git a/drivers/power/reset/mt6323-poweroff.c b/drivers/power/reset/=
+mt6323-poweroff.c
+> new file mode 100644
+> index 0000000..c195766
+> --- /dev/null
+> +++ b/drivers/power/reset/mt6323-poweroff.c
+> @@ -0,0 +1,97 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Power off through MediaTek PMIC
+> + *
+> + * Copyright (C) 2018 MediaTek Inc.
+> + *
+> + * Author: Sean Wang <sean.wang@mediatek.com>
+> + *
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
 
-What are those values? seconds?
+Not needed
 
+> +#include <linux/platform_device.h>
+> +#include <linux/mfd/mt6397/core.h>
+> +#include <linux/mfd/mt6397/rtc.h>
 > +
->  Regulators: All the regulators of MAX8998 to be instantiated shall be
->  listed in a child node named 'regulators'. Each regulator is represented
->  by a child node of the 'regulators' node.
-> @@ -99,6 +114,13 @@ Example:
->  		max8998,pmic-buck2-dvs-gpio =3D <&gpx0 0 3 0 0>; /* SET3 */
->  		max8998,pmic-buck2-dvs-voltage =3D <1350000>, <1300000>;
+> +struct mt6323_pwrc {
+> +	struct device *dev;
+> +	struct regmap *regmap;
+> +	u32 base;
+> +};
+> +
+> +static struct mt6323_pwrc *mt_pwrc;
+> +
+> +static void mt6323_do_pwroff(void)
+> +{
+> +	struct mt6323_pwrc *pwrc =3D mt_pwrc;
+> +	unsigned int val;
+> +	int ret;
+> +
+> +	regmap_write(pwrc->regmap, pwrc->base + RTC_BBPU, RTC_BBPU_KEY);
+> +	regmap_write(pwrc->regmap, pwrc->base + RTC_WRTGR, 1);
+> +
+> +	ret =3D regmap_read_poll_timeout(pwrc->regmap,
+> +				       pwrc->base + RTC_BBPU, val,
+> +				       !(val & RTC_BBPU_CBUSY),
+> +				       MTK_RTC_POLL_DELAY_US,
+> +				       MTK_RTC_POLL_TIMEOUT);
+> +	if (ret)
+> +		dev_err(pwrc->dev, "failed to write BBPU: %d\n", ret);
+> +
+> +	/* Wait some time until system down, otherwise, notice with a warn */
+> +	mdelay(1000);
+> +
+> +	WARN_ONCE(1, "Unable to power off system\n");
+> +}
+> +
+> +static int mt6323_pwrc_probe(struct platform_device *pdev)
+> +{
+> +	struct mt6397_chip *mt6397_chip =3D dev_get_drvdata(pdev->dev.parent);
+> +	struct mt6323_pwrc *pwrc;
+> +	struct resource *res;
+> +
+> +	pwrc =3D devm_kzalloc(&pdev->dev, sizeof(*pwrc), GFP_KERNEL);
+> +	if (!pwrc)
+> +		return -ENOMEM;
+> +
+> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	pwrc->base =3D res->start;
+> +	pwrc->regmap =3D mt6397_chip->regmap;
+> +	pwrc->dev =3D &pdev->dev;
+> +	mt_pwrc =3D pwrc;
+> +
+> +	pm_power_off =3D &mt6323_do_pwroff;
+> +
+> +	return 0;
+> +}
+> +
+> +static int mt6323_pwrc_remove(struct platform_device *pdev)
+> +{
+> +	if (pm_power_off =3D=3D &mt6323_do_pwroff)
+> +		pm_power_off =3D NULL;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id mt6323_pwrc_dt_match[] =3D {
+> +	{ .compatible =3D "mediatek,mt6323-pwrc" },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, mt6323_pwrc_dt_match);
+
+Don't forget to remove the DT table when you respin the series for
+the requested binding changes.
+
+> +static struct platform_driver mt6323_pwrc_driver =3D {
+> +	.probe		=3D mt6323_pwrc_probe,
+> +	.remove		=3D mt6323_pwrc_remove,
+> +	.driver		=3D {
+> +		.name	=3D "mt6323-pwrc",
+> +		.of_match_table =3D mt6323_pwrc_dt_match,
+> +	},
+> +};
+> +
+> +module_platform_driver(mt6323_pwrc_driver);
+> +
+> +MODULE_DESCRIPTION("Poweroff driver for MT6323 PMIC");
+> +MODULE_AUTHOR("Sean Wang <sean.wang@mediatek.com>");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rt=
+c.h
+> index 480977c..ac932c9 100644
+> --- a/include/linux/mfd/mt6397/rtc.h
+> +++ b/include/linux/mfd/mt6397/rtc.h
+> @@ -16,6 +16,7 @@
 > =20
-> +		/* Charger configuration */
-> +		charger {
-> +			max8998,charge-eoc =3D <0>;
-> +			max8998,charge-restart =3D <(-1)>;
-> +			max8998,charge-timeout =3D <7>;
-> +		};
-> +
->  		/* Regulators to instantiate */
->  		regulators {
->  			ldo2_reg: LDO2 {
-> --=20
-> 2.7.4
->=20
+>  #define RTC_BBPU		0x0000
+>  #define RTC_BBPU_CBUSY		BIT(6)
+> +#define RTC_BBPU_KEY            (0x43 << 8)
+> =20
+>  #define RTC_WRTGR		0x003c
 
---wwovjhgx53obeehm
+The driver looks fine otherwise.
+
+-- Sebastian
+
+--2xjqcbc7ra2xrdtp
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlroYXQACgkQ2O7X88g7
-+pr1AQ/6A1S8l6YS2U74zbBTOpiO3Lt1Q0OYZf8fWH4OQP8W2BXR35/Ew35A0ggD
-gZpd2Zd5gZfm2AEzn6HNeTnDKl1Af0cZwF2ZkP6KM39f4Xm/F1EUytiCLgIZV6RW
-fR0ibhuVNgWybwv5VkPz+dQt7sPWBidz9Ekvsf5xo2OauV394Xo1Q29RtopfytSn
-FtjQrU++yQ7qals/RlNf6RTd5O6CAnGlkG52JtftIG7tDH4ArH0zng7JVXv75nxh
-j09+TtkUbVqpaAQon0Y2tB7FSrfHI4znxIC20MyZv9hukP2cPtk4Xh3OnQ+i+0pe
-p9scjUPRQ0x1ZYMIy/APIlTSC4985aJNV2D6JvJPpwWvgZeoDqlHjT7FTpu3cu0D
-yQdFWDAuexYmdLPdhCTx/7+3Kekjm1+LV3k9eR5gWFvyI5OyLpJtu+EwO4LC6N44
-q16q+hCzw/Uy7UL1lCtixfqJALiR1h3weFhxUQlp9rJ1o8X8iesI0bKL+twJMB6u
-2el4m8Tq5jboH5Uy2IgZve1HW7EcTFqOYjqJupda1ohrNIpLMrVawe7Dl5Ij2F9z
-u8H4zBlXBzfzRiSX6Rg/LaasLT8b5aV79CiKj39Z5A/QObiVQUWECvkzla2uMp+H
-hNSdnD1+8ZqjnamMJ2c2LRP3i9njdDclyWPOSdtZ2g9opAIL+o0=
-=ryrZ
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlroY/kACgkQ2O7X88g7
++pp98g/7BSK8woCYmjvXst7kOG9S9fJijnbJ3ClpKKZNlTj+F8QhN17BFhz6Xbyw
+NttirFOSLb+vbVTle1f0UcpnU2hET4pLo70DzaXlIHGTM3rSa2cGebNRmbARolVQ
+UqT11rgCHFE9pn/8dgRhne8l/Mzxks91zc31fEGTcV1G+3iqrTdCrInxqm9oOUa0
+fVGk9T7u0GqVwowxoFM5l4EgdoHbVwPPeYxg7uPz+YHYR/nTsBRHRiu7ROnjDJbB
+XQIuuNlwKSBxgDEjmz/bNAHpk4qpsOx5ccKAbxpNkR3Ujbde+Pgh7mUu5zrY0ZG2
+4ZoYI6wbFlhtqP4yJAxVi59stthrEvCYBorPfzg7uVW093deZNloAcOsuK6tpElu
+idmpSAUH6YWIG9pRSSHpgqIpBkUWMGvDjglEXrg+BbCBlVbTN072hN2IQwqZ/aPr
+z3RtalfvEWiJvGKdI2lUwuCmg23r7lzI8KsNDRn1EdYWX0aZlTcbB9uGp7aph/Ky
+cSIuHuWo5s4dquuDghsYMwx83JbynDjxW1P6Uiqk2fmo5sMBs/Hs/TIY8QctovRs
+EgMtRZvJVdqKLRV2xv0fboPnU18Gknci+sVxV1ebNZGlWFjlVJbXQCySU5nO4V+L
+N2c8TiRV2bZNqJWJWgL9nmFzbwApmcB3J8QnKbSv1LuO7GxW1d4=
+=JauM
 -----END PGP SIGNATURE-----
 
---wwovjhgx53obeehm--
+--2xjqcbc7ra2xrdtp--
