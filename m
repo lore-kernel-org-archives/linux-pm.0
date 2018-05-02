@@ -1,76 +1,225 @@
-From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Subject: Re: [PATCH v3] PM / wakeup: use seq_open() to show wakeup stats
-Date: Wed, 2 May 2018 10:26:41 +0800
-Message-ID: <CADAEsF_onq=H65ZUi2kC7b_WmEpdvMLdLcBPn8bqDQP_DPyEjQ@mail.gmail.com>
-References: <1524653971-10425-1-git-send-email-opensource.ganesh@gmail.com> <20180429143002.GC13475@amd>
+From: Sean Wang <sean.wang@mediatek.com>
+Subject: Re: Re: [PATCH v2 15/17] power: reset: mt6323: add a driver for
+ MT6323 power controller
+Date: Wed, 2 May 2018 10:31:11 +0800
+Message-ID: <1525228271.14792.5.camel@mtkswgap22>
+References: <cover.1524646231.git.sean.wang@mediatek.com>
+         <51d4fbe0d6a22986ddd2df66c9db39aa1eaab74a.1524646231.git.sean.wang@mediatek.com>
+         <20180501125628.44nyx25tqsrxkvsl@earth.universe>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180429143002.GC13475@amd>
+In-Reply-To: <20180501125628.44nyx25tqsrxkvsl@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: mark.rutland@arm.com, a.zummo@towertech.it, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, alexandre.belloni@free-electrons.com, matthias.bgg@gmail.com, linux-mediatek@lists.infradead.org, eddie.huang@mediatek.com, lee.jones@linaro.org, linux-arm-kernel@lists.infradead.org, linux-rtc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Pavel
+On Tue, 2018-05-01 at 14:56 +0200, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Wed, Apr 25, 2018 at 05:32:41PM +0800, sean.wang@mediatek.com wrote:
+> > From: Sean Wang <sean.wang@mediatek.com>
+> > 
+> > The power device is responsible for externally down or up the power
+> > of the remote MediaTek SoC through the tiny circuit BBPU inside PMIC RTC.
+> > 
+> > Though it's a part of RTC device, it would be better to be a standalone
+> > driver than to be a part of existent RTC driver so as to let us make
+> > concentration on works about power-controlling topic and to obtain
+> > improvements while the subsystem power/reset constantly growing.
+> 
+> I don't understand the above sentence. (I'm fine with adding the
+> driver)
 
-Thanks for your review.
+Which I was actually meaning is that taking the poweroff driver as the
+standalone one and placing it under driver/reset/power seems can simply
+get a help from its subsystem either for function extension or bugfix in
+the future. I thought that way is better than just an embedded one
+somewhere in rtc driver or other drivers.
 
-2018-04-29 22:30 GMT+08:00 Pavel Machek <pavel@ucw.cz>:
-> On Wed 2018-04-25 18:59:31, Ganesh Mahendran wrote:
->> single_open() interface requires that the whole output must
->> fit into a single buffer. This will lead to timeout when
->> system memory is not in a good situation.
->>
->> This patch use seq_open() to show wakeup stats. This method
->> need only one page, so timeout will not be observed.
->
-> Sounds like magic.
+> > Currently, the most basic functionality supported is to just power off
+> > the system by writing to a special bit field in BBPU register after the
+> > system has reached pm_poweroff.
+> > 
+> > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> > ---
+> >  drivers/power/reset/Kconfig           | 10 ++++
+> >  drivers/power/reset/Makefile          |  1 +
+> >  drivers/power/reset/mt6323-poweroff.c | 97 +++++++++++++++++++++++++++++++++++
+> >  include/linux/mfd/mt6397/rtc.h        |  1 +
+> >  4 files changed, 109 insertions(+)
+> >  create mode 100644 drivers/power/reset/mt6323-poweroff.c
+> > 
+> > diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> > index df58fc8..7b49d71 100644
+> > --- a/drivers/power/reset/Kconfig
+> > +++ b/drivers/power/reset/Kconfig
+> > @@ -128,6 +128,16 @@ config POWER_RESET_LTC2952
+> >  	  This driver supports an external powerdown trigger and board power
+> >  	  down via the LTC2952. Bindings are made in the device tree.
+> >  
+> > +config POWER_RESET_MT6323
+> > +	bool "MediaTek MT6323 power-off driver"
+> > +	depends on MFD_MT6397
+> > +	help
+> > +	  The power-off driver is responsible for externally shutdown down
+> > +	  the power of a remote MediaTek SoC MT6323 is connected to through
+> > +	  controlling a tiny circuit BBPU inside MT6323 RTC.
+> > +
+> > +	  Say Y if you have a board where MT6323 could be found.
+> > +
+> >  config POWER_RESET_QNAP
+> >  	bool "QNAP power-off driver"
+> >  	depends on OF_GPIO && PLAT_ORION
+> > diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> > index 7778c74..8836172 100644
+> > --- a/drivers/power/reset/Makefile
+> > +++ b/drivers/power/reset/Makefile
+> > @@ -11,6 +11,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
+> >  obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
+> >  obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
+> >  obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
+> > +obj-$(CONFIG_POWER_RESET_MT6323) += mt6323-poweroff.o
+> >  obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
+> >  obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
+> >  obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
+> > diff --git a/drivers/power/reset/mt6323-poweroff.c b/drivers/power/reset/mt6323-poweroff.c
+> > new file mode 100644
+> > index 0000000..c195766
+> > --- /dev/null
+> > +++ b/drivers/power/reset/mt6323-poweroff.c
+> > @@ -0,0 +1,97 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Power off through MediaTek PMIC
+> > + *
+> > + * Copyright (C) 2018 MediaTek Inc.
+> > + *
+> > + * Author: Sean Wang <sean.wang@mediatek.com>
+> > + *
+> > + */
+> > +
+> > +#include <linux/err.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> 
+> Not needed
 
-I did not explain clearly here.
+Will be removed.
 
-If we use single_open() to open the file, a single buffer(physical
-continious) will be allocated
-to store the whole data of file /sys/kernel/debug/wakeup_sources.
-When memory situation is not good(fragments...), long time may be used
-to allocate
-such buffer which may cause android watchdog timeout.
+> 
+> > +#include <linux/platform_device.h>
+> > +#include <linux/mfd/mt6397/core.h>
+> > +#include <linux/mfd/mt6397/rtc.h>
+> > +
+> > +struct mt6323_pwrc {
+> > +	struct device *dev;
+> > +	struct regmap *regmap;
+> > +	u32 base;
+> > +};
+> > +
+> > +static struct mt6323_pwrc *mt_pwrc;
+> > +
+> > +static void mt6323_do_pwroff(void)
+> > +{
+> > +	struct mt6323_pwrc *pwrc = mt_pwrc;
+> > +	unsigned int val;
+> > +	int ret;
+> > +
+> > +	regmap_write(pwrc->regmap, pwrc->base + RTC_BBPU, RTC_BBPU_KEY);
+> > +	regmap_write(pwrc->regmap, pwrc->base + RTC_WRTGR, 1);
+> > +
+> > +	ret = regmap_read_poll_timeout(pwrc->regmap,
+> > +				       pwrc->base + RTC_BBPU, val,
+> > +				       !(val & RTC_BBPU_CBUSY),
+> > +				       MTK_RTC_POLL_DELAY_US,
+> > +				       MTK_RTC_POLL_TIMEOUT);
+> > +	if (ret)
+> > +		dev_err(pwrc->dev, "failed to write BBPU: %d\n", ret);
+> > +
+> > +	/* Wait some time until system down, otherwise, notice with a warn */
+> > +	mdelay(1000);
+> > +
+> > +	WARN_ONCE(1, "Unable to power off system\n");
+> > +}
+> > +
+> > +static int mt6323_pwrc_probe(struct platform_device *pdev)
+> > +{
+> > +	struct mt6397_chip *mt6397_chip = dev_get_drvdata(pdev->dev.parent);
+> > +	struct mt6323_pwrc *pwrc;
+> > +	struct resource *res;
+> > +
+> > +	pwrc = devm_kzalloc(&pdev->dev, sizeof(*pwrc), GFP_KERNEL);
+> > +	if (!pwrc)
+> > +		return -ENOMEM;
+> > +
+> > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +	pwrc->base = res->start;
+> > +	pwrc->regmap = mt6397_chip->regmap;
+> > +	pwrc->dev = &pdev->dev;
+> > +	mt_pwrc = pwrc;
+> > +
+> > +	pm_power_off = &mt6323_do_pwroff;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int mt6323_pwrc_remove(struct platform_device *pdev)
+> > +{
+> > +	if (pm_power_off == &mt6323_do_pwroff)
+> > +		pm_power_off = NULL;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct of_device_id mt6323_pwrc_dt_match[] = {
+> > +	{ .compatible = "mediatek,mt6323-pwrc" },
+> > +	{},
+> > +};
+> > +MODULE_DEVICE_TABLE(of, mt6323_pwrc_dt_match);
+> 
+> Don't forget to remove the DT table when you respin the series for
+> the requested binding changes.
+> 
 
->
->> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
->> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
->> +                                     loff_t *pos)
->>  {
-> ...
->> -     srcuidx = srcu_read_lock(&wakeup_srcu);
->> -     list_for_each_entry_rcu(ws, &wakeup_sources, entry)
->> -             print_wakeup_source_stats(m, ws);
->> -     srcu_read_unlock(&wakeup_srcu, srcuidx);
->> +     *srcuidx = srcu_read_lock(&wakeup_srcu);
->> +     list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
->> +             if (n-- <= 0)
->> +                     return ws;
->> +     }
->> +
->> +     return NULL;
->> +}
-> ...
->> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
->> +{
->> +     int *srcuidx = m->private;
->> +
->> +     srcu_read_unlock(&wakeup_srcu, *srcuidx);
->> +}
->
-> But you are holding srcu_lock over return to userspace, and somehow I
-> don't think that's permitted?
+Thanks. This table will be removed in the next version.
 
-In seq_read(), the m->op->[start | stop] will be invoked as a pair.
-So the srcu_lock will not be hold and return to userspace.
+
+> > +static struct platform_driver mt6323_pwrc_driver = {
+> > +	.probe		= mt6323_pwrc_probe,
+> > +	.remove		= mt6323_pwrc_remove,
+> > +	.driver		= {
+> > +		.name	= "mt6323-pwrc",
+> > +		.of_match_table = mt6323_pwrc_dt_match,
+> > +	},
+> > +};
+> > +
+> > +module_platform_driver(mt6323_pwrc_driver);
+> > +
+> > +MODULE_DESCRIPTION("Poweroff driver for MT6323 PMIC");
+> > +MODULE_AUTHOR("Sean Wang <sean.wang@mediatek.com>");
+> > +MODULE_LICENSE("GPL v2");
+> > diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rtc.h
+> > index 480977c..ac932c9 100644
+> > --- a/include/linux/mfd/mt6397/rtc.h
+> > +++ b/include/linux/mfd/mt6397/rtc.h
+> > @@ -16,6 +16,7 @@
+> >  
+> >  #define RTC_BBPU		0x0000
+> >  #define RTC_BBPU_CBUSY		BIT(6)
+> > +#define RTC_BBPU_KEY            (0x43 << 8)
+> >  
+> >  #define RTC_WRTGR		0x003c
+> 
+> The driver looks fine otherwise.
+> 
 
 Thanks.
 
->                                                                         Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> -- Sebastian
+> _______________________________________________
+> Linux-mediatek mailing list
+> Linux-mediatek@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-mediatek
