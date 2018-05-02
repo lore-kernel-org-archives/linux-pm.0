@@ -1,97 +1,61 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v3 2/3] power: supply: add cros-ec USBPD charger driver.
-Date: Wed, 2 May 2018 12:57:10 +0200
-Message-ID: <20180502105710.bi3tztsjkpcby2ui@earth.universe>
+Subject: Re: [PATCH v3 1/3] mfd: cros_ec: Add USBPD charger commands and
+ struct definitions.
+Date: Wed, 2 May 2018 13:02:36 +0200
+Message-ID: <20180502110236.bj7wp3ibavambvss@earth.universe>
 References: <20180502095343.17092-1-enric.balletbo@collabora.com>
- <20180502095343.17092-3-enric.balletbo@collabora.com>
+ <20180502095343.17092-2-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bpphou4g7zrvae6a"
+        protocol="application/pgp-signature"; boundary="5evptcyfkthhkvqg"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180502095343.17092-3-enric.balletbo@collabora.com>
+In-Reply-To: <20180502095343.17092-2-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 Cc: Lee Jones <lee.jones@linaro.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
 
---bpphou4g7zrvae6a
+--5evptcyfkthhkvqg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Lee,
 
-I found one more issue, otherwise the driver looks fine to me.
-
-On Wed, May 02, 2018 at 11:53:42AM +0200, Enric Balletbo i Serra wrote:
-> This driver gets various bits of information about what is connected to
-> USB PD ports from the EC and converts that into power_supply properties.
+On Wed, May 02, 2018 at 11:53:41AM +0200, Enric Balletbo i Serra wrote:
+> From: Sameer Nanda <snanda@chromium.org>
+>=20
+> The USBPD charger driver gets information from the ChromeOS EC, this
+> patch adds the USBPD charger definitions needed by this driver.
 >=20
 > Signed-off-by: Sameer Nanda <snanda@chromium.org>
 > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> ---
-[...]
-> +static int cros_usbpd_charger_probe(struct platform_device *pd)
-> +{
-[...]
-> +	for (i =3D 0; i < charger->num_charger_ports; i++) {
-[...]
-> +		psy =3D devm_power_supply_register_no_ws(dev, psy_desc,
-> +						       &psy_cfg);
-[...]
-> +		ec_device->charger =3D psy;
-> + }
-[...]
-> diff --git a/include/linux/mfd/cros_ec.h b/include/linux/mfd/cros_ec.h
-> index f36125ee9245..a1eb39344231 100644
-> --- a/include/linux/mfd/cros_ec.h
-> +++ b/include/linux/mfd/cros_ec.h
-> @@ -19,6 +19,7 @@
->  #include <linux/cdev.h>
->  #include <linux/device.h>
->  #include <linux/notifier.h>
-> +#include <linux/power_supply.h>
->  #include <linux/mfd/cros_ec_commands.h>
->  #include <linux/mutex.h>
-> =20
-> @@ -143,6 +144,7 @@ struct cros_ec_device {
->  			struct cros_ec_command *msg);
->  	int (*pkt_xfer)(struct cros_ec_device *ec,
->  			struct cros_ec_command *msg);
-> +	struct power_supply *charger;
->  	struct mutex lock;
->  	bool mkbp_event_supported;
->  	struct blocking_notifier_head event_notifier;
 
-I think cros_ec_device->charger can be dropped:
-
- * It is not cleared on power-supply removal
- * It randomly points to the last registered power-supply
- * It is only set, but never used
+The second patch depends on this one, so I will need
+an immutable branch.
 
 -- Sebastian
 
---bpphou4g7zrvae6a
+--5evptcyfkthhkvqg
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlrpmYQACgkQ2O7X88g7
-+pp8VRAAov4dApOUowd/wjGbnPgMOFLtozyvPmVzIGdna41WaSDyTQnmJiRP3k7a
-clfrtXP+m5IdKEyxMYOH9AQoDYzb79Tr5dBxl8FOxnBrAmoVp0GHqScv5EhvG9s5
-Lde4KEixA1AKkqeam6ada5bflvE0REU/D9NJ8aZObm/FaBo1qOt9oeVHn6a4ZnRM
-KZ4XhJb2yCE5ml1GtgL0tDz6xh1RSCWBNiMhXHI/yL0h0p6sdSYuOz2gkr/cS7Ac
-tASarNt0Tw3q1udC92ItJd+j8F69lQmRAoXvbkP/MAckVBr5ZOgamYAGXZyTgROX
-R7jZC//0548MA9EGkRv1EShzFRaEPmVolXp9dc2Po2TkfzxMgH27/2C/6L5MxG19
-gwll5RneHPS4J5/5OXUqBMtio4/v1Ku6D0+0gctAmDERPJKAaNmbAuB5T1hMhnZg
-PfOj0ChRH2BG4wRkaRQ/cyy3qM4zsbfo3l1e+iNhsPt2+WTfZiWoZ+6iL/+K0UU9
-p/rvprKY98dL4ya+iNr+f61ZCAfY6eudUj28t32BWQar0aSPkDpmuJNU53bghSj2
-TbCaQXQX/06xCLnKWmzDC9JtjMGcbRWBSPH/BQ/dt5epXfTMt8Yqr/KGKMPJd1cp
-FbhNaKC9JbcDIRIHSvX2654Q0eadVYNdGWvYkGI7dzpRfSJ70Yo=
-=TJlz
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlrpmswACgkQ2O7X88g7
++pqt3A/+J4Bbu9TKCGDJ9Y4u88Q78R1zIRYi8HNf88UNJ4USD3bhD/sUQ4mnvs8B
+HPjXmPqn0nuT8wLY3bWMn/QDyjvONQltgBETAjambXdqesaBl7EVyLWAnT1t8izv
+kzB7bT2SWo1oikUu8r/1csYQzwY9qBz52luDJf0rxXOQEfN0L1SKbcU8zeEBfC0S
+S74CpGKHen3IE1gaLih9/lxH8eqZd9aGcFMC3jfI9nMJdKOyiCe0LL35Z/L6IApB
+Qu9KOkX7/rx4YOSQbQ02LathDYCuctGPva7o8ysJYyX+K+nPZF1LBkFCP31QMank
+w7jQE5A0nq6afUT8WZhqGCLJceW6mehHvM+Qz8OUq7tdX9N/gBn5oUzfWvt6V0D2
+QZ8DtT14QlYULDpUI8qMk+KLRq1o3szmzzU3wCsixi+TJ4+NL4DgXqeJDSgvpaU7
+SWRDD9SYgZeTTu+pVFfWoLLBFN795J1xjldvj1TH3y5VXOdjrC6BEi45m68LMIdW
+oWqvemkJ/j3U4aV5n/1Jh9DnmYeHCYbawflm0FomuBwEtHXit2gB/HSRchU4sn8H
+e6GtbIt+0ui/hr2RUldSuMdWwzJn6QPkdDygMvBPvBo6jaAxo3s1pl6GhXaaOmZC
+3+k8RDQMEznAaBBSCRix23y4JJl1zESrC1rGhsGn+17UsgZIIHU=
+=7AxY
 -----END PGP SIGNATURE-----
 
---bpphou4g7zrvae6a--
+--5evptcyfkthhkvqg--
