@@ -1,77 +1,69 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH v3 2/3] power: supply: add cros-ec USBPD charger driver.
-Date: Wed, 2 May 2018 17:40:04 +0200
-Message-ID: <74e594f1-2c5c-b543-9e32-90c89f1bf3e3@collabora.com>
-References: <20180502095343.17092-1-enric.balletbo@collabora.com>
- <20180502095343.17092-3-enric.balletbo@collabora.com>
- <20180502105710.bi3tztsjkpcby2ui@earth.universe>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v4 0/3] mfd/power: cros_ec: add support for USBPD charger driver.
+Date: Wed,  2 May 2018 17:44:15 +0200
+Message-ID: <20180502154418.2153-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180502105710.bi3tztsjkpcby2ui@earth.universe>
-Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Lee Jones <lee.jones@linaro.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
+To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sebastian,
 
-On 02/05/18 12:57, Sebastian Reichel wrote:
-> Hi,
-> 
-> I found one more issue, otherwise the driver looks fine to me.
-> 
-> On Wed, May 02, 2018 at 11:53:42AM +0200, Enric Balletbo i Serra wrote:
->> This driver gets various bits of information about what is connected to
->> USB PD ports from the EC and converts that into power_supply properties.
->>
->> Signed-off-by: Sameer Nanda <snanda@chromium.org>
->> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> Acked-by: Lee Jones <lee.jones@linaro.org>
->> ---
-> [...]
->> +static int cros_usbpd_charger_probe(struct platform_device *pd)
->> +{
-> [...]
->> +	for (i = 0; i < charger->num_charger_ports; i++) {
-> [...]
->> +		psy = devm_power_supply_register_no_ws(dev, psy_desc,
->> +						       &psy_cfg);
-> [...]
->> +		ec_device->charger = psy;
->> + }
-> [...]
->> diff --git a/include/linux/mfd/cros_ec.h b/include/linux/mfd/cros_ec.h
->> index f36125ee9245..a1eb39344231 100644
->> --- a/include/linux/mfd/cros_ec.h
->> +++ b/include/linux/mfd/cros_ec.h
->> @@ -19,6 +19,7 @@
->>  #include <linux/cdev.h>
->>  #include <linux/device.h>
->>  #include <linux/notifier.h>
->> +#include <linux/power_supply.h>
->>  #include <linux/mfd/cros_ec_commands.h>
->>  #include <linux/mutex.h>
->>  
->> @@ -143,6 +144,7 @@ struct cros_ec_device {
->>  			struct cros_ec_command *msg);
->>  	int (*pkt_xfer)(struct cros_ec_device *ec,
->>  			struct cros_ec_command *msg);
->> +	struct power_supply *charger;
->>  	struct mutex lock;
->>  	bool mkbp_event_supported;
->>  	struct blocking_notifier_head event_notifier;
-> 
-> I think cros_ec_device->charger can be dropped:
-> 
->  * It is not cleared on power-supply removal
->  * It randomly points to the last registered power-supply
->  * It is only set, but never used
-> 
+Dear all,
 
-Good catch, a v4 fixing this will be send very soon.
+This is a fourth version of a patched to add support for the ChromeOS EC
+USBPD charger driver, the driver has been used on Chromebooks kernel for
+long time and has been ported now to mainline. The patches were tested
+successfully with a Samsung Chromebook Plus and an Pixel 2 Chromebook.
 
-> -- Sebastian
-> 
+This version is a rework with respect the first version, some features
+like the PD log have been removed and will be send as follow up patches
+for further discuss.
+
+The second patch of this series depends on these series that are queued
+for 4.18:
+
+- https://lkml.org/lkml/2018/4/23/602 ([PATCH v8 0/6] typec: tcpm: Add
+  sink side support for PPS)
+
+The third patch of this series depends on the following patch to apply
+cleanly:
+
+- https://lkml.org/lkml/2018/4/18/229 ([RESEND PATCH v5 4/7] mfd:
+  cros_ec_dev: Register cros-ec-rtc driver as a subdevice.)
+
+Best regards,
+ Enric
+
+Changes in v4:
+- [2/3] Drop cros_ec_device->charger as is not used.
+
+Changes in v3:
+- [1/3] Use the BIT macro.
+- [2/3] Add missing POWER_SUPPLY_PROP_USB_TYPE and a list of supported USB types.
+- [2/3] Fix SPDX header -> GPL-2.0+
+- [2/3] Unregister blocking_notifier_chain on remove.
+
+Changes in v2:
+- [2/3] Add SPDX header, use devm_ variant and drop .owner
+- [2/3] Removed the PD log functionality (will be send on a follow up patch)
+- [2/3] Removed the extra custom sysfs attributes (will be send on a follow up patch)
+- [3/3] Use ARRAY_SIZE instead of hardcoded 1.
+
+Enric Balletbo i Serra (1):
+  mfd: cros_ec_dev: Register cros_usbpd-charger driver as a subdevice.
+
+Sameer Nanda (2):
+  mfd: cros_ec: Add USBPD charger commands and struct definitions.
+  power: supply: add cros-ec USBPD charger driver.
+
+ drivers/mfd/cros_ec_dev.c                 |  16 +
+ drivers/power/supply/Kconfig              |  10 +
+ drivers/power/supply/Makefile             |   1 +
+ drivers/power/supply/cros_usbpd-charger.c | 544 ++++++++++++++++++++++
+ include/linux/mfd/cros_ec_commands.h      | 132 +++++-
+ 5 files changed, 699 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/power/supply/cros_usbpd-charger.c
+
+-- 
+2.17.0
