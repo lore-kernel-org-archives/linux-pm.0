@@ -1,65 +1,77 @@
-From: "Prakash, Prashanth" <pprakash@codeaurora.org>
-Subject: Re: [PATCH v4][for 4.17-rc3] cpufreq / CPPC: Set platform specific
- transition_delay_us
-Date: Wed, 2 May 2018 09:39:38 -0600
-Message-ID: <2b999bd3-6a9a-2b20-3671-06c86cd2bab7@codeaurora.org>
-References: <1524850527-31720-1-git-send-email-pprakash@codeaurora.org>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: Re: [PATCH v3 2/3] power: supply: add cros-ec USBPD charger driver.
+Date: Wed, 2 May 2018 17:40:04 +0200
+Message-ID: <74e594f1-2c5c-b543-9e32-90c89f1bf3e3@collabora.com>
+References: <20180502095343.17092-1-enric.balletbo@collabora.com>
+ <20180502095343.17092-3-enric.balletbo@collabora.com>
+ <20180502105710.bi3tztsjkpcby2ui@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1524850527-31720-1-git-send-email-pprakash@codeaurora.org>
-Content-Language: en-US
-Sender: stable-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, "4.14+" <stable@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180502105710.bi3tztsjkpcby2ui@earth.universe>
+Content-Language: en-GB
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Lee Jones <lee.jones@linaro.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
+Hi Sebastian,
 
+On 02/05/18 12:57, Sebastian Reichel wrote:
+> Hi,
+> 
+> I found one more issue, otherwise the driver looks fine to me.
+> 
+> On Wed, May 02, 2018 at 11:53:42AM +0200, Enric Balletbo i Serra wrote:
+>> This driver gets various bits of information about what is connected to
+>> USB PD ports from the EC and converts that into power_supply properties.
+>>
+>> Signed-off-by: Sameer Nanda <snanda@chromium.org>
+>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>> Acked-by: Lee Jones <lee.jones@linaro.org>
+>> ---
+> [...]
+>> +static int cros_usbpd_charger_probe(struct platform_device *pd)
+>> +{
+> [...]
+>> +	for (i = 0; i < charger->num_charger_ports; i++) {
+> [...]
+>> +		psy = devm_power_supply_register_no_ws(dev, psy_desc,
+>> +						       &psy_cfg);
+> [...]
+>> +		ec_device->charger = psy;
+>> + }
+> [...]
+>> diff --git a/include/linux/mfd/cros_ec.h b/include/linux/mfd/cros_ec.h
+>> index f36125ee9245..a1eb39344231 100644
+>> --- a/include/linux/mfd/cros_ec.h
+>> +++ b/include/linux/mfd/cros_ec.h
+>> @@ -19,6 +19,7 @@
+>>  #include <linux/cdev.h>
+>>  #include <linux/device.h>
+>>  #include <linux/notifier.h>
+>> +#include <linux/power_supply.h>
+>>  #include <linux/mfd/cros_ec_commands.h>
+>>  #include <linux/mutex.h>
+>>  
+>> @@ -143,6 +144,7 @@ struct cros_ec_device {
+>>  			struct cros_ec_command *msg);
+>>  	int (*pkt_xfer)(struct cros_ec_device *ec,
+>>  			struct cros_ec_command *msg);
+>> +	struct power_supply *charger;
+>>  	struct mutex lock;
+>>  	bool mkbp_event_supported;
+>>  	struct blocking_notifier_head event_notifier;
+> 
+> I think cros_ec_device->charger can be dropped:
+> 
+>  * It is not cleared on power-supply removal
+>  * It randomly points to the last registered power-supply
+>  * It is only set, but never used
+> 
 
-On 4/27/2018 11:35 AM, Prashanth Prakash wrote:
-> Add support to specify platform specific transition_delay_us instead
-> of using the transition delay derived from PCC.
->
-> With commit "3d41386d556d: cpufreq: CPPC: Use transition_delay_us
-> depending transition_latency" we are setting transition_delay_us
-> directly and not applying the LATENCY_MULTIPLIER. With this on Qualcomm
-> Centriq we can end up with a very high rate of frequency change requests
-> when using schedutil governor (default rate_limit_us=10 compared to an
-> earlier value of 10000).
->
-> The PCC subspace describes the rate at which the platform can accept
-> commands on the CPPC's PCC channel. This includes read and write
-> command on the PCC channel that can be used for reasons other than
-> frequency transitions. Moreover the same PCC subspace can be used by
-> multiple freq domains and deriving transition_delay_us from it as we do
-> now can be sub-optimal.
->
-> Moreover if a platform does not use PCC for desired_perf register then
-> there is no way to compute the transition latency or the delay_us.
->
-> CPPC does not have a standard defined mechanism to get the transition
-> rate or the latency at the moment.
->
-> Given the above limitations, it is simpler to have a platform specific
-> transition_delay_us and rely on PCC derived value only if a platform
-> specific value is not available.
->
-> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: 4.14+ <stable@vger.kernel.org>
-> Fixes: 3d41386d556d ("cpufreq: CPPC: Use transition_delay_us depending
-> transition_latency)
-> ---
-> v2:
-> * Return final delay_us from cppc_cpufreq_get_transition_delay_us (Viresh)
-> v3 and v4:
-> * code style changes (Viresh)
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 47 ++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 45 insertions(+), 2 deletions(-)
+Good catch, a v4 fixing this will be send very soon.
 
-Any inputs on this patch?  I was hoping to get this in for 4.17 as it fixes undesirable(very low)
-transition delay when using schedutil governor on centriq platform.
+> -- Sebastian
+> 
