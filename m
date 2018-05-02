@@ -1,54 +1,76 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/3] PM / core: Clean up suspend/resume diagnostic
- messages
-Date: Tue, 1 May 2018 23:01:15 +0200
-Message-ID: <20180501210115.GB9637@amd>
-References: <152477804633.202432.12678470890830085798.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: Ganesh Mahendran <opensource.ganesh@gmail.com>
+Subject: Re: [PATCH v3] PM / wakeup: use seq_open() to show wakeup stats
+Date: Wed, 2 May 2018 10:26:41 +0800
+Message-ID: <CADAEsF_onq=H65ZUi2kC7b_WmEpdvMLdLcBPn8bqDQP_DPyEjQ@mail.gmail.com>
+References: <1524653971-10425-1-git-send-email-opensource.ganesh@gmail.com> <20180429143002.GC13475@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="LpQ9ahxlCli8rRTG"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <152477804633.202432.12678470890830085798.stgit@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: <20180429143002.GC13475@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi, Pavel
 
---LpQ9ahxlCli8rRTG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for your review.
 
-On Thu 2018-04-26 16:36:20, Bjorn Helgaas wrote:
-> These are pretty minor cleanups to the suspend/resume diagnostic messages.
->=20
-> The first two are trivial.  The third may break scripts that parse dmesg
-> output.  I looked at scripts/bootgraph.pl, and I don't think it is
-> affected, but there may be others I don't know about.  Let me know if the=
-re
-> are.
+2018-04-29 22:30 GMT+08:00 Pavel Machek <pavel@ucw.cz>:
+> On Wed 2018-04-25 18:59:31, Ganesh Mahendran wrote:
+>> single_open() interface requires that the whole output must
+>> fit into a single buffer. This will lead to timeout when
+>> system memory is not in a good situation.
+>>
+>> This patch use seq_open() to show wakeup stats. This method
+>> need only one page, so timeout will not be observed.
+>
+> Sounds like magic.
 
-Looks good.
+I did not explain clearly here.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+If we use single_open() to open the file, a single buffer(physical
+continious) will be allocated
+to store the whole data of file /sys/kernel/debug/wakeup_sources.
+When memory situation is not good(fragments...), long time may be used
+to allocate
+such buffer which may cause android watchdog timeout.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+>
+>> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+>> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
+>> +                                     loff_t *pos)
+>>  {
+> ...
+>> -     srcuidx = srcu_read_lock(&wakeup_srcu);
+>> -     list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+>> -             print_wakeup_source_stats(m, ws);
+>> -     srcu_read_unlock(&wakeup_srcu, srcuidx);
+>> +     *srcuidx = srcu_read_lock(&wakeup_srcu);
+>> +     list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+>> +             if (n-- <= 0)
+>> +                     return ws;
+>> +     }
+>> +
+>> +     return NULL;
+>> +}
+> ...
+>> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
+>> +{
+>> +     int *srcuidx = m->private;
+>> +
+>> +     srcu_read_unlock(&wakeup_srcu, *srcuidx);
+>> +}
+>
+> But you are holding srcu_lock over return to userspace, and somehow I
+> don't think that's permitted?
 
---LpQ9ahxlCli8rRTG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+In seq_read(), the m->op->[start | stop] will be invoked as a pair.
+So the srcu_lock will not be hold and return to userspace.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Thanks.
 
-iEYEARECAAYFAlro1ZsACgkQMOfwapXb+vICHQCfepsrP/0TGbrVIm9yHq5lZrU5
-8wgAoJCeACqeBpJgMMQs2sr8zplvkPAp
-=dICQ
------END PGP SIGNATURE-----
-
---LpQ9ahxlCli8rRTG--
+>                                                                         Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
