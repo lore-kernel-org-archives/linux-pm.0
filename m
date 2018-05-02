@@ -1,33 +1,97 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 17/18] thermal: exynos: remove unused defines for
- Exynos5433
-Date: Wed, 02 May 2018 12:05:30 +0200
-Message-ID: <22436608.hx2xeEDBlI@amdc3058>
-References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
-        <1524743493-28113-18-git-send-email-b.zolnierkie@samsung.com>
-        <20180501110434.GN27619@mai>
-        <CGME20180502100530eucas1p180d0b51059ca8002ffe9440810391e9a@eucas1p1.samsung.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH v3 2/3] power: supply: add cros-ec USBPD charger driver.
+Date: Wed, 2 May 2018 12:57:10 +0200
+Message-ID: <20180502105710.bi3tztsjkpcby2ui@earth.universe>
+References: <20180502095343.17092-1-enric.balletbo@collabora.com>
+ <20180502095343.17092-3-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bpphou4g7zrvae6a"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180501110434.GN27619@mai>
+Content-Disposition: inline
+In-Reply-To: <20180502095343.17092-3-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 01, 2018 01:11:20 PM Daniel Lezcano wrote:
-> On Thu, Apr 26, 2018 at 01:51:32PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > Remove unused defines for Exynos5433.
-> 
-> I agree to remove these macros but is there a place with the documentation for
-> those values if we need to put them back ?
 
-They can be always resurrected from git repo if needed.
+--bpphou4g7zrvae6a
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Hi,
+
+I found one more issue, otherwise the driver looks fine to me.
+
+On Wed, May 02, 2018 at 11:53:42AM +0200, Enric Balletbo i Serra wrote:
+> This driver gets various bits of information about what is connected to
+> USB PD ports from the EC and converts that into power_supply properties.
+>=20
+> Signed-off-by: Sameer Nanda <snanda@chromium.org>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+> ---
+[...]
+> +static int cros_usbpd_charger_probe(struct platform_device *pd)
+> +{
+[...]
+> +	for (i =3D 0; i < charger->num_charger_ports; i++) {
+[...]
+> +		psy =3D devm_power_supply_register_no_ws(dev, psy_desc,
+> +						       &psy_cfg);
+[...]
+> +		ec_device->charger =3D psy;
+> + }
+[...]
+> diff --git a/include/linux/mfd/cros_ec.h b/include/linux/mfd/cros_ec.h
+> index f36125ee9245..a1eb39344231 100644
+> --- a/include/linux/mfd/cros_ec.h
+> +++ b/include/linux/mfd/cros_ec.h
+> @@ -19,6 +19,7 @@
+>  #include <linux/cdev.h>
+>  #include <linux/device.h>
+>  #include <linux/notifier.h>
+> +#include <linux/power_supply.h>
+>  #include <linux/mfd/cros_ec_commands.h>
+>  #include <linux/mutex.h>
+> =20
+> @@ -143,6 +144,7 @@ struct cros_ec_device {
+>  			struct cros_ec_command *msg);
+>  	int (*pkt_xfer)(struct cros_ec_device *ec,
+>  			struct cros_ec_command *msg);
+> +	struct power_supply *charger;
+>  	struct mutex lock;
+>  	bool mkbp_event_supported;
+>  	struct blocking_notifier_head event_notifier;
+
+I think cros_ec_device->charger can be dropped:
+
+ * It is not cleared on power-supply removal
+ * It randomly points to the last registered power-supply
+ * It is only set, but never used
+
+-- Sebastian
+
+--bpphou4g7zrvae6a
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlrpmYQACgkQ2O7X88g7
++pp8VRAAov4dApOUowd/wjGbnPgMOFLtozyvPmVzIGdna41WaSDyTQnmJiRP3k7a
+clfrtXP+m5IdKEyxMYOH9AQoDYzb79Tr5dBxl8FOxnBrAmoVp0GHqScv5EhvG9s5
+Lde4KEixA1AKkqeam6ada5bflvE0REU/D9NJ8aZObm/FaBo1qOt9oeVHn6a4ZnRM
+KZ4XhJb2yCE5ml1GtgL0tDz6xh1RSCWBNiMhXHI/yL0h0p6sdSYuOz2gkr/cS7Ac
+tASarNt0Tw3q1udC92ItJd+j8F69lQmRAoXvbkP/MAckVBr5ZOgamYAGXZyTgROX
+R7jZC//0548MA9EGkRv1EShzFRaEPmVolXp9dc2Po2TkfzxMgH27/2C/6L5MxG19
+gwll5RneHPS4J5/5OXUqBMtio4/v1Ku6D0+0gctAmDERPJKAaNmbAuB5T1hMhnZg
+PfOj0ChRH2BG4wRkaRQ/cyy3qM4zsbfo3l1e+iNhsPt2+WTfZiWoZ+6iL/+K0UU9
+p/rvprKY98dL4ya+iNr+f61ZCAfY6eudUj28t32BWQar0aSPkDpmuJNU53bghSj2
+TbCaQXQX/06xCLnKWmzDC9JtjMGcbRWBSPH/BQ/dt5epXfTMt8Yqr/KGKMPJd1cp
+FbhNaKC9JbcDIRIHSvX2654Q0eadVYNdGWvYkGI7dzpRfSJ70Yo=
+=TJlz
+-----END PGP SIGNATURE-----
+
+--bpphou4g7zrvae6a--
