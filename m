@@ -1,84 +1,57 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH v2 1/3] mfd: cros_ec: Add USBPD charger commands and
- struct definitions.
-Date: Wed, 2 May 2018 11:33:06 +0200
-Message-ID: <b8fd0545-4baa-ab82-462e-95179aa9b32d@collabora.com>
-References: <20180430131403.14296-1-enric.balletbo@collabora.com>
- <20180430131403.14296-2-enric.balletbo@collabora.com>
- <20180501082905.GJ5147@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 11/18] thermal: exynos: add
+ exynos*_tmu_set_[trip,hyst]() helpers
+Date: Wed, 02 May 2018 11:33:15 +0200
+Message-ID: <2658994.PYbssquHNy@amdc3058>
+References: <1524743493-28113-1-git-send-email-b.zolnierkie@samsung.com>
+        <1524743493-28113-12-git-send-email-b.zolnierkie@samsung.com>
+        <20180501095540.GH27619@mai>
+        <CGME20180502093316eucas1p1e7e7b2f27eae677dde9882a4aedd2ed7@eucas1p1.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180501082905.GJ5147@dell>
-Content-Language: en-GB
+In-reply-to: <20180501095540.GH27619@mai>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lee,
+On Tuesday, May 01, 2018 11:55:40 AM Daniel Lezcano wrote:
+> On Thu, Apr 26, 2018 at 01:51:26PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > Add exynos*_tmu_set_[trip,hyst]() helpers and convert
+> > all ->tmu_initialize implementations accordingly.
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > ---
+> >  drivers/thermal/samsung/exynos_tmu.c | 282 +++++++++++++++++------------------
+> >  1 file changed, 140 insertions(+), 142 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> > index 82484c5..80265d2 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > @@ -305,30 +305,6 @@ static void sanitize_temp_error(struct exynos_tmu_data *data, u32 trim_info)
+> >  			EXYNOS_TMU_TEMP_MASK;
+> >  }
+> 
+> [ ... ]
+> 
+> > +static void exynos4210_tmu_set_trip_temp(struct exynos_tmu_data *data,
+> > +					 int trip, u8 temp)
+> > +{
+> > +	const struct thermal_trip * const trips =
+> > +		of_thermal_get_trip_points(data->tzd);
+> > +	u8 ref, th_code;
+> 
+> I would not do this kind of change (unsigned long => u8) with this patch.
+> Just code reorg and another patch to tweak the variable types if needed.
 
-Thanks for the reviews.
+This is so minor change and it is has been already tested so I prefer to
+not split it from this patch now.
 
-On 01/05/18 10:29, Lee Jones wrote:
-> On Mon, 30 Apr 2018, Enric Balletbo i Serra wrote:
-> 
->> From: Sameer Nanda <snanda@chromium.org>
->>
->> The USBPD charger driver gets information from the ChromeOS EC, this
->> patch adds the USBPD charger definitions needed by this driver.
->>
->> Signed-off-by: Sameer Nanda <snanda@chromium.org>
->> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> ---
->>
->> Changes in v2: None
->>
->>  include/linux/mfd/cros_ec_commands.h | 132 ++++++++++++++++++++++++++-
->>  1 file changed, 128 insertions(+), 4 deletions(-)
->>
->> diff --git a/include/linux/mfd/cros_ec_commands.h b/include/linux/mfd/cros_ec_commands.h
->> index f2edd9969b40..94dcf331796c 100644
->> --- a/include/linux/mfd/cros_ec_commands.h
->> +++ b/include/linux/mfd/cros_ec_commands.h
-> 
-> [...]
-> 
->> +struct ec_response_pd_log {
->> +	uint32_t timestamp; /* relative timestamp in milliseconds */
->> +	uint8_t type;       /* event type : see PD_EVENT_xx below */
->> +	uint8_t size_port;  /* [7:5] port number [4:0] payload size in bytes */
->> +	uint16_t data;      /* type-defined data payload */
->> +	uint8_t payload[0]; /* optional additional data payload: 0..16 bytes */
->> +} __packed;
-> 
-> I think this whole file should be converted to Kerneldoc format.
-> 
-
-Ok, is something I can do, let me do this in a separate patchset though.
-
-> [...]
-> 
->> +/*
->> + * PD_EVENT_MCU_CHARGE event definition :
->> + * the payload is "struct usb_chg_measures"
->> + * the data field contains the port state flags as defined below :
->> + */
->> +/* Port partner is a dual role device */
->> +#define CHARGE_FLAGS_DUAL_ROLE         (1 << 15)
-> 
-> BIT()?
-> 
-
-Changed in next version, there are also other places (not in this patch) where
-the BIT() macro is not used. I'll send separate patchset to change it and to
-convert to kerneldoc format.
-
->> +/* Port is the pending override port */
->> +#define CHARGE_FLAGS_DELAYED_OVERRIDE  (1 << 14)
->> +/* Port is the override port */
->> +#define CHARGE_FLAGS_OVERRIDE          (1 << 13)
-> 
-> [...]
-> 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
