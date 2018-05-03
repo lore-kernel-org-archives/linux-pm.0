@@ -1,65 +1,71 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH 50/61] thermal: simplify getting .drvdata
-Date: Thu, 03 May 2018 14:23:07 +0200
-Message-ID: <3499277.H47n29vZV6@phil>
-References: <20180419140641.27926-1-wsa+renesas@sang-engineering.com> <20180419140641.27926-51-wsa+renesas@sang-engineering.com>
+From: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 1/3] fs: move documentation for thaw_super() where
+ appropriate
+Date: Thu, 3 May 2018 16:53:54 +0200
+Message-ID: <20180503145354.unbzycfj6axeumfl@quack2.suse.cz>
+References: <20180420235904.27496-1-mcgrof@kernel.org>
+ <20180420235904.27496-2-mcgrof@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180419140641.27926-51-wsa+renesas@sang-engineering.com>
+Content-Disposition: inline
+In-Reply-To: <20180420235904.27496-2-mcgrof@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, kernel-janitors@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org, jack@suse.cz, bart.vanassche@wdc.com, ming.lei@redhat.com, rjw@rjwysocki.net, mguzik@redhat.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 19. April 2018, 16:06:20 CEST schrieb Wolfram Sang:
-> We should get drvdata from struct device directly. Going via
-> platform_device is an unneeded step back and forth.
+On Fri 20-04-18 16:59:02, Luis R. Rodriguez wrote:
+> On commit 08fdc8a0138a ("buffer.c: call thaw_super during emergency thaw")
+> Mateusz added thaw_super_locked() and made thaw_super() use it, but
+> forgot to move the documentation.
 > 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> ---
-> 
-> Build tested only. buildbot is happy. Please apply individually.
-> 
->  drivers/thermal/rockchip_thermal.c | 8 +++-----
->  drivers/thermal/spear_thermal.c    | 8 +++-----
->  drivers/thermal/zx2967_thermal.c   | 6 ++----
->  3 files changed, 8 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index f36375d5a16c..9c7643d62ed7 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -1327,8 +1327,7 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
->  
->  static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
->  {
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
-> +	struct rockchip_thermal_data *thermal = dev_get_drvdata(dev);
->  	int i;
->  
->  	for (i = 0; i < thermal->chip->chn_num; i++)
-> @@ -1346,8 +1345,7 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
->  
->  static int __maybe_unused rockchip_thermal_resume(struct device *dev)
->  {
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
-> +	struct rockchip_thermal_data *thermal = dev_get_drvdata(dev);
->  	int i;
->  	int error;
->  
-> @@ -1376,7 +1374,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
->  					      id, thermal->regs,
->  					      thermal->tshut_temp);
->  		if (error)
-> -			dev_err(&pdev->dev, "%s: invalid tshut=%d, error=%d\n",
-> +			dev_err(dev, "%s: invalid tshut=%d, error=%d\n",
->  				__func__, thermal->tshut_temp, error);
->  	}
->  
+> Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 
-for the Rockchip-part
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Looks good (modulo the -- which is probably worth fixing when touching the
+comment anyway). You can add:
+
+Reviewed-by: Jan Kara <jack@suse.cz>
+
+								Honza
+
+> ---
+>  fs/super.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/fs/super.c b/fs/super.c
+> index 5fa9a8d8d865..9d0eb5e20a1f 100644
+> --- a/fs/super.c
+> +++ b/fs/super.c
+> @@ -1532,12 +1532,6 @@ int freeze_super(struct super_block *sb)
+>  }
+>  EXPORT_SYMBOL(freeze_super);
+>  
+> -/**
+> - * thaw_super -- unlock filesystem
+> - * @sb: the super to thaw
+> - *
+> - * Unlocks the filesystem and marks it writeable again after freeze_super().
+> - */
+>  static int thaw_super_locked(struct super_block *sb)
+>  {
+>  	int error;
+> @@ -1573,6 +1567,12 @@ static int thaw_super_locked(struct super_block *sb)
+>  	return 0;
+>  }
+>  
+> +/**
+> + * thaw_super -- unlock filesystem
+> + * @sb: the super to thaw
+> + *
+> + * Unlocks the filesystem and marks it writeable again after freeze_super().
+> + */
+>  int thaw_super(struct super_block *sb)
+>  {
+>  	down_write(&sb->s_umount);
+> -- 
+> 2.16.3
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
