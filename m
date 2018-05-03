@@ -1,51 +1,139 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 3/3] cpufreq: add suspend/resume support in Armada
- 37xx DVFS driver
-Date: Thu, 3 May 2018 10:06:57 +0530
-Message-ID: <20180503043657.4ufzqcxuqogx34mk@vireshk-i7>
-References: <e98965068836e673ea826e8a03fd01e168fce3ed.1524561482.git.viresh.kumar@linaro.org>
- <cover.1524737432.git.viresh.kumar@linaro.org>
- <d6be605205f6af01968a99582b05026aec2eca42.1524737432.git.viresh.kumar@linaro.org>
- <87r2mu8382.fsf@bootlin.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <87r2mu8382.fsf@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [PATCH V5] cpufreq: intel_pstate: allow trace in passive mode
+Date: Wed,  2 May 2018 23:22:47 -0700
+Message-ID: <1525328567-23747-1-git-send-email-dsmythies@telus.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net
+Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02-05-18, 17:52, Gregory CLEMENT wrote:
-> Hi Viresh,
->  
->  On jeu., avril 26 2018, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> > From: Miquel Raynal <miquel.raynal@bootlin.com>
-> >
-> > Add suspend/resume hooks in Armada 37xx DVFS driver to handle S2RAM
-> > operations. As there is currently no 'driver' structure, create one
-> > to store both the regmap and the register values during suspend
-> > operation.
-> 
-> I tested this patch on a Armada 3720 based board (EspressoBin), and it
-> worked well. I even made some power consumption measurement and after
-> the resume, the power consumption had the same value that before the
-> suspend, for low CPU frequency and high CPU frequency.
-> 
-> Tested-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+Allow use of the trace_pstate_sample trace function
+when the intel_pstate driver is in passive mode.
+Since the core_busy and scaled_busy fields are not
+used, and it might be desirable to know which path
+through the driver was used, either intel_cpufreq_target
+or intel_cpufreq_fast_switch, re-task the core_busy
+field as a flag indicator.
 
-Thanks Gregory.
+The user can then use the intel_pstate_tracer.py utility
+to summarize and plot the trace.
 
+Note: The core_busy feild still goes by that name
+in include/trace/events/power.h and within the
+intel_pstate_tracer.py script and csv file headers,
+but it is graphed as "performance", and called
+core_avg_perf now in the intel_pstate driver.
+
+Sometimes, in passive mode, the driver is not called for
+many tens or even hundreds of seconds. The user
+needs to understand, and not be confused by, this limitation.
+
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+
+---
+
+V5: Changes as per Rafael J. Wysocki feedback.
+    See: https://lkml.org/lkml/2018/1/7/270
+
+V4: Only execute the trace specific overhead code if trace
+    is enabled. Suggested by Srinivas Pandruvada.
+
+V3: Move largely duplicate code to a subroutine.
+    Suggested by Rafael J. Wysocki.
+
+V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
+
+---
+ drivers/cpufreq/intel_pstate.c | 44 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 42 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 17e566af..4a08686 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1939,13 +1939,49 @@ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
++/* Use of trace in passive mode:
++ *
++ * In passive mode the trace core_busy field (also known as the
++ * performance field, and lablelled as such on the graphs; also known as
++ * core_avg_perf) is not needed and so is re-assigned to indicate if the
++ * driver call was via the normal or fast switch path. Various graphs
++ * output from the intel_pstate_tracer.py utility that include core_busy
++ * (or performance or core_avg_perf) have a fixed y-axis from 0 to 100%,
++ * so we use 10 to indicate the the normal path through the driver, and
++ * 90 to indicate the fast switch path through the driver.
++ * The scaled_busy field is not used, and is set to 0.
++ */
++
++#define	INTEL_PSTATE_TRACE_TARGET 10
++#define	INTEL_PSTATE_TRACE_FAST_SWITCH 90
++
++static void intel_cpufreq_trace(struct cpudata *cpu, unsigned int trace_type, int old_pstate)
++{
++	struct sample *sample;
++
++	if (!trace_pstate_sample_enabled())
++		return;
++	if (!intel_pstate_sample(cpu, ktime_get()))
++		return;
++	sample = &cpu->sample;
++	trace_pstate_sample(trace_type,
++		0,
++		old_pstate,
++		cpu->pstate.current_pstate,
++		sample->mperf,
++		sample->aperf,
++		sample->tsc,
++		get_avg_frequency(cpu),
++		fp_toint(cpu->iowait_boost * 100));
++}
++
+ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ 				unsigned int target_freq,
+ 				unsigned int relation)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 	struct cpufreq_freqs freqs;
+-	int target_pstate;
++	int target_pstate, old_pstate;
+ 
+ 	update_turbo_state();
+ 
+@@ -1965,12 +2001,14 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ 		break;
+ 	}
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++	old_pstate = cpu->pstate.current_pstate;
+ 	if (target_pstate != cpu->pstate.current_pstate) {
+ 		cpu->pstate.current_pstate = target_pstate;
+ 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
+ 			      pstate_funcs.get_val(cpu, target_pstate));
+ 	}
+ 	freqs.new = target_pstate * cpu->pstate.scaling;
++	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_TARGET, old_pstate);
+ 	cpufreq_freq_transition_end(policy, &freqs, false);
+ 
+ 	return 0;
+@@ -1980,13 +2018,15 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+-	int target_pstate;
++	int target_pstate, old_pstate;
+ 
+ 	update_turbo_state();
+ 
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++	old_pstate = cpu->pstate.current_pstate;
+ 	intel_pstate_update_pstate(cpu, target_pstate);
++	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH, old_pstate);
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+ 
 -- 
-viresh
+2.7.4
