@@ -1,60 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4][for 4.17-rc3] cpufreq / CPPC: Set platform specific
- transition_delay_us
-Date: Thu, 3 May 2018 10:01:20 +0530
-Message-ID: <20180503043120.gyy6fvy7qic4mjd4@vireshk-i7>
-References: <1524850527-31720-1-git-send-email-pprakash@codeaurora.org>
+Subject: Re: [PATCH V4 3/3] cpufreq: add suspend/resume support in Armada
+ 37xx DVFS driver
+Date: Thu, 3 May 2018 10:06:57 +0530
+Message-ID: <20180503043657.4ufzqcxuqogx34mk@vireshk-i7>
+References: <e98965068836e673ea826e8a03fd01e168fce3ed.1524561482.git.viresh.kumar@linaro.org>
+ <cover.1524737432.git.viresh.kumar@linaro.org>
+ <d6be605205f6af01968a99582b05026aec2eca42.1524737432.git.viresh.kumar@linaro.org>
+ <87r2mu8382.fsf@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1524850527-31720-1-git-send-email-pprakash@codeaurora.org>
-Sender: stable-owner@vger.kernel.org
-To: Prashanth Prakash <pprakash@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, "4.14+" <stable@vger.kernel.org>
+In-Reply-To: <87r2mu8382.fsf@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@bootlin.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 27-04-18, 11:35, Prashanth Prakash wrote:
-> Add support to specify platform specific transition_delay_us instead
-> of using the transition delay derived from PCC.
+On 02-05-18, 17:52, Gregory CLEMENT wrote:
+> Hi Viresh,
+>  
+>  On jeu., avril 26 2018, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > 
-> With commit "3d41386d556d: cpufreq: CPPC: Use transition_delay_us
-> depending transition_latency" we are setting transition_delay_us
-> directly and not applying the LATENCY_MULTIPLIER. With this on Qualcomm
-> Centriq we can end up with a very high rate of frequency change requests
-> when using schedutil governor (default rate_limit_us=10 compared to an
-> earlier value of 10000).
+> > From: Miquel Raynal <miquel.raynal@bootlin.com>
+> >
+> > Add suspend/resume hooks in Armada 37xx DVFS driver to handle S2RAM
+> > operations. As there is currently no 'driver' structure, create one
+> > to store both the regmap and the register values during suspend
+> > operation.
 > 
-> The PCC subspace describes the rate at which the platform can accept
-> commands on the CPPC's PCC channel. This includes read and write
-> command on the PCC channel that can be used for reasons other than
-> frequency transitions. Moreover the same PCC subspace can be used by
-> multiple freq domains and deriving transition_delay_us from it as we do
-> now can be sub-optimal.
+> I tested this patch on a Armada 3720 based board (EspressoBin), and it
+> worked well. I even made some power consumption measurement and after
+> the resume, the power consumption had the same value that before the
+> suspend, for low CPU frequency and high CPU frequency.
 > 
-> Moreover if a platform does not use PCC for desired_perf register then
-> there is no way to compute the transition latency or the delay_us.
-> 
-> CPPC does not have a standard defined mechanism to get the transition
-> rate or the latency at the moment.
-> 
-> Given the above limitations, it is simpler to have a platform specific
-> transition_delay_us and rely on PCC derived value only if a platform
-> specific value is not available.
-> 
-> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: 4.14+ <stable@vger.kernel.org>
-> Fixes: 3d41386d556d ("cpufreq: CPPC: Use transition_delay_us depending
-> transition_latency)
-> ---
-> v2:
-> * Return final delay_us from cppc_cpufreq_get_transition_delay_us (Viresh)
-> v3 and v4:
-> * code style changes (Viresh)
+> Tested-by: Gregory CLEMENT <gregory.clement@bootlin.com>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thanks Gregory.
 
 -- 
 viresh
