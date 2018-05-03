@@ -1,65 +1,69 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 00/11] PM / Domains: Fixup error paths with dev_pm_domain_attach()
-Date: Thu, 3 May 2018 10:31:06 +0200
-Message-ID: <CAJZ5v0gze0Purjaq0U3gqcCBfjW3pHBUMY8LdaYuY9ZfP2xTVQ@mail.gmail.com>
-References: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFrUmNyMQ9Aqgwg-Ncf08fYgAqaY_MckvxqsrUq7mr-LQg@mail.gmail.com>
+Subject: Re: [PATCH v4][for 4.17-rc3] cpufreq / CPPC: Set platform specific transition_delay_us
+Date: Thu, 3 May 2018 10:32:19 +0200
+Message-ID: <CAJZ5v0jkwEEixwJOQCLcW6jLxroRsJqSWxy_KAcjKe1Gr=vMNw@mail.gmail.com>
+References: <1524850527-31720-1-git-send-email-pprakash@codeaurora.org> <2b999bd3-6a9a-2b20-3671-06c86cd2bab7@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrUmNyMQ9Aqgwg-Ncf08fYgAqaY_MckvxqsrUq7mr-LQg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mark Brown <broonie@kernel.org>, Vinod Koul <vinod.koul@intel.com>, Sanyog Kale <sanyog.r.kale@intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <2b999bd3-6a9a-2b20-3671-06c86cd2bab7@codeaurora.org>
+Sender: stable-owner@vger.kernel.org
+To: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "4.14+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 2, 2018 at 2:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 26 April 2018 at 10:52, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> While I was on working adding support for multiple PM domains to genpd, I
->> stumbled over several problems in the error path related to
->> dev_pm_domain_attach(). Hence, I decided to fix these problems first, which is
->> what this series intends to address.
->>
->> There first patch is material for stable, as it fixes a real bug in genpd,
->> while the rest may be considered as improvement of the error paths when devices
->> fails to be attached to their PM domains.
->>
->> I am seeking acks from subsystem maintainers and suggest with funnel the hole
->> series through Rafael's linux-pm tree, unless there are objections to that of
->> course.
->>
->> Ulf Hansson (11):
->>   PM / Domains: Fix error path during attach in genpd
->>   PM / Domains: Drop comment in genpd about legacy Samsung DT binding
->>   PM / Domains: Drop redundant code in genpd while attaching devices
->>   PM / Domains: Check for existing PM domain in dev_pm_domain_attach()
->>   PM / Domains: Allow a better error handling of dev_pm_domain_attach()
->>   amba: Respect all error codes from dev_pm_domain_attach()
->>   driver core: Respect all error codes from dev_pm_domain_attach()
->>   i2c: Respect all error codes from dev_pm_domain_attach()
->>   mmc: sdio: Respect all error codes from dev_pm_domain_attach()
->>   soundwire: Respect all error codes from dev_pm_domain_attach()
->>   spi: Respect all error codes from dev_pm_domain_attach()
->>
->>  drivers/acpi/device_pm.c     |  9 +++------
->>  drivers/amba/bus.c           |  4 ++--
->>  drivers/base/platform.c      | 17 ++++++++---------
->>  drivers/base/power/common.c  | 10 +++++++---
->>  drivers/base/power/domain.c  | 45 +++++++++++++++-----------------------------
->>  drivers/i2c/i2c-core-base.c  |  2 +-
->>  drivers/mmc/core/sdio_bus.c  |  2 +-
->>  drivers/soundwire/bus_type.c | 15 +++++++--------
->>  drivers/spi/spi.c            | 11 ++++++-----
->>  include/linux/acpi.h         |  2 +-
->>  include/linux/pm_domain.h    |  2 +-
->>  11 files changed, 52 insertions(+), 67 deletions(-)
+On Wed, May 2, 2018 at 5:39 PM, Prakash, Prashanth
+<pprakash@codeaurora.org> wrote:
+> Hi Viresh,
 >
-> Rafael,
 >
-> I understand if you are busy so this is not a ping. :-)
+> On 4/27/2018 11:35 AM, Prashanth Prakash wrote:
+>> Add support to specify platform specific transition_delay_us instead
+>> of using the transition delay derived from PCC.
+>>
+>> With commit "3d41386d556d: cpufreq: CPPC: Use transition_delay_us
+>> depending transition_latency" we are setting transition_delay_us
+>> directly and not applying the LATENCY_MULTIPLIER. With this on Qualcomm
+>> Centriq we can end up with a very high rate of frequency change requests
+>> when using schedutil governor (default rate_limit_us=10 compared to an
+>> earlier value of 10000).
+>>
+>> The PCC subspace describes the rate at which the platform can accept
+>> commands on the CPPC's PCC channel. This includes read and write
+>> command on the PCC channel that can be used for reasons other than
+>> frequency transitions. Moreover the same PCC subspace can be used by
+>> multiple freq domains and deriving transition_delay_us from it as we do
+>> now can be sub-optimal.
+>>
+>> Moreover if a platform does not use PCC for desired_perf register then
+>> there is no way to compute the transition latency or the delay_us.
+>>
+>> CPPC does not have a standard defined mechanism to get the transition
+>> rate or the latency at the moment.
+>>
+>> Given the above limitations, it is simpler to have a platform specific
+>> transition_delay_us and rely on PCC derived value only if a platform
+>> specific value is not available.
+>>
+>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: 4.14+ <stable@vger.kernel.org>
+>> Fixes: 3d41386d556d ("cpufreq: CPPC: Use transition_delay_us depending
+>> transition_latency)
+>> ---
+>> v2:
+>> * Return final delay_us from cppc_cpufreq_get_transition_delay_us (Viresh)
+>> v3 and v4:
+>> * code style changes (Viresh)
+>> ---
+>>  drivers/cpufreq/cppc_cpufreq.c | 47 ++++++++++++++++++++++++++++++++++++++++--
+>>  1 file changed, 45 insertions(+), 2 deletions(-)
 >
-> However, perhaps I can simplify by sending you a PR with these!?
+> Any inputs on this patch?  I was hoping to get this in for 4.17 as it fixes undesirable(very low)
+> transition delay when using schedutil governor on centriq platform.
 
-Yes, please.
+I've queued it up for -rc4.  I have a plan to push it later today.
 
-I'm going to have a look at the patches anyway, but I'm not expecting
-to see anything objectionable in them honestly. :-)
+Thanks,
+Rafael
