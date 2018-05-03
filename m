@@ -1,68 +1,62 @@
 From: Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH 1/3] fs: move documentation for thaw_super() where
- appropriate
-Date: Thu, 3 May 2018 16:53:54 +0200
-Message-ID: <20180503145354.unbzycfj6axeumfl@quack2.suse.cz>
+Subject: Re: [PATCH 3/3] fs: fix corner case race on freeze_bdev() when sb
+ disappears
+Date: Thu, 3 May 2018 17:02:17 +0200
+Message-ID: <20180503150217.ywu2cuxjbsgr47a6@quack2.suse.cz>
 References: <20180420235904.27496-1-mcgrof@kernel.org>
- <20180420235904.27496-2-mcgrof@kernel.org>
+ <20180420235904.27496-4-mcgrof@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180420235904.27496-2-mcgrof@kernel.org>
+In-Reply-To: <20180420235904.27496-4-mcgrof@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Luis R. Rodriguez" <mcgrof@kernel.org>
 Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org, jack@suse.cz, bart.vanassche@wdc.com, ming.lei@redhat.com, rjw@rjwysocki.net, mguzik@redhat.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 20-04-18 16:59:02, Luis R. Rodriguez wrote:
-> On commit 08fdc8a0138a ("buffer.c: call thaw_super during emergency thaw")
-> Mateusz added thaw_super_locked() and made thaw_super() use it, but
-> forgot to move the documentation.
+On Fri 20-04-18 16:59:04, Luis R. Rodriguez wrote:
+> freeze_bdev() will bail but leave the bd_fsfreeze_count incremented
+> if the get_active_super() does not find the superblock on our
+> super_blocks list to match.
 > 
+> This issue has been present since v2.6.29 during the introduction of the
+> ioctl_fsfreeze() and ioctl_fsthaw() via commit fcccf502540e3 ("filesystem
+> freeze: implement generic freeze feature").
+> 
+> I am not aware of any existing races which have triggered this
+> situation, however, if it does trigger it could mean leaving a
+> superblock with bd_fsfreeze_count always positive.
+> 
+> Fixes: fcccf502540e3 ("filesystem freeze: implement generic freeze feature")
 > Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 
-Looks good (modulo the -- which is probably worth fixing when touching the
-comment anyway). You can add:
+Looks good to me. You can add:
 
 Reviewed-by: Jan Kara <jack@suse.cz>
 
 								Honza
 
 > ---
->  fs/super.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+>  fs/block_dev.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> diff --git a/fs/super.c b/fs/super.c
-> index 5fa9a8d8d865..9d0eb5e20a1f 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -1532,12 +1532,6 @@ int freeze_super(struct super_block *sb)
->  }
->  EXPORT_SYMBOL(freeze_super);
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index b54966679833..7a532aa58c07 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -507,8 +507,10 @@ struct super_block *freeze_bdev(struct block_device *bdev)
+>  	}
 >  
-> -/**
-> - * thaw_super -- unlock filesystem
-> - * @sb: the super to thaw
-> - *
-> - * Unlocks the filesystem and marks it writeable again after freeze_super().
-> - */
->  static int thaw_super_locked(struct super_block *sb)
->  {
->  	int error;
-> @@ -1573,6 +1567,12 @@ static int thaw_super_locked(struct super_block *sb)
->  	return 0;
->  }
->  
-> +/**
-> + * thaw_super -- unlock filesystem
-> + * @sb: the super to thaw
-> + *
-> + * Unlocks the filesystem and marks it writeable again after freeze_super().
-> + */
->  int thaw_super(struct super_block *sb)
->  {
->  	down_write(&sb->s_umount);
+>  	sb = get_active_super(bdev);
+> -	if (!sb)
+> +	if (!sb) {
+> +		bdev->bd_fsfreeze_count--;
+>  		goto out;
+> +	}
+>  	if (sb->s_op->freeze_super)
+>  		error = sb->s_op->freeze_super(sb);
+>  	else
 > -- 
 > 2.16.3
 > 
