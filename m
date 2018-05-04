@@ -1,183 +1,189 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH] tools/power/x86/intel_pstate_tracer: Add optional setting of trace buffer memory allocation
-Date: Fri,  4 May 2018 06:46:22 -0700
-Message-ID: <1525441582-23855-1-git-send-email-dsmythies@telus.net>
+From: <ilialin@codeaurora.org>
+Subject: RE: [PATCH v5 12/14] cpufreq: Add Kryo CPU scaling driver
+Date: Fri, 4 May 2018 22:20:17 +0300
+Message-ID: <007601d3e3dc$f7454a60$e5cfdf20$@codeaurora.org>
+References: <1525348355-25471-1-git-send-email-ilialin@codeaurora.org> <1525348355-25471-13-git-send-email-ilialin@codeaurora.org> <20180504060827.7bddb53ln2ogwcvv@vireshk-i7> <002a01d3e373$6b6ee410$424cac30$@codeaurora.org> <20180504065709.62kacfext6bbprlo@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180504065709.62kacfext6bbprlo@vireshk-i7>
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com
-Cc: dsmythies@telus.net, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: 'Viresh Kumar' <viresh.kumar@linaro.org>
+Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Allow the user to override the default trace buffer memory allocation
-by adding a command line option to override the default.
 
-The patch also:
 
-Adds a SIGINT (i.e. CTRL C exit) handler,
-so that things can be cleaned up before exit.
+> -----Original Message-----
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Sent: Friday, May 4, 2018 09:57
+> To: ilialin@codeaurora.org
+> Cc: mturquette@baylibre.com; sboyd@kernel.org; robh@kernel.org;
+> mark.rutland@arm.com; rjw@rjwysocki.net; lgirdwood@gmail.com;
+> broonie@kernel.org; andy.gross@linaro.org; david.brown@linaro.org;
+> catalin.marinas@arm.com; will.deacon@arm.com; linux-clk@vger.kernel.org;
+> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
+> pm@vger.kernel.org; linux-arm-msm@vger.kernel.org; linux-
+> soc@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
+> rnayak@codeaurora.org; amit.kucheria@linaro.org;
+> nicolas.dechesne@linaro.org; celster@codeaurora.org;
+> tfinkel@codeaurora.org
+> Subject: Re: [PATCH v5 12/14] cpufreq: Add Kryo CPU scaling driver
+> 
+> On 04-05-18, 09:44, ilialin@codeaurora.org wrote:
+> >
+> >
+> > > -----Original Message-----
+> > > From: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Sent: Friday, May 4, 2018 09:08
+> > > To: Ilia Lin <ilialin@codeaurora.org>
+> > > Cc: mturquette@baylibre.com; sboyd@kernel.org; robh@kernel.org;
+> > > mark.rutland@arm.com; rjw@rjwysocki.net; lgirdwood@gmail.com;
+> > > broonie@kernel.org; andy.gross@linaro.org; david.brown@linaro.org;
+> > > catalin.marinas@arm.com; will.deacon@arm.com;
+> > > linux-clk@vger.kernel.org; devicetree@vger.kernel.org;
+> > > linux-kernel@vger.kernel.org; linux- pm@vger.kernel.org;
+> > > linux-arm-msm@vger.kernel.org; linux- soc@vger.kernel.org;
+> > > linux-arm-kernel@lists.infradead.org;
+> > > rnayak@codeaurora.org; amit.kucheria@linaro.org;
+> > > nicolas.dechesne@linaro.org; celster@codeaurora.org;
+> > > tfinkel@codeaurora.org
+> > > Subject: Re: [PATCH v5 12/14] cpufreq: Add Kryo CPU scaling driver
+> > >
+> > > On 03-05-18, 14:52, Ilia Lin wrote:
+> > > > In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO
+> > > > processors, the CPU ferequencies subset and voltage value of each
+> > > > OPP varies based on the silicon variant in use. Qualcomm Process
+> > > > Voltage Scaling Tables defines the voltage and frequency value
+> > > > based on the msm-id in SMEM and speedbin blown in the efuse
+> combination.
+> > > > The qcom-cpufreq-kryo driver reads the msm-id and efuse value from
+> > > > the SoC to provide the OPP framework with required information.
+> > > > This is used to determine the voltage and frequency value for each
+> > > > OPP of
+> > > > operating-points-v2 table when it is parsed by the OPP framework.
+> > > >
+> > > > Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
+> > > > ---
+> > > >  drivers/cpufreq/Kconfig.arm          |  11 +++
+> > > >  drivers/cpufreq/Makefile             |   1 +
+> > > >  drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
+> > > >  drivers/cpufreq/qcom-cpufreq-kryo.c  | 153
+> > > > +++++++++++++++++++++++++++++++++++
+> > > >  4 files changed, 168 insertions(+)  create mode 100644
+> > > > drivers/cpufreq/qcom-cpufreq-kryo.c
+> > > >
+> > > > diff --git a/drivers/cpufreq/Kconfig.arm
+> > > > b/drivers/cpufreq/Kconfig.arm index de55c7d..f9da18c 100644
+> > > > --- a/drivers/cpufreq/Kconfig.arm
+> > > > +++ b/drivers/cpufreq/Kconfig.arm
+> > > > @@ -124,6 +124,17 @@ config ARM_OMAP2PLUS_CPUFREQ
+> > > >  	depends on ARCH_OMAP2PLUS
+> > > >  	default ARCH_OMAP2PLUS
+> > > >
+> > > > +config ARM_QCOM_CPUFREQ_KRYO
+> > > > +	tristate "Qualcomm Technologies, Inc. Kryo based CPUFreq"
+> > >
+> > > I don't see any reply to Sricharan's query on this being tristate.
+> >
+> > Why shouldn't we leave possibility to compile the cpufreq-dt built-in,
+> > and the qcom-cpufreq-kryo module?
+> 
+> I was not saying this is incorrect, all I am saying is that you never
+replied to a
+> comment from one of the reviewers.
+> 
+> And I don't see a reason why this should be a tristate really.
+> cpufreq-dt is already capable of being a module, all your driver does is
+that it
+> creates the cpufreq-dt platform device after setting the OPP hw
+properties..
+> 
+> Over that, have you ever tried inserting, then removing and inserting the
+> driver module again? I feel it will fail.
+> 
+> The reason is that you never provided an exit routine which can get rid of
+the
+> platform device created in the first place.
 
-Moves the postion of some other cleanup from after to
-before the potential "No valid data to plot" exit.
+Convinced. I'll change it to bool.
 
-Replaces all quit() calls with sys.exit, because
-quit() is not supposed to be used in scripts.
+> 
+> > > > +	depends on QCOM_QFPROM
+> > > > +	depends on QCOM_SMEM
+> > > > +	select PM_OPP
+> > > > +	help
+> > > > +	  This adds the CPUFreq driver for
+> > > > +	  Qualcomm Technologies, Inc. Kryo SoC based boards.
+> > > > +
+> > > > +	  If in doubt, say N.
+> > > > +
+> > > >  config ARM_S3C_CPUFREQ
+> > > >  	bool
+> > > >  	help
+> > > > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> > > > index 8d24ade..fb4a2ec 100644
+> > > > --- a/drivers/cpufreq/Makefile
+> > > > +++ b/drivers/cpufreq/Makefile
+> > > > @@ -65,6 +65,7 @@ obj-$(CONFIG_MACH_MVEBU_V7)		+=
+> > > mvebu-cpufreq.o
+> > > >  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+> > > >  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+> > > >  obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+> > > > +obj-$(CONFIG_ARM_QCOM_CPUFREQ_KRYO)	+= qcom-cpufreq-
+> > > kryo.o
+> > > >  obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+> > > >  obj-$(CONFIG_ARM_S3C2412_CPUFREQ)	+= s3c2412-cpufreq.o
+> > > >  obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
+> > > > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > > > b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > > > index 3b585e4..77d6ab8 100644
+> > > > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > > > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > > > @@ -118,6 +118,9 @@
+> > > >
+> > > >  	{ .compatible = "nvidia,tegra124", },
+> > > >
+> > > > +	{ .compatible = "qcom,apq8096", },
+> > > > +	{ .compatible = "qcom,msm8996", },
+> > > > +
+> > > >  	{ .compatible = "st,stih407", },
+> > > >  	{ .compatible = "st,stih410", },
+> > > >
+> > > > diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > > > b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > > > new file mode 100644
+> > > > index 0000000..32371cc
+> > > > --- /dev/null
+> > > > +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > > > @@ -0,0 +1,153 @@
+> > > > +// SPDX-License-Identifier: GPL-2.0
+> > > > +/* Copyright (c) 2018, The Linux Foundation. All rights reserved.
+> > >
+> > > Incorrect multi line comment.
+> >
+> > This was done as per Bjorn's instruction.
+> 
+> You haven't followed him correctly.
+> 
+> What he asked for is:
+> 
+> // SPDX...
+> /*
+>  * XXXX
+>  */
+> 
+> What you have done is:
+> 
+> // SPDX...
+> /* XXXX
+>  */
 
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
----
- .../x86/intel_pstate_tracer/intel_pstate_tracer.py | 54 ++++++++++++++--------
- 1 file changed, 35 insertions(+), 19 deletions(-)
+OK. Got you. Will fix.
 
-diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-index 29f50d4..84e2b64 100755
---- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-+++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-@@ -28,6 +28,7 @@ import subprocess
- import os
- import time
- import re
-+import signal
- import sys
- import getopt
- import Gnuplot
-@@ -78,11 +79,12 @@ def print_help():
-     print('    Or')
-     print('      ./intel_pstate_tracer.py [--cpu cpus] ---trace_file <trace_file> --name <test_name>')
-     print('    To generate trace file, parse and plot, use (sudo required):')
--    print('      sudo ./intel_pstate_tracer.py [-c cpus] -i <interval> -n <test_name>')
-+    print('      sudo ./intel_pstate_tracer.py [-c cpus] -i <interval> -n <test_name> -m <kbytes>')
-     print('    Or')
--    print('      sudo ./intel_pstate_tracer.py [--cpu cpus] --interval <interval> --name <test_name>')
-+    print('      sudo ./intel_pstate_tracer.py [--cpu cpus] --interval <interval> --name <test_name> --memory <kbytes>')
-     print('    Optional argument:')
--    print('      cpus:  comma separated list of CPUs')
-+    print('      cpus:   comma separated list of CPUs')
-+    print('      kbytes: Kilo bytes of memory per CPU to allocate to the trace buffer. Default: 10240')
-     print('  Output:')
-     print('    If not already present, creates a "results/test_name" folder in the current working directory with:')
-     print('      cpu.csv - comma seperated values file with trace contents and some additional calculations.')
-@@ -379,7 +381,7 @@ def clear_trace_file():
-         f_handle.close()
-     except:
-         print('IO error clearing trace file ')
--        quit()
-+        sys.exit(2)
- 
- def enable_trace():
-     """ Enable trace """
-@@ -389,7 +391,7 @@ def enable_trace():
-                  , 'w').write("1")
-     except:
-         print('IO error enabling trace ')
--        quit()
-+        sys.exit(2)
- 
- def disable_trace():
-     """ Disable trace """
-@@ -399,17 +401,17 @@ def disable_trace():
-                  , 'w').write("0")
-     except:
-         print('IO error disabling trace ')
--        quit()
-+        sys.exit(2)
- 
- def set_trace_buffer_size():
-     """ Set trace buffer size """
- 
-     try:
--       open('/sys/kernel/debug/tracing/buffer_size_kb'
--                 , 'w').write("10240")
-+       with open('/sys/kernel/debug/tracing/buffer_size_kb', 'w') as fp:
-+          fp.write(memory)
-     except:
--        print('IO error setting trace buffer size ')
--        quit()
-+       print('IO error setting trace buffer size ')
-+       sys.exit(2)
- 
- def free_trace_buffer():
-     """ Free the trace buffer memory """
-@@ -418,8 +420,8 @@ def free_trace_buffer():
-        open('/sys/kernel/debug/tracing/buffer_size_kb'
-                  , 'w').write("1")
-     except:
--        print('IO error setting trace buffer size ')
--        quit()
-+        print('IO error freeing trace buffer ')
-+        sys.exit(2)
- 
- def read_trace_data(filename):
-     """ Read and parse trace data """
-@@ -431,7 +433,7 @@ def read_trace_data(filename):
-         data = open(filename, 'r').read()
-     except:
-         print('Error opening ', filename)
--        quit()
-+        sys.exit(2)
- 
-     for line in data.splitlines():
-         search_obj = \
-@@ -489,10 +491,22 @@ def read_trace_data(filename):
- # Now seperate the main overall csv file into per CPU csv files.
-     split_csv()
- 
-+def signal_handler(signal, frame):
-+    print(' SIGINT: Forcing cleanup before exit.')
-+    if interval:
-+        disable_trace()
-+        clear_trace_file()
-+        # Free the memory
-+        free_trace_buffer()
-+        sys.exit(0)
-+
-+signal.signal(signal.SIGINT, signal_handler)
-+
- interval = ""
- filename = ""
- cpu_list = ""
- testname = ""
-+memory = "10240"
- graph_data_present = False;
- 
- valid1 = False
-@@ -501,7 +515,7 @@ valid2 = False
- cpu_mask = zeros((MAX_CPUS,), dtype=int)
- 
- try:
--    opts, args = getopt.getopt(sys.argv[1:],"ht:i:c:n:",["help","trace_file=","interval=","cpu=","name="])
-+    opts, args = getopt.getopt(sys.argv[1:],"ht:i:c:n:m:",["help","trace_file=","interval=","cpu=","name=","memory="])
- except getopt.GetoptError:
-     print_help()
-     sys.exit(2)
-@@ -521,6 +535,8 @@ for opt, arg in opts:
-     elif opt in ("-n", "--name"):
-         valid2 = True
-         testname = arg
-+    elif opt in ("-m", "--memory"):
-+        memory = arg
- 
- if not (valid1 and valid2):
-     print_help()
-@@ -569,6 +585,11 @@ current_max_cpu = 0
- 
- read_trace_data(filename)
- 
-+clear_trace_file()
-+# Free the memory
-+if interval:
-+    free_trace_buffer()
-+
- if graph_data_present == False:
-     print('No valid data to plot')
-     sys.exit(2)
-@@ -593,9 +614,4 @@ for root, dirs, files in os.walk('.'):
-     for f in files:
-         fix_ownership(f)
- 
--clear_trace_file()
--# Free the memory
--if interval:
--    free_trace_buffer()
--
- os.chdir('../../')
--- 
-2.7.4
+> 
+> --
+> viresh
