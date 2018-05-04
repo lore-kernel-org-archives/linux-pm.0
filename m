@@ -1,39 +1,26 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 00/14] CPU scaling support for msm8996
-Date: Fri, 4 May 2018 11:30:55 +0530
-Message-ID: <20180504060055.2pdb6tirhjboy2rq@vireshk-i7>
-References: <1525348355-25471-1-git-send-email-ilialin@codeaurora.org>
+Subject: Re: [PATCH v4 08/14] dt: qcom: Add opp and thermal to the msm8996
+Date: Fri, 4 May 2018 11:34:04 +0530
+Message-ID: <CAKohpo=cw+2Leuwa6XjEYh4kVYK093A5eckUmPBDutgqeqpvog@mail.gmail.com>
+References: <1522358807-10413-1-git-send-email-ilialin@codeaurora.org>
+ <1522358807-10413-9-git-send-email-ilialin@codeaurora.org> <20180402091617.GA3572@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1525348355-25471-1-git-send-email-ilialin@codeaurora.org>
+In-Reply-To: <20180402091617.GA3572@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ilia Lin <ilialin@codeaurora.org>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Linux Clock List <linux-clk@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-arm-ker
 List-Id: linux-pm@vger.kernel.org
 
-On 03-05-18, 14:52, Ilia Lin wrote:
-> [v5]
->  * Rebased
->  * Adressed comments from Bjorn
->  * Adressed comments from Viresh
->  * Adressed comments from Sricharan
->  * Adressed comments from Nicolas
->  * Adressed comments from Rob
->  * Adressed comments from Mark
+On 2 April 2018 at 14:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-s/Adressed/Addressed/
+>> +     cluster0_opp: opp_table0 {
+>> +             compatible = "operating-points-v2";
+>> +             opp-shared;
+>
+> Is Kryo like krait where CPUs do DVFS independently ? If yes, then opp-shared
+> thing should be dropped.
 
-And that's not how the history should be present here. I don't have
-any clue on what I commented on in the previous versions. Now that
-there is no clear history available, I need to go look at my previous
-replies to understand that. That's not right.
-
-You should mention the exact changes here and you can include the name
-of the reviewer in parenthesis. Like this:
-
-* Replaced kmalloc with kzalloc (Viresh).
-
--- 
-viresh
+Have you ever replied to this question ? Sorry, but I am not able to
+find it in my inbox :(
