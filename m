@@ -1,56 +1,132 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v3 0/5] devfreq: rk3399_dmc: improve rk3399_dmc driver and it's documentation
-Date: Sat,  5 May 2018 11:34:45 +0200
-Message-ID: <20180505093450.17327-1-enric.balletbo@collabora.com>
+Subject: [PATCH v3 3/5] devfreq: rk3399_dmc: remove wait for dcf irq event.
+Date: Sat,  5 May 2018 11:34:48 +0200
+Message-ID: <20180505093450.17327-4-enric.balletbo@collabora.com>
+References: <20180505093450.17327-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180505093450.17327-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Dear all,
+We have already wait dcf done in ATF, so don't need wait dcf irq
+in kernel, besides, clear dcf irq in kernel will import competiton
+between kernel and ATF, only handle dcf irq in ATF is a better way.
 
-These patches is an attempt to improve a little bit the rk3399_dmc
-driver and it's documentation in order to have all in a better shape for
-a future work I am doing. My final intention is add ddrfreq support for
-rockchip drm driver, but the patches for this are still
-work-in-progress. So let's start with this first patchset that is
-basically some fixes/improvements for the rk3399_dmc driver.
+Signed-off-by: Lin Huang <hl@rock-chips.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
 
-The patches apply on top of current 4.17-rc3.
-
-Best regards,
- Enric
-
-Changes in v3:
-- [4/6] Move interrupts to be optional instead of remove.
-
+Changes in v3: None
 Changes in v2:
-- [1/6] Add Acked-by MyungJoo Ham.
-- [2/6] Improved commit message.
-- [2/6] Rename ddr.h to rk3399-ddr.h because is SoC specific.
 - [3/6] Add Reviewed-by Chanwoo Choi
-- [4/6] Add Reviewed-by Chanwoo Choi.
-- [5/6] Add Acked-by MyungJoo Ham.
-- [5/6] Add Reviewed-by Chanwoo Choi.
-- [6/6] Removed this patch from this series.
 
-Enric Balletbo i Serra (3):
-  dt-bindings: clock: add rk3399 DDR3 standard speed bins.
-  devfreq: rk3399_dmc: remove wait for dcf irq event.
-  dt-bindings: devfreq: rk3399_dmc: move interrupts to be optional.
+ drivers/devfreq/rk3399_dmc.c | 53 +-----------------------------------
+ 1 file changed, 1 insertion(+), 52 deletions(-)
 
-Lin Huang (1):
-  devfreq: rk3399_dmc: do not print error when get supply and clk defer.
-
-Nick Milner (1):
-  dt-bindings: devfreq: rk3399_dmc: improve binding documentation.
-
- .../bindings/devfreq/rk3399_dmc.txt           | 213 +++++++++---------
- drivers/devfreq/rk3399_dmc.c                  |  59 +----
- include/dt-bindings/clock/rk3399-ddr.h        |  56 +++++
- 3 files changed, 172 insertions(+), 156 deletions(-)
- create mode 100644 include/dt-bindings/clock/rk3399-ddr.h
-
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index 5dfbfa3cc878..44a379657cd5 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -68,15 +68,6 @@ struct rk3399_dmcfreq {
+ 	struct devfreq_event_dev *edev;
+ 	struct mutex lock;
+ 	struct dram_timing timing;
+-
+-	/*
+-	 * DDR Converser of Frequency (DCF) is used to implement DDR frequency
+-	 * conversion without the participation of CPU, we will implement and
+-	 * control it in arm trust firmware.
+-	 */
+-	wait_queue_head_t	wait_dcf_queue;
+-	int irq;
+-	int wait_dcf_flag;
+ 	struct regulator *vdd_center;
+ 	unsigned long rate, target_rate;
+ 	unsigned long volt, target_volt;
+@@ -117,7 +108,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 			goto out;
+ 		}
+ 	}
+-	dmcfreq->wait_dcf_flag = 1;
+ 
+ 	err = clk_set_rate(dmcfreq->dmc_clk, target_rate);
+ 	if (err) {
+@@ -128,14 +118,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 		goto out;
+ 	}
+ 
+-	/*
+-	 * Wait until bcf irq happen, it means freq scaling finish in
+-	 * arm trust firmware, use 100ms as timeout time.
+-	 */
+-	if (!wait_event_timeout(dmcfreq->wait_dcf_queue,
+-				!dmcfreq->wait_dcf_flag, HZ / 10))
+-		dev_warn(dev, "Timeout waiting for dcf interrupt\n");
+-
+ 	/*
+ 	 * Check the dpll rate,
+ 	 * There only two result we will get,
+@@ -241,22 +223,6 @@ static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
+ static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
+ 			 rk3399_dmcfreq_resume);
+ 
+-static irqreturn_t rk3399_dmc_irq(int irq, void *dev_id)
+-{
+-	struct rk3399_dmcfreq *dmcfreq = dev_id;
+-	struct arm_smccc_res res;
+-
+-	dmcfreq->wait_dcf_flag = 0;
+-	wake_up(&dmcfreq->wait_dcf_queue);
+-
+-	/* Clear the DCF interrupt */
+-	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
+-		      ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ,
+-		      0, 0, 0, 0, &res);
+-
+-	return IRQ_HANDLED;
+-}
+-
+ static int of_get_ddr_timings(struct dram_timing *timing,
+ 			      struct device_node *np)
+ {
+@@ -330,16 +296,10 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct rk3399_dmcfreq *data;
+-	int ret, irq, index, size;
++	int ret, index, size;
+ 	uint32_t *timing;
+ 	struct dev_pm_opp *opp;
+ 
+-	irq = platform_get_irq(pdev, 0);
+-	if (irq < 0) {
+-		dev_err(&pdev->dev,
+-			"Cannot get the dmc interrupt resource: %d\n", irq);
+-		return irq;
+-	}
+ 	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+@@ -358,17 +318,6 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 		return PTR_ERR(data->dmc_clk);
+ 	};
+ 
+-	data->irq = irq;
+-	ret = devm_request_irq(dev, irq, rk3399_dmc_irq, 0,
+-			       dev_name(dev), data);
+-	if (ret) {
+-		dev_err(dev, "Failed to request dmc irq: %d\n", ret);
+-		return ret;
+-	}
+-
+-	init_waitqueue_head(&data->wait_dcf_queue);
+-	data->wait_dcf_flag = 0;
+-
+ 	data->edev = devfreq_event_get_edev_by_phandle(dev, 0);
+ 	if (IS_ERR(data->edev))
+ 		return -EPROBE_DEFER;
 -- 
 2.17.0
