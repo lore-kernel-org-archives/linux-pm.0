@@ -1,53 +1,56 @@
-From: "Shuah Khan (Samsung OSG)" <shuah@kernel.org>
-Subject: [PATCH 04/24] selftests: cpufreq: return Kselftest Skip code for skipped tests
-Date: Fri,  4 May 2018 19:13:08 -0600
-Message-ID: <20180505011328.32078-4-shuah@kernel.org>
-References: <20180505011328.32078-1-shuah@kernel.org>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [PATCH v3 0/5] devfreq: rk3399_dmc: improve rk3399_dmc driver and it's documentation
+Date: Sat,  5 May 2018 11:34:45 +0200
+Message-ID: <20180505093450.17327-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180505011328.32078-1-shuah@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: shuah@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-When cpufreq test is skipped because of unmet dependencies and/or
-unsupported configuration, it exits with error which is treated as
-a fail by the Kselftest framework. This leads to false negative
-result even when the test could not be run.
+Dear all,
 
-Change it to return kselftest skip code when a test gets skipped to
-clearly report that the test could not be run.
+These patches is an attempt to improve a little bit the rk3399_dmc
+driver and it's documentation in order to have all in a better shape for
+a future work I am doing. My final intention is add ddrfreq support for
+rockchip drm driver, but the patches for this are still
+work-in-progress. So let's start with this first patchset that is
+basically some fixes/improvements for the rk3399_dmc driver.
 
-Kselftest framework SKIP code is 4 and the framework prints appropriate
-messages to indicate that the test is skipped.
+The patches apply on top of current 4.17-rc3.
 
-Signed-off-by: Shuah Khan (Samsung OSG) <shuah@kernel.org>
----
- tools/testing/selftests/cpufreq/main.sh | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Best regards,
+ Enric
 
-diff --git a/tools/testing/selftests/cpufreq/main.sh b/tools/testing/selftests/cpufreq/main.sh
-index d83922de9d89..31f8c9a76c5f 100755
---- a/tools/testing/selftests/cpufreq/main.sh
-+++ b/tools/testing/selftests/cpufreq/main.sh
-@@ -13,6 +13,9 @@ SYSFS=
- CPUROOT=
- CPUFREQROOT=
- 
-+# Kselftest framework requirement - SKIP code is 4.
-+ksft_skip=4
-+
- helpme()
- {
- 	printf "Usage: $0 [-h] [-todg args]
-@@ -38,7 +41,7 @@ prerequisite()
- 
- 	if [ $UID != 0 ]; then
- 		echo $msg must be run as root >&2
--		exit 2
-+		exit $ksft_skip
- 	fi
- 
- 	taskset -p 01 $$
+Changes in v3:
+- [4/6] Move interrupts to be optional instead of remove.
+
+Changes in v2:
+- [1/6] Add Acked-by MyungJoo Ham.
+- [2/6] Improved commit message.
+- [2/6] Rename ddr.h to rk3399-ddr.h because is SoC specific.
+- [3/6] Add Reviewed-by Chanwoo Choi
+- [4/6] Add Reviewed-by Chanwoo Choi.
+- [5/6] Add Acked-by MyungJoo Ham.
+- [5/6] Add Reviewed-by Chanwoo Choi.
+- [6/6] Removed this patch from this series.
+
+Enric Balletbo i Serra (3):
+  dt-bindings: clock: add rk3399 DDR3 standard speed bins.
+  devfreq: rk3399_dmc: remove wait for dcf irq event.
+  dt-bindings: devfreq: rk3399_dmc: move interrupts to be optional.
+
+Lin Huang (1):
+  devfreq: rk3399_dmc: do not print error when get supply and clk defer.
+
+Nick Milner (1):
+  dt-bindings: devfreq: rk3399_dmc: improve binding documentation.
+
+ .../bindings/devfreq/rk3399_dmc.txt           | 213 +++++++++---------
+ drivers/devfreq/rk3399_dmc.c                  |  59 +----
+ include/dt-bindings/clock/rk3399-ddr.h        |  56 +++++
+ 3 files changed, 172 insertions(+), 156 deletions(-)
+ create mode 100644 include/dt-bindings/clock/rk3399-ddr.h
+
 -- 
-2.14.1
+2.17.0
