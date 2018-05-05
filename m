@@ -1,84 +1,53 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH v2 1/2] scsi: ufs: Extract devfreq registration
-Date: Fri,  4 May 2018 15:44:26 -0700
-Message-ID: <20180504224427.32606-2-bjorn.andersson@linaro.org>
-References: <20180504224427.32606-1-bjorn.andersson@linaro.org>
+From: "Shuah Khan (Samsung OSG)" <shuah@kernel.org>
+Subject: [PATCH 04/24] selftests: cpufreq: return Kselftest Skip code for skipped tests
+Date: Fri,  4 May 2018 19:13:08 -0600
+Message-ID: <20180505011328.32078-4-shuah@kernel.org>
+References: <20180505011328.32078-1-shuah@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180504224427.32606-1-bjorn.andersson@linaro.org>
+In-Reply-To: <20180505011328.32078-1-shuah@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Vivek Gautam <vivek.gautam@codeaurora.org>
+To: shuah@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Failing to register with devfreq leaves hba->devfreq assigned, which
-causes the error path to dereference the ERR_PTR(). Rather than bolting
-on more conditionals, move the call of devm_devfreq_add_device() into
-it's own function and only update hba->devfreq once it's successfully
-registered.
+When cpufreq test is skipped because of unmet dependencies and/or
+unsupported configuration, it exits with error which is treated as
+a fail by the Kselftest framework. This leads to false negative
+result even when the test could not be run.
 
-The subsequent patch builds upon this to make UFS actually work again,
-as it's been broken since f1d981eaecf8 ("PM / devfreq: Use the available
-min/max frequency")
+Change it to return kselftest skip code when a test gets skipped to
+clearly report that the test could not be run.
 
-Reviewed-by: Subhash Jadavani <subhashj@codeaurora.org>
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Kselftest framework SKIP code is 4 and the framework prints appropriate
+messages to indicate that the test is skipped.
+
+Signed-off-by: Shuah Khan (Samsung OSG) <shuah@kernel.org>
 ---
+ tools/testing/selftests/cpufreq/main.sh | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Changes since v1:
-- None
-
- drivers/scsi/ufs/ufshcd.c | 31 ++++++++++++++++++++++---------
- 1 file changed, 22 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
-index 8f22a980b1a7..2253f24309ec 100644
---- a/drivers/scsi/ufs/ufshcd.c
-+++ b/drivers/scsi/ufs/ufshcd.c
-@@ -1255,6 +1255,26 @@ static struct devfreq_dev_profile ufs_devfreq_profile = {
- 	.get_dev_status	= ufshcd_devfreq_get_dev_status,
- };
+diff --git a/tools/testing/selftests/cpufreq/main.sh b/tools/testing/selftests/cpufreq/main.sh
+index d83922de9d89..31f8c9a76c5f 100755
+--- a/tools/testing/selftests/cpufreq/main.sh
++++ b/tools/testing/selftests/cpufreq/main.sh
+@@ -13,6 +13,9 @@ SYSFS=
+ CPUROOT=
+ CPUFREQROOT=
  
-+static int ufshcd_devfreq_init(struct ufs_hba *hba)
-+{
-+	struct devfreq *devfreq;
-+	int ret;
++# Kselftest framework requirement - SKIP code is 4.
++ksft_skip=4
 +
-+	devfreq = devm_devfreq_add_device(hba->dev,
-+			&ufs_devfreq_profile,
-+			"simple_ondemand",
-+			NULL);
-+	if (IS_ERR(devfreq)) {
-+		ret = PTR_ERR(devfreq);
-+		dev_err(hba->dev, "Unable to register with devfreq %d\n", ret);
-+		return ret;
-+	}
-+
-+	hba->devfreq = devfreq;
-+
-+	return 0;
-+}
-+
- static void __ufshcd_suspend_clkscaling(struct ufs_hba *hba)
+ helpme()
  {
- 	unsigned long flags;
-@@ -6399,16 +6419,9 @@ static int ufshcd_probe_hba(struct ufs_hba *hba)
- 				sizeof(struct ufs_pa_layer_attr));
- 			hba->clk_scaling.saved_pwr_info.is_valid = true;
- 			if (!hba->devfreq) {
--				hba->devfreq = devm_devfreq_add_device(hba->dev,
--							&ufs_devfreq_profile,
--							"simple_ondemand",
--							NULL);
--				if (IS_ERR(hba->devfreq)) {
--					ret = PTR_ERR(hba->devfreq);
--					dev_err(hba->dev, "Unable to register with devfreq %d\n",
--							ret);
-+				ret = ufshcd_devfreq_init(hba);
-+				if (ret)
- 					goto out;
--				}
- 			}
- 			hba->clk_scaling.is_allowed = true;
- 		}
+ 	printf "Usage: $0 [-h] [-todg args]
+@@ -38,7 +41,7 @@ prerequisite()
+ 
+ 	if [ $UID != 0 ]; then
+ 		echo $msg must be run as root >&2
+-		exit 2
++		exit $ksft_skip
+ 	fi
+ 
+ 	taskset -p 01 $$
 -- 
-2.17.0
+2.14.1
