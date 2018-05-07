@@ -1,62 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 04/24] selftests: cpufreq: return Kselftest Skip code for
- skipped tests
-Date: Mon, 7 May 2018 10:31:21 +0530
-Message-ID: <20180507050121.lzgjzbgsigisvgqj@vireshk-i7>
-References: <20180505011328.32078-1-shuah@kernel.org>
- <20180505011328.32078-4-shuah@kernel.org>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: [PATCH 00/18] Fix some build warnings/errors with Sphinx
+Date: Mon,  7 May 2018 06:35:36 -0300
+Message-ID: <cover.1525684985.git.mchehab+samsung@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180505011328.32078-4-shuah@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Shuah Khan (Samsung OSG)" <shuah@kernel.org>
-Cc: rjw@rjwysocki.net, linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-iio@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, linux-can@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04-05-18, 19:13, Shuah Khan (Samsung OSG) wrote:
-> When cpufreq test is skipped because of unmet dependencies and/or
-> unsupported configuration, it exits with error which is treated as
-> a fail by the Kselftest framework. This leads to false negative
-> result even when the test could not be run.
-> 
-> Change it to return kselftest skip code when a test gets skipped to
-> clearly report that the test could not be run.
-> 
-> Kselftest framework SKIP code is 4 and the framework prints appropriate
-> messages to indicate that the test is skipped.
-> 
-> Signed-off-by: Shuah Khan (Samsung OSG) <shuah@kernel.org>
-> ---
->  tools/testing/selftests/cpufreq/main.sh | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/cpufreq/main.sh b/tools/testing/selftests/cpufreq/main.sh
-> index d83922de9d89..31f8c9a76c5f 100755
-> --- a/tools/testing/selftests/cpufreq/main.sh
-> +++ b/tools/testing/selftests/cpufreq/main.sh
-> @@ -13,6 +13,9 @@ SYSFS=
->  CPUROOT=
->  CPUFREQROOT=
->  
-> +# Kselftest framework requirement - SKIP code is 4.
-> +ksft_skip=4
-> +
->  helpme()
->  {
->  	printf "Usage: $0 [-h] [-todg args]
-> @@ -38,7 +41,7 @@ prerequisite()
->  
->  	if [ $UID != 0 ]; then
->  		echo $msg must be run as root >&2
-> -		exit 2
-> +		exit $ksft_skip
->  	fi
->  
->  	taskset -p 01 $$
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+SSBkZWNpZGVkIHRvIGdpdmUgYSB0cnkgd2l0aCBTcGhpbnggbGFzdCBzdGFibGUgdmVyc2lvbgoo
+MS4xNy40KSwgYW5kIG5vdGljZWQgc2V2ZXJhbCBpc3N1ZXMuIFRoZSB3b3JzZSBvbmUgd2FzCndp
+dGggdGhlIG5ldHdvcmtpbmcgYm9vazogYSBub24tc3RhbmRhcmQgZm9vdG5vdGUgdGhlcmUKd2l0
+aCBbKl0gaW5zdGVhZCBvZiBhIG51bWJlciBjYXVzZXMgaXQgdG8gYnJlYWsgUERGIGJ1aWxkaW5n
+LgoKU28sIEkgdG9vayBzb21lIHNwYXJlIHRpbWUgdG8gYWRkcmVzcyBzb21lIHdhcm5pbmdzIGFs
+bCBvdmVyCnRoZSB0cmVlLCBhbmQgbW92ZWQgYSBmZXcgdGV4dCBkb2N1bWVudHMgdG8gYSBib29r
+LiBJIHdpdGgKSSBoYWQgbW9yZSB0aW1lIHRvIG1vdmUgdGhlIG90aGVyIG9uZXMgYW5kIHRvIHNv
+bHZlIG90aGVyCndhcm5pbmdzLgoKTWF1cm8gQ2FydmFsaG8gQ2hlaGFiICgxOCk6CiAgZG9jczog
+Y2FuLnJzdDogZml4IGEgZm9vdG5vdGUgcmVmZXJlbmNlCiAgZG9jczogZml4IGxvY2F0aW9uIG9m
+IHJlcXVlc3RfZmlybXdhcmUgJiBmcmllbmRzCiAgZG9jczogKi9pbmRleC5yc3Q6IEFkZCBuZXdl
+ciBkb2N1bWVudHMgdG8gdGhlaXIgcmVzcGVjdGl2ZSBpbmRleC5yc3QKICBkb2NzOiBhZG1pbi1n
+dWlkZTogYWRkIGJjYWNoZSBkb2N1bWVudGF0aW9uCiAgZG9jczogY29yZS1hcGk6IGFkZCBjYWNo
+ZXRsYiBkb2N1bWVudGF0aW9uCiAgZG9jczogY29yZS1hcGk6IGFkZCBjZ3JvdXAtdjIgZG9jdW1l
+bnRhdGlvbgogIGRvY3M6IGNvcmUtYXBpOiBhZGQgY2lyY3VsYXItYnVmZmVycyBkb2N1bWVudGF0
+aW9uCiAgZG9jczogZHJpdmVyLWFwaTogYWRkIGNsayBkb2N1bWVudGF0aW9uCiAgbmV0OiBtYWM4
+MDIxMS5oOiBmaXggYSBiYWQgY29tbWVudCBsaW5lCiAgcmN1OiByY3VwZGF0ZS5oOiBnZXQgcmlk
+IG9mIFNwaGlueCB3YXJuaW5ncyBhdCByY3VfcG9pbnRlcl9oYW5kb2ZmKCkKICBkb2NzOiBjcnlw
+dG9fZW5naW5lLnJzdDogRml4IHR3byBwYXJzZSB3YXJuaW5ncwogIHRpbWU6IHRpbWVyLmM6IGFk
+anVzdCBhIGtlcm5lbC1kb2MgY29tbWVudAogIHdhaXQ6IHdhaXQuaDogR2V0IHJpZCBvZiBhIGtl
+cm5lbC1kb2MvU3BoaW54IHdhcm5pbmdzCiAgZmJkZXY6IG1vZGVkYi5jOiBmaXggYSBrZXJuZWwt
+ZG9jIG1hcmt1cAogIGlpbzogaWlvLmg6IHVzZSBuZXN0ZWQgc3RydWN0IHN1cHBvcnQgb24ga2Vy
+bmVsLWRvYyBtYXJrdXAKICBtdGQ6IHJhd25hbmQuaDogdXNlIG5lc3RlZCB1bmlvbiBrZXJuZWwt
+ZG9jIG1hcmt1cHMKICBkb2NzOiB1aW8taG93dG8ucnN0OiB1c2UgYSBjb2RlIGJsb2NrIHRvIHNv
+bHZlIGEgd2FybmluZwogIHcxOiB3MV9pby5jOiBmaXggYSBrZXJuZWwtZG9jIHdhcm5pbmcKCiBE
+b2N1bWVudGF0aW9uLzAwLUlOREVYICAgICAgICAgICAgICAgICAgICAgICAgfCAxMCAtLS0tLS0t
+CiAuLi4ve2JjYWNoZS50eHQgPT4gYWRtaW4tZ3VpZGUvYmNhY2hlLnJzdH0gICAgfCAgMAogLi4u
+L2Nncm91cC12Mi5yc3R9ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDAKIERvY3VtZW50
+YXRpb24vYWRtaW4tZ3VpZGUvaW5kZXgucnN0ICAgICAgICAgICB8ICAyICsrCiAuLi4vYWRtaW4t
+Z3VpZGUva2VybmVsLXBhcmFtZXRlcnMudHh0ICAgICAgICAgfCAgMiArLQogLi4uL3tjYWNoZXRs
+Yi50eHQgPT4gY29yZS1hcGkvY2FjaGV0bGIucnN0fSAgIHwgIDAKIC4uLi9jaXJjdWxhci1idWZm
+ZXJzLnJzdH0gICAgICAgICAgICAgICAgICAgICB8ICAwCiBEb2N1bWVudGF0aW9uL2NvcmUtYXBp
+L2luZGV4LnJzdCAgICAgICAgICAgICAgfCAgMiArKwogRG9jdW1lbnRhdGlvbi9jcnlwdG8vY3J5
+cHRvX2VuZ2luZS5yc3QgICAgICAgIHwgIDggKysrLS0tCiBEb2N1bWVudGF0aW9uL2NyeXB0by9p
+bmRleC5yc3QgICAgICAgICAgICAgICAgfCAgMSArCiBEb2N1bWVudGF0aW9uL2RlbGxfcmJ1LnR4
+dCAgICAgICAgICAgICAgICAgICAgfCAgNCArLS0KIERvY3VtZW50YXRpb24ve2Nsay50eHQgPT4g
+ZHJpdmVyLWFwaS9jbGsucnN0fSB8ICAwCiAuLi4vZmlybXdhcmUvZmFsbGJhY2stbWVjaGFuaXNt
+cy5yc3QgICAgICAgICAgfCAgMiArLQogLi4uL2RyaXZlci1hcGkvZmlybXdhcmUvcmVxdWVzdF9m
+aXJtd2FyZS5yc3QgIHwgMTcgKysrKysrKy0tLS0tCiBEb2N1bWVudGF0aW9uL2RyaXZlci1hcGkv
+aW5kZXgucnN0ICAgICAgICAgICAgfCAgMiArKwogRG9jdW1lbnRhdGlvbi9kcml2ZXItYXBpL2lu
+ZnJhc3RydWN0dXJlLnJzdCAgIHwgIDIgKy0KIERvY3VtZW50YXRpb24vZHJpdmVyLWFwaS91aW8t
+aG93dG8ucnN0ICAgICAgICB8ICAzICsrLQogRG9jdW1lbnRhdGlvbi9tZW1vcnktYmFycmllcnMu
+dHh0ICAgICAgICAgICAgIHwgIDQgKy0tCiBEb2N1bWVudGF0aW9uL25ldHdvcmtpbmcvY2FuLnJz
+dCAgICAgICAgICAgICAgfCAgNCArLS0KIC4uLi9wb3dlci9zdXNwZW5kLWFuZC1jcHVob3RwbHVn
+LnR4dCAgICAgICAgICB8ICAyICstCiBEb2N1bWVudGF0aW9uL3Byb2Nlc3MvaW5kZXgucnN0ICAg
+ICAgICAgICAgICAgfCAgMSArCiBEb2N1bWVudGF0aW9uL3NlY3VyaXR5L2luZGV4LnJzdCAgICAg
+ICAgICAgICAgfCAgMiArKwogLi4uL3RyYW5zbGF0aW9ucy9rb19LUi9tZW1vcnktYmFycmllcnMu
+dHh0ICAgIHwgIDQgKy0tCiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvbW9kZWRiLmMgICAgICAg
+ICAgICAgfCAyMiArKysrKysrKy0tLS0tLS0tCiBkcml2ZXJzL3cxL3cxX2lvLmMgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgfCAgMSArCiBpbmNsdWRlL2xpbnV4L2lpby9paW8uaCAgICAgICAg
+ICAgICAgICAgICAgICAgfCAyNCArKysrKysrKy0tLS0tLS0tLQogaW5jbHVkZS9saW51eC9tdGQv
+cmF3bmFuZC5oICAgICAgICAgICAgICAgICAgIHwgMjYgKysrKysrKysrKysrKy0tLS0tLQogaW5j
+bHVkZS9saW51eC9yY3VwZGF0ZS5oICAgICAgICAgICAgICAgICAgICAgIHwgIDUgKystLQogaW5j
+bHVkZS9saW51eC93YWl0LmggICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDIgKy0KIGluY2x1
+ZGUvbmV0L21hYzgwMjExLmggICAgICAgICAgICAgICAgICAgICAgICB8ICAyICstCiBrZXJuZWwv
+dGltZS90aW1lci5jICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAxNCArKysrKy0tLS0tCiAz
+MSBmaWxlcyBjaGFuZ2VkLCA5MyBpbnNlcnRpb25zKCspLCA3NSBkZWxldGlvbnMoLSkKIHJlbmFt
+ZSBEb2N1bWVudGF0aW9uL3tiY2FjaGUudHh0ID0+IGFkbWluLWd1aWRlL2JjYWNoZS5yc3R9ICgx
+MDAlKQogcmVuYW1lIERvY3VtZW50YXRpb24ve2Nncm91cC12Mi50eHQgPT4gYWRtaW4tZ3VpZGUv
+Y2dyb3VwLXYyLnJzdH0gKDEwMCUpCiByZW5hbWUgRG9jdW1lbnRhdGlvbi97Y2FjaGV0bGIudHh0
+ID0+IGNvcmUtYXBpL2NhY2hldGxiLnJzdH0gKDEwMCUpCiByZW5hbWUgRG9jdW1lbnRhdGlvbi97
+Y2lyY3VsYXItYnVmZmVycy50eHQgPT4gY29yZS1hcGkvY2lyY3VsYXItYnVmZmVycy5yc3R9ICgx
+MDAlKQogcmVuYW1lIERvY3VtZW50YXRpb24ve2Nsay50eHQgPT4gZHJpdmVyLWFwaS9jbGsucnN0
+fSAoMTAwJSkKCi0tIAoyLjE3LjAKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9kcmktZGV2ZWwK
