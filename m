@@ -1,87 +1,145 @@
 From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: [PATCH 00/18] Fix some build warnings/errors with Sphinx
-Date: Mon,  7 May 2018 06:35:36 -0300
-Message-ID: <cover.1525684985.git.mchehab+samsung@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+Subject: [PATCH 02/18] docs: fix location of request_firmware & friends
+Date: Mon,  7 May 2018 06:35:38 -0300
+Message-ID: <9e40d0b3a085a937b42ec60a3b2409cf820ca713.1525684985.git.mchehab+samsung@kernel.org>
+References: <cover.1525684985.git.mchehab+samsung@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1525684985.git.mchehab+samsung@kernel.org>
+In-Reply-To: <cover.1525684985.git.mchehab+samsung@kernel.org>
+References: <cover.1525684985.git.mchehab+samsung@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc: linux-fbdev@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-iio@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, linux-can@vger.kernel.org
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Masanari Iida <standby24x7@gmail.com>, linux-pm@vger.kernel.org, Kees Cook <keescook@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-SSBkZWNpZGVkIHRvIGdpdmUgYSB0cnkgd2l0aCBTcGhpbnggbGFzdCBzdGFibGUgdmVyc2lvbgoo
-MS4xNy40KSwgYW5kIG5vdGljZWQgc2V2ZXJhbCBpc3N1ZXMuIFRoZSB3b3JzZSBvbmUgd2FzCndp
-dGggdGhlIG5ldHdvcmtpbmcgYm9vazogYSBub24tc3RhbmRhcmQgZm9vdG5vdGUgdGhlcmUKd2l0
-aCBbKl0gaW5zdGVhZCBvZiBhIG51bWJlciBjYXVzZXMgaXQgdG8gYnJlYWsgUERGIGJ1aWxkaW5n
-LgoKU28sIEkgdG9vayBzb21lIHNwYXJlIHRpbWUgdG8gYWRkcmVzcyBzb21lIHdhcm5pbmdzIGFs
-bCBvdmVyCnRoZSB0cmVlLCBhbmQgbW92ZWQgYSBmZXcgdGV4dCBkb2N1bWVudHMgdG8gYSBib29r
-LiBJIHdpdGgKSSBoYWQgbW9yZSB0aW1lIHRvIG1vdmUgdGhlIG90aGVyIG9uZXMgYW5kIHRvIHNv
-bHZlIG90aGVyCndhcm5pbmdzLgoKTWF1cm8gQ2FydmFsaG8gQ2hlaGFiICgxOCk6CiAgZG9jczog
-Y2FuLnJzdDogZml4IGEgZm9vdG5vdGUgcmVmZXJlbmNlCiAgZG9jczogZml4IGxvY2F0aW9uIG9m
-IHJlcXVlc3RfZmlybXdhcmUgJiBmcmllbmRzCiAgZG9jczogKi9pbmRleC5yc3Q6IEFkZCBuZXdl
-ciBkb2N1bWVudHMgdG8gdGhlaXIgcmVzcGVjdGl2ZSBpbmRleC5yc3QKICBkb2NzOiBhZG1pbi1n
-dWlkZTogYWRkIGJjYWNoZSBkb2N1bWVudGF0aW9uCiAgZG9jczogY29yZS1hcGk6IGFkZCBjYWNo
-ZXRsYiBkb2N1bWVudGF0aW9uCiAgZG9jczogY29yZS1hcGk6IGFkZCBjZ3JvdXAtdjIgZG9jdW1l
-bnRhdGlvbgogIGRvY3M6IGNvcmUtYXBpOiBhZGQgY2lyY3VsYXItYnVmZmVycyBkb2N1bWVudGF0
-aW9uCiAgZG9jczogZHJpdmVyLWFwaTogYWRkIGNsayBkb2N1bWVudGF0aW9uCiAgbmV0OiBtYWM4
-MDIxMS5oOiBmaXggYSBiYWQgY29tbWVudCBsaW5lCiAgcmN1OiByY3VwZGF0ZS5oOiBnZXQgcmlk
-IG9mIFNwaGlueCB3YXJuaW5ncyBhdCByY3VfcG9pbnRlcl9oYW5kb2ZmKCkKICBkb2NzOiBjcnlw
-dG9fZW5naW5lLnJzdDogRml4IHR3byBwYXJzZSB3YXJuaW5ncwogIHRpbWU6IHRpbWVyLmM6IGFk
-anVzdCBhIGtlcm5lbC1kb2MgY29tbWVudAogIHdhaXQ6IHdhaXQuaDogR2V0IHJpZCBvZiBhIGtl
-cm5lbC1kb2MvU3BoaW54IHdhcm5pbmdzCiAgZmJkZXY6IG1vZGVkYi5jOiBmaXggYSBrZXJuZWwt
-ZG9jIG1hcmt1cAogIGlpbzogaWlvLmg6IHVzZSBuZXN0ZWQgc3RydWN0IHN1cHBvcnQgb24ga2Vy
-bmVsLWRvYyBtYXJrdXAKICBtdGQ6IHJhd25hbmQuaDogdXNlIG5lc3RlZCB1bmlvbiBrZXJuZWwt
-ZG9jIG1hcmt1cHMKICBkb2NzOiB1aW8taG93dG8ucnN0OiB1c2UgYSBjb2RlIGJsb2NrIHRvIHNv
-bHZlIGEgd2FybmluZwogIHcxOiB3MV9pby5jOiBmaXggYSBrZXJuZWwtZG9jIHdhcm5pbmcKCiBE
-b2N1bWVudGF0aW9uLzAwLUlOREVYICAgICAgICAgICAgICAgICAgICAgICAgfCAxMCAtLS0tLS0t
-CiAuLi4ve2JjYWNoZS50eHQgPT4gYWRtaW4tZ3VpZGUvYmNhY2hlLnJzdH0gICAgfCAgMAogLi4u
-L2Nncm91cC12Mi5yc3R9ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDAKIERvY3VtZW50
-YXRpb24vYWRtaW4tZ3VpZGUvaW5kZXgucnN0ICAgICAgICAgICB8ICAyICsrCiAuLi4vYWRtaW4t
-Z3VpZGUva2VybmVsLXBhcmFtZXRlcnMudHh0ICAgICAgICAgfCAgMiArLQogLi4uL3tjYWNoZXRs
-Yi50eHQgPT4gY29yZS1hcGkvY2FjaGV0bGIucnN0fSAgIHwgIDAKIC4uLi9jaXJjdWxhci1idWZm
-ZXJzLnJzdH0gICAgICAgICAgICAgICAgICAgICB8ICAwCiBEb2N1bWVudGF0aW9uL2NvcmUtYXBp
-L2luZGV4LnJzdCAgICAgICAgICAgICAgfCAgMiArKwogRG9jdW1lbnRhdGlvbi9jcnlwdG8vY3J5
-cHRvX2VuZ2luZS5yc3QgICAgICAgIHwgIDggKysrLS0tCiBEb2N1bWVudGF0aW9uL2NyeXB0by9p
-bmRleC5yc3QgICAgICAgICAgICAgICAgfCAgMSArCiBEb2N1bWVudGF0aW9uL2RlbGxfcmJ1LnR4
-dCAgICAgICAgICAgICAgICAgICAgfCAgNCArLS0KIERvY3VtZW50YXRpb24ve2Nsay50eHQgPT4g
-ZHJpdmVyLWFwaS9jbGsucnN0fSB8ICAwCiAuLi4vZmlybXdhcmUvZmFsbGJhY2stbWVjaGFuaXNt
-cy5yc3QgICAgICAgICAgfCAgMiArLQogLi4uL2RyaXZlci1hcGkvZmlybXdhcmUvcmVxdWVzdF9m
-aXJtd2FyZS5yc3QgIHwgMTcgKysrKysrKy0tLS0tCiBEb2N1bWVudGF0aW9uL2RyaXZlci1hcGkv
-aW5kZXgucnN0ICAgICAgICAgICAgfCAgMiArKwogRG9jdW1lbnRhdGlvbi9kcml2ZXItYXBpL2lu
-ZnJhc3RydWN0dXJlLnJzdCAgIHwgIDIgKy0KIERvY3VtZW50YXRpb24vZHJpdmVyLWFwaS91aW8t
-aG93dG8ucnN0ICAgICAgICB8ICAzICsrLQogRG9jdW1lbnRhdGlvbi9tZW1vcnktYmFycmllcnMu
-dHh0ICAgICAgICAgICAgIHwgIDQgKy0tCiBEb2N1bWVudGF0aW9uL25ldHdvcmtpbmcvY2FuLnJz
-dCAgICAgICAgICAgICAgfCAgNCArLS0KIC4uLi9wb3dlci9zdXNwZW5kLWFuZC1jcHVob3RwbHVn
-LnR4dCAgICAgICAgICB8ICAyICstCiBEb2N1bWVudGF0aW9uL3Byb2Nlc3MvaW5kZXgucnN0ICAg
-ICAgICAgICAgICAgfCAgMSArCiBEb2N1bWVudGF0aW9uL3NlY3VyaXR5L2luZGV4LnJzdCAgICAg
-ICAgICAgICAgfCAgMiArKwogLi4uL3RyYW5zbGF0aW9ucy9rb19LUi9tZW1vcnktYmFycmllcnMu
-dHh0ICAgIHwgIDQgKy0tCiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvbW9kZWRiLmMgICAgICAg
-ICAgICAgfCAyMiArKysrKysrKy0tLS0tLS0tCiBkcml2ZXJzL3cxL3cxX2lvLmMgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgfCAgMSArCiBpbmNsdWRlL2xpbnV4L2lpby9paW8uaCAgICAgICAg
-ICAgICAgICAgICAgICAgfCAyNCArKysrKysrKy0tLS0tLS0tLQogaW5jbHVkZS9saW51eC9tdGQv
-cmF3bmFuZC5oICAgICAgICAgICAgICAgICAgIHwgMjYgKysrKysrKysrKysrKy0tLS0tLQogaW5j
-bHVkZS9saW51eC9yY3VwZGF0ZS5oICAgICAgICAgICAgICAgICAgICAgIHwgIDUgKystLQogaW5j
-bHVkZS9saW51eC93YWl0LmggICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDIgKy0KIGluY2x1
-ZGUvbmV0L21hYzgwMjExLmggICAgICAgICAgICAgICAgICAgICAgICB8ICAyICstCiBrZXJuZWwv
-dGltZS90aW1lci5jICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAxNCArKysrKy0tLS0tCiAz
-MSBmaWxlcyBjaGFuZ2VkLCA5MyBpbnNlcnRpb25zKCspLCA3NSBkZWxldGlvbnMoLSkKIHJlbmFt
-ZSBEb2N1bWVudGF0aW9uL3tiY2FjaGUudHh0ID0+IGFkbWluLWd1aWRlL2JjYWNoZS5yc3R9ICgx
-MDAlKQogcmVuYW1lIERvY3VtZW50YXRpb24ve2Nncm91cC12Mi50eHQgPT4gYWRtaW4tZ3VpZGUv
-Y2dyb3VwLXYyLnJzdH0gKDEwMCUpCiByZW5hbWUgRG9jdW1lbnRhdGlvbi97Y2FjaGV0bGIudHh0
-ID0+IGNvcmUtYXBpL2NhY2hldGxiLnJzdH0gKDEwMCUpCiByZW5hbWUgRG9jdW1lbnRhdGlvbi97
-Y2lyY3VsYXItYnVmZmVycy50eHQgPT4gY29yZS1hcGkvY2lyY3VsYXItYnVmZmVycy5yc3R9ICgx
-MDAlKQogcmVuYW1lIERvY3VtZW50YXRpb24ve2Nsay50eHQgPT4gZHJpdmVyLWFwaS9jbGsucnN0
-fSAoMTAwJSkKCi0tIAoyLjE3LjAKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9kcmktZGV2ZWwK
+commit 5d6d1ddd2730 ("firmware: move firmware loader into its own directory")
+and other commits renamed the old firmware_class.c file and split it
+into separate files, but documentation was not changed accordingly,
+causing Sphinx errors.
+
+Change the location accordingly at the documentation files.
+
+While here, add a missing entry at request_firmware.rst for
+release_firmware() function.
+
+Fixes: 5d6d1ddd2730 ("firmware: move firmware loader into its own directory")
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Luis R. Rodriguez <mcgrof@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+---
+ Documentation/dell_rbu.txt                      |  4 ++--
+ .../driver-api/firmware/fallback-mechanisms.rst |  2 +-
+ .../driver-api/firmware/request_firmware.rst    | 17 +++++++++++------
+ Documentation/driver-api/infrastructure.rst     |  2 +-
+ Documentation/power/suspend-and-cpuhotplug.txt  |  2 +-
+ 5 files changed, 16 insertions(+), 11 deletions(-)
+
+diff --git a/Documentation/dell_rbu.txt b/Documentation/dell_rbu.txt
+index 0fdb6aa2704c..befeff80e7ec 100644
+--- a/Documentation/dell_rbu.txt
++++ b/Documentation/dell_rbu.txt
+@@ -121,8 +121,8 @@ read back the image downloaded.
+ 
+ .. note::
+ 
+-   This driver requires a patch for firmware_class.c which has the modified
+-   request_firmware_nowait function.
++   This driver requires a patch for drivers/base/firmware_loader/main.c
++   which has the modified request_firmware_nowait() function.
+ 
+    Also after updating the BIOS image a user mode application needs to execute
+    code which sends the BIOS update request to the BIOS. So on the next reboot
+diff --git a/Documentation/driver-api/firmware/fallback-mechanisms.rst b/Documentation/driver-api/firmware/fallback-mechanisms.rst
+index f353783ae0be..7aed31b5a439 100644
+--- a/Documentation/driver-api/firmware/fallback-mechanisms.rst
++++ b/Documentation/driver-api/firmware/fallback-mechanisms.rst
+@@ -72,7 +72,7 @@ the firmware requested, and establishes it in the device hierarchy by
+ associating the device used to make the request as the device's parent.
+ The sysfs directory's file attributes are defined and controlled through
+ the new device's class (firmware_class) and group (fw_dev_attr_groups).
+-This is actually where the original firmware_class.c file name comes from,
++This is actually where drivers/base/firmware_loader/fallback.c comes from,
+ as originally the only firmware loading mechanism available was the
+ mechanism we now use as a fallback mechanism.
+ 
+diff --git a/Documentation/driver-api/firmware/request_firmware.rst b/Documentation/driver-api/firmware/request_firmware.rst
+index cf4516dfbf96..8e34d29ea02d 100644
+--- a/Documentation/driver-api/firmware/request_firmware.rst
++++ b/Documentation/driver-api/firmware/request_firmware.rst
+@@ -17,19 +17,24 @@ an error is returned.
+ 
+ request_firmware
+ ----------------
+-.. kernel-doc:: drivers/base/firmware_class.c
++.. kernel-doc:: drivers/base/firmware_loader/main.c
+    :functions: request_firmware
+ 
+ request_firmware_direct
+ -----------------------
+-.. kernel-doc:: drivers/base/firmware_class.c
++.. kernel-doc:: drivers/base/firmware_loader/main.c
+    :functions: request_firmware_direct
+ 
+ request_firmware_into_buf
+ -------------------------
+-.. kernel-doc:: drivers/base/firmware_class.c
++.. kernel-doc:: drivers/base/firmware_loader/main.c
+    :functions: request_firmware_into_buf
+ 
++release_firmware
++----------------
++.. kernel-doc:: drivers/base/firmware_loader/main.c
++   :functions: release_firmware
++
+ Asynchronous firmware requests
+ ==============================
+ 
+@@ -41,7 +46,7 @@ in atomic contexts.
+ 
+ request_firmware_nowait
+ -----------------------
+-.. kernel-doc:: drivers/base/firmware_class.c
++.. kernel-doc:: drivers/base/firmware_loader/main.c
+    :functions: request_firmware_nowait
+ 
+ Special optimizations on reboot
+@@ -54,8 +59,8 @@ this can be done with firmware_request_cache() insted of requesting for the
+ firmare to be loaded.
+ 
+ firmware_request_cache()
+------------------------
+-.. kernel-doc:: drivers/base/firmware_class.c
++------------------------
++.. kernel-doc:: drivers/base/firmware_loader/main.c
+    :functions: firmware_request_cache
+ 
+ request firmware API expected driver use
+diff --git a/Documentation/driver-api/infrastructure.rst b/Documentation/driver-api/infrastructure.rst
+index 6d9ff316b608..bee1b9a1702f 100644
+--- a/Documentation/driver-api/infrastructure.rst
++++ b/Documentation/driver-api/infrastructure.rst
+@@ -28,7 +28,7 @@ Device Drivers Base
+ .. kernel-doc:: drivers/base/node.c
+    :internal:
+ 
+-.. kernel-doc:: drivers/base/firmware_class.c
++.. kernel-doc:: drivers/base/firmware_loader/main.c
+    :export:
+ 
+ .. kernel-doc:: drivers/base/transport_class.c
+diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.txt
+index 31abd04b9572..6f55eb960a6d 100644
+--- a/Documentation/power/suspend-and-cpuhotplug.txt
++++ b/Documentation/power/suspend-and-cpuhotplug.txt
+@@ -168,7 +168,7 @@ update on the CPUs, as discussed below:
+ 
+ [Please bear in mind that the kernel requests the microcode images from
+ userspace, using the request_firmware() function defined in
+-drivers/base/firmware_class.c]
++drivers/base/firmware_loader/main.c]
+ 
+ 
+ a. When all the CPUs are identical:
+-- 
+2.17.0
