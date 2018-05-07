@@ -1,32 +1,243 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 10/14] dt-bindings: qcom_spmi: Add support for SAW
- documentation
-Date: Mon, 7 May 2018 11:07:37 -0500
-Message-ID: <20180507160737.GA16495@rob-hp-laptop>
-References: <1525348355-25471-1-git-send-email-ilialin@codeaurora.org>
- <1525348355-25471-11-git-send-email-ilialin@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: [PATCH] drivers: thermal: Update license to SPDX format
+Date: Mon,  7 May 2018 11:52:29 -0600
+Message-ID: <20180507175229.864-1-ilina@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1525348355-25471-11-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 03, 2018 at 02:52:31PM +0300, Ilia Lin wrote:
-> Add support for SAW controlled regulators.
-> The regulators defined as SAW controlled in the device tree
-> will be controlled through special CPU registers instead of direct
-> SPMI accesses.
-> This is required especially for CPU supply regulators to synchronize
-> with clock scaling and for Automatic Voltage Switching.
-> Document it.
-> 
-> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-> ---
->  .../bindings/regulator/qcom,spmi-regulator.txt     | 45 ++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
+Update licences format for core thermal files.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+---
+ drivers/thermal/of-thermal.c      | 19 +------------------
+ drivers/thermal/thermal_core.c    |  5 +----
+ drivers/thermal/thermal_core.h    | 17 +----------------
+ drivers/thermal/thermal_helpers.c |  5 +----
+ drivers/thermal/thermal_hwmon.c   | 17 +----------------
+ drivers/thermal/thermal_hwmon.h   | 17 +----------------
+ drivers/thermal/thermal_sysfs.c   |  5 +----
+ include/linux/thermal.h           | 17 +----------------
+ 8 files changed, 8 insertions(+), 94 deletions(-)
+
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index e09f0354a4bc..eea2fce82bf7 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -1,26 +1,9 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *  of-thermal.c - Generic Thermal Management device tree support.
+  *
+  *  Copyright (C) 2013 Texas Instruments
+  *  Copyright (C) 2013 Eduardo Valentin <eduardo.valentin@ti.com>
+- *
+- *
+- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ #include <linux/thermal.h>
+ #include <linux/slab.h>
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d64325e078db..589925ac0994 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1,13 +1,10 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *  thermal.c - Generic Thermal Management Sysfs support.
+  *
+  *  Copyright (C) 2008 Intel Corp
+  *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
+  *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+  */
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 5e4150261500..7f8ace4c0142 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -1,24 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /*
+  *  thermal_core.h
+  *
+  *  Copyright (C) 2012  Intel Corp
+  *  Author: Durgadoss R <durgadoss.r@intel.com>
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ 
+ #ifndef __THERMAL_CORE_H__
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index eb03d7e099bb..2ba756af76b7 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *  thermal_helpers.c - helper functions to handle thermal devices
+  *
+@@ -7,10 +8,6 @@
+  *  Copyright (C) 2008 Intel Corp
+  *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
+  *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+  */
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index c4a508a124dc..11278836ed12 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *  thermal_hwmon.c - Generic Thermal Management hwmon support.
+  *
+@@ -8,22 +9,6 @@
+  *
+  *  Copyright (C) 2013 Texas Instruments
+  *  Copyright (C) 2013 Eduardo Valentin <eduardo.valentin@ti.com>
+- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ #include <linux/hwmon.h>
+ #include <linux/thermal.h>
+diff --git a/drivers/thermal/thermal_hwmon.h b/drivers/thermal/thermal_hwmon.h
+index c798fdb2ae43..019f6f88224e 100644
+--- a/drivers/thermal/thermal_hwmon.h
++++ b/drivers/thermal/thermal_hwmon.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /*
+  *  thermal_hwmon.h - Generic Thermal Management hwmon support.
+  *
+@@ -8,22 +9,6 @@
+  *
+  *  Copyright (C) 2013 Texas Instruments
+  *  Copyright (C) 2013 Eduardo Valentin <eduardo.valentin@ti.com>
+- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ #ifndef __THERMAL_HWMON_H__
+ #define __THERMAL_HWMON_H__
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 23b5e0a709b0..275ffee292bf 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *  thermal.c - sysfs interface of thermal devices
+  *
+@@ -7,10 +8,6 @@
+  *  Copyright (C) 2008 Intel Corp
+  *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
+  *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+  */
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 7834be668d80..5f4705f46c2f 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -1,25 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /*
+  *  thermal.h  ($Revision: 0 $)
+  *
+  *  Copyright (C) 2008  Intel Corp
+  *  Copyright (C) 2008  Zhang Rui <rui.zhang@intel.com>
+  *  Copyright (C) 2008  Sujith Thomas <sujith.thomas@intel.com>
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ 
+ #ifndef __THERMAL_H__
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
