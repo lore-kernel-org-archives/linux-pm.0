@@ -1,41 +1,59 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH 00/18] Fix some build warnings/errors with Sphinx
-Date: Tue, 8 May 2018 17:36:49 +0000
-Message-ID: <20180508173649.GH27853@wotan.suse.de>
-References: <cover.1525684985.git.mchehab+samsung@kernel.org>
- <20180508101342.2bde20ea@lwn.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20180508101342.2bde20ea@lwn.net>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-fbdev@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-iio@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, linux-can@vger.kernel.org
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: [PATCH RFC 0/4] drivers/thermal: support for multiple TZ for sensor
+Date: Tue,  8 May 2018 11:48:55 -0600
+Message-ID: <20180508174859.26539-1-ilina@codeaurora.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, daniel.lezcano@linaro.org, amit.kucheria@linaro.org, Lina Iyer <ilina@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBNYXkgMDgsIDIwMTggYXQgMTA6MTM6NDJBTSAtMDYwMCwgSm9uYXRoYW4gQ29yYmV0
-IHdyb3RlOgo+IE9uIE1vbiwgIDcgTWF5IDIwMTggMDY6MzU6MzYgLTAzMDAKPiBNYXVybyBDYXJ2
-YWxobyBDaGVoYWIgPG1jaGVoYWIrc2Ftc3VuZ0BrZXJuZWwub3JnPiB3cm90ZToKPiAKPiA+IEkg
-ZGVjaWRlZCB0byBnaXZlIGEgdHJ5IHdpdGggU3BoaW54IGxhc3Qgc3RhYmxlIHZlcnNpb24KPiA+
-ICgxLjE3LjQpLCBhbmQgbm90aWNlZCBzZXZlcmFsIGlzc3Vlcy4gVGhlIHdvcnNlIG9uZSB3YXMK
-PiA+IHdpdGggdGhlIG5ldHdvcmtpbmcgYm9vazogYSBub24tc3RhbmRhcmQgZm9vdG5vdGUgdGhl
-cmUKPiA+IHdpdGggWypdIGluc3RlYWQgb2YgYSBudW1iZXIgY2F1c2VzIGl0IHRvIGJyZWFrIFBE
-RiBidWlsZGluZy4KPiA+IAo+ID4gU28sIEkgdG9vayBzb21lIHNwYXJlIHRpbWUgdG8gYWRkcmVz
-cyBzb21lIHdhcm5pbmdzIGFsbCBvdmVyCj4gPiB0aGUgdHJlZSwgYW5kIG1vdmVkIGEgZmV3IHRl
-eHQgZG9jdW1lbnRzIHRvIGEgYm9vay4gCj4gCj4gT0ssIEkndmUgYXBwbGllZCB0aGUgb25lcyB0
-aGF0IHNlZW0gdG8gbWFrZSBzZW5zZSBmb3IgbWUgdG8gdGFrZSBub3cuCj4gVGhlcmUncyBjb21t
-ZW50cyBvbiB0aGUgZmlybXdhcmUgb25lLCAKCkknbGwgZm9sZCBpbiB0aGUgZml4ZXMgZm9yIHRo
-ZSBmaXJtd2FyZSBBUEkgd2hpY2ggZG8gYXBwbHkgdG8gbXkgcXVldWUuCgogIEx1aXMKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxp
-bmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+This is an attempt at introducing multiple thermal zones for each thermal
+sensor. The usecase behind this is that, a sensor may involved in monitoring a
+region that could have different mitigative actions. For example, a sensor
+placed between audio and camera IP, will involve different mitigative actions
+on these blocks. Sometimes it is also desirable to employ different governors
+and different mitigative strategies for the same sensor. For example, using
+step-wise governor for temperatures > 0 and a userspace governor for
+temperatures < 0 degC.
+
+The idea presented in this patchset involves linking thermal zones together
+that share the same underlying sensor. The sensor still interacts with one
+thermal zone that we deem as the primary thermal sensor. The low thresholds set
+on a sensor is the max of min thresholds for the high trip threshold while the
+low trip thresholds for the sensor is the min of max thresholds from the
+different thermal zones of the sensor around the current sensor temperature.
+When the sensor temperature crosses the threshold, the thermal zone is notified
+and the new thresholds is evaluated again.
+
+These patches continue to return a struct thermal_zone * back to the sensor
+when the sensor registers. While this prevents breaking the existing
+interaction, it is not very clean and optimal. This is something to think about
+as we review the patches. The breakdown of the patches in this set is -
+
+- Patch #1 refactors the current data structures to help with the new support
+- Patch #2 allows probing and set up of multiple thermal zones when a sensor is
+  registered.
+- Patch #3 aggregates across multiple thermal zones to figure out the mitigation
+  and set new thresholds on the sensor. Sensor low and high thresholds are set
+  based on thresholds from any thermal zone of the sensor.
+- Patch #4 notifies the framework and the related thermal zones when the sensor
+  is tripped
+
+Please consider reviewing these patches. We have seen benefits of this idea and
+is implemented and used in mobile products.
+
+Lina Iyer (4):
+  drivers: of-thermal: abstract sensor related information
+  drivers: of-thermal: allow multiple thermal zones for a sensor
+  drivers: of-thermal: aggregate sensor trips across thermal zones
+  drivers: of-thermal: notify framework when sensor is tripped
+
+ drivers/thermal/of-thermal.c      | 205 ++++++++++++++++++++++++++----
+ drivers/thermal/thermal_helpers.c |  37 +++---
+ include/linux/thermal.h           |  10 ++
+ 3 files changed, 209 insertions(+), 43 deletions(-)
+
+--
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
