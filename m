@@ -1,42 +1,30 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: [PATCH] Documentation/admin-guide/pm/intel_pstate: fix Active Mode w/o HWP paragraph
-Date: Tue,  8 May 2018 17:12:09 +0200
-Message-ID: <20180508151209.9314-1-juri.lelli@redhat.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 02/17] dt-bindings: rtc: mt6397: add bindings for
+ MediaTek PMIC based RTC
+Date: Tue, 8 May 2018 10:39:41 -0500
+Message-ID: <20180508153941.GA23906@rob-hp-laptop>
+References: <cover.1524646231.git.sean.wang@mediatek.com>
+ <ae63c2a511e40ab4f6778197a1f15e41505d5682.1524646231.git.sean.wang@mediatek.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <ae63c2a511e40ab4f6778197a1f15e41505d5682.1524646231.git.sean.wang@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
+To: sean.wang@mediatek.com
+Cc: mark.rutland@arm.com, sre@kernel.org, lee.jones@linaro.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, matthias.bgg@gmail.com, eddie.huang@mediatek.com, devicetree@vger.kernel.org, linux-rtc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-P-state selection algorithm (powersave or performance) is selected by
-echoing the desired choice to scaling_governor sysfs attribute and not
-to scaling_cur_freq (as currently stated).
+On Wed, Apr 25, 2018 at 05:32:28PM +0800, sean.wang@mediatek.com wrote:
+> From: Sean Wang <sean.wang@mediatek.com>
+> 
+> Add device-tree binding for MediaTek PMIC based RTC
+> 
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> ---
+>  .../devicetree/bindings/rtc/rtc-mt6397.txt         | 29 ++++++++++++++++++++++
+>  1 file changed, 29 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
 
-Fix it.
-
-Signed-off-by: Juri Lelli <juri.lelli@redhat.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-doc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-
----
- Documentation/admin-guide/pm/intel_pstate.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
-index d2b6fda3d67b..ab2fe0eda1d7 100644
---- a/Documentation/admin-guide/pm/intel_pstate.rst
-+++ b/Documentation/admin-guide/pm/intel_pstate.rst
-@@ -145,7 +145,7 @@ feature enabled.]
- 
- In this mode ``intel_pstate`` registers utilization update callbacks with the
- CPU scheduler in order to run a P-state selection algorithm, either
--``powersave`` or ``performance``, depending on the ``scaling_cur_freq`` policy
-+``powersave`` or ``performance``, depending on the ``scaling_governor`` policy
- setting in ``sysfs``.  The current CPU frequency information to be made
- available from the ``scaling_cur_freq`` policy attribute in ``sysfs`` is
- periodically updated by those utilization update callbacks too.
--- 
-2.14.3
+Reviewed-by: Rob Herring <robh@kernel.org>
