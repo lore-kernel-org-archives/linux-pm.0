@@ -1,78 +1,91 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Drop custom MIN/MAX macros
-Date: Tue, 08 May 2018 13:49:51 +0900
-Message-ID: <5AF12C6F.4040903@samsung.com>
-References: <CGME20180424194654epcas2p23f29bc7de4118f84c7888a7966b90b88@epcas2p2.samsung.com>
-        <20180424194639.22804-1-bjorn.andersson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] sched/schedutil: Don't set next_freq to UINT_MAX
+Date: Tue,  8 May 2018 12:12:42 +0530
+Message-ID: <872c3f8690d9362820639d91a807e535f10a9a36.1525761635.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180424194639.22804-1-bjorn.andersson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, claudio@evidence.eu.com, patrick.bellasi@arm.com, juri.lelli@redhat.com, joelaf@google.com, "4 . 12+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The schedutil driver sets sg_policy->next_freq to UINT_MAX on certain
+occasions:
+- In sugov_start(), when the schedutil governor is started for a group
+  of CPUs.
+- And whenever we need to force a freq update before rate-limit
+  duration, which happens when:
+  - there is an update in cpufreq policy limits.
+  - Or when the utilization of DL scheduling class increases.
 
-On 2018년 04월 25일 04:46, Bjorn Andersson wrote:
-> Drop the custom MIN/MAX macros in favour of the standard min/max from
-> kernel.h
-> 
-> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> ---
->  drivers/devfreq/devfreq.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index fe2af6aa88fc..2067cd229ce3 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -28,9 +28,6 @@
->  #include <linux/of.h>
->  #include "governor.h"
->  
-> -#define MAX(a,b)	((a > b) ? a : b)
-> -#define MIN(a,b)	((a < b) ? a : b)
-> -
->  static struct class *devfreq_class;
->  
->  /*
-> @@ -280,8 +277,8 @@ int update_devfreq(struct devfreq *devfreq)
->  	 * max_freq
->  	 * min_freq
->  	 */
-> -	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
-> -	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
-> +	max_freq = min(devfreq->scaling_max_freq, devfreq->max_freq);
-> +	min_freq = max(devfreq->scaling_min_freq, devfreq->min_freq);
->  
->  	if (min_freq && freq < min_freq) {
->  		freq = min_freq;
-> @@ -1149,7 +1146,7 @@ static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
->  {
->  	struct devfreq *df = to_devfreq(dev);
->  
-> -	return sprintf(buf, "%lu\n", MAX(df->scaling_min_freq, df->min_freq));
-> +	return sprintf(buf, "%lu\n", max(df->scaling_min_freq, df->min_freq));
->  }
->  
->  static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
-> @@ -1185,7 +1182,7 @@ static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
->  {
->  	struct devfreq *df = to_devfreq(dev);
->  
-> -	return sprintf(buf, "%lu\n", MIN(df->scaling_max_freq, df->max_freq));
-> +	return sprintf(buf, "%lu\n", min(df->scaling_max_freq, df->max_freq));
->  }
->  static DEVICE_ATTR_RW(max_freq);
->  
-> 
+In return, get_next_freq() doesn't return a cached next_freq value but
+instead recalculates the next frequency. This has some side effects
+though and may significantly delay a required increase in frequency.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+In sugov_update_single() we try to avoid decreasing frequency if the CPU
+has not been idle recently. Consider this scenario, the available range
+of frequencies for a CPU are from 800 MHz to 2.5 GHz and current
+frequency is 800 MHz. From one of the call paths
+sg_policy->need_freq_update is set to true and hence
+sg_policy->next_freq is set to UINT_MAX. Now if the CPU had been busy,
+next_f will always be less than UINT_MAX, whatever the value of next_f
+is. And so even when we wanted to increase the frequency, we will
+overwrite next_f with UINT_MAX and will not change the frequency
+eventually. This will continue until the time CPU stays busy. This isn't
+cross checked with any specific test cases, but rather based on general
+code review.
 
+Fix that by not resetting the sg_policy->need_freq_update flag from
+sugov_should_update_freq() but get_next_freq() and we wouldn't need to
+overwrite sg_policy->next_freq anymore.
+
+Cc: 4.12+ <stable@vger.kernel.org> # 4.12+
+Fixes: b7eaf1aab9f8 ("cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index d2c6083304b4..daaca23697dc 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -95,15 +95,8 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+ 	if (sg_policy->work_in_progress)
+ 		return false;
+ 
+-	if (unlikely(sg_policy->need_freq_update)) {
+-		sg_policy->need_freq_update = false;
+-		/*
+-		 * This happens when limits change, so forget the previous
+-		 * next_freq value and force an update.
+-		 */
+-		sg_policy->next_freq = UINT_MAX;
++	if (unlikely(sg_policy->need_freq_update))
+ 		return true;
+-	}
+ 
+ 	delta_ns = time - sg_policy->last_freq_update_time;
+ 
+@@ -165,8 +158,10 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+ 
+ 	freq = (freq + (freq >> 2)) * util / max;
+ 
+-	if (freq == sg_policy->cached_raw_freq && sg_policy->next_freq != UINT_MAX)
++	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+ 		return sg_policy->next_freq;
++
++	sg_policy->need_freq_update = false;
+ 	sg_policy->cached_raw_freq = freq;
+ 	return cpufreq_driver_resolve_freq(policy, freq);
+ }
+@@ -670,7 +665,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+ 
+ 	sg_policy->freq_update_delay_ns	= sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
+ 	sg_policy->last_freq_update_time	= 0;
+-	sg_policy->next_freq			= UINT_MAX;
++	sg_policy->next_freq			= 0;
+ 	sg_policy->work_in_progress		= false;
+ 	sg_policy->need_freq_update		= false;
+ 	sg_policy->cached_raw_freq		= 0;
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.15.0.194.g9af6a3dea062
