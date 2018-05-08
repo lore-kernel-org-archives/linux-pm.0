@@ -1,125 +1,42 @@
-From: Claudio Scordino <claudio@evidence.eu.com>
-Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
- requests
-Date: Tue, 8 May 2018 14:32:27 +0200
-Message-ID: <a3cf769c-5f71-17fb-eeee-6e7e17ffa78a@evidence.eu.com>
-References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
- <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: [PATCH] Documentation/admin-guide/pm/intel_pstate: fix Active Mode w/o HWP paragraph
+Date: Tue,  8 May 2018 17:12:09 +0200
+Message-ID: <20180508151209.9314-1-juri.lelli@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+P-state selection algorithm (powersave or performance) is selected by
+echoing the desired choice to scaling_governor sysfs attribute and not
+to scaling_cur_freq (as currently stated).
 
+Fix it.
 
-Il 08/05/2018 08:54, Viresh Kumar ha scritto:
-> On 07-05-18, 16:43, Claudio Scordino wrote:
->> At OSPM, it was mentioned the issue about urgent CPU frequency requests
->> arriving when a frequency switch is already in progress.
->>
->> Besides the various issues (physical time for switching frequency,
->> on-going kthread activity, etc.) one (minor) issue is the kernel
->> "forgetting" such request, thus waiting the next switch time for
->> recomputing the needed frequency and behaving accordingly.
->>
->> This patch makes the kthread serve any urgent request occurred during
->> the previous frequency switch. It introduces a specific flag, only set
->> when the SCHED_DEADLINE scheduling class increases the CPU utilization,
->> aiming at decreasing the likelihood of a deadline miss.
->>
->> Indeed, some preliminary tests in critical conditions (i.e.
->> SCHED_DEADLINE tasks with short periods) have shown reductions of more
->> than 10% of the average number of deadline misses. On the other hand,
->> the increase in terms of energy consumption when running SCHED_DEADLINE
->> tasks (not yet measured) is likely to be not negligible (especially in
->> case of critical scenarios like "ramp up" utilizations).
->>
->> The patch is meant as follow-up discussion after OSPM.
->>
->> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
->> CC: Viresh Kumar <viresh.kumar@linaro.org>
->> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> CC: Peter Zijlstra <peterz@infradead.org>
->> CC: Ingo Molnar <mingo@redhat.com>
->> CC: Patrick Bellasi <patrick.bellasi@arm.com>
->> CC: Juri Lelli <juri.lelli@redhat.com>
->> Cc: Luca Abeni <luca.abeni@santannapisa.it>
->> CC: Joel Fernandes <joelaf@google.com>
->> CC: linux-pm@vger.kernel.org
->> ---
->>   kernel/sched/cpufreq_schedutil.c | 20 ++++++++++++++++++--
->>   1 file changed, 18 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->> index d2c6083..4de06b0 100644
->> --- a/kernel/sched/cpufreq_schedutil.c
->> +++ b/kernel/sched/cpufreq_schedutil.c
->> @@ -41,6 +41,7 @@ struct sugov_policy {
->>   	bool			work_in_progress;
->>   
->>   	bool			need_freq_update;
->> +	bool			urgent_freq_update;
->>   };
->>   
->>   struct sugov_cpu {
->> @@ -92,6 +93,14 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->>   	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
->>   		return false;
->>   
->> +	/*
->> +	 * Continue computing the new frequency. In case of work_in_progress,
->> +	 * the kthread will resched a change once the current transition is
->> +	 * finished.
->> +	 */
->> +	if (sg_policy->urgent_freq_update)
->> +		return true;
->> +
->>   	if (sg_policy->work_in_progress)
->>   		return false;
->>   
->> @@ -121,6 +130,9 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
->>   	sg_policy->next_freq = next_freq;
->>   	sg_policy->last_freq_update_time = time;
->>   
->> +	if (sg_policy->work_in_progress)
->> +		return;
->> +
->>   	if (policy->fast_switch_enabled) {
->>   		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
->>   		if (!next_freq)
->> @@ -274,7 +286,7 @@ static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
->>   static inline void ignore_dl_rate_limit(struct sugov_cpu *sg_cpu, struct sugov_policy *sg_policy)
->>   {
->>   	if (cpu_util_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->util_dl)
->> -		sg_policy->need_freq_update = true;
->> +		sg_policy->urgent_freq_update = true;
->>   }
->>   
->>   static void sugov_update_single(struct update_util_data *hook, u64 time,
->> @@ -383,8 +395,11 @@ static void sugov_work(struct kthread_work *work)
->>   	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
->>   
->>   	mutex_lock(&sg_policy->work_lock);
->> -	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
->> +	do {
->> +		sg_policy->urgent_freq_update = false;
->> +		__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
->>   				CPUFREQ_RELATION_L);
-> 
-> If we are going to solve this problem, then maybe instead of the added
-> complexity and a new flag we can look for need_freq_update flag at this location
-> and re-calculate the next frequency if required.
+Signed-off-by: Juri Lelli <juri.lelli@redhat.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
-I agree.
-Indeed, I've been in doubt if adding a new flag or relying on the existing need_freq_update flag (whose name, however, didn't seem to reflect any sense of urgency).
-Maybe we can use need_freq_update but change its name to a more meaningful string ?
+---
+ Documentation/admin-guide/pm/intel_pstate.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-
-            Claudio
+diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
+index d2b6fda3d67b..ab2fe0eda1d7 100644
+--- a/Documentation/admin-guide/pm/intel_pstate.rst
++++ b/Documentation/admin-guide/pm/intel_pstate.rst
+@@ -145,7 +145,7 @@ feature enabled.]
+ 
+ In this mode ``intel_pstate`` registers utilization update callbacks with the
+ CPU scheduler in order to run a P-state selection algorithm, either
+-``powersave`` or ``performance``, depending on the ``scaling_cur_freq`` policy
++``powersave`` or ``performance``, depending on the ``scaling_governor`` policy
+ setting in ``sysfs``.  The current CPU frequency information to be made
+ available from the ``scaling_cur_freq`` policy attribute in ``sysfs`` is
+ periodically updated by those utilization update callbacks too.
+-- 
+2.14.3
