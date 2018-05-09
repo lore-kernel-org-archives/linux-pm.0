@@ -1,90 +1,100 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
- requests
-Date: Wed, 9 May 2018 03:34:34 -0700
-Message-ID: <20180509103434.GF76874@joelaf.mtv.corp.google.com>
-References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
- <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
- <20180509045425.GA158882@joelaf.mtv.corp.google.com>
- <20180509064530.GA1681@localhost.localdomain>
- <20180509080644.GA76874@joelaf.mtv.corp.google.com>
- <CAJZ5v0iFZ5+6BQCism-o8bnOxD8KveueJ5CT58F9uH_7_pYOXQ@mail.gmail.com>
- <20180509084001.bghnwpv3a3xnuxce@vireshk-i7>
- <20180509090259.GD76874@joelaf.mtv.corp.google.com>
- <20180509092823.sfph4gomnblb7jgr@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] sched/schedutil: Don't set next_freq to UINT_MAX
+Date: Wed,  9 May 2018 16:05:24 +0530
+Message-ID: <dadd359a7fc0f719b9e95161b2ac469e1a3c70cc.1525861952.git.viresh.kumar@linaro.org>
+References: <2276196.ev9rMjHTR0@aspire.rjw.lan>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180509092823.sfph4gomnblb7jgr@vireshk-i7>
+In-Reply-To: <2276196.ev9rMjHTR0@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 09, 2018 at 02:58:23PM +0530, Viresh Kumar wrote:
-> On 09-05-18, 02:02, Joel Fernandes wrote:
-> > On Wed, May 09, 2018 at 02:10:01PM +0530, Viresh Kumar wrote:
-> > > Right, none of the above changes are required now.
-> > 
-> > I didn't follow what you mean the changes are not required? I was developing
-> > against Linus mainline. Also I replied to Rafael's comment in the other
-> > thread.
-> 
-> At least for the shared policy case the entire sequence of
-> sugov_should_update_freq() followed by sugov_update_commit() is
-> executed from within spinlock protected region and you are using the
-> same lock below. And so either the above two routines or the kthread
-> routine below will execute at a given point of time.
-> 
-> So in case kthread has started doing the update and acquired the lock,
-> the util update handler will wait until the time work_in_progress is
-> set to false, that's not a problem we are trying to solve here.
-> 
-> And if kthread hasn't acquired the lock yet and util handler has
-> started executing sugov_should_update_freq() ....
-> 
-> And ^^^ this is where I understood that your earlier change is
-> actually required, so that we accumulate the latest updated next_freq
-> value.
-> 
-> And with all that we wouldn't require a while loop in the kthread
-> code.
+The schedutil driver sets sg_policy->next_freq to UINT_MAX on certain
+occasions to discard the cached value of next freq:
+- In sugov_start(), when the schedutil governor is started for a group
+  of CPUs.
+- And whenever we need to force a freq update before rate-limit
+  duration, which happens when:
+  - there is an update in cpufreq policy limits.
+  - Or when the utilization of DL scheduling class increases.
 
-Oh yeah, totally. So I think we are on the same page now about that.
+In return, get_next_freq() doesn't return a cached next_freq value but
+recalculates the next frequency instead.
 
-> > > > > @@ -381,13 +381,23 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
-> > > > >  static void sugov_work(struct kthread_work *work)
-> > > > >  {
-> > > > >         struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-> > > > > +       unsigned int freq;
-> > > > > +
-> > > > > +       /*
-> > > > > +        * Hold sg_policy->update_lock just enough to handle the case where:
-> > > > > +        * if sg_policy->next_freq is updated before work_in_progress is set to
-> > > > > +        * false, we may miss queueing the new update request since
-> > > > > +        * work_in_progress would appear to be true.
-> > > > > +        */
-> > > > > +       raw_spin_lock(&sg_policy->update_lock);
-> > > > > +       freq = sg_policy->next_freq;
-> > > > > +       sg_policy->work_in_progress = false;
-> > > > > +       raw_spin_unlock(&sg_policy->update_lock);
-> > > 
-> > > One problem we still have is that sg_policy->update_lock is only used
-> > > in the shared policy case and not in the single CPU per policy case,
-> > > so the race isn't solved there yet.
-> > 
-> > True.. I can make the single CPU case acquire the update_lock very briefly
-> > around sugov_update_commit call in sugov_update_single.
-> 
-> Rafael was very clear from the beginning that he wouldn't allow a spin
-> lock in the un-shared policy case :)
+But having special meaning for a particular value of frequency makes the
+code less readable and error prone. We recently fixed a bug where the
+UINT_MAX value was considered as valid frequency in
+sugov_update_single().
 
-That's fair. Probably we can just not do this trickery at all for the single
-case for now, incase work_in_progress is set. That way we still get the
-benefit for the shared case, and the single case isn't changed from what it is
-today.
+All we need is a flag which can be used to discard the value of
+sg_policy->next_freq and we already have need_freq_update for that. Lets
+reuse it instead of setting next_freq to UINT_MAX.
 
-thanks,
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2:
+- Rebased over the fix sent by Rafael
 
-- Joel
+  lkml.kernel.org/r/2276196.ev9rMjHTR0@aspire.rjw.lan
+
+- Remove the additional check from sugov_update_single() as well.
+- This is for 4.18 now instead of stable kernels.
+
+ kernel/sched/cpufreq_schedutil.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index e23e84724f39..daaca23697dc 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -95,15 +95,8 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+ 	if (sg_policy->work_in_progress)
+ 		return false;
+ 
+-	if (unlikely(sg_policy->need_freq_update)) {
+-		sg_policy->need_freq_update = false;
+-		/*
+-		 * This happens when limits change, so forget the previous
+-		 * next_freq value and force an update.
+-		 */
+-		sg_policy->next_freq = UINT_MAX;
++	if (unlikely(sg_policy->need_freq_update))
+ 		return true;
+-	}
+ 
+ 	delta_ns = time - sg_policy->last_freq_update_time;
+ 
+@@ -165,8 +158,10 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+ 
+ 	freq = (freq + (freq >> 2)) * util / max;
+ 
+-	if (freq == sg_policy->cached_raw_freq && sg_policy->next_freq != UINT_MAX)
++	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+ 		return sg_policy->next_freq;
++
++	sg_policy->need_freq_update = false;
+ 	sg_policy->cached_raw_freq = freq;
+ 	return cpufreq_driver_resolve_freq(policy, freq);
+ }
+@@ -305,8 +300,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 	 * Do not reduce the frequency if the CPU has not been idle
+ 	 * recently, as the reduction is likely to be premature then.
+ 	 */
+-	if (busy && next_f < sg_policy->next_freq &&
+-	    sg_policy->next_freq != UINT_MAX) {
++	if (busy && next_f < sg_policy->next_freq) {
+ 		next_f = sg_policy->next_freq;
+ 
+ 		/* Reset cached freq as next_freq has changed */
+@@ -671,7 +665,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+ 
+ 	sg_policy->freq_update_delay_ns	= sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
+ 	sg_policy->last_freq_update_time	= 0;
+-	sg_policy->next_freq			= UINT_MAX;
++	sg_policy->next_freq			= 0;
+ 	sg_policy->work_in_progress		= false;
+ 	sg_policy->need_freq_update		= false;
+ 	sg_policy->cached_raw_freq		= 0;
+-- 
+2.15.0.194.g9af6a3dea062
