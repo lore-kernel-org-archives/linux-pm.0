@@ -1,35 +1,188 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: Serdev runtime PM (was: Re: [PATCH 4/7] dt-bindings: gnss: add
- u-blox binding)
-Date: Wed, 9 May 2018 11:49:57 +0200
-Message-ID: <20180509094957.GB2285@localhost>
-References: <20180502081637.GE2285@localhost>
- <5242FCAD-3139-4A9C-B9FA-7BBAA0E6AE57@goldelico.com>
- <20180503205037.7be552c1@aktux>
- <44A0BC7C-67C7-4116-849F-90FF7CF2B1F0@goldelico.com>
- <20180504114213.3xlzqxe74n55tk5s@earth.universe>
- <20180507100135.GS2285@localhost>
- <20180507154515.GP98604@atomide.com>
- <20180507163439.GV2285@localhost>
- <20180508155608.3bzcbepsmoskhlox@earth.universe>
- <20180509091831.GA2285@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH V2 05/11] PM / Domains: Allow a better error handling of dev_pm_domain_attach()
+Date: Wed,  9 May 2018 12:17:52 +0200
+Message-ID: <1525861072-29150-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180509091831.GA2285@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Johan Hovold <johan@kernel.org>, Tony Lindgren <tony@atomide.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mark Brown <broonie@kernel.org>, Vinod Koul <vinod.koul@intel.com>, Sanyog Kale <sanyog.r.kale@intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 09, 2018 at 11:18:31AM +0200, Johan Hovold wrote:
+The callers of dev_pm_domain_attach() currently checks the returned error
+code for -EPROBE_DEFER and needs to ignore other error codes. This is an
+unnecessary limitation, which also leads to a rather strange behaviour in
+the error path.
 
-> I've cooked up a patch which I'll be sending as a reply to this mail.
+Address this limitation, by changing the return codes from
+acpi_dev_pm_attach() and genpd_dev_pm_attach(). More precisely, let them
+return 0, when no PM domain is needed for the device and then return 1, in
+case the device was successfully attached to its PM domain. In this way,
+dev_pm_domain_attach(), gets a better understanding of what happens in the
+attach attempts and also allowing its caller to better act on real errors
+codes.
 
-Forgot to add the in-reply-to header of course. For the interested, the
-patch can be found here:
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
 
-https://lkml.kernel.org/r/20180509094419.13470-1-johan@kernel.org
+Changes in v2:
+	- Return 0 from the inline variant of dev_pm_domain_attach(), to make
+	sure probing still works when CONFIG_PM is unset.
 
-Johan
+---
+ drivers/acpi/device_pm.c    |  6 +++---
+ drivers/base/power/common.c |  7 ++++---
+ drivers/base/power/domain.c | 19 ++++++++++---------
+ include/linux/acpi.h        |  2 +-
+ include/linux/pm_domain.h   |  4 ++--
+ 5 files changed, 20 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index d006300..a7c2673 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -1257,7 +1257,7 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
+ 	struct acpi_device *adev = ACPI_COMPANION(dev);
+ 
+ 	if (!adev)
+-		return -ENODEV;
++		return 0;
+ 
+ 	/*
+ 	 * Only attach the power domain to the first device if the
+@@ -1265,7 +1265,7 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
+ 	 * management twice.
+ 	 */
+ 	if (!acpi_device_is_first_physical_node(adev, dev))
+-		return -EBUSY;
++		return 0;
+ 
+ 	acpi_add_pm_notifier(adev, dev, acpi_pm_notify_work_func);
+ 	dev_pm_domain_set(dev, &acpi_general_pm_domain);
+@@ -1275,7 +1275,7 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
+ 	}
+ 
+ 	dev->pm_domain->detach = acpi_dev_pm_detach;
+-	return 0;
++	return 1;
+ }
+ EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
+ #endif /* CONFIG_PM */
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index f3cf61f..5e4b481 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -98,7 +98,8 @@ EXPORT_SYMBOL_GPL(dev_pm_put_subsys_data);
+  * Callers must ensure proper synchronization of this function with power
+  * management callbacks.
+  *
+- * Returns 0 on successfully attached PM domain or negative error code.
++ * Returns 0 on successfully attached PM domain and when it found that the
++ * device don't need a PM domain, else a negative error code.
+  */
+ int dev_pm_domain_attach(struct device *dev, bool power_on)
+ {
+@@ -108,10 +109,10 @@ int dev_pm_domain_attach(struct device *dev, bool power_on)
+ 		return -EEXIST;
+ 
+ 	ret = acpi_dev_pm_attach(dev, power_on);
+-	if (ret)
++	if (!ret)
+ 		ret = genpd_dev_pm_attach(dev);
+ 
+-	return ret;
++	return ret < 0 ? ret : 0;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
+ 
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index b816adb..455ecea 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2180,10 +2180,11 @@ static void genpd_dev_pm_sync(struct device *dev)
+  * Parse device's OF node to find a PM domain specifier. If such is found,
+  * attaches the device to retrieved pm_domain ops.
+  *
+- * Returns 0 on successfully attached PM domain or negative error code. Note
+- * that if a power-domain exists for the device, but it cannot be found or
+- * turned on, then return -EPROBE_DEFER to ensure that the device is not
+- * probed and to re-try again later.
++ * Returns 1 on successfully attached PM domain, 0 when the device don't need a
++ * PM domain or a negative error code in case of failures. Note that if a
++ * power-domain exists for the device, but it cannot be found or turned on,
++ * then return -EPROBE_DEFER to ensure that the device is not probed and to
++ * re-try again later.
+  */
+ int genpd_dev_pm_attach(struct device *dev)
+ {
+@@ -2192,12 +2193,12 @@ int genpd_dev_pm_attach(struct device *dev)
+ 	int ret;
+ 
+ 	if (!dev->of_node)
+-		return -ENODEV;
++		return 0;
+ 
+ 	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
+ 					"#power-domain-cells", 0, &pd_args);
+ 	if (ret < 0)
+-		return ret;
++		return 0;
+ 
+ 	mutex_lock(&gpd_list_lock);
+ 	pd = genpd_get_from_provider(&pd_args);
+@@ -2218,7 +2219,7 @@ int genpd_dev_pm_attach(struct device *dev)
+ 		if (ret != -EPROBE_DEFER)
+ 			dev_err(dev, "failed to add to PM domain %s: %d",
+ 				pd->name, ret);
+-		goto out;
++		return ret;
+ 	}
+ 
+ 	dev->pm_domain->detach = genpd_dev_pm_detach;
+@@ -2230,8 +2231,8 @@ int genpd_dev_pm_attach(struct device *dev)
+ 
+ 	if (ret)
+ 		genpd_remove_device(pd, dev);
+-out:
+-	return ret ? -EPROBE_DEFER : 0;
++
++	return ret ? -EPROBE_DEFER : 1;
+ }
+ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+ 
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 15bfb15..c01675b 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -899,7 +899,7 @@ static inline int acpi_subsys_runtime_suspend(struct device *dev) { return 0; }
+ static inline int acpi_subsys_runtime_resume(struct device *dev) { return 0; }
+ static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
+ {
+-	return -ENODEV;
++	return 0;
+ }
+ #endif
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 04dbef9..ab18548 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -280,7 +280,7 @@ static inline int of_genpd_parse_idle_states(struct device_node *dn,
+ 
+ static inline int genpd_dev_pm_attach(struct device *dev)
+ {
+-	return -ENODEV;
++	return 0;
+ }
+ 
+ static inline
+@@ -297,7 +297,7 @@ extern void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
+ #else
+ static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
+ {
+-	return -ENODEV;
++	return 0;
+ }
+ static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
+ static inline void dev_pm_domain_set(struct device *dev,
+-- 
+2.7.4
