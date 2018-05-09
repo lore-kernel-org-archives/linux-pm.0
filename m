@@ -1,134 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Revert "cpufreq: schedutil: Don't restrict kthread to
- related_cpus unnecessarily"
-Date: Wed, 9 May 2018 10:25:27 +0530
-Message-ID: <20180509045527.ylf2nwolsxxcsjkq@vireshk-i7>
-References: <20180508073340.13114-1-dietmar.eggemann@arm.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
+ requests
+Date: Wed, 9 May 2018 08:45:30 +0200
+Message-ID: <20180509064530.GA1681@localhost.localdomain>
+References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
+ <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
+ <20180509045425.GA158882@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180508073340.13114-1-dietmar.eggemann@arm.com>
+In-Reply-To: <20180509045425.GA158882@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Pavan Kondeti <pkondeti@codeaurora.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Quentin Perret <quentin.perret@arm.com>
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08-05-18, 08:33, Dietmar Eggemann wrote:
-> This reverts commit e2cabe48c20efb174ce0c01190f8b9c5f3ea1d13.
+On 08/05/18 21:54, Joel Fernandes wrote:
+
+[...]
+
+> Just for discussion sake, is there any need for work_in_progress? If we can
+> queue multiple work say kthread_queue_work can handle it, then just queuing
+> works whenever they are available should be Ok and the kthread loop can
+> handle them. __cpufreq_driver_target is also protected by the work lock if
+> there is any concern that can have races... only thing is rate-limiting of
+> the requests, but we are doing a rate limiting, just not for the "DL
+> increased utilization" type requests (which I don't think we are doing at the
+> moment for urgent DL requests anyway).
 > 
-> Lifting the restriction that the sugov kthread is bound to the
-> policy->related_cpus for a system with a slow switching cpufreq driver,
-> which is able to perform DVFS from any cpu (e.g. cpufreq-dt), is not
-> only not beneficial it also harms Enery-Aware Scheduling (EAS) on
-> systems with asymmetric cpu capacities (e.g. Arm big.LITTLE).
+> Following is an untested diff to show the idea. What do you think?
 > 
-> The sugov kthread which does the update for the little cpus could
-> potentially run on a big cpu. It could prevent that the big cluster goes
-> into deeper idle states although all the tasks are running on the little
-> cluster.
+> thanks,
 > 
-> Example: hikey960 w/ 4.16.0-rc6-+
->          Arm big.LITTLE with per-cluster DVFS
+> - Joel
 > 
-> root@h960:~# cat /proc/cpuinfo | grep "^CPU part"
-> CPU part        : 0xd03 (Cortex-A53, little cpu)
-> CPU part        : 0xd03
-> CPU part        : 0xd03
-> CPU part        : 0xd03
-> CPU part        : 0xd09 (Cortex-A73, big cpu)
-> CPU part        : 0xd09
-> CPU part        : 0xd09
-> CPU part        : 0xd09
-> 
-> root@h960:/sys/devices/system/cpu/cpufreq# ls
-> policy0  policy4  schedutil
-> 
-> root@h960:/sys/devices/system/cpu/cpufreq# cat policy*/related_cpus
-> 0 1 2 3
-> 4 5 6 7
-> 
-> (1) w/o the revert:
-> 
-> root@h960:~# ps -eo pid,class,rtprio,pri,psr,comm | awk 'NR == 1 ||
-> /sugov/'
->   PID CLS RTPRIO PRI PSR COMMAND
->   1489 #6      0 140   1 sugov:0
->   1490 #6      0 140   0 sugov:4
-> 
-> The sugov kthread sugov:4 responsible for policy4 runs on cpu0. (In this
-> case both sugov kthreads run on little cpus).
-> 
-> cross policy (cluster) remote callback example:
-> ...
-> migration/1-14 [001] enqueue_task_fair: this_cpu=1 cpu_of(rq)=5
-> migration/1-14 [001] sugov_update_shared: this_cpu=1 sg_cpu->cpu=5
->                      sg_cpu->sg_policy->policy->related_cpus=4-7
->   sugov:4-1490 [000] sugov_work: this_cpu=0
->                      sg_cpu->sg_policy->policy->related_cpus=4-7
-> ...
-> 
-> The remote callback (this_cpu=1, target_cpu=5) is executed on cpu=0.
-> 
-> (2) w/ the revert:
-> 
-> root@h960:~# ps -eo pid,class,rtprio,pri,psr,comm | awk 'NR == 1 ||
-> /sugov/'
->   PID CLS RTPRIO PRI PSR COMMAND
->   1491 #6      0 140   2 sugov:0
->   1492 #6      0 140   4 sugov:4
-> 
-> The sugov kthread sugov:4 responsible for policy4 runs on cpu4.
-> 
-> cross policy (cluster) remote callback example:
-> ...
-> migration/1-14 [001] enqueue_task_fair: this_cpu=1 cpu_of(rq)=7
-> migration/1-14 [001] sugov_update_shared: this_cpu=1 sg_cpu->cpu=7
->                      sg_cpu->sg_policy->policy->related_cpus=4-7
->   sugov:4-1492 [004] sugov_work: this_cpu=4
->                      sg_cpu->sg_policy->policy->related_cpus=4-7
-> ...
-> 
-> The remote callback (this_cpu=1, target_cpu=7) is executed on cpu=4.
-> 
-> Now the sugov kthread executes again on the policy (cluster) for which
-> the Operating Performance Point (OPP) should be changed.
-> It avoids the problem that an otherwise idle policy (cluster) is running
-> schedutil (the sugov kthread) for another one.
-> 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Pavan Kondeti <pkondeti@codeaurora.org>
-> Cc: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Joel Fernandes <joelaf@google.com>
-> Cc: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Quentin Perret <quentin.perret@arm.com>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
-> 
+> ----8<---
 > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index d2c6083304b4..63014cff76a5 100644
+> index d2c6083304b4..862634ff4bf3 100644
 > --- a/kernel/sched/cpufreq_schedutil.c
 > +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -523,11 +523,7 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
+> @@ -38,7 +38,6 @@ struct sugov_policy {
+>  	struct			mutex work_lock;
+>  	struct			kthread_worker worker;
+>  	struct task_struct	*thread;
+> -	bool			work_in_progress;
+>  
+>  	bool			need_freq_update;
+>  };
+> @@ -92,16 +91,8 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>  	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
+>  		return false;
+>  
+> -	if (sg_policy->work_in_progress)
+> -		return false;
+> -
+>  	if (unlikely(sg_policy->need_freq_update)) {
+>  		sg_policy->need_freq_update = false;
+> -		/*
+> -		 * This happens when limits change, so forget the previous
+> -		 * next_freq value and force an update.
+> -		 */
+> -		sg_policy->next_freq = UINT_MAX;
+>  		return true;
 >  	}
 >  
->  	sg_policy->thread = thread;
-> -
-> -	/* Kthread is bound to all CPUs by default */
-> -	if (!policy->dvfs_possible_from_any_cpu)
-> -		kthread_bind_mask(thread, policy->related_cpus);
-> -
-> +	kthread_bind_mask(thread, policy->related_cpus);
->  	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
->  	mutex_init(&sg_policy->work_lock);
->  
+> @@ -129,7 +120,6 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>  		policy->cur = next_freq;
+>  		trace_cpu_frequency(next_freq, smp_processor_id());
+>  	} else {
+> -		sg_policy->work_in_progress = true;
+>  		irq_work_queue(&sg_policy->irq_work);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Isn't this potentially introducing unneeded irq pressure (and doing the
+whole wakeup the kthread thing), while the already active kthread could
+simply handle multiple back-to-back requests before going to sleep?
 
--- 
-viresh
+Best,
+
+- Juri
