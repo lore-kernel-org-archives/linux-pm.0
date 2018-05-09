@@ -1,60 +1,52 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: Serdev runtime PM (was: Re: [PATCH 4/7] dt-bindings: gnss: add
- u-blox binding)
-Date: Wed, 9 May 2018 07:05:50 -0700
-Message-ID: <20180509140550.GC98604@atomide.com>
-References: <20180502081637.GE2285@localhost>
- <5242FCAD-3139-4A9C-B9FA-7BBAA0E6AE57@goldelico.com>
- <20180503205037.7be552c1@aktux>
- <44A0BC7C-67C7-4116-849F-90FF7CF2B1F0@goldelico.com>
- <20180504114213.3xlzqxe74n55tk5s@earth.universe>
- <20180507100135.GS2285@localhost>
- <20180507154515.GP98604@atomide.com>
- <20180507163439.GV2285@localhost>
- <20180508155608.3bzcbepsmoskhlox@earth.universe>
- <20180509091831.GA2285@localhost>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH] drivers: thermal: step_wise: add support for hysteresis
+Date: Wed, 9 May 2018 10:25:52 -0600
+Message-ID: <20180509162552.GE4698@codeaurora.org>
+References: <20180507175408.2154-1-ilina@codeaurora.org>
+ <20180508020453.GH19313@mai>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180509091831.GA2285@localhost>
+In-Reply-To: <20180508020453.GH19313@mai>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ram Chandrasekar <rkumbako@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Johan Hovold <johan@kernel.org> [180509 09:20]:
-> On Tue, May 08, 2018 at 05:56:08PM +0200, Sebastian Reichel wrote:
-> > I think using open/close for runtime pm is good enough for GPS,
-> > since it regularly sends data and draws lots of power anyways.
-> > But devices, that have an out-of-band wakeup signal can do proper
-> > runtime PM of the serial port without loosing characters.
-> 
-> Yeah, there may be some applications where this is possible. And this is
-> not the case for GPS, but not just because of a generally higher power
-> consumption, but due to the fact that we cannot afford having the first
-> message in every report burst be dropped.
+Hi Daniel,
 
-Well most of the phone implementations use one or two out of band
-GPIOs to first wake the UART before any data is sent. For serdev
-this can be called from the serdev consumer write function for TX.
-For RX, the serdev consumer needs to implement an interrupt handler
-and wake up the parent UART before serdev RX.
+On Tue, May 08 2018 at 20:04 -0600, Daniel Lezcano wrote:
+>On Mon, May 07, 2018 at 11:54:08AM -0600, Lina Iyer wrote:
+>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+>>
+>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+>>
+>> Step wise governor increases the mitigation level when the temperature
+>> goes above a threshold and will decrease the mitigation when the
+>> temperature falls below the threshold. If it were a case, where the
+>> temperature hovers around a threshold, the mitigation will be applied
+>> and removed at every iteration. This reaction to the temperature is
+>> inefficient for performance.
+>>
+>> The use of hysteresis temperature could avoid this ping-pong of
+>> mitigation by relaxing the mitigation to happen only when the
+>> temperature goes below this lower hysteresis value.
+>
+>I don't disagree with this but the ping-pong around a temperature is usually
+>avoided with a P-I-D computation which is implemented with the IPA governor.
+>Wouldn't be more interesting to add the power numbers like some other
+>platforms, so the IPA could be used?
+>
+Possibly. But we have had better thermal performance for our hardware, with
+stepwise and custom governor. Much of the mitigation happens through the
+firmware and hardware. The stepwise governor works well for us.
 
-> > Note, that OMAP does not reach deep idle states with active
-> > serial port. This is not acceptable for low power devices.
-> 
-> Sure, but note that OMAP is the only serial driver which currently
-> implements this kind of aggressive runtime PM (besides a couple of
-> usb-serial drivers). This means that a serdev driver can never rely on
-> this being the case, and therefore needs to be restrictive about how
-> long the port is kept open if it cares about power at all.
+>You will probably have better results with the IPA than changing the step-wise
+>governor behavior (which may potentially impact other users).
+>
+This should not impact others who have not implemented the
+->get_trip_hyst method.
 
-Well by default we don't allow lossy UART. It needs to be manually
-configured via /sys for the timeout. With serdev, this can all be
-done with no /sys configuration needed for the cases with GPIO
-wake irqs :)
-
-Regards,
-
-Tony
+Thanks,
+Lina
