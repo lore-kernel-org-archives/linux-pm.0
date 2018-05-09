@@ -1,304 +1,126 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v4 1/6] dt-bindings: devfreq: rk3399_dmc: improve binding documentation.
-Date: Wed,  9 May 2018 14:57:43 +0200
-Message-ID: <20180509125749.31318-2-enric.balletbo@collabora.com>
-References: <20180509125749.31318-1-enric.balletbo@collabora.com>
+From: Johan Hovold <johan@kernel.org>
+Subject: OMAP serial runtime PM and autosuspend (was: Re: [PATCH 4/7]
+ dt-bindings: gnss: add u-blox binding))
+Date: Wed, 9 May 2018 15:10:03 +0200
+Message-ID: <20180509131003.GC2285@localhost>
+References: <20180504114213.3xlzqxe74n55tk5s@earth.universe>
+ <20180507100135.GS2285@localhost>
+ <20180507154515.GP98604@atomide.com>
+ <20180507163439.GV2285@localhost>
+ <20180507175032.GR98604@atomide.com>
+ <20180508065852.GW2285@localhost>
+ <20180508152228.GV98604@atomide.com>
+ <20180508154756.GW98604@atomide.com>
+ <20180508155405.GX98604@atomide.com>
+ <20180508164904.GZ98604@atomide.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180509125749.31318-1-enric.balletbo@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <20180508164904.GZ98604@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Nick Milner <nick.milner@collabora.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Johan Hovold <johan@kernel.org>, Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Nick Milner <nick.milner@collabora.com>
+[ Updating subject and adding linux-serial, linux-pm and linux-omap. ]
 
-There are several typos, references to non existent files, grammar and
-punctuation mistakes in the rk3399_dmc.txt binding. This patch tries
-to improve the binding documentation and fix these mistakes.
+On Tue, May 08, 2018 at 09:49:04AM -0700, Tony Lindgren wrote:
+> * Tony Lindgren <tony@atomide.com> [180508 08:54]:
+> > * Tony Lindgren <tony@atomide.com> [180508 08:47]:
+> > > * Tony Lindgren <tony@atomide.com> [180508 08:22]:
+> > > > * Johan Hovold <johan@kernel.org> [180508 07:00]:
+> > > > > With the negative autosuspend set in both omap drivers probe functions,
+> > > > > this is the expected behaviour. Which I think we must fix.
+> > > > 
+> > > > Yes indeed. I've been using my script for years now and have
+> > > > completely missed the fact that the unused ports are not idled
+> > > > at all on start-up when unused.
+> > > 
+> > > This might be all that's needed, care to try it and if it works
+> > > I'll send out two separate proper patches?
+> > > 
+> > > I'm seeing this now on my bbb after temporarily disabling my
+> > > UART idle init script:
+> > > 
+> > > # rwmem -s32 0x44e004b4           # uart 1 on l4_wkup
+> > > 0x44e004b4 = 0x00000002
+> > > 
+> > > # rwmem -s32 0x44e0006c+0x10      # uart 2 - 5 on l4_per
+> > > 0x44e0006c = 0x00030000
+> > > 0x44e00070 = 0x00030000
+> > > 0x44e00074 = 0x00030000
+> > > 0x44e00078 = 0x00030000
+> > > 
+> > > # rwmem -s32 0x44e00038           # uart 6 on l4_per
+> > > 0x44e00038 = 0x00030000
+> > 
+> > Hmm I forgot to remove status = "disabled" from the other ports,
+> > still not idling the unused ports with the patch below it seems.
+> 
+> No need to enable/disable autosuspend except in startup and shutdown
+> I think. The patch below works for me, now includes removal of the
+> status = "disabled" flags too. Only tested with 8250_omap on bbb
+> so far.
+> 
+> I wonder if other places still need fixing for autosuspend
+> like console support?
 
-Signed-off-by: Nick Milner <nick.milner@collabora.com>
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
-- [1/5] Fix some attributes to match with the code s/_disb/_dis/
+While this seems to fix the idling of closed ports here too, I'm not
+sure we can move use_autosuspend to startup() like this.
 
----
+First, this flag should be set before registering the tty so that udev
+can be used to update the attributes.
 
-Changes in v4: None
-Changes in v3:
-- [1/5] Add Reviewed-by Rob Herring.
+Second, this prevents setting the autosuspend delay through sysfs when
+the port is closed (when autosuspend is disabled).
 
-Changes in v2:
-- [1/6] Add Acked-by MyungJoo Ham.
-- [6/6] Removed this patch from this series.
+It seems we really should not be using the negative autosuspend to
+configure the RPM behaviour the way these drivers do. Perhaps a new
+mechanism is needed.
 
- .../bindings/devfreq/rk3399_dmc.txt           | 207 +++++++++---------
- 1 file changed, 105 insertions(+), 102 deletions(-)
+But I'm afraid I don't have time to look at this today.
 
-diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-index d6d2833482c9..1b93b33c7d38 100644
---- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-+++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-@@ -1,155 +1,158 @@
--* Rockchip rk3399 DMC(Dynamic Memory Controller) device
-+* Rockchip rk3399 DMC (Dynamic Memory Controller) device
- 
- Required properties:
- - compatible:		 Must be "rockchip,rk3399-dmc".
- - devfreq-events:	 Node to get DDR loading, Refer to
--			 Documentation/devicetree/bindings/devfreq/
-+			 Documentation/devicetree/bindings/devfreq/event/
- 			 rockchip-dfi.txt
--- interrupts:		 The interrupt number to the CPU. The interrupt
--			 specifier format depends on the interrupt controller.
--			 It should be DCF interrupts, when DDR dvfs finish,
--			 it will happen.
-+- interrupts:		 The CPU interrupt number. The interrupt specifier
-+			 format depends on the interrupt controller.
-+			 It should be a DCF interrupt. When DDR DVFS finishes
-+			 a DCF interrupt is triggered.
- - clocks:		 Phandles for clock specified in "clock-names" property
- - clock-names :		 The name of clock used by the DFI, must be
- 			 "pclk_ddr_mon";
--- operating-points-v2:	 Refer to Documentation/devicetree/bindings/power/opp.txt
-+- operating-points-v2:	 Refer to Documentation/devicetree/bindings/opp/opp.txt
- 			 for details.
- - center-supply:	 DMC supply node.
- - status:		 Marks the node enabled/disabled.
- 
--Following properties are ddr timing:
-+Following properties relate to DDR timing:
- 
- - rockchip,dram_speed_bin :	  Value reference include/dt-bindings/clock/ddr.h,
--				  it select ddr3 cl-trp-trcd type, default value
--				  "DDR3_DEFAULT".it must selected according to
--				  "Speed Bin" in ddr3 datasheet, DO NOT use
--				  smaller "Speed Bin" than ddr3 exactly is.
--
--- rockchip,pd_idle :		  Config the PD_IDLE value, defined the power-down
--				  idle period, memories are places into power-down
--				  mode if bus is idle for PD_IDLE DFI clocks.
--
--- rockchip,sr_idle :		  Configure the SR_IDLE value, defined the
--				  selfrefresh idle period, memories are places
--				  into self-refresh mode if bus is idle for
--				  SR_IDLE*1024 DFI clocks (DFI clocks freq is
--				  half of dram's clocks), defaule value is "0".
--
--- rockchip,sr_mc_gate_idle :	  Defined the self-refresh with memory and
--				  controller clock gating idle period, memories
--				  are places into self-refresh mode and memory
--				  controller clock arg gating if bus is idle for
--				  sr_mc_gate_idle*1024 DFI clocks.
--
--- rockchip,srpd_lite_idle :	  Defined the self-refresh power down idle
--				  period, memories are places into self-refresh
--				  power down mode if bus is idle for
--				  srpd_lite_idle*1024 DFI clocks. This parameter
--				  is for LPDDR4 only.
--
--- rockchip,standby_idle :	  Defined the standby idle period, memories are
--				  places into self-refresh than controller, pi,
--				  phy and dram clock will gating if bus is idle
--				  for standby_idle * DFI clocks.
--
--- rockchip,dram_dll_disb_freq :  It's defined the DDR3 dll bypass frequency in
--				  MHz, when ddr freq less than DRAM_DLL_DISB_FREQ,
--				  ddr3 dll will bypssed note: if dll was bypassed,
--				  the odt also stop working.
--
--- rockchip,phy_dll_disb_freq :	  Defined the PHY dll bypass frequency in
--				  MHz (Mega Hz), when ddr freq less than
--				  DRAM_DLL_DISB_FREQ, phy dll will bypssed.
--				  note: phy dll and phy odt are independent.
--
--- rockchip,ddr3_odt_disb_freq :  When dram type is DDR3, this parameter defined
--				  the odt disable frequency in MHz (Mega Hz),
--				  when ddr frequency less then ddr3_odt_disb_freq,
--				  the odt on dram side and controller side are
-+				  it selects the DDR3 cl-trp-trcd type. It must be
-+				  set according to "Speed Bin" in DDR3 datasheet,
-+				  DO NOT use a smaller "Speed Bin" than specified
-+				  for the DDR3 being used.
-+
-+- rockchip,pd_idle :		  Configure the PD_IDLE value. Defines the
-+				  power-down idle period in which memories are
-+				  placed into power-down mode if bus is idle
-+				  for PD_IDLE DFI clock cycles.
-+
-+- rockchip,sr_idle :		  Configure the SR_IDLE value. Defines the
-+				  self-refresh idle period in which memories are
-+				  placed into self-refresh mode if bus is idle
-+				  for SR_IDLE * 1024 DFI clock cycles (DFI
-+				  clocks freq is half of DRAM clock), default
-+				  value is "0".
-+
-+- rockchip,sr_mc_gate_idle :	  Defines the memory self-refresh and controller
-+				  clock gating idle period. Memories are placed
-+				  into self-refresh mode and memory controller
-+				  clock arg gating started if bus is idle for
-+				  sr_mc_gate_idle*1024 DFI clock cycles.
-+
-+- rockchip,srpd_lite_idle :	  Defines the self-refresh power down idle
-+				  period in which memories are placed into
-+				  self-refresh power down mode if bus is idle
-+				  for srpd_lite_idle * 1024 DFI clock cycles.
-+				  This parameter is for LPDDR4 only.
-+
-+- rockchip,standby_idle :	  Defines the standby idle period in which
-+				  memories are placed into self-refresh mode.
-+				  The controller, pi, PHY and DRAM clock will
-+				  be gated if bus is idle for standby_idle * DFI
-+				  clock cycles.
-+
-+- rockchip,dram_dll_dis_freq :	  Defines the DDR3 DLL bypass frequency in MHz.
-+				  When DDR frequency is less than DRAM_DLL_DISB_FREQ,
-+				  DDR3 DLL will be bypassed. Note: if DLL was bypassed,
-+				  the odt will also stop working.
-+
-+- rockchip,phy_dll_dis_freq :	  Defines the PHY dll bypass frequency in
-+				  MHz (Mega Hz). When DDR frequency is less than
-+				  DRAM_DLL_DISB_FREQ, PHY DLL will be bypassed.
-+				  Note: PHY DLL and PHY ODT are independent.
-+
-+- rockchip,ddr3_odt_dis_freq :	  When the DRAM type is DDR3, this parameter defines
-+				  the ODT disable frequency in MHz (Mega Hz).
-+				  when the DDR frequency is  less then ddr3_odt_dis_freq,
-+				  the ODT on the DRAM side and controller side are
- 				  both disabled.
- 
--- rockchip,ddr3_drv :		  When dram type is DDR3, this parameter define
--				  the dram side driver stength in ohm, default
-+- rockchip,ddr3_drv :		  When the DRAM type is DDR3, this parameter defines
-+				  the DRAM side driver strength in ohms. Default
- 				  value is DDR3_DS_40ohm.
- 
--- rockchip,ddr3_odt :		  When dram type is DDR3, this parameter define
--				  the dram side ODT stength in ohm, default value
-+- rockchip,ddr3_odt :		  When the DRAM type is DDR3, this parameter defines
-+				  the DRAM side ODT strength in ohms. Default value
- 				  is DDR3_ODT_120ohm.
- 
--- rockchip,phy_ddr3_ca_drv :	  When dram type is DDR3, this parameter define
--				  the phy side CA line(incluing command line,
-+- rockchip,phy_ddr3_ca_drv :	  When the DRAM type is DDR3, this parameter defines
-+				  the phy side CA line (incluing command line,
- 				  address line and clock line) driver strength.
- 				  Default value is PHY_DRV_ODT_40.
- 
--- rockchip,phy_ddr3_dq_drv :	  When dram type is DDR3, this parameter define
--				  the phy side DQ line(incluing DQS/DQ/DM line)
--				  driver strength. default value is PHY_DRV_ODT_40.
-+- rockchip,phy_ddr3_dq_drv :	  When the DRAM type is DDR3, this parameter defines
-+				  the PHY side DQ line (including DQS/DQ/DM line)
-+				  driver strength. Default value is PHY_DRV_ODT_40.
- 
--- rockchip,phy_ddr3_odt : 	  When dram type is DDR3, this parameter define the
--				  phy side odt strength, default value is
-+- rockchip,phy_ddr3_odt : 	  When the DRAM type is DDR3, this parameter defines
-+				  the PHY side ODT strength. Default value is
- 				  PHY_DRV_ODT_240.
- 
--- rockchip,lpddr3_odt_disb_freq : When dram type is LPDDR3, this parameter defined
--				  then odt disable frequency in MHz (Mega Hz),
--				  when ddr frequency less then ddr3_odt_disb_freq,
--				  the odt on dram side and controller side are
-+- rockchip,lpddr3_odt_dis_freq : When the DRAM type is LPDDR3, this parameter defines
-+				  then ODT disable frequency in MHz (Mega Hz).
-+				  When DDR frequency is less then ddr3_odt_dis_freq,
-+				  the ODT on the DRAM side and controller side are
- 				  both disabled.
- 
--- rockchip,lpddr3_drv :	  When dram type is LPDDR3, this parameter define
--				  the dram side driver stength in ohm, default
-+- rockchip,lpddr3_drv :		  When the DRAM type is LPDDR3, this parameter defines
-+				  the DRAM side driver strength in ohms. Default
- 				  value is LP3_DS_34ohm.
- 
--- rockchip,lpddr3_odt :	  When dram type is LPDDR3, this parameter define
--				  the dram side ODT stength in ohm, default value
-+- rockchip,lpddr3_odt :		  When the DRAM type is LPDDR3, this parameter defines
-+				  the DRAM side ODT strength in ohms. Default value
- 				  is LP3_ODT_240ohm.
- 
--- rockchip,phy_lpddr3_ca_drv :	  When dram type is LPDDR3, this parameter define
--				  the phy side CA line(incluing command line,
-+- rockchip,phy_lpddr3_ca_drv :	  When the DRAM type is LPDDR3, this parameter defines
-+				  the PHY side CA line (including command line,
- 				  address line and clock line) driver strength.
--				  default value is PHY_DRV_ODT_40.
-+				  Default value is PHY_DRV_ODT_40.
- 
--- rockchip,phy_lpddr3_dq_drv :	  When dram type is LPDDR3, this parameter define
--				  the phy side DQ line(incluing DQS/DQ/DM line)
--				  driver strength. default value is
-+- rockchip,phy_lpddr3_dq_drv :	  When the DRAM type is LPDDR3, this parameter defines
-+				  the PHY side DQ line (including DQS/DQ/DM line)
-+				  driver strength. Default value is
- 				  PHY_DRV_ODT_40.
- 
- - rockchip,phy_lpddr3_odt : 	  When dram type is LPDDR3, this parameter define
- 				  the phy side odt strength, default value is
- 				  PHY_DRV_ODT_240.
- 
--- rockchip,lpddr4_odt_disb_freq : When dram type is LPDDR4, this parameter
--				  defined the odt disable frequency in
--				  MHz (Mega Hz), when ddr frequency less then
--				  ddr3_odt_disb_freq, the odt on dram side and
-+- rockchip,lpddr4_odt_dis_freq : When the DRAM type is LPDDR4, this parameter
-+				  defines the ODT disable frequency in
-+				  MHz (Mega Hz). When the DDR frequency is less then
-+				  ddr3_odt_dis_freq, the ODT on the DRAM side and
- 				  controller side are both disabled.
- 
--- rockchip,lpddr4_drv :	  When dram type is LPDDR4, this parameter define
--				  the dram side driver stength in ohm, default
-+- rockchip,lpddr4_drv :		  When the DRAM type is LPDDR4, this parameter defines
-+				  the DRAM side driver strength in ohms. Default
- 				  value is LP4_PDDS_60ohm.
- 
--- rockchip,lpddr4_dq_odt : 	  When dram type is LPDDR4, this parameter define
--				  the dram side ODT on dqs/dq line stength in ohm,
--				  default value is LP4_DQ_ODT_40ohm.
-+- rockchip,lpddr4_dq_odt : 	  When the DRAM type is LPDDR4, this parameter defines
-+				  the DRAM side ODT on DQS/DQ line strength in ohms.
-+				  Default value is LP4_DQ_ODT_40ohm.
- 
--- rockchip,lpddr4_ca_odt :	  When dram type is LPDDR4, this parameter define
--				  the dram side ODT on ca line stength in ohm,
--				  default value is LP4_CA_ODT_40ohm.
-+- rockchip,lpddr4_ca_odt :	  When the DRAM type is LPDDR4, this parameter defines
-+				  the DRAM side ODT on CA line strength in ohms.
-+				  Default value is LP4_CA_ODT_40ohm.
- 
--- rockchip,phy_lpddr4_ca_drv :	  When dram type is LPDDR4, this parameter define
--				  the phy side  CA line(incluing command address
--				  line) driver strength. default value is
-+- rockchip,phy_lpddr4_ca_drv :	  When the DRAM type is LPDDR4, this parameter defines
-+				  the PHY side CA line (including command address
-+				  line) driver strength. Default value is
- 				  PHY_DRV_ODT_40.
- 
--- rockchip,phy_lpddr4_ck_cs_drv : When dram type is LPDDR4, this parameter define
--				  the phy side clock line and cs line driver
--				  strength. default value is PHY_DRV_ODT_80.
-+- rockchip,phy_lpddr4_ck_cs_drv : When the DRAM type is LPDDR4, this parameter defines
-+				  the PHY side clock line and CS line driver
-+				  strength. Default value is PHY_DRV_ODT_80.
- 
--- rockchip,phy_lpddr4_dq_drv :	  When dram type is LPDDR4, this parameter define
--				  the phy side DQ line(incluing DQS/DQ/DM line)
--				  driver strength. default value is PHY_DRV_ODT_80.
-+- rockchip,phy_lpddr4_dq_drv :	  When the DRAM type is LPDDR4, this parameter defines
-+				  the PHY side DQ line (including DQS/DQ/DM line)
-+				  driver strength. Default value is PHY_DRV_ODT_80.
- 
--- rockchip,phy_lpddr4_odt :	  When dram type is LPDDR4, this parameter define
--				  the phy side odt strength, default value is
-+- rockchip,phy_lpddr4_odt :	  When the DRAM type is LPDDR4, this parameter defines
-+				  the PHY side ODT strength. Default value is
- 				  PHY_DRV_ODT_60.
- 
- Example:
--- 
-2.17.0
+Thanks,
+Johan
+
+> --- a/drivers/tty/serial/8250/8250_omap.c
+> +++ b/drivers/tty/serial/8250/8250_omap.c
+> @@ -605,6 +605,7 @@ static int omap_8250_startup(struct uart_port *port)
+>  			return ret;
+>  	}
+>  
+> +	pm_runtime_use_autosuspend(port->dev);
+>  	pm_runtime_get_sync(port->dev);
+>  
+>  	up->mcr = 0;
+> @@ -685,8 +686,8 @@ static void omap_8250_shutdown(struct uart_port *port)
+>  		serial_out(up, UART_LCR, up->lcr & ~UART_LCR_SBC);
+>  	serial_out(up, UART_FCR, UART_FCR_CLEAR_RCVR | UART_FCR_CLEAR_XMIT);
+>  
+> -	pm_runtime_mark_last_busy(port->dev);
+> -	pm_runtime_put_autosuspend(port->dev);
+> +	pm_runtime_dont_use_autosuspend(port->dev);
+> +	pm_runtime_put_sync(port->dev);
+>  	free_irq(port->irq, port);
+>  	dev_pm_clear_wake_irq(port->dev);
+>  }
+> @@ -1226,7 +1227,7 @@ static int omap8250_probe(struct platform_device *pdev)
+>  	spin_lock_init(&priv->rx_dma_lock);
+>  
+>  	device_init_wakeup(&pdev->dev, true);
+> -	pm_runtime_use_autosuspend(&pdev->dev);
+> +	/* See omap_8250_startup and shutdown for autosuspend */
+>  	pm_runtime_set_autosuspend_delay(&pdev->dev, -1);
+>  
+>  	pm_runtime_irq_safe(&pdev->dev);
+> @@ -1265,8 +1266,8 @@ static int omap8250_probe(struct platform_device *pdev)
+>  	}
+>  	priv->line = ret;
+>  	platform_set_drvdata(pdev, priv);
+> -	pm_runtime_mark_last_busy(&pdev->dev);
+> -	pm_runtime_put_autosuspend(&pdev->dev);
+> +	pm_runtime_put_sync(&pdev->dev);
+> +
+>  	return 0;
+>  err:
