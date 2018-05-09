@@ -1,114 +1,133 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v4 2/6] dt-bindings: clock: add rk3399 DDR3 standard speed bins.
-Date: Wed,  9 May 2018 14:57:44 +0200
-Message-ID: <20180509125749.31318-3-enric.balletbo@collabora.com>
+Subject: [PATCH v4 3/6] devfreq: rk3399_dmc: remove wait for dcf irq event.
+Date: Wed,  9 May 2018 14:57:45 +0200
+Message-ID: <20180509125749.31318-4-enric.balletbo@collabora.com>
 References: <20180509125749.31318-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180509125749.31318-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-DDR3 SDRAM Standard (JESD79-3F) defines some standard speed bins for
-DDR3 memories. The rk3399_dmc driver allows you to pass these values via
-the device tree. For that purpose the devfreq/rk3399_dmc.txt binding
-refers to a ddr.h file which does not exist. This patch adds the missing
-defines in a include file called rk3399-ddr.h with the definition of
-standard speed bins according to the ARM Trusted Firmware (ATF).
+We have already wait dcf done in ATF, so don't need wait dcf irq
+in kernel, besides, clear dcf irq in kernel will import competiton
+between kernel and ATF, only handle dcf irq in ATF is a better way.
 
-Fixes: c1ceb8f7c167 (Documentation: bindings: add dt documentation for rk3399 dmc)
+Signed-off-by: Lin Huang <hl@rock-chips.com>
 Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
 
 Changes in v4: None
-Changes in v3:
-- [2/5] Add Reviewed-by Rob Herring.
-
+Changes in v3: None
 Changes in v2:
-- [2/6] Improved commit message.
-- [2/6] Rename ddr.h to rk3399-ddr.h because is SoC specific.
+- [3/6] Add Reviewed-by Chanwoo Choi
 
- .../bindings/devfreq/rk3399_dmc.txt           |  2 +-
- include/dt-bindings/clock/rk3399-ddr.h        | 56 +++++++++++++++++++
- 2 files changed, 57 insertions(+), 1 deletion(-)
- create mode 100644 include/dt-bindings/clock/rk3399-ddr.h
+ drivers/devfreq/rk3399_dmc.c | 53 +-----------------------------------
+ 1 file changed, 1 insertion(+), 52 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-index 1b93b33c7d38..e0030a139383 100644
---- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-+++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-@@ -19,7 +19,7 @@ Required properties:
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index 5dfbfa3cc878..44a379657cd5 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -68,15 +68,6 @@ struct rk3399_dmcfreq {
+ 	struct devfreq_event_dev *edev;
+ 	struct mutex lock;
+ 	struct dram_timing timing;
+-
+-	/*
+-	 * DDR Converser of Frequency (DCF) is used to implement DDR frequency
+-	 * conversion without the participation of CPU, we will implement and
+-	 * control it in arm trust firmware.
+-	 */
+-	wait_queue_head_t	wait_dcf_queue;
+-	int irq;
+-	int wait_dcf_flag;
+ 	struct regulator *vdd_center;
+ 	unsigned long rate, target_rate;
+ 	unsigned long volt, target_volt;
+@@ -117,7 +108,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 			goto out;
+ 		}
+ 	}
+-	dmcfreq->wait_dcf_flag = 1;
  
- Following properties relate to DDR timing:
+ 	err = clk_set_rate(dmcfreq->dmc_clk, target_rate);
+ 	if (err) {
+@@ -128,14 +118,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 		goto out;
+ 	}
  
--- rockchip,dram_speed_bin :	  Value reference include/dt-bindings/clock/ddr.h,
-+- rockchip,dram_speed_bin :	  Value reference include/dt-bindings/clock/rk3399-ddr.h,
- 				  it selects the DDR3 cl-trp-trcd type. It must be
- 				  set according to "Speed Bin" in DDR3 datasheet,
- 				  DO NOT use a smaller "Speed Bin" than specified
-diff --git a/include/dt-bindings/clock/rk3399-ddr.h b/include/dt-bindings/clock/rk3399-ddr.h
-new file mode 100644
-index 000000000000..ed2280844963
---- /dev/null
-+++ b/include/dt-bindings/clock/rk3399-ddr.h
-@@ -0,0 +1,56 @@
-+/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
-+
-+#ifndef DT_BINDINGS_DDR_H
-+#define DT_BINDINGS_DDR_H
-+
-+/*
-+ * DDR3 SDRAM Standard Speed Bins include tCK, tRCD, tRP, tRAS and tRC for
-+ * each corresponding bin.
-+ */
-+
-+/* DDR3-800 (5-5-5) */
-+#define DDR3_800D	0
-+/* DDR3-800 (6-6-6) */
-+#define DDR3_800E	1
-+/* DDR3-1066 (6-6-6) */
-+#define DDR3_1066E	2
-+/* DDR3-1066 (7-7-7) */
-+#define DDR3_1066F	3
-+/* DDR3-1066 (8-8-8) */
-+#define DDR3_1066G	4
-+/* DDR3-1333 (7-7-7) */
-+#define DDR3_1333F	5
-+/* DDR3-1333 (8-8-8) */
-+#define DDR3_1333G	6
-+/* DDR3-1333 (9-9-9) */
-+#define DDR3_1333H	7
-+/* DDR3-1333 (10-10-10) */
-+#define DDR3_1333J 	8
-+/* DDR3-1600 (8-8-8) */
-+#define DDR3_1600G	9
-+/* DDR3-1600 (9-9-9) */
-+#define DDR3_1600H	10
-+/* DDR3-1600 (10-10-10) */
-+#define DDR3_1600J	11
-+/* DDR3-1600 (11-11-11) */
-+#define DDR3_1600K	12
-+/* DDR3-1600 (10-10-10) */
-+#define DDR3_1866J	13
-+/* DDR3-1866 (11-11-11) */
-+#define DDR3_1866K	14
-+/* DDR3-1866 (12-12-12) */
-+#define DDR3_1866L	15
-+/* DDR3-1866 (13-13-13) */
-+#define DDR3_1866M	16
-+/* DDR3-2133 (11-11-11) */
-+#define DDR3_2133K	17
-+/* DDR3-2133 (12-12-12) */
-+#define DDR3_2133L	18
-+/* DDR3-2133 (13-13-13) */
-+#define DDR3_2133M	19
-+/* DDR3-2133 (14-14-14) */
-+#define DDR3_2133N	20
-+/* DDR3 ATF default */
-+#define DDR3_DEFAULT	21
-+
-+#endif
+-	/*
+-	 * Wait until bcf irq happen, it means freq scaling finish in
+-	 * arm trust firmware, use 100ms as timeout time.
+-	 */
+-	if (!wait_event_timeout(dmcfreq->wait_dcf_queue,
+-				!dmcfreq->wait_dcf_flag, HZ / 10))
+-		dev_warn(dev, "Timeout waiting for dcf interrupt\n");
+-
+ 	/*
+ 	 * Check the dpll rate,
+ 	 * There only two result we will get,
+@@ -241,22 +223,6 @@ static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
+ static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
+ 			 rk3399_dmcfreq_resume);
+ 
+-static irqreturn_t rk3399_dmc_irq(int irq, void *dev_id)
+-{
+-	struct rk3399_dmcfreq *dmcfreq = dev_id;
+-	struct arm_smccc_res res;
+-
+-	dmcfreq->wait_dcf_flag = 0;
+-	wake_up(&dmcfreq->wait_dcf_queue);
+-
+-	/* Clear the DCF interrupt */
+-	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
+-		      ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ,
+-		      0, 0, 0, 0, &res);
+-
+-	return IRQ_HANDLED;
+-}
+-
+ static int of_get_ddr_timings(struct dram_timing *timing,
+ 			      struct device_node *np)
+ {
+@@ -330,16 +296,10 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct rk3399_dmcfreq *data;
+-	int ret, irq, index, size;
++	int ret, index, size;
+ 	uint32_t *timing;
+ 	struct dev_pm_opp *opp;
+ 
+-	irq = platform_get_irq(pdev, 0);
+-	if (irq < 0) {
+-		dev_err(&pdev->dev,
+-			"Cannot get the dmc interrupt resource: %d\n", irq);
+-		return irq;
+-	}
+ 	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+@@ -358,17 +318,6 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 		return PTR_ERR(data->dmc_clk);
+ 	};
+ 
+-	data->irq = irq;
+-	ret = devm_request_irq(dev, irq, rk3399_dmc_irq, 0,
+-			       dev_name(dev), data);
+-	if (ret) {
+-		dev_err(dev, "Failed to request dmc irq: %d\n", ret);
+-		return ret;
+-	}
+-
+-	init_waitqueue_head(&data->wait_dcf_queue);
+-	data->wait_dcf_flag = 0;
+-
+ 	data->edev = devfreq_event_get_edev_by_phandle(dev, 0);
+ 	if (IS_ERR(data->edev))
+ 		return -EPROBE_DEFER;
 -- 
 2.17.0
