@@ -1,154 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency requests
-Date: Wed, 9 May 2018 10:30:37 +0200
-Message-ID: <CAJZ5v0iFZ5+6BQCism-o8bnOxD8KveueJ5CT58F9uH_7_pYOXQ@mail.gmail.com>
-References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
- <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7> <20180509045425.GA158882@joelaf.mtv.corp.google.com>
- <20180509064530.GA1681@localhost.localdomain> <20180509080644.GA76874@joelaf.mtv.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: [PATCH] kernel/sched/cpufreq_schedutil: remove stale comment
+Date: Wed,  9 May 2018 10:40:51 +0200
+Message-ID: <20180509084051.12107-1-juri.lelli@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180509080644.GA76874@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
+To: rafael.j.wysocki@intel.com, peterz@infradead.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri Lelli <juri.lelli@redhat.com>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Luca Abeni <luca.abeni@santannapisa.it>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 9, 2018 at 10:06 AM, Joel Fernandes <joel@joelfernandes.org> wrote:
-> On Wed, May 09, 2018 at 08:45:30AM +0200, Juri Lelli wrote:
->> On 08/05/18 21:54, Joel Fernandes wrote:
->>
->> [...]
->>
->> > Just for discussion sake, is there any need for work_in_progress? If we can
->> > queue multiple work say kthread_queue_work can handle it, then just queuing
->> > works whenever they are available should be Ok and the kthread loop can
->> > handle them. __cpufreq_driver_target is also protected by the work lock if
->> > there is any concern that can have races... only thing is rate-limiting of
->> > the requests, but we are doing a rate limiting, just not for the "DL
->> > increased utilization" type requests (which I don't think we are doing at the
->> > moment for urgent DL requests anyway).
->> >
->> > Following is an untested diff to show the idea. What do you think?
->> >
->> > thanks,
->> >
->> > - Joel
->> >
->> > ----8<---
->> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->> > index d2c6083304b4..862634ff4bf3 100644
->> > --- a/kernel/sched/cpufreq_schedutil.c
->> > +++ b/kernel/sched/cpufreq_schedutil.c
->> > @@ -38,7 +38,6 @@ struct sugov_policy {
->> >     struct                  mutex work_lock;
->> >     struct                  kthread_worker worker;
->> >     struct task_struct      *thread;
->> > -   bool                    work_in_progress;
->> >
->> >     bool                    need_freq_update;
->> >  };
->> > @@ -92,16 +91,8 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->> >         !cpufreq_can_do_remote_dvfs(sg_policy->policy))
->> >             return false;
->> >
->> > -   if (sg_policy->work_in_progress)
->> > -           return false;
->> > -
->> >     if (unlikely(sg_policy->need_freq_update)) {
->> >             sg_policy->need_freq_update = false;
->> > -           /*
->> > -            * This happens when limits change, so forget the previous
->> > -            * next_freq value and force an update.
->> > -            */
->> > -           sg_policy->next_freq = UINT_MAX;
->> >             return true;
->> >     }
->> >
->> > @@ -129,7 +120,6 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
->> >             policy->cur = next_freq;
->> >             trace_cpu_frequency(next_freq, smp_processor_id());
->> >     } else {
->> > -           sg_policy->work_in_progress = true;
->> >             irq_work_queue(&sg_policy->irq_work);
->>
->> Isn't this potentially introducing unneeded irq pressure (and doing the
->> whole wakeup the kthread thing), while the already active kthread could
->> simply handle multiple back-to-back requests before going to sleep?
->
-> How about this? Will use the latest request, and also doesn't do unnecessary
-> irq_work_queue:
->
-> (untested)
-> -----8<--------
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index d2c6083304b4..6a3e42b01f52 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -38,7 +38,7 @@ struct sugov_policy {
->         struct                  mutex work_lock;
->         struct                  kthread_worker worker;
->         struct task_struct      *thread;
-> -       bool                    work_in_progress;
-> +       bool                    work_in_progress; /* Has kthread been kicked */
->
->         bool                    need_freq_update;
->  };
-> @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->             !cpufreq_can_do_remote_dvfs(sg_policy->policy))
->                 return false;
->
-> -       if (sg_policy->work_in_progress)
-> -               return false;
-> -
+After commit 794a56ebd9a57 ("sched/cpufreq: Change the worker kthread to
+SCHED_DEADLINE") schedutil kthreads are "ignored" for a clock frequency
+selection point of view, so the potential corner case for RT tasks is not
+possible at all now.
 
-Why this change?
+Remove the stale comment mentioning it.
 
-Doing the below is rather pointless if work_in_progress is set, isn't it?
+Signed-off-by: Juri Lelli <juri.lelli@redhat.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Claudio Scordino <claudio@evidence.eu.com>
+Cc: Luca Abeni <luca.abeni@santannapisa.it>
+---
+ kernel/sched/cpufreq_schedutil.c | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-You'll drop the results of it on the floor going forward anyway then AFAICS.
-
->         if (unlikely(sg_policy->need_freq_update)) {
->                 sg_policy->need_freq_update = false;
->                 /*
-> @@ -129,8 +126,11 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
->                 policy->cur = next_freq;
->                 trace_cpu_frequency(next_freq, smp_processor_id());
->         } else {
-> -               sg_policy->work_in_progress = true;
-> -               irq_work_queue(&sg_policy->irq_work);
-> +               /* work_in_progress helps us not queue unnecessarily */
-> +               if (!sg_policy->work_in_progress) {
-> +                       sg_policy->work_in_progress = true;
-> +                       irq_work_queue(&sg_policy->irq_work);
-> +               }
->         }
->  }
->
-> @@ -381,13 +381,23 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
->  static void sugov_work(struct kthread_work *work)
->  {
->         struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-> +       unsigned int freq;
-> +
-> +       /*
-> +        * Hold sg_policy->update_lock just enough to handle the case where:
-> +        * if sg_policy->next_freq is updated before work_in_progress is set to
-> +        * false, we may miss queueing the new update request since
-> +        * work_in_progress would appear to be true.
-> +        */
-> +       raw_spin_lock(&sg_policy->update_lock);
-> +       freq = sg_policy->next_freq;
-> +       sg_policy->work_in_progress = false;
-> +       raw_spin_unlock(&sg_policy->update_lock);
->
->         mutex_lock(&sg_policy->work_lock);
-> -       __cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
-> +       __cpufreq_driver_target(sg_policy->policy, freq,
->                                 CPUFREQ_RELATION_L);
->         mutex_unlock(&sg_policy->work_lock);
-> -
-> -       sg_policy->work_in_progress = false;
->  }
->
->  static void sugov_irq_work(struct irq_work *irq_work)
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index d2c6083304b4..23ef19070137 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -396,19 +396,6 @@ static void sugov_irq_work(struct irq_work *irq_work)
+ 
+ 	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
+ 
+-	/*
+-	 * For RT tasks, the schedutil governor shoots the frequency to maximum.
+-	 * Special care must be taken to ensure that this kthread doesn't result
+-	 * in the same behavior.
+-	 *
+-	 * This is (mostly) guaranteed by the work_in_progress flag. The flag is
+-	 * updated only at the end of the sugov_work() function and before that
+-	 * the schedutil governor rejects all other frequency scaling requests.
+-	 *
+-	 * There is a very rare case though, where the RT thread yields right
+-	 * after the work_in_progress flag is cleared. The effects of that are
+-	 * neglected for now.
+-	 */
+ 	kthread_queue_work(&sg_policy->worker, &sg_policy->work);
+ }
+ 
+-- 
+2.14.3
