@@ -1,188 +1,90 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH V2 05/11] PM / Domains: Allow a better error handling of dev_pm_domain_attach()
-Date: Wed,  9 May 2018 12:17:52 +0200
-Message-ID: <1525861072-29150-1-git-send-email-ulf.hansson@linaro.org>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
+ requests
+Date: Wed, 9 May 2018 03:34:34 -0700
+Message-ID: <20180509103434.GF76874@joelaf.mtv.corp.google.com>
+References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
+ <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
+ <20180509045425.GA158882@joelaf.mtv.corp.google.com>
+ <20180509064530.GA1681@localhost.localdomain>
+ <20180509080644.GA76874@joelaf.mtv.corp.google.com>
+ <CAJZ5v0iFZ5+6BQCism-o8bnOxD8KveueJ5CT58F9uH_7_pYOXQ@mail.gmail.com>
+ <20180509084001.bghnwpv3a3xnuxce@vireshk-i7>
+ <20180509090259.GD76874@joelaf.mtv.corp.google.com>
+ <20180509092823.sfph4gomnblb7jgr@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180509092823.sfph4gomnblb7jgr@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mark Brown <broonie@kernel.org>, Vinod Koul <vinod.koul@intel.com>, Sanyog Kale <sanyog.r.kale@intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The callers of dev_pm_domain_attach() currently checks the returned error
-code for -EPROBE_DEFER and needs to ignore other error codes. This is an
-unnecessary limitation, which also leads to a rather strange behaviour in
-the error path.
+On Wed, May 09, 2018 at 02:58:23PM +0530, Viresh Kumar wrote:
+> On 09-05-18, 02:02, Joel Fernandes wrote:
+> > On Wed, May 09, 2018 at 02:10:01PM +0530, Viresh Kumar wrote:
+> > > Right, none of the above changes are required now.
+> > 
+> > I didn't follow what you mean the changes are not required? I was developing
+> > against Linus mainline. Also I replied to Rafael's comment in the other
+> > thread.
+> 
+> At least for the shared policy case the entire sequence of
+> sugov_should_update_freq() followed by sugov_update_commit() is
+> executed from within spinlock protected region and you are using the
+> same lock below. And so either the above two routines or the kthread
+> routine below will execute at a given point of time.
+> 
+> So in case kthread has started doing the update and acquired the lock,
+> the util update handler will wait until the time work_in_progress is
+> set to false, that's not a problem we are trying to solve here.
+> 
+> And if kthread hasn't acquired the lock yet and util handler has
+> started executing sugov_should_update_freq() ....
+> 
+> And ^^^ this is where I understood that your earlier change is
+> actually required, so that we accumulate the latest updated next_freq
+> value.
+> 
+> And with all that we wouldn't require a while loop in the kthread
+> code.
 
-Address this limitation, by changing the return codes from
-acpi_dev_pm_attach() and genpd_dev_pm_attach(). More precisely, let them
-return 0, when no PM domain is needed for the device and then return 1, in
-case the device was successfully attached to its PM domain. In this way,
-dev_pm_domain_attach(), gets a better understanding of what happens in the
-attach attempts and also allowing its caller to better act on real errors
-codes.
+Oh yeah, totally. So I think we are on the same page now about that.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+> > > > > @@ -381,13 +381,23 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+> > > > >  static void sugov_work(struct kthread_work *work)
+> > > > >  {
+> > > > >         struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> > > > > +       unsigned int freq;
+> > > > > +
+> > > > > +       /*
+> > > > > +        * Hold sg_policy->update_lock just enough to handle the case where:
+> > > > > +        * if sg_policy->next_freq is updated before work_in_progress is set to
+> > > > > +        * false, we may miss queueing the new update request since
+> > > > > +        * work_in_progress would appear to be true.
+> > > > > +        */
+> > > > > +       raw_spin_lock(&sg_policy->update_lock);
+> > > > > +       freq = sg_policy->next_freq;
+> > > > > +       sg_policy->work_in_progress = false;
+> > > > > +       raw_spin_unlock(&sg_policy->update_lock);
+> > > 
+> > > One problem we still have is that sg_policy->update_lock is only used
+> > > in the shared policy case and not in the single CPU per policy case,
+> > > so the race isn't solved there yet.
+> > 
+> > True.. I can make the single CPU case acquire the update_lock very briefly
+> > around sugov_update_commit call in sugov_update_single.
+> 
+> Rafael was very clear from the beginning that he wouldn't allow a spin
+> lock in the un-shared policy case :)
 
-Changes in v2:
-	- Return 0 from the inline variant of dev_pm_domain_attach(), to make
-	sure probing still works when CONFIG_PM is unset.
+That's fair. Probably we can just not do this trickery at all for the single
+case for now, incase work_in_progress is set. That way we still get the
+benefit for the shared case, and the single case isn't changed from what it is
+today.
 
----
- drivers/acpi/device_pm.c    |  6 +++---
- drivers/base/power/common.c |  7 ++++---
- drivers/base/power/domain.c | 19 ++++++++++---------
- include/linux/acpi.h        |  2 +-
- include/linux/pm_domain.h   |  4 ++--
- 5 files changed, 20 insertions(+), 18 deletions(-)
+thanks,
 
-diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
-index d006300..a7c2673 100644
---- a/drivers/acpi/device_pm.c
-+++ b/drivers/acpi/device_pm.c
-@@ -1257,7 +1257,7 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
- 	struct acpi_device *adev = ACPI_COMPANION(dev);
- 
- 	if (!adev)
--		return -ENODEV;
-+		return 0;
- 
- 	/*
- 	 * Only attach the power domain to the first device if the
-@@ -1265,7 +1265,7 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
- 	 * management twice.
- 	 */
- 	if (!acpi_device_is_first_physical_node(adev, dev))
--		return -EBUSY;
-+		return 0;
- 
- 	acpi_add_pm_notifier(adev, dev, acpi_pm_notify_work_func);
- 	dev_pm_domain_set(dev, &acpi_general_pm_domain);
-@@ -1275,7 +1275,7 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
- 	}
- 
- 	dev->pm_domain->detach = acpi_dev_pm_detach;
--	return 0;
-+	return 1;
- }
- EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
- #endif /* CONFIG_PM */
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index f3cf61f..5e4b481 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -98,7 +98,8 @@ EXPORT_SYMBOL_GPL(dev_pm_put_subsys_data);
-  * Callers must ensure proper synchronization of this function with power
-  * management callbacks.
-  *
-- * Returns 0 on successfully attached PM domain or negative error code.
-+ * Returns 0 on successfully attached PM domain and when it found that the
-+ * device don't need a PM domain, else a negative error code.
-  */
- int dev_pm_domain_attach(struct device *dev, bool power_on)
- {
-@@ -108,10 +109,10 @@ int dev_pm_domain_attach(struct device *dev, bool power_on)
- 		return -EEXIST;
- 
- 	ret = acpi_dev_pm_attach(dev, power_on);
--	if (ret)
-+	if (!ret)
- 		ret = genpd_dev_pm_attach(dev);
- 
--	return ret;
-+	return ret < 0 ? ret : 0;
- }
- EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
- 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index b816adb..455ecea 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2180,10 +2180,11 @@ static void genpd_dev_pm_sync(struct device *dev)
-  * Parse device's OF node to find a PM domain specifier. If such is found,
-  * attaches the device to retrieved pm_domain ops.
-  *
-- * Returns 0 on successfully attached PM domain or negative error code. Note
-- * that if a power-domain exists for the device, but it cannot be found or
-- * turned on, then return -EPROBE_DEFER to ensure that the device is not
-- * probed and to re-try again later.
-+ * Returns 1 on successfully attached PM domain, 0 when the device don't need a
-+ * PM domain or a negative error code in case of failures. Note that if a
-+ * power-domain exists for the device, but it cannot be found or turned on,
-+ * then return -EPROBE_DEFER to ensure that the device is not probed and to
-+ * re-try again later.
-  */
- int genpd_dev_pm_attach(struct device *dev)
- {
-@@ -2192,12 +2193,12 @@ int genpd_dev_pm_attach(struct device *dev)
- 	int ret;
- 
- 	if (!dev->of_node)
--		return -ENODEV;
-+		return 0;
- 
- 	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
- 					"#power-domain-cells", 0, &pd_args);
- 	if (ret < 0)
--		return ret;
-+		return 0;
- 
- 	mutex_lock(&gpd_list_lock);
- 	pd = genpd_get_from_provider(&pd_args);
-@@ -2218,7 +2219,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 		if (ret != -EPROBE_DEFER)
- 			dev_err(dev, "failed to add to PM domain %s: %d",
- 				pd->name, ret);
--		goto out;
-+		return ret;
- 	}
- 
- 	dev->pm_domain->detach = genpd_dev_pm_detach;
-@@ -2230,8 +2231,8 @@ int genpd_dev_pm_attach(struct device *dev)
- 
- 	if (ret)
- 		genpd_remove_device(pd, dev);
--out:
--	return ret ? -EPROBE_DEFER : 0;
-+
-+	return ret ? -EPROBE_DEFER : 1;
- }
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- 
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 15bfb15..c01675b 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -899,7 +899,7 @@ static inline int acpi_subsys_runtime_suspend(struct device *dev) { return 0; }
- static inline int acpi_subsys_runtime_resume(struct device *dev) { return 0; }
- static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
- {
--	return -ENODEV;
-+	return 0;
- }
- #endif
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 04dbef9..ab18548 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -280,7 +280,7 @@ static inline int of_genpd_parse_idle_states(struct device_node *dn,
- 
- static inline int genpd_dev_pm_attach(struct device *dev)
- {
--	return -ENODEV;
-+	return 0;
- }
- 
- static inline
-@@ -297,7 +297,7 @@ extern void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
- #else
- static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
- {
--	return -ENODEV;
-+	return 0;
- }
- static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
- static inline void dev_pm_domain_set(struct device *dev,
--- 
-2.7.4
+- Joel
