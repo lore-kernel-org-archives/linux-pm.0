@@ -1,54 +1,67 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: [PATCH] kernel/sched/cpufreq_schedutil: remove stale comment
-Date: Wed,  9 May 2018 10:40:51 +0200
-Message-ID: <20180509084051.12107-1-juri.lelli@redhat.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] sched/schedutil: Don't set next_freq to UINT_MAX
+Date: Wed, 9 May 2018 14:11:28 +0530
+Message-ID: <20180509084128.s3nu57njyep4tw2w@vireshk-i7>
+References: <872c3f8690d9362820639d91a807e535f10a9a36.1525761635.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gVpOT81WPFc8shkPa0vzteb6s2r9dBYW9VGz+wcuffGw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gVpOT81WPFc8shkPa0vzteb6s2r9dBYW9VGz+wcuffGw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rafael.j.wysocki@intel.com, peterz@infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri Lelli <juri.lelli@redhat.com>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Luca Abeni <luca.abeni@santannapisa.it>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, "4 . 12+" <stable@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-After commit 794a56ebd9a57 ("sched/cpufreq: Change the worker kthread to
-SCHED_DEADLINE") schedutil kthreads are "ignored" for a clock frequency
-selection point of view, so the potential corner case for RT tasks is not
-possible at all now.
+On 08-05-18, 22:54, Rafael J. Wysocki wrote:
+> On Tue, May 8, 2018 at 8:42 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > The schedutil driver sets sg_policy->next_freq to UINT_MAX on certain
+> > occasions:
+> > - In sugov_start(), when the schedutil governor is started for a group
+> >   of CPUs.
+> > - And whenever we need to force a freq update before rate-limit
+> >   duration, which happens when:
+> >   - there is an update in cpufreq policy limits.
+> >   - Or when the utilization of DL scheduling class increases.
+> >
+> > In return, get_next_freq() doesn't return a cached next_freq value but
+> > instead recalculates the next frequency. This has some side effects
+> > though and may significantly delay a required increase in frequency.
+> >
+> > In sugov_update_single() we try to avoid decreasing frequency if the CPU
+> > has not been idle recently. Consider this scenario, the available range
+> > of frequencies for a CPU are from 800 MHz to 2.5 GHz and current
+> > frequency is 800 MHz. From one of the call paths
+> > sg_policy->need_freq_update is set to true and hence
+> > sg_policy->next_freq is set to UINT_MAX. Now if the CPU had been busy,
+> > next_f will always be less than UINT_MAX, whatever the value of next_f
+> > is. And so even when we wanted to increase the frequency, we will
+> > overwrite next_f with UINT_MAX and will not change the frequency
+> > eventually. This will continue until the time CPU stays busy. This isn't
+> > cross checked with any specific test cases, but rather based on general
+> > code review.
+> >
+> > Fix that by not resetting the sg_policy->need_freq_update flag from
+> > sugov_should_update_freq() but get_next_freq() and we wouldn't need to
+> > overwrite sg_policy->next_freq anymore.
+> >
+> > Cc: 4.12+ <stable@vger.kernel.org> # 4.12+
+> > Fixes: b7eaf1aab9f8 ("cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely")
+> 
+> The rest of the chantelog is totally disconnected from this commit.
 
-Remove the stale comment mentioning it.
+I added the "Fixes" tag because this is exactly the commit after which
+this problem started, isn't it?
 
-Signed-off-by: Juri Lelli <juri.lelli@redhat.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Claudio Scordino <claudio@evidence.eu.com>
-Cc: Luca Abeni <luca.abeni@santannapisa.it>
----
- kernel/sched/cpufreq_schedutil.c | 13 -------------
- 1 file changed, 13 deletions(-)
+> So the problem is that sugov_update_single() doesn't check the special
+> UNIT_MAX value before assigning sg_policy->next_freq to next_f.  Fair
+> enough.
+> 
+> I don't see why the patch is the right fix for that, however.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index d2c6083304b4..23ef19070137 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -396,19 +396,6 @@ static void sugov_irq_work(struct irq_work *irq_work)
- 
- 	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
- 
--	/*
--	 * For RT tasks, the schedutil governor shoots the frequency to maximum.
--	 * Special care must be taken to ensure that this kthread doesn't result
--	 * in the same behavior.
--	 *
--	 * This is (mostly) guaranteed by the work_in_progress flag. The flag is
--	 * updated only at the end of the sugov_work() function and before that
--	 * the schedutil governor rejects all other frequency scaling requests.
--	 *
--	 * There is a very rare case though, where the RT thread yields right
--	 * after the work_in_progress flag is cleared. The effects of that are
--	 * neglected for now.
--	 */
- 	kthread_queue_work(&sg_policy->worker, &sg_policy->work);
- }
- 
+I thought not overwriting next_freq makes things much simpler and easy
+to review. What else do you have in mind to solve this problem ?
+
 -- 
-2.14.3
+viresh
