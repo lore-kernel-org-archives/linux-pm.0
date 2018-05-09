@@ -1,8 +1,8 @@
-From: Joel Fernandes <joel@joelfernandes.org>
+From: Juri Lelli <juri.lelli@redhat.com>
 Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
  requests
-Date: Wed, 9 May 2018 01:22:59 -0700
-Message-ID: <20180509082259.GB76874@joelaf.mtv.corp.google.com>
+Date: Wed, 9 May 2018 10:23:50 +0200
+Message-ID: <20180509082350.GB1681@localhost.localdomain>
 References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
  <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
  <20180509045425.GA158882@joelaf.mtv.corp.google.com>
@@ -17,10 +17,10 @@ Content-Disposition: inline
 In-Reply-To: <CAJZ5v0hNgvd=0dKstXRsbHhtrc6m+ugS5kjPOq2B8k55ioX0MA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Joel Fernandes <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 09, 2018 at 10:05:09AM +0200, Rafael J. Wysocki wrote:
+On 09/05/18 10:05, Rafael J. Wysocki wrote:
 > On Wed, May 9, 2018 at 9:01 AM, Joel Fernandes <joel@joelfernandes.org> wrote:
 > > On Wed, May 09, 2018 at 12:24:49PM +0530, Viresh Kumar wrote:
 > >> On 09-05-18, 08:45, Juri Lelli wrote:
@@ -42,16 +42,11 @@ On Wed, May 09, 2018 at 10:05:09AM +0200, Rafael J. Wysocki wrote:
 > In the non-fast-switch case the "commit" only means queuing up an
 > irq_work.  Which BTW is one of the reasons for having work_in_progress
 > even if your kthread can handle multiple work items in one go.
+> 
+> You may try to clear work_in_progress in sugov_irq_work() instead of
+> in sugov_work(), though.
+> 
+> BTW, I'm not sure if the comment in sugov_irq_work() still applies.  Juri?
 
-Ok I agree. I just thought there was something funky with the meaning of
-commit from a cpufreq perspective.
-
-In the last diff I just sent out, I actually keep work_in_progress and
-consider its meaning to be what you're saying (has the kthread been kicked)
-and lets such "overwriting" of the next frequency to be made possible. Also
-with that we would be servicing just the latest request even if there were
-multiple ones made.
-
-thanks,
-
-- Joel
+It doesn't anymore. sugov kthreads are now being "ignored". Should have
+remove it with the DL set of changes, sorry about that.
