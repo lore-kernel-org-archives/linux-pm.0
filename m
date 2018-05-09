@@ -1,72 +1,114 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v4 6/6] devfreq: rk3399_dmc: fix spelling mistakes.
-Date: Wed,  9 May 2018 14:57:48 +0200
-Message-ID: <20180509125749.31318-7-enric.balletbo@collabora.com>
+Subject: [PATCH v4 2/6] dt-bindings: clock: add rk3399 DDR3 standard speed bins.
+Date: Wed,  9 May 2018 14:57:44 +0200
+Message-ID: <20180509125749.31318-3-enric.balletbo@collabora.com>
 References: <20180509125749.31318-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180509125749.31318-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Fix some spelling mistakes in error and debug messages.
+DDR3 SDRAM Standard (JESD79-3F) defines some standard speed bins for
+DDR3 memories. The rk3399_dmc driver allows you to pass these values via
+the device tree. For that purpose the devfreq/rk3399_dmc.txt binding
+refers to a ddr.h file which does not exist. This patch adds the missing
+defines in a include file called rk3399-ddr.h with the definition of
+standard speed bins according to the ARM Trusted Firmware (ATF).
 
+Fixes: c1ceb8f7c167 (Documentation: bindings: add dt documentation for rk3399 dmc)
 Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
 
-Changes in v4:
-- [6/6] Introduce this new patch that fixes some spelling.
+Changes in v4: None
+Changes in v3:
+- [2/5] Add Reviewed-by Rob Herring.
 
-Changes in v3: None
-Changes in v2: None
+Changes in v2:
+- [2/6] Improved commit message.
+- [2/6] Rename ddr.h to rk3399-ddr.h because is SoC specific.
 
- drivers/devfreq/rk3399_dmc.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ .../bindings/devfreq/rk3399_dmc.txt           |  2 +-
+ include/dt-bindings/clock/rk3399-ddr.h        | 56 +++++++++++++++++++
+ 2 files changed, 57 insertions(+), 1 deletion(-)
+ create mode 100644 include/dt-bindings/clock/rk3399-ddr.h
 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index 5bfca028eaaf..d5c03e5abe13 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -103,7 +103,7 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 		err = regulator_set_voltage(dmcfreq->vdd_center, target_volt,
- 					    target_volt);
- 		if (err) {
--			dev_err(dev, "Cannot to set voltage %lu uV\n",
-+			dev_err(dev, "Cannot set voltage %lu uV\n",
- 				target_volt);
- 			goto out;
- 		}
-@@ -111,8 +111,8 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+index 1b93b33c7d38..e0030a139383 100644
+--- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
++++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+@@ -19,7 +19,7 @@ Required properties:
  
- 	err = clk_set_rate(dmcfreq->dmc_clk, target_rate);
- 	if (err) {
--		dev_err(dev, "Cannot to set frequency %lu (%d)\n",
--			target_rate, err);
-+		dev_err(dev, "Cannot set frequency %lu (%d)\n", target_rate,
-+			err);
- 		regulator_set_voltage(dmcfreq->vdd_center, dmcfreq->volt,
- 				      dmcfreq->volt);
- 		goto out;
-@@ -128,8 +128,8 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ Following properties relate to DDR timing:
  
- 	/* If get the incorrect rate, set voltage to old value. */
- 	if (dmcfreq->rate != target_rate) {
--		dev_err(dev, "Get wrong ddr frequency, Request frequency %lu,\
--			Current frequency %lu\n", target_rate, dmcfreq->rate);
-+		dev_err(dev, "Got wrong frequency, Request %lu, Current %lu\n",
-+			target_rate, dmcfreq->rate);
- 		regulator_set_voltage(dmcfreq->vdd_center, dmcfreq->volt,
- 				      dmcfreq->volt);
- 		goto out;
-@@ -137,7 +137,7 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 		err = regulator_set_voltage(dmcfreq->vdd_center, target_volt,
- 					    target_volt);
- 	if (err)
--		dev_err(dev, "Cannot to set vol %lu uV\n", target_volt);
-+		dev_err(dev, "Cannot set voltage %lu uV\n", target_volt);
- 
- 	dmcfreq->rate = target_rate;
- 	dmcfreq->volt = target_volt;
+-- rockchip,dram_speed_bin :	  Value reference include/dt-bindings/clock/ddr.h,
++- rockchip,dram_speed_bin :	  Value reference include/dt-bindings/clock/rk3399-ddr.h,
+ 				  it selects the DDR3 cl-trp-trcd type. It must be
+ 				  set according to "Speed Bin" in DDR3 datasheet,
+ 				  DO NOT use a smaller "Speed Bin" than specified
+diff --git a/include/dt-bindings/clock/rk3399-ddr.h b/include/dt-bindings/clock/rk3399-ddr.h
+new file mode 100644
+index 000000000000..ed2280844963
+--- /dev/null
++++ b/include/dt-bindings/clock/rk3399-ddr.h
+@@ -0,0 +1,56 @@
++/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
++
++#ifndef DT_BINDINGS_DDR_H
++#define DT_BINDINGS_DDR_H
++
++/*
++ * DDR3 SDRAM Standard Speed Bins include tCK, tRCD, tRP, tRAS and tRC for
++ * each corresponding bin.
++ */
++
++/* DDR3-800 (5-5-5) */
++#define DDR3_800D	0
++/* DDR3-800 (6-6-6) */
++#define DDR3_800E	1
++/* DDR3-1066 (6-6-6) */
++#define DDR3_1066E	2
++/* DDR3-1066 (7-7-7) */
++#define DDR3_1066F	3
++/* DDR3-1066 (8-8-8) */
++#define DDR3_1066G	4
++/* DDR3-1333 (7-7-7) */
++#define DDR3_1333F	5
++/* DDR3-1333 (8-8-8) */
++#define DDR3_1333G	6
++/* DDR3-1333 (9-9-9) */
++#define DDR3_1333H	7
++/* DDR3-1333 (10-10-10) */
++#define DDR3_1333J 	8
++/* DDR3-1600 (8-8-8) */
++#define DDR3_1600G	9
++/* DDR3-1600 (9-9-9) */
++#define DDR3_1600H	10
++/* DDR3-1600 (10-10-10) */
++#define DDR3_1600J	11
++/* DDR3-1600 (11-11-11) */
++#define DDR3_1600K	12
++/* DDR3-1600 (10-10-10) */
++#define DDR3_1866J	13
++/* DDR3-1866 (11-11-11) */
++#define DDR3_1866K	14
++/* DDR3-1866 (12-12-12) */
++#define DDR3_1866L	15
++/* DDR3-1866 (13-13-13) */
++#define DDR3_1866M	16
++/* DDR3-2133 (11-11-11) */
++#define DDR3_2133K	17
++/* DDR3-2133 (12-12-12) */
++#define DDR3_2133L	18
++/* DDR3-2133 (13-13-13) */
++#define DDR3_2133M	19
++/* DDR3-2133 (14-14-14) */
++#define DDR3_2133N	20
++/* DDR3 ATF default */
++#define DDR3_DEFAULT	21
++
++#endif
 -- 
 2.17.0
