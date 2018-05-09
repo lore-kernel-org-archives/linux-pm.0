@@ -1,55 +1,49 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: [PATCH EXAMPLE 2/2] dbg: gnss: sirf: allow aggressive controller runtime PM
-Date: Wed,  9 May 2018 11:44:19 +0200
-Message-ID: <20180509094419.13470-2-johan@kernel.org>
-References: <20180509094419.13470-1-johan@kernel.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: schedutil: Avoid using invalid next_freq
+Date: Wed, 09 May 2018 11:44:56 +0200
+Message-ID: <2276196.ev9rMjHTR0@aspire.rjw.lan>
+References: <872c3f8690d9362820639d91a807e535f10a9a36.1525761635.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180509094419.13470-1-johan@kernel.org>
+In-Reply-To: <872c3f8690d9362820639d91a807e535f10a9a36.1525761635.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org, Johan Hovold <johan@kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, claudio@evidence.eu.com, patrick.bellasi@arm.com, juri.lelli@redhat.com, joelaf@google.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is just an example of how a serdev driver could go about to allow
-aggressive controller runtime PM by dropping the RPM reference taken by
-serdev core in serdev_device_open().
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Note that for most GNSS devices this does not make any sense, as
-allowing the controller to suspend this way would cause the
-first message of every report burst to be corrupted (and discarded).
+If the next_freq field of struct sugov_policy is set to UINT_MAX,
+it shouldn't be used for updating the CPU frequency (this is a
+special "invalid" value), but after commit b7eaf1aab9f8 (cpufreq:
+schedutil: Avoid reducing frequency of busy CPUs prematurely) it
+may be passed as the new frequency to sugov_update_commit() in
+sugov_update_single().
 
-This one applies on top of the GNSS series available here:
+Fix that by adding an extra check for the special UINT_MAX value
+of next_freq to sugov_update_single().
 
-https://lkml.kernel.org/r/20180424163458.11947-1-johan@kernel.org
-
-Not-Signed-off-by: Johan Hovold <johan@kernel.org>
+Fixes: b7eaf1aab9f8 (cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely)
+Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: 4.12+ <stable@vger.kernel.org> # 4.12+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/gnss/sirf.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ kernel/sched/cpufreq_schedutil.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gnss/sirf.c b/drivers/gnss/sirf.c
-index 497f8eb8467f..31b2cbccd194 100644
---- a/drivers/gnss/sirf.c
-+++ b/drivers/gnss/sirf.c
-@@ -57,6 +57,9 @@ static int sirf_open(struct gnss_device *gdev)
- 		goto err_close;
- 	}
+Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+===================================================================
+--- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
++++ linux-pm/kernel/sched/cpufreq_schedutil.c
+@@ -305,7 +305,8 @@ static void sugov_update_single(struct u
+ 	 * Do not reduce the frequency if the CPU has not been idle
+ 	 * recently, as the reduction is likely to be premature then.
+ 	 */
+-	if (busy && next_f < sg_policy->next_freq) {
++	if (busy && next_f < sg_policy->next_freq &&
++	    sg_policy->next_freq != UINT_MAX) {
+ 		next_f = sg_policy->next_freq;
  
-+	/* Allow aggresive controller runtime PM. */
-+	pm_runtime_put(&serdev->ctrl->dev);
-+
- 	return 0;
- 
- err_close:
-@@ -70,6 +73,9 @@ static void sirf_close(struct gnss_device *gdev)
- 	struct sirf_data *data = gnss_get_drvdata(gdev);
- 	struct serdev_device *serdev = data->serdev;
- 
-+	/* Balance the put in open() */
-+	pm_runtime_get(&serdev->ctrl->dev);
-+
- 	serdev_device_close(serdev);
- 
- 	pm_runtime_put(&serdev->dev);
--- 
-2.17.0
+ 		/* Reset cached freq as next_freq has changed */
