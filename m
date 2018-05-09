@@ -1,63 +1,58 @@
 From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v4 0/6] devfreq: rk3399_dmc: improve rk3399_dmc driver and it's documentation
-Date: Wed,  9 May 2018 14:57:42 +0200
-Message-ID: <20180509125749.31318-1-enric.balletbo@collabora.com>
+Subject: [PATCH v4 5/6] devfreq: rk3399_dmc: do not print error when get supply and clk defer.
+Date: Wed,  9 May 2018 14:57:47 +0200
+Message-ID: <20180509125749.31318-6-enric.balletbo@collabora.com>
+References: <20180509125749.31318-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180509125749.31318-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, dianders@google.com, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Dear all,
+From: Lin Huang <hl@rock-chips.com>
 
-These patches is an attempt to improve a little bit the rk3399_dmc
-driver and it's documentation in order to have all in a better shape for
-a future work I am doing. My final intention is add ddrfreq support for
-rockchip drm driver, but the patches for this are still
-work-in-progress. So let's start with this first patchset that is
-basically some fixes/improvements for the rk3399_dmc driver.
+We just return -EPROBE_DEFER error code to caller and do not
+print error message when try to get center logic regulator
+and DMC clock defer.
 
-The patches apply on top of current 4.17-rc3.
+Signed-off-by: Lin Huang <hl@rock-chips.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
 
-Best regards,
- Enric
-
-Changes in v4:
-- [4/6] Add Reviewed-by Rob Herring.
-- [6/6] Introduce this new patch that fixes some spelling.
-
-Changes in v3:
-- [1/5] Add Reviewed-by Rob Herring.
-- [2/5] Add Reviewed-by Rob Herring.
-- [4/6] Move interrupts to be optional instead of remove.
-
+Changes in v4: None
+Changes in v3: None
 Changes in v2:
-- [1/6] Add Acked-by MyungJoo Ham.
-- [2/6] Improved commit message.
-- [2/6] Rename ddr.h to rk3399-ddr.h because is SoC specific.
-- [3/6] Add Reviewed-by Chanwoo Choi
-- [4/6] Add Reviewed-by Chanwoo Choi.
 - [5/6] Add Acked-by MyungJoo Ham.
 - [5/6] Add Reviewed-by Chanwoo Choi.
-- [6/6] Removed this patch from this series.
 
-Enric Balletbo i Serra (4):
-  dt-bindings: clock: add rk3399 DDR3 standard speed bins.
-  devfreq: rk3399_dmc: remove wait for dcf irq event.
-  dt-bindings: devfreq: rk3399_dmc: move interrupts to be optional.
-  devfreq: rk3399_dmc: fix spelling mistakes.
+ drivers/devfreq/rk3399_dmc.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Lin Huang (1):
-  devfreq: rk3399_dmc: do not print error when get supply and clk defer.
-
-Nick Milner (1):
-  dt-bindings: devfreq: rk3399_dmc: improve binding documentation.
-
- .../bindings/devfreq/rk3399_dmc.txt           | 213 +++++++++---------
- drivers/devfreq/rk3399_dmc.c                  |  71 ++----
- include/dt-bindings/clock/rk3399-ddr.h        |  56 +++++
- 3 files changed, 178 insertions(+), 162 deletions(-)
- create mode 100644 include/dt-bindings/clock/rk3399-ddr.h
-
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index 44a379657cd5..5bfca028eaaf 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -308,12 +308,18 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 
+ 	data->vdd_center = devm_regulator_get(dev, "center");
+ 	if (IS_ERR(data->vdd_center)) {
++		if (PTR_ERR(data->vdd_center) == -EPROBE_DEFER)
++			return -EPROBE_DEFER;
++
+ 		dev_err(dev, "Cannot get the regulator \"center\"\n");
+ 		return PTR_ERR(data->vdd_center);
+ 	}
+ 
+ 	data->dmc_clk = devm_clk_get(dev, "dmc_clk");
+ 	if (IS_ERR(data->dmc_clk)) {
++		if (PTR_ERR(data->dmc_clk) == -EPROBE_DEFER)
++			return -EPROBE_DEFER;
++
+ 		dev_err(dev, "Cannot get the clk dmc_clk\n");
+ 		return PTR_ERR(data->dmc_clk);
+ 	};
 -- 
 2.17.0
