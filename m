@@ -1,65 +1,80 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] sched/schedutil: Don't set next_freq to UINT_MAX
-Date: Wed, 9 May 2018 11:23:01 +0200
-Message-ID: <CAJZ5v0jekW=8-VbeVR5GZ6iTxj_oHiFAq7OWqzkAWktL2pU=CA@mail.gmail.com>
-References: <872c3f8690d9362820639d91a807e535f10a9a36.1525761635.git.viresh.kumar@linaro.org>
- <CAJZ5v0gVpOT81WPFc8shkPa0vzteb6s2r9dBYW9VGz+wcuffGw@mail.gmail.com>
- <20180509084128.s3nu57njyep4tw2w@vireshk-i7> <CAJZ5v0gAuhUsEg_yLw1kZYE_MnaLFR+X1c9OZCROF2u17RaKOg@mail.gmail.com>
- <20180509091519.czq5zu5l7xfhqph4@vireshk-i7>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
+ requests
+Date: Wed, 9 May 2018 14:58:23 +0530
+Message-ID: <20180509092823.sfph4gomnblb7jgr@vireshk-i7>
+References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
+ <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
+ <20180509045425.GA158882@joelaf.mtv.corp.google.com>
+ <20180509064530.GA1681@localhost.localdomain>
+ <20180509080644.GA76874@joelaf.mtv.corp.google.com>
+ <CAJZ5v0iFZ5+6BQCism-o8bnOxD8KveueJ5CT58F9uH_7_pYOXQ@mail.gmail.com>
+ <20180509084001.bghnwpv3a3xnuxce@vireshk-i7>
+ <20180509090259.GD76874@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180509091519.czq5zu5l7xfhqph4@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <20180509090259.GD76874@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, "4 . 12+" <stable@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 9, 2018 at 11:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 09-05-18, 10:56, Rafael J. Wysocki wrote:
->> I'm kind of concerned about updating the limits via sysfs in which
->> case the cached next frequency may be out of range, so it's better to
->> invalidate it right away then.
->
-> That should not be a problem as __cpufreq_driver_target() will anyway
-> clamp the target frequency to be within limits, whatever the cached
-> value of next_freq is.
+On 09-05-18, 02:02, Joel Fernandes wrote:
+> On Wed, May 09, 2018 at 02:10:01PM +0530, Viresh Kumar wrote:
+> > Right, none of the above changes are required now.
+> 
+> I didn't follow what you mean the changes are not required? I was developing
+> against Linus mainline. Also I replied to Rafael's comment in the other
+> thread.
 
-The fast switch case doesn't use it, though.
+At least for the shared policy case the entire sequence of
+sugov_should_update_freq() followed by sugov_update_commit() is
+executed from within spinlock protected region and you are using the
+same lock below. And so either the above two routines or the kthread
+routine below will execute at a given point of time.
 
-> And we aren't invalidating the cached next freq immediately currently
-> as well, as we are waiting until the next time the util update handler
-> is called to set sg_policy->next_freq to UINT_MAX.
->
->> > What else do you have in mind to solve this problem ?
->>
->> Something like the below?
->>
->> ---
->>  kernel/sched/cpufreq_schedutil.c |    3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
->> ===================================================================
->> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
->> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
->> @@ -305,7 +305,8 @@ static void sugov_update_single(struct u
->>       * Do not reduce the frequency if the CPU has not been idle
->>       * recently, as the reduction is likely to be premature then.
->>       */
->> -    if (busy && next_f < sg_policy->next_freq) {
->> +    if (busy && next_f < sg_policy->next_freq &&
->> +        sg_policy->next_freq != UINT_MAX) {
->>          next_f = sg_policy->next_freq;
->>
->>          /* Reset cached freq as next_freq has changed */
->
-> This will fix the problem we have identified currently, but adding a
-> special meaning to next_freq == UINT_MAX invites more hidden corner
-> cases like the one we just found. IMHO, using next_freq only for the
-> *real* frequency values makes its usage more transparent and readable.
-> And we already have the need_freq_update flag which we can use for
-> this special purpose, as is done in my patch.
+So in case kthread has started doing the update and acquired the lock,
+the util update handler will wait until the time work_in_progress is
+set to false, that's not a problem we are trying to solve here.
 
-So I prefer to do the above as a -stable fix and make the UNIT_MAX
-change on top of that.
+And if kthread hasn't acquired the lock yet and util handler has
+started executing sugov_should_update_freq() ....
+
+And ^^^ this is where I understood that your earlier change is
+actually required, so that we accumulate the latest updated next_freq
+value.
+
+And with all that we wouldn't require a while loop in the kthread
+code.
+ 
+> > > > @@ -381,13 +381,23 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+> > > >  static void sugov_work(struct kthread_work *work)
+> > > >  {
+> > > >         struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> > > > +       unsigned int freq;
+> > > > +
+> > > > +       /*
+> > > > +        * Hold sg_policy->update_lock just enough to handle the case where:
+> > > > +        * if sg_policy->next_freq is updated before work_in_progress is set to
+> > > > +        * false, we may miss queueing the new update request since
+> > > > +        * work_in_progress would appear to be true.
+> > > > +        */
+> > > > +       raw_spin_lock(&sg_policy->update_lock);
+> > > > +       freq = sg_policy->next_freq;
+> > > > +       sg_policy->work_in_progress = false;
+> > > > +       raw_spin_unlock(&sg_policy->update_lock);
+> > 
+> > One problem we still have is that sg_policy->update_lock is only used
+> > in the shared policy case and not in the single CPU per policy case,
+> > so the race isn't solved there yet.
+> 
+> True.. I can make the single CPU case acquire the update_lock very briefly
+> around sugov_update_commit call in sugov_update_single.
+
+Rafael was very clear from the beginning that he wouldn't allow a spin
+lock in the un-shared policy case :)
+
+-- 
+viresh
