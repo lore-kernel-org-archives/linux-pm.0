@@ -1,62 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] kernel/sched/cpufreq_schedutil: remove stale comment
-Date: Wed, 9 May 2018 14:11:54 +0530
-Message-ID: <20180509084154.dbbhkegrengsw3ki@vireshk-i7>
-References: <20180509084051.12107-1-juri.lelli@redhat.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
+ requests
+Date: Wed, 9 May 2018 10:41:47 +0200
+Message-ID: <20180509084147.GC1681@localhost.localdomain>
+References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
+ <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
+ <20180509045425.GA158882@joelaf.mtv.corp.google.com>
+ <20180509064530.GA1681@localhost.localdomain>
+ <20180509065449.c5zotxqmuyatjgfd@vireshk-i7>
+ <20180509070113.GB52784@joelaf.mtv.corp.google.com>
+ <CAJZ5v0hNgvd=0dKstXRsbHhtrc6m+ugS5kjPOq2B8k55ioX0MA@mail.gmail.com>
+ <20180509082350.GB1681@localhost.localdomain>
+ <CAJZ5v0hkeCOybZo4LPpwiE0PG8msCWQkgiHJbpi-6zJHtOQbfg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180509084051.12107-1-juri.lelli@redhat.com>
+In-Reply-To: <CAJZ5v0hkeCOybZo4LPpwiE0PG8msCWQkgiHJbpi-6zJHtOQbfg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: rafael.j.wysocki@intel.com, peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Claudio Scordino <claudio@evidence.eu.com>, Luca Abeni <luca.abeni@santannapisa.it>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Joel Fernandes <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 09-05-18, 10:40, Juri Lelli wrote:
-> After commit 794a56ebd9a57 ("sched/cpufreq: Change the worker kthread to
-> SCHED_DEADLINE") schedutil kthreads are "ignored" for a clock frequency
-> selection point of view, so the potential corner case for RT tasks is not
-> possible at all now.
+On 09/05/18 10:25, Rafael J. Wysocki wrote:
+> On Wed, May 9, 2018 at 10:23 AM, Juri Lelli <juri.lelli@redhat.com> wrote:
+> > On 09/05/18 10:05, Rafael J. Wysocki wrote:
+> >> On Wed, May 9, 2018 at 9:01 AM, Joel Fernandes <joel@joelfernandes.org> wrote:
+> >> > On Wed, May 09, 2018 at 12:24:49PM +0530, Viresh Kumar wrote:
+> >> >> On 09-05-18, 08:45, Juri Lelli wrote:
+> >> >> > On 08/05/18 21:54, Joel Fernandes wrote:
+> >> >> > Isn't this potentially introducing unneeded irq pressure (and doing the
+> >> >> > whole wakeup the kthread thing), while the already active kthread could
+> >> >> > simply handle multiple back-to-back requests before going to sleep?
+> >> >>
+> >> >> And then we may need more instances of the work item and need to store
+> >> >> a different value of next_freq with each work item, as we can't use
+> >> >> the common one anymore as there would be races around accessing it ?
+> >> >
+> >> > Exactly. I think it also doesn't make sense to over write an already
+> >> > committed request either so better to store them separate (?). After the
+> >> > "commit", that previous request is done..
+> >>
+> >> Why is it?
+> >>
+> >> In the non-fast-switch case the "commit" only means queuing up an
+> >> irq_work.  Which BTW is one of the reasons for having work_in_progress
+> >> even if your kthread can handle multiple work items in one go.
+> >>
+> >> You may try to clear work_in_progress in sugov_irq_work() instead of
+> >> in sugov_work(), though.
+> >>
+> >> BTW, I'm not sure if the comment in sugov_irq_work() still applies.  Juri?
+> >
+> > It doesn't anymore. sugov kthreads are now being "ignored". Should have
+> > remove it with the DL set of changes, sorry about that.
 > 
-> Remove the stale comment mentioning it.
-> 
-> Signed-off-by: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Claudio Scordino <claudio@evidence.eu.com>
-> Cc: Luca Abeni <luca.abeni@santannapisa.it>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 13 -------------
->  1 file changed, 13 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index d2c6083304b4..23ef19070137 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -396,19 +396,6 @@ static void sugov_irq_work(struct irq_work *irq_work)
->  
->  	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
->  
-> -	/*
-> -	 * For RT tasks, the schedutil governor shoots the frequency to maximum.
-> -	 * Special care must be taken to ensure that this kthread doesn't result
-> -	 * in the same behavior.
-> -	 *
-> -	 * This is (mostly) guaranteed by the work_in_progress flag. The flag is
-> -	 * updated only at the end of the sugov_work() function and before that
-> -	 * the schedutil governor rejects all other frequency scaling requests.
-> -	 *
-> -	 * There is a very rare case though, where the RT thread yields right
-> -	 * after the work_in_progress flag is cleared. The effects of that are
-> -	 * neglected for now.
-> -	 */
->  	kthread_queue_work(&sg_policy->worker, &sg_policy->work);
->  }
+> No worries, you can still do that. ;-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+Indeed! Done. :)
