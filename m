@@ -1,158 +1,136 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
- requests
-Date: Wed, 9 May 2018 02:39:32 -0700
-Message-ID: <20180509093932.GE76874@joelaf.mtv.corp.google.com>
-References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
- <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
- <20180509045425.GA158882@joelaf.mtv.corp.google.com>
- <20180509064530.GA1681@localhost.localdomain>
- <20180509080644.GA76874@joelaf.mtv.corp.google.com>
- <CAJZ5v0iFZ5+6BQCism-o8bnOxD8KveueJ5CT58F9uH_7_pYOXQ@mail.gmail.com>
- <20180509085116.GC76874@joelaf.mtv.corp.google.com>
- <CAJZ5v0jKUQ5MeR4dKvyWTgH7vY+vVOmTN+yzP8xWut3KTaYx4A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Johan Hovold <johan@kernel.org>
+Subject: [PATCH 1/2] serdev: add controller runtime PM support
+Date: Wed,  9 May 2018 11:44:18 +0200
+Message-ID: <20180509094419.13470-1-johan@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jKUQ5MeR4dKvyWTgH7vY+vVOmTN+yzP8xWut3KTaYx4A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org, Johan Hovold <johan@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 09, 2018 at 11:06:24AM +0200, Rafael J. Wysocki wrote:
-> On Wed, May 9, 2018 at 10:51 AM, Joel Fernandes <joel@joelfernandes.org> wrote:
-> > On Wed, May 09, 2018 at 10:30:37AM +0200, Rafael J. Wysocki wrote:
-> >> On Wed, May 9, 2018 at 10:06 AM, Joel Fernandes <joel@joelfernandes.org> wrote:
-> >> > On Wed, May 09, 2018 at 08:45:30AM +0200, Juri Lelli wrote:
-> >> >> On 08/05/18 21:54, Joel Fernandes wrote:
-> >> >>
-> >> >> [...]
-> >> >>
-> >> >> > Just for discussion sake, is there any need for work_in_progress? If we can
-> >> >> > queue multiple work say kthread_queue_work can handle it, then just queuing
-> >> >> > works whenever they are available should be Ok and the kthread loop can
-> >> >> > handle them. __cpufreq_driver_target is also protected by the work lock if
-> >> >> > there is any concern that can have races... only thing is rate-limiting of
-> >> >> > the requests, but we are doing a rate limiting, just not for the "DL
-> >> >> > increased utilization" type requests (which I don't think we are doing at the
-> >> >> > moment for urgent DL requests anyway).
-> >> >> >
-> >> >> > Following is an untested diff to show the idea. What do you think?
-> >> >> >
-> >> >> > thanks,
-> >> >> >
-> >> >> > - Joel
-> >> >> >
-> >> >> > ----8<---
-> >> >> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> >> >> > index d2c6083304b4..862634ff4bf3 100644
-> >> >> > --- a/kernel/sched/cpufreq_schedutil.c
-> >> >> > +++ b/kernel/sched/cpufreq_schedutil.c
-> >> >> > @@ -38,7 +38,6 @@ struct sugov_policy {
-> >> >> >     struct                  mutex work_lock;
-> >> >> >     struct                  kthread_worker worker;
-> >> >> >     struct task_struct      *thread;
-> >> >> > -   bool                    work_in_progress;
-> >> >> >
-> >> >> >     bool                    need_freq_update;
-> >> >> >  };
-> >> >> > @@ -92,16 +91,8 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> >> >> >         !cpufreq_can_do_remote_dvfs(sg_policy->policy))
-> >> >> >             return false;
-> >> >> >
-> >> >> > -   if (sg_policy->work_in_progress)
-> >> >> > -           return false;
-> >> >> > -
-> >> >> >     if (unlikely(sg_policy->need_freq_update)) {
-> >> >> >             sg_policy->need_freq_update = false;
-> >> >> > -           /*
-> >> >> > -            * This happens when limits change, so forget the previous
-> >> >> > -            * next_freq value and force an update.
-> >> >> > -            */
-> >> >> > -           sg_policy->next_freq = UINT_MAX;
-> >> >> >             return true;
-> >> >> >     }
-> >> >> >
-> >> >> > @@ -129,7 +120,6 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-> >> >> >             policy->cur = next_freq;
-> >> >> >             trace_cpu_frequency(next_freq, smp_processor_id());
-> >> >> >     } else {
-> >> >> > -           sg_policy->work_in_progress = true;
-> >> >> >             irq_work_queue(&sg_policy->irq_work);
-> >> >>
-> >> >> Isn't this potentially introducing unneeded irq pressure (and doing the
-> >> >> whole wakeup the kthread thing), while the already active kthread could
-> >> >> simply handle multiple back-to-back requests before going to sleep?
-> >> >
-> >> > How about this? Will use the latest request, and also doesn't do unnecessary
-> >> > irq_work_queue:
-> >> >
-> >> > (untested)
-> >> > -----8<--------
-> >> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> >> > index d2c6083304b4..6a3e42b01f52 100644
-> >> > --- a/kernel/sched/cpufreq_schedutil.c
-> >> > +++ b/kernel/sched/cpufreq_schedutil.c
-> >> > @@ -38,7 +38,7 @@ struct sugov_policy {
-> >> >         struct                  mutex work_lock;
-> >> >         struct                  kthread_worker worker;
-> >> >         struct task_struct      *thread;
-> >> > -       bool                    work_in_progress;
-> >> > +       bool                    work_in_progress; /* Has kthread been kicked */
-> >> >
-> >> >         bool                    need_freq_update;
-> >> >  };
-> >> > @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> >> >             !cpufreq_can_do_remote_dvfs(sg_policy->policy))
-> >> >                 return false;
-> >> >
-> >> > -       if (sg_policy->work_in_progress)
-> >> > -               return false;
-> >> > -
-> >>
-> >> Why this change?
-> >>
-> >> Doing the below is rather pointless if work_in_progress is set, isn't it?
-> >
-> > The issue being discussed is that if a work was already in progress, then new
-> > frequency updates will be dropped. So say even if DL increased in
-> > utilization, nothing will happen because if work_in_progress = true and
-> > need_freq_update = true, we would skip an update.  In this diff, I am
-> > allowing the frequency request to be possible while work_in_progress is true.
-> > In the end the latest update will be picked.
-> 
-> I'm not sure if taking new requests with the irq_work in flight is a good idea.
+Add support for controller runtime power management to serdev core. This
+is needed to allow slave drivers to manage the runtime PM state of the
+underlying serial controller when its driver, in turn, implements more
+aggressive runtime power management (e.g. using autosuspend).
 
-That's the point of the original $SUBJECT patch posted by Claudio :) In that
-you can see if urgent_request, then work_in_progress isn't checked.
+For some applications, for example, where loss off initial data after a
+remote-wakeup event is acceptable or where rx is not used at all,
+aggressive serial controller runtime PM may be used without further
+involvement of the slave driver. But when this is not the case, the
+slave driver must be able to indicate when incoming data is expected in
+order to avoid data loss.
 
-Also I don't see why we cannot do this with this small tweak as in my diff.
-It solves a real problem seen with frequency updates done with the
-slow-switch as we discussed at OSPM.
+To facilitate the common case, where the serial controller power state
+is active whenever the port is open (which is the case with just about
+every serial driver), and where data loss is not acceptable and cannot
+even be prevented by explicit controller runtime power management, an
+RPM reference is taken in serdev open and put again at close. This
+reference can later be balanced by any serdev driver which wants and/or
+can handle aggressive controller runtime PM.
 
-But let me know if I missed your point or something ;)
+Note that the .ignore_children flag is set for the serdev controller to
+allow the underlying hardware to idle when no I/O is expected, regardless
+of the slave device RPM state.
 
-> 
-> >>
-> >> You'll drop the results of it on the floor going forward anyway then AFAICS.
-> >
-> > Why?
-> 
-> Because you cannot queue up a new irq_work before the previous one is complete?
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/tty/serdev/core.c | 33 ++++++++++++++++++++++++++++++---
+ 1 file changed, 30 insertions(+), 3 deletions(-)
 
-We are not doing that. If you see in my diff, I am not queuing an irq_work if
-one was already queued. What we're allowing is an update to next_freq. We
-still use work_in_progress but don't use it to ban all incoming update
-requests as done previously. Instead we use work_in_progress to make sure
-that we dont unnecessarily increase the irq pressure and have excessive wake
-ups (as Juri suggested).
-
-I can clean it up and post it as a patch next week after some testing incase
-that's less confusing.
-This week I'm actually on vacation and the diff was pure vacation hacking ;-)
-
-thanks,
-
-- Joel
+diff --git a/drivers/tty/serdev/core.c b/drivers/tty/serdev/core.c
+index df93b727e984..e5e84303faca 100644
+--- a/drivers/tty/serdev/core.c
++++ b/drivers/tty/serdev/core.c
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/serdev.h>
+ #include <linux/slab.h>
+ 
+@@ -143,11 +144,28 @@ EXPORT_SYMBOL_GPL(serdev_device_remove);
+ int serdev_device_open(struct serdev_device *serdev)
+ {
+ 	struct serdev_controller *ctrl = serdev->ctrl;
++	int ret;
+ 
+ 	if (!ctrl || !ctrl->ops->open)
+ 		return -EINVAL;
+ 
+-	return ctrl->ops->open(ctrl);
++	ret = ctrl->ops->open(ctrl);
++	if (ret)
++		return ret;
++
++	ret = pm_runtime_get_sync(&ctrl->dev);
++	if (ret < 0) {
++		pm_runtime_put_noidle(&ctrl->dev);
++		goto err_close;
++	}
++
++	return 0;
++
++err_close:
++	if (ctrl->ops->close)
++		ctrl->ops->close(ctrl);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(serdev_device_open);
+ 
+@@ -158,6 +176,8 @@ void serdev_device_close(struct serdev_device *serdev)
+ 	if (!ctrl || !ctrl->ops->close)
+ 		return;
+ 
++	pm_runtime_put(&ctrl->dev);
++
+ 	ctrl->ops->close(ctrl);
+ }
+ EXPORT_SYMBOL_GPL(serdev_device_close);
+@@ -416,6 +436,9 @@ struct serdev_controller *serdev_controller_alloc(struct device *parent,
+ 
+ 	dev_set_name(&ctrl->dev, "serial%d", id);
+ 
++	pm_runtime_no_callbacks(&ctrl->dev);
++	pm_suspend_ignore_children(&ctrl->dev, true);
++
+ 	dev_dbg(&ctrl->dev, "allocated controller 0x%p id %d\n", ctrl, id);
+ 	return ctrl;
+ 
+@@ -547,20 +570,23 @@ int serdev_controller_add(struct serdev_controller *ctrl)
+ 	if (ret)
+ 		return ret;
+ 
++	pm_runtime_enable(&ctrl->dev);
++
+ 	ret_of = of_serdev_register_devices(ctrl);
+ 	ret_acpi = acpi_serdev_register_devices(ctrl);
+ 	if (ret_of && ret_acpi) {
+ 		dev_dbg(&ctrl->dev, "no devices registered: of:%d acpi:%d\n",
+ 			ret_of, ret_acpi);
+ 		ret = -ENODEV;
+-		goto out_dev_del;
++		goto err_rpm_disable;
+ 	}
+ 
+ 	dev_dbg(&ctrl->dev, "serdev%d registered: dev:%p\n",
+ 		ctrl->nr, &ctrl->dev);
+ 	return 0;
+ 
+-out_dev_del:
++err_rpm_disable:
++	pm_runtime_disable(&ctrl->dev);
+ 	device_del(&ctrl->dev);
+ 	return ret;
+ };
+@@ -591,6 +617,7 @@ void serdev_controller_remove(struct serdev_controller *ctrl)
+ 
+ 	dummy = device_for_each_child(&ctrl->dev, NULL,
+ 				      serdev_remove_device);
++	pm_runtime_disable(&ctrl->dev);
+ 	device_del(&ctrl->dev);
+ }
+ EXPORT_SYMBOL_GPL(serdev_controller_remove);
+-- 
+2.17.0
