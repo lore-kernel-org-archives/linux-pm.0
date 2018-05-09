@@ -1,36 +1,43 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency
- requests
-Date: Wed, 9 May 2018 00:01:13 -0700
-Message-ID: <20180509070113.GB52784@joelaf.mtv.corp.google.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH] sched/cpufreq/schedutil: handling urgent frequency requests
+Date: Wed, 9 May 2018 10:05:09 +0200
+Message-ID: <CAJZ5v0hNgvd=0dKstXRsbHhtrc6m+ugS5kjPOq2B8k55ioX0MA@mail.gmail.com>
 References: <1525704215-8683-1-git-send-email-claudio@evidence.eu.com>
- <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7>
- <20180509045425.GA158882@joelaf.mtv.corp.google.com>
- <20180509064530.GA1681@localhost.localdomain>
- <20180509065449.c5zotxqmuyatjgfd@vireshk-i7>
+ <20180508065435.bcht6dyb3rpp6gk5@vireshk-i7> <20180509045425.GA158882@joelaf.mtv.corp.google.com>
+ <20180509064530.GA1681@localhost.localdomain> <20180509065449.c5zotxqmuyatjgfd@vireshk-i7>
+ <20180509070113.GB52784@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180509065449.c5zotxqmuyatjgfd@vireshk-i7>
+In-Reply-To: <20180509070113.GB52784@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Claudio Scordino <claudio@evidence.eu.com>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
+To: Joel Fernandes <joel@joelfernandes.org>, Juri Lelli <juri.lelli@redhat.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Claudio Scordino <claudio@evidence.eu.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 09, 2018 at 12:24:49PM +0530, Viresh Kumar wrote:
-> On 09-05-18, 08:45, Juri Lelli wrote:
-> > On 08/05/18 21:54, Joel Fernandes wrote:
-> > Isn't this potentially introducing unneeded irq pressure (and doing the
-> > whole wakeup the kthread thing), while the already active kthread could
-> > simply handle multiple back-to-back requests before going to sleep?
-> 
-> And then we may need more instances of the work item and need to store
-> a different value of next_freq with each work item, as we can't use
-> the common one anymore as there would be races around accessing it ?
+On Wed, May 9, 2018 at 9:01 AM, Joel Fernandes <joel@joelfernandes.org> wrote:
+> On Wed, May 09, 2018 at 12:24:49PM +0530, Viresh Kumar wrote:
+>> On 09-05-18, 08:45, Juri Lelli wrote:
+>> > On 08/05/18 21:54, Joel Fernandes wrote:
+>> > Isn't this potentially introducing unneeded irq pressure (and doing the
+>> > whole wakeup the kthread thing), while the already active kthread could
+>> > simply handle multiple back-to-back requests before going to sleep?
+>>
+>> And then we may need more instances of the work item and need to store
+>> a different value of next_freq with each work item, as we can't use
+>> the common one anymore as there would be races around accessing it ?
+>
+> Exactly. I think it also doesn't make sense to over write an already
+> committed request either so better to store them separate (?). After the
+> "commit", that previous request is done..
 
-Exactly. I think it also doesn't make sense to over write an already
-committed request either so better to store them separate (?). After the
-"commit", that previous request is done..
+Why is it?
 
-- Joel
+In the non-fast-switch case the "commit" only means queuing up an
+irq_work.  Which BTW is one of the reasons for having work_in_progress
+even if your kthread can handle multiple work items in one go.
+
+You may try to clear work_in_progress in sugov_irq_work() instead of
+in sugov_work(), though.
+
+BTW, I'm not sure if the comment in sugov_irq_work() still applies.  Juri?
