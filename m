@@ -1,47 +1,43 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH 6/8] firmware: arm_scmi: remove unnecessary bitmap_zero
-Date: Wed,  9 May 2018 18:07:12 +0100
-Message-ID: <1525885634-22348-7-git-send-email-sudeep.holla@arm.com>
-References: <1525885634-22348-1-git-send-email-sudeep.holla@arm.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v4 6/6] devfreq: rk3399_dmc: fix spelling mistakes.
+Date: Thu, 10 May 2018 10:14:55 +0900
+Message-ID: <5AF39D0F.20006@samsung.com>
+References: <20180509125749.31318-1-enric.balletbo@collabora.com>
+        <CGME20180509125837epcas1p2fb18921a0c7f25e277e795c290a824d6@epcas1p2.samsung.com>
+        <20180509125749.31318-7-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1525885634-22348-1-git-send-email-sudeep.holla@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20180509125749.31318-7-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-kcalloc zeros the memory and it's totally unnecessary to zero the bitmap
-again using bitmap_zero. This patch just drops the unnecessary use of
-the bitmap_zero in the context.
+Hi,
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/firmware/arm_scmi/driver.c | 2 --
- 1 file changed, 2 deletions(-)
+On 2018년 05월 09일 21:57, Enric Balletbo i Serra wrote:
+> Fix some spelling mistakes in error and debug messages.
+> 
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> 
+> Changes in v4:
+> - [6/6] Introduce this new patch that fixes some spelling.
+> 
+> Changes in v3: None
+> Changes in v2: None
+> 
+>  drivers/devfreq/rk3399_dmc.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
-index 33d2b78af3ff..4087d6c50ecd 100644
---- a/drivers/firmware/arm_scmi/driver.c
-+++ b/drivers/firmware/arm_scmi/driver.c
-@@ -636,8 +636,6 @@ static int scmi_xfer_info_init(struct scmi_info *sinfo)
- 	if (!info->xfer_alloc_table)
- 		return -ENOMEM;
- 
--	bitmap_zero(info->xfer_alloc_table, desc->max_msg);
--
- 	/* Pre-initialize the buffer pointer to pre-allocated buffers */
- 	for (i = 0, xfer = info->xfer_block; i < desc->max_msg; i++, xfer++) {
- 		xfer->rx.buf = devm_kcalloc(dev, sizeof(u8), desc->max_msg_size,
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+[snip]
+
+
 -- 
-2.7.4
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
