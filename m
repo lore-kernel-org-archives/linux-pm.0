@@ -1,43 +1,40 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v4 6/6] devfreq: rk3399_dmc: fix spelling mistakes.
-Date: Thu, 10 May 2018 10:14:55 +0900
-Message-ID: <5AF39D0F.20006@samsung.com>
-References: <20180509125749.31318-1-enric.balletbo@collabora.com>
-        <CGME20180509125837epcas1p2fb18921a0c7f25e277e795c290a824d6@epcas1p2.samsung.com>
-        <20180509125749.31318-7-enric.balletbo@collabora.com>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH] soc: mediatek: remove unneeded semicolon
+Date: Thu, 10 May 2018 10:57:40 +0800
+Message-ID: <a4b9c30335194d90072baf9373e41a21b349bc54.1525920846.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180509125749.31318-7-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, hl@rock-chips.com
+To: matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
+Cc: ulf.hansson@linaro.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Sean Wang <sean.wang@mediatek.com>
 
-On 2018년 05월 09일 21:57, Enric Balletbo i Serra wrote:
-> Fix some spelling mistakes in error and debug messages.
-> 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-> 
-> Changes in v4:
-> - [6/6] Introduce this new patch that fixes some spelling.
-> 
-> Changes in v3: None
-> Changes in v2: None
-> 
->  drivers/devfreq/rk3399_dmc.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+Fix up drivers/soc/mediatek/mtk-scpsys.c:255:2-3: Unneeded semicolon
+accidently being added in commit f9e2f65dd561 ("soc: mediatek: add a
+fixed wait for SRAM stable").
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Fixes: f9e2f65dd561 ("soc: mediatek: add a fixed wait for SRAM stable")
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+---
+ drivers/soc/mediatek/mtk-scpsys.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[snip]
-
-
+diff --git a/drivers/soc/mediatek/mtk-scpsys.c b/drivers/soc/mediatek/mtk-scpsys.c
+index 2080c8f..128e3dd 100644
+--- a/drivers/soc/mediatek/mtk-scpsys.c
++++ b/drivers/soc/mediatek/mtk-scpsys.c
+@@ -252,7 +252,7 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+ 					 MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+ 		if (ret < 0)
+ 			goto err_pwr_ack;
+-	};
++	}
+ 
+ 	if (scpd->data->bus_prot_mask) {
+ 		ret = mtk_infracfg_clear_bus_protection(scp->infracfg,
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.7.4
