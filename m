@@ -1,60 +1,48 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
- required
-Date: Thu, 10 May 2018 18:15:15 +0200
-Message-ID: <20180510161515.GH12217@hirez.programming.kicks-ass.net>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-4-patrick.bellasi@arm.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 1/2] serdev: add controller runtime PM support
+Date: Thu, 10 May 2018 09:48:31 -0700
+Message-ID: <20180510164831.GH98604@atomide.com>
+References: <20180509094419.13470-1-johan@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180510150553.28122-4-patrick.bellasi@arm.com>
+In-Reply-To: <20180509094419.13470-1-johan@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Johan Hovold <johan@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 10, 2018 at 04:05:53PM +0100, Patrick Bellasi wrote:
-> All the above considered, let's make schedutil updates more explicit in
-> fair.c by removing the cfs_rq_util_change() wrapper function in favour
-> of the existing cpufreq_update_util() public API.
-> This can be done by calling cpufreq_update_util() explicitly in the few
-> call sites where it really makes sense and when all the (potentially)
-> required cfs_rq's information have been updated.
+* Johan Hovold <johan@kernel.org> [180509 09:46]:
+> Add support for controller runtime power management to serdev core. This
+> is needed to allow slave drivers to manage the runtime PM state of the
+> underlying serial controller when its driver, in turn, implements more
+> aggressive runtime power management (e.g. using autosuspend).
+> 
+> For some applications, for example, where loss off initial data after a
+> remote-wakeup event is acceptable or where rx is not used at all,
+> aggressive serial controller runtime PM may be used without further
+> involvement of the slave driver. But when this is not the case, the
+> slave driver must be able to indicate when incoming data is expected in
+> order to avoid data loss.
+> 
+> To facilitate the common case, where the serial controller power state
+> is active whenever the port is open (which is the case with just about
+> every serial driver), and where data loss is not acceptable and cannot
+> even be prevented by explicit controller runtime power management, an
+> RPM reference is taken in serdev open and put again at close. This
+> reference can later be balanced by any serdev driver which wants and/or
+> can handle aggressive controller runtime PM.
+> 
+> Note that the .ignore_children flag is set for the serdev controller to
+> allow the underlying hardware to idle when no I/O is expected, regardless
+> of the slave device RPM state.
 
-Aside from having to redraw my ever stale diagrams _again_ I don't think
-I object too much here. As you write tracking the exact point where we
-did do the update was fairly tedious.
+If this solution works for GPS then this should also work for modems
+that might produce data. And as long as the serdev consumer driver
+can wake up the UART with pm_runtime_get(&serdev->ctrl->dev) then
+the out of band GPIO wake interrupts will work to. And for TX,
+the serdev consumer driver can toggle the wake GPIO, and then call
+pm_runtime_get(&serdev->ctrl->dev). So yeah, looks nice to me:
 
-> @@ -5397,9 +5366,27 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->  		update_cfs_group(se);
->  	}
->  
-> +	/* The task is visible from the root cfs_rq */
-> +	if (!se) {
-> +		unsigned int flags = 0;
-
-That one shadows the @flags argument. Some checker is bound to complain
-about it.
-
-> +
->  		add_nr_running(rq, 1);
->  
-> +		if (p->in_iowait)
-> +			flags |= SCHED_CPUFREQ_IOWAIT;
-> +
-> +		/*
-> +		 * !last_update_time means we've passed through
-> +		 * migrate_task_rq_fair() indicating we migrated.
-> +		 *
-> +		 * IOW we're enqueueing a task on a new CPU.
-> +		 */
-> +		if (!p->se.avg.last_update_time)
-> +			flags |= SCHED_CPUFREQ_MIGRATION;
-> +
-> +		cpufreq_update_util(rq, flags);
-> +	}
-> +
->  	hrtick_update(rq);
->  }
+Acked-by: Tony Lindgren <tony@atomide.com>
