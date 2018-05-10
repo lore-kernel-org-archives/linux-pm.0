@@ -1,110 +1,134 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: [PATCH -resend 02/27] x86: assembly, use SYM_DATA for data
-Date: Thu, 10 May 2018 10:06:19 +0200
-Message-ID: <20180510080644.19752-3-jslaby@suse.cz>
-References: <20180510080644.19752-1-jslaby@suse.cz>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180510080644.19752-1-jslaby@suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/8] firmware: arm_scmi: rename get_transition_latency and
+ add_opps_to_device
+Date: Thu, 10 May 2018 10:29:48 +0200
+Message-ID: <CAJZ5v0ixZPB8aZs0xc9-3JMrWfRC7+7mzYWNaCj1o_q6VSqEJA@mail.gmail.com>
+References: <1525885634-22348-1-git-send-email-sudeep.holla@arm.com>
+ <1525885634-22348-4-git-send-email-sudeep.holla@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1525885634-22348-4-git-send-email-sudeep.holla@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Jonathan Cameron <Jonathan.Cameron@huawei.com>
 List-Id: linux-pm@vger.kernel.org
 
-We make proper use of SYM_DATA on global data instead of marking them as
-ENTRY. ENTRY is intended for functions and shall be paired with ENDPROC.
-ENTRY also aligns symbols which creates unnecessary holes here between
-data.
+On Wed, May 9, 2018 at 7:07 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> Most of the scmi code follows the suggestion from Greg KH on a totally
+> different thread[0] to have the subsystem name first, followed by the
+> noun and finally the verb with couple of these exceptions.
+>
+> This patch fixes them so that all the functions names are aligned to
+> on practice.
+>
+> [0] https://www.spinics.net/lists/arm-kernel/msg583673.html
+>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-ENTRY from saved_eip in wakeup_32 and many saved_* in wakeup_64 is
-simply dropped, as these symbols are local only.
+ACK for the cpufreq driver changes and I'm assuming this to go in via the arch.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
-Cc: linux-pm@vger.kernel.org
----
- arch/x86/kernel/acpi/wakeup_32.S |  4 ++--
- arch/x86/kernel/acpi/wakeup_64.S | 14 +++++++-------
- arch/x86/kernel/head_32.S        |  6 ++----
- arch/x86/kernel/head_64.S        |  5 ++---
- 4 files changed, 13 insertions(+), 16 deletions(-)
-
-diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-index 0c26b1b44e51..feac1e5ecba0 100644
---- a/arch/x86/kernel/acpi/wakeup_32.S
-+++ b/arch/x86/kernel/acpi/wakeup_32.S
-@@ -89,8 +89,8 @@ ret_point:
- 
- .data
- ALIGN
--ENTRY(saved_magic)	.long	0
--ENTRY(saved_eip)	.long	0
-+SYM_DATA(saved_magic,	.long 0)
-+saved_eip:		.long 0
- 
- # saved registers
- saved_idt:	.long	0,0
-diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-index 50b8ed0317a3..551758f48eb7 100644
---- a/arch/x86/kernel/acpi/wakeup_64.S
-+++ b/arch/x86/kernel/acpi/wakeup_64.S
-@@ -125,12 +125,12 @@ ENTRY(do_suspend_lowlevel)
- ENDPROC(do_suspend_lowlevel)
- 
- .data
--ENTRY(saved_rbp)	.quad	0
--ENTRY(saved_rsi)	.quad	0
--ENTRY(saved_rdi)	.quad	0
--ENTRY(saved_rbx)	.quad	0
-+saved_rbp:		.quad	0
-+saved_rsi:		.quad	0
-+saved_rdi:		.quad	0
-+saved_rbx:		.quad	0
- 
--ENTRY(saved_rip)	.quad	0
--ENTRY(saved_rsp)	.quad	0
-+saved_rip:		.quad	0
-+saved_rsp:		.quad	0
- 
--ENTRY(saved_magic)	.quad	0
-+SYM_DATA(saved_magic,	.quad	0)
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index b59e4fb40fd9..80965fd75fea 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -507,10 +507,8 @@ GLOBAL(early_recursion_flag)
- 
- __REFDATA
- 	.align 4
--ENTRY(initial_code)
--	.long i386_start_kernel
--ENTRY(setup_once_ref)
--	.long setup_once
-+SYM_DATA(initial_code,		.long i386_start_kernel)
-+SYM_DATA(setup_once_ref,	.long setup_once)
- 
- /*
-  * BSS section
-diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-index 8344dd2f310a..17543533642d 100644
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -463,9 +463,8 @@ early_gdt_descr:
- early_gdt_descr_base:
- 	.quad	INIT_PER_CPU_VAR(gdt_page)
- 
--ENTRY(phys_base)
--	/* This must match the first entry in level2_kernel_pgt */
--	.quad   0x0000000000000000
-+/* This must match the first entry in level2_kernel_pgt */
-+SYM_DATA(phys_base, .quad 0x0000000000000000)
- EXPORT_SYMBOL(phys_base)
- 
- #include "../../x86/xen/xen-head.S"
--- 
-2.16.3
+> ---
+>  drivers/cpufreq/scmi-cpufreq.c   |  4 ++--
+>  drivers/firmware/arm_scmi/perf.c | 10 +++++-----
+>  include/linux/scmi_protocol.h    | 10 +++++-----
+>  3 files changed, 12 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+> index b4dbc77459b6..50b1551ba894 100644
+> --- a/drivers/cpufreq/scmi-cpufreq.c
+> +++ b/drivers/cpufreq/scmi-cpufreq.c
+> @@ -117,7 +117,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+>                 return -ENODEV;
+>         }
+>
+> -       ret = handle->perf_ops->add_opps_to_device(handle, cpu_dev);
+> +       ret = handle->perf_ops->device_opps_add(handle, cpu_dev);
+>         if (ret) {
+>                 dev_warn(cpu_dev, "failed to add opps to the device\n");
+>                 return ret;
+> @@ -164,7 +164,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+>         /* SCMI allows DVFS request for any domain from any CPU */
+>         policy->dvfs_possible_from_any_cpu = true;
+>
+> -       latency = handle->perf_ops->get_transition_latency(handle, cpu_dev);
+> +       latency = handle->perf_ops->transition_latency_get(handle, cpu_dev);
+>         if (!latency)
+>                 latency = CPUFREQ_ETERNAL;
+>
+> diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
+> index 987c64d19801..611ab08e6174 100644
+> --- a/drivers/firmware/arm_scmi/perf.c
+> +++ b/drivers/firmware/arm_scmi/perf.c
+> @@ -349,8 +349,8 @@ static int scmi_dev_domain_id(struct device *dev)
+>         return clkspec.args[0];
+>  }
+>
+> -static int scmi_dvfs_add_opps_to_device(const struct scmi_handle *handle,
+> -                                       struct device *dev)
+> +static int scmi_dvfs_device_opps_add(const struct scmi_handle *handle,
+> +                                    struct device *dev)
+>  {
+>         int idx, ret, domain;
+>         unsigned long freq;
+> @@ -383,7 +383,7 @@ static int scmi_dvfs_add_opps_to_device(const struct scmi_handle *handle,
+>         return 0;
+>  }
+>
+> -static int scmi_dvfs_get_transition_latency(const struct scmi_handle *handle,
+> +static int scmi_dvfs_transition_latency_get(const struct scmi_handle *handle,
+>                                             struct device *dev)
+>  {
+>         struct perf_dom_info *dom;
+> @@ -432,8 +432,8 @@ static struct scmi_perf_ops perf_ops = {
+>         .level_set = scmi_perf_level_set,
+>         .level_get = scmi_perf_level_get,
+>         .device_domain_id = scmi_dev_domain_id,
+> -       .get_transition_latency = scmi_dvfs_get_transition_latency,
+> -       .add_opps_to_device = scmi_dvfs_add_opps_to_device,
+> +       .transition_latency_get = scmi_dvfs_transition_latency_get,
+> +       .device_opps_add = scmi_dvfs_device_opps_add,
+>         .freq_set = scmi_dvfs_freq_set,
+>         .freq_get = scmi_dvfs_freq_get,
+>  };
+> diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
+> index a171c1e293e8..f4c9fc0fc755 100644
+> --- a/include/linux/scmi_protocol.h
+> +++ b/include/linux/scmi_protocol.h
+> @@ -85,8 +85,8 @@ struct scmi_clk_ops {
+>   * @level_set: sets the performance level of a domain
+>   * @level_get: gets the performance level of a domain
+>   * @device_domain_id: gets the scmi domain id for a given device
+> - * @get_transition_latency: gets the DVFS transition latency for a given device
+> - * @add_opps_to_device: adds all the OPPs for a given device
+> + * @transition_latency_get: gets the DVFS transition latency for a given device
+> + * @device_opps_add: adds all the OPPs for a given device
+>   * @freq_set: sets the frequency for a given device using sustained frequency
+>   *     to sustained performance level mapping
+>   * @freq_get: gets the frequency for a given device using sustained frequency
+> @@ -102,10 +102,10 @@ struct scmi_perf_ops {
+>         int (*level_get)(const struct scmi_handle *handle, u32 domain,
+>                          u32 *level, bool poll);
+>         int (*device_domain_id)(struct device *dev);
+> -       int (*get_transition_latency)(const struct scmi_handle *handle,
+> +       int (*transition_latency_get)(const struct scmi_handle *handle,
+>                                       struct device *dev);
+> -       int (*add_opps_to_device)(const struct scmi_handle *handle,
+> -                                 struct device *dev);
+> +       int (*device_opps_add)(const struct scmi_handle *handle,
+> +                              struct device *dev);
+>         int (*freq_set)(const struct scmi_handle *handle, u32 domain,
+>                         unsigned long rate, bool poll);
+>         int (*freq_get)(const struct scmi_handle *handle, u32 domain,
+> --
+> 2.7.4
+>
