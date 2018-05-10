@@ -1,8 +1,10 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] powercap/drivers/idle_injection: Add an idle injection framework
-Date: Thu, 10 May 2018 12:34:18 +0200
-Message-ID: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V2] powercap/drivers/idle_injection: Add an idle injection framework
+Date: Thu, 10 May 2018 14:26:03 +0200
+Message-ID: <1525955163-14556-1-git-send-email-daniel.lezcano@linaro.org>
+References: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: viresh.kumar@linaro.org, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
@@ -35,25 +37,29 @@ The task handling the timer interrupt will wakeup all the kthreads
 belonging to the cpumask.
 
 This code was previously tested with the cpu cooling device and went
-through several iterations. It results now in splitted code and API
-exported in the header file. It was tested with the cpu cooling
-device with success.
+through several iterations. It results now in split code and API
+exported in the header file. It was tested with the cpu cooling device
+with success.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/powercap/Kconfig          |   8 +
+ V2: Fixed checkpatch warnings
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/powercap/Kconfig          |  10 ++
  drivers/powercap/Makefile         |   1 +
- drivers/powercap/idle_injection.c | 330 ++++++++++++++++++++++++++++++++++++++
+ drivers/powercap/idle_injection.c | 331 ++++++++++++++++++++++++++++++++++++++
  include/linux/idle_injection.h    |  62 +++++++
- 4 files changed, 401 insertions(+)
+ 4 files changed, 404 insertions(+)
  create mode 100644 drivers/powercap/idle_injection.c
  create mode 100644 include/linux/idle_injection.h
 
 diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-index 85727ef..1ed23e3 100644
+index 85727ef..a767ef2 100644
 --- a/drivers/powercap/Kconfig
 +++ b/drivers/powercap/Kconfig
-@@ -29,4 +29,12 @@ config INTEL_RAPL
+@@ -29,4 +29,14 @@ config INTEL_RAPL
  	  controller, CPU core (Power Plance 0), graphics uncore (Power Plane
  	  1), etc.
  
@@ -61,10 +67,12 @@ index 85727ef..1ed23e3 100644
 +	bool "Idle injection framework"
 +	depends on CPU_IDLE
 +	default n
-+	---help---
-+	   This enable support for the idle injection framework. It
-+	   provides a way to force idle periods on a set of specified
-+	   CPUs for power capping.
++	help
++	  This enables support for the idle injection framework. It
++	  provides a way to force idle periods on a set of specified
++	  CPUs for power capping. Idle period can be injected
++	  synchronously on a set of specified CPUs or alternatively
++	  on a per CPU basis.
  endif
 diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
 index 0a21ef3..c3bbfee 100644
@@ -76,10 +84,10 @@ index 0a21ef3..c3bbfee 100644
 +obj-$(CONFIG_IDLE_INJECTION) += idle_injection.o
 diff --git a/drivers/powercap/idle_injection.c b/drivers/powercap/idle_injection.c
 new file mode 100644
-index 0000000..120171f
+index 0000000..825ffac
 --- /dev/null
 +++ b/drivers/powercap/idle_injection.c
-@@ -0,0 +1,330 @@
+@@ -0,0 +1,331 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * drivers/powercap/idle_injection.c
@@ -180,42 +188,42 @@ index 0000000..120171f
 + */
 +static void idle_injection_fn(unsigned int cpu)
 +{
-+       struct idle_injection_device *ii_dev;
-+       struct idle_injection_thread *iit;
-+       int run_duration_ms, idle_duration_ms;
++	struct idle_injection_device *ii_dev;
++	struct idle_injection_thread *iit;
++	int run_duration_ms, idle_duration_ms;
 +
-+       ii_dev = per_cpu(idle_injection_device, cpu);
++	ii_dev = per_cpu(idle_injection_device, cpu);
 +
-+       iit = per_cpu_ptr(&idle_injection_thread, cpu);
++	iit = per_cpu_ptr(&idle_injection_thread, cpu);
 +
-+       /*
-+	* Boolean used by the smpboot mainloop and used as a flip-flop
-+	* in this function
-+	*/
-+       iit->should_run = 0;
++	/*
++	 * Boolean used by the smpboot mainloop and used as a flip-flop
++	 * in this function
++	 */
++	iit->should_run = 0;
 +
-+       atomic_inc(&ii_dev->count);
++	atomic_inc(&ii_dev->count);
 +
-+       idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
++	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
 +
-+       play_idle(idle_duration_ms);
++	play_idle(idle_duration_ms);
 +
-+       /*
-+        * The last CPU waking up is in charge of setting the timer. If
-+        * the CPU is hotplugged, the timer will move to another CPU
-+        * (which may not belong to the same cluster) but that is not a
-+        * problem as the timer will be set again by another CPU
-+        * belonging to the cluster. This mechanism is self adaptive.
-+        */
-+       if (!atomic_dec_and_test(&ii_dev->count))
-+               return;
++	/*
++	 * The last CPU waking up is in charge of setting the timer. If
++	 * the CPU is hotplugged, the timer will move to another CPU
++	 * (which may not belong to the same cluster) but that is not a
++	 * problem as the timer will be set again by another CPU
++	 * belonging to the cluster. This mechanism is self adaptive.
++	 */
++	if (!atomic_dec_and_test(&ii_dev->count))
++		return;
 +
-+       run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
-+       if (!run_duration_ms)
-+	       return;
++	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
++	if (!run_duration_ms)
++		return;
 +
-+       hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
-+		     HRTIMER_MODE_REL_PINNED);
++	hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
++		      HRTIMER_MODE_REL_PINNED);
 +}
 +
 +/**
@@ -296,7 +304,7 @@ index 0000000..120171f
 + */
 +static void idle_injection_setup(unsigned int cpu)
 +{
-+	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2 };
++	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
 +
 +	set_freezable();
 +
@@ -402,9 +410,10 @@ index 0000000..120171f
 + */
 +void idle_injection_unregister(struct idle_injection_device *ii_dev)
 +{
-+	struct smp_hotplug_thread *smp_hotplug_thread = ii_dev->smp_hotplug_thread;
++	struct smp_hotplug_thread *smp_hotplug_thread;
 +
 +	idle_injection_stop(ii_dev);
++	smp_hotplug_thread = ii_dev->smp_hotplug_thread;
 +	smpboot_unregister_percpu_thread(smp_hotplug_thread);
 +	kfree(smp_hotplug_thread->thread_comm);
 +	kfree(smp_hotplug_thread);
