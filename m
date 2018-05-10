@@ -1,76 +1,69 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
- required
-Date: Thu, 10 May 2018 17:54:14 +0100
-Message-ID: <20180510165414.GB30654@e110439-lin>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-4-patrick.bellasi@arm.com>
- <20180510161515.GH12217@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Rajat Jain <rajatja@google.com>
+Subject: [PATCH] PM / s2idle: Clear the events_check_enabled flag
+Date: Thu, 10 May 2018 16:34:26 -0700
+Message-ID: <20180510233426.94514-1-rajatja@google.com>
+References: <20180508230148.121852-1-rajatja@google.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180510161515.GH12217@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180508230148.121852-1-rajatja@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dtor@google.com, rajatxjain@gmail.com
+Cc: Rajat Jain <rajatja@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-May 18:15, Peter Zijlstra wrote:
-> On Thu, May 10, 2018 at 04:05:53PM +0100, Patrick Bellasi wrote:
-> > All the above considered, let's make schedutil updates more explicit in
-> > fair.c by removing the cfs_rq_util_change() wrapper function in favour
-> > of the existing cpufreq_update_util() public API.
-> > This can be done by calling cpufreq_update_util() explicitly in the few
-> > call sites where it really makes sense and when all the (potentially)
-> > required cfs_rq's information have been updated.
-> 
-> Aside from having to redraw my ever stale diagrams _again_ I don't think
-> I object too much here. As you write tracking the exact point where we
-> did do the update was fairly tedious.
+Problem: This flag does not get cleared currently in the suspend or
+resume path in the following cases:
 
-Maybe we can simplify even better these diagrams if we get to the
-point where schedutil updates are tirggered just from core.c...
+* In case some driver's suspend routine returns an error.
+* Successful s2idle case
+* etc?
 
-This patch could be a first step on this directions, not entirely sure
-we can get there... but, having some well defined callbacks maybe it
-can make it easier to factorize up the updates in the core scheduler.
+Why is this a problem: What happens is that the next suspend attempt
+could fail even though the user did not enable the flag by writing to
+/sys/power/wakeup_count. This is 1 use case how the issue can be seen
+(but similar use case with driver suspend failure can be thought of):
 
-> > @@ -5397,9 +5366,27 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >  		update_cfs_group(se);
-> >  	}
-> >  
-> > +	/* The task is visible from the root cfs_rq */
-> > +	if (!se) {
-> > +		unsigned int flags = 0;
-> 
-> That one shadows the @flags argument. Some checker is bound to complain
-> about it.
+1. Read /sys/power/wakeup_count
+2. echo count > /sys/power/wakeup_count
+3. echo freeze > /sys/power/wakeup_count
+4. Let the system suspend, and wakeup the system using some wake source
+   that calls pm_wakeup_event() e.g. power button or something.
+5. Note that the combined wakeup count would be incremented due
+   to the pm_wakeup_event() in the resume path.
+6. After resuming the events_check_enabled flag is still set.
 
-Ohps... right... I'll s/flags/sc_flags/ "sc_" standing for SCHED_CPUFREQ_.
+At this point if the user attempts to freeze again (without writing to
+/sys/power/wakeup_count), the suspend would fail even though there has
+been no wake event since the past resume.
 
-> > +
-> >  		add_nr_running(rq, 1);
-> >  
-> > +		if (p->in_iowait)
-> > +			flags |= SCHED_CPUFREQ_IOWAIT;
-> > +
-> > +		/*
-> > +		 * !last_update_time means we've passed through
-> > +		 * migrate_task_rq_fair() indicating we migrated.
-> > +		 *
-> > +		 * IOW we're enqueueing a task on a new CPU.
-> > +		 */
-> > +		if (!p->se.avg.last_update_time)
-> > +			flags |= SCHED_CPUFREQ_MIGRATION;
-> > +
-> > +		cpufreq_update_util(rq, flags);
-> > +	}
-> > +
-> >  	hrtick_update(rq);
-> >  }
+What this patch does:
 
+It moves the clearing of the flag to just before a resume is completed,
+so that it is always cleared for the corner cases mentioned above.
+
+Signed-off-by: Rajat Jain <rajatja@google.com>
+---
+ kernel/power/suspend.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index ccd2d20e6b06..0685c4499431 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -437,7 +437,6 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 			error = suspend_ops->enter(state);
+ 			trace_suspend_resume(TPS("machine_suspend"),
+ 				state, false);
+-			events_check_enabled = false;
+ 		} else if (*wakeup) {
+ 			error = -EBUSY;
+ 		}
+@@ -582,6 +581,7 @@ static int enter_state(suspend_state_t state)
+ 	pm_restore_gfp_mask();
+ 
+  Finish:
++	events_check_enabled = false;
+ 	pm_pr_dbg("Finishing wakeup.\n");
+ 	suspend_finish();
+  Unlock:
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.15.0.403.gc27cc4dac6-goog
