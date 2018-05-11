@@ -1,7 +1,7 @@
 From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v1 02/13] dt-bindings: add binding for rk3036 power domains
-Date: Fri, 11 May 2018 11:30:47 +0800
-Message-ID: <1526009458-28579-3-git-send-email-zhangqing@rock-chips.com>
+Subject: [PATCH v1 05/13] dt-bindings: power: add RK3128 SoCs header for power-domain
+Date: Fri, 11 May 2018 11:32:39 +0800
+Message-ID: <1526009559-1807-1-git-send-email-zhangqing@rock-chips.com>
 References: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com>
@@ -10,41 +10,47 @@ To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
 Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add binding documentation for the power domains
-found on Rockchip RK3036 SoCs.
+According to a description from TRM, add all the power domains.
 
 Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
 ---
- Documentation/devicetree/bindings/soc/rockchip/power_domain.txt | 3 +++
- 1 file changed, 3 insertions(+)
+ include/dt-bindings/power/rk3128-power.h | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 include/dt-bindings/power/rk3128-power.h
 
-diff --git a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-index 301d2a9bc1b8..79924ee9ae86 100644
---- a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-+++ b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-@@ -5,6 +5,7 @@ powered up/down by software based on different application scenes to save power.
- 
- Required properties for power domain controller:
- - compatible: Should be one of the following.
-+	"rockchip,rk3036-power-controller" - for RK3036 SoCs.
- 	"rockchip,rk3288-power-controller" - for RK3288 SoCs.
- 	"rockchip,rk3328-power-controller" - for RK3328 SoCs.
- 	"rockchip,rk3366-power-controller" - for RK3366 SoCs.
-@@ -17,6 +18,7 @@ Required properties for power domain controller:
- 
- Required properties for power domain sub nodes:
- - reg: index of the power domain, should use macros in:
-+	"include/dt-bindings/power/rk3036-power.h" - for RK3036 type power domain.
- 	"include/dt-bindings/power/rk3288-power.h" - for RK3288 type power domain.
- 	"include/dt-bindings/power/rk3328-power.h" - for RK3328 type power domain.
- 	"include/dt-bindings/power/rk3366-power.h" - for RK3366 type power domain.
-@@ -93,6 +95,7 @@ Node of a device using power domains must have a power-domains property,
- containing a phandle to the power device node and an index specifying which
- power domain to use.
- The index should use macros in:
-+	"include/dt-bindings/power/rk3036-power.h" - for rk3036 type power domain.
- 	"include/dt-bindings/power/rk3288-power.h" - for rk3288 type power domain.
- 	"include/dt-bindings/power/rk3328-power.h" - for rk3328 type power domain.
- 	"include/dt-bindings/power/rk3366-power.h" - for rk3366 type power domain.
+diff --git a/include/dt-bindings/power/rk3128-power.h b/include/dt-bindings/power/rk3128-power.h
+new file mode 100644
+index 000000000000..26aef519cd94
+--- /dev/null
++++ b/include/dt-bindings/power/rk3128-power.h
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (c) 2017 Rockchip Electronics Co. Ltd.
++ * Author: Elaine Zhang <zhangqing@rock-chips.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __DT_BINDINGS_POWER_RK3128_POWER_H__
++#define __DT_BINDINGS_POWER_RK3128_POWER_H__
++
++/* VD_CORE */
++#define RK3128_PD_CORE		0
++
++/* VD_LOGIC */
++#define RK3128_PD_VIO		1
++#define RK3128_PD_VIDEO		2
++#define RK3128_PD_GPU		3
++#define RK3128_PD_MSCH		4
++
++#endif
 -- 
 1.9.1
