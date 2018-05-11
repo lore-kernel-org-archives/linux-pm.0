@@ -1,7 +1,7 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v2 1/3] sched/cpufreq: always consider blocked FAIR utilization
-Date: Fri, 11 May 2018 14:15:07 +0100
-Message-ID: <20180511131509.16275-2-patrick.bellasi@arm.com>
+Subject: [PATCH v2 2/3] sched/fair: util_est: update before schedutil
+Date: Fri, 11 May 2018 14:15:08 +0100
+Message-ID: <20180511131509.16275-3-patrick.bellasi@arm.com>
 References: <20180511131509.16275-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180511131509.16275-1-patrick.bellasi@arm.com>
@@ -10,84 +10,63 @@ To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Since the refactoring introduced by:
+When a task is enqueue the estimated utilization of a CPU is updated
+to better support the selection of the required frequency.
+However, schedutil is (implicitly) updated by update_load_avg() which
+always happens before util_est_{en,de}queue(), thus potentially
+introducing a latency between estimated utilization updates and
+frequency selections.
 
-   commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
-
-we aggregate FAIR utilization only if this class has runnable tasks.
-This was mainly due to avoid the risk to stay on an high frequency just
-because of the blocked utilization of a CPU not being properly decayed
-while the CPU was idle.
-
-However, since:
-
-   commit 31e77c93e432 ("sched/fair: Update blocked load when newly idle")
-
-the FAIR blocked utilization is properly decayed also for IDLE CPUs.
-
-This allows us to use the FAIR blocked utilization as a safe mechanism
-to gracefully reduce the frequency only if no FAIR tasks show up on a
-CPU for a reasonable period of time.
-
-Moreover, we also reduce the frequency drops of CPUs running periodic
-tasks which, depending on the task periodicity and the time required
-for a frequency switch, was increasing the chances to introduce some
-undesirable performance variations.
+Let's update util_est at the beginning of enqueue_task_fair(),
+which will ensure that all schedutil updates will see the most
+updated estimated utilization value for a CPU.
 
 Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Joel Fernandes <joelaf@google.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
+Fixes: 7f65ea42eb00 ("sched/fair: Add util_est on top of PELT")
 
 ---
 
 Changes in v2:
+ - improve comment in enqueue_task_fair() (Peter)
+ - add "Fixes" tag
  - add "Acked-by" Viresh tag
 ---
- kernel/sched/cpufreq_schedutil.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ kernel/sched/fair.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index d2c6083304b4..a74d05160e66 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -183,22 +183,21 @@ static void sugov_get_util(struct sugov_cpu *sg_cpu)
- static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
- {
- 	struct rq *rq = cpu_rq(sg_cpu->cpu);
--	unsigned long util;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 1f6a23a5b451..f01f0f395f9a 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -5356,6 +5356,14 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	struct cfs_rq *cfs_rq;
+ 	struct sched_entity *se = &p->se;
  
--	if (rq->rt.rt_nr_running) {
--		util = sg_cpu->max;
--	} else {
--		util = sg_cpu->util_dl;
--		if (rq->cfs.h_nr_running)
--			util += sg_cpu->util_cfs;
--	}
-+	if (rq->rt.rt_nr_running)
-+		return sg_cpu->max;
- 
++	/*
++	 * The code below (indirectly) updates schedutil which looks at
++	 * the cfs_rq utilization to select a frequency.
++	 * Let's add the task's estimated utilization to the cfs_rq's
++	 * estimated utilization, before we update schedutil.
++	 */
++	util_est_enqueue(&rq->cfs, p);
++
  	/*
-+	 * Utilization required by DEADLINE must always be granted while, for
-+	 * FAIR, we use blocked utilization of IDLE CPUs as a mechanism to
-+	 * gracefully reduce the frequency when no tasks show up for longer
-+	 * periods of time.
-+	 *
- 	 * Ideally we would like to set util_dl as min/guaranteed freq and
- 	 * util_cfs + util_dl as requested freq. However, cpufreq is not yet
- 	 * ready for such an interface. So, we only do the latter for now.
- 	 */
--	return min(util, sg_cpu->max);
-+	return min(sg_cpu->max, (sg_cpu->util_dl + sg_cpu->util_cfs));
+ 	 * If in_iowait is set, the code below may not trigger any cpufreq
+ 	 * utilization updates, so do it here explicitly with the IOWAIT flag
+@@ -5397,7 +5405,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	if (!se)
+ 		add_nr_running(rq, 1);
+ 
+-	util_est_enqueue(&rq->cfs, p);
+ 	hrtick_update(rq);
  }
  
- static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
 -- 
 2.15.1
