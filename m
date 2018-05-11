@@ -1,68 +1,93 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v2 0/3] Improve schedutil integration for FAIR tasks
-Date: Fri, 11 May 2018 14:15:06 +0100
-Message-ID: <20180511131509.16275-1-patrick.bellasi@arm.com>
+Subject: [PATCH v2 1/3] sched/cpufreq: always consider blocked FAIR utilization
+Date: Fri, 11 May 2018 14:15:07 +0100
+Message-ID: <20180511131509.16275-2-patrick.bellasi@arm.com>
+References: <20180511131509.16275-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180511131509.16275-1-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Here is an update of:
+Since the refactoring introduced by:
 
-   https://lkml.org/lkml/2018/5/10/346
+   commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
 
-Where, apart from some minor clean-ups, I've added a cpufreq_enqueue() wrapper
-function for cpufreq_update_util() to be used in enqueue_task_fair().
-That's because:
- - it helps to keep more clean the enqueue_task_fair()
-   by collecting all cpufreq related code into a single function
- - it fixes the flags masking issue reported by Peter
- - it allows to add a compilation guard for !SMP systems
-   where we never migrate tasks and thus we should never set the
-   SCHED_CPUFREQ_MIGRATION flag.
+we aggregate FAIR utilization only if this class has runnable tasks.
+This was mainly due to avoid the risk to stay on an high frequency just
+because of the blocked utilization of a CPU not being properly decayed
+while the CPU was idle.
 
-The SCHED_CPUFREQ_MIGRATION flag was previously set from update_load_avg()
-which is empty defined for !SMP. Now that we update schedutil at the end of
-enqueue_task_fair, we have to specifically address this case.
+However, since:
 
-Still, the resulting code, it's more clean in defining when schedutil is going
-to be updated and under which conditions/flags.
+   commit 31e77c93e432 ("sched/fair: Update blocked load when newly idle")
 
-Again, I want to call out that with the last patch there is one function change
-wrt mainline. When the CPU controller is in use, and a task is queued into a
-throttled RQ, the behavior of the IOWAIT flag is different.
-Currently we set the flag (and thus boost the frequency to max) even tough we
-know the task is not going to run. With the patch the flag is not set, and thus
-the frequency not bumped, which seems to most correct behavior to me.
+the FAIR blocked utilization is properly decayed also for IDLE CPUs.
 
-Moreover, the IOWAIT flag for this task is lost forever, since when the RQ in
-unthrottled we do not walk the tasks to collect their flags. However, given the
-task has been already delayed because of the throttled RQ, perhaps a delayed
-IOWAIT boost also does not make a lot of sense. What do you think?
+This allows us to use the FAIR blocked utilization as a safe mechanism
+to gracefully reduce the frequency only if no FAIR tasks show up on a
+CPU for a reasonable period of time.
 
-Finally, Viresh suggested some patches could/should have "stable" in
-Cc but I was not entirely sure. Thus, I've left it as a maintainers call.
+Moreover, we also reduce the frequency drops of CPUs running periodic
+tasks which, depending on the task periodicity and the time required
+for a frequency switch, was increasing the chances to introduce some
+undesirable performance variations.
 
-Cheers Patrick
+Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Joel Fernandes <joelaf@google.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+
+---
 
 Changes in v2:
- - improved comment in enqueue_task_fair (Peter)
- - fixed flags masking (Peter)
- - fixed !CONFIG_SMP build (0-DAY)
-   by using a cpufreq_enqueue wrapper to avoid setting the
-   SCHED_CPUFREQ_MIGRATION flag on !SMP systems
- - removed blank lines (Viresh)
- - add "Acked-by" Viresh tag to the first two patches
+ - add "Acked-by" Viresh tag
+---
+ kernel/sched/cpufreq_schedutil.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-Patrick Bellasi (3):
-  sched/cpufreq: always consider blocked FAIR utilization
-  sched/fair: util_est: update before schedutil
-  sched/fair: schedutil: explicit update only when required
-
- kernel/sched/cpufreq_schedutil.c | 17 ++++----
- kernel/sched/fair.c              | 93 +++++++++++++++++++++-------------------
- 2 files changed, 56 insertions(+), 54 deletions(-)
-
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index d2c6083304b4..a74d05160e66 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -183,22 +183,21 @@ static void sugov_get_util(struct sugov_cpu *sg_cpu)
+ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+ {
+ 	struct rq *rq = cpu_rq(sg_cpu->cpu);
+-	unsigned long util;
+ 
+-	if (rq->rt.rt_nr_running) {
+-		util = sg_cpu->max;
+-	} else {
+-		util = sg_cpu->util_dl;
+-		if (rq->cfs.h_nr_running)
+-			util += sg_cpu->util_cfs;
+-	}
++	if (rq->rt.rt_nr_running)
++		return sg_cpu->max;
+ 
+ 	/*
++	 * Utilization required by DEADLINE must always be granted while, for
++	 * FAIR, we use blocked utilization of IDLE CPUs as a mechanism to
++	 * gracefully reduce the frequency when no tasks show up for longer
++	 * periods of time.
++	 *
+ 	 * Ideally we would like to set util_dl as min/guaranteed freq and
+ 	 * util_cfs + util_dl as requested freq. However, cpufreq is not yet
+ 	 * ready for such an interface. So, we only do the latter for now.
+ 	 */
+-	return min(util, sg_cpu->max);
++	return min(sg_cpu->max, (sg_cpu->util_dl + sg_cpu->util_cfs));
+ }
+ 
+ static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
 -- 
 2.15.1
