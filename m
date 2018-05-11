@@ -1,55 +1,68 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH 1/2] serdev: add controller runtime PM support
-Date: Fri, 11 May 2018 15:12:13 +0200
-Message-ID: <20180511131213.GF2285@localhost>
-References: <20180509094419.13470-1-johan@kernel.org>
- <20180510164831.GH98604@atomide.com>
- <20180511080725.GE2285@localhost>
- <20180511125627.GI98604@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v2 0/3] Improve schedutil integration for FAIR tasks
+Date: Fri, 11 May 2018 14:15:06 +0100
+Message-ID: <20180511131509.16275-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180511125627.GI98604@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Johan Hovold <johan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 11, 2018 at 05:56:27AM -0700, Tony Lindgren wrote:
-> * Johan Hovold <johan@kernel.org> [180511 08:09]:
-> > On Thu, May 10, 2018 at 09:48:31AM -0700, Tony Lindgren wrote:
-> > > If this solution works for GPS then this should also work for modems
-> > > that might produce data. And as long as the serdev consumer driver
-> > > can wake up the UART with pm_runtime_get(&serdev->ctrl->dev) then
-> > > the out of band GPIO wake interrupts will work to. And for TX,
-> > > the serdev consumer driver can toggle the wake GPIO, and then call
-> > > pm_runtime_get(&serdev->ctrl->dev).
-> > 
-> > I don't think any serdev driver action is needed for TX however. The
-> > serial driver itself would know that there's data in the write buffer
-> > and should manage PM itself until the buffer has been drained (which may
-> > never happen due to flow control).
-> 
-> Sure if the serial driver can manage TX wake directly. However, the
-> case I'm thinking needs few hundred milliseconds after toggling the
-> GPIO before we can even attempt to do TX. I guess what I'm saying
-> let's not try to stuff any "application specific" GPIO handling to
-> generic UART code :)
+Here is an update of:
 
-Ok, I think understand what you have in mind now, but that sounds like
-something which should be handled by the serdev driver which is
-responsible for the power state of the serial-attached device (e.g.
-through a pm_runtime_get_sync(&serdev->dev)).
+   https://lkml.org/lkml/2018/5/10/346
 
-And you're absolutely right that that RPM reference cannot be dropped
-before any written data has reached the device. But note that the serial
-controller responsible for that transfer could potentially runtime
-suspend before the write buffer has been drained (e.g. during long
-periods without I/O due to flow control).
+Where, apart from some minor clean-ups, I've added a cpufreq_enqueue() wrapper
+function for cpufreq_update_util() to be used in enqueue_task_fair().
+That's because:
+ - it helps to keep more clean the enqueue_task_fair()
+   by collecting all cpufreq related code into a single function
+ - it fixes the flags masking issue reported by Peter
+ - it allows to add a compilation guard for !SMP systems
+   where we never migrate tasks and thus we should never set the
+   SCHED_CPUFREQ_MIGRATION flag.
 
-So I still think that TX is not directly related to this patch and RPM
-support for serdev controllers.
+The SCHED_CPUFREQ_MIGRATION flag was previously set from update_load_avg()
+which is empty defined for !SMP. Now that we update schedutil at the end of
+enqueue_task_fair, we have to specifically address this case.
 
-Thanks,
-Johan
+Still, the resulting code, it's more clean in defining when schedutil is going
+to be updated and under which conditions/flags.
+
+Again, I want to call out that with the last patch there is one function change
+wrt mainline. When the CPU controller is in use, and a task is queued into a
+throttled RQ, the behavior of the IOWAIT flag is different.
+Currently we set the flag (and thus boost the frequency to max) even tough we
+know the task is not going to run. With the patch the flag is not set, and thus
+the frequency not bumped, which seems to most correct behavior to me.
+
+Moreover, the IOWAIT flag for this task is lost forever, since when the RQ in
+unthrottled we do not walk the tasks to collect their flags. However, given the
+task has been already delayed because of the throttled RQ, perhaps a delayed
+IOWAIT boost also does not make a lot of sense. What do you think?
+
+Finally, Viresh suggested some patches could/should have "stable" in
+Cc but I was not entirely sure. Thus, I've left it as a maintainers call.
+
+Cheers Patrick
+
+Changes in v2:
+ - improved comment in enqueue_task_fair (Peter)
+ - fixed flags masking (Peter)
+ - fixed !CONFIG_SMP build (0-DAY)
+   by using a cpufreq_enqueue wrapper to avoid setting the
+   SCHED_CPUFREQ_MIGRATION flag on !SMP systems
+ - removed blank lines (Viresh)
+ - add "Acked-by" Viresh tag to the first two patches
+
+Patrick Bellasi (3):
+  sched/cpufreq: always consider blocked FAIR utilization
+  sched/fair: util_est: update before schedutil
+  sched/fair: schedutil: explicit update only when required
+
+ kernel/sched/cpufreq_schedutil.c | 17 ++++----
+ kernel/sched/fair.c              | 93 +++++++++++++++++++++-------------------
+ 2 files changed, 56 insertions(+), 54 deletions(-)
+
+-- 
+2.15.1
