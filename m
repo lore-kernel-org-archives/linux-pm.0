@@ -1,67 +1,154 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] sched/fair: util_est: update before schedutil
-Date: Fri, 11 May 2018 11:14:39 +0530
-Message-ID: <20180511054439.slrpscgm6ivho5qy@vireshk-i7>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-3-patrick.bellasi@arm.com>
+From: kbuild test robot <lkp@intel.com>
+Subject: Re: [PATCH] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Fri, 11 May 2018 14:11:22 +0800
+Message-ID: <201805111348.jwOOmfVZ%fengguang.wu@intel.com>
+References: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180510150553.28122-3-patrick.bellasi@arm.com>
+In-Reply-To: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: kbuild-all@01.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10-05-18, 16:05, Patrick Bellasi wrote:
-> When a task is enqueue the estimated utilization of a CPU is updated
-> to better support the selection of the required frequency.
-> However, schedutil is (implicitly) updated by update_load_avg() which
-> always happens before util_est_{en,de}queue(), thus potentially
-> introducing a latency between estimated utilization updates and
-> frequency selections.
-> 
-> Let's update util_est at the beginning of enqueue_task_fair(),
-> which will ensure that all schedutil updates will see the most
-> updated estimated utilization value for a CPU.
-> 
-> Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> ---
->  kernel/sched/fair.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+Hi Daniel,
 
-Fixes and Stable ?
+I love your patch! Perhaps something to improve:
 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 1f6a23a5b451..01dfc47541e6 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -5356,6 +5356,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->  	struct cfs_rq *cfs_rq;
->  	struct sched_entity *se = &p->se;
->  
-> +	/* Estimated utilization must be updated before schedutil */
-> +	util_est_enqueue(&rq->cfs, p);
-> +
->  	/*
->  	 * If in_iowait is set, the code below may not trigger any cpufreq
->  	 * utilization updates, so do it here explicitly with the IOWAIT flag
-> @@ -5397,7 +5400,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->  	if (!se)
->  		add_nr_running(rq, 1);
->  
-> -	util_est_enqueue(&rq->cfs, p);
->  	hrtick_update(rq);
->  }
+[auto build test WARNING on pm/linux-next]
+[also build test WARNING on v4.17-rc4 next-20180510]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+url:    https://github.com/0day-ci/linux/commits/Daniel-Lezcano/powercap-drivers-idle_injection-Add-an-idle-injection-framework/20180511-074751
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+reproduce:
+        # apt-get install sparse
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF=-D__CHECK_ENDIAN__
 
--- 
-viresh
+
+sparse warnings: (new ones prefixed by >>)
+
+>> drivers/powercap/idle_injection.c:242:36: sparse: incorrect type in initializer (different address spaces) @@    expected struct task_struct [noderef] <asn:3>**store @@    got struct task_struct [noderef] <asn:3>**store @@
+   drivers/powercap/idle_injection.c:242:36:    expected struct task_struct [noderef] <asn:3>**store
+   drivers/powercap/idle_injection.c:242:36:    got struct task_struct *[noderef] <asn:3>*<noident>
+
+vim +242 drivers/powercap/idle_injection.c
+
+   138	
+   139	/**
+   140	 * idle_injection_set_duration - idle and run duration helper
+   141	 * @run_duration_ms: an unsigned int giving the running time in milliseconds
+   142	 * @idle_duration_ms: an unsigned int giving the idle time in milliseconds
+   143	 */
+ > 144	void idle_injection_set_duration(struct idle_injection_device *ii_dev,
+   145					 unsigned int run_duration_ms,
+   146					 unsigned int idle_duration_ms)
+   147	{
+   148		atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
+   149		atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
+   150	}
+   151	
+   152	
+   153	/**
+   154	 * idle_injection_get_duration - idle and run duration helper
+   155	 * @run_duration_ms: a pointer to an unsigned int to store the running time
+   156	 * @idle_duration_ms: a pointer to an unsigned int to store the idle time
+   157	 */
+   158	void idle_injection_get_duration(struct idle_injection_device *ii_dev,
+   159					 unsigned int *run_duration_ms,
+   160					 unsigned int *idle_duration_ms)
+   161	{
+   162		*run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+   163		*idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
+   164	}
+   165	
+   166	/**
+   167	 * idle_injection_start - starts the idle injections
+   168	 * @ii_dev: a pointer to an idle_injection_device structure
+   169	 *
+   170	 * The function starts the idle injection cycles by first waking up
+   171	 * all the tasks the ii_dev is attached to and let them handle the
+   172	 * idle-run periods
+   173	 *
+   174	 * Returns -EINVAL if the idle or the running duration are not set
+   175	 */
+   176	int idle_injection_start(struct idle_injection_device *ii_dev)
+   177	{
+   178		if (!atomic_read(&ii_dev->idle_duration_ms))
+   179			return -EINVAL;
+   180	
+   181		if (!atomic_read(&ii_dev->run_duration_ms))
+   182			return -EINVAL;
+   183	
+   184		pr_debug("Starting injecting idle cycles on CPUs '%*pbl'\n",
+   185			 cpumask_pr_args(ii_dev->smp_hotplug_thread->cpumask));
+   186	
+   187		idle_injection_wakeup(ii_dev);
+   188	
+   189		return 0;
+   190	}
+   191	
+   192	/**
+   193	 * idle_injection_stop - stops the idle injections
+   194	 * @ii_dev: a pointer to an idle injection_device structure
+   195	 *
+   196	 * The function stops the idle injection by canceling the timer in
+   197	 * charge of waking up the tasks to inject idle and unset the idle and
+   198	 * running durations.
+   199	 */
+   200	void idle_injection_stop(struct idle_injection_device *ii_dev)
+   201	{
+   202		pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
+   203			 cpumask_pr_args(ii_dev->smp_hotplug_thread->cpumask));
+   204	
+   205		hrtimer_cancel(&ii_dev->timer);
+   206	
+   207		idle_injection_set_duration(ii_dev, 0, 0);
+   208	}
+   209	
+   210	/**
+   211	 * idle_injection_setup - initialize the current task as a RT task
+   212	 * @cpu: the CPU number where the kthread is running on (not used)
+   213	 *
+   214	 */
+   215	static void idle_injection_setup(unsigned int cpu)
+   216	{
+   217		struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2 };
+   218	
+   219		set_freezable();
+   220	
+   221		sched_setscheduler(current, SCHED_FIFO, &param);
+   222	}
+   223	
+   224	/**
+   225	 * idle_injection_should_run - function helper for the smpboot API
+   226	 * @cpu: the CPU number where the kthread is running on
+   227	 *
+   228	 * Returns the boolean telling if the thread can run
+   229	 */
+   230	static int idle_injection_should_run(unsigned int cpu)
+   231	{
+   232		struct idle_injection_thread *iit =
+   233			per_cpu_ptr(&idle_injection_thread, cpu);
+   234	
+   235		return iit->should_run;
+   236	}
+   237	
+   238	/*
+   239	 * idle_injection_threads - smp hotplug threads ops
+   240	 */
+   241	static struct smp_hotplug_thread idle_injection_threads = {
+ > 242		.store                  = &idle_injection_thread.tsk,
+   243		.thread_fn              = idle_injection_fn,
+   244		.thread_should_run	= idle_injection_should_run,
+   245		.setup                  = idle_injection_setup,
+   246	};
+   247	
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
