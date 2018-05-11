@@ -1,154 +1,63 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH] powercap/drivers/idle_injection: Add an idle injection
- framework
-Date: Fri, 11 May 2018 14:11:22 +0800
-Message-ID: <201805111348.jwOOmfVZ%fengguang.wu@intel.com>
-References: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH 1/2] serdev: add controller runtime PM support
+Date: Fri, 11 May 2018 10:07:25 +0200
+Message-ID: <20180511080725.GE2285@localhost>
+References: <20180509094419.13470-1-johan@kernel.org>
+ <20180510164831.GH98604@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <20180510164831.GH98604@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: kbuild-all@01.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Johan Hovold <johan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
+On Thu, May 10, 2018 at 09:48:31AM -0700, Tony Lindgren wrote:
+> * Johan Hovold <johan@kernel.org> [180509 09:46]:
+> > Add support for controller runtime power management to serdev core. This
+> > is needed to allow slave drivers to manage the runtime PM state of the
+> > underlying serial controller when its driver, in turn, implements more
+> > aggressive runtime power management (e.g. using autosuspend).
+> > 
+> > For some applications, for example, where loss off initial data after a
+> > remote-wakeup event is acceptable or where rx is not used at all,
+> > aggressive serial controller runtime PM may be used without further
+> > involvement of the slave driver. But when this is not the case, the
+> > slave driver must be able to indicate when incoming data is expected in
+> > order to avoid data loss.
+> > 
+> > To facilitate the common case, where the serial controller power state
+> > is active whenever the port is open (which is the case with just about
+> > every serial driver), and where data loss is not acceptable and cannot
+> > even be prevented by explicit controller runtime power management, an
+> > RPM reference is taken in serdev open and put again at close. This
+> > reference can later be balanced by any serdev driver which wants and/or
+> > can handle aggressive controller runtime PM.
+> > 
+> > Note that the .ignore_children flag is set for the serdev controller to
+> > allow the underlying hardware to idle when no I/O is expected, regardless
+> > of the slave device RPM state.
+> 
+> If this solution works for GPS then this should also work for modems
+> that might produce data. And as long as the serdev consumer driver
+> can wake up the UART with pm_runtime_get(&serdev->ctrl->dev) then
+> the out of band GPIO wake interrupts will work to. And for TX,
+> the serdev consumer driver can toggle the wake GPIO, and then call
+> pm_runtime_get(&serdev->ctrl->dev).
 
-I love your patch! Perhaps something to improve:
+I don't think any serdev driver action is needed for TX however. The
+serial driver itself would know that there's data in the write buffer
+and should manage PM itself until the buffer has been drained (which may
+never happen due to flow control).
 
-[auto build test WARNING on pm/linux-next]
-[also build test WARNING on v4.17-rc4 next-20180510]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+But either way, the mechanism introduced by this patch is general enough
+that it could in principle be used also for something like that.
 
-url:    https://github.com/0day-ci/linux/commits/Daniel-Lezcano/powercap-drivers-idle_injection-Add-an-idle-injection-framework/20180511-074751
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-reproduce:
-        # apt-get install sparse
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF=-D__CHECK_ENDIAN__
+> So yeah, looks nice to me:
+> 
+> Acked-by: Tony Lindgren <tony@atomide.com>
 
-
-sparse warnings: (new ones prefixed by >>)
-
->> drivers/powercap/idle_injection.c:242:36: sparse: incorrect type in initializer (different address spaces) @@    expected struct task_struct [noderef] <asn:3>**store @@    got struct task_struct [noderef] <asn:3>**store @@
-   drivers/powercap/idle_injection.c:242:36:    expected struct task_struct [noderef] <asn:3>**store
-   drivers/powercap/idle_injection.c:242:36:    got struct task_struct *[noderef] <asn:3>*<noident>
-
-vim +242 drivers/powercap/idle_injection.c
-
-   138	
-   139	/**
-   140	 * idle_injection_set_duration - idle and run duration helper
-   141	 * @run_duration_ms: an unsigned int giving the running time in milliseconds
-   142	 * @idle_duration_ms: an unsigned int giving the idle time in milliseconds
-   143	 */
- > 144	void idle_injection_set_duration(struct idle_injection_device *ii_dev,
-   145					 unsigned int run_duration_ms,
-   146					 unsigned int idle_duration_ms)
-   147	{
-   148		atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
-   149		atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
-   150	}
-   151	
-   152	
-   153	/**
-   154	 * idle_injection_get_duration - idle and run duration helper
-   155	 * @run_duration_ms: a pointer to an unsigned int to store the running time
-   156	 * @idle_duration_ms: a pointer to an unsigned int to store the idle time
-   157	 */
-   158	void idle_injection_get_duration(struct idle_injection_device *ii_dev,
-   159					 unsigned int *run_duration_ms,
-   160					 unsigned int *idle_duration_ms)
-   161	{
-   162		*run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
-   163		*idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
-   164	}
-   165	
-   166	/**
-   167	 * idle_injection_start - starts the idle injections
-   168	 * @ii_dev: a pointer to an idle_injection_device structure
-   169	 *
-   170	 * The function starts the idle injection cycles by first waking up
-   171	 * all the tasks the ii_dev is attached to and let them handle the
-   172	 * idle-run periods
-   173	 *
-   174	 * Returns -EINVAL if the idle or the running duration are not set
-   175	 */
-   176	int idle_injection_start(struct idle_injection_device *ii_dev)
-   177	{
-   178		if (!atomic_read(&ii_dev->idle_duration_ms))
-   179			return -EINVAL;
-   180	
-   181		if (!atomic_read(&ii_dev->run_duration_ms))
-   182			return -EINVAL;
-   183	
-   184		pr_debug("Starting injecting idle cycles on CPUs '%*pbl'\n",
-   185			 cpumask_pr_args(ii_dev->smp_hotplug_thread->cpumask));
-   186	
-   187		idle_injection_wakeup(ii_dev);
-   188	
-   189		return 0;
-   190	}
-   191	
-   192	/**
-   193	 * idle_injection_stop - stops the idle injections
-   194	 * @ii_dev: a pointer to an idle injection_device structure
-   195	 *
-   196	 * The function stops the idle injection by canceling the timer in
-   197	 * charge of waking up the tasks to inject idle and unset the idle and
-   198	 * running durations.
-   199	 */
-   200	void idle_injection_stop(struct idle_injection_device *ii_dev)
-   201	{
-   202		pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
-   203			 cpumask_pr_args(ii_dev->smp_hotplug_thread->cpumask));
-   204	
-   205		hrtimer_cancel(&ii_dev->timer);
-   206	
-   207		idle_injection_set_duration(ii_dev, 0, 0);
-   208	}
-   209	
-   210	/**
-   211	 * idle_injection_setup - initialize the current task as a RT task
-   212	 * @cpu: the CPU number where the kthread is running on (not used)
-   213	 *
-   214	 */
-   215	static void idle_injection_setup(unsigned int cpu)
-   216	{
-   217		struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2 };
-   218	
-   219		set_freezable();
-   220	
-   221		sched_setscheduler(current, SCHED_FIFO, &param);
-   222	}
-   223	
-   224	/**
-   225	 * idle_injection_should_run - function helper for the smpboot API
-   226	 * @cpu: the CPU number where the kthread is running on
-   227	 *
-   228	 * Returns the boolean telling if the thread can run
-   229	 */
-   230	static int idle_injection_should_run(unsigned int cpu)
-   231	{
-   232		struct idle_injection_thread *iit =
-   233			per_cpu_ptr(&idle_injection_thread, cpu);
-   234	
-   235		return iit->should_run;
-   236	}
-   237	
-   238	/*
-   239	 * idle_injection_threads - smp hotplug threads ops
-   240	 */
-   241	static struct smp_hotplug_thread idle_injection_threads = {
- > 242		.store                  = &idle_injection_thread.tsk,
-   243		.thread_fn              = idle_injection_fn,
-   244		.thread_should_run	= idle_injection_should_run,
-   245		.setup                  = idle_injection_setup,
-   246	};
-   247	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Thanks,
+Johan
