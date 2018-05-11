@@ -1,42 +1,93 @@
 From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v1 00/13] add power domain support for Rockchip Socs
-Date: Fri, 11 May 2018 11:30:45 +0800
-Message-ID: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com>
+Subject: [PATCH v1 03/13] Soc: rockchip: power-domain: add power domain support for rk3036
+Date: Fri, 11 May 2018 11:30:48 +0800
+Message-ID: <1526009458-28579-4-git-send-email-zhangqing@rock-chips.com>
+References: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
 Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-add power domain support for RK3036/RK3128/RK3228/PX30 Soc.
-fix up the wrong value when set power domain up.
+This driver is modified to support RK3036 SoC.
 
-Elaine Zhang (13):
-  dt-bindings: power: add RK3036 SoCs header for power-domain
-  dt-bindings: add binding for rk3036 power domains
-  Soc: rockchip: power-domain: add power domain support for rk3036
-  soc: rockchip: power-domain: Fix wrong value when power up pd
-  dt-bindings: power: add RK3128 SoCs header for power-domain
-  dt-bindings: add binding for rk3128 power domains
-  soc: rockchip: power-domain: add power domain support for rk3128
-  dt-bindings: power: add RK3228 SoCs header for power-domain
-  dt-bindings: add binding for rk3228 power domains
-  soc: rockchip: power-domain: add power domain support for rk3228
-  dt-bindings: power: add PX30 SoCs header for power-domain
-  dt-bindings: add binding for px30 power domains
-  soc: rockchip: power-domain: add power domain support for px30
+Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+---
+ drivers/soc/rockchip/pm_domains.c | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
- .../bindings/soc/rockchip/power_domain.txt         |  12 +++
- drivers/soc/rockchip/pm_domains.c                  | 116 ++++++++++++++++++++-
- include/dt-bindings/power/px30-power.h             |  32 ++++++
- include/dt-bindings/power/rk3036-power.h           |  27 +++++
- include/dt-bindings/power/rk3128-power.h           |  28 +++++
- include/dt-bindings/power/rk3228-power.h           |  26 +++++
- 6 files changed, 240 insertions(+), 1 deletion(-)
- create mode 100644 include/dt-bindings/power/px30-power.h
- create mode 100644 include/dt-bindings/power/rk3036-power.h
- create mode 100644 include/dt-bindings/power/rk3128-power.h
- create mode 100644 include/dt-bindings/power/rk3228-power.h
-
+diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
+index 53efc386b1ad..ebd7c41898c0 100644
+--- a/drivers/soc/rockchip/pm_domains.c
++++ b/drivers/soc/rockchip/pm_domains.c
+@@ -18,6 +18,7 @@
+ #include <linux/clk.h>
+ #include <linux/regmap.h>
+ #include <linux/mfd/syscon.h>
++#include <dt-bindings/power/rk3036-power.h>
+ #include <dt-bindings/power/rk3288-power.h>
+ #include <dt-bindings/power/rk3328-power.h>
+ #include <dt-bindings/power/rk3366-power.h>
+@@ -102,6 +103,14 @@ struct rockchip_pmu {
+ 	.ack_mask = (ack >= 0) ? BIT(ack) : 0,		\
+ 	.active_wakeup = wakeup,			\
+ }
++#define DOMAIN_RK3036(req, ack, idle, wakeup)		\
++{							\
++	.req_mask = (req >= 0) ? BIT(req) : 0,		\
++	.req_w_mask = (req >= 0) ?  BIT(req + 16) : 0,	\
++	.ack_mask = (ack >= 0) ? BIT(ack) : 0,		\
++	.idle_mask = (idle >= 0) ? BIT(idle) : 0,	\
++	.active_wakeup = wakeup,			\
++}
+ 
+ #define DOMAIN_RK3288(pwr, status, req, wakeup)		\
+ 	DOMAIN(pwr, status, req, req, (req) + 16, wakeup)
+@@ -701,6 +710,16 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 	return error;
+ }
+ 
++static const struct rockchip_domain_info rk3036_pm_domains[] = {
++	[RK3036_PD_MSCH]	= DOMAIN_RK3036(14, 23, 30, true),
++	[RK3036_PD_CORE]	= DOMAIN_RK3036(13, 17, 24, false),
++	[RK3036_PD_PERI]	= DOMAIN_RK3036(12, 18, 25, false),
++	[RK3036_PD_VIO]		= DOMAIN_RK3036(11, 19, 26, false),
++	[RK3036_PD_VPU]		= DOMAIN_RK3036(10, 20, 27, false),
++	[RK3036_PD_GPU]		= DOMAIN_RK3036(9, 21, 28, false),
++	[RK3036_PD_SYS]		= DOMAIN_RK3036(8, 22, 29, false),
++};
++
+ static const struct rockchip_domain_info rk3288_pm_domains[] = {
+ 	[RK3288_PD_VIO]		= DOMAIN_RK3288(7, 7, 4, false),
+ 	[RK3288_PD_HEVC]	= DOMAIN_RK3288(14, 10, 9, false),
+@@ -768,6 +787,15 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 	[RK3399_PD_SDIOAUDIO]	= DOMAIN_RK3399(31, 31, 29, true),
+ };
+ 
++static const struct rockchip_pmu_info rk3036_pmu = {
++	.req_offset = 0x148,
++	.idle_offset = 0x14c,
++	.ack_offset = 0x14c,
++
++	.num_domains = ARRAY_SIZE(rk3036_pm_domains),
++	.domain_info = rk3036_pm_domains,
++};
++
+ static const struct rockchip_pmu_info rk3288_pmu = {
+ 	.pwr_offset = 0x08,
+ 	.status_offset = 0x0c,
+@@ -843,6 +871,10 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 
+ static const struct of_device_id rockchip_pm_domain_dt_match[] = {
+ 	{
++		.compatible = "rockchip,rk3036-power-controller",
++		.data = (void *)&rk3036_pmu,
++	},
++	{
+ 		.compatible = "rockchip,rk3288-power-controller",
+ 		.data = (void *)&rk3288_pmu,
+ 	},
 -- 
 1.9.1
