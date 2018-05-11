@@ -1,330 +1,184 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Fri, 11 May 2018 13:55:39 +0200
-Message-ID: <20180511115539.GC29062@mai>
-References: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
- <1525955163-14556-1-git-send-email-daniel.lezcano@linaro.org>
- <20180511093221.z5jfv4bo5kcdrzp4@vireshk-i7>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/2] serdev: add controller runtime PM support
+Date: Fri, 11 May 2018 14:35:53 +0200
+Message-ID: <20180511123553.gmtpc5gelps5j3vj@earth.universe>
+References: <20180509094419.13470-1-johan@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="rj6nkibnjsz4q422"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180511093221.z5jfv4bo5kcdrzp4@vireshk-i7>
+In-Reply-To: <20180509094419.13470-1-johan@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
+To: Johan Hovold <johan@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, Tony Lindgren <tony@atomide.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 11, 2018 at 03:02:21PM +0530, viresh kumar wrote:
-> On 10-05-18, 14:26, Daniel Lezcano wrote:
-> > Initially, the cpu_cooling device for ARM was changed by adding a new
-> > policy inserting idle cycles. The intel_powerclamp driver does a
-> > similar action.
-> > 
-> > Instead of implementing idle injections privately in the cpu_cooling
-> > device, move the idle injection code in a dedicated framework and give
-> > the opportunity to other frameworks to make use of it.
-> 
-> Maybe move the above explanation in the comments section below, as it
-> doesn't belong to the commit log really.
 
-Yes that makes sense.
- 
-[ ... ]
+--rj6nkibnjsz4q422
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > diff --git a/drivers/powercap/idle_injection.c b/drivers/powercap/idle_injection.c
-> > new file mode 100644
-> > index 0000000..825ffac
-> > --- /dev/null
-> > +++ b/drivers/powercap/idle_injection.c
-> > @@ -0,0 +1,331 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/*
-> > + * drivers/powercap/idle_injection.c
-> > + *
-> 
-> What's the purpose of this particular line ? Yeah, I have seen it
-> quite a number of times and might have added that myself as well
-> somewhere :)
+Hi Johan,
 
-I think it is a hundredth monkey effect :)
- 
-[ ... ]
+On Wed, May 09, 2018 at 11:44:18AM +0200, Johan Hovold wrote:
+> Add support for controller runtime power management to serdev core. This
+> is needed to allow slave drivers to manage the runtime PM state of the
+> underlying serial controller when its driver, in turn, implements more
+> aggressive runtime power management (e.g. using autosuspend).
+>=20
+> For some applications, for example, where loss off initial data after a
+> remote-wakeup event is acceptable or where rx is not used at all,
+> aggressive serial controller runtime PM may be used without further
+> involvement of the slave driver. But when this is not the case, the
+> slave driver must be able to indicate when incoming data is expected in
+> order to avoid data loss.
+>=20
+> To facilitate the common case, where the serial controller power state
+> is active whenever the port is open (which is the case with just about
+> every serial driver), and where data loss is not acceptable and cannot
+> even be prevented by explicit controller runtime power management, an
+> RPM reference is taken in serdev open and put again at close. This
+> reference can later be balanced by any serdev driver which wants and/or
+> can handle aggressive controller runtime PM.
+>=20
+> Note that the .ignore_children flag is set for the serdev controller to
+> allow the underlying hardware to idle when no I/O is expected, regardless
+> of the slave device RPM state.
+>=20
+> Signed-off-by: Johan Hovold <johan@kernel.org>
+> ---
 
-> > +	/*
-> > +	 * Boolean used by the smpboot mainloop and used as a flip-flop
-> 
-> s/mainloop/main loop/ ?
-> 
-> > +	 * in this function
-> > +	 */
-> > +	iit->should_run = 0;
-> 
-> What is the purpose of this field ? Just wanted to check on how
-> smpboot stuff uses it.
+Looks good to me.
 
-This field is used as a boolean for the smpboot main loop.
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 
-You should look at the function smpboot_thread_fn().
+-- Sebastian
 
-The function idle_injection_thread_fn() idle is called every idle injection
-period, sets a timer for the next idle injection deadline and tells the
-smpboot main loop to schedule. The way to tell the smpboot main loop to
-schedule and not call the idle_injection_thread_fn() again is by setting this
-boolean to false.
+>  drivers/tty/serdev/core.c | 33 ++++++++++++++++++++++++++++++---
+>  1 file changed, 30 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/tty/serdev/core.c b/drivers/tty/serdev/core.c
+> index df93b727e984..e5e84303faca 100644
+> --- a/drivers/tty/serdev/core.c
+> +++ b/drivers/tty/serdev/core.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/of_device.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/serdev.h>
+>  #include <linux/slab.h>
+> =20
+> @@ -143,11 +144,28 @@ EXPORT_SYMBOL_GPL(serdev_device_remove);
+>  int serdev_device_open(struct serdev_device *serdev)
+>  {
+>  	struct serdev_controller *ctrl =3D serdev->ctrl;
+> +	int ret;
+> =20
+>  	if (!ctrl || !ctrl->ops->open)
+>  		return -EINVAL;
+> =20
+> -	return ctrl->ops->open(ctrl);
+> +	ret =3D ctrl->ops->open(ctrl);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret =3D pm_runtime_get_sync(&ctrl->dev);
+> +	if (ret < 0) {
+> +		pm_runtime_put_noidle(&ctrl->dev);
+> +		goto err_close;
+> +	}
+> +
+> +	return 0;
+> +
+> +err_close:
+> +	if (ctrl->ops->close)
+> +		ctrl->ops->close(ctrl);
+> +
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(serdev_device_open);
+> =20
+> @@ -158,6 +176,8 @@ void serdev_device_close(struct serdev_device *serdev)
+>  	if (!ctrl || !ctrl->ops->close)
+>  		return;
+> =20
+> +	pm_runtime_put(&ctrl->dev);
+> +
+>  	ctrl->ops->close(ctrl);
+>  }
+>  EXPORT_SYMBOL_GPL(serdev_device_close);
+> @@ -416,6 +436,9 @@ struct serdev_controller *serdev_controller_alloc(str=
+uct device *parent,
+> =20
+>  	dev_set_name(&ctrl->dev, "serial%d", id);
+> =20
+> +	pm_runtime_no_callbacks(&ctrl->dev);
+> +	pm_suspend_ignore_children(&ctrl->dev, true);
+> +
+>  	dev_dbg(&ctrl->dev, "allocated controller 0x%p id %d\n", ctrl, id);
+>  	return ctrl;
+> =20
+> @@ -547,20 +570,23 @@ int serdev_controller_add(struct serdev_controller =
+*ctrl)
+>  	if (ret)
+>  		return ret;
+> =20
+> +	pm_runtime_enable(&ctrl->dev);
+> +
+>  	ret_of =3D of_serdev_register_devices(ctrl);
+>  	ret_acpi =3D acpi_serdev_register_devices(ctrl);
+>  	if (ret_of && ret_acpi) {
+>  		dev_dbg(&ctrl->dev, "no devices registered: of:%d acpi:%d\n",
+>  			ret_of, ret_acpi);
+>  		ret =3D -ENODEV;
+> -		goto out_dev_del;
+> +		goto err_rpm_disable;
+>  	}
+> =20
+>  	dev_dbg(&ctrl->dev, "serdev%d registered: dev:%p\n",
+>  		ctrl->nr, &ctrl->dev);
+>  	return 0;
+> =20
+> -out_dev_del:
+> +err_rpm_disable:
+> +	pm_runtime_disable(&ctrl->dev);
+>  	device_del(&ctrl->dev);
+>  	return ret;
+>  };
+> @@ -591,6 +617,7 @@ void serdev_controller_remove(struct serdev_controlle=
+r *ctrl)
+> =20
+>  	dummy =3D device_for_each_child(&ctrl->dev, NULL,
+>  				      serdev_remove_device);
+> +	pm_runtime_disable(&ctrl->dev);
+>  	device_del(&ctrl->dev);
+>  }
+>  EXPORT_SYMBOL_GPL(serdev_controller_remove);
+> --=20
+> 2.17.0
+>=20
 
-static int smpboot_thread_fn(void *data)
-{
-	while (1) {
+--rj6nkibnjsz4q422
+Content-Type: application/pgp-signature; name="signature.asc"
 
-		[ ... ]
+-----BEGIN PGP SIGNATURE-----
 
-		if (!ht->thread_should_run(td->cpu)) {
-			preempt_enable_no_resched();
-			schedule();
-		} else {
-			__set_current_state(TASK_RUNNING);
-			preempt_enable();
-			ht->thread_fn(td->cpu);
-		}
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlr1jiYACgkQ2O7X88g7
++po57w/9Fr2uQ1qCrElanPCpNKB1uB0HjCkU+jDpMXzEpoX/TI+6L57SJbZ0qfzL
+vMKzMhpOVogiF2Kd8kVxz4ZliJFngCNDd7tPccH1AHdt4kr00VIC70UGBvG57GOt
+iQMF1Sd25x9sXv3t/qLNpOwqv3VcmFp8zm7ewp43XCHSOXhBgykcBCtldiSYw72b
+oA8DUfOTdzm1M7Rpiy1fo6/XUQX62Mexlj40cp6m2afnEKxJiBATpYG9ftK11kT2
+jsVq2GqYnp+M4BAgsS7+Ev269T+1q8YLkk+0evyKlAXThjZTArhfPxQENpIONN8R
+r51MIhzGZ45g2ghTnREybaf2jboDVP6v1dFLTtCVC2tOAnVNodX//c8L89IWENss
+Bpx+PNJIS4G58ZUPPNSjYq2wRVtS3BdRHVsbmYO42SEBFvklKwAMQ4AqUnOsAYec
+Dg8v/Sl7hfyS+jCrSUg8DA9CEeFY+6nwNwrmzdZT204VOP1MrGLMQQgMYK72FI84
+KytM0Etf9PhohYcXz9G4FWJ/QM5XA63AsW3msSk2OHqL3JcOUfqSyV4JIJWi8VwZ
+mQTm4KqvsPOrNDvmJh4XfM+AUWt/Xk9ZA43pBSXnF8Wo5/1BAJc3pBdNrykK3R/u
+UBN665HIWlch7dviHqwm2oGr8T08i1QKgitnKWVDx+BhootW548=
+=NEH3
+-----END PGP SIGNATURE-----
 
-		[ ... ]
-	}
-}
-
-[ ... ]
-
-> > + */
-> > +void idle_injection_set_duration(struct idle_injection_device *ii_dev,
-> > +				 unsigned int run_duration_ms,
-> > +				 unsigned int idle_duration_ms)
-> > +{
-> > +	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
-> > +	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
-> > +}
-> > +
-> > +
-> 
-> Two blank lines here ?
-
-Ah, yes.
-
-[ ... ]
-
-> > +int idle_injection_start(struct idle_injection_device *ii_dev)
-> > +{
-> > +	if (!atomic_read(&ii_dev->idle_duration_ms))
-> > +		return -EINVAL;
-> > +
-> > +	if (!atomic_read(&ii_dev->run_duration_ms))
-> > +		return -EINVAL;
-> 
-> You are required to have them as atomic variables to take care of the
-> races while they are set ? 
-
-The race is when you change the values, while the idle injection is acting and
-you read those values in the idle injection thread function.
-
-> What about getting the durations as arguments to this routine then ?
-
-May be I missed your point but I don't think that will change the above.
- 
-[ ... ]
-
-> > +/*
-> > + * idle_injection_threads - smp hotplug threads ops
-> > + */
-> > +static struct smp_hotplug_thread idle_injection_threads = {
-> > +	.store                  = &idle_injection_thread.tsk,
-> > +	.thread_fn              = idle_injection_fn,
-> > +	.thread_should_run	= idle_injection_should_run,
-> > +	.setup                  = idle_injection_setup,
-> > +};
-> 
-> Why should we keep this structure at all and not have these four
-> assignments in the below routine itself ? It is unnecessarily copying
-> a bigger structure while it is required to copy only a part of it. And
-> then we keep wasting memory for this particular instance without any
-> use.
-
-With your comment below about registering the smpboot threads with a cpumask, a
-single structure should be used, I will fix this.
-
-> > +
-> > +/**
-> > + * idle_injection_register - idle injection init routine
-> > + * @cpumask: the list of CPUs to run the kthreads
-> > + * @name: the threads command name
-> > + *
-> > + * This is the initialization function in charge of creating the
-> > + * kthreads, initializing the timer and allocate the structures.  It
-> > + * does not starts the idle injection cycles
-> 
-> Forgot full stop (.). Please check that across file
-
-Oops, right. I rememeber you did a similar comment on the previous version.
-
-> > + *
-> > + * Returns -ENOMEM if an allocation fails, or < 0 if the smpboot
-> 
-> It should be Return:
-
-Ok.
- 
-> > + * kthread registering fails.
-> > + */
-> > +struct idle_injection_device *
-> > +idle_injection_register(struct cpumask *cpumask, const char *name)
-> > +{
-> > +	struct idle_injection_device *ii_dev;
-> > +	struct smp_hotplug_thread *smp_hotplug_thread;
-> > +	char *idle_injection_comm;
-> > +	int cpu, ret;
-> > +
-> > +	ret = -ENOMEM;
-> 
-> Maybe merge it earlier only ?
-
-What do you mean ? int ret = -ENOMEM ?
-
-> > +
-> > +	idle_injection_comm = kasprintf(GFP_KERNEL, "%s/%%u", name);
-> > +	if (!idle_injection_comm)
-> > +		goto out;
-> > +
-> > +	smp_hotplug_thread = kmemdup(&idle_injection_threads,
-> > +				     sizeof(*smp_hotplug_thread),
-> > +				     GFP_KERNEL);
-> > +	if (!smp_hotplug_thread)
-> > +		goto out_free_thread_comm;
-> > +
-> > +	smp_hotplug_thread->thread_comm	= idle_injection_comm;
-> > +
-> > +	ii_dev = kzalloc(sizeof(*ii_dev),
-> > +					GFP_KERNEL);
-> 
-> Accidental line break ?
-
-grumf ...
-
-> > +	if (!ii_dev)
-> > +		goto out_free_smp_hotplug;
-> > +
-> > +	ii_dev->smp_hotplug_thread = smp_hotplug_thread;
-> > +
-> > +	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> > +
-> > +	ii_dev->timer.function = idle_injection_wakeup_fn;
-> > +
-> > +	for_each_cpu(cpu, cpumask)
-> > +		per_cpu(idle_injection_device, cpu) = ii_dev;
-> > +
-> > +	ret = smpboot_register_percpu_thread_cpumask(smp_hotplug_thread,
-> > +						     cpumask);
-> 
-> This creates the thread for all online CPUs and unparks only the one
-> in the cpumask. I am not sure how the smpboot stuff works, but this
-> looks somewhat wrong to me, we may end up creating multiple threads
-> per CPU even if this function is called twice for non-intersecting cpu
-> masks.
-
-Good point! That must be fixed, calling idle_injection_register()
-one time and idle_injection_start() with a cpumask would be more convenient.
-
-> > +	if (ret)
-> > +		goto out_free_idle_inject;
-> > +
-> > +	return ii_dev;
-> > +
-> > +out_free_idle_inject:
-> > +	kfree(ii_dev);
-> 
-> What about resetting per-cpu idle_injection_device ? You missed the
-> same in unregister routine below as well ?
-
-Ok.
-
-> > +out_free_smp_hotplug:
-> > +	kfree(smp_hotplug_thread);
-> > +out_free_thread_comm:
-> > +	kfree(idle_injection_comm);
-> > +out:
-> > +	return ERR_PTR(ret);
-> > +}
-> > +
-> > +/**
-> > + * idle_injection_unregister - Unregister the idle injection device
-> > + * @ii_dev: a pointer to an idle injection device
-> > + *
-> > + * The function is in charge of stopping the idle injections,
-> > + * unregister the kthreads and free the allocated memory in the
-> > + * register function.
-> > + */
-> > +void idle_injection_unregister(struct idle_injection_device *ii_dev)
-> > +{
-> > +	struct smp_hotplug_thread *smp_hotplug_thread;
-> > +
-> > +	idle_injection_stop(ii_dev);
-> > +	smp_hotplug_thread = ii_dev->smp_hotplug_thread;
-> > +	smpboot_unregister_percpu_thread(smp_hotplug_thread);
-> > +	kfree(smp_hotplug_thread->thread_comm);
-> > +	kfree(smp_hotplug_thread);
-> > +	kfree(ii_dev);
-> 
-> Ideally it is much more readable if the ordering here is exactly
-> opposite of how things are done in registration time. You may need to
-> change the order in which things are allocated, and that would be
-> worth it :)
-
-Ok.
-
-> > +}
-> > diff --git a/include/linux/idle_injection.h b/include/linux/idle_injection.h
-> > new file mode 100644
-> > index 0000000..084b999
-> > --- /dev/null
-> > +++ b/include/linux/idle_injection.h
-> > @@ -0,0 +1,62 @@
-> > +/* SPDX-License-Identifier: GPL-2.0 */
-> > +/*
-> > + * Copyright (C) 2018 Linaro Ltd
-> > + *
-> > + * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > + *
-> > + */
-> > +#ifndef __IDLE_INJECTION_H__
-> > +#define __IDLE_INJECTION_H__
-> > +
-> > +/* private idle injection device structure */
-> > +struct idle_injection_device;
-> > +
-> > +/**
-> > + * idle_injection_register - allocates and initializes an idle_injection_device
-> > + * @cpumask: all CPUs with a idle injection kthreads
-> > + * @name: a const string giving the kthread name
-> > + *
-> > + * Returns a pointer to a idle_injection_device, ERR_PTR otherwise.
-> 
-> This needs to be written as "Return: XXXX.", else it wouldn't get
-> documented properly in kernel doc.
-> 
-> And I am wondering on why you have added all these kernel doc comments
-> in the .h file ? What will kernel doc look like as we will have to doc
-> comments for the same function ? Maybe try generating the doc and you
-> will see how it looks.
-
-Hmm, right. I will remove the documentation in the header.
-
-Thanks for the review.
-
-  -- Daniel
-
--- 
-
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+--rj6nkibnjsz4q422--
