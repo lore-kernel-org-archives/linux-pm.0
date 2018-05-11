@@ -1,156 +1,330 @@
-From: Pintu Kumar <pintu.ping@gmail.com>
-Subject: Not able to set smp_affinity for an IRQ on i.MX7
-Date: Fri, 11 May 2018 17:04:50 +0530
-Message-ID: <CAOuPNLjqJVsPOVPCnswtFyXudAJ88_F0QVUq-Z6qWE=UpH0mBA@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Fri, 11 May 2018 13:55:39 +0200
+Message-ID: <20180511115539.GC29062@mai>
+References: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
+ <1525955163-14556-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180511093221.z5jfv4bo5kcdrzp4@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2595804741952351622=="
-Return-path: <kernelnewbies-bounces@kernelnewbies.org>
-List-Unsubscribe: <https://lists.kernelnewbies.org/mailman/options/kernelnewbies>,
- <mailto:kernelnewbies-request@kernelnewbies.org?subject=unsubscribe>
-List-Archive: <http://lists.kernelnewbies.org/pipermail/kernelnewbies/>
-List-Post: <mailto:kernelnewbies@kernelnewbies.org>
-List-Help: <mailto:kernelnewbies-request@kernelnewbies.org?subject=help>
-List-Subscribe: <https://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies>,
- <mailto:kernelnewbies-request@kernelnewbies.org?subject=subscribe>
-Errors-To: kernelnewbies-bounces@kernelnewbies.org
-To: open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernelnewbies@kernelnewbies.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180511093221.z5jfv4bo5kcdrzp4@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
---===============2595804741952351622==
-Content-Type: multipart/alternative; boundary="00000000000024d142056bec86f6"
+On Fri, May 11, 2018 at 03:02:21PM +0530, viresh kumar wrote:
+> On 10-05-18, 14:26, Daniel Lezcano wrote:
+> > Initially, the cpu_cooling device for ARM was changed by adding a new
+> > policy inserting idle cycles. The intel_powerclamp driver does a
+> > similar action.
+> > 
+> > Instead of implementing idle injections privately in the cpu_cooling
+> > device, move the idle injection code in a dedicated framework and give
+> > the opportunity to other frameworks to make use of it.
+> 
+> Maybe move the above explanation in the comments section below, as it
+> doesn't belong to the commit log really.
 
---00000000000024d142056bec86f6
-Content-Type: text/plain; charset="UTF-8"
+Yes that makes sense.
+ 
+[ ... ]
 
-Hi,
+> > diff --git a/drivers/powercap/idle_injection.c b/drivers/powercap/idle_injection.c
+> > new file mode 100644
+> > index 0000000..825ffac
+> > --- /dev/null
+> > +++ b/drivers/powercap/idle_injection.c
+> > @@ -0,0 +1,331 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * drivers/powercap/idle_injection.c
+> > + *
+> 
+> What's the purpose of this particular line ? Yeah, I have seen it
+> quite a number of times and might have added that myself as well
+> somewhere :)
 
-I need one help.
-I am using i.MX7 Sabre board with kernel version 4.1.15
+I think it is a hundredth monkey effect :)
+ 
+[ ... ]
 
-Let's say I am interested in GPIO number: 21
-I wanted to set CPU affinity for particular GPIO->IRQ number, so I tried
-the below steps:
-root@10:~# echo 21 > /sys/class/gpio/export
-root@10:~# echo "rising" > /sys/class/gpio/gpio21/edge
-root@10:~# cat /proc/interrupts | grep 21
-  47: 0 0 gpio-mxc 21 Edge gpiolib
-root@10:~# cat /sys/class/gpio/gpio21/direction
-in
-root@10:~# cat /proc/irq/47/smp_affinity
-3
-root@10:~# echo 2 > /proc/irq/47/smp_affinity
--bash: echo: write error: Input/output error
+> > +	/*
+> > +	 * Boolean used by the smpboot mainloop and used as a flip-flop
+> 
+> s/mainloop/main loop/ ?
+> 
+> > +	 * in this function
+> > +	 */
+> > +	iit->should_run = 0;
+> 
+> What is the purpose of this field ? Just wanted to check on how
+> smpboot stuff uses it.
 
-But I get input/output error.
-When I debug further, found that irq_can_set_affinity is returning 0:
-[    0.000000] genirq: irq_can_set_affinity (0): balance: 1, irq_data.chip:
-a81b7e48, irq_set_affinity:   (null)
-[    0.000000] write_irq_affinity: FAIL
+This field is used as a boolean for the smpboot main loop.
 
-I also tried first setting /proc/irq/default_smp_affinity to 2 (from 3).
-This change is working, but the smp_affinity setting for the new IRQ is not
-working.
+You should look at the function smpboot_thread_fn().
 
-When I try to set smp_affinity for mmc0, then it works.
-# cat /proc/interrupts | grep mmc
-295:         55          0     GPCV2  22 Edge      mmc0
-296:          0          0     GPCV2  23 Edge      mmc1
-297:         52          0     GPCV2  24 Edge      mmc2
+The function idle_injection_thread_fn() idle is called every idle injection
+period, sets a timer for the next idle injection deadline and tells the
+smpboot main loop to schedule. The way to tell the smpboot main loop to
+schedule and not call the idle_injection_thread_fn() again is by setting this
+boolean to false.
 
-root@10:~# echo 2 > /proc/irq/295/smp_affinity
-root@10:~#
+static int smpboot_thread_fn(void *data)
+{
+	while (1) {
 
+		[ ... ]
 
-So, I wanted to know what are the conditions for which setting smp_affinity
-for an IRQ will work ?
+		if (!ht->thread_should_run(td->cpu)) {
+			preempt_enable_no_resched();
+			schedule();
+		} else {
+			__set_current_state(TASK_RUNNING);
+			preempt_enable();
+			ht->thread_fn(td->cpu);
+		}
 
-Is there any way by which I can set CPU affinity to a GPIO -> IRQ ?
-Whether, irq_set_affinity_hint() will work in this case ?
+		[ ... ]
+	}
+}
 
+[ ... ]
 
-Thanks,
-Pintu
+> > + */
+> > +void idle_injection_set_duration(struct idle_injection_device *ii_dev,
+> > +				 unsigned int run_duration_ms,
+> > +				 unsigned int idle_duration_ms)
+> > +{
+> > +	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
+> > +	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
+> > +}
+> > +
+> > +
+> 
+> Two blank lines here ?
 
---00000000000024d142056bec86f6
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Ah, yes.
 
-<div dir=3D"ltr"><div class=3D"gmail_default" style=3D"font-family:verdana,=
-sans-serif">Hi,</div><div class=3D"gmail_default" style=3D"font-family:verd=
-ana,sans-serif"><br></div><div class=3D"gmail_default" style=3D"font-family=
-:verdana,sans-serif">I need one help.</div><div class=3D"gmail_default" sty=
-le=3D"font-family:verdana,sans-serif">I am using i.MX7 Sabre board with ker=
-nel version 4.1.15</div><div class=3D"gmail_default" style=3D"font-family:v=
-erdana,sans-serif"><br></div><div class=3D"gmail_default" style=3D"font-fam=
-ily:verdana,sans-serif">Let&#39;s say I am interested in GPIO number: 21</d=
-iv><div class=3D"gmail_default" style=3D"font-family:verdana,sans-serif">I =
-wanted to set CPU affinity for particular GPIO-&gt;IRQ number, so I tried t=
-he below steps:</div><div class=3D"gmail_default" style=3D"font-family:verd=
-ana,sans-serif"><span style=3D"font-family:arial,sans-serif">root@10:~# ech=
-o 21 &gt; /sys/class/gpio/export</span></div><div class=3D"gmail_default" s=
-tyle=3D"font-family:verdana,sans-serif"><span style=3D"font-family:arial,sa=
-ns-serif">root@10:~# echo &quot;rising&quot; &gt; /sys/class/gpio/gpio21/ed=
-ge</span></div><div class=3D"gmail_default" style=3D"font-family:verdana,sa=
-ns-serif"><span style=3D"font-family:arial,sans-serif">root@10:~# cat /proc=
-/interrupts | grep 21</span></div><div class=3D"gmail_default" style=3D"fon=
-t-family:verdana,sans-serif"><span style=3D"font-family:arial,sans-serif">=
-=C2=A0 47:          0          0  gpio-mxc  21 Edge      gpiolib</span></di=
-v><div class=3D"gmail_default" style=3D"font-family:verdana,sans-serif"><sp=
-an style=3D"font-family:arial,sans-serif">root@10:~# cat /sys/class/gpio/gp=
-io21/direction</span></div><div class=3D"gmail_default" style=3D"font-famil=
-y:verdana,sans-serif"><span style=3D"font-family:arial,sans-serif">in</span=
-></div><div class=3D"gmail_default"><span style=3D"font-family:verdana,sans=
--serif">root@10:~# cat /proc/irq/47/smp_affinity</span></div><div class=3D"=
-gmail_default"><span style=3D"font-family:verdana,sans-serif">3</span></div=
-><div class=3D"gmail_default" style=3D"font-family:verdana,sans-serif">
+[ ... ]
 
-<div class=3D"gmail_default">root@10:~# echo 2 &gt; /proc/irq/47/smp_affini=
-ty</div><div class=3D"gmail_default">-bash: echo: write error: Input/output=
- error</div><div class=3D"gmail_default"><br></div><div class=3D"gmail_defa=
-ult">But I get input/output error.</div><div class=3D"gmail_default">When I=
- debug further, found that irq_can_set_affinity is returning 0:</div><div c=
-lass=3D"gmail_default"><div class=3D"gmail_default">[=C2=A0 =C2=A0 0.000000=
-] genirq: irq_can_set_affinity (0): balance: 1, irq_data.chip: a81b7e48, ir=
-q_set_affinity:=C2=A0 =C2=A0(null)</div><div class=3D"gmail_default">[=C2=
-=A0 =C2=A0 0.000000] write_irq_affinity: FAIL</div><div class=3D"gmail_defa=
-ult"><br></div><div class=3D"gmail_default">I also tried first setting=C2=
-=A0/proc/irq/default_smp_affinity to 2 (from 3).</div><div class=3D"gmail_d=
-efault">This change is working, but the smp_affinity setting for the new IR=
-Q is not working.</div><div class=3D"gmail_default"><br></div><div class=3D=
-"gmail_default">When I try to set smp_affinity for mmc0, then it works.</di=
-v><div class=3D"gmail_default"># cat /proc/interrupts | grep mmc</div><div =
-class=3D"gmail_default"><div class=3D"gmail_default">295:=C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A055=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 0=C2=A0 =C2=A0 =C2=A0=
-GPCV2=C2=A0 22 Edge=C2=A0 =C2=A0 =C2=A0 mmc0</div><div class=3D"gmail_defau=
-lt">296:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 0=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 0=C2=A0 =C2=A0 =C2=A0GPCV2=C2=A0 23 Edge=C2=A0 =C2=A0 =C2=A0 mmc1</div>=
-<div class=3D"gmail_default">297:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A052=C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 0=C2=A0 =C2=A0 =C2=A0GPCV2=C2=A0 24 Edge=C2=A0=
- =C2=A0 =C2=A0 mmc2</div><div class=3D"gmail_default"><br></div><div class=
-=3D"gmail_default"><div class=3D"gmail_default">root@10:~# echo 2 &gt; /pro=
-c/irq/295/smp_affinity</div><div class=3D"gmail_default">root@10:~#</div></=
-div></div><div class=3D"gmail_default"><br></div><div class=3D"gmail_defaul=
-t"><br></div><div class=3D"gmail_default">So, I wanted to know what are the=
- conditions for which setting smp_affinity for an IRQ will work ?</div><div=
- class=3D"gmail_default"><br></div><div class=3D"gmail_default">Is there an=
-y way by which I can set CPU affinity to a GPIO -&gt; IRQ ?</div><div class=
-=3D"gmail_default">Whether, irq_set_affinity_hint() will work in this case =
-?</div><div class=3D"gmail_default"><br></div><div class=3D"gmail_default">=
-<br></div><div class=3D"gmail_default">Thanks,</div><div class=3D"gmail_def=
-ault">Pintu</div><div class=3D"gmail_default"><br></div></div></div></div>
+> > +int idle_injection_start(struct idle_injection_device *ii_dev)
+> > +{
+> > +	if (!atomic_read(&ii_dev->idle_duration_ms))
+> > +		return -EINVAL;
+> > +
+> > +	if (!atomic_read(&ii_dev->run_duration_ms))
+> > +		return -EINVAL;
+> 
+> You are required to have them as atomic variables to take care of the
+> races while they are set ? 
 
---00000000000024d142056bec86f6--
+The race is when you change the values, while the idle injection is acting and
+you read those values in the idle injection thread function.
 
+> What about getting the durations as arguments to this routine then ?
 
---===============2595804741952351622==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+May be I missed your point but I don't think that will change the above.
+ 
+[ ... ]
 
-_______________________________________________
-Kernelnewbies mailing list
-Kernelnewbies@kernelnewbies.org
-https://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies
+> > +/*
+> > + * idle_injection_threads - smp hotplug threads ops
+> > + */
+> > +static struct smp_hotplug_thread idle_injection_threads = {
+> > +	.store                  = &idle_injection_thread.tsk,
+> > +	.thread_fn              = idle_injection_fn,
+> > +	.thread_should_run	= idle_injection_should_run,
+> > +	.setup                  = idle_injection_setup,
+> > +};
+> 
+> Why should we keep this structure at all and not have these four
+> assignments in the below routine itself ? It is unnecessarily copying
+> a bigger structure while it is required to copy only a part of it. And
+> then we keep wasting memory for this particular instance without any
+> use.
 
---===============2595804741952351622==--
+With your comment below about registering the smpboot threads with a cpumask, a
+single structure should be used, I will fix this.
+
+> > +
+> > +/**
+> > + * idle_injection_register - idle injection init routine
+> > + * @cpumask: the list of CPUs to run the kthreads
+> > + * @name: the threads command name
+> > + *
+> > + * This is the initialization function in charge of creating the
+> > + * kthreads, initializing the timer and allocate the structures.  It
+> > + * does not starts the idle injection cycles
+> 
+> Forgot full stop (.). Please check that across file
+
+Oops, right. I rememeber you did a similar comment on the previous version.
+
+> > + *
+> > + * Returns -ENOMEM if an allocation fails, or < 0 if the smpboot
+> 
+> It should be Return:
+
+Ok.
+ 
+> > + * kthread registering fails.
+> > + */
+> > +struct idle_injection_device *
+> > +idle_injection_register(struct cpumask *cpumask, const char *name)
+> > +{
+> > +	struct idle_injection_device *ii_dev;
+> > +	struct smp_hotplug_thread *smp_hotplug_thread;
+> > +	char *idle_injection_comm;
+> > +	int cpu, ret;
+> > +
+> > +	ret = -ENOMEM;
+> 
+> Maybe merge it earlier only ?
+
+What do you mean ? int ret = -ENOMEM ?
+
+> > +
+> > +	idle_injection_comm = kasprintf(GFP_KERNEL, "%s/%%u", name);
+> > +	if (!idle_injection_comm)
+> > +		goto out;
+> > +
+> > +	smp_hotplug_thread = kmemdup(&idle_injection_threads,
+> > +				     sizeof(*smp_hotplug_thread),
+> > +				     GFP_KERNEL);
+> > +	if (!smp_hotplug_thread)
+> > +		goto out_free_thread_comm;
+> > +
+> > +	smp_hotplug_thread->thread_comm	= idle_injection_comm;
+> > +
+> > +	ii_dev = kzalloc(sizeof(*ii_dev),
+> > +					GFP_KERNEL);
+> 
+> Accidental line break ?
+
+grumf ...
+
+> > +	if (!ii_dev)
+> > +		goto out_free_smp_hotplug;
+> > +
+> > +	ii_dev->smp_hotplug_thread = smp_hotplug_thread;
+> > +
+> > +	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> > +
+> > +	ii_dev->timer.function = idle_injection_wakeup_fn;
+> > +
+> > +	for_each_cpu(cpu, cpumask)
+> > +		per_cpu(idle_injection_device, cpu) = ii_dev;
+> > +
+> > +	ret = smpboot_register_percpu_thread_cpumask(smp_hotplug_thread,
+> > +						     cpumask);
+> 
+> This creates the thread for all online CPUs and unparks only the one
+> in the cpumask. I am not sure how the smpboot stuff works, but this
+> looks somewhat wrong to me, we may end up creating multiple threads
+> per CPU even if this function is called twice for non-intersecting cpu
+> masks.
+
+Good point! That must be fixed, calling idle_injection_register()
+one time and idle_injection_start() with a cpumask would be more convenient.
+
+> > +	if (ret)
+> > +		goto out_free_idle_inject;
+> > +
+> > +	return ii_dev;
+> > +
+> > +out_free_idle_inject:
+> > +	kfree(ii_dev);
+> 
+> What about resetting per-cpu idle_injection_device ? You missed the
+> same in unregister routine below as well ?
+
+Ok.
+
+> > +out_free_smp_hotplug:
+> > +	kfree(smp_hotplug_thread);
+> > +out_free_thread_comm:
+> > +	kfree(idle_injection_comm);
+> > +out:
+> > +	return ERR_PTR(ret);
+> > +}
+> > +
+> > +/**
+> > + * idle_injection_unregister - Unregister the idle injection device
+> > + * @ii_dev: a pointer to an idle injection device
+> > + *
+> > + * The function is in charge of stopping the idle injections,
+> > + * unregister the kthreads and free the allocated memory in the
+> > + * register function.
+> > + */
+> > +void idle_injection_unregister(struct idle_injection_device *ii_dev)
+> > +{
+> > +	struct smp_hotplug_thread *smp_hotplug_thread;
+> > +
+> > +	idle_injection_stop(ii_dev);
+> > +	smp_hotplug_thread = ii_dev->smp_hotplug_thread;
+> > +	smpboot_unregister_percpu_thread(smp_hotplug_thread);
+> > +	kfree(smp_hotplug_thread->thread_comm);
+> > +	kfree(smp_hotplug_thread);
+> > +	kfree(ii_dev);
+> 
+> Ideally it is much more readable if the ordering here is exactly
+> opposite of how things are done in registration time. You may need to
+> change the order in which things are allocated, and that would be
+> worth it :)
+
+Ok.
+
+> > +}
+> > diff --git a/include/linux/idle_injection.h b/include/linux/idle_injection.h
+> > new file mode 100644
+> > index 0000000..084b999
+> > --- /dev/null
+> > +++ b/include/linux/idle_injection.h
+> > @@ -0,0 +1,62 @@
+> > +/* SPDX-License-Identifier: GPL-2.0 */
+> > +/*
+> > + * Copyright (C) 2018 Linaro Ltd
+> > + *
+> > + * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > + *
+> > + */
+> > +#ifndef __IDLE_INJECTION_H__
+> > +#define __IDLE_INJECTION_H__
+> > +
+> > +/* private idle injection device structure */
+> > +struct idle_injection_device;
+> > +
+> > +/**
+> > + * idle_injection_register - allocates and initializes an idle_injection_device
+> > + * @cpumask: all CPUs with a idle injection kthreads
+> > + * @name: a const string giving the kthread name
+> > + *
+> > + * Returns a pointer to a idle_injection_device, ERR_PTR otherwise.
+> 
+> This needs to be written as "Return: XXXX.", else it wouldn't get
+> documented properly in kernel doc.
+> 
+> And I am wondering on why you have added all these kernel doc comments
+> in the .h file ? What will kernel doc look like as we will have to doc
+> comments for the same function ? Maybe try generating the doc and you
+> will see how it looks.
+
+Hmm, right. I will remove the documentation in the header.
+
+Thanks for the review.
+
+  -- Daniel
+
+-- 
+
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
