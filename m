@@ -1,64 +1,112 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 1/2] serdev: add controller runtime PM support
-Date: Fri, 11 May 2018 09:00:35 -0700
-Message-ID: <20180511160035.GJ98604@atomide.com>
-References: <20180509094419.13470-1-johan@kernel.org>
- <20180510164831.GH98604@atomide.com>
- <20180511080725.GE2285@localhost>
- <20180511125627.GI98604@atomide.com>
- <20180511131213.GF2285@localhost>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [V2] sched/schedutil: Don't set next_freq to UINT_MAX
+Date: Fri, 11 May 2018 13:47:12 -0700
+Message-ID: <20180511204712.GA83958@joelaf.mtv.corp.google.com>
+References: <dadd359a7fc0f719b9e95161b2ac469e1a3c70cc.1525861952.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180511131213.GF2285@localhost>
+In-Reply-To: <dadd359a7fc0f719b9e95161b2ac469e1a3c70cc.1525861952.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-* Johan Hovold <johan@kernel.org> [180511 13:14]:
-> On Fri, May 11, 2018 at 05:56:27AM -0700, Tony Lindgren wrote:
-> > * Johan Hovold <johan@kernel.org> [180511 08:09]:
-> > > On Thu, May 10, 2018 at 09:48:31AM -0700, Tony Lindgren wrote:
-> > > > If this solution works for GPS then this should also work for modems
-> > > > that might produce data. And as long as the serdev consumer driver
-> > > > can wake up the UART with pm_runtime_get(&serdev->ctrl->dev) then
-> > > > the out of band GPIO wake interrupts will work to. And for TX,
-> > > > the serdev consumer driver can toggle the wake GPIO, and then call
-> > > > pm_runtime_get(&serdev->ctrl->dev).
-> > > 
-> > > I don't think any serdev driver action is needed for TX however. The
-> > > serial driver itself would know that there's data in the write buffer
-> > > and should manage PM itself until the buffer has been drained (which may
-> > > never happen due to flow control).
-> > 
-> > Sure if the serial driver can manage TX wake directly. However, the
-> > case I'm thinking needs few hundred milliseconds after toggling the
-> > GPIO before we can even attempt to do TX. I guess what I'm saying
-> > let's not try to stuff any "application specific" GPIO handling to
-> > generic UART code :)
+On Wed, May 09, 2018 at 04:05:24PM +0530, Viresh Kumar wrote:
+> The schedutil driver sets sg_policy->next_freq to UINT_MAX on certain
+> occasions to discard the cached value of next freq:
+> - In sugov_start(), when the schedutil governor is started for a group
+>   of CPUs.
+> - And whenever we need to force a freq update before rate-limit
+>   duration, which happens when:
+>   - there is an update in cpufreq policy limits.
+>   - Or when the utilization of DL scheduling class increases.
 > 
-> Ok, I think understand what you have in mind now, but that sounds like
-> something which should be handled by the serdev driver which is
-> responsible for the power state of the serial-attached device (e.g.
-> through a pm_runtime_get_sync(&serdev->dev)).
-
-Yes that makes sense.
-
-> And you're absolutely right that that RPM reference cannot be dropped
-> before any written data has reached the device. But note that the serial
-> controller responsible for that transfer could potentially runtime
-> suspend before the write buffer has been drained (e.g. during long
-> periods without I/O due to flow control).
+> In return, get_next_freq() doesn't return a cached next_freq value but
+> recalculates the next frequency instead.
 > 
-> So I still think that TX is not directly related to this patch and RPM
-> support for serdev controllers.
+> But having special meaning for a particular value of frequency makes the
+> code less readable and error prone. We recently fixed a bug where the
+> UINT_MAX value was considered as valid frequency in
+> sugov_update_single().
+> 
+> All we need is a flag which can be used to discard the value of
+> sg_policy->next_freq and we already have need_freq_update for that. Lets
+> reuse it instead of setting next_freq to UINT_MAX.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V2:
+> - Rebased over the fix sent by Rafael
+> 
+>   lkml.kernel.org/r/2276196.ev9rMjHTR0@aspire.rjw.lan
+> 
+> - Remove the additional check from sugov_update_single() as well.
+> - This is for 4.18 now instead of stable kernels.
 
-Yes you are right after the device on the serial line has been properly
-woken up then TX should just work and at that point the UART driver
-runtime PM can take care of things.
+Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 
-Regards,
+(please note my email address change as well in your contact/address-book).
 
-Tony
+thanks,
+
+- Joel
+
+
+> 
+>  kernel/sched/cpufreq_schedutil.c | 18 ++++++------------
+>  1 file changed, 6 insertions(+), 12 deletions(-)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index e23e84724f39..daaca23697dc 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -95,15 +95,8 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>  	if (sg_policy->work_in_progress)
+>  		return false;
+>  
+> -	if (unlikely(sg_policy->need_freq_update)) {
+> -		sg_policy->need_freq_update = false;
+> -		/*
+> -		 * This happens when limits change, so forget the previous
+> -		 * next_freq value and force an update.
+> -		 */
+> -		sg_policy->next_freq = UINT_MAX;
+> +	if (unlikely(sg_policy->need_freq_update))
+>  		return true;
+> -	}
+>  
+>  	delta_ns = time - sg_policy->last_freq_update_time;
+>  
+> @@ -165,8 +158,10 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>  
+>  	freq = (freq + (freq >> 2)) * util / max;
+>  
+> -	if (freq == sg_policy->cached_raw_freq && sg_policy->next_freq != UINT_MAX)
+> +	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+>  		return sg_policy->next_freq;
+> +
+> +	sg_policy->need_freq_update = false;
+>  	sg_policy->cached_raw_freq = freq;
+>  	return cpufreq_driver_resolve_freq(policy, freq);
+>  }
+> @@ -305,8 +300,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  	 * Do not reduce the frequency if the CPU has not been idle
+>  	 * recently, as the reduction is likely to be premature then.
+>  	 */
+> -	if (busy && next_f < sg_policy->next_freq &&
+> -	    sg_policy->next_freq != UINT_MAX) {
+> +	if (busy && next_f < sg_policy->next_freq) {
+>  		next_f = sg_policy->next_freq;
+>  
+>  		/* Reset cached freq as next_freq has changed */
+> @@ -671,7 +665,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+>  
+>  	sg_policy->freq_update_delay_ns	= sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
+>  	sg_policy->last_freq_update_time	= 0;
+> -	sg_policy->next_freq			= UINT_MAX;
+> +	sg_policy->next_freq			= 0;
+>  	sg_policy->work_in_progress		= false;
+>  	sg_policy->need_freq_update		= false;
+>  	sg_policy->cached_raw_freq		= 0;
