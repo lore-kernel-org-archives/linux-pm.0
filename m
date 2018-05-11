@@ -1,50 +1,46 @@
-From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v1 09/13] dt-bindings: add binding for rk3228 power domains
-Date: Fri, 11 May 2018 11:33:46 +0800
-Message-ID: <1526009626-2000-1-git-send-email-zhangqing@rock-chips.com>
-References: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
+ required
+Date: Fri, 11 May 2018 11:13:15 +0530
+Message-ID: <20180511054315.6jhvg4pveyyeqkws@vireshk-i7>
+References: <20180510150553.28122-1-patrick.bellasi@arm.com>
+ <20180510150553.28122-4-patrick.bellasi@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com>
+Content-Disposition: inline
+In-Reply-To: <20180510150553.28122-4-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add binding documentation for the power domains
-found on Rockchip RK3228 SoCs.
+On 10-05-18, 16:05, Patrick Bellasi wrote:
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> -static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+> +static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>  {
+>  	u32 divider = LOAD_AVG_MAX - 1024 + cfs_rq->avg.period_contrib;
+>  
+> @@ -3762,7 +3736,6 @@ static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+>  
+>  	add_tg_cfs_propagate(cfs_rq, se->avg.load_sum);
+>  
+> -	cfs_rq_util_change(cfs_rq, flags);
 
-Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
----
- Documentation/devicetree/bindings/soc/rockchip/power_domain.txt | 3 +++
- 1 file changed, 3 insertions(+)
+Was leaving a blank line at the end of routine intentional ?
 
-diff --git a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-index 9a3f5fd36a80..affe36dcfa17 100644
---- a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-+++ b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-@@ -7,6 +7,7 @@ Required properties for power domain controller:
- - compatible: Should be one of the following.
- 	"rockchip,rk3036-power-controller" - for RK3036 SoCs.
- 	"rockchip,rk3128-power-controller" - for RK3128 SoCs.
-+	"rockchip,rk3228-power-controller" - for RK3228 SoCs.
- 	"rockchip,rk3288-power-controller" - for RK3288 SoCs.
- 	"rockchip,rk3328-power-controller" - for RK3328 SoCs.
- 	"rockchip,rk3366-power-controller" - for RK3366 SoCs.
-@@ -21,6 +22,7 @@ Required properties for power domain sub nodes:
- - reg: index of the power domain, should use macros in:
- 	"include/dt-bindings/power/rk3036-power.h" - for RK3036 type power domain.
- 	"include/dt-bindings/power/rk3128-power.h" - for RK3128 type power domain.
-+	"include/dt-bindings/power/rk3228-power.h" - for RK3228 type power domain.
- 	"include/dt-bindings/power/rk3288-power.h" - for RK3288 type power domain.
- 	"include/dt-bindings/power/rk3328-power.h" - for RK3328 type power domain.
- 	"include/dt-bindings/power/rk3366-power.h" - for RK3366 type power domain.
-@@ -99,6 +101,7 @@ power domain to use.
- The index should use macros in:
- 	"include/dt-bindings/power/rk3036-power.h" - for rk3036 type power domain.
- 	"include/dt-bindings/power/rk3128-power.h" - for rk3128 type power domain.
-+	"include/dt-bindings/power/rk3128-power.h" - for rk3228 type power domain.
- 	"include/dt-bindings/power/rk3288-power.h" - for rk3288 type power domain.
- 	"include/dt-bindings/power/rk3328-power.h" - for rk3328 type power domain.
- 	"include/dt-bindings/power/rk3366-power.h" - for rk3366 type power domain.
+>  }
+>  
+>  /**
+> @@ -3781,7 +3754,6 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+>  
+>  	add_tg_cfs_propagate(cfs_rq, -se->avg.load_sum);
+>  
+> -	cfs_rq_util_change(cfs_rq, 0);
+
+Here too.
+
+>  }
 -- 
-1.9.1
+viresh
