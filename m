@@ -1,57 +1,54 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH v1 04/13] soc: rockchip: power-domain: Fix wrong value when power up pd
-Date: Sat, 12 May 2018 16:11:00 +0200
-Message-ID: <2785491.5jVj6F0Ubh@phil>
-References: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com> <1526009458-28579-5-git-send-email-zhangqing@rock-chips.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.17-rc5
+Date: Sun, 13 May 2018 00:15:02 +0800
+Message-ID: <1526141702.2067.4.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526009458-28579-5-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Elaine Zhang <zhangqing@rock-chips.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Elaine,
+Hi, Linus,
 
-Am Freitag, 11. Mai 2018, 05:30:49 CEST schrieb Elaine Zhang:
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-please provide a patch description. This seems to affect rk3328
-alone right now, but seems that rk3328 could only ever turn off
-power-domains but never turn them on again, right?
+to receive the latest Thermal Management updates for v4.17-rc5 with
+top-most commit 60abce9f43d812dfec6687a10ca30be380f6f97a:
 
-Authorship comment from my previous comment applies here
-as well.
+  Merge branch 'thermal-soc' into next (2018-05-11 09:37:21 +0800)
 
-And please add a
+on top of commit 6d08b06e67cd117f6992c46611dfb4ce267cd71e:
 
-Fixes: 9bb17ce8edb3 ("soc: rockchip: power-domain: Support domain control in hiword-registers")
-Cc: stable@vger.kernel.org
+  Linux 4.17-rc2 (2018-04-22 19:20:09 -0700)
 
-to the patch description.
+Specifics:
+
+- Fix NULL pointer deref on module load/probe, for int3403_thermal
+driver.
+
+- Fix an emergency shutdown issue on exynos thermal driver.
 
 
-Thanks
-Heiko
+thanks,
+rui
 
-> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
-> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
-> ---
->  drivers/soc/rockchip/pm_domains.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
-> index ebd7c41898c0..01d4ba26a054 100644
-> --- a/drivers/soc/rockchip/pm_domains.c
-> +++ b/drivers/soc/rockchip/pm_domains.c
-> @@ -264,7 +264,7 @@ static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
->  		return;
->  	else if (pd->info->pwr_w_mask)
->  		regmap_write(pmu->regmap, pmu->info->pwr_offset,
-> -			     on ? pd->info->pwr_mask :
-> +			     on ? pd->info->pwr_w_mask :
->  			     (pd->info->pwr_mask | pd->info->pwr_w_mask));
->  	else
->  		regmap_update_bits(pmu->regmap, pmu->info->pwr_offset,
-> 
+----------------------------------------------------------------
+Hans de Goede (1):
+      thermal: int3403_thermal: Fix NULL pointer deref on module load /
+probe
+
+Marek Szyprowski (2):
+      thermal: exynos: Reading temperature makes sense only when TMU is
+turned on
+      thermal: exynos: Propagate error value from tmu_read()
+
+Zhang Rui (1):
+      Merge branch 'thermal-soc' into next
+
+ drivers/thermal/int340x_thermal/int3403_thermal.c |  3 +--
+ drivers/thermal/samsung/exynos_tmu.c              | 14 +++++++++++---
+ 2 files changed, 12 insertions(+), 5 deletions(-)
