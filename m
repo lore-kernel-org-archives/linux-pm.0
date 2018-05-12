@@ -1,13 +1,13 @@
 From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH v1 11/13] dt-bindings: power: add PX30 SoCs header for power-domain
-Date: Sat, 12 May 2018 00:11:24 +0200
-Message-ID: <508694354.7btLQf7nsA@phil>
-References: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com> <1526009672-2097-1-git-send-email-zhangqing@rock-chips.com>
+Subject: Re: [PATCH v1 04/13] soc: rockchip: power-domain: Fix wrong value when power up pd
+Date: Sat, 12 May 2018 16:11:00 +0200
+Message-ID: <2785491.5jVj6F0Ubh@phil>
+References: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com> <1526009458-28579-5-git-send-email-zhangqing@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526009672-2097-1-git-send-email-zhangqing@rock-chips.com>
+In-Reply-To: <1526009458-28579-5-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Elaine Zhang <zhangqing@rock-chips.com>
 Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>
@@ -15,42 +15,43 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Elaine,
 
+Am Freitag, 11. Mai 2018, 05:30:49 CEST schrieb Elaine Zhang:
 
-Am Freitag, 11. Mai 2018, 05:34:32 CEST schrieb Elaine Zhang:
-> According to a description from TRM, add all the power domains.
-> 
-> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
-> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+please provide a patch description. This seems to affect rk3328
+alone right now, but seems that rk3328 could only ever turn off
+power-domains but never turn them on again, right?
 
-that's a bit ambigous, having the Signed-offs like above.
+Authorship comment from my previous comment applies here
+as well.
 
-Either you are the author+sender of the patch, then Finley's
-Signed-off should go away ... or Finley is the author and you
-are the sender, then the author of the patch should be set
-correctly (--author option for git) and the Signed-offs should
-switch places (= Finley first, then yours). Please fix.
+And please add a
 
-This seems to be true for most patches in this series.
+Fixes: 9bb17ce8edb3 ("soc: rockchip: power-domain: Support domain control in hiword-registers")
+Cc: stable@vger.kernel.org
 
-> ---
->  include/dt-bindings/power/px30-power.h | 32 ++++++++++++++++++++++++++++++++
->  1 file changed, 32 insertions(+)
->  create mode 100644 include/dt-bindings/power/px30-power.h
-> 
-> diff --git a/include/dt-bindings/power/px30-power.h b/include/dt-bindings/power/px30-power.h
-> new file mode 100644
-> index 000000000000..4ed482e80950
-> --- /dev/null
-> +++ b/include/dt-bindings/power/px30-power.h
-
-Here I have a naming question. When looking at the vendor kernel
-it looks like the px30 is largely related to the rk3326.
-(rk3326.dtsi includeing the px30.dtsi)
-
-What is the reason for basing the naming on the px30 this time? And could
-we possibly keep to rkXXXX names for the basic things in the kernel, thus
-keeping the pxXX as second name, like with the other px-variants before?
+to the patch description.
 
 
 Thanks
 Heiko
+
+> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+> ---
+>  drivers/soc/rockchip/pm_domains.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
+> index ebd7c41898c0..01d4ba26a054 100644
+> --- a/drivers/soc/rockchip/pm_domains.c
+> +++ b/drivers/soc/rockchip/pm_domains.c
+> @@ -264,7 +264,7 @@ static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
+>  		return;
+>  	else if (pd->info->pwr_w_mask)
+>  		regmap_write(pmu->regmap, pmu->info->pwr_offset,
+> -			     on ? pd->info->pwr_mask :
+> +			     on ? pd->info->pwr_w_mask :
+>  			     (pd->info->pwr_mask | pd->info->pwr_w_mask));
+>  	else
+>  		regmap_update_bits(pmu->regmap, pmu->info->pwr_offset,
+> 
