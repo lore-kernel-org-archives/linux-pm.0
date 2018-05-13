@@ -1,47 +1,39 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH] thermal: exynos: Reduce severity of too early temperature read
-Date: Sun, 13 May 2018 19:54:02 +0200
-Message-ID: <20180513175402.28887-1-krzk@kernel.org>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v1 11/13] dt-bindings: power: add PX30 SoCs header for power-domain
+Date: Sun, 13 May 2018 22:53:00 +0200
+Message-ID: <1550439.0mAU4944n0@diego>
+References: <1526009458-28579-1-git-send-email-zhangqing@rock-chips.com> <508694354.7btLQf7nsA@phil> <9c9606f0-5c97-1a6e-a3c5-f6380c16fea4@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <9c9606f0-5c97-1a6e-a3c5-f6380c16fea4@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Tao Huang <huangtao@rock-chips.com>
+Cc: Elaine Zhang <zhangqing@rock-chips.com>, mark.rutland@arm.com, devicetree@vger.kernel.org, ulf.hansson@linaro.org, khilman@kernel.org, xxx@rock-chips.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, xf@rock-chips.com, linux-rockchip@lists.infradead.org, robh+dt@kernel.org, Finley Xiao <finley.xiao@rock-chips.com>, linux-arm-kernel@lists.infradead.org, wxt@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-Thermal core tries to read temperature during sensor registering in
-thermal_zone_of_sensor_register().  In that time Exynos TMU driver and
-hardware are not yet initialized.  Commit 0eb875d88aaa ("thermal:
-exynos: Reading temperature makes sense only when TMU is turned on")
-added a boolean flag to prevent reading bogus temperature in such
-case but it exposed warning message during boot:
-	[    3.864913] thermal thermal_zone0: failed to read out thermal zone (-22)
+Hi,
 
-Return EAGAIN in such case to skip omitting such message because it
-might mislead user.
+Am Sonntag, 13. Mai 2018, 17:18:12 CEST schrieb Tao Huang:
+> Hi Heiko:
+> 
+> On 2018年05月12日 06:11, Heiko Stuebner wrote:
+> > Here I have a naming question. When looking at the vendor kernel
+> > it looks like the px30 is largely related to the rk3326.
+> > (rk3326.dtsi includeing the px30.dtsi)
+> > 
+> > What is the reason for basing the naming on the px30 this time? And could
+> > we possibly keep to rkXXXX names for the basic things in the kernel, thus
+> > keeping the pxXX as second name, like with the other px-variants before?
+> 
+> PX30 and RK3326 are different chips. PX30 has more features. You can simply
+> think that RK3326 is a subset of PX30. The RK3326 is more like a PX30
+> derivative chip. This is not the same as the previous chips. So we use PX30
+> instead of RK3326 for name, and the opening document is only for PX30, we
+> think this is more convenient for developers.
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- drivers/thermal/samsung/exynos_tmu.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ok, sounds reasonable :-) ... So we'll stay with the PX30.
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 3b20309789e3..c24969d740d1 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -666,8 +666,14 @@ static int exynos_get_temp(void *p, int *temp)
- 	struct exynos_tmu_data *data = p;
- 	int value, ret = 0;
- 
--	if (!data || !data->tmu_read || !data->enabled)
-+	if (!data || !data->tmu_read)
- 		return -EINVAL;
-+	else if (!data->enabled)
-+		/*
-+		 * Called too early, probably
-+		 * from thermal_zone_of_sensor_register().
-+		 */
-+		return -EAGAIN;
- 
- 	mutex_lock(&data->lock);
- 	clk_enable(data->clk);
--- 
-2.14.1
+
+Heiko
