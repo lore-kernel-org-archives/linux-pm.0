@@ -1,147 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V5] cpufreq: intel_pstate: allow trace in passive mode
-Date: Sun, 13 May 2018 10:43:51 +0200
-Message-ID: <3708753.N4DSO893cq@aspire.rjw.lan>
-References: <1525328567-23747-1-git-send-email-dsmythies@telus.net>
+Subject: Re: [PATCH] cpufreq: s3c2440: fix spelling mistake: "divsiors" -> "divisors"
+Date: Sun, 13 May 2018 10:45:40 +0200
+Message-ID: <3819884.ugggRtP9TD@aspire.rjw.lan>
+References: <20180430144801.6727-1-colin.king@canonical.com> <20180502053721.5h6jhicjsjss2ixe@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1525328567-23747-1-git-send-email-dsmythies@telus.net>
+In-Reply-To: <20180502053721.5h6jhicjsjss2ixe@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <doug.smythies@gmail.com>, srinivas.pandruvada@linux.intel.com
-Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Colin King <colin.king@canonical.com>
+Cc: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 3, 2018 8:22:47 AM CEST Doug Smythies wrote:
-> Allow use of the trace_pstate_sample trace function
-> when the intel_pstate driver is in passive mode.
-> Since the core_busy and scaled_busy fields are not
-> used, and it might be desirable to know which path
-> through the driver was used, either intel_cpufreq_target
-> or intel_cpufreq_fast_switch, re-task the core_busy
-> field as a flag indicator.
+On Wednesday, May 2, 2018 7:37:21 AM CEST Viresh Kumar wrote:
+> On 30-04-18, 15:48, Colin King wrote:
+> > From: Colin Ian King <colin.king@canonical.com>
+> > 
+> > Trivial fix to spelling mistake in s3c_freq_dbg debug message text.
+> > 
+> > Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> > ---
+> >  drivers/cpufreq/s3c2440-cpufreq.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/s3c2440-cpufreq.c b/drivers/cpufreq/s3c2440-cpufreq.c
+> > index d0d75b65ddd6..d2f67b7a20dd 100644
+> > --- a/drivers/cpufreq/s3c2440-cpufreq.c
+> > +++ b/drivers/cpufreq/s3c2440-cpufreq.c
+> > @@ -143,7 +143,7 @@ static void s3c2440_cpufreq_setdivs(struct s3c_cpufreq_config *cfg)
+> >  {
+> >  	unsigned long clkdiv, camdiv;
+> >  
+> > -	s3c_freq_dbg("%s: divsiors: h=%d, p=%d\n", __func__,
+> > +	s3c_freq_dbg("%s: divisors: h=%d, p=%d\n", __func__,
+> >  		     cfg->divs.h_divisor, cfg->divs.p_divisor);
+> >  
+> >  	clkdiv = __raw_readl(S3C2410_CLKDIVN);
 > 
-> The user can then use the intel_pstate_tracer.py utility
-> to summarize and plot the trace.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> Note: The core_busy feild still goes by that name
-> in include/trace/events/power.h and within the
-> intel_pstate_tracer.py script and csv file headers,
-> but it is graphed as "performance", and called
-> core_avg_perf now in the intel_pstate driver.
 > 
-> Sometimes, in passive mode, the driver is not called for
-> many tens or even hundreds of seconds. The user
-> needs to understand, and not be confused by, this limitation.
-> 
-> Signed-off-by: Doug Smythies <dsmythies@telus.net>
 
-Srinivas, any comments or concerns?
-
-> 
-> ---
-> 
-> V5: Changes as per Rafael J. Wysocki feedback.
->     See: https://lkml.org/lkml/2018/1/7/270
-> 
-> V4: Only execute the trace specific overhead code if trace
->     is enabled. Suggested by Srinivas Pandruvada.
-> 
-> V3: Move largely duplicate code to a subroutine.
->     Suggested by Rafael J. Wysocki.
-> 
-> V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
-> 
-> ---
->  drivers/cpufreq/intel_pstate.c | 44 ++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 42 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 17e566af..4a08686 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1939,13 +1939,49 @@ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
->  	return 0;
->  }
->  
-> +/* Use of trace in passive mode:
-> + *
-> + * In passive mode the trace core_busy field (also known as the
-> + * performance field, and lablelled as such on the graphs; also known as
-> + * core_avg_perf) is not needed and so is re-assigned to indicate if the
-> + * driver call was via the normal or fast switch path. Various graphs
-> + * output from the intel_pstate_tracer.py utility that include core_busy
-> + * (or performance or core_avg_perf) have a fixed y-axis from 0 to 100%,
-> + * so we use 10 to indicate the the normal path through the driver, and
-> + * 90 to indicate the fast switch path through the driver.
-> + * The scaled_busy field is not used, and is set to 0.
-> + */
-> +
-> +#define	INTEL_PSTATE_TRACE_TARGET 10
-> +#define	INTEL_PSTATE_TRACE_FAST_SWITCH 90
-> +
-> +static void intel_cpufreq_trace(struct cpudata *cpu, unsigned int trace_type, int old_pstate)
-> +{
-> +	struct sample *sample;
-> +
-> +	if (!trace_pstate_sample_enabled())
-> +		return;
-> +	if (!intel_pstate_sample(cpu, ktime_get()))
-> +		return;
-> +	sample = &cpu->sample;
-> +	trace_pstate_sample(trace_type,
-> +		0,
-> +		old_pstate,
-> +		cpu->pstate.current_pstate,
-> +		sample->mperf,
-> +		sample->aperf,
-> +		sample->tsc,
-> +		get_avg_frequency(cpu),
-> +		fp_toint(cpu->iowait_boost * 100));
-> +}
-> +
->  static int intel_cpufreq_target(struct cpufreq_policy *policy,
->  				unsigned int target_freq,
->  				unsigned int relation)
->  {
->  	struct cpudata *cpu = all_cpu_data[policy->cpu];
->  	struct cpufreq_freqs freqs;
-> -	int target_pstate;
-> +	int target_pstate, old_pstate;
->  
->  	update_turbo_state();
->  
-> @@ -1965,12 +2001,14 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
->  		break;
->  	}
->  	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-> +	old_pstate = cpu->pstate.current_pstate;
->  	if (target_pstate != cpu->pstate.current_pstate) {
->  		cpu->pstate.current_pstate = target_pstate;
->  		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
->  			      pstate_funcs.get_val(cpu, target_pstate));
->  	}
->  	freqs.new = target_pstate * cpu->pstate.scaling;
-> +	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_TARGET, old_pstate);
->  	cpufreq_freq_transition_end(policy, &freqs, false);
->  
->  	return 0;
-> @@ -1980,13 +2018,15 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
->  					      unsigned int target_freq)
->  {
->  	struct cpudata *cpu = all_cpu_data[policy->cpu];
-> -	int target_pstate;
-> +	int target_pstate, old_pstate;
->  
->  	update_turbo_state();
->  
->  	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
->  	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-> +	old_pstate = cpu->pstate.current_pstate;
->  	intel_pstate_update_pstate(cpu, target_pstate);
-> +	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH, old_pstate);
->  	return target_pstate * cpu->pstate.scaling;
->  }
->  
-> 
+Applied, thanks!
