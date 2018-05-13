@@ -1,11 +1,11 @@
 From: Ognjen Galic <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 2/3] thinkpad_acpi: add support for
- force_discharge
-Date: Sun, 13 May 2018 17:30:00 +0200
-Message-ID: <20180513153000.GA5117@thinkpad>
+Subject: [PATCH 3/3] thinkpad_acpi: document the battery
+ controls
+Date: Sun, 13 May 2018 17:30:24 +0200
+Message-ID: <20180513153024.GA5142@thinkpad>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
@@ -19,150 +19,79 @@ Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.
 To: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Lenovo ThinkPad systems have a feature that lets you
-force the battery to discharge regardless if AC is attached
-or not.
-
-This patch implements that feature and exposes it via the generic
-ACPI battery driver.
-
-Signed-off-by: Ognjen Galic <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
----
- drivers/platform/x86/thinkpad_acpi.c | 56 ++++++++++++++++++++++++++--
- 1 file changed, 53 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index b8b74889..28a87640 100644
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -9236,7 +9236,11 @@ static struct ibm_struct mute_led_driver_data = {
- #define SET_INHIBIT	"BICS"
- #define GET_INHIBIT	"BICG"
- 
-+#define GET_DISCHARGE	"BDSG"
-+#define SET_DISCHARGE	"PSBS"
-+
- #define INHIBIT_ATTR	"inhibit_charge"
-+#define DISCHARGE_ATTR	"force_discharge"
- 
- #define START_ATTR "charge_start_threshold"
- #define STOP_ATTR  "charge_stop_threshold"
-@@ -9256,7 +9260,8 @@ enum {
- 	/* This is used in the get/set helpers */
- 	THRESHOLD_START,
- 	THRESHOLD_STOP,
--	INHIBIT_CHARGE
-+	INHIBIT_CHARGE,
-+	FORCE_DISCHARGE
- };
- 
- struct tpacpi_battery_data {
-@@ -9265,6 +9270,7 @@ struct tpacpi_battery_data {
- 	int charge_stop;
- 	int stop_support;
- 	int inhibit_support;
-+	int discharge_support;
- };
- 
- struct tpacpi_battery_driver_data {
-@@ -9329,6 +9335,12 @@ static int tpacpi_battery_get(int what, int battery, int *ret)
- 		/* The inhibit charge status is in the first bit */
- 		*ret = *ret & 0x01;
- 		return 0;
-+	case FORCE_DISCHARGE:
-+		if ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_DISCHARGE, ret, battery))
-+			return -ENODEV;
-+		/* The force discharge status is in the first bit */
-+		*ret = *ret & 0x01;
-+		return 0;
- 	default:
- 		pr_crit("wrong parameter: %d", what);
- 		return -EINVAL;
-@@ -9372,6 +9384,14 @@ static int tpacpi_battery_set(int what, int battery, int value)
- 			return -ENODEV;
- 		}
- 		return 0;
-+	case FORCE_DISCHARGE:
-+		param = battery;
-+		param |= value << 8;
-+		if ACPI_FAILURE(tpacpi_battery_acpi_eval(SET_DISCHARGE, &ret, param)) {
-+			pr_err("failed to set force dischrage on %d", battery);
-+			return -ENODEV;
-+		}
-+		return 0;
- 	default:
- 		pr_crit("wrong parameter: %d", what);
- 		return -EINVAL;
-@@ -9431,11 +9451,16 @@ static int tpacpi_battery_probe(int battery)
- 			/* Support is marked in bit 5 */
- 			battery_info.batteries[battery].inhibit_support = ret & BIT(5);
- 
--	pr_info("battery %d registered (start %d, stop %d, inhibit: %d)",
-+	if (acpi_has_method(hkey_handle, GET_DISCHARGE))
-+		if (!ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_DISCHARGE, &ret, battery)))
-+			battery_info.batteries[battery].discharge_support = ret & BIT(8);
-+
-+	pr_info("battery %d registered (start %d, stop %d, inhibit: %d, force: %d)",
- 			battery,
- 			battery_info.batteries[battery].charge_start,
- 			battery_info.batteries[battery].charge_stop,
--			battery_info.batteries[battery].inhibit_support);
-+			battery_info.batteries[battery].inhibit_support,
-+			battery_info.batteries[battery].discharge_support);
- 
- 	return 0;
- }
-@@ -9530,6 +9555,15 @@ static ssize_t tpacpi_battery_store(int what,
- 		if (tpacpi_battery_set(INHIBIT_CHARGE, battery, value))
- 			return -ENODEV;
- 		return count;
-+	case FORCE_DISCHARGE:
-+		if (!battery_info.batteries[battery].discharge_support)
-+			return -ENODEV;
-+		/* The only valid values are 1 and 0 */
-+		if (value != 0 && value != 1)
-+			return -EINVAL;
-+		if (tpacpi_battery_set(FORCE_DISCHARGE, battery, value))
-+			return -ENODEV;
-+		return count;
- 	default:
- 		pr_crit("Wrong parameter: %d", what);
- 		return -EINVAL;
-@@ -9606,14 +9640,30 @@ static ssize_t inhibit_charge_show(struct device *device,
- 	return tpacpi_battery_show(INHIBIT_CHARGE, device, buf);
- }
- 
-+static ssize_t force_discharge_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	return tpacpi_battery_store(FORCE_DISCHARGE, dev, buf, count);
-+}
-+
-+static ssize_t force_discharge_show(struct device *device,
-+				struct device_attribute *attr,
-+				char *buf)
-+{
-+	return tpacpi_battery_show(FORCE_DISCHARGE, device, buf);
-+}
-+
- static DEVICE_ATTR_RW(charge_start_threshold);
- static DEVICE_ATTR_RW(charge_stop_threshold);
- static DEVICE_ATTR_RW(inhibit_charge);
-+static DEVICE_ATTR_RW(force_discharge);
- 
- static struct attribute *tpacpi_battery_attrs[] = {
- 	&dev_attr_charge_start_threshold.attr,
- 	&dev_attr_charge_stop_threshold.attr,
- 	&dev_attr_inhibit_charge.attr,
-+	&dev_attr_force_discharge.attr,
- 	NULL,
- };
- 
--- 
-2.17.0
-
-
-------------------------------------------------------------------------------
-Check out the vibrant tech community on one of the world's most
-engaging tech sites, Slashdot.org! http://sdm.link/slashdot
+VGhpcyBkb2N1bWVudHMgdGhlIG5ldyBiYXR0ZXJ5IGNvbnRyb2xzIGFuZCB3ZWFyIGxldmVsaW5n
+IHN1cHBvcnQKZm9yIExlbm92byBUaGlua1BhZCBsYXB0b3BzLgoKU2lnbmVkLW9mZi1ieTogT2du
+amVuIEdhbGljIDxzbWNsdDMwcEBnbWFpbC5jb20+Ci0tLQogRG9jdW1lbnRhdGlvbi9sYXB0b3Bz
+L3RoaW5rcGFkLWFjcGkudHh0IHwgNzAgKysrKysrKysrKysrKysrKysrKysrKysrLQogMSBmaWxl
+IGNoYW5nZWQsIDY5IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKCmRpZmYgLS1naXQgYS9E
+b2N1bWVudGF0aW9uL2xhcHRvcHMvdGhpbmtwYWQtYWNwaS50eHQgYi9Eb2N1bWVudGF0aW9uL2xh
+cHRvcHMvdGhpbmtwYWQtYWNwaS50eHQKaW5kZXggMDBiNmRmZWQuLjM0OTFkNDZmIDEwMDY0NAot
+LS0gYS9Eb2N1bWVudGF0aW9uL2xhcHRvcHMvdGhpbmtwYWQtYWNwaS50eHQKKysrIGIvRG9jdW1l
+bnRhdGlvbi9sYXB0b3BzL3RoaW5rcGFkLWFjcGkudHh0CkBAIC0xLDYgKzEsNiBAQAogCQkgICAg
+IFRoaW5rUGFkIEFDUEkgRXh0cmFzIERyaXZlcgogCi0gICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgVmVyc2lvbiAwLjI1CisgICAgICAgICAgICAgICAgICAgICAgICAgICAgVmVyc2lvbiAwLjI3
+CiAgICAgICAgICAgICAgICAgICAgICAgICBPY3RvYmVyIDE2dGgsICAyMDEzCiAKICAgICAgICAg
+ICAgICAgIEJvcmlzbGF2IERlaWFub3YgPGJvcmlzbGF2QHVzZXJzLnNmLm5ldD4KQEAgLTQ2LDYg
+KzQ2LDkgQEAgZGV0YWlsZWQgZGVzY3JpcHRpb24pOgogCS0gRmFuIGNvbnRyb2wgYW5kIG1vbml0
+b3Jpbmc6IGZhbiBzcGVlZCwgZmFuIGVuYWJsZS9kaXNhYmxlCiAJLSBXQU4gZW5hYmxlIGFuZCBk
+aXNhYmxlCiAJLSBVV0IgZW5hYmxlIGFuZCBkaXNhYmxlCisJLSBCYXR0ZXJ5IHdlYXIgY29udHJv
+bCAoYmF0dGVyeSBzdGFydCBhbmQgc3RvcCB0aHJlc2hvbGQpCisJLSBCYXR0ZXJ5IGluaGliaXQg
+Y2hhcmdlCisJLSBCYXR0ZXJ5IGZvcmNlIGRpc2NoYXJnZQogCiBBIGNvbXBhdGliaWxpdHkgdGFi
+bGUgYnkgbW9kZWwgYW5kIGZlYXR1cmUgaXMgbWFpbnRhaW5lZCBvbiB0aGUgd2ViCiBzaXRlLCBo
+dHRwOi8vaWJtLWFjcGkuc2YubmV0Ly4gSSBhcHByZWNpYXRlIGFueSBzdWNjZXNzIG9yIGZhaWx1
+cmUKQEAgLTE0ODMsMyArMTQ4Niw2OCBAQCBTeXNmcyBpbnRlcmZhY2UgY2hhbmdlbG9nOgogMHgw
+MzAwMDA6CVRoZXJtYWwgYW5kIGZhbiBzeXNmcyBhdHRyaWJ1dGVzIHdlcmUgbW92ZWQgdG8gdGhl
+IGh3bW9uCiAJCWRldmljZSBpbnN0ZWFkIG9mIGJlaW5nIGF0dGFjaGVkIHRvIHRoZSBiYWNraW5n
+IHBsYXRmb3JtCiAJCWRldmljZS4KKworCitCYXR0ZXJ5IHdlYXIgY29udHJvbCAoY2hhcmdlIGFu
+ZCBzdG9wIHRocmVzaG9sZHMpCistLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLQorCitTaW5jZSBMaW51eCA0LjE3IHRwYWNwaSBzdXBwb3J0cyBzZXR0aW5n
+IG9mIGNoYXJnZSBzdGFydCBhbmQgc3RvcCB0aHJlc2hvbGRzIG9uIGNlcnRhaW4KK0xlbm92byBU
+aGlua1BhZCBsYXB0b3BzLiBUaGlzIGZlYXR1cmUgaXMgZXhwb3NlZCB2aWEgYSBuZXcgQVBJIGZy
+b20gdGhlIEFDUEkgYmF0dGVyeSBkcml2ZXIKK2Fsc28gbmV3IGluIExpbnV4IDQuMTcuCisKK1Ro
+ZSBuZXcgYmF0dGVyeSBBUEkgYWxsb3dzIGRldmVsb3BlcnMgdG8gZXh0ZW5kZWQgdGhlIHN0YW5k
+YXJkIGF0dHJpYnV0ZXMgb2ZmZXJlZCBieSB0aGUKK2dlbmVyaWMgQUNQSSBiYXR0ZXJ5IGRyaXZl
+ciBhbmQgYWRkIGN1c3RvbSBhdHRyaWJ1dGVzIGZyb20gb3RoZXIgZHJpdmVycy4gdGhpbmtwYWRf
+YWNwaQorbGV2ZXJhZ2VzIHRoaXMgQVBJIGFuZCBleHBvc2VzIGEgZmV3IGN1c3RvbSBhdHRyaWJ1
+dGVzIGZvciB3ZWFyIGNvbnRyb2wgb2YgdGhlIGJhdHRlcnkuCisKK1dlYXIgY29udHJvbCBpcyBk
+ZXNpZ25lZCB0byBzdG9wIHRoZSBjaGFyZ2luZyBvZiB0aGUgYmF0dGVyeSBhdCBhIGNlcnRhaW4g
+dGhyZXNob2xkIGFuZCB0aHVzCitzdG9wIHRoZSBjZWxsIGZyb20gd2VhcmluZyBvdXQgZnJvbSBj
+b25zdGFudCBjaGFyZ2UgY3ljbGVzLiBTbyBpZiB5b3UgcHV0IHRoZSB0aHJlc2hvbGQgYXQKKzUw
+JSwgdGhlIGNoYXJnZSB3aWxsIG9ubHkgY2hhcmdlIHRoZSBiYXR0ZXJ5IHdoZW4gaXQgaXMgYmVs
+b3cgNTAlIGFuZCBpdCB3aWxsIHN0b3AgYXQgNTAlLgorCitBIGxvd2VyIGxldmVsIGlzIGFsc28g
+ZXhwb3NlZCwgdGh1cyBjcmVhdGluZyBhIGNoYXJnZXIgImRlYWQgem9uZSIsIGEgem9uZSB3aGVy
+ZSB0aGUgY2hhcmdlciBkb2VzCitub3RoaW5nIGFuZCB0aGUgYmF0dGVyeSBpcyBpbiBpZGxlIGFz
+IGlmIGl0IHdhcyByZW1vdmVkIGZyb20gdGhlIFRoaW5rcGFkLgorCitGb3IgZXhhbXBsZSwgdGhp
+cyBpcyB3aGF0IGhhcHBlbnMgd2hlbiB5b3Ugc2V0IHRoZSB2YWx1ZXMgdG8gNDAlIGFuZCA2NSU6
+CisKKyAgICAgICAgICAgIOKUjCAgICAgIERpc2NoYXJnaW5nICAgICAg4pSQCisJICAgIOKUgiAg
+ICAgICAgICAgICAgICAgICAgICAg4pSCCitbMCUtLS0tLS0tLTQwJSAgICAgICA2NSUtLS0tLS0t
+LS0tLTEwMCVdIEJhdHRlcnkgMQorIOKUgiAgICAgICAgICAgICAgICAgICAg4pSCCisg4pSUICAg
+ICAgQ2hhcmdpbmcgICAgICDilJgKKworV2hlbiBwbHVnZ2VkIGludG8gQUMgYW5kIGlmIHRoZSBw
+ZXJjZW50YWdlIGlzIGJldHdlZW4gNDAlIGFuZCAxMDAlIHRoZSBiYXR0ZXJ5IGlzIGluIGlkbGUu
+CisKK1RoZSBhdHRyaWJ1dGVzOgorLS0tLS0tLS0tLS0tLS0tCisKKy9zeXMvY2xhc3MvcG93ZXJf
+c3VwcGx5L0JBVHgvY2hhcmdlX3N0YXJ0X3RocmVzaG9sZCBbaW50LCA8MCwgPjk5XQorCitUaGlz
+IHNldHMgdGhlIGxvd2VyIGNoYXJnZSBzdG9wIHRocmVzaG9sZCBmb3IgdGhlIGJhdHRlcnkuIEl0
+cyBhIGludGVnZXIgYW5kIHZhbGlkIHZhbHVlcyBhcmUgZnJvbQorMCUgdG8gOTklLgorCisvc3lz
+L2NsYXNzL3Bvd2VyX3N1cHBseS9CQVR4L2NoYXJnZV9zdG9wX3RocmVzaG9sZCBbaW50LCA8MSwg
+PjEwMF0KKworVGhpcyBzZXRzIHRoZSB1cHBlciBjaGFyZ2UgdGhyZXNob2xkIGZvciB0aGUgYmF0
+dGVyeS4gSXRzIGEgaW50ZWdlciBhbmQgdGhlIHZhbHVlIHZhbHVlcyBhcmUgZnJvbQorMSUgdG8g
+MTAwJS4KKworU2V0dGluZyB0aGUgbG93ZXIgbGltaXQgdG8gMCUgYW5kIHRoZSB1cHBlciBsaW1p
+dCB0byAxMDAlIGRpc2FibGVzIHRoZSB3ZWFyIGxldmVsaW5nIGNvbnRyb2wgZmVhdHVyZS4KKwor
+CitCYXR0ZXJ5IGNoYXJnZSBpbmhpYml0aW5nCistLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQor
+CitQcmV2ZW50aW5nIHRoZSBiYXR0ZXJ5IGZyb20gY2hhcmdpbmcgaXMgYWxzbyBhdmFpbGFibGUg
+YXMgYSBtYW51YWwgb3ZlcnJpZGUgb3ZlciB0aGUgc2V0dGluZ3MuIEl0cyBleHBvc2VkIHZpYQor
+dGhlIGdlbmVyaWMgQUNQSSBkcml2ZXI6CisKKy9zeXMvY2xhc3MvcG93ZXJfc3VwcGx5L0JBVHgv
+aW5oaWJpdF9jaGFyZ2UgW2ludCwgMSwgMF0KKworU2V0dGluZyBpdCB0byAxIHByZXZlbnRzIHRo
+ZSBiYXR0ZXJ5IGZyb20gY2hhcmdpbmcuCisKK0JhdHRlcnkgZm9yY2UgZGlzY2hhcmdpbmcKKy0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCisKK1RoZXJlIGlzIGFsc28gc3VwcG9ydCBmb3IgQUMg
+b3ZlcnJpZGluZy4gVGhpcyBtZWFucyB0aGF0IHlvdSBjYW4gZm9yY2UgdGhlIGJhdHRlcnkgdG8g
+ZGlzY2hhcmdlCitldmVuIHdoZW4gQUMgaXMgYXR0YWNoZWQuIFRoaXMgaXMgYWxzbyBleHBvc2Vk
+IHZpYSB0aGUgZ2VuZXJpYyBBQ1BJIGRyaXZlcjoKKworL3N5cy9jbGFzcy9wb3dlcl9zdXBwbHkv
+QkFUeC9mb3JjZV9kaXNjaGFyZ2UgW2ludCwgMSwgMF0KKworU2V0dGluZyBpdCB0byAxIGZvcmNl
+cyB0aGUgYmF0dGVyeSB0byBkaXNjaGFyZ2Ugb24gQUMuCi0tIAoyLjE3LjAKCgotLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0KQ2hlY2sgb3V0IHRoZSB2aWJyYW50IHRlY2ggY29tbXVuaXR5IG9uIG9uZSBv
+ZiB0aGUgd29ybGQncyBtb3N0CmVuZ2FnaW5nIHRlY2ggc2l0ZXMsIFNsYXNoZG90Lm9yZyEgaHR0
+cDovL3NkbS5saW5rL3NsYXNoZG90Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCmlibS1hY3BpLWRldmVsIG1haWxpbmcgbGlzdAppYm0tYWNwaS1kZXZlbEBs
+aXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMv
+bGlzdGluZm8vaWJtLWFjcGktZGV2ZWwK
