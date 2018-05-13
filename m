@@ -1,138 +1,63 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3] PM / wakeup: use seq_open() to show wakeup stats
-Date: Sun, 13 May 2018 10:46:57 +0200
-Message-ID: <2754294.zfdF7jmEWy@aspire.rjw.lan>
-References: <1524653971-10425-1-git-send-email-opensource.ganesh@gmail.com>
+Subject: Re: [PATCH V3 0/3] cpufreq: dt: Allow platforms to provide
+ suspend/resume hooks
+Date: Sun, 13 May 2018 10:48:04 +0200
+Message-ID: <2141918.GL8YPaupJ4@aspire.rjw.lan>
+References: <cover.1524561482.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1524653971-10425-1-git-send-email-opensource.ganesh@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Cc: pavel@ucw.cz, len.brown@intel.com, rafael@kernel.org, gregkh@linuxfoundation.org, geert@linux-m68k.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cover.1524561482.git.viresh.kumar@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Gregory Clement <gregory.clement@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, April 25, 2018 12:59:31 PM CEST Ganesh Mahendran wrote:
-> single_open() interface requires that the whole output must
-> fit into a single buffer. This will lead to timeout when
-> system memory is not in a good situation.
+On Tuesday, April 24, 2018 11:39:44 AM CEST Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> This patch use seq_open() to show wakeup stats. This method
-> need only one page, so timeout will not be observed.
+> These patches are already tested by Miquel and are ready to get merged.
+> Please pick them as part of 4.18 stuff whenever you do that.
 > 
-> Signed-off-by: Ganesh Mahendran <opensource.ganesh@gmail.com>
-> ----
-> v3: simplify wakeup_sources_stats_seq_start
-> v2: use srcu_read_lock instead of rcu_read_lock
-> ---
->  drivers/base/power/wakeup.c | 75 +++++++++++++++++++++++++++++++++++----------
->  1 file changed, 59 insertions(+), 16 deletions(-)
+> I have updated the cpufreq-dt driver to allow platform specific
+> suspend/resume hooks and done some minor cleanup in the driver. I have
+> updated Miquel's patch and applied that on top of all this.
 > 
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index ea01621..5872705 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -1029,32 +1029,75 @@ static int print_wakeup_source_stats(struct seq_file *m,
->  	return 0;
->  }
->  
-> -/**
-> - * wakeup_sources_stats_show - Print wakeup sources statistics information.
-> - * @m: seq_file to print the statistics into.
-> - */
-> -static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
-> +static void *wakeup_sources_stats_seq_start(struct seq_file *m,
-> +					loff_t *pos)
->  {
->  	struct wakeup_source *ws;
-> -	int srcuidx;
-> +	loff_t n = *pos;
-> +	int *srcuidx = m->private;
->  
-> -	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> -		"expire_count\tactive_since\ttotal_time\tmax_time\t"
-> -		"last_change\tprevent_suspend_time\n");
-> +	if (n == 0) {
-> +		seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-> +			"expire_count\tactive_since\ttotal_time\tmax_time\t"
-> +			"last_change\tprevent_suspend_time\n");
-> +	}
->  
-> -	srcuidx = srcu_read_lock(&wakeup_srcu);
-> -	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
-> -		print_wakeup_source_stats(m, ws);
-> -	srcu_read_unlock(&wakeup_srcu, srcuidx);
-> +	*srcuidx = srcu_read_lock(&wakeup_srcu);
-> +	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> +		if (n-- <= 0)
-> +			return ws;
-> +	}
-> +
-> +	return NULL;
-> +}
-> +
-> +static void *wakeup_sources_stats_seq_next(struct seq_file *m,
-> +					void *v, loff_t *pos)
-> +{
-> +	struct wakeup_source *ws = v;
-> +	struct wakeup_source *next_ws = NULL;
-> +
-> +	++(*pos);
->  
-> -	print_wakeup_source_stats(m, &deleted_ws);
-> +	list_for_each_entry_continue_rcu(ws, &wakeup_sources, entry) {
-> +		next_ws = ws;
-> +		break;
-> +	}
-> +
-> +	return next_ws;
-> +}
-> +
-> +static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
-> +{
-> +	int *srcuidx = m->private;
-> +
-> +	srcu_read_unlock(&wakeup_srcu, *srcuidx);
-> +}
-> +
-> +/**
-> + * wakeup_sources_stats_seq_show - Print wakeup sources statistics information.
-> + * @m: seq_file to print the statistics into.
-> + * @v: wakeup_source of each iteration
-> + */
-> +static int wakeup_sources_stats_seq_show(struct seq_file *m, void *v)
-> +{
-> +	struct wakeup_source *ws = v;
-> +
-> +	print_wakeup_source_stats(m, ws);
->  
->  	return 0;
->  }
->  
-> +static const struct seq_operations wakeup_sources_stats_seq_ops = {
-> +	.start = wakeup_sources_stats_seq_start,
-> +	.next  = wakeup_sources_stats_seq_next,
-> +	.stop  = wakeup_sources_stats_seq_stop,
-> +	.show  = wakeup_sources_stats_seq_show,
-> +};
-> +
->  static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->  {
-> -	return single_open(file, wakeup_sources_stats_show, NULL);
-> +	return seq_open_private(file, &wakeup_sources_stats_seq_ops, sizeof(int));
->  }
->  
->  static const struct file_operations wakeup_sources_stats_fops = {
-> @@ -1062,7 +1105,7 @@ static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
->  	.open = wakeup_sources_stats_open,
->  	.read = seq_read,
->  	.llseek = seq_lseek,
-> -	.release = single_release,
-> +	.release = seq_release_private,
->  };
->  
->  static int __init wakeup_sources_debugfs_init(void)
+> Thanks.
+> 
+> V2->V3:
+> - Don't double put the clock.
+> - Fix commit log of 3/3.
+> - Add tested-by from Miquel.
+> - There was no V2 of 1-2/3 but only 3/3 on the lists. All are marked as
+>   V3 to clear things out.
+> 
+> --
+> viresh
+> 
+> [1] https://lkml.kernel.org/r/20180421141943.25705-1-miquel.raynal@bootlin.com
+> 
+> Miquel Raynal (1):
+>   cpufreq: add suspend/resume support in Armada 37xx DVFS driver
+> 
+> Viresh Kumar (2):
+>   cpufreq: dt: Allow platform specific suspend/resume callbacks
+>   cpufreq: armada: Free resources on error paths
+> 
+>  drivers/cpufreq/armada-37xx-cpufreq.c | 100 +++++++++++++++++++++++++++++-----
+>  drivers/cpufreq/cpufreq-dt.c          |  10 +++-
+>  drivers/cpufreq/cpufreq-dt.h          |   5 ++
+>  3 files changed, 100 insertions(+), 15 deletions(-)
+> 
 > 
 
-Applied, thanks!
+Applied including the v4 of patch [3/3], thanks!
