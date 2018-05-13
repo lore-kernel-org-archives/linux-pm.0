@@ -1,97 +1,47 @@
-From: Ognjen Galic <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 3/3] thinkpad_acpi: document the battery
- controls
-Date: Sun, 13 May 2018 17:30:24 +0200
-Message-ID: <20180513153024.GA5142@thinkpad>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
-List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-To: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH] thermal: exynos: Reduce severity of too early temperature read
+Date: Sun, 13 May 2018 19:54:02 +0200
+Message-ID: <20180513175402.28887-1-krzk@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBkb2N1bWVudHMgdGhlIG5ldyBiYXR0ZXJ5IGNvbnRyb2xzIGFuZCB3ZWFyIGxldmVsaW5n
-IHN1cHBvcnQKZm9yIExlbm92byBUaGlua1BhZCBsYXB0b3BzLgoKU2lnbmVkLW9mZi1ieTogT2du
-amVuIEdhbGljIDxzbWNsdDMwcEBnbWFpbC5jb20+Ci0tLQogRG9jdW1lbnRhdGlvbi9sYXB0b3Bz
-L3RoaW5rcGFkLWFjcGkudHh0IHwgNzAgKysrKysrKysrKysrKysrKysrKysrKysrLQogMSBmaWxl
-IGNoYW5nZWQsIDY5IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKCmRpZmYgLS1naXQgYS9E
-b2N1bWVudGF0aW9uL2xhcHRvcHMvdGhpbmtwYWQtYWNwaS50eHQgYi9Eb2N1bWVudGF0aW9uL2xh
-cHRvcHMvdGhpbmtwYWQtYWNwaS50eHQKaW5kZXggMDBiNmRmZWQuLjM0OTFkNDZmIDEwMDY0NAot
-LS0gYS9Eb2N1bWVudGF0aW9uL2xhcHRvcHMvdGhpbmtwYWQtYWNwaS50eHQKKysrIGIvRG9jdW1l
-bnRhdGlvbi9sYXB0b3BzL3RoaW5rcGFkLWFjcGkudHh0CkBAIC0xLDYgKzEsNiBAQAogCQkgICAg
-IFRoaW5rUGFkIEFDUEkgRXh0cmFzIERyaXZlcgogCi0gICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgVmVyc2lvbiAwLjI1CisgICAgICAgICAgICAgICAgICAgICAgICAgICAgVmVyc2lvbiAwLjI3
-CiAgICAgICAgICAgICAgICAgICAgICAgICBPY3RvYmVyIDE2dGgsICAyMDEzCiAKICAgICAgICAg
-ICAgICAgIEJvcmlzbGF2IERlaWFub3YgPGJvcmlzbGF2QHVzZXJzLnNmLm5ldD4KQEAgLTQ2LDYg
-KzQ2LDkgQEAgZGV0YWlsZWQgZGVzY3JpcHRpb24pOgogCS0gRmFuIGNvbnRyb2wgYW5kIG1vbml0
-b3Jpbmc6IGZhbiBzcGVlZCwgZmFuIGVuYWJsZS9kaXNhYmxlCiAJLSBXQU4gZW5hYmxlIGFuZCBk
-aXNhYmxlCiAJLSBVV0IgZW5hYmxlIGFuZCBkaXNhYmxlCisJLSBCYXR0ZXJ5IHdlYXIgY29udHJv
-bCAoYmF0dGVyeSBzdGFydCBhbmQgc3RvcCB0aHJlc2hvbGQpCisJLSBCYXR0ZXJ5IGluaGliaXQg
-Y2hhcmdlCisJLSBCYXR0ZXJ5IGZvcmNlIGRpc2NoYXJnZQogCiBBIGNvbXBhdGliaWxpdHkgdGFi
-bGUgYnkgbW9kZWwgYW5kIGZlYXR1cmUgaXMgbWFpbnRhaW5lZCBvbiB0aGUgd2ViCiBzaXRlLCBo
-dHRwOi8vaWJtLWFjcGkuc2YubmV0Ly4gSSBhcHByZWNpYXRlIGFueSBzdWNjZXNzIG9yIGZhaWx1
-cmUKQEAgLTE0ODMsMyArMTQ4Niw2OCBAQCBTeXNmcyBpbnRlcmZhY2UgY2hhbmdlbG9nOgogMHgw
-MzAwMDA6CVRoZXJtYWwgYW5kIGZhbiBzeXNmcyBhdHRyaWJ1dGVzIHdlcmUgbW92ZWQgdG8gdGhl
-IGh3bW9uCiAJCWRldmljZSBpbnN0ZWFkIG9mIGJlaW5nIGF0dGFjaGVkIHRvIHRoZSBiYWNraW5n
-IHBsYXRmb3JtCiAJCWRldmljZS4KKworCitCYXR0ZXJ5IHdlYXIgY29udHJvbCAoY2hhcmdlIGFu
-ZCBzdG9wIHRocmVzaG9sZHMpCistLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLQorCitTaW5jZSBMaW51eCA0LjE3IHRwYWNwaSBzdXBwb3J0cyBzZXR0aW5n
-IG9mIGNoYXJnZSBzdGFydCBhbmQgc3RvcCB0aHJlc2hvbGRzIG9uIGNlcnRhaW4KK0xlbm92byBU
-aGlua1BhZCBsYXB0b3BzLiBUaGlzIGZlYXR1cmUgaXMgZXhwb3NlZCB2aWEgYSBuZXcgQVBJIGZy
-b20gdGhlIEFDUEkgYmF0dGVyeSBkcml2ZXIKK2Fsc28gbmV3IGluIExpbnV4IDQuMTcuCisKK1Ro
-ZSBuZXcgYmF0dGVyeSBBUEkgYWxsb3dzIGRldmVsb3BlcnMgdG8gZXh0ZW5kZWQgdGhlIHN0YW5k
-YXJkIGF0dHJpYnV0ZXMgb2ZmZXJlZCBieSB0aGUKK2dlbmVyaWMgQUNQSSBiYXR0ZXJ5IGRyaXZl
-ciBhbmQgYWRkIGN1c3RvbSBhdHRyaWJ1dGVzIGZyb20gb3RoZXIgZHJpdmVycy4gdGhpbmtwYWRf
-YWNwaQorbGV2ZXJhZ2VzIHRoaXMgQVBJIGFuZCBleHBvc2VzIGEgZmV3IGN1c3RvbSBhdHRyaWJ1
-dGVzIGZvciB3ZWFyIGNvbnRyb2wgb2YgdGhlIGJhdHRlcnkuCisKK1dlYXIgY29udHJvbCBpcyBk
-ZXNpZ25lZCB0byBzdG9wIHRoZSBjaGFyZ2luZyBvZiB0aGUgYmF0dGVyeSBhdCBhIGNlcnRhaW4g
-dGhyZXNob2xkIGFuZCB0aHVzCitzdG9wIHRoZSBjZWxsIGZyb20gd2VhcmluZyBvdXQgZnJvbSBj
-b25zdGFudCBjaGFyZ2UgY3ljbGVzLiBTbyBpZiB5b3UgcHV0IHRoZSB0aHJlc2hvbGQgYXQKKzUw
-JSwgdGhlIGNoYXJnZSB3aWxsIG9ubHkgY2hhcmdlIHRoZSBiYXR0ZXJ5IHdoZW4gaXQgaXMgYmVs
-b3cgNTAlIGFuZCBpdCB3aWxsIHN0b3AgYXQgNTAlLgorCitBIGxvd2VyIGxldmVsIGlzIGFsc28g
-ZXhwb3NlZCwgdGh1cyBjcmVhdGluZyBhIGNoYXJnZXIgImRlYWQgem9uZSIsIGEgem9uZSB3aGVy
-ZSB0aGUgY2hhcmdlciBkb2VzCitub3RoaW5nIGFuZCB0aGUgYmF0dGVyeSBpcyBpbiBpZGxlIGFz
-IGlmIGl0IHdhcyByZW1vdmVkIGZyb20gdGhlIFRoaW5rcGFkLgorCitGb3IgZXhhbXBsZSwgdGhp
-cyBpcyB3aGF0IGhhcHBlbnMgd2hlbiB5b3Ugc2V0IHRoZSB2YWx1ZXMgdG8gNDAlIGFuZCA2NSU6
-CisKKyAgICAgICAgICAgIOKUjCAgICAgIERpc2NoYXJnaW5nICAgICAg4pSQCisJICAgIOKUgiAg
-ICAgICAgICAgICAgICAgICAgICAg4pSCCitbMCUtLS0tLS0tLTQwJSAgICAgICA2NSUtLS0tLS0t
-LS0tLTEwMCVdIEJhdHRlcnkgMQorIOKUgiAgICAgICAgICAgICAgICAgICAg4pSCCisg4pSUICAg
-ICAgQ2hhcmdpbmcgICAgICDilJgKKworV2hlbiBwbHVnZ2VkIGludG8gQUMgYW5kIGlmIHRoZSBw
-ZXJjZW50YWdlIGlzIGJldHdlZW4gNDAlIGFuZCAxMDAlIHRoZSBiYXR0ZXJ5IGlzIGluIGlkbGUu
-CisKK1RoZSBhdHRyaWJ1dGVzOgorLS0tLS0tLS0tLS0tLS0tCisKKy9zeXMvY2xhc3MvcG93ZXJf
-c3VwcGx5L0JBVHgvY2hhcmdlX3N0YXJ0X3RocmVzaG9sZCBbaW50LCA8MCwgPjk5XQorCitUaGlz
-IHNldHMgdGhlIGxvd2VyIGNoYXJnZSBzdG9wIHRocmVzaG9sZCBmb3IgdGhlIGJhdHRlcnkuIEl0
-cyBhIGludGVnZXIgYW5kIHZhbGlkIHZhbHVlcyBhcmUgZnJvbQorMCUgdG8gOTklLgorCisvc3lz
-L2NsYXNzL3Bvd2VyX3N1cHBseS9CQVR4L2NoYXJnZV9zdG9wX3RocmVzaG9sZCBbaW50LCA8MSwg
-PjEwMF0KKworVGhpcyBzZXRzIHRoZSB1cHBlciBjaGFyZ2UgdGhyZXNob2xkIGZvciB0aGUgYmF0
-dGVyeS4gSXRzIGEgaW50ZWdlciBhbmQgdGhlIHZhbHVlIHZhbHVlcyBhcmUgZnJvbQorMSUgdG8g
-MTAwJS4KKworU2V0dGluZyB0aGUgbG93ZXIgbGltaXQgdG8gMCUgYW5kIHRoZSB1cHBlciBsaW1p
-dCB0byAxMDAlIGRpc2FibGVzIHRoZSB3ZWFyIGxldmVsaW5nIGNvbnRyb2wgZmVhdHVyZS4KKwor
-CitCYXR0ZXJ5IGNoYXJnZSBpbmhpYml0aW5nCistLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQor
-CitQcmV2ZW50aW5nIHRoZSBiYXR0ZXJ5IGZyb20gY2hhcmdpbmcgaXMgYWxzbyBhdmFpbGFibGUg
-YXMgYSBtYW51YWwgb3ZlcnJpZGUgb3ZlciB0aGUgc2V0dGluZ3MuIEl0cyBleHBvc2VkIHZpYQor
-dGhlIGdlbmVyaWMgQUNQSSBkcml2ZXI6CisKKy9zeXMvY2xhc3MvcG93ZXJfc3VwcGx5L0JBVHgv
-aW5oaWJpdF9jaGFyZ2UgW2ludCwgMSwgMF0KKworU2V0dGluZyBpdCB0byAxIHByZXZlbnRzIHRo
-ZSBiYXR0ZXJ5IGZyb20gY2hhcmdpbmcuCisKK0JhdHRlcnkgZm9yY2UgZGlzY2hhcmdpbmcKKy0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCisKK1RoZXJlIGlzIGFsc28gc3VwcG9ydCBmb3IgQUMg
-b3ZlcnJpZGluZy4gVGhpcyBtZWFucyB0aGF0IHlvdSBjYW4gZm9yY2UgdGhlIGJhdHRlcnkgdG8g
-ZGlzY2hhcmdlCitldmVuIHdoZW4gQUMgaXMgYXR0YWNoZWQuIFRoaXMgaXMgYWxzbyBleHBvc2Vk
-IHZpYSB0aGUgZ2VuZXJpYyBBQ1BJIGRyaXZlcjoKKworL3N5cy9jbGFzcy9wb3dlcl9zdXBwbHkv
-QkFUeC9mb3JjZV9kaXNjaGFyZ2UgW2ludCwgMSwgMF0KKworU2V0dGluZyBpdCB0byAxIGZvcmNl
-cyB0aGUgYmF0dGVyeSB0byBkaXNjaGFyZ2Ugb24gQUMuCi0tIAoyLjE3LjAKCgotLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0KQ2hlY2sgb3V0IHRoZSB2aWJyYW50IHRlY2ggY29tbXVuaXR5IG9uIG9uZSBv
-ZiB0aGUgd29ybGQncyBtb3N0CmVuZ2FnaW5nIHRlY2ggc2l0ZXMsIFNsYXNoZG90Lm9yZyEgaHR0
-cDovL3NkbS5saW5rL3NsYXNoZG90Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fCmlibS1hY3BpLWRldmVsIG1haWxpbmcgbGlzdAppYm0tYWNwaS1kZXZlbEBs
-aXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMv
-bGlzdGluZm8vaWJtLWFjcGktZGV2ZWwK
+Thermal core tries to read temperature during sensor registering in
+thermal_zone_of_sensor_register().  In that time Exynos TMU driver and
+hardware are not yet initialized.  Commit 0eb875d88aaa ("thermal:
+exynos: Reading temperature makes sense only when TMU is turned on")
+added a boolean flag to prevent reading bogus temperature in such
+case but it exposed warning message during boot:
+	[    3.864913] thermal thermal_zone0: failed to read out thermal zone (-22)
+
+Return EAGAIN in such case to skip omitting such message because it
+might mislead user.
+
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 3b20309789e3..c24969d740d1 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -666,8 +666,14 @@ static int exynos_get_temp(void *p, int *temp)
+ 	struct exynos_tmu_data *data = p;
+ 	int value, ret = 0;
+ 
+-	if (!data || !data->tmu_read || !data->enabled)
++	if (!data || !data->tmu_read)
+ 		return -EINVAL;
++	else if (!data->enabled)
++		/*
++		 * Called too early, probably
++		 * from thermal_zone_of_sensor_register().
++		 */
++		return -EAGAIN;
+ 
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
+-- 
+2.14.1
