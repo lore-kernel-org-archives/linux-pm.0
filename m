@@ -1,145 +1,78 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH V6] cpufreq: intel_pstate: allow trace in passive mode
-Date: Mon, 14 May 2018 08:35:49 -0700
-Message-ID: <20180514153549.33292-1-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, doug.smythies@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dsmythies@telus.net, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Henrique de Moraes Holschuh <hmh-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>
+Subject: Re: [PATCH 1/3] thinkpad_acpi: add support for
+ inhibit_charge
+Date: Mon, 14 May 2018 12:41:02 -0300
+Message-ID: <20180514154102.h5ptzizvhwqgobiz@khazad-dum.debian.net>
+References: <20180513152937.GA5072@thinkpad>
+ <20180514094620.wfoom4mwwyqb7qe5@localhost>
+ <20180514113928.dnsxjqov7l6rvorb@khazad-dum.debian.net>
+ <20180514134041.GC6417@thinkpad>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180514134041.GC6417@thinkpad>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
+List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Doug Smythies <doug.smythies@gmail.com>
-
-Allow use of the trace_pstate_sample trace function
-when the intel_pstate driver is in passive mode.
-Since the core_busy and scaled_busy fields are not
-used, and it might be desirable to know which path
-through the driver was used, either intel_cpufreq_target
-or intel_cpufreq_fast_switch, re-task the core_busy
-field as a flag indicator.
-
-The user can then use the intel_pstate_tracer.py utility
-to summarize and plot the trace.
-
-Note: The core_busy feild still goes by that name
-in include/trace/events/power.h and within the
-intel_pstate_tracer.py script and csv file headers,
-but it is graphed as "performance", and called
-core_avg_perf now in the intel_pstate driver.
-
-Sometimes, in passive mode, the driver is not called for
-many tens or even hundreds of seconds. The user
-needs to understand, and not be confused by, this limitation.
-
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-
-V6:
-    Just added new line after return
-
-V5: Changes as per Rafael J. Wysocki feedback.
-    See: https://lkml.org/lkml/2018/1/7/270
-
-V4: Only execute the trace specific overhead code if trace
-    is enabled. Suggested by Srinivas Pandruvada.
-
-V3: Move largely duplicate code to a subroutine.
-    Suggested by Rafael J. Wysocki.
-
-V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
-
- drivers/cpufreq/intel_pstate.c | 46 ++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 44 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 17e566afbb41..08960a55eb27 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1939,13 +1939,51 @@ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
-+/* Use of trace in passive mode:
-+ *
-+ * In passive mode the trace core_busy field (also known as the
-+ * performance field, and lablelled as such on the graphs; also known as
-+ * core_avg_perf) is not needed and so is re-assigned to indicate if the
-+ * driver call was via the normal or fast switch path. Various graphs
-+ * output from the intel_pstate_tracer.py utility that include core_busy
-+ * (or performance or core_avg_perf) have a fixed y-axis from 0 to 100%,
-+ * so we use 10 to indicate the the normal path through the driver, and
-+ * 90 to indicate the fast switch path through the driver.
-+ * The scaled_busy field is not used, and is set to 0.
-+ */
-+
-+#define	INTEL_PSTATE_TRACE_TARGET 10
-+#define	INTEL_PSTATE_TRACE_FAST_SWITCH 90
-+
-+static void intel_cpufreq_trace(struct cpudata *cpu, unsigned int trace_type, int old_pstate)
-+{
-+	struct sample *sample;
-+
-+	if (!trace_pstate_sample_enabled())
-+		return;
-+
-+	if (!intel_pstate_sample(cpu, ktime_get()))
-+		return;
-+
-+	sample = &cpu->sample;
-+	trace_pstate_sample(trace_type,
-+		0,
-+		old_pstate,
-+		cpu->pstate.current_pstate,
-+		sample->mperf,
-+		sample->aperf,
-+		sample->tsc,
-+		get_avg_frequency(cpu),
-+		fp_toint(cpu->iowait_boost * 100));
-+}
-+
- static int intel_cpufreq_target(struct cpufreq_policy *policy,
- 				unsigned int target_freq,
- 				unsigned int relation)
- {
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
- 	struct cpufreq_freqs freqs;
--	int target_pstate;
-+	int target_pstate, old_pstate;
- 
- 	update_turbo_state();
- 
-@@ -1965,12 +2003,14 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
- 		break;
- 	}
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+	old_pstate = cpu->pstate.current_pstate;
- 	if (target_pstate != cpu->pstate.current_pstate) {
- 		cpu->pstate.current_pstate = target_pstate;
- 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
- 			      pstate_funcs.get_val(cpu, target_pstate));
- 	}
- 	freqs.new = target_pstate * cpu->pstate.scaling;
-+	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_TARGET, old_pstate);
- 	cpufreq_freq_transition_end(policy, &freqs, false);
- 
- 	return 0;
-@@ -1980,13 +2020,15 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
--	int target_pstate;
-+	int target_pstate, old_pstate;
- 
- 	update_turbo_state();
- 
- 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+	old_pstate = cpu->pstate.current_pstate;
- 	intel_pstate_update_pstate(cpu, target_pstate);
-+	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH, old_pstate);
- 	return target_pstate * cpu->pstate.scaling;
- }
- 
--- 
-2.13.6
+T24gTW9uLCAxNCBNYXkgMjAxOCwgT2duamVuIEdhbGnEhyB3cm90ZToKPiBPbiBNb24sIE1heSAx
+NCwgMjAxOCBhdCAwODozOToyOEFNIC0wMzAwLCBIZW5yaXF1ZSBkZSBNb3JhZXMgSG9sc2NodWgg
+d3JvdGU6Cj4gPiBPbiBNb24sIDE0IE1heSAyMDE4LCBDaHJpc3RvcGggQsO2aG13YWxkZXIgd3Jv
+dGU6Cj4gPiA+ID4gKwljYXNlIElOSElCSVRfQ0hBUkdFOgo+ID4gPiA+ICsJCWlmIEFDUElfRkFJ
+TFVSRSh0cGFjcGlfYmF0dGVyeV9hY3BpX2V2YWwoR0VUX0lOSElCSVQsIHJldCwgYmF0dGVyeSkp
+Cj4gPiA+ID4gKwkJCXJldHVybiAtRU5PREVWOwo+ID4gPiA+ICsKPiA+ID4gPiArCQkvKiBUaGUg
+aW5oaWJpdCBjaGFyZ2Ugc3RhdHVzIGlzIGluIHRoZSBmaXJzdCBiaXQgKi8KPiA+ID4gPiArCQkq
+cmV0ID0gKnJldCAmIDB4MDE7Cj4gPiA+ID4gKwkJcmV0dXJuIDA7Cj4gPiAKPiA+IERvIHdlIGtu
+b3cgd2hhdCBpcyBpbiB0aGUgb3RoZXIgYml0cz8gIElmIHNvLCBwbGVhc2UgZG9jdW1lbnQgdGhl
+IEFDUEkKPiA+IG1ldGhvZCB1c2luZyBhIGNvbW1lbnQgc29tZXdoZXJlIGluIHRoZSBkcml2ZXIg
+Y29kZSwgbGlrZSB5b3UgZGlkIGZvcgo+ID4gU0VUX0lOSElCSVQuCj4gCj4gSSBnb3QgdGhlIHNw
+ZWNzIGZvciB0aGUgbWV0aG9kcyBpbiBhIExlbm92byBkb2MgSSB3YXMgdG9sZCBub3QgdG8gc2hh
+cmUKPiBhcm91bmQsIGluY2x1ZGluZyBpbmZvcm1hdGlvbiBpbiBpdC4KCkhtbSwgb2suIFBsZWFz
+ZSBzZW5kIHRvIG1lIGluIHByaXZhdGUgdGhlIGVtYWlsIGFkZHJlc3Mgb2YgdGhlIHBlcnNvbiBJ
+CnNob3VsZCBhc2sgZm9yIHRoZSBkb2N1bWVudGF0aW9uIHNpbmNlIHlvdSBjYW5ub3QgZGlzdHJp
+YnV0ZSB0aGUKZG9jdW1lbnRhdGlvbiBpdHNlbGYuICBUaGlzIGlzbid0IHRoZSBmaXJzdCB0aW1l
+IGl0IGhhcHBlbmVkLgoKVGhlIHVzdWFsIHJ1bGUgSSBmb2xsb3cgaXM6IGRvY3VtZW50IHdoYXQg
+aXMgZWl0aGVyIGFscmVhZHkgYmVpbmcgdXNlZAppbiB0aGUgZHJpdmVyIG9yIHdoaWNoIHZlcnkg
+bGlrZWx5IHdpbCBoYXZlIHRvIGJlIHVzZWQgaW4gdGhlIGRyaXZlci4KVW5yZWxhdGVkIHN0dWZm
+IChlLmcuIGZvciBzb21lIHVucmVsYXRlZCBmdW5jdGlvbmFsaXR5IHRoZSBkcml2ZXIgZG9lcwpu
+b3QgaW1wbGVtZW50KSBkb2Vzbid0IGhhdmUgdG8gYmUgZG9jdW1lbnRlZC4KCkluIHRoaXMgY2Fz
+ZSwgd2UgbmVlZCB0byBhdCBsZWFzdCBrbm93IHdoYXQgYml0cyBuZWVkIHRvIGJlIFJNVywgb3IK
+YWx3YXlzLXplcm8gd2hlbiBjYWxsaW5nIFNFVF8qIG1ldGhvZHMuLi4KCj4gU28gd2hhdCBkbyB5
+b3UgcGVvcGxlIHdhbnQgbWUgdG8gZG8/IFNob3VsZCBJIGZpeCB0aGUgY29tbWVudHMgb3IgbGVh
+dmUKPiBhcy1pcz8KClNpbmNlIHRoZSBzdWJzeXN0ZW0gbWFpbnRhaW5lciBzYWlkIGl0IHNob3Vs
+ZCBiZSBrZXB0IGFzLWlzLCBhbmQgSSBkb24ndAptdWNoIGNhcmUsIHBsZWFzZSBrZWVwIGl0IGFz
+LWlzLiAgSXQgd29uJ3QgbWF0dGVyIGZvciBteSBkcml2ZXIKbWFpbnRhaW5lciBhY2sgOi0pCgo+
+ID4gPiA+ICsJY2FzZSBJTkhJQklUX0NIQVJHRToKPiA+ID4gPiArCQlpZiAoIWJhdHRlcnlfaW5m
+by5iYXR0ZXJpZXNbYmF0dGVyeV0uaW5oaWJpdF9zdXBwb3J0KQo+ID4gPiA+ICsJCQlyZXR1cm4g
+LUVOT0RFVjsKPiA+ID4gPiArCQkvKiBUaGUgb25seSB2YWxpZCB2YWx1ZXMgYXJlIDEgYW5kIDAg
+Ki8KPiA+ID4gPiArCQlpZiAodmFsdWUgIT0gMCAmJiB2YWx1ZSAhPSAxKQo+ID4gPiAKPiA+ID4g
+SSdtIG5vdCBzdXJlLCBidXQgbWF5YmUgYGlmICh2YWx1ZSA8IDIpYCBpcyBiZXR0ZXIgaGVyZT8K
+PiA+IAo+ID4gSW5kZWVkLi4uIHdpdGggYSBjb21tZW50IHRoYXQgc2F5cyAwID0gbWFpbiBiYXR0
+ZXJ5LCAxID0gZXh0cmEvZG9jawo+ID4gYmF0dGVyeSBvciBzb21ldGhpbmcuCj4gCj4gVGhhdCBz
+ZWVtcyBsaWtlIG9iZnVzY2F0aW9uIHRvIG1lLCB0aGlzIHdheSBpdHMgY2xlYXIgdGhhdCBpdCBt
+dXN0IGJlCj4gZWl0aGVyIDEgb3IgMC4gQW5kIGluaGliaXRpbmcgaXMgc2V0IHBlci1iYXR0ZXJ5
+IHNvIDEgaXMgb24gYW5kIG5vdAo+IGJhdHRlcnkgMS4KCkhtbSwgeWVzIEkgZ290IHRoYXQgd3Jv
+bmcuICJiYXR0ZXJ5IiBzaG91bGQgdXNlIDAgPD0gYmF0dGVyeSA8MiBmb3IKY2hlY2tpbmcgKGlm
+IG5lZWRlZCksIGJ1dCB2YWx1ZSBjYW4gb25seSBiZSAwIG9yIDEuCgpJJ2QgcGVyc29uYWxseSBo
+YXZlIHVzZWQgYSBiaXRtYXNrIHRlc3QgZm9yICJ2YWx1ZSIsIGVuc3VyaW5nIGFsbCBvdGhlcgpi
+aXRzIGFyZSB6ZXJvLCB0aG91Z2guICBCdXQgdGhhdCdzIGp1c3QgYSBtYXR0ZXIgb2YgdGFzdGUg
+YW5kIEkgZG9uJ3QKdGhpbmsgYW55IG9mIHRoZSBjaG9pY2VzIChpbmNsdWRpbmcgdGhlIG9uZSB5
+b3UgdXNlZCkgYXJlICJiYWQgdGFzdGUiLApzbyBhbGwgb2YgdGhlbSBhcmUgZmluZSBhcyBmYXIg
+YXMgSSBhbSBjb25jZXJuZWQuCgotLSAKICBIZW5yaXF1ZSBIb2xzY2h1aAoKLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tCkNoZWNrIG91dCB0aGUgdmlicmFudCB0ZWNoIGNvbW11bml0eSBvbiBvbmUgb2Yg
+dGhlIHdvcmxkJ3MgbW9zdAplbmdhZ2luZyB0ZWNoIHNpdGVzLCBTbGFzaGRvdC5vcmchIGh0dHA6
+Ly9zZG0ubGluay9zbGFzaGRvdApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwppYm0tYWNwaS1kZXZlbCBtYWlsaW5nIGxpc3QKaWJtLWFjcGktZGV2ZWxAbGlz
+dHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xp
+c3RpbmZvL2libS1hY3BpLWRldmVsCg==
