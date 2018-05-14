@@ -1,109 +1,33 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Subject: [PATCH] PM / core: refactor PM_OPS initializers
-Date: Mon, 14 May 2018 10:21:46 +0200
-Message-ID: <20180514082146.4318-1-a.hajda@samsung.com>
-References: <CGME20180514082201eucas1p1549ae992aeeef0906a2cccb5da96533f@eucas1p1.samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/3] thermal: imx: remove cpufreq cooling registration
+Date: Mon, 14 May 2018 10:34:55 +0200
+Message-ID: <20180514083455.GE29062@mai>
+References: <1526285359-17978-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1526285359-17978-1-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Andrzej Hajda <a.hajda@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Arnd Bergmann <arnd@arndb.de>
+To: Anson Huang <Anson.Huang@nxp.com>
+Cc: shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, Linux-imx@nxp.com, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-With current implementation of PM_OPS initializers users should annotate
-all PM callbacks with __maybe_unused attribute to prevent compiler from
-complaining in case respective option is not enabled. Using ternary
-operator with IS_ENABLED(symbol) as a condition allows to avoid marking
-these functions with __maybe_unused.
-Solution was tested successfully with multiple versions of gcc since
-4.9.4 up to 7.2.1. No functional changes has been observed and callbacks
-were compiled out if not used, as before.
+On Mon, May 14, 2018 at 04:09:17PM +0800, Anson Huang wrote:
+> This patch removes cpufreq cooling registration in
+> thermal .probe function, cpufreq cooling should be
+> done in cpufreq driver when it is ready.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
 
-Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
----
- include/linux/pm.h | 61 ++++++++++++++++++----------------------------
- 1 file changed, 24 insertions(+), 37 deletions(-)
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e723b78d8357..59f333922c15 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -313,50 +313,37 @@ struct dev_pm_ops {
- 	int (*runtime_idle)(struct device *dev);
- };
- 
--#ifdef CONFIG_PM_SLEEP
-+#define PM_SLEEP_PTR(ptr) (IS_ENABLED(CONFIG_PM_SLEEP) ? (ptr) : NULL)
-+#define PM_PTR(ptr) (IS_ENABLED(CONFIG_PM) ? (ptr) : NULL)
-+
- #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
--	.suspend = suspend_fn, \
--	.resume = resume_fn, \
--	.freeze = suspend_fn, \
--	.thaw = resume_fn, \
--	.poweroff = suspend_fn, \
--	.restore = resume_fn,
--#else
--#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
--#endif
-+	.suspend = PM_SLEEP_PTR(suspend_fn), \
-+	.resume = PM_SLEEP_PTR(resume_fn), \
-+	.freeze = PM_SLEEP_PTR(suspend_fn), \
-+	.thaw = PM_SLEEP_PTR(resume_fn), \
-+	.poweroff = PM_SLEEP_PTR(suspend_fn), \
-+	.restore = PM_SLEEP_PTR(resume_fn),
- 
--#ifdef CONFIG_PM_SLEEP
- #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
--	.suspend_late = suspend_fn, \
--	.resume_early = resume_fn, \
--	.freeze_late = suspend_fn, \
--	.thaw_early = resume_fn, \
--	.poweroff_late = suspend_fn, \
--	.restore_early = resume_fn,
--#else
--#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
--#endif
-+	.suspend_late = PM_SLEEP_PTR(suspend_fn), \
-+	.resume_early = PM_SLEEP_PTR(resume_fn), \
-+	.freeze_late = PM_SLEEP_PTR(suspend_fn), \
-+	.thaw_early = PM_SLEEP_PTR(resume_fn), \
-+	.poweroff_late = PM_SLEEP_PTR(suspend_fn), \
-+	.restore_early = PM_SLEEP_PTR(resume_fn),
- 
--#ifdef CONFIG_PM_SLEEP
- #define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
--	.suspend_noirq = suspend_fn, \
--	.resume_noirq = resume_fn, \
--	.freeze_noirq = suspend_fn, \
--	.thaw_noirq = resume_fn, \
--	.poweroff_noirq = suspend_fn, \
--	.restore_noirq = resume_fn,
--#else
--#define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
--#endif
-+	.suspend_noirq = PM_SLEEP_PTR(suspend_fn), \
-+	.resume_noirq = PM_SLEEP_PTR(resume_fn), \
-+	.freeze_noirq = PM_SLEEP_PTR(suspend_fn), \
-+	.thaw_noirq = PM_SLEEP_PTR(resume_fn), \
-+	.poweroff_noirq = PM_SLEEP_PTR(suspend_fn), \
-+	.restore_noirq = PM_SLEEP_PTR(resume_fn),
- 
--#ifdef CONFIG_PM
- #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
--	.runtime_suspend = suspend_fn, \
--	.runtime_resume = resume_fn, \
--	.runtime_idle = idle_fn,
--#else
--#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
--#endif
-+	.runtime_suspend = PM_PTR(suspend_fn), \
-+	.runtime_resume = PM_PTR(resume_fn), \
-+	.runtime_idle = PM_PTR(idle_fn),
- 
- /*
-  * Use this if you want to use the same suspend and resume callbacks for suspend
 -- 
-2.17.0
+
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
