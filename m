@@ -1,49 +1,74 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Don't return -EEXIST at attach when PM domain exists
-Date: Mon, 14 May 2018 16:52:37 +0200
-Message-ID: <1526309557-7995-1-git-send-email-ulf.hansson@linaro.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 07/11] driver core: Respect all error codes from
+ dev_pm_domain_attach()
+Date: Mon, 14 May 2018 08:19:07 -0700
+Message-ID: <20180514151907.GK98604@atomide.com>
+References: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
+ <1524732790-2234-8-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1524732790-2234-8-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "linux-samsung-soc @ vger . kernel . org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Vinod Koul <vinod.koul@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Russell King <linux@armlinux.org.uk>, Mark Brown <broonie@kernel.org>, linux-arm-kernel@lists.infradead.org, Sanyog Kale <sanyog.r.kale@intel.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-As dev_pm_domain_attach() isn't the only way to assign PM domain pointers
-to devices, clearly we must allow a device to have the pointer already
-being assigned. For this reason, return 0 instead of -EEXIST.
+Ulf,
 
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Tested-by: Tested-by: Krzysztof Kozlowski <krzk@kernel.org>
----
+* Ulf Hansson <ulf.hansson@linaro.org> [180426 09:01]:
+> The limitation of being able to check only for -EPROBE_DEFER from
+> dev_pm_domain_attach() has been removed. Hence let's respect all error
+> codes and bail out accordingly.
+> 
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/platform.c | 17 ++++++++---------
+>  1 file changed, 8 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index 8075ddc..9460139 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -572,17 +572,16 @@ static int platform_drv_probe(struct device *_dev)
+>  		return ret;
+>  
+>  	ret = dev_pm_domain_attach(_dev, true);
+> -	if (ret != -EPROBE_DEFER) {
+> -		if (drv->probe) {
+> -			ret = drv->probe(dev);
+> -			if (ret)
+> -				dev_pm_domain_detach(_dev, true);
+> -		} else {
+> -			/* don't fail if just dev_pm_domain_attach failed */
+> -			ret = 0;
+> -		}
+> +	if (ret)
+> +		goto out;
+> +
+> +	if (drv->probe) {
+> +		ret = drv->probe(dev);
+> +		if (ret)
+> +			dev_pm_domain_detach(_dev, true);
+>  	}
+>  
+> +out:
+>  	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
+>  		dev_warn(_dev, "probe deferral not supported\n");
+>  		ret = -ENXIO;
+> -- 
 
-Krzysztof reported problems for an Exynos5 board, where some devices are added
-to their PM domains (genpd) via calling of_genpd_add_device(). As also pointed
-out by Sylvester, this leads to probe failure when dev_pm_domain_attach()
-returns -EXISTS.
+Looks like this causes Linux next to not boot for me with device
+probes failing with error -17. So that's at least omaps, looks
+like kernelci has others failing too.
 
-Rafael, potentially this change could be squashed with the recently queued
-patch: "PM / Domains: Check for existing PM domain in dev_pm_domain_attach()",
-but perhaps its too late for that and the fix is better applied on top!?
+Reverting for 8c123c14bbba ("driver core: Respect all error codes from
+dev_pm_domain_attach()") fixes the issue for me.
 
----
- drivers/base/power/common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Sounds like something is missing, any ideas?
 
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index 5e4b481..390868c 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -106,7 +106,7 @@ int dev_pm_domain_attach(struct device *dev, bool power_on)
- 	int ret;
- 
- 	if (dev->pm_domain)
--		return -EEXIST;
-+		return 0;
- 
- 	ret = acpi_dev_pm_attach(dev, power_on);
- 	if (!ret)
--- 
-2.7.4
+Regards,
+
+Tony
