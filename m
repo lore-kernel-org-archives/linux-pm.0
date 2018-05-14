@@ -1,7 +1,7 @@
 From: Ilia Lin <ilialin@codeaurora.org>
-Subject: [PATCH v6 04/14] clk: qcom: Add DT bindings for CPU clock driver for msm8996
-Date: Mon, 14 May 2018 16:11:50 +0300
-Message-ID: <1526303520-5843-5-git-send-email-ilialin@codeaurora.org>
+Subject: [PATCH v6 06/14] clk: qcom: cpu-8996: Add support to switch below 600Mhz
+Date: Mon, 14 May 2018 16:11:52 +0300
+Message-ID: <1526303520-5843-7-git-send-email-ilialin@codeaurora.org>
 References: <1526303520-5843-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1526303520-5843-1-git-send-email-ilialin@codeaurora.org>
@@ -10,73 +10,121 @@ To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, ilialin@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Each of the CPU clusters (Power and Perf) on msm8996 are
-clocked via 2 PLLs, a primary and alternate. There are also
-2 Mux'es, a primary and secondary all connected together
-as shown below
+From: Rajendra Nayak <rnayak@codeaurora.org>
 
-                             +-------+
-              XO             |       |
-          +------------------>0      |
-                             |       |
-                   PLL/2     | SMUX  +----+
-                     +------->1      |    |
-                     |       |       |    |
-                     |       +-------+    |    +-------+
-                     |                    +---->0      |
-                     |                         |       |
-+---------------+    |             +----------->1      | CPU clk
-|Primary PLL    +----+ PLL_EARLY   |           |       +------>
-|               +------+-----------+    +------>2 PMUX |
-+---------------+      |                |      |       |
-                       |   +------+     |   +-->3      |
-                       +--^+  ACD +-----+   |  +-------+
-+---------------+          +------+         |
-|Alt PLL        |                           |
-|               +---------------------------+
-+---------------+         PLL_EARLY
+The CPU clock controller's primary PLL operates on a single VCO range,
+between 600MHz and 3GHz. However the CPUs do support OPPs with
+frequencies between 300MHz and 600MHz. In order to support running the
+CPUs at those frequencies we end up having to lock the PLL at twice the
+rate and drive the CPU clk via the PLL/2 output and SMUX.
 
-The primary PLL is what drives the CPU clk, except for times
-when we are reprogramming the PLL itself (for rate changes) when
-we temporarily switch to an alternate PLL. A subsequent patch adds
-support to switch between primary and alternate PLL during rate
-changes.
+So for frequencies above 600MHz we follow the following path
+ Primary PLL --> PLL_EARLY --> PMUX(1) --> CPU clk
+and for frequencies between 300MHz and 600MHz we follow
+ Primary PLL --> PLL/2 --> SMUX(1) --> PMUX(0) --> CPU clk
 
-The primary PLL operates on a single VCO range, between 600MHz
-and 3GHz. However the CPUs do support OPPs with frequencies
-between 300MHz and 600MHz. In order to support running the CPUs
-at those frequencies we end up having to lock the PLL at twice
-the rate and drive the CPU clk via the PLL/2 output and SMUX.
-
+Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- Documentation/devicetree/bindings/clock/qcom,kryocc.txt | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/qcom,kryocc.txt
 
-diff --git a/Documentation/devicetree/bindings/clock/qcom,kryocc.txt b/Documentation/devicetree/bindings/clock/qcom,kryocc.txt
-new file mode 100644
-index 0000000..8458783
---- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/qcom,kryocc.txt
-@@ -0,0 +1,17 @@
-+Qualcomm CPUSS clock controller for Kryo CPUs
-+----------------------------------------------------
+Conflicts:
+	drivers/clk/qcom/clk-cpu-8996.c
+---
+ drivers/clk/qcom/clk-cpu-8996.c | 25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/clk/qcom/clk-cpu-8996.c b/drivers/clk/qcom/clk-cpu-8996.c
+index 390b369..3ea0446 100644
+--- a/drivers/clk/qcom/clk-cpu-8996.c
++++ b/drivers/clk/qcom/clk-cpu-8996.c
+@@ -77,6 +77,8 @@ enum _pmux_input {
+ 	NUM_OF_PMUX_INPUTS
+ };
+ 
++#define DIV_2_THRESHOLD		600000000
 +
-+Required properties :
-+- compatible : shall contain only one of the following:
+ static const u8 prim_pll_regs[PLL_OFF_MAX_REGS] = {
+        [PLL_OFF_L_VAL] = 0x04,
+        [PLL_OFF_ALPHA_VAL] = 0x08,
+@@ -104,10 +106,11 @@ enum _pmux_input {
+ 
+ static const struct alpha_pll_config hfpll_config = {
+ 	.l = 60,
+-	.config_ctl_val = 0x200d4828,
++	.config_ctl_val = 0x200d4aa8,
+ 	.config_ctl_hi_val = 0x006,
+ 	.pre_div_mask = BIT(12),
+ 	.post_div_mask = 0x3 << 8,
++	.post_div_val = 0x1 << 8,
+ 	.main_output_mask = BIT(0),
+ 	.early_output_mask = BIT(3),
+ };
+@@ -149,7 +152,7 @@ enum _pmux_input {
+ 	.vco_mask = 0x3 << 20,
+ 	.config_ctl_val = 0x4001051b,
+ 	.post_div_mask = 0x3 << 8,
+-	.post_div_val = 0x1,
++	.post_div_val = 0x1 << 8,
+ 	.main_output_mask = BIT(0),
+ 	.early_output_mask = BIT(3),
+ };
+@@ -190,6 +193,7 @@ struct clk_cpu_8996_mux {
+ 	u8	width;
+ 	struct notifier_block nb;
+ 	struct clk_hw	*pll;
++	struct clk_hw	*pll_div_2;
+ 	struct clk_regmap clkr;
+ };
+ 
+@@ -235,6 +239,13 @@ static int clk_cpu_8996_mux_set_parent(struct clk_hw *hw, u8 index)
+ 	struct clk_cpu_8996_mux *cpuclk = to_clk_cpu_8996_mux_hw(hw);
+ 	struct clk_hw *parent = cpuclk->pll;
+ 
++	if (cpuclk->pll_div_2 && req->rate < DIV_2_THRESHOLD) {
++		if (req->rate < (DIV_2_THRESHOLD / 2))
++			return -EINVAL;
 +
-+			"qcom,msm8996-apcc"
++		parent = cpuclk->pll_div_2;
++	}
 +
-+- reg : shall contain base register location and length
-+- #clock-cells : shall contain 1
-+
-+Example:
-+	kryocc: clock-controller@6400000 {
-+		compatible = "qcom,msm8996-apcc";
-+		reg = <0x6400000 0x90000>;
-+		#clock-cells = <1>;
-+	};
+ 	req->best_parent_rate = clk_hw_round_rate(parent, req->rate);
+ 	req->best_parent_hw = parent;
+ 
+@@ -246,13 +257,19 @@ int cpu_clk_notifier_cb(struct notifier_block *nb, unsigned long event,
+ {
+ 	int ret;
+ 	struct clk_cpu_8996_mux *cpuclk = to_clk_cpu_8996_mux_nb(nb);
++	struct clk_notifier_data *cnd = data;
+ 
+ 	switch (event) {
+ 	case PRE_RATE_CHANGE:
+ 		ret = clk_cpu_8996_mux_set_parent(&cpuclk->clkr.hw, ALT_INDEX);
+ 		break;
+ 	case POST_RATE_CHANGE:
+-		ret = clk_cpu_8996_mux_set_parent(&cpuclk->clkr.hw, PLL_INDEX);
++		if (cnd->new_rate < DIV_2_THRESHOLD)
++			ret = clk_cpu_8996_mux_set_parent(&cpuclk->clkr.hw,
++							  DIV_2_INDEX);
++		else
++			ret = clk_cpu_8996_mux_set_parent(&cpuclk->clkr.hw,
++							  PLL_INDEX);
+ 		break;
+ 	default:
+ 		ret = 0;
+@@ -304,6 +321,7 @@ int cpu_clk_notifier_cb(struct notifier_block *nb, unsigned long event,
+ 	.shift = 0,
+ 	.width = 2,
+ 	.pll = &pwrcl_pll.clkr.hw,
++	.pll_div_2 = &pwrcl_smux.clkr.hw,
+ 	.nb.notifier_call = cpu_clk_notifier_cb,
+ 	.clkr.hw.init = &(struct clk_init_data) {
+ 		.name = "pwrcl_pmux",
+@@ -324,6 +342,7 @@ int cpu_clk_notifier_cb(struct notifier_block *nb, unsigned long event,
+ 	.shift = 0,
+ 	.width = 2,
+ 	.pll = &perfcl_pll.clkr.hw,
++	.pll_div_2 = &perfcl_smux.clkr.hw,
+ 	.nb.notifier_call = cpu_clk_notifier_cb,
+ 	.clkr.hw.init = &(struct clk_init_data) {
+ 		.name = "perfcl_pmux",
 -- 
 1.9.1
