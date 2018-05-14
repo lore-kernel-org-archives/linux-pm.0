@@ -1,121 +1,26 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Subject: Re: [PATCH] PM / core: refactor PM_OPS initializers
-Date: Mon, 14 May 2018 14:07:54 +0200
-Message-ID: <9e1f4be2-436e-0d60-eb28-44c229a3178c@samsung.com>
-References: <CGME20180514082201eucas1p1549ae992aeeef0906a2cccb5da96533f@eucas1p1.samsung.com>
-        <20180514082146.4318-1-a.hajda@samsung.com>
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Re: [PATCH -resend 01/27] linkage: new macros for assembler symbols
+Date: Mon, 14 May 2018 14:54:43 +0200
+Message-ID: <09b38f5b-6dfb-c12f-5d77-249c4c9f484a@suse.cz>
+References: <20180510080644.19752-1-jslaby@suse.cz>
+ <20180510080644.19752-2-jslaby@suse.cz>
+ <e5e17ecd-0e74-7766-e730-333004ada199@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180514082146.4318-1-a.hajda@samsung.com>
-Content-Language: en-US
+In-Reply-To: <e5e17ecd-0e74-7766-e730-333004ada199@infradead.org>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Arnd Bergmann <arnd@arndb.de>
+To: Randy Dunlap <rdunlap@infradead.org>, mingo@redhat.com
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, hpa@zytor.com, Ingo Molnar <mingo@kernel.org>, jpoimboe@redhat.com, Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, xen-devel@lists.xenproject.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14.05.2018 10:21, Andrzej Hajda wrote:
-> With current implementation of PM_OPS initializers users should annotate
-> all PM callbacks with __maybe_unused attribute to prevent compiler from
-> complaining in case respective option is not enabled. Using ternary
-> operator with IS_ENABLED(symbol) as a condition allows to avoid marking
-> these functions with __maybe_unused.
-> Solution was tested successfully with multiple versions of gcc since
-> 4.9.4 up to 7.2.1. No functional changes has been observed and callbacks
-> were compiled out if not used, as before.
+On 05/14/2018, 05:04 AM, Randy Dunlap wrote:
+> HTH.
 
-The kernel does not compile with the patch applied if the driver defines
-PM callback inside "#ifdef CONFIG_PM(_SLEEP)" - initializers assume that
-callbacks are defined, even if they are not used.
-So if the idea is OK I should figure it out how to make proper
-transition, any ideas welcome :)
+Definitely, thanks for proof-reading.
 
-Regards
-Andrzej
-
->
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
-> ---
->  include/linux/pm.h | 61 ++++++++++++++++++----------------------------
->  1 file changed, 24 insertions(+), 37 deletions(-)
->
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index e723b78d8357..59f333922c15 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -313,50 +313,37 @@ struct dev_pm_ops {
->  	int (*runtime_idle)(struct device *dev);
->  };
->  
-> -#ifdef CONFIG_PM_SLEEP
-> +#define PM_SLEEP_PTR(ptr) (IS_ENABLED(CONFIG_PM_SLEEP) ? (ptr) : NULL)
-> +#define PM_PTR(ptr) (IS_ENABLED(CONFIG_PM) ? (ptr) : NULL)
-> +
->  #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-> -	.suspend = suspend_fn, \
-> -	.resume = resume_fn, \
-> -	.freeze = suspend_fn, \
-> -	.thaw = resume_fn, \
-> -	.poweroff = suspend_fn, \
-> -	.restore = resume_fn,
-> -#else
-> -#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-> -#endif
-> +	.suspend = PM_SLEEP_PTR(suspend_fn), \
-> +	.resume = PM_SLEEP_PTR(resume_fn), \
-> +	.freeze = PM_SLEEP_PTR(suspend_fn), \
-> +	.thaw = PM_SLEEP_PTR(resume_fn), \
-> +	.poweroff = PM_SLEEP_PTR(suspend_fn), \
-> +	.restore = PM_SLEEP_PTR(resume_fn),
->  
-> -#ifdef CONFIG_PM_SLEEP
->  #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-> -	.suspend_late = suspend_fn, \
-> -	.resume_early = resume_fn, \
-> -	.freeze_late = suspend_fn, \
-> -	.thaw_early = resume_fn, \
-> -	.poweroff_late = suspend_fn, \
-> -	.restore_early = resume_fn,
-> -#else
-> -#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-> -#endif
-> +	.suspend_late = PM_SLEEP_PTR(suspend_fn), \
-> +	.resume_early = PM_SLEEP_PTR(resume_fn), \
-> +	.freeze_late = PM_SLEEP_PTR(suspend_fn), \
-> +	.thaw_early = PM_SLEEP_PTR(resume_fn), \
-> +	.poweroff_late = PM_SLEEP_PTR(suspend_fn), \
-> +	.restore_early = PM_SLEEP_PTR(resume_fn),
->  
-> -#ifdef CONFIG_PM_SLEEP
->  #define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-> -	.suspend_noirq = suspend_fn, \
-> -	.resume_noirq = resume_fn, \
-> -	.freeze_noirq = suspend_fn, \
-> -	.thaw_noirq = resume_fn, \
-> -	.poweroff_noirq = suspend_fn, \
-> -	.restore_noirq = resume_fn,
-> -#else
-> -#define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-> -#endif
-> +	.suspend_noirq = PM_SLEEP_PTR(suspend_fn), \
-> +	.resume_noirq = PM_SLEEP_PTR(resume_fn), \
-> +	.freeze_noirq = PM_SLEEP_PTR(suspend_fn), \
-> +	.thaw_noirq = PM_SLEEP_PTR(resume_fn), \
-> +	.poweroff_noirq = PM_SLEEP_PTR(suspend_fn), \
-> +	.restore_noirq = PM_SLEEP_PTR(resume_fn),
->  
-> -#ifdef CONFIG_PM
->  #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-> -	.runtime_suspend = suspend_fn, \
-> -	.runtime_resume = resume_fn, \
-> -	.runtime_idle = idle_fn,
-> -#else
-> -#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-> -#endif
-> +	.runtime_suspend = PM_PTR(suspend_fn), \
-> +	.runtime_resume = PM_PTR(resume_fn), \
-> +	.runtime_idle = PM_PTR(idle_fn),
->  
->  /*
->   * Use this if you want to use the same suspend and resume callbacks for suspend
+-- 
+js
+suse labs
