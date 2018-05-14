@@ -1,78 +1,296 @@
-From: Henrique de Moraes Holschuh <hmh-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>
-Subject: Re: [PATCH 1/3] thinkpad_acpi: add support for
- inhibit_charge
-Date: Mon, 14 May 2018 12:41:02 -0300
-Message-ID: <20180514154102.h5ptzizvhwqgobiz@khazad-dum.debian.net>
-References: <20180513152937.GA5072@thinkpad>
- <20180514094620.wfoom4mwwyqb7qe5@localhost>
- <20180514113928.dnsxjqov7l6rvorb@khazad-dum.debian.net>
- <20180514134041.GC6417@thinkpad>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
+ required
+Date: Mon, 14 May 2018 17:32:06 +0100
+Message-ID: <20180514163206.GF30654@e110439-lin>
+References: <20180510150553.28122-1-patrick.bellasi@arm.com>
+ <20180510150553.28122-4-patrick.bellasi@arm.com>
+ <20180513060443.GB64158@joelaf.mtv.corp.google.com>
+ <20180513062538.GA116730@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180514134041.GC6417@thinkpad>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
-List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-To: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+In-Reply-To: <20180513062538.GA116730@joelaf.mtv.corp.google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCAxNCBNYXkgMjAxOCwgT2duamVuIEdhbGnEhyB3cm90ZToKPiBPbiBNb24sIE1heSAx
-NCwgMjAxOCBhdCAwODozOToyOEFNIC0wMzAwLCBIZW5yaXF1ZSBkZSBNb3JhZXMgSG9sc2NodWgg
-d3JvdGU6Cj4gPiBPbiBNb24sIDE0IE1heSAyMDE4LCBDaHJpc3RvcGggQsO2aG13YWxkZXIgd3Jv
-dGU6Cj4gPiA+ID4gKwljYXNlIElOSElCSVRfQ0hBUkdFOgo+ID4gPiA+ICsJCWlmIEFDUElfRkFJ
-TFVSRSh0cGFjcGlfYmF0dGVyeV9hY3BpX2V2YWwoR0VUX0lOSElCSVQsIHJldCwgYmF0dGVyeSkp
-Cj4gPiA+ID4gKwkJCXJldHVybiAtRU5PREVWOwo+ID4gPiA+ICsKPiA+ID4gPiArCQkvKiBUaGUg
-aW5oaWJpdCBjaGFyZ2Ugc3RhdHVzIGlzIGluIHRoZSBmaXJzdCBiaXQgKi8KPiA+ID4gPiArCQkq
-cmV0ID0gKnJldCAmIDB4MDE7Cj4gPiA+ID4gKwkJcmV0dXJuIDA7Cj4gPiAKPiA+IERvIHdlIGtu
-b3cgd2hhdCBpcyBpbiB0aGUgb3RoZXIgYml0cz8gIElmIHNvLCBwbGVhc2UgZG9jdW1lbnQgdGhl
-IEFDUEkKPiA+IG1ldGhvZCB1c2luZyBhIGNvbW1lbnQgc29tZXdoZXJlIGluIHRoZSBkcml2ZXIg
-Y29kZSwgbGlrZSB5b3UgZGlkIGZvcgo+ID4gU0VUX0lOSElCSVQuCj4gCj4gSSBnb3QgdGhlIHNw
-ZWNzIGZvciB0aGUgbWV0aG9kcyBpbiBhIExlbm92byBkb2MgSSB3YXMgdG9sZCBub3QgdG8gc2hh
-cmUKPiBhcm91bmQsIGluY2x1ZGluZyBpbmZvcm1hdGlvbiBpbiBpdC4KCkhtbSwgb2suIFBsZWFz
-ZSBzZW5kIHRvIG1lIGluIHByaXZhdGUgdGhlIGVtYWlsIGFkZHJlc3Mgb2YgdGhlIHBlcnNvbiBJ
-CnNob3VsZCBhc2sgZm9yIHRoZSBkb2N1bWVudGF0aW9uIHNpbmNlIHlvdSBjYW5ub3QgZGlzdHJp
-YnV0ZSB0aGUKZG9jdW1lbnRhdGlvbiBpdHNlbGYuICBUaGlzIGlzbid0IHRoZSBmaXJzdCB0aW1l
-IGl0IGhhcHBlbmVkLgoKVGhlIHVzdWFsIHJ1bGUgSSBmb2xsb3cgaXM6IGRvY3VtZW50IHdoYXQg
-aXMgZWl0aGVyIGFscmVhZHkgYmVpbmcgdXNlZAppbiB0aGUgZHJpdmVyIG9yIHdoaWNoIHZlcnkg
-bGlrZWx5IHdpbCBoYXZlIHRvIGJlIHVzZWQgaW4gdGhlIGRyaXZlci4KVW5yZWxhdGVkIHN0dWZm
-IChlLmcuIGZvciBzb21lIHVucmVsYXRlZCBmdW5jdGlvbmFsaXR5IHRoZSBkcml2ZXIgZG9lcwpu
-b3QgaW1wbGVtZW50KSBkb2Vzbid0IGhhdmUgdG8gYmUgZG9jdW1lbnRlZC4KCkluIHRoaXMgY2Fz
-ZSwgd2UgbmVlZCB0byBhdCBsZWFzdCBrbm93IHdoYXQgYml0cyBuZWVkIHRvIGJlIFJNVywgb3IK
-YWx3YXlzLXplcm8gd2hlbiBjYWxsaW5nIFNFVF8qIG1ldGhvZHMuLi4KCj4gU28gd2hhdCBkbyB5
-b3UgcGVvcGxlIHdhbnQgbWUgdG8gZG8/IFNob3VsZCBJIGZpeCB0aGUgY29tbWVudHMgb3IgbGVh
-dmUKPiBhcy1pcz8KClNpbmNlIHRoZSBzdWJzeXN0ZW0gbWFpbnRhaW5lciBzYWlkIGl0IHNob3Vs
-ZCBiZSBrZXB0IGFzLWlzLCBhbmQgSSBkb24ndAptdWNoIGNhcmUsIHBsZWFzZSBrZWVwIGl0IGFz
-LWlzLiAgSXQgd29uJ3QgbWF0dGVyIGZvciBteSBkcml2ZXIKbWFpbnRhaW5lciBhY2sgOi0pCgo+
-ID4gPiA+ICsJY2FzZSBJTkhJQklUX0NIQVJHRToKPiA+ID4gPiArCQlpZiAoIWJhdHRlcnlfaW5m
-by5iYXR0ZXJpZXNbYmF0dGVyeV0uaW5oaWJpdF9zdXBwb3J0KQo+ID4gPiA+ICsJCQlyZXR1cm4g
-LUVOT0RFVjsKPiA+ID4gPiArCQkvKiBUaGUgb25seSB2YWxpZCB2YWx1ZXMgYXJlIDEgYW5kIDAg
-Ki8KPiA+ID4gPiArCQlpZiAodmFsdWUgIT0gMCAmJiB2YWx1ZSAhPSAxKQo+ID4gPiAKPiA+ID4g
-SSdtIG5vdCBzdXJlLCBidXQgbWF5YmUgYGlmICh2YWx1ZSA8IDIpYCBpcyBiZXR0ZXIgaGVyZT8K
-PiA+IAo+ID4gSW5kZWVkLi4uIHdpdGggYSBjb21tZW50IHRoYXQgc2F5cyAwID0gbWFpbiBiYXR0
-ZXJ5LCAxID0gZXh0cmEvZG9jawo+ID4gYmF0dGVyeSBvciBzb21ldGhpbmcuCj4gCj4gVGhhdCBz
-ZWVtcyBsaWtlIG9iZnVzY2F0aW9uIHRvIG1lLCB0aGlzIHdheSBpdHMgY2xlYXIgdGhhdCBpdCBt
-dXN0IGJlCj4gZWl0aGVyIDEgb3IgMC4gQW5kIGluaGliaXRpbmcgaXMgc2V0IHBlci1iYXR0ZXJ5
-IHNvIDEgaXMgb24gYW5kIG5vdAo+IGJhdHRlcnkgMS4KCkhtbSwgeWVzIEkgZ290IHRoYXQgd3Jv
-bmcuICJiYXR0ZXJ5IiBzaG91bGQgdXNlIDAgPD0gYmF0dGVyeSA8MiBmb3IKY2hlY2tpbmcgKGlm
-IG5lZWRlZCksIGJ1dCB2YWx1ZSBjYW4gb25seSBiZSAwIG9yIDEuCgpJJ2QgcGVyc29uYWxseSBo
-YXZlIHVzZWQgYSBiaXRtYXNrIHRlc3QgZm9yICJ2YWx1ZSIsIGVuc3VyaW5nIGFsbCBvdGhlcgpi
-aXRzIGFyZSB6ZXJvLCB0aG91Z2guICBCdXQgdGhhdCdzIGp1c3QgYSBtYXR0ZXIgb2YgdGFzdGUg
-YW5kIEkgZG9uJ3QKdGhpbmsgYW55IG9mIHRoZSBjaG9pY2VzIChpbmNsdWRpbmcgdGhlIG9uZSB5
-b3UgdXNlZCkgYXJlICJiYWQgdGFzdGUiLApzbyBhbGwgb2YgdGhlbSBhcmUgZmluZSBhcyBmYXIg
-YXMgSSBhbSBjb25jZXJuZWQuCgotLSAKICBIZW5yaXF1ZSBIb2xzY2h1aAoKLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tCkNoZWNrIG91dCB0aGUgdmlicmFudCB0ZWNoIGNvbW11bml0eSBvbiBvbmUgb2Yg
-dGhlIHdvcmxkJ3MgbW9zdAplbmdhZ2luZyB0ZWNoIHNpdGVzLCBTbGFzaGRvdC5vcmchIGh0dHA6
-Ly9zZG0ubGluay9zbGFzaGRvdApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwppYm0tYWNwaS1kZXZlbCBtYWlsaW5nIGxpc3QKaWJtLWFjcGktZGV2ZWxAbGlz
-dHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xp
-c3RpbmZvL2libS1hY3BpLWRldmVsCg==
+On 12-May 23:25, Joel Fernandes wrote:
+> On Sat, May 12, 2018 at 11:04:43PM -0700, Joel Fernandes wrote:
+> > On Thu, May 10, 2018 at 04:05:53PM +0100, Patrick Bellasi wrote:
+> > > Schedutil updates for FAIR tasks are triggered implicitly each time a
+> > > cfs_rq's utilization is updated via cfs_rq_util_change(), currently
+> > > called by update_cfs_rq_load_avg(), when the utilization of a cfs_rq has
+> > > changed, and {attach,detach}_entity_load_avg().
+> > > 
+> > > This design is based on the idea that "we should callback schedutil
+> > > frequently enough" to properly update the CPU frequency at every
+> > > utilization change. However, such an integration strategy has also
+> > > some downsides:
+> > 
+> > Hi Patrick,
+
+Hi Joel,
+
+> > I agree making the call explicit would make schedutil integration easier so
+> > that's really awesome. However I also fear that if some path in the fair
+> > class in the future changes the utilization but forgets to update schedutil
+> > explicitly (because they forgot to call the explicit public API) then the
+> > schedutil update wouldn't go through. In this case the previous design of
+> > doing the schedutil update in the wrapper kind of was a nice to have
+
+I cannot see right now other possible future paths where we can
+actually change the utilization signal without considering that,
+eventually, we should call an existing API to update schedutil if it
+makes sense.
+
+What I can see more likely instead, also because it already happened a
+couple of time, is that because of code changes in fair.c we end up
+calling (implicitly) schedutil with a wrong utilization value.
+
+To note this kind of broken dependency it has already been more
+difficult than possibly noticing an update of the utilization without
+a corresponding explicit call of the public API.
+
+> > Just thinking out loud but is there a way you could make the implicit call
+> > anyway incase the explicit call wasn't requested for some reason? That's
+> > probably hard to do correctly though..
+> > 
+> > Some more comments below:
+> > 
+
+[...]
+
+> > > 
+> > >  - it makes it hard to integrate new features since it could require to
+> > >    change other function prototypes just to pass in an additional flag,
+> > >    as it happened for example in commit:
+> > > 
+> > >       ea14b57e8a18 ("sched/cpufreq: Provide migration hint")
+
+IMHO, the point above is also a good example of how convoluted is
+to add support for one new simple feature because of the current
+implicit updates.
+
+[...]
+
+> > > @@ -4028,13 +4000,12 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+> > >  
+> > >  static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int not_used1)
+> > >  {
+> > > -	cfs_rq_util_change(cfs_rq, 0);
+> > 
+> > How about kill that extra line by doing:
+> > 
+> > static inline void update_load_avg(struct cfs_rq *cfs_rq,
+> > 				   struct sched_entity *se, int not_used1) {}
+> > 
+> > >  }
+
+Right, that could make sense, thanks!
+
+[...]
+
+> > > @@ -5397,9 +5366,27 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+> > >  		update_cfs_group(se);
+> > >  	}
+> > >  
+> > > -	if (!se)
+> > > +	/* The task is visible from the root cfs_rq */
+> > > +	if (!se) {
+> > > +		unsigned int flags = 0;
+> > > +
+> > >  		add_nr_running(rq, 1);
+> > >  
+> > > +		if (p->in_iowait)
+> > > +			flags |= SCHED_CPUFREQ_IOWAIT;
+> > > +
+> > > +		/*
+> > > +		 * !last_update_time means we've passed through
+> > > +		 * migrate_task_rq_fair() indicating we migrated.
+> > > +		 *
+> > > +		 * IOW we're enqueueing a task on a new CPU.
+> > > +		 */
+> > > +		if (!p->se.avg.last_update_time)
+> > > +			flags |= SCHED_CPUFREQ_MIGRATION;
+> > > +
+> > > +		cpufreq_update_util(rq, flags);
+> > > +	}
+> > > +
+> > >  	hrtick_update(rq);
+> > >  }
+> > >  
+> > > @@ -5456,10 +5443,12 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+> > >  		update_cfs_group(se);
+> > >  	}
+> > >  
+> > > +	/* The task is no more visible from the root cfs_rq */
+> > >  	if (!se)
+> > >  		sub_nr_running(rq, 1);
+> > >  
+> > >  	util_est_dequeue(&rq->cfs, p, task_sleep);
+> > > +	cpufreq_update_util(rq, 0);
+> > 
+> > One question about this change. In enqueue, throttle and unthrottle - you are
+> > conditionally calling cpufreq_update_util incase the task was
+> > visible/not-visible in the hierarchy.
+> > 
+> > But in dequeue you're unconditionally calling it. Seems a bit inconsistent.
+> > Is this because of util_est or something? Could you add a comment here
+> > explaining why this is so?
+> 
+> The big question I have is incase se != NULL, then its still visible at the
+> root RQ level.
+
+My understanding it that you get !se at dequeue time when we are
+dequeuing a task from a throttled RQ. Isn't it?
+
+Thus, this means you are dequeuing a throttled task, I guess for
+example because of a migration.
+However, the point is that a task dequeue from a throttled RQ _is
+already_ not visible from the root RQ, because of the sub_nr_running()
+done by throttle_cfs_rq().
+
+> In that case should we still call the util_est_dequeue and the
+> cpufreq_update_util?
+
+I had a better look at the different code paths and I've possibly come
+up with some interesting observations. Lemme try to resume theme here.
+
+First of all, we need to distinguish from estimated utilization
+updates and schedutil updates, since they respond to two very
+different goals.
+
+
+.:: Estimated utilization updates
+=================================
+
+Goal: account for the amount of utilization we are going to
+      expect on a CPU
+
+At {en,de}queue time, util_est_{en,de}queue() is always
+unconditionally called because it tracks the utilization which is
+estimated to be generated by all the RUNNABLE tasks.
+
+We do not care about throttled/un-throttled RQ here because the effect
+of throttling is already folded into the estimated utilization.
+
+For example, a 100% tasks which is placed into a 50% bandwidth
+limited TG will generate a 50% (estimated) utilization. Thus, when the
+task is enqueued we can account immediately for that utilization
+although the RQ can be currently throttled.
+
+
+.:: Schedutil updates
+=====================
+
+Goal: select a better frequency, if and _when_ required
+
+At enqueue time, if the task is visible at the root RQ the it's
+expected to run within a scheduler latency period. Thus, it makes
+sense to call immediately schedutil to account for its estimated
+utilization to possibly increase the OPP.
+
+If instead the task is enqueued into a throttled RQ, then I'm
+skipping the update since the task will not run until the RQ is
+actually un-throttled.
+
+HOWEVER, I would say that in general we could skip this last
+optimization and always unconditionally update schedutil at enqueue
+time considering the fact that the effects of a throttled RQ are
+always reflected into the (estimated) utilization of a task.
+
+At dequeue time instead, since we certainly removed some estimated
+utilization, then I unconditionally updated schedutil.
+
+HOWEVER, I was not considering these two things:
+
+1. for a task going to sleep, we still have its blocked utilization
+   accounted in the cfs_rq utilization.
+
+2. for a task being migrated, at dequeue time we still have not
+   removed the task's utilization from the cfs_rq's utilization.
+   This usually happens later, for example we can have:
+
+      move_queued_task()
+         dequeue_task()                      --> CFS task dequeued
+         set_task_cpu()                         --> schedutil updated
+            migrate_task_rq_fair()
+               detach_entity_cfs_rq()
+                  detach_entity_load_avg()   --> CFS util removal
+         enqueue_task()
+
+Moreover, the "CFS util removal" actually affects the cfs_rq only if
+we hold the RQ lock, otherwise we know that it's just back annotated
+as "removed" utilization and the actual cfs_rq utilization is fixed up
+at the next chance we have the RQ lock.
+
+Thus, I would say that in both cases, at dequeue time it does not make
+sense to update schedutil since we always see the task's utilization
+in the cfs_rq and thus we will not reduce the frequency.
+
+NOTE, this is true independently from the refactoring I'm proposing.
+At dequeue time, although we call update_load_avg() on the root RQ,
+it does not make sense to update schedutil since we still see either
+the blocked utilization of a sleeping task or the not yet removed
+utilization of a migrating task. In both cases the risk is to ask for
+an higher OPP right when a CPU is going to be IDLE.
+
+Moreover, it seems that in general we prefer a "conservative" approach
+in frequency reduction.
+For example it could be harmful to trigger a frequency reduction when
+a task is migrating off a CPU, if right after another task should be
+instead migrated into the same CPU.
+
+
+.:: Conclusions
+===============
+
+All that considered, I think I've convinced myself that we really need
+to notify schedutil only in these cases:
+
+ 1. enqueue time
+    because of the changes in estimated utilization and the
+    possibility to just straight to a better OPP
+
+ 2. task tick time
+    because of the possible ramp-up of the utilization
+
+Another case is related to remote CPUs blocked utilization update,
+after the recent Vincent's patches. Currently indeed:
+
+  update_blocked_averages()
+     update_load_avg()
+        --> update schedutil
+
+and thus, potentially we wake up an IDLE cluster just to reduce its
+OPP. If the cluster is in a deep idle state, I'm not entirely sure
+this is good from an energy saving standpoint.
+However, with the patch I'm proposing we are missing that support,
+meaning that an IDLE cluster will get its utilization decayed but we
+don't wake it up just to drop its frequency.
+
+Perhaps we should better pass in this information to schedutil via a
+flag (e.g. SCHED_FREQ_REMOTE_UPDATE) and implement there a policy to
+decide if and when it makes sense to drop the OPP. Or otherwise find a
+way for the special DL tasks to always run on the lower capacity_orig
+CPUs.
+
+> Sorry if I missed something obvious.
+
+Thanks for the question it has actually triggered a better analysis of
+what we have and what we need.
+
+Looking forward to some feedbacks about the above before posting a new
+version of this last patch.
+
+> thanks!
+> 
+> - Joel
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
