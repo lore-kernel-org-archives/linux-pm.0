@@ -1,61 +1,112 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH V2] thermal: tegra: soctherm: add const to struct
- thermal_cooling_device_ops
-Date: Mon, 14 May 2018 14:55:27 +0200
-Message-ID: <20180514125527.GK18312@ulmo>
-References: <1526147228-5317-1-git-send-email-srplinux2008@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="x+RZeZVNR8VILNfK"
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v6 00/14] CPU scaling support for msm8996
+Date: Mon, 14 May 2018 16:11:46 +0300
+Message-ID: <1526303520-5843-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1526147228-5317-1-git-send-email-srplinux2008@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sumeet p <srplinux2008@gmail.com>
-Cc: jonathanh@nvidia.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, viresh.kumar@linaro.org, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, ilialin@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
+[v6]
+ * Addressed comments from Viresh about:
+ ** Comments style
+ ** Kconfig bool instead of tristate
+ ** DT and documentation style
+ ** Resourses deallocation on an error
+ ** Typos
 
---x+RZeZVNR8VILNfK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[v5]
+ * Rebased
+ * Addressed comments from Bjorn about SPDX style,
+   functions and parameters naming
+ * Addressed comments from Viresh DT properties and style, comments style,
+   resourses deallocation, documentation placement
+ * Addressed comments from Sricharan about unnessesary include
+ * Addressed comments from Nicolas
+ * Addressed comments from Rob about the commit messages and acks
+ * Addressed comments from Mark
 
-On Sat, May 12, 2018 at 11:17:08PM +0530, sumeet p wrote:
-> Correct the typecast with const to struct thermal_cooling_device_ops.
-> It is the last argument to the function thermal_of_cooling_device_register
-> and this argument is of type const. So, declare this structure
-> thermal_cooling_device_ops as constant.
->=20
-> Signed-off-by: sumeet p <srplinux2008@gmail.com>
-> ---
-> Changes in V2:
-> - Updated Signed-off-by with correct name.
->=20
-> ---
->  drivers/thermal/tegra/soctherm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+[v4]
+ * Adressed all comments from Stephen
+ * Added CPU regulator support
+ * Added qcom-cpufreq-kryo driver
 
-Acked-by: Thierry Reding <treding@nvidia.com>
+[v3]
+ * Rebased on top of the latest PLL driver changes
+ * Addressed comment from Rob Herring for bindings
 
---x+RZeZVNR8VILNfK
-Content-Type: application/pgp-signature; name="signature.asc"
+[v2]
+ * Addressed comments from Rob Herring for bindings
+ * Addressed comments from Mark Rutland for memory barrier
+ * Addressed comments from Julien Thierry for clock reenabling condition
+ * Tuned the HW configuration for clock frequencies below 600MHz
 
------BEGIN PGP SIGNATURE-----
+Clocks:
+This series adds support for the CPU clocks on msm8996 devices.
+The driver uses the existing PLL drivers and is required to control
+the CPU frequency scaling on the MSM8996.
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlr5hz8ACgkQ3SOs138+
-s6FzTw//UHE9kxWKN65Ox6rnF9i4OjP0s00iyS+VHqUde2M9s/yhhFVCKAYwoSy3
-lft31j7hHDsVmKDy243aUJrRZ8epvVR3t28wVnDYuS77pvFi6YWxvzaY5UrHrKIk
-F0w71k39Xv9OKTCC5v0/vgDUvJcJlhu16AzCBq5DojrfUBP4YgEEngicSFMQCTfG
-TRowsWuCgqU4zvLeKRlC6RjG1k+ynIa7e+ddBhg5nfJabf0dUm7pCPepWnQ83/av
-4eCoVB1eD8UEiYE9CqI85R/gjIR4LFkGEbQVK+2gMaugkwjNkJ9CRXPXZ0NuS9ws
-MTDs5Lt44YAe3ricmrJXcOre3yH1UWla+a6AcCgzlciQUzdWOloec1r7jNMXZSiR
-V5mP+/ocvBdzrw+fu71grKVwJvoTb406LvSLYd3qL34NHaPHLc20pmGWmXxgSTvk
-2ym7obQjHh8iLS3HFwyUbqkbVN2UbOwZeE7wyaKTzMncCfs+7uLML0CCZ99Fiwb4
-StiFFb4EefYiuDa0Ihs57Mf/eh79VMpuCYNQxy4SNTNyyhEH8LNQEr+8Dtj6Emcx
-SAqlt34CpQtu03zACeQErCFixFuB1nNr8fgbQ7oXC6mX3g5Z1KLW+ZGAc0oyLyh5
-rjUJ6bXfUe1tnxk3vfGBhXQ19iZcvbo7VP4BUm1qFnSTia7RId8=
-=9eRK
------END PGP SIGNATURE-----
+Regulators:
+Added SAW regulator support to the SPMI regulator driver. The SAW regulators
+will be controlled through special CPU registers instead of direct
+SPMI accesses.
 
---x+RZeZVNR8VILNfK--
+Cpufreq:
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
+
+A previous post of RFC can be found here:
+https://patchwork.kernel.org/patch/10377887/
+
+Ilia Lin (11):
+  soc: qcom: Separate kryo l2 accessors from PMU driver
+  clk: qcom: Add CPU clock driver for msm8996
+  clk: qcom: Add DT bindings for CPU clock driver for msm8996
+  clk: qcom: Add ACD path to CPU clock driver for msm8996
+  dt: qcom: Add opp and thermal to the msm8996
+  regulator: qcom_spmi: Add support for SAW
+  dt-bindings: qcom_spmi: Add support for SAW documentation
+  dt: qcom: Add SAW regulator for 8x96 CPUs
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+  dt: qcom: Add qcom-cpufreq-kryo driver configuration
+
+Rajendra Nayak (3):
+  clk: qcom: Make clk_alpha_pll_configure available to modules
+  clk: qcom: cpu-8996: Add support to switch to alternate PLL
+  clk: qcom: cpu-8996: Add support to switch below 600Mhz
+
+ .../devicetree/bindings/clock/qcom,kryocc.txt      |  17 +
+ .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+ .../bindings/regulator/qcom,spmi-regulator.txt     |  45 ++
+ arch/arm64/boot/dts/qcom/apq8096-db820c.dts        |   2 +-
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              | 650 +++++++++++++++++++-
+ drivers/clk/clk-fixed-factor.c                     |   2 +-
+ drivers/clk/qcom/Kconfig                           |   9 +
+ drivers/clk/qcom/Makefile                          |   1 +
+ drivers/clk/qcom/clk-alpha-pll.c                   |   1 +
+ drivers/clk/qcom/clk-alpha-pll.h                   |   6 +
+ drivers/clk/qcom/clk-cpu-8996.c                    | 519 ++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  11 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 148 +++++
+ drivers/perf/Kconfig                               |   1 +
+ drivers/perf/qcom_l2_pmu.c                         |  90 +--
+ drivers/regulator/qcom_spmi-regulator.c            | 133 +++-
+ drivers/soc/qcom/Kconfig                           |   3 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/kryo-l2-accessors.c               |  65 ++
+ include/soc/qcom/kryo-l2-accessors.h               |  21 +
+ 22 files changed, 2329 insertions(+), 80 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,kryocc.txt
+ create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+ create mode 100644 drivers/clk/qcom/clk-cpu-8996.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+ create mode 100644 drivers/soc/qcom/kryo-l2-accessors.c
+ create mode 100644 include/soc/qcom/kryo-l2-accessors.h
+
+-- 
+1.9.1
