@@ -1,62 +1,88 @@
-From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 3/3] thinkpad_acpi: document the
- battery controls
-Date: Mon, 14 May 2018 15:41:18 +0200
-Message-ID: <20180514134118.GD6417@thinkpad>
-References: <20180513153024.GA5142@thinkpad>
- <20180514120302.knhohskga6x6ji3s@khazad-dum.debian.net>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] thermal: qcom: tsens: Allow number of sensors to come
+ from DT
+Date: Mon, 14 May 2018 17:45:56 +0300
+Message-ID: <CAHLCerN9zQEJK4WoV6BY6hga2BxwzMsyScWnTdYcLgEk0Bjg4w@mail.gmail.com>
+References: <20180507235339.8836-1-bjorn.andersson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20180514120302.knhohskga6x6ji3s-ZGHd14iZgfaRjzvQDGKj+xxZW9W5cXbT@public.gmane.org>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
-List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-To: Henrique de Moraes Holschuh <hmh-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>
-Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180507235339.8836-1-bjorn.andersson@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rajendra Nayak <rnayak@codeaurora.org>, Linux PM list <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 14, 2018 at 09:03:02AM -0300, Henrique de Moraes Holschuh wrote:
-> On Sun, 13 May 2018, Ognjen Galic wrote:
-> > +Battery force discharging
-> > +--------------------------
-> > +
-> > +There is also support for AC overriding. This means that you can force the battery to discharge
-> > +even when AC is attached. This is also exposed via the generic ACPI driver:
-> > +
-> > +/sys/class/power_supply/BATx/force_discharge [int, 1, 0]
-> > +
-> > +Setting it to 1 forces the battery to discharge on AC.
-> 
-> This is used to run a battery "fuel gauge" callibration cycle.
-> 
-> One has to set the limits to 0,100 (i.e. disable the anti-wear
-> limiters), trigger a force_discharge, and wait until it discharges to
-> zero.  At that point, the EC is supposed to reset the force_discharge
-> bit by itself, and then you have to wait the battery to charge back to
-> full.
+On Tue, May 8, 2018 at 2:53 AM, Bjorn Andersson
+<bjorn.andersson@linaro.org> wrote:
+> For platforms that has multiple copies of the TSENS hardware block it's
+> necessary to be able to specify the number of sensors per block in DeviceTree.
 
-That's the intended use case for this patches via an upcoming program I
-am writing for userspace.
+I assume you want to replace the hardcoded num_sensors values in the
+tsens-xxxx.c files with values in device tree atleast on platforms
+that use devicetree?
 
-> 
-> (and at least on older thinkpads, where you had to use SMAPI to do the
-> above, it didn't need much help from the operating system.  Once a
-> couple years you could just set force_discharge on both batteries (with
-> the thing connected to AC), shutdown the operating system, and go to
-> sleep.  By morning, it would be fully charged and both gauges
-> calibrated, still powered off, ready to go :P ).
-> 
-> -- 
->   Henrique Holschuh
-
-------------------------------------------------------------------------------
-Check out the vibrant tech community on one of the world's most
-engaging tech sites, Slashdot.org! http://sdm.link/slashdot
+> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+> ---
+>  .../devicetree/bindings/thermal/qcom-tsens.txt       |  1 +
+>  drivers/thermal/qcom/tsens.c                         | 12 +++++++++---
+>  2 files changed, 10 insertions(+), 3 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> index 292ed89d900b..06195e8f35e2 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> @@ -8,6 +8,7 @@ Required properties:
+>
+>  - reg: Address range of the thermal registers
+>  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
+> +- #qcom,sensors: Number of sensors in tsens block
+>  - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
+>  nvmem cells
+>
+> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> index 3f9fe6aa51cc..20f3b87d7667 100644
+> --- a/drivers/thermal/qcom/tsens.c
+> +++ b/drivers/thermal/qcom/tsens.c
+> @@ -116,6 +116,7 @@ static int tsens_probe(struct platform_device *pdev)
+>         struct tsens_device *tmdev;
+>         const struct tsens_data *data;
+>         const struct of_device_id *id;
+> +       u32 num_sensors;
+>
+>         if (pdev->dev.of_node)
+>                 dev = &pdev->dev;
+> @@ -130,18 +131,23 @@ static int tsens_probe(struct platform_device *pdev)
+>         else
+>                 data = &data_8960;
+>
+> -       if (data->num_sensors <= 0) {
+> +       num_sensors = data->num_sensors;
+> +
+> +       if (np)
+> +               of_property_read_u32(np, "#qcom,sensors", &num_sensors);
+> +
+> +       if (num_sensors <= 0) {
+>                 dev_err(dev, "invalid number of sensors\n");
+>                 return -EINVAL;
+>         }
+>
+>         tmdev = devm_kzalloc(dev, sizeof(*tmdev) +
+> -                            data->num_sensors * sizeof(*s), GFP_KERNEL);
+> +                            num_sensors * sizeof(*s), GFP_KERNEL);
+>         if (!tmdev)
+>                 return -ENOMEM;
+>
+>         tmdev->dev = dev;
+> -       tmdev->num_sensors = data->num_sensors;
+> +       tmdev->num_sensors = num_sensors;
+>         tmdev->ops = data->ops;
+>         for (i = 0;  i < tmdev->num_sensors; i++) {
+>                 if (data->hw_ids)
+> --
+> 2.17.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
