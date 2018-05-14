@@ -1,76 +1,71 @@
-From: Henrique de Moraes Holschuh <hmh-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>
-Subject: Re: [PATCH 1/3] thinkpad_acpi: add support for
- inhibit_charge
-Date: Mon, 14 May 2018 08:39:28 -0300
-Message-ID: <20180514113928.dnsxjqov7l6rvorb@khazad-dum.debian.net>
-References: <20180513152937.GA5072@thinkpad>
- <20180514094620.wfoom4mwwyqb7qe5@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20180514094620.wfoom4mwwyqb7qe5@localhost>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
-List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-To: Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>
-Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Ognjen Galic <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 00/14] thermal: ti-soc-thermal: simplify the driver a bit
+Date: Mon, 14 May 2018 13:42:07 +0200
+Message-ID: <1526298141-14045-1-git-send-email-b.zolnierkie@samsung.com>
+References: <CGME20180514114255epcas1p438ea8d32c2b7fd40b86afb25c9c8f2cf@epcas1p4.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 14 May 2018, Christoph B=F6hmwalder wrote:
-> > +	case INHIBIT_CHARGE:
-> > +		if ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_INHIBIT, ret, battery))
-> > +			return -ENODEV;
-> > +
-> > +		/* The inhibit charge status is in the first bit */
-> > +		*ret =3D *ret & 0x01;
-> > +		return 0;
+Hi,
 
-Do we know what is in the other bits?  If so, please document the ACPI
-method using a comment somewhere in the driver code, like you did for
-SET_INHIBIT.
+This patchset contains few fixups and cleanups for TI thermal driver
+(this is the result of my attempt to understand the driver operation).
 
-> >  	default:
-> >  		pr_crit("wrong parameter: %d", what);
-> >  		return -EINVAL;
-> > @@ -9343,6 +9357,21 @@ static int tpacpi_battery_set(int what, int batt=
-ery, int value)
-> >  			return -ENODEV;
-> >  		}
-> >  		return 0;
-> > +	case INHIBIT_CHARGE:
-> > +		/* When setting inhbitit charge, we set a default vaulue of
-> =
+Highlights:
+* Fix TALERT IRQ handling for DRA752 SoC.
+* Reuse most of OMAP5 SoC code for DRA752 SoC.
+* Reduce size of *_adc_to_temp[] conversion tables.
+* Remove duplicated code.
+* Remove SoC family config options.
 
-> This comment does not adhere to the Linux coding style
+The patchset is based on top of:
+- "[PATCH v2] thermal: ti-soc-thermal: fix incorrect entry in
+  omap5430_adc_to_temp[]" (https://lkml.org/lkml/2018/5/2/433)
+- "[PATCH] thermal: ti-soc-thermal: remove dead code"
+  (https://lkml.org/lkml/2018/5/2/367)
 
-Much on the driver doesn't, because it is _OLD_.  But yeah, it is
-preferrable to fix this as we add code, so it would be good to have all
-new (and modified) comments switched to modern kernel style.
+Please consider applying.
 
-> > +	case INHIBIT_CHARGE:
-> > +		if (!battery_info.batteries[battery].inhibit_support)
-> > +			return -ENODEV;
-> > +		/* The only valid values are 1 and 0 */
-> > +		if (value !=3D 0 && value !=3D 1)
-> =
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-> I'm not sure, but maybe `if (value < 2)` is better here?
 
-Indeed... with a comment that says 0 =3D main battery, 1 =3D extra/dock
-battery or something.
+Bartlomiej Zolnierkiewicz (14):
+  thermal: ti-soc-thermal: fix TALERT IRQ handling for DRA752
+  thermal: ti-soc-thermal: fix comment in omap5xxx-bandgap.h
+  thermal: ti-soc-thermal: fix comments in omap4-thermal-data.c
+  thermal: ti-soc-thermal: cleanup COUNTER feature handling for OMAP5
+  thermal: ti-soc-thermal: remove redundant methods from struct
+    ti_bandgap_data
+  thermal: ti-soc-thermal: remove ->threshold_[thot,tcold]_mask fields
+  thermal: ti-soc-thermal: remove ->tshut_[hot,cold]_mask fields
+  thermal: ti-soc-thermal: use common struct temp_sensor_data for OMAP5
+  thermal: ti-soc-thermal: use common struct temp_sensor_data for DRA752
+  thermal: ti-soc-thermal: use OMAP5 defines for DRA752
+  thermal: ti-soc-thermal: use OMAP5 register tables for DRA752
+  thermal: ti-soc-thermal: add ->adc_to_mcelsius method
+  thermal: ti-soc-thermal: use short int for *_adc_to_temp[] conversion
+    tables
+  thermal: ti-soc-thermal: remove SoC family config options
 
--- =
+ drivers/thermal/ti-soc-thermal/Kconfig             |  63 +----
+ drivers/thermal/ti-soc-thermal/Makefile            |   8 +-
+ drivers/thermal/ti-soc-thermal/dra752-bandgap.h    | 109 +------
+ .../thermal/ti-soc-thermal/dra752-thermal-data.c   | 313 ++++-----------------
+ .../thermal/ti-soc-thermal/omap3-thermal-data.c    |  70 +++--
+ .../thermal/ti-soc-thermal/omap4-thermal-data.c    | 132 ++++-----
+ drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h  |   8 -
+ .../thermal/ti-soc-thermal/omap5-thermal-data.c    | 171 ++++-------
+ drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h  |  47 +---
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  61 ++--
+ drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  45 +--
+ 11 files changed, 265 insertions(+), 762 deletions(-)
 
-  Henrique Holschuh
-
----------------------------------------------------------------------------=
----
-Check out the vibrant tech community on one of the world's most
-engaging tech sites, Slashdot.org! http://sdm.link/slashdot
+-- 
+1.9.1
