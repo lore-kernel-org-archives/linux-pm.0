@@ -1,110 +1,109 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH 1/3] thermal: imx: remove cpufreq cooling registration
-Date: Mon, 14 May 2018 09:10:56 +0000
-Message-ID: <AM3PR04MB1315B6320421800346313075F59C0@AM3PR04MB1315.eurprd04.prod.outlook.com>
-References: <1526285359-17978-1-git-send-email-Anson.Huang@nxp.com>
- <5a449fc0-4d3e-c7c7-0e9a-43efb4b909cf@pengutronix.de>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v2 1/3] sched/cpufreq: always consider blocked FAIR utilization
+Date: Mon, 14 May 2018 11:16:12 +0200
+Message-ID: <CAKfTPtD3GJH3LLp6tpYoz7Uf0eXb-ZLMbGdQdRUsAgczZMr47g@mail.gmail.com>
+References: <20180511131509.16275-1-patrick.bellasi@arm.com> <20180511131509.16275-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5a449fc0-4d3e-c7c7-0e9a-43efb4b909cf@pengutronix.de>
-Content-Language: en-US
+In-Reply-To: <20180511131509.16275-2-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bastian Stender <bst@pengutronix.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCkFuc29uIEh1YW5nDQpCZXN0IFJlZ2FyZHMhDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
-Z2UtLS0tLQ0KPiBGcm9tOiBCYXN0aWFuIFN0ZW5kZXIgW21haWx0bzpic3RAcGVuZ3V0cm9uaXgu
-ZGVdDQo+IFNlbnQ6IE1vbmRheSwgTWF5IDE0LCAyMDE4IDQ6MzcgUE0NCj4gVG86IEFuc29uIEh1
-YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsgc2hhd25ndW9Aa2VybmVsLm9yZzsNCj4gcy5oYXVl
-ckBwZW5ndXRyb25peC5kZTsga2VybmVsQHBlbmd1dHJvbml4LmRlOyBGYWJpbyBFc3RldmFtDQo+
-IDxmYWJpby5lc3RldmFtQG54cC5jb20+OyByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0bGFu
-ZEBhcm0uY29tOw0KPiByandAcmp3eXNvY2tpLm5ldDsgdmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7
-IHJ1aS56aGFuZ0BpbnRlbC5jb207DQo+IGVkdWJlenZhbEBnbWFpbC5jb20NCj4gQ2M6IGRldmlj
-ZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGRsLWxpbnV4
-LWlteA0KPiA8bGludXgtaW14QG54cC5jb20+OyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJh
-ZGVhZC5vcmc7DQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6
-IFtQQVRDSCAxLzNdIHRoZXJtYWw6IGlteDogcmVtb3ZlIGNwdWZyZXEgY29vbGluZyByZWdpc3Ry
-YXRpb24NCj4gDQo+IEhpLA0KPiANCj4gT24gMDUvMTQvMjAxOCAxMDowOSBBTSwgQW5zb24gSHVh
-bmcgd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCByZW1vdmVzIGNwdWZyZXEgY29vbGluZyByZWdpc3Ry
-YXRpb24gaW4gdGhlcm1hbCAucHJvYmUNCj4gPiBmdW5jdGlvbiwgY3B1ZnJlcSBjb29saW5nIHNo
-b3VsZCBiZSBkb25lIGluIGNwdWZyZXEgZHJpdmVyIHdoZW4gaXQgaXMNCj4gPiByZWFkeS4NCj4g
-Pg0KPiA+IFNpZ25lZC1vZmYtYnk6IEFuc29uIEh1YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29tPg0K
-PiANCj4gSXQgc2VlbXMgeW91IGFyZSB0cnlpbmcgdG8gYWNoaWV2ZSBzb21ldGhpbmcgc2ltaWxh
-ciB0byBhIHBhdGNoIEkgc2VudCBhIGNvdXBsZQ0KPiBvZiBtb250aCBhZ28uIFVuZm9ydHVuYXRl
-bHkgSSBkaWQgbm90IGhhdmUgdGhlIHRpbWUgdG8gcmV3b3JrIGl0IHlldDoNCj4gDQo+IA0KPiBo
-dHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHBz
-JTNBJTJGJTJGcGF0Y2gNCj4gd29yay5rZXJuZWwub3JnJTJGcGF0Y2glMkYxMDA1OTA4NSUyRiZk
-YXRhPTAyJTdDMDElN0NhbnNvbi5odWFuZw0KPiAlNDBueHAuY29tJTdDMTc5ZGEzNjM1Y2FiNGEx
-NGRlZWYwOGQ1Yjk3NWVjYjYlN0M2ODZlYTFkM2JjMmI0YzZmDQo+IGE5MmNkOTljNWMzMDE2MzUl
-N0MwJTdDMCU3QzYzNjYxODgzODUwODk3ODYyOSZzZGF0YT1CY1E5dGMlMkJFDQo+IENaJTJGazRB
-c1pGeHNoZ212U3NQZzdlUk4wQVN6UDhMTzh5QkklM0QmcmVzZXJ2ZWQ9MA0KPiANCj4gU29tZSBv
-ZiB0aGUgY29tbWVudHMgbWlnaHQgYXBwbHkgaGVyZSB0b28uDQogDQpBaCwgSSBkaWQgTk9UIG5v
-dGljZSB0aGlzIHRocmVhZCwgc28gaG93IHRvIHByb2NlZWQsIHdpbGwgeW91IGNvbnRpbnVlIHRv
-IGZpbmlzaCB5b3VyIHBhdGNoPw0KSWYgeWVzLCB0aGVuIHlvdSBjYW4ganVzdCBpZ25vcmUvc2tp
-cCBteSBwYXRjaCwgdGhhbmtzLg0KDQpBbnNvbi4NCg0KPiANCj4gUmVnYXJkcywNCj4gQmFzdGlh
-bg0KPiANCj4gPiAtLS0NCj4gPiAgIGRyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jIHwgMTYg
-LS0tLS0tLS0tLS0tLS0tLQ0KPiA+ICAgMSBmaWxlIGNoYW5nZWQsIDE2IGRlbGV0aW9ucygtKQ0K
-PiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+ID4g
-Yi9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYyBpbmRleCBjMzBkYzIxLi44ZWVkYjk3IDEw
-MDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+ID4gKysrIGIv
-ZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMNCj4gPiBAQCAtOSw3ICs5LDYgQEANCj4gPg0K
-PiA+ICAgI2luY2x1ZGUgPGxpbnV4L2Nsay5oPg0KPiA+ICAgI2luY2x1ZGUgPGxpbnV4L2NwdWZy
-ZXEuaD4NCj4gPiAtI2luY2x1ZGUgPGxpbnV4L2NwdV9jb29saW5nLmg+DQo+ID4gICAjaW5jbHVk
-ZSA8bGludXgvZGVsYXkuaD4NCj4gPiAgICNpbmNsdWRlIDxsaW51eC9kZXZpY2UuaD4NCj4gPiAg
-ICNpbmNsdWRlIDxsaW51eC9pbml0Lmg+DQo+ID4gQEAgLTIwNyw3ICsyMDYsNiBAQCBzdGF0aWMg
-c3RydWN0IHRoZXJtYWxfc29jX2RhdGEgdGhlcm1hbF9pbXg3ZF9kYXRhDQo+ID0gew0KPiA+ICAg
-c3RydWN0IGlteF90aGVybWFsX2RhdGEgew0KPiA+ICAgCXN0cnVjdCBjcHVmcmVxX3BvbGljeSAq
-cG9saWN5Ow0KPiA+ICAgCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0ejsNCj4gPiAtCXN0
-cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlICpjZGV2Ow0KPiA+ICAgCWVudW0gdGhlcm1hbF9k
-ZXZpY2VfbW9kZSBtb2RlOw0KPiA+ICAgCXN0cnVjdCByZWdtYXAgKnRlbXBtb247DQo+ID4gICAJ
-dTMyIGMxLCBjMjsgLyogU2VlIGZvcm11bGEgaW4gaW14X2luaXRfY2FsaWIoKSAqLyBAQCAtNzI5
-LDIyDQo+ID4gKzcyNywxMiBAQCBzdGF0aWMgaW50IGlteF90aGVybWFsX3Byb2JlKHN0cnVjdCBw
-bGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gICAJCXJldHVybiAtRVBST0JFX0RFRkVSOw0KPiA+
-ICAgCX0NCj4gPg0KPiA+IC0JZGF0YS0+Y2RldiA9IGNwdWZyZXFfY29vbGluZ19yZWdpc3Rlcihk
-YXRhLT5wb2xpY3kpOw0KPiA+IC0JaWYgKElTX0VSUihkYXRhLT5jZGV2KSkgew0KPiA+IC0JCXJl
-dCA9IFBUUl9FUlIoZGF0YS0+Y2Rldik7DQo+ID4gLQkJZGV2X2VycigmcGRldi0+ZGV2LA0KPiA+
-IC0JCQkiZmFpbGVkIHRvIHJlZ2lzdGVyIGNwdWZyZXEgY29vbGluZyBkZXZpY2U6ICVkXG4iLCBy
-ZXQpOw0KPiA+IC0JCWNwdWZyZXFfY3B1X3B1dChkYXRhLT5wb2xpY3kpOw0KPiA+IC0JCXJldHVy
-biByZXQ7DQo+ID4gLQl9DQo+ID4gLQ0KPiA+ICAgCWRhdGEtPnRoZXJtYWxfY2xrID0gZGV2bV9j
-bGtfZ2V0KCZwZGV2LT5kZXYsIE5VTEwpOw0KPiA+ICAgCWlmIChJU19FUlIoZGF0YS0+dGhlcm1h
-bF9jbGspKSB7DQo+ID4gICAJCXJldCA9IFBUUl9FUlIoZGF0YS0+dGhlcm1hbF9jbGspOw0KPiA+
-ICAgCQlpZiAocmV0ICE9IC1FUFJPQkVfREVGRVIpDQo+ID4gICAJCQlkZXZfZXJyKCZwZGV2LT5k
-ZXYsDQo+ID4gICAJCQkJImZhaWxlZCB0byBnZXQgdGhlcm1hbCBjbGs6ICVkXG4iLCByZXQpOw0K
-PiA+IC0JCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNkZXYpOw0KPiA+ICAgCQlj
-cHVmcmVxX2NwdV9wdXQoZGF0YS0+cG9saWN5KTsNCj4gPiAgIAkJcmV0dXJuIHJldDsNCj4gPiAg
-IAl9DQo+ID4gQEAgLTc1OSw3ICs3NDcsNiBAQCBzdGF0aWMgaW50IGlteF90aGVybWFsX3Byb2Jl
-KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKnBkZXYpDQo+ID4gICAJcmV0ID0gY2xrX3ByZXBh
-cmVfZW5hYmxlKGRhdGEtPnRoZXJtYWxfY2xrKTsNCj4gPiAgIAlpZiAocmV0KSB7DQo+ID4gICAJ
-CWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byBlbmFibGUgdGhlcm1hbCBjbGs6ICVkXG4i
-LCByZXQpOw0KPiA+IC0JCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNkZXYpOw0K
-PiA+ICAgCQljcHVmcmVxX2NwdV9wdXQoZGF0YS0+cG9saWN5KTsNCj4gPiAgIAkJcmV0dXJuIHJl
-dDsNCj4gPiAgIAl9DQo+ID4gQEAgLTc3NSw3ICs3NjIsNiBAQCBzdGF0aWMgaW50IGlteF90aGVy
-bWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKnBkZXYpDQo+ID4gICAJCWRldl9l
-cnIoJnBkZXYtPmRldiwNCj4gPiAgIAkJCSJmYWlsZWQgdG8gcmVnaXN0ZXIgdGhlcm1hbCB6b25l
-IGRldmljZSAlZFxuIiwgcmV0KTsNCj4gPiAgIAkJY2xrX2Rpc2FibGVfdW5wcmVwYXJlKGRhdGEt
-PnRoZXJtYWxfY2xrKTsNCj4gPiAtCQljcHVmcmVxX2Nvb2xpbmdfdW5yZWdpc3RlcihkYXRhLT5j
-ZGV2KTsNCj4gPiAgIAkJY3B1ZnJlcV9jcHVfcHV0KGRhdGEtPnBvbGljeSk7DQo+ID4gICAJCXJl
-dHVybiByZXQ7DQo+ID4gICAJfQ0KPiA+IEBAIC04MTEsNyArNzk3LDYgQEAgc3RhdGljIGludCBp
-bXhfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlDQo+ICpwZGV2KQ0KPiA+ICAg
-CQlkZXZfZXJyKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gcmVxdWVzdCBhbGFybSBpcnE6ICVkXG4i
-LCByZXQpOw0KPiA+ICAgCQljbGtfZGlzYWJsZV91bnByZXBhcmUoZGF0YS0+dGhlcm1hbF9jbGsp
-Ow0KPiA+ICAgCQl0aGVybWFsX3pvbmVfZGV2aWNlX3VucmVnaXN0ZXIoZGF0YS0+dHopOw0KPiA+
-IC0JCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNkZXYpOw0KPiA+ICAgCQljcHVm
-cmVxX2NwdV9wdXQoZGF0YS0+cG9saWN5KTsNCj4gPiAgIAkJcmV0dXJuIHJldDsNCj4gPiAgIAl9
-DQo+ID4gQEAgLTgzMSw3ICs4MTYsNiBAQCBzdGF0aWMgaW50IGlteF90aGVybWFsX3JlbW92ZShz
-dHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICAgCQljbGtfZGlzYWJsZV91bnBy
-ZXBhcmUoZGF0YS0+dGhlcm1hbF9jbGspOw0KPiA+DQo+ID4gICAJdGhlcm1hbF96b25lX2Rldmlj
-ZV91bnJlZ2lzdGVyKGRhdGEtPnR6KTsNCj4gPiAtCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVy
-KGRhdGEtPmNkZXYpOw0KPiA+ICAgCWNwdWZyZXFfY3B1X3B1dChkYXRhLT5wb2xpY3kpOw0KPiA+
-DQo+ID4gICAJcmV0dXJuIDA7DQo+ID4NCj4gDQo+IC0tDQo+IFBlbmd1dHJvbml4IGUuSy4NCj4g
-SW5kdXN0cmlhbCBMaW51eCBTb2x1dGlvbnMNCj4gaHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnBy
-b3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3Lg0KPiBwZW5ndXRyb25p
-eC5kZSUyRiZkYXRhPTAyJTdDMDElN0NhbnNvbi5odWFuZyU0MG54cC5jb20lN0MxNzlkYTM2DQo+
-IDM1Y2FiNGExNGRlZWYwOGQ1Yjk3NWVjYjYlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5OWM1YzMw
-MTYzNSU3QzANCj4gJTdDMCU3QzYzNjYxODgzODUwODk3ODYyOSZzZGF0YT1rSEhqbmJtajJrVjBh
-UGxBdlVMWFVoJTJGbSUyRnANCj4gZ2J1MjFsdU1RNmpmSVVnTG8lM0QmcmVzZXJ2ZWQ9MA0KPiBQ
-ZWluZXIgU3RyLiA2LTgsIDMxMTM3IEhpbGRlc2hlaW0sIEdlcm1hbnkgQW10c2dlcmljaHQgSGls
-ZGVzaGVpbSwgSFJBIDI2ODYNCg==
+Hi Patrick,
+
+On 11 May 2018 at 15:15, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> Since the refactoring introduced by:
+>
+>    commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
+>
+> we aggregate FAIR utilization only if this class has runnable tasks.
+> This was mainly due to avoid the risk to stay on an high frequency just
+> because of the blocked utilization of a CPU not being properly decayed
+> while the CPU was idle.
+>
+> However, since:
+>
+>    commit 31e77c93e432 ("sched/fair: Update blocked load when newly idle")
+>
+> the FAIR blocked utilization is properly decayed also for IDLE CPUs.
+>
+> This allows us to use the FAIR blocked utilization as a safe mechanism
+> to gracefully reduce the frequency only if no FAIR tasks show up on a
+> CPU for a reasonable period of time.
+>
+> Moreover, we also reduce the frequency drops of CPUs running periodic
+> tasks which, depending on the task periodicity and the time required
+> for a frequency switch, was increasing the chances to introduce some
+> undesirable performance variations.
+>
+> Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+
+With this patch, I can't see the spurious OPP changes that I was seeing before
+
+FWIW
+Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+Tested-by: Vincent Guittot <vincent.guittot@linaro.org>
+
+Regards,
+Vincent
+
+>
+> ---
+>
+> Changes in v2:
+>  - add "Acked-by" Viresh tag
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 17 ++++++++---------
+>  1 file changed, 8 insertions(+), 9 deletions(-)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index d2c6083304b4..a74d05160e66 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -183,22 +183,21 @@ static void sugov_get_util(struct sugov_cpu *sg_cpu)
+>  static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+>  {
+>         struct rq *rq = cpu_rq(sg_cpu->cpu);
+> -       unsigned long util;
+>
+> -       if (rq->rt.rt_nr_running) {
+> -               util = sg_cpu->max;
+> -       } else {
+> -               util = sg_cpu->util_dl;
+> -               if (rq->cfs.h_nr_running)
+> -                       util += sg_cpu->util_cfs;
+> -       }
+> +       if (rq->rt.rt_nr_running)
+> +               return sg_cpu->max;
+>
+>         /*
+> +        * Utilization required by DEADLINE must always be granted while, for
+> +        * FAIR, we use blocked utilization of IDLE CPUs as a mechanism to
+> +        * gracefully reduce the frequency when no tasks show up for longer
+> +        * periods of time.
+> +        *
+>          * Ideally we would like to set util_dl as min/guaranteed freq and
+>          * util_cfs + util_dl as requested freq. However, cpufreq is not yet
+>          * ready for such an interface. So, we only do the latter for now.
+>          */
+> -       return min(util, sg_cpu->max);
+> +       return min(sg_cpu->max, (sg_cpu->util_dl + sg_cpu->util_cfs));
+>  }
+>
+>  static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
+> --
+> 2.15.1
+>
