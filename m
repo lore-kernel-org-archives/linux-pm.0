@@ -1,82 +1,107 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 07/11] driver core: Respect all error codes from dev_pm_domain_attach()
-Date: Mon, 14 May 2018 20:57:17 +0200
-Message-ID: <CAPDyKFqY5u3=db7-Xd9JXWo228PSNbH7-m-QNfSY9z8Z3p8t8A@mail.gmail.com>
-References: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
- <1524732790-2234-8-git-send-email-ulf.hansson@linaro.org> <20180514151907.GK98604@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [RFC PATCH 01/10] devfreq: rockchip-dfi: Move GRF definitions to a common place.
+Date: Mon, 14 May 2018 23:16:01 +0200
+Message-ID: <20180514211610.26618-2-enric.balletbo@collabora.com>
+References: <20180514211610.26618-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180514151907.GK98604@atomide.com>
+In-Reply-To: <20180514211610.26618-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Vinod Koul <vinod.koul@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Russell King <linux@armlinux.org.uk>, Mark Brown <broonie@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Sanyog Kale <sanyog.r.kale@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14 May 2018 at 17:19, Tony Lindgren <tony@atomide.com> wrote:
-> Ulf,
->
-> * Ulf Hansson <ulf.hansson@linaro.org> [180426 09:01]:
->> The limitation of being able to check only for -EPROBE_DEFER from
->> dev_pm_domain_attach() has been removed. Hence let's respect all error
->> codes and bail out accordingly.
->>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  drivers/base/platform.c | 17 ++++++++---------
->>  1 file changed, 8 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
->> index 8075ddc..9460139 100644
->> --- a/drivers/base/platform.c
->> +++ b/drivers/base/platform.c
->> @@ -572,17 +572,16 @@ static int platform_drv_probe(struct device *_dev)
->>               return ret;
->>
->>       ret = dev_pm_domain_attach(_dev, true);
->> -     if (ret != -EPROBE_DEFER) {
->> -             if (drv->probe) {
->> -                     ret = drv->probe(dev);
->> -                     if (ret)
->> -                             dev_pm_domain_detach(_dev, true);
->> -             } else {
->> -                     /* don't fail if just dev_pm_domain_attach failed */
->> -                     ret = 0;
->> -             }
->> +     if (ret)
->> +             goto out;
->> +
->> +     if (drv->probe) {
->> +             ret = drv->probe(dev);
->> +             if (ret)
->> +                     dev_pm_domain_detach(_dev, true);
->>       }
->>
->> +out:
->>       if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
->>               dev_warn(_dev, "probe deferral not supported\n");
->>               ret = -ENXIO;
->> --
->
-> Looks like this causes Linux next to not boot for me with device
-> probes failing with error -17. So that's at least omaps, looks
-> like kernelci has others failing too.
+Some rk3399 GRF (Generic Register Files) definitions can be used for
+different drivers. Move these definitions to a common include so we
+don't need to duplicate these definitions.
 
-Yep, problem also reported for some Exynos5 platforms.
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
 
-Omap suffers from the similar problem, because of its SoC specific way
-of attaching devices to PM domains.
+ drivers/devfreq/event/rockchip-dfi.c | 23 +++++++----------------
+ include/soc/rockchip/rk3399_grf.h    | 21 +++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 16 deletions(-)
+ create mode 100644 include/soc/rockchip/rk3399_grf.h
 
->
-> Reverting for 8c123c14bbba ("driver core: Respect all error codes from
-> dev_pm_domain_attach()") fixes the issue for me.
->
-> Sounds like something is missing, any ideas?
-
-This should solve the problem:
-
-https://patchwork.kernel.org/patch/10398597/
-
-Kind regards
-Uffe
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 22b113363ffc..2fbbcbeb644f 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -26,6 +26,8 @@
+ #include <linux/list.h>
+ #include <linux/of.h>
+ 
++#include <soc/rockchip/rk3399_grf.h>
++
+ #define RK3399_DMC_NUM_CH	2
+ 
+ /* DDRMON_CTRL */
+@@ -43,18 +45,6 @@
+ #define DDRMON_CH1_COUNT_NUM		0x3c
+ #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
+ 
+-/* pmu grf */
+-#define PMUGRF_OS_REG2	0x308
+-#define DDRTYPE_SHIFT	13
+-#define DDRTYPE_MASK	7
+-
+-enum {
+-	DDR3 = 3,
+-	LPDDR3 = 6,
+-	LPDDR4 = 7,
+-	UNUSED = 0xFF
+-};
+-
+ struct dmc_usage {
+ 	u32 access;
+ 	u32 total;
+@@ -83,16 +73,17 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
+ 	u32 ddr_type;
+ 
+ 	/* get ddr type */
+-	regmap_read(info->regmap_pmu, PMUGRF_OS_REG2, &val);
+-	ddr_type = (val >> DDRTYPE_SHIFT) & DDRTYPE_MASK;
++	regmap_read(info->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
++	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
++		    RK3399_PMUGRF_DDRTYPE_MASK;
+ 
+ 	/* clear DDRMON_CTRL setting */
+ 	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
+ 
+ 	/* set ddr type to dfi */
+-	if (ddr_type == LPDDR3)
++	if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
+ 		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
+-	else if (ddr_type == LPDDR4)
++	else if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
+ 		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
+ 
+ 	/* enable count, use software mode */
+diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
+new file mode 100644
+index 000000000000..0f94034e2e9a
+--- /dev/null
++++ b/include/soc/rockchip/rk3399_grf.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Rockchip Generic Register Files definitions
++ *
++ * Copyright (c) 2018, Collabora Ltd.
++ * Author: Enric Balletbo i Serra <enric.balletbo@collabora.com>
++ */
++
++#ifndef __SOC_RK3399_GRF_H
++#define __SOC_RK3399_GRF_H
++
++/* PMU GRF Registers */
++#define RK3399_PMUGRF_OS_REG2		0x308
++#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
++#define RK3399_PMUGRF_DDRTYPE_MASK	7
++#define RK3399_PMUGRF_DDRTYPE_DDR3	3
++#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
++#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
++#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
++
++#endif
+-- 
+2.17.0
