@@ -1,75 +1,44 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] thermal: exynos: Reduce severity of too early
- temperature read
-Date: Mon, 14 May 2018 18:48:58 +0200
-Message-ID: <5680419.dyeeL7KHIb@amdc3058>
-References: <CGME20180513175436epcas1p1475e12e647ec135d0fedd29e5992c152@epcas1p1.samsung.com>
-        <20180513175402.28887-1-krzk@kernel.org>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH] thermal: qcom: tsens: Allow number of sensors to come
+ from DT
+Date: Mon, 14 May 2018 10:46:49 -0700
+Message-ID: <20180514174649.GM14924@minitux>
+References: <20180507235339.8836-1-bjorn.andersson@linaro.org>
+ <CAHLCerN9zQEJK4WoV6BY6hga2BxwzMsyScWnTdYcLgEk0Bjg4w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180513175402.28887-1-krzk@kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAHLCerN9zQEJK4WoV6BY6hga2BxwzMsyScWnTdYcLgEk0Bjg4w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rajendra Nayak <rnayak@codeaurora.org>, Linux PM list <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, May 13, 2018 07:54:02 PM Krzysztof Kozlowski wrote:
-> Thermal core tries to read temperature during sensor registering in
-> thermal_zone_of_sensor_register().  In that time Exynos TMU driver and
-> hardware are not yet initialized.  Commit 0eb875d88aaa ("thermal:
-> exynos: Reading temperature makes sense only when TMU is turned on")
-> added a boolean flag to prevent reading bogus temperature in such
-> case but it exposed warning message during boot:
-> 	[    3.864913] thermal thermal_zone0: failed to read out thermal zone (-22)
+On Mon 14 May 07:45 PDT 2018, Amit Kucheria wrote:
+
+> On Tue, May 8, 2018 at 2:53 AM, Bjorn Andersson
+> <bjorn.andersson@linaro.org> wrote:
+> > For platforms that has multiple copies of the TSENS hardware block it's
+> > necessary to be able to specify the number of sensors per block in DeviceTree.
 > 
-> Return EAGAIN in such case to skip omitting such message because it
-> might mislead user.
-
-Hi Krzysztof,
-
-I've fixed this in generic way a month ago:
-
-	https://lkml.org/lkml/2018/4/10/376
-
-(there has been not much feedback on it yet)
-
-However since my patchset is not v4.17 material:
-
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Eduardo, please queue it for v4.17 if possible, thanks.
-
-> ---
->  drivers/thermal/samsung/exynos_tmu.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
+> I assume you want to replace the hardcoded num_sensors values in the
+> tsens-xxxx.c files with values in device tree atleast on platforms
+> that use devicetree?
 > 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 3b20309789e3..c24969d740d1 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -666,8 +666,14 @@ static int exynos_get_temp(void *p, int *temp)
->  	struct exynos_tmu_data *data = p;
->  	int value, ret = 0;
->  
-> -	if (!data || !data->tmu_read || !data->enabled)
-> +	if (!data || !data->tmu_read)
->  		return -EINVAL;
-> +	else if (!data->enabled)
-> +		/*
-> +		 * Called too early, probably
-> +		 * from thermal_zone_of_sensor_register().
-> +		 */
-> +		return -EAGAIN;
->  
->  	mutex_lock(&data->lock);
->  	clk_enable(data->clk);
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Right, e.g. in msm8998 we have two blocks with 12 and 8 sensors
+respectively. With the patch we will overwrite the num_sensors with a
+value from DT, iff specified.
+
+As probe will fail if num_sensors is 0 we can reuse ops_8996 and just
+not provide num_sensors for 8998, hence requiring it to be specified in
+DT.
+
+
+PS. Looking at the register spec 8996 too seems to have two tsens
+blocks, so in order to access sensors off the second bank this patch
+would be needed (and would work and be backwards compatible).
+
+Regards,
+Bjorn
