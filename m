@@ -1,7 +1,7 @@
 From: Anson Huang <Anson.Huang@nxp.com>
-Subject: [PATCH 3/3] ARM: dts: imx: add cooling-cells for cpufreq cooling device
-Date: Mon, 14 May 2018 16:09:19 +0800
-Message-ID: <1526285359-17978-3-git-send-email-Anson.Huang@nxp.com>
+Subject: [PATCH 2/3] cpufreq: imx6q: add cpufreq cooling device based on device tree
+Date: Mon, 14 May 2018 16:09:18 +0800
+Message-ID: <1526285359-17978-2-git-send-email-Anson.Huang@nxp.com>
 References: <1526285359-17978-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,90 +12,64 @@ To: shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, fabio.es
 Cc: Linux-imx@nxp.com, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add #cooling-cells for i.MX6/7 SoCs for cpufreq
-cooling device usage.
+Register the imx6q cpufreq driver as a cooling device
+based on the thermal device tree framework.
+
+When temperature exceeds the passive trip point, cpufreq
+driver will be used to throttle CPUs.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 ---
- arch/arm/boot/dts/imx6dl.dtsi | 1 +
- arch/arm/boot/dts/imx6q.dtsi  | 1 +
- arch/arm/boot/dts/imx6sl.dtsi | 1 +
- arch/arm/boot/dts/imx6sx.dtsi | 1 +
- arch/arm/boot/dts/imx6ul.dtsi | 1 +
- arch/arm/boot/dts/imx7d.dtsi  | 1 +
- 6 files changed, 6 insertions(+)
+ drivers/cpufreq/imx6q-cpufreq.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm/boot/dts/imx6dl.dtsi b/arch/arm/boot/dts/imx6dl.dtsi
-index 558bce8..b830dfd 100644
---- a/arch/arm/boot/dts/imx6dl.dtsi
-+++ b/arch/arm/boot/dts/imx6dl.dtsi
-@@ -39,6 +39,7 @@
- 				396000	1175000
- 			>;
- 			clock-latency = <61036>; /* two CLK32 periods */
-+			#cooling-cells = <2>;
- 			clocks = <&clks IMX6QDL_CLK_ARM>,
- 				 <&clks IMX6QDL_CLK_PLL2_PFD2_396M>,
- 				 <&clks IMX6QDL_CLK_STEP>,
-diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-index ae7b3f1..ac9f5cb 100644
---- a/arch/arm/boot/dts/imx6q.dtsi
-+++ b/arch/arm/boot/dts/imx6q.dtsi
-@@ -44,6 +44,7 @@
- 				396000	1175000
- 			>;
- 			clock-latency = <61036>; /* two CLK32 periods */
-+			#cooling-cells = <2>;
- 			clocks = <&clks IMX6QDL_CLK_ARM>,
- 				 <&clks IMX6QDL_CLK_PLL2_PFD2_396M>,
- 				 <&clks IMX6QDL_CLK_STEP>,
-diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-index ab6a7e2..d35d4e9 100644
---- a/arch/arm/boot/dts/imx6sl.dtsi
-+++ b/arch/arm/boot/dts/imx6sl.dtsi
-@@ -65,6 +65,7 @@
- 				396000          1175000
- 			>;
- 			clock-latency = <61036>; /* two CLK32 periods */
-+			#cooling-cells = <2>;
- 			clocks = <&clks IMX6SL_CLK_ARM>, <&clks IMX6SL_CLK_PLL2_PFD2>,
- 					<&clks IMX6SL_CLK_STEP>, <&clks IMX6SL_CLK_PLL1_SW>,
- 					<&clks IMX6SL_CLK_PLL1_SYS>;
-diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-index 49c7205..966e39a 100644
---- a/arch/arm/boot/dts/imx6sx.dtsi
-+++ b/arch/arm/boot/dts/imx6sx.dtsi
-@@ -83,6 +83,7 @@
- 				198000	    1175000
- 			>;
- 			clock-latency = <61036>; /* two CLK32 periods */
-+			#cooling-cells = <2>;
- 			clocks = <&clks IMX6SX_CLK_ARM>,
- 				 <&clks IMX6SX_CLK_PLL2_PFD2>,
- 				 <&clks IMX6SX_CLK_STEP>,
-diff --git a/arch/arm/boot/dts/imx6ul.dtsi b/arch/arm/boot/dts/imx6ul.dtsi
-index 1241972..14b6ac7 100644
---- a/arch/arm/boot/dts/imx6ul.dtsi
-+++ b/arch/arm/boot/dts/imx6ul.dtsi
-@@ -66,6 +66,7 @@
- 			device_type = "cpu";
- 			reg = <0>;
- 			clock-latency = <61036>; /* two CLK32 periods */
-+			#cooling-cells = <2>;
- 			operating-points = <
- 				/* kHz	uV */
- 				696000	1275000
-diff --git a/arch/arm/boot/dts/imx7d.dtsi b/arch/arm/boot/dts/imx7d.dtsi
-index 200714e..49913717 100644
---- a/arch/arm/boot/dts/imx7d.dtsi
-+++ b/arch/arm/boot/dts/imx7d.dtsi
-@@ -53,6 +53,7 @@
- 				792000	975000
- 			>;
- 			clock-frequency = <996000000>;
-+			#cooling-cells = <2>;
- 		};
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index 83cf631..27ce84d 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -9,6 +9,7 @@
+ #include <linux/clk.h>
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/err.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -50,6 +51,7 @@ static struct clk_bulk_data clks[] = {
+ };
  
- 		cpu1: cpu@1 {
+ static struct device *cpu_dev;
++struct thermal_cooling_device *cdev;
+ static bool free_opp;
+ static struct cpufreq_frequency_table *freq_table;
+ static unsigned int max_freq;
+@@ -202,6 +204,11 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ 	return ret;
+ }
+ 
++static void imx6q_cpufreq_ready(struct cpufreq_policy *policy)
++{
++	cdev = of_cpufreq_cooling_register(policy);
++}
++
+ static struct cpufreq_driver imx6q_cpufreq_driver = {
+ 	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+@@ -210,6 +217,7 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
+ 	.init = imx6q_cpufreq_init,
+ 	.name = "imx6q-cpufreq",
+ 	.attr = cpufreq_generic_attr,
++	.ready = imx6q_cpufreq_ready,
+ 	.suspend = cpufreq_generic_suspend,
+ };
+ 
+@@ -482,6 +490,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 
+ static int imx6q_cpufreq_remove(struct platform_device *pdev)
+ {
++	cpufreq_cooling_unregister(cdev);
+ 	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+ 	if (free_opp)
 -- 
 2.7.4
