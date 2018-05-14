@@ -1,49 +1,58 @@
 From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v2 00/13] add power domain support for Rockchip Socs
-Date: Mon, 14 May 2018 11:27:35 +0800
-Message-ID: <1526268455-9133-1-git-send-email-zhangqing@rock-chips.com>
+Subject: [PATCH v2 01/13] dt-bindings: power: add RK3036 SoCs header for power-domain
+Date: Mon, 14 May 2018 11:28:21 +0800
+Message-ID: <1526268501-9200-1-git-send-email-zhangqing@rock-chips.com>
+References: <1526268455-9133-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1526268455-9133-1-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
 Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-add power domain support for RK3036/RK3128/RK3228/PX30 Soc.
-fix up the wrong value when set power domain up.
+From: Caesar Wang <wxt@rock-chips.com>
 
-Change in V2:
-Fix up the commit message description and Assign author.
+According to a description from TRM, add all the power domains.
 
-Caesar Wang (3):
-  dt-bindings: power: add RK3036 SoCs header for power-domain
-  dt-bindings: add binding for rk3036 power domains
-  Soc: rockchip: power-domain: add power domain support for rk3036
-
-Elaine Zhang (6):
-  dt-bindings: power: add RK3128 SoCs header for power-domain
-  dt-bindings: add binding for rk3128 power domains
-  soc: rockchip: power-domain: add power domain support for rk3128
-  dt-bindings: power: add RK3228 SoCs header for power-domain
-  dt-bindings: add binding for rk3228 power domains
-  soc: rockchip: power-domain: add power domain support for rk3228
-
-Finley Xiao (4):
-  soc: rockchip: power-domain: Fix wrong value when power up pd
-  dt-bindings: power: add PX30 SoCs header for power-domain
-  dt-bindings: add binding for px30 power domains
-  soc: rockchip: power-domain: add power domain support for px30
-
- .../bindings/soc/rockchip/power_domain.txt         |  12 +++
- drivers/soc/rockchip/pm_domains.c                  | 116 ++++++++++++++++++++-
- include/dt-bindings/power/px30-power.h             |  32 ++++++
- include/dt-bindings/power/rk3036-power.h           |  27 +++++
- include/dt-bindings/power/rk3128-power.h           |  28 +++++
- include/dt-bindings/power/rk3228-power.h           |  26 +++++
- 6 files changed, 240 insertions(+), 1 deletion(-)
- create mode 100644 include/dt-bindings/power/px30-power.h
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+---
+ include/dt-bindings/power/rk3036-power.h | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
  create mode 100644 include/dt-bindings/power/rk3036-power.h
- create mode 100644 include/dt-bindings/power/rk3128-power.h
- create mode 100644 include/dt-bindings/power/rk3228-power.h
 
+diff --git a/include/dt-bindings/power/rk3036-power.h b/include/dt-bindings/power/rk3036-power.h
+new file mode 100644
+index 000000000000..59e09f1c5af7
+--- /dev/null
++++ b/include/dt-bindings/power/rk3036-power.h
+@@ -0,0 +1,27 @@
++/*
++ * Copyright (c) 2017 Rockchip Electronics Co. Ltd.
++ * Author: Caesar Wang <wxt@rock-chips.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __DT_BINDINGS_POWER_RK3036_POWER_H__
++#define __DT_BINDINGS_POWER_RK3036_POWER_H__
++
++#define RK3036_PD_MSCH		0
++#define RK3036_PD_CORE		1
++#define RK3036_PD_PERI		2
++#define RK3036_PD_VIO		3
++#define RK3036_PD_VPU		4
++#define RK3036_PD_GPU		5
++#define RK3036_PD_SYS		6
++
++#endif
 -- 
 1.9.1
