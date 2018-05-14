@@ -1,42 +1,53 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH v4 0/6] devfreq: rk3399_dmc: improve rk3399_dmc driver
- and it's documentation
-Date: Mon, 14 May 2018 19:32:18 +0900
-Message-ID: <20180514103218epcms1p487dcebca93bacca64eca1775b2cd826d@epcms1p4>
-References: <20180509125749.31318-1-enric.balletbo@collabora.com>
-        <CGME20180509125801epcas2p29e23003ce1111e20bfcb3bdc5db94372@epcms1p4>
-Reply-To: myungjoo.ham@samsung.com
+From: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 1/3] thinkpad_acpi: add support for
+ inhibit_charge
+Date: Mon, 14 May 2018 13:41:33 +0300
+Message-ID: <CAHp75VdPOH7J1X4ZXmRsQ1yrB5n5RRmhPneWOnu7TFOAysgE6Q@mail.gmail.com>
+References: <20180513152937.GA5072@thinkpad>
+ <20180514094620.wfoom4mwwyqb7qe5@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180509125749.31318-1-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Kyungmin Park <kyungmin.park@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dianders@google.com" <dianders@google.com>, "groeck@chromium.org" <groeck@chromium.org>, "kernel@collabora.com" <kernel@collabora.com>, "hl@rock-chips.com" <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
+Content-Transfer-Encoding: base64
+Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+In-Reply-To: <20180514094620.wfoom4mwwyqb7qe5@localhost>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
+List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: Ognjen Galic <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
->Dear all,
->
->These patches is an attempt to improve a little bit the rk3399_dmc
->driver and it's documentation in order to have all in a better shape for
->a future work I am doing. My final intention is add ddrfreq support for
->rockchip drm driver, but the patches for this are still
->work-in-progress. So let's start with this first patchset that is
->basically some fixes/improvements for the rk3399_dmc driver.
->
->The patches apply on top of current 4.17-rc3.
->
->Best regards,
-> Enric
->
-
-Dear Enric,
-
-It appears that this patchset is ready to be applied.
-
-Is "dt-binding" part going to be merged separatedly?
-Or may I handle all the 6 commits? (assuming the three dt-binding got acks from dt maintainers)
-
-Cheers,
-MyungJoo
+T24gTW9uLCBNYXkgMTQsIDIwMTggYXQgMTI6NDYgUE0sIENocmlzdG9waCBCw7ZobXdhbGRlcgo8
+Y2hyaXN0b3BoQGJvZWhtd2FsZGVyLmF0PiB3cm90ZToKPiBPbiBTdW4sIE1heSAxMywgMjAxOCBh
+dCAwNToyOTozN1BNICswMjAwLCBPZ25qZW4gR2FsaWMgd3JvdGU6Cj4+IExlbm92byBUaGlua1Bh
+ZCBzeXN0ZW1zIHN1cHBvcnQgdGhlIHByZXZlbnRpb24gb2YKPj4gYmF0dGVyeSBjaGFyZ2luZyB2
+aWEgYSBtYW51YWwgb3ZlcnJpZGUgY2FsbGVkIEluaGliaXQgQ2hhcmdlLgo+Pgo+PiBUaGlzIHBh
+dGNoIGFkZHMgc3VwcG9ydCBmb3IgdGhhdCBhdHRyaWJ1dGUgYW5kIGV4cG9zZXMgaXQgdmlhIHRo
+ZQo+PiBiYXR0ZXJ5IEFDUEkgZHJpdmVyIGluIHRoZSBnZW5lcmljIGxvY2F0aW9uOgo+Pgo+PiAv
+c3lzL2NsYXNzL3Bvd2VyX3N1cHBseS9CQVRYL2luaGliaXRfY2hhcmdlCgo+PiArICAgICAgICAg
+ICAgIC8qIFdoZW4gc2V0dGluZyBpbmhiaXRpdCBjaGFyZ2UsIHdlIHNldCBhIGRlZmF1bHQgdmF1
+bHVlIG9mCj4KPiBUaGlzIGNvbW1lbnQgZG9lcyBub3QgYWRoZXJlIHRvIHRoZSBMaW51eCBjb2Rp
+bmcgc3R5bGUKCldoaWxlIHlvdSBhcmUgcmlnaHQgaW4gcHJpbmNpcGxlLCB0aGUgd2hvbGUgZHJp
+dmVyIGlzIHNvIG9sZCBhbmQgdXNlcwp0aGlzIHN0eWxlLiBTbywgZm9yIHN1Y2ggY2FzZXMgd2Us
+IGFzIG1haW50YWluZXJzLCBwcmVmZXIgbGVzcwpkZXZpYXRpb24gd29yaywgaS5lLiBrZWVwaW5n
+IHRoZQpzdHlsZSBpcyBhIGdvb2QgdGhpbmcgdG8gZG8uCgo+PiArICAgICAgICAgICAgIC8qIFRo
+ZSBvbmx5IHZhbGlkIHZhbHVlcyBhcmUgMSBhbmQgMCAqLwo+PiArICAgICAgICAgICAgIGlmICh2
+YWx1ZSAhPSAwICYmIHZhbHVlICE9IDEpCj4KPiBJJ20gbm90IHN1cmUsIGJ1dCBtYXliZSBgaWYg
+KHZhbHVlIDwgMilgIGlzIGJldHRlciBoZXJlPwoKU2luY2UgaXQncyBhYm91dCBpbnRlZ2VyLWFz
+LWEtYm9vbGVhbiwgdGVzdCBmb3IgYml0IDAgd291bGQgYmUKc3VmZmljaWVudCwgaS5lLiB+QklU
+KDApLiBUaG91Z2gsIEkgZmluZCB0aGlzIGZvcm0gbm90IHNvIHJlYWRhYmxlCnNpbmNlIHRoZSBp
+bnB1dCBjb21lcyBhY3R1YWxseSBmcm9tIHRoZSB1c2VyLgpJdCB3b3VsZCBiZSBuaWNlIHRvIGhh
+dmUganVzdCBrc3RydG9ib29sKCkgY2FsbGVkIGluc3RlYWQgZm9yIHN1Y2gKb3B0aW9ucywgYnV0
+IHNlZSBhYm92ZS4gSXQgd291bGQgbmVlZCBhIChodWdlKSByZWZhY3RvcmluZyBvZiB0aGUKZHJp
+dmVyIGZpcnN0LgoKLS0gCldpdGggQmVzdCBSZWdhcmRzLApBbmR5IFNoZXZjaGVua28KCi0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQpDaGVjayBvdXQgdGhlIHZpYnJhbnQgdGVjaCBjb21tdW5pdHkgb24g
+b25lIG9mIHRoZSB3b3JsZCdzIG1vc3QKZW5nYWdpbmcgdGVjaCBzaXRlcywgU2xhc2hkb3Qub3Jn
+ISBodHRwOi8vc2RtLmxpbmsvc2xhc2hkb3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KaWJtLWFjcGktZGV2ZWwgbWFpbGluZyBsaXN0CmlibS1hY3BpLWRl
+dmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9s
+aXN0cy9saXN0aW5mby9pYm0tYWNwaS1kZXZlbAo=
