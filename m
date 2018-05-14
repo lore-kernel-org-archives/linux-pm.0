@@ -1,54 +1,61 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH v2 04/13] soc: rockchip: power-domain: Fix wrong value when power up pd
-Date: Mon, 14 May 2018 11:45:05 +0200
-Message-ID: <1861053.XlXe5vHN1s@phil>
-References: <1526268455-9133-1-git-send-email-zhangqing@rock-chips.com> <1526268578-9361-1-git-send-email-zhangqing@rock-chips.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 00/13] add power domain support for Rockchip Socs
+Date: Mon, 14 May 2018 11:51:59 +0200
+Message-ID: <CAPDyKFqJvMt2A1ayAVRQC-gQxzu2+cmTU+chgSK0SvEXgyC2Wg@mail.gmail.com>
+References: <1526268455-9133-1-git-send-email-zhangqing@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526268578-9361-1-git-send-email-zhangqing@rock-chips.com>
+In-Reply-To: <1526268455-9133-1-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Elaine Zhang <zhangqing@rock-chips.com>, linux-pm@vger.kernel.org
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>
+To: Elaine Zhang <zhangqing@rock-chips.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Caesar Wang <wxt@rock-chips.com>, xxx@rock-chips.com, Feng Xiao <xf@rock-chips.com>, Tao Huang <huangtao@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Elaine,
+On 14 May 2018 at 05:27, Elaine Zhang <zhangqing@rock-chips.com> wrote:
+> add power domain support for RK3036/RK3128/RK3228/PX30 Soc.
+> fix up the wrong value when set power domain up.
+>
+> Change in V2:
+> Fix up the commit message description and Assign author.
+>
+> Caesar Wang (3):
+>   dt-bindings: power: add RK3036 SoCs header for power-domain
+>   dt-bindings: add binding for rk3036 power domains
+>   Soc: rockchip: power-domain: add power domain support for rk3036
+>
+> Elaine Zhang (6):
+>   dt-bindings: power: add RK3128 SoCs header for power-domain
+>   dt-bindings: add binding for rk3128 power domains
+>   soc: rockchip: power-domain: add power domain support for rk3128
+>   dt-bindings: power: add RK3228 SoCs header for power-domain
+>   dt-bindings: add binding for rk3228 power domains
+>   soc: rockchip: power-domain: add power domain support for rk3228
+>
+> Finley Xiao (4):
+>   soc: rockchip: power-domain: Fix wrong value when power up pd
+>   dt-bindings: power: add PX30 SoCs header for power-domain
+>   dt-bindings: add binding for px30 power domains
+>   soc: rockchip: power-domain: add power domain support for px30
+>
+>  .../bindings/soc/rockchip/power_domain.txt         |  12 +++
+>  drivers/soc/rockchip/pm_domains.c                  | 116 ++++++++++++++++++++-
+>  include/dt-bindings/power/px30-power.h             |  32 ++++++
+>  include/dt-bindings/power/rk3036-power.h           |  27 +++++
+>  include/dt-bindings/power/rk3128-power.h           |  28 +++++
+>  include/dt-bindings/power/rk3228-power.h           |  26 +++++
+>  6 files changed, 240 insertions(+), 1 deletion(-)
+>  create mode 100644 include/dt-bindings/power/px30-power.h
+>  create mode 100644 include/dt-bindings/power/rk3036-power.h
+>  create mode 100644 include/dt-bindings/power/rk3128-power.h
+>  create mode 100644 include/dt-bindings/power/rk3228-power.h
+>
+> --
+> 1.9.1
 
-Am Montag, 14. Mai 2018, 05:29:38 CEST schrieb Elaine Zhang:
-> From: Finley Xiao <finley.xiao@rock-chips.com>
-> 
-> Solve the pd could only ever turn off but never turn them on again,
-> If the pd registers have the writemask bits.
-> 
-> Fix up the code error for commit:
-> 	commit 79bb17ce8edb3141339b5882e372d0ec7346217c
-> 	Author: Elaine Zhang <zhangqing@rock-chips.com>
-> 	Date:   Fri Dec 23 11:47:52 2016 +0800
-> 
-> 	soc: rockchip: power-domain: Support domain control in hiword-registers
-> 
-> 	New Rockchips SoCs may have their power-domain control in registers
-> 	using a writemask-based access scheme (upper 16bit being the write
-> 	mask). So add a DOMAIN_M type and handle this case accordingly.
-> 	Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
-> 	Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-> 
-> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
-> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+FWIW, for the series:
 
-As Gregs automated mail noted, the stable-notice needed some changes.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org
 
-I've done these changes and applied the result for 4.18.
-
-When you look at [0] you'll see  the two lines "Fixes:..." and "Cc:..."
-in the commit message. Greg then has automated scripts running that
-extract so marked patches from Linus' tree and queue them for possible
-stable-inclusion.
-
-[The other patches need to wait a bit to give Rob a chance to Ack them]
-
-Heiko
-
-
-[0] https://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip.git/commit/?id=ed726894761c056b3513ce15915af74ce5d7d57b
+Kind regards
+Uffe
