@@ -1,88 +1,49 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] thermal: qcom: tsens: Allow number of sensors to come
- from DT
-Date: Mon, 14 May 2018 17:45:56 +0300
-Message-ID: <CAHLCerN9zQEJK4WoV6BY6hga2BxwzMsyScWnTdYcLgEk0Bjg4w@mail.gmail.com>
-References: <20180507235339.8836-1-bjorn.andersson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Domains: Don't return -EEXIST at attach when PM domain exists
+Date: Mon, 14 May 2018 16:52:37 +0200
+Message-ID: <1526309557-7995-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180507235339.8836-1-bjorn.andersson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rajendra Nayak <rnayak@codeaurora.org>, Linux PM list <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "linux-samsung-soc @ vger . kernel . org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 8, 2018 at 2:53 AM, Bjorn Andersson
-<bjorn.andersson@linaro.org> wrote:
-> For platforms that has multiple copies of the TSENS hardware block it's
-> necessary to be able to specify the number of sensors per block in DeviceTree.
+As dev_pm_domain_attach() isn't the only way to assign PM domain pointers
+to devices, clearly we must allow a device to have the pointer already
+being assigned. For this reason, return 0 instead of -EEXIST.
 
-I assume you want to replace the hardcoded num_sensors values in the
-tsens-xxxx.c files with values in device tree atleast on platforms
-that use devicetree?
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Tested-by: Tested-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
 
-> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> ---
->  .../devicetree/bindings/thermal/qcom-tsens.txt       |  1 +
->  drivers/thermal/qcom/tsens.c                         | 12 +++++++++---
->  2 files changed, 10 insertions(+), 3 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> index 292ed89d900b..06195e8f35e2 100644
-> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> @@ -8,6 +8,7 @@ Required properties:
->
->  - reg: Address range of the thermal registers
->  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-> +- #qcom,sensors: Number of sensors in tsens block
->  - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
->  nvmem cells
->
-> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> index 3f9fe6aa51cc..20f3b87d7667 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -116,6 +116,7 @@ static int tsens_probe(struct platform_device *pdev)
->         struct tsens_device *tmdev;
->         const struct tsens_data *data;
->         const struct of_device_id *id;
-> +       u32 num_sensors;
->
->         if (pdev->dev.of_node)
->                 dev = &pdev->dev;
-> @@ -130,18 +131,23 @@ static int tsens_probe(struct platform_device *pdev)
->         else
->                 data = &data_8960;
->
-> -       if (data->num_sensors <= 0) {
-> +       num_sensors = data->num_sensors;
-> +
-> +       if (np)
-> +               of_property_read_u32(np, "#qcom,sensors", &num_sensors);
-> +
-> +       if (num_sensors <= 0) {
->                 dev_err(dev, "invalid number of sensors\n");
->                 return -EINVAL;
->         }
->
->         tmdev = devm_kzalloc(dev, sizeof(*tmdev) +
-> -                            data->num_sensors * sizeof(*s), GFP_KERNEL);
-> +                            num_sensors * sizeof(*s), GFP_KERNEL);
->         if (!tmdev)
->                 return -ENOMEM;
->
->         tmdev->dev = dev;
-> -       tmdev->num_sensors = data->num_sensors;
-> +       tmdev->num_sensors = num_sensors;
->         tmdev->ops = data->ops;
->         for (i = 0;  i < tmdev->num_sensors; i++) {
->                 if (data->hw_ids)
-> --
-> 2.17.0
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Krzysztof reported problems for an Exynos5 board, where some devices are added
+to their PM domains (genpd) via calling of_genpd_add_device(). As also pointed
+out by Sylvester, this leads to probe failure when dev_pm_domain_attach()
+returns -EXISTS.
+
+Rafael, potentially this change could be squashed with the recently queued
+patch: "PM / Domains: Check for existing PM domain in dev_pm_domain_attach()",
+but perhaps its too late for that and the fix is better applied on top!?
+
+---
+ drivers/base/power/common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index 5e4b481..390868c 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -106,7 +106,7 @@ int dev_pm_domain_attach(struct device *dev, bool power_on)
+ 	int ret;
+ 
+ 	if (dev->pm_domain)
+-		return -EEXIST;
++		return 0;
+ 
+ 	ret = acpi_dev_pm_attach(dev, power_on);
+ 	if (!ret)
+-- 
+2.7.4
