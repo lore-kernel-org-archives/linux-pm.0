@@ -1,99 +1,52 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] arm64: dts: exynos: fix type of thermal trip points for Exynos7
-Date: Tue, 15 May 2018 14:59:33 +0200
-Message-ID: <CAJKOXPdW7Ovo9GW=29tqa3rEAkSFgrEzbxm_wdGmRpamgk2-ig@mail.gmail.com>
-References: <CGME20180515123755eucas1p278a9c1e9cb0101e406e3839e27f8b3b1@eucas1p2.samsung.com>
- <1702366.qL959G52Hi@amdc3058>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1702366.qL959G52Hi@amdc3058>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Thomas Martitz <kugel@rockbox.org>
+Subject: [PATCH] PM/ runtime: fix resume from suspend on newer hp zbook/elitebook
+Date: Tue, 15 May 2018 15:35:08 +0200
+Message-ID: <20180515133508.2913-1-kugel@rockbox.org>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Martitz <kugel@rockbox.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 15, 2018 at 2:37 PM, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
-> Currently Exynos thermal driver treats as "active" all specified
-> trip points before reaching maximum number of hardware supported
-> trip points.
+In 08810a4119aaebf6318f209ec5dd9828e969cba4 setting
+dev->power.direct_complete was made conditional on
+pm_runtime_suspended().
 
-The trip point type describe the way how system should act - use
-active or passive cooling. It is independent of thermal driver. I do
-not understand what is exactly wrong... maybe except whether the trip
-point is active/passive looks like property of board, not SoC itself,
-but your patch does not address it.
+The justification was:
+    While at it, make the core check pm_runtime_suspended() when
+    setting power.direct_complete so that it doesn't need to be
+    checked by ->prepare callbacks.
 
-> Moreover polling-delay-passive is specified as "0"
-> in exynos7.dtsi (IOW passive polling is disabled).
+However, this breaks resuming from suspend on those newer HP laptops
+if the amdgpu driver is used (due to hybrid intel+radeon graphics). Given
+the justification for the change, undoing it seems best as it
+appears to have unintended side effects.
 
-Which is perfectly fine. TMU driver for Exynos7 supports up to eight
-trip points in interrupt mode so having polling mode = 0 is good. IOW
-passive polling is disabled just like active polling is disabled so
-what did you want to say here?
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=199693
+References: https://bugs.freedesktop.org/show_bug.cgi?id=106447
+Signed-off-by: Thomas Martitz <kugel@rockbox.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>
+Cc: <linux-pm@vger.kernel.org>
+Cc: <stable@vger.kernel.org> [4.15+]
+Signed-off-by: Thomas Martitz <kugel@rockbox.org>
+---
+ drivers/base/power/main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Best regards,
-Krzysztof
-
-> Therefore fix
-> type of cpu-alert-0 to cpu-alert6 trip points to be "active"
-> instead of "passive" (cpu-alert-7 type is "critical" so it
-> doesn't need a fixup).
->
-> Cc: Alim Akhtar <alim.akhtar@samsung.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi |   14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
->
-> Index: b/arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi
-> ===================================================================
-> --- a/arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi       2018-05-15 13:57:55.822172496 +0200
-> +++ b/arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi       2018-05-15 14:23:12.594016481 +0200
-> @@ -10,37 +10,37 @@ trips {
->         cpu-alert-0 {
->                 temperature = <75000>; /* millicelsius */
->                 hysteresis = <10000>; /* millicelsius */
-> -               type = "passive";
-> +               type = "active";
->         };
->         cpu-alert-1 {
->                 temperature = <80000>; /* millicelsius */
->                 hysteresis = <10000>; /* millicelsius */
-> -               type = "passive";
-> +               type = "active";
->         };
->         cpu-alert-2 {
->                 temperature = <85000>; /* millicelsius */
->                 hysteresis = <10000>; /* millicelsius */
-> -               type = "passive";
-> +               type = "active";
->         };
->         cpu-alert-3 {
->                 temperature = <90000>; /* millicelsius */
->                 hysteresis = <10000>; /* millicelsius */
-> -               type = "passive";
-> +               type = "active";
->         };
->         cpu-alert-4 {
->                 temperature = <95000>; /* millicelsius */
->                 hysteresis = <10000>; /* millicelsius */
-> -               type = "passive";
-> +               type = "active";
->         };
->         cpu-alert-5 {
->                 temperature = <100000>; /* millicelsius */
->                 hysteresis = <10000>; /* millicelsius */
-> -               type = "passive";
-> +               type = "active";
->         };
->         cpu-alert-6 {
->                 temperature = <110000>; /* millicelsius */
->                 hysteresis = <10000>; /* millicelsius */
-> -               type = "passive";
-> +               type = "active";
->         };
->         cpu-crit-0 {
->                 temperature = <115000>; /* millicelsius */
->
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 02a497e7c785..b2fb0974f832 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1960,8 +1960,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 	 */
+ 	spin_lock_irq(&dev->power.lock);
+ 	dev->power.direct_complete = state.event == PM_EVENT_SUSPEND &&
+-		pm_runtime_suspended(dev) && ret > 0 &&
+-		!dev_pm_test_driver_flags(dev, DPM_FLAG_NEVER_SKIP);
++		ret > 0 && !dev_pm_test_driver_flags(dev, DPM_FLAG_NEVER_SKIP);
+ 	spin_unlock_irq(&dev->power.lock);
+ 	return 0;
+ }
+-- 
+2.17.0
