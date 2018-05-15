@@ -1,55 +1,103 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/2] Revert explicit support for Renesas R-Car Gen 3
- r8a779[56] SoCs
-Date: Tue, 15 May 2018 10:00:57 +0200
-Message-ID: <CAJZ5v0hyga1pHCqJK5e5y1fXJLLc3cDm1p7N2o6bzPZFNpRZxQ@mail.gmail.com>
-References: <20180502095806.30341-1-horms+renesas@verge.net.au>
- <2473510.IAjYrYimeR@aspire.rjw.lan>
- <20180515073553.372uzwx4gvj5qpk4@verge.net.au>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Tue, 15 May 2018 10:01:34 +0200
+Message-ID: <20180515080134.GH29062@mai>
+References: <1525948458-23488-1-git-send-email-daniel.lezcano@linaro.org>
+ <1525955163-14556-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180511093221.z5jfv4bo5kcdrzp4@vireshk-i7>
+ <20180511115539.GC29062@mai>
+ <20180515051241.xdrjj6u4ssqcatvy@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180515073553.372uzwx4gvj5qpk4@verge.net.au>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Simon Horman <horms@verge.net.au>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180515051241.xdrjj6u4ssqcatvy@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 15, 2018 at 9:35 AM, Simon Horman <horms@verge.net.au> wrote:
-> On Thu, May 10, 2018 at 11:51:38AM +0200, Rafael J. Wysocki wrote:
->> On Wednesday, May 2, 2018 11:58:04 AM CEST Simon Horman wrote:
->> > Revert commits that added explicit support for Renesas R-Car Gen 3
->> > r8a779[56] SoCs to the generic cpufreq driver.
->> >
->> > This is no longer needed since the flowing commit and to the best of my
->> > knowledge is not relied on by any upstream DTS: edeec420de24 ("cpufreq:
->> > dt-platdev: Automatically create cpufreq device with OPP v2")
->> >
->> > Simon Horman (2):
->> >   Revert "cpufreq: dt: Add r8a7796 support to to use generic cpufreq
->> >     driver"
->> >   Revert "cpufreq: rcar: Add support for R8A7795 SoC"
->> >
->> >  drivers/cpufreq/cpufreq-dt-platdev.c | 2 --
->> >  1 file changed, 2 deletions(-)
->> >
->> >
->>
->> Am I expected to pick up this series?
->
-> Hi Rafael,
->
-> that would be ideal from my point of view.
+On Tue, May 15, 2018 at 10:42:41AM +0530, viresh kumar wrote:
+> On 11-05-18, 13:55, Daniel Lezcano wrote:
+> > On Fri, May 11, 2018 at 03:02:21PM +0530, viresh kumar wrote:
+> > > On 10-05-18, 14:26, Daniel Lezcano wrote:
+> > > > +int idle_injection_start(struct idle_injection_device *ii_dev)
+> > > > +{
+> > > > +	if (!atomic_read(&ii_dev->idle_duration_ms))
+> > > > +		return -EINVAL;
+> > > > +
+> > > > +	if (!atomic_read(&ii_dev->run_duration_ms))
+> > > > +		return -EINVAL;
+> > > 
+> > > You are required to have them as atomic variables to take care of the
+> > > races while they are set ? 
+> > 
+> > The race is when you change the values, while the idle injection is acting and
+> > you read those values in the idle injection thread function.
+> > 
+> > > What about getting the durations as arguments to this routine then ?
+> > 
+> > May be I missed your point but I don't think that will change the above.
+> 
+> Well, it can. Can you explain the kind of use-cases you have in mind ?
+> 
+> For example, what I assumed to be the usecase was:
+> 
+> idle_injection_start(iidev, idle_duration, run_duration);
+> 
+> and then at some point of time:
+> 
+> idle_injection_stop(iidev);
+> 
+> 
+> With this, you would be required to stop the idle injection stuff to
+> reconfigure the durations. And then you will never have a race which
+> you mentioned above.
+> 
+> What you are trying to do is something like this:
+> 
+> idle_injection_set_duration(idle_duration, run_duration);
+> idle_injection_start(iidev);
+> 
+> and then at some point of time:
+> idle_injection_set_duration(idle_duration2, run_duration2);
 
-OK, I'll queue them up, then.
+Here potentially hundred of times between a start and a stop, and at a high
+rate.
+ 
+> and then at some point of time:
+> idle_injection_stop(iidev);
+> 
+> I am not sure if we would ever want to do something like this. Or if
+> stopping the idle injection to start it again is that bad of an idea.
 
-Thanks!
+It sounds strange, it is like you change the speed of the car by stopping and
+restarting the motor.
+ 
+> > > > +struct idle_injection_device *
+> > > > +idle_injection_register(struct cpumask *cpumask, const char *name)
+> > > > +{
+> > > > +	struct idle_injection_device *ii_dev;
+> > > > +	struct smp_hotplug_thread *smp_hotplug_thread;
+> > > > +	char *idle_injection_comm;
+> > > > +	int cpu, ret;
+> > > > +
+> > > > +	ret = -ENOMEM;
+> > > 
+> > > Maybe merge it earlier only ?
+> > 
+> > What do you mean ? int ret = -ENOMEM ?
+> 
+> Yes.
+
+Ok.
+
+-- 
+
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
