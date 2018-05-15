@@ -1,72 +1,109 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH] PM / AVS: rockchip-io: add io selectors and supplies for PX30
-Date: Tue, 15 May 2018 11:49:10 +0200
-Message-ID: <7587293.TUNouLJ331@phil>
-References: <1526376217-3833-1-git-send-email-david.wu@rock-chips.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v2 3/3] sched/fair: schedutil: explicit update only when required
+Date: Tue, 15 May 2018 12:12:22 +0200
+Message-ID: <CAKfTPtCF5bJcJ_qdy-VDP1t9CRP1fwcCdvneX36GQe-pzCz_gQ@mail.gmail.com>
+References: <20180511131509.16275-1-patrick.bellasi@arm.com> <20180511131509.16275-4-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526376217-3833-1-git-send-email-david.wu@rock-chips.com>
+In-Reply-To: <20180511131509.16275-4-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Wu <david.wu@rock-chips.com>
-Cc: khilman@baylibre.com, rafael.j.wysocki@intel.com, nm@ti.com, huangtao@rock-chips.com, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi David,
+Hi Patrick,
 
-looks good overall, some small things below.
+On 11 May 2018 at 15:15, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> Schedutil updates for FAIR tasks are triggered implicitly each time a
+> cfs_rq's utilization is updated via cfs_rq_util_change(), currently
+> called by update_cfs_rq_load_avg(), when the utilization of a cfs_rq has
+> changed, and {attach,detach}_entity_load_avg().
+>
+> This design is based on the idea that "we should callback schedutil
+> frequently enough" to properly update the CPU frequency at every
+> utilization change. However, such an integration strategy has also
+> some downsides:
+>
+>  - schedutil updates are triggered by RQ's load updates, which makes
+>    sense in general but it does not allow to know exactly which other RQ
+>    related information have been updated.
+>    Recently, for example, we had issues due to schedutil dependencies on
+>    cfs_rq->h_nr_running and estimated utilization updates.
+>
+>  - cfs_rq_util_change() is mainly a wrapper function for an already
+>    existing "public API", cpufreq_update_util(), which is required
+>    just to ensure we actually update schedutil only when we are updating
+>    a root cfs_rq.
+>    Thus, especially when task groups are in use, most of the calls to
+>    this wrapper function are not required.
+>
+>  - the usage of a wrapper function is not completely consistent across
+>    fair.c, since we could still need additional explicit calls to
+>    cpufreq_update_util().
+>    For example this already happens to report the IOWAIT boot flag in
+>    the wakeup path.
+>
+>  - it makes it hard to integrate new features since it could require to
+>    change other function prototypes just to pass in an additional flag,
+>    as it happened for example in commit:
+>
+>       commit ea14b57e8a18 ("sched/cpufreq: Provide migration hint")
+>
+> All the above considered, let's make schedutil updates more explicit in
+> fair.c by removing the cfs_rq_util_change() wrapper function in favour
+> of the existing cpufreq_update_util() public API.
 
-Am Dienstag, 15. Mai 2018, 11:23:37 CEST schrieb David Wu:
-> This adds the necessary data for handling io voltage domains on PX30.
-> As interesting tidbit, the PX30 contains two separate iodomain areas.
-> One in the regular General Register Files (GRF) and one in PMUGRF in the
-> pmu power domain.
-> 
-> Signed-off-by: David Wu <david.wu@rock-chips.com>
+removing the wrapper makes sense
+
+> This can be done by calling cpufreq_update_util() explicitly in the few
+> call sites where it really makes sense and when all the (potentially)
+> required cfs_rq's information have been updated.
+>
+> This patch mainly removes code and adds explicit schedutil updates
+> only when we:
+>  - {enqueue,dequeue}_task_fair() a task to/from the root cfs_rq
+
+The task's utilization is added during attach/detach and not during
+the enqueue/dequeue.
+
+>  - (un)throttle_cfs_rq() a set of tasks up to the root cfs_rq
+>  - task_tick_fair() to update the utilization of the root cfs_rq
+>
+> All the other code paths, currently _indirectly_ covered by a call to
+> update_load_avg(), are still covered. Indeed, some paths already imply
+> enqueue/dequeue calls:
+>  - switch_{to,from}_fair()
+>  - sched_move_task()
+> while others are followed by enqueue/dequeue calls:
+>  - cpu_cgroup_fork() and
+>    post_init_entity_util_avg():
+>      are used at wakeup_new_task() time and thus already followed by an
+>      enqueue_task_fair()
+>  - migrate_task_rq_fair():
+>      updates the removed utilization but not the actual cfs_rq
+>      utilization, which is updated by a following sched event
+
+The removed utilization will be applied during next call to
+update_cfs_rq_load_avg() which means at next call to update_load_avg()
+or update_blocked_averages()
+
+I'm going to continue on the longer reply that you made to Joel
+
+>
+> This new proposal allows also to better aggregate schedutil related
+> flags, which are required only at enqueue_task_fair() time.
+> IOWAIT and MIGRATION flags are now requested only when a task is
+> actually visible at the root cfs_rq level.
+>
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+>
 > ---
->  .../bindings/power/rockchip-io-domain.txt          |  2 +
->  drivers/power/avs/rockchip-io-domain.c             | 68 ++++++++++++++++++++++
->  2 files changed, 70 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
-> index 4a4766e..c2595ba 100644
-> --- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
-> +++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
-> @@ -31,6 +31,8 @@ SoC is on the same page.
->  
->  Required properties:
->  - compatible: should be one of:
-> +  - "rockchip,px30-io-voltage-domain" for px30
-> +  - "rockchip,px30-pmu-io-voltage-domain" for px30 pmu-domains
->    - "rockchip,rk3188-io-voltage-domain" for rk3188
->    - "rockchip,rk3228-io-voltage-domain" for rk3228
->    - "rockchip,rk3288-io-voltage-domain" for rk3288
-
-please also define the px30-specific supply names as can be seen in that
-file for the other socs.
-
-Also, please include devicetree maintainers, when modifying
-binding documents.
-
-
-> +static const struct rockchip_iodomain_soc_data soc_data_px30 = {
-> +	.grf_offset = 0x180,
-> +	.supply_names = {
-> +		NULL,
-> +		"vccio6",
-> +		"vccio1",
-> +		"vccio2",
-> +		"vccio3",
-> +		"vccio4",
-> +		"vccio5",
-> +		"vccio_oscgpi",
-
-vccio-oscgpi ... aka with a "-" instead of "_"
-
-With the above fixed
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-
-
-Thanks
-Heiko
