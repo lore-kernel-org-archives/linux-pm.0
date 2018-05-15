@@ -1,182 +1,116 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V5] cpufreq: intel_pstate: allow trace in passive mode
-Date: Tue, 15 May 2018 11:05:11 +0200
-Message-ID: <2717351.WdDDVb137V@aspire.rjw.lan>
-References: <1525328567-23747-1-git-send-email-dsmythies@telus.net> <3708753.N4DSO893cq@aspire.rjw.lan> <1526312141.61700.5.camel@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v7 00/14] CPU scaling support for msm8996
+Date: Tue, 15 May 2018 12:13:22 +0300
+Message-ID: <1526375616-16904-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526312141.61700.5.camel@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Doug Smythies <doug.smythies@gmail.com>, dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, viresh.kumar@linaro.org, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, ilialin@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, May 14, 2018 5:35:41 PM CEST Srinivas Pandruvada wrote:
-> On Sun, 2018-05-13 at 10:43 +0200, Rafael J. Wysocki wrote:
-> > On Thursday, May 3, 2018 8:22:47 AM CEST Doug Smythies wrote:
-> > > Allow use of the trace_pstate_sample trace function
-> > > when the intel_pstate driver is in passive mode.
-> > > Since the core_busy and scaled_busy fields are not
-> > > used, and it might be desirable to know which path
-> > > through the driver was used, either intel_cpufreq_target
-> > > or intel_cpufreq_fast_switch, re-task the core_busy
-> > > field as a flag indicator.
-> > > 
-> > > The user can then use the intel_pstate_tracer.py utility
-> > > to summarize and plot the trace.
-> > > 
-> > > Note: The core_busy feild still goes by that name
-> > > in include/trace/events/power.h and within the
-> > > intel_pstate_tracer.py script and csv file headers,
-> > > but it is graphed as "performance", and called
-> > > core_avg_perf now in the intel_pstate driver.
-> > > 
-> > > Sometimes, in passive mode, the driver is not called for
-> > > many tens or even hundreds of seconds. The user
-> > > needs to understand, and not be confused by, this limitation.
-> > > 
-> > > Signed-off-by: Doug Smythies <dsmythies@telus.net>
-> > 
-> > Srinivas, any comments or concerns?
-> > 
-> Looks fine. But as rest of code, prefer a newline after return.
-> So I am sending V6 version only with that change.
-> 
-> Thanks,
-> Srinivas
-> > > 
-> > > ---
-> > > 
-> > > V5: Changes as per Rafael J. Wysocki feedback.
-> > >     See: https://lkml.org/lkml/2018/1/7/270
-> > > 
-> > > V4: Only execute the trace specific overhead code if trace
-> > >     is enabled. Suggested by Srinivas Pandruvada.
-> > > 
-> > > V3: Move largely duplicate code to a subroutine.
-> > >     Suggested by Rafael J. Wysocki.
-> > > 
-> > > V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
-> > > 
-> > > ---
-> > >  drivers/cpufreq/intel_pstate.c | 44
-> > > ++++++++++++++++++++++++++++++++++++++++--
-> > >  1 file changed, 42 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/drivers/cpufreq/intel_pstate.c
-> > > b/drivers/cpufreq/intel_pstate.c
-> > > index 17e566af..4a08686 100644
-> > > --- a/drivers/cpufreq/intel_pstate.c
-> > > +++ b/drivers/cpufreq/intel_pstate.c
-> > > @@ -1939,13 +1939,49 @@ static int
-> > > intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
-> > >  	return 0;
-> > >  }
-> > >  
-> > > +/* Use of trace in passive mode:
-> > > + *
-> > > + * In passive mode the trace core_busy field (also known as the
-> > > + * performance field, and lablelled as such on the graphs; also
-> > > known as
-> > > + * core_avg_perf) is not needed and so is re-assigned to indicate
-> > > if the
-> > > + * driver call was via the normal or fast switch path. Various
-> > > graphs
-> > > + * output from the intel_pstate_tracer.py utility that include
-> > > core_busy
-> > > + * (or performance or core_avg_perf) have a fixed y-axis from 0 to
-> > > 100%,
-> > > + * so we use 10 to indicate the the normal path through the
-> > > driver, and
-> > > + * 90 to indicate the fast switch path through the driver.
-> > > + * The scaled_busy field is not used, and is set to 0.
-> > > + */
-> > > +
-> > > +#define	INTEL_PSTATE_TRACE_TARGET 10
-> > > +#define	INTEL_PSTATE_TRACE_FAST_SWITCH 90
-> > > +
-> > > +static void intel_cpufreq_trace(struct cpudata *cpu, unsigned int
-> > > trace_type, int old_pstate)
-> > > +{
-> > > +	struct sample *sample;
-> > > +
-> > > +	if (!trace_pstate_sample_enabled())
-> > > +		return;
-> one newline
-> 
-> > > +	if (!intel_pstate_sample(cpu, ktime_get()))
-> > > +		return;
-> one new line
-> 
-> > > +	sample = &cpu->sample;
-> > > +	trace_pstate_sample(trace_type,
-> > > +		0,
-> > > +		old_pstate,
-> > > +		cpu->pstate.current_pstate,
-> > > +		sample->mperf,
-> > > +		sample->aperf,
-> > > +		sample->tsc,
-> > > +		get_avg_frequency(cpu),
-> > > +		fp_toint(cpu->iowait_boost * 100));
-> > > +}
-> > > +
-> > >  static int intel_cpufreq_target(struct cpufreq_policy *policy,
-> > >  				unsigned int target_freq,
-> > >  				unsigned int relation)
-> > >  {
-> > >  	struct cpudata *cpu = all_cpu_data[policy->cpu];
-> > >  	struct cpufreq_freqs freqs;
-> > > -	int target_pstate;
-> > > +	int target_pstate, old_pstate;
-> > >  
-> > >  	update_turbo_state();
-> > >  
-> > > @@ -1965,12 +2001,14 @@ static int intel_cpufreq_target(struct
-> > > cpufreq_policy *policy,
-> > >  		break;
-> > >  	}
-> > >  	target_pstate = intel_pstate_prepare_request(cpu,
-> > > target_pstate);
-> > > +	old_pstate = cpu->pstate.current_pstate;
-> > >  	if (target_pstate != cpu->pstate.current_pstate) {
-> > >  		cpu->pstate.current_pstate = target_pstate;
-> > >  		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
-> > >  			      pstate_funcs.get_val(cpu,
-> > > target_pstate));
-> > >  	}
-> > >  	freqs.new = target_pstate * cpu->pstate.scaling;
-> > > +	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_TARGET,
-> > > old_pstate);
-> > >  	cpufreq_freq_transition_end(policy, &freqs, false);
-> > >  
-> > >  	return 0;
-> > > @@ -1980,13 +2018,15 @@ static unsigned int
-> > > intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
-> > >  					      unsigned int
-> > > target_freq)
-> > >  {
-> > >  	struct cpudata *cpu = all_cpu_data[policy->cpu];
-> > > -	int target_pstate;
-> > > +	int target_pstate, old_pstate;
-> > >  
-> > >  	update_turbo_state();
-> > >  
-> > >  	target_pstate = DIV_ROUND_UP(target_freq, cpu-
-> > > >pstate.scaling);
-> > >  	target_pstate = intel_pstate_prepare_request(cpu,
-> > > target_pstate);
-> > > +	old_pstate = cpu->pstate.current_pstate;
-> > >  	intel_pstate_update_pstate(cpu, target_pstate);
-> > > +	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH,
-> > > old_pstate);
-> > >  	return target_pstate * cpu->pstate.scaling;
-> > >  }
-> > >  
-> > > 
-> > 
-> > 
-> 
+[v7]
+ * Addressed comments from Viresh about resourses deallocation
+   and DT compatible
 
-Applied, thanks!
+[v6]
+ * Addressed comments from Viresh about:
+ ** Comments style
+ ** Kconfig bool instead of tristate
+ ** DT and documentation style
+ ** Resourses deallocation on an error
+ ** Typos
+
+[v5]
+ * Rebased
+ * Addressed comments from Bjorn about SPDX style,
+   functions and parameters naming
+ * Addressed comments from Viresh DT properties and style, comments style,
+   resourses deallocation, documentation placement
+ * Addressed comments from Sricharan about unnessesary include
+ * Addressed comments from Nicolas
+ * Addressed comments from Rob about the commit messages and acks
+ * Addressed comments from Mark
+
+[v4]
+ * Adressed all comments from Stephen
+ * Added CPU regulator support
+ * Added qcom-cpufreq-kryo driver
+
+[v3]
+ * Rebased on top of the latest PLL driver changes
+ * Addressed comment from Rob Herring for bindings
+
+[v2]
+ * Addressed comments from Rob Herring for bindings
+ * Addressed comments from Mark Rutland for memory barrier
+ * Addressed comments from Julien Thierry for clock reenabling condition
+ * Tuned the HW configuration for clock frequencies below 600MHz
+
+Clocks:
+This series adds support for the CPU clocks on msm8996 devices.
+The driver uses the existing PLL drivers and is required to control
+the CPU frequency scaling on the MSM8996.
+
+Regulators:
+Added SAW regulator support to the SPMI regulator driver. The SAW regulators
+will be controlled through special CPU registers instead of direct
+SPMI accesses.
+
+Cpufreq:
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
+
+A previous post of RFC can be found here:
+https://patchwork.kernel.org/patch/10398455/
+
+Ilia Lin (11):
+  soc: qcom: Separate kryo l2 accessors from PMU driver
+  clk: qcom: Add CPU clock driver for msm8996
+  clk: qcom: Add DT bindings for CPU clock driver for msm8996
+  clk: qcom: Add ACD path to CPU clock driver for msm8996
+  dt: qcom: Add opp and thermal to the msm8996
+  regulator: qcom_spmi: Add support for SAW
+  dt-bindings: qcom_spmi: Add support for SAW documentation
+  dt: qcom: Add SAW regulator for 8x96 CPUs
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+  dt: qcom: Add qcom-cpufreq-kryo driver configuration
+
+Rajendra Nayak (3):
+  clk: qcom: Make clk_alpha_pll_configure available to modules
+  clk: qcom: cpu-8996: Add support to switch to alternate PLL
+  clk: qcom: cpu-8996: Add support to switch below 600Mhz
+
+ .../devicetree/bindings/clock/qcom,kryocc.txt      |  17 +
+ .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+ .../bindings/regulator/qcom,spmi-regulator.txt     |  45 ++
+ arch/arm64/boot/dts/qcom/apq8096-db820c.dts        |   2 +-
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              | 651 +++++++++++++++++++-
+ drivers/clk/clk-fixed-factor.c                     |   2 +-
+ drivers/clk/qcom/Kconfig                           |   9 +
+ drivers/clk/qcom/Makefile                          |   1 +
+ drivers/clk/qcom/clk-alpha-pll.c                   |   1 +
+ drivers/clk/qcom/clk-alpha-pll.h                   |   6 +
+ drivers/clk/qcom/clk-cpu-8996.c                    | 519 ++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  11 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 150 +++++
+ drivers/perf/Kconfig                               |   1 +
+ drivers/perf/qcom_l2_pmu.c                         |  90 +--
+ drivers/regulator/qcom_spmi-regulator.c            | 133 +++-
+ drivers/soc/qcom/Kconfig                           |   3 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/kryo-l2-accessors.c               |  65 ++
+ include/soc/qcom/kryo-l2-accessors.h               |  21 +
+ 22 files changed, 2332 insertions(+), 80 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,kryocc.txt
+ create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+ create mode 100644 drivers/clk/qcom/clk-cpu-8996.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+ create mode 100644 drivers/soc/qcom/kryo-l2-accessors.c
+ create mode 100644 include/soc/qcom/kryo-l2-accessors.h
+
+-- 
+1.9.1
