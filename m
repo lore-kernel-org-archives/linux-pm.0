@@ -1,109 +1,262 @@
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v2 3/3] sched/fair: schedutil: explicit update only when required
-Date: Tue, 15 May 2018 12:12:22 +0200
-Message-ID: <CAKfTPtCF5bJcJ_qdy-VDP1t9CRP1fwcCdvneX36GQe-pzCz_gQ@mail.gmail.com>
-References: <20180511131509.16275-1-patrick.bellasi@arm.com> <20180511131509.16275-4-patrick.bellasi@arm.com>
+Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when required
+Date: Tue, 15 May 2018 12:19:21 +0200
+Message-ID: <CAKfTPtCrUOJ=RGqrXMTc0_JFHzRjtpydoKmVNGT8KVz19QQ1vA@mail.gmail.com>
+References: <20180510150553.28122-1-patrick.bellasi@arm.com>
+ <20180510150553.28122-4-patrick.bellasi@arm.com> <20180513060443.GB64158@joelaf.mtv.corp.google.com>
+ <20180513062538.GA116730@joelaf.mtv.corp.google.com> <20180514163206.GF30654@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180511131509.16275-4-patrick.bellasi@arm.com>
+In-Reply-To: <20180514163206.GF30654@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+Cc: Joel Fernandes <joel@joelfernandes.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Patrick,
+On 14 May 2018 at 18:32, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> On 12-May 23:25, Joel Fernandes wrote:
+>> On Sat, May 12, 2018 at 11:04:43PM -0700, Joel Fernandes wrote:
+>> > On Thu, May 10, 2018 at 04:05:53PM +0100, Patrick Bellasi wrote:
+>> > > Schedutil updates for FAIR tasks are triggered implicitly each time a
+>> > > cfs_rq's utilization is updated via cfs_rq_util_change(), currently
+>> > > called by update_cfs_rq_load_avg(), when the utilization of a cfs_rq has
+>> > > changed, and {attach,detach}_entity_load_avg().
+>> > >
+>> > > This design is based on the idea that "we should callback schedutil
+>> > > frequently enough" to properly update the CPU frequency at every
+>> > > utilization change. However, such an integration strategy has also
+>> > > some downsides:
+>> >
+>> > Hi Patrick,
+>
+> Hi Joel,
+>
 
-On 11 May 2018 at 15:15, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> Schedutil updates for FAIR tasks are triggered implicitly each time a
-> cfs_rq's utilization is updated via cfs_rq_util_change(), currently
-> called by update_cfs_rq_load_avg(), when the utilization of a cfs_rq has
-> changed, and {attach,detach}_entity_load_avg().
->
-> This design is based on the idea that "we should callback schedutil
-> frequently enough" to properly update the CPU frequency at every
-> utilization change. However, such an integration strategy has also
-> some downsides:
->
->  - schedutil updates are triggered by RQ's load updates, which makes
->    sense in general but it does not allow to know exactly which other RQ
->    related information have been updated.
->    Recently, for example, we had issues due to schedutil dependencies on
->    cfs_rq->h_nr_running and estimated utilization updates.
->
->  - cfs_rq_util_change() is mainly a wrapper function for an already
->    existing "public API", cpufreq_update_util(), which is required
->    just to ensure we actually update schedutil only when we are updating
->    a root cfs_rq.
->    Thus, especially when task groups are in use, most of the calls to
->    this wrapper function are not required.
->
->  - the usage of a wrapper function is not completely consistent across
->    fair.c, since we could still need additional explicit calls to
->    cpufreq_update_util().
->    For example this already happens to report the IOWAIT boot flag in
->    the wakeup path.
->
->  - it makes it hard to integrate new features since it could require to
->    change other function prototypes just to pass in an additional flag,
->    as it happened for example in commit:
->
->       commit ea14b57e8a18 ("sched/cpufreq: Provide migration hint")
->
-> All the above considered, let's make schedutil updates more explicit in
-> fair.c by removing the cfs_rq_util_change() wrapper function in favour
-> of the existing cpufreq_update_util() public API.
+[...]
 
-removing the wrapper makes sense
-
-> This can be done by calling cpufreq_update_util() explicitly in the few
-> call sites where it really makes sense and when all the (potentially)
-> required cfs_rq's information have been updated.
+>> > > @@ -5456,10 +5443,12 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>> > >           update_cfs_group(se);
+>> > >   }
+>> > >
+>> > > + /* The task is no more visible from the root cfs_rq */
+>> > >   if (!se)
+>> > >           sub_nr_running(rq, 1);
+>> > >
+>> > >   util_est_dequeue(&rq->cfs, p, task_sleep);
+>> > > + cpufreq_update_util(rq, 0);
+>> >
+>> > One question about this change. In enqueue, throttle and unthrottle - you are
+>> > conditionally calling cpufreq_update_util incase the task was
+>> > visible/not-visible in the hierarchy.
+>> >
+>> > But in dequeue you're unconditionally calling it. Seems a bit inconsistent.
+>> > Is this because of util_est or something? Could you add a comment here
+>> > explaining why this is so?
+>>
+>> The big question I have is incase se != NULL, then its still visible at the
+>> root RQ level.
 >
-> This patch mainly removes code and adds explicit schedutil updates
-> only when we:
->  - {enqueue,dequeue}_task_fair() a task to/from the root cfs_rq
+> My understanding it that you get !se at dequeue time when we are
+> dequeuing a task from a throttled RQ. Isn't it?
 
-The task's utilization is added during attach/detach and not during
-the enqueue/dequeue.
-
->  - (un)throttle_cfs_rq() a set of tasks up to the root cfs_rq
->  - task_tick_fair() to update the utilization of the root cfs_rq
->
-> All the other code paths, currently _indirectly_ covered by a call to
-> update_load_avg(), are still covered. Indeed, some paths already imply
-> enqueue/dequeue calls:
->  - switch_{to,from}_fair()
->  - sched_move_task()
-> while others are followed by enqueue/dequeue calls:
->  - cpu_cgroup_fork() and
->    post_init_entity_util_avg():
->      are used at wakeup_new_task() time and thus already followed by an
->      enqueue_task_fair()
->  - migrate_task_rq_fair():
->      updates the removed utilization but not the actual cfs_rq
->      utilization, which is updated by a following sched event
-
-The removed utilization will be applied during next call to
-update_cfs_rq_load_avg() which means at next call to update_load_avg()
-or update_blocked_averages()
-
-I'm going to continue on the longer reply that you made to Joel
+Yes se becomes NULL only when you reach root domain
 
 >
-> This new proposal allows also to better aggregate schedutil related
-> flags, which are required only at enqueue_task_fair() time.
-> IOWAIT and MIGRATION flags are now requested only when a task is
-> actually visible at the root cfs_rq level.
+> Thus, this means you are dequeuing a throttled task, I guess for
+> example because of a migration.
+> However, the point is that a task dequeue from a throttled RQ _is
+> already_ not visible from the root RQ, because of the sub_nr_running()
+> done by throttle_cfs_rq().
 >
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Joel Fernandes <joelaf@google.com>
-> Cc: Juri Lelli <juri.lelli@redhat.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
+>> In that case should we still call the util_est_dequeue and the
+>> cpufreq_update_util?
 >
-> ---
+> I had a better look at the different code paths and I've possibly come
+> up with some interesting observations. Lemme try to resume theme here.
+>
+> First of all, we need to distinguish from estimated utilization
+> updates and schedutil updates, since they respond to two very
+> different goals.
+>
+>
+> .:: Estimated utilization updates
+> =================================
+>
+> Goal: account for the amount of utilization we are going to
+>       expect on a CPU
+>
+> At {en,de}queue time, util_est_{en,de}queue() is always
+> unconditionally called because it tracks the utilization which is
+> estimated to be generated by all the RUNNABLE tasks.
+>
+> We do not care about throttled/un-throttled RQ here because the effect
+> of throttling is already folded into the estimated utilization.
+>
+> For example, a 100% tasks which is placed into a 50% bandwidth
+> limited TG will generate a 50% (estimated) utilization. Thus, when the
+> task is enqueued we can account immediately for that utilization
+> although the RQ can be currently throttled.
+>
+>
+> .:: Schedutil updates
+> =====================
+>
+> Goal: select a better frequency, if and _when_ required
+>
+> At enqueue time, if the task is visible at the root RQ the it's
+> expected to run within a scheduler latency period. Thus, it makes
+> sense to call immediately schedutil to account for its estimated
+> utilization to possibly increase the OPP.
+>
+> If instead the task is enqueued into a throttled RQ, then I'm
+> skipping the update since the task will not run until the RQ is
+> actually un-throttled.
+>
+> HOWEVER, I would say that in general we could skip this last
+> optimization and always unconditionally update schedutil at enqueue
+> time considering the fact that the effects of a throttled RQ are
+> always reflected into the (estimated) utilization of a task.
+
+I think so too
+
+>
+> At dequeue time instead, since we certainly removed some estimated
+> utilization, then I unconditionally updated schedutil.
+>
+> HOWEVER, I was not considering these two things:
+>
+> 1. for a task going to sleep, we still have its blocked utilization
+>    accounted in the cfs_rq utilization.
+
+It might be still interesting to reduce the frequency because the
+blocked utilization can be lower than its estimated utilization.
+
+>
+> 2. for a task being migrated, at dequeue time we still have not
+>    removed the task's utilization from the cfs_rq's utilization.
+>    This usually happens later, for example we can have:
+>
+>       move_queued_task()
+>          dequeue_task()                      --> CFS task dequeued
+>          set_task_cpu()                         --> schedutil updated
+>             migrate_task_rq_fair()
+>                detach_entity_cfs_rq()
+>                   detach_entity_load_avg()   --> CFS util removal
+>          enqueue_task()
+>
+> Moreover, the "CFS util removal" actually affects the cfs_rq only if
+> we hold the RQ lock, otherwise we know that it's just back annotated
+> as "removed" utilization and the actual cfs_rq utilization is fixed up
+> at the next chance we have the RQ lock.
+>
+> Thus, I would say that in both cases, at dequeue time it does not make
+> sense to update schedutil since we always see the task's utilization
+> in the cfs_rq and thus we will not reduce the frequency.
+
+Yes only attach/detach make sense from an utilization pov and that's
+where we should check for a frequency update for utilization
+
+>
+> NOTE, this is true independently from the refactoring I'm proposing.
+> At dequeue time, although we call update_load_avg() on the root RQ,
+> it does not make sense to update schedutil since we still see either
+> the blocked utilization of a sleeping task or the not yet removed
+> utilization of a migrating task. In both cases the risk is to ask for
+> an higher OPP right when a CPU is going to be IDLE.
+
+We have to take care of not mixing the opportunity to update the
+frequency when we are updating the utilization with the policy that we
+want to apply regarding (what we think that is) the best time to
+update the frequency. Like saying that we should wait a bit more to
+make sure that the current utilization is sustainable because a
+frequency change is expensive on the platform (or not)
+
+It's not because a task is dequeued that we should not update and
+increase the frequency; Or even that we should not decrease it because
+we have just taken into account some removed utilization of a previous
+migration.
+The same happen when a task migrates, we don't know if the utilization
+that is about to be migrated, will be higher or lower than the normal
+update of the utilization (since the last update) and can not generate
+a frequency change
+
+I see your explanation above like a kind of policy where you want to
+balance the cost of a frequency change with the probability that we
+will not have to re-update the frequency soon.
+
+I agree that some scheduling events give higher chances of a
+sustainable utilization level and we should favor these events when
+the frequency change is costly but I'm not sure that we should remove
+all other opportunity to udjust the frequency to the current
+utilization level when the cost is low or negligible.
+
+Can't we classify the utilization events into some kind of major and
+minor changes ?
+
+>
+> Moreover, it seems that in general we prefer a "conservative" approach
+> in frequency reduction.
+> For example it could be harmful to trigger a frequency reduction when
+> a task is migrating off a CPU, if right after another task should be
+> instead migrated into the same CPU.
+>
+>
+> .:: Conclusions
+> ===============
+>
+> All that considered, I think I've convinced myself that we really need
+> to notify schedutil only in these cases:
+>
+>  1. enqueue time
+>     because of the changes in estimated utilization and the
+>     possibility to just straight to a better OPP
+>
+>  2. task tick time
+>     because of the possible ramp-up of the utilization
+>
+> Another case is related to remote CPUs blocked utilization update,
+> after the recent Vincent's patches. Currently indeed:
+>
+>   update_blocked_averages()
+>      update_load_avg()
+>         --> update schedutil
+>
+> and thus, potentially we wake up an IDLE cluster just to reduce its
+> OPP. If the cluster is in a deep idle state, I'm not entirely sure
+> this is good from an energy saving standpoint.
+> However, with the patch I'm proposing we are missing that support,
+> meaning that an IDLE cluster will get its utilization decayed but we
+> don't wake it up just to drop its frequency.
+
+So more than deciding in the scheduler if we should wake it up or not,
+we should give a chance to cpufreq to decide if it wants to update the
+frequency or not as this decision is somehow platform specific: cost
+of frequency change, clock topology and shared clock, voltage topology
+...
+
+Regards,
+Vincent
+>
+> Perhaps we should better pass in this information to schedutil via a
+> flag (e.g. SCHED_FREQ_REMOTE_UPDATE) and implement there a policy to
+> decide if and when it makes sense to drop the OPP. Or otherwise find a
+> way for the special DL tasks to always run on the lower capacity_orig
+> CPUs.
+>
+>> Sorry if I missed something obvious.
+>
+> Thanks for the question it has actually triggered a better analysis of
+> what we have and what we need.
+>
+> Looking forward to some feedbacks about the above before posting a new
+> version of this last patch.
+>
+>> thanks!
+>>
+>> - Joel
+>
+> --
+> #include <best/regards.h>
+>
+> Patrick Bellasi
