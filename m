@@ -1,28 +1,136 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 14/14] dt: qcom: Add qcom-cpufreq-kryo driver
- configuration
-Date: Tue, 15 May 2018 14:49:33 +0530
-Message-ID: <20180515091933.2psozeaamhl2coiz@vireshk-i7>
-References: <1526375616-16904-1-git-send-email-ilialin@codeaurora.org>
- <1526375616-16904-15-git-send-email-ilialin@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Wu <david.wu@rock-chips.com>
+Subject: [PATCH] PM / AVS: rockchip-io: add io selectors and supplies for PX30
+Date: Tue, 15 May 2018 17:23:37 +0800
+Message-ID: <1526376217-3833-1-git-send-email-david.wu@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1526375616-16904-15-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: khilman@baylibre.com, heiko@sntech.de
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, huangtao@rock-chips.com, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, David Wu <david.wu@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 15-05-18, 12:13, Ilia Lin wrote:
-> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-> ---
->  arch/arm64/boot/dts/qcom/apq8096-db820c.dts |   2 +-
->  arch/arm64/boot/dts/qcom/msm8996.dtsi       | 311 +++++++++++++++++++++++++++-
->  2 files changed, 310 insertions(+), 3 deletions(-)
+This adds the necessary data for handling io voltage domains on PX30.
+As interesting tidbit, the PX30 contains two separate iodomain areas.
+One in the regular General Register Files (GRF) and one in PMUGRF in the
+pmu power domain.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: David Wu <david.wu@rock-chips.com>
+---
+ .../bindings/power/rockchip-io-domain.txt          |  2 +
+ drivers/power/avs/rockchip-io-domain.c             | 68 ++++++++++++++++++++++
+ 2 files changed, 70 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+index 4a4766e..c2595ba 100644
+--- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
++++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+@@ -31,6 +31,8 @@ SoC is on the same page.
+ 
+ Required properties:
+ - compatible: should be one of:
++  - "rockchip,px30-io-voltage-domain" for px30
++  - "rockchip,px30-pmu-io-voltage-domain" for px30 pmu-domains
+   - "rockchip,rk3188-io-voltage-domain" for rk3188
+   - "rockchip,rk3228-io-voltage-domain" for rk3228
+   - "rockchip,rk3288-io-voltage-domain" for rk3288
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index ed2b109..41c2b83 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -39,6 +39,10 @@
+ #define MAX_VOLTAGE_1_8		1980000
+ #define MAX_VOLTAGE_3_3		3600000
+ 
++#define PX30_IO_VSEL			0x180
++#define PX30_IO_VSEL_VCCIO6_SRC		BIT(0)
++#define PX30_IO_VSEL_VCCIO6_SUPPLY_NUM	1
++
+ #define RK3288_SOC_CON2			0x24c
+ #define RK3288_SOC_CON2_FLASH0		BIT(7)
+ #define RK3288_SOC_FLASH_SUPPLY_NUM	2
+@@ -151,6 +155,25 @@ static int rockchip_iodomain_notify(struct notifier_block *nb,
+ 	return NOTIFY_OK;
+ }
+ 
++static void px30_iodomain_init(struct rockchip_iodomain *iod)
++{
++	int ret;
++	u32 val;
++
++	/* if no VCCIO0 supply we should leave things alone */
++	if (!iod->supplies[PX30_IO_VSEL_VCCIO6_SUPPLY_NUM].reg)
++		return;
++
++	/*
++	 * set vccio0 iodomain to also use this framework
++	 * instead of a special gpio.
++	 */
++	val = PX30_IO_VSEL_VCCIO6_SRC | (PX30_IO_VSEL_VCCIO6_SRC << 16);
++	ret = regmap_write(iod->grf, PX30_IO_VSEL, val);
++	if (ret < 0)
++		dev_warn(iod->dev, "couldn't update vccio0 ctrl\n");
++}
++
+ static void rk3288_iodomain_init(struct rockchip_iodomain *iod)
+ {
+ 	int ret;
+@@ -227,6 +250,43 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 		dev_warn(iod->dev, "couldn't update pmu io iodomain ctrl\n");
+ }
+ 
++static const struct rockchip_iodomain_soc_data soc_data_px30 = {
++	.grf_offset = 0x180,
++	.supply_names = {
++		NULL,
++		"vccio6",
++		"vccio1",
++		"vccio2",
++		"vccio3",
++		"vccio4",
++		"vccio5",
++		"vccio_oscgpi",
++	},
++	.init = px30_iodomain_init,
++};
++
++static const struct rockchip_iodomain_soc_data soc_data_px30_pmu = {
++	.grf_offset = 0x100,
++	.supply_names = {
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		"pmuio1",
++		"pmuio2",
++	},
++};
++
+ /*
+  * On the rk3188 the io-domains are handled by a shared register with the
+  * lower 8 bits being still being continuing drive-strength settings.
+@@ -381,6 +441,14 @@ static const struct rockchip_iodomain_soc_data soc_data_rv1108_pmu = {
+ 
+ static const struct of_device_id rockchip_iodomain_match[] = {
+ 	{
++		.compatible = "rockchip,px30-io-voltage-domain",
++		.data = (void *)&soc_data_px30
++	},
++	{
++		.compatible = "rockchip,px30-pmu-io-voltage-domain",
++		.data = (void *)&soc_data_px30_pmu
++	},
++	{
+ 		.compatible = "rockchip,rk3188-io-voltage-domain",
+ 		.data = &soc_data_rk3188
+ 	},
 -- 
-viresh
+2.7.4
