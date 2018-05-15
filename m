@@ -1,84 +1,156 @@
-From: Robin Murphy <robin.murphy@arm.com>
-Subject: Re: [RFC PATCH 01/10] devfreq: rockchip-dfi: Move GRF definitions to
- a common place.
-Date: Tue, 15 May 2018 12:23:28 +0100
-Message-ID: <c217cf74-c5fe-4e4b-7b55-7672381b3eaf@arm.com>
-References: <20180514211610.26618-1-enric.balletbo@collabora.com>
- <20180514211610.26618-2-enric.balletbo@collabora.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20180514211610.26618-2-enric.balletbo@collabora.com>
-Content-Language: en-GB
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
-Cc: Lin Huang <hl@rock-chips.com>, linux-pm@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org, kernel@collabora.com, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: David Wu <david.wu@rock-chips.com>
+Subject: [PATCH v2] PM / AVS: rockchip-io: add io selectors and supplies for PX30
+Date: Tue, 15 May 2018 19:48:19 +0800
+Message-ID: <1526384899-11644-1-git-send-email-david.wu@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: khilman@baylibre.com, heiko@sntech.de
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, huangtao@rock-chips.com, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, David Wu <david.wu@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgRW5yaWMsCgpPbiAxNC8wNS8xOCAyMjoxNiwgRW5yaWMgQmFsbGV0Ym8gaSBTZXJyYSB3cm90
-ZToKPiBTb21lIHJrMzM5OSBHUkYgKEdlbmVyaWMgUmVnaXN0ZXIgRmlsZXMpIGRlZmluaXRpb25z
-IGNhbiBiZSB1c2VkIGZvcgo+IGRpZmZlcmVudCBkcml2ZXJzLiBNb3ZlIHRoZXNlIGRlZmluaXRp
-b25zIHRvIGEgY29tbW9uIGluY2x1ZGUgc28gd2UKPiBkb24ndCBuZWVkIHRvIGR1cGxpY2F0ZSB0
-aGVzZSBkZWZpbml0aW9ucy4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBFbnJpYyBCYWxsZXRibyBpIFNl
-cnJhIDxlbnJpYy5iYWxsZXRib0Bjb2xsYWJvcmEuY29tPgo+IC0tLQo+IAo+ICAgZHJpdmVycy9k
-ZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS5jIHwgMjMgKysrKysrKy0tLS0tLS0tLS0tLS0tLS0K
-PiAgIGluY2x1ZGUvc29jL3JvY2tjaGlwL3JrMzM5OV9ncmYuaCAgICB8IDIxICsrKysrKysrKysr
-KysrKysrKysrKwo+ICAgMiBmaWxlcyBjaGFuZ2VkLCAyOCBpbnNlcnRpb25zKCspLCAxNiBkZWxl
-dGlvbnMoLSkKPiAgIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRlL3NvYy9yb2NrY2hpcC9yazMz
-OTlfZ3JmLmgKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlw
-LWRmaS5jIGIvZHJpdmVycy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS5jCj4gaW5kZXggMjJi
-MTEzMzYzZmZjLi4yZmJiY2JlYjY0NGYgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2V2
-ZW50L3JvY2tjaGlwLWRmaS5jCj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlw
-LWRmaS5jCj4gQEAgLTI2LDYgKzI2LDggQEAKPiAgICNpbmNsdWRlIDxsaW51eC9saXN0Lmg+Cj4g
-ICAjaW5jbHVkZSA8bGludXgvb2YuaD4KPiAgIAo+ICsjaW5jbHVkZSA8c29jL3JvY2tjaGlwL3Jr
-MzM5OV9ncmYuaD4KPiArCj4gICAjZGVmaW5lIFJLMzM5OV9ETUNfTlVNX0NICTIKPiAgIAo+ICAg
-LyogRERSTU9OX0NUUkwgKi8KPiBAQCAtNDMsMTggKzQ1LDYgQEAKPiAgICNkZWZpbmUgRERSTU9O
-X0NIMV9DT1VOVF9OVU0JCTB4M2MKPiAgICNkZWZpbmUgRERSTU9OX0NIMV9ERklfQUNDRVNTX05V
-TQkweDQwCj4gICAKPiAtLyogcG11IGdyZiAqLwo+IC0jZGVmaW5lIFBNVUdSRl9PU19SRUcyCTB4
-MzA4Cj4gLSNkZWZpbmUgRERSVFlQRV9TSElGVAkxMwo+IC0jZGVmaW5lIEREUlRZUEVfTUFTSwk3
-Cj4gLQo+IC1lbnVtIHsKPiAtCUREUjMgPSAzLAo+IC0JTFBERFIzID0gNiwKPiAtCUxQRERSNCA9
-IDcsCj4gLQlVTlVTRUQgPSAweEZGCj4gLX07Cj4gLQo+ICAgc3RydWN0IGRtY191c2FnZSB7Cj4g
-ICAJdTMyIGFjY2VzczsKPiAgIAl1MzIgdG90YWw7Cj4gQEAgLTgzLDE2ICs3MywxNyBAQCBzdGF0
-aWMgdm9pZCByb2NrY2hpcF9kZmlfc3RhcnRfaGFyZHdhcmVfY291bnRlcihzdHJ1Y3QgZGV2ZnJl
-cV9ldmVudF9kZXYgKmVkZXYpCj4gICAJdTMyIGRkcl90eXBlOwo+ICAgCj4gICAJLyogZ2V0IGRk
-ciB0eXBlICovCj4gLQlyZWdtYXBfcmVhZChpbmZvLT5yZWdtYXBfcG11LCBQTVVHUkZfT1NfUkVH
-MiwgJnZhbCk7Cj4gLQlkZHJfdHlwZSA9ICh2YWwgPj4gRERSVFlQRV9TSElGVCkgJiBERFJUWVBF
-X01BU0s7Cj4gKwlyZWdtYXBfcmVhZChpbmZvLT5yZWdtYXBfcG11LCBSSzMzOTlfUE1VR1JGX09T
-X1JFRzIsICZ2YWwpOwo+ICsJZGRyX3R5cGUgPSAodmFsID4+IFJLMzM5OV9QTVVHUkZfRERSVFlQ
-RV9TSElGVCkgJgo+ICsJCSAgICBSSzMzOTlfUE1VR1JGX0REUlRZUEVfTUFTSzsKPiAgIAo+ICAg
-CS8qIGNsZWFyIEREUk1PTl9DVFJMIHNldHRpbmcgKi8KPiAgIAl3cml0ZWxfcmVsYXhlZChDTFJf
-RERSTU9OX0NUUkwsIGRmaV9yZWdzICsgRERSTU9OX0NUUkwpOwo+ICAgCj4gICAJLyogc2V0IGRk
-ciB0eXBlIHRvIGRmaSAqLwo+IC0JaWYgKGRkcl90eXBlID09IExQRERSMykKPiArCWlmIChkZHJf
-dHlwZSA9PSBSSzMzOTlfUE1VR1JGX0REUlRZUEVfTFBERFIzKQo+ICAgCQl3cml0ZWxfcmVsYXhl
-ZChMUEREUjNfRU4sIGRmaV9yZWdzICsgRERSTU9OX0NUUkwpOwo+IC0JZWxzZSBpZiAoZGRyX3R5
-cGUgPT0gTFBERFI0KQo+ICsJZWxzZSBpZiAoZGRyX3R5cGUgPT0gUkszMzk5X1BNVUdSRl9ERFJU
-WVBFX0xQRERSNCkKPiAgIAkJd3JpdGVsX3JlbGF4ZWQoTFBERFI0X0VOLCBkZmlfcmVncyArIERE
-Uk1PTl9DVFJMKTsKPiAgIAo+ICAgCS8qIGVuYWJsZSBjb3VudCwgdXNlIHNvZnR3YXJlIG1vZGUg
-Ki8KPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9zb2Mvcm9ja2NoaXAvcmszMzk5X2dyZi5oIGIvaW5j
-bHVkZS9zb2Mvcm9ja2NoaXAvcmszMzk5X2dyZi5oCj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQKPiBp
-bmRleCAwMDAwMDAwMDAwMDAuLjBmOTQwMzRlMmU5YQo+IC0tLSAvZGV2L251bGwKPiArKysgYi9p
-bmNsdWRlL3NvYy9yb2NrY2hpcC9yazMzOTlfZ3JmLmgKPiBAQCAtMCwwICsxLDIxIEBACj4gKy8q
-IFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wKyAqLwo+ICsvKgo+ICsgKiBSb2NrY2hp
-cCBHZW5lcmljIFJlZ2lzdGVyIEZpbGVzIGRlZmluaXRpb25zCgpOaXQ6IHMvR2VuZXJpYy9HZW5l
-cmFsLwoKKHRoYXQncyB3aGF0IHRoZSBUUk1zIHNheSkKClJvYmluLgoKPiArICoKPiArICogQ29w
-eXJpZ2h0IChjKSAyMDE4LCBDb2xsYWJvcmEgTHRkLgo+ICsgKiBBdXRob3I6IEVucmljIEJhbGxl
-dGJvIGkgU2VycmEgPGVucmljLmJhbGxldGJvQGNvbGxhYm9yYS5jb20+Cj4gKyAqLwo+ICsKPiAr
-I2lmbmRlZiBfX1NPQ19SSzMzOTlfR1JGX0gKPiArI2RlZmluZSBfX1NPQ19SSzMzOTlfR1JGX0gK
-PiArCj4gKy8qIFBNVSBHUkYgUmVnaXN0ZXJzICovCj4gKyNkZWZpbmUgUkszMzk5X1BNVUdSRl9P
-U19SRUcyCQkweDMwOAo+ICsjZGVmaW5lIFJLMzM5OV9QTVVHUkZfRERSVFlQRV9TSElGVAkxMwo+
-ICsjZGVmaW5lIFJLMzM5OV9QTVVHUkZfRERSVFlQRV9NQVNLCTcKPiArI2RlZmluZSBSSzMzOTlf
-UE1VR1JGX0REUlRZUEVfRERSMwkzCj4gKyNkZWZpbmUgUkszMzk5X1BNVUdSRl9ERFJUWVBFX0xQ
-RERSMgk1Cj4gKyNkZWZpbmUgUkszMzk5X1BNVUdSRl9ERFJUWVBFX0xQRERSMwk2Cj4gKyNkZWZp
-bmUgUkszMzk5X1BNVUdSRl9ERFJUWVBFX0xQRERSNAk3Cj4gKwo+ICsjZW5kaWYKPiAKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxp
-bmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+This adds the necessary data for handling io voltage domains on PX30.
+As interesting tidbit, the PX30 contains two separate iodomain areas.
+One in the regular General Register Files (GRF) and one in PMUGRF in the
+pmu power domain.
+
+Signed-off-by: David Wu <david.wu@rock-chips.com>
+---
+ .../bindings/power/rockchip-io-domain.txt          | 15 +++++
+ drivers/power/avs/rockchip-io-domain.c             | 68 ++++++++++++++++++++++
+ 2 files changed, 83 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+index 4a4766e..e66fd4e 100644
+--- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
++++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+@@ -31,6 +31,8 @@ SoC is on the same page.
+ 
+ Required properties:
+ - compatible: should be one of:
++  - "rockchip,px30-io-voltage-domain" for px30
++  - "rockchip,px30-pmu-io-voltage-domain" for px30 pmu-domains
+   - "rockchip,rk3188-io-voltage-domain" for rk3188
+   - "rockchip,rk3228-io-voltage-domain" for rk3228
+   - "rockchip,rk3288-io-voltage-domain" for rk3288
+@@ -51,6 +53,19 @@ a phandle the relevant regulator.  All specified supplies must be able
+ to report their voltage.  The IO Voltage Domain for any non-specified
+ supplies will be not be touched.
+ 
++Possible supplies for PX30:
++- vccio6-supply: The supply connected to VCCIO6.
++- vccio1-supply: The supply connected to VCCIO1.
++- vccio2-supply: The supply connected to VCCIO2.
++- vccio3-supply: The supply connected to VCCIO3.
++- vccio4-supply: The supply connected to VCCIO4.
++- vccio5-supply: The supply connected to VCCIO5.
++- vccio-oscgpi-supply: The supply connected to VCCIO_OSCGPI.
++
++Possible supplies for PX30 pmu-domains:
++- pmuio1-supply: The supply connected to PMUIO1.
++- pmuio2-supply: The supply connected to PMUIO2.
++
+ Possible supplies for rk3188:
+ - ap0-supply:    The supply connected to AP0_VCC.
+ - ap1-supply:    The supply connected to AP1_VCC.
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index ed2b109..d6a5e6b 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -39,6 +39,10 @@
+ #define MAX_VOLTAGE_1_8		1980000
+ #define MAX_VOLTAGE_3_3		3600000
+ 
++#define PX30_IO_VSEL			0x180
++#define PX30_IO_VSEL_VCCIO6_SRC		BIT(0)
++#define PX30_IO_VSEL_VCCIO6_SUPPLY_NUM	1
++
+ #define RK3288_SOC_CON2			0x24c
+ #define RK3288_SOC_CON2_FLASH0		BIT(7)
+ #define RK3288_SOC_FLASH_SUPPLY_NUM	2
+@@ -151,6 +155,25 @@ static int rockchip_iodomain_notify(struct notifier_block *nb,
+ 	return NOTIFY_OK;
+ }
+ 
++static void px30_iodomain_init(struct rockchip_iodomain *iod)
++{
++	int ret;
++	u32 val;
++
++	/* if no VCCIO0 supply we should leave things alone */
++	if (!iod->supplies[PX30_IO_VSEL_VCCIO6_SUPPLY_NUM].reg)
++		return;
++
++	/*
++	 * set vccio0 iodomain to also use this framework
++	 * instead of a special gpio.
++	 */
++	val = PX30_IO_VSEL_VCCIO6_SRC | (PX30_IO_VSEL_VCCIO6_SRC << 16);
++	ret = regmap_write(iod->grf, PX30_IO_VSEL, val);
++	if (ret < 0)
++		dev_warn(iod->dev, "couldn't update vccio0 ctrl\n");
++}
++
+ static void rk3288_iodomain_init(struct rockchip_iodomain *iod)
+ {
+ 	int ret;
+@@ -227,6 +250,43 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 		dev_warn(iod->dev, "couldn't update pmu io iodomain ctrl\n");
+ }
+ 
++static const struct rockchip_iodomain_soc_data soc_data_px30 = {
++	.grf_offset = 0x180,
++	.supply_names = {
++		NULL,
++		"vccio6",
++		"vccio1",
++		"vccio2",
++		"vccio3",
++		"vccio4",
++		"vccio5",
++		"vccio-oscgpi",
++	},
++	.init = px30_iodomain_init,
++};
++
++static const struct rockchip_iodomain_soc_data soc_data_px30_pmu = {
++	.grf_offset = 0x100,
++	.supply_names = {
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		"pmuio1",
++		"pmuio2",
++	},
++};
++
+ /*
+  * On the rk3188 the io-domains are handled by a shared register with the
+  * lower 8 bits being still being continuing drive-strength settings.
+@@ -381,6 +441,14 @@ static const struct rockchip_iodomain_soc_data soc_data_rv1108_pmu = {
+ 
+ static const struct of_device_id rockchip_iodomain_match[] = {
+ 	{
++		.compatible = "rockchip,px30-io-voltage-domain",
++		.data = (void *)&soc_data_px30
++	},
++	{
++		.compatible = "rockchip,px30-pmu-io-voltage-domain",
++		.data = (void *)&soc_data_px30_pmu
++	},
++	{
+ 		.compatible = "rockchip,rk3188-io-voltage-domain",
+ 		.data = &soc_data_rk3188
+ 	},
+-- 
+2.7.4
