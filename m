@@ -1,7 +1,7 @@
 From: Ilia Lin <ilialin@codeaurora.org>
-Subject: [PATCH v7 11/14] dt: qcom: Add SAW regulator for 8x96 CPUs
-Date: Tue, 15 May 2018 12:13:33 +0300
-Message-ID: <1526375616-16904-12-git-send-email-ilialin@codeaurora.org>
+Subject: [PATCH v7 12/14] cpufreq: Add Kryo CPU scaling driver
+Date: Tue, 15 May 2018 12:13:34 +0300
+Message-ID: <1526375616-16904-13-git-send-email-ilialin@codeaurora.org>
 References: <1526375616-16904-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1526375616-16904-1-git-send-email-ilialin@codeaurora.org>
@@ -10,314 +10,228 @@ To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, ilialin@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-1. Add syscon node for the SAW CPU registers
-2. Add SAW regulators gang definition for s8-s11
-3. Add voltages to the OPP tables
-4. Add the s11 SAW regulator as CPU regulator
+In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
+the CPU ferequencies subset and voltage value of each OPP varies
+based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+defines the voltage and frequency value based on the msm-id in SMEM
+and speedbin blown in the efuse combination.
+The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
+to provide the OPP framework with required information.
+This is used to determine the voltage and frequency value for each OPP of
+operating-points-v2 table when it is parsed by the OPP framework.
 
 Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/msm8996.dtsi | 75 +++++++++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
+ drivers/cpufreq/Kconfig.arm          |  11 +++
+ drivers/cpufreq/Makefile             |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c  | 150 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 165 insertions(+)
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8996.dtsi b/arch/arm64/boot/dts/qcom/msm8996.dtsi
-index e6cf290..d7adef9 100644
---- a/arch/arm64/boot/dts/qcom/msm8996.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8996.dtsi
-@@ -15,6 +15,7 @@
- #include <dt-bindings/clock/qcom,mmcc-msm8996.h>
- #include <dt-bindings/clock/qcom,rpmcc.h>
- #include <dt-bindings/thermal/thermal.h>
-+#include <dt-bindings/spmi/spmi.h>
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index de55c7d..5c16f05 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -124,6 +124,17 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
  
- / {
- 	model = "Qualcomm Technologies, Inc. MSM8996";
-@@ -99,6 +100,7 @@
- 			reg = <0x0 0x0>;
- 			enable-method = "psci";
- 			clocks = <&kryocc 0>;
-+			cpu-supply = <&pm8994_s11_saw>;
- 			operating-points-v2 = <&cluster0_opp>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_0>;
-@@ -114,6 +116,7 @@
- 			reg = <0x0 0x1>;
- 			enable-method = "psci";
- 			clocks = <&kryocc 0>;
-+			cpu-supply = <&pm8994_s11_saw>;
- 			operating-points-v2 = <&cluster0_opp>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_0>;
-@@ -125,6 +128,7 @@
- 			reg = <0x0 0x100>;
- 			enable-method = "psci";
- 			clocks = <&kryocc 1>;
-+			cpu-supply = <&pm8994_s11_saw>;
- 			operating-points-v2 = <&cluster1_opp>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_1>;
-@@ -140,6 +144,7 @@
- 			reg = <0x0 0x101>;
- 			enable-method = "psci";
- 			clocks = <&kryocc 1>;
-+			cpu-supply = <&pm8994_s11_saw>;
- 			operating-points-v2 = <&cluster1_opp>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_1>;
-@@ -174,66 +179,82 @@
++config ARM_QCOM_CPUFREQ_KRYO
++	bool "Qualcomm Technologies, Inc. Kryo based CPUFreq"
++	depends on QCOM_QFPROM
++	depends on QCOM_SMEM
++	select PM_OPP
++	help
++	  This adds the CPUFreq driver for
++	  Qualcomm Technologies, Inc. Kryo SoC based boards.
++
++	  If in doubt, say N.
++
+ config ARM_S3C_CPUFREQ
+ 	bool
+ 	help
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 8d24ade..fb4a2ec 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ_KRYO)	+= qcom-cpufreq-kryo.o
+ obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2412_CPUFREQ)	+= s3c2412-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 3b585e4..77d6ab8 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -118,6 +118,9 @@
  
- 		opp-307200000 {
- 			opp-hz = /bits/ 64 <307200000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-422400000 {
- 			opp-hz = /bits/ 64 <422400000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-480000000 {
- 			opp-hz = /bits/ 64 <480000000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-556800000 {
- 			opp-hz = /bits/ 64 <556800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-652800000 {
- 			opp-hz = /bits/ 64 <652800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-729600000 {
- 			opp-hz = /bits/ 64 <729600000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-844800000 {
- 			opp-hz = /bits/ 64 <844800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-960000000 {
- 			opp-hz = /bits/ 64 <960000000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1036800000 {
- 			opp-hz = /bits/ 64 <1036800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1113600000 {
- 			opp-hz = /bits/ 64 <1113600000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1190400000 {
- 			opp-hz = /bits/ 64 <1190400000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1228800000 {
- 			opp-hz = /bits/ 64 <1228800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1324800000 {
- 			opp-hz = /bits/ 64 <1324800000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1401600000 {
- 			opp-hz = /bits/ 64 <1401600000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1478400000 {
- 			opp-hz = /bits/ 64 <1478400000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1593600000 {
- 			opp-hz = /bits/ 64 <1593600000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 	};
-@@ -244,102 +265,127 @@
+ 	{ .compatible = "nvidia,tegra124", },
  
- 		opp-307200000 {
- 			opp-hz = /bits/ 64 <307200000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-403200000 {
- 			opp-hz = /bits/ 64 <403200000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-480000000 {
- 			opp-hz = /bits/ 64 <480000000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-556800000 {
- 			opp-hz = /bits/ 64 <556800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-652800000 {
- 			opp-hz = /bits/ 64 <652800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-729600000 {
- 			opp-hz = /bits/ 64 <729600000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-806400000 {
- 			opp-hz = /bits/ 64 <806400000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-883200000 {
- 			opp-hz = /bits/ 64 <883200000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-940800000 {
- 			opp-hz = /bits/ 64 <940800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1036800000 {
- 			opp-hz = /bits/ 64 <1036800000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1113600000 {
- 			opp-hz = /bits/ 64 <1113600000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1190400000 {
- 			opp-hz = /bits/ 64 <1190400000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1248000000 {
- 			opp-hz = /bits/ 64 <1248000000>;
-+			opp-microvolt = <905000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1324800000 {
- 			opp-hz = /bits/ 64 <1324800000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1401600000 {
- 			opp-hz = /bits/ 64 <1401600000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1478400000 {
- 			opp-hz = /bits/ 64 <1478400000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1555200000 {
- 			opp-hz = /bits/ 64 <1555200000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1632000000 {
- 			opp-hz = /bits/ 64 <1632000000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1708800000 {
- 			opp-hz = /bits/ 64 <1708800000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1785600000 {
- 			opp-hz = /bits/ 64 <1785600000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1824000000 {
- 			opp-hz = /bits/ 64 <1824000000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1920000000 {
- 			opp-hz = /bits/ 64 <1920000000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-1996800000 {
- 			opp-hz = /bits/ 64 <1996800000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-2073600000 {
- 			opp-hz = /bits/ 64 <2073600000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 		opp-2150400000 {
- 			opp-hz = /bits/ 64 <2150400000>;
-+			opp-microvolt = <1140000 905000 1140000>;
- 			clock-latency-ns = <200000>;
- 		};
- 	};
-@@ -656,6 +702,10 @@
- 			#mbox-cells = <1>;
- 		};
++	{ .compatible = "qcom,apq8096", },
++	{ .compatible = "qcom,msm8996", },
++
+ 	{ .compatible = "st,stih407", },
+ 	{ .compatible = "st,stih410", },
  
-+		saw3: syscon@9A10000 {
-+			compatible = "syscon";
-+			reg = <0x9A10000 0x1000>;
-+		};
- 		gcc: clock-controller@300000 {
- 			compatible = "qcom,gcc-msm8996";
- 			#clock-cells = <1>;
-@@ -882,6 +932,31 @@
- 			#size-cells = <0>;
- 			interrupt-controller;
- 			#interrupt-cells = <4>;
-+			pmic@1 {
-+				compatible = "qcom,pm8994", "qcom,spmi-pmic";
-+				reg = <0x1 SPMI_USID>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				spm-regulators {
-+					compatible = "qcom,pm8994-regulators";
-+					qcom,saw-reg = <&saw3>;
-+					s8 {
-+						qcom,saw-slave;
-+					};
-+					s9 {
-+						qcom,saw-slave;
-+					};
-+					s10 {
-+						qcom,saw-slave;
-+					};
-+					pm8994_s11_saw: s11 {
-+						qcom,saw-leader;
-+						regulator-always-on;
-+						regulator-min-microvolt = <905000>;
-+						regulator-max-microvolt = <1140000>;
-+					};
-+				};
-+			};
- 		};
- 
- 		mmcc: clock-controller@8c0000 {
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+new file mode 100644
+index 0000000..10d7236
+--- /dev/null
++++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+@@ -0,0 +1,150 @@
++// SPDX-License-Identifier: GPL-2.0
++/* 
++ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/nvmem-consumer.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++#include <linux/soc/qcom/smem.h>
++
++#define MSM_ID_SMEM	137
++#define SILVER_LEAD	0
++#define GOLD_LEAD	2
++
++enum _msm_id {
++	MSM8996V3 = 0xF6ul,
++	APQ8096V3 = 0x123ul,
++	MSM8996SG = 0x131ul,
++	APQ8096SG = 0x138ul,
++};
++
++enum _msm8996_version {
++	MSM8996_V3,
++	MSM8996_SG,
++	NUM_OF_MSM8996_VERSIONS,
++};
++
++static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
++{
++	size_t len;
++	u32 *msm_id;
++	enum _msm8996_version version;
++
++	msm_id = qcom_smem_get(QCOM_SMEM_HOST_ANY, MSM_ID_SMEM, &len);
++	/* The first 4 bytes are format, next to them is the actual msm-id */
++	msm_id++;
++
++	switch ((enum _msm_id)*msm_id) {
++	case MSM8996V3:
++	case APQ8096V3:
++		version = MSM8996_V3;
++		break;
++	case MSM8996SG:
++	case APQ8096SG:
++		version = MSM8996_SG;
++		break;
++	default:
++		version = NUM_OF_MSM8996_VERSIONS;
++	}
++
++	return version;
++}
++
++static int __init qcom_cpufreq_kryo_driver_init(void)
++{
++	size_t len;
++	int ret;
++	u32 versions;
++	enum _msm8996_version msm8996_version;
++	u8 *speedbin;
++	struct device *cpu_dev;
++	struct device_node *np;
++	struct nvmem_cell *speedbin_nvmem;
++	struct opp_table *opp_temp = NULL;
++
++	cpu_dev = get_cpu_device(SILVER_LEAD);
++	if (IS_ERR_OR_NULL(cpu_dev))
++		return PTR_ERR(cpu_dev);
++
++	msm8996_version = qcom_cpufreq_kryo_get_msm_id();
++	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
++		dev_err(cpu_dev, "Not Snapdragon 820/821!");
++		return -ENODEV;
++        }
++
++	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
++	if (IS_ERR_OR_NULL(np))
++		return PTR_ERR(np);
++
++	if (!of_device_is_compatible(np, "operating-points-v2-kryo-cpu")) {
++		ret = -ENOENT;
++		goto free_np;
++	}
++
++	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
++	if (IS_ERR(speedbin_nvmem)) {
++		ret = PTR_ERR(speedbin_nvmem);
++		dev_err(cpu_dev, "Could not get nvmem cell: %d\n", ret);
++		goto free_np;
++	}
++
++	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++
++	switch (msm8996_version) {
++	case MSM8996_V3:
++		versions = 1 << (unsigned int)(*speedbin);
++		break;
++	case MSM8996_SG:
++		versions = 1 << ((unsigned int)(*speedbin) + 4);
++		break;
++	default:
++		BUG();
++		break;
++	}
++
++	ret = PTR_ERR_OR_ZERO(opp_temp =
++			      dev_pm_opp_set_supported_hw(cpu_dev,&versions,1));
++	if (0 > ret)
++		goto free_opp;
++
++	cpu_dev = get_cpu_device(GOLD_LEAD);
++	ret = PTR_ERR_OR_ZERO(opp_temp =
++			      dev_pm_opp_set_supported_hw(cpu_dev,&versions,1));
++	if (0 > ret)
++		goto free_opp;
++
++	ret = PTR_ERR_OR_ZERO(platform_device_register_simple("cpufreq-dt",
++							      -1, NULL, 0));
++
++	if (0 == ret)
++		return 0;
++
++free_opp:
++	dev_pm_opp_put_supported_hw(opp_temp);
++
++free_np:
++	of_node_put(np);
++
++	return ret;
++}
++late_initcall(qcom_cpufreq_kryo_driver_init);
++
++MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
