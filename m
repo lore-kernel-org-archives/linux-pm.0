@@ -1,67 +1,63 @@
-From: Ayan Kumar Halder <ayan.halder@arm.com>
-Subject: [PATCH v3 5/5] drm/arm/malidp: Added the late system pm functions
-Date: Tue, 15 May 2018 17:04:19 +0100
-Message-ID: <1526400259-7573-6-git-send-email-ayan.halder@arm.com>
-References: <1526400259-7573-1-git-send-email-ayan.halder@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
+ required
+Date: Tue, 15 May 2018 18:53:04 +0200
+Message-ID: <20180515165304.GH12217@hirez.programming.kicks-ass.net>
+References: <20180510150553.28122-1-patrick.bellasi@arm.com>
+ <20180510150553.28122-4-patrick.bellasi@arm.com>
+ <20180513060443.GB64158@joelaf.mtv.corp.google.com>
+ <20180513062538.GA116730@joelaf.mtv.corp.google.com>
+ <20180514163206.GF30654@e110439-lin>
+ <CAKfTPtCrUOJ=RGqrXMTc0_JFHzRjtpydoKmVNGT8KVz19QQ1vA@mail.gmail.com>
+ <20180515145343.GJ30654@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1526400259-7573-1-git-send-email-ayan.halder@arm.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: ayan.halder@arm.com, liviu.dudau@arm.com, brian.starkey@arm.com, malidp@foss.arm.com, airlied@linux.ie, dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: nd@arm.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180515145343.GJ30654@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Joel Fernandes <joel@joelfernandes.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-bWFsaWRwX3BtX3N1c3BlbmRfbGF0ZSBjaGVja3MgaWYgdGhlIHJ1bnRpbWUgc3RhdHVzIGlzIG5v
-dCBzdXNwZW5kZWQKYW5kIGlmIHNvLCBpbnZva2VzIG1hbGlkcF9ydW50aW1lX3BtX3N1c3BlbmQg
-d2hpY2ggZGlzYWJsZXMgdGhlCmRpc3BsYXkgZW5naW5lL2NvcmUgaW50ZXJydXB0cyBhbmQgdGhl
-IGNsb2Nrcy4gSXQgc2V0cyB0aGUgcnVudGltZSBzdGF0dXMKYXMgc3VzcGVuZGVkLgoKVGhlIGRp
-ZmZlcmVuY2UgYmV0d2VlbiBzdXNwZW5kKCkgYW5kIHN1c3BlbmRfbGF0ZSgpIGlzIGFzIGZvbGxv
-d3M6LQoxLiBzdXNwZW5kKCkgbWFrZXMgdGhlIGRldmljZSBxdWllc2NlbnQuIEluIG91ciBjYXNl
-LCB3ZSBpbnZva2UgdGhlIERSTQpoZWxwZXIgd2hpY2ggZGlzYWJsZXMgdGhlIENSVEMuIFRoaXMg
-d291bGQgaGF2ZSBpbnZva2VkIHJ1bnRpbWUgcG0Kc3VzcGVuZCBidXQgdGhlIHN5c3RlbSBzdXNw
-ZW5kIHByb2Nlc3MgZGlzYWJsZXMgcnVudGltZSBwbS4KMi4gc3VzcGVuZF9sYXRlKCkgSXQgY29u
-dGludWVzIHRoZSBzdXNwZW5kIG9wZXJhdGlvbnMgb2YgdGhlIGRybSBkZXZpY2UgCndoaWNoIHdh
-cyBzdGFydGVkIGJ5IHN1c3BlbmQoKS4gSW4gb3VyIGNhc2UsIGl0IHBlcmZvcm1zIHRoZSBzYW1l
-IGZ1bmN0aW9uYWxpdHkKYXMgcnVudGltZV9zdXNwZW5kKCkuCgpUaGUgY29tcGxpbWVudGFyeSBm
-dW5jdGlvbnMgYXJlIHJlc3VtZSgpIGFuZCByZXN1bWVfZWFybHkoKS4gSW4gdGhlIGNhc2Ugb2YK
-cmVzdW1lX2Vhcmx5KCksIHdlIGludm9rZSBtYWxpZHBfcnVudGltZV9wbV9yZXN1bWUoKSB3aGlj
-aCBlbmFibGVzIHRoZSBjbG9ja3MKYW5kIHRoZSBpbnRlcnJ1cHRzLiBJdCBzZXRzIHRoZSBydW50
-aW1lIHN0YXR1cyBhcyBhY3RpdmUuIElmIHRoZSBkZXZpY2Ugd2FzCmluIHJ1bnRpbWUgc3VzcGVu
-ZCBtb2RlIGJlZm9yZSBzeXN0ZW0gc3VzcGVuZCB3YXMgY2FsbGVkLCBwbV9ydW50aW1lX3dvcmso
-KQp3aWxsIHB1dCB0aGUgZGV2aWNlIGJhY2sgaW4gcnVudGltZSBzdXNwZW5kZWQgbW9kZSggYWZ0
-ZXIgdGhlIGNvbXBsZXRlIHN5c3RlbQpoYXMgYmVlbiByZXN1bWVkKS4KClNpZ25lZC1vZmYtYnk6
-IEF5YW4gS3VtYXIgSGFsZGVyIDxheWFuLmhhbGRlckBhcm0uY29tPgoKLS0tCkNoYW5nZXMgaW4g
-djM6LQotIFJlYmFzZWQgb24gdG9wIG9mIGVhcmxpZXIgdjMgcGF0Y2hlcywgCgpDaGFuZ2VzIGlu
-IHYyOi0KLSBSZW1vdmVkIHRoZSBjaGFuZ2UgaWQgYW5kIG1vZGlmaWVkIHRoZSBjb21taXQgbWVz
-c2FnZQotLS0KIGRyaXZlcnMvZ3B1L2RybS9hcm0vbWFsaWRwX2Rydi5jIHwgMTcgKysrKysrKysr
-KysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspCgpkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9ncHUvZHJtL2FybS9tYWxpZHBfZHJ2LmMgYi9kcml2ZXJzL2dwdS9kcm0vYXJtL21h
-bGlkcF9kcnYuYwppbmRleCA4MjIyMWVhLi5jNTNiNDZhIDEwMDY0NAotLS0gYS9kcml2ZXJzL2dw
-dS9kcm0vYXJtL21hbGlkcF9kcnYuYworKysgYi9kcml2ZXJzL2dwdS9kcm0vYXJtL21hbGlkcF9k
-cnYuYwpAQCAtNzY4LDggKzc2OCwyNSBAQCBzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIG1hbGlk
-cF9wbV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQogCXJldHVybiAwOwogfQogCitzdGF0aWMg
-aW50IF9fbWF5YmVfdW51c2VkIG1hbGlkcF9wbV9zdXNwZW5kX2xhdGUoc3RydWN0IGRldmljZSAq
-ZGV2KQoreworCWlmICghcG1fcnVudGltZV9zdGF0dXNfc3VzcGVuZGVkKGRldikpIHsKKwkJbWFs
-aWRwX3J1bnRpbWVfcG1fc3VzcGVuZChkZXYpOworCQlwbV9ydW50aW1lX3NldF9zdXNwZW5kZWQo
-ZGV2KTsKKwl9CisJcmV0dXJuIDA7Cit9CisKK3N0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgbWFs
-aWRwX3BtX3Jlc3VtZV9lYXJseShzdHJ1Y3QgZGV2aWNlICpkZXYpCit7CisJbWFsaWRwX3J1bnRp
-bWVfcG1fcmVzdW1lKGRldik7CisJcG1fcnVudGltZV9zZXRfYWN0aXZlKGRldik7CisJcmV0dXJu
-IDA7Cit9CisKIHN0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBtYWxpZHBfcG1fb3BzID0g
-ewogCVNFVF9TWVNURU1fU0xFRVBfUE1fT1BTKG1hbGlkcF9wbV9zdXNwZW5kLCBtYWxpZHBfcG1f
-cmVzdW1lKSBcCisJU0VUX0xBVEVfU1lTVEVNX1NMRUVQX1BNX09QUyhtYWxpZHBfcG1fc3VzcGVu
-ZF9sYXRlLCBtYWxpZHBfcG1fcmVzdW1lX2Vhcmx5KSBcCiAJU0VUX1JVTlRJTUVfUE1fT1BTKG1h
-bGlkcF9ydW50aW1lX3BtX3N1c3BlbmQsIG1hbGlkcF9ydW50aW1lX3BtX3Jlc3VtZSwgTlVMTCkK
-IH07CiAKLS0gCjIuNy40CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3Rv
-cC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmkt
-ZGV2ZWwK
+On Tue, May 15, 2018 at 03:53:43PM +0100, Patrick Bellasi wrote:
+> On 15-May 12:19, Vincent Guittot wrote:
+> > On 14 May 2018 at 18:32, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+
+> > Yes se becomes NULL only when you reach root domain
+
+root group; domains are something else again ;-)
+
+> Thus, the scheduler knows that we are going to sleep: does is really
+> makes sense to send a notification in this case?
+
+It might; esp. on these very slow changing machines.
+
+> What about adding a new explicit callback at the end of:
+>    update_blocked_averages() ?
+> 
+> Something like:
+> 
+> ---8<---
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index cb77407ba485..6eb0f31c656d 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -7740,6 +7740,9 @@ static void update_blocked_averages(int cpu)
+>         if (done)
+>                 rq->has_blocked_load = 0;
+>  #endif
+> +
+> +       cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
+> +
+>         rq_unlock_irqrestore(rq, &rf);
+>  }
+> ---8<---
+> 
+> Where we can also pass in a new SCHED_CPUFREQ_IDLE flag just to notify
+> schedutil that the CPU is currently IDLE?
+> 
+> Could that work?
+
+Simlarly you could add ENQUEUE/DEQUEUE flags I suppose. But let's do all
+that later in separate patches and evaluate the impact separately, OK?
