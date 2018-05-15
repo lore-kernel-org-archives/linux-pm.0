@@ -1,94 +1,50 @@
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: [PATCH] thermal: qcom: tsens: Allow number of sensors to come
- from DT
-Date: Tue, 15 May 2018 09:57:58 +0300
-Message-ID: <CAHLCerNSNSiER=_aD5ef6+6sq=5HMxrxNpj4h9S5JUJawTp-Pw@mail.gmail.com>
-References: <20180507235339.8836-1-bjorn.andersson@linaro.org>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 0/2] Revert explicit support for Renesas R-Car Gen 3
+ r8a779[56] SoCs
+Date: Tue, 15 May 2018 09:35:54 +0200
+Message-ID: <20180515073553.372uzwx4gvj5qpk4@verge.net.au>
+References: <20180502095806.30341-1-horms+renesas@verge.net.au>
+ <2473510.IAjYrYimeR@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180507235339.8836-1-bjorn.andersson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rajendra Nayak <rnayak@codeaurora.org>, Linux PM list <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <2473510.IAjYrYimeR@aspire.rjw.lan>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-renesas-soc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 8, 2018 at 2:53 AM, Bjorn Andersson
-<bjorn.andersson@linaro.org> wrote:
-> For platforms that has multiple copies of the TSENS hardware block it's
-> necessary to be able to specify the number of sensors per block in DeviceTree.
->
-> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+On Thu, May 10, 2018 at 11:51:38AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, May 2, 2018 11:58:04 AM CEST Simon Horman wrote:
+> > Revert commits that added explicit support for Renesas R-Car Gen 3
+> > r8a779[56] SoCs to the generic cpufreq driver.
+> > 
+> > This is no longer needed since the flowing commit and to the best of my
+> > knowledge is not relied on by any upstream DTS: edeec420de24 ("cpufreq:
+> > dt-platdev: Automatically create cpufreq device with OPP v2")
+> > 
+> > Simon Horman (2):
+> >   Revert "cpufreq: dt: Add r8a7796 support to to use generic cpufreq
+> >     driver"
+> >   Revert "cpufreq: rcar: Add support for R8A7795 SoC"
+> > 
+> >  drivers/cpufreq/cpufreq-dt-platdev.c | 2 --
+> >  1 file changed, 2 deletions(-)
+> > 
+> > 
+> 
+> Am I expected to pick up this series?
 
-Just one comment below, otherwise,
+Hi Rafael,
 
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
-
-> ---
->  .../devicetree/bindings/thermal/qcom-tsens.txt       |  1 +
->  drivers/thermal/qcom/tsens.c                         | 12 +++++++++---
->  2 files changed, 10 insertions(+), 3 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> index 292ed89d900b..06195e8f35e2 100644
-> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> @@ -8,6 +8,7 @@ Required properties:
->
->  - reg: Address range of the thermal registers
->  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-> +- #qcom,sensors: Number of sensors in tsens block
->  - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
->  nvmem cells
->
-> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> index 3f9fe6aa51cc..20f3b87d7667 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -116,6 +116,7 @@ static int tsens_probe(struct platform_device *pdev)
->         struct tsens_device *tmdev;
->         const struct tsens_data *data;
->         const struct of_device_id *id;
-> +       u32 num_sensors;
->
->         if (pdev->dev.of_node)
->                 dev = &pdev->dev;
-> @@ -130,18 +131,23 @@ static int tsens_probe(struct platform_device *pdev)
->         else
->                 data = &data_8960;
->
-> -       if (data->num_sensors <= 0) {
-> +       num_sensors = data->num_sensors;
-> +
-
-
-Probably worth adding a comment that we're overriding the num_sensors
-from DT if available here.
-
-> +       if (np)
-> +               of_property_read_u32(np, "#qcom,sensors", &num_sensors);
-> +
-> +       if (num_sensors <= 0) {
->                 dev_err(dev, "invalid number of sensors\n");
->                 return -EINVAL;
->         }
->
->         tmdev = devm_kzalloc(dev, sizeof(*tmdev) +
-> -                            data->num_sensors * sizeof(*s), GFP_KERNEL);
-> +                            num_sensors * sizeof(*s), GFP_KERNEL);
->         if (!tmdev)
->                 return -ENOMEM;
->
->         tmdev->dev = dev;
-> -       tmdev->num_sensors = data->num_sensors;
-> +       tmdev->num_sensors = num_sensors;
->         tmdev->ops = data->ops;
->         for (i = 0;  i < tmdev->num_sensors; i++) {
->                 if (data->hw_ids)
-> --
-> 2.17.0
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+that would be ideal from my point of view.
