@@ -1,68 +1,58 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
- required
-Date: Tue, 15 May 2018 18:25:58 +0100
-Message-ID: <20180515172557.GK30654@e110439-lin>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-4-patrick.bellasi@arm.com>
- <20180513060443.GB64158@joelaf.mtv.corp.google.com>
- <20180513062538.GA116730@joelaf.mtv.corp.google.com>
- <20180514163206.GF30654@e110439-lin>
- <CAKfTPtCrUOJ=RGqrXMTc0_JFHzRjtpydoKmVNGT8KVz19QQ1vA@mail.gmail.com>
- <20180515145343.GJ30654@e110439-lin>
- <20180515165304.GH12217@hirez.programming.kicks-ass.net>
+From: Thomas Martitz <kugel@rockbox.org>
+Subject: Re: [PATCH] PM/ runtime: fix resume from suspend on newer hp
+ zbook/elitebook
+Date: Tue, 15 May 2018 21:39:33 +0200
+Message-ID: <061fae0d-f358-ef6a-9c4a-a40a33d8b900@rockbox.org>
+References: <20180515133508.2913-1-kugel@rockbox.org>
+ <CAJZ5v0ipJgkwmv6n5b8Z+=V0k_7d+iXdLycsF9Tsq01MWy_Jqg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180515165304.GH12217@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Joel Fernandes <joel@joelfernandes.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0ipJgkwmv6n5b8Z+=V0k_7d+iXdLycsF9Tsq01MWy_Jqg@mail.gmail.com>
+Content-Language: en-US
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 15-May 18:53, Peter Zijlstra wrote:
-> On Tue, May 15, 2018 at 03:53:43PM +0100, Patrick Bellasi wrote:
-> > On 15-May 12:19, Vincent Guittot wrote:
-> > > On 14 May 2018 at 18:32, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> > What about adding a new explicit callback at the end of:
-> >    update_blocked_averages() ?
-> > 
-> > Something like:
-> > 
-> > ---8<---
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index cb77407ba485..6eb0f31c656d 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -7740,6 +7740,9 @@ static void update_blocked_averages(int cpu)
-> >         if (done)
-> >                 rq->has_blocked_load = 0;
-> >  #endif
-> > +
-> > +       cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
-> > +
-> >         rq_unlock_irqrestore(rq, &rf);
-> >  }
-> > ---8<---
-> > 
-> > Where we can also pass in a new SCHED_CPUFREQ_IDLE flag just to notify
-> > schedutil that the CPU is currently IDLE?
-> > 
-> > Could that work?
+Am 15.05.2018 um 17:10 schrieb Rafael J. Wysocki:
+
+> Before applying anything like this I need to understand the failure in
+> the first place.
 > 
-> Simlarly you could add ENQUEUE/DEQUEUE flags I suppose. But let's do all
-> that later in separate patches and evaluate the impact separately, OK?
+> Since direct_complete is optional anyway and it should be safe to call
+> pm_runtime_suspended() at any time, I'm suspecting a bug in a driver
+> that is exposed by the commit turned up by bisection.
+> 
+> Where's the code I need to look at?
+> 
 
-Sure, that's better to keep on a separate patch.
+Hello,
 
-For the time being I'll just update this last patch with the above
-snippet just to have the same behavior we have right now.
+thanks for looking into this. To answer the question I need your 
+expertise. I couldn't find out which device causes it. Since the freeze 
+only happens of amdgpu is loaded I naturally thought the problematic 
+device(s) would be bound to amdgpu. So I assumed the amdgpu-bound 
+devices would be affected by your change, i.e. not have direct_complete 
+set anymore. But I could not confirm this evidence during testing (I 
+basically restricted my patch to devices which pass 
+!strcmp(dev->driver->name, "amdgpu", and the system was still frozen 
+upon resume).
 
-Then maybe we can also split this last patch into a separate series to
-better evaluate the ideas to have "explicit" updates.
+Then I printed a list which pass "dev->direct_complete && 
+!pm_runtime_suspended(dev)" (with this patch applied), and the list was 
+*very* long (maybe 100+). I can perform this again if you find the list 
+useful.
 
--- 
-#include <best/regards.h>
+The sheer number of devices which pass  "dev->direct_complete && 
+!pm_runtime_suspended(dev)" made me think that your change should be 
+re-considered, hence my patch.
 
-Patrick Bellasi
+So, please give me advice on how I can point you to the code that you'd 
+like to look at. I assume key information which device(s) pass 
+"dev->direct_complete && !pm_runtime_suspended(dev)" AND cause the 
+freeze on !dev->direct_complete? I'm afraid that will take a very long 
+time to find out.
+
+Best regards.
