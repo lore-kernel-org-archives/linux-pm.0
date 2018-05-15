@@ -1,262 +1,84 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when required
-Date: Tue, 15 May 2018 12:19:21 +0200
-Message-ID: <CAKfTPtCrUOJ=RGqrXMTc0_JFHzRjtpydoKmVNGT8KVz19QQ1vA@mail.gmail.com>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-4-patrick.bellasi@arm.com> <20180513060443.GB64158@joelaf.mtv.corp.google.com>
- <20180513062538.GA116730@joelaf.mtv.corp.google.com> <20180514163206.GF30654@e110439-lin>
+From: Robin Murphy <robin.murphy@arm.com>
+Subject: Re: [RFC PATCH 01/10] devfreq: rockchip-dfi: Move GRF definitions to
+ a common place.
+Date: Tue, 15 May 2018 12:23:28 +0100
+Message-ID: <c217cf74-c5fe-4e4b-7b55-7672381b3eaf@arm.com>
+References: <20180514211610.26618-1-enric.balletbo@collabora.com>
+ <20180514211610.26618-2-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180514163206.GF30654@e110439-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Joel Fernandes <joel@joelfernandes.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20180514211610.26618-2-enric.balletbo@collabora.com>
+Content-Language: en-GB
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
+Cc: Lin Huang <hl@rock-chips.com>, linux-pm@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org, kernel@collabora.com, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14 May 2018 at 18:32, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> On 12-May 23:25, Joel Fernandes wrote:
->> On Sat, May 12, 2018 at 11:04:43PM -0700, Joel Fernandes wrote:
->> > On Thu, May 10, 2018 at 04:05:53PM +0100, Patrick Bellasi wrote:
->> > > Schedutil updates for FAIR tasks are triggered implicitly each time a
->> > > cfs_rq's utilization is updated via cfs_rq_util_change(), currently
->> > > called by update_cfs_rq_load_avg(), when the utilization of a cfs_rq has
->> > > changed, and {attach,detach}_entity_load_avg().
->> > >
->> > > This design is based on the idea that "we should callback schedutil
->> > > frequently enough" to properly update the CPU frequency at every
->> > > utilization change. However, such an integration strategy has also
->> > > some downsides:
->> >
->> > Hi Patrick,
->
-> Hi Joel,
->
-
-[...]
-
->> > > @@ -5456,10 +5443,12 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->> > >           update_cfs_group(se);
->> > >   }
->> > >
->> > > + /* The task is no more visible from the root cfs_rq */
->> > >   if (!se)
->> > >           sub_nr_running(rq, 1);
->> > >
->> > >   util_est_dequeue(&rq->cfs, p, task_sleep);
->> > > + cpufreq_update_util(rq, 0);
->> >
->> > One question about this change. In enqueue, throttle and unthrottle - you are
->> > conditionally calling cpufreq_update_util incase the task was
->> > visible/not-visible in the hierarchy.
->> >
->> > But in dequeue you're unconditionally calling it. Seems a bit inconsistent.
->> > Is this because of util_est or something? Could you add a comment here
->> > explaining why this is so?
->>
->> The big question I have is incase se != NULL, then its still visible at the
->> root RQ level.
->
-> My understanding it that you get !se at dequeue time when we are
-> dequeuing a task from a throttled RQ. Isn't it?
-
-Yes se becomes NULL only when you reach root domain
-
->
-> Thus, this means you are dequeuing a throttled task, I guess for
-> example because of a migration.
-> However, the point is that a task dequeue from a throttled RQ _is
-> already_ not visible from the root RQ, because of the sub_nr_running()
-> done by throttle_cfs_rq().
->
->> In that case should we still call the util_est_dequeue and the
->> cpufreq_update_util?
->
-> I had a better look at the different code paths and I've possibly come
-> up with some interesting observations. Lemme try to resume theme here.
->
-> First of all, we need to distinguish from estimated utilization
-> updates and schedutil updates, since they respond to two very
-> different goals.
->
->
-> .:: Estimated utilization updates
-> =================================
->
-> Goal: account for the amount of utilization we are going to
->       expect on a CPU
->
-> At {en,de}queue time, util_est_{en,de}queue() is always
-> unconditionally called because it tracks the utilization which is
-> estimated to be generated by all the RUNNABLE tasks.
->
-> We do not care about throttled/un-throttled RQ here because the effect
-> of throttling is already folded into the estimated utilization.
->
-> For example, a 100% tasks which is placed into a 50% bandwidth
-> limited TG will generate a 50% (estimated) utilization. Thus, when the
-> task is enqueued we can account immediately for that utilization
-> although the RQ can be currently throttled.
->
->
-> .:: Schedutil updates
-> =====================
->
-> Goal: select a better frequency, if and _when_ required
->
-> At enqueue time, if the task is visible at the root RQ the it's
-> expected to run within a scheduler latency period. Thus, it makes
-> sense to call immediately schedutil to account for its estimated
-> utilization to possibly increase the OPP.
->
-> If instead the task is enqueued into a throttled RQ, then I'm
-> skipping the update since the task will not run until the RQ is
-> actually un-throttled.
->
-> HOWEVER, I would say that in general we could skip this last
-> optimization and always unconditionally update schedutil at enqueue
-> time considering the fact that the effects of a throttled RQ are
-> always reflected into the (estimated) utilization of a task.
-
-I think so too
-
->
-> At dequeue time instead, since we certainly removed some estimated
-> utilization, then I unconditionally updated schedutil.
->
-> HOWEVER, I was not considering these two things:
->
-> 1. for a task going to sleep, we still have its blocked utilization
->    accounted in the cfs_rq utilization.
-
-It might be still interesting to reduce the frequency because the
-blocked utilization can be lower than its estimated utilization.
-
->
-> 2. for a task being migrated, at dequeue time we still have not
->    removed the task's utilization from the cfs_rq's utilization.
->    This usually happens later, for example we can have:
->
->       move_queued_task()
->          dequeue_task()                      --> CFS task dequeued
->          set_task_cpu()                         --> schedutil updated
->             migrate_task_rq_fair()
->                detach_entity_cfs_rq()
->                   detach_entity_load_avg()   --> CFS util removal
->          enqueue_task()
->
-> Moreover, the "CFS util removal" actually affects the cfs_rq only if
-> we hold the RQ lock, otherwise we know that it's just back annotated
-> as "removed" utilization and the actual cfs_rq utilization is fixed up
-> at the next chance we have the RQ lock.
->
-> Thus, I would say that in both cases, at dequeue time it does not make
-> sense to update schedutil since we always see the task's utilization
-> in the cfs_rq and thus we will not reduce the frequency.
-
-Yes only attach/detach make sense from an utilization pov and that's
-where we should check for a frequency update for utilization
-
->
-> NOTE, this is true independently from the refactoring I'm proposing.
-> At dequeue time, although we call update_load_avg() on the root RQ,
-> it does not make sense to update schedutil since we still see either
-> the blocked utilization of a sleeping task or the not yet removed
-> utilization of a migrating task. In both cases the risk is to ask for
-> an higher OPP right when a CPU is going to be IDLE.
-
-We have to take care of not mixing the opportunity to update the
-frequency when we are updating the utilization with the policy that we
-want to apply regarding (what we think that is) the best time to
-update the frequency. Like saying that we should wait a bit more to
-make sure that the current utilization is sustainable because a
-frequency change is expensive on the platform (or not)
-
-It's not because a task is dequeued that we should not update and
-increase the frequency; Or even that we should not decrease it because
-we have just taken into account some removed utilization of a previous
-migration.
-The same happen when a task migrates, we don't know if the utilization
-that is about to be migrated, will be higher or lower than the normal
-update of the utilization (since the last update) and can not generate
-a frequency change
-
-I see your explanation above like a kind of policy where you want to
-balance the cost of a frequency change with the probability that we
-will not have to re-update the frequency soon.
-
-I agree that some scheduling events give higher chances of a
-sustainable utilization level and we should favor these events when
-the frequency change is costly but I'm not sure that we should remove
-all other opportunity to udjust the frequency to the current
-utilization level when the cost is low or negligible.
-
-Can't we classify the utilization events into some kind of major and
-minor changes ?
-
->
-> Moreover, it seems that in general we prefer a "conservative" approach
-> in frequency reduction.
-> For example it could be harmful to trigger a frequency reduction when
-> a task is migrating off a CPU, if right after another task should be
-> instead migrated into the same CPU.
->
->
-> .:: Conclusions
-> ===============
->
-> All that considered, I think I've convinced myself that we really need
-> to notify schedutil only in these cases:
->
->  1. enqueue time
->     because of the changes in estimated utilization and the
->     possibility to just straight to a better OPP
->
->  2. task tick time
->     because of the possible ramp-up of the utilization
->
-> Another case is related to remote CPUs blocked utilization update,
-> after the recent Vincent's patches. Currently indeed:
->
->   update_blocked_averages()
->      update_load_avg()
->         --> update schedutil
->
-> and thus, potentially we wake up an IDLE cluster just to reduce its
-> OPP. If the cluster is in a deep idle state, I'm not entirely sure
-> this is good from an energy saving standpoint.
-> However, with the patch I'm proposing we are missing that support,
-> meaning that an IDLE cluster will get its utilization decayed but we
-> don't wake it up just to drop its frequency.
-
-So more than deciding in the scheduler if we should wake it up or not,
-we should give a chance to cpufreq to decide if it wants to update the
-frequency or not as this decision is somehow platform specific: cost
-of frequency change, clock topology and shared clock, voltage topology
-...
-
-Regards,
-Vincent
->
-> Perhaps we should better pass in this information to schedutil via a
-> flag (e.g. SCHED_FREQ_REMOTE_UPDATE) and implement there a policy to
-> decide if and when it makes sense to drop the OPP. Or otherwise find a
-> way for the special DL tasks to always run on the lower capacity_orig
-> CPUs.
->
->> Sorry if I missed something obvious.
->
-> Thanks for the question it has actually triggered a better analysis of
-> what we have and what we need.
->
-> Looking forward to some feedbacks about the above before posting a new
-> version of this last patch.
->
->> thanks!
->>
->> - Joel
->
-> --
-> #include <best/regards.h>
->
-> Patrick Bellasi
+SGkgRW5yaWMsCgpPbiAxNC8wNS8xOCAyMjoxNiwgRW5yaWMgQmFsbGV0Ym8gaSBTZXJyYSB3cm90
+ZToKPiBTb21lIHJrMzM5OSBHUkYgKEdlbmVyaWMgUmVnaXN0ZXIgRmlsZXMpIGRlZmluaXRpb25z
+IGNhbiBiZSB1c2VkIGZvcgo+IGRpZmZlcmVudCBkcml2ZXJzLiBNb3ZlIHRoZXNlIGRlZmluaXRp
+b25zIHRvIGEgY29tbW9uIGluY2x1ZGUgc28gd2UKPiBkb24ndCBuZWVkIHRvIGR1cGxpY2F0ZSB0
+aGVzZSBkZWZpbml0aW9ucy4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBFbnJpYyBCYWxsZXRibyBpIFNl
+cnJhIDxlbnJpYy5iYWxsZXRib0Bjb2xsYWJvcmEuY29tPgo+IC0tLQo+IAo+ICAgZHJpdmVycy9k
+ZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS5jIHwgMjMgKysrKysrKy0tLS0tLS0tLS0tLS0tLS0K
+PiAgIGluY2x1ZGUvc29jL3JvY2tjaGlwL3JrMzM5OV9ncmYuaCAgICB8IDIxICsrKysrKysrKysr
+KysrKysrKysrKwo+ICAgMiBmaWxlcyBjaGFuZ2VkLCAyOCBpbnNlcnRpb25zKCspLCAxNiBkZWxl
+dGlvbnMoLSkKPiAgIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRlL3NvYy9yb2NrY2hpcC9yazMz
+OTlfZ3JmLmgKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlw
+LWRmaS5jIGIvZHJpdmVycy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS5jCj4gaW5kZXggMjJi
+MTEzMzYzZmZjLi4yZmJiY2JlYjY0NGYgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2V2
+ZW50L3JvY2tjaGlwLWRmaS5jCj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlw
+LWRmaS5jCj4gQEAgLTI2LDYgKzI2LDggQEAKPiAgICNpbmNsdWRlIDxsaW51eC9saXN0Lmg+Cj4g
+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4KPiAgIAo+ICsjaW5jbHVkZSA8c29jL3JvY2tjaGlwL3Jr
+MzM5OV9ncmYuaD4KPiArCj4gICAjZGVmaW5lIFJLMzM5OV9ETUNfTlVNX0NICTIKPiAgIAo+ICAg
+LyogRERSTU9OX0NUUkwgKi8KPiBAQCAtNDMsMTggKzQ1LDYgQEAKPiAgICNkZWZpbmUgRERSTU9O
+X0NIMV9DT1VOVF9OVU0JCTB4M2MKPiAgICNkZWZpbmUgRERSTU9OX0NIMV9ERklfQUNDRVNTX05V
+TQkweDQwCj4gICAKPiAtLyogcG11IGdyZiAqLwo+IC0jZGVmaW5lIFBNVUdSRl9PU19SRUcyCTB4
+MzA4Cj4gLSNkZWZpbmUgRERSVFlQRV9TSElGVAkxMwo+IC0jZGVmaW5lIEREUlRZUEVfTUFTSwk3
+Cj4gLQo+IC1lbnVtIHsKPiAtCUREUjMgPSAzLAo+IC0JTFBERFIzID0gNiwKPiAtCUxQRERSNCA9
+IDcsCj4gLQlVTlVTRUQgPSAweEZGCj4gLX07Cj4gLQo+ICAgc3RydWN0IGRtY191c2FnZSB7Cj4g
+ICAJdTMyIGFjY2VzczsKPiAgIAl1MzIgdG90YWw7Cj4gQEAgLTgzLDE2ICs3MywxNyBAQCBzdGF0
+aWMgdm9pZCByb2NrY2hpcF9kZmlfc3RhcnRfaGFyZHdhcmVfY291bnRlcihzdHJ1Y3QgZGV2ZnJl
+cV9ldmVudF9kZXYgKmVkZXYpCj4gICAJdTMyIGRkcl90eXBlOwo+ICAgCj4gICAJLyogZ2V0IGRk
+ciB0eXBlICovCj4gLQlyZWdtYXBfcmVhZChpbmZvLT5yZWdtYXBfcG11LCBQTVVHUkZfT1NfUkVH
+MiwgJnZhbCk7Cj4gLQlkZHJfdHlwZSA9ICh2YWwgPj4gRERSVFlQRV9TSElGVCkgJiBERFJUWVBF
+X01BU0s7Cj4gKwlyZWdtYXBfcmVhZChpbmZvLT5yZWdtYXBfcG11LCBSSzMzOTlfUE1VR1JGX09T
+X1JFRzIsICZ2YWwpOwo+ICsJZGRyX3R5cGUgPSAodmFsID4+IFJLMzM5OV9QTVVHUkZfRERSVFlQ
+RV9TSElGVCkgJgo+ICsJCSAgICBSSzMzOTlfUE1VR1JGX0REUlRZUEVfTUFTSzsKPiAgIAo+ICAg
+CS8qIGNsZWFyIEREUk1PTl9DVFJMIHNldHRpbmcgKi8KPiAgIAl3cml0ZWxfcmVsYXhlZChDTFJf
+RERSTU9OX0NUUkwsIGRmaV9yZWdzICsgRERSTU9OX0NUUkwpOwo+ICAgCj4gICAJLyogc2V0IGRk
+ciB0eXBlIHRvIGRmaSAqLwo+IC0JaWYgKGRkcl90eXBlID09IExQRERSMykKPiArCWlmIChkZHJf
+dHlwZSA9PSBSSzMzOTlfUE1VR1JGX0REUlRZUEVfTFBERFIzKQo+ICAgCQl3cml0ZWxfcmVsYXhl
+ZChMUEREUjNfRU4sIGRmaV9yZWdzICsgRERSTU9OX0NUUkwpOwo+IC0JZWxzZSBpZiAoZGRyX3R5
+cGUgPT0gTFBERFI0KQo+ICsJZWxzZSBpZiAoZGRyX3R5cGUgPT0gUkszMzk5X1BNVUdSRl9ERFJU
+WVBFX0xQRERSNCkKPiAgIAkJd3JpdGVsX3JlbGF4ZWQoTFBERFI0X0VOLCBkZmlfcmVncyArIERE
+Uk1PTl9DVFJMKTsKPiAgIAo+ICAgCS8qIGVuYWJsZSBjb3VudCwgdXNlIHNvZnR3YXJlIG1vZGUg
+Ki8KPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9zb2Mvcm9ja2NoaXAvcmszMzk5X2dyZi5oIGIvaW5j
+bHVkZS9zb2Mvcm9ja2NoaXAvcmszMzk5X2dyZi5oCj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQKPiBp
+bmRleCAwMDAwMDAwMDAwMDAuLjBmOTQwMzRlMmU5YQo+IC0tLSAvZGV2L251bGwKPiArKysgYi9p
+bmNsdWRlL3NvYy9yb2NrY2hpcC9yazMzOTlfZ3JmLmgKPiBAQCAtMCwwICsxLDIxIEBACj4gKy8q
+IFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wKyAqLwo+ICsvKgo+ICsgKiBSb2NrY2hp
+cCBHZW5lcmljIFJlZ2lzdGVyIEZpbGVzIGRlZmluaXRpb25zCgpOaXQ6IHMvR2VuZXJpYy9HZW5l
+cmFsLwoKKHRoYXQncyB3aGF0IHRoZSBUUk1zIHNheSkKClJvYmluLgoKPiArICoKPiArICogQ29w
+eXJpZ2h0IChjKSAyMDE4LCBDb2xsYWJvcmEgTHRkLgo+ICsgKiBBdXRob3I6IEVucmljIEJhbGxl
+dGJvIGkgU2VycmEgPGVucmljLmJhbGxldGJvQGNvbGxhYm9yYS5jb20+Cj4gKyAqLwo+ICsKPiAr
+I2lmbmRlZiBfX1NPQ19SSzMzOTlfR1JGX0gKPiArI2RlZmluZSBfX1NPQ19SSzMzOTlfR1JGX0gK
+PiArCj4gKy8qIFBNVSBHUkYgUmVnaXN0ZXJzICovCj4gKyNkZWZpbmUgUkszMzk5X1BNVUdSRl9P
+U19SRUcyCQkweDMwOAo+ICsjZGVmaW5lIFJLMzM5OV9QTVVHUkZfRERSVFlQRV9TSElGVAkxMwo+
+ICsjZGVmaW5lIFJLMzM5OV9QTVVHUkZfRERSVFlQRV9NQVNLCTcKPiArI2RlZmluZSBSSzMzOTlf
+UE1VR1JGX0REUlRZUEVfRERSMwkzCj4gKyNkZWZpbmUgUkszMzk5X1BNVUdSRl9ERFJUWVBFX0xQ
+RERSMgk1Cj4gKyNkZWZpbmUgUkszMzk5X1BNVUdSRl9ERFJUWVBFX0xQRERSMwk2Cj4gKyNkZWZp
+bmUgUkszMzk5X1BNVUdSRl9ERFJUWVBFX0xQRERSNAk3Cj4gKwo+ICsjZW5kaWYKPiAKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxp
+bmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
