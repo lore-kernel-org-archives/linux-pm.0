@@ -1,35 +1,26 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 07/11] driver core: Respect all error codes from
- dev_pm_domain_attach()
-Date: Mon, 14 May 2018 17:54:42 -0700
-Message-ID: <20180515005442.GN98604@atomide.com>
-References: <1524732790-2234-1-git-send-email-ulf.hansson@linaro.org>
- <1524732790-2234-8-git-send-email-ulf.hansson@linaro.org>
- <20180514151907.GK98604@atomide.com>
- <CAPDyKFqY5u3=db7-Xd9JXWo228PSNbH7-m-QNfSY9z8Z3p8t8A@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 08/14] dt: qcom: Add opp and thermal to the msm8996
+Date: Tue, 15 May 2018 09:34:10 +0530
+Message-ID: <20180515040410.jl537anxpksi2hel@vireshk-i7>
+References: <1526303520-5843-1-git-send-email-ilialin@codeaurora.org>
+ <1526303520-5843-9-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFqY5u3=db7-Xd9JXWo228PSNbH7-m-QNfSY9z8Z3p8t8A@mail.gmail.com>
+In-Reply-To: <1526303520-5843-9-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Vinod Koul <vinod.koul@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Russell King <linux@armlinux.org.uk>, Mark Brown <broonie@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Sanyog Kale <sanyog.r.kale@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-* Ulf Hansson <ulf.hansson@linaro.org> [180514 18:59]:
-> On 14 May 2018 at 17:19, Tony Lindgren <tony@atomide.com> wrote:
-> > Reverting for 8c123c14bbba ("driver core: Respect all error codes from
-> > dev_pm_domain_attach()") fixes the issue for me.
-> >
-> > Sounds like something is missing, any ideas?
-> 
-> This should solve the problem:
-> 
-> https://patchwork.kernel.org/patch/10398597/
+On 14-05-18, 16:11, Ilia Lin wrote:
+> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
+> ---
+>  arch/arm64/boot/dts/qcom/msm8996.dtsi | 269 ++++++++++++++++++++++++++++++++--
+>  1 file changed, 260 insertions(+), 9 deletions(-)
 
-Thanks yeah that fixes it for me too.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Regards,
-
-Tony
+-- 
+viresh
