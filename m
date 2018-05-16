@@ -1,126 +1,74 @@
-From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
-Subject: [PATCH RFC] schedutil: Allow cpufreq requests to be made even when kthread kicked
-Date: Wed, 16 May 2018 15:45:18 -0700
-Message-ID: <20180516224518.109891-1-joel@joelfernandes.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH] PM / devfreq: Init user limits from OPP limits, not viceversa
+Date: Wed, 16 May 2018 15:57:09 -0700
+Message-ID: <20180516225709.153138-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: "Joel Fernandes (Google)" <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently there is a chance of a schedutil cpufreq update request to be
-dropped if there is a pending update request. This pending request can
-be delayed if there is a scheduling delay of the irq_work and the wake
-up of the schedutil governor kthread.
+Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding
+the devfreq device") introduced the initialization of the user
+limits min/max_freq from the lowest/highest available OPPs. Later
+commit f1d981eaecf8 ("PM / devfreq: Use the available min/max
+frequency") added scaling_min/max_freq, which actually represent
+the frequencies of the lowest/highest available OPP. scaling_min/
+max_freq are initialized with the values from min/max_freq, which
+is totally correct in the context, but a bit awkward to read.
 
-A very bad scenario is when a schedutil request was already just made,
-such as to reduce the CPU frequency, then a newer request to increase
-CPU frequency (even sched deadline urgent frequency increase requests)
-can be dropped, even though the rate limits suggest that its Ok to
-process a request. This is because of the way the work_in_progress flag
-is used.
+Swap the initialization and assign scaling_min/max_freq with the
+OPP freqs and then the user limts min/max_freq with scaling_min/
+max_freq.
 
-This patch improves the situation by allowing new requests to happen
-even though the old one is still being processed. Note that in this
-approach, if an irq_work was already issued, we just update next_freq
-and don't bother to queue another request so there's no extra work being
-done to make this happen.
+Needless to say that this change is a NOP, intended to improve
+readability.
 
-I had brought up this issue at the OSPM conference and Claudio had a
-discussion RFC with an alternate approach [1]. I prefer the approach as
-done in the patch below since it doesn't need any new flags and doesn't
-cause any other extra overhead.
-
-[1] https://patchwork.kernel.org/patch/10384261/
-
-CC: Viresh Kumar <viresh.kumar@linaro.org>
-CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-CC: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: Patrick Bellasi <patrick.bellasi@arm.com>
-CC: Juri Lelli <juri.lelli@redhat.com>
-Cc: Luca Abeni <luca.abeni@santannapisa.it>
-CC: Joel Fernandes <joelaf@google.com>
-CC: linux-pm@vger.kernel.org
-Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 ---
-Claudio,
-Could you also test this patch for your usecase?
+Additional context: I'm considering to introduce the concept of
+a devfreq policy, which would probably move min/max_freq inside
+of a struct policy, this would make the initialization even
+more awkward to read. If this moves forward I might also propose
+to rename scaling_min/max_freq to something like min/max_opp_freq
+to avoid confusion with the frequencies in the policy (cpufreq uses
+scaling_min/max_freq for the sysfs attributes of the policy
+limits).
 
- kernel/sched/cpufreq_schedutil.c | 36 +++++++++++++++++++++++++-------
- 1 file changed, 28 insertions(+), 8 deletions(-)
+ drivers/devfreq/devfreq.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index e13df951aca7..a87fc281893d 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- 	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
- 		return false;
- 
--	if (sg_policy->work_in_progress)
--		return false;
--
- 	if (unlikely(sg_policy->need_freq_update)) {
- 		sg_policy->need_freq_update = false;
- 		/*
-@@ -129,8 +126,11 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
- 		policy->cur = next_freq;
- 		trace_cpu_frequency(next_freq, smp_processor_id());
- 	} else {
--		sg_policy->work_in_progress = true;
--		irq_work_queue(&sg_policy->irq_work);
-+		/* Don't queue request if one was already queued */
-+		if (!sg_policy->work_in_progress) {
-+			sg_policy->work_in_progress = true;
-+			irq_work_queue(&sg_policy->irq_work);
-+		}
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index fe2af6aa88fc..0057ef5b0a98 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -604,21 +604,21 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		mutex_lock(&devfreq->lock);
  	}
- }
  
-@@ -291,6 +291,15 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+-	devfreq->min_freq = find_available_min_freq(devfreq);
+-	if (!devfreq->min_freq) {
++	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
++	if (!devfreq->scaling_min_freq) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -EINVAL;
+ 		goto err_dev;
+ 	}
+-	devfreq->scaling_min_freq = devfreq->min_freq;
++	devfreq->min_freq = devfreq->scaling_min_freq;
  
- 	ignore_dl_rate_limit(sg_cpu, sg_policy);
+-	devfreq->max_freq = find_available_max_freq(devfreq);
+-	if (!devfreq->max_freq) {
++	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
++	if (!devfreq->scaling_max_freq) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -EINVAL;
+ 		goto err_dev;
+ 	}
+-	devfreq->scaling_max_freq = devfreq->max_freq;
++	devfreq->max_freq = devfreq->scaling_max_freq;
  
-+	/*
-+	 * For slow-switch systems, single policy requests can't run at the
-+	 * moment if the governor thread is already processing a pending
-+	 * frequency switch request, this can be fixed by acquiring update_lock
-+	 * while updating next_freq and work_in_progress but we prefer not to.
-+	 */
-+	if (sg_policy->work_in_progress)
-+		return;
-+
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
-@@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
- static void sugov_work(struct kthread_work *work)
- {
- 	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-+	unsigned int freq;
-+	unsigned long flags;
-+
-+	/*
-+	 * Hold sg_policy->update_lock shortly to handle the case where:
-+	 * incase sg_policy->next_freq is read here, and then updated by
-+	 * sugov_update_shared just before work_in_progress is set to false
-+	 * here, we may miss queueing the new update.
-+	 */
-+	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
-+	freq = sg_policy->next_freq;
-+	sg_policy->work_in_progress = false;
-+	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
- 
- 	mutex_lock(&sg_policy->work_lock);
--	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
-+	__cpufreq_driver_target(sg_policy->policy, freq,
- 				CPUFREQ_RELATION_L);
- 	mutex_unlock(&sg_policy->work_lock);
--
--	sg_policy->work_in_progress = false;
- }
- 
- static void sugov_irq_work(struct irq_work *irq_work)
+ 	dev_set_name(&devfreq->dev, "devfreq%d",
+ 				atomic_inc_return(&devfreq_no));
 -- 
 2.17.0.441.gb46fe60e1d-goog
