@@ -1,116 +1,146 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH] PM / devfreq: Remove redundant frequency adjustment from governors
-Date: Wed, 16 May 2018 14:10:51 -0700
-Message-ID: <20180516211051.78875-1-mka@chromium.org>
+From: Subhash Jadavani <subhashj@codeaurora.org>
+Subject: Re: [PATCH v2 2/2] scsi: ufs: Use freq table with devfreq
+Date: Wed, 16 May 2018 14:20:33 -0700
+Message-ID: <90f5df2414f26ed8c8c95b41d2f018c2@codeaurora.org>
+References: <20180504224427.32606-1-bjorn.andersson@linaro.org>
+ <20180504224427.32606-3-bjorn.andersson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180504224427.32606-3-bjorn.andersson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Vivek Gautam <vivek.gautam@codeaurora.org>, linux-scsi-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The performance, powersave, simpleondemand and userspace governors
-determine a target frequency and then adjust it according to the
-df->min/max_freq limits that might have been set by user space. This
-adjustment is redundant, it is done in update_devfreq() for any
-governor, right after governor->get_target_freq().
+On 2018-05-04 15:44, Bjorn Andersson wrote:
+> devfreq requires that the client operates on actual frequencies, not
+> only 0 and UMAX_INT and as such UFS brok with the introduction of
+> f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency").
+> 
+> This patch registers the frequencies of the first clock as opp levels
+> and use these to determine if we're trying to step up or down.
+> 
+> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+> ---
+> 
+> Chances since v1:
+> - Register min_freq and max_freq as opp levels.
+> - Unregister opp levels on removal, to make e.g. probe defer working
+> 
+>  drivers/scsi/ufs/ufshcd.c | 47 +++++++++++++++++++++++++++++++++------
+>  1 file changed, 40 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
+> index 2253f24309ec..257614b889bd 100644
+> --- a/drivers/scsi/ufs/ufshcd.c
+> +++ b/drivers/scsi/ufs/ufshcd.c
+> @@ -1168,16 +1168,13 @@ static int ufshcd_devfreq_target(struct device 
+> *dev,
+>  	struct ufs_hba *hba = dev_get_drvdata(dev);
+>  	ktime_t start;
+>  	bool scale_up, sched_clk_scaling_suspend_work = false;
+> +	struct list_head *clk_list = &hba->clk_list_head;
+> +	struct ufs_clk_info *clki;
+>  	unsigned long irq_flags;
+> 
+>  	if (!ufshcd_is_clkscaling_supported(hba))
+>  		return -EINVAL;
+> 
+> -	if ((*freq > 0) && (*freq < UINT_MAX)) {
+> -		dev_err(hba->dev, "%s: invalid freq = %lu\n", __func__, *freq);
+> -		return -EINVAL;
+> -	}
+> -
+>  	spin_lock_irqsave(hba->host->host_lock, irq_flags);
+>  	if (ufshcd_eh_in_progress(hba)) {
+>  		spin_unlock_irqrestore(hba->host->host_lock, irq_flags);
+> @@ -1187,7 +1184,13 @@ static int ufshcd_devfreq_target(struct device 
+> *dev,
+>  	if (!hba->clk_scaling.active_reqs)
+>  		sched_clk_scaling_suspend_work = true;
+> 
+> -	scale_up = (*freq == UINT_MAX) ? true : false;
+> +	if (list_empty(clk_list)) {
+> +		spin_unlock_irqrestore(hba->host->host_lock, irq_flags);
+> +		goto out;
+> +	}
+> +
+> +	clki = list_first_entry(clk_list, struct ufs_clk_info, list);
+> +	scale_up = (*freq == clki->max_freq) ? true : false;
+>  	if (!ufshcd_is_devfreq_scaling_required(hba, scale_up)) {
+>  		spin_unlock_irqrestore(hba->host->host_lock, irq_flags);
+>  		ret = 0;
+> @@ -1257,16 +1260,29 @@ static struct devfreq_dev_profile
+> ufs_devfreq_profile = {
+> 
+>  static int ufshcd_devfreq_init(struct ufs_hba *hba)
+>  {
+> +	struct list_head *clk_list = &hba->clk_list_head;
+> +	struct ufs_clk_info *clki;
+>  	struct devfreq *devfreq;
+>  	int ret;
+> 
+> -	devfreq = devm_devfreq_add_device(hba->dev,
+> +	/* Skip devfreq if we don't have any clocks in the list */
+> +	if (list_empty(clk_list))
+> +		return 0;
+> +
+> +	clki = list_first_entry(clk_list, struct ufs_clk_info, list);
+> +	dev_pm_opp_add(hba->dev, clki->min_freq, 0);
+> +	dev_pm_opp_add(hba->dev, clki->max_freq, 0);
+> +
+> +	devfreq = devfreq_add_device(hba->dev,
+>  			&ufs_devfreq_profile,
+>  			"simple_ondemand",
+>  			NULL);
+>  	if (IS_ERR(devfreq)) {
+>  		ret = PTR_ERR(devfreq);
+>  		dev_err(hba->dev, "Unable to register with devfreq %d\n", ret);
+> +
+> +		dev_pm_opp_remove(hba->dev, clki->min_freq);
+> +		dev_pm_opp_remove(hba->dev, clki->max_freq);
+>  		return ret;
+>  	}
+> 
+> @@ -1275,6 +1291,22 @@ static int ufshcd_devfreq_init(struct ufs_hba 
+> *hba)
+>  	return 0;
+>  }
+> 
+> +static void ufshcd_devfreq_remove(struct ufs_hba *hba)
+> +{
+> +	struct list_head *clk_list = &hba->clk_list_head;
+> +	struct ufs_clk_info *clki;
+> +
+> +	if (!hba->devfreq)
+> +		return;
+> +
+> +	devfreq_remove_device(hba->devfreq);
+> +	hba->devfreq = NULL;
+> +
+> +	clki = list_first_entry(clk_list, struct ufs_clk_info, list);
+> +	dev_pm_opp_remove(hba->dev, clki->min_freq);
+> +	dev_pm_opp_remove(hba->dev, clki->max_freq);
+> +}
+> +
+>  static void __ufshcd_suspend_clkscaling(struct ufs_hba *hba)
+>  {
+>  	unsigned long flags;
+> @@ -6966,6 +6998,7 @@ static void ufshcd_hba_exit(struct ufs_hba *hba)
+>  			if (hba->devfreq)
+>  				ufshcd_suspend_clkscaling(hba);
+>  			destroy_workqueue(hba->clk_scaling.workq);
+> +			ufshcd_devfreq_remove(hba);
+>  		}
+>  		ufshcd_setup_clocks(hba, false);
+>  		ufshcd_setup_hba_vreg(hba, false);
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
----
- drivers/devfreq/governor_performance.c    | 10 ++--------
- drivers/devfreq/governor_powersave.c      |  5 -----
- drivers/devfreq/governor_simpleondemand.c |  7 +------
- drivers/devfreq/governor_userspace.c      | 16 ++++------------
- 4 files changed, 7 insertions(+), 31 deletions(-)
+Looks good to me.
+Reviewed-by: Subhash Jadavani <subhashj@codeaurora.org>
 
-diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
-index 4d23ecfbd948..31ee30622c00 100644
---- a/drivers/devfreq/governor_performance.c
-+++ b/drivers/devfreq/governor_performance.c
-@@ -16,14 +16,8 @@
- static int devfreq_performance_func(struct devfreq *df,
- 				    unsigned long *freq)
- {
--	/*
--	 * target callback should be able to get floor value as
--	 * said in devfreq.h
--	 */
--	if (!df->max_freq)
--		*freq = UINT_MAX;
--	else
--		*freq = df->max_freq;
-+	*freq = UINT_MAX;
-+
- 	return 0;
- }
- 
-diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
-index 0c42f23249ef..50a891f7c92d 100644
---- a/drivers/devfreq/governor_powersave.c
-+++ b/drivers/devfreq/governor_powersave.c
-@@ -16,11 +16,6 @@
- static int devfreq_powersave_func(struct devfreq *df,
- 				  unsigned long *freq)
- {
--	/*
--	 * target callback should be able to get ceiling value as
--	 * said in devfreq.h
--	 */
--	*freq = df->min_freq;
- 	return 0;
- }
- 
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index 28e0f2de7100..7ed733c528f4 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -27,7 +27,7 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	unsigned int dfso_upthreshold = DFSO_UPTHRESHOLD;
- 	unsigned int dfso_downdifferential = DFSO_DOWNDIFFERENCTIAL;
- 	struct devfreq_simple_ondemand_data *data = df->data;
--	unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
-+	unsigned long max = UINT_MAX;
- 
- 	err = devfreq_update_stats(df);
- 	if (err)
-@@ -85,11 +85,6 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
- 	*freq = (unsigned long) b;
- 
--	if (df->min_freq && *freq < df->min_freq)
--		*freq = df->min_freq;
--	if (df->max_freq && *freq > df->max_freq)
--		*freq = df->max_freq;
--
- 	return 0;
- }
- 
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 080607c3f34d..378d84c011df 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -26,19 +26,11 @@ static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
- {
- 	struct userspace_data *data = df->data;
- 
--	if (data->valid) {
--		unsigned long adjusted_freq = data->user_frequency;
--
--		if (df->max_freq && adjusted_freq > df->max_freq)
--			adjusted_freq = df->max_freq;
--
--		if (df->min_freq && adjusted_freq < df->min_freq)
--			adjusted_freq = df->min_freq;
--
--		*freq = adjusted_freq;
--	} else {
-+	if (data->valid)
-+		*freq = data->user_frequency;
-+	else
- 		*freq = df->previous_freq; /* No user freq specified yet */
--	}
-+
- 	return 0;
- }
- 
 -- 
-2.17.0.441.gb46fe60e1d-goog
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
