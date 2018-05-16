@@ -1,128 +1,116 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] ACPICA: Introduce acpi_dispatch_gpe()
-Date: Wed, 16 May 2018 23:03:09 +0200
-Message-ID: <CAJZ5v0hAzkyMA4Kku9p6_TcmOXDniVSqGRKmkDvsJsW26SOKFQ@mail.gmail.com>
-References: <2406722.gU2bUHd7bl@aspire.rjw.lan> <1877957.ohNgiH8Sko@aspire.rjw.lan>
- <94F2FBAB4432B54E8AACC7DFDE6C92E3B776DF31@ORSMSX108.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH] PM / devfreq: Remove redundant frequency adjustment from governors
+Date: Wed, 16 May 2018 14:10:51 -0700
+Message-ID: <20180516211051.78875-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <94F2FBAB4432B54E8AACC7DFDE6C92E3B776DF31@ORSMSX108.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Schmauss, Erik" <erik.schmauss@intel.com>, "Wang, Wendy" <wendy.wang@intel.com>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 16, 2018 at 9:18 PM, Moore, Robert <robert.moore@intel.com> wrote:
-> I'm not sure why this is necessary, please explain.
->
-> Is the implication here that some driver is going to poll on acpi_dispatch_gpe?
+The performance, powersave, simpleondemand and userspace governors
+determine a target frequency and then adjust it according to the
+df->min/max_freq limits that might have been set by user space. This
+adjustment is redundant, it is done in update_devfreq() for any
+governor, right after governor->get_target_freq().
 
-Not a driver, but the core part of resume from suspend-to-idle and it
-needs to call it for the EC GPE specifically to avoid missing events
-that will be discarded on some platforms if the EC is not poked at
-within specific time since when the GPE status changed.
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ drivers/devfreq/governor_performance.c    | 10 ++--------
+ drivers/devfreq/governor_powersave.c      |  5 -----
+ drivers/devfreq/governor_simpleondemand.c |  7 +------
+ drivers/devfreq/governor_userspace.c      | 16 ++++------------
+ 4 files changed, 7 insertions(+), 31 deletions(-)
 
-IOW, the use case is in patch [2/2]. :-)
-
-I do realize, however, that you may not want this upstream as it is
-strictly Linux-specific and will probably stay this way forever
-(suspend-to-idle is a Linux concept and I'm not aware of any OSes
-doing it).
-
->> -----Original Message-----
->> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
->> Sent: Wednesday, May 16, 2018 5:12 AM
->> To: Linux ACPI <linux-acpi@vger.kernel.org>
->> Cc: Zhang, Rui <rui.zhang@intel.com>; Linux PM <linux-
->> pm@vger.kernel.org>; LKML <linux-kernel@vger.kernel.org>; Schmauss, Erik
->> <erik.schmauss@intel.com>; Moore, Robert <robert.moore@intel.com>; Wang,
->> Wendy <wendy.wang@intel.com>
->> Subject: [PATCH 1/2] ACPICA: Introduce acpi_dispatch_gpe()
->>
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Introduce acpi_dispatch_gpe() as a wrapper around acpi_ev_detect_gpe()
->> for checking if the given GPE (as represented by a GPE device handle and
->> a GPE number) is currently active and dispatching it (if that's the
->> case) outside of interrupt context.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>  drivers/acpi/acpica/evgpe.c   |    6 ++++++
->>  drivers/acpi/acpica/evxfgpe.c |   22 ++++++++++++++++++++++
->>  include/acpi/acpixf.h         |    1 +
->>  3 files changed, 29 insertions(+)
->>
->> Index: linux-pm/drivers/acpi/acpica/evgpe.c
->> ===================================================================
->> --- linux-pm.orig/drivers/acpi/acpica/evgpe.c
->> +++ linux-pm/drivers/acpi/acpica/evgpe.c
->> @@ -634,6 +634,12 @@ acpi_ev_detect_gpe(struct acpi_namespace
->>
->>       flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
->>
->> +     if (!gpe_event_info) {
->> +             gpe_event_info = acpi_ev_get_gpe_event_info(gpe_device,
->> gpe_number);
->> +             if (!gpe_event_info)
->> +                     goto error_exit;
->> +     }
->> +
->>       /* Get the info block for the entire GPE register */
->>
->>       gpe_register_info = gpe_event_info->register_info;
->> Index: linux-pm/drivers/acpi/acpica/evxfgpe.c
->> ===================================================================
->> --- linux-pm.orig/drivers/acpi/acpica/evxfgpe.c
->> +++ linux-pm/drivers/acpi/acpica/evxfgpe.c
->> @@ -639,6 +639,28 @@ ACPI_EXPORT_SYMBOL(acpi_get_gpe_status)
->>
->>
->> /***********************************************************************
->> ********
->>   *
->> + * FUNCTION:    acpi_gispatch_gpe
->> + *
->> + * PARAMETERS:  gpe_device          - Parent GPE Device. NULL for
->> GPE0/GPE1
->> + *              gpe_number          - GPE level within the GPE block
->> + *
->> + * RETURN:      None
->> + *
->> + * DESCRIPTION: Detect and dispatch a General Purpose Event to either a
->> function
->> + *              (e.g. EC) or method (e.g. _Lxx/_Exx) handler.
->> + *
->> +
->> +***********************************************************************
->> +*******/ void acpi_dispatch_gpe(acpi_handle gpe_device, u32 gpe_number)
->> +{
->> +     ACPI_FUNCTION_TRACE(acpi_dispatch_gpe);
->> +
->> +     acpi_ev_detect_gpe(gpe_device, NULL, gpe_number); }
->> +
->> +ACPI_EXPORT_SYMBOL(acpi_dispatch_gpe)
->> +
->> +/**********************************************************************
->> +*********
->> + *
->>   * FUNCTION:    acpi_finish_gpe
->>   *
->>   * PARAMETERS:  gpe_device          - Namespace node for the GPE Block
->> Index: linux-pm/include/acpi/acpixf.h
->> ===================================================================
->> --- linux-pm.orig/include/acpi/acpixf.h
->> +++ linux-pm/include/acpi/acpixf.h
->> @@ -753,6 +753,7 @@ ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_sta
->>                                                    u32 gpe_number,
->>                                                    acpi_event_status
->>                                                    *event_status))
->> +void acpi_dispatch_gpe(acpi_handle gpe_device, u32 gpe_number);
->>  ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
->> acpi_disable_all_gpes(void))
->> ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
->> acpi_enable_all_runtime_gpes(void))
->>  ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
->> acpi_enable_all_wakeup_gpes(void))
->
+diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
+index 4d23ecfbd948..31ee30622c00 100644
+--- a/drivers/devfreq/governor_performance.c
++++ b/drivers/devfreq/governor_performance.c
+@@ -16,14 +16,8 @@
+ static int devfreq_performance_func(struct devfreq *df,
+ 				    unsigned long *freq)
+ {
+-	/*
+-	 * target callback should be able to get floor value as
+-	 * said in devfreq.h
+-	 */
+-	if (!df->max_freq)
+-		*freq = UINT_MAX;
+-	else
+-		*freq = df->max_freq;
++	*freq = UINT_MAX;
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
+index 0c42f23249ef..50a891f7c92d 100644
+--- a/drivers/devfreq/governor_powersave.c
++++ b/drivers/devfreq/governor_powersave.c
+@@ -16,11 +16,6 @@
+ static int devfreq_powersave_func(struct devfreq *df,
+ 				  unsigned long *freq)
+ {
+-	/*
+-	 * target callback should be able to get ceiling value as
+-	 * said in devfreq.h
+-	 */
+-	*freq = df->min_freq;
+ 	return 0;
+ }
+ 
+diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+index 28e0f2de7100..7ed733c528f4 100644
+--- a/drivers/devfreq/governor_simpleondemand.c
++++ b/drivers/devfreq/governor_simpleondemand.c
+@@ -27,7 +27,7 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 	unsigned int dfso_upthreshold = DFSO_UPTHRESHOLD;
+ 	unsigned int dfso_downdifferential = DFSO_DOWNDIFFERENCTIAL;
+ 	struct devfreq_simple_ondemand_data *data = df->data;
+-	unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
++	unsigned long max = UINT_MAX;
+ 
+ 	err = devfreq_update_stats(df);
+ 	if (err)
+@@ -85,11 +85,6 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
+ 	*freq = (unsigned long) b;
+ 
+-	if (df->min_freq && *freq < df->min_freq)
+-		*freq = df->min_freq;
+-	if (df->max_freq && *freq > df->max_freq)
+-		*freq = df->max_freq;
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 080607c3f34d..378d84c011df 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -26,19 +26,11 @@ static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
+ {
+ 	struct userspace_data *data = df->data;
+ 
+-	if (data->valid) {
+-		unsigned long adjusted_freq = data->user_frequency;
+-
+-		if (df->max_freq && adjusted_freq > df->max_freq)
+-			adjusted_freq = df->max_freq;
+-
+-		if (df->min_freq && adjusted_freq < df->min_freq)
+-			adjusted_freq = df->min_freq;
+-
+-		*freq = adjusted_freq;
+-	} else {
++	if (data->valid)
++		*freq = data->user_frequency;
++	else
+ 		*freq = df->previous_freq; /* No user freq specified yet */
+-	}
++
+ 	return 0;
+ }
+ 
+-- 
+2.17.0.441.gb46fe60e1d-goog
