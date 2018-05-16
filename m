@@ -1,155 +1,75 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT] [PATCH 05/10] cpufreq: intel_pstate: HWP boost
- performance on IO Wake
-Date: Wed, 16 May 2018 11:45:32 +0200
-Message-ID: <CAJZ5v0jSfZyGoKJKHEQCZRgQtiNt+_D0_sY+K2p3nQ9xdg3qKg@mail.gmail.com>
-References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com> <20180516044911.28797-6-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v3 5/5] drm/arm/malidp: Added the late system pm functions
+Date: Wed, 16 May 2018 12:38:54 +0200
+Message-ID: <CAJZ5v0juz3uWRPyhtd7EWSga4oM4PGaSyNzZVOnrXpgxJwyhCA@mail.gmail.com>
+References: <1526400259-7573-1-git-send-email-ayan.halder@arm.com>
+ <1526400259-7573-6-git-send-email-ayan.halder@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516044911.28797-6-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <1526400259-7573-6-git-send-email-ayan.halder@arm.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Ayan Kumar Halder <ayan.halder@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, liviu.dudau@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, malidp@foss.arm.com, nd@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 16, 2018 at 6:49 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> When a task is woken up from IO wait, boost HWP prformance to max. This
-> helps IO workloads on servers with per core P-states. But changing limits
-> has extra over head of issuing new HWP Request MSR, which takes 1000+
-> cycles. So this change limits setting HWP Request MSR. Also request can
-> be for a remote CPU.
-> Rate control in setting HWP Requests:
-> - If the current performance is around P1, simply ignore IO flag.
-> - Once set wait till hold time, till remove boost. While the boost
->   is on, another IO flags is notified, it will prolong boost.
-> - If the IO flags are notified multiple ticks apart, this may not be
-> IO bound task. Othewise idle system gets periodic boosts for one
-> IO wake.
->
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 75 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 75 insertions(+)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index e200887..d418265 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -20,6 +20,7 @@
->  #include <linux/tick.h>
->  #include <linux/slab.h>
->  #include <linux/sched/cpufreq.h>
-> +#include <linux/sched/topology.h>
->  #include <linux/list.h>
->  #include <linux/cpu.h>
->  #include <linux/cpufreq.h>
-> @@ -224,6 +225,8 @@ struct global_params {
->   * @hwp_req_cached:    Cached value of the last HWP request MSR
->   * @csd:               A structure used to issue SMP async call, which
->   *                     defines callback and arguments
-> + * @hwp_boost_active:  HWP performance is boosted on this CPU
-> + * @last_io_update:    Last time when IO wake flag was set
->   *
->   * This structure stores per CPU instance data for all CPUs.
->   */
-> @@ -258,6 +261,8 @@ struct cpudata {
->         s16 epp_saved;
->         u64 hwp_req_cached;
->         call_single_data_t csd;
-> +       bool hwp_boost_active;
-> +       u64 last_io_update;
->  };
->
->  static struct cpudata **all_cpu_data;
-> @@ -1421,10 +1426,80 @@ static void csd_init(struct cpudata *cpu)
->         cpu->csd.info = cpu;
->  }
->
-> +/*
-> + * Long hold time will keep high perf limits for long time,
-> + * which negatively impacts perf/watt for some workloads,
-> + * like specpower. 3ms is based on experiements on some
-> + * workoads.
-> + */
-> +static int hwp_boost_hold_time_ms = 3;
-> +
-> +/* Default: This will roughly around P1 on SKX */
-> +#define BOOST_PSTATE_THRESHOLD (SCHED_CAPACITY_SCALE / 2)
-> +static int hwp_boost_pstate_threshold = BOOST_PSTATE_THRESHOLD;
-> +
-> +static inline bool intel_pstate_check_boost_threhold(struct cpudata *cpu)
-> +{
-> +       /*
-> +        * If the last performance is above threshold, then return false,
-> +        * so that caller can ignore boosting.
-> +        */
-> +       if (arch_scale_freq_capacity(cpu->cpu) > hwp_boost_pstate_threshold)
-> +               return false;
-> +
-> +       return true;
-> +}
-> +
->  static inline void intel_pstate_update_util_hwp(struct update_util_data *data,
->                                                 u64 time, unsigned int flags)
->  {
-> +       struct cpudata *cpu = container_of(data, struct cpudata, update_util);
-> +
-> +       if (flags & SCHED_CPUFREQ_IOWAIT) {
-> +               /*
-> +                * Set iowait_boost flag and update time. Since IO WAIT flag
-> +                * is set all the time, we can't just conclude that there is
-> +                * some IO bound activity is scheduled on this CPU with just
-> +                * one occurrence. If we receive at least two in two
-> +                * consecutive ticks, then we start treating as IO. So
-> +                * there will be one tick latency.
-> +                */
-> +               if (time_before64(time, cpu->last_io_update + 2 * TICK_NSEC) &&
-> +                   intel_pstate_check_boost_threhold(cpu))
-> +                       cpu->iowait_boost = true;
-> +
-> +               cpu->last_io_update = time;
-> +               cpu->last_update = time;
-
-This is a shared data structure and it gets updated without
-synchronization, unless I'm missing something.
-
-How much does the cross-CPU case matter?
-
-> +       }
->
-> +       /*
-> +        * If the boost is active, we will remove it after timeout on local
-> +        * CPU only.
-> +        */
-> +       if (cpu->hwp_boost_active) {
-> +               if (smp_processor_id() == cpu->cpu) {
-> +                       bool expired;
-> +
-> +                       expired = time_after64(time, cpu->last_update +
-> +                                              (hwp_boost_hold_time_ms * NSEC_PER_MSEC));
-> +                       if (expired) {
-> +                               intel_pstate_hwp_boost_down(cpu);
-> +                               cpu->hwp_boost_active = false;
-> +                               cpu->iowait_boost = false;
-> +                       }
-> +               }
-> +               return;
-> +       }
-> +
-> +       cpu->last_update = time;
-> +
-> +       if (cpu->iowait_boost) {
-> +               cpu->hwp_boost_active = true;
-> +               if (smp_processor_id() == cpu->cpu)
-> +                       intel_pstate_hwp_boost_up(cpu);
-> +               else
-> +                       smp_call_function_single_async(cpu->cpu, &cpu->csd);
-> +       }
->  }
->
->  static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
-> --
-> 2.9.5
->
+T24gVHVlLCBNYXkgMTUsIDIwMTggYXQgNjowNCBQTSwgQXlhbiBLdW1hciBIYWxkZXIgPGF5YW4u
+aGFsZGVyQGFybS5jb20+IHdyb3RlOgo+IG1hbGlkcF9wbV9zdXNwZW5kX2xhdGUgY2hlY2tzIGlm
+IHRoZSBydW50aW1lIHN0YXR1cyBpcyBub3Qgc3VzcGVuZGVkCj4gYW5kIGlmIHNvLCBpbnZva2Vz
+IG1hbGlkcF9ydW50aW1lX3BtX3N1c3BlbmQgd2hpY2ggZGlzYWJsZXMgdGhlCj4gZGlzcGxheSBl
+bmdpbmUvY29yZSBpbnRlcnJ1cHRzIGFuZCB0aGUgY2xvY2tzLiBJdCBzZXRzIHRoZSBydW50aW1l
+IHN0YXR1cwo+IGFzIHN1c3BlbmRlZC4KPgo+IFRoZSBkaWZmZXJlbmNlIGJldHdlZW4gc3VzcGVu
+ZCgpIGFuZCBzdXNwZW5kX2xhdGUoKSBpcyBhcyBmb2xsb3dzOi0KPiAxLiBzdXNwZW5kKCkgbWFr
+ZXMgdGhlIGRldmljZSBxdWllc2NlbnQuIEluIG91ciBjYXNlLCB3ZSBpbnZva2UgdGhlIERSTQo+
+IGhlbHBlciB3aGljaCBkaXNhYmxlcyB0aGUgQ1JUQy4gVGhpcyB3b3VsZCBoYXZlIGludm9rZWQg
+cnVudGltZSBwbQo+IHN1c3BlbmQgYnV0IHRoZSBzeXN0ZW0gc3VzcGVuZCBwcm9jZXNzIGRpc2Fi
+bGVzIHJ1bnRpbWUgcG0uCj4gMi4gc3VzcGVuZF9sYXRlKCkgSXQgY29udGludWVzIHRoZSBzdXNw
+ZW5kIG9wZXJhdGlvbnMgb2YgdGhlIGRybSBkZXZpY2UKPiB3aGljaCB3YXMgc3RhcnRlZCBieSBz
+dXNwZW5kKCkuIEluIG91ciBjYXNlLCBpdCBwZXJmb3JtcyB0aGUgc2FtZSBmdW5jdGlvbmFsaXR5
+Cj4gYXMgcnVudGltZV9zdXNwZW5kKCkuCj4KPiBUaGUgY29tcGxpbWVudGFyeSBmdW5jdGlvbnMg
+YXJlIHJlc3VtZSgpIGFuZCByZXN1bWVfZWFybHkoKS4gSW4gdGhlIGNhc2Ugb2YKPiByZXN1bWVf
+ZWFybHkoKSwgd2UgaW52b2tlIG1hbGlkcF9ydW50aW1lX3BtX3Jlc3VtZSgpIHdoaWNoIGVuYWJs
+ZXMgdGhlIGNsb2Nrcwo+IGFuZCB0aGUgaW50ZXJydXB0cy4gSXQgc2V0cyB0aGUgcnVudGltZSBz
+dGF0dXMgYXMgYWN0aXZlLiBJZiB0aGUgZGV2aWNlIHdhcwo+IGluIHJ1bnRpbWUgc3VzcGVuZCBt
+b2RlIGJlZm9yZSBzeXN0ZW0gc3VzcGVuZCB3YXMgY2FsbGVkLCBwbV9ydW50aW1lX3dvcmsoKQo+
+IHdpbGwgcHV0IHRoZSBkZXZpY2UgYmFjayBpbiBydW50aW1lIHN1c3BlbmRlZCBtb2RlKCBhZnRl
+ciB0aGUgY29tcGxldGUgc3lzdGVtCj4gaGFzIGJlZW4gcmVzdW1lZCkuCj4KPiBTaWduZWQtb2Zm
+LWJ5OiBBeWFuIEt1bWFyIEhhbGRlciA8YXlhbi5oYWxkZXJAYXJtLmNvbT4KPgo+IC0tLQo+IENo
+YW5nZXMgaW4gdjM6LQo+IC0gUmViYXNlZCBvbiB0b3Agb2YgZWFybGllciB2MyBwYXRjaGVzLAo+
+Cj4gQ2hhbmdlcyBpbiB2MjotCj4gLSBSZW1vdmVkIHRoZSBjaGFuZ2UgaWQgYW5kIG1vZGlmaWVk
+IHRoZSBjb21taXQgbWVzc2FnZQo+IC0tLQo+ICBkcml2ZXJzL2dwdS9kcm0vYXJtL21hbGlkcF9k
+cnYuYyB8IDE3ICsrKysrKysrKysrKysrKysrCj4gIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRp
+b25zKCspCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2FybS9tYWxpZHBfZHJ2LmMg
+Yi9kcml2ZXJzL2dwdS9kcm0vYXJtL21hbGlkcF9kcnYuYwo+IGluZGV4IDgyMjIxZWEuLmM1M2I0
+NmEgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2FybS9tYWxpZHBfZHJ2LmMKPiArKysg
+Yi9kcml2ZXJzL2dwdS9kcm0vYXJtL21hbGlkcF9kcnYuYwo+IEBAIC03NjgsOCArNzY4LDI1IEBA
+IHN0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgbWFsaWRwX3BtX3Jlc3VtZShzdHJ1Y3QgZGV2aWNl
+ICpkZXYpCj4gICAgICAgICByZXR1cm4gMDsKPiAgfQo+Cj4gK3N0YXRpYyBpbnQgX19tYXliZV91
+bnVzZWQgbWFsaWRwX3BtX3N1c3BlbmRfbGF0ZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gK3sKPiAr
+ICAgICAgIGlmICghcG1fcnVudGltZV9zdGF0dXNfc3VzcGVuZGVkKGRldikpIHsKPiArICAgICAg
+ICAgICAgICAgbWFsaWRwX3J1bnRpbWVfcG1fc3VzcGVuZChkZXYpOwo+ICsgICAgICAgICAgICAg
+ICBwbV9ydW50aW1lX3NldF9zdXNwZW5kZWQoZGV2KTsKPiArICAgICAgIH0KPiArICAgICAgIHJl
+dHVybiAwOwo+ICt9Cj4gKwo+ICtzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIG1hbGlkcF9wbV9y
+ZXN1bWVfZWFybHkoc3RydWN0IGRldmljZSAqZGV2KQo+ICt7Cj4gKyAgICAgICBtYWxpZHBfcnVu
+dGltZV9wbV9yZXN1bWUoZGV2KTsKPiArICAgICAgIHBtX3J1bnRpbWVfc2V0X2FjdGl2ZShkZXYp
+Owo+ICsgICAgICAgcmV0dXJuIDA7Cj4gK30KPiArCj4gIHN0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2
+X3BtX29wcyBtYWxpZHBfcG1fb3BzID0gewo+ICAgICAgICAgU0VUX1NZU1RFTV9TTEVFUF9QTV9P
+UFMobWFsaWRwX3BtX3N1c3BlbmQsIG1hbGlkcF9wbV9yZXN1bWUpIFwKPiArICAgICAgIFNFVF9M
+QVRFX1NZU1RFTV9TTEVFUF9QTV9PUFMobWFsaWRwX3BtX3N1c3BlbmRfbGF0ZSwgbWFsaWRwX3Bt
+X3Jlc3VtZV9lYXJseSkgXAo+ICAgICAgICAgU0VUX1JVTlRJTUVfUE1fT1BTKG1hbGlkcF9ydW50
+aW1lX3BtX3N1c3BlbmQsIG1hbGlkcF9ydW50aW1lX3BtX3Jlc3VtZSwgTlVMTCkKPiAgfTsKPgo+
+IC0tCgpBRkFJQ1MsIHRoaXMgc2hvdWxkIHdvcmssIHNvIHBsZWFzZSBmZWVsIGZyZWUgdG8gYWRk
+CgpSZXZpZXdlZC1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwu
+Y29tPgoKdG8gaXQgaWYgdGhhdCBoZWxwcy4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMu
+ZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlz
+dGluZm8vZHJpLWRldmVsCg==
