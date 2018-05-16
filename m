@@ -1,63 +1,32 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when required
-Date: Wed, 16 May 2018 09:13:20 +0200
-Message-ID: <CAKfTPtCUbe+qE47byN_1ptc+A1Tvt_E4Y-5rZQmBsUhLiMGAqw@mail.gmail.com>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-4-patrick.bellasi@arm.com> <20180513060443.GB64158@joelaf.mtv.corp.google.com>
- <20180513062538.GA116730@joelaf.mtv.corp.google.com> <20180514163206.GF30654@e110439-lin>
- <CAKfTPtCrUOJ=RGqrXMTc0_JFHzRjtpydoKmVNGT8KVz19QQ1vA@mail.gmail.com>
- <20180515145343.GJ30654@e110439-lin> <20180515165304.GH12217@hirez.programming.kicks-ass.net>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
+ frequency invariant accounting
+Date: Wed, 16 May 2018 09:16:40 +0200
+Message-ID: <20180516071640.GU12217@hirez.programming.kicks-ass.net>
+References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+ <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180515165304.GH12217@hirez.programming.kicks-ass.net>
+Content-Disposition: inline
+In-Reply-To: <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joel@joelfernandes.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15 May 2018 at 18:53, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Tue, May 15, 2018 at 03:53:43PM +0100, Patrick Bellasi wrote:
->> On 15-May 12:19, Vincent Guittot wrote:
->> > On 14 May 2018 at 18:32, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
->
->> > Yes se becomes NULL only when you reach root domain
->
-> root group; domains are something else again ;-)
+On Tue, May 15, 2018 at 09:49:03PM -0700, Srinivas Pandruvada wrote:
+> intel_pstate has two operating modes: active and passive. In "active"
+> mode, the in-built scaling governor is used and in "passive" mode,
+> the driver can be used with any governor like "schedutil". In "active"
+> mode the utilization values from schedutil is not used and there is
+> a requirement from high performance computing use cases, not to read
+> any APERF/MPERF MSRs. In this case no need to use CPU cycles for
+> frequency invariant accounting by reading APERF/MPERF MSRs.
+> With this change frequency invariant account is only enabled in
+> "passive" mode.
 
-yes good point :-)
+WTH is active/passive? Is passive when we select performance governor?
 
->
->> Thus, the scheduler knows that we are going to sleep: does is really
->> makes sense to send a notification in this case?
->
-> It might; esp. on these very slow changing machines.
->
->> What about adding a new explicit callback at the end of:
->>    update_blocked_averages() ?
->>
->> Something like:
->>
->> ---8<---
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index cb77407ba485..6eb0f31c656d 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -7740,6 +7740,9 @@ static void update_blocked_averages(int cpu)
->>         if (done)
->>                 rq->has_blocked_load = 0;
->>  #endif
->> +
->> +       cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
->> +
->>         rq_unlock_irqrestore(rq, &rf);
->>  }
->> ---8<---
->>
->> Where we can also pass in a new SCHED_CPUFREQ_IDLE flag just to notify
->> schedutil that the CPU is currently IDLE?
->>
->> Could that work?
->
-> Simlarly you could add ENQUEUE/DEQUEUE flags I suppose. But let's do all
-> that later in separate patches and evaluate the impact separately, OK?
+Also; you have to explain why using APERF/MPERF is bad in that case. Why
+do they care if we read those MSRs during the tick?
