@@ -1,61 +1,66 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v7 12/14] cpufreq: Add Kryo CPU scaling driver
-Date: Wed, 16 May 2018 17:13:44 +0300
-Message-ID: <CAP245DVO8mG--ZvUitLkEwvUP_YkQe0cz2qmpXg+uyZD_cT9+g@mail.gmail.com>
-References: <1526375616-16904-1-git-send-email-ilialin@codeaurora.org>
- <1526375616-16904-13-git-send-email-ilialin@codeaurora.org>
- <CAHLCerOYq4q2GE+m3MQAbMfxM4azPr95XiLKVtoPVG1Kv2Db=A@mail.gmail.com> <20180516141132.aqjif7d5motmmnlo@vireshk-i7>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
+ frequency invariant accounting
+Date: Wed, 16 May 2018 17:19:25 +0200
+Message-ID: <20180516151925.GO28366@localhost.localdomain>
+References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+ <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516141132.aqjif7d5motmmnlo@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ilia Lin <ilialin@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, sboyd@kernel.org, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Menon, Nishanth" <nm@ti.com>, lgirdwood@gmail.com, Mark Brown <broonie@kernel.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-clk@vger.kernel.org, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnay>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 16, 2018 at 5:11 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 16-05-18, 16:12, Amit Kucheria wrote:
->> > +       ret = PTR_ERR_OR_ZERO(opp_temp =
->> > +                             dev_pm_opp_set_supported_hw(cpu_dev,&versions,1));
->> > +       if (0 > ret)
->>
->> Any particular reason to prefer this over (ret < 0) that is generally
->> used? I've seen it used to avoid the == vs. = typos, but not for other
->> comparisons.
->>
->> Suggest sticking to what is commonly used i.e. ret < 0.
->>
->> > +               goto free_opp;
->> > +
->> > +       cpu_dev = get_cpu_device(GOLD_LEAD);
->>
->> Error check cpu_dev here?
->>
->> > +       ret = PTR_ERR_OR_ZERO(opp_temp =
->> > +                             dev_pm_opp_set_supported_hw(cpu_dev,&versions,1));
->> > +       if (0 > ret)
->> > +               goto free_opp;
->
-> The goto here is wrong
->
->> > +
->> > +
->> > +       ret = PTR_ERR_OR_ZERO(platform_device_register_simple("cpufreq-dt",
->> > +                                                             -1, NULL, 0));
->> > +
->> > +       if (0 == ret)
->> > +               return 0;
->> > +
->> > +free_opp:
->> > +       dev_pm_opp_put_supported_hw(opp_temp);
->>
->> This is not needed because dev_pm_opp_set_supported_hw will free
->> memory in case of failure. This call in only needed in case of a
->> successful get.
->
-> But this is still required for the case where platform device
-> registration fails.
+On 15/05/18 21:49, Srinivas Pandruvada wrote:
+> intel_pstate has two operating modes: active and passive. In "active"
+> mode, the in-built scaling governor is used and in "passive" mode,
+> the driver can be used with any governor like "schedutil". In "active"
+> mode the utilization values from schedutil is not used and there is
+> a requirement from high performance computing use cases, not to read
+> any APERF/MPERF MSRs. In this case no need to use CPU cycles for
+> frequency invariant accounting by reading APERF/MPERF MSRs.
+> With this change frequency invariant account is only enabled in
+> "passive" mode.
+> 
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+> [Note: The tick will be enabled later in the series when hwp dynamic
+> boost is enabled]
+> 
+>  drivers/cpufreq/intel_pstate.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 17e566af..f686bbe 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2040,6 +2040,8 @@ static int intel_pstate_register_driver(struct cpufreq_driver *driver)
+>  {
+>  	int ret;
+>  
+> +	x86_arch_scale_freq_tick_disable();
+> +
+>  	memset(&global, 0, sizeof(global));
+>  	global.max_perf_pct = 100;
+>  
+> @@ -2052,6 +2054,9 @@ static int intel_pstate_register_driver(struct cpufreq_driver *driver)
+>  
+>  	global.min_perf_pct = min_perf_pct_min();
+>  
+> +	if (driver == &intel_cpufreq)
+> +		x86_arch_scale_freq_tick_enable();
 
-Agreed. The overall error path needs to be re-written with proper
-check of return values.
+This will unconditionally trigger the reading/calculation at each tick
+even though information is not actually consumed (e.g., running
+performance or any other governor), right? Do we want that?
+
+Anyway, FWIW I started testing this on a E5-2609 v3 and I'm not seeing
+hackbench regressions so far (running with schedutil governor).
+
+Best,
+
+- Juri
