@@ -1,75 +1,26 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3 5/5] drm/arm/malidp: Added the late system pm functions
-Date: Wed, 16 May 2018 12:38:54 +0200
-Message-ID: <CAJZ5v0juz3uWRPyhtd7EWSga4oM4PGaSyNzZVOnrXpgxJwyhCA@mail.gmail.com>
-References: <1526400259-7573-1-git-send-email-ayan.halder@arm.com>
- <1526400259-7573-6-git-send-email-ayan.halder@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC/RFT] [PATCH 03/10] cpufreq: intel_pstate: Utility functions
+ to boost HWP performance limits
+Date: Wed, 16 May 2018 12:43:13 +0200
+Message-ID: <20180516104313.GC12217@hirez.programming.kicks-ass.net>
+References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+ <20180516044911.28797-4-srinivas.pandruvada@linux.intel.com>
+ <20180516072202.GV12217@hirez.programming.kicks-ass.net>
+ <CAJZ5v0iaRFO5GWRZAHVWWVMmF8FQps1CowpE5r6zj_tFO7W+jg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1526400259-7573-6-git-send-email-ayan.halder@arm.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Ayan Kumar Halder <ayan.halder@arm.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, liviu.dudau@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, malidp@foss.arm.com, nd@arm.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iaRFO5GWRZAHVWWVMmF8FQps1CowpE5r6zj_tFO7W+jg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBNYXkgMTUsIDIwMTggYXQgNjowNCBQTSwgQXlhbiBLdW1hciBIYWxkZXIgPGF5YW4u
-aGFsZGVyQGFybS5jb20+IHdyb3RlOgo+IG1hbGlkcF9wbV9zdXNwZW5kX2xhdGUgY2hlY2tzIGlm
-IHRoZSBydW50aW1lIHN0YXR1cyBpcyBub3Qgc3VzcGVuZGVkCj4gYW5kIGlmIHNvLCBpbnZva2Vz
-IG1hbGlkcF9ydW50aW1lX3BtX3N1c3BlbmQgd2hpY2ggZGlzYWJsZXMgdGhlCj4gZGlzcGxheSBl
-bmdpbmUvY29yZSBpbnRlcnJ1cHRzIGFuZCB0aGUgY2xvY2tzLiBJdCBzZXRzIHRoZSBydW50aW1l
-IHN0YXR1cwo+IGFzIHN1c3BlbmRlZC4KPgo+IFRoZSBkaWZmZXJlbmNlIGJldHdlZW4gc3VzcGVu
-ZCgpIGFuZCBzdXNwZW5kX2xhdGUoKSBpcyBhcyBmb2xsb3dzOi0KPiAxLiBzdXNwZW5kKCkgbWFr
-ZXMgdGhlIGRldmljZSBxdWllc2NlbnQuIEluIG91ciBjYXNlLCB3ZSBpbnZva2UgdGhlIERSTQo+
-IGhlbHBlciB3aGljaCBkaXNhYmxlcyB0aGUgQ1JUQy4gVGhpcyB3b3VsZCBoYXZlIGludm9rZWQg
-cnVudGltZSBwbQo+IHN1c3BlbmQgYnV0IHRoZSBzeXN0ZW0gc3VzcGVuZCBwcm9jZXNzIGRpc2Fi
-bGVzIHJ1bnRpbWUgcG0uCj4gMi4gc3VzcGVuZF9sYXRlKCkgSXQgY29udGludWVzIHRoZSBzdXNw
-ZW5kIG9wZXJhdGlvbnMgb2YgdGhlIGRybSBkZXZpY2UKPiB3aGljaCB3YXMgc3RhcnRlZCBieSBz
-dXNwZW5kKCkuIEluIG91ciBjYXNlLCBpdCBwZXJmb3JtcyB0aGUgc2FtZSBmdW5jdGlvbmFsaXR5
-Cj4gYXMgcnVudGltZV9zdXNwZW5kKCkuCj4KPiBUaGUgY29tcGxpbWVudGFyeSBmdW5jdGlvbnMg
-YXJlIHJlc3VtZSgpIGFuZCByZXN1bWVfZWFybHkoKS4gSW4gdGhlIGNhc2Ugb2YKPiByZXN1bWVf
-ZWFybHkoKSwgd2UgaW52b2tlIG1hbGlkcF9ydW50aW1lX3BtX3Jlc3VtZSgpIHdoaWNoIGVuYWJs
-ZXMgdGhlIGNsb2Nrcwo+IGFuZCB0aGUgaW50ZXJydXB0cy4gSXQgc2V0cyB0aGUgcnVudGltZSBz
-dGF0dXMgYXMgYWN0aXZlLiBJZiB0aGUgZGV2aWNlIHdhcwo+IGluIHJ1bnRpbWUgc3VzcGVuZCBt
-b2RlIGJlZm9yZSBzeXN0ZW0gc3VzcGVuZCB3YXMgY2FsbGVkLCBwbV9ydW50aW1lX3dvcmsoKQo+
-IHdpbGwgcHV0IHRoZSBkZXZpY2UgYmFjayBpbiBydW50aW1lIHN1c3BlbmRlZCBtb2RlKCBhZnRl
-ciB0aGUgY29tcGxldGUgc3lzdGVtCj4gaGFzIGJlZW4gcmVzdW1lZCkuCj4KPiBTaWduZWQtb2Zm
-LWJ5OiBBeWFuIEt1bWFyIEhhbGRlciA8YXlhbi5oYWxkZXJAYXJtLmNvbT4KPgo+IC0tLQo+IENo
-YW5nZXMgaW4gdjM6LQo+IC0gUmViYXNlZCBvbiB0b3Agb2YgZWFybGllciB2MyBwYXRjaGVzLAo+
-Cj4gQ2hhbmdlcyBpbiB2MjotCj4gLSBSZW1vdmVkIHRoZSBjaGFuZ2UgaWQgYW5kIG1vZGlmaWVk
-IHRoZSBjb21taXQgbWVzc2FnZQo+IC0tLQo+ICBkcml2ZXJzL2dwdS9kcm0vYXJtL21hbGlkcF9k
-cnYuYyB8IDE3ICsrKysrKysrKysrKysrKysrCj4gIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRp
-b25zKCspCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2FybS9tYWxpZHBfZHJ2LmMg
-Yi9kcml2ZXJzL2dwdS9kcm0vYXJtL21hbGlkcF9kcnYuYwo+IGluZGV4IDgyMjIxZWEuLmM1M2I0
-NmEgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2FybS9tYWxpZHBfZHJ2LmMKPiArKysg
-Yi9kcml2ZXJzL2dwdS9kcm0vYXJtL21hbGlkcF9kcnYuYwo+IEBAIC03NjgsOCArNzY4LDI1IEBA
-IHN0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgbWFsaWRwX3BtX3Jlc3VtZShzdHJ1Y3QgZGV2aWNl
-ICpkZXYpCj4gICAgICAgICByZXR1cm4gMDsKPiAgfQo+Cj4gK3N0YXRpYyBpbnQgX19tYXliZV91
-bnVzZWQgbWFsaWRwX3BtX3N1c3BlbmRfbGF0ZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gK3sKPiAr
-ICAgICAgIGlmICghcG1fcnVudGltZV9zdGF0dXNfc3VzcGVuZGVkKGRldikpIHsKPiArICAgICAg
-ICAgICAgICAgbWFsaWRwX3J1bnRpbWVfcG1fc3VzcGVuZChkZXYpOwo+ICsgICAgICAgICAgICAg
-ICBwbV9ydW50aW1lX3NldF9zdXNwZW5kZWQoZGV2KTsKPiArICAgICAgIH0KPiArICAgICAgIHJl
-dHVybiAwOwo+ICt9Cj4gKwo+ICtzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIG1hbGlkcF9wbV9y
-ZXN1bWVfZWFybHkoc3RydWN0IGRldmljZSAqZGV2KQo+ICt7Cj4gKyAgICAgICBtYWxpZHBfcnVu
-dGltZV9wbV9yZXN1bWUoZGV2KTsKPiArICAgICAgIHBtX3J1bnRpbWVfc2V0X2FjdGl2ZShkZXYp
-Owo+ICsgICAgICAgcmV0dXJuIDA7Cj4gK30KPiArCj4gIHN0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2
-X3BtX29wcyBtYWxpZHBfcG1fb3BzID0gewo+ICAgICAgICAgU0VUX1NZU1RFTV9TTEVFUF9QTV9P
-UFMobWFsaWRwX3BtX3N1c3BlbmQsIG1hbGlkcF9wbV9yZXN1bWUpIFwKPiArICAgICAgIFNFVF9M
-QVRFX1NZU1RFTV9TTEVFUF9QTV9PUFMobWFsaWRwX3BtX3N1c3BlbmRfbGF0ZSwgbWFsaWRwX3Bt
-X3Jlc3VtZV9lYXJseSkgXAo+ICAgICAgICAgU0VUX1JVTlRJTUVfUE1fT1BTKG1hbGlkcF9ydW50
-aW1lX3BtX3N1c3BlbmQsIG1hbGlkcF9ydW50aW1lX3BtX3Jlc3VtZSwgTlVMTCkKPiAgfTsKPgo+
-IC0tCgpBRkFJQ1MsIHRoaXMgc2hvdWxkIHdvcmssIHNvIHBsZWFzZSBmZWVsIGZyZWUgdG8gYWRk
-CgpSZXZpZXdlZC1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwu
-Y29tPgoKdG8gaXQgaWYgdGhhdCBoZWxwcy4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlz
-dGluZm8vZHJpLWRldmVsCg==
+On Wed, May 16, 2018 at 11:15:09AM +0200, Rafael J. Wysocki wrote:
+
+> So if the "cached" thing is the last "not boosted EPP", that's why it
+> is not updated here.
+
+Sure, I see what it does, just saying that naming and comments are wrong
+vs the actual code.
