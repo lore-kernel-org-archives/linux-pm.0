@@ -1,84 +1,36 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Juri Lelli <juri.lelli@redhat.com>
 Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
  frequency invariant accounting
-Date: Wed, 16 May 2018 08:58:22 -0700
-Message-ID: <1526486302.61700.23.camel@linux.intel.com>
+Date: Wed, 16 May 2018 18:31:05 +0200
+Message-ID: <20180516163105.GP28366@localhost.localdomain>
 References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
-         <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
-         <20180516151925.GO28366@localhost.localdomain>
+ <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
+ <20180516151925.GO28366@localhost.localdomain>
+ <20180516154733.GF12198@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516151925.GO28366@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <20180516154733.GF12198@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2018-05-16 at 17:19 +0200, Juri Lelli wrote:
-> On 15/05/18 21:49, Srinivas Pandruvada wrote:
-> > intel_pstate has two operating modes: active and passive. In
-> > "active"
-> > mode, the in-built scaling governor is used and in "passive" mode,
-> > the driver can be used with any governor like "schedutil". In
-> > "active"
-> > mode the utilization values from schedutil is not used and there is
-> > a requirement from high performance computing use cases, not to
-> > read
-> > any APERF/MPERF MSRs. In this case no need to use CPU cycles for
-> > frequency invariant accounting by reading APERF/MPERF MSRs.
-> > With this change frequency invariant account is only enabled in
-> > "passive" mode.
-> > 
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
-> > .com>
-> > ---
-> > [Note: The tick will be enabled later in the series when hwp
-> > dynamic
-> > boost is enabled]
-> > 
-> >  drivers/cpufreq/intel_pstate.c | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/intel_pstate.c
-> > b/drivers/cpufreq/intel_pstate.c
-> > index 17e566af..f686bbe 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -2040,6 +2040,8 @@ static int
-> > intel_pstate_register_driver(struct cpufreq_driver *driver)
-> >  {
-> >  	int ret;
-> >  
-> > +	x86_arch_scale_freq_tick_disable();
-> > +
-> >  	memset(&global, 0, sizeof(global));
-> >  	global.max_perf_pct = 100;
-> >  
-> > @@ -2052,6 +2054,9 @@ static int
-> > intel_pstate_register_driver(struct cpufreq_driver *driver)
-> >  
-> >  	global.min_perf_pct = min_perf_pct_min();
-> >  
-> > +	if (driver == &intel_cpufreq)
-> > +		x86_arch_scale_freq_tick_enable();
+On 16/05/18 17:47, Peter Zijlstra wrote:
+> On Wed, May 16, 2018 at 05:19:25PM +0200, Juri Lelli wrote:
 > 
-> This will unconditionally trigger the reading/calculation at each
-> tick
-> even though information is not actually consumed (e.g., running
-> performance or any other governor), right? Do we want that?
-Good point. I should call x86_arch_scale_freq_tick_disable() in
-performance mode switch for active mode.
+> > Anyway, FWIW I started testing this on a E5-2609 v3 and I'm not seeing
+> > hackbench regressions so far (running with schedutil governor).
+> 
+> https://en.wikipedia.org/wiki/Haswell_(microarchitecture)#Server_processors
+> 
+> Lists the E5 2609 v3 as not having turbo at all, which is basically a
+> best case scenario for this patch.
+> 
+> As I wrote earlier today; when turbo exists, like say the 2699, then
+> when we're busy we'll run at U=2.3/3.6 ~ .64, which might confuse
+> things.
 
-Thanks,
-Srinivas
-
-> 
-> Anyway, FWIW I started testing this on a E5-2609 v3 and I'm not
-> seeing
-> hackbench regressions so far (running with schedutil governor).
-> 
-> Best,
-> 
-> - Juri
+Indeed. I was mostly trying to see if adding this to the tick might
+introduce noticeable overhead.
