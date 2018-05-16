@@ -1,100 +1,151 @@
-From: Peng Fan <peng.fan@nxp.com>
-Subject: RE: [RFC] platform: detach from PM domains on shutdown
-Date: Wed, 16 May 2018 12:53:45 +0000
-Message-ID: <HE1PR04MB30044B7419754EB54ADE1A9288920@HE1PR04MB3004.eurprd04.prod.outlook.com>
-References: <20180515090110.26820-1-peng.fan@nxp.com>
- <CAPDyKFpKGhLrj-px1E3C_tq3_2GAxWpzSgr5TXJU7s8-jokf9g@mail.gmail.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v7 00/14] CPU scaling support for msm8996
+Date: Wed, 16 May 2018 16:11:52 +0300
+Message-ID: <CAHLCerOL1R=8jaHT-dKx3xwXVOZhCZMjZwqWYeQtYQsnUZ-NbQ@mail.gmail.com>
+References: <1526375616-16904-1-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpKGhLrj-px1E3C_tq3_2GAxWpzSgr5TXJU7s8-jokf9g@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <1526375616-16904-1-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, sboyd@kernel.org, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, catalin.marinas@arm.com, will.deacon@arm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, lakml <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnayak@codeaurora.org>, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgVWZmZSwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBVbGYgSGFu
-c3NvbiBbbWFpbHRvOnVsZi5oYW5zc29uQGxpbmFyby5vcmddDQo+IFNlbnQ6IDIwMTjlubQ15pyI
-MTbml6UgMTc6NTMNCj4gVG86IFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPg0KPiBDYzogUmFm
-YWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPjsgRmFiaW8gRXN0ZXZh
-bQ0KPiA8ZmFiaW8uZXN0ZXZhbUBueHAuY29tPjsgR3JlZyBLcm9haC1IYXJ0bWFuDQo+IDxncmVn
-a2hAbGludXhmb3VuZGF0aW9uLm9yZz47IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3QNCj4gPGxp
-bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTSA8bGludXgtcG1Admdlci5rZXJu
-ZWwub3JnPjsNCj4gZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhwLmNvbT4NCj4gU3ViamVjdDog
-UmU6IFtSRkNdIHBsYXRmb3JtOiBkZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uIHNodXRkb3duDQo+
-IA0KPiBPbiAxNSBNYXkgMjAxOCBhdCAxMTowMSwgUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+
-IHdyb3RlOg0KPiA+IFdoZW4gcmVib290IExpbnV4LCB0aGUgUE0gZG9tYWlucyBhdHRhY2hlZCB0
-byBhIGRldmljZSBhcmUgbm90DQo+ID4gc2h1dGRvd24uIFRvIFNvQ3Mgd2hpY2ggcmVseXMgb24g
-cmVzZXQgdGhlIHdob2xlIFNvQywgdGhlcmUgaXMgbm8gbmVlZA0KPiA+IHRvIHNodXRkb3duIFBN
-IGRvbWFpbnMsIGJ1dCB0byBMaW51eCBydW5uaW5nIGluIGEgdmlydHVhbCBtYWNoaW5lIHdpdGgN
-Cj4gPiBkZXZpY2VzIHBhc3MtdGhyb3VnaCwgd2UgY291bGQgbm90IHJlc2V0IHRoZSB3aG9sZSBT
-b0MuIEN1cnJlbnRseSB3ZQ0KPiA+IG5lZWQgTGludXggdG8gc2h1dGRvd24gaXRzIFBNIGRvbWFp
-bnMgd2hlbiByZWJvb3QuDQo+IA0KPiBJIGFtIG5vdCBzdXJlIEkgdW5kZXJzdGFuZCBleGFjdGx5
-IHdoeSB0aGUgUE0gZG9tYWluIG5lZWRzIHRvIGJlIHNodXRkb3duDQo+IGZvciB0aGVzZSBjYXNl
-cywgY291bGQgeW91IHBsZWFzZSBlbGFib3JhdGUgYSBiaXQgb24gdGhhdC4NCj4gDQo+IEJUVywg
-d2hhdCBwbGF0Zm9ybSBhcmUgeW91IHJ1bm5pbmcgb24gYW5kIGFsc28gd2hhdCBQTSBkb21haW5z
-IGFyZSBiZWluZw0KPiB1c2VkPw0KDQpJdCBpcyBvbiBpLk1YOCBwbGF0Zm9ybSwgd2l0aCB0d28g
-TGludXggT1NlcyBydW5uaW5nIG9uIGh5cGVydmlzb3IuDQpPUzIgaXMgYXNzaWduZWQgYSBkaXNw
-bGF5IGNvbnRyb2xsZXIgd2l0aCBTTU1VLiBXaGVuIE9TMiByZWJvb3QsIE9TMSBpcw0Kbm90IGFm
-ZmVjdGVkLg0KDQpXaGVuIE9TMiBmaXJzdGx5IGJvb3RzIHVwLCB0aGUgcG93ZXIgZG9tYWluIG9m
-IGRpc3BsYXkgY29udHJvbGxlciBpcyBwb3dlcmVkIHVwLA0KYW5kIGRpc3BsYXkgd29ya3Mgd2Vs
-bDsgdGhlbiBJIHJlYm9vdCBPUzIsIHdpdGggYCNyZWJvb3RgIGluIE9TMiBiYXNoOyBPUzIgZGlz
-cGxheQ0Kbm90IHdvcmsgd2VsbCwgYmVjYXVzZSBvZiB0aGUgcG93ZXIgZG9tYWluIG5vdCBzaHV0
-ZG93bi4gVGhpcyBtaWdodCBiZSBzb21ldGhpbmcNCmluIHRoZSBmaXJtd2FyZSB0aGF0IGhhbmRs
-aW5nIHBvd2VyIGRvbWFpbiB3ZWxsIGlmIHRoZSBwb3dlciBkb21haW4gaXMgb3BlbmVkIHR3aWNl
-Lg0KQnV0IG9wZW4gcG93ZXIgZG9tYWluIHR3aWNlIHNlZW1zIG5vdCBnb29kLCBiZWNhdXNlIHdo
-ZW4gT1MyIHNodXRkb3duLCB0aGUgcG93ZXINCmRvbWFpbiBpcyBzdGlsbCBvbi4NCg0KPiANCj4g
-QW55d2F5LCBpdCBzZWVtcyBsaWtlIHRoZXJlIG1heSBiZSBuZWVkIGZvciBjZXJ0YWluIGNhc2Vz
-LCBidXQgY2VydGFpbmx5IG5vdCBhbGwgLQ0KPiBlc3BlY2lhbGx5IHNpbmNlIGl0IG1heSBzbG93
-IGRvd24gdGhlIHNodXRkb3duIHByb2Nlc3MsIHdoZW4gbm90IG5lZWRlZC4NCg0KWWVzLCBhZGRp
-bmcgdGhpcyB3aWxsIHNsb3cgZG93biB0aGUgc2h1dGRvd24gcHJvY2Vzcy4gSSBqdXN0IHRob3Vn
-aHQNCnRoZSBsaW5lIGNvZGUgd2FzIHJlbW92ZWQgYmVjYXVzZSBvZiBhIGZhbHNlIGFsYXJtIHdh
-cm5pbmcsIHNvIGFkZCBpdCBiYWNrLg0KDQo+IA0KPiBDYW4gd2UgbWFrZSB0aGlzIHJ1bnRpbWUg
-Y29uZmlndXJhYmxlLCB2aWEgc3lzZnMgb3Igd2hhdGV2ZXIgdGhhdCBtYWtlcw0KPiBzZW5zZSE/
-DQoNCkluIG15IGNhc2UsIEkgbmVlZCBhbGwgdGhlIHBvd2VyIGRvbWFpbnMgYXNzaWduZWQgdG8g
-T1MyIG5lZWRzIHRvIGJlIHNodXRkb3duDQp3aGVuIHJlYm9vdCBvciBzaHV0ZG93bi4gSWYgcnVu
-dGltZSBjb25maWd1cmF0aW9uIGlzIGZvciBhbGwgdGhlIHBvd2VyIGRvbWFpbnMgaW4gb25lIE9T
-LA0KSSBhbSBvay4NCg0KU29tZXRoaW5nIGxpa2UgdGhpcz8NCmRpZmYgLS1naXQgYS9kcml2ZXJz
-L2Jhc2UvcGxhdGZvcm0uYyBiL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQppbmRleCA4MDc1ZGRj
-NzBhMTcuLmJiMzRmMDA2NTRkYSAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5j
-DQorKysgYi9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KQEAgLTYxNiw2ICs2MTYsOCBAQCBzdGF0
-aWMgdm9pZCBwbGF0Zm9ybV9kcnZfc2h1dGRvd24oc3RydWN0IGRldmljZSAqX2RldikNCg0KICAg
-ICAgICBpZiAoZHJ2LT5zaHV0ZG93bikNCiAgICAgICAgICAgICAgICBkcnYtPnNodXRkb3duKGRl
-dik7DQorICAgICAgIGlmIChzaHV0ZG93bl9wZCkNCisgICAgICAgICAgICAgICBkZXZfcG1fZG9t
-YWluX2RldGFjaChfZGV2LCB0cnVlKTsNCiB9DQoNCkFuZCBpbiBrZXJuZWwvcG93ZXIvbWFpbi5j
-IGNyZWF0ZSBhbiBhdHRyaWJ1dGUgZXhwb3NlZCB0byB1c2Vyc3BhY2UgdG8gcmVhZC93cml0ZSBz
-aHV0ZG93bl9wZCB2YXJpYWJsZS4NCg0KVGhhbmtzLA0KUGVuZy4NCg0KIC8qKg0KDQo+IA0KPiA+
-DQo+ID4gY29tbWl0IDJkMzBiYjBiMzg4OSAoInBsYXRmb3JtOiBEbyBub3QgZGV0YWNoIGZyb20g
-UE0gZG9tYWlucyBvbg0KPiA+IHNodXRkb3duIiksIHJlbW92ZXMgd2hhdCB0aGlzIHBhdGNoIHRy
-aWVzIHRvIGFkZCwgYmVjYXVzZSBvZiBhIHdhcm5pbmcuDQo+ID4gY29tbWl0IGU3OWFlZTQ5YmNm
-OSAoIlBNOiBBdm9pZCBmYWxzZS1wb3NpdGl2ZSB3YXJuaW5ncyBpbg0KPiA+IGRldl9wbV9kb21h
-aW5fc2V0KCkiKSBhbHJlYWR5IGZpeGVzIHRoZSBmYWxzZSBhbGFybSB3YXJuaW5nLiBTbyBsZXQn
-cw0KPiA+IGRldGFjaCB0aGUgcG93ZXIgZG9tYWluIHRvIHNodXRkb3duIFBNIGRvbWFpbnMgYWZ0
-ZXIgZHJpdmVyIHNodXRkb3duLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogUGVuZyBGYW4gPHBl
-bmcuZmFuQG54cC5jb20+DQo+ID4gLS0tDQo+ID4NCj4gPiBJIGRvIG5vdCBmaW5kIGEgYmV0dGVy
-IHBsYWNlIHRvIHNodXRkb3duIHBvd2VyIGRvbWFpbiB3aGVuIHJlYm9vdA0KPiA+IExpbnV4LCBz
-byBhZGQgYmFjayB0aGUgbGluZSB0aGF0IGNvbW1pdCAyZDMwYmIwYjM4ODkgcmVtb3ZlcywgYmVj
-YXVzZQ0KPiA+IGl0IGlzIGEgZmFsc2UgYWxhcm0gd2FybmluZyBhcyBjb21taXQgZTc5YWVlNDli
-Y2Y5IGRlc2NyaWJlcy4NCj4gPg0KPiA+ICBkcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyB8IDEgKw0K
-PiA+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4gPg0KPiA+IGRpZmYgLS1naXQg
-YS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyBiL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGluZGV4
-DQo+ID4gODA3NWRkYzcwYTE3Li5hNTkyOWYyNGRjM2MgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVy
-cy9iYXNlL3BsYXRmb3JtLmMNCj4gPiArKysgYi9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+
-IEBAIC02MTYsNiArNjE2LDcgQEAgc3RhdGljIHZvaWQgcGxhdGZvcm1fZHJ2X3NodXRkb3duKHN0
-cnVjdCBkZXZpY2UNCj4gPiAqX2RldikNCj4gPg0KPiA+ICAgICAgICAgaWYgKGRydi0+c2h1dGRv
-d24pDQo+ID4gICAgICAgICAgICAgICAgIGRydi0+c2h1dGRvd24oZGV2KTsNCj4gPiArICAgICAg
-IGRldl9wbV9kb21haW5fZGV0YWNoKF9kZXYsIHRydWUpOw0KPiANCj4gVGhpcyB3b3VsZCBzb21l
-d2hhdCB3b3JrLCBidXQgb25seSBmb3IgcGxhdGZvcm0gZGV2aWNlcy4gVG8gbWFrZSB0aGlzIGZ1
-bGx5DQo+IHdvcmssIHdlIG5lZWQgdG8gY2FsbCBkZXZfcG1fZG9tYWluX2RldGFjaCgpIGZyb20g
-YW1iYSwgc3BpLCBldGMgYXMgd2VsbC4NCj4gDQo+IFBlcmhhcHMgYW5vdGhlciBvcHRpb24gdG8g
-bWFuYWdlIHRoaXMgbW9yZSBnZW5lcmFsbHksIGFuIHdpdGhvdXQgaGF2aW5nDQo+IGRldGFjaCBk
-ZXZpY2VzLCBjb3VsZCBiZSB0byBleHRlbmQgdGhlIHN0cnVjdCBkZXZfcG1fZG9tYWluIHdpdGgg
-YSBuZXcNCj4gY2FsbGJhY2ssICItPnNodXRkb3duKCkiIGFuZCB0aGVuIG1ha2UgdGhlIGRyaXZl
-ciBjb3JlIGNhbGwgaXQgZnJvbQ0KPiBkZXZpY2Vfc2h1dGRvd24oKS4NCj4gDQo+IFR5cGljYWxs
-eSwgZm9yIGdlbnBkLCBJIHdvdWxkIHByb2JhYmx5IGNvdW50IHRoZSBudW1iZXIgb2YgY2FsbHMg
-YmVpbmcgbWFkZSB0bw0KPiAtPnNodXRkb3duKCkgcGVyIFBNIGRvbWFpbiwgdGhlbiB3aGVuIGl0
-IHJlYWNoZXMgdGhlIG51bWJlciBvZiBhdHRhY2hlZA0KPiBkZXZpY2VzIHRvIGl0LCBhbGxvdyB0
-byBwb3dlciBvZmYgaXQuDQo+IA0KPiBMZXQncyBzZWUgd2hhdCBSYWZhZWwgdGhpbmtzIGFib3V0
-IGl0Lg0KPiANCj4gS2luZCByZWdhcmRzDQo+IFVmZmUNCg==
+On Tue, May 15, 2018 at 12:13 PM, Ilia Lin <ilialin@codeaurora.org> wrote:
+> [v7]
+>  * Addressed comments from Viresh about resourses deallocation
+>    and DT compatible
+
+Hi Ilia,
+
+Thanks for working on this series. Here a few comments regarding the
+series as a whole.
+
+- The series could use a better cover letter describing how the
+various patches are grouped. e.g. 1-7 are clock related and probably
+will get merged through the clk maintainers tree. The regulator bits
+might get merged through the regulator maintainer tree and so forth.
+If there are any dependencies, please outline those as well so
+maintainers can decide how best to merge this.
+- Please describe what features this series adds - just frequency
+scaling or more. Please describe in more detail what the dependency on
+the SAW regulator changes is.
+- Please get rid of the GPL boiler plate since you already have the
+SPDX tags. See comments on patch 1 for what I'm referring to.
+- You also mention that ACD is not implemented in the earlier patches
+and then there is a patch that seems to add ACD related features
+(7/14).
+
+A few other comments follow across the individual patches.
+
+Regards,
+Amit
+
+> [v6]
+>  * Addressed comments from Viresh about:
+>  ** Comments style
+>  ** Kconfig bool instead of tristate
+>  ** DT and documentation style
+>  ** Resourses deallocation on an error
+>  ** Typos
+>
+> [v5]
+>  * Rebased
+>  * Addressed comments from Bjorn about SPDX style,
+>    functions and parameters naming
+>  * Addressed comments from Viresh DT properties and style, comments style,
+>    resourses deallocation, documentation placement
+>  * Addressed comments from Sricharan about unnessesary include
+>  * Addressed comments from Nicolas
+>  * Addressed comments from Rob about the commit messages and acks
+>  * Addressed comments from Mark
+>
+> [v4]
+>  * Adressed all comments from Stephen
+>  * Added CPU regulator support
+>  * Added qcom-cpufreq-kryo driver
+>
+> [v3]
+>  * Rebased on top of the latest PLL driver changes
+>  * Addressed comment from Rob Herring for bindings
+>
+> [v2]
+>  * Addressed comments from Rob Herring for bindings
+>  * Addressed comments from Mark Rutland for memory barrier
+>  * Addressed comments from Julien Thierry for clock reenabling condition
+>  * Tuned the HW configuration for clock frequencies below 600MHz
+>
+> Clocks:
+> This series adds support for the CPU clocks on msm8996 devices.
+> The driver uses the existing PLL drivers and is required to control
+> the CPU frequency scaling on the MSM8996.
+>
+> Regulators:
+> Added SAW regulator support to the SPMI regulator driver. The SAW regulators
+> will be controlled through special CPU registers instead of direct
+> SPMI accesses.
+>
+> Cpufreq:
+> The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+> The driver reads eFuse information and chooses the required OPP subset
+> by passing the OPP supported-hw parameter.
+>
+> A previous post of RFC can be found here:
+> https://patchwork.kernel.org/patch/10398455/
+>
+> Ilia Lin (11):
+>   soc: qcom: Separate kryo l2 accessors from PMU driver
+>   clk: qcom: Add CPU clock driver for msm8996
+>   clk: qcom: Add DT bindings for CPU clock driver for msm8996
+>   clk: qcom: Add ACD path to CPU clock driver for msm8996
+>   dt: qcom: Add opp and thermal to the msm8996
+>   regulator: qcom_spmi: Add support for SAW
+>   dt-bindings: qcom_spmi: Add support for SAW documentation
+>   dt: qcom: Add SAW regulator for 8x96 CPUs
+>   cpufreq: Add Kryo CPU scaling driver
+>   dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+>   dt: qcom: Add qcom-cpufreq-kryo driver configuration
+>
+> Rajendra Nayak (3):
+>   clk: qcom: Make clk_alpha_pll_configure available to modules
+>   clk: qcom: cpu-8996: Add support to switch to alternate PLL
+>   clk: qcom: cpu-8996: Add support to switch below 600Mhz
+>
+>  .../devicetree/bindings/clock/qcom,kryocc.txt      |  17 +
+>  .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+>  .../bindings/regulator/qcom,spmi-regulator.txt     |  45 ++
+>  arch/arm64/boot/dts/qcom/apq8096-db820c.dts        |   2 +-
+>  arch/arm64/boot/dts/qcom/msm8996.dtsi              | 651 +++++++++++++++++++-
+>  drivers/clk/clk-fixed-factor.c                     |   2 +-
+>  drivers/clk/qcom/Kconfig                           |   9 +
+>  drivers/clk/qcom/Makefile                          |   1 +
+>  drivers/clk/qcom/clk-alpha-pll.c                   |   1 +
+>  drivers/clk/qcom/clk-alpha-pll.h                   |   6 +
+>  drivers/clk/qcom/clk-cpu-8996.c                    | 519 ++++++++++++++++
+>  drivers/cpufreq/Kconfig.arm                        |  11 +
+>  drivers/cpufreq/Makefile                           |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+>  drivers/cpufreq/qcom-cpufreq-kryo.c                | 150 +++++
+>  drivers/perf/Kconfig                               |   1 +
+>  drivers/perf/qcom_l2_pmu.c                         |  90 +--
+>  drivers/regulator/qcom_spmi-regulator.c            | 133 +++-
+>  drivers/soc/qcom/Kconfig                           |   3 +
+>  drivers/soc/qcom/Makefile                          |   1 +
+>  drivers/soc/qcom/kryo-l2-accessors.c               |  65 ++
+>  include/soc/qcom/kryo-l2-accessors.h               |  21 +
+>  22 files changed, 2332 insertions(+), 80 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/clock/qcom,kryocc.txt
+>  create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+>  create mode 100644 drivers/clk/qcom/clk-cpu-8996.c
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+>  create mode 100644 drivers/soc/qcom/kryo-l2-accessors.c
+>  create mode 100644 include/soc/qcom/kryo-l2-accessors.h
+>
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
