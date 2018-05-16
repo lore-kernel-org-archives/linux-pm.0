@@ -1,90 +1,84 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH] cpufreq: brcmstb-avs-cpufreq: sort frequencies in
- ascending order
-Date: Wed, 16 May 2018 12:24:23 -0700
-Message-ID: <71309e94-90d4-2b58-729b-9ab488c6d554@gmail.com>
-References: <20180516034954.56475-1-code@mmayer.net>
- <20180516043218.7ktq5vjq2rhcszz5@vireshk-i7>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC/RFT] [PATCH 05/10] cpufreq: intel_pstate: HWP boost
+ performance on IO Wake
+Date: Wed, 16 May 2018 12:28:09 -0700
+Message-ID: <1526498889.61700.82.camel@linux.intel.com>
+References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+         <20180516044911.28797-6-srinivas.pandruvada@linux.intel.com>
+         <CAJZ5v0jSfZyGoKJKHEQCZRgQtiNt+_D0_sY+K2p3nQ9xdg3qKg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516043218.7ktq5vjq2rhcszz5@vireshk-i7>
-Content-Language: en-US
+In-Reply-To: <CAJZ5v0jSfZyGoKJKHEQCZRgQtiNt+_D0_sY+K2p3nQ9xdg3qKg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Markus Mayer <code@mmayer.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/15/2018 09:32 PM, Viresh Kumar wrote:
-> On 15-05-18, 20:49, Markus Mayer wrote:
->> From: Markus Mayer <mmayer@broadcom.com>
->>
->> Most CPUfreq drivers (at least on ARM) seem to be sorting the available
->> frequencies from lowest to highest. To match this behaviour, we reverse
->> the sorting order in brcmstb-avs-cpufreq, so it is now also lowest to
->> highest.
-> 
-> The reasoning isn't correct. Just because everyone else is doing it
-> doesn't make it right and so you shouldn't change just because of
-> that.
-> 
-> What you must written instead in the commit log is that the cpufreq
-> core performs better if the table is sorted (in any order), and so we
-> must sort it as well.
+On Wed, 2018-05-16 at 11:45 +0200, Rafael J. Wysocki wrote:
 
-Is there a reason why set_freq_table_sorted() tries an ascending or
-descending sort, but does not enforce one versus another for all drivers?
+[...]
+> 
+> > +               if (time_before64(time, cpu->last_io_update + 2 *
+> > TICK_NSEC) &&
+> > +                   intel_pstate_check_boost_threhold(cpu))
+> > +                       cpu->iowait_boost = true;
+> > +
+> > +               cpu->last_io_update = time;
+> > +               cpu->last_update = time;
+> 
+> This is a shared data structure and it gets updated without
+> synchronization, unless I'm missing something.
+Good point.
 
 > 
-> But I feel the table is already sorted for your platform, isn't it?
-> And I don't see a clear advantage of merging this patch.
+> How much does the cross-CPU case matter?
+I was under impression that IOWAIT flag is set on local CPU calls only,
+but I see IOWAIT flags set for remote CPU all the time. So we will miss
+if we don't take care of cross CPU calls.
 
-The patch changes the order to have the lowest to highest, whereas the
-current implementation has them from highest to lowest. From what you
-are saying, it sounds like this is unnecessary, since the sorting is
-already making things efficient enough, so this is just a cosmetic thing?
+But I can lump them as part of smp async call for all cross cpu updates
+to avoid sync issue.
 
 > 
->> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
->> ---
->>  drivers/cpufreq/brcmstb-avs-cpufreq.c | 9 +++++----
->>  1 file changed, 5 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
->> index b07559b9ed99..7dac3205d3eb 100644
->> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
->> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
->> @@ -403,7 +403,7 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
->>  {
->>  	struct cpufreq_frequency_table *table;
->>  	unsigned int pstate;
->> -	int i, ret;
->> +	int p, i, ret;
->>  
->>  	/* Remember P-state for later */
->>  	ret = brcm_avs_get_pstate(priv, &pstate);
->> @@ -415,12 +415,13 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
->>  	if (!table)
->>  		return ERR_PTR(-ENOMEM);
->>  
->> -	for (i = AVS_PSTATE_P0; i <= AVS_PSTATE_MAX; i++) {
->> -		ret = brcm_avs_set_pstate(priv, i);
->> +	for (p = AVS_PSTATE_MAX, i = 0; p >= 0; p--, i++) {
->> +		ret = brcm_avs_set_pstate(priv, p);
->>  		if (ret)
->>  			return ERR_PTR(ret);
->>  		table[i].frequency = brcm_avs_get_frequency(priv->base);
->> -		table[i].driver_data = i;
->> +		/* Store the corresponding P-state with each frequency */
->> +		table[i].driver_data = p;
->>  	}
->>  	table[i].frequency = CPUFREQ_TABLE_END;
->>  
->> -- 
->> 2.7.4
-> 
-
-
--- 
-Florian
+> > +       }
+> > 
+> > +       /*
+> > +        * If the boost is active, we will remove it after timeout
+> > on local
+> > +        * CPU only.
+> > +        */
+> > +       if (cpu->hwp_boost_active) {
+> > +               if (smp_processor_id() == cpu->cpu) {
+> > +                       bool expired;
+> > +
+> > +                       expired = time_after64(time, cpu-
+> > >last_update +
+> > +                                              (hwp_boost_hold_time
+> > _ms * NSEC_PER_MSEC));
+> > +                       if (expired) {
+> > +                               intel_pstate_hwp_boost_down(cpu);
+> > +                               cpu->hwp_boost_active = false;
+> > +                               cpu->iowait_boost = false;
+> > +                       }
+> > +               }
+> > +               return;
+> > +       }
+> > +
+> > +       cpu->last_update = time;
+> > +
+> > +       if (cpu->iowait_boost) {
+> > +               cpu->hwp_boost_active = true;
+> > +               if (smp_processor_id() == cpu->cpu)
+> > +                       intel_pstate_hwp_boost_up(cpu);
+> > +               else
+> > +                       smp_call_function_single_async(cpu->cpu,
+> > &cpu->csd);
+> > +       }
+> >  }
+> > 
+> >  static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+> > --
+> > 2.9.5
+> > 
