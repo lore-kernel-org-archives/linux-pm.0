@@ -1,75 +1,89 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: brcmstb-avs-cpufreq: sort frequencies in
- ascending order
-Date: Wed, 16 May 2018 10:02:18 +0530
-Message-ID: <20180516043218.7ktq5vjq2rhcszz5@vireshk-i7>
-References: <20180516034954.56475-1-code@mmayer.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [RFC/RFT] [PATCH 04/10] cpufreq: intel_pstate: Add update_util_hook for HWP
+Date: Tue, 15 May 2018 21:49:05 -0700
+Message-ID: <20180516044911.28797-5-srinivas.pandruvada@linux.intel.com>
+References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180516034954.56475-1-code@mmayer.net>
+In-Reply-To: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <code@mmayer.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: srinivas.pandruvada@linux.intel.com, tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15-05-18, 20:49, Markus Mayer wrote:
-> From: Markus Mayer <mmayer@broadcom.com>
-> 
-> Most CPUfreq drivers (at least on ARM) seem to be sorting the available
-> frequencies from lowest to highest. To match this behaviour, we reverse
-> the sorting order in brcmstb-avs-cpufreq, so it is now also lowest to
-> highest.
+When HWP dynamic boost is active then set the HWP specific update util
+hook. Also start and stop processing in frequency invariant accounting
+based on the HWP dyanmic boost setting
 
-The reasoning isn't correct. Just because everyone else is doing it
-doesn't make it right and so you shouldn't change just because of
-that.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 26 ++++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
 
-What you must written instead in the commit log is that the cpufreq
-core performs better if the table is sorted (in any order), and so we
-must sort it as well.
-
-But I feel the table is already sorted for your platform, isn't it?
-And I don't see a clear advantage of merging this patch.
-
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> ---
->  drivers/cpufreq/brcmstb-avs-cpufreq.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> index b07559b9ed99..7dac3205d3eb 100644
-> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> @@ -403,7 +403,7 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
->  {
->  	struct cpufreq_frequency_table *table;
->  	unsigned int pstate;
-> -	int i, ret;
-> +	int p, i, ret;
->  
->  	/* Remember P-state for later */
->  	ret = brcm_avs_get_pstate(priv, &pstate);
-> @@ -415,12 +415,13 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
->  	if (!table)
->  		return ERR_PTR(-ENOMEM);
->  
-> -	for (i = AVS_PSTATE_P0; i <= AVS_PSTATE_MAX; i++) {
-> -		ret = brcm_avs_set_pstate(priv, i);
-> +	for (p = AVS_PSTATE_MAX, i = 0; p >= 0; p--, i++) {
-> +		ret = brcm_avs_set_pstate(priv, p);
->  		if (ret)
->  			return ERR_PTR(ret);
->  		table[i].frequency = brcm_avs_get_frequency(priv->base);
-> -		table[i].driver_data = i;
-> +		/* Store the corresponding P-state with each frequency */
-> +		table[i].driver_data = p;
->  	}
->  	table[i].frequency = CPUFREQ_TABLE_END;
->  
-> -- 
-> 2.7.4
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index dc7dfa9..e200887 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -290,6 +290,7 @@ static struct pstate_funcs pstate_funcs __read_mostly;
+ 
+ static int hwp_active __read_mostly;
+ static bool per_cpu_limits __read_mostly;
++static bool hwp_boost __read_mostly;
+ 
+ static struct cpufreq_driver *intel_pstate_driver __read_mostly;
+ 
+@@ -1420,6 +1421,12 @@ static void csd_init(struct cpudata *cpu)
+ 	cpu->csd.info = cpu;
+ }
+ 
++static inline void intel_pstate_update_util_hwp(struct update_util_data *data,
++						u64 time, unsigned int flags)
++{
++
++}
++
+ static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
+@@ -1723,7 +1730,7 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+ {
+ 	struct cpudata *cpu = all_cpu_data[cpu_num];
+ 
+-	if (hwp_active)
++	if (hwp_active && !hwp_boost)
+ 		return;
+ 
+ 	if (cpu->update_util_set)
+@@ -1731,8 +1738,12 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+ 
+ 	/* Prevent intel_pstate_update_util() from using stale data. */
+ 	cpu->sample.time = 0;
+-	cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
+-				     intel_pstate_update_util);
++	if (hwp_active)
++		cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
++					     intel_pstate_update_util_hwp);
++	else
++		cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
++					     intel_pstate_update_util);
+ 	cpu->update_util_set = true;
+ }
+ 
+@@ -1844,8 +1855,15 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 		intel_pstate_set_update_util_hook(policy->cpu);
+ 	}
+ 
+-	if (hwp_active)
++	if (hwp_active) {
++		if (hwp_boost) {
++			x86_arch_scale_freq_tick_enable();
++		} else {
++			intel_pstate_clear_update_util_hook(policy->cpu);
++			x86_arch_scale_freq_tick_disable();
++		}
+ 		intel_pstate_hwp_set(policy->cpu);
++	}
+ 
+ 	mutex_unlock(&intel_pstate_limits_lock);
+ 
 -- 
-viresh
+2.9.5
