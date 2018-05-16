@@ -1,36 +1,97 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
- frequency invariant accounting
-Date: Wed, 16 May 2018 18:31:05 +0200
-Message-ID: <20180516163105.GP28366@localhost.localdomain>
-References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
- <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
- <20180516151925.GO28366@localhost.localdomain>
- <20180516154733.GF12198@hirez.programming.kicks-ass.net>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: Re: [PATCH 00/27] Add multi-channel and overheat IRQ support to
+ Armada thermal driver
+Date: Wed, 16 May 2018 19:28:45 +0200
+Message-ID: <871seb33xu.fsf@bootlin.com>
+References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180516154733.GF12198@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180421151255.29929-1-miquel.raynal@bootlin.com> (Miquel
+ Raynal's message of "Sat, 21 Apr 2018 17:12:28 +0200")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 16/05/18 17:47, Peter Zijlstra wrote:
-> On Wed, May 16, 2018 at 05:19:25PM +0200, Juri Lelli wrote:
-> 
-> > Anyway, FWIW I started testing this on a E5-2609 v3 and I'm not seeing
-> > hackbench regressions so far (running with schedutil governor).
-> 
-> https://en.wikipedia.org/wiki/Haswell_(microarchitecture)#Server_processors
-> 
-> Lists the E5 2609 v3 as not having turbo at all, which is basically a
-> best case scenario for this patch.
-> 
-> As I wrote earlier today; when turbo exists, like say the 2699, then
-> when we're busy we'll run at U=2.3/3.6 ~ .64, which might confuse
-> things.
-
-Indeed. I was mostly trying to see if adding this to the tick might
-introduce noticeable overhead.
+SGkgTWlxdWVsLAogCiBPbiBzYW0uLCBhdnJpbCAyMSAyMDE4LCBNaXF1ZWwgUmF5bmFsIDxtaXF1
+ZWwucmF5bmFsQGJvb3RsaW4uY29tPiB3cm90ZToKCj4gVGhlIG9ubHkgY2FwYWJpbGl0eSBvZiB0
+aGUgQXJtYWRhIHRoZXJtYWwgZHJpdmVyIGlzIGN1cnJlbnRseSBqdXN0IHRvCj4gcmVhZCBvbmUg
+c2Vuc29yICh0aGUgZGVmYXVsdCBvbmUpIHBlciBBUCBhbmQgb25lIHBlciBDUC4KPgo+IEFjdHVh
+bGx5LCB0aGVyZSBpcyBvbmUgc2Vuc29yIHBlciBjb3JlIGluIHRoZSBBUDgwNiBwbHVzIG9uZSBz
+ZW5zb3IgaW4KPiB0aGUgdGhlcm1hbCBJUCBpdHNlbGYuIFRoZSBDUDExMCBqdXN0IGZlYXR1cmVz
+IG9uZSB0aGVybWFsIHNlbnNvciBpbiBpdHMKPiBvd24gdGhlcm1hbCBJUC4KPgo+IEFsc28sIHRo
+ZXJlIGlzIG5vIG5lZWQgZm9yIHRoZSB0aGVybWFsIGNvcmUgdG8gcG9sbCB0aGUgdGVtcGVyYXR1
+cmUgb2YKPiBlYWNoIHNlbnNvciBieSBzb2Z0d2FyZSBhcyB0aGlzIElQIChhdCBsZWFzdCBmb3Ig
+QVA4MDYgYW5kIENQMTEwCj4gY29tcGF0aWJsZXMpIGZlYXR1cmVzIGFuIGhhcmR3YXJlIG92ZXJo
+ZWF0IGludGVycnVwdC4KPgo+IFRoaXMgc2VyaWVzIGZpcnN0IGltcHJvdmVzIHRoZSByZWFkYWJp
+bGl0eSBvZiB0aGlzIGRyaXZlciwgdGhlbiBhZGRzCj4gc3VwcG9ydCBmb3IgbXVsdGktY2hhbm5l
+bCB0aGVybWFsIElQcywgYW5kIGZpbmFsbHkgYWRkcyBzdXBwb3J0IGZvciB0aGUKPiBoYXJkd2Fy
+ZSBvdmVyaGVhdCBpbnRlcnJ1cHQuIFRoZSBiaW5kaW5ncyBhbmQgdGhlIGRldmljZS10cmVlcyBh
+cmUKPiB1cGRhdGVkIGFjY29yZGluZ2x5Lgo+Cj4gUGxlYXNlIG5vdGUgdGhhdCB0aGUgdGhlcm1h
+bCBJUCByYWlzZXMgU0VJIGludGVycnVwdHMsIGZyb20gd2hpY2ggdGhlCj4gc3VwcG9ydCBhcyBq
+dXN0IGJlZW4gY29udHJpYnV0ZWQgYW5kIG5vdCBtZXJnZWQgeWV0LiBBcHBseWluZyB0aGUgbGFz
+dAo+IERUIHBhdGNoZXMgcmVmZXJyaW5nIHRvIHRoZSAnc2VpJyBhbmQgJ2ljdV9zZWknIG5vZGVz
+IHdpbGwgcmVxdWlyZSB0aGlzCj4gZmVhdHVyZSBbMV0gdG8gaGF2ZSBiZWVuIGFjY2VwdGVkIGZp
+cnN0Lgo+Cj4gWzFdIGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL3BpcGVybWFpbC9saW51eC1h
+cm0ta2VybmVsLzIwMTgtQXByaWwvNTcyODUyLmh0bWwKPgo+IFRoYW5rIHlvdSwKPiBNaXF1w6hs
+Cj4KPgo+IE1pcXVlbCBSYXluYWwgKDI3KToKPiAgIHRoZXJtYWw6IGFybWFkYTogYWRkIGEgZnVu
+Y3Rpb24gdGhhdCBzYW5pdGl6ZXMgdGhlIHRoZXJtYWwgem9uZSBuYW1lCj4gICB0aGVybWFsOiBh
+cm1hZGE6IHJlbW92ZSB1c2VsZXNzIHJlZ2lzdGVyIGFjY2Vzc2VzCj4gICB0aGVybWFsOiBhcm1h
+ZGE6IHJlbW92ZSBtaXNsZWFkaW5nIGNvbW1lbnRzCj4gICB0aGVybWFsOiBhcm1hZGE6IHJlbmFt
+ZSB0aGUgaW5pdGlhbGl6YXRpb24gcm91dGluZQo+ICAgdGhlcm1hbDogYXJtYWRhOiBkaXNzb2Np
+YXRlIGEzODAgYW5kIGNwMTEwIC0+aW5pdCgpIGhvb2tzCj4gICB0aGVybWFsOiBhcm1hZGE6IGF2
+ZXJhZ2Ugb3ZlciBzYW1wbGVzIHRvIGF2b2lkIGdsaXRjaGVzCj4gICB0aGVybWFsOiBhcm1hZGE6
+IGNvbnZlcnQgZHJpdmVyIHRvIHN5c2NvbiByZWdpc3RlciBhY2Nlc3Nlcwo+ICAgdGhlcm1hbDog
+YXJtYWRhOiB1c2UgdGhlIHJlc291cmNlIG1hbmFnZWQgcmVnaXN0cmF0aW9uIGhlbHBlcgo+ICAg
+ICBhbHRlcm5hdGl2ZQo+ICAgdGhlcm1hbDogYXJtYWRhOiBhZGQgbXVsdGktY2hhbm5lbCBzZW5z
+b3JzIHN1cHBvcnQKPiAgIHRoZXJtYWw6IGFybWFkYTogcmVtb3ZlIHNlbnNvcnMgdmFsaWRpdHkg
+ZnJvbSB0aGUgSVAgaW5pdGlhbGl6YXRpb24KPiAgIHRoZXJtYWw6IGFybWFkYTogbW92ZSB2YWxp
+ZGl0eSBjaGVjayBvdXQgb2YgdGhlIHJlYWQgZnVuY3Rpb24KPiAgIHRoZXJtYWw6IGFybWFkYTog
+Z2V0IHJpZCBvZiB0aGUgLT5pc192YWxpZCgpIHBvaW50ZXIKPiAgIHRoZXJtYWw6IGFybWFkYTog
+YWRkIG92ZXJoZWF0IGludGVycnVwdCBzdXBwb3J0Cj4gICBkdC1iaW5kaW5nczogY3AxMTA6IHJl
+bmFtZSBjcDExMCBzeXNjb24gZmlsZQo+ICAgZHQtYmluZGluZ3M6IGFwODA2OiBwcmVwYXJlIHRo
+ZSBzeXNjb24gZmlsZSB0byBsaXN0IG90aGVyIHN5c2NvbnMKPiAgICAgbm9kZXMKPiAgIGR0LWJp
+bmRpbmdzOiBjcDExMDogcHJlcGFyZSB0aGUgc3lzY29uIGZpbGUgdG8gbGlzdCBvdGhlciBzeXNj
+b25zCj4gICAgIG5vZGVzCj4gICBkdC1iaW5kaW5nczogYXA4MDY6IGFkZCB0aGUgdGhlcm1hbCBu
+b2RlIGluIHRoZSBzeXNjb24gZmlsZQo+ICAgZHQtYmluZGluZ3M6IGNwMTEwOiB1cGRhdGUgZG9j
+dW1lbnRhdGlvbiBzaW5jZSBEVCBkZS1kdXBsaWNhdGlvbgo+ICAgZHQtYmluZGluZ3M6IGNwMTEw
+OiBhZGQgdGhlIHRoZXJtYWwgbm9kZSBpbiB0aGUgc3lzY29uIGZpbGUKPiAgIGR0LWJpbmRpbmdz
+OiB0aGVybWFsOiBhcm1hZGE6IGFkZCByZWZlcmVuY2UgdG8gbmV3IGJpbmRpbmdzCj4gICBhcm02
+NDogZHRzOiBtYXJ2ZWxsOiByZW5hbWUgYXA4MDYgc3lzY29uIG5vZGUKPiAgIGFybTY0OiBkdHM6
+IG1hcnZlbGw6IG1vdmUgQVA4MDYvQ1AxMTAgdGhlcm1hbCBub2RlcyBpbnRvIGEgbmV3IHN5c2Nv
+bgo+ICAgYXJtNjQ6IGR0czogbWFydmVsbDogYWRkIHRoZXJtYWwtem9uZSBub2RlIGluIGFwODA2
+IERUU0kgZmlsZQo+ICAgYXJtNjQ6IGR0czogbWFydmVsbDogYWRkIG1hY3JvIHRvIG1ha2UgZGlz
+dGluY3Rpb24gYmV0d2VlbiBub2RlIG5hbWVzCj4gICBhcm02NDogZHRzOiBtYXJ2ZWxsOiBhZGQg
+dGhlcm1hbC16b25lIG5vZGUgaW4gY3AxMTAgRFRTSSBmaWxlCj4gICBhcm02NDogZHRzOiBtYXJ2
+ZWxsOiBhZGQgaW50ZXJydXB0IHN1cHBvcnQgdG8gYXA4MDYgdGhlcm1hbCBub2RlCj4gICBhcm02
+NDogZHRzOiBtYXJ2ZWxsOiBhZGQgaW50ZXJydXB0IHN1cHBvcnQgdG8gY3AxMTAgdGhlcm1hbCBu
+b2RlCj4KPiAgLi4uL2FybS9tYXJ2ZWxsL2FwODA2LXN5c3RlbS1jb250cm9sbGVyLnR4dCAgICAg
+ICAgfCAgNTUgKy0KPiAgLi4uY29udHJvbGxlcjAudHh0ID0+IGNwMTEwLXN5c3RlbS1jb250cm9s
+bGVyLnR4dH0gfCAgNjYgKy0KPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9hcm1h
+ZGEtdGhlcm1hbC50eHQgfCAgIDUgKwo+ICBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJt
+YWRhLWFwODA2LmR0c2kgICAgICB8ICA4NSArLQo+ICBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZl
+bGwvYXJtYWRhLWNvbW1vbi5kdHNpICAgICB8ICAgMSArCj4gIGFyY2gvYXJtNjQvYm9vdC9kdHMv
+bWFydmVsbC9hcm1hZGEtY3AxMTAuZHRzaSAgICAgIHwgIDQ1ICstCj4gIGRyaXZlcnMvdGhlcm1h
+bC9hcm1hZGFfdGhlcm1hbC5jICAgICAgICAgICAgICAgICAgIHwgODc1ICsrKysrKysrKysrKysr
+KysrKy0tLQo+ICA3IGZpbGVzIGNoYW5nZWQsIDk3NiBpbnNlcnRpb25zKCspLCAxNTYgZGVsZXRp
+b25zKC0pCj4gIHJlbmFtZSBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21h
+cnZlbGwve2NwMTEwLXN5c3RlbS1jb250cm9sbGVyMC50eHQgPT4gY3AxMTAtc3lzdGVtLWNvbnRy
+b2xsZXIudHh0fSAoODMlKQoKV2hhdCBpcyB0aGUgc3RhdHVzIG9mIHRoaXMgc2VyaWVzPwpJIGFt
+IGVzcGVjaWFsbHkgaW50ZXJlc3RlZCBpbiB0aGUgZHQgcGFydC4KRG8geW91IGV4cGVjdCBzZW5k
+aW5nIGEgbmV3IHNlcmllcyBtb2RpZnlpbmcgdGhlbT8KCkdyZWdvcnkKCj4KPiAtLSAKPiAyLjE0
+LjEKPgoKLS0gCkdyZWdvcnkgQ2xlbWVudCwgQm9vdGxpbiAoZm9ybWVybHkgRnJlZSBFbGVjdHJv
+bnMpCkVtYmVkZGVkIExpbnV4IGFuZCBLZXJuZWwgZW5naW5lZXJpbmcKaHR0cDovL2Jvb3RsaW4u
+Y29tCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
+eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
+ZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1h
+cm0ta2VybmVsCg==
