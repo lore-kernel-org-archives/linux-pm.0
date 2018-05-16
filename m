@@ -1,55 +1,81 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional frequency invariant accounting
-Date: Tue, 15 May 2018 21:49:03 -0700
-Message-ID: <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC/RFT] [PATCH 06/10] cpufreq / sched: Add interface to get
+ utilization values
+Date: Wed, 16 May 2018 12:10:55 +0530
+Message-ID: <20180516064055.gbmemcxsv2qvx67g@vireshk-i7>
 References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+ <20180516044911.28797-7-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <20180516044911.28797-7-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-intel_pstate has two operating modes: active and passive. In "active"
-mode, the in-built scaling governor is used and in "passive" mode,
-the driver can be used with any governor like "schedutil". In "active"
-mode the utilization values from schedutil is not used and there is
-a requirement from high performance computing use cases, not to read
-any APERF/MPERF MSRs. In this case no need to use CPU cycles for
-frequency invariant accounting by reading APERF/MPERF MSRs.
-With this change frequency invariant account is only enabled in
-"passive" mode.
+On 15-05-18, 21:49, Srinivas Pandruvada wrote:
+> Added cpufreq_get_sched_util() to get the CFS, DL and max utilization
+> values for a CPU. This is required for getting utilization values
+> for cpufreq drivers outside of kernel/sched folder.
+> 
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>  include/linux/sched/cpufreq.h |  2 ++
+>  kernel/sched/cpufreq.c        | 23 +++++++++++++++++++++++
+>  2 files changed, 25 insertions(+)
+> 
+> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+> index 5966744..a366600 100644
+> --- a/include/linux/sched/cpufreq.h
+> +++ b/include/linux/sched/cpufreq.h
+> @@ -20,6 +20,8 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
+>                         void (*func)(struct update_util_data *data, u64 time,
+>  				    unsigned int flags));
+>  void cpufreq_remove_update_util_hook(int cpu);
+> +void cpufreq_get_sched_util(int cpu, unsigned long *util_cfs,
+> +			    unsigned long *util_dl, unsigned long *max);
+>  #endif /* CONFIG_CPU_FREQ */
+>  
+>  #endif /* _LINUX_SCHED_CPUFREQ_H */
+> diff --git a/kernel/sched/cpufreq.c b/kernel/sched/cpufreq.c
+> index 5e54cbc..36e2839 100644
+> --- a/kernel/sched/cpufreq.c
+> +++ b/kernel/sched/cpufreq.c
+> @@ -60,3 +60,26 @@ void cpufreq_remove_update_util_hook(int cpu)
+>  	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), NULL);
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_remove_update_util_hook);
+> +
+> +/**
+> + * cpufreq_get_sched_util - Get utilization values.
+> + * @cpu: The targeted CPU.
+> + *
+> + * Get the CFS, DL and max utilization.
+> + * This function allows cpufreq driver outside the kernel/sched to access
+> + * utilization value for a CPUs run queue.
+> + */
+> +void cpufreq_get_sched_util(int cpu, unsigned long *util_cfs,
+> +			    unsigned long *util_dl, unsigned long *max)
+> +{
+> +#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-[Note: The tick will be enabled later in the series when hwp dynamic
-boost is enabled]
+What will happen when schedutil is compiled in the kernel but ondemand
+is the one getting used currently ?
 
- drivers/cpufreq/intel_pstate.c | 5 +++++
- 1 file changed, 5 insertions(+)
+> +	struct rq *rq = cpu_rq(cpu);
+> +
+> +	*max = arch_scale_cpu_capacity(NULL, cpu);
+> +	*util_cfs = cpu_util_cfs(rq);
+> +	*util_dl  = cpu_util_dl(rq);
+> +#else
+> +	*util_cfs = *util_dl = 1;
+> +#endif
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_get_sched_util);
+> -- 
+> 2.9.5
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 17e566af..f686bbe 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2040,6 +2040,8 @@ static int intel_pstate_register_driver(struct cpufreq_driver *driver)
- {
- 	int ret;
- 
-+	x86_arch_scale_freq_tick_disable();
-+
- 	memset(&global, 0, sizeof(global));
- 	global.max_perf_pct = 100;
- 
-@@ -2052,6 +2054,9 @@ static int intel_pstate_register_driver(struct cpufreq_driver *driver)
- 
- 	global.min_perf_pct = min_perf_pct_min();
- 
-+	if (driver == &intel_cpufreq)
-+		x86_arch_scale_freq_tick_enable();
-+
- 	return 0;
- }
- 
 -- 
-2.9.5
+viresh
