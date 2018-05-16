@@ -1,119 +1,90 @@
-From: "Moore, Robert" <robert.moore@intel.com>
-Subject: RE: [PATCH 1/2] ACPICA: Introduce acpi_dispatch_gpe()
-Date: Wed, 16 May 2018 19:18:56 +0000
-Message-ID: <94F2FBAB4432B54E8AACC7DFDE6C92E3B776DF31@ORSMSX108.amr.corp.intel.com>
-References: <2406722.gU2bUHd7bl@aspire.rjw.lan>
- <1877957.ohNgiH8Sko@aspire.rjw.lan>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH] cpufreq: brcmstb-avs-cpufreq: sort frequencies in
+ ascending order
+Date: Wed, 16 May 2018 12:24:23 -0700
+Message-ID: <71309e94-90d4-2b58-729b-9ab488c6d554@gmail.com>
+References: <20180516034954.56475-1-code@mmayer.net>
+ <20180516043218.7ktq5vjq2rhcszz5@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1877957.ohNgiH8Sko@aspire.rjw.lan>
+In-Reply-To: <20180516043218.7ktq5vjq2rhcszz5@vireshk-i7>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Schmauss, Erik" <erik.schmauss@intel.com>, "Wang, Wendy" <wendy.wang@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Markus Mayer <code@mmayer.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-I'm not sure why this is necessary, please explain.
+On 05/15/2018 09:32 PM, Viresh Kumar wrote:
+> On 15-05-18, 20:49, Markus Mayer wrote:
+>> From: Markus Mayer <mmayer@broadcom.com>
+>>
+>> Most CPUfreq drivers (at least on ARM) seem to be sorting the available
+>> frequencies from lowest to highest. To match this behaviour, we reverse
+>> the sorting order in brcmstb-avs-cpufreq, so it is now also lowest to
+>> highest.
+> 
+> The reasoning isn't correct. Just because everyone else is doing it
+> doesn't make it right and so you shouldn't change just because of
+> that.
+> 
+> What you must written instead in the commit log is that the cpufreq
+> core performs better if the table is sorted (in any order), and so we
+> must sort it as well.
 
-Is the implication here that some driver is going to poll on acpi_dispatch_gpe?
+Is there a reason why set_freq_table_sorted() tries an ascending or
+descending sort, but does not enforce one versus another for all drivers?
 
-Bob
+> 
+> But I feel the table is already sorted for your platform, isn't it?
+> And I don't see a clear advantage of merging this patch.
+
+The patch changes the order to have the lowest to highest, whereas the
+current implementation has them from highest to lowest. From what you
+are saying, it sounds like this is unnecessary, since the sorting is
+already making things efficient enough, so this is just a cosmetic thing?
+
+> 
+>> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+>> ---
+>>  drivers/cpufreq/brcmstb-avs-cpufreq.c | 9 +++++----
+>>  1 file changed, 5 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> index b07559b9ed99..7dac3205d3eb 100644
+>> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> @@ -403,7 +403,7 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
+>>  {
+>>  	struct cpufreq_frequency_table *table;
+>>  	unsigned int pstate;
+>> -	int i, ret;
+>> +	int p, i, ret;
+>>  
+>>  	/* Remember P-state for later */
+>>  	ret = brcm_avs_get_pstate(priv, &pstate);
+>> @@ -415,12 +415,13 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
+>>  	if (!table)
+>>  		return ERR_PTR(-ENOMEM);
+>>  
+>> -	for (i = AVS_PSTATE_P0; i <= AVS_PSTATE_MAX; i++) {
+>> -		ret = brcm_avs_set_pstate(priv, i);
+>> +	for (p = AVS_PSTATE_MAX, i = 0; p >= 0; p--, i++) {
+>> +		ret = brcm_avs_set_pstate(priv, p);
+>>  		if (ret)
+>>  			return ERR_PTR(ret);
+>>  		table[i].frequency = brcm_avs_get_frequency(priv->base);
+>> -		table[i].driver_data = i;
+>> +		/* Store the corresponding P-state with each frequency */
+>> +		table[i].driver_data = p;
+>>  	}
+>>  	table[i].frequency = CPUFREQ_TABLE_END;
+>>  
+>> -- 
+>> 2.7.4
+> 
 
 
-> -----Original Message-----
-> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
-> Sent: Wednesday, May 16, 2018 5:12 AM
-> To: Linux ACPI <linux-acpi@vger.kernel.org>
-> Cc: Zhang, Rui <rui.zhang@intel.com>; Linux PM <linux-
-> pm@vger.kernel.org>; LKML <linux-kernel@vger.kernel.org>; Schmauss, Erik
-> <erik.schmauss@intel.com>; Moore, Robert <robert.moore@intel.com>; Wang,
-> Wendy <wendy.wang@intel.com>
-> Subject: [PATCH 1/2] ACPICA: Introduce acpi_dispatch_gpe()
-> 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Introduce acpi_dispatch_gpe() as a wrapper around acpi_ev_detect_gpe()
-> for checking if the given GPE (as represented by a GPE device handle and
-> a GPE number) is currently active and dispatching it (if that's the
-> case) outside of interrupt context.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/acpi/acpica/evgpe.c   |    6 ++++++
->  drivers/acpi/acpica/evxfgpe.c |   22 ++++++++++++++++++++++
->  include/acpi/acpixf.h         |    1 +
->  3 files changed, 29 insertions(+)
-> 
-> Index: linux-pm/drivers/acpi/acpica/evgpe.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/acpica/evgpe.c
-> +++ linux-pm/drivers/acpi/acpica/evgpe.c
-> @@ -634,6 +634,12 @@ acpi_ev_detect_gpe(struct acpi_namespace
-> 
->  	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
-> 
-> +	if (!gpe_event_info) {
-> +		gpe_event_info = acpi_ev_get_gpe_event_info(gpe_device,
-> gpe_number);
-> +		if (!gpe_event_info)
-> +			goto error_exit;
-> +	}
-> +
->  	/* Get the info block for the entire GPE register */
-> 
->  	gpe_register_info = gpe_event_info->register_info;
-> Index: linux-pm/drivers/acpi/acpica/evxfgpe.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/acpica/evxfgpe.c
-> +++ linux-pm/drivers/acpi/acpica/evxfgpe.c
-> @@ -639,6 +639,28 @@ ACPI_EXPORT_SYMBOL(acpi_get_gpe_status)
-> 
-> 
-> /***********************************************************************
-> ********
->   *
-> + * FUNCTION:    acpi_gispatch_gpe
-> + *
-> + * PARAMETERS:  gpe_device          - Parent GPE Device. NULL for
-> GPE0/GPE1
-> + *              gpe_number          - GPE level within the GPE block
-> + *
-> + * RETURN:      None
-> + *
-> + * DESCRIPTION: Detect and dispatch a General Purpose Event to either a
-> function
-> + *              (e.g. EC) or method (e.g. _Lxx/_Exx) handler.
-> + *
-> +
-> +***********************************************************************
-> +*******/ void acpi_dispatch_gpe(acpi_handle gpe_device, u32 gpe_number)
-> +{
-> +	ACPI_FUNCTION_TRACE(acpi_dispatch_gpe);
-> +
-> +	acpi_ev_detect_gpe(gpe_device, NULL, gpe_number); }
-> +
-> +ACPI_EXPORT_SYMBOL(acpi_dispatch_gpe)
-> +
-> +/**********************************************************************
-> +*********
-> + *
->   * FUNCTION:    acpi_finish_gpe
->   *
->   * PARAMETERS:  gpe_device          - Namespace node for the GPE Block
-> Index: linux-pm/include/acpi/acpixf.h
-> ===================================================================
-> --- linux-pm.orig/include/acpi/acpixf.h
-> +++ linux-pm/include/acpi/acpixf.h
-> @@ -753,6 +753,7 @@ ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_sta
->  						     u32 gpe_number,
->  						     acpi_event_status
->  						     *event_status))
-> +void acpi_dispatch_gpe(acpi_handle gpe_device, u32 gpe_number);
->  ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
-> acpi_disable_all_gpes(void))
-> ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
-> acpi_enable_all_runtime_gpes(void))
->  ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
-> acpi_enable_all_wakeup_gpes(void))
+-- 
+Florian
