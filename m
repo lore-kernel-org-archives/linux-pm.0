@@ -1,147 +1,54 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [RFC PATCH] PM / devfreq: Add policy notifier
-Date: Tue, 15 May 2018 14:24:47 -0700
-Message-ID: <20180515212447.180595-1-mka@chromium.org>
+From: Markus Mayer <code@mmayer.net>
+Subject: [PATCH] cpufreq: brcmstb-avs-cpufreq: sort frequencies in ascending order
+Date: Tue, 15 May 2018 20:49:54 -0700
+Message-ID: <20180516034954.56475-1-code@mmayer.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>
+Cc: Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Policy notifiers are called before a frequency change and may adjust the
-frequency, similar to CPUFREQ_ADJUST. The purpose of policy notifiers is
-to support non-thermal throttling of devfreq devices.
+From: Markus Mayer <mmayer@broadcom.com>
 
-As of now notifiers may only select a lower frequency, but not increase it.
-The reason for this limitation is that devfreq currently doesn't have an
-actual policy for frequencies and OPPs > freq might be disabled by a
-devfreq cooling device (see drivers/thermal/devfreq_cooling.c).
+Most CPUfreq drivers (at least on ARM) seem to be sorting the available
+frequencies from lowest to highest. To match this behaviour, we reverse
+the sorting order in brcmstb-avs-cpufreq, so it is now also lowest to
+highest.
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
 ---
-Marked as RFC since I'm aware that this isn't quite a 'policy' notifier,
-but I also didn't want to make it too specific. Maybe devfreq devices should
-have a policy similar to cpufreq?
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-Should devfreq core be in charge of disabling/enabling OPPs instead of
-the thermal cooling device? Typically we don't want to use higher OPPs
-than those whitelisted by thermal, so in practice the current situation
-shouldn't be much of an issue.
-
- drivers/devfreq/devfreq.c | 20 ++++++++++++++++----
- include/linux/devfreq.h   |  6 ++++++
- 2 files changed, 22 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index fe2af6aa88fc..a7294c056f65 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -273,6 +273,9 @@ int update_devfreq(struct devfreq *devfreq)
- 	if (err)
- 		return err;
+diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+index b07559b9ed99..7dac3205d3eb 100644
+--- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
++++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+@@ -403,7 +403,7 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
+ {
+ 	struct cpufreq_frequency_table *table;
+ 	unsigned int pstate;
+-	int i, ret;
++	int p, i, ret;
  
-+	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
-+			DEVFREQ_ADJUST, &freq);
-+
- 	/*
- 	 * Adjust the frequency with user freq, QoS and available freq.
- 	 *
-@@ -640,6 +643,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->last_stat_updated = jiffies;
+ 	/* Remember P-state for later */
+ 	ret = brcm_avs_get_pstate(priv, &pstate);
+@@ -415,12 +415,13 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
+ 	if (!table)
+ 		return ERR_PTR(-ENOMEM);
  
- 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
-+	srcu_init_notifier_head(&devfreq->policy_notifier_list);
- 
- 	mutex_unlock(&devfreq->lock);
- 
-@@ -1414,7 +1418,7 @@ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
-  * devfreq_register_notifier() - Register a driver with devfreq
-  * @devfreq:	The devfreq object.
-  * @nb:		The notifier block to register.
-- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
-  */
- int devfreq_register_notifier(struct devfreq *devfreq,
- 				struct notifier_block *nb,
-@@ -1430,6 +1434,10 @@ int devfreq_register_notifier(struct devfreq *devfreq,
- 		ret = srcu_notifier_chain_register(
- 				&devfreq->transition_notifier_list, nb);
- 		break;
-+	case DEVFREQ_POLICY_NOTIFIER:
-+		ret = srcu_notifier_chain_register(
-+				&devfreq->policy_notifier_list, nb);
-+		break;
- 	default:
- 		ret = -EINVAL;
+-	for (i = AVS_PSTATE_P0; i <= AVS_PSTATE_MAX; i++) {
+-		ret = brcm_avs_set_pstate(priv, i);
++	for (p = AVS_PSTATE_MAX, i = 0; p >= 0; p--, i++) {
++		ret = brcm_avs_set_pstate(priv, p);
+ 		if (ret)
+ 			return ERR_PTR(ret);
+ 		table[i].frequency = brcm_avs_get_frequency(priv->base);
+-		table[i].driver_data = i;
++		/* Store the corresponding P-state with each frequency */
++		table[i].driver_data = p;
  	}
-@@ -1442,7 +1450,7 @@ EXPORT_SYMBOL(devfreq_register_notifier);
-  * devfreq_unregister_notifier() - Unregister a driver with devfreq
-  * @devfreq:	The devfreq object.
-  * @nb:		The notifier block to be unregistered.
-- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
-  */
- int devfreq_unregister_notifier(struct devfreq *devfreq,
- 				struct notifier_block *nb,
-@@ -1458,6 +1466,10 @@ int devfreq_unregister_notifier(struct devfreq *devfreq,
- 		ret = srcu_notifier_chain_unregister(
- 				&devfreq->transition_notifier_list, nb);
- 		break;
-+	case DEVFREQ_POLICY_NOTIFIER:
-+		ret = srcu_notifier_chain_unregister(
-+				&devfreq->policy_notifier_list, nb);
-+		break;
- 	default:
- 		ret = -EINVAL;
- 	}
-@@ -1485,7 +1497,7 @@ static void devm_devfreq_notifier_release(struct device *dev, void *res)
-  * @dev:	The devfreq user device. (parent of devfreq)
-  * @devfreq:	The devfreq object.
-  * @nb:		The notifier block to be unregistered.
-- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
-  */
- int devm_devfreq_register_notifier(struct device *dev,
- 				struct devfreq *devfreq,
-@@ -1521,7 +1533,7 @@ EXPORT_SYMBOL(devm_devfreq_register_notifier);
-  * @dev:	The devfreq user device. (parent of devfreq)
-  * @devfreq:	The devfreq object.
-  * @nb:		The notifier block to be unregistered.
-- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
-  */
- void devm_devfreq_unregister_notifier(struct device *dev,
- 				struct devfreq *devfreq,
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 3aae5b3af87c..8edc538d78f7 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -33,6 +33,10 @@
- #define	DEVFREQ_PRECHANGE		(0)
- #define DEVFREQ_POSTCHANGE		(1)
+ 	table[i].frequency = CPUFREQ_TABLE_END;
  
-+#define DEVFREQ_POLICY_NOTIFIER		1
-+
-+#define	DEVFREQ_ADJUST			0
-+
- struct devfreq;
- struct devfreq_governor;
- 
-@@ -136,6 +140,7 @@ struct devfreq_dev_profile {
-  * @time_in_state:	Statistics of devfreq states
-  * @last_stat_updated:	The last time stat updated
-  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
-+ * @policy_notifier_list: list head of DEVFREQ_POLICY_NOTIFIER notifier
-  *
-  * This structure stores the devfreq information for a give device.
-  *
-@@ -174,6 +179,7 @@ struct devfreq {
- 	unsigned long last_stat_updated;
- 
- 	struct srcu_notifier_head transition_notifier_list;
-+	struct srcu_notifier_head policy_notifier_list;
- };
- 
- struct devfreq_freqs {
 -- 
-2.17.0.441.gb46fe60e1d-goog
+2.7.4
