@@ -1,47 +1,29 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC/RFT] [PATCH 00/10] Intel_pstate: HWP Dynamic performance
- boost
-Date: Wed, 16 May 2018 08:43:11 -0700
-Message-ID: <1526485391.61700.15.camel@linux.intel.com>
+Subject: Re: [RFC/RFT] [PATCH 10/10] cpufreq: intel_pstate: enable boost for
+ SKX
+Date: Wed, 16 May 2018 08:46:24 -0700
+Message-ID: <1526485584.61700.19.camel@linux.intel.com>
 References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
-         <20180516064943.GA28366@localhost.localdomain>
+         <20180516044911.28797-11-srinivas.pandruvada@linux.intel.com>
+         <20180516074948.GZ12217@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516064943.GA28366@localhost.localdomain>
+In-Reply-To: <20180516074948.GZ12217@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@gmail.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Juri,
-
-On Wed, 2018-05-16 at 08:49 +0200, Juri Lelli wrote:
-> Hi Srinivas,
+On Wed, 2018-05-16 at 09:49 +0200, Peter Zijlstra wrote:
+> On Tue, May 15, 2018 at 09:49:11PM -0700, Srinivas Pandruvada wrote:
+> > Enable HWP boost on Skylake server platform.
 > 
-> On 15/05/18 21:49, Srinivas Pandruvada wrote:
-> 
-> [...]
-> 
-> > 
-> > Peter Zijlstra (1):
-> >   x86,sched: Add support for frequency invariance
-> 
-> Cool! I was going to ask Peter about this patch. You beat me to it.
-> :)
-> 
-> I'll have a lokk at the set. BTW, just noticed that you Cc-ed me
-> using
-> my old address. Please use juri.lelli@redhat.com. ;)
-I didn't realize that. From next revision I will change to this
-address.
+> Why not unconditionally enable it on everything HWP ?
+Never noticed in any difference performance in clients with HWP nor
+anybody complained. Since clients uses single power domain, some other
+CPUs always gives boost. 
 
 Thanks,
 Srinivas
-
-
-> 
-> Best,
-> 
-> - Juri
