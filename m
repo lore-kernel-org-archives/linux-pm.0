@@ -1,76 +1,126 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC/RFT] [PATCH 06/10] cpufreq / sched: Add interface to get
- utilization values
-Date: Wed, 16 May 2018 15:40:39 -0700
-Message-ID: <1526510439.61700.109.camel@linux.intel.com>
-References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
-         <20180516044911.28797-7-srinivas.pandruvada@linux.intel.com>
-         <20180516081155.GA12217@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
+Subject: [PATCH RFC] schedutil: Allow cpufreq requests to be made even when kthread kicked
+Date: Wed, 16 May 2018 15:45:18 -0700
+Message-ID: <20180516224518.109891-1-joel@joelfernandes.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516081155.GA12217@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "Joel Fernandes (Google)" <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2018-05-16 at 10:11 +0200, Peter Zijlstra wrote:
-> On Tue, May 15, 2018 at 09:49:07PM -0700, Srinivas Pandruvada wrote:
-> > --- a/kernel/sched/cpufreq.c
-> > +++ b/kernel/sched/cpufreq.c
-> > @@ -60,3 +60,26 @@ void cpufreq_remove_update_util_hook(int cpu)
-> >  	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu),
-> > NULL);
-> >  }
-> >  EXPORT_SYMBOL_GPL(cpufreq_remove_update_util_hook);
-> > +
-> > +/**
-> > + * cpufreq_get_sched_util - Get utilization values.
-> > + * @cpu: The targeted CPU.
-> > + *
-> > + * Get the CFS, DL and max utilization.
-> > + * This function allows cpufreq driver outside the kernel/sched to
-> > access
-> > + * utilization value for a CPUs run queue.
-> > + */
-> > +void cpufreq_get_sched_util(int cpu, unsigned long *util_cfs,
-> > +			    unsigned long *util_dl, unsigned long
-> > *max)
-> > +{
-> > +#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-> > +	struct rq *rq = cpu_rq(cpu);
-> > +
-> > +	*max = arch_scale_cpu_capacity(NULL, cpu);
-> > +	*util_cfs = cpu_util_cfs(rq);
-> > +	*util_dl  = cpu_util_dl(rq);
-> > +#else
-> > +	*util_cfs = *util_dl = 1;
-> > +#endif
-> > +}
-> > +EXPORT_SYMBOL_GPL(cpufreq_get_sched_util);
-> 
-> So I _really_ hate this... I'd much rather you make schedutil work
-> with
-> the hwp passive stuff.
-Are you not happy with ifdefs are utility function itself? Can you
-explain more how this should be done?
+Currently there is a chance of a schedutil cpufreq update request to be
+dropped if there is a pending update request. This pending request can
+be delayed if there is a scheduling delay of the irq_work and the wake
+up of the schedutil governor kthread.
 
-utilization values are not passed with scheduler update util callback.
-So need to have access to rq->cfs.avg.util* and rq->dl.running_bw
-access from intel_pstate.
-The ifdefs can be removed, if we remove ifdefs for cpu_util_dl() or
-cpu_util_cfs(), which are not doing anything special other than
-accessing rq->cfs.avg.util* and rq->dl.running_bw. I think it is better
-to remove from these functions.
+A very bad scenario is when a schedutil request was already just made,
+such as to reduce the CPU frequency, then a newer request to increase
+CPU frequency (even sched deadline urgent frequency increase requests)
+can be dropped, even though the rate limits suggest that its Ok to
+process a request. This is because of the way the work_in_progress flag
+is used.
 
-> 
-> Also, afaict intel_pstate is bool, not tristate, so no need for an
-> EXPORT at all.
-Correct. I am just following other interface functions for sched util
-hooks in this file which are using EXPORT.
-But I will remove EXPORT in the next revision.
+This patch improves the situation by allowing new requests to happen
+even though the old one is still being processed. Note that in this
+approach, if an irq_work was already issued, we just update next_freq
+and don't bother to queue another request so there's no extra work being
+done to make this happen.
 
-Thanks,
-Srinivas
+I had brought up this issue at the OSPM conference and Claudio had a
+discussion RFC with an alternate approach [1]. I prefer the approach as
+done in the patch below since it doesn't need any new flags and doesn't
+cause any other extra overhead.
+
+[1] https://patchwork.kernel.org/patch/10384261/
+
+CC: Viresh Kumar <viresh.kumar@linaro.org>
+CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: Patrick Bellasi <patrick.bellasi@arm.com>
+CC: Juri Lelli <juri.lelli@redhat.com>
+Cc: Luca Abeni <luca.abeni@santannapisa.it>
+CC: Joel Fernandes <joelaf@google.com>
+CC: linux-pm@vger.kernel.org
+Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+---
+Claudio,
+Could you also test this patch for your usecase?
+
+ kernel/sched/cpufreq_schedutil.c | 36 +++++++++++++++++++++++++-------
+ 1 file changed, 28 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index e13df951aca7..a87fc281893d 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+ 	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
+ 		return false;
+ 
+-	if (sg_policy->work_in_progress)
+-		return false;
+-
+ 	if (unlikely(sg_policy->need_freq_update)) {
+ 		sg_policy->need_freq_update = false;
+ 		/*
+@@ -129,8 +126,11 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+ 		policy->cur = next_freq;
+ 		trace_cpu_frequency(next_freq, smp_processor_id());
+ 	} else {
+-		sg_policy->work_in_progress = true;
+-		irq_work_queue(&sg_policy->irq_work);
++		/* Don't queue request if one was already queued */
++		if (!sg_policy->work_in_progress) {
++			sg_policy->work_in_progress = true;
++			irq_work_queue(&sg_policy->irq_work);
++		}
+ 	}
+ }
+ 
+@@ -291,6 +291,15 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 
+ 	ignore_dl_rate_limit(sg_cpu, sg_policy);
+ 
++	/*
++	 * For slow-switch systems, single policy requests can't run at the
++	 * moment if the governor thread is already processing a pending
++	 * frequency switch request, this can be fixed by acquiring update_lock
++	 * while updating next_freq and work_in_progress but we prefer not to.
++	 */
++	if (sg_policy->work_in_progress)
++		return;
++
+ 	if (!sugov_should_update_freq(sg_policy, time))
+ 		return;
+ 
+@@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+ static void sugov_work(struct kthread_work *work)
+ {
+ 	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
++	unsigned int freq;
++	unsigned long flags;
++
++	/*
++	 * Hold sg_policy->update_lock shortly to handle the case where:
++	 * incase sg_policy->next_freq is read here, and then updated by
++	 * sugov_update_shared just before work_in_progress is set to false
++	 * here, we may miss queueing the new update.
++	 */
++	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
++	freq = sg_policy->next_freq;
++	sg_policy->work_in_progress = false;
++	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+ 
+ 	mutex_lock(&sg_policy->work_lock);
+-	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
++	__cpufreq_driver_target(sg_policy->policy, freq,
+ 				CPUFREQ_RELATION_L);
+ 	mutex_unlock(&sg_policy->work_lock);
+-
+-	sg_policy->work_in_progress = false;
+ }
+ 
+ static void sugov_irq_work(struct irq_work *irq_work)
+-- 
+2.17.0.441.gb46fe60e1d-goog
