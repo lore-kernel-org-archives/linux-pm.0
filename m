@@ -1,66 +1,34 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
- frequency invariant accounting
-Date: Wed, 16 May 2018 17:19:25 +0200
-Message-ID: <20180516151925.GO28366@localhost.localdomain>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC/RFT] [PATCH 03/10] cpufreq: intel_pstate: Utility
+ functions to boost HWP performance limits
+Date: Wed, 16 May 2018 08:39:36 -0700
+Message-ID: <1526485176.61700.12.camel@linux.intel.com>
 References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
- <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
+         <20180516044911.28797-4-srinivas.pandruvada@linux.intel.com>
+         <20180516072202.GV12217@hirez.programming.kicks-ass.net>
+         <CAJZ5v0iaRFO5GWRZAHVWWVMmF8FQps1CowpE5r6zj_tFO7W+jg@mail.gmail.com>
+         <20180516104313.GC12217@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20180516104313.GC12217@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, peterz@infradead.org, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 15/05/18 21:49, Srinivas Pandruvada wrote:
-> intel_pstate has two operating modes: active and passive. In "active"
-> mode, the in-built scaling governor is used and in "passive" mode,
-> the driver can be used with any governor like "schedutil". In "active"
-> mode the utilization values from schedutil is not used and there is
-> a requirement from high performance computing use cases, not to read
-> any APERF/MPERF MSRs. In this case no need to use CPU cycles for
-> frequency invariant accounting by reading APERF/MPERF MSRs.
-> With this change frequency invariant account is only enabled in
-> "passive" mode.
+On Wed, 2018-05-16 at 12:43 +0200, Peter Zijlstra wrote:
+> On Wed, May 16, 2018 at 11:15:09AM +0200, Rafael J. Wysocki wrote:
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
-> [Note: The tick will be enabled later in the series when hwp dynamic
-> boost is enabled]
+> > So if the "cached" thing is the last "not boosted EPP", that's why
+> > it
+> > is not updated here.
 > 
->  drivers/cpufreq/intel_pstate.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 17e566af..f686bbe 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2040,6 +2040,8 @@ static int intel_pstate_register_driver(struct cpufreq_driver *driver)
->  {
->  	int ret;
->  
-> +	x86_arch_scale_freq_tick_disable();
-> +
->  	memset(&global, 0, sizeof(global));
->  	global.max_perf_pct = 100;
->  
-> @@ -2052,6 +2054,9 @@ static int intel_pstate_register_driver(struct cpufreq_driver *driver)
->  
->  	global.min_perf_pct = min_perf_pct_min();
->  
-> +	if (driver == &intel_cpufreq)
-> +		x86_arch_scale_freq_tick_enable();
+> Sure, I see what it does, just saying that naming and comments are
+> wrong
+> vs the actual code.
+I will fix in the next revision.
 
-This will unconditionally trigger the reading/calculation at each tick
-even though information is not actually consumed (e.g., running
-performance or any other governor), right? Do we want that?
-
-Anyway, FWIW I started testing this on a E5-2609 v3 and I'm not seeing
-hackbench regressions so far (running with schedutil governor).
-
-Best,
-
-- Juri
+Thanks,
+Srinivas
