@@ -1,109 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [v0 1/2] dt-bindings: clock: Introduce QCOM CPUFREQ FW bindings
-Date: Thu, 17 May 2018 15:44:38 +0530
-Message-ID: <20180517101438.du7xihojuhjxq77l@vireshk-i7>
-References: <1526549401-25666-1-git-send-email-tdas@codeaurora.org>
- <1526549401-25666-2-git-send-email-tdas@codeaurora.org>
+Subject: Re: [PATCH RFC] schedutil: Allow cpufreq requests to be made even
+ when kthread kicked
+Date: Thu, 17 May 2018 15:50:24 +0530
+Message-ID: <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
+References: <20180516224518.109891-1-joel@joelfernandes.org>
+ <20180517070026.GA22493@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1526549401-25666-2-git-send-email-tdas@codeaurora.org>
+In-Reply-To: <20180517070026.GA22493@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>, robh@kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, amit.kucheria@linaro.org
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: "Joel Fernandes (Google)" <joel@joelfernandes.org>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-+ Rob.
+On 17-05-18, 09:00, Juri Lelli wrote:
+> Hi Joel,
+> 
+> On 16/05/18 15:45, Joel Fernandes (Google) wrote:
+> 
+> [...]
+> 
+> > @@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+> >  static void sugov_work(struct kthread_work *work)
+> >  {
+> >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> > +	unsigned int freq;
+> > +	unsigned long flags;
+> > +
+> > +	/*
+> > +	 * Hold sg_policy->update_lock shortly to handle the case where:
+> > +	 * incase sg_policy->next_freq is read here, and then updated by
+> > +	 * sugov_update_shared just before work_in_progress is set to false
+> > +	 * here, we may miss queueing the new update.
+> > +	 */
+> > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+> > +	freq = sg_policy->next_freq;
+> > +	sg_policy->work_in_progress = false;
+> > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+> 
+> OK, we queue the new request up, but still we need to let this kthread
+> activation complete and then wake it up again to service the request
+> already queued, right? Wasn't what Claudio proposed (service back to
+> back requests all in the same kthread activation) better from an
+> overhead pow?
 
-On 17-05-18, 15:00, Taniya Das wrote:
-> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
-> SoCs. This is required for managing the cpu frequency transitions which are
-> controlled by firmware.
-> 
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 68 ++++++++++++++++++++++
->  1 file changed, 68 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
-> new file mode 100644
-> index 0000000..bc912f4
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
-> @@ -0,0 +1,68 @@
-> +Qualcomm Technologies, Inc. CPUFREQ Bindings
-> +
-> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
-> +SoCs to manage frequency in hardware. It is capable of controlling frequency
-> +for multiple clusters.
-> +
-> +Properties:
-> +- compatible
-> +	Usage:		required
-> +	Value type:	<string>
-> +	Definition:	must be "qcom,cpufreq-fw".
-> +
-> +Note that #address-cells, #size-cells, and ranges shall be present to ensure
-> +the cpufreq can address a freq-domain registers.
-> +
-> +A freq-domain sub-node would be defined for the cpus with the following
-> +properties:
-> +
-> +- compatible:
-> +	Usage:		required
-> +	Value type:	<string>
-> +	Definition:	must be "cpufreq".
-> +
-> +- reg
-> +	Usage:		required
-> +	Value type:	<prop-encoded-array>
-> +	Definition:	Addresses and sizes for the memory of the perf_base
-> +			, lut_base and en_base.
-> +- reg-names
-> +	Usage:		required
-> +	Value type:	<stringlist>
-> +	Definition:	Address names. Must be "perf_base", "lut_base",
-> +			"en_base".
-> +			Must be specified in the same order as the
-> +			corresponding addresses are specified in the reg
-> +			property.
-> +
-> +- qcom,cpulist
-> +	Usage:		required
-> +	Value type:	<phandles of CPU>
-> +	Definition:	List of related cpu handles which are under a cluster.
-> +
-> +Example:
-> +	qcom,cpufreq-fw {
-> +		compatible = "qcom,cpufreq-fw";
-> +
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +
-> +		freq-domain-0 {
-> +			compatible = "cpufreq";
-> +			reg = <0x17d43920 0x4>,
-> +			     <0x17d43110 0x500>,
-> +			     <0x17d41000 0x4>;
-> +			reg-names = "perf_base", "lut_base", "en_base";
-> +			qcom,cpulist = <&CPU0 &CPU1 &CPU2 &CPU3>;
-> +		};
-> +
-> +		freq-domain-1 {
-> +			compatible = "cpufreq";
-> +			reg = <0x17d46120 0x4>,
-> +			    <0x17d45910 0x500>,
-> +			    <0x17d45800 0x4>;
-> +			reg-names = "perf_base", "lut_base", "en_base";
-> +			qcom,cpulist = <&CPU4 &CPU5 &CPU6 &CPU7>;
-> +		};
-> +	};
-> --
-> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
-> of the Code Aurora Forum, hosted by the  Linux Foundation.
+We would need more locking stuff in the work handler in that case and
+I think there maybe a chance of missing the request in that solution
+if the request happens right at the end of when sugov_work returns.
 
 -- 
 viresh
