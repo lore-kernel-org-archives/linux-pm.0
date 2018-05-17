@@ -1,97 +1,105 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
- frequency invariant accounting
-Date: Thu, 17 May 2018 08:41:32 -0700
-Message-ID: <1526571692.11765.10.camel@linux.intel.com>
-References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
-         <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
-         <20180516151925.GO28366@localhost.localdomain>
-         <20180516154733.GF12198@hirez.programming.kicks-ass.net>
-         <20180516163105.GP28366@localhost.localdomain>
-         <20180517105907.GC22493@localhost.localdomain>
-         <20180517150418.GF22493@localhost.localdomain>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH] PM / devfreq: Remove redundant frequency adjustment from
+ governors
+Date: Thu, 17 May 2018 08:47:05 -0700
+Message-ID: <20180517154705.GN19594@google.com>
+References: <CGME20180516211119epcas2p4370ceb0c9d959bd1441fa71493a9b0e0@epcas2p4.samsung.com>
+ <20180516211051.78875-1-mka@chromium.org>
+ <5AFCDE68.6000804@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180517150418.GF22493@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <5AFCDE68.6000804@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2018-05-17 at 17:04 +0200, Juri Lelli wrote:
-> On 17/05/18 12:59, Juri Lelli wrote:
-> > On 16/05/18 18:31, Juri Lelli wrote:
-> > > On 16/05/18 17:47, Peter Zijlstra wrote:
-> > > > On Wed, May 16, 2018 at 05:19:25PM +0200, Juri Lelli wrote:
-> > > > 
-> > > > > Anyway, FWIW I started testing this on a E5-2609 v3 and I'm
-> > > > > not seeing
-> > > > > hackbench regressions so far (running with schedutil
-> > > > > governor).
-> > > > 
-> > > > https://en.wikipedia.org/wiki/Haswell_(microarchitecture)#Serve
-> > > > r_processors
-> > > > 
-> > > > Lists the E5 2609 v3 as not having turbo at all, which is
-> > > > basically a
-> > > > best case scenario for this patch.
-> > > > 
-> > > > As I wrote earlier today; when turbo exists, like say the 2699,
-> > > > then
-> > > > when we're busy we'll run at U=2.3/3.6 ~ .64, which might
-> > > > confuse
-> > > > things.
-> > > 
-> > > Indeed. I was mostly trying to see if adding this to the tick
-> > > might
-> > > introduce noticeable overhead.
-> > 
-> > Blindly testing on an i5-5200U (2.2/2.7 GHz) gave the following
-> > 
-> > # perf bench sched messaging --pipe --thread --group 2 --loop 20000
-> > 
-> >                       count       mean       std     min     50%   
-> >     95%       99%     max
-> > hostname
-> > kernel                                                             
-> >                 
-> > i5-5200U
-> > test_after    30.0  13.843433  0.590605  12.369  13.810  14.85635  
-> > 15.08205  15.127
-> >          test_before   30.0  13.571167  0.999798  12.228  13.302  1
-> > 5.57805  16.40029  16.690
-> > 
-> > It might be interesting to see what happens when using a single CPU
-> > only?
-> > 
-> > Also, I will look at how the util signals look when a single CPU is
-> > busy..
-> 
-> And this is showing where the problem is (as you were saying [1]):
-> 
-> https://gist.github.com/jlelli/f5438221186e5ed3660194e4f645fe93
-> 
-> Just look at the plots (and ignore setup).
-> 
-> First one (pid:4483) shows a single task busy running on a single
-> CPU,
-> which seems to be able to sustain turbo for 5 sec. So task util
-> reaches
-> ~1024.
-> 
-> Second one (pid:4283) shows the same task, but running together with
-> other 3 tasks (each one pinned to a different CPU). In this case util
-> saturates at ~943, which is due to the fact that max freq is still
-> considered to be the turbo one. :/
+Hi,
 
-
-One more point to note. Even if we calculate some utilization based on
-the freq-invariant and arrive at a P-state, we will not be able to
-control any P-state in turbo region (not even as a cap) on several
-Intel processors using PERF_CTL MSRs.
-
-
+On Thu, May 17, 2018 at 10:44:08AM +0900, Chanwoo Choi wrote:
+> Hi,
 > 
-> [1] https://marc.info/?l=linux-kernel&m=152646464017810&w=2
+> On 2018년 05월 17일 06:10, Matthias Kaehlcke wrote:
+> > The performance, powersave, simpleondemand and userspace governors
+> > determine a target frequency and then adjust it according to the
+> > df->min/max_freq limits that might have been set by user space. This
+> > adjustment is redundant, it is done in update_devfreq() for any
+> > governor, right after governor->get_target_freq().
+> > 
+> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> >  drivers/devfreq/governor_performance.c    | 10 ++--------
+> >  drivers/devfreq/governor_powersave.c      |  5 -----
+> >  drivers/devfreq/governor_simpleondemand.c |  7 +------
+> >  drivers/devfreq/governor_userspace.c      | 16 ++++------------
+> >  4 files changed, 7 insertions(+), 31 deletions(-)
+> > 
+> > diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
+> > index 4d23ecfbd948..31ee30622c00 100644
+> > --- a/drivers/devfreq/governor_performance.c
+> > +++ b/drivers/devfreq/governor_performance.c
+> > @@ -16,14 +16,8 @@
+> >  static int devfreq_performance_func(struct devfreq *df,
+> >  				    unsigned long *freq)
+> >  {
+> > -	/*
+> > -	 * target callback should be able to get floor value as
+> > -	 * said in devfreq.h
+> > -	 */
+> > -	if (!df->max_freq)
+> > -		*freq = UINT_MAX;
+> > -	else
+> > -		*freq = df->max_freq;
+> > +	*freq = UINT_MAX;
+> > +
+> 
+> It is difficult to understand why use UINT_MAX instead of df->max_freq.
+> 
+> Instead, after merged the commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq
+> when adding the devfreq device"), df->max/min_freq have the specific frequency
+> value always. So, we can change it as following without UINT_MAX. 
+> 
+> 	*freq = df->max_freq;
+
+There are two reasons why I don't like to return df->max_freq:
+
+1. update_devfreq() already handles the user limits (which is what
+min/max_freq actually are), no need to spread parts of this
+additionally over all governors.
+
+2. I plan to introduce the concept of a devfreq policy [1], which
+would introduce another pair of frequencies, df->policy.min/max, and
+min/max_freq would become df->policy.user.min/max. The governors would
+then return df->policy.user.min/max, which isn't really incorrect
+since update_devfreq() takes care of adjusting the value with
+df->policy.min/max if needed, but it also isn't very clear. And we
+almost certainly shouldn't additionally handle df->policy.min/max in
+the governors.
+
+I agree though that just returning UINT_MAX isn't very clear either,
+even though that's what some governors are doing currently when
+df->min/max_freq is not set (which can still occur, since user space
+is free to set the value to 0).
+
+I think there are two better options than returning df->min/max_freq:
+
+a) create constants DEVFREQ_MIN/MAX_FREQ and return them, this clearly
+states the intent.
+
+b) return df->scaling_min/max_freq, which is the min/max frequency
+that is actually available on the device side, depending on the
+enabled OPPs.
+
+A slightly related question: Is it actually intended to keep
+supporting a value of 0 for df->min/max_freq to keep backwards
+compatibility, or should the related code be removed?
+
+Thanks
+
+Matthias
+
+[1] https://patchwork.kernel.org/patch/10401999/ (first draft, without
+df->policy.min/max)
