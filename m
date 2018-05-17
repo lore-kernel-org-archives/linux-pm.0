@@ -1,124 +1,138 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC] platform: detach from PM domains on shutdown
-Date: Thu, 17 May 2018 10:01:00 +0200
-Message-ID: <CAJZ5v0ibwRXqaGJW0vFcy+YqMEc_ao9itBErP_w1YjLQWVVtQg@mail.gmail.com>
-References: <20180515090110.26820-1-peng.fan@nxp.com> <CAPDyKFpKGhLrj-px1E3C_tq3_2GAxWpzSgr5TXJU7s8-jokf9g@mail.gmail.com>
- <CAJZ5v0h7zaNtSC6UCLJ8xEGKMSuBiZ_oAyB8bk1ROWCuH_-K4g@mail.gmail.com> <HE1PR04MB300483E474BE21D55720BCEC88910@HE1PR04MB3004.eurprd04.prod.outlook.com>
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH 1/8] firmware: arm_scmi: improve code readability using
+ bitfield accessor macros
+Date: Thu, 17 May 2018 09:14:33 +0100
+Message-ID: <20180517091433.0000513b@huawei.com>
+References: <1525885634-22348-1-git-send-email-sudeep.holla@arm.com>
+ <1525885634-22348-2-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <HE1PR04MB300483E474BE21D55720BCEC88910@HE1PR04MB3004.eurprd04.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peng Fan <peng.fan@nxp.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1525885634-22348-2-git-send-email-sudeep.holla@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 17, 2018 at 4:33 AM, Peng Fan <peng.fan@nxp.com> wrote:
->
->
->> -----Original Message-----
->> From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of Rafa=
-el
->> J. Wysocki
->> Sent: 2018=E5=B9=B45=E6=9C=8817=E6=97=A5 5:35
->> To: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: Peng Fan <peng.fan@nxp.com>; Rafael J. Wysocki
->> <rafael.j.wysocki@intel.com>; Fabio Estevam <fabio.estevam@nxp.com>; Gre=
-g
->> Kroah-Hartman <gregkh@linuxfoundation.org>; Linux Kernel Mailing List
->> <linux-kernel@vger.kernel.org>; Linux PM <linux-pm@vger.kernel.org>;
->> dl-linux-imx <linux-imx@nxp.com>
->> Subject: Re: [RFC] platform: detach from PM domains on shutdown
->>
->> On Wed, May 16, 2018 at 11:52 AM, Ulf Hansson <ulf.hansson@linaro.org>
->> wrote:
->> > On 15 May 2018 at 11:01, Peng Fan <peng.fan@nxp.com> wrote:
->> >> When reboot Linux, the PM domains attached to a device are not
->> >> shutdown. To SoCs which relys on reset the whole SoC, there is no
->> >> need to shutdown PM domains, but to Linux running in a virtual
->> >> machine with devices pass-through, we could not reset the whole SoC.
->> >> Currently we need Linux to shutdown its PM domains when reboot.
->> >
->> > I am not sure I understand exactly why the PM domain needs to be
->> > shutdown for these cases, could you please elaborate a bit on that.
->> >
->> > BTW, what platform are you running on and also what PM domains are bei=
-ng
->> used?
->> >
->> > Anyway, it seems like there may be need for certain cases, but
->> > certainly not all - especially since it may slow down the shutdown
->> > process, when not needed.
->> >
->> > Can we make this runtime configurable, via sysfs or whatever that make=
-s
->> sense!?
->> >
->> >>
->> >> commit 2d30bb0b3889 ("platform: Do not detach from PM domains on
->> >> shutdown"), removes what this patch tries to add, because of a warnin=
-g.
->> >> commit e79aee49bcf9 ("PM: Avoid false-positive warnings in
->> >> dev_pm_domain_set()") already fixes the false alarm warning. So let's
->> >> detach the power domain to shutdown PM domains after driver shutdown.
->> >>
->> >> Signed-off-by: Peng Fan <peng.fan@nxp.com>
->> >> ---
->> >>
->> >> I do not find a better place to shutdown power domain when reboot
->> >> Linux, so add back the line that commit 2d30bb0b3889 removes, because
->> >> it is a false alarm warning as commit e79aee49bcf9 describes.
->> >>
->> >>  drivers/base/platform.c | 1 +
->> >>  1 file changed, 1 insertion(+)
->> >>
->> >> diff --git a/drivers/base/platform.c b/drivers/base/platform.c index
->> >> 8075ddc70a17..a5929f24dc3c 100644
->> >> --- a/drivers/base/platform.c
->> >> +++ b/drivers/base/platform.c
->> >> @@ -616,6 +616,7 @@ static void platform_drv_shutdown(struct device
->> >> *_dev)
->> >>
->> >>         if (drv->shutdown)
->> >>                 drv->shutdown(dev);
->> >> +       dev_pm_domain_detach(_dev, true);
->> >
->> > This would somewhat work, but only for platform devices. To make this
->> > fully work, we need to call dev_pm_domain_detach() from amba, spi, etc
->> > as well.
->> >
->> > Perhaps another option to manage this more generally, an without
->> > having detach devices, could be to extend the struct dev_pm_domain
->> > with a new callback, "->shutdown()" and then make the driver core call
->> > it from device_shutdown().
->>
->> I'm sensing a possible ordering slippery slope with this (it will only w=
-ork if all of
->> the drivers/bus types etc do the right thing in their
->> ->shutdown callbacks so nothing depends on the domain going forward).
->>
->> > Typically, for genpd, I would probably count the number of calls being
->> > made to ->shutdown() per PM domain, then when it reaches the number of
->> > attached devices to it, allow to power off it.
->> >
->> > Let's see what Rafael thinks about it.
->>
->> I'm not sure about the use case.  The hypervisor should be able to take =
-care of
->> turning power domains off on the client OS reboot in theory.  If the cli=
-ent OS
->> leaving the hypervisor needs to worry about what state it leaves behind,=
- the
->> design of the hypervisor is sort of questionable IMO.
->
-> This is valid concern. But moving the power domain logic into hypervisor =
-mostly micro-kernel design
-> will introduce more complexity and make certification harder.
-> Currently, Let Linux shutdown it's power domain is the easiest way to me =
-and make things work well
-> after reboot.
+On Wed, 9 May 2018 18:07:07 +0100
+Sudeep Holla <sudeep.holla@arm.com> wrote:
 
-Well, to put it bluntly, if your hypervisor depends on the guest to do
-the right thing on exit, it doesn't do its job.  I wouldn't have
-certified it for you if that was my decision.
+> By using FIELD_{FIT,GET,PREP} and GENMASK macro accessors we can avoid
+> some clumpsy custom shifting and masking macros and also improve the
+> code better readability.
+> 
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Hi Sudeep,
+
+A minor comment inline.
+
+Jonathan
+> ---
+>  drivers/firmware/arm_scmi/common.h |  9 +++++----
+>  drivers/firmware/arm_scmi/driver.c | 31 ++++++++++++++-----------------
+>  2 files changed, 19 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/firmware/arm_scmi/common.h b/drivers/firmware/arm_scmi/common.h
+> index 0c30234f9098..e8f332c9c469 100644
+> --- a/drivers/firmware/arm_scmi/common.h
+> +++ b/drivers/firmware/arm_scmi/common.h
+> @@ -7,6 +7,7 @@
+>   * Copyright (C) 2018 ARM Ltd.
+>   */
+>  
+> +#include <linux/bitfield.h>
+>  #include <linux/completion.h>
+>  #include <linux/device.h>
+>  #include <linux/errno.h>
+> @@ -14,10 +15,10 @@
+>  #include <linux/scmi_protocol.h>
+>  #include <linux/types.h>
+>  
+> -#define PROTOCOL_REV_MINOR_BITS	16
+> -#define PROTOCOL_REV_MINOR_MASK	((1U << PROTOCOL_REV_MINOR_BITS) - 1)
+> -#define PROTOCOL_REV_MAJOR(x)	((x) >> PROTOCOL_REV_MINOR_BITS)
+> -#define PROTOCOL_REV_MINOR(x)	((x) & PROTOCOL_REV_MINOR_MASK)
+> +#define PROTOCOL_REV_MINOR_MASK	GENMASK(15, 0)
+> +#define PROTOCOL_REV_MAJOR_MASK	GENMASK(31, 16)
+> +#define PROTOCOL_REV_MAJOR(x)	(u16)(FIELD_GET(PROTOCOL_REV_MAJOR_MASK, (x)))
+> +#define PROTOCOL_REV_MINOR(x)	(u16)(FIELD_GET(PROTOCOL_REV_MINOR_MASK, (x)))
+>  #define MAX_PROTOCOLS_IMP	16
+>  #define MAX_OPPS		16
+>  
+> diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
+> index 14b147135a0c..917786d91f55 100644
+> --- a/drivers/firmware/arm_scmi/driver.c
+> +++ b/drivers/firmware/arm_scmi/driver.c
+> @@ -29,16 +29,12 @@
+>  
+>  #include "common.h"
+>  
+> -#define MSG_ID_SHIFT		0
+> -#define MSG_ID_MASK		0xff
+> -#define MSG_TYPE_SHIFT		8
+> -#define MSG_TYPE_MASK		0x3
+> -#define MSG_PROTOCOL_ID_SHIFT	10
+> -#define MSG_PROTOCOL_ID_MASK	0xff
+> -#define MSG_TOKEN_ID_SHIFT	18
+> -#define MSG_TOKEN_ID_MASK	0x3ff
+> -#define MSG_XTRACT_TOKEN(header)	\
+> -	(((header) >> MSG_TOKEN_ID_SHIFT) & MSG_TOKEN_ID_MASK)
+> +#define MSG_ID_MASK		GENMASK(7, 0)
+> +#define MSG_TYPE_MASK		GENMASK(9, 8)
+> +#define MSG_PROTOCOL_ID_MASK	GENMASK(17, 10)
+> +#define MSG_TOKEN_ID_MASK	GENMASK(27, 18)
+> +#define MSG_XTRACT_TOKEN(hdr)	FIELD_GET(MSG_TOKEN_ID_MASK, (hdr))
+> +#define MSG_TOKEN_MAX		(MSG_XTRACT_TOKEN(MSG_TOKEN_ID_MASK) + 1)
+
+This feels a little odd. It's not the Max value, I think, but rather one more than
+it. I would set it to this -1 and use > than in the test below.
+
+>  
+>  enum scmi_error_codes {
+>  	SCMI_SUCCESS = 0,	/* Success */
+> @@ -255,9 +251,9 @@ static void scmi_rx_callback(struct mbox_client *cl, void *m)
+>   */
+>  static inline u32 pack_scmi_header(struct scmi_msg_hdr *hdr)
+>  {
+> -	return ((hdr->id & MSG_ID_MASK) << MSG_ID_SHIFT) |
+> -	   ((hdr->seq & MSG_TOKEN_ID_MASK) << MSG_TOKEN_ID_SHIFT) |
+> -	   ((hdr->protocol_id & MSG_PROTOCOL_ID_MASK) << MSG_PROTOCOL_ID_SHIFT);
+> +	return FIELD_PREP(MSG_ID_MASK, hdr->id) |
+> +		FIELD_PREP(MSG_TOKEN_ID_MASK, hdr->seq) |
+> +		FIELD_PREP(MSG_PROTOCOL_ID_MASK, hdr->protocol_id);
+>  }
+>  
+>  /**
+> @@ -621,9 +617,9 @@ static int scmi_xfer_info_init(struct scmi_info *sinfo)
+>  	struct scmi_xfers_info *info = &sinfo->minfo;
+>  
+>  	/* Pre-allocated messages, no more than what hdr.seq can support */
+> -	if (WARN_ON(desc->max_msg >= (MSG_TOKEN_ID_MASK + 1))) {
+> -		dev_err(dev, "Maximum message of %d exceeds supported %d\n",
+> -			desc->max_msg, MSG_TOKEN_ID_MASK + 1);
+> +	if (WARN_ON(desc->max_msg >= MSG_TOKEN_MAX)) {
+
+> +		dev_err(dev, "Maximum message of %d exceeds supported %ld\n",
+> +			desc->max_msg, MSG_TOKEN_MAX);
+>  		return -EINVAL;
+>  	}
+>  
+> @@ -840,7 +836,8 @@ static int scmi_probe(struct platform_device *pdev)
+>  		if (of_property_read_u32(child, "reg", &prot_id))
+>  			continue;
+>  
+> -		prot_id &= MSG_PROTOCOL_ID_MASK;
+> +		if (!FIELD_FIT(MSG_PROTOCOL_ID_MASK, prot_id))
+> +			dev_err(dev, "Out of range protocol %d\n", prot_id);
+>  
+>  		if (!scmi_is_protocol_implemented(handle, prot_id)) {
+>  			dev_err(dev, "SCMI protocol %d not implemented\n",
