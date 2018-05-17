@@ -1,62 +1,29 @@
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH 8/8] firmware: arm_scmi: simplify exit path by returning
- on error
-Date: Thu, 17 May 2018 10:14:39 +0100
-Message-ID: <20180517101439.00007ba9@huawei.com>
-References: <1525885634-22348-1-git-send-email-sudeep.holla@arm.com>
- <1525885634-22348-9-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1525885634-22348-9-git-send-email-sudeep.holla@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From: Taniya Das <tdas@codeaurora.org>
+Subject: [v0 0/2] Add support for QCOM cpufreq FW driver
+Date: Thu, 17 May 2018 14:59:59 +0530
+Message-ID: <1526549401-25666-1-git-send-email-tdas@codeaurora.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, amit.kucheria@linaro.org, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 May 2018 18:07:14 +0100
-Sudeep Holla <sudeep.holla@arm.com> wrote:
+The CPUfreq FW present in some QCOM chipsets offloads the steps necessary
+for hanging the frequency of CPUs. The driver implements the cpufreq driver
+interface for this firmware.
 
-> Yet another nasty indentation left out during code restructuring. It's
-> must simpler to return on error instead of having unnecessary indentation.
-> 
-> Suggested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Taniya Das (2):
+  dt-bindings: clock: Introduce QCOM CPUFREQ FW bindings
+  cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
 
+ .../bindings/cpufreq/cpufreq-qcom-fw.txt           |  68 +++++
+ drivers/cpufreq/Kconfig.arm                        |   9 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/qcom-cpufreq-fw.c                  | 318 +++++++++++++++++++++
+ 4 files changed, 396 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-fw.c
 
-> ---
->  drivers/firmware/arm_scmi/driver.c | 11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
-> index 4087d6c50ecd..e996395af5f2 100644
-> --- a/drivers/firmware/arm_scmi/driver.c
-> +++ b/drivers/firmware/arm_scmi/driver.c
-> @@ -687,11 +687,12 @@ static int scmi_remove(struct platform_device *pdev)
->  		list_del(&info->node);
->  	mutex_unlock(&scmi_list_mutex);
->  
-> -	if (!ret) {
-> -		/* Safe to free channels since no more users */
-> -		ret = idr_for_each(idr, scmi_mbox_free_channel, idr);
-> -		idr_destroy(&info->tx_idr);
-> -	}
-> +	if (ret)
-> +		return ret;
-> +
-> +	/* Safe to free channels since no more users */
-> +	ret = idr_for_each(idr, scmi_mbox_free_channel, idr);
-> +	idr_destroy(&info->tx_idr);
->  
->  	return ret;
->  }
+--
+Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+of the Code Aurora Forum, hosted by the  Linux Foundation.
