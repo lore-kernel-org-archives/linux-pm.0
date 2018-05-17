@@ -1,60 +1,53 @@
 From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH RFC] schedutil: Allow cpufreq requests to be made even
- when kthread kicked
-Date: Thu, 17 May 2018 12:53:58 +0200
-Message-ID: <20180517105358.GB22493@localhost.localdomain>
-References: <20180516224518.109891-1-joel@joelfernandes.org>
- <20180517070026.GA22493@localhost.localdomain>
- <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
+Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
+ frequency invariant accounting
+Date: Thu, 17 May 2018 12:59:07 +0200
+Message-ID: <20180517105907.GC22493@localhost.localdomain>
+References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+ <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
+ <20180516151925.GO28366@localhost.localdomain>
+ <20180516154733.GF12198@hirez.programming.kicks-ass.net>
+ <20180516163105.GP28366@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
+In-Reply-To: <20180516163105.GP28366@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Joel Fernandes (Google)" <joel@joelfernandes.org>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 17/05/18 15:50, Viresh Kumar wrote:
-> On 17-05-18, 09:00, Juri Lelli wrote:
-> > Hi Joel,
+On 16/05/18 18:31, Juri Lelli wrote:
+> On 16/05/18 17:47, Peter Zijlstra wrote:
+> > On Wed, May 16, 2018 at 05:19:25PM +0200, Juri Lelli wrote:
 > > 
-> > On 16/05/18 15:45, Joel Fernandes (Google) wrote:
+> > > Anyway, FWIW I started testing this on a E5-2609 v3 and I'm not seeing
+> > > hackbench regressions so far (running with schedutil governor).
 > > 
-> > [...]
+> > https://en.wikipedia.org/wiki/Haswell_(microarchitecture)#Server_processors
 > > 
-> > > @@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
-> > >  static void sugov_work(struct kthread_work *work)
-> > >  {
-> > >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-> > > +	unsigned int freq;
-> > > +	unsigned long flags;
-> > > +
-> > > +	/*
-> > > +	 * Hold sg_policy->update_lock shortly to handle the case where:
-> > > +	 * incase sg_policy->next_freq is read here, and then updated by
-> > > +	 * sugov_update_shared just before work_in_progress is set to false
-> > > +	 * here, we may miss queueing the new update.
-> > > +	 */
-> > > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
-> > > +	freq = sg_policy->next_freq;
-> > > +	sg_policy->work_in_progress = false;
-> > > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+> > Lists the E5 2609 v3 as not having turbo at all, which is basically a
+> > best case scenario for this patch.
 > > 
-> > OK, we queue the new request up, but still we need to let this kthread
-> > activation complete and then wake it up again to service the request
-> > already queued, right? Wasn't what Claudio proposed (service back to
-> > back requests all in the same kthread activation) better from an
-> > overhead pow?
+> > As I wrote earlier today; when turbo exists, like say the 2699, then
+> > when we're busy we'll run at U=2.3/3.6 ~ .64, which might confuse
+> > things.
 > 
-> We would need more locking stuff in the work handler in that case and
-> I think there maybe a chance of missing the request in that solution
-> if the request happens right at the end of when sugov_work returns.
+> Indeed. I was mostly trying to see if adding this to the tick might
+> introduce noticeable overhead.
 
-Mmm, true. Ideally we might want to use some sort of queue where to
-atomically insert requests and then consume until queue is empty from
-sugov kthread.
+Blindly testing on an i5-5200U (2.2/2.7 GHz) gave the following
 
-But, I guess that's going to be too much complexity for an (hopefully)
-corner case.
+# perf bench sched messaging --pipe --thread --group 2 --loop 20000
+
+                      count       mean       std     min     50%       95%       99%     max
+hostname kernel                                                                             
+i5-5200U test_after    30.0  13.843433  0.590605  12.369  13.810  14.85635  15.08205  15.127
+         test_before   30.0  13.571167  0.999798  12.228  13.302  15.57805  16.40029  16.690
+
+It might be interesting to see what happens when using a single CPU
+only?
+
+Also, I will look at how the util signals look when a single CPU is
+busy..
