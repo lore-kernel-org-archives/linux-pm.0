@@ -1,15 +1,15 @@
 From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH 7/8] firmware: arm_scmi: improve exit paths and code
- readability
-Date: Thu, 17 May 2018 10:13:07 +0100
-Message-ID: <20180517094927.0000690f@huawei.com>
+Subject: Re: [PATCH 8/8] firmware: arm_scmi: simplify exit path by returning
+ on error
+Date: Thu, 17 May 2018 10:14:39 +0100
+Message-ID: <20180517101439.00007ba9@huawei.com>
 References: <1525885634-22348-1-git-send-email-sudeep.holla@arm.com>
- <1525885634-22348-8-git-send-email-sudeep.holla@arm.com>
+ <1525885634-22348-9-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1525885634-22348-8-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <1525885634-22348-9-git-send-email-sudeep.holla@arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,89 +23,40 @@ To: Sudeep Holla <sudeep.holla@arm.com>
 Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 May 2018 18:07:13 +0100
+On Wed, 9 May 2018 18:07:14 +0100
 Sudeep Holla <sudeep.holla@arm.com> wrote:
 
-> The existing code intends the good path to reduce the code which is so
-> uncommon. It's obvious to have more readable code with a goto used for
-> the error path. This patch adds more appropriate error paths and makes
-> code more readable. It also moves a error logging outside the scope of
-> locking.
+> Yet another nasty indentation left out during code restructuring. It's
+> must simpler to return on error instead of having unnecessary indentation.
 > 
 > Suggested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-
-It could be argued the lock move is unrelated and should be in a separate
-patch... Not particularly important though.
-
-Some comments inline, but I'm happy with how you did this.
-
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
+
 > ---
->  drivers/firmware/arm_scmi/bus.c | 22 ++++++++++++----------
->  1 file changed, 12 insertions(+), 10 deletions(-)
+>  drivers/firmware/arm_scmi/driver.c | 11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/firmware/arm_scmi/bus.c b/drivers/firmware/arm_scmi/bus.c
-> index f2760a596c28..472c88ae1c0f 100644
-> --- a/drivers/firmware/arm_scmi/bus.c
-> +++ b/drivers/firmware/arm_scmi/bus.c
-> @@ -125,13 +125,13 @@ scmi_device_create(struct device_node *np, struct device *parent, int protocol)
->  	int id, retval;
->  	struct scmi_device *scmi_dev;
+> diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
+> index 4087d6c50ecd..e996395af5f2 100644
+> --- a/drivers/firmware/arm_scmi/driver.c
+> +++ b/drivers/firmware/arm_scmi/driver.c
+> @@ -687,11 +687,12 @@ static int scmi_remove(struct platform_device *pdev)
+>  		list_del(&info->node);
+>  	mutex_unlock(&scmi_list_mutex);
 >  
-> -	id = ida_simple_get(&scmi_bus_id, 1, 0, GFP_KERNEL);
-> -	if (id < 0)
-> -		return NULL;
-> -
->  	scmi_dev = kzalloc(sizeof(*scmi_dev), GFP_KERNEL);
->  	if (!scmi_dev)
-> -		goto no_mem;
-> +		return NULL;
+> -	if (!ret) {
+> -		/* Safe to free channels since no more users */
+> -		ret = idr_for_each(idr, scmi_mbox_free_channel, idr);
+> -		idr_destroy(&info->tx_idr);
+> -	}
+> +	if (ret)
+> +		return ret;
 > +
-> +	id = ida_simple_get(&scmi_bus_id, 1, 0, GFP_KERNEL);
-> +	if (id < 0)
-> +		goto free_mem;
-
-I guess this reorder was to match what is done in remove?
-
-Personally I would have reordered remove as that was a one line change, but
-it really doesn't matter.
-
->  
->  	scmi_dev->id = id;
->  	scmi_dev->protocol_id = protocol;
-> @@ -141,13 +141,15 @@ scmi_device_create(struct device_node *np, struct device *parent, int protocol)
->  	dev_set_name(&scmi_dev->dev, "scmi_dev.%d", id);
->  
->  	retval = device_register(&scmi_dev->dev);
-> -	if (!retval)
-> -		return scmi_dev;
-> +	if (retval)
-> +		goto put_dev;
->  
-> +	return scmi_dev;
-
-If you are respinning I'd add a blank line here for readability.
-
-> +put_dev:
->  	put_device(&scmi_dev->dev);
-> -	kfree(scmi_dev);
-> -no_mem:
->  	ida_simple_remove(&scmi_bus_id, id);
-> +free_mem:
-> +	kfree(scmi_dev);
->  	return NULL;
->  }
->  
-> @@ -171,9 +173,9 @@ int scmi_protocol_register(int protocol_id, scmi_prot_init_fn_t fn)
->  	spin_lock(&protocol_lock);
->  	ret = idr_alloc(&scmi_protocols, fn, protocol_id, protocol_id + 1,
->  			GFP_ATOMIC);
-> +	spin_unlock(&protocol_lock);
->  	if (ret != protocol_id)
->  		pr_err("unable to allocate SCMI idr slot, err %d\n", ret);
-> -	spin_unlock(&protocol_lock);
+> +	/* Safe to free channels since no more users */
+> +	ret = idr_for_each(idr, scmi_mbox_free_channel, idr);
+> +	idr_destroy(&info->tx_idr);
 >  
 >  	return ret;
 >  }
