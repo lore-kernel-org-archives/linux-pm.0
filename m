@@ -1,381 +1,126 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: [PATCH 2/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
-Date: Thu, 17 May 2018 16:30:47 +0530
-Message-ID: <1526554847-6976-3-git-send-email-tdas@codeaurora.org>
-References: <1526554847-6976-1-git-send-email-tdas@codeaurora.org>
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v8 00/15] CPU scaling support for msm8996
+Date: Thu, 17 May 2018 14:19:00 +0300
+Message-ID: <1526555955-29960-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526554847-6976-1-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, Taniya Das <tdas@codeaurora.org>
+To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, viresh.kumar@linaro.org, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, ilialin@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-The CPUfreq FW present in some QCOM chipsets offloads the steps necessary
-for changing the frequency of CPUs. The driver implements the cpufreq
-driver interface for this firmware.
+[v8]
+ * Reordered the patch series into 4 groups
+ * Addressed comments from Amit about the comments and commit messages
+ * Addressed comments from Amit and Viresh about the resourses deallocation
 
-Signed-off-by: Taniya Das <tdas@codeaurora.org>
----
- drivers/cpufreq/Kconfig.arm       |   9 ++
- drivers/cpufreq/Makefile          |   1 +
- drivers/cpufreq/qcom-cpufreq-fw.c | 319 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 329 insertions(+)
- create mode 100644 drivers/cpufreq/qcom-cpufreq-fw.c
+[v7]
+ * Addressed comments from Viresh about resourses deallocation
+   and DT compatible
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 96b35b8..a50aa6e 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -301,3 +301,12 @@ config ARM_PXA2xx_CPUFREQ
- 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+[v6]
+ * Addressed comments from Viresh about:
+ ** Comments style
+ ** Kconfig bool instead of tristate
+ ** DT and documentation style
+ ** Resourses deallocation on an error
+ ** Typos
 
- 	  If in doubt, say N.
-+
-+config ARM_QCOM_CPUFREQ_FW
-+	tristate "QCOM CPUFreq FW driver"
-+	help
-+	 Support for the CPUFreq FW driver.
-+	 The CPUfreq FW preset in some QCOM chipsets offloads the steps
-+	 necessary for changing the frequency of CPUs. The driver
-+	 implements the cpufreq driver interface for this firmware.
-+	 Say Y if you want to support CPUFreq FW.
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 8d24ade..a3edbce 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -85,6 +85,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
- obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
- obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-+obj-$(CONFIG_ARM_QCOM_CPUFREQ_FW)	+= qcom-cpufreq-fw.o
+[v5]
+ * Rebased
+ * Addressed comments from Bjorn about SPDX style,
+   functions and parameters naming
+ * Addressed comments from Viresh DT properties and style, comments style,
+   resourses deallocation, documentation placement
+ * Addressed comments from Sricharan about unnessesary include
+ * Addressed comments from Nicolas
+ * Addressed comments from Rob about the commit messages and acks
+ * Addressed comments from Mark
 
+[v4]
+ * Adressed all comments from Stephen
+ * Added CPU regulator support
+ * Added qcom-cpufreq-kryo driver
 
- ##################################################################################
-diff --git a/drivers/cpufreq/qcom-cpufreq-fw.c b/drivers/cpufreq/qcom-cpufreq-fw.c
-new file mode 100644
-index 0000000..2ac7210
---- /dev/null
-+++ b/drivers/cpufreq/qcom-cpufreq-fw.c
-@@ -0,0 +1,319 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+
-+#define INIT_RATE			300000000UL
-+#define XO_RATE				19200000UL
-+#define LUT_MAX_ENTRIES			40U
-+#define CORE_COUNT_VAL(val)		((val & GENMASK(18, 16)) >> 16)
-+#define LUT_ROW_SIZE			32
-+
-+struct cpufreq_qcom {
-+	struct cpufreq_frequency_table *table;
-+	struct device *dev;
-+	void __iomem *perf_base;
-+	void __iomem *lut_base;
-+	cpumask_t related_cpus;
-+	unsigned int max_cores;
-+};
-+
-+static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
-+
-+static int
-+qcom_cpufreq_fw_target_index(struct cpufreq_policy *policy, unsigned int index)
-+{
-+	struct cpufreq_qcom *c = policy->driver_data;
-+
-+	if (index >= LUT_MAX_ENTRIES) {
-+		dev_err(c->dev,
-+		"Passing an index (%u) that's greater than max (%d)\n",
-+					index, LUT_MAX_ENTRIES - 1);
-+		return -EINVAL;
-+	}
-+
-+	writel_relaxed(index, c->perf_base);
-+
-+	/* Make sure the write goes through before proceeding */
-+	mb();
-+	return 0;
-+}
-+
-+static unsigned int qcom_cpufreq_fw_get(unsigned int cpu)
-+{
-+	struct cpufreq_qcom *c;
-+	unsigned int index;
-+
-+	c = qcom_freq_domain_map[cpu];
-+	if (!c)
-+		return -ENODEV;
-+
-+	index = readl_relaxed(c->perf_base);
-+	index = min(index, LUT_MAX_ENTRIES - 1);
-+
-+	return c->table[index].frequency;
-+}
-+
-+static int qcom_cpufreq_fw_cpu_init(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_qcom *c;
-+	int ret;
-+
-+	c = qcom_freq_domain_map[policy->cpu];
-+	if (!c) {
-+		pr_err("No scaling support for CPU%d\n", policy->cpu);
-+		return -ENODEV;
-+	}
-+
-+	cpumask_copy(policy->cpus, &c->related_cpus);
-+
-+	policy->freq_table = c->table;
-+	policy->driver_data = c;
-+
-+	return ret;
-+}
-+
-+static struct freq_attr *qcom_cpufreq_fw_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	&cpufreq_freq_attr_scaling_boost_freqs,
-+	NULL
-+};
-+
-+static struct cpufreq_driver cpufreq_qcom_fw_driver = {
-+	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-+			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-+	.verify		= cpufreq_generic_frequency_table_verify,
-+	.target_index	= qcom_cpufreq_fw_target_index,
-+	.get		= qcom_cpufreq_fw_get,
-+	.init		= qcom_cpufreq_fw_cpu_init,
-+	.name		= "qcom-cpufreq-fw",
-+	.attr		= qcom_cpufreq_fw_attr,
-+	.boost_enabled	= true,
-+};
-+
-+static int qcom_read_lut(struct platform_device *pdev,
-+			struct cpufreq_qcom *c)
-+{
-+	struct device *dev = &pdev->dev;
-+	u32 data, src, lval, i, core_count, prev_cc = 0;
-+
-+	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
-+				sizeof(*c->table), GFP_KERNEL);
-+	if (!c->table)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
-+		data = readl_relaxed(c->lut_base + i * LUT_ROW_SIZE);
-+		src = ((data & GENMASK(31, 30)) >> 30);
-+		lval = (data & GENMASK(7, 0));
-+		core_count = CORE_COUNT_VAL(data);
-+
-+		if (!src)
-+			c->table[i].frequency = INIT_RATE / 1000;
-+		else
-+			c->table[i].frequency = XO_RATE * lval / 1000;
-+
-+		c->table[i].driver_data = c->table[i].frequency;
-+
-+		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
-+				i, c->table[i].frequency, core_count);
-+
-+		if (core_count != c->max_cores)
-+			c->table[i].frequency = CPUFREQ_ENTRY_INVALID;
-+
-+		/*
-+		 * Two of the same frequencies with the same core counts means
-+		 * end of table.
-+		 */
-+		if (i > 0 && c->table[i - 1].driver_data ==
-+					c->table[i].driver_data
-+					&& prev_cc == core_count) {
-+			struct cpufreq_frequency_table *prev = &c->table[i - 1];
-+
-+			if (prev->frequency == CPUFREQ_ENTRY_INVALID) {
-+				prev->flags = CPUFREQ_BOOST_FREQ;
-+				prev->frequency = prev->driver_data;
-+			}
-+
-+			break;
-+		}
-+		prev_cc = core_count;
-+	}
-+	c->table[i].frequency = CPUFREQ_TABLE_END;
-+
-+	return 0;
-+}
-+
-+static int qcom_get_related_cpus(struct device_node *np, struct cpumask *m)
-+{
-+	struct device_node *dev_phandle;
-+	struct device *cpu_dev;
-+	int cpu, i = 0, ret = -ENOENT;
-+
-+	dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
-+	while (dev_phandle) {
-+		for_each_possible_cpu(cpu) {
-+			cpu_dev = get_cpu_device(cpu);
-+			if (cpu_dev && cpu_dev->of_node == dev_phandle) {
-+				cpumask_set_cpu(cpu, m);
-+				ret = 0;
-+				break;
-+			}
-+		}
-+		dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
-+	}
-+
-+	return ret;
-+}
-+
-+static int qcom_cpu_resources_init(struct platform_device *pdev,
-+						struct device_node *np)
-+{
-+	struct cpufreq_qcom *c;
-+	struct resource res;
-+	struct device *dev = &pdev->dev;
-+	void __iomem *en_base;
-+	int cpu, index = 0, ret;
-+
-+	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
-+
-+	index = of_property_match_string(np, "reg-names", "en_base");
-+	if (index < 0)
-+		return index;
-+
-+	if (of_address_to_resource(np, index, &res))
-+		return -ENOMEM;
-+
-+	en_base = devm_ioremap(dev, res.start, resource_size(&res));
-+	if (!en_base) {
-+		dev_err(dev, "Unable to map %s en-base\n", np->name);
-+		return -ENOMEM;
-+	}
-+
-+	/* FW should be enabled state to proceed */
-+	if (!(readl_relaxed(en_base) & 0x1)) {
-+		dev_err(dev, "%s firmware not enabled\n", np->name);
-+		return -ENODEV;
-+	}
-+
-+	devm_iounmap(&pdev->dev, en_base);
-+
-+	index = of_property_match_string(np, "reg-names", "perf_base");
-+	if (index < 0)
-+		return index;
-+
-+	if (of_address_to_resource(np, index, &res))
-+		return -ENOMEM;
-+
-+	c->perf_base = devm_ioremap(dev, res.start, resource_size(&res));
-+	if (!c->perf_base) {
-+		dev_err(dev, "Unable to map %s perf-base\n", np->name);
-+		return -ENOMEM;
-+	}
-+
-+	index = of_property_match_string(np, "reg-names", "lut_base");
-+	if (index < 0)
-+		return index;
-+
-+	if (of_address_to_resource(np, index, &res))
-+		return -ENOMEM;
-+
-+	c->lut_base = devm_ioremap(dev, res.start, resource_size(&res));
-+	if (!c->lut_base) {
-+		dev_err(dev, "Unable to map %s lut-base\n", np->name);
-+		return -ENOMEM;
-+	}
-+
-+	ret = qcom_get_related_cpus(np, &c->related_cpus);
-+	if (ret) {
-+		dev_err(dev, "%s failed to get core phandles\n", np->name);
-+		return ret;
-+	}
-+
-+	c->max_cores = cpumask_weight(&c->related_cpus);
-+
-+	ret = qcom_read_lut(pdev, c);
-+	if (ret) {
-+		dev_err(dev, "%s failed to read LUT\n", np->name);
-+		return ret;
-+	}
-+
-+	for_each_cpu(cpu, &c->related_cpus)
-+		qcom_freq_domain_map[cpu] = c;
-+
-+	return 0;
-+}
-+
-+static int qcom_resources_init(struct platform_device *pdev)
-+{
-+	struct device_node *np;
-+	int ret = -ENODEV;
-+
-+	for_each_available_child_of_node(pdev->dev.of_node, np) {
-+		if (of_device_is_compatible(np, "cpufreq")) {
-+			ret = qcom_cpu_resources_init(pdev, np);
-+			if (ret)
-+				return ret;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+static int qcom_cpufreq_fw_driver_probe(struct platform_device *pdev)
-+{
-+	int rc = 0;
-+
-+	/* Get the bases of cpufreq for domains */
-+	rc = qcom_resources_init(pdev);
-+	if (rc) {
-+		dev_err(&pdev->dev, "CPUFreq resource init failed\n");
-+		return rc;
-+	}
-+
-+	rc = cpufreq_register_driver(&cpufreq_qcom_fw_driver);
-+	if (rc) {
-+		dev_err(&pdev->dev, "CPUFreq FW driver failed to register\n");
-+		return rc;
-+	}
-+
-+	dev_info(&pdev->dev, "QCOM CPUFreq FW driver inited\n");
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id match_table[] = {
-+	{ .compatible = "qcom,cpufreq-fw" },
-+	{}
-+};
-+
-+static struct platform_driver qcom_cpufreq_fw_driver = {
-+	.probe = qcom_cpufreq_fw_driver_probe,
-+	.driver = {
-+		.name = "qcom-cpufreq-fw",
-+		.of_match_table = match_table,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init qcom_cpufreq_fw_init(void)
-+{
-+	return platform_driver_register(&qcom_cpufreq_fw_driver);
-+}
-+subsys_initcall(qcom_cpufreq_fw_init);
-+
-+static void __exit qcom_cpufreq_fw_exit(void)
-+{
-+	platform_driver_unregister(&qcom_cpufreq_fw_driver);
-+}
-+module_exit(qcom_cpufreq_fw_exit);
-+
-+MODULE_DESCRIPTION("QCOM CPU Frequency FW");
-+MODULE_LICENSE("GPL v2");
---
-Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
-of the Code Aurora Forum, hosted by the  Linux Foundation.
+[v3]
+ * Rebased on top of the latest PLL driver changes
+ * Addressed comment from Rob Herring for bindings
+
+[v2]
+ * Addressed comments from Rob Herring for bindings
+ * Addressed comments from Mark Rutland for memory barrier
+ * Addressed comments from Julien Thierry for clock reenabling condition
+ * Tuned the HW configuration for clock frequencies below 600MHz
+
+The series contains 4 groups of patches, which can be merged in the chain order,
+while each group depends on all the previous groups.
+(However, Only SOC, or SOC and Clocks, or SOC and Clocks and Cpufreq will work)  
+
+SOC (1/15):
+Extracts the kryo l2 accessors driver from the QCOM PMU driver
+
+Clocks (2/15-9/15):
+This series adds support for the CPU clocks on msm8996 devices.
+The driver uses the existing PLL drivers and is required to control
+the CPU frequency scaling on the MSM8996.
+
+Cpufreq (10/15-12/15):
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
+
+Regulators (13/15-15/15):
+Added SAW regulator support to the SPMI regulator driver. The SAW regulators
+will be controlled through special CPU registers instead of direct
+SPMI accesses.
+
+Ilia Lin (13):
+  soc: qcom: Separate kryo l2 accessors from PMU driver
+  clk: Use devm_ in the register fixed factor clock
+  clk: qcom: Add CPU clock driver for msm8996
+  dt-bindings: clk: qcom: Add bindings for CPU clock for msm8996
+  clk: qcom: cpu-8996: Add support to switch below 600Mhz
+  clk: qcom: Add ACD path to CPU clock driver for msm8996
+  dt: qcom: Add opp and thermal to the msm8996
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+  dt: qcom: Add qcom-cpufreq-kryo driver configuration
+  regulator: qcom_spmi: Add support for SAW
+  dt-bindings: qcom_spmi: Document SAW support
+  dt: qcom: Add SAW regulator for 8x96 CPUs
+
+Rajendra Nayak (2):
+  clk: qcom: Make clk_alpha_pll_configure available to modules
+  clk: qcom: cpu-8996: Add support to switch to alternate PLL
+
+ .../devicetree/bindings/clock/qcom,kryocc.txt      |  17 +
+ .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+ .../bindings/regulator/qcom,spmi-regulator.txt     |  45 ++
+ arch/arm64/boot/dts/qcom/apq8096-db820c.dts        |   2 +-
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              | 665 +++++++++++++++++++-
+ drivers/clk/clk-fixed-factor.c                     |   2 +-
+ drivers/clk/qcom/Kconfig                           |   9 +
+ drivers/clk/qcom/Makefile                          |   1 +
+ drivers/clk/qcom/clk-alpha-pll.c                   |   1 +
+ drivers/clk/qcom/clk-alpha-pll.h                   |   6 +
+ drivers/clk/qcom/clk-cpu-8996.c                    | 510 ++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 166 +++++
+ drivers/perf/Kconfig                               |   1 +
+ drivers/perf/qcom_l2_pmu.c                         |  90 +--
+ drivers/regulator/qcom_spmi-regulator.c            | 133 +++-
+ drivers/soc/qcom/Kconfig                           |   3 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/kryo-l2-accessors.c               |  56 ++
+ include/soc/qcom/kryo-l2-accessors.h               |  12 +
+ 22 files changed, 2324 insertions(+), 90 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,kryocc.txt
+ create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+ create mode 100644 drivers/clk/qcom/clk-cpu-8996.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+ create mode 100644 drivers/soc/qcom/kryo-l2-accessors.c
+ create mode 100644 include/soc/qcom/kryo-l2-accessors.h
+
+-- 
+1.9.1
