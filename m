@@ -1,93 +1,56 @@
-From: Peng Fan <peng.fan@nxp.com>
-Subject: RE: [RFC] platform: detach from PM domains on shutdown
-Date: Thu, 17 May 2018 02:33:50 +0000
-Message-ID: <HE1PR04MB300483E474BE21D55720BCEC88910@HE1PR04MB3004.eurprd04.prod.outlook.com>
-References: <20180515090110.26820-1-peng.fan@nxp.com>
- <CAPDyKFpKGhLrj-px1E3C_tq3_2GAxWpzSgr5TXJU7s8-jokf9g@mail.gmail.com>
- <CAJZ5v0h7zaNtSC6UCLJ8xEGKMSuBiZ_oAyB8bk1ROWCuH_-K4g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: brcmstb-avs-cpufreq: sort frequencies in
+ ascending order
+Date: Thu, 17 May 2018 09:44:48 +0530
+Message-ID: <20180517041448.ceh4g5fs2qfqqojm@vireshk-i7>
+References: <20180516034954.56475-1-code@mmayer.net>
+ <20180516043218.7ktq5vjq2rhcszz5@vireshk-i7>
+ <71309e94-90d4-2b58-729b-9ab488c6d554@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0h7zaNtSC6UCLJ8xEGKMSuBiZ_oAyB8bk1ROWCuH_-K4g@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <71309e94-90d4-2b58-729b-9ab488c6d554@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Markus Mayer <code@mmayer.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdtYWls
-LmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZiBSYWZhZWwNCj4g
-Si4gV3lzb2NraQ0KPiBTZW50OiAyMDE45bm0NeaciDE35pelIDU6MzUNCj4gVG86IFVsZiBIYW5z
-c29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPg0KPiBDYzogUGVuZyBGYW4gPHBlbmcuZmFuQG54
-cC5jb20+OyBSYWZhZWwgSi4gV3lzb2NraQ0KPiA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+
-OyBGYWJpbyBFc3RldmFtIDxmYWJpby5lc3RldmFtQG54cC5jb20+OyBHcmVnDQo+IEtyb2FoLUhh
-cnRtYW4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgTGludXggS2VybmVsIE1haWxpbmcg
-TGlzdA0KPiA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBNIDxsaW51eC1w
-bUB2Z2VyLmtlcm5lbC5vcmc+Ow0KPiBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0K
-PiBTdWJqZWN0OiBSZTogW1JGQ10gcGxhdGZvcm06IGRldGFjaCBmcm9tIFBNIGRvbWFpbnMgb24g
-c2h1dGRvd24NCj4gDQo+IE9uIFdlZCwgTWF5IDE2LCAyMDE4IGF0IDExOjUyIEFNLCBVbGYgSGFu
-c3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4NCj4gd3JvdGU6DQo+ID4gT24gMTUgTWF5IDIw
-MTggYXQgMTE6MDEsIFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPiB3cm90ZToNCj4gPj4gV2hl
-biByZWJvb3QgTGludXgsIHRoZSBQTSBkb21haW5zIGF0dGFjaGVkIHRvIGEgZGV2aWNlIGFyZSBu
-b3QNCj4gPj4gc2h1dGRvd24uIFRvIFNvQ3Mgd2hpY2ggcmVseXMgb24gcmVzZXQgdGhlIHdob2xl
-IFNvQywgdGhlcmUgaXMgbm8NCj4gPj4gbmVlZCB0byBzaHV0ZG93biBQTSBkb21haW5zLCBidXQg
-dG8gTGludXggcnVubmluZyBpbiBhIHZpcnR1YWwNCj4gPj4gbWFjaGluZSB3aXRoIGRldmljZXMg
-cGFzcy10aHJvdWdoLCB3ZSBjb3VsZCBub3QgcmVzZXQgdGhlIHdob2xlIFNvQy4NCj4gPj4gQ3Vy
-cmVudGx5IHdlIG5lZWQgTGludXggdG8gc2h1dGRvd24gaXRzIFBNIGRvbWFpbnMgd2hlbiByZWJv
-b3QuDQo+ID4NCj4gPiBJIGFtIG5vdCBzdXJlIEkgdW5kZXJzdGFuZCBleGFjdGx5IHdoeSB0aGUg
-UE0gZG9tYWluIG5lZWRzIHRvIGJlDQo+ID4gc2h1dGRvd24gZm9yIHRoZXNlIGNhc2VzLCBjb3Vs
-ZCB5b3UgcGxlYXNlIGVsYWJvcmF0ZSBhIGJpdCBvbiB0aGF0Lg0KPiA+DQo+ID4gQlRXLCB3aGF0
-IHBsYXRmb3JtIGFyZSB5b3UgcnVubmluZyBvbiBhbmQgYWxzbyB3aGF0IFBNIGRvbWFpbnMgYXJl
-IGJlaW5nDQo+IHVzZWQ/DQo+ID4NCj4gPiBBbnl3YXksIGl0IHNlZW1zIGxpa2UgdGhlcmUgbWF5
-IGJlIG5lZWQgZm9yIGNlcnRhaW4gY2FzZXMsIGJ1dA0KPiA+IGNlcnRhaW5seSBub3QgYWxsIC0g
-ZXNwZWNpYWxseSBzaW5jZSBpdCBtYXkgc2xvdyBkb3duIHRoZSBzaHV0ZG93bg0KPiA+IHByb2Nl
-c3MsIHdoZW4gbm90IG5lZWRlZC4NCj4gPg0KPiA+IENhbiB3ZSBtYWtlIHRoaXMgcnVudGltZSBj
-b25maWd1cmFibGUsIHZpYSBzeXNmcyBvciB3aGF0ZXZlciB0aGF0IG1ha2VzDQo+IHNlbnNlIT8N
-Cj4gPg0KPiA+Pg0KPiA+PiBjb21taXQgMmQzMGJiMGIzODg5ICgicGxhdGZvcm06IERvIG5vdCBk
-ZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uDQo+ID4+IHNodXRkb3duIiksIHJlbW92ZXMgd2hhdCB0
-aGlzIHBhdGNoIHRyaWVzIHRvIGFkZCwgYmVjYXVzZSBvZiBhIHdhcm5pbmcuDQo+ID4+IGNvbW1p
-dCBlNzlhZWU0OWJjZjkgKCJQTTogQXZvaWQgZmFsc2UtcG9zaXRpdmUgd2FybmluZ3MgaW4NCj4g
-Pj4gZGV2X3BtX2RvbWFpbl9zZXQoKSIpIGFscmVhZHkgZml4ZXMgdGhlIGZhbHNlIGFsYXJtIHdh
-cm5pbmcuIFNvIGxldCdzDQo+ID4+IGRldGFjaCB0aGUgcG93ZXIgZG9tYWluIHRvIHNodXRkb3du
-IFBNIGRvbWFpbnMgYWZ0ZXIgZHJpdmVyIHNodXRkb3duLg0KPiA+Pg0KPiA+PiBTaWduZWQtb2Zm
-LWJ5OiBQZW5nIEZhbiA8cGVuZy5mYW5AbnhwLmNvbT4NCj4gPj4gLS0tDQo+ID4+DQo+ID4+IEkg
-ZG8gbm90IGZpbmQgYSBiZXR0ZXIgcGxhY2UgdG8gc2h1dGRvd24gcG93ZXIgZG9tYWluIHdoZW4g
-cmVib290DQo+ID4+IExpbnV4LCBzbyBhZGQgYmFjayB0aGUgbGluZSB0aGF0IGNvbW1pdCAyZDMw
-YmIwYjM4ODkgcmVtb3ZlcywgYmVjYXVzZQ0KPiA+PiBpdCBpcyBhIGZhbHNlIGFsYXJtIHdhcm5p
-bmcgYXMgY29tbWl0IGU3OWFlZTQ5YmNmOSBkZXNjcmliZXMuDQo+ID4+DQo+ID4+ICBkcml2ZXJz
-L2Jhc2UvcGxhdGZvcm0uYyB8IDEgKw0KPiA+PiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9u
-KCspDQo+ID4+DQo+ID4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyBiL2Ry
-aXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGluZGV4DQo+ID4+IDgwNzVkZGM3MGExNy4uYTU5MjlmMjRk
-YzNjIDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+PiArKysg
-Yi9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+PiBAQCAtNjE2LDYgKzYxNiw3IEBAIHN0YXRp
-YyB2b2lkIHBsYXRmb3JtX2Rydl9zaHV0ZG93bihzdHJ1Y3QgZGV2aWNlDQo+ID4+ICpfZGV2KQ0K
-PiA+Pg0KPiA+PiAgICAgICAgIGlmIChkcnYtPnNodXRkb3duKQ0KPiA+PiAgICAgICAgICAgICAg
-ICAgZHJ2LT5zaHV0ZG93bihkZXYpOw0KPiA+PiArICAgICAgIGRldl9wbV9kb21haW5fZGV0YWNo
-KF9kZXYsIHRydWUpOw0KPiA+DQo+ID4gVGhpcyB3b3VsZCBzb21ld2hhdCB3b3JrLCBidXQgb25s
-eSBmb3IgcGxhdGZvcm0gZGV2aWNlcy4gVG8gbWFrZSB0aGlzDQo+ID4gZnVsbHkgd29yaywgd2Ug
-bmVlZCB0byBjYWxsIGRldl9wbV9kb21haW5fZGV0YWNoKCkgZnJvbSBhbWJhLCBzcGksIGV0Yw0K
-PiA+IGFzIHdlbGwuDQo+ID4NCj4gPiBQZXJoYXBzIGFub3RoZXIgb3B0aW9uIHRvIG1hbmFnZSB0
-aGlzIG1vcmUgZ2VuZXJhbGx5LCBhbiB3aXRob3V0DQo+ID4gaGF2aW5nIGRldGFjaCBkZXZpY2Vz
-LCBjb3VsZCBiZSB0byBleHRlbmQgdGhlIHN0cnVjdCBkZXZfcG1fZG9tYWluDQo+ID4gd2l0aCBh
-IG5ldyBjYWxsYmFjaywgIi0+c2h1dGRvd24oKSIgYW5kIHRoZW4gbWFrZSB0aGUgZHJpdmVyIGNv
-cmUgY2FsbA0KPiA+IGl0IGZyb20gZGV2aWNlX3NodXRkb3duKCkuDQo+IA0KPiBJJ20gc2Vuc2lu
-ZyBhIHBvc3NpYmxlIG9yZGVyaW5nIHNsaXBwZXJ5IHNsb3BlIHdpdGggdGhpcyAoaXQgd2lsbCBv
-bmx5IHdvcmsgaWYgYWxsIG9mDQo+IHRoZSBkcml2ZXJzL2J1cyB0eXBlcyBldGMgZG8gdGhlIHJp
-Z2h0IHRoaW5nIGluIHRoZWlyDQo+IC0+c2h1dGRvd24gY2FsbGJhY2tzIHNvIG5vdGhpbmcgZGVw
-ZW5kcyBvbiB0aGUgZG9tYWluIGdvaW5nIGZvcndhcmQpLg0KPiANCj4gPiBUeXBpY2FsbHksIGZv
-ciBnZW5wZCwgSSB3b3VsZCBwcm9iYWJseSBjb3VudCB0aGUgbnVtYmVyIG9mIGNhbGxzIGJlaW5n
-DQo+ID4gbWFkZSB0byAtPnNodXRkb3duKCkgcGVyIFBNIGRvbWFpbiwgdGhlbiB3aGVuIGl0IHJl
-YWNoZXMgdGhlIG51bWJlciBvZg0KPiA+IGF0dGFjaGVkIGRldmljZXMgdG8gaXQsIGFsbG93IHRv
-IHBvd2VyIG9mZiBpdC4NCj4gPg0KPiA+IExldCdzIHNlZSB3aGF0IFJhZmFlbCB0aGlua3MgYWJv
-dXQgaXQuDQo+IA0KPiBJJ20gbm90IHN1cmUgYWJvdXQgdGhlIHVzZSBjYXNlLiAgVGhlIGh5cGVy
-dmlzb3Igc2hvdWxkIGJlIGFibGUgdG8gdGFrZSBjYXJlIG9mDQo+IHR1cm5pbmcgcG93ZXIgZG9t
-YWlucyBvZmYgb24gdGhlIGNsaWVudCBPUyByZWJvb3QgaW4gdGhlb3J5LiAgSWYgdGhlIGNsaWVu
-dCBPUw0KPiBsZWF2aW5nIHRoZSBoeXBlcnZpc29yIG5lZWRzIHRvIHdvcnJ5IGFib3V0IHdoYXQg
-c3RhdGUgaXQgbGVhdmVzIGJlaGluZCwgdGhlDQo+IGRlc2lnbiBvZiB0aGUgaHlwZXJ2aXNvciBp
-cyBzb3J0IG9mIHF1ZXN0aW9uYWJsZSBJTU8uDQoNClRoaXMgaXMgdmFsaWQgY29uY2Vybi4gQnV0
-IG1vdmluZyB0aGUgcG93ZXIgZG9tYWluIGxvZ2ljIGludG8gaHlwZXJ2aXNvciBtb3N0bHkgbWlj
-cm8ta2VybmVsIGRlc2lnbg0Kd2lsbCBpbnRyb2R1Y2UgbW9yZSBjb21wbGV4aXR5IGFuZCBtYWtl
-IGNlcnRpZmljYXRpb24gaGFyZGVyLg0KQ3VycmVudGx5LCBMZXQgTGludXggc2h1dGRvd24gaXQn
-cyBwb3dlciBkb21haW4gaXMgdGhlIGVhc2llc3Qgd2F5IHRvIG1lIGFuZCBtYWtlIHRoaW5ncyB3
-b3JrIHdlbGwNCmFmdGVyIHJlYm9vdC4NCg0KVGhhbmtzLA0KUGVuZw0KDQo=
+On 16-05-18, 12:24, Florian Fainelli wrote:
+> On 05/15/2018 09:32 PM, Viresh Kumar wrote:
+> > On 15-05-18, 20:49, Markus Mayer wrote:
+> >> From: Markus Mayer <mmayer@broadcom.com>
+> >>
+> >> Most CPUfreq drivers (at least on ARM) seem to be sorting the available
+> >> frequencies from lowest to highest. To match this behaviour, we reverse
+> >> the sorting order in brcmstb-avs-cpufreq, so it is now also lowest to
+> >> highest.
+> > 
+> > The reasoning isn't correct. Just because everyone else is doing it
+> > doesn't make it right and so you shouldn't change just because of
+> > that.
+> > 
+> > What you must written instead in the commit log is that the cpufreq
+> > core performs better if the table is sorted (in any order), and so we
+> > must sort it as well.
+> 
+> Is there a reason why set_freq_table_sorted() tries an ascending or
+> descending sort, but does not enforce one versus another for all drivers?
+
+set_freq_table_sorted() doesn't sort the frequency table but checks if
+the table is already sorted in a particular order. And then
+cpufreq_frequency_table_target() is optimized based on this flag. We
+don't have to enforce any particular ordering here.
+
+> > But I feel the table is already sorted for your platform, isn't it?
+> > And I don't see a clear advantage of merging this patch.
+> 
+> The patch changes the order to have the lowest to highest, whereas the
+> current implementation has them from highest to lowest. From what you
+> are saying, it sounds like this is unnecessary, since the sorting is
+> already making things efficient enough, so this is just a cosmetic thing?
+
+Right. It shouldn't make any performance improvements.
+
+-- 
+viresh
