@@ -1,172 +1,93 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [RFC PATCH] PM / devfreq: Add policy notifier
-Date: Thu, 17 May 2018 11:01:34 +0900
-Message-ID: <5AFCE27E.20803@samsung.com>
-References: <CGME20180515212545epcas1p2bdfd9c90f2ce6b74ac0fdd8cd9f9f63b@epcas1p2.samsung.com>
-        <20180515212447.180595-1-mka@chromium.org>
+From: Peng Fan <peng.fan@nxp.com>
+Subject: RE: [RFC] platform: detach from PM domains on shutdown
+Date: Thu, 17 May 2018 02:33:50 +0000
+Message-ID: <HE1PR04MB300483E474BE21D55720BCEC88910@HE1PR04MB3004.eurprd04.prod.outlook.com>
+References: <20180515090110.26820-1-peng.fan@nxp.com>
+ <CAPDyKFpKGhLrj-px1E3C_tq3_2GAxWpzSgr5TXJU7s8-jokf9g@mail.gmail.com>
+ <CAJZ5v0h7zaNtSC6UCLJ8xEGKMSuBiZ_oAyB8bk1ROWCuH_-K4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180515212447.180595-1-mka@chromium.org>
+In-Reply-To: <CAJZ5v0h7zaNtSC6UCLJ8xEGKMSuBiZ_oAyB8bk1ROWCuH_-K4g@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-Could you give some use-case of DEVFREQ_POLICY_NOTIFIER
-or send use-case patch with this patch?
-
-I already knew the CPUFREQ_POLICY_NOTIFIER.
-But, until now, there are no any requirements of DEVFREQ_POLICY_NOTIFIER.
-If there are no any use-case, it is not necessary codes.
-
-On 2018년 05월 16일 06:24, Matthias Kaehlcke wrote:
-> Policy notifiers are called before a frequency change and may adjust the
-> frequency, similar to CPUFREQ_ADJUST. The purpose of policy notifiers is
-> to support non-thermal throttling of devfreq devices.
-> 
-> As of now notifiers may only select a lower frequency, but not increase it.
-> The reason for this limitation is that devfreq currently doesn't have an
-> actual policy for frequencies and OPPs > freq might be disabled by a
-> devfreq cooling device (see drivers/thermal/devfreq_cooling.c).
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
-> Marked as RFC since I'm aware that this isn't quite a 'policy' notifier,
-> but I also didn't want to make it too specific. Maybe devfreq devices should
-> have a policy similar to cpufreq?
-> 
-> Should devfreq core be in charge of disabling/enabling OPPs instead of
-> the thermal cooling device? Typically we don't want to use higher OPPs
-> than those whitelisted by thermal, so in practice the current situation
-> shouldn't be much of an issue.
-> 
->  drivers/devfreq/devfreq.c | 20 ++++++++++++++++----
->  include/linux/devfreq.h   |  6 ++++++
->  2 files changed, 22 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index fe2af6aa88fc..a7294c056f65 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -273,6 +273,9 @@ int update_devfreq(struct devfreq *devfreq)
->  	if (err)
->  		return err;
->  
-> +	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
-> +			DEVFREQ_ADJUST, &freq);
-
-It is not proper to used 'freq' as the passed data.
-In current step,'freq' is not adjusted and is not final decided frequency.
-
-> +
->  	/*
->  	 * Adjust the frequency with user freq, QoS and available freq.
->  	 *
-> @@ -640,6 +643,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  	devfreq->last_stat_updated = jiffies;
->  
->  	srcu_init_notifier_head(&devfreq->transition_notifier_list);
-> +	srcu_init_notifier_head(&devfreq->policy_notifier_list);
->  
->  	mutex_unlock(&devfreq->lock);
->  
-> @@ -1414,7 +1418,7 @@ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
->   * devfreq_register_notifier() - Register a driver with devfreq
->   * @devfreq:	The devfreq object.
->   * @nb:		The notifier block to register.
-> - * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-> + * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
->   */
->  int devfreq_register_notifier(struct devfreq *devfreq,
->  				struct notifier_block *nb,
-> @@ -1430,6 +1434,10 @@ int devfreq_register_notifier(struct devfreq *devfreq,
->  		ret = srcu_notifier_chain_register(
->  				&devfreq->transition_notifier_list, nb);
->  		break;
-> +	case DEVFREQ_POLICY_NOTIFIER:
-> +		ret = srcu_notifier_chain_register(
-> +				&devfreq->policy_notifier_list, nb);
-> +		break;
->  	default:
->  		ret = -EINVAL;
->  	}
-> @@ -1442,7 +1450,7 @@ EXPORT_SYMBOL(devfreq_register_notifier);
->   * devfreq_unregister_notifier() - Unregister a driver with devfreq
->   * @devfreq:	The devfreq object.
->   * @nb:		The notifier block to be unregistered.
-> - * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-> + * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
->   */
->  int devfreq_unregister_notifier(struct devfreq *devfreq,
->  				struct notifier_block *nb,
-> @@ -1458,6 +1466,10 @@ int devfreq_unregister_notifier(struct devfreq *devfreq,
->  		ret = srcu_notifier_chain_unregister(
->  				&devfreq->transition_notifier_list, nb);
->  		break;
-> +	case DEVFREQ_POLICY_NOTIFIER:
-> +		ret = srcu_notifier_chain_unregister(
-> +				&devfreq->policy_notifier_list, nb);
-> +		break;
->  	default:
->  		ret = -EINVAL;
->  	}
-> @@ -1485,7 +1497,7 @@ static void devm_devfreq_notifier_release(struct device *dev, void *res)
->   * @dev:	The devfreq user device. (parent of devfreq)
->   * @devfreq:	The devfreq object.
->   * @nb:		The notifier block to be unregistered.
-> - * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-> + * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
->   */
->  int devm_devfreq_register_notifier(struct device *dev,
->  				struct devfreq *devfreq,
-> @@ -1521,7 +1533,7 @@ EXPORT_SYMBOL(devm_devfreq_register_notifier);
->   * @dev:	The devfreq user device. (parent of devfreq)
->   * @devfreq:	The devfreq object.
->   * @nb:		The notifier block to be unregistered.
-> - * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-> + * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
->   */
->  void devm_devfreq_unregister_notifier(struct device *dev,
->  				struct devfreq *devfreq,
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index 3aae5b3af87c..8edc538d78f7 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -33,6 +33,10 @@
->  #define	DEVFREQ_PRECHANGE		(0)
->  #define DEVFREQ_POSTCHANGE		(1)
->  
-> +#define DEVFREQ_POLICY_NOTIFIER		1
-> +
-> +#define	DEVFREQ_ADJUST			0
-> +
->  struct devfreq;
->  struct devfreq_governor;
->  
-> @@ -136,6 +140,7 @@ struct devfreq_dev_profile {
->   * @time_in_state:	Statistics of devfreq states
->   * @last_stat_updated:	The last time stat updated
->   * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
-> + * @policy_notifier_list: list head of DEVFREQ_POLICY_NOTIFIER notifier
->   *
->   * This structure stores the devfreq information for a give device.
->   *
-> @@ -174,6 +179,7 @@ struct devfreq {
->  	unsigned long last_stat_updated;
->  
->  	struct srcu_notifier_head transition_notifier_list;
-> +	struct srcu_notifier_head policy_notifier_list;
->  };
->  
->  struct devfreq_freqs {
-> 
-
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdtYWls
+LmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZiBSYWZhZWwNCj4g
+Si4gV3lzb2NraQ0KPiBTZW50OiAyMDE45bm0NeaciDE35pelIDU6MzUNCj4gVG86IFVsZiBIYW5z
+c29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPg0KPiBDYzogUGVuZyBGYW4gPHBlbmcuZmFuQG54
+cC5jb20+OyBSYWZhZWwgSi4gV3lzb2NraQ0KPiA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+
+OyBGYWJpbyBFc3RldmFtIDxmYWJpby5lc3RldmFtQG54cC5jb20+OyBHcmVnDQo+IEtyb2FoLUhh
+cnRtYW4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgTGludXggS2VybmVsIE1haWxpbmcg
+TGlzdA0KPiA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBNIDxsaW51eC1w
+bUB2Z2VyLmtlcm5lbC5vcmc+Ow0KPiBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0K
+PiBTdWJqZWN0OiBSZTogW1JGQ10gcGxhdGZvcm06IGRldGFjaCBmcm9tIFBNIGRvbWFpbnMgb24g
+c2h1dGRvd24NCj4gDQo+IE9uIFdlZCwgTWF5IDE2LCAyMDE4IGF0IDExOjUyIEFNLCBVbGYgSGFu
+c3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4NCj4gd3JvdGU6DQo+ID4gT24gMTUgTWF5IDIw
+MTggYXQgMTE6MDEsIFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPiB3cm90ZToNCj4gPj4gV2hl
+biByZWJvb3QgTGludXgsIHRoZSBQTSBkb21haW5zIGF0dGFjaGVkIHRvIGEgZGV2aWNlIGFyZSBu
+b3QNCj4gPj4gc2h1dGRvd24uIFRvIFNvQ3Mgd2hpY2ggcmVseXMgb24gcmVzZXQgdGhlIHdob2xl
+IFNvQywgdGhlcmUgaXMgbm8NCj4gPj4gbmVlZCB0byBzaHV0ZG93biBQTSBkb21haW5zLCBidXQg
+dG8gTGludXggcnVubmluZyBpbiBhIHZpcnR1YWwNCj4gPj4gbWFjaGluZSB3aXRoIGRldmljZXMg
+cGFzcy10aHJvdWdoLCB3ZSBjb3VsZCBub3QgcmVzZXQgdGhlIHdob2xlIFNvQy4NCj4gPj4gQ3Vy
+cmVudGx5IHdlIG5lZWQgTGludXggdG8gc2h1dGRvd24gaXRzIFBNIGRvbWFpbnMgd2hlbiByZWJv
+b3QuDQo+ID4NCj4gPiBJIGFtIG5vdCBzdXJlIEkgdW5kZXJzdGFuZCBleGFjdGx5IHdoeSB0aGUg
+UE0gZG9tYWluIG5lZWRzIHRvIGJlDQo+ID4gc2h1dGRvd24gZm9yIHRoZXNlIGNhc2VzLCBjb3Vs
+ZCB5b3UgcGxlYXNlIGVsYWJvcmF0ZSBhIGJpdCBvbiB0aGF0Lg0KPiA+DQo+ID4gQlRXLCB3aGF0
+IHBsYXRmb3JtIGFyZSB5b3UgcnVubmluZyBvbiBhbmQgYWxzbyB3aGF0IFBNIGRvbWFpbnMgYXJl
+IGJlaW5nDQo+IHVzZWQ/DQo+ID4NCj4gPiBBbnl3YXksIGl0IHNlZW1zIGxpa2UgdGhlcmUgbWF5
+IGJlIG5lZWQgZm9yIGNlcnRhaW4gY2FzZXMsIGJ1dA0KPiA+IGNlcnRhaW5seSBub3QgYWxsIC0g
+ZXNwZWNpYWxseSBzaW5jZSBpdCBtYXkgc2xvdyBkb3duIHRoZSBzaHV0ZG93bg0KPiA+IHByb2Nl
+c3MsIHdoZW4gbm90IG5lZWRlZC4NCj4gPg0KPiA+IENhbiB3ZSBtYWtlIHRoaXMgcnVudGltZSBj
+b25maWd1cmFibGUsIHZpYSBzeXNmcyBvciB3aGF0ZXZlciB0aGF0IG1ha2VzDQo+IHNlbnNlIT8N
+Cj4gPg0KPiA+Pg0KPiA+PiBjb21taXQgMmQzMGJiMGIzODg5ICgicGxhdGZvcm06IERvIG5vdCBk
+ZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uDQo+ID4+IHNodXRkb3duIiksIHJlbW92ZXMgd2hhdCB0
+aGlzIHBhdGNoIHRyaWVzIHRvIGFkZCwgYmVjYXVzZSBvZiBhIHdhcm5pbmcuDQo+ID4+IGNvbW1p
+dCBlNzlhZWU0OWJjZjkgKCJQTTogQXZvaWQgZmFsc2UtcG9zaXRpdmUgd2FybmluZ3MgaW4NCj4g
+Pj4gZGV2X3BtX2RvbWFpbl9zZXQoKSIpIGFscmVhZHkgZml4ZXMgdGhlIGZhbHNlIGFsYXJtIHdh
+cm5pbmcuIFNvIGxldCdzDQo+ID4+IGRldGFjaCB0aGUgcG93ZXIgZG9tYWluIHRvIHNodXRkb3du
+IFBNIGRvbWFpbnMgYWZ0ZXIgZHJpdmVyIHNodXRkb3duLg0KPiA+Pg0KPiA+PiBTaWduZWQtb2Zm
+LWJ5OiBQZW5nIEZhbiA8cGVuZy5mYW5AbnhwLmNvbT4NCj4gPj4gLS0tDQo+ID4+DQo+ID4+IEkg
+ZG8gbm90IGZpbmQgYSBiZXR0ZXIgcGxhY2UgdG8gc2h1dGRvd24gcG93ZXIgZG9tYWluIHdoZW4g
+cmVib290DQo+ID4+IExpbnV4LCBzbyBhZGQgYmFjayB0aGUgbGluZSB0aGF0IGNvbW1pdCAyZDMw
+YmIwYjM4ODkgcmVtb3ZlcywgYmVjYXVzZQ0KPiA+PiBpdCBpcyBhIGZhbHNlIGFsYXJtIHdhcm5p
+bmcgYXMgY29tbWl0IGU3OWFlZTQ5YmNmOSBkZXNjcmliZXMuDQo+ID4+DQo+ID4+ICBkcml2ZXJz
+L2Jhc2UvcGxhdGZvcm0uYyB8IDEgKw0KPiA+PiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9u
+KCspDQo+ID4+DQo+ID4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyBiL2Ry
+aXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGluZGV4DQo+ID4+IDgwNzVkZGM3MGExNy4uYTU5MjlmMjRk
+YzNjIDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+PiArKysg
+Yi9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+PiBAQCAtNjE2LDYgKzYxNiw3IEBAIHN0YXRp
+YyB2b2lkIHBsYXRmb3JtX2Rydl9zaHV0ZG93bihzdHJ1Y3QgZGV2aWNlDQo+ID4+ICpfZGV2KQ0K
+PiA+Pg0KPiA+PiAgICAgICAgIGlmIChkcnYtPnNodXRkb3duKQ0KPiA+PiAgICAgICAgICAgICAg
+ICAgZHJ2LT5zaHV0ZG93bihkZXYpOw0KPiA+PiArICAgICAgIGRldl9wbV9kb21haW5fZGV0YWNo
+KF9kZXYsIHRydWUpOw0KPiA+DQo+ID4gVGhpcyB3b3VsZCBzb21ld2hhdCB3b3JrLCBidXQgb25s
+eSBmb3IgcGxhdGZvcm0gZGV2aWNlcy4gVG8gbWFrZSB0aGlzDQo+ID4gZnVsbHkgd29yaywgd2Ug
+bmVlZCB0byBjYWxsIGRldl9wbV9kb21haW5fZGV0YWNoKCkgZnJvbSBhbWJhLCBzcGksIGV0Yw0K
+PiA+IGFzIHdlbGwuDQo+ID4NCj4gPiBQZXJoYXBzIGFub3RoZXIgb3B0aW9uIHRvIG1hbmFnZSB0
+aGlzIG1vcmUgZ2VuZXJhbGx5LCBhbiB3aXRob3V0DQo+ID4gaGF2aW5nIGRldGFjaCBkZXZpY2Vz
+LCBjb3VsZCBiZSB0byBleHRlbmQgdGhlIHN0cnVjdCBkZXZfcG1fZG9tYWluDQo+ID4gd2l0aCBh
+IG5ldyBjYWxsYmFjaywgIi0+c2h1dGRvd24oKSIgYW5kIHRoZW4gbWFrZSB0aGUgZHJpdmVyIGNv
+cmUgY2FsbA0KPiA+IGl0IGZyb20gZGV2aWNlX3NodXRkb3duKCkuDQo+IA0KPiBJJ20gc2Vuc2lu
+ZyBhIHBvc3NpYmxlIG9yZGVyaW5nIHNsaXBwZXJ5IHNsb3BlIHdpdGggdGhpcyAoaXQgd2lsbCBv
+bmx5IHdvcmsgaWYgYWxsIG9mDQo+IHRoZSBkcml2ZXJzL2J1cyB0eXBlcyBldGMgZG8gdGhlIHJp
+Z2h0IHRoaW5nIGluIHRoZWlyDQo+IC0+c2h1dGRvd24gY2FsbGJhY2tzIHNvIG5vdGhpbmcgZGVw
+ZW5kcyBvbiB0aGUgZG9tYWluIGdvaW5nIGZvcndhcmQpLg0KPiANCj4gPiBUeXBpY2FsbHksIGZv
+ciBnZW5wZCwgSSB3b3VsZCBwcm9iYWJseSBjb3VudCB0aGUgbnVtYmVyIG9mIGNhbGxzIGJlaW5n
+DQo+ID4gbWFkZSB0byAtPnNodXRkb3duKCkgcGVyIFBNIGRvbWFpbiwgdGhlbiB3aGVuIGl0IHJl
+YWNoZXMgdGhlIG51bWJlciBvZg0KPiA+IGF0dGFjaGVkIGRldmljZXMgdG8gaXQsIGFsbG93IHRv
+IHBvd2VyIG9mZiBpdC4NCj4gPg0KPiA+IExldCdzIHNlZSB3aGF0IFJhZmFlbCB0aGlua3MgYWJv
+dXQgaXQuDQo+IA0KPiBJJ20gbm90IHN1cmUgYWJvdXQgdGhlIHVzZSBjYXNlLiAgVGhlIGh5cGVy
+dmlzb3Igc2hvdWxkIGJlIGFibGUgdG8gdGFrZSBjYXJlIG9mDQo+IHR1cm5pbmcgcG93ZXIgZG9t
+YWlucyBvZmYgb24gdGhlIGNsaWVudCBPUyByZWJvb3QgaW4gdGhlb3J5LiAgSWYgdGhlIGNsaWVu
+dCBPUw0KPiBsZWF2aW5nIHRoZSBoeXBlcnZpc29yIG5lZWRzIHRvIHdvcnJ5IGFib3V0IHdoYXQg
+c3RhdGUgaXQgbGVhdmVzIGJlaGluZCwgdGhlDQo+IGRlc2lnbiBvZiB0aGUgaHlwZXJ2aXNvciBp
+cyBzb3J0IG9mIHF1ZXN0aW9uYWJsZSBJTU8uDQoNClRoaXMgaXMgdmFsaWQgY29uY2Vybi4gQnV0
+IG1vdmluZyB0aGUgcG93ZXIgZG9tYWluIGxvZ2ljIGludG8gaHlwZXJ2aXNvciBtb3N0bHkgbWlj
+cm8ta2VybmVsIGRlc2lnbg0Kd2lsbCBpbnRyb2R1Y2UgbW9yZSBjb21wbGV4aXR5IGFuZCBtYWtl
+IGNlcnRpZmljYXRpb24gaGFyZGVyLg0KQ3VycmVudGx5LCBMZXQgTGludXggc2h1dGRvd24gaXQn
+cyBwb3dlciBkb21haW4gaXMgdGhlIGVhc2llc3Qgd2F5IHRvIG1lIGFuZCBtYWtlIHRoaW5ncyB3
+b3JrIHdlbGwNCmFmdGVyIHJlYm9vdC4NCg0KVGhhbmtzLA0KUGVuZw0KDQo=
