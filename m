@@ -1,66 +1,126 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Remove redundant frequency adjustment
- from governors
-Date: Fri, 18 May 2018 08:18:14 +0900
-Message-ID: <5AFE0DB6.1060801@samsung.com>
-References: <20180516211051.78875-1-mka@chromium.org>
-        <CGME20180517224139epcas4p4c62c83cad84b5f1e81d16a215306ea0e@epcas4p4.samsung.com>
-        <20180517224126.GP19594@google.com>
+Subject: Re: [PATCH] PM / devfreq: Init user limits from OPP limits, not
+ viceversa
+Date: Fri, 18 May 2018 08:20:30 +0900
+Message-ID: <5AFE0E3E.7070307@samsung.com>
+References: <CGME20180516225800epcas5p188094c0edfe8a9c3ffd3bfb9e48ce87c@epcas5p1.samsung.com>
+        <20180516225709.153138-1-mka@chromium.org> <5AFCD5EC.5080200@samsung.com>
+        <20180517163543.GO19594@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180517224126.GP19594@google.com>
+In-reply-to: <20180517163543.GO19594@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018년 05월 18일 07:41, Matthias Kaehlcke wrote:
-> On Wed, May 16, 2018 at 02:10:51PM -0700, Matthias Kaehlcke wrote:
->> The performance, powersave, simpleondemand and userspace governors
->> determine a target frequency and then adjust it according to the
->> df->min/max_freq limits that might have been set by user space. This
->> adjustment is redundant, it is done in update_devfreq() for any
->> governor, right after governor->get_target_freq().
->>
->> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
->> ---
->>  drivers/devfreq/governor_performance.c    | 10 ++--------
->>  drivers/devfreq/governor_powersave.c      |  5 -----
->>  drivers/devfreq/governor_simpleondemand.c |  7 +------
->>  drivers/devfreq/governor_userspace.c      | 16 ++++------------
->>  4 files changed, 7 insertions(+), 31 deletions(-)
->>
->> diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
->> index 4d23ecfbd948..31ee30622c00 100644
->> --- a/drivers/devfreq/governor_performance.c
->> +++ b/drivers/devfreq/governor_performance.c
->> @@ -16,14 +16,8 @@
->>  static int devfreq_performance_func(struct devfreq *df,
->>  				    unsigned long *freq)
->>  {
->> -	/*
->> -	 * target callback should be able to get floor value as
->> -	 * said in devfreq.h
->> -	 */
->> -	if (!df->max_freq)
->> -		*freq = UINT_MAX;
->> -	else
->> -		*freq = df->max_freq;
->> +	*freq = UINT_MAX;
->> +
->>  	return 0;
->>  }
-> 
-> For the record, the frequency adjustment in update_devfreq() is
-> currently broken for df->max_freq == 0:
-> 
-> https://patchwork.kernel.org/patch/10407827/
+Hi,
 
-Why don't you send patch set? It is very difficult to track
-the history and a correlation between patches. Usually, if patches
-have the dependency between patches, send the patch set with cover-letter.
+On 2018년 05월 18일 01:35, Matthias Kaehlcke wrote:
+> On Thu, May 17, 2018 at 10:07:56AM +0900, Chanwoo Choi wrote:
+>> Hi,
+>>
+>> On 2018년 05월 17일 07:57, Matthias Kaehlcke wrote:
+>>> Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding
+>>> the devfreq device") introduced the initialization of the user
+>>> limits min/max_freq from the lowest/highest available OPPs. Later
+>>> commit f1d981eaecf8 ("PM / devfreq: Use the available min/max
+>>> frequency") added scaling_min/max_freq, which actually represent
+>>> the frequencies of the lowest/highest available OPP. scaling_min/
+>>> max_freq are initialized with the values from min/max_freq, which
+>>> is totally correct in the context, but a bit awkward to read.
+>>>
+>>> Swap the initialization and assign scaling_min/max_freq with the
+>>> OPP freqs and then the user limts min/max_freq with scaling_min/
+>>> max_freq.
+>>>
+>>> Needless to say that this change is a NOP, intended to improve
+>>> readability.
+>>>
+>>> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+>>> ---
+>>> Additional context: I'm considering to introduce the concept of
+>>> a devfreq policy, which would probably move min/max_freq inside
+>>> of a struct policy, this would make the initialization even
+>>> more awkward to read. If this moves forward I might also propose
+>>> to rename scaling_min/max_freq to something like min/max_opp_freq
+>>> to avoid confusion with the frequencies in the policy (cpufreq uses
+>>> scaling_min/max_freq for the sysfs attributes of the policy
+>>> limits).
+>>>
+>>>  drivers/devfreq/devfreq.c | 12 ++++++------
+>>>  1 file changed, 6 insertions(+), 6 deletions(-)
+>>>
+>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>> index fe2af6aa88fc..0057ef5b0a98 100644
+>>> --- a/drivers/devfreq/devfreq.c
+>>> +++ b/drivers/devfreq/devfreq.c
+>>> @@ -604,21 +604,21 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>>  		mutex_lock(&devfreq->lock);
+>>>  	}
+>>>  
+>>> -	devfreq->min_freq = find_available_min_freq(devfreq);
+>>> -	if (!devfreq->min_freq) {
+>>> +	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
+>>> +	if (!devfreq->scaling_min_freq) {
+>>>  		mutex_unlock(&devfreq->lock);
+>>>  		err = -EINVAL;
+>>>  		goto err_dev;
+>>>  	}
+>>> -	devfreq->scaling_min_freq = devfreq->min_freq;
+>>> +	devfreq->min_freq = devfreq->scaling_min_freq;
+>>>  
+>>> -	devfreq->max_freq = find_available_max_freq(devfreq);
+>>> -	if (!devfreq->max_freq) {
+>>> +	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
+>>> +	if (!devfreq->scaling_max_freq) {
+>>>  		mutex_unlock(&devfreq->lock);
+>>>  		err = -EINVAL;
+>>>  		goto err_dev;
+>>>  	}
+>>> -	devfreq->scaling_max_freq = devfreq->max_freq;
+>>> +	devfreq->max_freq = devfreq->scaling_max_freq;
+>>>  
+>>>  	dev_set_name(&devfreq->dev, "devfreq%d",
+>>>  				atomic_inc_return(&devfreq_no));
+>>>
+>>
+>> This patch just clean-up codes related to min/max_freq and scaling_min/max_freq.
+>> It seems be good.
+>>
+>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> 
+> Thanks for the review!
+> 
+>> But, I don't want to change the name from 'scaling_min/max_freq'
+>> to 'min/max_opp_freq'.
+> 
+> It's obviously up to you in the end, and I won't insist if you are
+> convinced that scaling_min/max_freq is the better name (I suggest to
+> make this judgement after a new revision of the policy patch [1],
+> which likely will introduce another pair of frequencies, and naming
+> can help to clearly differentiate between them).
+> 
+>> You can check the meaning of variables in comment of struct devfreq.
+> 
+> This is true, but ideally code should be as self-explaining as
+> possible (without becoming too verbose ;-), and variable/function
+> names are a key element for that.
+
+I don't want to use the framework name for specific variable.
+
+> 
+> Best regards
+> 
+> Matthias
+> 
+> [1] https://patchwork.kernel.org/patch/10401999/
+> 
+> 
+> 
+
 
 -- 
 Best Regards,
