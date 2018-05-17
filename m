@@ -1,540 +1,123 @@
-From: Ilia Lin <ilialin@codeaurora.org>
-Subject: [PATCH v8 04/15] clk: qcom: Add CPU clock driver for msm8996
-Date: Thu, 17 May 2018 14:19:04 +0300
-Message-ID: <1526555955-29960-5-git-send-email-ilialin@codeaurora.org>
-References: <1526555955-29960-1-git-send-email-ilialin@codeaurora.org>
+From: Peng Fan <peng.fan@nxp.com>
+Subject: RE: [RFC] platform: detach from PM domains on shutdown
+Date: Thu, 17 May 2018 12:37:31 +0000
+Message-ID: <HE1PR04MB3004EF83E7AE2250E44C49A088910@HE1PR04MB3004.eurprd04.prod.outlook.com>
+References: <20180515090110.26820-1-peng.fan@nxp.com>
+ <CAPDyKFpKGhLrj-px1E3C_tq3_2GAxWpzSgr5TXJU7s8-jokf9g@mail.gmail.com>
+ <CAJZ5v0h7zaNtSC6UCLJ8xEGKMSuBiZ_oAyB8bk1ROWCuH_-K4g@mail.gmail.com>
+ <HE1PR04MB300483E474BE21D55720BCEC88910@HE1PR04MB3004.eurprd04.prod.outlook.com>
+ <CAJZ5v0ibwRXqaGJW0vFcy+YqMEc_ao9itBErP_w1YjLQWVVtQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1526555955-29960-1-git-send-email-ilialin@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, viresh.kumar@linaro.org, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org
-Cc: devicetree@vger.kernel.org, rnayak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kucheria@linaro.org, tfinkel@codeaurora.org, ilialin@codeaurora.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0ibwRXqaGJW0vFcy+YqMEc_ao9itBErP_w1YjLQWVVtQg@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Each of the CPU clusters (Power and Perf) on msm8996 are
-clocked via 2 PLLs, a primary and alternate. There are also
-2 Mux'es, a primary and secondary all connected together
-as shown below
-
-                             +-------+
-              XO             |       |
-          +------------------>0      |
-                             |       |
-                   PLL/2     | SMUX  +----+
-                     +------->1      |    |
-                     |       |       |    |
-                     |       +-------+    |    +-------+
-                     |                    +---->0      |
-                     |                         |       |
-+---------------+    |             +----------->1      | CPU clk
-|Primary PLL    +----+ PLL_EARLY   |           |       +------>
-|               +------+-----------+    +------>2 PMUX |
-+---------------+      |                |      |       |
-                       |   +------+     |   +-->3      |
-                       +--^+  ACD +-----+   |  +-------+
-+---------------+          +------+         |
-|Alt PLL        |                           |
-|               +---------------------------+
-+---------------+         PLL_EARLY
-
-The primary PLL is what drives the CPU clk, except for times
-when we are reprogramming the PLL itself (for rate changes) when
-we temporarily switch to an alternate PLL. A subsequent patch adds
-support to switch between primary and alternate PLL during rate
-changes.
-
-The primary PLL operates on a single VCO range, between 600MHz
-and 3GHz. However the CPUs do support OPPs with frequencies
-between 300MHz and 600MHz. In order to support running the CPUs
-at those frequencies we end up having to lock the PLL at twice
-the rate and drive the CPU clk via the PLL/2 output and SMUX.
-
-So for frequencies above 600MHz we follow the following path
- Primary PLL --> PLL_EARLY --> PMUX(1) --> CPU clk
-and for frequencies between 300MHz and 600MHz we follow
- Primary PLL --> PLL/2 --> SMUX(1) --> PMUX(0) --> CPU clk
-Support for this is added in a subsequent patch as well.
-
-ACD stands for Adaptive Clock Distribution and is used to
-detect voltage droops.
-
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
----
- drivers/clk/qcom/Kconfig         |   9 +
- drivers/clk/qcom/Makefile        |   1 +
- drivers/clk/qcom/clk-alpha-pll.h |   6 +
- drivers/clk/qcom/clk-cpu-8996.c  | 403 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 419 insertions(+)
- create mode 100644 drivers/clk/qcom/clk-cpu-8996.c
-
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index e42e1af..866ce1f 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -33,6 +33,15 @@ config QCOM_CLK_APCS_MSM8916
- 	  Say Y if you want to support CPU frequency scaling on devices
- 	  such as msm8916.
- 
-+config QCOM_CLK_APCC_MSM8996
-+	tristate "MSM8996 CPU Clock Controller"
-+	depends on COMMON_CLK_QCOM
-+	select QCOM_KRYO_L2_ACCESSORS
-+	help
-+	  Support for the CPU clock controller on msm8996 devices.
-+	  Say Y if you want to support CPU clock scaling using CPUfreq
-+	  drivers for dyanmic power management.
-+
- config QCOM_CLK_RPM
- 	tristate "RPM based Clock Controller"
- 	depends on COMMON_CLK_QCOM && MFD_QCOM_RPM
-diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index 7c09ab1..a822fc8 100644
---- a/drivers/clk/qcom/Makefile
-+++ b/drivers/clk/qcom/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_MSM_MMCC_8974) += mmcc-msm8974.o
- obj-$(CONFIG_MSM_MMCC_8996) += mmcc-msm8996.o
- obj-$(CONFIG_QCOM_A53PLL) += a53-pll.o
- obj-$(CONFIG_QCOM_CLK_APCS_MSM8916) += apcs-msm8916.o
-+obj-$(CONFIG_QCOM_CLK_APCC_MSM8996) += clk-cpu-8996.o
- obj-$(CONFIG_QCOM_CLK_RPM) += clk-rpm.o
- obj-$(CONFIG_QCOM_CLK_SMD_RPM) += clk-smd-rpm.o
- obj-$(CONFIG_SPMI_PMIC_CLKDIV) += clk-spmi-pmic-div.o
-diff --git a/drivers/clk/qcom/clk-alpha-pll.h b/drivers/clk/qcom/clk-alpha-pll.h
-index f981b48..9ce2a32 100644
---- a/drivers/clk/qcom/clk-alpha-pll.h
-+++ b/drivers/clk/qcom/clk-alpha-pll.h
-@@ -50,6 +50,12 @@ struct pll_vco {
- 	u32 val;
- };
- 
-+#define VCO(a, b, c) { \
-+	.val = a,\
-+	.min_freq = b,\
-+	.max_freq = c,\
-+}
-+
- /**
-  * struct clk_alpha_pll - phase locked loop (PLL)
-  * @offset: base address of registers
-diff --git a/drivers/clk/qcom/clk-cpu-8996.c b/drivers/clk/qcom/clk-cpu-8996.c
-new file mode 100644
-index 0000000..d92cad93
---- /dev/null
-+++ b/drivers/clk/qcom/clk-cpu-8996.c
-@@ -0,0 +1,403 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-+ */
-+
-+/*
-+ * Each of the CPU clusters (Power and Perf) on msm8996 are
-+ * clocked via 2 PLLs, a primary and alternate. There are also
-+ * 2 Mux'es, a primary and secondary all connected together
-+ * as shown below
-+ *
-+ *                              +-------+
-+ *               XO             |       |
-+ *           +------------------>0      |
-+ *                              |       |
-+ *                    PLL/2     | SMUX  +----+
-+ *                      +------->1      |    |
-+ *                      |       |       |    |
-+ *                      |       +-------+    |    +-------+
-+ *                      |                    +---->0      |
-+ *                      |                         |       |
-+ * +---------------+    |             +----------->1      | CPU clk
-+ * |Primary PLL    +----+ PLL_EARLY   |           |       +------>
-+ * |               +------+-----------+    +------>2 PMUX |
-+ * +---------------+      |                |      |       |
-+ *                        |   +------+     |   +-->3      |
-+ *                        +--^+  ACD +-----+   |  +-------+
-+ * +---------------+          +------+         |
-+ * |Alt PLL        |                           |
-+ * |               +---------------------------+
-+ * +---------------+         PLL_EARLY
-+ *
-+ * The primary PLL is what drives the CPU clk, except for times
-+ * when we are reprogramming the PLL itself (for rate changes) when
-+ * we temporarily switch to an alternate PLL. A subsequent patch adds
-+ * support to switch between primary and alternate PLL during rate
-+ * changes.
-+ *
-+ * The primary PLL operates on a single VCO range, between 600MHz
-+ * and 3GHz. However the CPUs do support OPPs with frequencies
-+ * between 300MHz and 600MHz. In order to support running the CPUs
-+ * at those frequencies we end up having to lock the PLL at twice
-+ * the rate and drive the CPU clk via the PLL/2 output and SMUX.
-+ *
-+ * So for frequencies above 600MHz we follow the following path
-+ *  Primary PLL --> PLL_EARLY --> PMUX(1) --> CPU clk
-+ * and for frequencies between 300MHz and 600MHz we follow
-+ *  Primary PLL --> PLL/2 --> SMUX(1) --> PMUX(0) --> CPU clk
-+ * Support for this is added in a subsequent patch as well.
-+ *
-+ * ACD stands for Adaptive Clock Distribution and is used to
-+ * detect voltage droops.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+#include "clk-alpha-pll.h"
-+#include "clk-regmap.h"
-+
-+enum _pmux_input {
-+	DIV_2_INDEX = 0,
-+	PLL_INDEX,
-+	ACD_INDEX,
-+	ALT_INDEX,
-+	NUM_OF_PMUX_INPUTS
-+};
-+
-+static const u8 prim_pll_regs[PLL_OFF_MAX_REGS] = {
-+       [PLL_OFF_L_VAL] = 0x04,
-+       [PLL_OFF_ALPHA_VAL] = 0x08,
-+       [PLL_OFF_USER_CTL] = 0x10,
-+       [PLL_OFF_CONFIG_CTL] = 0x18,
-+       [PLL_OFF_CONFIG_CTL_U] = 0x1c,
-+       [PLL_OFF_TEST_CTL] = 0x20,
-+       [PLL_OFF_TEST_CTL_U] = 0x24,
-+       [PLL_OFF_STATUS] = 0x28,
-+};
-+
-+static const u8 alt_pll_regs[PLL_OFF_MAX_REGS] = {
-+       [PLL_OFF_L_VAL] = 0x04,
-+       [PLL_OFF_ALPHA_VAL] = 0x08,
-+       [PLL_OFF_ALPHA_VAL_U] = 0x0c,
-+       [PLL_OFF_USER_CTL] = 0x10,
-+       [PLL_OFF_USER_CTL_U] = 0x14,
-+       [PLL_OFF_CONFIG_CTL] = 0x18,
-+       [PLL_OFF_TEST_CTL] = 0x20,
-+       [PLL_OFF_TEST_CTL_U] = 0x24,
-+       [PLL_OFF_STATUS] = 0x28,
-+};
-+
-+/* PLLs */
-+
-+static const struct alpha_pll_config hfpll_config = {
-+	.l = 60,
-+	.config_ctl_val = 0x200d4828,
-+	.config_ctl_hi_val = 0x006,
-+	.pre_div_mask = BIT(12),
-+	.post_div_mask = 0x3 << 8,
-+	.main_output_mask = BIT(0),
-+	.early_output_mask = BIT(3),
-+};
-+
-+static struct clk_alpha_pll perfcl_pll = {
-+	.offset = 0x80000,
-+	.regs = prim_pll_regs,
-+	.flags = SUPPORTS_DYNAMIC_UPDATE | SUPPORTS_FSM_MODE,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.name = "perfcl_pll",
-+		.parent_names = (const char *[]){ "xo" },
-+		.num_parents = 1,
-+		.ops = &clk_alpha_pll_huayra_ops,
-+	},
-+};
-+
-+static struct clk_alpha_pll pwrcl_pll = {
-+	.offset = 0x0,
-+	.regs = prim_pll_regs,
-+	.flags = SUPPORTS_DYNAMIC_UPDATE | SUPPORTS_FSM_MODE,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.name = "pwrcl_pll",
-+		.parent_names = (const char *[]){ "xo" },
-+		.num_parents = 1,
-+		.ops = &clk_alpha_pll_huayra_ops,
-+	},
-+};
-+
-+static const struct pll_vco alt_pll_vco_modes[] = {
-+	VCO(3,  250000000,  500000000),
-+	VCO(2,  500000000,  750000000),
-+	VCO(1,  750000000, 1000000000),
-+	VCO(0, 1000000000, 2150400000),
-+};
-+
-+static const struct alpha_pll_config altpll_config = {
-+	.l = 16,
-+	.vco_val = 0x3 << 20,
-+	.vco_mask = 0x3 << 20,
-+	.config_ctl_val = 0x4001051b,
-+	.post_div_mask = 0x3 << 8,
-+	.post_div_val = 0x1,
-+	.main_output_mask = BIT(0),
-+	.early_output_mask = BIT(3),
-+};
-+
-+static struct clk_alpha_pll perfcl_alt_pll = {
-+	.offset = 0x80100,
-+	.regs = alt_pll_regs,
-+	.vco_table = alt_pll_vco_modes,
-+	.num_vco = ARRAY_SIZE(alt_pll_vco_modes),
-+	.flags = SUPPORTS_OFFLINE_REQ | SUPPORTS_FSM_MODE,
-+	.clkr.hw.init = &(struct clk_init_data) {
-+		.name = "perfcl_alt_pll",
-+		.parent_names = (const char *[]){ "xo" },
-+		.num_parents = 1,
-+		.ops = &clk_alpha_pll_hwfsm_ops,
-+	},
-+};
-+
-+static struct clk_alpha_pll pwrcl_alt_pll = {
-+	.offset = 0x100,
-+	.regs = alt_pll_regs,
-+	.vco_table = alt_pll_vco_modes,
-+	.num_vco = ARRAY_SIZE(alt_pll_vco_modes),
-+	.flags = SUPPORTS_OFFLINE_REQ | SUPPORTS_FSM_MODE,
-+	.clkr.hw.init = &(struct clk_init_data) {
-+		.name = "pwrcl_alt_pll",
-+		.parent_names = (const char *[]){ "xo" },
-+		.num_parents = 1,
-+		.ops = &clk_alpha_pll_hwfsm_ops,
-+	},
-+};
-+
-+/* Mux'es */
-+
-+struct clk_cpu_8996_mux {
-+	u32	reg;
-+	u8	shift;
-+	u8	width;
-+	struct clk_hw	*pll;
-+	struct clk_regmap clkr;
-+};
-+
-+static inline
-+struct clk_cpu_8996_mux *to_clk_cpu_8996_mux_hw(struct clk_hw *hw)
-+{
-+	return container_of(to_clk_regmap(hw), struct clk_cpu_8996_mux, clkr);
-+}
-+
-+static u8 clk_cpu_8996_mux_get_parent(struct clk_hw *hw)
-+{
-+	u32 val;
-+	struct clk_regmap *clkr = to_clk_regmap(hw);
-+	struct clk_cpu_8996_mux *cpuclk = to_clk_cpu_8996_mux_hw(hw);
-+	u32 mask = (u32)GENMASK(cpuclk->width - 1, 0);
-+
-+	regmap_read(clkr->regmap, cpuclk->reg, &val);
-+	val >>= (u32)(cpuclk->shift);
-+
-+	return (u8)(val & mask);
-+}
-+
-+static int clk_cpu_8996_mux_set_parent(struct clk_hw *hw, u8 index)
-+{
-+	u32 val;
-+	struct clk_regmap *clkr = to_clk_regmap(hw);
-+	struct clk_cpu_8996_mux *cpuclk = to_clk_cpu_8996_mux_hw(hw);
-+	unsigned int mask = GENMASK(cpuclk->width + cpuclk->shift - 1,
-+				    cpuclk->shift);
-+
-+	val = (u32)index;
-+	val <<= (u32)(cpuclk->shift);
-+
-+	return regmap_update_bits(clkr->regmap, cpuclk->reg, mask, val);
-+}
-+
-+static int
-+clk_cpu_8996_mux_determine_rate(struct clk_hw *hw, struct clk_rate_request *req)
-+{
-+	struct clk_cpu_8996_mux *cpuclk = to_clk_cpu_8996_mux_hw(hw);
-+	struct clk_hw *parent = cpuclk->pll;
-+
-+	req->best_parent_rate = clk_hw_round_rate(parent, req->rate);
-+	req->best_parent_hw = parent;
-+
-+	return 0;
-+}
-+
-+const struct clk_ops clk_cpu_8996_mux_ops = {
-+	.set_parent = clk_cpu_8996_mux_set_parent,
-+	.get_parent = clk_cpu_8996_mux_get_parent,
-+	.determine_rate = clk_cpu_8996_mux_determine_rate,
-+};
-+
-+static struct clk_cpu_8996_mux pwrcl_smux = {
-+	.reg = 0x40,
-+	.shift = 2,
-+	.width = 2,
-+	.clkr.hw.init = &(struct clk_init_data) {
-+		.name = "pwrcl_smux",
-+		.parent_names = (const char *[]){
-+			"xo",
-+			"pwrcl_pll_main",
-+		},
-+		.num_parents = 2,
-+		.ops = &clk_cpu_8996_mux_ops,
-+		.flags = CLK_SET_RATE_PARENT,
-+	},
-+};
-+
-+static struct clk_cpu_8996_mux perfcl_smux = {
-+	.reg = 0x80040,
-+	.shift = 2,
-+	.width = 2,
-+	.clkr.hw.init = &(struct clk_init_data) {
-+		.name = "perfcl_smux",
-+		.parent_names = (const char *[]){
-+			"xo",
-+			"perfcl_pll_main",
-+		},
-+		.num_parents = 2,
-+		.ops = &clk_cpu_8996_mux_ops,
-+		.flags = CLK_SET_RATE_PARENT,
-+	},
-+};
-+
-+static struct clk_cpu_8996_mux pwrcl_pmux = {
-+	.reg = 0x40,
-+	.shift = 0,
-+	.width = 2,
-+	.pll = &pwrcl_pll.clkr.hw,
-+	.clkr.hw.init = &(struct clk_init_data) {
-+		.name = "pwrcl_pmux",
-+		.parent_names = (const char *[]){
-+			"pwrcl_smux",
-+			"pwrcl_pll",
-+			"pwrcl_pll_acd",
-+			"pwrcl_alt_pll",
-+		},
-+		.num_parents = 4,
-+		.ops = &clk_cpu_8996_mux_ops,
-+		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
-+	},
-+};
-+
-+static struct clk_cpu_8996_mux perfcl_pmux = {
-+	.reg = 0x80040,
-+	.shift = 0,
-+	.width = 2,
-+	.pll = &perfcl_pll.clkr.hw,
-+	.clkr.hw.init = &(struct clk_init_data) {
-+		.name = "perfcl_pmux",
-+		.parent_names = (const char *[]){
-+			"perfcl_smux",
-+			"perfcl_pll",
-+			"perfcl_pll_acd",
-+			"perfcl_alt_pll",
-+		},
-+		.num_parents = 4,
-+		.ops = &clk_cpu_8996_mux_ops,
-+		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
-+	},
-+};
-+
-+static const struct regmap_config cpu_msm8996_regmap_config = {
-+	.reg_bits		= 32,
-+	.reg_stride		= 4,
-+	.val_bits		= 32,
-+	.max_register		= 0x80210,
-+	.fast_io		= true,
-+	.val_format_endian	= REGMAP_ENDIAN_LITTLE,
-+};
-+
-+struct clk_regmap *clks[] = {
-+	&perfcl_pll.clkr,
-+	&pwrcl_pll.clkr,
-+	&perfcl_alt_pll.clkr,
-+	&pwrcl_alt_pll.clkr,
-+	&perfcl_smux.clkr,
-+	&pwrcl_smux.clkr,
-+	&perfcl_pmux.clkr,
-+	&pwrcl_pmux.clkr,
-+};
-+
-+static int
-+qcom_cpu_clk_msm8996_register_clks(struct device *dev, struct regmap *regmap)
-+{
-+	int i, ret;
-+
-+	perfcl_smux.pll = clk_hw_register_fixed_factor(dev, "perfcl_pll_main",
-+						       "perfcl_pll",
-+						   CLK_SET_RATE_PARENT, 1, 2);
-+
-+	pwrcl_smux.pll = clk_hw_register_fixed_factor(dev, "pwrcl_pll_main",
-+						      "pwrcl_pll",
-+						   CLK_SET_RATE_PARENT, 1, 2);
-+
-+	for (i = 0; i < ARRAY_SIZE(clks); i++) {
-+		ret = devm_clk_register_regmap(dev, clks[i]);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	clk_alpha_pll_configure(&perfcl_pll, regmap, &hfpll_config);
-+	clk_alpha_pll_configure(&pwrcl_pll, regmap, &hfpll_config);
-+	clk_alpha_pll_configure(&perfcl_alt_pll, regmap, &altpll_config);
-+	clk_alpha_pll_configure(&pwrcl_alt_pll, regmap, &altpll_config);
-+
-+	return ret;
-+}
-+
-+static int qcom_cpu_clk_msm8996_driver_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	void __iomem *base;
-+	struct resource *res;
-+	struct regmap *regmap;
-+	struct clk_hw_onecell_data *data;
-+	struct device *dev = &pdev->dev;
-+
-+	data = devm_kzalloc(dev, sizeof(*data) + 2 * sizeof(struct clk_hw *),
-+			    GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(base))
-+		return PTR_ERR(base);
-+
-+	regmap = devm_regmap_init_mmio(dev, base, &cpu_msm8996_regmap_config);
-+	if (IS_ERR(regmap))
-+		return PTR_ERR(regmap);
-+
-+	ret = qcom_cpu_clk_msm8996_register_clks(dev, regmap);
-+	if (ret)
-+		return ret;
-+
-+	data->hws[0] = &pwrcl_pmux.clkr.hw;
-+	data->hws[1] = &perfcl_pmux.clkr.hw;
-+	data->num = 2;
-+
-+	return devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, data);
-+}
-+
-+static const struct of_device_id qcom_cpu_clk_msm8996_match_table[] = {
-+	{ .compatible = "qcom,msm8996-apcc" },
-+	{}
-+};
-+
-+static struct platform_driver qcom_cpu_clk_msm8996_driver = {
-+	.probe = qcom_cpu_clk_msm8996_driver_probe,
-+	.driver = {
-+		.name = "qcom-msm8996-apcc",
-+		.of_match_table = qcom_cpu_clk_msm8996_match_table,
-+	},
-+};
-+module_platform_driver(qcom_cpu_clk_msm8996_driver);
-+
-+MODULE_ALIAS("platform:msm8996-apcc");
-+MODULE_DESCRIPTION("QCOM MSM8996 CPU Clock Driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.9.1
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdtYWls
+LmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZiBSYWZhZWwNCj4g
+Si4gV3lzb2NraQ0KPiBTZW50OiAyMDE45bm0NeaciDE35pelIDE2OjAxDQo+IFRvOiBQZW5nIEZh
+biA8cGVuZy5mYW5AbnhwLmNvbT4NCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxAa2Vy
+bmVsLm9yZz47IFVsZiBIYW5zc29uDQo+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPjsgUmFmYWVs
+IEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPjsNCj4gRmFiaW8gRXN0ZXZh
+bSA8ZmFiaW8uZXN0ZXZhbUBueHAuY29tPjsgR3JlZyBLcm9haC1IYXJ0bWFuDQo+IDxncmVna2hA
+bGludXhmb3VuZGF0aW9uLm9yZz47IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3QNCj4gPGxpbnV4
+LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTSA8bGludXgtcG1Admdlci5rZXJuZWwu
+b3JnPjsNCj4gZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6
+IFtSRkNdIHBsYXRmb3JtOiBkZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uIHNodXRkb3duDQo+IA0K
+PiBPbiBUaHUsIE1heSAxNywgMjAxOCBhdCA0OjMzIEFNLCBQZW5nIEZhbiA8cGVuZy5mYW5Abnhw
+LmNvbT4gd3JvdGU6DQo+ID4NCj4gPg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiA+PiBGcm9tOiByand5c29ja2lAZ21haWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNv
+bV0gT24gQmVoYWxmIE9mDQo+ID4+IFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4+IFNlbnQ6IDIwMTjl
+ubQ15pyIMTfml6UgNTozNQ0KPiA+PiBUbzogVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxpbmFy
+by5vcmc+DQo+ID4+IENjOiBQZW5nIEZhbiA8cGVuZy5mYW5AbnhwLmNvbT47IFJhZmFlbCBKLiBX
+eXNvY2tpDQo+ID4+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZhYmlvIEVzdGV2YW0g
+PGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47DQo+ID4+IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2to
+QGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZw0KPiA+PiBMaXN0IDxs
+aW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0NCj4gPj4gPGxpbnV4LXBtQHZn
+ZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+ID4+IFN1
+YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlucyBvbiBzaHV0
+ZG93bg0KPiA+Pg0KPiA+PiBPbiBXZWQsIE1heSAxNiwgMjAxOCBhdCAxMTo1MiBBTSwgVWxmIEhh
+bnNzb24NCj4gPj4gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+DQo+ID4+IHdyb3RlOg0KPiA+PiA+
+IE9uIDE1IE1heSAyMDE4IGF0IDExOjAxLCBQZW5nIEZhbiA8cGVuZy5mYW5AbnhwLmNvbT4gd3Jv
+dGU6DQo+ID4+ID4+IFdoZW4gcmVib290IExpbnV4LCB0aGUgUE0gZG9tYWlucyBhdHRhY2hlZCB0
+byBhIGRldmljZSBhcmUgbm90DQo+ID4+ID4+IHNodXRkb3duLiBUbyBTb0NzIHdoaWNoIHJlbHlz
+IG9uIHJlc2V0IHRoZSB3aG9sZSBTb0MsIHRoZXJlIGlzIG5vDQo+ID4+ID4+IG5lZWQgdG8gc2h1
+dGRvd24gUE0gZG9tYWlucywgYnV0IHRvIExpbnV4IHJ1bm5pbmcgaW4gYSB2aXJ0dWFsDQo+ID4+
+ID4+IG1hY2hpbmUgd2l0aCBkZXZpY2VzIHBhc3MtdGhyb3VnaCwgd2UgY291bGQgbm90IHJlc2V0
+IHRoZSB3aG9sZSBTb0MuDQo+ID4+ID4+IEN1cnJlbnRseSB3ZSBuZWVkIExpbnV4IHRvIHNodXRk
+b3duIGl0cyBQTSBkb21haW5zIHdoZW4gcmVib290Lg0KPiA+PiA+DQo+ID4+ID4gSSBhbSBub3Qg
+c3VyZSBJIHVuZGVyc3RhbmQgZXhhY3RseSB3aHkgdGhlIFBNIGRvbWFpbiBuZWVkcyB0byBiZQ0K
+PiA+PiA+IHNodXRkb3duIGZvciB0aGVzZSBjYXNlcywgY291bGQgeW91IHBsZWFzZSBlbGFib3Jh
+dGUgYSBiaXQgb24gdGhhdC4NCj4gPj4gPg0KPiA+PiA+IEJUVywgd2hhdCBwbGF0Zm9ybSBhcmUg
+eW91IHJ1bm5pbmcgb24gYW5kIGFsc28gd2hhdCBQTSBkb21haW5zIGFyZQ0KPiA+PiA+IGJlaW5n
+DQo+ID4+IHVzZWQ/DQo+ID4+ID4NCj4gPj4gPiBBbnl3YXksIGl0IHNlZW1zIGxpa2UgdGhlcmUg
+bWF5IGJlIG5lZWQgZm9yIGNlcnRhaW4gY2FzZXMsIGJ1dA0KPiA+PiA+IGNlcnRhaW5seSBub3Qg
+YWxsIC0gZXNwZWNpYWxseSBzaW5jZSBpdCBtYXkgc2xvdyBkb3duIHRoZSBzaHV0ZG93bg0KPiA+
+PiA+IHByb2Nlc3MsIHdoZW4gbm90IG5lZWRlZC4NCj4gPj4gPg0KPiA+PiA+IENhbiB3ZSBtYWtl
+IHRoaXMgcnVudGltZSBjb25maWd1cmFibGUsIHZpYSBzeXNmcyBvciB3aGF0ZXZlciB0aGF0DQo+
+ID4+ID4gbWFrZXMNCj4gPj4gc2Vuc2UhPw0KPiA+PiA+DQo+ID4+ID4+DQo+ID4+ID4+IGNvbW1p
+dCAyZDMwYmIwYjM4ODkgKCJwbGF0Zm9ybTogRG8gbm90IGRldGFjaCBmcm9tIFBNIGRvbWFpbnMg
+b24NCj4gPj4gPj4gc2h1dGRvd24iKSwgcmVtb3ZlcyB3aGF0IHRoaXMgcGF0Y2ggdHJpZXMgdG8g
+YWRkLCBiZWNhdXNlIG9mIGEgd2FybmluZy4NCj4gPj4gPj4gY29tbWl0IGU3OWFlZTQ5YmNmOSAo
+IlBNOiBBdm9pZCBmYWxzZS1wb3NpdGl2ZSB3YXJuaW5ncyBpbg0KPiA+PiA+PiBkZXZfcG1fZG9t
+YWluX3NldCgpIikgYWxyZWFkeSBmaXhlcyB0aGUgZmFsc2UgYWxhcm0gd2FybmluZy4gU28NCj4g
+Pj4gPj4gbGV0J3MgZGV0YWNoIHRoZSBwb3dlciBkb21haW4gdG8gc2h1dGRvd24gUE0gZG9tYWlu
+cyBhZnRlciBkcml2ZXINCj4gc2h1dGRvd24uDQo+ID4+ID4+DQo+ID4+ID4+IFNpZ25lZC1vZmYt
+Ynk6IFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPg0KPiA+PiA+PiAtLS0NCj4gPj4gPj4NCj4g
+Pj4gPj4gSSBkbyBub3QgZmluZCBhIGJldHRlciBwbGFjZSB0byBzaHV0ZG93biBwb3dlciBkb21h
+aW4gd2hlbiByZWJvb3QNCj4gPj4gPj4gTGludXgsIHNvIGFkZCBiYWNrIHRoZSBsaW5lIHRoYXQg
+Y29tbWl0IDJkMzBiYjBiMzg4OSByZW1vdmVzLA0KPiA+PiA+PiBiZWNhdXNlIGl0IGlzIGEgZmFs
+c2UgYWxhcm0gd2FybmluZyBhcyBjb21taXQgZTc5YWVlNDliY2Y5IGRlc2NyaWJlcy4NCj4gPj4g
+Pj4NCj4gPj4gPj4gIGRyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIHwgMSArDQo+ID4+ID4+ICAxIGZp
+bGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4gPj4gPj4NCj4gPj4gPj4gZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGIvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMNCj4gPj4g
+Pj4gaW5kZXggODA3NWRkYzcwYTE3Li5hNTkyOWYyNGRjM2MgMTAwNjQ0DQo+ID4+ID4+IC0tLSBh
+L2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQo+ID4+ID4+ICsrKyBiL2RyaXZlcnMvYmFzZS9wbGF0
+Zm9ybS5jDQo+ID4+ID4+IEBAIC02MTYsNiArNjE2LDcgQEAgc3RhdGljIHZvaWQgcGxhdGZvcm1f
+ZHJ2X3NodXRkb3duKHN0cnVjdA0KPiA+PiA+PiBkZXZpY2UNCj4gPj4gPj4gKl9kZXYpDQo+ID4+
+ID4+DQo+ID4+ID4+ICAgICAgICAgaWYgKGRydi0+c2h1dGRvd24pDQo+ID4+ID4+ICAgICAgICAg
+ICAgICAgICBkcnYtPnNodXRkb3duKGRldik7DQo+ID4+ID4+ICsgICAgICAgZGV2X3BtX2RvbWFp
+bl9kZXRhY2goX2RldiwgdHJ1ZSk7DQo+ID4+ID4NCj4gPj4gPiBUaGlzIHdvdWxkIHNvbWV3aGF0
+IHdvcmssIGJ1dCBvbmx5IGZvciBwbGF0Zm9ybSBkZXZpY2VzLiBUbyBtYWtlDQo+ID4+ID4gdGhp
+cyBmdWxseSB3b3JrLCB3ZSBuZWVkIHRvIGNhbGwgZGV2X3BtX2RvbWFpbl9kZXRhY2goKSBmcm9t
+IGFtYmEsDQo+ID4+ID4gc3BpLCBldGMgYXMgd2VsbC4NCj4gPj4gPg0KPiA+PiA+IFBlcmhhcHMg
+YW5vdGhlciBvcHRpb24gdG8gbWFuYWdlIHRoaXMgbW9yZSBnZW5lcmFsbHksIGFuIHdpdGhvdXQN
+Cj4gPj4gPiBoYXZpbmcgZGV0YWNoIGRldmljZXMsIGNvdWxkIGJlIHRvIGV4dGVuZCB0aGUgc3Ry
+dWN0IGRldl9wbV9kb21haW4NCj4gPj4gPiB3aXRoIGEgbmV3IGNhbGxiYWNrLCAiLT5zaHV0ZG93
+bigpIiBhbmQgdGhlbiBtYWtlIHRoZSBkcml2ZXIgY29yZQ0KPiA+PiA+IGNhbGwgaXQgZnJvbSBk
+ZXZpY2Vfc2h1dGRvd24oKS4NCj4gPj4NCj4gPj4gSSdtIHNlbnNpbmcgYSBwb3NzaWJsZSBvcmRl
+cmluZyBzbGlwcGVyeSBzbG9wZSB3aXRoIHRoaXMgKGl0IHdpbGwNCj4gPj4gb25seSB3b3JrIGlm
+IGFsbCBvZiB0aGUgZHJpdmVycy9idXMgdHlwZXMgZXRjIGRvIHRoZSByaWdodCB0aGluZyBpbg0K
+PiA+PiB0aGVpcg0KPiA+PiAtPnNodXRkb3duIGNhbGxiYWNrcyBzbyBub3RoaW5nIGRlcGVuZHMg
+b24gdGhlIGRvbWFpbiBnb2luZyBmb3J3YXJkKS4NCj4gPj4NCj4gPj4gPiBUeXBpY2FsbHksIGZv
+ciBnZW5wZCwgSSB3b3VsZCBwcm9iYWJseSBjb3VudCB0aGUgbnVtYmVyIG9mIGNhbGxzDQo+ID4+
+ID4gYmVpbmcgbWFkZSB0byAtPnNodXRkb3duKCkgcGVyIFBNIGRvbWFpbiwgdGhlbiB3aGVuIGl0
+IHJlYWNoZXMgdGhlDQo+ID4+ID4gbnVtYmVyIG9mIGF0dGFjaGVkIGRldmljZXMgdG8gaXQsIGFs
+bG93IHRvIHBvd2VyIG9mZiBpdC4NCj4gPj4gPg0KPiA+PiA+IExldCdzIHNlZSB3aGF0IFJhZmFl
+bCB0aGlua3MgYWJvdXQgaXQuDQo+ID4+DQo+ID4+IEknbSBub3Qgc3VyZSBhYm91dCB0aGUgdXNl
+IGNhc2UuICBUaGUgaHlwZXJ2aXNvciBzaG91bGQgYmUgYWJsZSB0bw0KPiA+PiB0YWtlIGNhcmUg
+b2YgdHVybmluZyBwb3dlciBkb21haW5zIG9mZiBvbiB0aGUgY2xpZW50IE9TIHJlYm9vdCBpbg0K
+PiA+PiB0aGVvcnkuICBJZiB0aGUgY2xpZW50IE9TIGxlYXZpbmcgdGhlIGh5cGVydmlzb3IgbmVl
+ZHMgdG8gd29ycnkgYWJvdXQNCj4gPj4gd2hhdCBzdGF0ZSBpdCBsZWF2ZXMgYmVoaW5kLCB0aGUg
+ZGVzaWduIG9mIHRoZSBoeXBlcnZpc29yIGlzIHNvcnQgb2YNCj4gcXVlc3Rpb25hYmxlIElNTy4N
+Cj4gPg0KPiA+IFRoaXMgaXMgdmFsaWQgY29uY2Vybi4gQnV0IG1vdmluZyB0aGUgcG93ZXIgZG9t
+YWluIGxvZ2ljIGludG8NCj4gPiBoeXBlcnZpc29yIG1vc3RseSBtaWNyby1rZXJuZWwgZGVzaWdu
+IHdpbGwgaW50cm9kdWNlIG1vcmUgY29tcGxleGl0eSBhbmQNCj4gbWFrZSBjZXJ0aWZpY2F0aW9u
+IGhhcmRlci4NCj4gPiBDdXJyZW50bHksIExldCBMaW51eCBzaHV0ZG93biBpdCdzIHBvd2VyIGRv
+bWFpbiBpcyB0aGUgZWFzaWVzdCB3YXkgdG8NCj4gPiBtZSBhbmQgbWFrZSB0aGluZ3Mgd29yayB3
+ZWxsIGFmdGVyIHJlYm9vdC4NCj4gDQo+IFdlbGwsIHRvIHB1dCBpdCBibHVudGx5LCBpZiB5b3Vy
+IGh5cGVydmlzb3IgZGVwZW5kcyBvbiB0aGUgZ3Vlc3QgdG8gZG8gdGhlIHJpZ2h0DQo+IHRoaW5n
+IG9uIGV4aXQsIGl0IGRvZXNuJ3QgZG8gaXRzIGpvYi4gIEkgd291bGRuJ3QgaGF2ZSBjZXJ0aWZp
+ZWQgaXQgZm9yIHlvdSBpZiB0aGF0IHdhcw0KPiBteSBkZWNpc2lvbi4NCg0KSXQgaXMgZ3Vlc3Qg
+b3Mgbm90IHdvcmsgd2VsbCBhZnRlciBndWVzdCBvcyByZWJvb3QuIFRoZSBoeXBlcnZpc29yIGlz
+IG5vdCBhZmZlY3RlZC4NCg0KVGhpbmtpbmcgYW5vdGhlciBjYXNlIHdpdGhvdXQgaHlwZXJ2aXNv
+ciwgTTQgY29yZSBydW4gUlRPUywgQTM1IENvcmUgcnVuIExpbnV4LCB3aGVuIExpbnV4IHJlYm9v
+dGluZywNClJUT1Mgc2hvdWxkIG5vdCBiZSBhZmZlY3RlZC4gQWZ0ZXIgTGludXggcmVib290IGl0
+c2VsZiwgYmVjYXVzZSBpdHMgcG93ZXIgZG9tYWluIGlzIG5vdA0KcGFpcmVkIHdpdGggb3Blbi9z
+aHV0ZG93biwgc29tZSBkZXZpY2VzIG5vdCBmdW5jdGlvbiB3ZWxsLg0KDQpUaGFua3MsDQpQZW5n
+Lg0K
