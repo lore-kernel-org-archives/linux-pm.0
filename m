@@ -1,123 +1,100 @@
-From: Peng Fan <peng.fan@nxp.com>
-Subject: RE: [RFC] platform: detach from PM domains on shutdown
-Date: Thu, 17 May 2018 12:37:31 +0000
-Message-ID: <HE1PR04MB3004EF83E7AE2250E44C49A088910@HE1PR04MB3004.eurprd04.prod.outlook.com>
-References: <20180515090110.26820-1-peng.fan@nxp.com>
- <CAPDyKFpKGhLrj-px1E3C_tq3_2GAxWpzSgr5TXJU7s8-jokf9g@mail.gmail.com>
- <CAJZ5v0h7zaNtSC6UCLJ8xEGKMSuBiZ_oAyB8bk1ROWCuH_-K4g@mail.gmail.com>
- <HE1PR04MB300483E474BE21D55720BCEC88910@HE1PR04MB3004.eurprd04.prod.outlook.com>
- <CAJZ5v0ibwRXqaGJW0vFcy+YqMEc_ao9itBErP_w1YjLQWVVtQg@mail.gmail.com>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH RFC] schedutil: Allow cpufreq requests to be made even
+ when kthread kicked
+Date: Thu, 17 May 2018 06:07:04 -0700
+Message-ID: <20180517130704.GA139147@joelaf.mtv.corp.google.com>
+References: <20180516224518.109891-1-joel@joelfernandes.org>
+ <20180517070026.GA22493@localhost.localdomain>
+ <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
+ <20180517105358.GB22493@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ibwRXqaGJW0vFcy+YqMEc_ao9itBErP_w1YjLQWVVtQg@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180517105358.GB22493@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, kernel-team@android.com
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdtYWls
-LmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZiBSYWZhZWwNCj4g
-Si4gV3lzb2NraQ0KPiBTZW50OiAyMDE45bm0NeaciDE35pelIDE2OjAxDQo+IFRvOiBQZW5nIEZh
-biA8cGVuZy5mYW5AbnhwLmNvbT4NCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxAa2Vy
-bmVsLm9yZz47IFVsZiBIYW5zc29uDQo+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPjsgUmFmYWVs
-IEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPjsNCj4gRmFiaW8gRXN0ZXZh
-bSA8ZmFiaW8uZXN0ZXZhbUBueHAuY29tPjsgR3JlZyBLcm9haC1IYXJ0bWFuDQo+IDxncmVna2hA
-bGludXhmb3VuZGF0aW9uLm9yZz47IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3QNCj4gPGxpbnV4
-LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTSA8bGludXgtcG1Admdlci5rZXJuZWwu
-b3JnPjsNCj4gZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6
-IFtSRkNdIHBsYXRmb3JtOiBkZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uIHNodXRkb3duDQo+IA0K
-PiBPbiBUaHUsIE1heSAxNywgMjAxOCBhdCA0OjMzIEFNLCBQZW5nIEZhbiA8cGVuZy5mYW5Abnhw
-LmNvbT4gd3JvdGU6DQo+ID4NCj4gPg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiA+PiBGcm9tOiByand5c29ja2lAZ21haWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNv
-bV0gT24gQmVoYWxmIE9mDQo+ID4+IFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4+IFNlbnQ6IDIwMTjl
-ubQ15pyIMTfml6UgNTozNQ0KPiA+PiBUbzogVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxpbmFy
-by5vcmc+DQo+ID4+IENjOiBQZW5nIEZhbiA8cGVuZy5mYW5AbnhwLmNvbT47IFJhZmFlbCBKLiBX
-eXNvY2tpDQo+ID4+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZhYmlvIEVzdGV2YW0g
-PGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47DQo+ID4+IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2to
-QGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZw0KPiA+PiBMaXN0IDxs
-aW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0NCj4gPj4gPGxpbnV4LXBtQHZn
-ZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+ID4+IFN1
-YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlucyBvbiBzaHV0
-ZG93bg0KPiA+Pg0KPiA+PiBPbiBXZWQsIE1heSAxNiwgMjAxOCBhdCAxMTo1MiBBTSwgVWxmIEhh
-bnNzb24NCj4gPj4gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+DQo+ID4+IHdyb3RlOg0KPiA+PiA+
-IE9uIDE1IE1heSAyMDE4IGF0IDExOjAxLCBQZW5nIEZhbiA8cGVuZy5mYW5AbnhwLmNvbT4gd3Jv
-dGU6DQo+ID4+ID4+IFdoZW4gcmVib290IExpbnV4LCB0aGUgUE0gZG9tYWlucyBhdHRhY2hlZCB0
-byBhIGRldmljZSBhcmUgbm90DQo+ID4+ID4+IHNodXRkb3duLiBUbyBTb0NzIHdoaWNoIHJlbHlz
-IG9uIHJlc2V0IHRoZSB3aG9sZSBTb0MsIHRoZXJlIGlzIG5vDQo+ID4+ID4+IG5lZWQgdG8gc2h1
-dGRvd24gUE0gZG9tYWlucywgYnV0IHRvIExpbnV4IHJ1bm5pbmcgaW4gYSB2aXJ0dWFsDQo+ID4+
-ID4+IG1hY2hpbmUgd2l0aCBkZXZpY2VzIHBhc3MtdGhyb3VnaCwgd2UgY291bGQgbm90IHJlc2V0
-IHRoZSB3aG9sZSBTb0MuDQo+ID4+ID4+IEN1cnJlbnRseSB3ZSBuZWVkIExpbnV4IHRvIHNodXRk
-b3duIGl0cyBQTSBkb21haW5zIHdoZW4gcmVib290Lg0KPiA+PiA+DQo+ID4+ID4gSSBhbSBub3Qg
-c3VyZSBJIHVuZGVyc3RhbmQgZXhhY3RseSB3aHkgdGhlIFBNIGRvbWFpbiBuZWVkcyB0byBiZQ0K
-PiA+PiA+IHNodXRkb3duIGZvciB0aGVzZSBjYXNlcywgY291bGQgeW91IHBsZWFzZSBlbGFib3Jh
-dGUgYSBiaXQgb24gdGhhdC4NCj4gPj4gPg0KPiA+PiA+IEJUVywgd2hhdCBwbGF0Zm9ybSBhcmUg
-eW91IHJ1bm5pbmcgb24gYW5kIGFsc28gd2hhdCBQTSBkb21haW5zIGFyZQ0KPiA+PiA+IGJlaW5n
-DQo+ID4+IHVzZWQ/DQo+ID4+ID4NCj4gPj4gPiBBbnl3YXksIGl0IHNlZW1zIGxpa2UgdGhlcmUg
-bWF5IGJlIG5lZWQgZm9yIGNlcnRhaW4gY2FzZXMsIGJ1dA0KPiA+PiA+IGNlcnRhaW5seSBub3Qg
-YWxsIC0gZXNwZWNpYWxseSBzaW5jZSBpdCBtYXkgc2xvdyBkb3duIHRoZSBzaHV0ZG93bg0KPiA+
-PiA+IHByb2Nlc3MsIHdoZW4gbm90IG5lZWRlZC4NCj4gPj4gPg0KPiA+PiA+IENhbiB3ZSBtYWtl
-IHRoaXMgcnVudGltZSBjb25maWd1cmFibGUsIHZpYSBzeXNmcyBvciB3aGF0ZXZlciB0aGF0DQo+
-ID4+ID4gbWFrZXMNCj4gPj4gc2Vuc2UhPw0KPiA+PiA+DQo+ID4+ID4+DQo+ID4+ID4+IGNvbW1p
-dCAyZDMwYmIwYjM4ODkgKCJwbGF0Zm9ybTogRG8gbm90IGRldGFjaCBmcm9tIFBNIGRvbWFpbnMg
-b24NCj4gPj4gPj4gc2h1dGRvd24iKSwgcmVtb3ZlcyB3aGF0IHRoaXMgcGF0Y2ggdHJpZXMgdG8g
-YWRkLCBiZWNhdXNlIG9mIGEgd2FybmluZy4NCj4gPj4gPj4gY29tbWl0IGU3OWFlZTQ5YmNmOSAo
-IlBNOiBBdm9pZCBmYWxzZS1wb3NpdGl2ZSB3YXJuaW5ncyBpbg0KPiA+PiA+PiBkZXZfcG1fZG9t
-YWluX3NldCgpIikgYWxyZWFkeSBmaXhlcyB0aGUgZmFsc2UgYWxhcm0gd2FybmluZy4gU28NCj4g
-Pj4gPj4gbGV0J3MgZGV0YWNoIHRoZSBwb3dlciBkb21haW4gdG8gc2h1dGRvd24gUE0gZG9tYWlu
-cyBhZnRlciBkcml2ZXINCj4gc2h1dGRvd24uDQo+ID4+ID4+DQo+ID4+ID4+IFNpZ25lZC1vZmYt
-Ynk6IFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPg0KPiA+PiA+PiAtLS0NCj4gPj4gPj4NCj4g
-Pj4gPj4gSSBkbyBub3QgZmluZCBhIGJldHRlciBwbGFjZSB0byBzaHV0ZG93biBwb3dlciBkb21h
-aW4gd2hlbiByZWJvb3QNCj4gPj4gPj4gTGludXgsIHNvIGFkZCBiYWNrIHRoZSBsaW5lIHRoYXQg
-Y29tbWl0IDJkMzBiYjBiMzg4OSByZW1vdmVzLA0KPiA+PiA+PiBiZWNhdXNlIGl0IGlzIGEgZmFs
-c2UgYWxhcm0gd2FybmluZyBhcyBjb21taXQgZTc5YWVlNDliY2Y5IGRlc2NyaWJlcy4NCj4gPj4g
-Pj4NCj4gPj4gPj4gIGRyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIHwgMSArDQo+ID4+ID4+ICAxIGZp
-bGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4gPj4gPj4NCj4gPj4gPj4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGIvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMNCj4gPj4g
-Pj4gaW5kZXggODA3NWRkYzcwYTE3Li5hNTkyOWYyNGRjM2MgMTAwNjQ0DQo+ID4+ID4+IC0tLSBh
-L2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQo+ID4+ID4+ICsrKyBiL2RyaXZlcnMvYmFzZS9wbGF0
-Zm9ybS5jDQo+ID4+ID4+IEBAIC02MTYsNiArNjE2LDcgQEAgc3RhdGljIHZvaWQgcGxhdGZvcm1f
-ZHJ2X3NodXRkb3duKHN0cnVjdA0KPiA+PiA+PiBkZXZpY2UNCj4gPj4gPj4gKl9kZXYpDQo+ID4+
-ID4+DQo+ID4+ID4+ICAgICAgICAgaWYgKGRydi0+c2h1dGRvd24pDQo+ID4+ID4+ICAgICAgICAg
-ICAgICAgICBkcnYtPnNodXRkb3duKGRldik7DQo+ID4+ID4+ICsgICAgICAgZGV2X3BtX2RvbWFp
-bl9kZXRhY2goX2RldiwgdHJ1ZSk7DQo+ID4+ID4NCj4gPj4gPiBUaGlzIHdvdWxkIHNvbWV3aGF0
-IHdvcmssIGJ1dCBvbmx5IGZvciBwbGF0Zm9ybSBkZXZpY2VzLiBUbyBtYWtlDQo+ID4+ID4gdGhp
-cyBmdWxseSB3b3JrLCB3ZSBuZWVkIHRvIGNhbGwgZGV2X3BtX2RvbWFpbl9kZXRhY2goKSBmcm9t
-IGFtYmEsDQo+ID4+ID4gc3BpLCBldGMgYXMgd2VsbC4NCj4gPj4gPg0KPiA+PiA+IFBlcmhhcHMg
-YW5vdGhlciBvcHRpb24gdG8gbWFuYWdlIHRoaXMgbW9yZSBnZW5lcmFsbHksIGFuIHdpdGhvdXQN
-Cj4gPj4gPiBoYXZpbmcgZGV0YWNoIGRldmljZXMsIGNvdWxkIGJlIHRvIGV4dGVuZCB0aGUgc3Ry
-dWN0IGRldl9wbV9kb21haW4NCj4gPj4gPiB3aXRoIGEgbmV3IGNhbGxiYWNrLCAiLT5zaHV0ZG93
-bigpIiBhbmQgdGhlbiBtYWtlIHRoZSBkcml2ZXIgY29yZQ0KPiA+PiA+IGNhbGwgaXQgZnJvbSBk
-ZXZpY2Vfc2h1dGRvd24oKS4NCj4gPj4NCj4gPj4gSSdtIHNlbnNpbmcgYSBwb3NzaWJsZSBvcmRl
-cmluZyBzbGlwcGVyeSBzbG9wZSB3aXRoIHRoaXMgKGl0IHdpbGwNCj4gPj4gb25seSB3b3JrIGlm
-IGFsbCBvZiB0aGUgZHJpdmVycy9idXMgdHlwZXMgZXRjIGRvIHRoZSByaWdodCB0aGluZyBpbg0K
-PiA+PiB0aGVpcg0KPiA+PiAtPnNodXRkb3duIGNhbGxiYWNrcyBzbyBub3RoaW5nIGRlcGVuZHMg
-b24gdGhlIGRvbWFpbiBnb2luZyBmb3J3YXJkKS4NCj4gPj4NCj4gPj4gPiBUeXBpY2FsbHksIGZv
-ciBnZW5wZCwgSSB3b3VsZCBwcm9iYWJseSBjb3VudCB0aGUgbnVtYmVyIG9mIGNhbGxzDQo+ID4+
-ID4gYmVpbmcgbWFkZSB0byAtPnNodXRkb3duKCkgcGVyIFBNIGRvbWFpbiwgdGhlbiB3aGVuIGl0
-IHJlYWNoZXMgdGhlDQo+ID4+ID4gbnVtYmVyIG9mIGF0dGFjaGVkIGRldmljZXMgdG8gaXQsIGFs
-bG93IHRvIHBvd2VyIG9mZiBpdC4NCj4gPj4gPg0KPiA+PiA+IExldCdzIHNlZSB3aGF0IFJhZmFl
-bCB0aGlua3MgYWJvdXQgaXQuDQo+ID4+DQo+ID4+IEknbSBub3Qgc3VyZSBhYm91dCB0aGUgdXNl
-IGNhc2UuICBUaGUgaHlwZXJ2aXNvciBzaG91bGQgYmUgYWJsZSB0bw0KPiA+PiB0YWtlIGNhcmUg
-b2YgdHVybmluZyBwb3dlciBkb21haW5zIG9mZiBvbiB0aGUgY2xpZW50IE9TIHJlYm9vdCBpbg0K
-PiA+PiB0aGVvcnkuICBJZiB0aGUgY2xpZW50IE9TIGxlYXZpbmcgdGhlIGh5cGVydmlzb3IgbmVl
-ZHMgdG8gd29ycnkgYWJvdXQNCj4gPj4gd2hhdCBzdGF0ZSBpdCBsZWF2ZXMgYmVoaW5kLCB0aGUg
-ZGVzaWduIG9mIHRoZSBoeXBlcnZpc29yIGlzIHNvcnQgb2YNCj4gcXVlc3Rpb25hYmxlIElNTy4N
-Cj4gPg0KPiA+IFRoaXMgaXMgdmFsaWQgY29uY2Vybi4gQnV0IG1vdmluZyB0aGUgcG93ZXIgZG9t
-YWluIGxvZ2ljIGludG8NCj4gPiBoeXBlcnZpc29yIG1vc3RseSBtaWNyby1rZXJuZWwgZGVzaWdu
-IHdpbGwgaW50cm9kdWNlIG1vcmUgY29tcGxleGl0eSBhbmQNCj4gbWFrZSBjZXJ0aWZpY2F0aW9u
-IGhhcmRlci4NCj4gPiBDdXJyZW50bHksIExldCBMaW51eCBzaHV0ZG93biBpdCdzIHBvd2VyIGRv
-bWFpbiBpcyB0aGUgZWFzaWVzdCB3YXkgdG8NCj4gPiBtZSBhbmQgbWFrZSB0aGluZ3Mgd29yayB3
-ZWxsIGFmdGVyIHJlYm9vdC4NCj4gDQo+IFdlbGwsIHRvIHB1dCBpdCBibHVudGx5LCBpZiB5b3Vy
-IGh5cGVydmlzb3IgZGVwZW5kcyBvbiB0aGUgZ3Vlc3QgdG8gZG8gdGhlIHJpZ2h0DQo+IHRoaW5n
-IG9uIGV4aXQsIGl0IGRvZXNuJ3QgZG8gaXRzIGpvYi4gIEkgd291bGRuJ3QgaGF2ZSBjZXJ0aWZp
-ZWQgaXQgZm9yIHlvdSBpZiB0aGF0IHdhcw0KPiBteSBkZWNpc2lvbi4NCg0KSXQgaXMgZ3Vlc3Qg
-b3Mgbm90IHdvcmsgd2VsbCBhZnRlciBndWVzdCBvcyByZWJvb3QuIFRoZSBoeXBlcnZpc29yIGlz
-IG5vdCBhZmZlY3RlZC4NCg0KVGhpbmtpbmcgYW5vdGhlciBjYXNlIHdpdGhvdXQgaHlwZXJ2aXNv
-ciwgTTQgY29yZSBydW4gUlRPUywgQTM1IENvcmUgcnVuIExpbnV4LCB3aGVuIExpbnV4IHJlYm9v
-dGluZywNClJUT1Mgc2hvdWxkIG5vdCBiZSBhZmZlY3RlZC4gQWZ0ZXIgTGludXggcmVib290IGl0
-c2VsZiwgYmVjYXVzZSBpdHMgcG93ZXIgZG9tYWluIGlzIG5vdA0KcGFpcmVkIHdpdGggb3Blbi9z
-aHV0ZG93biwgc29tZSBkZXZpY2VzIG5vdCBmdW5jdGlvbiB3ZWxsLg0KDQpUaGFua3MsDQpQZW5n
-Lg0K
+On Thu, May 17, 2018 at 12:53:58PM +0200, Juri Lelli wrote:
+> On 17/05/18 15:50, Viresh Kumar wrote:
+> > On 17-05-18, 09:00, Juri Lelli wrote:
+> > > Hi Joel,
+> > > 
+> > > On 16/05/18 15:45, Joel Fernandes (Google) wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > @@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+> > > >  static void sugov_work(struct kthread_work *work)
+> > > >  {
+> > > >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> > > > +	unsigned int freq;
+> > > > +	unsigned long flags;
+> > > > +
+> > > > +	/*
+> > > > +	 * Hold sg_policy->update_lock shortly to handle the case where:
+> > > > +	 * incase sg_policy->next_freq is read here, and then updated by
+> > > > +	 * sugov_update_shared just before work_in_progress is set to false
+> > > > +	 * here, we may miss queueing the new update.
+> > > > +	 */
+> > > > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+> > > > +	freq = sg_policy->next_freq;
+> > > > +	sg_policy->work_in_progress = false;
+> > > > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+> > > 
+> > > OK, we queue the new request up, but still we need to let this kthread
+> > > activation complete and then wake it up again to service the request
+> > > already queued, right? Wasn't what Claudio proposed (service back to
+> > > back requests all in the same kthread activation) better from an
+> > > overhead pow?
+
+Hmm, from that perspective, yeah. But note that my patch doesn't increase the
+overhead from what it already is.. because we don't queue the irq_work again
+unless work_in_progress is cleared, which wouldn't be if the kthread didn't
+run yet.
+
+> > 
+> > We would need more locking stuff in the work handler in that case and
+> > I think there maybe a chance of missing the request in that solution
+> > if the request happens right at the end of when sugov_work returns.
+> 
+> Mmm, true. Ideally we might want to use some sort of queue where to
+> atomically insert requests and then consume until queue is empty from
+> sugov kthread.
+
+IMO we don't really need a queue or anything, we should need the kthread to
+process the *latest* request it sees since that's the only one that matters.
+
+> But, I guess that's going to be too much complexity for an (hopefully)
+> corner case.
+
+I thought of this corner case too, I'd argue its still an improvement over
+not doing anything, but we could tighten this up a bit more if you wanted by
+doing something like this on top of my patch. Thoughts?
+
+---8<-----------------------
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index a87fc281893d..e45ec24b810b 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -394,6 +394,7 @@ static void sugov_work(struct kthread_work *work)
+ 	unsigned int freq;
+ 	unsigned long flags;
+ 
++redo_work:
+ 	/*
+ 	 * Hold sg_policy->update_lock shortly to handle the case where:
+ 	 * incase sg_policy->next_freq is read here, and then updated by
+@@ -409,6 +410,9 @@ static void sugov_work(struct kthread_work *work)
+ 	__cpufreq_driver_target(sg_policy->policy, freq,
+ 				CPUFREQ_RELATION_L);
+ 	mutex_unlock(&sg_policy->work_lock);
++
++	if (sg_policy->work_in_progress)
++		goto redo_work;
+ }
+ 
+ static void sugov_irq_work(struct irq_work *irq_work)
