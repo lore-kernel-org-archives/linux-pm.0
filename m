@@ -1,138 +1,45 @@
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH 1/8] firmware: arm_scmi: improve code readability using
- bitfield accessor macros
-Date: Thu, 17 May 2018 09:14:33 +0100
-Message-ID: <20180517091433.0000513b@huawei.com>
-References: <1525885634-22348-1-git-send-email-sudeep.holla@arm.com>
- <1525885634-22348-2-git-send-email-sudeep.holla@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC/RFT] [PATCH 05/10] cpufreq: intel_pstate: HWP boost
+ performance on IO Wake
+Date: Thu, 17 May 2018 10:19:48 +0200
+Message-ID: <20180517081948.GM12217@hirez.programming.kicks-ass.net>
+References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
+ <20180516044911.28797-6-srinivas.pandruvada@linux.intel.com>
+ <20180516073701.GW12217@hirez.programming.kicks-ass.net>
+ <1526493313.61700.61.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1525885634-22348-2-git-send-email-sudeep.holla@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1526493313.61700.61.camel@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 May 2018 18:07:07 +0100
-Sudeep Holla <sudeep.holla@arm.com> wrote:
+On Wed, May 16, 2018 at 10:55:13AM -0700, Srinivas Pandruvada wrote:
+> On Wed, 2018-05-16 at 09:37 +0200, Peter Zijlstra wrote:
+> > On Tue, May 15, 2018 at 09:49:06PM -0700, Srinivas Pandruvada wrote:
 
-> By using FIELD_{FIT,GET,PREP} and GENMASK macro accessors we can avoid
-> some clumpsy custom shifting and masking macros and also improve the
-> code better readability.
-> 
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-Hi Sudeep,
+> > Hurmph, this looks like you're starting to duplicate the schedutil
+> > iowait logic. Why didn't you copy the gradual boosting thing?
 
-A minor comment inline.
+> I tried what we implemented in intel_pstate in legacy mode, which gave
+> the best performance for servers (ramp up faster and slow ramp down).
+> This caused regression on some workloads, as each time we can call
+> HWP_REQUEST, we spend 1200+ cycles in issuing MSR. So keeping it at max
+> for timeout. Even keeping at P1 didn't help in power numbers.
 
-Jonathan
-> ---
->  drivers/firmware/arm_scmi/common.h |  9 +++++----
->  drivers/firmware/arm_scmi/driver.c | 31 ++++++++++++++-----------------
->  2 files changed, 19 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/firmware/arm_scmi/common.h b/drivers/firmware/arm_scmi/common.h
-> index 0c30234f9098..e8f332c9c469 100644
-> --- a/drivers/firmware/arm_scmi/common.h
-> +++ b/drivers/firmware/arm_scmi/common.h
-> @@ -7,6 +7,7 @@
->   * Copyright (C) 2018 ARM Ltd.
->   */
->  
-> +#include <linux/bitfield.h>
->  #include <linux/completion.h>
->  #include <linux/device.h>
->  #include <linux/errno.h>
-> @@ -14,10 +15,10 @@
->  #include <linux/scmi_protocol.h>
->  #include <linux/types.h>
->  
-> -#define PROTOCOL_REV_MINOR_BITS	16
-> -#define PROTOCOL_REV_MINOR_MASK	((1U << PROTOCOL_REV_MINOR_BITS) - 1)
-> -#define PROTOCOL_REV_MAJOR(x)	((x) >> PROTOCOL_REV_MINOR_BITS)
-> -#define PROTOCOL_REV_MINOR(x)	((x) & PROTOCOL_REV_MINOR_MASK)
-> +#define PROTOCOL_REV_MINOR_MASK	GENMASK(15, 0)
-> +#define PROTOCOL_REV_MAJOR_MASK	GENMASK(31, 16)
-> +#define PROTOCOL_REV_MAJOR(x)	(u16)(FIELD_GET(PROTOCOL_REV_MAJOR_MASK, (x)))
-> +#define PROTOCOL_REV_MINOR(x)	(u16)(FIELD_GET(PROTOCOL_REV_MINOR_MASK, (x)))
->  #define MAX_PROTOCOLS_IMP	16
->  #define MAX_OPPS		16
->  
-> diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
-> index 14b147135a0c..917786d91f55 100644
-> --- a/drivers/firmware/arm_scmi/driver.c
-> +++ b/drivers/firmware/arm_scmi/driver.c
-> @@ -29,16 +29,12 @@
->  
->  #include "common.h"
->  
-> -#define MSG_ID_SHIFT		0
-> -#define MSG_ID_MASK		0xff
-> -#define MSG_TYPE_SHIFT		8
-> -#define MSG_TYPE_MASK		0x3
-> -#define MSG_PROTOCOL_ID_SHIFT	10
-> -#define MSG_PROTOCOL_ID_MASK	0xff
-> -#define MSG_TOKEN_ID_SHIFT	18
-> -#define MSG_TOKEN_ID_MASK	0x3ff
-> -#define MSG_XTRACT_TOKEN(header)	\
-> -	(((header) >> MSG_TOKEN_ID_SHIFT) & MSG_TOKEN_ID_MASK)
-> +#define MSG_ID_MASK		GENMASK(7, 0)
-> +#define MSG_TYPE_MASK		GENMASK(9, 8)
-> +#define MSG_PROTOCOL_ID_MASK	GENMASK(17, 10)
-> +#define MSG_TOKEN_ID_MASK	GENMASK(27, 18)
-> +#define MSG_XTRACT_TOKEN(hdr)	FIELD_GET(MSG_TOKEN_ID_MASK, (hdr))
-> +#define MSG_TOKEN_MAX		(MSG_XTRACT_TOKEN(MSG_TOKEN_ID_MASK) + 1)
+> > > - If the IO flags are notified multiple ticks apart, this may not be
+> > > IO bound task. Othewise idle system gets periodic boosts for one
+> > > IO wake.
 
-This feels a little odd. It's not the Max value, I think, but rather one more than
-it. I would set it to this -1 and use > than in the test below.
+That is what made me think of the gradual boosting. Because that is very
+similar to the scenario that made us do that.
 
->  
->  enum scmi_error_codes {
->  	SCMI_SUCCESS = 0,	/* Success */
-> @@ -255,9 +251,9 @@ static void scmi_rx_callback(struct mbox_client *cl, void *m)
->   */
->  static inline u32 pack_scmi_header(struct scmi_msg_hdr *hdr)
->  {
-> -	return ((hdr->id & MSG_ID_MASK) << MSG_ID_SHIFT) |
-> -	   ((hdr->seq & MSG_TOKEN_ID_MASK) << MSG_TOKEN_ID_SHIFT) |
-> -	   ((hdr->protocol_id & MSG_PROTOCOL_ID_MASK) << MSG_PROTOCOL_ID_SHIFT);
-> +	return FIELD_PREP(MSG_ID_MASK, hdr->id) |
-> +		FIELD_PREP(MSG_TOKEN_ID_MASK, hdr->seq) |
-> +		FIELD_PREP(MSG_PROTOCOL_ID_MASK, hdr->protocol_id);
->  }
->  
->  /**
-> @@ -621,9 +617,9 @@ static int scmi_xfer_info_init(struct scmi_info *sinfo)
->  	struct scmi_xfers_info *info = &sinfo->minfo;
->  
->  	/* Pre-allocated messages, no more than what hdr.seq can support */
-> -	if (WARN_ON(desc->max_msg >= (MSG_TOKEN_ID_MASK + 1))) {
-> -		dev_err(dev, "Maximum message of %d exceeds supported %d\n",
-> -			desc->max_msg, MSG_TOKEN_ID_MASK + 1);
-> +	if (WARN_ON(desc->max_msg >= MSG_TOKEN_MAX)) {
-
-> +		dev_err(dev, "Maximum message of %d exceeds supported %ld\n",
-> +			desc->max_msg, MSG_TOKEN_MAX);
->  		return -EINVAL;
->  	}
->  
-> @@ -840,7 +836,8 @@ static int scmi_probe(struct platform_device *pdev)
->  		if (of_property_read_u32(child, "reg", &prot_id))
->  			continue;
->  
-> -		prot_id &= MSG_PROTOCOL_ID_MASK;
-> +		if (!FIELD_FIT(MSG_PROTOCOL_ID_MASK, prot_id))
-> +			dev_err(dev, "Out of range protocol %d\n", prot_id);
->  
->  		if (!scmi_is_protocol_implemented(handle, prot_id)) {
->  			dev_err(dev, "SCMI protocol %d not implemented\n",
+But like said elsewhere, ideally we'd use schedutil exclusively and
+reduce intel_pstate to a pure driver. The normal way do deal with slow
+transitions is rate limiting. Another option is for the slow HWP msr
+driver we could choose to only issue the update when we reach max_freq.
+But if the MSR ever gets cheaper we can issue it more often/finer
+grained.
