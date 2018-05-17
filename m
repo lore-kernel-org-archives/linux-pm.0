@@ -1,35 +1,126 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [v0 1/2] dt-bindings: clock: Introduce QCOM CPUFREQ FW bindings
-Date: Thu, 17 May 2018 12:17:01 -0700
-Message-ID: <5AFDD52D.2000201@codeaurora.org>
-References: <1526549401-25666-1-git-send-email-tdas@codeaurora.org> <1526549401-25666-2-git-send-email-tdas@codeaurora.org> <20180517101438.du7xihojuhjxq77l@vireshk-i7>
+Subject: Re: [v0 2/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
+Date: Thu, 17 May 2018 12:25:59 -0700
+Message-ID: <5AFDD747.7020509@codeaurora.org>
+References: <1526549401-25666-1-git-send-email-tdas@codeaurora.org> <1526549401-25666-3-git-send-email-tdas@codeaurora.org> <20180517101405.23oxyqpmpjhauflx@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180517101438.du7xihojuhjxq77l@vireshk-i7>
+In-Reply-To: <20180517101405.23oxyqpmpjhauflx@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Taniya Das <tdas@codeaurora.org>, robh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, amit.kucheria@linaro.org
+Cc: Taniya Das <tdas@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
 On 05/17/2018 03:14 AM, Viresh Kumar wrote:
-> + Rob.
->
 > On 17-05-18, 15:00, Taniya Das wrote:
->> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
->> SoCs. This is required for managing the cpu frequency transitions which are
->> controlled by firmware.
+>> The CPUfreq FW present in some QCOM chipsets offloads the steps necessary
+>> for hanging the frequency of CPUs. The driver implements the cpufreq driver
+>> interface for this firmware.
 >>
 >> Signed-off-by: Taniya Das <tdas@codeaurora.org>
 >> ---
->>   .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 68 ++++++++++++++++++++++
->>   1 file changed, 68 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+>>
+>>   ##################################################################################
+>> diff --git a/drivers/cpufreq/qcom-cpufreq-fw.c b/drivers/cpufreq/qcom-cpufreq-fw.c
 
-Isn't the prefix wrong? Shouldn't it be dt-bindings: cpufreq:?
+>> +
+>> +static int qcom_read_lut(struct platform_device *pdev,
+>> +			struct cpufreq_qcom *c)
+>> +{
+>> +	struct device *dev = &pdev->dev;
+>> +	u32 data, src, lval, i, core_count, prev_cc = 0;
+>> +
+>> +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
+>> +				sizeof(*c->table), GFP_KERNEL);
+>> +	if (!c->table)
+>> +		return -ENOMEM;
+>> +
+>> +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+>> +		data = readl_relaxed(c->lut_base + i * LUT_ROW_SIZE);
+>> +		src = ((data & GENMASK(31, 30)) >> 30);
+>> +		lval = (data & GENMASK(7, 0));
+>> +		core_count = CORE_COUNT_VAL(data);
+>
+> Why do you need this here ? And why do below in case this doesn't
+> match max-cores count ?
 
--Saravana
+This is how we detect boost frequencies.
+
+>> +
+>> +		if (!src)
+>> +			c->table[i].frequency = INIT_RATE / 1000;
+>> +		else
+>> +			c->table[i].frequency = XO_RATE * lval / 1000;
+>> +
+>> +		c->table[i].driver_data = c->table[i].frequency;
+>> +
+>> +		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
+>> +				i, c->table[i].frequency, core_count);
+>> +
+>> +		if (core_count != c->max_cores)
+>> +			c->table[i].frequency = CPUFREQ_ENTRY_INVALID;
+
+The FW might has some frequencies marked as "boost frequencies" when 
+there are higher non-boost frequencies. So, we mark them as invalid.
+
+>> +
+>> +		/*
+>> +		 * Two of the same frequencies with the same core counts means
+>> +		 * end of table.
+>> +		 */
+>> +		if (i > 0 && c->table[i - 1].driver_data ==
+>> +					c->table[i].driver_data
+>> +					&& prev_cc == core_count) {
+>> +			struct cpufreq_frequency_table *prev = &c->table[i - 1];
+>> +
+>> +			if (prev->frequency == CPUFREQ_ENTRY_INVALID) {
+>> +				prev->flags = CPUFREQ_BOOST_FREQ;
+>> +				prev->frequency = prev->driver_data;
+>> +			}
+>> +
+>> +			break;
+>> +		}
+>> +		prev_cc = core_count;
+>> +	}
+>> +	c->table[i].frequency = CPUFREQ_TABLE_END;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int qcom_get_related_cpus(struct device_node *np, struct cpumask *m)
+>> +{
+>> +	struct device_node *dev_phandle;
+>> +	struct device *cpu_dev;
+>> +	int cpu, i = 0, ret = -ENOENT;
+>> +
+>> +	dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
+>
+> TBH, I am not a great fan of the CPU phandle list you have created
+> here. Lets see what Rob has to say on this.
+>
+
+Neither do we, but this is the only real way of mapping the logical CPU 
+numbers to the real CPUs in HW that belong to the same freq domain. 
+Because boot CPU is always going to be CPU0 if I'm not mistaken.
+
+>> +	while (dev_phandle) {
+>> +		for_each_possible_cpu(cpu) {
+>> +			cpu_dev = get_cpu_device(cpu);
+>> +			if (cpu_dev && cpu_dev->of_node == dev_phandle) {
+>> +				cpumask_set_cpu(cpu, m);
+>> +				ret = 0;
+>
+> Maybe just remove this line ...
+>
+>> +				break;
+>> +			}
+>> +		}
+>> +		dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
+>> +	}
+>> +
+>> +	return ret;
 
 
 -- 
