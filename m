@@ -1,116 +1,106 @@
-From: Joel Fernandes <joel@joelfernandes.org>
+From: Juri Lelli <juri.lelli@redhat.com>
 Subject: Re: [PATCH RFC] schedutil: Allow cpufreq requests to be made even
  when kthread kicked
-Date: Thu, 17 May 2018 06:11:55 -0700
-Message-ID: <20180517131155.GB139147@joelaf.mtv.corp.google.com>
+Date: Thu, 17 May 2018 16:28:23 +0200
+Message-ID: <20180517142823.GD22493@localhost.localdomain>
 References: <20180516224518.109891-1-joel@joelfernandes.org>
- <20180517050611.yj2alkzckl3ximzu@vireshk-i7>
+ <20180517070026.GA22493@localhost.localdomain>
+ <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
+ <20180517105358.GB22493@localhost.localdomain>
+ <20180517130704.GA139147@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180517050611.yj2alkzckl3ximzu@vireshk-i7>
+In-Reply-To: <20180517130704.GA139147@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, kernel-team@android.com, linux-pm@vger.kernel.org
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org, kernel-team@android.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 17, 2018 at 10:36:11AM +0530, Viresh Kumar wrote:
-> On 16-05-18, 15:45, Joel Fernandes (Google) wrote:
-> >  kernel/sched/cpufreq_schedutil.c | 36 +++++++++++++++++++++++++-------
-> >  1 file changed, 28 insertions(+), 8 deletions(-)
+On 17/05/18 06:07, Joel Fernandes wrote:
+> On Thu, May 17, 2018 at 12:53:58PM +0200, Juri Lelli wrote:
+> > On 17/05/18 15:50, Viresh Kumar wrote:
+> > > On 17-05-18, 09:00, Juri Lelli wrote:
+> > > > Hi Joel,
+> > > > 
+> > > > On 16/05/18 15:45, Joel Fernandes (Google) wrote:
+> > > > 
+> > > > [...]
+> > > > 
+> > > > > @@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+> > > > >  static void sugov_work(struct kthread_work *work)
+> > > > >  {
+> > > > >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> > > > > +	unsigned int freq;
+> > > > > +	unsigned long flags;
+> > > > > +
+> > > > > +	/*
+> > > > > +	 * Hold sg_policy->update_lock shortly to handle the case where:
+> > > > > +	 * incase sg_policy->next_freq is read here, and then updated by
+> > > > > +	 * sugov_update_shared just before work_in_progress is set to false
+> > > > > +	 * here, we may miss queueing the new update.
+> > > > > +	 */
+> > > > > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+> > > > > +	freq = sg_policy->next_freq;
+> > > > > +	sg_policy->work_in_progress = false;
+> > > > > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+> > > > 
+> > > > OK, we queue the new request up, but still we need to let this kthread
+> > > > activation complete and then wake it up again to service the request
+> > > > already queued, right? Wasn't what Claudio proposed (service back to
+> > > > back requests all in the same kthread activation) better from an
+> > > > overhead pow?
+> 
+> Hmm, from that perspective, yeah. But note that my patch doesn't increase the
+> overhead from what it already is.. because we don't queue the irq_work again
+> unless work_in_progress is cleared, which wouldn't be if the kthread didn't
+> run yet.
+> 
+> > > 
+> > > We would need more locking stuff in the work handler in that case and
+> > > I think there maybe a chance of missing the request in that solution
+> > > if the request happens right at the end of when sugov_work returns.
 > > 
-> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > index e13df951aca7..a87fc281893d 100644
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> >  	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
-> >  		return false;
-> >  
-> > -	if (sg_policy->work_in_progress)
-> > -		return false;
-> > -
-> >  	if (unlikely(sg_policy->need_freq_update)) {
-> >  		sg_policy->need_freq_update = false;
-> >  		/*
-> > @@ -129,8 +126,11 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-> >  		policy->cur = next_freq;
-> >  		trace_cpu_frequency(next_freq, smp_processor_id());
-> >  	} else {
-> > -		sg_policy->work_in_progress = true;
-> > -		irq_work_queue(&sg_policy->irq_work);
-> > +		/* Don't queue request if one was already queued */
-> > +		if (!sg_policy->work_in_progress) {
+> > Mmm, true. Ideally we might want to use some sort of queue where to
+> > atomically insert requests and then consume until queue is empty from
+> > sugov kthread.
 > 
-> Merge it above to make it "else if".
+> IMO we don't really need a queue or anything, we should need the kthread to
+> process the *latest* request it sees since that's the only one that matters.
 
-Sure.
+Yep, makes sense.
 
-> > +			sg_policy->work_in_progress = true;
-> > +			irq_work_queue(&sg_policy->irq_work);
-> > +		}
-> >  	}
-> >  }
-> >  
-> > @@ -291,6 +291,15 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> >  
-> >  	ignore_dl_rate_limit(sg_cpu, sg_policy);
-> >  
-> > +	/*
-> > +	 * For slow-switch systems, single policy requests can't run at the
-> > +	 * moment if the governor thread is already processing a pending
-> > +	 * frequency switch request, this can be fixed by acquiring update_lock
-> > +	 * while updating next_freq and work_in_progress but we prefer not to.
-> > +	 */
-> > +	if (sg_policy->work_in_progress)
-> > +		return;
-> > +
+> > But, I guess that's going to be too much complexity for an (hopefully)
+> > corner case.
 > 
-> @Rafael: Do you think its worth start using the lock now for unshared
-> policies ?
+> I thought of this corner case too, I'd argue its still an improvement over
+> not doing anything, but we could tighten this up a bit more if you wanted by
 
-Will wait for confirmation before next revision.
+Indeed! :)
 
-> >  	if (!sugov_should_update_freq(sg_policy, time))
-> >  		return;
-> >  
-> > @@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
-> >  static void sugov_work(struct kthread_work *work)
-> >  {
-> >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-> > +	unsigned int freq;
-> > +	unsigned long flags;
-> > +
-> > +	/*
-> > +	 * Hold sg_policy->update_lock shortly to handle the case where:
-> > +	 * incase sg_policy->next_freq is read here, and then updated by
-> > +	 * sugov_update_shared just before work_in_progress is set to false
-> > +	 * here, we may miss queueing the new update.
-> > +	 */
-> > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
-> > +	freq = sg_policy->next_freq;
-> > +	sg_policy->work_in_progress = false;
-> > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
-> >  
-> >  	mutex_lock(&sg_policy->work_lock);
-> > -	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
-> > +	__cpufreq_driver_target(sg_policy->policy, freq,
-> >  				CPUFREQ_RELATION_L);
+> doing something like this on top of my patch. Thoughts?
 > 
-> No need of line break anymore.
-
-Yes, will fix.
-
-> >  	mutex_unlock(&sg_policy->work_lock);
-> > -
-> > -	sg_policy->work_in_progress = false;
-> >  }
-> >  
-> >  static void sugov_irq_work(struct irq_work *irq_work)
+> ---8<-----------------------
 > 
-> LGTM.
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index a87fc281893d..e45ec24b810b 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -394,6 +394,7 @@ static void sugov_work(struct kthread_work *work)
+>  	unsigned int freq;
+>  	unsigned long flags;
+>  
+> +redo_work:
+>  	/*
+>  	 * Hold sg_policy->update_lock shortly to handle the case where:
+>  	 * incase sg_policy->next_freq is read here, and then updated by
+> @@ -409,6 +410,9 @@ static void sugov_work(struct kthread_work *work)
+>  	__cpufreq_driver_target(sg_policy->policy, freq,
+>  				CPUFREQ_RELATION_L);
+>  	mutex_unlock(&sg_policy->work_lock);
+> +
+> +	if (sg_policy->work_in_progress)
+> +		goto redo_work;
 
-Cool, thanks.
-
-- Joel
+Didn't we already queue up another irq_work at this point?
