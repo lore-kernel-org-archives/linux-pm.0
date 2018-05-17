@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1 02/11] cpufreq: tegra20: Clean up whitespaces in the code
-Date: Thu, 17 May 2018 21:00:47 +0300
-Message-ID: <20180517180056.13336-3-digetx@gmail.com>
+Subject: [PATCH v1 09/11] cpufreq: tegra20: Allow cpufreq driver to be built as loadable module
+Date: Thu, 17 May 2018 21:00:54 +0300
+Message-ID: <20180517180056.13336-10-digetx@gmail.com>
 References: <20180517180056.13336-1-digetx@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180517180056.13336-1-digetx@gmail.com>
@@ -10,31 +10,26 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Remove unneeded blank line and replace whitespaces with a tab in the code
-for consistency.
+Nothing prevents Tegra20 CPUFreq module to be unloaded, hence allow it to
+be built as a non-builtin kernel module.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/cpufreq/tegra20-cpufreq.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/cpufreq/Kconfig.arm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
-index 10793498355e..dd8a76a64a8e 100644
---- a/drivers/cpufreq/tegra20-cpufreq.c
-+++ b/drivers/cpufreq/tegra20-cpufreq.c
-@@ -203,12 +203,11 @@ static int __init tegra_cpufreq_init(void)
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 96b35b8b3606..a8a2e210c624 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -264,7 +264,7 @@ config ARM_TANGO_CPUFREQ
+ 	default y
  
- static void __exit tegra_cpufreq_exit(void)
- {
--        cpufreq_unregister_driver(&tegra_cpufreq_driver);
-+	cpufreq_unregister_driver(&tegra_cpufreq_driver);
- 	clk_put(emc_clk);
- 	clk_put(cpu_clk);
- }
- 
--
- MODULE_AUTHOR("Colin Cross <ccross@android.com>");
- MODULE_DESCRIPTION("NVIDIA Tegra20 cpufreq driver");
- MODULE_LICENSE("GPL");
+ config ARM_TEGRA20_CPUFREQ
+-	bool "Tegra20 CPUFreq support"
++	tristate "Tegra20 CPUFreq support"
+ 	depends on ARCH_TEGRA
+ 	default y
+ 	help
 -- 
 2.17.0
