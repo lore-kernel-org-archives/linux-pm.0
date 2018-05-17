@@ -1,56 +1,107 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: brcmstb-avs-cpufreq: sort frequencies in
- ascending order
-Date: Thu, 17 May 2018 09:44:48 +0530
-Message-ID: <20180517041448.ceh4g5fs2qfqqojm@vireshk-i7>
-References: <20180516034954.56475-1-code@mmayer.net>
- <20180516043218.7ktq5vjq2rhcszz5@vireshk-i7>
- <71309e94-90d4-2b58-729b-9ab488c6d554@gmail.com>
+Subject: Re: [PATCH RFC] schedutil: Allow cpufreq requests to be made even
+ when kthread kicked
+Date: Thu, 17 May 2018 10:36:11 +0530
+Message-ID: <20180517050611.yj2alkzckl3ximzu@vireshk-i7>
+References: <20180516224518.109891-1-joel@joelfernandes.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <71309e94-90d4-2b58-729b-9ab488c6d554@gmail.com>
+In-Reply-To: <20180516224518.109891-1-joel@joelfernandes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Markus Mayer <code@mmayer.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Joel Fernandes (Google)" <joel@joelfernandes.org>
+Cc: linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16-05-18, 12:24, Florian Fainelli wrote:
-> On 05/15/2018 09:32 PM, Viresh Kumar wrote:
-> > On 15-05-18, 20:49, Markus Mayer wrote:
-> >> From: Markus Mayer <mmayer@broadcom.com>
-> >>
-> >> Most CPUfreq drivers (at least on ARM) seem to be sorting the available
-> >> frequencies from lowest to highest. To match this behaviour, we reverse
-> >> the sorting order in brcmstb-avs-cpufreq, so it is now also lowest to
-> >> highest.
-> > 
-> > The reasoning isn't correct. Just because everyone else is doing it
-> > doesn't make it right and so you shouldn't change just because of
-> > that.
-> > 
-> > What you must written instead in the commit log is that the cpufreq
-> > core performs better if the table is sorted (in any order), and so we
-> > must sort it as well.
+On 16-05-18, 15:45, Joel Fernandes (Google) wrote:
+>  kernel/sched/cpufreq_schedutil.c | 36 +++++++++++++++++++++++++-------
+>  1 file changed, 28 insertions(+), 8 deletions(-)
 > 
-> Is there a reason why set_freq_table_sorted() tries an ascending or
-> descending sort, but does not enforce one versus another for all drivers?
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index e13df951aca7..a87fc281893d 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>  	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
+>  		return false;
+>  
+> -	if (sg_policy->work_in_progress)
+> -		return false;
+> -
+>  	if (unlikely(sg_policy->need_freq_update)) {
+>  		sg_policy->need_freq_update = false;
+>  		/*
+> @@ -129,8 +126,11 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>  		policy->cur = next_freq;
+>  		trace_cpu_frequency(next_freq, smp_processor_id());
+>  	} else {
+> -		sg_policy->work_in_progress = true;
+> -		irq_work_queue(&sg_policy->irq_work);
+> +		/* Don't queue request if one was already queued */
+> +		if (!sg_policy->work_in_progress) {
 
-set_freq_table_sorted() doesn't sort the frequency table but checks if
-the table is already sorted in a particular order. And then
-cpufreq_frequency_table_target() is optimized based on this flag. We
-don't have to enforce any particular ordering here.
+Merge it above to make it "else if".
 
-> > But I feel the table is already sorted for your platform, isn't it?
-> > And I don't see a clear advantage of merging this patch.
-> 
-> The patch changes the order to have the lowest to highest, whereas the
-> current implementation has them from highest to lowest. From what you
-> are saying, it sounds like this is unnecessary, since the sorting is
-> already making things efficient enough, so this is just a cosmetic thing?
+> +			sg_policy->work_in_progress = true;
+> +			irq_work_queue(&sg_policy->irq_work);
+> +		}
+>  	}
+>  }
+>  
+> @@ -291,6 +291,15 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  
+>  	ignore_dl_rate_limit(sg_cpu, sg_policy);
+>  
+> +	/*
+> +	 * For slow-switch systems, single policy requests can't run at the
+> +	 * moment if the governor thread is already processing a pending
+> +	 * frequency switch request, this can be fixed by acquiring update_lock
+> +	 * while updating next_freq and work_in_progress but we prefer not to.
+> +	 */
+> +	if (sg_policy->work_in_progress)
+> +		return;
+> +
 
-Right. It shouldn't make any performance improvements.
+@Rafael: Do you think its worth start using the lock now for unshared
+policies ?
+
+>  	if (!sugov_should_update_freq(sg_policy, time))
+>  		return;
+>  
+> @@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+>  static void sugov_work(struct kthread_work *work)
+>  {
+>  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> +	unsigned int freq;
+> +	unsigned long flags;
+> +
+> +	/*
+> +	 * Hold sg_policy->update_lock shortly to handle the case where:
+> +	 * incase sg_policy->next_freq is read here, and then updated by
+> +	 * sugov_update_shared just before work_in_progress is set to false
+> +	 * here, we may miss queueing the new update.
+> +	 */
+> +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+> +	freq = sg_policy->next_freq;
+> +	sg_policy->work_in_progress = false;
+> +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+>  
+>  	mutex_lock(&sg_policy->work_lock);
+> -	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
+> +	__cpufreq_driver_target(sg_policy->policy, freq,
+>  				CPUFREQ_RELATION_L);
+
+No need of line break anymore.
+
+>  	mutex_unlock(&sg_policy->work_lock);
+> -
+> -	sg_policy->work_in_progress = false;
+>  }
+>  
+>  static void sugov_irq_work(struct irq_work *irq_work)
+
+LGTM.
 
 -- 
 viresh
