@@ -1,56 +1,60 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH] PM / devfreq: Remove redundant frequency adjustment from
- governors
-Date: Thu, 17 May 2018 15:41:26 -0700
-Message-ID: <20180517224126.GP19594@google.com>
-References: <20180516211051.78875-1-mka@chromium.org>
+Subject: Re: [RFC PATCH] PM / devfreq: Add policy notifier
+Date: Thu, 17 May 2018 16:07:28 -0700
+Message-ID: <20180517230728.GQ19594@google.com>
+References: <CGME20180515212545epcas1p2bdfd9c90f2ce6b74ac0fdd8cd9f9f63b@epcas1p2.samsung.com>
+ <20180515212447.180595-1-mka@chromium.org>
+ <5AFCE27E.20803@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180516211051.78875-1-mka@chromium.org>
+In-Reply-To: <5AFCE27E.20803@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 16, 2018 at 02:10:51PM -0700, Matthias Kaehlcke wrote:
-> The performance, powersave, simpleondemand and userspace governors
-> determine a target frequency and then adjust it according to the
-> df->min/max_freq limits that might have been set by user space. This
-> adjustment is redundant, it is done in update_devfreq() for any
-> governor, right after governor->get_target_freq().
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  drivers/devfreq/governor_performance.c    | 10 ++--------
->  drivers/devfreq/governor_powersave.c      |  5 -----
->  drivers/devfreq/governor_simpleondemand.c |  7 +------
->  drivers/devfreq/governor_userspace.c      | 16 ++++------------
->  4 files changed, 7 insertions(+), 31 deletions(-)
-> 
-> diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
-> index 4d23ecfbd948..31ee30622c00 100644
-> --- a/drivers/devfreq/governor_performance.c
-> +++ b/drivers/devfreq/governor_performance.c
-> @@ -16,14 +16,8 @@
->  static int devfreq_performance_func(struct devfreq *df,
->  				    unsigned long *freq)
->  {
-> -	/*
-> -	 * target callback should be able to get floor value as
-> -	 * said in devfreq.h
-> -	 */
-> -	if (!df->max_freq)
-> -		*freq = UINT_MAX;
-> -	else
-> -		*freq = df->max_freq;
-> +	*freq = UINT_MAX;
-> +
->  	return 0;
->  }
+Hi,
 
-For the record, the frequency adjustment in update_devfreq() is
-currently broken for df->max_freq == 0:
+On Thu, May 17, 2018 at 11:01:34AM +0900, Chanwoo Choi wrote:
+> Hi,
+> 
+> Could you give some use-case of DEVFREQ_POLICY_NOTIFIER
+> or send use-case patch with this patch?
 
-https://patchwork.kernel.org/patch/10407827/
+This is a WIP patch that makes use of the DEVFREQ_POLICY_NOTIFIER:
+
+https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/1065122
+
+> I already knew the CPUFREQ_POLICY_NOTIFIER.
+> But, until now, there are no any requirements of DEVFREQ_POLICY_NOTIFIER.
+> If there are no any use-case, it is not necessary codes.
+
+Sure, I intend to land the above driver upstream if devfreq can
+provide the necessary interfaces.
+
+> On 2018년 05월 16일 06:24, Matthias Kaehlcke wrote:
+> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> > index fe2af6aa88fc..a7294c056f65 100644
+> > --- a/drivers/devfreq/devfreq.c
+> > +++ b/drivers/devfreq/devfreq.c
+> > @@ -273,6 +273,9 @@ int update_devfreq(struct devfreq *devfreq)
+> >  	if (err)
+> >  		return err;
+> >  
+> > +	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
+> > +			DEVFREQ_ADJUST, &freq);
+> 
+> It is not proper to used 'freq' as the passed data.
+> In current step,'freq' is not adjusted and is not final decided
+> frequency.
+
+Right, the next revision will pass a struct devfreq_policy instead,
+where the notifiers can adjust the min/max values, similar to what
+cpufreq does.
+
+Thanks
+
+Matthias
