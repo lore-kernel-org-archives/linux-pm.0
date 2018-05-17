@@ -1,60 +1,127 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [RFC PATCH] PM / devfreq: Add policy notifier
-Date: Thu, 17 May 2018 16:07:28 -0700
-Message-ID: <20180517230728.GQ19594@google.com>
-References: <CGME20180515212545epcas1p2bdfd9c90f2ce6b74ac0fdd8cd9f9f63b@epcas1p2.samsung.com>
- <20180515212447.180595-1-mka@chromium.org>
- <5AFCE27E.20803@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Remove redundant frequency adjustment
+ from governors
+Date: Fri, 18 May 2018 08:15:55 +0900
+Message-ID: <5AFE0D2B.6090201@samsung.com>
+References: <CGME20180516211119epcas2p4370ceb0c9d959bd1441fa71493a9b0e0@epcas2p4.samsung.com>
+        <20180516211051.78875-1-mka@chromium.org> <5AFCDE68.6000804@samsung.com>
+        <20180517154705.GN19594@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5AFCE27E.20803@samsung.com>
+In-reply-to: <20180517154705.GN19594@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On Thu, May 17, 2018 at 11:01:34AM +0900, Chanwoo Choi wrote:
+On 2018년 05월 18일 00:47, Matthias Kaehlcke wrote:
 > Hi,
 > 
-> Could you give some use-case of DEVFREQ_POLICY_NOTIFIER
-> or send use-case patch with this patch?
-
-This is a WIP patch that makes use of the DEVFREQ_POLICY_NOTIFIER:
-
-https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/1065122
-
-> I already knew the CPUFREQ_POLICY_NOTIFIER.
-> But, until now, there are no any requirements of DEVFREQ_POLICY_NOTIFIER.
-> If there are no any use-case, it is not necessary codes.
-
-Sure, I intend to land the above driver upstream if devfreq can
-provide the necessary interfaces.
-
-> On 2018년 05월 16일 06:24, Matthias Kaehlcke wrote:
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> > index fe2af6aa88fc..a7294c056f65 100644
-> > --- a/drivers/devfreq/devfreq.c
-> > +++ b/drivers/devfreq/devfreq.c
-> > @@ -273,6 +273,9 @@ int update_devfreq(struct devfreq *devfreq)
-> >  	if (err)
-> >  		return err;
-> >  
-> > +	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
-> > +			DEVFREQ_ADJUST, &freq);
+> On Thu, May 17, 2018 at 10:44:08AM +0900, Chanwoo Choi wrote:
+>> Hi,
+>>
+>> On 2018년 05월 17일 06:10, Matthias Kaehlcke wrote:
+>>> The performance, powersave, simpleondemand and userspace governors
+>>> determine a target frequency and then adjust it according to the
+>>> df->min/max_freq limits that might have been set by user space. This
+>>> adjustment is redundant, it is done in update_devfreq() for any
+>>> governor, right after governor->get_target_freq().
+>>>
+>>> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+>>> ---
+>>>  drivers/devfreq/governor_performance.c    | 10 ++--------
+>>>  drivers/devfreq/governor_powersave.c      |  5 -----
+>>>  drivers/devfreq/governor_simpleondemand.c |  7 +------
+>>>  drivers/devfreq/governor_userspace.c      | 16 ++++------------
+>>>  4 files changed, 7 insertions(+), 31 deletions(-)
+>>>
+>>> diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
+>>> index 4d23ecfbd948..31ee30622c00 100644
+>>> --- a/drivers/devfreq/governor_performance.c
+>>> +++ b/drivers/devfreq/governor_performance.c
+>>> @@ -16,14 +16,8 @@
+>>>  static int devfreq_performance_func(struct devfreq *df,
+>>>  				    unsigned long *freq)
+>>>  {
+>>> -	/*
+>>> -	 * target callback should be able to get floor value as
+>>> -	 * said in devfreq.h
+>>> -	 */
+>>> -	if (!df->max_freq)
+>>> -		*freq = UINT_MAX;
+>>> -	else
+>>> -		*freq = df->max_freq;
+>>> +	*freq = UINT_MAX;
+>>> +
+>>
+>> It is difficult to understand why use UINT_MAX instead of df->max_freq.
+>>
+>> Instead, after merged the commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq
+>> when adding the devfreq device"), df->max/min_freq have the specific frequency
+>> value always. So, we can change it as following without UINT_MAX. 
+>>
+>> 	*freq = df->max_freq;
 > 
-> It is not proper to used 'freq' as the passed data.
-> In current step,'freq' is not adjusted and is not final decided
-> frequency.
+> There are two reasons why I don't like to return df->max_freq:
+> 
+> 1. update_devfreq() already handles the user limits (which is what
+> min/max_freq actually are), no need to spread parts of this
+> additionally over all governors.
 
-Right, the next revision will pass a struct devfreq_policy instead,
-where the notifiers can adjust the min/max values, similar to what
-cpufreq does.
+As I already commented, each function have to keep their own role.
+Actually, this function doesn't know the future work in update_devfreq().
+Only, devfreq_performance_func have to set the maximum frequency to "*freq".
+It is role of performance governor.
 
-Thanks
+> 
+> 2. I plan to introduce the concept of a devfreq policy [1], which
+> would introduce another pair of frequencies, df->policy.min/max, and
+> min/max_freq would become df->policy.user.min/max. The governors would
+> then return df->policy.user.min/max, which isn't really incorrect
+> since update_devfreq() takes care of adjusting the value with
+> df->policy.min/max if needed, but it also isn't very clear. And we
+> almost certainly shouldn't additionally handle df->policy.min/max in
+> the governors.
 
-Matthias
+I have not seen any patch. Also, it is not proper to discuss on this patch
+because this patch doesn't include devfreq policy(?).
+
+> 
+> I agree though that just returning UINT_MAX isn't very clear either,
+> even though that's what some governors are doing currently when
+> df->min/max_freq is not set (which can still occur, since user space
+> is free to set the value to 0).
+> 
+> I think there are two better options than returning df->min/max_freq:
+> 
+> a) create constants DEVFREQ_MIN/MAX_FREQ and return them, this clearly
+> states the intent.
+> 
+> b) return df->scaling_min/max_freq, which is the min/max frequency
+> that is actually available on the device side, depending on the
+> enabled OPPs.
+> 
+> A slightly related question: Is it actually intended to keep
+> supporting a value of 0 for df->min/max_freq to keep backwards
+> compatibility, or should the related code be removed?
+> 
+> Thanks
+> 
+> Matthias
+> 
+> [1] https://patchwork.kernel.org/patch/10401999/ (first draft, without
+> df->policy.min/max)
+> 
+> 
+> 
+
+And when you reply, please remain previous my comments of another point.
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
