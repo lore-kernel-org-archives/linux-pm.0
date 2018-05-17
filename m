@@ -1,38 +1,97 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC/RFT] [PATCH 10/10] cpufreq: intel_pstate: enable boost for
- SKX
-Date: Wed, 16 May 2018 17:52:41 -0700
-Message-ID: <1526518361.8766.1.camel@linux.intel.com>
-References: <20180516044911.28797-1-srinivas.pandruvada@linux.intel.com>
-         <20180516044911.28797-11-srinivas.pandruvada@linux.intel.com>
-         <20180516074948.GZ12217@hirez.programming.kicks-ass.net>
-         <1526485584.61700.19.camel@linux.intel.com>
-         <20180516155424.GG12198@hirez.programming.kicks-ass.net>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Init user limits from OPP limits, not
+ viceversa
+Date: Thu, 17 May 2018 10:07:56 +0900
+Message-ID: <5AFCD5EC.5080200@samsung.com>
+References: <CGME20180516225800epcas5p188094c0edfe8a9c3ffd3bfb9e48ce87c@epcas5p1.samsung.com>
+        <20180516225709.153138-1-mka@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180516155424.GG12198@hirez.programming.kicks-ass.net>
+In-reply-to: <20180516225709.153138-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, bp@suse.de, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net, x86@kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, juri.lelli@arm.com, linux-kernel@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2018-05-16 at 17:54 +0200, Peter Zijlstra wrote:
-> On Wed, May 16, 2018 at 08:46:24AM -0700, Srinivas Pandruvada wrote:
-> > On Wed, 2018-05-16 at 09:49 +0200, Peter Zijlstra wrote:
-> > > On Tue, May 15, 2018 at 09:49:11PM -0700, Srinivas Pandruvada
-> > > wrote:
-> > > > Enable HWP boost on Skylake server platform.
-> > > 
-> > > Why not unconditionally enable it on everything HWP ?
-> > 
-> > Never noticed in any difference performance in clients with HWP nor
-> > anybody complained. Since clients uses single power domain, some
-> > other
-> > CPUs always gives boost. 
+Hi,
+
+On 2018년 05월 17일 07:57, Matthias Kaehlcke wrote:
+> Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding
+> the devfreq device") introduced the initialization of the user
+> limits min/max_freq from the lowest/highest available OPPs. Later
+> commit f1d981eaecf8 ("PM / devfreq: Use the available min/max
+> frequency") added scaling_min/max_freq, which actually represent
+> the frequencies of the lowest/highest available OPP. scaling_min/
+> max_freq are initialized with the values from min/max_freq, which
+> is totally correct in the context, but a bit awkward to read.
 > 
-> Can't the hardware tell us about per-core stuff? Do we really have to
-> use tables for that?
-AFAIK not in a standard way across all platforms. But I will check on
-this.
+> Swap the initialization and assign scaling_min/max_freq with the
+> OPP freqs and then the user limts min/max_freq with scaling_min/
+> max_freq.
+> 
+> Needless to say that this change is a NOP, intended to improve
+> readability.
+> 
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+> Additional context: I'm considering to introduce the concept of
+> a devfreq policy, which would probably move min/max_freq inside
+> of a struct policy, this would make the initialization even
+> more awkward to read. If this moves forward I might also propose
+> to rename scaling_min/max_freq to something like min/max_opp_freq
+> to avoid confusion with the frequencies in the policy (cpufreq uses
+> scaling_min/max_freq for the sysfs attributes of the policy
+> limits).
+> 
+>  drivers/devfreq/devfreq.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index fe2af6aa88fc..0057ef5b0a98 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -604,21 +604,21 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  		mutex_lock(&devfreq->lock);
+>  	}
+>  
+> -	devfreq->min_freq = find_available_min_freq(devfreq);
+> -	if (!devfreq->min_freq) {
+> +	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
+> +	if (!devfreq->scaling_min_freq) {
+>  		mutex_unlock(&devfreq->lock);
+>  		err = -EINVAL;
+>  		goto err_dev;
+>  	}
+> -	devfreq->scaling_min_freq = devfreq->min_freq;
+> +	devfreq->min_freq = devfreq->scaling_min_freq;
+>  
+> -	devfreq->max_freq = find_available_max_freq(devfreq);
+> -	if (!devfreq->max_freq) {
+> +	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
+> +	if (!devfreq->scaling_max_freq) {
+>  		mutex_unlock(&devfreq->lock);
+>  		err = -EINVAL;
+>  		goto err_dev;
+>  	}
+> -	devfreq->scaling_max_freq = devfreq->max_freq;
+> +	devfreq->max_freq = devfreq->scaling_max_freq;
+>  
+>  	dev_set_name(&devfreq->dev, "devfreq%d",
+>  				atomic_inc_return(&devfreq_no));
+> 
+
+This patch just clean-up codes related to min/max_freq and scaling_min/max_freq.
+It seems be good.
+
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+But, I don't want to change the name from 'scaling_min/max_freq'
+to 'min/max_opp_freq'. You can check the meaning of variables
+in comment of struct devfreq.
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
