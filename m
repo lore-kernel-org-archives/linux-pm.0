@@ -1,129 +1,112 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [v0 2/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
-Date: Thu, 17 May 2018 12:25:59 -0700
-Message-ID: <5AFDD747.7020509@codeaurora.org>
-References: <1526549401-25666-1-git-send-email-tdas@codeaurora.org> <1526549401-25666-3-git-send-email-tdas@codeaurora.org> <20180517101405.23oxyqpmpjhauflx@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH] PM / devfreq: Fix handling of min/max_freq == 0
+Date: Thu, 17 May 2018 15:32:55 -0700
+Message-ID: <20180517223255.211918-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180517101405.23oxyqpmpjhauflx@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Taniya Das <tdas@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, amit.kucheria@linaro.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/17/2018 03:14 AM, Viresh Kumar wrote:
-> On 17-05-18, 15:00, Taniya Das wrote:
->> The CPUfreq FW present in some QCOM chipsets offloads the steps necessary
->> for hanging the frequency of CPUs. The driver implements the cpufreq driver
->> interface for this firmware.
->>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>
->>   ##################################################################################
->> diff --git a/drivers/cpufreq/qcom-cpufreq-fw.c b/drivers/cpufreq/qcom-cpufreq-fw.c
+Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
+devfreq device") initializes df->min/max_freq with the min/max OPP when
+the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
+available min/max frequency") adds df->scaling_min/max_freq and the
+following to the frequency adjustment code:
 
->> +
->> +static int qcom_read_lut(struct platform_device *pdev,
->> +			struct cpufreq_qcom *c)
->> +{
->> +	struct device *dev = &pdev->dev;
->> +	u32 data, src, lval, i, core_count, prev_cc = 0;
->> +
->> +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
->> +				sizeof(*c->table), GFP_KERNEL);
->> +	if (!c->table)
->> +		return -ENOMEM;
->> +
->> +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
->> +		data = readl_relaxed(c->lut_base + i * LUT_ROW_SIZE);
->> +		src = ((data & GENMASK(31, 30)) >> 30);
->> +		lval = (data & GENMASK(7, 0));
->> +		core_count = CORE_COUNT_VAL(data);
->
-> Why do you need this here ? And why do below in case this doesn't
-> match max-cores count ?
+  max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
 
-This is how we detect boost frequencies.
+With the current handling of min/max_freq this is incorrect:
 
->> +
->> +		if (!src)
->> +			c->table[i].frequency = INIT_RATE / 1000;
->> +		else
->> +			c->table[i].frequency = XO_RATE * lval / 1000;
->> +
->> +		c->table[i].driver_data = c->table[i].frequency;
->> +
->> +		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
->> +				i, c->table[i].frequency, core_count);
->> +
->> +		if (core_count != c->max_cores)
->> +			c->table[i].frequency = CPUFREQ_ENTRY_INVALID;
+Even though df->max_freq is now initialized to a value != 0 user space
+can still set it to 0, in this case max_freq would be 0 instead of
+df->scaling_max_freq as intended. In consequence the frequency adjustment
+is not performed:
 
-The FW might has some frequencies marked as "boost frequencies" when 
-there are higher non-boost frequencies. So, we mark them as invalid.
+  if (max_freq && freq > max_freq) {
+	freq = max_freq;
 
->> +
->> +		/*
->> +		 * Two of the same frequencies with the same core counts means
->> +		 * end of table.
->> +		 */
->> +		if (i > 0 && c->table[i - 1].driver_data ==
->> +					c->table[i].driver_data
->> +					&& prev_cc == core_count) {
->> +			struct cpufreq_frequency_table *prev = &c->table[i - 1];
->> +
->> +			if (prev->frequency == CPUFREQ_ENTRY_INVALID) {
->> +				prev->flags = CPUFREQ_BOOST_FREQ;
->> +				prev->frequency = prev->driver_data;
->> +			}
->> +
->> +			break;
->> +		}
->> +		prev_cc = core_count;
->> +	}
->> +	c->table[i].frequency = CPUFREQ_TABLE_END;
->> +
->> +	return 0;
->> +}
->> +
->> +static int qcom_get_related_cpus(struct device_node *np, struct cpumask *m)
->> +{
->> +	struct device_node *dev_phandle;
->> +	struct device *cpu_dev;
->> +	int cpu, i = 0, ret = -ENOENT;
->> +
->> +	dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
->
-> TBH, I am not a great fan of the CPU phandle list you have created
-> here. Lets see what Rob has to say on this.
->
+To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
+when the user passes a value of 0. This also prevents df->max_freq from
+being set below the min OPP when df->min_freq is 0, and similar for
+min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
+checks for this case can be removed.
 
-Neither do we, but this is the only real way of mapping the logical CPU 
-numbers to the real CPUs in HW that belong to the same freq domain. 
-Because boot CPU is always going to be CPU0 if I'm not mistaken.
+Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ drivers/devfreq/devfreq.c | 30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
->> +	while (dev_phandle) {
->> +		for_each_possible_cpu(cpu) {
->> +			cpu_dev = get_cpu_device(cpu);
->> +			if (cpu_dev && cpu_dev->of_node == dev_phandle) {
->> +				cpumask_set_cpu(cpu, m);
->> +				ret = 0;
->
-> Maybe just remove this line ...
->
->> +				break;
->> +			}
->> +		}
->> +		dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
->> +	}
->> +
->> +	return ret;
-
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index fe2af6aa88fc..e007534297f7 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
+ 	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+ 	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
+ 
+-	if (min_freq && freq < min_freq) {
++	if (freq < min_freq) {
+ 		freq = min_freq;
+ 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
+ 	}
+-	if (max_freq && freq > max_freq) {
++	if (freq > max_freq) {
+ 		freq = max_freq;
+ 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+ 	}
+@@ -1123,17 +1123,20 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ 	struct devfreq *df = to_devfreq(dev);
+ 	unsigned long value;
+ 	int ret;
+-	unsigned long max;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&df->lock);
+-	max = df->max_freq;
+-	if (value && max && value > max) {
+-		ret = -EINVAL;
+-		goto unlock;
++
++	if (value) {
++		if (value > df->max_freq) {
++			ret = -EINVAL;
++			goto unlock;
++		}
++	} else {
++		value = df->profile->freq_table[df->profile->max_state - 1];
+ 	}
+ 
+ 	df->min_freq = value;
+@@ -1158,17 +1161,20 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 	struct devfreq *df = to_devfreq(dev);
+ 	unsigned long value;
+ 	int ret;
+-	unsigned long min;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&df->lock);
+-	min = df->min_freq;
+-	if (value && min && value < min) {
+-		ret = -EINVAL;
+-		goto unlock;
++
++	if (!value) {
++		value = df->profile->freq_table[0];
++	} else {
++		if (value < df->min_freq) {
++			ret = -EINVAL;
++			goto unlock;
++		}
+ 	}
+ 
+ 	df->max_freq = value;
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.17.0.441.gb46fe60e1d-goog
