@@ -1,141 +1,104 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
- required
-Date: Thu, 17 May 2018 08:17:01 -0700
-Message-ID: <20180517151701.GC162290@joelaf.mtv.corp.google.com>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-4-patrick.bellasi@arm.com>
- <20180513060443.GB64158@joelaf.mtv.corp.google.com>
- <20180513062538.GA116730@joelaf.mtv.corp.google.com>
- <20180514163206.GF30654@e110439-lin>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH RFC] schedutil: Allow cpufreq requests to be made even
+ when kthread kicked
+Date: Thu, 17 May 2018 17:23:12 +0200
+Message-ID: <20180517152312.GG22493@localhost.localdomain>
+References: <20180516224518.109891-1-joel@joelfernandes.org>
+ <20180517070026.GA22493@localhost.localdomain>
+ <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
+ <20180517105358.GB22493@localhost.localdomain>
+ <20180517130704.GA139147@joelaf.mtv.corp.google.com>
+ <20180517142823.GD22493@localhost.localdomain>
+ <20180517144359.GA162290@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180514163206.GF30654@e110439-lin>
+In-Reply-To: <20180517144359.GA162290@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Todd Kjos <tkjos@google.com>, kernel-team@android.com, Steve Muckle <smuckle@google.com>
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, linux-pm@vger.kernel.org, kernel-team@android.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Patrick,
-
-On Mon, May 14, 2018 at 05:32:06PM +0100, Patrick Bellasi wrote:
-> On 12-May 23:25, Joel Fernandes wrote:
-> > On Sat, May 12, 2018 at 11:04:43PM -0700, Joel Fernandes wrote:
-> > > On Thu, May 10, 2018 at 04:05:53PM +0100, Patrick Bellasi wrote:
-> > > > Schedutil updates for FAIR tasks are triggered implicitly each time a
-> > > > cfs_rq's utilization is updated via cfs_rq_util_change(), currently
-> > > > called by update_cfs_rq_load_avg(), when the utilization of a cfs_rq has
-> > > > changed, and {attach,detach}_entity_load_avg().
+On 17/05/18 07:43, Joel Fernandes wrote:
+> On Thu, May 17, 2018 at 04:28:23PM +0200, Juri Lelli wrote:
+> [...]
+> > > > > We would need more locking stuff in the work handler in that case and
+> > > > > I think there maybe a chance of missing the request in that solution
+> > > > > if the request happens right at the end of when sugov_work returns.
 > > > > 
-> > > > This design is based on the idea that "we should callback schedutil
-> > > > frequently enough" to properly update the CPU frequency at every
-> > > > utilization change. However, such an integration strategy has also
-> > > > some downsides:
+> > > > Mmm, true. Ideally we might want to use some sort of queue where to
+> > > > atomically insert requests and then consume until queue is empty from
+> > > > sugov kthread.
 > > > 
-> > > I agree making the call explicit would make schedutil integration easier so
-> > > that's really awesome. However I also fear that if some path in the fair
-> > > class in the future changes the utilization but forgets to update schedutil
-> > > explicitly (because they forgot to call the explicit public API) then the
-> > > schedutil update wouldn't go through. In this case the previous design of
-> > > doing the schedutil update in the wrapper kind of was a nice to have
-> 
-> I cannot see right now other possible future paths where we can
-> actually change the utilization signal without considering that,
-> eventually, we should call an existing API to update schedutil if it
-> makes sense.
-> 
-> What I can see more likely instead, also because it already happened a
-> couple of time, is that because of code changes in fair.c we end up
-> calling (implicitly) schedutil with a wrong utilization value.
-> 
-> To note this kind of broken dependency it has already been more
-> difficult than possibly noticing an update of the utilization without
-> a corresponding explicit call of the public API.
-
-Ok, we are in agreement this is a good thing to do :)
-
-> > > > @@ -5397,9 +5366,27 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> > > >  		update_cfs_group(se);
-> > > >  	}
-> > > >  
-> > > > -	if (!se)
-> > > > +	/* The task is visible from the root cfs_rq */
-> > > > +	if (!se) {
-> > > > +		unsigned int flags = 0;
-> > > > +
-> > > >  		add_nr_running(rq, 1);
-> > > >  
-> > > > +		if (p->in_iowait)
-> > > > +			flags |= SCHED_CPUFREQ_IOWAIT;
-> > > > +
-> > > > +		/*
-> > > > +		 * !last_update_time means we've passed through
-> > > > +		 * migrate_task_rq_fair() indicating we migrated.
-> > > > +		 *
-> > > > +		 * IOW we're enqueueing a task on a new CPU.
-> > > > +		 */
-> > > > +		if (!p->se.avg.last_update_time)
-> > > > +			flags |= SCHED_CPUFREQ_MIGRATION;
-> > > > +
-> > > > +		cpufreq_update_util(rq, flags);
-> > > > +	}
-> > > > +
-> > > >  	hrtick_update(rq);
-> > > >  }
-> > > >  
-> > > > @@ -5456,10 +5443,12 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> > > >  		update_cfs_group(se);
-> > > >  	}
-> > > >  
-> > > > +	/* The task is no more visible from the root cfs_rq */
-> > > >  	if (!se)
-> > > >  		sub_nr_running(rq, 1);
-> > > >  
-> > > >  	util_est_dequeue(&rq->cfs, p, task_sleep);
-> > > > +	cpufreq_update_util(rq, 0);
-> > > 
-> > > One question about this change. In enqueue, throttle and unthrottle - you are
-> > > conditionally calling cpufreq_update_util incase the task was
-> > > visible/not-visible in the hierarchy.
-> > > 
-> > > But in dequeue you're unconditionally calling it. Seems a bit inconsistent.
-> > > Is this because of util_est or something? Could you add a comment here
-> > > explaining why this is so?
+> > > IMO we don't really need a queue or anything, we should need the kthread to
+> > > process the *latest* request it sees since that's the only one that matters.
 > > 
-> > The big question I have is incase se != NULL, then its still visible at the
-> > root RQ level.
+> > Yep, makes sense.
+> > 
+> > > > But, I guess that's going to be too much complexity for an (hopefully)
+> > > > corner case.
+> > > 
+> > > I thought of this corner case too, I'd argue its still an improvement over
+> > > not doing anything, but we could tighten this up a bit more if you wanted by
+> > 
+> > Indeed! :)
+> > 
+> > > doing something like this on top of my patch. Thoughts?
+> > > 
+> > > ---8<-----------------------
+> > > 
+> > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > > index a87fc281893d..e45ec24b810b 100644
+> > > --- a/kernel/sched/cpufreq_schedutil.c
+> > > +++ b/kernel/sched/cpufreq_schedutil.c
+> > > @@ -394,6 +394,7 @@ static void sugov_work(struct kthread_work *work)
+> > >  	unsigned int freq;
+> > >  	unsigned long flags;
+> > >  
+> > > +redo_work:
+> > >  	/*
+> > >  	 * Hold sg_policy->update_lock shortly to handle the case where:
+> > >  	 * incase sg_policy->next_freq is read here, and then updated by
+> > > @@ -409,6 +410,9 @@ static void sugov_work(struct kthread_work *work)
+> > >  	__cpufreq_driver_target(sg_policy->policy, freq,
+> > >  				CPUFREQ_RELATION_L);
+> > >  	mutex_unlock(&sg_policy->work_lock);
+> > > +
+> > > +	if (sg_policy->work_in_progress)
+> > > +		goto redo_work;
+> > 
+> > Didn't we already queue up another irq_work at this point?
 > 
-> My understanding it that you get !se at dequeue time when we are
-> dequeuing a task from a throttled RQ. Isn't it?
-
-I don't think so? !se means the RQ is not throttled.
-
-> Thus, this means you are dequeuing a throttled task, I guess for
-> example because of a migration.
-> However, the point is that a task dequeue from a throttled RQ _is
-> already_ not visible from the root RQ, because of the sub_nr_running()
-> done by throttle_cfs_rq().
-
-Yes that's what I was wondering, so my point was if its already not visible,
-then why call schedutil. I felt call schedutil only if its visible like you
-were doing for the other paths.
-
+> Oh yeah, so the case I was thinking was if the kthread was active, while the
+> new irq_work raced and finished.
 > 
-> > In that case should we still call the util_est_dequeue and the
-> > cpufreq_update_util?
+> Since that would just mean a new kthread_work for the worker, the loop I
+> mentioned above isn't needed. Infact there's already a higher level loop
+> taking care of it in kthread_worker_fn as below. So the governor thread
+> will not sleep and we'll keep servicing all pending requests till
+> they're done. So I think we're good with my original patch.
 > 
-> I had a better look at the different code paths and I've possibly come
-> up with some interesting observations. Lemme try to resume theme here.
+> repeat:
+> [...]
+> if (!list_empty(&worker->work_list)) {
+> 		work = list_first_entry(&worker->work_list,
+> 					struct kthread_work, node);
+> 		list_del_init(&work->node);
+> 	}
+> 	worker->current_work = work;
+> 	spin_unlock_irq(&worker->lock);
 > 
-> First of all, we need to distinguish from estimated utilization
-> updates and schedutil updates, since they respond to two very
-> different goals.
+> 	if (work) {
+> 		__set_current_state(TASK_RUNNING);
+> 		work->func(work);
+> 	} else if (!freezing(current))
+> 		schedule();
+> 
+> 	try_to_freeze();
+> 	cond_resched();
+> 	goto repeat;
 
-I agree with your assessments below and about not calling cpufreq when CPU is
-about to idle.
+Ah, right. Your original patch LGTM then. :)
 
-thanks!
-
-- Joel
+Maybe add a comment about this higher level loop?
