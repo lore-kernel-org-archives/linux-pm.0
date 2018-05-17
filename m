@@ -1,51 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [V2] sched/schedutil: Don't set next_freq to UINT_MAX
-Date: Thu, 17 May 2018 12:33:51 +0200
-Message-ID: <218097156.b89HneGrTB@aspire.rjw.lan>
-References: <dadd359a7fc0f719b9e95161b2ac469e1a3c70cc.1525861952.git.viresh.kumar@linaro.org> <20180511204712.GA83958@joelaf.mtv.corp.google.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH RFC] schedutil: Allow cpufreq requests to be made even
+ when kthread kicked
+Date: Thu, 17 May 2018 12:53:58 +0200
+Message-ID: <20180517105358.GB22493@localhost.localdomain>
+References: <20180516224518.109891-1-joel@joelfernandes.org>
+ <20180517070026.GA22493@localhost.localdomain>
+ <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180511204712.GA83958@joelaf.mtv.corp.google.com>
+Content-Disposition: inline
+In-Reply-To: <20180517102024.s3dxo4uepujh5f65@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Joel Fernandes (Google)" <joel@joelfernandes.org>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, May 11, 2018 10:47:12 PM CEST Joel Fernandes wrote:
-> On Wed, May 09, 2018 at 04:05:24PM +0530, Viresh Kumar wrote:
-> > The schedutil driver sets sg_policy->next_freq to UINT_MAX on certain
-> > occasions to discard the cached value of next freq:
-> > - In sugov_start(), when the schedutil governor is started for a group
-> >   of CPUs.
-> > - And whenever we need to force a freq update before rate-limit
-> >   duration, which happens when:
-> >   - there is an update in cpufreq policy limits.
-> >   - Or when the utilization of DL scheduling class increases.
+On 17/05/18 15:50, Viresh Kumar wrote:
+> On 17-05-18, 09:00, Juri Lelli wrote:
+> > Hi Joel,
 > > 
-> > In return, get_next_freq() doesn't return a cached next_freq value but
-> > recalculates the next frequency instead.
+> > On 16/05/18 15:45, Joel Fernandes (Google) wrote:
 > > 
-> > But having special meaning for a particular value of frequency makes the
-> > code less readable and error prone. We recently fixed a bug where the
-> > UINT_MAX value was considered as valid frequency in
-> > sugov_update_single().
+> > [...]
 > > 
-> > All we need is a flag which can be used to discard the value of
-> > sg_policy->next_freq and we already have need_freq_update for that. Lets
-> > reuse it instead of setting next_freq to UINT_MAX.
+> > > @@ -382,13 +391,24 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+> > >  static void sugov_work(struct kthread_work *work)
+> > >  {
+> > >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> > > +	unsigned int freq;
+> > > +	unsigned long flags;
+> > > +
+> > > +	/*
+> > > +	 * Hold sg_policy->update_lock shortly to handle the case where:
+> > > +	 * incase sg_policy->next_freq is read here, and then updated by
+> > > +	 * sugov_update_shared just before work_in_progress is set to false
+> > > +	 * here, we may miss queueing the new update.
+> > > +	 */
+> > > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+> > > +	freq = sg_policy->next_freq;
+> > > +	sg_policy->work_in_progress = false;
+> > > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
 > > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > V2:
-> > - Rebased over the fix sent by Rafael
-> > 
-> >   lkml.kernel.org/r/2276196.ev9rMjHTR0@aspire.rjw.lan
-> > 
-> > - Remove the additional check from sugov_update_single() as well.
-> > - This is for 4.18 now instead of stable kernels.
+> > OK, we queue the new request up, but still we need to let this kthread
+> > activation complete and then wake it up again to service the request
+> > already queued, right? Wasn't what Claudio proposed (service back to
+> > back requests all in the same kthread activation) better from an
+> > overhead pow?
 > 
-> Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+> We would need more locking stuff in the work handler in that case and
+> I think there maybe a chance of missing the request in that solution
+> if the request happens right at the end of when sugov_work returns.
 
-Applied, thanks!
+Mmm, true. Ideally we might want to use some sort of queue where to
+atomically insert requests and then consume until queue is empty from
+sugov kthread.
+
+But, I guess that's going to be too much complexity for an (hopefully)
+corner case.
