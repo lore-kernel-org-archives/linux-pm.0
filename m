@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1 03/11] cpufreq: tegra20: Remove EMC clock usage
-Date: Thu, 17 May 2018 21:00:48 +0300
-Message-ID: <20180517180056.13336-4-digetx@gmail.com>
+Subject: [PATCH v1 05/11] cpufreq: tegra20: Clean up included headers
+Date: Thu, 17 May 2018 21:00:50 +0300
+Message-ID: <20180517180056.13336-6-digetx@gmail.com>
 References: <20180517180056.13336-1-digetx@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180517180056.13336-1-digetx@gmail.com>
@@ -10,88 +10,35 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The EMC driver has been gone 4 years ago, since the commit a7cbe92cef27
-("ARM: tegra: remove tegra EMC scaling driver"). Remove the EMC clock
-usage as it does nothing. We may consider re-implementing the EMC scaling
-later, probably using PM Memory Bandwidth QoS API.
+Remove unused/unneeded headers and sort them in the alphabet order.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/cpufreq/tegra20-cpufreq.c | 22 ----------------------
- 1 file changed, 22 deletions(-)
+ drivers/cpufreq/tegra20-cpufreq.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
-index dd8a76a64a8e..693f9067ba8a 100644
+index 69f033d297e1..61f00d1cba26 100644
 --- a/drivers/cpufreq/tegra20-cpufreq.c
 +++ b/drivers/cpufreq/tegra20-cpufreq.c
-@@ -44,7 +44,6 @@ static struct cpufreq_frequency_table freq_table[] = {
- static struct clk *cpu_clk;
- static struct clk *pll_x_clk;
- static struct clk *pll_p_clk;
--static struct clk *emc_clk;
- static bool pll_x_prepared;
+@@ -16,16 +16,9 @@
+  *
+  */
  
- static unsigned int tegra_get_intermediate(struct cpufreq_policy *policy,
-@@ -95,17 +94,6 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- 	unsigned int ifreq = clk_get_rate(pll_p_clk) / 1000;
- 	int ret = 0;
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/types.h>
+-#include <linux/sched.h>
+-#include <linux/cpufreq.h>
+-#include <linux/delay.h>
+-#include <linux/init.h>
+-#include <linux/err.h>
+ #include <linux/clk.h>
+-#include <linux/io.h>
++#include <linux/cpufreq.h>
++#include <linux/module.h>
  
--	/*
--	 * Vote on memory bus frequency based on cpu frequency
--	 * This sets the minimum frequency, display or avp may request higher
--	 */
--	if (rate >= 816000)
--		clk_set_rate(emc_clk, 600000000); /* cpu 816 MHz, emc max */
--	else if (rate >= 456000)
--		clk_set_rate(emc_clk, 300000000); /* cpu 456 MHz, emc 150Mhz */
--	else
--		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
--
- 	/*
- 	 * target freq == pll_p, don't need to take extra reference to pll_x_clk
- 	 * as it isn't used anymore.
-@@ -141,14 +129,12 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- 	if (policy->cpu >= NUM_CPUS)
- 		return -EINVAL;
- 
--	clk_prepare_enable(emc_clk);
- 	clk_prepare_enable(cpu_clk);
- 
- 	/* FIXME: what's the actual transition time? */
- 	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
- 	if (ret) {
- 		clk_disable_unprepare(cpu_clk);
--		clk_disable_unprepare(emc_clk);
- 		return ret;
- 	}
- 
-@@ -160,7 +146,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- static int tegra_cpu_exit(struct cpufreq_policy *policy)
- {
- 	clk_disable_unprepare(cpu_clk);
--	clk_disable_unprepare(emc_clk);
- 	return 0;
- }
- 
-@@ -192,19 +177,12 @@ static int __init tegra_cpufreq_init(void)
- 	if (IS_ERR(pll_p_clk))
- 		return PTR_ERR(pll_p_clk);
- 
--	emc_clk = clk_get_sys("cpu", "emc");
--	if (IS_ERR(emc_clk)) {
--		clk_put(cpu_clk);
--		return PTR_ERR(emc_clk);
--	}
--
- 	return cpufreq_register_driver(&tegra_cpufreq_driver);
- }
- 
- static void __exit tegra_cpufreq_exit(void)
- {
- 	cpufreq_unregister_driver(&tegra_cpufreq_driver);
--	clk_put(emc_clk);
- 	clk_put(cpu_clk);
- }
- 
+ static struct cpufreq_frequency_table freq_table[] = {
+ 	{ .frequency = 216000 },
 -- 
 2.17.0
