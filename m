@@ -1,72 +1,399 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: Serdev runtime PM (was: Re: [PATCH 4/7] dt-bindings: gnss: add
- u-blox binding)
-Date: Thu, 17 May 2018 12:25:02 +0200
-Message-ID: <20180517102502.GJ30172@localhost>
-References: <5242FCAD-3139-4A9C-B9FA-7BBAA0E6AE57@goldelico.com>
- <20180503205037.7be552c1@aktux>
- <44A0BC7C-67C7-4116-849F-90FF7CF2B1F0@goldelico.com>
- <20180504114213.3xlzqxe74n55tk5s@earth.universe>
- <20180507100135.GS2285@localhost>
- <20180507154515.GP98604@atomide.com>
- <20180507163439.GV2285@localhost>
- <20180508155608.3bzcbepsmoskhlox@earth.universe>
- <20180509091831.GA2285@localhost>
- <20180509140550.GC98604@atomide.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [v0 2/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
+Date: Thu, 17 May 2018 13:27:19 +0300
+Message-ID: <CAP245DWH7T=hwN9mt=DKxD0sMaZVnW9cd_b2+6dNWUK0OL3E6w@mail.gmail.com>
+References: <1526549401-25666-1-git-send-email-tdas@codeaurora.org> <1526549401-25666-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180509140550.GC98604@atomide.com>
+In-Reply-To: <1526549401-25666-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Johan Hovold <johan@kernel.org>, Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, DTML <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 09, 2018 at 07:05:50AM -0700, Tony Lindgren wrote:
-> * Johan Hovold <johan@kernel.org> [180509 09:20]:
-> > On Tue, May 08, 2018 at 05:56:08PM +0200, Sebastian Reichel wrote:
-> > > I think using open/close for runtime pm is good enough for GPS,
-> > > since it regularly sends data and draws lots of power anyways.
-> > > But devices, that have an out-of-band wakeup signal can do proper
-> > > runtime PM of the serial port without loosing characters.
-> > 
-> > Yeah, there may be some applications where this is possible. And this is
-> > not the case for GPS, but not just because of a generally higher power
-> > consumption, but due to the fact that we cannot afford having the first
-> > message in every report burst be dropped.
-> 
-> Well most of the phone implementations use one or two out of band
-> GPIOs to first wake the UART before any data is sent. For serdev
-> this can be called from the serdev consumer write function for TX.
-> For RX, the serdev consumer needs to implement an interrupt handler
-> and wake up the parent UART before serdev RX.
+On Thu, May 17, 2018 at 12:30 PM, Taniya Das <tdas@codeaurora.org> wrote:
+> The CPUfreq FW present in some QCOM chipsets offloads the steps necessary
+> for hanging the frequency of CPUs. The driver implements the cpufreq driver
 
-Right, but the client driver would then wake the parent controller when
-expecting RX, while waking its own (serial-attached) device when wanting
-to do TX.
+s/hanging/changing :-)
 
-Just for the record, we also cleared this up here:
+> interface for this firmware.
+>
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm       |   9 ++
+>  drivers/cpufreq/Makefile          |   1 +
+>  drivers/cpufreq/qcom-cpufreq-fw.c | 318 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 328 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-fw.c
+>
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 96b35b8..a50aa6e 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -301,3 +301,12 @@ config ARM_PXA2xx_CPUFREQ
+>           This add the CPUFreq driver support for Intel PXA2xx SOCs.
+>
+>           If in doubt, say N.
+> +
+> +config ARM_QCOM_CPUFREQ_FW
+> +       tristate "QCOM CPUFreq FW driver"
+> +       help
+> +        Support for the CPUFreq FW driver.
+> +        The CPUfreq FW preset in some QCOM chipsets offloads the steps
+> +        necessary for changing the frequency of CPUs. The driver
+> +        implements the cpufreq driver interface for this firmware.
+> +        Say Y if you want to support CPUFreq FW.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index 8d24ade..a3edbce 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -85,6 +85,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)    += tegra124-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)     += tegra186-cpufreq.o
+>  obj-$(CONFIG_ARM_TI_CPUFREQ)           += ti-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ) += vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_FW)      += qcom-cpufreq-fw.o
+>
+>
+>  ##################################################################################
+> diff --git a/drivers/cpufreq/qcom-cpufreq-fw.c b/drivers/cpufreq/qcom-cpufreq-fw.c
+> new file mode 100644
+> index 0000000..67996d5
+> --- /dev/null
+> +++ b/drivers/cpufreq/qcom-cpufreq-fw.c
+> @@ -0,0 +1,318 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+> + */
+> +
+> +#include <linux/cpufreq.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +
+> +#define INIT_RATE                      300000000UL
+> +#define XO_RATE                                19200000UL
+> +#define LUT_MAX_ENTRIES                        40U
+> +#define CORE_COUNT_VAL(val)            ((val & GENMASK(18, 16)) >> 16)
+> +#define LUT_ROW_SIZE                   32
+> +
+> +struct cpufreq_qcom {
+> +       struct cpufreq_frequency_table *table;
+> +       struct device *dev;
+> +       void __iomem *perf_base;
+> +       void __iomem *lut_base;
+> +       cpumask_t related_cpus;
+> +       unsigned int max_cores;
+> +};
+> +
+> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
+> +
+> +static int
+> +qcom_cpufreq_fw_target_index(struct cpufreq_policy *policy, unsigned int index)
+> +{
+> +       struct cpufreq_qcom *c = policy->driver_data;
+> +
+> +       if (index >= LUT_MAX_ENTRIES) {
+> +               dev_err(c->dev,
+> +               "Passing an index (%u) that's greater than max (%d)\n",
+> +                                       index, LUT_MAX_ENTRIES - 1);
+> +               return -EINVAL;
+> +       }
+> +
+> +       writel_relaxed(index, c->perf_base);
+> +
+> +       /* Make sure the write goes through before proceeding */
+> +       mb();
+> +       return 0;
+> +}
+> +
+> +static unsigned int qcom_cpufreq_fw_get(unsigned int cpu)
+> +{
+> +       struct cpufreq_qcom *c;
+> +       unsigned int index;
+> +
+> +       c = qcom_freq_domain_map[cpu];
+> +       if (!c)
+> +               return -ENODEV;
+> +
+> +       index = readl_relaxed(c->perf_base);
+> +       index = min(index, LUT_MAX_ENTRIES - 1);
+> +
+> +       return c->table[index].frequency;
+> +}
+> +
+> +static int qcom_cpufreq_fw_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +       struct cpufreq_qcom *c;
+> +       int ret;
+> +
+> +       c = qcom_freq_domain_map[policy->cpu];
+> +       if (!c) {
+> +               pr_err("No scaling support for CPU%d\n", policy->cpu);
+> +               return -ENODEV;
+> +       }
+> +
+> +       cpumask_copy(policy->cpus, &c->related_cpus);
+> +
+> +       policy->table = c->table;
+> +       policy->driver_data = c;
+> +
+> +       return ret;
+> +}
+> +
+> +static struct freq_attr *qcom_cpufreq_fw_attr[] = {
+> +       &cpufreq_freq_attr_scaling_available_freqs,
+> +       &cpufreq_freq_attr_scaling_boost_freqs,
+> +       NULL
+> +};
+> +
+> +static struct cpufreq_driver cpufreq_qcom_fw_driver = {
+> +       .flags          = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+> +                         CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+> +       .verify         = cpufreq_generic_frequency_table_verify,
+> +       .target_index   = qcom_cpufreq_fw_target_index,
+> +       .get            = qcom_cpufreq_fw_get,
+> +       .init           = qcom_cpufreq_fw_cpu_init,
+> +       .name           = "qcom-cpufreq-fw",
+> +       .attr           = qcom_cpufreq_fw_attr,
+> +       .boost_enabled  = true,
+> +};
+> +
+> +static int qcom_read_lut(struct platform_device *pdev,
+> +                       struct cpufreq_qcom *c)
+> +{
+> +       struct device *dev = &pdev->dev;
+> +       u32 data, src, lval, i, core_count, prev_cc = 0;
 
-	https://marc.info/?l=linux-kernel&m=152604434504868&w=2
 
-> > > Note, that OMAP does not reach deep idle states with active
-> > > serial port. This is not acceptable for low power devices.
-> > 
-> > Sure, but note that OMAP is the only serial driver which currently
-> > implements this kind of aggressive runtime PM (besides a couple of
-> > usb-serial drivers). This means that a serdev driver can never rely on
-> > this being the case, and therefore needs to be restrictive about how
-> > long the port is kept open if it cares about power at all.
-> 
-> Well by default we don't allow lossy UART. It needs to be manually
-> configured via /sys for the timeout. With serdev, this can all be
-> done with no /sys configuration needed for the cases with GPIO
-> wake irqs :)
+Get rid of prev_cc variable initialisation here and in other places
+through out the code
 
-Indeed, but serdev client drivers must also work with serial drivers
-which do not implement this kind of aggressive runtime PM, and then the
-only way to save power is to close the port when not in use.
+> +
+> +       c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
+> +                               sizeof(*c->table), GFP_KERNEL);
+> +       if (!c->table)
+> +               return -ENOMEM;
+> +
+> +       for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+> +               data = readl_relaxed(c->lut_base + i * LUT_ROW_SIZE);
+> +               src = ((data & GENMASK(31, 30)) >> 30);
+> +               lval = (data & GENMASK(7, 0));
+> +               core_count = CORE_COUNT_VAL(data);
+> +
+> +               if (!src)
+> +                       c->table[i].frequency = INIT_RATE / 1000;
+> +               else
+> +                       c->table[i].frequency = XO_RATE * lval / 1000;
+> +
+> +               c->table[i].driver_data = c->table[i].frequency;
+> +
+> +               dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
+> +                               i, c->table[i].frequency, core_count);
+> +
+> +               if (core_count != c->max_cores)
+> +                       c->table[i].frequency = CPUFREQ_ENTRY_INVALID;
+> +
+> +               /*
+> +                * Two of the same frequencies with the same core counts means
+> +                * end of table.
+> +                */
+> +               if (i > 0 && c->table[i - 1].driver_data ==
+> +                                       c->table[i].driver_data
+> +                                       && prev_cc == core_count) {
+> +                       struct cpufreq_frequency_table *prev = &c->table[i - 1];
+> +
+> +                       if (prev->frequency == CPUFREQ_ENTRY_INVALID) {
+> +                               prev->flags = CPUFREQ_BOOST_FREQ;
+> +                               prev->frequency = prev->driver_data;
+> +                       }
+> +
+> +                       break;
+> +               }
+> +               prev_cc = core_count;
+> +       }
+> +       c->table[i].frequency = CPUFREQ_TABLE_END;
+> +
+> +       return 0;
+> +}
+> +
+> +static int qcom_get_related_cpus(struct device_node *np, struct cpumask *m)
+> +{
+> +       struct device_node *dev_phandle;
+> +       struct device *cpu_dev;
+> +       int cpu, i = 0, ret = -ENOENT;
+> +
+> +       dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
+> +       while (dev_phandle) {
+> +               for_each_possible_cpu(cpu) {
+> +                       cpu_dev = get_cpu_device(cpu);
+> +                       if (cpu_dev && cpu_dev->of_node == dev_phandle) {
+> +                               cpumask_set_cpu(cpu, m);
+> +                               ret = 0;
+> +                               break;
+> +                       }
+> +               }
+> +               dev_phandle = of_parse_phandle(np, "qcom,cpulist", i++);
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +static int qcom_cpu_resources_init(struct platform_device *pdev,
+> +                                               struct device_node *np)
+> +{
+> +       struct cpufreq_qcom *c;
+> +       struct resource res;
+> +       struct device *dev = &pdev->dev;
+> +       void __iomem *en_base;
+> +       int cpu, index = 0, ret;
+> +
+> +       c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
 
-Thanks,
-Johan
+Check if memory allocated successfully?
+
+> +
+> +       res = platform_get_resource_byname(dev, IORESOURCE_MEM, "en_base");
+> +       if (!res) {
+> +               dev_err(dev, "Enable base not defined for %s\n", np->name);
+> +               return ret;
+> +       }
+
+
+This is not going to build. Did you build-test this on a 4.17-rc kenel ?
+
+> +
+> +       en_base = devm_ioremap(dev, res->start, resource_size(res));
+> +       if (!en_base) {
+> +               dev_err(dev, "Unable to map %s en-base\n", np->name);
+> +               return -ENOMEM;
+> +       }
+> +
+> +       /* FW should be enabled state to proceed */
+> +       if (!(readl_relaxed(en_base) & 0x1)) {
+> +               dev_err(dev, "%s firmware not enabled\n", np->name);
+> +               return -ENODEV;
+> +       }
+> +
+> +       devm_iounmap(&pdev->dev, en_base);
+> +
+> +       index = of_property_match_string(np, "reg-names", "perf_base");
+> +       if (index < 0)
+> +               return index;
+> +
+> +       if (of_address_to_resource(np, index, &res))
+> +               return -ENOMEM;
+> +
+> +       c->perf_base = devm_ioremap(dev, res.start, resource_size(&res));
+> +       if (!c->perf_base) {
+> +               dev_err(dev, "Unable to map %s perf-base\n", np->name);
+> +               return -ENOMEM;
+> +       }
+> +
+> +       index = of_property_match_string(np, "reg-names", "lut_base");
+> +       if (index < 0)
+> +               return index;
+> +
+> +       if (of_address_to_resource(np, index, &res))
+> +               return -ENOMEM;
+> +
+> +       c->lut_base = devm_ioremap(dev, res.start, resource_size(&res));
+> +       if (!c->lut_base) {
+> +               dev_err(dev, "Unable to map %s lut-base\n", np->name);
+> +               return -ENOMEM;
+> +       }
+> +
+> +       ret = qcom_get_related_cpus(np, &c->related_cpus);
+> +       if (ret) {
+> +               dev_err(dev, "%s failed to get core phandles\n", np->name);
+> +               return ret;
+> +       }
+> +
+> +       c->max_cores = cpumask_weight(&c->related_cpus);
+> +
+> +       ret = qcom_read_lut(pdev, c);
+> +       if (ret) {
+> +               dev_err(dev, "%s failed to read LUT\n", np->name);
+> +               return ret;
+> +       }
+> +
+> +       for_each_cpu(cpu, &c->related_cpus)
+> +               qcom_freq_domain_map[cpu] = c;
+> +
+> +       return 0;
+> +}
+> +
+> +static int qcom_resources_init(struct platform_device *pdev)
+> +{
+> +       struct device_node *np;
+> +       int ret = -ENODEV;
+> +
+> +       for_each_available_child_of_node(pdev->dev.of_node, np) {
+> +               if (of_device_is_compatible(np, "cpufreq")) {
+> +                       ret = qcom_cpu_resources_init(pdev, np);
+> +                       if (ret)
+> +                               return ret;
+> +               }
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +static int qcom_cpufreq_fw_driver_probe(struct platform_device *pdev)
+> +{
+> +       int rc = 0;
+> +
+> +       /* Get the bases of cpufreq for domains */
+> +       rc = qcom_resources_init(pdev);
+> +       if (rc) {
+> +               dev_err(&pdev->dev, "CPUFreq resource init failed\n");
+> +               return rc;
+> +       }
+> +
+> +       rc = cpufreq_register_driver(&cpufreq_qcom_fw_driver);
+> +       if (rc) {
+> +               dev_err(&pdev->dev, "CPUFreq FW driver failed to register\n");
+> +               return rc;
+> +       }
+> +
+> +       dev_info(&pdev->dev, "QCOM CPUFreq FW driver inited\n");
+> +
+> +       return 0;
+> +}
+> +
+> +static const struct of_device_id match_table[] = {
+> +       { .compatible = "qcom,cpufreq-fw" },
+> +       {}
+> +};
+> +
+> +static struct platform_driver qcom_cpufreq_fw_driver = {
+> +       .probe = qcom_cpufreq_fw_driver_probe,
+> +       .driver = {
+> +               .name = "qcom-cpufreq-fw",
+> +               .of_match_table = match_table,
+> +               .owner = THIS_MODULE,
+> +       },
+> +};
+> +
+> +static int __init qcom_cpufreq_fw_init(void)
+> +{
+> +       return platform_driver_register(&qcom_cpufreq_fw_driver);
+> +}
+> +subsys_initcall(qcom_cpufreq_fw_init);
+> +
+> +static void __exit qcom_cpufreq_fw_exit(void)
+> +{
+> +       platform_driver_unregister(&qcom_cpufreq_fw_driver);
+> +}
+> +module_exit(qcom_cpufreq_fw_exit);
+> +
+> +MODULE_DESCRIPTION("QCOM CPU Frequency FW");
+> +MODULE_LICENSE("GPL v2");
+> --
+> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+> of the Code Aurora Forum, hosted by the  Linux Foundation.
+>
