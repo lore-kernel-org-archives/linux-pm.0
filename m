@@ -1,67 +1,69 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
- frequency invariant accounting
-Date: Thu, 17 May 2018 20:28:03 +0200
-Message-ID: <20180517182803.GY12217@hirez.programming.kicks-ass.net>
-References: <20180516044911.28797-3-srinivas.pandruvada@linux.intel.com>
- <20180516151925.GO28366@localhost.localdomain>
- <20180516154733.GF12198@hirez.programming.kicks-ass.net>
- <20180516163105.GP28366@localhost.localdomain>
- <20180517105907.GC22493@localhost.localdomain>
- <20180517150418.GF22493@localhost.localdomain>
- <1526571692.11765.10.camel@linux.intel.com>
- <20180517161649.GX12217@hirez.programming.kicks-ass.net>
- <1526575358.11765.14.camel@linux.intel.com>
- <CAJZ5v0j82sm94iCpLOVMBwoSksKx1Y49RfJv=nhhJiKhenZykg@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] Revert "cpufreq: schedutil: Don't restrict kthread to
+ related_cpus unnecessarily"
+Date: Thu, 17 May 2018 12:10:22 -0700
+Message-ID: <5AFDD39E.6040203@codeaurora.org>
+References: <20180508073340.13114-1-dietmar.eggemann@arm.com> <20180508082242.bre6sjfvefhz6xc3@vireshk-i7> <8cf21b1a-ca6e-fed7-43c5-94c66ff5986b@arm.com> <20180508094237.GA3752@e108498-lin.cambridge.arm.com> <20180513051933.GA64158@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0j82sm94iCpLOVMBwoSksKx1Y49RfJv=nhhJiKhenZykg@mail.gmail.com>
+In-Reply-To: <20180513051933.GA64158@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Pavan Kondeti <pkondeti@codeaurora.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 17, 2018 at 06:56:37PM +0200, Rafael J. Wysocki wrote:
-> On Thu, May 17, 2018 at 6:42 PM, Srinivas Pandruvada
+On 05/12/2018 10:19 PM, Joel Fernandes wrote:
+> On Tue, May 08, 2018 at 10:42:37AM +0100, Quentin Perret wrote:
+>> On Tuesday 08 May 2018 at 11:09:57 (+0200), Dietmar Eggemann wrote:
+>>> On 05/08/2018 10:22 AM, Viresh Kumar wrote:
+>>>> On 08-05-18, 08:33, Dietmar Eggemann wrote:
+>>>>> This reverts commit e2cabe48c20efb174ce0c01190f8b9c5f3ea1d13.
+>>>>>
+>>>>> Lifting the restriction that the sugov kthread is bound to the
+>>>>> policy->related_cpus for a system with a slow switching cpufreq driver,
+>>>>> which is able to perform DVFS from any cpu (e.g. cpufreq-dt), is not
+>>>>> only not beneficial it also harms Enery-Aware Scheduling (EAS) on
+>>>>> systems with asymmetric cpu capacities (e.g. Arm big.LITTLE).
+>>>>>
+>>>>> The sugov kthread which does the update for the little cpus could
+>>>>> potentially run on a big cpu. It could prevent that the big cluster goes
+>>>>> into deeper idle states although all the tasks are running on the little
+>>>>> cluster.
+>>>>
+>>>> I think the original patch did the right thing, but that doesn't suit
+>>>> everybody as you explained.
+>>>>
+>>>> I wouldn't really revert the patch but fix my platform's cpufreq
+>>>> driver to set dvfs_possible_from_any_cpu = false, so that other
+>>>> platforms can still benefit from the original commit.
+>>>
+>>> This would make sure that the kthreads are bound to the correct set of cpus
+>>> for platforms with those cpufreq drivers (cpufreq-dt (h960), scmi-cpufreq,
+>>> scpi-cpufreq) but it will also change the logic (e.g.
+>>> sugov_should_update_freq() -> cpufreq_can_do_remote_dvfs()).
+>>>
+>>> I'm still struggling to understand when a driver/platform should set
+>>> dvfs_possible_from_any_cpu to true and what the actual benefit would be.
+>>
+>> I assume it might be beneficial to have the kthread moving around freely
+>> in some cases, but since it is a SCHED_DEADLINE task now it can't really
+>> migrate anywhere anyway. So I'm not sure either if this commits still makes
+>> sense now. Or is there another use case for this ?
+>
+> The usecase I guess is, as Dietmar was saying, that it makes sense for
+> kthread to update its own cluster and not disturb other clusters or random
+> CPUs. I agree with this point.
 
-> > What will happen if we look at all core turbo as max and cap any
-> > utilization above this to 1024?
-> 
-> I was going to suggest that.
+I agree with Viresh. Also, why exactly did we make it deadline instead 
+of RT? Was RT not getting scheduled quick enough? Is it because Android 
+creates a lot of RT threads?
 
-To the basic premise behind all our frequency scaling is that there's a
-linear relation between utilization and frequency, where u=1 gets us the
-fastest.
-
-Now, we all know this is fairly crude, but it is what we work with.
-
-OTOH, the whole premise of turbo is that you don't in fact know what the
-fastest is, and in that respect setting u=1 at the guaranteed or
-sustainable frequency makes sense.
-
-The direct concequence of allowing clipping is that u=1 doesn't select
-the highest frequency, but since we don't select anything anyway
-(p-code does that for us) all we really need is to have u=1 above that
-turbo activation point you mentioned.
-
-For parts where we have to directly select frequency this obviously
-comes apart.
-
-However; what happens when the sustainable freq drops below our initial
-'max'? Imagine us dropping below the all-core-turbo because of AVX. Then
-we're back to running at u<1 at full tilt.
-
-Or for mobile parts, the sustainable frequency could drop because of
-severe thermal limits. Now I _think_ we have the possibility for getting
-interrupts and reading the new guaranteed frequency, so we could
-re-guage.
-
-So in theory I think it works, in practise we need to always be able to
-find the actual max -- be it all-core turbo, AVX or thermal constrained
-frequency. Can we do that in all cases?
+-Saravana
 
 
-I need to go back to see what the complains against Vincent's proposal
-were, because I really liked the fact that it did away with all this.
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
