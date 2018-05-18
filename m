@@ -1,143 +1,154 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / runtime: Fixup reference counting of device link suppliers at probe
-Date: Fri, 18 May 2018 10:48:49 +0200
-Message-ID: <1526633329-31729-1-git-send-email-ulf.hansson@linaro.org>
+From: Peng Fan <peng.fan@nxp.com>
+Subject: RE: [RFC] platform: detach from PM domains on shutdown
+Date: Fri, 18 May 2018 08:53:26 +0000
+Message-ID: <HE1PR04MB30041C742230314926032D4D88900@HE1PR04MB3004.eurprd04.prod.outlook.com>
+References: <20180515090110.26820-1-peng.fan@nxp.com>
+ <CAJZ5v0ibwRXqaGJW0vFcy+YqMEc_ao9itBErP_w1YjLQWVVtQg@mail.gmail.com>
+ <HE1PR04MB3004EF83E7AE2250E44C49A088910@HE1PR04MB3004.eurprd04.prod.outlook.com>
+ <1580300.sK9GS2NB4b@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1580300.sK9GS2NB4b@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-In the driver core, before it invokes really_probe() it runtime resumes the
-suppliers for the device via calling pm_runtime_get_suppliers(), which also
-increases the runtime PM usage count for each of the available supplier.
-
-This makes sense, as to be able to allow the consumer device to be probed
-by its driver. However, if the driver decides to add a new supplier link
-during ->probe(), hence updating the list of suppliers, the following call
-to pm_runtime_put_suppliers(), invoked after really_probe() in the driver
-core, we get into trouble.
-
-More precisely, pm_runtime_put() gets called also for the new supplier(s),
-which is wrong as the driver core, didn't trigger pm_runtime_get_sync() to
-be called for it in the first place. In other words, the new supplier may
-be runtime suspended even in cases when it shouldn't.
-
-Fix this behaviour, by runtime resume suppliers according to the same
-conditions as managed by the runtime PM core, when runtime resume callbacks
-are being invoked.
-
-Additionally, don't try to runtime suspend any of the suppliers after
-really_probe(), but instead rely on that to happen via the consumer device,
-when it becomes runtime suspended.
-
-Fixes: 21d5c57b3726 ("PM / runtime: Use device links")
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-An optional solution (requires to add code, rather than remove), in case we
-think it's not suffient to rely on the consumer device to be runtime suspended
-after probe.
-
-This could be done via adding a new bool member to the struct device_link, and
-set it from pm_runtime_get_suppliers(). Check it at pm_runtime_put_suppliers(),
-and only call pm_runtime_put() on those suppliers that has it set.
-
----
- drivers/base/dd.c            |  3 +--
- drivers/base/power/runtime.c | 27 +++------------------------
- include/linux/pm_runtime.h   |  6 ++----
- 3 files changed, 6 insertions(+), 30 deletions(-)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 10454fe..a41c91b 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -580,7 +580,7 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
- 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
- 		 drv->bus->name, __func__, dev_name(dev), drv->name);
- 
--	pm_runtime_get_suppliers(dev);
-+	pm_runtime_resume_suppliers(dev);
- 	if (dev->parent)
- 		pm_runtime_get_sync(dev->parent);
- 
-@@ -591,7 +591,6 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
- 	if (dev->parent)
- 		pm_runtime_put(dev->parent);
- 
--	pm_runtime_put_suppliers(dev);
- 	return ret;
- }
- 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 8bef3cb..6f4f50e 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1563,37 +1563,16 @@ void pm_runtime_clean_up_links(struct device *dev)
- }
- 
- /**
-- * pm_runtime_get_suppliers - Resume and reference-count supplier devices.
-+ * pm_runtime_resume_suppliers - Resume supplier devices.
-  * @dev: Consumer device.
-  */
--void pm_runtime_get_suppliers(struct device *dev)
-+void pm_runtime_resume_suppliers(struct device *dev)
- {
--	struct device_link *link;
- 	int idx;
- 
- 	idx = device_links_read_lock();
- 
--	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
--		if (link->flags & DL_FLAG_PM_RUNTIME)
--			pm_runtime_get_sync(link->supplier);
--
--	device_links_read_unlock(idx);
--}
--
--/**
-- * pm_runtime_put_suppliers - Drop references to supplier devices.
-- * @dev: Consumer device.
-- */
--void pm_runtime_put_suppliers(struct device *dev)
--{
--	struct device_link *link;
--	int idx;
--
--	idx = device_links_read_lock();
--
--	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
--		if (link->flags & DL_FLAG_PM_RUNTIME)
--			pm_runtime_put(link->supplier);
-+	rpm_get_suppliers(dev);
- 
- 	device_links_read_unlock(idx);
- }
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index f0fc470..db5dbbf 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -56,8 +56,7 @@ extern void pm_runtime_update_max_time_suspended(struct device *dev,
- 						 s64 delta_ns);
- extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
- extern void pm_runtime_clean_up_links(struct device *dev);
--extern void pm_runtime_get_suppliers(struct device *dev);
--extern void pm_runtime_put_suppliers(struct device *dev);
-+extern void pm_runtime_resume_suppliers(struct device *dev);
- extern void pm_runtime_new_link(struct device *dev);
- extern void pm_runtime_drop_link(struct device *dev);
- 
-@@ -173,8 +172,7 @@ static inline unsigned long pm_runtime_autosuspend_expiration(
- static inline void pm_runtime_set_memalloc_noio(struct device *dev,
- 						bool enable){}
- static inline void pm_runtime_clean_up_links(struct device *dev) {}
--static inline void pm_runtime_get_suppliers(struct device *dev) {}
--static inline void pm_runtime_put_suppliers(struct device *dev) {}
-+static inline void pm_runtime_resume_suppliers(struct device *dev) {}
- static inline void pm_runtime_new_link(struct device *dev) {}
- static inline void pm_runtime_drop_link(struct device *dev) {}
- 
--- 
-2.7.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogMjAxOOW5tDXmnIgxOOaXpSAx
+NTo1NQ0KPiBUbzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+IENjOiBSYWZhZWwgSi4g
+V3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+OyBVbGYgSGFuc3Nvbg0KPiA8dWxmLmhhbnNzb25A
+bGluYXJvLm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNv
+bT47DQo+IEZhYmlvIEVzdGV2YW0gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47IEdyZWcgS3JvYWgt
+SGFydG1hbg0KPiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFp
+bGluZyBMaXN0DQo+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0gPGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZz47DQo+IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5j
+b20+DQo+IFN1YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlu
+cyBvbiBzaHV0ZG93bg0KPiANCj4gT24gVGh1cnNkYXksIE1heSAxNywgMjAxOCAyOjM3OjMxIFBN
+IENFU1QgUGVuZyBGYW4gd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+ID4gPiBGcm9tOiByand5c29ja2lAZ21haWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdt
+YWlsLmNvbV0gT24gQmVoYWxmIE9mDQo+ID4gPiBSYWZhZWwgSi4gV3lzb2NraQ0KPiA+ID4gU2Vu
+dDogMjAxOOW5tDXmnIgxN+aXpSAxNjowMQ0KPiA+ID4gVG86IFBlbmcgRmFuIDxwZW5nLmZhbkBu
+eHAuY29tPg0KPiA+ID4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz47
+IFVsZiBIYW5zc29uDQo+ID4gPiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz47IFJhZmFlbCBKLiBX
+eXNvY2tpDQo+ID4gPiA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+OyBGYWJpbyBFc3RldmFt
+IDxmYWJpby5lc3RldmFtQG54cC5jb20+Ow0KPiA+ID4gR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVn
+a2hAbGludXhmb3VuZGF0aW9uLm9yZz47IExpbnV4IEtlcm5lbA0KPiA+ID4gTWFpbGluZyBMaXN0
+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0NCj4gPiA+IDxsaW51eC1w
+bUB2Z2VyLmtlcm5lbC5vcmc+OyBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0KPiA+
+ID4gU3ViamVjdDogUmU6IFtSRkNdIHBsYXRmb3JtOiBkZXRhY2ggZnJvbSBQTSBkb21haW5zIG9u
+IHNodXRkb3duDQo+ID4gPg0KPiA+ID4gT24gVGh1LCBNYXkgMTcsIDIwMTggYXQgNDozMyBBTSwg
+UGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+IHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPg0KPiA+
+ID4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4+IEZyb206IHJqd3lzb2Nr
+aUBnbWFpbC5jb20gW21haWx0bzpyand5c29ja2lAZ21haWwuY29tXSBPbiBCZWhhbGYNCj4gPiA+
+ID4+IE9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiA+PiBTZW50OiAyMDE45bm0NeaciDE35pel
+IDU6MzUNCj4gPiA+ID4+IFRvOiBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4N
+Cj4gPiA+ID4+IENjOiBQZW5nIEZhbiA8cGVuZy5mYW5AbnhwLmNvbT47IFJhZmFlbCBKLiBXeXNv
+Y2tpDQo+ID4gPiA+PiA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+OyBGYWJpbyBFc3RldmFt
+DQo+ID4gPiA+PiA8ZmFiaW8uZXN0ZXZhbUBueHAuY29tPjsgR3JlZyBLcm9haC1IYXJ0bWFuDQo+
+ID4gPiA+PiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGlu
+ZyBMaXN0DQo+ID4gPiA+PiA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBN
+DQo+ID4gPiA+PiA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPjsgZGwtbGludXgtaW14IDxsaW51
+eC1pbXhAbnhwLmNvbT4NCj4gPiA+ID4+IFN1YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0
+YWNoIGZyb20gUE0gZG9tYWlucyBvbiBzaHV0ZG93bg0KPiA+ID4gPj4NCj4gPiA+ID4+IE9uIFdl
+ZCwgTWF5IDE2LCAyMDE4IGF0IDExOjUyIEFNLCBVbGYgSGFuc3Nvbg0KPiA+ID4gPj4gPHVsZi5o
+YW5zc29uQGxpbmFyby5vcmc+DQo+ID4gPiA+PiB3cm90ZToNCj4gPiA+ID4+ID4gT24gMTUgTWF5
+IDIwMTggYXQgMTE6MDEsIFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPiB3cm90ZToNCj4gPiA+
+ID4+ID4+IFdoZW4gcmVib290IExpbnV4LCB0aGUgUE0gZG9tYWlucyBhdHRhY2hlZCB0byBhIGRl
+dmljZSBhcmUgbm90DQo+ID4gPiA+PiA+PiBzaHV0ZG93bi4gVG8gU29DcyB3aGljaCByZWx5cyBv
+biByZXNldCB0aGUgd2hvbGUgU29DLCB0aGVyZSBpcw0KPiA+ID4gPj4gPj4gbm8gbmVlZCB0byBz
+aHV0ZG93biBQTSBkb21haW5zLCBidXQgdG8gTGludXggcnVubmluZyBpbiBhDQo+ID4gPiA+PiA+
+PiB2aXJ0dWFsIG1hY2hpbmUgd2l0aCBkZXZpY2VzIHBhc3MtdGhyb3VnaCwgd2UgY291bGQgbm90
+IHJlc2V0IHRoZQ0KPiB3aG9sZSBTb0MuDQo+ID4gPiA+PiA+PiBDdXJyZW50bHkgd2UgbmVlZCBM
+aW51eCB0byBzaHV0ZG93biBpdHMgUE0gZG9tYWlucyB3aGVuIHJlYm9vdC4NCj4gPiA+ID4+ID4N
+Cj4gPiA+ID4+ID4gSSBhbSBub3Qgc3VyZSBJIHVuZGVyc3RhbmQgZXhhY3RseSB3aHkgdGhlIFBN
+IGRvbWFpbiBuZWVkcyB0bw0KPiA+ID4gPj4gPiBiZSBzaHV0ZG93biBmb3IgdGhlc2UgY2FzZXMs
+IGNvdWxkIHlvdSBwbGVhc2UgZWxhYm9yYXRlIGEgYml0IG9uIHRoYXQuDQo+ID4gPiA+PiA+DQo+
+ID4gPiA+PiA+IEJUVywgd2hhdCBwbGF0Zm9ybSBhcmUgeW91IHJ1bm5pbmcgb24gYW5kIGFsc28g
+d2hhdCBQTSBkb21haW5zDQo+ID4gPiA+PiA+IGFyZSBiZWluZw0KPiA+ID4gPj4gdXNlZD8NCj4g
+PiA+ID4+ID4NCj4gPiA+ID4+ID4gQW55d2F5LCBpdCBzZWVtcyBsaWtlIHRoZXJlIG1heSBiZSBu
+ZWVkIGZvciBjZXJ0YWluIGNhc2VzLCBidXQNCj4gPiA+ID4+ID4gY2VydGFpbmx5IG5vdCBhbGwg
+LSBlc3BlY2lhbGx5IHNpbmNlIGl0IG1heSBzbG93IGRvd24gdGhlDQo+ID4gPiA+PiA+IHNodXRk
+b3duIHByb2Nlc3MsIHdoZW4gbm90IG5lZWRlZC4NCj4gPiA+ID4+ID4NCj4gPiA+ID4+ID4gQ2Fu
+IHdlIG1ha2UgdGhpcyBydW50aW1lIGNvbmZpZ3VyYWJsZSwgdmlhIHN5c2ZzIG9yIHdoYXRldmVy
+DQo+ID4gPiA+PiA+IHRoYXQgbWFrZXMNCj4gPiA+ID4+IHNlbnNlIT8NCj4gPiA+ID4+ID4NCj4g
+PiA+ID4+ID4+DQo+ID4gPiA+PiA+PiBjb21taXQgMmQzMGJiMGIzODg5ICgicGxhdGZvcm06IERv
+IG5vdCBkZXRhY2ggZnJvbSBQTSBkb21haW5zDQo+ID4gPiA+PiA+PiBvbiBzaHV0ZG93biIpLCBy
+ZW1vdmVzIHdoYXQgdGhpcyBwYXRjaCB0cmllcyB0byBhZGQsIGJlY2F1c2Ugb2YgYQ0KPiB3YXJu
+aW5nLg0KPiA+ID4gPj4gPj4gY29tbWl0IGU3OWFlZTQ5YmNmOSAoIlBNOiBBdm9pZCBmYWxzZS1w
+b3NpdGl2ZSB3YXJuaW5ncyBpbg0KPiA+ID4gPj4gPj4gZGV2X3BtX2RvbWFpbl9zZXQoKSIpIGFs
+cmVhZHkgZml4ZXMgdGhlIGZhbHNlIGFsYXJtIHdhcm5pbmcuDQo+ID4gPiA+PiA+PiBTbyBsZXQn
+cyBkZXRhY2ggdGhlIHBvd2VyIGRvbWFpbiB0byBzaHV0ZG93biBQTSBkb21haW5zIGFmdGVyDQo+
+ID4gPiA+PiA+PiBkcml2ZXINCj4gPiA+IHNodXRkb3duLg0KPiA+ID4gPj4gPj4NCj4gPiA+ID4+
+ID4+IFNpZ25lZC1vZmYtYnk6IFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPg0KPiA+ID4gPj4g
+Pj4gLS0tDQo+ID4gPiA+PiA+Pg0KPiA+ID4gPj4gPj4gSSBkbyBub3QgZmluZCBhIGJldHRlciBw
+bGFjZSB0byBzaHV0ZG93biBwb3dlciBkb21haW4gd2hlbg0KPiA+ID4gPj4gPj4gcmVib290IExp
+bnV4LCBzbyBhZGQgYmFjayB0aGUgbGluZSB0aGF0IGNvbW1pdCAyZDMwYmIwYjM4ODkNCj4gPiA+
+ID4+ID4+IHJlbW92ZXMsIGJlY2F1c2UgaXQgaXMgYSBmYWxzZSBhbGFybSB3YXJuaW5nIGFzIGNv
+bW1pdCBlNzlhZWU0OWJjZjkNCj4gZGVzY3JpYmVzLg0KPiA+ID4gPj4gPj4NCj4gPiA+ID4+ID4+
+ICBkcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyB8IDEgKw0KPiA+ID4gPj4gPj4gIDEgZmlsZSBjaGFu
+Z2VkLCAxIGluc2VydGlvbigrKQ0KPiA+ID4gPj4gPj4NCj4gPiA+ID4+ID4+IGRpZmYgLS1naXQg
+YS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyBiL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQo+ID4g
+PiA+PiA+PiBpbmRleCA4MDc1ZGRjNzBhMTcuLmE1OTI5ZjI0ZGMzYyAxMDA2NDQNCj4gPiA+ID4+
+ID4+IC0tLSBhL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQo+ID4gPiA+PiA+PiArKysgYi9kcml2
+ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+ID4gPj4gPj4gQEAgLTYxNiw2ICs2MTYsNyBAQCBzdGF0
+aWMgdm9pZCBwbGF0Zm9ybV9kcnZfc2h1dGRvd24oc3RydWN0DQo+ID4gPiA+PiA+PiBkZXZpY2UN
+Cj4gPiA+ID4+ID4+ICpfZGV2KQ0KPiA+ID4gPj4gPj4NCj4gPiA+ID4+ID4+ICAgICAgICAgaWYg
+KGRydi0+c2h1dGRvd24pDQo+ID4gPiA+PiA+PiAgICAgICAgICAgICAgICAgZHJ2LT5zaHV0ZG93
+bihkZXYpOw0KPiA+ID4gPj4gPj4gKyAgICAgICBkZXZfcG1fZG9tYWluX2RldGFjaChfZGV2LCB0
+cnVlKTsNCj4gPiA+ID4+ID4NCj4gPiA+ID4+ID4gVGhpcyB3b3VsZCBzb21ld2hhdCB3b3JrLCBi
+dXQgb25seSBmb3IgcGxhdGZvcm0gZGV2aWNlcy4gVG8NCj4gPiA+ID4+ID4gbWFrZSB0aGlzIGZ1
+bGx5IHdvcmssIHdlIG5lZWQgdG8gY2FsbCBkZXZfcG1fZG9tYWluX2RldGFjaCgpDQo+ID4gPiA+
+PiA+IGZyb20gYW1iYSwgc3BpLCBldGMgYXMgd2VsbC4NCj4gPiA+ID4+ID4NCj4gPiA+ID4+ID4g
+UGVyaGFwcyBhbm90aGVyIG9wdGlvbiB0byBtYW5hZ2UgdGhpcyBtb3JlIGdlbmVyYWxseSwgYW4N
+Cj4gPiA+ID4+ID4gd2l0aG91dCBoYXZpbmcgZGV0YWNoIGRldmljZXMsIGNvdWxkIGJlIHRvIGV4
+dGVuZCB0aGUgc3RydWN0DQo+ID4gPiA+PiA+IGRldl9wbV9kb21haW4gd2l0aCBhIG5ldyBjYWxs
+YmFjaywgIi0+c2h1dGRvd24oKSIgYW5kIHRoZW4gbWFrZQ0KPiA+ID4gPj4gPiB0aGUgZHJpdmVy
+IGNvcmUgY2FsbCBpdCBmcm9tIGRldmljZV9zaHV0ZG93bigpLg0KPiA+ID4gPj4NCj4gPiA+ID4+
+IEknbSBzZW5zaW5nIGEgcG9zc2libGUgb3JkZXJpbmcgc2xpcHBlcnkgc2xvcGUgd2l0aCB0aGlz
+IChpdCB3aWxsDQo+ID4gPiA+PiBvbmx5IHdvcmsgaWYgYWxsIG9mIHRoZSBkcml2ZXJzL2J1cyB0
+eXBlcyBldGMgZG8gdGhlIHJpZ2h0IHRoaW5nDQo+ID4gPiA+PiBpbiB0aGVpcg0KPiA+ID4gPj4g
+LT5zaHV0ZG93biBjYWxsYmFja3Mgc28gbm90aGluZyBkZXBlbmRzIG9uIHRoZSBkb21haW4gZ29p
+bmcgZm9yd2FyZCkuDQo+ID4gPiA+Pg0KPiA+ID4gPj4gPiBUeXBpY2FsbHksIGZvciBnZW5wZCwg
+SSB3b3VsZCBwcm9iYWJseSBjb3VudCB0aGUgbnVtYmVyIG9mDQo+ID4gPiA+PiA+IGNhbGxzIGJl
+aW5nIG1hZGUgdG8gLT5zaHV0ZG93bigpIHBlciBQTSBkb21haW4sIHRoZW4gd2hlbiBpdA0KPiA+
+ID4gPj4gPiByZWFjaGVzIHRoZSBudW1iZXIgb2YgYXR0YWNoZWQgZGV2aWNlcyB0byBpdCwgYWxs
+b3cgdG8gcG93ZXIgb2ZmIGl0Lg0KPiA+ID4gPj4gPg0KPiA+ID4gPj4gPiBMZXQncyBzZWUgd2hh
+dCBSYWZhZWwgdGhpbmtzIGFib3V0IGl0Lg0KPiA+ID4gPj4NCj4gPiA+ID4+IEknbSBub3Qgc3Vy
+ZSBhYm91dCB0aGUgdXNlIGNhc2UuICBUaGUgaHlwZXJ2aXNvciBzaG91bGQgYmUgYWJsZQ0KPiA+
+ID4gPj4gdG8gdGFrZSBjYXJlIG9mIHR1cm5pbmcgcG93ZXIgZG9tYWlucyBvZmYgb24gdGhlIGNs
+aWVudCBPUyByZWJvb3QNCj4gPiA+ID4+IGluIHRoZW9yeS4gIElmIHRoZSBjbGllbnQgT1MgbGVh
+dmluZyB0aGUgaHlwZXJ2aXNvciBuZWVkcyB0bw0KPiA+ID4gPj4gd29ycnkgYWJvdXQgd2hhdCBz
+dGF0ZSBpdCBsZWF2ZXMgYmVoaW5kLCB0aGUgZGVzaWduIG9mIHRoZQ0KPiA+ID4gPj4gaHlwZXJ2
+aXNvciBpcyBzb3J0IG9mDQo+ID4gPiBxdWVzdGlvbmFibGUgSU1PLg0KPiA+ID4gPg0KPiA+ID4g
+PiBUaGlzIGlzIHZhbGlkIGNvbmNlcm4uIEJ1dCBtb3ZpbmcgdGhlIHBvd2VyIGRvbWFpbiBsb2dp
+YyBpbnRvDQo+ID4gPiA+IGh5cGVydmlzb3IgbW9zdGx5IG1pY3JvLWtlcm5lbCBkZXNpZ24gd2ls
+bCBpbnRyb2R1Y2UgbW9yZQ0KPiA+ID4gPiBjb21wbGV4aXR5IGFuZA0KPiA+ID4gbWFrZSBjZXJ0
+aWZpY2F0aW9uIGhhcmRlci4NCj4gPiA+ID4gQ3VycmVudGx5LCBMZXQgTGludXggc2h1dGRvd24g
+aXQncyBwb3dlciBkb21haW4gaXMgdGhlIGVhc2llc3Qgd2F5DQo+ID4gPiA+IHRvIG1lIGFuZCBt
+YWtlIHRoaW5ncyB3b3JrIHdlbGwgYWZ0ZXIgcmVib290Lg0KPiA+ID4NCj4gPiA+IFdlbGwsIHRv
+IHB1dCBpdCBibHVudGx5LCBpZiB5b3VyIGh5cGVydmlzb3IgZGVwZW5kcyBvbiB0aGUgZ3Vlc3Qg
+dG8NCj4gPiA+IGRvIHRoZSByaWdodCB0aGluZyBvbiBleGl0LCBpdCBkb2Vzbid0IGRvIGl0cyBq
+b2IuICBJIHdvdWxkbid0IGhhdmUNCj4gPiA+IGNlcnRpZmllZCBpdCBmb3IgeW91IGlmIHRoYXQg
+d2FzIG15IGRlY2lzaW9uLg0KPiA+DQo+ID4gSXQgaXMgZ3Vlc3Qgb3Mgbm90IHdvcmsgd2VsbCBh
+ZnRlciBndWVzdCBvcyByZWJvb3QuIFRoZSBoeXBlcnZpc29yIGlzIG5vdA0KPiBhZmZlY3RlZC4N
+Cj4gPg0KPiA+IFRoaW5raW5nIGFub3RoZXIgY2FzZSB3aXRob3V0IGh5cGVydmlzb3IsIE00IGNv
+cmUgcnVuIFJUT1MsIEEzNSBDb3JlDQo+ID4gcnVuIExpbnV4LCB3aGVuIExpbnV4IHJlYm9vdGlu
+ZywgUlRPUyBzaG91bGQgbm90IGJlIGFmZmVjdGVkLiBBZnRlcg0KPiA+IExpbnV4IHJlYm9vdCBp
+dHNlbGYsIGJlY2F1c2UgaXRzIHBvd2VyIGRvbWFpbiBpcyBub3QgcGFpcmVkIHdpdGgNCj4gb3Bl
+bi9zaHV0ZG93biwgc29tZSBkZXZpY2VzIG5vdCBmdW5jdGlvbiB3ZWxsLg0KPiANCj4gVGhlIHF1
+ZXN0aW9uIGJvaWxzIGRvd24gdG8gd2hldGhlciBvciBub3QgZGV2aWNlcyBzaG91bGQgYmUgZGV0
+YWNoZWQgZnJvbSBQTQ0KPiBkb21haW5zIG9uIHNodXRkb3duIElNTy4NCj4gDQo+IFRoZXkgYXJl
+IGRldGFjaGVkIGZyb20gUE0gZG9tYWlucyBvbiBkcml2ZXIgcmVtb3ZhbCwgc28gSSBndWVzcyBv
+bmUgYW5zd2VyIGlzDQo+ICJ5ZXMsIGluIGFuYWxvZ3kgd2l0aCB0aGF0Ii4gIEhvd2V2ZXIsIHRo
+ZSBwb2ludCBhYm91dCBwZXJmb3JtYWNlIGJyb3VnaHQgdXANCj4gYnkgVWxmIHNlZW1zIHRvIGJl
+IHZhbGlkIHRvby4NCj4gDQo+IEluIGFueSBjYXNlLCB0aGUgY2hhbmdlIHNob3VsZCBiZSBtYWRl
+IGZvciBhbGwgb2YgdGhlIGJ1cyB0eXBlcyB1c2luZyBQTQ0KPiBkb21haW5zLCBub3QganVzdCBv
+bmUuDQoNClVuZGVyc3RhbmQsIGl0IHdpbGwgaW5jcmVhc2Ugc2h1dGRvd24gdGltZS4gSG93IGFi
+b3V0IHNodXRkb3duIHRoZSBwb3dlciBkb21haW4NCmluIHBsYXRmb3JtX2RyaXZlci0+c2h1dGRv
+d24sIGxldCB0aGUgZHJpdmVyIGhhbmRsZSBpdCdzIHBvd2VyIGRvbWFpbiBzdGh1ZG93biBieSBp
+dHNlbGY/DQpUaGVuIG5vIG5lZWQgY29tbW9uIGZyYW1ld29yayBjaGFuZ2UuDQoNClRoYW5rcywN
+ClBlbmcNCg0K
