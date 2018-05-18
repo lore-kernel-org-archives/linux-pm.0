@@ -1,60 +1,107 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM/ runtime: fix resume from suspend on newer hp zbook/elitebook
-Date: Fri, 18 May 2018 12:26:39 +0200
-Message-ID: <CAJZ5v0jmqez5MJYRJr7SE6UseAf=eaduhv54BaGgyeC8PdoCgw@mail.gmail.com>
-References: <20180515133508.2913-1-kugel@rockbox.org> <CAJZ5v0ipJgkwmv6n5b8Z+=V0k_7d+iXdLycsF9Tsq01MWy_Jqg@mail.gmail.com>
- <061fae0d-f358-ef6a-9c4a-a40a33d8b900@rockbox.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <061fae0d-f358-ef6a-9c4a-a40a33d8b900@rockbox.org>
-Sender: stable-owner@vger.kernel.org
-To: Thomas Martitz <kugel@rockbox.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Stable <stable@vger.kernel.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 1/9] PM / Domains: Drop extern declarations of functions in pm_domain.h
+Date: Fri, 18 May 2018 12:31:22 +0200
+Message-ID: <1526639490-12167-2-git-send-email-ulf.hansson@linaro.org>
+References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 15, 2018 at 9:39 PM, Thomas Martitz <kugel@rockbox.org> wrote:
-> Am 15.05.2018 um 17:10 schrieb Rafael J. Wysocki:
->
->> Before applying anything like this I need to understand the failure in
->> the first place.
->>
->> Since direct_complete is optional anyway and it should be safe to call
->> pm_runtime_suspended() at any time, I'm suspecting a bug in a driver
->> that is exposed by the commit turned up by bisection.
->>
->> Where's the code I need to look at?
->>
->
-> Hello,
->
-> thanks for looking into this. To answer the question I need your expertise.
-> I couldn't find out which device causes it. Since the freeze only happens of
-> amdgpu is loaded I naturally thought the problematic device(s) would be
-> bound to amdgpu. So I assumed the amdgpu-bound devices would be affected by
-> your change, i.e. not have direct_complete set anymore. But I could not
-> confirm this evidence during testing (I basically restricted my patch to
-> devices which pass !strcmp(dev->driver->name, "amdgpu", and the system was
-> still frozen upon resume).
->
-> Then I printed a list which pass "dev->direct_complete &&
-> !pm_runtime_suspended(dev)" (with this patch applied), and the list was
-> *very* long (maybe 100+). I can perform this again if you find the list
-> useful.
->
-> The sheer number of devices which pass  "dev->direct_complete &&
-> !pm_runtime_suspended(dev)" made me think that your change should be
-> re-considered, hence my patch.
->
-> So, please give me advice on how I can point you to the code that you'd like
-> to look at. I assume key information which device(s) pass
-> "dev->direct_complete && !pm_runtime_suspended(dev)" AND cause the freeze on
-> !dev->direct_complete? I'm afraid that will take a very long time to find
-> out.
+Using "extern" to declare a function in a public header file is somewhat
+pointless, but also doesn't hurt. However, to make all the function
+declarations in pm_domain.h to be consistent, let's drop the use of
+"extern".
 
-Let's continue this in the Bugzilla entry at
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ include/linux/pm_domain.h | 51 +++++++++++++++++++++--------------------------
+ 1 file changed, 23 insertions(+), 28 deletions(-)
 
-https://bugzilla.kernel.org/show_bug.cgi?id=199693
-
-Thanks,
-Rafael
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 4e57640..c847e9a 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -143,21 +143,17 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+ 	return to_gpd_data(dev->power.subsys_data->domain_data);
+ }
+ 
+-extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+-				 struct device *dev,
+-				 struct gpd_timing_data *td);
+-
+-extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+-				  struct device *dev);
+-extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+-				  struct generic_pm_domain *new_subdomain);
+-extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+-				     struct generic_pm_domain *target);
+-extern int pm_genpd_init(struct generic_pm_domain *genpd,
+-			 struct dev_power_governor *gov, bool is_off);
+-extern int pm_genpd_remove(struct generic_pm_domain *genpd);
+-extern int dev_pm_genpd_set_performance_state(struct device *dev,
+-					      unsigned int state);
++int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
++			  struct gpd_timing_data *td);
++int pm_genpd_remove_device(struct generic_pm_domain *genpd, struct device *dev);
++int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
++			   struct generic_pm_domain *new_subdomain);
++int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
++			      struct generic_pm_domain *target);
++int pm_genpd_init(struct generic_pm_domain *genpd,
++		  struct dev_power_governor *gov, bool is_off);
++int pm_genpd_remove(struct generic_pm_domain *genpd);
++int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
+ 
+ extern struct dev_power_governor simple_qos_governor;
+ extern struct dev_power_governor pm_domain_always_on_gov;
+@@ -215,8 +211,8 @@ static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+ }
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
+-extern void pm_genpd_syscore_poweroff(struct device *dev);
+-extern void pm_genpd_syscore_poweron(struct device *dev);
++void pm_genpd_syscore_poweroff(struct device *dev);
++void pm_genpd_syscore_poweron(struct device *dev);
+ #else
+ static inline void pm_genpd_syscore_poweroff(struct device *dev) {}
+ static inline void pm_genpd_syscore_poweron(struct device *dev) {}
+@@ -240,14 +236,13 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ int of_genpd_add_provider_onecell(struct device_node *np,
+ 				  struct genpd_onecell_data *data);
+ void of_genpd_del_provider(struct device_node *np);
+-extern int of_genpd_add_device(struct of_phandle_args *args,
+-			       struct device *dev);
+-extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
+-				  struct of_phandle_args *new_subdomain);
+-extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
+-extern int of_genpd_parse_idle_states(struct device_node *dn,
+-			struct genpd_power_state **states, int *n);
+-extern unsigned int of_genpd_opp_to_performance_state(struct device *dev,
++int of_genpd_add_device(struct of_phandle_args *args, struct device *dev);
++int of_genpd_add_subdomain(struct of_phandle_args *parent,
++			   struct of_phandle_args *new_subdomain);
++struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
++int of_genpd_parse_idle_states(struct device_node *dn,
++			       struct genpd_power_state **states, int *n);
++unsigned int of_genpd_opp_to_performance_state(struct device *dev,
+ 				struct device_node *opp_node);
+ 
+ int genpd_dev_pm_attach(struct device *dev);
+@@ -304,9 +299,9 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+ #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+ 
+ #ifdef CONFIG_PM
+-extern int dev_pm_domain_attach(struct device *dev, bool power_on);
+-extern void dev_pm_domain_detach(struct device *dev, bool power_off);
+-extern void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
++int dev_pm_domain_attach(struct device *dev, bool power_on);
++void dev_pm_domain_detach(struct device *dev, bool power_off);
++void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
+ #else
+ static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
+ {
+-- 
+2.7.4
