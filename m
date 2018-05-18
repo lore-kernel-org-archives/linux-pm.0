@@ -1,104 +1,23 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH 1/2] Revert "cpufreq: Remove policy create/remove notifiers"
-Date: Fri, 18 May 2018 01:24:47 -0700
-Message-ID: <1526631889-5084-2-git-send-email-skannan@codeaurora.org>
-References: <1526631889-5084-1-git-send-email-skannan@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] Revert "cpufreq: Remove policy create/remove notifiers"
+Date: Fri, 18 May 2018 10:29:30 +0200
+Message-ID: <CAJZ5v0geHvVUfL=+x-XNMQt4ygpt8QumOaWSjG268Sbtw9oeKw@mail.gmail.com>
+References: <1526631889-5084-1-git-send-email-skannan@codeaurora.org> <1526631889-5084-2-git-send-email-skannan@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526631889-5084-1-git-send-email-skannan@codeaurora.org>
+In-Reply-To: <1526631889-5084-2-git-send-email-skannan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This reverts commit f9f41e3ef99ac9d4e91b07634362e393fb929aad.
+On Fri, May 18, 2018 at 10:24 AM, Saravana Kannan
+<skannan@codeaurora.org> wrote:
+> This reverts commit f9f41e3ef99ac9d4e91b07634362e393fb929aad.
 
-Change-Id: Iddde3ef56c9e5b14dcb14f8737899b85e56f5b43
----
- drivers/cpufreq/cpufreq.c | 16 +++++++++++-----
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 14 insertions(+), 5 deletions(-)
+No explanation, no cake. :-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 075d18f..f790686 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1129,11 +1129,15 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	return NULL;
- }
- 
--static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
-+static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy, bool notify)
- {
- 	struct kobject *kobj;
- 	struct completion *cmp;
- 
-+	if (notify)
-+		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+					     CPUFREQ_REMOVE_POLICY, policy);
-+
- 	down_write(&policy->rwsem);
- 	cpufreq_stats_free_table(policy);
- 	kobj = &policy->kobj;
-@@ -1151,7 +1155,7 @@ static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
- 	pr_debug("wait complete\n");
- }
- 
--static void cpufreq_policy_free(struct cpufreq_policy *policy)
-+static void cpufreq_policy_free(struct cpufreq_policy *policy, bool notify)
- {
- 	unsigned long flags;
- 	int cpu;
-@@ -1164,7 +1168,7 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
- 		per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--	cpufreq_policy_put_kobj(policy);
-+	cpufreq_policy_put_kobj(policy, notify);
- 	free_cpumask_var(policy->real_cpus);
- 	free_cpumask_var(policy->related_cpus);
- 	free_cpumask_var(policy->cpus);
-@@ -1296,6 +1300,8 @@ static int cpufreq_online(unsigned int cpu)
- 			goto out_destroy_policy;
- 
- 		cpufreq_stats_create_table(policy);
-+		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+				CPUFREQ_CREATE_POLICY, policy);
- 
- 		write_lock_irqsave(&cpufreq_driver_lock, flags);
- 		list_add(&policy->policy_list, &cpufreq_policy_list);
-@@ -1334,7 +1340,7 @@ static int cpufreq_online(unsigned int cpu)
- 		cpufreq_driver->exit(policy);
- 
- out_free_policy:
--	cpufreq_policy_free(policy);
-+	cpufreq_policy_free(policy, !new_policy);
- 	return ret;
- }
- 
-@@ -1447,7 +1453,7 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
- 	remove_cpu_dev_symlink(policy, dev);
- 
- 	if (cpumask_empty(policy->real_cpus))
--		cpufreq_policy_free(policy);
-+		cpufreq_policy_free(policy, true);
- }
- 
- /**
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 87f48dd..b6209b3 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -437,6 +437,9 @@ static inline void cpufreq_resume(void) {}
- /* Policy Notifiers  */
- #define CPUFREQ_ADJUST			(0)
- #define CPUFREQ_NOTIFY			(1)
-+#define CPUFREQ_START			(2)
-+#define CPUFREQ_CREATE_POLICY		(3)
-+#define CPUFREQ_REMOVE_POLICY		(4)
- 
- #ifdef CONFIG_CPU_FREQ
- int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> Change-Id: Iddde3ef56c9e5b14dcb14f8737899b85e56f5b43
+
+S-o-b missing.
