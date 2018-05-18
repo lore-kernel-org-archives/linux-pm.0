@@ -1,94 +1,88 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/9] PM / Domains: Drop __pm_genpd_add_device()
-Date: Fri, 18 May 2018 12:31:23 +0200
-Message-ID: <1526639490-12167-3-git-send-email-ulf.hansson@linaro.org>
-References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 5/9] PM / Domains: dt: Allow power-domain property to be a
+ list of phandles
+Date: Fri, 18 May 2018 12:46:58 +0200
+Message-ID: <CAMuHMdUTF-8_V6kMAE0THNES+yv2HhZGJA3f41Yfpd1Bs6txHg@mail.gmail.com>
+References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org> <1526639490-12167-6-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
+In-Reply-To: <1526639490-12167-6-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-There are still a few non-DT existing users of genpd, however neither of
-them uses __pm_genpd_add_device(), hence let's drop it.
+Hi Ulf,
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 10 ++++------
- include/linux/pm_domain.h   | 14 +++-----------
- 2 files changed, 7 insertions(+), 17 deletions(-)
+On Fri, May 18, 2018 at 12:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> To be able to describe topologies where devices are partitioned across
+> multiple power domains, let's extend the power-domain property to allow
+> being a list of phandles.
+>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Suggested-by: Jon Hunter <jonathanh@nvidia.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index da6c886..d58aee3 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1414,23 +1414,21 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- }
- 
- /**
-- * __pm_genpd_add_device - Add a device to an I/O PM domain.
-+ * pm_genpd_add_device - Add a device to an I/O PM domain.
-  * @genpd: PM domain to add the device to.
-  * @dev: Device to be added.
-- * @td: Set of PM QoS timing parameters to attach to the device.
-  */
--int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
--			  struct gpd_timing_data *td)
-+int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
- {
- 	int ret;
- 
- 	mutex_lock(&gpd_list_lock);
--	ret = genpd_add_device(genpd, dev, td);
-+	ret = genpd_add_device(genpd, dev, NULL);
- 	mutex_unlock(&gpd_list_lock);
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(__pm_genpd_add_device);
-+EXPORT_SYMBOL_GPL(pm_genpd_add_device);
- 
- static int genpd_remove_device(struct generic_pm_domain *genpd,
- 			       struct device *dev)
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index c847e9a..79888fb 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -143,8 +143,7 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
- 	return to_gpd_data(dev->power.subsys_data->domain_data);
- }
- 
--int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
--			  struct gpd_timing_data *td);
-+int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev);
- int pm_genpd_remove_device(struct generic_pm_domain *genpd, struct device *dev);
- int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- 			   struct generic_pm_domain *new_subdomain);
-@@ -163,9 +162,8 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
- {
- 	return ERR_PTR(-ENOSYS);
- }
--static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
--					struct device *dev,
--					struct gpd_timing_data *td)
-+static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
-+				      struct device *dev)
- {
- 	return -ENOSYS;
- }
-@@ -204,12 +202,6 @@ static inline int dev_pm_genpd_set_performance_state(struct device *dev,
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
- 
--static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
--				      struct device *dev)
--{
--	return __pm_genpd_add_device(genpd, dev, NULL);
--}
--
- #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
- void pm_genpd_syscore_poweroff(struct device *dev);
- void pm_genpd_syscore_poweron(struct device *dev);
+Thanks for your patch!
+
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -111,8 +111,9 @@ Example 3:
+>  ==PM domain consumers==
+>
+>  Required properties:
+> - - power-domains : A phandle and PM domain specifier as defined by bindings of
+> -                   the power controller specified by phandle.
+> + - power-domains : A phandle and PM domain specifier, or a list of phandles, as
+
+A list of PM domain specifiers?
+
+(A PM domain specifier consists of a phandle, and zero or more indices)
+
+> +                  defined by bindings of the power controller specified by
+> +                  phandle.
+>
+>  Example:
+>
+> @@ -122,9 +123,16 @@ Example:
+>                 power-domains = <&power 0>;
+>         };
+>
+> -The node above defines a typical PM domain consumer device, which is located
+> -inside a PM domain with index 0 of a power controller represented by a node
+> -with the label "power".
+> +       leaky-device@12350000 {
+
+I know it's just an example, but this uses the same unit-address and
+reg property
+as the device node above.
+
+There's a similar issue with the two other examples below, but they
+use different
+node names (leaky-device0 and leaky-device1).
+
+> +               compatible = "foo,i-leak-current";
+> +               reg = <0x12350000 0x1000>;
+> +               power-domains = <&power0 0>, <&power1 0> ;
+> +       };
+> +
+> +The first example above defines a typical PM domain consumer device, which is
+> +located inside a PM domain with index 0 of a power controller represented by a
+> +node with the label "power". In the second example the consumer device are
+> +partitioned across two PM domains.
+>
+>  Optional properties:
+>  - required-opps: This contains phandle to an OPP node in another device's OPP
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.7.4
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
