@@ -1,56 +1,57 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v1 02/11] cpufreq: tegra20: Clean up whitespaces in the
- code
-Date: Fri, 18 May 2018 10:34:54 +0200
-Message-ID: <20180518083454.GB14500@ulmo>
+Subject: Re: [PATCH v1 03/11] cpufreq: tegra20: Remove EMC clock usage
+Date: Fri, 18 May 2018 10:36:39 +0200
+Message-ID: <20180518083639.GC14500@ulmo>
 References: <20180517180056.13336-1-digetx@gmail.com>
- <20180517180056.13336-3-digetx@gmail.com>
+ <20180517180056.13336-4-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="mxv5cy4qt+RJ9ypb"
+        protocol="application/pgp-signature"; boundary="+xNpyl7Qekk2NvDX"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180517180056.13336-3-digetx@gmail.com>
+In-Reply-To: <20180517180056.13336-4-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---mxv5cy4qt+RJ9ypb
+--+xNpyl7Qekk2NvDX
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 17, 2018 at 09:00:47PM +0300, Dmitry Osipenko wrote:
-> Remove unneeded blank line and replace whitespaces with a tab in the code
-> for consistency.
+On Thu, May 17, 2018 at 09:00:48PM +0300, Dmitry Osipenko wrote:
+> The EMC driver has been gone 4 years ago, since the commit a7cbe92cef27
+> ("ARM: tegra: remove tegra EMC scaling driver"). Remove the EMC clock
+> usage as it does nothing. We may consider re-implementing the EMC scaling
+> later, probably using PM Memory Bandwidth QoS API.
 >=20
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/cpufreq/tegra20-cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>  drivers/cpufreq/tegra20-cpufreq.c | 22 ----------------------
+>  1 file changed, 22 deletions(-)
 
 Acked-by: Thierry Reding <treding@nvidia.com>
 
---mxv5cy4qt+RJ9ypb
+--+xNpyl7Qekk2NvDX
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlr+kC4ACgkQ3SOs138+
-s6HOMg/+P1862k14OF7KHetlp3iGlPedTLXjTUPqaxmfzm7OfiR/PhhITB3Dk6Jn
-vEIHGiWQmVzRa9FBXJ6PCspdwXWmogJ1hY3pLVXxzYeqY3lSIc3ndYJhrOhWJjS6
-gZbXUp6zVJz3DdqYO65WPD2NG0IOS0TpFgjn/jlU8VLXDY6orx5FeEndHD/Anvmc
-VIi0O1L+8atewwHqz7UhGZhJfekdzkqjgAqGhXM2q3KHuwXfCJ1EiJGYH+VfiuKt
-wfIcYHTMLTiOdTVcyGw91xIMOfGW7wqJ3cVRB7uRLe3CRoQXTAtmh/azxkpvF5sM
-PIYSLEfD11CVoSGlmGZN4H+MmiNp/G7vOkyRpP1o2t5tjxlLo2MgMAzF4jcZQRE2
-a7voj/ZWDBvVNzi6C6WZ9Ql+FjZkb3ISdC+by7sCCCFPaCMEgDIi5QSExw9a8wXa
-0arhIQo1pELHix5IUkcI8Jxw2Q7MGtBfJYA/U2sOucfgvNjrdMLv104ajFGqRok+
-Pyl4RMfK3lhhcHHDjxIDciqhbP+dbL/+VxhYEDuxM/TRb3rdKSVz1A3VhUXTg5ob
-HvO/V941vz5tz12qgu6awOyiA0jAgGBq2PXG5t5CGsy/A1pcl5BBWNoKoFUgZYar
-K5vYQwZVrPCs5WDEU02wB/42SVka2epBYtv2y6kCkZciIYDoOK8=
-=gyI2
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlr+kJcACgkQ3SOs138+
+s6FpPA//RtNtZ1WXf+1QXkaeVmqWNiFwVGDxx+6FrMAPjSJ1GSMBfPyKAiC8T9qm
+LBPYO3w2cioqvITok4QB39QPgQH2tQHkkUkNs7FiYMBDZhECifzO/v2Njnw8KQwN
+6xOarW4xcApDKXziePhGbGb6mOhg7KPtFjQCcFXXo9liuR/OdZLpTSaXkzrHoquQ
+2BUSKMf1n/V1TnHKQwhDBZG9ZNVK94+Zk5oabST7cvuSQeZBTHiNF02KvDKm3g/x
+owXzc6bV1VZaDLBvEbwV2mkhUKEcnrVfTQt5jZWnnKp5vkjG3pXk0f4PkjIwxdAk
+/Q+ckpnR8rNVe4Ses7C8rX9kiOHjLyfRKd7GgFf3t2cO8GGFQzHKAwv1Aw5K6AAC
+XYyIJTlYtNmbqq7jBKwxYK/vbY+XGzBDhOmmte0tAY6INubZDdaO3pcGeQgX1H/E
+sPXdWS9P13Nvb3Yx//tPnU5OvjX4PoroMQUIQ1n5RsfNLUz6ha3hj8PJuLumbcLl
+rdpCGhLqc2+pEJNTCrvRVMawR9MTViCu75NgwVNnLKGoHwDlTG8kQf711XDiBjR4
+VjYR8uKx15wYyqLk2IWi9yAdNCNvOzhg+zltxL3xJBaFk12MlUGsW+huftOX4JGr
+YmLpI2JY/xCfN6dcrlyUdz1m27jEF6vDd/d1mtgNFLfAy6JnMHw=
+=5Djw
 -----END PGP SIGNATURE-----
 
---mxv5cy4qt+RJ9ypb--
+--+xNpyl7Qekk2NvDX--
