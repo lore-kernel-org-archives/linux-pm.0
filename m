@@ -1,103 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even when
- kthread kicked
-Date: Fri, 18 May 2018 23:17:05 +0200
-Message-ID: <CAJZ5v0hG7Y7=nFZfhZzNF0C+g4MUj85PUG8YohCvtSLL7VqPNA@mail.gmail.com>
-References: <20180518185501.173552-1-joel@joelfernandes.org> <5AFF41F9.6050300@codeaurora.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 07/11] cpufreq: tegra20: Remove unnecessary parentheses
+Date: Sat, 19 May 2018 00:02:54 +0200
+Message-ID: <20180518220254.GC28123@ulmo>
+References: <20180518200642.24815-1-digetx@gmail.com>
+ <20180518200642.24815-8-digetx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="xo44VMWPx7vlQ2+2"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5AFF41F9.6050300@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <20180518200642.24815-8-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Joel Fernandes (Google.)" <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Joel Fernandes (Google)" <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 18, 2018 at 11:13 PM, Saravana Kannan
-<skannan@codeaurora.org> wrote:
-> On 05/18/2018 11:55 AM, Joel Fernandes (Google.) wrote:
->>
->> From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
->>
->> Currently there is a chance of a schedutil cpufreq update request to be
->> dropped if there is a pending update request. This pending request can
->> be delayed if there is a scheduling delay of the irq_work and the wake
->> up of the schedutil governor kthread.
->>
->> A very bad scenario is when a schedutil request was already just made,
->> such as to reduce the CPU frequency, then a newer request to increase
->> CPU frequency (even sched deadline urgent frequency increase requests)
->> can be dropped, even though the rate limits suggest that its Ok to
->> process a request. This is because of the way the work_in_progress flag
->> is used.
->>
->> This patch improves the situation by allowing new requests to happen
->> even though the old one is still being processed. Note that in this
->> approach, if an irq_work was already issued, we just update next_freq
->> and don't bother to queue another request so there's no extra work being
->> done to make this happen.
->>
->> I had brought up this issue at the OSPM conference and Claudio had a
->> discussion RFC with an alternate approach [1]. I prefer the approach as
->> done in the patch below since it doesn't need any new flags and doesn't
->> cause any other extra overhead.
->>
->> [1] https://patchwork.kernel.org/patch/10384261/
->>
->> LGTMed-by: Viresh Kumar <viresh.kumar@linaro.org>
->> LGTMed-by: Juri Lelli <juri.lelli@redhat.com>
->> CC: Viresh Kumar <viresh.kumar@linaro.org>
->> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> CC: Peter Zijlstra <peterz@infradead.org>
->> CC: Ingo Molnar <mingo@redhat.com>
->> CC: Patrick Bellasi <patrick.bellasi@arm.com>
->> CC: Juri Lelli <juri.lelli@redhat.com>
->> Cc: Luca Abeni <luca.abeni@santannapisa.it>
->> CC: Joel Fernandes <joelaf@google.com>
->> CC: Todd Kjos <tkjos@google.com>
->> CC: claudio@evidence.eu.com
->> CC: kernel-team@android.com
->> CC: linux-pm@vger.kernel.org
->> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
->> ---
->> v1 -> v2: Minor style related changes.
->>
->>   kernel/sched/cpufreq_schedutil.c | 34 ++++++++++++++++++++++++--------
->>   1 file changed, 26 insertions(+), 8 deletions(-)
->>
->> diff --git a/kernel/sched/cpufreq_schedutil.c
->> b/kernel/sched/cpufreq_schedutil.c
->> index e13df951aca7..5c482ec38610 100644
->> --- a/kernel/sched/cpufreq_schedutil.c
->> +++ b/kernel/sched/cpufreq_schedutil.c
->> @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy
->> *sg_policy, u64 time)
->>             !cpufreq_can_do_remote_dvfs(sg_policy->policy))
->>                 return false;
->>
->> -       if (sg_policy->work_in_progress)
->> -               return false;
->> -
->>         if (unlikely(sg_policy->need_freq_update)) {
->>                 sg_policy->need_freq_update = false;
->>                 /*
->> @@ -128,7 +125,7 @@ static void sugov_update_commit(struct sugov_policy
->> *sg_policy, u64 time,
->>
->>                 policy->cur = next_freq;
->>                 trace_cpu_frequency(next_freq, smp_processor_id());
->> -       } else {
->> +       } else if (!sg_policy->work_in_progress) {
->
->
-> Not really something you added, but if you are modifying it:
-> Do we really need this work_in_progress flag? irq_work_queue() already
-> checks if the work is pending and then returns true/false.
->
-> Wouldn't the issue you are trying to fix be resolved just by dropping this
-> flag check entirely?
 
-You've missed the entire discussion on that several days ago, sorry.
+--xo44VMWPx7vlQ2+2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Rafael
+On Fri, May 18, 2018 at 11:06:38PM +0300, Dmitry Osipenko wrote:
+> Remove unnecessary parentheses as suggested by the checkpatch script.
+>=20
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/cpufreq/tegra20-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+
+Acked-by: Thierry Reding <treding@nvidia.com>
+
+--xo44VMWPx7vlQ2+2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlr/TY4ACgkQ3SOs138+
+s6GV0w/9HBba7yTfqCMIuBjab3jvfawUuz2FlU0wIrRbW+BseG11hf7kQes13hJD
+8qJkC62nRsfjoGxzjO4aQSGJItS8R8wJ/3dkwCLlER51LmttsFzR92e7V+6CIU3Q
+EsEfkavHF6qqw2UX8o/jdthxZVsMJ3C5U+tYKHgb1YjzP803U5VUQtvnOpc0FzAF
+Utd4U5uto6HbxiKv8VNg8ES17EZY1ZtkQuVXsaP6Kpd4u2PScQpGh7Y6faAk1Dcm
+UJiH74VP90iJHge4tlQH/ZHmAwrk+G3pZnMwbu3+x2NeH5ISWD6b55qfyPxSTUzM
+L8bXH8LGo/i0olrEosj94tNbVVfaLNutMrwqC1d0KAnBakgbGlIigEzIKVB494uJ
+XaUWsBaJvbuCLdMKfb3GJ30uWvluqxkau+16Yooqm2yKmurg6sSKU12zRFIw6i/x
+TyEq6Imzkh+Jum0FTYx4DJs7NAh1x238OiwrsOCoMxYVYrrA+AI13emkXB/rIE97
+ZdynmqrJRVK4dQJqORvMIZOW52zlSxXKCTqFGVcT+VhKr6R84vxLWEMahzcsfYmq
+tyracS7vFBxYrvXrORZu14f9vVHugNf0oMojXwG55bAew5u/wmpEmSwjhs9mFHrD
+pMWYRufv+n4TtXUevlcaGNjym0jPqFokXGIeaR/3I5156JaYFYI=
+=V9cG
+-----END PGP SIGNATURE-----
+
+--xo44VMWPx7vlQ2+2--
