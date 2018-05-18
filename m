@@ -1,106 +1,55 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 7/9] PM / Domains: Split genpd_dev_pm_attach()
-Date: Fri, 18 May 2018 12:31:28 +0200
-Message-ID: <1526639490-12167-8-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 4/9] PM / Domains: Drop unused parameter in
+ genpd_allocate_dev_data()
+Date: Fri, 18 May 2018 12:31:25 +0200
+Message-ID: <1526639490-12167-5-git-send-email-ulf.hansson@linaro.org>
 References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-To extend genpd to deal with allowing multiple PM domains per device, some
-of the code in genpd_dev_pm_attach() can be re-used. Let's prepare for this
-by moving some of the code into a sub-function.
+The in-parameter struct generic_pm_domain *genpd to
+genpd_allocate_dev_data() is unused, so let's drop it.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 60 +++++++++++++++++++++++++--------------------
- 1 file changed, 33 insertions(+), 27 deletions(-)
+ drivers/base/power/domain.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 4597e1c..d538640 100644
+index f08fa15..050ce07 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -2221,38 +2221,15 @@ static void genpd_dev_pm_sync(struct device *dev)
- 	genpd_queue_power_off_work(pd);
- }
+@@ -1316,7 +1316,6 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
+ #endif /* CONFIG_PM_SLEEP */
  
--/**
-- * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
-- * @dev: Device to attach.
-- *
-- * Parse device's OF node to find a PM domain specifier. If such is found,
-- * attaches the device to retrieved pm_domain ops.
-- *
-- * Returns 1 on successfully attached PM domain, 0 when the device don't need a
-- * PM domain or when multiple power-domains exists for it, else a negative error
-- * code. Note that if a power-domain exists for the device, but it cannot be
-- * found or turned on, then return -EPROBE_DEFER to ensure that the device is
-- * not probed and to re-try again later.
-- */
--int genpd_dev_pm_attach(struct device *dev)
-+static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
-+				 unsigned int index)
+ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+-					struct generic_pm_domain *genpd,
+ 					struct gpd_timing_data *td)
  {
- 	struct of_phandle_args pd_args;
- 	struct generic_pm_domain *pd;
- 	int ret;
+ 	struct generic_pm_domain_data *gpd_data;
+@@ -1385,7 +1384,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
+ 		return -EINVAL;
  
--	if (!dev->of_node)
--		return 0;
--
--	/*
--	 * Devices with multiple PM domains must be attached separately, as we
--	 * can only attach one PM domain per device.
--	 */
--	if (of_count_phandle_with_args(dev->of_node, "power-domains",
--				       "#power-domain-cells") != 1)
--		return 0;
--
--	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
--					"#power-domain-cells", 0, &pd_args);
-+	ret = of_parse_phandle_with_args(np, "power-domains",
-+				"#power-domain-cells", index, &pd_args);
- 	if (ret < 0)
- 		return ret;
+-	gpd_data = genpd_alloc_dev_data(dev, genpd, td);
++	gpd_data = genpd_alloc_dev_data(dev, td);
+ 	if (IS_ERR(gpd_data))
+ 		return PTR_ERR(gpd_data);
  
-@@ -2290,6 +2267,35 @@ int genpd_dev_pm_attach(struct device *dev)
- 
- 	return ret ? -EPROBE_DEFER : 1;
- }
-+
-+/**
-+ * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
-+ * @dev: Device to attach.
-+ *
-+ * Parse device's OF node to find a PM domain specifier. If such is found,
-+ * attaches the device to retrieved pm_domain ops.
-+ *
-+ * Returns 1 on successfully attached PM domain, 0 when the device don't need a
-+ * PM domain or when multiple power-domains exists for it, else a negative error
-+ * code. Note that if a power-domain exists for the device, but it cannot be
-+ * found or turned on, then return -EPROBE_DEFER to ensure that the device is
-+ * not probed and to re-try again later.
-+ */
-+int genpd_dev_pm_attach(struct device *dev)
-+{
-+	if (!dev->of_node)
-+		return 0;
-+
-+	/*
-+	 * Devices with multiple PM domains must be attached separately, as we
-+	 * can only attach one PM domain per device.
-+	 */
-+	if (of_count_phandle_with_args(dev->of_node, "power-domains",
-+				       "#power-domain-cells") != 1)
-+		return 0;
-+
-+	return __genpd_dev_pm_attach(dev, dev->of_node, 0);
-+}
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- 
- static const struct of_device_id idle_state_match[] = {
 -- 
 2.7.4
