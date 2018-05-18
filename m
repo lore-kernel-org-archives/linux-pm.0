@@ -1,52 +1,52 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v1 06/11] cpufreq: tegra20: Remove unneeded check in
- tegra_cpu_init
-Date: Fri, 18 May 2018 07:29:16 +0530
-Message-ID: <20180518015916.u3i6ts4hwqbws6ma@vireshk-i7>
+Subject: Re: [PATCH v1 07/11] cpufreq: tegra20: Check if this is Tegra20
+ machine
+Date: Fri, 18 May 2018 07:29:37 +0530
+Message-ID: <20180518015937.kcu3ltv3kb3nvoli@vireshk-i7>
 References: <20180517180056.13336-1-digetx@gmail.com>
- <20180517180056.13336-7-digetx@gmail.com>
+ <20180517180056.13336-8-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180517180056.13336-7-digetx@gmail.com>
+In-Reply-To: <20180517180056.13336-8-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 On 17-05-18, 21:00, Dmitry Osipenko wrote:
-> Remove checking of the CPU number for consistency as it won't ever fail
-> unless there is a severe bug in the cpufreq core.
+> Don't even try to request the clocks during of module initialization on
+> non-Tegra20 machines (this is the case for a multi-platform kernel) for
+> consistency.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/cpufreq/tegra20-cpufreq.c | 5 -----
->  1 file changed, 5 deletions(-)
+>  drivers/cpufreq/tegra20-cpufreq.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
 > diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
-> index 61f00d1cba26..147ae3e14f18 100644
+> index 147ae3e14f18..797c61c74b65 100644
 > --- a/drivers/cpufreq/tegra20-cpufreq.c
 > +++ b/drivers/cpufreq/tegra20-cpufreq.c
-> @@ -32,8 +32,6 @@ static struct cpufreq_frequency_table freq_table[] = {
->  	{ .frequency = CPUFREQ_TABLE_END },
->  };
+> @@ -19,6 +19,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/module.h>
+> +#include <linux/of.h>
 >  
-> -#define NUM_CPUS	2
-> -
->  static struct clk *cpu_clk;
->  static struct clk *pll_x_clk;
->  static struct clk *pll_p_clk;
-> @@ -119,9 +117,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
+>  static struct cpufreq_frequency_table freq_table[] = {
+>  	{ .frequency = 216000 },
+> @@ -155,6 +156,9 @@ static int __init tegra_cpufreq_init(void)
 >  {
->  	int ret;
+>  	int err;
 >  
-> -	if (policy->cpu >= NUM_CPUS)
-> -		return -EINVAL;
-> -
->  	clk_prepare_enable(cpu_clk);
->  
->  	/* FIXME: what's the actual transition time? */
+> +	if (!of_machine_is_compatible("nvidia,tegra20"))
+> +		return -ENODEV;
+> +
+>  	cpu_clk = clk_get_sys(NULL, "cclk");
+>  	if (IS_ERR(cpu_clk))
+>  		return PTR_ERR(cpu_clk);
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
