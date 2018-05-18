@@ -1,104 +1,60 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH 00/27] Add multi-channel and overheat IRQ support to
- Armada thermal driver
-Date: Fri, 18 May 2018 11:49:35 +0200
-Message-ID: <20180518114935.38d6e883@xps13>
-References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
- <871seb33xu.fsf@bootlin.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM/ runtime: fix resume from suspend on newer hp zbook/elitebook
+Date: Fri, 18 May 2018 12:26:39 +0200
+Message-ID: <CAJZ5v0jmqez5MJYRJr7SE6UseAf=eaduhv54BaGgyeC8PdoCgw@mail.gmail.com>
+References: <20180515133508.2913-1-kugel@rockbox.org> <CAJZ5v0ipJgkwmv6n5b8Z+=V0k_7d+iXdLycsF9Tsq01MWy_Jqg@mail.gmail.com>
+ <061fae0d-f358-ef6a-9c4a-a40a33d8b900@rockbox.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <871seb33xu.fsf@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <061fae0d-f358-ef6a-9c4a-a40a33d8b900@rockbox.org>
+Sender: stable-owner@vger.kernel.org
+To: Thomas Martitz <kugel@rockbox.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgWmhhbmcsIEVkdWFyZG8gJiBHcmVnb3J5LAoKT24gV2VkLCAxNiBNYXkgMjAxOCAxOToyODo0
-NSArMDIwMCwgR3JlZ29yeSBDTEVNRU5UCjxncmVnb3J5LmNsZW1lbnRAYm9vdGxpbi5jb20+IHdy
-b3RlOgoKPiBIaSBNaXF1ZWwsCj4gIAo+ICBPbiBzYW0uLCBhdnJpbCAyMSAyMDE4LCBNaXF1ZWwg
-UmF5bmFsIDxtaXF1ZWwucmF5bmFsQGJvb3RsaW4uY29tPiB3cm90ZToKPiAKPiA+IFRoZSBvbmx5
-IGNhcGFiaWxpdHkgb2YgdGhlIEFybWFkYSB0aGVybWFsIGRyaXZlciBpcyBjdXJyZW50bHkganVz
-dCB0bwo+ID4gcmVhZCBvbmUgc2Vuc29yICh0aGUgZGVmYXVsdCBvbmUpIHBlciBBUCBhbmQgb25l
-IHBlciBDUC4KPiA+Cj4gPiBBY3R1YWxseSwgdGhlcmUgaXMgb25lIHNlbnNvciBwZXIgY29yZSBp
-biB0aGUgQVA4MDYgcGx1cyBvbmUgc2Vuc29yIGluCj4gPiB0aGUgdGhlcm1hbCBJUCBpdHNlbGYu
-IFRoZSBDUDExMCBqdXN0IGZlYXR1cmVzIG9uZSB0aGVybWFsIHNlbnNvciBpbiBpdHMKPiA+IG93
-biB0aGVybWFsIElQLgo+ID4KPiA+IEFsc28sIHRoZXJlIGlzIG5vIG5lZWQgZm9yIHRoZSB0aGVy
-bWFsIGNvcmUgdG8gcG9sbCB0aGUgdGVtcGVyYXR1cmUgb2YKPiA+IGVhY2ggc2Vuc29yIGJ5IHNv
-ZnR3YXJlIGFzIHRoaXMgSVAgKGF0IGxlYXN0IGZvciBBUDgwNiBhbmQgQ1AxMTAKPiA+IGNvbXBh
-dGlibGVzKSBmZWF0dXJlcyBhbiBoYXJkd2FyZSBvdmVyaGVhdCBpbnRlcnJ1cHQuCj4gPgo+ID4g
-VGhpcyBzZXJpZXMgZmlyc3QgaW1wcm92ZXMgdGhlIHJlYWRhYmlsaXR5IG9mIHRoaXMgZHJpdmVy
-LCB0aGVuIGFkZHMKPiA+IHN1cHBvcnQgZm9yIG11bHRpLWNoYW5uZWwgdGhlcm1hbCBJUHMsIGFu
-ZCBmaW5hbGx5IGFkZHMgc3VwcG9ydCBmb3IgdGhlCj4gPiBoYXJkd2FyZSBvdmVyaGVhdCBpbnRl
-cnJ1cHQuIFRoZSBiaW5kaW5ncyBhbmQgdGhlIGRldmljZS10cmVlcyBhcmUKPiA+IHVwZGF0ZWQg
-YWNjb3JkaW5nbHkuCj4gPgo+ID4gUGxlYXNlIG5vdGUgdGhhdCB0aGUgdGhlcm1hbCBJUCByYWlz
-ZXMgU0VJIGludGVycnVwdHMsIGZyb20gd2hpY2ggdGhlCj4gPiBzdXBwb3J0IGFzIGp1c3QgYmVl
-biBjb250cmlidXRlZCBhbmQgbm90IG1lcmdlZCB5ZXQuIEFwcGx5aW5nIHRoZSBsYXN0Cj4gPiBE
-VCBwYXRjaGVzIHJlZmVycmluZyB0byB0aGUgJ3NlaScgYW5kICdpY3Vfc2VpJyBub2RlcyB3aWxs
-IHJlcXVpcmUgdGhpcwo+ID4gZmVhdHVyZSBbMV0gdG8gaGF2ZSBiZWVuIGFjY2VwdGVkIGZpcnN0
-Lgo+ID4KPiA+IFsxXSBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwvbGludXgt
-YXJtLWtlcm5lbC8yMDE4LUFwcmlsLzU3Mjg1Mi5odG1sCj4gPgo+ID4gVGhhbmsgeW91LAo+ID4g
-TWlxdcOobAo+ID4KPiA+Cj4gPiBNaXF1ZWwgUmF5bmFsICgyNyk6Cj4gPiAgIHRoZXJtYWw6IGFy
-bWFkYTogYWRkIGEgZnVuY3Rpb24gdGhhdCBzYW5pdGl6ZXMgdGhlIHRoZXJtYWwgem9uZSBuYW1l
-Cj4gPiAgIHRoZXJtYWw6IGFybWFkYTogcmVtb3ZlIHVzZWxlc3MgcmVnaXN0ZXIgYWNjZXNzZXMK
-PiA+ICAgdGhlcm1hbDogYXJtYWRhOiByZW1vdmUgbWlzbGVhZGluZyBjb21tZW50cwo+ID4gICB0
-aGVybWFsOiBhcm1hZGE6IHJlbmFtZSB0aGUgaW5pdGlhbGl6YXRpb24gcm91dGluZQo+ID4gICB0
-aGVybWFsOiBhcm1hZGE6IGRpc3NvY2lhdGUgYTM4MCBhbmQgY3AxMTAgLT5pbml0KCkgaG9va3MK
-PiA+ICAgdGhlcm1hbDogYXJtYWRhOiBhdmVyYWdlIG92ZXIgc2FtcGxlcyB0byBhdm9pZCBnbGl0
-Y2hlcwo+ID4gICB0aGVybWFsOiBhcm1hZGE6IGNvbnZlcnQgZHJpdmVyIHRvIHN5c2NvbiByZWdp
-c3RlciBhY2Nlc3Nlcwo+ID4gICB0aGVybWFsOiBhcm1hZGE6IHVzZSB0aGUgcmVzb3VyY2UgbWFu
-YWdlZCByZWdpc3RyYXRpb24gaGVscGVyCj4gPiAgICAgYWx0ZXJuYXRpdmUKPiA+ICAgdGhlcm1h
-bDogYXJtYWRhOiBhZGQgbXVsdGktY2hhbm5lbCBzZW5zb3JzIHN1cHBvcnQKPiA+ICAgdGhlcm1h
-bDogYXJtYWRhOiByZW1vdmUgc2Vuc29ycyB2YWxpZGl0eSBmcm9tIHRoZSBJUCBpbml0aWFsaXph
-dGlvbgo+ID4gICB0aGVybWFsOiBhcm1hZGE6IG1vdmUgdmFsaWRpdHkgY2hlY2sgb3V0IG9mIHRo
-ZSByZWFkIGZ1bmN0aW9uCj4gPiAgIHRoZXJtYWw6IGFybWFkYTogZ2V0IHJpZCBvZiB0aGUgLT5p
-c192YWxpZCgpIHBvaW50ZXIKPiA+ICAgdGhlcm1hbDogYXJtYWRhOiBhZGQgb3ZlcmhlYXQgaW50
-ZXJydXB0IHN1cHBvcnQKPiA+ICAgZHQtYmluZGluZ3M6IGNwMTEwOiByZW5hbWUgY3AxMTAgc3lz
-Y29uIGZpbGUKPiA+ICAgZHQtYmluZGluZ3M6IGFwODA2OiBwcmVwYXJlIHRoZSBzeXNjb24gZmls
-ZSB0byBsaXN0IG90aGVyIHN5c2NvbnMKPiA+ICAgICBub2Rlcwo+ID4gICBkdC1iaW5kaW5nczog
-Y3AxMTA6IHByZXBhcmUgdGhlIHN5c2NvbiBmaWxlIHRvIGxpc3Qgb3RoZXIgc3lzY29ucwo+ID4g
-ICAgIG5vZGVzCj4gPiAgIGR0LWJpbmRpbmdzOiBhcDgwNjogYWRkIHRoZSB0aGVybWFsIG5vZGUg
-aW4gdGhlIHN5c2NvbiBmaWxlCj4gPiAgIGR0LWJpbmRpbmdzOiBjcDExMDogdXBkYXRlIGRvY3Vt
-ZW50YXRpb24gc2luY2UgRFQgZGUtZHVwbGljYXRpb24KPiA+ICAgZHQtYmluZGluZ3M6IGNwMTEw
-OiBhZGQgdGhlIHRoZXJtYWwgbm9kZSBpbiB0aGUgc3lzY29uIGZpbGUKPiA+ICAgZHQtYmluZGlu
-Z3M6IHRoZXJtYWw6IGFybWFkYTogYWRkIHJlZmVyZW5jZSB0byBuZXcgYmluZGluZ3MKPiA+ICAg
-YXJtNjQ6IGR0czogbWFydmVsbDogcmVuYW1lIGFwODA2IHN5c2NvbiBub2RlCj4gPiAgIGFybTY0
-OiBkdHM6IG1hcnZlbGw6IG1vdmUgQVA4MDYvQ1AxMTAgdGhlcm1hbCBub2RlcyBpbnRvIGEgbmV3
-IHN5c2Nvbgo+ID4gICBhcm02NDogZHRzOiBtYXJ2ZWxsOiBhZGQgdGhlcm1hbC16b25lIG5vZGUg
-aW4gYXA4MDYgRFRTSSBmaWxlCj4gPiAgIGFybTY0OiBkdHM6IG1hcnZlbGw6IGFkZCBtYWNybyB0
-byBtYWtlIGRpc3RpbmN0aW9uIGJldHdlZW4gbm9kZSBuYW1lcwo+ID4gICBhcm02NDogZHRzOiBt
-YXJ2ZWxsOiBhZGQgdGhlcm1hbC16b25lIG5vZGUgaW4gY3AxMTAgRFRTSSBmaWxlCj4gPiAgIGFy
-bTY0OiBkdHM6IG1hcnZlbGw6IGFkZCBpbnRlcnJ1cHQgc3VwcG9ydCB0byBhcDgwNiB0aGVybWFs
-IG5vZGUKPiA+ICAgYXJtNjQ6IGR0czogbWFydmVsbDogYWRkIGludGVycnVwdCBzdXBwb3J0IHRv
-IGNwMTEwIHRoZXJtYWwgbm9kZQo+ID4KPiA+ICAuLi4vYXJtL21hcnZlbGwvYXA4MDYtc3lzdGVt
-LWNvbnRyb2xsZXIudHh0ICAgICAgICB8ICA1NSArLQo+ID4gIC4uLmNvbnRyb2xsZXIwLnR4dCA9
-PiBjcDExMC1zeXN0ZW0tY29udHJvbGxlci50eHR9IHwgIDY2ICstCj4gPiAgLi4uL2RldmljZXRy
-ZWUvYmluZGluZ3MvdGhlcm1hbC9hcm1hZGEtdGhlcm1hbC50eHQgfCAgIDUgKwo+ID4gIGFyY2gv
-YXJtNjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEtYXA4MDYuZHRzaSAgICAgIHwgIDg1ICstCj4g
-PiAgYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFkYS1jb21tb24uZHRzaSAgICAgfCAg
-IDEgKwo+ID4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEtY3AxMTAuZHRzaSAg
-ICAgIHwgIDQ1ICstCj4gPiAgZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLmMgICAgICAg
-ICAgICAgICAgICAgfCA4NzUgKysrKysrKysrKysrKysrKysrLS0tCj4gPiAgNyBmaWxlcyBjaGFu
-Z2VkLCA5NzYgaW5zZXJ0aW9ucygrKSwgMTU2IGRlbGV0aW9ucygtKQo+ID4gIHJlbmFtZSBEb2N1
-bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21hcnZlbGwve2NwMTEwLXN5c3RlbS1j
-b250cm9sbGVyMC50eHQgPT4gY3AxMTAtc3lzdGVtLWNvbnRyb2xsZXIudHh0fSAoODMlKSAgCj4g
-Cj4gV2hhdCBpcyB0aGUgc3RhdHVzIG9mIHRoaXMgc2VyaWVzPwo+IEkgYW0gZXNwZWNpYWxseSBp
-bnRlcmVzdGVkIGluIHRoZSBkdCBwYXJ0Lgo+IERvIHlvdSBleHBlY3Qgc2VuZGluZyBhIG5ldyBz
-ZXJpZXMgbW9kaWZ5aW5nIHRoZW0/CgpJIGhhdmUgbm90IHJlY2VpdmVkIGFueSBmZWVkYmFjayB5
-ZXQgb24gdGhlIHRoZXJtYWwgcGFydCwgYmluZGluZ3MgaGF2ZQpiZWVuIHBhcnRpYWxseSBhY2tl
-ZCBieSBSb2IgKG9uZSByZXF1ZXN0LCBJIHdpbGwgcHJvYmFibHkgYWRkIGEgcmVnCnByb3BlcnR5
-IGluIHRoZSBBUCBub2RlKSBzbyBwbGVhc2UgZG8gbm90IHRha2UgdGhlIERUUyBjaGFuZ2VzIG9m
-CnRoaXMgaXRlcmF0aW9uLgoKWmhhbmcsIEVkdWFyZG8sIGNvdWxkIHlvdSBwbGVhc2Ugc2hhcmUg
-dGhlIHN0YXR1cyBvZiB0aGlzIHNlcmllcz8KClRoYW5rcywKTWlxdcOobAoKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFp
-bGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlz
-dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Tue, May 15, 2018 at 9:39 PM, Thomas Martitz <kugel@rockbox.org> wrote:
+> Am 15.05.2018 um 17:10 schrieb Rafael J. Wysocki:
+>
+>> Before applying anything like this I need to understand the failure in
+>> the first place.
+>>
+>> Since direct_complete is optional anyway and it should be safe to call
+>> pm_runtime_suspended() at any time, I'm suspecting a bug in a driver
+>> that is exposed by the commit turned up by bisection.
+>>
+>> Where's the code I need to look at?
+>>
+>
+> Hello,
+>
+> thanks for looking into this. To answer the question I need your expertise.
+> I couldn't find out which device causes it. Since the freeze only happens of
+> amdgpu is loaded I naturally thought the problematic device(s) would be
+> bound to amdgpu. So I assumed the amdgpu-bound devices would be affected by
+> your change, i.e. not have direct_complete set anymore. But I could not
+> confirm this evidence during testing (I basically restricted my patch to
+> devices which pass !strcmp(dev->driver->name, "amdgpu", and the system was
+> still frozen upon resume).
+>
+> Then I printed a list which pass "dev->direct_complete &&
+> !pm_runtime_suspended(dev)" (with this patch applied), and the list was
+> *very* long (maybe 100+). I can perform this again if you find the list
+> useful.
+>
+> The sheer number of devices which pass  "dev->direct_complete &&
+> !pm_runtime_suspended(dev)" made me think that your change should be
+> re-considered, hence my patch.
+>
+> So, please give me advice on how I can point you to the code that you'd like
+> to look at. I assume key information which device(s) pass
+> "dev->direct_complete && !pm_runtime_suspended(dev)" AND cause the freeze on
+> !dev->direct_complete? I'm afraid that will take a very long time to find
+> out.
+
+Let's continue this in the Bugzilla entry at
+
+https://bugzilla.kernel.org/show_bug.cgi?id=199693
+
+Thanks,
+Rafael
