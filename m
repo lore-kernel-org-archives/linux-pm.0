@@ -1,9 +1,10 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
+From: Valentin Schneider <valentin.schneider@arm.com>
 Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
  frequency invariant accounting
-Date: Fri, 18 May 2018 14:33:53 +0100
-Message-ID: <20180518133353.GO30654@e110439-lin>
-References: <20180516163105.GP28366@localhost.localdomain>
+Date: Fri, 18 May 2018 15:09:21 +0100
+Message-ID: <efcccd63-d952-db31-29e7-1566e2b5089f@arm.com>
+References: <20180516154733.GF12198@hirez.programming.kicks-ass.net>
+ <20180516163105.GP28366@localhost.localdomain>
  <20180517105907.GC22493@localhost.localdomain>
  <20180517150418.GF22493@localhost.localdomain>
  <1526571692.11765.10.camel@linux.intel.com>
@@ -14,99 +15,28 @@ References: <20180516163105.GP28366@localhost.localdomain>
  <20180518105742.GN30654@e110439-lin>
  <20180518112919.GI12217@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <20180518112919.GI12217@hirez.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 18-May 13:29, Peter Zijlstra wrote:
+Hi,
+
+On 18/05/18 12:29, Peter Zijlstra wrote:
 > On Fri, May 18, 2018 at 11:57:42AM +0100, Patrick Bellasi wrote:
-> > Thus, my simple (maybe dumb) questions are:
-> > - why can't we just fold turbo boost frequency into the existing concepts?
-> > - what are the limitations of such a "simple" approach?
+>> Thus, my simple (maybe dumb) questions are:
+>> - why can't we just fold turbo boost frequency into the existing concepts?
+>> - what are the limitations of such a "simple" approach?
 > 
 > Perhaps... but does this not further complicate the whole capacity vs
 > util thing we already have in say the misfit patches?
 
-Not sure about that...
-
-> And the  util_fits_capacity() thing from the EAS ones.
-
-In this case instead, if we can track somehow (not saying we can)
-what is the currently available "transient maximum capacity"...
-then a util_fits_capacity() should just look at that.
-
-If the transient capacity is already folded into cpu_capacity, as it
-is now for RT and IRQ pressure, then likely we don't have to change
-anything.
-
-> The thing is, we either need to dynamically scale the util or the
-> capacity or both. I think for Thermal there are patches out there that
-> drop the capacity.
-
-Not sure... but I would feel more comfortable by something which caps
-the maximum capacity. Meaning, eventually you can fill up the maximum
-possible capacity only "up to" a given value, because of thermal or other
-reasons most of the scheduler maybe doesn't even have to know why?
-
-> But we'd then have to do the same for turbo/vector and all the other
-> stuff as well. Otherwise we risk things like running at low U with 0%
-> idle and not triggering the tipping point between eas and regular
-> balancing.
-
-Interacting with the tipping point and/or OPP changes is indeed an
-interesting side of the problem I was not considering so far...
-
-But again, the tipping point could not be defined as a delta
-with respect to the "transient maximum capacity" ?
-
-> So either way around we need to know the 'true' max, either to fudge
-> util or to fudge capacity.
-
-Right, but what I see from a concepts standpoint is something like:
-
-     +--+--+   cpu_capacity_orig (CONSTANT at boot time)
-     |  |  |
-     |  |  |       HW generated constraints
-     |  v  |
-     +-----+   cpu_capacity_max (depending on thermal/turbo boost)
-     |  |  |
-     |  |  |       SW generated constraints
-     |  v  |
-     +-----+   cpu_capacity (depending on RT/IRQ pressure)
-     |  |  |
-     |  |  |       tipping point delta
-     +--v--+
-     |     |   Energy Aware mode available capacity
-     +-----+
-
-Where all the wkp/lb heuristics are updated to properly consider the
-cpu_capacity_max metrics whenever it comes to know what is the max
-speed we can reach now on a CPU.
-
-> And I'm not sure we can know in some of these cases :/
-
-Right, this schema will eventually work only under the hypothesis that
-"somehow" we can update cpu_capacity_max from HW events.
-
-Not entirely sure that's possible and/or at which time granularity on
-all different platforms.
-
-> And while Vincent's patches might have been inspired by another problem,
-> they do have the effect of always allowing util to go to 1, which is
-> nice for this.
-
-Sure, that's a nice point, but still I have the feeling that always
-reaching u=1 can defeat other interesting properties of a task,
-For example, comparing task requirements in different CPUs and/or at
-different times, which plays a big role for energy aware task
-placement decisions.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+What do you mean by that ? Bear in mind, I'm a complete stranger to turbo
+boost so I fail to see why, as Patrick puts it, it can't fit within the
+existing concepts (i.e. max util is 1024 but is only reachable when turbo
+boosted).
