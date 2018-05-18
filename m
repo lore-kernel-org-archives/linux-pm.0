@@ -1,23 +1,34 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] Revert "cpufreq: Remove policy create/remove notifiers"
-Date: Fri, 18 May 2018 10:29:30 +0200
-Message-ID: <CAJZ5v0geHvVUfL=+x-XNMQt4ygpt8QumOaWSjG268Sbtw9oeKw@mail.gmail.com>
-References: <1526631889-5084-1-git-send-email-skannan@codeaurora.org> <1526631889-5084-2-git-send-email-skannan@codeaurora.org>
+From: skannan@codeaurora.org
+Subject: Re: [PATCH 1/2] Revert "cpufreq: Remove policy create/remove
+ notifiers"
+Date: Fri, 18 May 2018 01:31:05 -0700
+Message-ID: <1a66e15a401b2e1602f26cff5e904f12@codeaurora.org>
+References: <1526631889-5084-1-git-send-email-skannan@codeaurora.org>
+ <1526631889-5084-2-git-send-email-skannan@codeaurora.org>
+ <CAJZ5v0geHvVUfL=+x-XNMQt4ygpt8QumOaWSjG268Sbtw9oeKw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526631889-5084-2-git-send-email-skannan@codeaurora.org>
+In-Reply-To: <CAJZ5v0geHvVUfL=+x-XNMQt4ygpt8QumOaWSjG268Sbtw9oeKw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rjwysocki@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 18, 2018 at 10:24 AM, Saravana Kannan
-<skannan@codeaurora.org> wrote:
-> This reverts commit f9f41e3ef99ac9d4e91b07634362e393fb929aad.
+On 2018-05-18 01:29, Rafael J. Wysocki wrote:
+> On Fri, May 18, 2018 at 10:24 AM, Saravana Kannan
+> <skannan@codeaurora.org> wrote:
+>> This reverts commit f9f41e3ef99ac9d4e91b07634362e393fb929aad.
+> 
+> No explanation, no cake. :-)
+> 
+>> Change-Id: Iddde3ef56c9e5b14dcb14f8737899b85e56f5b43
+> 
+> S-o-b missing.
 
-No explanation, no cake. :-)
+Sorry, forgot the S-o-b. But there's a long explanation in the cover 
+letter :)
 
-> Change-Id: Iddde3ef56c9e5b14dcb14f8737899b85e56f5b43
-
-S-o-b missing.
+-Saravana
