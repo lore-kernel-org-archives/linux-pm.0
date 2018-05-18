@@ -1,90 +1,214 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH v3 1/3] scsi: ufs: Extract devfreq registration
-Date: Thu, 17 May 2018 23:26:36 -0700
-Message-ID: <20180518062638.31777-2-bjorn.andersson@linaro.org>
-References: <20180518062638.31777-1-bjorn.andersson@linaro.org>
+From: skannan@codeaurora.org
+Subject: Re: [PATCH] PM / devfreq: Add support for QCOM devfreq FW
+Date: Fri, 18 May 2018 00:16:07 -0700
+Message-ID: <56e9cd3e57d809ef6cd5765a97101e6e@codeaurora.org>
+References: <CGME20180517060257epcas2p1b42e6969c806473ccdf38ea52a74ca04@epcas2p1.samsung.com>
+ <1526536958-29419-1-git-send-email-skannan@codeaurora.org>
+ <5AFE3A30.4040505@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180518062638.31777-1-bjorn.andersson@linaro.org>
+In-Reply-To: <5AFE3A30.4040505@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Andy Gross <andy.gross@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Failing to register with devfreq leaves hba->devfreq assigned, which
-causes the error path to dereference the ERR_PTR(). Rather than bolting
-on more conditionals, move the call of devm_devfreq_add_device() into
-it's own function and only update hba->devfreq once it's successfully
-registered.
+On 2018-05-17 19:28, Chanwoo Choi wrote:
+> Hi,
+> 
+> On 2018년 05월 17일 15:02, Saravana Kannan wrote:
+>> The firmware present in some QCOM chipsets offloads the steps 
+>> necessary for
+>> changing the frequency of some devices (Eg: L3). This driver 
+>> implements the
+>> devfreq interface for this firmware so that various governors could be 
+>> used
+>> to scale the frequency of these devices.
+> 
+> The description doesn't include what kind of firmware. You have to 
+> explain
+> the type and role of firmware.
 
-The subsequent patch builds upon this to make UFS actually work again,
-as it's been broken since f1d981eaecf8 ("PM / devfreq: Use the available
-min/max frequency")
+Not exactly sure what you mean. I described exactly what the firmware 
+does. Not sure what you mean by what kind of firmware. I just understand 
+the interface with it -- not the implementation of the firmware or 
+hardware.
 
-Also switch to use DEVFREQ_GOV_SIMPLE_ONDEMAND constant.
+> And it doesn't contain the description
+> of correlation
+> between 'qcom,devfreq-fw' and 'qcom,devfreq-fw-voter'.
+> 
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
----
+Will do.
 
-Changes since v2:
-- Use DEVFREQ_GOV_SIMPLE_ONDEMAND, per Chanwoo's recommendation
-- Picked up Chanwoo's R-b
+>> 
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> ---
+>>  .../bindings/devfreq/devfreq-qcom-fw.txt           |  31 ++
+>>  drivers/devfreq/Kconfig                            |  14 +
+>>  drivers/devfreq/Makefile                           |   1 +
+>>  drivers/devfreq/devfreq_qcom_fw.c                  | 326 
+>> +++++++++++++++++++++
+>>  4 files changed, 372 insertions(+)
+>>  create mode 100644 
+>> Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
+>>  create mode 100644 drivers/devfreq/devfreq_qcom_fw.c
+>> 
+>> diff --git 
+>> a/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt 
+>> b/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
+>> new file mode 100644
+>> index 0000000..5e1aecf
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
+>> @@ -0,0 +1,31 @@
+>> +QCOM Devfreq FW device
+>> +
+>> +Some Qualcomm Technologies, Inc. (QTI) chipsets have a FW that 
+>> offloads the
+>> +child devices of the corresponding qcom,devfreq-fw device.
+>> +
+>> +Required properties:
+>> +- compatible:		Must be "qcom,devfreq-fw" or "qcom,devfreq-fw-voter"
+> 
+> The use of 'devfreq' word is not proper because 'devfreq' is framework 
+> name.
+> I think you have to use the specific SoC name for the compatible.
 
-Changes since v1:
-- None
+I don't think it's mandatory to use chip name. Typically you pick the IP 
+name. This IP is a firmware just for scaling device frequency - so 
+called it qcom,devfreq-fw. I'll see what the DT maintainers say about 
+this.
 
- drivers/scsi/ufs/ufshcd.c | 31 ++++++++++++++++++++++---------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+> In the future,
+> if you need to support the new SoC with this driver, just you can add
+> the new compatible.
+> 
+>> +Only for qcom,devfreq-fw:
+>> +- reg:			Pairs of physical base addresses and region sizes of
+>> +			memory mapped registers.
+>> +- reg-names:		Names of the bases for the above registers. Expected
+>> +			bases are: "en-base", "lut-base" and "perf-base".
+> 
+> It is not possible to understand what are meaning of "en-base",
+> "lut-base" and "perf-base".
+> because they depend on specific H/W specification. You have to add the
+> detailed description
+> why they are necessary. Also, you should explain whether thery are
+> mandatory or optional.
 
-diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
-index 00e79057f870..f04902a066cb 100644
---- a/drivers/scsi/ufs/ufshcd.c
-+++ b/drivers/scsi/ufs/ufshcd.c
-@@ -1287,6 +1287,26 @@ static struct devfreq_dev_profile ufs_devfreq_profile = {
- 	.get_dev_status	= ufshcd_devfreq_get_dev_status,
- };
- 
-+static int ufshcd_devfreq_init(struct ufs_hba *hba)
-+{
-+	struct devfreq *devfreq;
-+	int ret;
-+
-+	devfreq = devm_devfreq_add_device(hba->dev,
-+			&ufs_devfreq_profile,
-+			DEVFREQ_GOV_SIMPLE_ONDEMAND,
-+			NULL);
-+	if (IS_ERR(devfreq)) {
-+		ret = PTR_ERR(devfreq);
-+		dev_err(hba->dev, "Unable to register with devfreq %d\n", ret);
-+		return ret;
-+	}
-+
-+	hba->devfreq = devfreq;
-+
-+	return 0;
-+}
-+
- static void __ufshcd_suspend_clkscaling(struct ufs_hba *hba)
- {
- 	unsigned long flags;
-@@ -6439,16 +6459,9 @@ static int ufshcd_probe_hba(struct ufs_hba *hba)
- 				sizeof(struct ufs_pa_layer_attr));
- 			hba->clk_scaling.saved_pwr_info.is_valid = true;
- 			if (!hba->devfreq) {
--				hba->devfreq = devm_devfreq_add_device(hba->dev,
--							&ufs_devfreq_profile,
--							"simple_ondemand",
--							NULL);
--				if (IS_ERR(hba->devfreq)) {
--					ret = PTR_ERR(hba->devfreq);
--					dev_err(hba->dev, "Unable to register with devfreq %d\n",
--							ret);
-+				ret = ufshcd_devfreq_init(hba);
-+				if (ret)
- 					goto out;
--				}
- 			}
- 			hba->clk_scaling.is_allowed = true;
- 		}
--- 
-2.17.0
+The are all mandatory, that's why I didn't have the "Optional" heading. 
+I can add descriptions.
+
+> 
+>> +
+>> +Example:
+>> +
+>> +	qcom,devfreq-l3 {
+>> +		compatible = "qcom,devfreq-fw";
+>> +		reg-names = "en-base", "lut-base", "perf-base";
+>> +		reg = <0x18321000 0x4>, <0x18321110 0x600>, <0x18321920 0x4>;
+>> +
+>> +		qcom,cpu0-l3 {
+>> +			compatible = "qcom,devfreq-fw-voter";
+>> +		};
+>> +
+>> +		qcom,cpu4-l3 {
+>> +			compatible = "qcom,devfreq-fw-voter";
+>> +		};
+>> +	};
+>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+>> index 6a172d3..8503018 100644
+>> --- a/drivers/devfreq/Kconfig
+>> +++ b/drivers/devfreq/Kconfig
+>> @@ -113,6 +113,20 @@ config ARM_RK3399_DMC_DEVFREQ
+>>            It sets the frequency for the memory controller and reads 
+>> the usage counts
+>>            from hardware.
+>> 
+>> +config ARM_QCOM_DEVFREQ_FW
+>> +	bool "Qualcomm Technologies Inc. DEVFREQ FW driver"
+>> +	depends on ARCH_QCOM
+>> +	select DEVFREQ_GOV_PERFORMANCE
+>> +	select DEVFREQ_GOV_POWERSAVE
+>> +	select DEVFREQ_GOV_USERSPACE
+>> +	default n
+>> +	help
+>> +	  The firmware present in some QCOM chipsets offloads the steps
+>> +	  necessary for changing the frequency of some devices (Eg: L3). 
+>> This
+>> +	  driver implements the devfreq interface for this firmware so that
+>> +	  various governors could be used to scale the frequency of these
+>> +	  devices.
+> 
+> As I commented, you need to add a description of what kind of firmwar.
+
+Again, not sure what you mean by "what kind of firmware". It's exactly 
+what I've described here. Can you please elaborate?
+
+>> +
+>>  source "drivers/devfreq/event/Kconfig"
+>> 
+>>  endif # PM_DEVFREQ
+>> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+>> index 32b8d4d..f1cc8990 100644
+>> --- a/drivers/devfreq/Makefile
+>> +++ b/drivers/devfreq/Makefile
+>> @@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= 
+>> governor_passive.o
+>>  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+>>  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+>>  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
+>> +obj-$(CONFIG_ARM_QCOM_DEVFREQ_FW)	+= devfreq_qcom_fw.o
+>> 
+>>  # DEVFREQ Event Drivers
+>>  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
+>> diff --git a/drivers/devfreq/devfreq_qcom_fw.c 
+>> b/drivers/devfreq/devfreq_qcom_fw.c
+>> new file mode 100644
+>> index 0000000..3e85f76
+>> --- /dev/null
+>> +++ b/drivers/devfreq/devfreq_qcom_fw.c
+>> @@ -0,0 +1,326 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+> 
+> Is it right? or Qualcomm?
+
+Yup, it's right.
+
+> 
+>> + */
+>> +
+>> +#include <linux/err.h>
+>> +#include <linux/errno.h>
+>> +#include <linux/init.h>
+>> +#include <linux/io.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/of_platform.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/list.h>
+>> +#include <linux/devfreq.h>
+>> +#include <linux/pm_opp.h>
+>> +
+>> +#define INIT_RATE			300000000UL
+>> +#define XO_RATE				19200000UL
+>> +#define LUT_MAX_ENTRIES			40U
+>> +#define LUT_ROW_SIZE			32
+> 
+> I don't know what are the meaning of 'XO', 'LUT'.
+
+XO is a very common term for crystal oscillator. I don't want to change 
+these symbols.
+LUT stands for Look up table. But I can rename it to FREQ_TBL_.
+
+Thanks,
+Saravana
