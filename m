@@ -1,42 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v1 10/11] cpufreq: tegra20: Wrap cpufreq into platform
- driver
-Date: Fri, 18 May 2018 14:34:45 +0530
-Message-ID: <20180518090445.g7aeufyu7agawofa@vireshk-i7>
-References: <20180517180056.13336-1-digetx@gmail.com>
- <20180517180056.13336-11-digetx@gmail.com>
- <20180518020730.byftoaodycccze3m@vireshk-i7>
- <6127765f-e953-ce28-9994-43ffbe98703d@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / runtime: Fixup reference counting of device link
+ suppliers at probe
+Date: Fri, 18 May 2018 11:07:02 +0200
+Message-ID: <CAPDyKFphMCQ_S5aBVToGUL=Rvd0cBQ4O3Top3AYPdM79Ak_LzA@mail.gmail.com>
+References: <1526633329-31729-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0ikXsWdXq-h8rWLd-vfzi-gFmxyHmOGvRvDUoJHC3L2XA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <6127765f-e953-ce28-9994-43ffbe98703d@gmail.com>
+In-Reply-To: <CAJZ5v0ikXsWdXq-h8rWLd-vfzi-gFmxyHmOGvRvDUoJHC3L2XA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 18-05-18, 11:09, Dmitry Osipenko wrote:
-> On 18.05.2018 05:07, Viresh Kumar wrote:
-> > On 17-05-18, 21:00, Dmitry Osipenko wrote:
-> >> -static int __init tegra_cpufreq_init(void)
-> >> +static int tegra20_cpufreq_probe(struct platform_device *pdev)
-> >>  {
-> >> +	struct tegra20_cpufreq_data *data;
-> >>  	int err;
-> >>  
-> >> -	if (!of_machine_is_compatible("nvidia,tegra20"))
-> >> -		return -ENODEV;
-> > 
-> > So this stuff wasn't really required as you are getting rid of that in
-> > the same series. Should we really add it then ? Maybe ..
-> > 
-> 
-> It's not strictly needed, but I'd prefer to keep that stuff for clarity as it
-> kinda shows the way that led to the final result.
+On 18 May 2018 at 10:58, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, May 18, 2018 at 10:48 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> In the driver core, before it invokes really_probe() it runtime resumes the
+>> suppliers for the device via calling pm_runtime_get_suppliers(), which also
+>> increases the runtime PM usage count for each of the available supplier.
+>>
+>> This makes sense, as to be able to allow the consumer device to be probed
+>> by its driver. However, if the driver decides to add a new supplier link
+>> during ->probe(), hence updating the list of suppliers,
+>
+> Do any of the existing drivers do that?
 
-Okay.
+Yes.
 
--- 
-viresh
+At least these, but possibly even more...
+
+drivers/gpu/drm/rockchip/rockchip_drm_drv.c
+drivers/gpu/drm/tegra/dc.c
+drivers/gpu/ipu-v3/ipu-prg.c
+drivers/pci/dwc/pci-dra7xx.c
+
+>
+>> the following call to pm_runtime_put_suppliers(), invoked after really_probe()
+>> in the driver core, we get into trouble.
+
+Kind regards
+Uffe
