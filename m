@@ -1,56 +1,57 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v1 06/11] cpufreq: tegra20: Remove unneeded check in
- tegra_cpu_init
-Date: Fri, 18 May 2018 10:57:37 +0200
-Message-ID: <20180518085737.GF14500@ulmo>
+Subject: Re: [PATCH v1 07/11] cpufreq: tegra20: Check if this is Tegra20
+ machine
+Date: Fri, 18 May 2018 10:58:13 +0200
+Message-ID: <20180518085813.GG14500@ulmo>
 References: <20180517180056.13336-1-digetx@gmail.com>
- <20180517180056.13336-7-digetx@gmail.com>
+ <20180517180056.13336-8-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="w3uUfsyyY1Pqa/ej"
+        protocol="application/pgp-signature"; boundary="Qf1oXS95uex85X0R"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180517180056.13336-7-digetx@gmail.com>
+In-Reply-To: <20180517180056.13336-8-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---w3uUfsyyY1Pqa/ej
+--Qf1oXS95uex85X0R
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 17, 2018 at 09:00:51PM +0300, Dmitry Osipenko wrote:
-> Remove checking of the CPU number for consistency as it won't ever fail
-> unless there is a severe bug in the cpufreq core.
+On Thu, May 17, 2018 at 09:00:52PM +0300, Dmitry Osipenko wrote:
+> Don't even try to request the clocks during of module initialization on
+> non-Tegra20 machines (this is the case for a multi-platform kernel) for
+> consistency.
 >=20
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/cpufreq/tegra20-cpufreq.c | 5 -----
->  1 file changed, 5 deletions(-)
+>  drivers/cpufreq/tegra20-cpufreq.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 
 Acked-by: Thierry Reding <treding@nvidia.com>
 
---w3uUfsyyY1Pqa/ej
+--Qf1oXS95uex85X0R
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlr+lYEACgkQ3SOs138+
-s6FCXA//e3o9EQLf8AXy4zLm2AdX1fPol4HziGLearqZXulBm7LFjk+q8JhuITXD
-pk0/froyjqxioHIdeYATbym1DuNO9Q3ZA0vcobpWakgN1HciS/HKbSKaVLLia4cc
-q73q9sIyqr41oQ3ych9hXtlxBkTKzmCET+IzbVJVoLrEvTc0jQEBPNJlO6Zpo0Ys
-hAHhfebmLBmTQ8YuAxf6XU/PIEsAEz5SENIccHNXNSqiR4mxBjjTbst4WVWEV4uh
-GFVRIQ2ooPIrDxswB2ZXpxFFSdSrE9P75odgoLoOb6hnyW8dTn3S9e57GdzKcZeE
-EXg08e206VRuk/vO1A4jFdqWnqZ2oZ4ZyKftDjpKB9jhC/hQg3FAan6CBeLWsuBY
-ACmjnMDL8+XJSZyqaJVHqQCceOQ1ZBe4zBAhx8C/X1Z0pbfAhlFDeuOpZoMxfj0X
-046X0aMqCykC+vQZ1A3psD5PjEdCoDXlV/ItrFjwnOTQCByW+rdJF/4v5q8HHLSc
-NJVRZlcUATtPu3GEmHl69EgCXZxSON1cVwqhNiVZ84GNttVOCaJDmMrYo9NoKoXY
-dYBMhyujklF8eTEdlV6DxTF91V4C6IK+Qsyyfe9qRNR+0sXVwr2rsHsL6R5xt38L
-IMijA/V3p/zRITaWFEF3YC1YosMgKd//lBQKnmP+5XOjO8seggI=
-=SAKT
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlr+laUACgkQ3SOs138+
+s6HFcA//aK/hiIfIrFe2Rtv7UWHEMxSWLuJG37fb1wlxp8UjewTpJkio/5BGiqzx
+k+l1fJdlO/C2UHck6JQQXhRJNhyOZGrabVel/q+giufB+mJjzIzeEMQ8zbGZ4DI4
+mwaAnvEG+vklgRSQe7EOhH7M+ukC+plB2Sw1zBLhLPi69liompbjvsspRDJwHORx
+FV9AYziFNR62RinfU2MlQe1Jamxduy6xelMjqKr9QTC5pr51P4guu6CyY5kD89mm
+q849rExxtXhhh5lVTREYouY0nyGu2MRCwxsKYDXmMrLpDusMkmlv/3Xld0SLuAbq
+moIIqj0/mArMv978BnxqPSZvlcumHMw/Ucj3mPIppsL6qBMMnWzCvYvT15AW9ztL
+nIR/kbKodKjpVD3hwCddmWf/gZOG+HKRZaBK6zQN87vfUgC69cfpSe/IfesHFEv9
+pniiqgbxPCVQaqn+vrs99FLmn844eY4xPAHknSzzFUiOM8B5+k2LsRp+46oU9P8l
+E2gG1tar5PONzWPhhJYEeILkBnvpNVMDIbG12Sy5CKF88OL1EhbUm0U3LXDJFflU
+DvUrmY1yCPn8PZNcpWzi+gtVCo/J+/i1/eO5tUYf0ZgZcUKle8aewp0dfS3yDJTK
+eMXf9iQaGJFxJIU6Ia23C8pTP3Is6RJzxJKy3qQmdbjCE4fiF3U=
+=RTGP
 -----END PGP SIGNATURE-----
 
---w3uUfsyyY1Pqa/ej--
+--Qf1oXS95uex85X0R--
