@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v2 06/11] cpufreq: tegra20: Remove unneeded check in tegra_cpu_init
-Date: Fri, 18 May 2018 23:06:37 +0300
-Message-ID: <20180518200642.24815-7-digetx@gmail.com>
+Subject: [PATCH v2 05/11] cpufreq: tegra20: Release clocks properly
+Date: Fri, 18 May 2018 23:06:36 +0300
+Message-ID: <20180518200642.24815-6-digetx@gmail.com>
 References: <20180518200642.24815-1-digetx@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180518200642.24815-1-digetx@gmail.com>
@@ -10,38 +10,69 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Remove checking of the CPU number for consistency as it won't ever fail
-unless there is a severe bug in the cpufreq core.
+Properly put requested clocks in the module init/exit code.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Acked-by: Thierry Reding <treding@nvidia.com>
 ---
- drivers/cpufreq/tegra20-cpufreq.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/cpufreq/tegra20-cpufreq.c | 31 ++++++++++++++++++++++++++-----
+ 1 file changed, 26 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
-index ea186d3f0faf..df25e350c8e6 100644
+index 4b09a8b410c4..ea186d3f0faf 100644
 --- a/drivers/cpufreq/tegra20-cpufreq.c
 +++ b/drivers/cpufreq/tegra20-cpufreq.c
-@@ -35,8 +35,6 @@ static struct cpufreq_frequency_table freq_table[] = {
- 	{ .frequency = CPUFREQ_TABLE_END },
- };
+@@ -161,24 +161,45 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
  
--#define NUM_CPUS	2
--
- static struct clk *cpu_clk;
- static struct clk *pll_x_clk;
- static struct clk *pll_p_clk;
-@@ -122,9 +120,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
+ static int __init tegra_cpufreq_init(void)
  {
- 	int ret;
++	int err;
++
+ 	cpu_clk = clk_get_sys(NULL, "cclk");
+ 	if (IS_ERR(cpu_clk))
+ 		return PTR_ERR(cpu_clk);
  
--	if (policy->cpu >= NUM_CPUS)
--		return -EINVAL;
--
- 	clk_prepare_enable(cpu_clk);
+ 	pll_x_clk = clk_get_sys(NULL, "pll_x");
+-	if (IS_ERR(pll_x_clk))
+-		return PTR_ERR(pll_x_clk);
++	if (IS_ERR(pll_x_clk)) {
++		err = PTR_ERR(pll_x_clk);
++		goto put_cpu;
++	}
  
- 	/* FIXME: what's the actual transition time? */
+ 	pll_p_clk = clk_get_sys(NULL, "pll_p");
+-	if (IS_ERR(pll_p_clk))
+-		return PTR_ERR(pll_p_clk);
++	if (IS_ERR(pll_p_clk)) {
++		err = PTR_ERR(pll_p_clk);
++		goto put_pll_x;
++	}
++
++	err = cpufreq_register_driver(&tegra_cpufreq_driver);
++	if (err)
++		goto put_pll_p;
++
++	return 0;
++
++put_pll_p:
++	clk_put(pll_p_clk);
++put_pll_x:
++	clk_put(pll_x_clk);
++put_cpu:
++	clk_put(cpu_clk);
+ 
+-	return cpufreq_register_driver(&tegra_cpufreq_driver);
++	return err;
+ }
+ 
+ static void __exit tegra_cpufreq_exit(void)
+ {
+ 	cpufreq_unregister_driver(&tegra_cpufreq_driver);
++	clk_put(pll_p_clk);
++	clk_put(pll_x_clk);
+ 	clk_put(cpu_clk);
+ }
+ 
 -- 
 2.17.0
