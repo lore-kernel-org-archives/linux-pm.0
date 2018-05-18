@@ -1,99 +1,89 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 03/28] x86/asm/suspend: use SYM_DATA for data
-Date: Fri, 18 May 2018 12:03:48 +0200
-Message-ID: <CAJZ5v0gH-Zjd_VWv9wBrtvTjewHdyjEiRhR2GWpSS2huMcWKLw@mail.gmail.com>
-References: <20180518091721.7604-1-jslaby@suse.cz> <20180518091721.7604-4-jslaby@suse.cz>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH 17/27] dt-bindings: ap806: add the thermal node in the
+ syscon file
+Date: Fri, 18 May 2018 11:56:09 +0200
+Message-ID: <20180518115609.420de41d@xps13>
+References: <20180421151255.29929-1-miquel.raynal@bootlin.com>
+ <20180421151255.29929-18-miquel.raynal@bootlin.com>
+ <20180427210722.obyujepjvqc5hwcd@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180518091721.7604-4-jslaby@suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Ingo Molnar <mingo@redhat.com>, linux-arch <linux-arch@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180427210722.obyujepjvqc5hwcd@rob-hp-laptop>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 18, 2018 at 11:16 AM, Jiri Slaby <jslaby@suse.cz> wrote:
-> Some global data in the suspend code were marked as `ENTRY'. ENTRY was
-> intended for functions and shall be paired with ENDPROC. ENTRY also
-> aligns symbols which creates unnecessary holes here between data. Since
-> we are dropping historical markings, make proper use of newly added
-> SYM_DATA in this code.
->
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: x86@kernel.org
-> Cc: linux-pm@vger.kernel.org
-
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-> ---
->  arch/x86/kernel/acpi/wakeup_32.S | 2 +-
->  arch/x86/kernel/acpi/wakeup_64.S | 2 +-
->  arch/x86/kernel/head_32.S        | 6 ++----
->  arch/x86/kernel/head_64.S        | 5 ++---
->  4 files changed, 6 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-> index 4203d4f0c68d..feac1e5ecba0 100644
-> --- a/arch/x86/kernel/acpi/wakeup_32.S
-> +++ b/arch/x86/kernel/acpi/wakeup_32.S
-> @@ -89,7 +89,7 @@ ret_point:
->
->  .data
->  ALIGN
-> -ENTRY(saved_magic)     .long   0
-> +SYM_DATA(saved_magic,  .long 0)
->  saved_eip:             .long 0
->
->  # saved registers
-> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-> index 510fa12aab73..551758f48eb7 100644
-> --- a/arch/x86/kernel/acpi/wakeup_64.S
-> +++ b/arch/x86/kernel/acpi/wakeup_64.S
-> @@ -133,4 +133,4 @@ saved_rbx:          .quad   0
->  saved_rip:             .quad   0
->  saved_rsp:             .quad   0
->
-> -ENTRY(saved_magic)     .quad   0
-> +SYM_DATA(saved_magic,  .quad   0)
-> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-> index b59e4fb40fd9..80965fd75fea 100644
-> --- a/arch/x86/kernel/head_32.S
-> +++ b/arch/x86/kernel/head_32.S
-> @@ -507,10 +507,8 @@ GLOBAL(early_recursion_flag)
->
->  __REFDATA
->         .align 4
-> -ENTRY(initial_code)
-> -       .long i386_start_kernel
-> -ENTRY(setup_once_ref)
-> -       .long setup_once
-> +SYM_DATA(initial_code,         .long i386_start_kernel)
-> +SYM_DATA(setup_once_ref,       .long setup_once)
->
->  /*
->   * BSS section
-> diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-> index 8344dd2f310a..17543533642d 100644
-> --- a/arch/x86/kernel/head_64.S
-> +++ b/arch/x86/kernel/head_64.S
-> @@ -463,9 +463,8 @@ early_gdt_descr:
->  early_gdt_descr_base:
->         .quad   INIT_PER_CPU_VAR(gdt_page)
->
-> -ENTRY(phys_base)
-> -       /* This must match the first entry in level2_kernel_pgt */
-> -       .quad   0x0000000000000000
-> +/* This must match the first entry in level2_kernel_pgt */
-> +SYM_DATA(phys_base, .quad 0x0000000000000000)
->  EXPORT_SYMBOL(phys_base)
->
->  #include "../../x86/xen/xen-head.S"
-> --
-> 2.16.3
->
+SGkgUm9iLAoKVGhhbmtzIGZvciByZXZpZXdpbmcsIG9uZSBxdWVzdGlvbiBiZWxvdy4KCk9uIEZy
+aSwgMjcgQXByIDIwMTggMTY6MDc6MjIgLTA1MDAsIFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5v
+cmc+IHdyb3RlOgoKPiBPbiBTYXQsIEFwciAyMSwgMjAxOCBhdCAwNToxMjo0NVBNICswMjAwLCBN
+aXF1ZWwgUmF5bmFsIHdyb3RlOgo+ID4gRXhwbGFpbiB0aGUgdGhlcm1hbCBiaW5kaW5ncyBub3cg
+dGhhdCB0aGUgdGhlcm1hbCBJUCBpcyBkZXNjcmliZWQgYmVpbmcKPiA+IGluc2lkZSBvZiBhIHN5
+c3RlbSBjb250cm9sbGVyLiBBZGQgYSByZWZlcmVuY2UgdG8gdGhlIHRoZXJtYWwtem9uZSBub2Rl
+Lgo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5OiBNaXF1ZWwgUmF5bmFsIDxtaXF1ZWwucmF5bmFsQGJv
+b3RsaW4uY29tPgo+ID4gLS0tCj4gPiAgLi4uL2FybS9tYXJ2ZWxsL2FwODA2LXN5c3RlbS1jb250
+cm9sbGVyLnR4dCAgICAgICAgfCA0MyArKysrKysrKysrKysrKysrKysrKysrCj4gPiAgMSBmaWxl
+IGNoYW5nZWQsIDQzIGluc2VydGlvbnMoKykKPiA+IAo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50
+YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vbWFydmVsbC9hcDgwNi1zeXN0ZW0tY29udHJv
+bGxlci50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21hcnZlbGwv
+YXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0Cj4gPiBpbmRleCBhODU2ZWI5YTRlMDUuLmM5NWYz
+YWM1YzcyOCAxMDA2NDQKPiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+cy9hcm0vbWFydmVsbC9hcDgwNi1zeXN0ZW0tY29udHJvbGxlci50eHQKPiA+ICsrKyBiL0RvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vbWFydmVsbC9hcDgwNi1zeXN0ZW0tY29u
+dHJvbGxlci50eHQKPiA+IEBAIC0xMSw2ICsxMSw5IEBAIEZvciB0aGUgdG9wIGxldmVsIG5vZGU6
+Cj4gPiAgIC0gY29tcGF0aWJsZTogbXVzdCBiZTogInN5c2NvbiIsICJzaW1wbGUtbWZkIjsKPiA+
+ICAgLSByZWc6IHJlZ2lzdGVyIGFyZWEgb2YgdGhlIEFQODA2IHN5c3RlbSBjb250cm9sbGVyCj4g
+PiAgCj4gPiArU1lTVEVNIENPTlRST0xMRVIgMAo+ID4gKz09PT09PT09PT09PT09PT09PT0KPiA+
+ICsKPiA+ICBDbG9ja3M6Cj4gPiAgLS0tLS0tLQo+ID4gIAo+ID4gQEAgLTk4LDMgKzEwMSw0MyBA
+QCBhcF9zeXNjb246IHN5c3RlbS1jb250cm9sbGVyQDZmNDAwMCB7Cj4gPiAgCQlncGlvLXJhbmdl
+cyA9IDwmYXBfcGluY3RybCAwIDAgMTk+Owo+ID4gIAl9Owo+ID4gIH07Cj4gPiArCj4gPiArU1lT
+VEVNIENPTlRST0xMRVIgMQo+ID4gKz09PT09PT09PT09PT09PT09PT0KPiA+ICsKPiA+ICtUaGVy
+bWFsOgo+ID4gKy0tLS0tLS0tCj4gPiArCj4gPiArRm9yIGNvbW1vbiBiaW5kaW5nIHBhcnQgYW5k
+IHVzYWdlLCByZWZlciB0bwo+ID4gK0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90
+aGVybWFsL3RoZXJtYWwudHh0Cj4gPiArCj4gPiArVGhlIHRoZXJtYWwgSVAgY2FuIHByb2JlIHRo
+ZSB0ZW1wZXJhdHVyZSBhbGwgYXJvdW5kIHRoZSBwcm9jZXNzb3IuIEl0Cj4gPiArbWF5IGZlYXR1
+cmUgc2V2ZXJhbCBjaGFubmVscywgZWFjaCBvZiB0aGVtIHdpcmVkIHRvIG9uZSBzZW5zb3IuCj4g
+PiArCj4gPiArSXQgaXMgcG9zc2libGUgdG8gc2V0dXAgYW4gb3ZlcmhlYXQgaW50ZXJydXB0IGJ5
+IGdpdmluZyBhdCBsZWFzdCBvbmUKPiA+ICtjcml0aWNhbCBwb2ludCB0byBhbnkgc3Vibm9kZSBv
+ZiB0aGUgdGhlcm1hbC16b25lIG5vZGUuCj4gPiArCj4gPiArUmVxdWlyZWQgcHJvcGVydGllczoK
+PiA+ICstIGNvbXBhdGlibGU6ICJtYXJ2ZWxsLGFybWFkYS1hcDgwNi10aGVybWFsIgo+ID4gKwo+
+ID4gK09wdGlvbmFsIHByb3BlcnRpZXM6Cj4gPiArLSBpbnRlcnJ1cHQtcGFyZW50L2ludGVycnVw
+dHM6IG92ZXJoZWF0IGludGVycnVwdCBoYW5kbGUuIFNob3VsZCBwb2ludCB0bwo+ID4gKyAgbGlu
+ZSAxOCBvZiB0aGUgU0VJIGlycWNoaXAuCj4gPiArICBTZWUgaW50ZXJydXB0LWNvbnRyb2xsZXIv
+aW50ZXJydXB0cy50eHQKPiA+ICstICN0aGVybWFsLXNlbnNvci1jZWxsczogc2hhbGwgYmUgPDE+
+IHdoZW4gdGhlcm1hbC16b25lcyBzdWJub2RlcyByZWZlcgo+ID4gKyAgdG8gdGhpcyBJUCBhbmQg
+cmVwcmVzZW50cyB0aGUgY2hhbm5lbCBJRC4gVGhlcmUgaXMgb25lIHNlbnNvciBwZXIKPiA+ICsg
+IGNoYW5uZWwuIE8gcmVmZXJzIHRvIHRoZSB0aGVybWFsIElQIGludGVybmFsIGNoYW5uZWwsIHdo
+aWxlIHBvc2l0aXZlCj4gPiArICBJRHMgcmVmZXIgdG8gZWFjaCBDUFUuCj4gPiArCj4gPiArRXhh
+bXBsZToKPiA+ICthcF9zeXNjb24xOiBzeXN0ZW0tY29udHJvbGxlckA2ZjgwMDAgewo+ID4gKwlj
+b21wYXRpYmxlID0gInN5c2NvbiIsICJzaW1wbGUtbWZkIjsKPiA+ICsJcmVnID0gPDB4NmY4MDAw
+IDB4MTAwMD47Cj4gPiArCj4gPiArCWFwX3RoZXJtYWw6IGFwLXRoZXJtYWwgewo+ID4gKwkJY29t
+cGF0aWJsZSA9ICJtYXJ2ZWxsLGFybWFkYS1hcDgwNi10aGVybWFsIjsgIAo+IAo+IElzIHRoZXJl
+IGEgcmVnaXN0ZXIgcmFuZ2UgYXNzb2NpYXRlZCB3aXRoIHRoZSB0aGVybWFsIGZ1bmN0aW9ucz8K
+CkluZGVlZCB0aGVyZSBpcyBhIHNtYWxsIG9uZSAodGhyZWUgcmVnaXN0ZXJzKSBidXQgd2UgYWxz
+byBuZWVkIHRvIGFjY2Vzcwpzb21lIHJlZ2lzdGVycyBvdXQgb2YgdGhpcyBhcmVhIChzbyBjYWxs
+ZWQgdGhlICdERlgnIGFyZWEsIGluIHRoaXMKc3lzY29uLCB0byByb3V0ZSBjb3JyZWN0bHkgdGhl
+IGludGVycnVwdCkgYW5kIEkgZmVhciB3ZSdsbCBuZWVkIHRvCmFjY2VzcyBvdGhlcnMgaW4gdGhl
+IGZ1dHVyZS4gSSBjaG9vc2UgdG8gZGVjbGFyZSBhIHN5c2NvbiBiZWNhdXNlIHRoaXMKYXJlYSBt
+aXhlcyBhIGxvdCBvZiBtaXNjIHJlZ2lzdGVycy4KClNvIGRvIHlvdSB0aGluayBJIHNob3VsZCBk
+ZWNsYXJlIHRoZXNlIDMgcmVnaXN0ZXJzIGFyZWEgaW4gYSByZWcKcHJvcGVydHk/IE9yIGtlZXAg
+dGhlIHdheSBJIHJldHJpZXZlZCB0aGUgb2Zmc2V0cyBpbiB0aGUgc3lzY29uOgpkZWZpbmluZyBv
+ZmZzZXRzIGluIHRoZSBjb2RlPwoKPiAKPiA+ICsJCWludGVycnVwdC1wYXJlbnQgPSA8JnNlaT47
+Cj4gPiArCQlpbnRlcnJ1cHRzID0gPDE4PjsKPiA+ICsJCSN0aGVybWFsLXNlbnNvci1jZWxscyA9
+IDwxPjsKPiA+ICsJfTsKPiA+ICt9Owo+ID4gLS0gCj4gPiAyLjE0LjEKPiA+ICAgCgpUaGFua3Ms
+Ck1pcXXDqGwKCi0tIApNaXF1ZWwgUmF5bmFsLCBCb290bGluIChmb3JtZXJseSBGcmVlIEVsZWN0
+cm9ucykKRW1iZWRkZWQgTGludXggYW5kIEtlcm5lbCBlbmdpbmVlcmluZwpodHRwczovL2Jvb3Rs
+aW4uY29tCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
+aW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJh
+ZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
+eC1hcm0ta2VybmVsCg==
