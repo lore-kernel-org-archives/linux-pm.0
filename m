@@ -1,444 +1,345 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V3] powercap/drivers/idle_injection: Add an idle injection framework
-Date: Fri, 18 May 2018 16:50:56 +0200
-Message-ID: <1526655056-24592-1-git-send-email-daniel.lezcano@linaro.org>
+From: Stefan Popa <stefan.popa@analog.com>
+Subject: [PATCH v2 1/2] iio:dac:ad5686: Add AD5691R/AD5692R/AD5693/AD5693R support
+Date: Fri, 18 May 2018 18:22:50 +0300
+Message-ID: <1526656970-28852-1-git-send-email-stefan.popa@analog.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
+To: jic23@kernel.org, Michael.Hennerich@analog.com, lars@metafoo.de
+Cc: knaack.h@gmx.de, pmeerw@pmeerw.net, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, stefan.popa@analog.com
 List-Id: linux-pm@vger.kernel.org
 
-Initially, the cpu_cooling device for ARM was changed by adding a new
-policy inserting idle cycles. The intel_powerclamp driver does a
-similar action.
+The AD5691R/AD5692R/AD5693/AD5693R are a family of one channel DACs with
+12-bit, 14-bit and 16-bit precision respectively. The devices have either
+no built-in reference, or built-in 2.5V reference.
 
-Instead of implementing idle injections privately in the cpu_cooling
-device, move the idle injection code in a dedicated framework and give
-the opportunity to other frameworks to make use of it.
+These devices are pretty similar to AD5671R/AD5675R and
+AD5694/AD5694R/AD5695R/AD5696/AD5696R, except that they have one channel.
+Another difference is that they use a write control register(addr 0x04) for
+setting the power down modes and the internal reference instead of separate
+registers for each function.
 
-The framework relies on the smpboot kthreads which handles via its
-mainloop the common code for hotplugging and [un]parking.
+Datasheet:
+http://www.analog.com/media/en/technical-documentation/data-sheets/AD5693R_5692R_5691R_5693.pdf
 
-This code was previously tested with the cpu cooling device and went
-through several iterations. It results now in split code and API
-exported in the header file. It was tested with the cpu cooling device
-with success.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Stefan Popa <stefan.popa@analog.com>
 ---
- V3:
-   - Fixed typos (Viresh Kumar)
-   - Removed extra blank line (Viresh Kumar)
-   - Added full stop (Viresh Kumar)
-   - Fixed Return kerneldoc format (Viresh Kumar)
-   - Fixed multiple kthreads initialization (Viresh Kumar)
-   - Fixed rollbacking the actions in the unregister function (Viresh Kumar)
-   - Make idle injection kthreads name hardcoded
-   - Kthreads are created in the initcall process
+Changes in v2:
+	- Removed the initialization for ref_bit_msk and shift variables
+	  from ad5686_write_dac_powerdown() and ad5686_probe().
+	- Added the the missing default case from
+	  ad5686_write_dac_powerdown() and ad5686_probe().
 
- V2: Fixed checkpatch warnings
----
- drivers/powercap/Kconfig          |  10 ++
- drivers/powercap/Makefile         |   1 +
- drivers/powercap/idle_injection.c | 326 ++++++++++++++++++++++++++++++++++++++
- include/linux/idle_injection.h    |  29 ++++
- 4 files changed, 366 insertions(+)
- create mode 100644 drivers/powercap/idle_injection.c
- create mode 100644 include/linux/idle_injection.h
+ drivers/iio/dac/ad5686.c     | 93 +++++++++++++++++++++++++++++++++++++++++---
+ drivers/iio/dac/ad5686.h     | 16 ++++++++
+ drivers/iio/dac/ad5696-i2c.c |  7 +++-
+ 3 files changed, 109 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-index 85727ef..a767ef2 100644
---- a/drivers/powercap/Kconfig
-+++ b/drivers/powercap/Kconfig
-@@ -29,4 +29,14 @@ config INTEL_RAPL
- 	  controller, CPU core (Power Plance 0), graphics uncore (Power Plane
- 	  1), etc.
+diff --git a/drivers/iio/dac/ad5686.c b/drivers/iio/dac/ad5686.c
+index 89c5f08..1fc0c56 100644
+--- a/drivers/iio/dac/ad5686.c
++++ b/drivers/iio/dac/ad5686.c
+@@ -70,6 +70,8 @@ static ssize_t ad5686_write_dac_powerdown(struct iio_dev *indio_dev,
+ 	bool readin;
+ 	int ret;
+ 	struct ad5686_state *st = iio_priv(indio_dev);
++	unsigned int val, ref_bit_msk;
++	u8 shift;
  
-+config IDLE_INJECTION
-+	bool "Idle injection framework"
-+	depends on CPU_IDLE
-+	default n
-+	help
-+	  This enables support for the idle injection framework. It
-+	  provides a way to force idle periods on a set of specified
-+	  CPUs for power capping. Idle period can be injected
-+	  synchronously on a set of specified CPUs or alternatively
-+	  on a per CPU basis.
- endif
-diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
-index 0a21ef3..c3bbfee 100644
---- a/drivers/powercap/Makefile
-+++ b/drivers/powercap/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_POWERCAP)	+= powercap_sys.o
- obj-$(CONFIG_INTEL_RAPL) += intel_rapl.o
-+obj-$(CONFIG_IDLE_INJECTION) += idle_injection.o
-diff --git a/drivers/powercap/idle_injection.c b/drivers/powercap/idle_injection.c
-new file mode 100644
-index 0000000..a5fe205
---- /dev/null
-+++ b/drivers/powercap/idle_injection.c
-@@ -0,0 +1,326 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * drivers/powercap/idle_injection.c
-+ *
-+ * Copyright 2018 Linaro Limited
-+ *
-+ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
-+ *
-+ * The idle injection framework proposes a way to force a cpu to enter
-+ * an idle state during a specified amount of time for a specified
-+ * period.
-+ *
-+ * It relies on the smpboot kthreads which handles, via its main loop,
-+ * the common code for hotplugging and [un]parking.
-+ *
-+ * At init time, all the kthreads are created and parked.
-+ *
-+ * A cpumask is specified as parameter for the idle injection
-+ * registering function. The kthreads will be synchronized regarding
-+ * this cpumask.
-+ *
-+ * The idle + run duration is specified via the helpers and then the
-+ * idle injection can be started at this point.
-+ *
-+ * A kthread will call play_idle() with the specified idle duration
-+ * from above and then will schedule itself. The latest CPU belonging
-+ * to the group is in charge of setting the timer for the next idle
-+ * injection deadline.
-+ *
-+ * The task handling the timer interrupt will wakeup all the kthreads
-+ * belonging to the cpumask.
-+ */
-+#include <linux/cpu.h>
-+#include <linux/freezer.h>
-+#include <linux/hrtimer.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/smpboot.h>
-+
-+#include <uapi/linux/sched/types.h>
-+
-+/**
-+ * struct idle_injection_thread - task on/off switch structure
-+ * @tsk: a pointer to a task_struct injecting the idle cycles
-+ * @should_run: a integer used as a boolean by the smpboot kthread API
-+ */
-+struct idle_injection_thread {
-+	struct task_struct *tsk;
-+	int should_run;
-+};
-+
-+/**
-+ * struct idle_injection_device - data for the idle injection
-+ * @cpumask: a cpumask containing the list of CPUs managed by the device
-+ * @timer: a hrtimer giving the tempo for the idle injection
-+ * @count: an atomic to keep track of the last task exiting the idle cycle
-+ * @idle_duration_ms: an atomic specifying the idle duration
-+ * @run_duration_ms: an atomic specifying the running duration
-+ */
-+struct idle_injection_device {
-+	cpumask_var_t cpumask;
-+	struct hrtimer timer;
-+	atomic_t count;
-+	atomic_t idle_duration_ms;
-+	atomic_t run_duration_ms;
-+};
-+
-+static DEFINE_PER_CPU(struct idle_injection_thread, idle_injection_thread);
-+static DEFINE_PER_CPU(struct idle_injection_device *, idle_injection_device);
-+
-+/**
-+ * idle_injection_wakeup - Wake up all idle injection threads
-+ * @ii_dev: the idle injection device
-+ *
-+ * Every idle injection task belonging to the idle injection device
-+ * and running on an online CPU will be wake up by this call.
-+ */
-+static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
-+{
-+	struct idle_injection_thread *iit;
-+	int cpu;
-+
-+	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
-+		iit = per_cpu_ptr(&idle_injection_thread, cpu);
-+		iit->should_run = 1;
-+		wake_up_process(iit->tsk);
+ 	ret = strtobool(buf, &readin);
+ 	if (ret)
+@@ -80,9 +82,24 @@ static ssize_t ad5686_write_dac_powerdown(struct iio_dev *indio_dev,
+ 	else
+ 		st->pwr_down_mask &= ~(0x3 << (chan->channel * 2));
+ 
+-	ret = st->write(st, AD5686_CMD_POWERDOWN_DAC, 0,
+-			st->pwr_down_mask & st->pwr_down_mode);
++	switch (st->chip_info->regmap_type) {
++	case AD5686_REGMAP:
++		shift = 0;
++		ref_bit_msk = 0;
++		break;
++	case AD5693_REGMAP:
++		shift = 13;
++		ref_bit_msk = AD5693_REF_BIT_MSK;
++		break;
++	default:
++		return -EINVAL;
 +	}
++
++	val = ((st->pwr_down_mask & st->pwr_down_mode) << shift);
++	if (!st->use_internal_vref)
++		val |= ref_bit_msk;
+ 
++	ret = st->write(st, AD5686_CMD_POWERDOWN_DAC, 0, val);
+ 
+ 	return ret ? ret : len;
+ }
+@@ -175,6 +192,11 @@ static const struct iio_chan_spec_ext_info ad5686_ext_info[] = {
+ 		.ext_info = ad5686_ext_info,			\
+ }
+ 
++#define DECLARE_AD5693_CHANNELS(name, bits, _shift)		\
++static struct iio_chan_spec name[] = {				\
++		AD5868_CHANNEL(0, 0, bits, _shift),		\
 +}
 +
-+/**
-+ * idle_injection_wakeup_fn - idle injection timer callback
-+ * @timer: a hrtimer structure
-+ *
-+ * This function is called when the idle injection timer expires which
-+ * will wake up the idle injection tasks and these ones, in turn, play
-+ * idle a specified amount of time.
-+ *
-+ * Return: HRTIMER_NORESTART.
-+ */
-+static enum hrtimer_restart idle_injection_wakeup_fn(struct hrtimer *timer)
-+{
-+	struct idle_injection_device *ii_dev =
-+		container_of(timer, struct idle_injection_device, timer);
+ #define DECLARE_AD5686_CHANNELS(name, bits, _shift)		\
+ static struct iio_chan_spec name[] = {				\
+ 		AD5868_CHANNEL(0, 1, bits, _shift),		\
+@@ -200,72 +222,112 @@ DECLARE_AD5676_CHANNELS(ad5676_channels, 16, 0);
+ DECLARE_AD5686_CHANNELS(ad5684_channels, 12, 4);
+ DECLARE_AD5686_CHANNELS(ad5685r_channels, 14, 2);
+ DECLARE_AD5686_CHANNELS(ad5686_channels, 16, 0);
++DECLARE_AD5693_CHANNELS(ad5693_channels, 16, 0);
++DECLARE_AD5693_CHANNELS(ad5692r_channels, 14, 2);
++DECLARE_AD5693_CHANNELS(ad5691r_channels, 12, 4);
+ 
+ static const struct ad5686_chip_info ad5686_chip_info_tbl[] = {
+ 	[ID_AD5671R] = {
+ 		.channels = ad5672_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 8,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5672R] = {
+ 		.channels = ad5672_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 8,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5675R] = {
+ 		.channels = ad5676_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 8,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5676] = {
+ 		.channels = ad5676_channels,
+ 		.num_channels = 8,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5676R] = {
+ 		.channels = ad5676_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 8,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5684] = {
+ 		.channels = ad5684_channels,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5684R] = {
+ 		.channels = ad5684_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5685R] = {
+ 		.channels = ad5685r_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5686] = {
+ 		.channels = ad5686_channels,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5686R] = {
+ 		.channels = ad5686_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
++	},
++	[ID_AD5691R] = {
++		.channels = ad5691r_channels,
++		.int_vref_mv = 2500,
++		.num_channels = 1,
++		.regmap_type = AD5693_REGMAP,
++	},
++	[ID_AD5692R] = {
++		.channels = ad5692r_channels,
++		.int_vref_mv = 2500,
++		.num_channels = 1,
++		.regmap_type = AD5693_REGMAP,
++	},
++	[ID_AD5693] = {
++		.channels = ad5693_channels,
++		.num_channels = 1,
++		.regmap_type = AD5693_REGMAP,
++	},
++	[ID_AD5693R] = {
++		.channels = ad5693_channels,
++		.int_vref_mv = 2500,
++		.num_channels = 1,
++		.regmap_type = AD5693_REGMAP,
+ 	},
+ 	[ID_AD5694] = {
+ 		.channels = ad5684_channels,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5694R] = {
+ 		.channels = ad5684_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5696] = {
+ 		.channels = ad5686_channels,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ 	[ID_AD5696R] = {
+ 		.channels = ad5686_channels,
+ 		.int_vref_mv = 2500,
+ 		.num_channels = 4,
++		.regmap_type = AD5686_REGMAP,
+ 	},
+ };
+ 
+@@ -276,7 +338,9 @@ int ad5686_probe(struct device *dev,
+ {
+ 	struct ad5686_state *st;
+ 	struct iio_dev *indio_dev;
+-	int ret, voltage_uv = 0;
++	unsigned int val, ref_bit_msk;
++	u8 cmd;
++	int ret, i, voltage_uv = 0;
+ 
+ 	indio_dev = devm_iio_device_alloc(dev, sizeof(*st));
+ 	if (indio_dev == NULL)
+@@ -310,7 +374,8 @@ int ad5686_probe(struct device *dev,
+ 		st->vref_mv = st->chip_info->int_vref_mv;
+ 
+ 	/* Set all the power down mode for all channels to 1K pulldown */
+-	st->pwr_down_mode = 0x55;
++	for (i = 0; i < st->chip_info->num_channels; i++)
++		st->pwr_down_mode |= (0x01 << (i * 2));
+ 
+ 	indio_dev->dev.parent = dev;
+ 	indio_dev->name = name;
+@@ -319,8 +384,24 @@ int ad5686_probe(struct device *dev,
+ 	indio_dev->channels = st->chip_info->channels;
+ 	indio_dev->num_channels = st->chip_info->num_channels;
+ 
+-	ret = st->write(st, AD5686_CMD_INTERNAL_REFER_SETUP,
+-			0, !!voltage_uv);
++	switch (st->chip_info->regmap_type) {
++	case AD5686_REGMAP:
++		cmd = AD5686_CMD_INTERNAL_REFER_SETUP;
++		ref_bit_msk = 0;
++		break;
++	case AD5693_REGMAP:
++		cmd = AD5686_CMD_CONTROL_REG;
++		ref_bit_msk = AD5693_REF_BIT_MSK;
++		st->use_internal_vref = !voltage_uv;
++		break;
++	default:
++		ret = -EINVAL;
++		goto error_disable_reg;
++	}
 +
-+	idle_injection_wakeup(ii_dev);
++	val = (voltage_uv | ref_bit_msk);
 +
-+	return HRTIMER_NORESTART;
-+}
++	ret = st->write(st, cmd, 0, !!val);
+ 	if (ret)
+ 		goto error_disable_reg;
+ 
+diff --git a/drivers/iio/dac/ad5686.h b/drivers/iio/dac/ad5686.h
+index 05f0ce9..6c6879d 100644
+--- a/drivers/iio/dac/ad5686.h
++++ b/drivers/iio/dac/ad5686.h
+@@ -35,6 +35,9 @@
+ #define AD5686_LDAC_PWRDN_100K			0x2
+ #define AD5686_LDAC_PWRDN_3STATE		0x3
+ 
++#define AD5686_CMD_CONTROL_REG			0x4
++#define AD5693_REF_BIT_MSK			BIT(12)
 +
-+/**
-+ * idle_injection_fn - idle injection routine
-+ * @cpu: the CPU number the tasks belongs to
-+ *
-+ * The idle injection routine will stay idle the specified amount of
-+ * time
-+ */
-+static void idle_injection_fn(unsigned int cpu)
-+{
-+	struct idle_injection_device *ii_dev;
-+	struct idle_injection_thread *iit;
-+	int run_duration_ms, idle_duration_ms;
-+
-+	ii_dev = per_cpu(idle_injection_device, cpu);
-+
-+	iit = per_cpu_ptr(&idle_injection_thread, cpu);
-+
-+	/*
-+	 * Boolean used by the smpboot mainloop and used as a flip-flop
-+	 * in this function
-+	 */
-+	iit->should_run = 0;
-+
-+	atomic_inc(&ii_dev->count);
-+
-+	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
-+
-+	play_idle(idle_duration_ms);
-+
-+	/*
-+	 * The last CPU waking up is in charge of setting the timer. If
-+	 * the CPU is hotplugged, the timer will move to another CPU
-+	 * (which may not belong to the same cluster) but that is not a
-+	 * problem as the timer will be set again by another CPU
-+	 * belonging to the cluster. This mechanism is self adaptive.
-+	 */
-+	if (!atomic_dec_and_test(&ii_dev->count))
-+		return;
-+
-+	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
-+	if (!run_duration_ms)
-+		return;
-+
-+	hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
-+		      HRTIMER_MODE_REL_PINNED);
-+}
-+
-+/**
-+ * idle_injection_set_duration - idle and run duration helper
-+ * @run_duration_ms: an unsigned int giving the running time in milliseconds
-+ * @idle_duration_ms: an unsigned int giving the idle time in milliseconds
-+ */
-+void idle_injection_set_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int run_duration_ms,
-+				 unsigned int idle_duration_ms)
-+{
-+	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
-+	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
-+}
-+
-+/**
-+ * idle_injection_get_duration - idle and run duration helper
-+ * @run_duration_ms: a pointer to an unsigned int to store the running time
-+ * @idle_duration_ms: a pointer to an unsigned int to store the idle time
-+ */
-+void idle_injection_get_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int *run_duration_ms,
-+				 unsigned int *idle_duration_ms)
-+{
-+	*run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
-+	*idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
-+}
-+
-+/**
-+ * idle_injection_start - starts the idle injections
-+ * @ii_dev: a pointer to an idle_injection_device structure
-+ *
-+ * The function starts the idle injection cycles by first waking up
-+ * all the tasks the ii_dev is attached to and let them handle the
-+ * idle-run periods.
-+ *
-+ * Return: -EINVAL if the idle or the running durations are not set.
-+ */
-+int idle_injection_start(struct idle_injection_device *ii_dev)
-+{
-+	if (!atomic_read(&ii_dev->idle_duration_ms))
-+		return -EINVAL;
-+
-+	if (!atomic_read(&ii_dev->run_duration_ms))
-+		return -EINVAL;
-+
-+	pr_debug("Starting injecting idle cycles on CPUs '%*pbl'\n",
-+		 cpumask_pr_args(ii_dev->cpumask));
-+
-+	idle_injection_wakeup(ii_dev);
-+
-+	return 0;
-+}
-+
-+/**
-+ * idle_injection_stop - stops the idle injections
-+ * @ii_dev: a pointer to an idle injection_device structure
-+ *
-+ * The function stops the idle injection by canceling the timer in
-+ * charge of waking up the tasks to inject idle and unset the idle and
-+ * running durations.
-+ */
-+void idle_injection_stop(struct idle_injection_device *ii_dev)
-+{
-+	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
-+		 cpumask_pr_args(ii_dev->cpumask));
-+
-+	hrtimer_cancel(&ii_dev->timer);
-+
-+	idle_injection_set_duration(ii_dev, 0, 0);
-+}
-+
-+/**
-+ * idle_injection_setup - initialize the current task as a RT task
-+ * @cpu: the CPU number where the kthread is running on (not used)
-+ *
-+ * Called one time, this function is in charge of setting the task
-+ * scheduler parameters.
-+ */
-+static void idle_injection_setup(unsigned int cpu)
-+{
-+	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
-+
-+	set_freezable();
-+
-+	sched_setscheduler(current, SCHED_FIFO, &param);
-+}
-+
-+/**
-+ * idle_injection_should_run - function helper for the smpboot API
-+ * @cpu: the CPU number where the kthread is running on
-+ *
-+ * Return: a boolean telling if the thread can run.
-+ */
-+static int idle_injection_should_run(unsigned int cpu)
-+{
-+	struct idle_injection_thread *iit =
-+		per_cpu_ptr(&idle_injection_thread, cpu);
-+
-+	return iit->should_run;
-+}
-+
-+/**
-+ * idle_injection_register - idle injection init routine
-+ * @cpumask: the list of CPUs managed by the idle injection device
-+ *
-+ * This is the initialization function in charge of creating the
-+ * initializing the timer and allocate the structures. It does not
-+ * starts the idle injection cycles.
-+ *
-+ * Return: NULL if an allocation fails.
-+ */
-+struct idle_injection_device *idle_injection_register(struct cpumask *cpumask)
-+{
-+	struct idle_injection_device *ii_dev;
-+	int cpu;
-+
-+	ii_dev = kzalloc(sizeof(*ii_dev), GFP_KERNEL);
-+	if (!ii_dev)
-+		return NULL;
-+
-+	if (!alloc_cpumask_var(&ii_dev->cpumask, GFP_KERNEL))
-+		goto out_free_ii_dev;
-+	cpumask_copy(ii_dev->cpumask, cpumask);
-+
-+	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+
-+	ii_dev->timer.function = idle_injection_wakeup_fn;
-+
-+	for_each_cpu(cpu, cpumask)
-+		per_cpu(idle_injection_device, cpu) = ii_dev;
-+
-+	return ii_dev;
-+
-+out_free_ii_dev:
-+	kfree(ii_dev);
-+	return NULL;
-+}
-+
-+/**
-+ * idle_injection_unregister - Unregister the idle injection device
-+ * @ii_dev: a pointer to an idle injection device
-+ *
-+ * The function is in charge of stopping the idle injections,
-+ * unregister the kthreads and free the allocated memory in the
-+ * register function.
-+ */
-+void idle_injection_unregister(struct idle_injection_device *ii_dev)
-+{
-+	int cpu;
-+
-+	idle_injection_stop(ii_dev);
-+
-+	for_each_cpu(cpu, ii_dev->cpumask)
-+		per_cpu(idle_injection_device, cpu) = NULL;
-+
-+	kfree(ii_dev);
-+}
-+
-+static struct smp_hotplug_thread idle_injection_threads = {
-+	.store = &idle_injection_thread.tsk,
-+	.setup = idle_injection_setup,
-+	.thread_fn = idle_injection_fn,
-+	.thread_comm = "idle_inject/%u",
-+	.thread_should_run = idle_injection_should_run,
+ /**
+  * ad5686_supported_device_ids:
+  */
+@@ -49,6 +52,10 @@ enum ad5686_supported_device_ids {
+ 	ID_AD5685R,
+ 	ID_AD5686,
+ 	ID_AD5686R,
++	ID_AD5691R,
++	ID_AD5692R,
++	ID_AD5693,
++	ID_AD5693R,
+ 	ID_AD5694,
+ 	ID_AD5694R,
+ 	ID_AD5695R,
+@@ -56,6 +63,11 @@ enum ad5686_supported_device_ids {
+ 	ID_AD5696R,
+ };
+ 
++enum ad5686_regmap_type {
++	AD5686_REGMAP,
++	AD5693_REGMAP
 +};
 +
-+static int __init idle_injection_init(void)
-+{
-+	return smpboot_register_percpu_thread(&idle_injection_threads);
-+}
-+early_initcall(idle_injection_init);
-diff --git a/include/linux/idle_injection.h b/include/linux/idle_injection.h
-new file mode 100644
-index 0000000..ffd20d7
---- /dev/null
-+++ b/include/linux/idle_injection.h
-@@ -0,0 +1,29 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2018 Linaro Ltd
-+ *
-+ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
-+ *
-+ */
-+#ifndef __IDLE_INJECTION_H__
-+#define __IDLE_INJECTION_H__
-+
-+/* private idle injection device structure */
-+struct idle_injection_device;
-+
-+struct idle_injection_device *idle_injection_register(struct cpumask *cpumask);
-+
-+void idle_injection_unregister(struct idle_injection_device *ii_dev);
-+
-+int idle_injection_start(struct idle_injection_device *ii_dev);
-+
-+void idle_injection_stop(struct idle_injection_device *ii_dev);
-+
-+void idle_injection_set_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int run_duration_ms,
-+				 unsigned int idle_duration_ms);
-+
-+void idle_injection_get_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int *run_duration_ms,
-+				 unsigned int *idle_duration_ms);
-+#endif /* __IDLE_INJECTION_H__ */
+ struct ad5686_state;
+ 
+ typedef int (*ad5686_write_func)(struct ad5686_state *st,
+@@ -68,12 +80,14 @@ typedef int (*ad5686_read_func)(struct ad5686_state *st, u8 addr);
+  * @int_vref_mv:	AD5620/40/60: the internal reference voltage
+  * @num_channels:	number of channels
+  * @channel:		channel specification
++ * @regmap_type:	register map layout variant
+  */
+ 
+ struct ad5686_chip_info {
+ 	u16				int_vref_mv;
+ 	unsigned int			num_channels;
+ 	struct iio_chan_spec		*channels;
++	enum ad5686_regmap_type		regmap_type;
+ };
+ 
+ /**
+@@ -84,6 +98,7 @@ struct ad5686_chip_info {
+  * @vref_mv:		actual reference voltage used
+  * @pwr_down_mask:	power down mask
+  * @pwr_down_mode:	current power down mode
++ * @use_internal_vref:	set to true if the internal reference voltage is used
+  * @data:		spi transfer buffers
+  */
+ 
+@@ -96,6 +111,7 @@ struct ad5686_state {
+ 	unsigned int			pwr_down_mode;
+ 	ad5686_write_func		write;
+ 	ad5686_read_func		read;
++	bool				use_internal_vref;
+ 
+ 	/*
+ 	 * DMA (thus cache coherency maintenance) requires the
+diff --git a/drivers/iio/dac/ad5696-i2c.c b/drivers/iio/dac/ad5696-i2c.c
+index 275e032..d18735d 100644
+--- a/drivers/iio/dac/ad5696-i2c.c
++++ b/drivers/iio/dac/ad5696-i2c.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ /*
+- * AD5671R, AD5675R, AD5694, AD5694R, AD5695R, AD5696, AD5696R
++ * AD5671R, AD5675R, AD5691R, AD5692R, AD5693, AD5693R,
++ * AD5694, AD5694R, AD5695R, AD5696, AD5696R
+  * Digital to analog converters driver
+  *
+  * Copyright 2018 Analog Devices Inc.
+@@ -72,6 +73,10 @@ static int ad5686_i2c_remove(struct i2c_client *i2c)
+ static const struct i2c_device_id ad5686_i2c_id[] = {
+ 	{"ad5671r", ID_AD5671R},
+ 	{"ad5675r", ID_AD5675R},
++	{"ad5691r", ID_AD5691R},
++	{"ad5692r", ID_AD5692R},
++	{"ad5693", ID_AD5693},
++	{"ad5693r", ID_AD5693R},
+ 	{"ad5694", ID_AD5694},
+ 	{"ad5694r", ID_AD5694R},
+ 	{"ad5695r", ID_AD5695R},
 -- 
 2.7.4
