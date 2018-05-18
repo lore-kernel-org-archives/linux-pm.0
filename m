@@ -1,72 +1,83 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v1 11/11] ARM: tegra: Create platform device for
- tegra20-cpufreq driver
-Date: Fri, 18 May 2018 12:30:21 +0300
-Message-ID: <1ca8f874-40da-05b4-0b76-116164c85137@gmail.com>
-References: <20180517180056.13336-1-digetx@gmail.com>
- <20180517180056.13336-12-digetx@gmail.com> <20180518091352.GK14500@ulmo>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 02/28] x86/asm/suspend: drop ENTRY from local data
+Date: Fri, 18 May 2018 12:03:20 +0200
+Message-ID: <CAJZ5v0jz-qzA-k0+6PvyALbwzpnRyB5SQpbDr9g-THiz7ZwH3g@mail.gmail.com>
+References: <20180518091721.7604-1-jslaby@suse.cz> <20180518091721.7604-3-jslaby@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180518091352.GK14500@ulmo>
-Content-Language: en-US
+In-Reply-To: <20180518091721.7604-3-jslaby@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Ingo Molnar <mingo@redhat.com>, linux-arch <linux-arch@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 18.05.2018 12:13, Thierry Reding wrote:
-> On Thu, May 17, 2018 at 09:00:56PM +0300, Dmitry Osipenko wrote:
->> Tegra20-cpufreq driver require a platform device in order to be loaded,
->> instantiate a simple platform device for the driver during of the machines
->> late initialization.
->>
->> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->> ---
->>  arch/arm/mach-tegra/tegra.c | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
->> index 02e712d2ea30..f9587be48235 100644
->> --- a/arch/arm/mach-tegra/tegra.c
->> +++ b/arch/arm/mach-tegra/tegra.c
->> @@ -97,6 +97,10 @@ static void __init tegra_dt_init_late(void)
->>  	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
->>  	    of_machine_is_compatible("compal,paz00"))
->>  		tegra_paz00_wifikill_init();
->> +
->> +	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
->> +	    of_machine_is_compatible("nvidia,tegra20"))
->> +		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
->>  }
->>  
->>  static const char * const tegra_dt_board_compat[] = {
-> 
-> Tegra124 has a CPU frequency driver that is similar to this and it
-> contains code that will instantiate the platform device from the CPU
-> frequency driver's module_init function.
-> 
-> I think the primary reason for doing that was to not tie the code to
-> 32-bit ARM, even though it never runs on anything but that, so it's
-> slightly over-engineered.
+On Fri, May 18, 2018 at 11:16 AM, Jiri Slaby <jslaby@suse.cz> wrote:
+> ENTRY was intended for functions and shall be paired with ENDPROC.
+> ENTRY also aligns symbols which creates unnecessary holes here between
+> data.
+>
+> So drop ENTRY from saved_eip in wakeup_32 and many saved_* in wakeup_64,
+> as these symbols are local only.
+>
+> We could use SYM_DATA_LOCAL for these symbols, but it was discouraged
+> earlier [1].
+>
+> [1] https://lkml.org/lkml/2017/4/27/244
+>
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: linux-pm@vger.kernel.org
 
-The tegra124-cpufreq driver likely to be broken in regards to the module loading
-as platform_device_register_simple() seem to be allowed invoked only from the
-kernel itself.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Having platform_device_register_simple in the kernels module leads to a such
-errors on the module loading:
-
-# section 5 reloc 7 sym 'memset': relocation 10 out of range (0xbf805030 ->
-0xc088c481)
-
-Initially I wanted to make tegra124-cpufreq a module_platform_driver, but
-decided to postpone that, as the driver is shared with ARM64 Tegra132 which
-doesn't have machine-init code. Maybe we could move the devices instantiation to
-something common like driver/soc/tegra/devices.c later.
-
-> I don't mind either way, and it's easy enough to change this to
-> something else later on if we want. I'll pick this up into the Tegra
-> tree.
-Okay, thanks.
+> ---
+>  arch/x86/kernel/acpi/wakeup_32.S |  2 +-
+>  arch/x86/kernel/acpi/wakeup_64.S | 12 ++++++------
+>  2 files changed, 7 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
+> index 0c26b1b44e51..4203d4f0c68d 100644
+> --- a/arch/x86/kernel/acpi/wakeup_32.S
+> +++ b/arch/x86/kernel/acpi/wakeup_32.S
+> @@ -90,7 +90,7 @@ ret_point:
+>  .data
+>  ALIGN
+>  ENTRY(saved_magic)     .long   0
+> -ENTRY(saved_eip)       .long   0
+> +saved_eip:             .long 0
+>
+>  # saved registers
+>  saved_idt:     .long   0,0
+> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
+> index 50b8ed0317a3..510fa12aab73 100644
+> --- a/arch/x86/kernel/acpi/wakeup_64.S
+> +++ b/arch/x86/kernel/acpi/wakeup_64.S
+> @@ -125,12 +125,12 @@ ENTRY(do_suspend_lowlevel)
+>  ENDPROC(do_suspend_lowlevel)
+>
+>  .data
+> -ENTRY(saved_rbp)       .quad   0
+> -ENTRY(saved_rsi)       .quad   0
+> -ENTRY(saved_rdi)       .quad   0
+> -ENTRY(saved_rbx)       .quad   0
+> +saved_rbp:             .quad   0
+> +saved_rsi:             .quad   0
+> +saved_rdi:             .quad   0
+> +saved_rbx:             .quad   0
+>
+> -ENTRY(saved_rip)       .quad   0
+> -ENTRY(saved_rsp)       .quad   0
+> +saved_rip:             .quad   0
+> +saved_rsp:             .quad   0
+>
+>  ENTRY(saved_magic)     .quad   0
+> --
+> 2.16.3
+>
