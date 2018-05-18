@@ -1,111 +1,76 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v1 10/11] cpufreq: tegra20: Wrap cpufreq into platform
- driver
-Date: Fri, 18 May 2018 12:19:16 +0300
-Message-ID: <4ed2535c-651a-2bb1-c9bc-0550bca3d292@gmail.com>
-References: <20180517180056.13336-1-digetx@gmail.com>
- <20180517180056.13336-11-digetx@gmail.com> <20180518090755.GJ14500@ulmo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: [PATCH v6 02/28] x86/asm/suspend: drop ENTRY from local data
+Date: Fri, 18 May 2018 11:16:55 +0200
+Message-ID: <20180518091721.7604-3-jslaby@suse.cz>
+References: <20180518091721.7604-1-jslaby@suse.cz>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180518090755.GJ14500@ulmo>
-Content-Language: en-US
+In-Reply-To: <20180518091721.7604-1-jslaby@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Geis <pgwipeout@gmail.com>
+To: mingo@redhat.com
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18.05.2018 12:07, Thierry Reding wrote:
-> On Thu, May 17, 2018 at 09:00:55PM +0300, Dmitry Osipenko wrote:
->> Currently tegra20-cpufreq kernel module isn't getting autoloaded because
->> there is no device associated with the module, this is one of two patches
->> that resolves the module autoloading. This patch adds a module alias that
->> will associate the tegra20-cpufreq kernel module with the platform device,
->> other patch will instantiate the actual platform device. And now it makes
->> sense to wrap cpufreq driver into a platform driver for consistency.
->>
->> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->> ---
->>  drivers/cpufreq/tegra20-cpufreq.c | 116 +++++++++++++++++++-----------
->>  1 file changed, 73 insertions(+), 43 deletions(-)
->>
->> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
->> index c0a7b5a78aa6..f9d02a28df9e 100644
->> --- a/drivers/cpufreq/tegra20-cpufreq.c
->> +++ b/drivers/cpufreq/tegra20-cpufreq.c
->> @@ -19,7 +19,7 @@
->>  #include <linux/clk.h>
->>  #include <linux/cpufreq.h>
->>  #include <linux/module.h>
->> -#include <linux/of.h>
->> +#include <linux/platform_device.h>
->>  
->>  static struct cpufreq_frequency_table freq_table[] = {
->>  	{ .frequency = 216000 },
->> @@ -33,15 +33,19 @@ static struct cpufreq_frequency_table freq_table[] = {
->>  	{ .frequency = CPUFREQ_TABLE_END },
->>  };
->>  
->> -static struct clk *cpu_clk;
->> -static struct clk *pll_x_clk;
->> -static struct clk *pll_p_clk;
->> -static bool pll_x_prepared;
->> +struct tegra20_cpufreq_data {
-> 
-> Nit: I'm not a big fan of _data suffixes because they are completely
-> redundant. Any data structure by definition hosts data, so I'd just drop
-> that.
+ENTRY was intended for functions and shall be paired with ENDPROC.
+ENTRY also aligns symbols which creates unnecessary holes here between
+data.
 
-Okay, I'll drop it in v2.
+So drop ENTRY from saved_eip in wakeup_32 and many saved_* in wakeup_64,
+as these symbols are local only.
 
-> [...]
->> @@ -152,55 +161,76 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
->>  	.suspend		= cpufreq_generic_suspend,
->>  };
->>  
->> -static int __init tegra_cpufreq_init(void)
->> +static int tegra20_cpufreq_probe(struct platform_device *pdev)
->>  {
->> +	struct tegra20_cpufreq_data *data;
->>  	int err;
->>  
->> -	if (!of_machine_is_compatible("nvidia,tegra20"))
->> -		return -ENODEV;
->> +	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
->> +	if (!data)
->> +		return -ENOMEM;
->>  
->> -	cpu_clk = clk_get_sys(NULL, "cclk");
->> -	if (IS_ERR(cpu_clk))
->> -		return PTR_ERR(cpu_clk);
->> +	data->cpu_clk = clk_get_sys(NULL, "cclk");
->> +	if (IS_ERR(data->cpu_clk))
->> +		return PTR_ERR(data->cpu_clk);
->>  
->> -	pll_x_clk = clk_get_sys(NULL, "pll_x");
->> -	if (IS_ERR(pll_x_clk)) {
->> -		err = PTR_ERR(pll_x_clk);
->> +	data->pll_x_clk = clk_get_sys(NULL, "pll_x");
->> +	if (IS_ERR(data->pll_x_clk)) {
->> +		err = PTR_ERR(data->pll_x_clk);
->>  		goto put_cpu;
->>  	}
->>  
->> -	pll_p_clk = clk_get_sys(NULL, "pll_p");
->> -	if (IS_ERR(pll_p_clk)) {
->> -		err = PTR_ERR(pll_p_clk);
->> +	data->pll_p_clk = clk_get_sys(NULL, "pll_p");
->> +	if (IS_ERR(data->pll_p_clk)) {
->> +		err = PTR_ERR(data->pll_p_clk);
->>  		goto put_pll_x;
->>  	}
->>  
->> +	data->dev = &pdev->dev;
->> +
->> +	tegra_cpufreq_driver.driver_data = data;
-> 
-> Couldn't this be embedded into struct tegra20_cpufreq_data? Moving
-> everything but this into a per-device data structure seems half-baked.
+We could use SYM_DATA_LOCAL for these symbols, but it was discouraged
+earlier [1].
 
-That's a good suggestions, thank you.
+[1] https://lkml.org/lkml/2017/4/27/244
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ arch/x86/kernel/acpi/wakeup_32.S |  2 +-
+ arch/x86/kernel/acpi/wakeup_64.S | 12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
+index 0c26b1b44e51..4203d4f0c68d 100644
+--- a/arch/x86/kernel/acpi/wakeup_32.S
++++ b/arch/x86/kernel/acpi/wakeup_32.S
+@@ -90,7 +90,7 @@ ret_point:
+ .data
+ ALIGN
+ ENTRY(saved_magic)	.long	0
+-ENTRY(saved_eip)	.long	0
++saved_eip:		.long 0
+ 
+ # saved registers
+ saved_idt:	.long	0,0
+diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
+index 50b8ed0317a3..510fa12aab73 100644
+--- a/arch/x86/kernel/acpi/wakeup_64.S
++++ b/arch/x86/kernel/acpi/wakeup_64.S
+@@ -125,12 +125,12 @@ ENTRY(do_suspend_lowlevel)
+ ENDPROC(do_suspend_lowlevel)
+ 
+ .data
+-ENTRY(saved_rbp)	.quad	0
+-ENTRY(saved_rsi)	.quad	0
+-ENTRY(saved_rdi)	.quad	0
+-ENTRY(saved_rbx)	.quad	0
++saved_rbp:		.quad	0
++saved_rsi:		.quad	0
++saved_rdi:		.quad	0
++saved_rbx:		.quad	0
+ 
+-ENTRY(saved_rip)	.quad	0
+-ENTRY(saved_rsp)	.quad	0
++saved_rip:		.quad	0
++saved_rsp:		.quad	0
+ 
+ ENTRY(saved_magic)	.quad	0
+-- 
+2.16.3
