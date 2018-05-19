@@ -1,62 +1,35 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Subject: Re: [PATCH v8 10/15] cpufreq: Add Kryo CPU scaling driver
-Date: Sat, 19 May 2018 12:54:41 +0100
-Message-ID: <20180519115441.GK17671@n2100.armlinux.org.uk>
-References: <1526555955-29960-1-git-send-email-ilialin@codeaurora.org>
- <1526555955-29960-11-git-send-email-ilialin@codeaurora.org>
- <20180518014538.duphof6enscpm5vp@vireshk-i7>
- <018701d3ef61$dfd5e700$9f81b500$@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Taniya Das <tdas@codeaurora.org>
+Subject: [PATCH v2 0/2] Add support for QCOM cpufreq FW driver
+Date: Sat, 19 May 2018 23:04:49 +0530
+Message-ID: <1526751291-17873-1-git-send-email-tdas@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <018701d3ef61$dfd5e700$9f81b500$@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ilialin@codeaurora.org
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, mark.rutland@arm.com, nm@ti.com, catalin.marinas@arm.com, mturquette@baylibre.com, will.deacon@arm.com, tfinkel@codeaurora.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, nicolas.dechesne@linaro.org, linux-clk@vger.kernel.org, robh@kernel.org, andy.gross@linaro.org, celster@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, broonie@kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, sboyd@kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, amit.kucheria@linaro.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 19, 2018 at 02:09:24PM +0300, ilialin@codeaurora.org wrote:
-> +static int __init qcom_cpufreq_kryo_driver_init(void)
-> +{
-> +       struct device *cpu_dev_silver, *cpu_dev_gold;
-> +       struct opp_table *opp_silver, *opp_gold;
-> +       enum _msm8996_version msm8996_version;
-> +       struct nvmem_cell *speedbin_nvmem;
-> +       struct platform_device *pdev;
-> +       struct device_node *np;
-> +       u8 *speedbin;
-> +       u32 versions;
-> +       size_t len;
-> +       int ret;
-> +
-> +       cpu_dev_silver = get_cpu_device(SILVER_LEAD);
-> +       if (IS_ERR_OR_NULL(cpu_dev_silver))
-> +               return PTR_ERR(cpu_dev_silver);
-> +
-> +       cpu_dev_gold = get_cpu_device(SILVER_LEAD);
-> +       if (IS_ERR_OR_NULL(cpu_dev_gold))
-> +               return PTR_ERR(cpu_dev_gold);
-> +
-> +       msm8996_version = qcom_cpufreq_kryo_get_msm_id();
-> +       if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
-> +               dev_err(cpu_dev_silver, "Not Snapdragon 820/821!");
-> +               return -ENODEV;
-> +       }
-> +
-> +       np = dev_pm_opp_of_get_opp_desc_node(cpu_dev_silver);
-> +       if (IS_ERR_OR_NULL(np))
-> +               return PTR_ERR(np);
+ [v2]
+   * Address comments given in v0 series.
 
-This function (qcom_cpufreq_kryo_driver_init) returns zero on success.
-You are checking "np" here for being an error pointer, or NULL.
-What value do you think PTR_ERR() returns in the case of PTR_ERR(NULL)?
+ [v1]
+    * Fixed compilation reported by Amit K.
 
-IS_ERR_OR_NULL() is considered by some (me included) as being _very_
-harmful because programmers generally fail to look at linux/err.h and
-consider what it means when used as above.
+The CPUfreq FW present in some QCOM chipsets offloads the steps necessary
+for changing the frequency of CPUs. The driver implements the cpufreq
+driver interface for this firmware.
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
-According to speedtest.net: 8.21Mbps down 510kbps up
+Taniya Das (2):
+  dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW bindings
+  cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
+
+ .../bindings/cpufreq/cpufreq-qcom-fw.txt           |  68 +++++
+ drivers/cpufreq/Kconfig.arm                        |   9 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/qcom-cpufreq-fw.c                  | 317 +++++++++++++++++++++
+ 4 files changed, 395 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-fw.c
+
+--
+Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+of the Code Aurora Forum, hosted by the  Linux Foundation.
