@@ -1,7 +1,7 @@
 From: Yisheng Xie <xieyisheng1@huawei.com>
-Subject: [PATCH 19/33] thermal: db8500: use match_string() helper
-Date: Mon, 21 May 2018 19:57:56 +0800
-Message-ID: <1526903890-35761-20-git-send-email-xieyisheng1@huawei.com>
+Subject: [PATCH 18/33] power: supply: use match_string() helper
+Date: Mon, 21 May 2018 19:57:55 +0800
+Message-ID: <1526903890-35761-19-git-send-email-xieyisheng1@huawei.com>
 References: <1526903890-35761-1-git-send-email-xieyisheng1@huawei.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -9,39 +9,56 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1526903890-35761-1-git-send-email-xieyisheng1@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Yisheng Xie <xieyisheng1@huawei.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+Cc: Yisheng Xie <xieyisheng1@huawei.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 match_string() returns the index of an array for a matching string,
 which can be used intead of open coded variant.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Yisheng Xie <xieyisheng1@huawei.com>
 ---
- drivers/thermal/db8500_thermal.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/power/supply/power_supply_core.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-index f491faf..dd83614 100644
---- a/drivers/thermal/db8500_thermal.c
-+++ b/drivers/thermal/db8500_thermal.c
-@@ -50,12 +50,10 @@ static int db8500_thermal_match_cdev(struct thermal_cooling_device *cdev,
- 	if (!strlen(cdev->type))
- 		return -EINVAL;
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index feac7b0..84da3a2 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -36,8 +36,6 @@
+ static bool __power_supply_is_supplied_by(struct power_supply *supplier,
+ 					 struct power_supply *supply)
+ {
+-	int i;
+-
+ 	if (!supply->supplied_from && !supplier->supplied_to)
+ 		return false;
  
--	for (i = 0; i < COOLING_DEV_MAX; i++) {
--		if (!strcmp(trip_point->cdev_name[i], cdev->type))
--			return 0;
--	}
-+	i = match_string((const char **)trip_point->cdev_name,
-+			 COOLING_DEV_MAX, cdev->type);
- 
--	return -ENODEV;
-+	return (i < 0) ? -ENODEV : 0;
+@@ -45,18 +43,16 @@ static bool __power_supply_is_supplied_by(struct power_supply *supplier,
+ 	if (supply->supplied_from) {
+ 		if (!supplier->desc->name)
+ 			return false;
+-		for (i = 0; i < supply->num_supplies; i++)
+-			if (!strcmp(supplier->desc->name, supply->supplied_from[i]))
+-				return true;
++		return match_string((const char **)supply->supplied_from,
++				    supply->num_supplies,
++				    supplier->desc->name) >= 0;
+ 	} else {
+ 		if (!supply->desc->name)
+ 			return false;
+-		for (i = 0; i < supplier->num_supplicants; i++)
+-			if (!strcmp(supplier->supplied_to[i], supply->desc->name))
+-				return true;
++		return match_string((const char **)supplier->supplied_to,
++				    supplier->num_supplicants,
++				    supply->desc->name) >= 0;
+ 	}
+-
+-	return false;
  }
  
- /* Callback to bind cooling device to thermal zone */
+ static int __power_supply_changed_work(struct device *dev, void *data)
 -- 
 1.7.12.4
