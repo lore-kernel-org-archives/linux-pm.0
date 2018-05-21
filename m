@@ -1,113 +1,33 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: schedutil: Fix iowait boost reset
-Date: Mon, 21 May 2018 14:33:38 +0530
-Message-ID: <20180521090338.7z6n7ydy3rx3jnoa@vireshk-i7>
-References: <20180521085120.7902-1-patrick.bellasi@arm.com>
- <20180521085120.7902-2-patrick.bellasi@arm.com>
+Subject: Re: [PATCH v8 10/15] cpufreq: Add Kryo CPU scaling driver
+Date: Mon, 21 May 2018 14:35:53 +0530
+Message-ID: <20180521090553.6wervk335scgnko6@vireshk-i7>
+References: <1526555955-29960-1-git-send-email-ilialin@codeaurora.org>
+ <1526555955-29960-11-git-send-email-ilialin@codeaurora.org>
+ <20180518014538.duphof6enscpm5vp@vireshk-i7>
+ <019201d3ef66$db97aed0$92c70c70$@codeaurora.org>
+ <20180521044938.bnr2sdkmvdorfxqm@vireshk-i7>
+ <000501d3f0e2$23500c00$69f02400$@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180521085120.7902-2-patrick.bellasi@arm.com>
+In-Reply-To: <000501d3f0e2$23500c00$69f02400$@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>
+To: ilialin@codeaurora.org
+Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21-05-18, 09:51, Patrick Bellasi wrote:
-> A more energy efficient update of the IO wait boosting mechanism has
-> been introduced in:
-> 
->    commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost more energy efficient")
-> 
-> where the boost value is expected to be:
-> 
->  - doubled at each successive wakeup from IO
->    staring from the minimum frequency supported by a CPU
-> 
->  - reset when a CPU is not updated for more then one tick
->    by either disabling the IO wait boost or resetting its value to the
->    minimum frequency if this new update requires an IO boost.
-> 
-> This approach is supposed to "ignore" boosting for sporadic wakeups from
-> IO, while still getting the frequency boosted to the maximum to benefit
-> long sequence of wakeup from IO operations.
-> 
-> However, these assumptions are not always satisfied.
-> For example, when an IO boosted CPU enters idle for more the one tick
-> and then wakes up after an IO wait, since in sugov_set_iowait_boost() we
-> first check the IOWAIT flag, we keep doubling the iowait boost instead
-> of restarting from the minimum frequency value.
-> 
-> This misbehavior could happen mainly on non-shared frequency domains,
-> thus defeating the energy efficiency optimization, but it can also
-> happen on shared frequency domain systems.
-> 
-> Let fix this issue in sugov_set_iowait_boost() by:
->  - first check the IO wait boost reset conditions
->    to eventually reset the boost value
->  - then applying the correct IO boost value
->    if required by the caller
-> 
-> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Joel Fernandes <joelaf@google.com>
-> Cc: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Fixes: a5a0809bc58e ("cpufreq: schedutil: Make iowait boost more energy efficient")
-> 
-> ---
-> Changes in v3:
->  - split the fix into a separated patch (this one)
->  - added "Fixes" tag (Viresh)
-> ---
->  kernel/sched/cpufreq_schedutil.c | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index e13df951aca7..c4063e578e4d 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -203,6 +203,16 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
->  
->  static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
->  {
-> +	/* Clear iowait_boost if the CPU apprears to have been idle. */
-> +	if (sg_cpu->iowait_boost) {
-> +		s64 delta_ns = time - sg_cpu->last_update;
-> +
-> +		if (delta_ns > TICK_NSEC) {
-> +			sg_cpu->iowait_boost = 0;
-> +			sg_cpu->iowait_boost_pending = false;
-> +		}
-> +	}
-> +
->  	if (flags & SCHED_CPUFREQ_IOWAIT) {
->  		if (sg_cpu->iowait_boost_pending)
->  			return;
-> @@ -216,14 +226,6 @@ static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned
->  		} else {
->  			sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
->  		}
-> -	} else if (sg_cpu->iowait_boost) {
-> -		s64 delta_ns = time - sg_cpu->last_update;
-> -
-> -		/* Clear iowait_boost if the CPU apprears to have been idle. */
-> -		if (delta_ns > TICK_NSEC) {
-> -			sg_cpu->iowait_boost = 0;
-> -			sg_cpu->iowait_boost_pending = false;
-> -		}
->  	}
->  }
->  
+On 21-05-18, 12:00, ilialin@codeaurora.org wrote:
+> Final version (addressing Russel's comment as well):
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Sorry, can't review it like this. At least you should be posting your
+diff here and you also need to do that from a sane email client like
+mutt, which wouldn't auto-fix/update the code. Doing it from gmail or
+thunderbird will ofcourse screw it.
+
+Or a simple way is to send the patch again (alone) using in-reply-to
+field.
 
 -- 
 viresh
