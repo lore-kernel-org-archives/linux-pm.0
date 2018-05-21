@@ -1,107 +1,66 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
- when kthread kicked
-Date: Mon, 21 May 2018 11:50:55 +0100
-Message-ID: <20180521105055.GQ30654@e110439-lin>
-References: <20180518185501.173552-1-joel@joelfernandes.org>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCH] cpufreq: Add Kryo CPU scaling driver
+Date: Mon, 21 May 2018 11:54:28 +0100
+Message-ID: <20180521105428.GM17671@n2100.armlinux.org.uk>
+References: <1526555955-29960-11-git-send-email-ilialin@codeaurora.org>
+ <1526898690-4018-1-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180518185501.173552-1-joel@joelfernandes.org>
+In-Reply-To: <1526898690-4018-1-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Joel Fernandes (Google.)" <joelaf@google.com>
-Cc: linux-kernel@vger.kernel.org, "Joel Fernandes (Google)" <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: viresh.kumar@linaro.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18-May 11:55, Joel Fernandes (Google.) wrote:
-> From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
-> 
-> Currently there is a chance of a schedutil cpufreq update request to be
-> dropped if there is a pending update request. This pending request can
-> be delayed if there is a scheduling delay of the irq_work and the wake
-> up of the schedutil governor kthread.
-> 
-> A very bad scenario is when a schedutil request was already just made,
-> such as to reduce the CPU frequency, then a newer request to increase
-> CPU frequency (even sched deadline urgent frequency increase requests)
-> can be dropped, even though the rate limits suggest that its Ok to
-> process a request. This is because of the way the work_in_progress flag
-> is used.
-> 
-> This patch improves the situation by allowing new requests to happen
-> even though the old one is still being processed. Note that in this
-> approach, if an irq_work was already issued, we just update next_freq
-> and don't bother to queue another request so there's no extra work being
-> done to make this happen.
+On Mon, May 21, 2018 at 01:31:30PM +0300, Ilia Lin wrote:
+> +#define SILVER_LEAD	0
+> +#define GOLD_LEAD	2
 
-Maybe I'm missing something but... is not this patch just a partial
-mitigation of the issue you descrive above?
+Okay, two different values here, but "GOLD_LEAD" appears unused.
 
-If a DL freq increase is queued, with this patch we store the request
-but we don't actually increase the frequency until the next schedutil
-update, which can be one tick away... isn't it?
+> +	cpu_dev_silver = get_cpu_device(SILVER_LEAD);
+> +	if (NULL == cpu_dev_silver)
+> +		return -ENODEV;
+> +
+> +	cpu_dev_gold = get_cpu_device(SILVER_LEAD);
+> +	if (NULL == cpu_dev_gold)
+> +		return -ENODEV;
 
-If that's the case, maybe something like the following can complete
-the cure?
+get_cpu_device() takes the logical CPU number.  So the above gets CPU 0
+each time, and so cpu_dev_silver == cpu_dev_gold here.  So what's the
+point of the second get_cpu_device() ?  If it's supposed to be:
 
----8<---
-#define SUGOV_FREQ_NONE 0
+	cpu_dev_gold = get_cpu_device(GOLD_LEAD);
 
-static unsigned int sugov_work_update(struct sugov_policy *sg_policy,
-				      unsigned int prev_freq)
-{
-	unsigned long irq_flags;
-	bool update_freq = true;
-	unsigned int next_freq;
+That would get CPU 2, but in terms of these defines, it doesn't make that
+much sense.  What exactly does "silver lead" and "gold lead" refer to in
+these definitions?
 
-	/*
-	 * Hold sg_policy->update_lock shortly to handle the case where:
-	 * incase sg_policy->next_freq is read here, and then updated by
-	 * sugov_update_shared just before work_in_progress is set to false
-	 * here, we may miss queueing the new update.
-	 *
-	 * Note: If a work was queued after the update_lock is released,
-	 * sugov_work will just be called again by kthread_work code; and the
-	 * request will be proceed before the sugov thread sleeps.
-	 */
-	raw_spin_lock_irqsave(&sg_policy->update_lock, irq_flags);
-	next_freq = sg_policy->next_freq;
-	sg_policy->work_in_progress = false;
-	if (prev_freq == next_freq)
-		update_freq = false;
-	raw_spin_unlock_irqrestore(&sg_policy->update_lock, irq_flags);
+> +	opp_silver = dev_pm_opp_set_supported_hw(cpu_dev_silver,&versions,1);
+> +	if (IS_ERR(opp_silver)) {
+> +		dev_err(cpu_dev_silver, "Failed to set supported hardware\n");
+> +		ret = PTR_ERR(opp_silver);
+> +		goto free_np;
+> +	}
+> +
+> +	opp_gold = dev_pm_opp_set_supported_hw(cpu_dev_gold,&versions,1);
+> +	if (IS_ERR(opp_gold)) {
+> +		dev_err(cpu_dev_gold, "Failed to set supported hardware\n");
+> +		ret = PTR_ERR(opp_gold);
+> +		goto free_opp_silver;
+> +	}
 
-	/*
-	 * Update the frequency only if it has changed since the last call.
-	 */
-	if (update_freq) {
-		mutex_lock(&sg_policy->work_lock);
-		__cpufreq_driver_target(sg_policy->policy, next_freq, CPUFREQ_RELATION_L);
-		mutex_unlock(&sg_policy->work_lock);
+Given that cpu_dev_silver == cpu_dev_gold, doesn't the second call to
+dev_pm_opp_set_supported_hw() always fail, as opp_table->supported_hw
+will be set by the first call?
 
-		return next_freq;
-	}
-
-	return SUGOV_FREQ_NONE;
-}
-
-static void sugov_work(struct kthread_work *work)
-{
-	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-	unsigned int prev_freq = 0;
-
-	/*
-	 * Keep updating the frequency until we end up with a frequency which
-	 * satisfies the most recent request we got meanwhile.
-	 */
-	do {
-		prev_freq = sugov_work_update(sg_policy, prev_freq);
-	} while (prev_freq != SUGOV_FREQ_NONE);
-}
----8<---
+To me, this driver looks completely useless as it will always fail to
+initialise, and I question whether this code has even been runtime
+tested.
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up
