@@ -1,167 +1,83 @@
-From: Joel Fernandes <joel@joelfernandes.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
  when kthread kicked
-Date: Mon, 21 May 2018 09:13:46 -0700
-Message-ID: <20180521161346.GB14065@joelaf.mtv.corp.google.com>
+Date: Mon, 21 May 2018 18:00:50 +0100
+Message-ID: <20180521170050.GT30654@e110439-lin>
 References: <20180518185501.173552-1-joel@joelfernandes.org>
- <20180521051424.mljwmisvrvi6yyc4@vireshk-i7>
- <CAJZ5v0jbJ3HfLyP6VZ2PuG0q1n=faX3G98ruwK-o1ro+gv7B9w@mail.gmail.com>
+ <20180521105055.GQ30654@e110439-lin>
+ <20180521154957.GA14065@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jbJ3HfLyP6VZ2PuG0q1n=faX3G98ruwK-o1ro+gv7B9w@mail.gmail.com>
+In-Reply-To: <20180521154957.GA14065@joelaf.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Joel Fernandes (Google.)" <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: "Joel Fernandes (Google.)" <joelaf@google.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 21, 2018 at 10:29:52AM +0200, Rafael J. Wysocki wrote:
-> On Mon, May 21, 2018 at 7:14 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 18-05-18, 11:55, Joel Fernandes (Google.) wrote:
-> >> From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
-> >>
-> >> Currently there is a chance of a schedutil cpufreq update request to be
-> >> dropped if there is a pending update request. This pending request can
-> >> be delayed if there is a scheduling delay of the irq_work and the wake
-> >> up of the schedutil governor kthread.
-> >>
-> >> A very bad scenario is when a schedutil request was already just made,
-> >> such as to reduce the CPU frequency, then a newer request to increase
-> >> CPU frequency (even sched deadline urgent frequency increase requests)
-> >> can be dropped, even though the rate limits suggest that its Ok to
-> >> process a request. This is because of the way the work_in_progress flag
-> >> is used.
-> >>
-> >> This patch improves the situation by allowing new requests to happen
-> >> even though the old one is still being processed. Note that in this
-> >> approach, if an irq_work was already issued, we just update next_freq
-> >> and don't bother to queue another request so there's no extra work being
-> >> done to make this happen.
-> >
-> > Now that this isn't an RFC anymore, you shouldn't have added below
-> > paragraph here. It could go to the comments section though.
-> >
-> >> I had brought up this issue at the OSPM conference and Claudio had a
-> >> discussion RFC with an alternate approach [1]. I prefer the approach as
-> >> done in the patch below since it doesn't need any new flags and doesn't
-> >> cause any other extra overhead.
-> >>
-> >> [1] https://patchwork.kernel.org/patch/10384261/
-> >>
-> >> LGTMed-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >> LGTMed-by: Juri Lelli <juri.lelli@redhat.com>
-> >
-> > Looks like a Tag you just invented ? :)
+On 21-May 08:49, Joel Fernandes wrote:
+> On Mon, May 21, 2018 at 11:50:55AM +0100, Patrick Bellasi wrote:
+> > On 18-May 11:55, Joel Fernandes (Google.) wrote:
+> > > From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
+> > > 
+> > > Currently there is a chance of a schedutil cpufreq update request to be
+> > > dropped if there is a pending update request. This pending request can
+> > > be delayed if there is a scheduling delay of the irq_work and the wake
+> > > up of the schedutil governor kthread.
+> > > 
+> > > A very bad scenario is when a schedutil request was already just made,
+> > > such as to reduce the CPU frequency, then a newer request to increase
+> > > CPU frequency (even sched deadline urgent frequency increase requests)
+> > > can be dropped, even though the rate limits suggest that its Ok to
+> > > process a request. This is because of the way the work_in_progress flag
+> > > is used.
+> > > 
+> > > This patch improves the situation by allowing new requests to happen
+> > > even though the old one is still being processed. Note that in this
+> > > approach, if an irq_work was already issued, we just update next_freq
+> > > and don't bother to queue another request so there's no extra work being
+> > > done to make this happen.
+> > 
+> > Maybe I'm missing something but... is not this patch just a partial
+> > mitigation of the issue you descrive above?
+> > 
+> > If a DL freq increase is queued, with this patch we store the request
+> > but we don't actually increase the frequency until the next schedutil
+> > update, which can be one tick away... isn't it?
+> > 
+> > If that's the case, maybe something like the following can complete
+> > the cure?
 > 
-> Yeah.
+> We already discussed this and thought of this case, I think you missed a
+> previous thread [1]. The outer loop in the kthread_work subsystem will take
+> care of calling sugov_work again incase another request was queued which we
+> happen to miss.
+
+Ok, I missed that thread... my bad.
+
+However, [1] made me noticing that your solution works under the
+assumption that we keep queuing a new kworker job for each request we
+get, isn't it?
+
+If that's the case, this means that if, for example, during a
+frequency switch you get a request to reduce the frequency (e.g.
+deadline task passing the 0-lag time) and right after a request to
+increase the frequency (e.g. the current FAIR task tick)... you will
+enqueue a freq drop followed by a freq increase and actually do two
+frequency hops?
+
+> So I don't think more complexity is needed to handle the case
+> you're bringing up.
+>
+> thanks!
 > 
-> The LGTM from Juri can be converned into an ACK silently IMO.  That
-> said I have added Looks-good-to: tags to a couple of commits. :-)
-
-Cool, I'll covert them to Acks :-)
-
-[..]
-> >> v1 -> v2: Minor style related changes.
-> >>
-> >>  kernel/sched/cpufreq_schedutil.c | 34 ++++++++++++++++++++++++--------
-> >>  1 file changed, 26 insertions(+), 8 deletions(-)
-> >>
-> >> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> >> index e13df951aca7..5c482ec38610 100644
-> >> --- a/kernel/sched/cpufreq_schedutil.c
-> >> +++ b/kernel/sched/cpufreq_schedutil.c
-> >> @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> >>           !cpufreq_can_do_remote_dvfs(sg_policy->policy))
-> >>               return false;
-> >>
-> >> -     if (sg_policy->work_in_progress)
-> >> -             return false;
-> >> -
-> >>       if (unlikely(sg_policy->need_freq_update)) {
-> >>               sg_policy->need_freq_update = false;
-> >>               /*
-> >> @@ -128,7 +125,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-> >>
-> >>               policy->cur = next_freq;
-> >>               trace_cpu_frequency(next_freq, smp_processor_id());
-> >> -     } else {
-> >> +     } else if (!sg_policy->work_in_progress) {
-> >>               sg_policy->work_in_progress = true;
-> >>               irq_work_queue(&sg_policy->irq_work);
-> >>       }
-> >> @@ -291,6 +288,13 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> >>
-> >>       ignore_dl_rate_limit(sg_cpu, sg_policy);
-> >>
-> >> +     /*
-> >> +      * For slow-switch systems, single policy requests can't run at the
-> >> +      * moment if update is in progress, unless we acquire update_lock.
-> >> +      */
-> >> +     if (sg_policy->work_in_progress)
-> >> +             return;
-> >> +
-> >
-> > I would still want this to go away :)
-> >
-> > @Rafael, will it be fine to get locking in place for unshared policy
-> > platforms ?
+>  - Joel
 > 
-> As long as it doesn't affect the fast switch path in any way.
-
-I just realized that on a single policy switch that uses the governor thread,
-there will be 1 thread per-CPU. The sugov_update_single will be called on the
-same CPU with interrupts disabled. In sugov_work, we are doing a
-raw_spin_lock_irqsave which also disables interrupts. So I don't think
-there's any possibility of a race happening on the same CPU between the
-frequency update request and the sugov_work executing. In other words, I feel
-we can drop the above if (..) statement for single policies completely and
-only keep the changes for the shared policy. Viresh since you brought up the
-single policy issue initially which made me add this if statememnt, could you
-let me know if you agree with what I just said?
-
-> >>       if (!sugov_should_update_freq(sg_policy, time))
-> >>               return;
-> >>
-> >> @@ -382,13 +386,27 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
-> >>  static void sugov_work(struct kthread_work *work)
-> >>  {
-> >>       struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-> >> +     unsigned int freq;
-> >> +     unsigned long flags;
-> >> +
-> >> +     /*
-> >> +      * Hold sg_policy->update_lock shortly to handle the case where:
-> >> +      * incase sg_policy->next_freq is read here, and then updated by
-> >> +      * sugov_update_shared just before work_in_progress is set to false
-> >> +      * here, we may miss queueing the new update.
-> >> +      *
-> >> +      * Note: If a work was queued after the update_lock is released,
-> >> +      * sugov_work will just be called again by kthread_work code; and the
-> >> +      * request will be proceed before the sugov thread sleeps.
-> >> +      */
-> >> +     raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
-> >> +     freq = sg_policy->next_freq;
-> >> +     sg_policy->work_in_progress = false;
-> >> +     raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
-> >>
-> >>       mutex_lock(&sg_policy->work_lock);
-> >> -     __cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
-> >> -                             CPUFREQ_RELATION_L);
-> >> +     __cpufreq_driver_target(sg_policy->policy, freq, CPUFREQ_RELATION_L);
-> >>       mutex_unlock(&sg_policy->work_lock);
-> >> -
-> >> -     sg_policy->work_in_progress = false;
-> >>  }
-> >>
-> >>  static void sugov_irq_work(struct irq_work *irq_work)
-> >
-> > Fix the commit log and you can add my
+> [1] https://lkml.org/lkml/2018/5/17/668
 > 
-> I can fix it up.
-> 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Thanks!
+-- 
+#include <best/regards.h>
 
- - Joel
+Patrick Bellasi
