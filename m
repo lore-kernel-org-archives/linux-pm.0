@@ -1,114 +1,47 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: OMAP serial runtime PM and autosuspend (was: Re: [PATCH 4/7]
- dt-bindings: gnss: add u-blox binding))
-Date: Mon, 21 May 2018 15:48:30 +0200
-Message-ID: <20180521134830.GR30172@localhost>
-References: <20180507175032.GR98604@atomide.com>
- <20180508065852.GW2285@localhost>
- <20180508152228.GV98604@atomide.com>
- <20180508154756.GW98604@atomide.com>
- <20180508155405.GX98604@atomide.com>
- <20180508164904.GZ98604@atomide.com>
- <20180509131003.GC2285@localhost>
- <20180509135706.GB98604@atomide.com>
- <20180517100948.GI30172@localhost>
- <20180517171038.GL98604@atomide.com>
+From: Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>
+Subject: Re: [PATCH 2/3] thinkpad_acpi: add support for
+ force_discharge
+Date: Mon, 21 May 2018 07:31:12 -0600
+Message-ID: <20180521133112.GA4578@kevinolos>
+References: <20180513153000.GA5117@thinkpad>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20180517171038.GL98604@atomide.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Johan Hovold <johan@kernel.org>, Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20180513153000.GA5117@thinkpad>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
+List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: Ognjen Galic <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 17, 2018 at 10:10:38AM -0700, Tony Lindgren wrote:
-> * Johan Hovold <johan@kernel.org> [180517 10:12]:
-> > [ Sorry about the late reply. ]
-> > 
-> > On Wed, May 09, 2018 at 06:57:06AM -0700, Tony Lindgren wrote:
-> > > * Johan Hovold <johan@kernel.org> [180509 13:12]:
-> > 
-> > > > It seems we really should not be using the negative autosuspend to
-> > > > configure the RPM behaviour the way these drivers do. Perhaps a new
-> > > > mechanism is needed.
-> > > 
-> > > Hmm well simply defaulting to "on" instead of "auto" and setting the
-> > > autosuspend_ms to 3000 by default might be doable. I think that way
-> > > we can keep use_autosuspend() in probe. Let's hope there are no
-> > > existing use cases that would break with that.
-> > 
-> > No, defaulting to "on" (i.e. calling pm_runtime_forbid()) wouldn't work
-> > either as that would also prevent the device from runtime suspending
-> > just as the current negative autosuspend delay does.
+On Sun, 2018-05-13 at 17:30 +0200, Ognjen Galic wrote:
+> Lenovo ThinkPad systems have a feature that lets you
+> force the battery to discharge regardless if AC is attached
+> or not.
 > 
-> Well in that case we should just stick with -1 value for the
-> autosuspend. And just do pm_runtime_put_sync_suspend() after
-> probe and on close.
+> This patch implements that feature and exposes it via the generic
+> ACPI battery driver.
 
-That won't work either as a negative autosuspend delay prevents runtime
-suspend completely (by grabbing an extra RPM reference).
+On a T430 (2342-CTO) I can confirm that both force_discharge and
+inhibit_charge behave as expected, both when the battery is above and
+below charge_start_threshold.  Input validation also works
+as-expected.  The only oddity I noticed is that force_discharge has a
+delay taking effect (<1 sec) transitioning from 0 to 1 (but not 1 to
+0).
 
-> > I fail to see how we can implement this using the current toolbox. What
-> > you're after here is really a mechanism for selecting between two
-> > different runtime PM schemes at runtime:
-> > 
-> > 	1. normal serial RPM, where the controller is active while the
-> > 	   port is open (this should be the safe default)
-> 
-> Agreed. And that is the case already.
+Tested-by: Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>
 
-Yes, but it's not really the case today as since omap-serial (and
-8250-omap) sets a negative autosuspend at probe and hence does not
-runtime-suspend when the port is closed. So that's the long-standing bug
-which needs fixing.
+Thanks for working on this!
+Kevin
 
-> > 	2. aggressive serial RPM, where the controller is allowed to
-> > 	   suspend while the port is open even though this may result in
-> > 	   lost characters when waking up on incoming data
-> 
-> In this case it seems that the only thing needed is to just
-> configure the autosuspend delay for the parent port. The use of
-> -1 has been around since the start of runtime PM AFAIK, so maybe
-> we should just document it. I guess we could also introduce
-> pm_runtime_block_autoidle_unless_configured() :)
-
-The implications of a negative autosuspend delay are already documented
-(in Documentation/power/runtime_pm.txt); it's just the omap drivers that
-gets it wrong when trying to do things which aren't currently supported
-(and never have been).
-
-So I still think we need a new mechanism for this.
-
-> > For normal ttys, we need a user-space interface for selecting between
-> > the two, and for serdev we may want a way to select the RPM scheme from
-> > within the kernel.
-> > 
-> > Note that with my serdev controller runtime PM patch, serdev core could
-> > always opt for aggressive PM (as by default serdev core holds an RPM
-> > reference for the controller while the port is open).
-> 
-> So if your serdev controller was to set the parent autosuspend
-> delay on open() and set it back on close() this should work?
-
-Is it really the job of a serdev driver to set the autosuspend delay of
-a parent controller? Isn't this somethings which depends on the
-characteristics of the controller (possibly configurable by user space)
-such as the cost of runtime suspending and resuming?
-
-The patch I posted works with what we have today; if a parent serial
-controller driver uses aggressive runtime PM by default or after having
-been configured through sysfs to do so.
-
-What I'm getting at here is that the delay should be set by the serial
-driver implementing aggressive runtime PM. Then all we need is a
-mechanism to determine whether an extra RPM reference should be taken at
-tty open or not (configurable by user space, defaulting to yes).
-
-Specifically, the serial drivers themselves would always use
-autosuspend and not have to deal with supporting the two RPM schemes
-(normal vs aggressive runtime PM).
-
-Thanks,
-Johan
+------------------------------------------------------------------------------
+Check out the vibrant tech community on one of the world's most
+engaging tech sites, Slashdot.org! http://sdm.link/slashdot
