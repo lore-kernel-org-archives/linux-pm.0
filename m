@@ -1,87 +1,98 @@
 From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
- when kthread kicked
-Date: Mon, 21 May 2018 10:20:01 -0700
-Message-ID: <20180521172001.GA21678@joelaf.mtv.corp.google.com>
-References: <20180518185501.173552-1-joel@joelfernandes.org>
- <20180521105055.GQ30654@e110439-lin>
- <20180521154957.GA14065@joelaf.mtv.corp.google.com>
- <20180521170050.GT30654@e110439-lin>
+Subject: Re: [PATCH v3 1/2] cpufreq: schedutil: Fix iowait boost reset
+Date: Mon, 21 May 2018 10:33:56 -0700
+Message-ID: <20180521173356.GB21678@joelaf.mtv.corp.google.com>
+References: <20180521085120.7902-1-patrick.bellasi@arm.com>
+ <20180521085120.7902-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180521170050.GT30654@e110439-lin>
+In-Reply-To: <20180521085120.7902-2-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: "Joel Fernandes (Google.)" <joelaf@google.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@redhat.com>, kernel-team@android.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Patrick,
-
-On Mon, May 21, 2018 at 06:00:50PM +0100, Patrick Bellasi wrote:
-> On 21-May 08:49, Joel Fernandes wrote:
-> > On Mon, May 21, 2018 at 11:50:55AM +0100, Patrick Bellasi wrote:
-> > > On 18-May 11:55, Joel Fernandes (Google.) wrote:
-> > > > From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
-> > > > 
-> > > > Currently there is a chance of a schedutil cpufreq update request to be
-> > > > dropped if there is a pending update request. This pending request can
-> > > > be delayed if there is a scheduling delay of the irq_work and the wake
-> > > > up of the schedutil governor kthread.
-> > > > 
-> > > > A very bad scenario is when a schedutil request was already just made,
-> > > > such as to reduce the CPU frequency, then a newer request to increase
-> > > > CPU frequency (even sched deadline urgent frequency increase requests)
-> > > > can be dropped, even though the rate limits suggest that its Ok to
-> > > > process a request. This is because of the way the work_in_progress flag
-> > > > is used.
-> > > > 
-> > > > This patch improves the situation by allowing new requests to happen
-> > > > even though the old one is still being processed. Note that in this
-> > > > approach, if an irq_work was already issued, we just update next_freq
-> > > > and don't bother to queue another request so there's no extra work being
-> > > > done to make this happen.
-> > > 
-> > > Maybe I'm missing something but... is not this patch just a partial
-> > > mitigation of the issue you descrive above?
-> > > 
-> > > If a DL freq increase is queued, with this patch we store the request
-> > > but we don't actually increase the frequency until the next schedutil
-> > > update, which can be one tick away... isn't it?
-> > > 
-> > > If that's the case, maybe something like the following can complete
-> > > the cure?
-> > 
-> > We already discussed this and thought of this case, I think you missed a
-> > previous thread [1]. The outer loop in the kthread_work subsystem will take
-> > care of calling sugov_work again incase another request was queued which we
-> > happen to miss.
+On Mon, May 21, 2018 at 09:51:19AM +0100, Patrick Bellasi wrote:
+> A more energy efficient update of the IO wait boosting mechanism has
+> been introduced in:
 > 
-> Ok, I missed that thread... my bad.
+>    commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost more energy efficient")
+> 
+> where the boost value is expected to be:
+> 
+>  - doubled at each successive wakeup from IO
+>    staring from the minimum frequency supported by a CPU
+> 
+>  - reset when a CPU is not updated for more then one tick
+>    by either disabling the IO wait boost or resetting its value to the
+>    minimum frequency if this new update requires an IO boost.
+> 
+> This approach is supposed to "ignore" boosting for sporadic wakeups from
+> IO, while still getting the frequency boosted to the maximum to benefit
+> long sequence of wakeup from IO operations.
+> 
+> However, these assumptions are not always satisfied.
+> For example, when an IO boosted CPU enters idle for more the one tick
+> and then wakes up after an IO wait, since in sugov_set_iowait_boost() we
+> first check the IOWAIT flag, we keep doubling the iowait boost instead
+> of restarting from the minimum frequency value.
+> 
+> This misbehavior could happen mainly on non-shared frequency domains,
+> thus defeating the energy efficiency optimization, but it can also
+> happen on shared frequency domain systems.
+> 
+> Let fix this issue in sugov_set_iowait_boost() by:
+>  - first check the IO wait boost reset conditions
+>    to eventually reset the boost value
+>  - then applying the correct IO boost value
+>    if required by the caller
+> 
+> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Fixes: a5a0809bc58e ("cpufreq: schedutil: Make iowait boost more energy efficient")
+> 
+> ---
+> Changes in v3:
+>  - split the fix into a separated patch (this one)
+>  - added "Fixes" tag (Viresh)
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index e13df951aca7..c4063e578e4d 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -203,6 +203,16 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+>  
+>  static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
+>  {
+> +	/* Clear iowait_boost if the CPU apprears to have been idle. */
+> +	if (sg_cpu->iowait_boost) {
+> +		s64 delta_ns = time - sg_cpu->last_update;
+> +
+> +		if (delta_ns > TICK_NSEC) {
+> +			sg_cpu->iowait_boost = 0;
+> +			sg_cpu->iowait_boost_pending = false;
+> +		}
+> +	}
+> +
 
-Sure no problem, sorry I was just pointing out the thread, not blaming you
-for not reading it ;)
+Yes, I guess this effects single policies only. For shared, we are resetting
+the iowait boost on the wake-up-from-idle update anyway. So even if it was
+doubled, it would be reset.
 
-> However, [1] made me noticing that your solution works under the
-> assumption that we keep queuing a new kworker job for each request we
-> get, isn't it?
+Looks good to me! thanks,
 
-Not at each request, but each request after work_in_progress was cleared by the
-sugov_work. Any requests that happen between work_in_progress is set and
-cleared only result in updating of the next_freq.
-
-> If that's the case, this means that if, for example, during a
-> frequency switch you get a request to reduce the frequency (e.g.
-> deadline task passing the 0-lag time) and right after a request to
-> increase the frequency (e.g. the current FAIR task tick)... you will
-> enqueue a freq drop followed by a freq increase and actually do two
-> frequency hops?
-
-Yes possibly, I see your point but I'm not sure if the tight loop around that
-is worth the complexity, or atleast is within the scope of my patch. Perhaps
-the problem you describe can be looked at as a future enhancement?
-
-thanks,
-
- - Joel
+Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
