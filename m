@@ -1,53 +1,113 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 0/2] Add support for QCOM cpufreq FW driver
-Date: Mon, 21 May 2018 14:32:01 +0530
-Message-ID: <20180521090201.4ix2at6emxsdf6s2@vireshk-i7>
-References: <1526751291-17873-1-git-send-email-tdas@codeaurora.org>
- <20180521060529.kyjkglucbydr6b3f@vireshk-i7>
- <cb15a4db-77cd-8063-f323-652c6b03306e@codeaurora.org>
+Subject: Re: [PATCH v3 1/2] cpufreq: schedutil: Fix iowait boost reset
+Date: Mon, 21 May 2018 14:33:38 +0530
+Message-ID: <20180521090338.7z6n7ydy3rx3jnoa@vireshk-i7>
+References: <20180521085120.7902-1-patrick.bellasi@arm.com>
+ <20180521085120.7902-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <cb15a4db-77cd-8063-f323-652c6b03306e@codeaurora.org>
+In-Reply-To: <20180521085120.7902-2-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-05-18, 13:05, Taniya Das wrote:
-> Hello Viresh,
+On 21-05-18, 09:51, Patrick Bellasi wrote:
+> A more energy efficient update of the IO wait boosting mechanism has
+> been introduced in:
 > 
-> Sure, will do it next time. Hope updating the fixes in this email is fine.
-> Do let me know in case you need me to send it across again the series with
-> cover letter updated.
+>    commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost more energy efficient")
 > 
-> On 5/21/2018 11:35 AM, Viresh Kumar wrote:
-> > On 19-05-18, 23:04, Taniya Das wrote:
-> > >   [v2]
-> > >     * Address comments given in v0 series.
-> > 
-> > That's not how you do it. You need to explain every change in enough
-> > detail here so that the reviewers don't need to go to their previous
-> > emails to see what changed.
-> > 
-> Fixes in [v2]
->   * Fixed the alignment issues in "qcom_cpufreq_fw_target_index" for
-> dev_err and also for "qcom_cpu_resources_init".
->  * Removed ret = 0 from qcom_get_related_cpus and added to check for
-> cpu_mask_empty to return -ENOENT.
->  * Fixes qcom_cpu_resources_init function
->    * Remove initialization of 'index'
->    * Check for valid 'c'
->  * Removed initialization of 'prev_cc' from 'qcom_read_lut'.
->  * Remove initialization of 'ret' from function qcom_resources_init and add
-> return -ENODEV based on 'of_get_available_child_count'.
->  * Removed initialization of 'rc' from qcom_cpufreq_fw_driver_probe
->  * Removed module_exit as this driver would not be used as module, also
-> updated the Kconfig to bool from tristate.
->  * Updated the subsystem in device tree bindings.
+> where the boost value is expected to be:
+> 
+>  - doubled at each successive wakeup from IO
+>    staring from the minimum frequency supported by a CPU
+> 
+>  - reset when a CPU is not updated for more then one tick
+>    by either disabling the IO wait boost or resetting its value to the
+>    minimum frequency if this new update requires an IO boost.
+> 
+> This approach is supposed to "ignore" boosting for sporadic wakeups from
+> IO, while still getting the frequency boosted to the maximum to benefit
+> long sequence of wakeup from IO operations.
+> 
+> However, these assumptions are not always satisfied.
+> For example, when an IO boosted CPU enters idle for more the one tick
+> and then wakes up after an IO wait, since in sugov_set_iowait_boost() we
+> first check the IOWAIT flag, we keep doubling the iowait boost instead
+> of restarting from the minimum frequency value.
+> 
+> This misbehavior could happen mainly on non-shared frequency domains,
+> thus defeating the energy efficiency optimization, but it can also
+> happen on shared frequency domain systems.
+> 
+> Let fix this issue in sugov_set_iowait_boost() by:
+>  - first check the IO wait boost reset conditions
+>    to eventually reset the boost value
+>  - then applying the correct IO boost value
+>    if required by the caller
+> 
+> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Fixes: a5a0809bc58e ("cpufreq: schedutil: Make iowait boost more energy efficient")
+> 
+> ---
+> Changes in v3:
+>  - split the fix into a separated patch (this one)
+>  - added "Fixes" tag (Viresh)
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index e13df951aca7..c4063e578e4d 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -203,6 +203,16 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+>  
+>  static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
+>  {
+> +	/* Clear iowait_boost if the CPU apprears to have been idle. */
+> +	if (sg_cpu->iowait_boost) {
+> +		s64 delta_ns = time - sg_cpu->last_update;
+> +
+> +		if (delta_ns > TICK_NSEC) {
+> +			sg_cpu->iowait_boost = 0;
+> +			sg_cpu->iowait_boost_pending = false;
+> +		}
+> +	}
+> +
+>  	if (flags & SCHED_CPUFREQ_IOWAIT) {
+>  		if (sg_cpu->iowait_boost_pending)
+>  			return;
+> @@ -216,14 +226,6 @@ static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned
+>  		} else {
+>  			sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
+>  		}
+> -	} else if (sg_cpu->iowait_boost) {
+> -		s64 delta_ns = time - sg_cpu->last_update;
+> -
+> -		/* Clear iowait_boost if the CPU apprears to have been idle. */
+> -		if (delta_ns > TICK_NSEC) {
+> -			sg_cpu->iowait_boost = 0;
+> -			sg_cpu->iowait_boost_pending = false;
+> -		}
+>  	}
+>  }
+>  
 
-That's what it should look like. Thanks.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
