@@ -1,306 +1,228 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v3 2/2] cpufreq: schedutil: Cleanup and document iowait boost
-Date: Mon, 21 May 2018 09:51:20 +0100
-Message-ID: <20180521085120.7902-3-patrick.bellasi@arm.com>
-References: <20180521085120.7902-1-patrick.bellasi@arm.com>
+From: <ilialin@codeaurora.org>
+Subject: RE: [PATCH v8 10/15] cpufreq: Add Kryo CPU scaling driver
+Date: Mon, 21 May 2018 12:00:09 +0300
+Message-ID: <000501d3f0e2$23500c00$69f02400$@codeaurora.org>
+References: <1526555955-29960-1-git-send-email-ilialin@codeaurora.org> <1526555955-29960-11-git-send-email-ilialin@codeaurora.org> <20180518014538.duphof6enscpm5vp@vireshk-i7> <019201d3ef66$db97aed0$92c70c70$@codeaurora.org> <20180521044938.bnr2sdkmvdorfxqm@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180521085120.7902-1-patrick.bellasi@arm.com>
+In-Reply-To: <20180521044938.bnr2sdkmvdorfxqm@vireshk-i7>
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>
+To: 'Viresh Kumar' <viresh.kumar@linaro.org>
+Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-The iowait boosting code has been recently updated to add a progressive
-boosting behavior which allows to be less aggressive in boosting tasks
-doing only sporadic IO operations, thus being more energy efficient for
-example on mobile platforms.
+Final version (addressing Russel's comment as well):
 
-The current code is now however a bit convoluted. Some functionalities
-(e.g. iowait boost reset) are replicated in different paths and their
-documentation is slightly misaligned.
 
-Let's cleanup the code by consolidating all the IO wait boosting related
-functionality within within few dedicated functions and better define
-their role:
 
-- sugov_iowait_boost: set/increase the IO wait boost of a CPU
-- sugov_iowait_apply: apply/reduce the IO wait boost of a CPU
 
-Both these two function are used at every sugov updated and they makes
-use of a unified IO wait boost reset policy provided by:
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ */
 
-- sugov_iowait_reset: reset/disable the IO wait boost of a CPU
-     if a CPU is not updated for more then one tick
+/*
+ * In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
+ * the CPU frequency subset and voltage value of each OPP varies
+ * based on the silicon variant in use. Qualcomm Process Voltage Scaling
+Tables
+ * defines the voltage and frequency value based on the msm-id in SMEM
+ * and speedbin blown in the efuse combination.
+ * The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the
+SoC
+ * to provide the OPP framework with required information.
+ * This is used to determine the voltage and frequency value for each OPP of
+ * operating-points-v2 table when it is parsed by the OPP framework.
+ */
 
-This makes possible a cleaner and more self-contained design for the IO
-wait boosting code since the rest of the sugov update routines, both for
-single and shared frequency domains, follow the same template:
+#include <linux/cpu.h>
+#include <linux/err.h>
+#include <linux/init.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/nvmem-consumer.h>
+#include <linux/of.h>
+#include <linux/platform_device.h>
+#include <linux/pm_opp.h>
+#include <linux/slab.h>
+#include <linux/soc/qcom/smem.h>
 
-   /* Configure IO boost, if required */
-   sugov_iowait_boost()
+#define MSM_ID_SMEM	137
+#define SILVER_LEAD	0
+#define GOLD_LEAD	2
 
-   /* Return here if freq change is in progress or throttled */
+enum _msm_id {
+	MSM8996V3 = 0xF6ul,
+	APQ8096V3 = 0x123ul,
+	MSM8996SG = 0x131ul,
+	APQ8096SG = 0x138ul,
+};
 
-   /* Collect and aggregate utilization information */
-   sugov_get_util()
-   sugov_aggregate_util()
+enum _msm8996_version {
+	MSM8996_V3,
+	MSM8996_SG,
+	NUM_OF_MSM8996_VERSIONS,
+};
 
-   /*
-    * Add IO boost, if currently enabled, on top of the aggregated
-    * utilization value
-    */
-   sugov_iowait_apply()
+static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
+{
+	size_t len;
+	u32 *msm_id;
+	enum _msm8996_version version;
 
-As a extra bonus, let's also add the documentation for the new
-functions and better align the in-code documentation.
+	msm_id = qcom_smem_get(QCOM_SMEM_HOST_ANY, MSM_ID_SMEM, &len);
+	/* The first 4 bytes are format, next to them is the actual msm-id
+*/
+	msm_id++;
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Joel Fernandes <joelaf@google.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+	switch ((enum _msm_id)*msm_id) {
+	case MSM8996V3:
+	case APQ8096V3:
+		version = MSM8996_V3;
+		break;
+	case MSM8996SG:
+	case APQ8096SG:
+		version = MSM8996_SG;
+		break;
+	default:
+		version = NUM_OF_MSM8996_VERSIONS;
+	}
 
----
-Changes in v3:
- - renamed the iowait boost functions (Peter)
- - moved boost reset into a dedicated function (Peter)
- - split the fix into a separated patch (Viresh)
----
- kernel/sched/cpufreq_schedutil.c | 152 +++++++++++++++++++++++++++------------
- 1 file changed, 107 insertions(+), 45 deletions(-)
+	return version;
+}
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index c4063e578e4d..1a50e1e95f4b 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -51,7 +51,7 @@ struct sugov_cpu {
- 	bool			iowait_boost_pending;
- 	unsigned int		iowait_boost;
- 	unsigned int		iowait_boost_max;
--	u64 last_update;
-+	u64			last_update;
- 
- 	/* The fields below are only needed when sharing a policy: */
- 	unsigned long		util_cfs;
-@@ -201,45 +201,120 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
- 	return min(util, sg_cpu->max);
- }
- 
--static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
-+/**
-+ * sugov_iowait_reset() - Reset the IO boost status of a CPU.
-+ * @sg_cpu: the sugov data for the CPU to boost
-+ * @time: the update time from the caller
-+ * @set_iowait_boost: true if an IO boost has been requested
-+ *
-+ * The IO wait boost of a task is disabled after a tick since the last update
-+ * of a CPU. If a new IO wait boost is requested after more then a tick, then
-+ * we enable the boost starting from the minimum frequency, which improves
-+ * energy efficiency by ignoring sporadic wakeups from IO.
-+ */
-+static bool sugov_iowait_reset(struct sugov_cpu *sg_cpu, u64 time,
-+			       bool set_iowait_boost)
- {
--	/* Clear iowait_boost if the CPU apprears to have been idle. */
--	if (sg_cpu->iowait_boost) {
--		s64 delta_ns = time - sg_cpu->last_update;
-+	s64 delta_ns = time - sg_cpu->last_update;
- 
--		if (delta_ns > TICK_NSEC) {
--			sg_cpu->iowait_boost = 0;
--			sg_cpu->iowait_boost_pending = false;
--		}
--	}
-+	/* Reset boost only if a tick has elapsed since last request */
-+	if (delta_ns <= TICK_NSEC)
-+		return false;
- 
--	if (flags & SCHED_CPUFREQ_IOWAIT) {
--		if (sg_cpu->iowait_boost_pending)
--			return;
-+	sg_cpu->iowait_boost = set_iowait_boost
-+		? sg_cpu->sg_policy->policy->min : 0;
-+	sg_cpu->iowait_boost_pending = set_iowait_boost;
- 
--		sg_cpu->iowait_boost_pending = true;
-+	return true;
-+}
- 
--		if (sg_cpu->iowait_boost) {
--			sg_cpu->iowait_boost <<= 1;
--			if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
--				sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
--		} else {
--			sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
--		}
-+/**
-+ * sugov_iowait_boost() - Updates the IO boost status of a CPU.
-+ * @sg_cpu: the sugov data for the CPU to boost
-+ * @time: the update time from the caller
-+ * @flags: SCHED_CPUFREQ_IOWAIT if the task is waking up after an IO wait
-+ *
-+ * Each time a task wakes up after an IO operation, the CPU utilization can be
-+ * boosted to a certain utilization which doubles at each "frequent and
-+ * successive" wakeup from IO, ranging from the utilization of the minimum
-+ * OPP to the utilization of the maximum OPP.
-+ * To keep doubling, an IO boost has to be requested at least once per tick,
-+ * otherwise we restart from the utilization of the minimum OPP.
-+ */
-+static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-+			       unsigned int flags)
-+{
-+	bool set_iowait_boost = flags & SCHED_CPUFREQ_IOWAIT;
-+
-+	/* Reset boost if the CPU appears to have been idle enough */
-+	if (sg_cpu->iowait_boost &&
-+	    sugov_iowait_reset(sg_cpu, time, set_iowait_boost))
-+		return;
-+
-+	/* Boost only tasks waking up after IO */
-+	if (!set_iowait_boost)
-+		return;
-+
-+	/* Ensure boost doubles only one time at each request */
-+	if (sg_cpu->iowait_boost_pending)
-+		return;
-+	sg_cpu->iowait_boost_pending = true;
-+
-+	/* Double the boost at each request */
-+	if (sg_cpu->iowait_boost) {
-+		sg_cpu->iowait_boost <<= 1;
-+		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
-+			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
-+		return;
- 	}
-+
-+	/* First wakeup after IO: start with minimum boost */
-+	sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
- }
- 
--static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
--			       unsigned long *max)
-+/**
-+ * sugov_iowait_apply() - Apply the IO boost to a CPU.
-+ * @sg_cpu: the sugov data for the cpu to boost
-+ * @time: the update time from the caller
-+ * @util: the utilization to (eventually) boost
-+ * @max: the maximum value the utilization can be boosted to
-+ *
-+ * A CPU running a task which woken up after an IO operation can have its
-+ * utilization boosted to speed up the completion of those IO operations.
-+ * The IO boost value is increased each time a task wakes up from IO, in
-+ * sugov_iowait_apply(), and it's instead decreased by this function,
-+ * each time an increase has not been requested (!iowait_boost_pending).
-+ *
-+ * A CPU which also appears to have been idle for at least one tick has also
-+ * its IO boost utilization reset.
-+ *
-+ * This mechanism is designed to boost high frequently IO waiting tasks, while
-+ * being more conservative on tasks which does sporadic IO operations.
-+ */
-+static void sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time,
-+			       unsigned long *util, unsigned long *max)
- {
- 	unsigned int boost_util, boost_max;
- 
-+	/* No boost currently required */
- 	if (!sg_cpu->iowait_boost)
- 		return;
- 
-+	/* Reset boost if the CPU appears to have been idle enough */
-+	if (sugov_iowait_reset(sg_cpu, time, false))
-+		return;
-+
-+	/*
-+	 * An IO waiting task has just woken up:
-+	 * allow to further double the boost value
-+	 */
- 	if (sg_cpu->iowait_boost_pending) {
- 		sg_cpu->iowait_boost_pending = false;
- 	} else {
-+		/*
-+		 * Otherwise: reduce the boost value and disable it when we
-+		 * reach the minimum.
-+		 */
- 		sg_cpu->iowait_boost >>= 1;
- 		if (sg_cpu->iowait_boost < sg_cpu->sg_policy->policy->min) {
- 			sg_cpu->iowait_boost = 0;
-@@ -247,9 +322,12 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
- 		}
- 	}
- 
-+	/*
-+	 * Apply the current boost value: a CPU is boosted only if its current
-+	 * utilization is smaller then the current IO boost level.
-+	 */
- 	boost_util = sg_cpu->iowait_boost;
- 	boost_max = sg_cpu->iowait_boost_max;
--
- 	if (*util * boost_max < *max * boost_util) {
- 		*util = boost_util;
- 		*max = boost_max;
-@@ -288,7 +366,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	unsigned int next_f;
- 	bool busy;
- 
--	sugov_set_iowait_boost(sg_cpu, time, flags);
-+	sugov_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
- 	ignore_dl_rate_limit(sg_cpu, sg_policy);
-@@ -301,7 +379,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	sugov_get_util(sg_cpu);
- 	max = sg_cpu->max;
- 	util = sugov_aggregate_util(sg_cpu);
--	sugov_iowait_boost(sg_cpu, &util, &max);
-+	sugov_iowait_apply(sg_cpu, time, &util, &max);
- 	next_f = get_next_freq(sg_policy, util, max);
- 	/*
- 	 * Do not reduce the frequency if the CPU has not been idle
-@@ -328,28 +406,12 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
- 	for_each_cpu(j, policy->cpus) {
- 		struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
- 		unsigned long j_util, j_max;
--		s64 delta_ns;
- 
- 		sugov_get_util(j_sg_cpu);
--
--		/*
--		 * If the CFS CPU utilization was last updated before the
--		 * previous frequency update and the time elapsed between the
--		 * last update of the CPU utilization and the last frequency
--		 * update is long enough, reset iowait_boost and util_cfs, as
--		 * they are now probably stale. However, still consider the
--		 * CPU contribution if it has some DEADLINE utilization
--		 * (util_dl).
--		 */
--		delta_ns = time - j_sg_cpu->last_update;
--		if (delta_ns > TICK_NSEC) {
--			j_sg_cpu->iowait_boost = 0;
--			j_sg_cpu->iowait_boost_pending = false;
--		}
--
- 		j_max = j_sg_cpu->max;
- 		j_util = sugov_aggregate_util(j_sg_cpu);
--		sugov_iowait_boost(j_sg_cpu, &j_util, &j_max);
-+		sugov_iowait_apply(j_sg_cpu, time, &j_util, &j_max);
-+
- 		if (j_util * max > j_max * util) {
- 			util = j_util;
- 			max = j_max;
-@@ -368,7 +430,7 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
- 
- 	raw_spin_lock(&sg_policy->update_lock);
- 
--	sugov_set_iowait_boost(sg_cpu, time, flags);
-+	sugov_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
- 	ignore_dl_rate_limit(sg_cpu, sg_policy);
--- 
-2.15.1
+static int __init qcom_cpufreq_kryo_driver_init(void)
+{
+	struct device *cpu_dev_silver, *cpu_dev_gold;
+	struct opp_table *opp_silver, *opp_gold;
+	enum _msm8996_version msm8996_version;
+	struct nvmem_cell *speedbin_nvmem;
+	struct platform_device *pdev;
+	struct device_node *np;
+	u8 *speedbin;
+	u32 versions;
+	size_t len;
+	int ret;
+
+	cpu_dev_silver = get_cpu_device(SILVER_LEAD);
+	if (NULL == cpu_dev_silver)
+		return -ENODEV;
+
+	cpu_dev_gold = get_cpu_device(SILVER_LEAD);
+	if (NULL == cpu_dev_gold)
+		return -ENODEV;
+
+	msm8996_version = qcom_cpufreq_kryo_get_msm_id();
+	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
+		dev_err(cpu_dev_silver, "Not Snapdragon 820/821!");
+		return -ENODEV;
+	}
+
+	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev_silver);
+	if (IS_ERR(np))
+		return PTR_ERR(np);
+
+	if (!of_device_is_compatible(np, "operating-points-v2-kryo-cpu")) {
+		ret = -ENOENT;
+		goto free_np;
+	}
+
+	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
+	if (IS_ERR(speedbin_nvmem)) {
+		ret = PTR_ERR(speedbin_nvmem);
+		dev_err(cpu_dev_silver, "Could not get nvmem cell: %d\n",
+ret);
+		goto free_np;
+	}
+
+	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
+	nvmem_cell_put(speedbin_nvmem);
+
+	switch (msm8996_version) {
+	case MSM8996_V3:
+		versions = 1 << (unsigned int)(*speedbin);
+		break;
+	case MSM8996_SG:
+		versions = 1 << ((unsigned int)(*speedbin) + 4);
+		break;
+	default:
+		BUG();
+		break;
+	}
+
+	opp_silver =
+dev_pm_opp_set_supported_hw(cpu_dev_silver,&versions,1);
+	if (IS_ERR(opp_silver)) {
+		dev_err(cpu_dev_silver, "Failed to set supported
+hardware\n");
+		ret = PTR_ERR(opp_silver);
+		goto free_np;
+	}
+
+	opp_gold = dev_pm_opp_set_supported_hw(cpu_dev_gold,&versions,1);
+	if (IS_ERR(opp_gold)) {
+		dev_err(cpu_dev_gold, "Failed to set supported hardware\n");
+		ret = PTR_ERR(opp_gold);
+		goto free_opp_silver;
+	}
+
+	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+	if (!IS_ERR(pdev))
+		return 0;
+
+	ret = PTR_ERR(pdev);
+	dev_err(cpu_dev_silver, "Failed to register platform device\n");
+	dev_pm_opp_put_supported_hw(opp_gold);
+
+free_opp_silver:
+	dev_pm_opp_put_supported_hw(opp_silver);
+
+free_np:
+	of_node_put(np);
+
+	return ret;
+}
+late_initcall(qcom_cpufreq_kryo_driver_init);
+
+MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
+MODULE_LICENSE("GPL v2");
+
+
+
+
+
+
+> -----Original Message-----
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Sent: Monday, May 21, 2018 07:50
+> To: ilialin@codeaurora.org
+> Cc: mturquette@baylibre.com; sboyd@kernel.org; robh@kernel.org;
+> mark.rutland@arm.com; nm@ti.com; lgirdwood@gmail.com;
+> broonie@kernel.org; andy.gross@linaro.org; david.brown@linaro.org;
+> catalin.marinas@arm.com; will.deacon@arm.com; rjw@rjwysocki.net; linux-
+> clk@vger.kernel.org; devicetree@vger.kernel.org; linux-
+> kernel@vger.kernel.org; linux-pm@vger.kernel.org; linux-arm-
+> msm@vger.kernel.org; linux-soc@vger.kernel.org; linux-arm-
+> kernel@lists.infradead.org; rnayak@codeaurora.org;
+> amit.kucheria@linaro.org; nicolas.dechesne@linaro.org;
+> celster@codeaurora.org; tfinkel@codeaurora.org
+> Subject: Re: [PATCH v8 10/15] cpufreq: Add Kryo CPU scaling driver
+> 
+> On 19-05-18, 14:45, ilialin@codeaurora.org wrote:
+> > Hi Viresh,
+> >
+> > If I send patches in reply, it will produce new patches, instead of
+> > answers in the thread. Please find below the file dump.
+> 
+> There is one email from you which appears to be just fine and appears to
+be
+> in reply to this thread only. Maybe its your email client that screwed it
+up for
+> you ? Things look good in mutt.
+> 
+> --
+> viresh
