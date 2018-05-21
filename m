@@ -1,7 +1,7 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
-Date: Mon, 21 May 2018 15:25:05 +0100
-Message-ID: <20180521142505.6522-11-quentin.perret@arm.com>
+Subject: [RFC PATCH v3 08/10] sched: Lowest energy aware balancing sched_domain level pointer
+Date: Mon, 21 May 2018 15:25:03 +0100
+Message-ID: <20180521142505.6522-9-quentin.perret@arm.com>
 References: <20180521142505.6522-1-quentin.perret@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180521142505.6522-1-quentin.perret@arm.com>
@@ -10,72 +10,62 @@ To: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-k
 Cc: mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Energy Aware Scheduling starts when the scheduling domains are built if the
-Energy Model is present and all conditions are met. However, in the typical
-case of Arm/Arm64 systems, the Energy Model is provided after the scheduling
-domains are first built at boot time, which results in EAS staying
-disabled.
+Add another member to the family of per-cpu sched_domain shortcut
+pointers. This one, sd_ea, points to the lowest level at which energy
+aware scheduling should be used.
 
-This commit fixes this issue by re-building the scheduling domain from the
-arch topology driver, once CPUfreq is up and running and when the capacity
-of the CPUs have been updated to their final value.
+Generally speaking, the largest opportunity to save energy via scheduling
+comes from a smarter exploitation of heterogeneous platforms (i.e.
+big.LITTLE). Consequently, the sd_ea shortcut is wired to the lowest
+scheduling domain at which the SD_ASYM_CPUCAPACITY flag is set. For
+example, it is possible to apply energy-aware scheduling within a socket
+on a multi-socket system, as long as each socket has an asymmetric
+topology. Cross-sockets wake-up balancing will only happen when the
+system is over-utilized, or this_cpu and prev_cpu are in different
+sockets.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+cc: Ingo Molnar <mingo@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>
+Suggested-by: Morten Rasmussen <morten.rasmussen@arm.com>
 Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 ---
- drivers/base/arch_topology.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ kernel/sched/sched.h    | 1 +
+ kernel/sched/topology.c | 4 ++++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index e7cb0c6ade81..7f9fa10ef940 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -15,6 +15,8 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/sched/topology.h>
-+#include <linux/energy_model.h>
-+#include <linux/cpuset.h>
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 0dd895554f78..31535198f545 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1151,6 +1151,7 @@ DECLARE_PER_CPU(int, sd_llc_id);
+ DECLARE_PER_CPU(struct sched_domain_shared *, sd_llc_shared);
+ DECLARE_PER_CPU(struct sched_domain *, sd_numa);
+ DECLARE_PER_CPU(struct sched_domain *, sd_asym);
++DECLARE_PER_CPU(struct sched_domain *, sd_ea);
  
- DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
+ struct sched_group_capacity {
+ 	atomic_t		ref;
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index 3e22c798f18d..8e7ee37771bb 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -398,6 +398,7 @@ DEFINE_PER_CPU(int, sd_llc_id);
+ DEFINE_PER_CPU(struct sched_domain_shared *, sd_llc_shared);
+ DEFINE_PER_CPU(struct sched_domain *, sd_numa);
+ DEFINE_PER_CPU(struct sched_domain *, sd_asym);
++DEFINE_PER_CPU(struct sched_domain *, sd_ea);
  
-@@ -173,6 +175,9 @@ static cpumask_var_t cpus_to_visit;
- static void parsing_done_workfn(struct work_struct *work);
- static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
+ static void update_top_cache_domain(int cpu)
+ {
+@@ -423,6 +424,9 @@ static void update_top_cache_domain(int cpu)
  
-+static void start_eas_workfn(struct work_struct *work);
-+static DECLARE_WORK(start_eas_work, start_eas_workfn);
+ 	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
+ 	rcu_assign_pointer(per_cpu(sd_asym, cpu), sd);
 +
- static int
- init_cpu_capacity_callback(struct notifier_block *nb,
- 			   unsigned long val,
-@@ -204,6 +209,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
- 		free_raw_capacity();
- 		pr_debug("cpu_capacity: parsing done\n");
- 		schedule_work(&parsing_done_work);
-+		schedule_work(&start_eas_work);
- 	}
- 
- 	return 0;
-@@ -249,6 +255,19 @@ static void parsing_done_workfn(struct work_struct *work)
- 	free_cpumask_var(cpus_to_visit);
++	sd = lowest_flag_domain(cpu, SD_ASYM_CPUCAPACITY);
++	rcu_assign_pointer(per_cpu(sd_ea, cpu), sd);
  }
  
-+static void start_eas_workfn(struct work_struct *work)
-+{
-+	/* Make sure the EM knows about the updated CPU capacities. */
-+	rcu_read_lock();
-+	em_rescale_cpu_capacity();
-+	rcu_read_unlock();
-+
-+	/* Inform the scheduler about the EM availability. */
-+	cpus_read_lock();
-+	rebuild_sched_domains();
-+	cpus_read_unlock();
-+}
-+
- #else
- core_initcall(free_raw_capacity);
- #endif
+ /*
 -- 
 2.17.0
