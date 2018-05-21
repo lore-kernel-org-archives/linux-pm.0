@@ -1,33 +1,106 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v8 10/15] cpufreq: Add Kryo CPU scaling driver
-Date: Mon, 21 May 2018 14:35:53 +0530
-Message-ID: <20180521090553.6wervk335scgnko6@vireshk-i7>
-References: <1526555955-29960-1-git-send-email-ilialin@codeaurora.org>
- <1526555955-29960-11-git-send-email-ilialin@codeaurora.org>
- <20180518014538.duphof6enscpm5vp@vireshk-i7>
- <019201d3ef66$db97aed0$92c70c70$@codeaurora.org>
- <20180521044938.bnr2sdkmvdorfxqm@vireshk-i7>
- <000501d3f0e2$23500c00$69f02400$@codeaurora.org>
+Subject: Re: [PATCH v3 2/2] cpufreq: schedutil: Cleanup and document iowait
+ boost
+Date: Mon, 21 May 2018 15:22:55 +0530
+Message-ID: <20180521095255.h62pdcf34bh344wu@vireshk-i7>
+References: <20180521085120.7902-1-patrick.bellasi@arm.com>
+ <20180521085120.7902-3-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <000501d3f0e2$23500c00$69f02400$@codeaurora.org>
+In-Reply-To: <20180521085120.7902-3-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ilialin@codeaurora.org
-Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-05-18, 12:00, ilialin@codeaurora.org wrote:
-> Final version (addressing Russel's comment as well):
+On 21-05-18, 09:51, Patrick Bellasi wrote:
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> +static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
+> +			       unsigned int flags)
+> +{
+> +	bool set_iowait_boost = flags & SCHED_CPUFREQ_IOWAIT;
+> +
+> +	/* Reset boost if the CPU appears to have been idle enough */
+> +	if (sg_cpu->iowait_boost &&
+> +	    sugov_iowait_reset(sg_cpu, time, set_iowait_boost))
+> +		return;
+> +
+> +	/* Boost only tasks waking up after IO */
+> +	if (!set_iowait_boost)
+> +		return;
+> +
+> +	/* Ensure boost doubles only one time at each request */
+> +	if (sg_cpu->iowait_boost_pending)
+> +		return;
+> +	sg_cpu->iowait_boost_pending = true;
+> +
+> +	/* Double the boost at each request */
+> +	if (sg_cpu->iowait_boost) {
+> +		sg_cpu->iowait_boost <<= 1;
+> +		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
+> +			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
+> +		return;
 
-Sorry, can't review it like this. At least you should be posting your
-diff here and you also need to do that from a sane email client like
-mutt, which wouldn't auto-fix/update the code. Doing it from gmail or
-thunderbird will ofcourse screw it.
+Maybe add "else" part of the if block and drop the "return" statement
+here ?
 
-Or a simple way is to send the patch again (alone) using in-reply-to
-field.
+>  	}
+> +
+> +	/* First wakeup after IO: start with minimum boost */
+> +	sg_cpu->iowait_boost = sg_cpu->sg_policy->policy->min;
+>  }
+
+
+> +static void sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time,
+> +			       unsigned long *util, unsigned long *max)
+>  {
+>  	unsigned int boost_util, boost_max;
+>  
+> +	/* No boost currently required */
+>  	if (!sg_cpu->iowait_boost)
+>  		return;
+>  
+> +	/* Reset boost if the CPU appears to have been idle enough */
+> +	if (sugov_iowait_reset(sg_cpu, time, false))
+> +		return;
+> +
+> +	/*
+> +	 * An IO waiting task has just woken up:
+> +	 * allow to further double the boost value
+> +	 */
+>  	if (sg_cpu->iowait_boost_pending) {
+>  		sg_cpu->iowait_boost_pending = false;
+>  	} else {
+> +		/*
+> +		 * Otherwise: reduce the boost value and disable it when we
+> +		 * reach the minimum.
+> +		 */
+>  		sg_cpu->iowait_boost >>= 1;
+>  		if (sg_cpu->iowait_boost < sg_cpu->sg_policy->policy->min) {
+>  			sg_cpu->iowait_boost = 0;
+> @@ -247,9 +322,12 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
+>  		}
+>  	}
+>  
+> +	/*
+> +	 * Apply the current boost value: a CPU is boosted only if its current
+> +	 * utilization is smaller then the current IO boost level.
+> +	 */
+>  	boost_util = sg_cpu->iowait_boost;
+>  	boost_max = sg_cpu->iowait_boost_max;
+> -
+
+Maybe keep this blank line as is ?
+
+>  	if (*util * boost_max < *max * boost_util) {
+>  		*util = boost_util;
+>  		*max = boost_max;
+
+Otherwise looks good.
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
