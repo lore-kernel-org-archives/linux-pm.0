@@ -1,111 +1,122 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v2] PM / devfreq: Add support for QCOM devfreq firmware
-Date: Tue, 22 May 2018 11:30:41 -0700
-Message-ID: <5B0461D1.1050900@codeaurora.org>
-References: <1526629965-28729-1-git-send-email-skannan@codeaurora.org> <20180522180838.GA13423@rob-hp-laptop>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
+ bindings
+Date: Tue, 22 May 2018 14:31:39 -0500
+Message-ID: <20180522193139.GA21623@rob-hp-laptop>
+References: <1526751291-17873-1-git-send-email-tdas@codeaurora.org>
+ <1526751291-17873-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180522180838.GA13423@rob-hp-laptop>
+Content-Disposition: inline
+In-Reply-To: <1526751291-17873-2-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>, Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/22/2018 11:08 AM, Rob Herring wrote:
-> On Fri, May 18, 2018 at 12:52:40AM -0700, Saravana Kannan wrote:
->> The firmware present in some QCOM chipsets offloads the steps necessary for
->> changing the frequency of some devices (Eg: L3). This driver implements the
->> devfreq interface for this firmware so that various governors could be used
->> to scale the frequency of these devices.
->>
->> Each client (say cluster 0 and cluster 1) that wants to vote for a
->> particular device's frequency (say, L3 frequency) is represented as a
->> separate voter device (qcom,devfreq-fw-voter) that's a child of the
->> firmware device (qcom,devfreq-fw).
->>
->> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->> ---
->>   .../bindings/devfreq/devfreq-qcom-fw.txt           |  41 +++
->>   drivers/devfreq/Kconfig                            |  14 +
->>   drivers/devfreq/Makefile                           |   1 +
->>   drivers/devfreq/devfreq_qcom_fw.c                  | 330 +++++++++++++++++++++
->>   4 files changed, 386 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
->>   create mode 100644 drivers/devfreq/devfreq_qcom_fw.c
->>
->> diff --git a/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt b/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
->> new file mode 100644
->> index 0000000..f882a0b
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
->> @@ -0,0 +1,41 @@
->> +QCOM Devfreq firmware device
->> +
->> +Some Qualcomm Technologies, Inc. (QTI) chipsets have a firmware that
->> +offloads the steps for frequency switching. It provides a table of
->> +supported frequencies and a register to request one of the supported
->> +freqencies.
->> +
->> +The qcom,devfreq-fw represents this firmware as a device. Sometimes,
->> +multiple entities want to vote on the frequency request that is sent to the
->> +firmware. The qcom,devfreq-fw-voter represents these voters as child
->> +devices of the corresponding qcom,devfreq-fw device.
->> +
->> +Required properties:
->> +- compatible:		Must be "qcom,devfreq-fw" or "qcom,devfreq-fw-voter"
->
-> No versions of firmware?
+On Sat, May 19, 2018 at 11:04:50PM +0530, Taniya Das wrote:
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by firmware.
+> 
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 68 ++++++++++++++++++++++
+>  1 file changed, 68 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> new file mode 100644
+> index 0000000..bc912f4
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> @@ -0,0 +1,68 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "qcom,cpufreq-fw".
 
-Sure, I can add a v1. Right now the interface has always been identical. 
-I thought if it changed in the future I'll add -v2.
+Only 1 version ever?
 
->
->> +Only for qcom,devfreq-fw:
->> +- reg:			Pairs of physical base addresses and region sizes of
->> +			memory mapped registers.
->
-> Registers? Is this firmware or h/w block?
+> +
+> +Note that #address-cells, #size-cells, and ranges shall be present to ensure
+> +the cpufreq can address a freq-domain registers.
+> +
+> +A freq-domain sub-node would be defined for the cpus with the following
+> +properties:
+> +
+> +- compatible:
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "cpufreq".
 
-It's a HW block that has its own firmware.
+Too generic. This is very much a QCom specific binding. Perhaps just 
+drop the compatible.
 
->
->> +- reg-names:		Names of the bases for the above registers.
->> +			Required register regions are:
->> +			- "en-base": address of register to check if the
->> +			  firmware is enabled.
->> +			- "ftbl-base": address region for the frequency
->> +			  table.
->> +			- "perf-base": address of register to request a
->> +			  frequency.
->> +
->> +Example:
->> +
->> +	qcom,devfreq-l3 {
->> +		compatible = "qcom,devfreq-fw";
->> +		reg-names = "en-base", "ftbl-base", "perf-base";
->> +		reg = <0x18321000 0x4>, <0x18321110 0x600>, <0x18321920 0x4>;
->> +
->> +		qcom,cpu0-l3 {
->> +			compatible = "qcom,devfreq-fw-voter";
->
-> There's no point in these nodes. They don't have any properties or
-> resources.
+> +
+> +- reg
+> +	Usage:		required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Addresses and sizes for the memory of the perf_base
+> +			, lut_base and en_base.
+> +- reg-names
+> +	Usage:		required
+> +	Value type:	<stringlist>
+> +	Definition:	Address names. Must be "perf_base", "lut_base",
+> +			"en_base".
 
-These nodes decide how many voters this device supports. Each voter 
-would be a devfreq node that will have its own governor set. For 
-example, one of them would use this governor:
-http://lkml.iu.edu/hypermail/linux/kernel/1805.2/02474.html
+_base is redundant.
 
-You can also attach different devfreq-event devices to each one of these 
-voter devices based on what events you want to use for scaling each 
-voter. So, the devices are definitely needed in the larger context.
+> +			Must be specified in the same order as the
+> +			corresponding addresses are specified in the reg
+> +			property.
 
-Thanks,
-Saravana
+Actually, must be specified in the order you specify here.
 
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> +
+> +- qcom,cpulist
+> +	Usage:		required
+> +	Value type:	<phandles of CPU>
+> +	Definition:	List of related cpu handles which are under a cluster.
+> +
+> +Example:
+> +	qcom,cpufreq-fw {
+> +		compatible = "qcom,cpufreq-fw";
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+
+There's not a smaller address range you can restrict children to?
+
+> +
+> +		freq-domain-0 {
+> +			compatible = "cpufreq";
+> +			reg = <0x17d43920 0x4>,
+> +			     <0x17d43110 0x500>,
+> +			     <0x17d41000 0x4>;
+> +			reg-names = "perf_base", "lut_base", "en_base";
+> +			qcom,cpulist = <&CPU0 &CPU1 &CPU2 &CPU3>;
+> +		};
+> +
+> +		freq-domain-1 {
+> +			compatible = "cpufreq";
+> +			reg = <0x17d46120 0x4>,
+> +			    <0x17d45910 0x500>,
+> +			    <0x17d45800 0x4>;
+> +			reg-names = "perf_base", "lut_base", "en_base";
+> +			qcom,cpulist = <&CPU4 &CPU5 &CPU6 &CPU7>;
+> +		};
+> +	};
+> --
+> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+> of the Code Aurora Forum, hosted by the  Linux Foundation.
+> 
