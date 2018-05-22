@@ -1,126 +1,76 @@
 From: Joel Fernandes <joel@joelfernandes.org>
 Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
  when kthread kicked
-Date: Tue, 22 May 2018 15:09:53 -0700
-Message-ID: <20180522220953.GB40506@joelaf.mtv.corp.google.com>
+Date: Tue, 22 May 2018 15:28:37 -0700
+Message-ID: <20180522222837.GA55359@joelaf.mtv.corp.google.com>
 References: <20180518185501.173552-1-joel@joelfernandes.org>
- <20180522103415.cuutobi5kbhj4gcw@vireshk-i7>
+ <20180522113844.5rz3skjeck57arft@vireshk-i7>
+ <CAJZ5v0hP+gCiLa+6YvKHaj7u-DuRfmVq_vjFRMj6CnVktJRxVg@mail.gmail.com>
+ <4237890.zlzv5C60QP@aspire.rjw.lan>
+ <CAJZ5v0henS+LZ64JQwrXR8LrY7xzcsnnYS7AoBuR9dNaC4mTRw@mail.gmail.com>
+ <20180522213113.GA40506@joelaf.mtv.corp.google.com>
+ <CAJZ5v0ir7Chz6jCZTKRNT12oMd4uyu+JgFLKmZ8RJkcRkyrzBg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180522103415.cuutobi5kbhj4gcw@vireshk-i7>
+In-Reply-To: <CAJZ5v0ir7Chz6jCZTKRNT12oMd4uyu+JgFLKmZ8RJkcRkyrzBg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Joel Fernandes (Google.)" <joelaf@google.com>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>, "Joel Fernandes (Google.)" <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 22, 2018 at 04:04:15PM +0530, Viresh Kumar wrote:
-> Okay, me and Rafael were discussing this patch, locking and races around this.
+On Tue, May 22, 2018 at 11:52:46PM +0200, Rafael J. Wysocki wrote:
+> On Tue, May 22, 2018 at 11:41 PM, Joel Fernandes <joel@joelfernandes.org> wrote:
+> > On Tue, May 22, 2018 at 05:27:11PM +0200, Rafael J. Wysocki wrote:
+> >> On Tue, May 22, 2018 at 2:22 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > On Tuesday, May 22, 2018 1:42:05 PM CEST Rafael J. Wysocki wrote:
+> >> >> On Tue, May 22, 2018 at 1:38 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> >> > On 22-05-18, 13:31, Rafael J. Wysocki wrote:
+> >> >> >> So below is my (compiled-only) version of the $subject patch, obviously based
+> >> >> >> on the Joel's work.
+> >> >> >>
+> >> >> >> Roughly, what it does is to move the fast_switch_enabled path entirely to
+> >> >> >> sugov_update_single() and take the spinlock around sugov_update_commit()
+> >> >> >> in the one-CPU case too.
+> >> >
+> >> > [cut]
+> >> >
+> >> >> >
+> >> >> > Why do you assume that fast switch isn't possible in shared policy
+> >> >> > cases ? It infact is already enabled for few drivers.
+> >> >
+> >> > I hope that fast_switch is not used with devfs_possible_from_any_cpu set in the
+> >> > one-CPU policy case, as that looks racy even without any patching.
+> >>
+> >> Which would be the only case in which sugov_update_single() would run
+> >> on a CPU that is not the target.
+> >>
+> >> And running sugov_update_single() concurrently on two different CPUs
+> >> for the same target is a no-no, as we don't prevent concurrent updates
+> >> from occurring in that path.
+> >>
+> >> Which means that the original patch from Joel will be sufficient as
+> >> long as we ensure that sugov_update_single() can only run on one CPU
+> >> at a time.
+> >
+> > Since target CPU's runqueue lock is held, I don't see how we can run
+> > sugov_update_single concurrently with any other CPU for single policy, so
+> > protecting such race shouldn't be necessary.
 > 
-> On 18-05-18, 11:55, Joel Fernandes (Google.) wrote:
-> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > index e13df951aca7..5c482ec38610 100644
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> >  	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
-> >  		return false;
-> >  
-> > -	if (sg_policy->work_in_progress)
-> > -		return false;
-> > -
-> >  	if (unlikely(sg_policy->need_freq_update)) {
-> >  		sg_policy->need_freq_update = false;
-> >  		/*
-> > @@ -128,7 +125,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-> >  
-> >  		policy->cur = next_freq;
-> >  		trace_cpu_frequency(next_freq, smp_processor_id());
-> > -	} else {
-> > +	} else if (!sg_policy->work_in_progress) {
-> >  		sg_policy->work_in_progress = true;
-> >  		irq_work_queue(&sg_policy->irq_work);
-> >  	}
-> > @@ -291,6 +288,13 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> >  
-> >  	ignore_dl_rate_limit(sg_cpu, sg_policy);
-> >  
-> > +	/*
-> > +	 * For slow-switch systems, single policy requests can't run at the
-> > +	 * moment if update is in progress, unless we acquire update_lock.
-> > +	 */
-> > +	if (sg_policy->work_in_progress)
-> > +		return;
-> > +
-> >  	if (!sugov_should_update_freq(sg_policy, time))
-> >  		return;
-> >  
-> > @@ -382,13 +386,27 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
-> >  static void sugov_work(struct kthread_work *work)
-> >  {
-> >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-> > +	unsigned int freq;
-> > +	unsigned long flags;
-> > +
-> > +	/*
-> > +	 * Hold sg_policy->update_lock shortly to handle the case where:
-> > +	 * incase sg_policy->next_freq is read here, and then updated by
-> > +	 * sugov_update_shared just before work_in_progress is set to false
-> > +	 * here, we may miss queueing the new update.
-> > +	 *
-> > +	 * Note: If a work was queued after the update_lock is released,
-> > +	 * sugov_work will just be called again by kthread_work code; and the
-> > +	 * request will be proceed before the sugov thread sleeps.
-> > +	 */
-> > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
-> > +	freq = sg_policy->next_freq;
-> > +	sg_policy->work_in_progress = false;
-> > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
-> >  
-> >  	mutex_lock(&sg_policy->work_lock);
-> > -	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
-> > -				CPUFREQ_RELATION_L);
-> > +	__cpufreq_driver_target(sg_policy->policy, freq, CPUFREQ_RELATION_L);
-> >  	mutex_unlock(&sg_policy->work_lock);
-> > -
-> > -	sg_policy->work_in_progress = false;
-> >  }
+> If dvfs_possible_from_any_cpu is set, any CPU can run
+> sugov_update_single(), but the kthread will only run on the target
+> itself.  So another CPU running sugov_update_single() for the target
+> may be racing with the target's kthread.
 > 
-> And I do see a race here for single policy systems doing slow switching.
-> 
-> Kthread                                                 Sched update
-> 
-> sugov_work()                                            sugov_update_single()
-> 
->         lock();
->         // The CPU is free to rearrange below           
->         // two in any order, so it may clear
->         // the flag first and then read next
->         // freq. Lets assume it does.
->         work_in_progress = false
-> 
->                                                         if (work_in_progress)
->                                                                 return;
-> 
->                                                         sg_policy->next_freq = 0;
->         freq = sg_policy->next_freq;
->                                                         sg_policy->next_freq = real-next-freq;
->         unlock();
-> 
+Yes, I agree. I thought you meant the case of sugov_update_single running
+currently with other sugov_update_single. So just to be on the same page,
+I'll fix the commit log and repost this one as is.
 
-I agree with the race you describe for single policy slow-switch. Good find :)
-
-The mainline sugov_work could also do such reordering in sugov_work, I think. Even
-with the mutex_unlock in mainline's sugov_work, that work_in_progress write could
-be reordered by the CPU to happen before the read of next_freq. AIUI,
-mutex_unlock is expected to be only a release-barrier.
-
-Although to be safe, I could just put an smp_mb() there. I believe with that,
-no locking would be needed for such case.
-
-I'll send out a v3 with Acks for the original patch, and the send out the
-smp_mb() as a separate patch if that's Ok.
+And then I'll post the smp_rmb() patch separately to address the memory order
+issue (which I believe is in mainline as well). Basically I was thinking to
+address Viresh's issue, there should be an smp_mb() after the next_freq is
+read, but before the write to work_in_progress.
 
 thanks,
 
