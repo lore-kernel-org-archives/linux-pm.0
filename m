@@ -1,38 +1,82 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC PATCH 02/10] dt-bindings: devfreq: rk3399_dmc: Add
- rockchip,pmu phandle.
-Date: Tue, 22 May 2018 17:45:49 -0500
-Message-ID: <20180522224549.GA26650@rob-hp-laptop>
+Subject: Re: [RFC PATCH 09/10] arm64: dts: rk3399: Add dfi and dmc nodes.
+Date: Tue, 22 May 2018 17:51:40 -0500
+Message-ID: <20180522225140.GA30149@rob-hp-laptop>
 References: <20180514211610.26618-1-enric.balletbo@collabora.com>
- <20180514211610.26618-3-enric.balletbo@collabora.com>
+ <20180514211610.26618-10-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180514211610.26618-3-enric.balletbo@collabora.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20180514211610.26618-10-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, David Airlie <airlied@linux.ie>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Derek Basehore <dbasehore@chromium.org>, Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-rockchip@lists.infradead.org, kernel@collabora.com, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lin Huang <hl@rock-chips.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org, Nickey Yang <nickey.yang@rock-chips.com>, devicetree@vger.kernel.org, Yakir Yang <kuankuan.y@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBNYXkgMTQsIDIwMTggYXQgMTE6MTY6MDJQTSArMDIwMCwgRW5yaWMgQmFsbGV0Ym8g
-aSBTZXJyYSB3cm90ZToKPiBUaGUgUm9ja2NoaXAgRE1DIChEeW5hbWljIE1lbW9yeSBJbnRlcmZh
-Y2UpIG5lZWRzIHRvIGFjY2VzcyB0byB0aGUgUE1VCj4gZ2VuZXJhbCByZWdpc3RlciBmaWxlcyB0
-byBrbm93IHRoZSBEUkFNIHR5cGUsIHNvIGFkZCBhIHBoYW5kbGUgdG8gdGhlCj4gc3lzY29uIHRo
-YXQgbWFuYWdlcyB0aGVzZSByZWdpc3RlcnMuCj4gCj4gU2lnbmVkLW9mZi1ieTogRW5yaWMgQmFs
-bGV0Ym8gaSBTZXJyYSA8ZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbT4KPiAtLS0KPiAKPiAg
-RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvcmszMzk5X2RtYy50eHQg
-fCAyICsrCj4gIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKykKCkFja2VkLWJ5OiBSb2Ig
-SGVycmluZyA8cm9iaEBrZXJuZWwub3JnPgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5m
-cmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9kcmktZGV2ZWwK
+On Mon, May 14, 2018 at 11:16:09PM +0200, Enric Balletbo i Serra wrote:
+> From: Lin Huang <hl@rock-chips.com>
+> 
+> These are required to support DDR DVFS on rk3399 platform. The patch also
+> introduces two new files (rk3399-dram.h and rk3399-dram-default-timing)
+> with default DRAM settings.
+> 
+> Signed-off-by: Lin Huang <hl@rock-chips.com>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> 
+>  .../rockchip/rk3399-dram-default-timing.dtsi  | 38 ++++++++++
+>  arch/arm64/boot/dts/rockchip/rk3399-dram.h    | 73 +++++++++++++++++++
+>  .../boot/dts/rockchip/rk3399-op1-opp.dtsi     | 29 ++++++++
+>  arch/arm64/boot/dts/rockchip/rk3399.dtsi      | 20 +++++
+>  4 files changed, 160 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi
+>  create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-dram.h
+> 
+> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi
+> new file mode 100644
+> index 000000000000..4dfe3e1d8bdf
+> --- /dev/null
+> +++ b/arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi
+> @@ -0,0 +1,38 @@
+> +// SPDX-License-Identifier: (GPL-2.0+ OR X11)
+> +/*
+> + * Copyright (c) 2016-2018, Fuzhou Rockchip Electronics Co., Ltd
+> + *
+> + * Author: Lin Huang <hl@rock-chips.com>
+> + */
+> +
+> +#include "rk3399-dram.h"
+> +
+> +rockchip,ddr3_speed_bin = <21>;
+> +rockchip,pd_idle = <0x40>;
+> +rockchip,sr_idle = <0x2>;
+
+Don't do includes this way please. These should go under a node.
+
+> +rockchip,sr_mc_gate_idle = <0x3>;
+> +rockchip,srpd_lite_idle	= <0x4>;
+> +rockchip,standby_idle = <0x2000>;
+> +rockchip,dram_dll_dis_freq = <300000000>;
+> +rockchip,phy_dll_dis_freq = <125000000>;
+> +rockchip,auto_pd_dis_freq = <666000000>;
+> +rockchip,ddr3_odt_dis_freq = <333000000>;
+> +rockchip,ddr3_drv = <DDR3_DS_40ohm>;
+> +rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
+> +rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
+> +rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
+> +rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
+> +rockchip,lpddr3_odt_dis_freq = <333000000>;
+> +rockchip,lpddr3_drv = <LP3_DS_34ohm>;
+> +rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
+> +rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
+> +rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
+> +rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
+> +rockchip,lpddr4_odt_dis_freq = <333000000>;
+> +rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
+> +rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
+> +rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
+> +rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
+> +rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
+> +rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
+> +rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
