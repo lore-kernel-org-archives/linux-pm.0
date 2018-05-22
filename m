@@ -1,78 +1,63 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1] cpufreq: tegra20: Fix imbalanced clock enable count
-Date: Wed, 23 May 2018 00:14:20 +0300
-Message-ID: <20180522211420.2006-1-digetx@gmail.com>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
+ when kthread kicked
+Date: Tue, 22 May 2018 14:41:53 -0700
+Message-ID: <20180522213113.GA40506@joelaf.mtv.corp.google.com>
+References: <20180518185501.173552-1-joel@joelfernandes.org>
+ <20180522113844.5rz3skjeck57arft@vireshk-i7>
+ <CAJZ5v0hP+gCiLa+6YvKHaj7u-DuRfmVq_vjFRMj6CnVktJRxVg@mail.gmail.com>
+ <4237890.zlzv5C60QP@aspire.rjw.lan>
+ <CAJZ5v0henS+LZ64JQwrXR8LrY7xzcsnnYS7AoBuR9dNaC4mTRw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0henS+LZ64JQwrXR8LrY7xzcsnnYS7AoBuR9dNaC4mTRw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>
-Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>, "Joel Fernandes (Google.)" <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Tegra20-cpufreq driver missed enabling the CPU clocks. This results in a
-clock-enable refcount disbalance on PLL_P <-> PLL_X reparent, causing
-PLL_X to get disabled while it shouldn't. Fix this by enabling the clocks
-on the driver probe.
+On Tue, May 22, 2018 at 05:27:11PM +0200, Rafael J. Wysocki wrote:
+> On Tue, May 22, 2018 at 2:22 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, May 22, 2018 1:42:05 PM CEST Rafael J. Wysocki wrote:
+> >> On Tue, May 22, 2018 at 1:38 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> > On 22-05-18, 13:31, Rafael J. Wysocki wrote:
+> >> >> So below is my (compiled-only) version of the $subject patch, obviously based
+> >> >> on the Joel's work.
+> >> >>
+> >> >> Roughly, what it does is to move the fast_switch_enabled path entirely to
+> >> >> sugov_update_single() and take the spinlock around sugov_update_commit()
+> >> >> in the one-CPU case too.
+> >
+> > [cut]
+> >
+> >> >
+> >> > Why do you assume that fast switch isn't possible in shared policy
+> >> > cases ? It infact is already enabled for few drivers.
+> >
+> > I hope that fast_switch is not used with devfs_possible_from_any_cpu set in the
+> > one-CPU policy case, as that looks racy even without any patching.
+> 
+> Which would be the only case in which sugov_update_single() would run
+> on a CPU that is not the target.
+> 
+> And running sugov_update_single() concurrently on two different CPUs
+> for the same target is a no-no, as we don't prevent concurrent updates
+> from occurring in that path.
+> 
+> Which means that the original patch from Joel will be sufficient as
+> long as we ensure that sugov_update_single() can only run on one CPU
+> at a time.
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
+Since target CPU's runqueue lock is held, I don't see how we can run
+sugov_update_single concurrently with any other CPU for single policy, so
+protecting such race shouldn't be necessary.
 
-CPUFreq maintainers,
+Also the "if (work_in_progress)" check I added to the sugov_update_single
+doesn't change the behavior of single policy from what it is in mainline
+since we were doing the same thing in already sugov_should_update_freq.
 
-Please take into account that this patch is made on top of my recent
-series of patches [0] "Clean up Tegra20 cpufreq driver" that was fully
-reviewed, but seems not applied yet. Let me know if you prefer to re-spin
-the [0], including this patch into the series.
+thanks,
 
-[0] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=45321
-
- drivers/cpufreq/tegra20-cpufreq.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
-index 05f57dcd5215..ca5229265b60 100644
---- a/drivers/cpufreq/tegra20-cpufreq.c
-+++ b/drivers/cpufreq/tegra20-cpufreq.c
-@@ -176,6 +176,14 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
- 		goto put_pll_x;
- 	}
- 
-+	err = clk_prepare_enable(cpufreq->pll_x_clk);
-+	if (err)
-+		goto put_pll_p;
-+
-+	err = clk_prepare_enable(cpufreq->pll_p_clk);
-+	if (err)
-+		goto disable_pll_x;
-+
- 	cpufreq->dev = &pdev->dev;
- 	cpufreq->driver.get = cpufreq_generic_get;
- 	cpufreq->driver.attr = cpufreq_generic_attr;
-@@ -192,12 +200,16 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
- 
- 	err = cpufreq_register_driver(&cpufreq->driver);
- 	if (err)
--		goto put_pll_p;
-+		goto disable_pll_p;
- 
- 	platform_set_drvdata(pdev, cpufreq);
- 
- 	return 0;
- 
-+disable_pll_p:
-+	clk_disable_unprepare(cpufreq->pll_p_clk);
-+disable_pll_x:
-+	clk_disable_unprepare(cpufreq->pll_x_clk);
- put_pll_p:
- 	clk_put(cpufreq->pll_p_clk);
- put_pll_x:
-@@ -214,6 +226,8 @@ static int tegra20_cpufreq_remove(struct platform_device *pdev)
- 
- 	cpufreq_unregister_driver(&cpufreq->driver);
- 
-+	clk_disable_unprepare(cpufreq->pll_p_clk);
-+	clk_disable_unprepare(cpufreq->pll_x_clk);
- 	clk_put(cpufreq->pll_p_clk);
- 	clk_put(cpufreq->pll_x_clk);
- 	clk_put(cpufreq->cpu_clk);
--- 
-2.17.0
+ - Joel
