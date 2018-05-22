@@ -1,61 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / core: Fix direct_complete handling for devices with no callbacks
-Date: Tue, 22 May 2018 13:02:17 +0200
-Message-ID: <6238546.EnOBWIOf9o@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v4 0/2] Fix and cleanup iowait boost
+Date: Tue, 22 May 2018 12:07:52 +0100
+Message-ID: <20180522110754.20832-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Martitz <kugel@rockbox.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Here is the (hopefully) final update of:
 
-Commit 08810a4119aa (PM / core: Add NEVER_SKIP and SMART_PREPARE
-driver flags) inadvertently prevented the power.direct_complete flag
-from being set for devices without PM callbacks and with disabled
-runtime PM which also prevents power.direct_complete from being set
-for their parents.  That led to problems including a resume crash on
-HP ZBook 14u.
+   https://lkml.org/lkml/2018/5/21/114
+   20180521085120.7902-1-patrick.bellasi@arm.com
 
-Restore the previous behavior by causing power.direct_complete to be
-set for those devices again, but do that in a more direct way to
-avoid overlooking that case in the future.
+which just includes the small typo fixes suggested by Jeol and the ack
+and review tags collected so far.
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=199693
-Fixes: 08810a4119aa (PM / core: Add NEVER_SKIP and SMART_PREPARE driver flags)
-Reported-by: Thomas Martitz <kugel@rockbox.org>
-Tested-by: Thomas Martitz <kugel@rockbox.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+Cheers Patrick
 
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -1920,10 +1920,8 @@ static int device_prepare(struct device
- 
- 	dev->power.wakeup_path = false;
- 
--	if (dev->power.no_pm_callbacks) {
--		ret = 1;	/* Let device go direct_complete */
-+	if (dev->power.no_pm_callbacks)
- 		goto unlock;
--	}
- 
- 	if (dev->pm_domain)
- 		callback = dev->pm_domain->ops.prepare;
-@@ -1957,7 +1955,8 @@ unlock:
- 	 */
- 	spin_lock_irq(&dev->power.lock);
- 	dev->power.direct_complete = state.event == PM_EVENT_SUSPEND &&
--		pm_runtime_suspended(dev) && ret > 0 &&
-+		((pm_runtime_suspended(dev) && ret > 0) ||
-+		 dev->power.no_pm_callbacks) &&
- 		!dev_pm_test_driver_flags(dev, DPM_FLAG_NEVER_SKIP);
- 	spin_unlock_irq(&dev->power.lock);
- 	return 0;
+Changes in v4:
+ - fixed typos in changelog (Joel)
+ - added Reviewed-by Joel Fernandes
+ - added Acked-by Viresh and Peter
+
+Changes in v3:
+ - renamed the iowait boost functions (Peter)
+ - moved boost reset into a dedicated function (Peter)
+ - split the fix into a separated patch (Viresh)
+ - added "Fixes" tag (Viresh)
+
+Patrick Bellasi (2):
+  cpufreq: schedutil: Fix iowait boost reset
+  cpufreq: schedutil: Cleanup and document iowait boost
+
+ kernel/sched/cpufreq_schedutil.c | 152 +++++++++++++++++++++++++++------------
+ 1 file changed, 108 insertions(+), 44 deletions(-)
+
+-- 
+2.15.1
