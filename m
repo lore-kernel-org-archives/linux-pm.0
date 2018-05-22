@@ -1,193 +1,114 @@
-From: <ilialin@codeaurora.org>
-Subject: RE: [PATCH] cpufreq: Add Kryo CPU scaling driver
-Date: Tue, 22 May 2018 10:59:07 +0300
-Message-ID: <001401d3f1a2$c7328850$559798f0$@codeaurora.org>
-References: <1526555955-29960-11-git-send-email-ilialin@codeaurora.org> <1526729701-8589-1-git-send-email-ilialin@codeaurora.org> <153cc316-dcb5-972f-5a2f-c91fe0f6348b@arm.com> <000f01d3f103$3ff78ba0$bfe6a2e0$@codeaurora.org> <2ace10bc-e1c4-2060-94d3-eb71e966ffbe@arm.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpufreq: Add Kryo CPU scaling driver
+Date: Tue, 22 May 2018 10:12:34 +0100
+Message-ID: <5b2eb27b-b852-97ff-b099-fe4c22b44937@arm.com>
+References: <1526555955-29960-11-git-send-email-ilialin@codeaurora.org>
+ <1526729701-8589-1-git-send-email-ilialin@codeaurora.org>
+ <153cc316-dcb5-972f-5a2f-c91fe0f6348b@arm.com>
+ <000f01d3f103$3ff78ba0$bfe6a2e0$@codeaurora.org>
+ <2ace10bc-e1c4-2060-94d3-eb71e966ffbe@arm.com>
+ <001201d3f19a$0130a860$0391f920$@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: 
-Content-Language: en-us
+In-Reply-To: <001201d3f19a$0130a860$0391f920$@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Sudeep Holla' <sudeep.holla@arm.com>, mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, viresh.kumar@linaro.org, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: ilialin@codeaurora.org, mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, viresh.kumar@linaro.org, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-OK, I think I found out the way. Would this be correct?
--------------------------------------------------------------------------=
-----------------------
-extern struct cpu_topology cpu_topology[NR_CPUS];
 
-static struct device *qcom_cpufreq_kryo_get_cluster_lead(int cluster)
-{
-	unsigned cpu;
 
-	for_each_possible_cpu(cpu) {
-		if ((cluster =3D=3D cpu_topology[cpu].cluster_id) &&
-			(0 =3D=3D cpu_topology[cpu].core_id))
-			return get_cpu_device(cpu);
-	}
+On 22/05/18 07:56, ilialin@codeaurora.org wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Sudeep Holla <sudeep.holla@arm.com>
+>> Sent: Monday, May 21, 2018 16:05
 
-	return NULL;
-}
--------------------------------------------------------------------------=
-----------------------
+[...]
 
-> -----Original Message-----
-> From: ilialin@codeaurora.org <ilialin@codeaurora.org>
-> Sent: Tuesday, May 22, 2018 09:56
-> To: 'Sudeep Holla' <sudeep.holla@arm.com>; 'mturquette@baylibre.com'
-> <mturquette@baylibre.com>; 'sboyd@kernel.org' <sboyd@kernel.org>;
-> 'robh@kernel.org' <robh@kernel.org>; 'mark.rutland@arm.com'
-> <mark.rutland@arm.com>; 'viresh.kumar@linaro.org'
-> <viresh.kumar@linaro.org>; 'nm@ti.com' <nm@ti.com>;
-> 'lgirdwood@gmail.com' <lgirdwood@gmail.com>; 'broonie@kernel.org'
-> <broonie@kernel.org>; 'andy.gross@linaro.org' <andy.gross@linaro.org>;
-> 'david.brown@linaro.org' <david.brown@linaro.org>;
-> 'catalin.marinas@arm.com' <catalin.marinas@arm.com>;
-> 'will.deacon@arm.com' <will.deacon@arm.com>; 'rjw@rjwysocki.net'
-> <rjw@rjwysocki.net>; 'linux-clk@vger.kernel.org' <linux-
-> clk@vger.kernel.org>
-> Cc: 'devicetree@vger.kernel.org' <devicetree@vger.kernel.org>; 'linux-
-> kernel@vger.kernel.org' <linux-kernel@vger.kernel.org>; 'linux-
-> pm@vger.kernel.org' <linux-pm@vger.kernel.org>; 'linux-arm-
-> msm@vger.kernel.org' <linux-arm-msm@vger.kernel.org>; 'linux-
-> soc@vger.kernel.org' <linux-soc@vger.kernel.org>; 'linux-arm-
-> kernel@lists.infradead.org' <linux-arm-kernel@lists.infradead.org>;
-> 'rnayak@codeaurora.org' <rnayak@codeaurora.org>;
-> 'amit.kucheria@linaro.org' <amit.kucheria@linaro.org>;
-> 'nicolas.dechesne@linaro.org' <nicolas.dechesne@linaro.org>;
-> 'celster@codeaurora.org' <celster@codeaurora.org>;
-> 'tfinkel@codeaurora.org' <tfinkel@codeaurora.org>
-> Subject: RE: [PATCH] cpufreq: Add Kryo CPU scaling driver
->=20
->=20
->=20
-> > -----Original Message-----
-> > From: Sudeep Holla <sudeep.holla@arm.com>
-> > Sent: Monday, May 21, 2018 16:05
-> > To: ilialin@codeaurora.org; mturquette@baylibre.com; =
-sboyd@kernel.org;
-> > robh@kernel.org; mark.rutland@arm.com; viresh.kumar@linaro.org;
-> > nm@ti.com; lgirdwood@gmail.com; broonie@kernel.org;
-> > andy.gross@linaro.org; david.brown@linaro.org;
-> > catalin.marinas@arm.com; will.deacon@arm.com; rjw@rjwysocki.net;
-> > linux-clk@vger.kernel.org
-> > Cc: Sudeep Holla <sudeep.holla@arm.com>; devicetree@vger.kernel.org;
-> > linux-kernel@vger.kernel.org; linux-pm@vger.kernel.org; linux-arm-
-> > msm@vger.kernel.org; linux-soc@vger.kernel.org; linux-arm-
-> > kernel@lists.infradead.org; rnayak@codeaurora.org;
-> > amit.kucheria@linaro.org; nicolas.dechesne@linaro.org;
-> > celster@codeaurora.org; tfinkel@codeaurora.org
-> > Subject: Re: [PATCH] cpufreq: Add Kryo CPU scaling driver
-> >
-> >
-> >
-> > On 21/05/18 13:57, ilialin@codeaurora.org wrote:
-> > >
-> > [...]
-> >
-> > >>> +#include <linux/cpu.h>
-> > >>> +#include <linux/err.h>
-> > >>> +#include <linux/init.h>
-> > >>> +#include <linux/kernel.h>
-> > >>> +#include <linux/module.h>
-> > >>> +#include <linux/nvmem-consumer.h> #include <linux/of.h> =
-#include
-> > >>> +<linux/platform_device.h> #include <linux/pm_opp.h> #include
-> > >>> +<linux/slab.h> #include <linux/soc/qcom/smem.h>
-> > >>> +
-> > >>> +#define MSM_ID_SMEM	137
-> > >>> +#define SILVER_LEAD	0
-> > >>> +#define GOLD_LEAD	2
-> > >>> +
-> > >>
-> > >> So I gather form other emails, that these are physical cpu
-> > >> number(not even unique identifier like MPIDR). Will this work on
-> > >> parts or platforms that need to boot in GOLD LEAD cpus.
-> > >
-> > > The driver is for Kryo CPU, which (and AFAIK all multicore MSMs)
-> > > always boots on the CPU0.
-> >
-> >
-> > That may be true and I am not that bothered about it. But assuming
-> > physical ordering from the logical cpu number is *incorrect* and =
-will
-> > break if kernel decides to change the allocation algorithm. Kernel
-> > provides no guarantee on that, so you need to depend on some =
-physical
-> > ID or may be DT to achieve what your want. But the current code as =
-it
-> stands is wrong.
->=20
-> Got your point. In fact CPUs are numbered 0-3 and ordered into 2 =
-clusters in
-> the DT:
->=20
+>>
+>>
+>> That may be true and I am not that bothered about it. But assuming physical
+>> ordering from the logical cpu number is *incorrect* and will break if kernel
+>> decides to change the allocation algorithm. Kernel provides no guarantee on
+>> that, so you need to depend on some physical ID or may be DT to achieve
+>> what your want. But the current code as it stands is wrong.
+> 
+> Got your point. In fact CPUs are numbered 0-3 and ordered into 2 clusters in the DT:
+> 
 > cpus {
-> 	#address-cells =3D <2>;
-> 	#size-cells =3D <0>;
->=20
+> 	#address-cells = <2>;
+> 	#size-cells = <0>;
+> 
 > 	CPU0: cpu@0 {
 > 		...
-> 		reg =3D <0x0 0x0>;
+> 		reg = <0x0 0x0>;
 > 		...
 > 	};
->=20
+> 
 > 	CPU1: cpu@1 {
 > 		...
-> 		reg =3D <0x0 0x1>;
+> 		reg = <0x0 0x1>;
 > 		...
 > 	};
->=20
+> 
 > 	CPU2: cpu@100 {
 > 		...
-> 		reg =3D <0x0 0x100>;
+> 		reg = <0x0 0x100>;
 > 		...
 > 	};
->=20
+> 
 > 	CPU3: cpu@101 {
 > 		...
-> 		reg =3D <0x0 0x101>;
+> 		reg = <0x0 0x101>;
 > 		...
 > 	};
->=20
+> 
 > 	cpu-map {
 > 		cluster0 {
 > 			core0 {
-> 				cpu =3D <&CPU0>;
+> 				cpu = <&CPU0>;
 > 			};
->=20
+> 
 > 			core1 {
-> 				cpu =3D <&CPU1>;
+> 				cpu = <&CPU1>;
 > 			};
 > 		};
->=20
+> 
 > 		cluster1 {
 > 			core0 {
-> 				cpu =3D <&CPU2>;
+> 				cpu = <&CPU2>;
 > 			};
->=20
+> 
 > 			core1 {
-> 				cpu =3D <&CPU3>;
+> 				cpu = <&CPU3>;
 > 			};
 > 		};
 > 	};
 > };
->=20
-> As far, as I understand, they are probed in the same order. However, =
-to be
-> certain that the physical CPU is the one I intend to configure, I have =
-to fetch
-> the device structure pointer for the cpu-map -> clusterX -> core0 -> =
-cpu path.
-> Could you suggest a kernel API to do that?
->=20
->=20
->=20
-> >
-> > --
-> > Regards,
-> > Sudeep
+> 
+> As far, as I understand, they are probed in the same order. 
+
+Yes that's correct today, will that have to remain same for ever ?
+No it's not user ABI and kernel can decide to change the allocation
+order. What if for some reason one/more CPUs fails to boot or even
+configured not to boot ?
+
+> However, to be certain that the physical CPU is the one I intend to
+> configure, I have to fetch the device structure pointer for the cpu-map ->
+> clusterX -> core0 -> cpu path. Could you suggest a kernel API to do
+> that?
+> 
+
+Let's rewind a bit. Do you supply OPPs only on CPU0 and CPU2 ?
+If yes, that's again wrong. Simple solution is to parse all logical
+CPUs and skip if the share OPPs with some other CPUs. I think that
+logic already exists in OPP library IIRC.
+
+-- 
+Regards,
+Sudeep
