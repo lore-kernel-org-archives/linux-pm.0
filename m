@@ -1,37 +1,96 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 19/33] thermal: db8500: use match_string() helper
-Date: Tue, 22 May 2018 01:00:23 +0300
-Message-ID: <CAHp75VfqEdoDZydwFmQaLiUN8cVtH3MbFHf3qixU8xUHXMwt1g@mail.gmail.com>
-References: <1526903890-35761-1-git-send-email-xieyisheng1@huawei.com> <1526903890-35761-20-git-send-email-xieyisheng1@huawei.com>
+From: =?UTF-8?Q?S=c3=a9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
+Subject: Re: [PATCH v2 1/2] cpufreq: imx6q: check speed grades for i.MX6ULL
+Date: Tue, 22 May 2018 08:13:28 +0200
+Message-ID: <64f4077f-9f71-3eae-db80-0722035a2b60@armadeus.com>
+References: <20180419071942.14828-1-sebastien.szymanski@armadeus.com>
+ <CAOh2x==MCPnANhww2JYhGkaALcAPZe_qAUcbZmhyCDwPjOjT2Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526903890-35761-20-git-send-email-xieyisheng1@huawei.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yisheng Xie <xieyisheng1@huawei.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAOh2x==MCPnANhww2JYhGkaALcAPZe_qAUcbZmhyCDwPjOjT2Q@mail.gmail.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Stefan Agner <stefan@agner.ch>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 21, 2018 at 2:57 PM, Yisheng Xie <xieyisheng1@huawei.com> wrote:
-> match_string() returns the index of an array for a matching string,
-> which can be used intead of open coded variant.
-
-> +       i = match_string((const char **)trip_point->cdev_name,
-
-Casting looks ugly. You need to constify the variable itself.
-
-> +                        COOLING_DEV_MAX, cdev->type);
->
-> -       return -ENODEV;
-> +       return (i < 0) ? -ENODEV : 0;
-
-I would rather go with
-
-if (ret < 0)
- return -ENODEV;
-
-return 0;
-
--- 
-With Best Regards,
-Andy Shevchenko
+T24gMDQvMTkvMjAxOCAxMTowOSBBTSwgVmlyZXNoIEt1bWFyIHdyb3RlOgo+IE9uIFRodSwgQXBy
+IDE5LCAyMDE4IGF0IDEyOjQ5IFBNLCBTw6liYXN0aWVuIFN6eW1hbnNraQo+IDxzZWJhc3RpZW4u
+c3p5bWFuc2tpQGFybWFkZXVzLmNvbT4gd3JvdGU6Cj4+IENoZWNrIHRoZSBtYXggc3BlZWQgc3Vw
+cG9ydGVkIGZyb20gdGhlIGZ1c2VzIGZvciBpLk1YNlVMTCBhbmQgdXBkYXRlIHRoZQo+PiBvcGVy
+YXRpbmcgcG9pbnRzIHRhYmxlIGFjY29yZGluZ2x5Lgo+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBTw6li
+YXN0aWVuIFN6eW1hbnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1hZGV1cy5jb20+Cj4+IC0t
+LQo+Pgo+PiBDaGFuZ2VzIGZvciB2MjoKPj4gIC0gbm9uZQo+IAo+IFBsZWFzZSBjYyBhbGwgdGhl
+IG1haW50YWluZXJzIHByZXNlbnQgaW4gTUFJTlRBSU5FUlMgZmlsZS4gWW91IG1pc3NlZCBjYydp
+bmcgbWUKPiBhbmQgSSBtaXNzZWQgVjEgZWFybGllci4KCk9rLgoKPiAKPj4gIGRyaXZlcnMvY3B1
+ZnJlcS9pbXg2cS1jcHVmcmVxLmMgfCAyOSArKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLQo+
+PiAgMSBmaWxlIGNoYW5nZWQsIDIzIGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0pCj4+Cj4+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jIGIvZHJpdmVycy9j
+cHVmcmVxL2lteDZxLWNwdWZyZXEuYwo+PiBpbmRleCA4M2NmNjMxZmM5YmMuLmYwOTQ2ODdjYWU1
+MiAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYwo+PiArKysg
+Yi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jCj4+IEBAIC0yNjYsNiArMjY2LDggQEAg
+c3RhdGljIHZvaWQgaW14NnFfb3BwX2NoZWNrX3NwZWVkX2dyYWRpbmcoc3RydWN0IGRldmljZSAq
+ZGV2KQo+PiAgfQo+Pgo+PiAgI2RlZmluZSBPQ09UUF9DRkczXzZVTF9TUEVFRF82OTZNSFogICAg
+MHgyCj4+ICsjZGVmaW5lIE9DT1RQX0NGRzNfNlVMTF9TUEVFRF83OTJNSFogICAweDIKPj4gKyNk
+ZWZpbmUgT0NPVFBfQ0ZHM182VUxMX1NQRUVEXzkwME1IWiAgIDB4Mwo+IAo+IExvb2tpbmcgYXQg
+dGhlIHdvcmRpbmcgZXZlcnl3aGVyZSwgdGhpcyByZXByZXNlbnRzIHRoZSBtYXhpbXVtCj4gc3Vw
+cG9ydGVkIGZyZXF1ZW5jeSA/CgpZZXMuCgo+IEluIHRoYXQgY2FzZSAuLi4KPiAKPj4KPj4gIHN0
+YXRpYyB2b2lkIGlteDZ1bF9vcHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhzdHJ1Y3QgZGV2aWNlICpk
+ZXYpCj4+ICB7Cj4+IEBAIC0yODcsMTYgKzI4OSwzMCBAQCBzdGF0aWMgdm9pZCBpbXg2dWxfb3Bw
+X2NoZWNrX3NwZWVkX2dyYWRpbmcoc3RydWN0IGRldmljZSAqZGV2KQo+PiAgICAgICAgICAqIFNw
+ZWVkIEdSQURJTkdbMTowXSBkZWZpbmVzIHRoZSBtYXggc3BlZWQgb2YgQVJNOgo+PiAgICAgICAg
+ICAqIDJiJzAwOiBSZXNlcnZlZDsKPj4gICAgICAgICAgKiAyYicwMTogNTI4MDAwMDAwSHo7Cj4+
+IC0gICAgICAgICogMmInMTA6IDY5NjAwMDAwMEh6Owo+PiAtICAgICAgICAqIDJiJzExOiBSZXNl
+cnZlZDsKPj4gKyAgICAgICAgKiAyYicxMDogNjk2MDAwMDAwSHogb24gaS5NWDZVTCwgNzkyMDAw
+MDAwSHogb24gaS5NWDZVTEw7Cj4+ICsgICAgICAgICogMmInMTE6IDkwMDAwMDAwMEh6IG9uIGku
+TVg2VUxMIG9ubHk7Cj4+ICAgICAgICAgICogV2UgbmVlZCB0byBzZXQgdGhlIG1heCBzcGVlZCBv
+ZiBBUk0gYWNjb3JkaW5nIHRvIGZ1c2UgbWFwLgo+PiAgICAgICAgICAqLwo+PiAgICAgICAgIHZh
+bCA9IHJlYWRsX3JlbGF4ZWQoYmFzZSArIE9DT1RQX0NGRzMpOwo+PiAgICAgICAgIHZhbCA+Pj0g
+T0NPVFBfQ0ZHM19TUEVFRF9TSElGVDsKPj4gICAgICAgICB2YWwgJj0gMHgzOwo+PiAtICAgICAg
+IGlmICh2YWwgIT0gT0NPVFBfQ0ZHM182VUxfU1BFRURfNjk2TUhaKQo+PiAtICAgICAgICAgICAg
+ICAgaWYgKGRldl9wbV9vcHBfZGlzYWJsZShkZXYsIDY5NjAwMDAwMCkpCj4+IC0gICAgICAgICAg
+ICAgICAgICAgICAgIGRldl93YXJuKGRldiwgImZhaWxlZCB0byBkaXNhYmxlIDY5Nk1IeiBPUFBc
+biIpOwo+PiArCj4+ICsgICAgICAgaWYgKG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlt
+eDZ1bCIpKSB7Cj4+ICsgICAgICAgICAgICAgICBpZiAodmFsICE9IE9DT1RQX0NGRzNfNlVMX1NQ
+RUVEXzY5Nk1IWikKPj4gKyAgICAgICAgICAgICAgICAgICAgICAgaWYgKGRldl9wbV9vcHBfZGlz
+YWJsZShkZXYsIDY5NjAwMDAwMCkpCj4+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ZGV2X3dhcm4oZGV2LCAiZmFpbGVkIHRvIGRpc2FibGUgNjk2TUh6IE9QUFxuIik7Cj4+ICsgICAg
+ICAgfQo+PiArCj4+ICsgICAgICAgaWYgKG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlt
+eDZ1bGwiKSkgewo+PiArICAgICAgICAgICAgICAgaWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTExf
+U1BFRURfNzkyTUhaKQo+PiArICAgICAgICAgICAgICAgICAgICAgICBpZiAoZGV2X3BtX29wcF9k
+aXNhYmxlKGRldiwgNzkyMDAwMDAwKSkKPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICBkZXZfd2FybihkZXYsICJmYWlsZWQgdG8gZGlzYWJsZSA3OTJNSHogT1BQXG4iKTsKPj4gKwo+
+PiArICAgICAgICAgICAgICAgaWYgKHZhbCAhPSBPQ09UUF9DRkczXzZVTExfU1BFRURfOTAwTUha
+KQo+PiArICAgICAgICAgICAgICAgICAgICAgICBpZiAoZGV2X3BtX29wcF9kaXNhYmxlKGRldiwg
+OTAwMDAwMDAwKSkKPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXZfd2Fybihk
+ZXYsICJmYWlsZWQgdG8gZGlzYWJsZSA5MDBNSHogT1BQXG4iKTsKPiAKPiAuLi4gdGhpcyBsb29r
+cyB3cm9uZyB0byBtZSBhcyB5b3Ugd2lsbCBlbmQgdXAgZGlzYWJsaW5nIDc5MiBNSHogaWYgbWF4
+IHNwZWVkIGlzCj4gOTAwIE1Iei4KClRoZSBkYXRhc2hlZXQgb2YgdGhlIDkwMCBNSHogaS5NWDZV
+TEwgdmVyc2lvbiBbMV0gZG9lcyBub3QgbGlzdCA3OTIgTUh6CmFzIGFuIG9wZXJhdGluZyByYW5n
+ZSwgdGhhdCdzIHdoeSA3OTIgTUh6IGlzIGRpc2FibGVkIHdoZW4gbWF4IHNwZWVkIGlzCjkwMCBN
+SHouCgpbMV0gaHR0cHM6Ly93d3cubnhwLmNvbS9kb2NzL2VuL2RhdGEtc2hlZXQvSU1YNlVMTENF
+Qy5wZGYgKHBhZ2UgMjQsCnRhYmxlIDEwLiAiT3BlcmF0aW5nIFJhbmdlcyIpCgpSZWdhcmRzLAoK
+PiAKPj4gKyAgICAgICB9Cj4+ICsKPj4gICAgICAgICBpb3VubWFwKGJhc2UpOwo+PiAgcHV0X25v
+ZGU6Cj4+ICAgICAgICAgb2Zfbm9kZV9wdXQobnApOwo+PiBAQCAtMzU2LDcgKzM3Miw4IEBAIHN0
+YXRpYyBpbnQgaW14NnFfY3B1ZnJlcV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2
+KQo+PiAgICAgICAgICAgICAgICAgZ290byBwdXRfcmVnOwo+PiAgICAgICAgIH0KPj4KPj4gLSAg
+ICAgICBpZiAob2ZfbWFjaGluZV9pc19jb21wYXRpYmxlKCJmc2wsaW14NnVsIikpCj4+ICsgICAg
+ICAgaWYgKG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bCIpIHx8Cj4+ICsgICAg
+ICAgICAgIG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bGwiKSkKPj4gICAgICAg
+ICAgICAgICAgIGlteDZ1bF9vcHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhjcHVfZGV2KTsKPj4gICAg
+ICAgICBlbHNlCj4+ICAgICAgICAgICAgICAgICBpbXg2cV9vcHBfY2hlY2tfc3BlZWRfZ3JhZGlu
+ZyhjcHVfZGV2KTsKPj4gLS0KPj4gMi4xNi4xCj4+CgoKLS0gClPDqWJhc3RpZW4gU3p5bWFuc2tp
+ClNvZnR3YXJlIGVuZ2luZWVyLCBBcm1hZGV1cyBTeXN0ZW1zClRlbDogKzMzICgwKTkgNzIgMjkg
+NDEgNDQKRmF4OiArMzMgKDApOSA3MiAyOCA3OSAyNgoKX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGlu
+dXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQu
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
