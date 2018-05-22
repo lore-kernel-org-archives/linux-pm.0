@@ -1,49 +1,33 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH 2/2] typec: tcpm: Provide fwnode pointer as part of psy_cfg
-Date: Tue, 22 May 2018 16:16:24 +0100
-Message-ID: <449707040719c8845cf9fa6bc779bae25fca54a5.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
-References: <cover.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PCI / PM: Clean up outdated comments in pci_target_state()
+Date: Tue, 22 May 2018 17:21:47 +0200
+Message-ID: <CAJZ5v0gssLSpaN+OdeGP5-O4RFwwONL6FF0=swo+kc2R0+Av1g@mail.gmail.com>
+References: <2360046.ecez94sF1Y@aspire.rjw.lan> <20180522130612.GB161672@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <20180522130612.GB161672@bhelgaas-glaptop.roam.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-For supply registration, provide fwnode pointer of the port device,
-via the power_supply_config structure, to allow other psy drivers
-to add us as a supplier. At present this only applies to DT
-based platforms using the 'power-supplies' DT property, but in the
-future should also work for ACPI platforms when the relevant support
-is added to the power_supply core.
+On Tue, May 22, 2018 at 3:06 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> On Mon, May 21, 2018 at 01:11:12PM +0200, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Two comments in pci_target_state() are outdated, as the function
+>> doesn't set the target power state for the device any more, only
+>> finds one for it, so fix them accordingly.
+>>
+>> Reported-by: Bjorn Helgaas <bhelgaas@google.com>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+>
+> I assume you'll merge this; let me know if you'd rather that I take it.
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Suggested-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
----
- drivers/usb/typec/tcpm.c | 2 ++
- 1 file changed, 2 insertions(+)
+I will take it, thanks!
 
-diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
-index 72996cc..0ccd2ce 100644
---- a/drivers/usb/typec/tcpm.c
-+++ b/drivers/usb/typec/tcpm.c
-@@ -14,6 +14,7 @@
- #include <linux/mutex.h>
- #include <linux/power_supply.h>
- #include <linux/proc_fs.h>
-+#include <linux/property.h>
- #include <linux/sched/clock.h>
- #include <linux/seq_file.h>
- #include <linux/slab.h>
-@@ -4500,6 +4501,7 @@ static int devm_tcpm_psy_register(struct tcpm_port *port)
- 	char *psy_name;
- 
- 	psy_cfg.drv_data = port;
-+	psy_cfg.fwnode = dev_fwnode(port->dev);
- 	psy_name = devm_kzalloc(port->dev, psy_name_len, GFP_KERNEL);
- 	if (!psy_name)
- 		return -ENOMEM;
--- 
-1.9.1
+Can you have a look at https://patchwork.kernel.org/patch/10408977/
+too, please, while at it?
