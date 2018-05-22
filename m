@@ -1,112 +1,65 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/2] power: supply: Add fwnode pointer to
- power_supply_config struct
-Date: Tue, 22 May 2018 18:15:32 +0200
-Message-ID: <20180522161532.qqmyknk6f3scwzpg@earth.universe>
-References: <cover.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
- <c398d1fcc81017b9cc694a00d2c1f655874dfeac.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: Re: [PATCH 18/33] power: supply: use match_string() helper
+Date: Tue, 22 May 2018 18:16:22 +0200
+Message-ID: <20180522161622.iwfo4ppcqpthxkum@earth.universe>
+References: <1526903890-35761-1-git-send-email-xieyisheng1@huawei.com>
+ <1526903890-35761-19-git-send-email-xieyisheng1@huawei.com>
+ <CAHp75VfnJQBdXiVuv9OOT6w=wD5rKDCJKA7M2iyxxmQndNhoRA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="piqsyxv6m4f4ofuj"
+        protocol="application/pgp-signature"; boundary="zgfopwpbzziugpzd"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <c398d1fcc81017b9cc694a00d2c1f655874dfeac.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <CAHp75VfnJQBdXiVuv9OOT6w=wD5rKDCJKA7M2iyxxmQndNhoRA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Yisheng Xie <xieyisheng1@huawei.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---piqsyxv6m4f4ofuj
+--zgfopwpbzziugpzd
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Andy,
 
-On Tue, May 22, 2018 at 04:16:23PM +0100, Adam Thomson wrote:
-> To allow users of the power supply framework to be hw description
-> agnostic, this commit adds the ability to pass a fwnode pointer,
-> via the power_supply_config structure, to the initialisation code
-> of the core, instead of explicitly specifying of_ndoe. If that
-> fwnode pointer is provided then it will automatically resolve down
-> to of_node on platforms which support it, otherwise it will be NULL.
+On Tue, May 22, 2018 at 12:58:14AM +0300, Andy Shevchenko wrote:
+> On Mon, May 21, 2018 at 2:57 PM, Yisheng Xie <xieyisheng1@huawei.com> wro=
+te:
+> > match_string() returns the index of an array for a matching string,
+> > which can be used intead of open coded variant.
+> >
 >=20
-> In the future, when ACPI support is added, this can be modified to
-> accommodate ACPI without the need to change calling code which
-> already provides the fwnode handle in this manner.
+> This doesn't make code looks better anyhow. I even think it makes it
+> worse to read. That's why I dropped my version of the change (and yes,
+> I missed the type conversion which looks here just ugly).
 >=20
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> Suggested-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> ---
+> Sebastian, if my opinion makes any difference here, I would say
+> NAK to this one.
 
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+I agree.
 
 -- Sebastian
 
->  drivers/power/supply/power_supply_core.c | 4 +++-
->  include/linux/power_supply.h             | 2 ++
->  2 files changed, 5 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index ecd68c2..f57ab0a 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -19,6 +19,7 @@
->  #include <linux/err.h>
->  #include <linux/of.h>
->  #include <linux/power_supply.h>
-> +#include <linux/property.h>
->  #include <linux/thermal.h>
->  #include "power_supply.h"
-> =20
-> @@ -874,7 +875,8 @@ static void psy_unregister_cooler(struct power_supply=
- *psy)
->  	psy->desc =3D desc;
->  	if (cfg) {
->  		psy->drv_data =3D cfg->drv_data;
-> -		psy->of_node =3D cfg->of_node;
-> +		psy->of_node =3D
-> +			cfg->fwnode ? to_of_node(cfg->fwnode) : cfg->of_node;
->  		psy->supplied_to =3D cfg->supplied_to;
->  		psy->num_supplicants =3D cfg->num_supplicants;
->  	}
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 0c9a572..b21c4bd9 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -199,6 +199,8 @@ enum power_supply_notifier_events {
->  /* Run-time specific power supply configuration */
->  struct power_supply_config {
->  	struct device_node *of_node;
-> +	struct fwnode_handle *fwnode;
-> +
->  	/* Driver private data */
->  	void *drv_data;
-> =20
-> --=20
-> 1.9.1
->=20
-
---piqsyxv6m4f4ofuj
+--zgfopwpbzziugpzd
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlsEQh0ACgkQ2O7X88g7
-+prbag/+MdsWV2EBxYN+umd8vzZNmSS9/RdlMu/Nrmu3PAbA95P/N/IIRS5+VB1Y
-1+WT+Dt9kAwHPc9N/VuD61WxHlNo0ofmuPFEDb0lNdu2diYEpwWm2J2kr1jvCwPd
-5xQxi6Lq1Ktig77YyALo4SoMmBb7ANUz5CCrrsUML9lAYuZqvejwtyyzLwjpeAVv
-HWxN3z9mRLg7a017goNyBXYJnKhTHXgeOJlnKGbdkJ6ziP/8uAhkgANM3b5CJQyf
-OC8vyYJkBvKT63Ai46RHW6X7tWnkwfcgXzkQVCmyHn/krrHLz9wLctpPNXTboB7p
-dRJVUS0LcT1NWDWmQ9yWHpAvkdYLw1sWll6cfEm1MLmYbfRS6kFExbGk6Yt6h8mU
-MSk8H4Nm74z29MpP7L434JzWs173pQ2zhwXA6IqAppw8kQ0F6ADlq61Cmnd0Fklv
-SQXHeHTtpzz1NBf95KBbAuAHp6T5cXJrQA5BzkaaOztoMCTp1hOVbzqKEBr9iaLq
-Rkfr/l5ci81iqGH2SkFsKtMQnWB0M3BNBtjMfON+7zap5p6cKTn1g0RDjUGeTefE
-WV+syOHSpkOk8I66cmEiLTR80uT2TQXBG4E21wVILUMW0atyqH5VPRdY8RPSlK6C
-sv7jXTTSjpnr02o547tHj/J/31HcEUB3U8jJ0IKUqkXwqLL4kcM=
-=0taw
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlsEQlYACgkQ2O7X88g7
++pqGJg//SQU/lRqfRD0aUmCRA10EE3J0EWHgyGDMRu2IthzfQ6HGRt6QAecltrqd
+hPyfv/9WX9G9tAI4tcYdlPu76bxmoq4rm8ZfTO0MAGc0pYum5hhQ/S6iARBN1Giy
+miutTMYI6h1B5p4ZERk9oEPNZxaPfizO1pDsoH67vnid7jQmkhHTc3bVxN6sX/Hi
+eig6S4jeoJFFDLQZZ5aeHBLKYhhC0L8cPyUbLpGb5J2QKhx49uw1bdbwCX2BYGlW
+N8K6b8AluV8g9wGGR5KVSltjXWMVpjV5At1Sh3dm9zQXUNVwX8L3XmgExkdBWXKN
+fae3Sw3wmF7sZdM4HtkEv+GHEbJUoSDlpEAgj2Zuss+WSehBODA5U2LpU0cNh2LS
+zlqvoS3Ik4FEcfpt9Uay3uxTFGFz5T3zhGPelCrA3dZJNd7yZbXDdPvfC+CChtFH
+yFke68PKXqw+ymI4gvtrK8hcfghqBHfi7SfPW94gAwvkLTBkQ0/uUsdEFrDwx06F
+ujZ4/WL7gPoPq/oSBfDrrtpTEuAgk+7NOh7LJouYkvMjxtgWGElWxAFv5Mulj/0Z
+F6sTZ+002HQHrkGGMpO4EpVGefXYxy8dvVHUuee0z+fNPubusjnUnNFWx6H2Jn00
+oJF8zB2D7A3JJtja1ffqbzz/80MH2wkYggr3n1qLAwK/vYygqTQ=
+=hudn
 -----END PGP SIGNATURE-----
 
---piqsyxv6m4f4ofuj--
+--zgfopwpbzziugpzd--
