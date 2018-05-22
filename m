@@ -1,82 +1,121 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC PATCH 09/10] arm64: dts: rk3399: Add dfi and dmc nodes.
-Date: Tue, 22 May 2018 17:51:40 -0500
-Message-ID: <20180522225140.GA30149@rob-hp-laptop>
-References: <20180514211610.26618-1-enric.balletbo@collabora.com>
- <20180514211610.26618-10-enric.balletbo@collabora.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Joel Fernandes <joelaf@google.com>
+Subject: [PATCH v3] schedutil: Allow cpufreq requests to be made even when kthread kicked
+Date: Tue, 22 May 2018 15:55:53 -0700
+Message-ID: <20180522225553.69483-1-joel@joelfernandes.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180514211610.26618-10-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org, Nickey Yang <nickey.yang@rock-chips.com>, devicetree@vger.kernel.org, Yakir Yang <kuankuan.y@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Joel Fernandes (Google)" <joel@joelfernandes.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 14, 2018 at 11:16:09PM +0200, Enric Balletbo i Serra wrote:
-> From: Lin Huang <hl@rock-chips.com>
-> 
-> These are required to support DDR DVFS on rk3399 platform. The patch also
-> introduces two new files (rk3399-dram.h and rk3399-dram-default-timing)
-> with default DRAM settings.
-> 
-> Signed-off-by: Lin Huang <hl@rock-chips.com>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-> 
->  .../rockchip/rk3399-dram-default-timing.dtsi  | 38 ++++++++++
->  arch/arm64/boot/dts/rockchip/rk3399-dram.h    | 73 +++++++++++++++++++
->  .../boot/dts/rockchip/rk3399-op1-opp.dtsi     | 29 ++++++++
->  arch/arm64/boot/dts/rockchip/rk3399.dtsi      | 20 +++++
->  4 files changed, 160 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi
->  create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-dram.h
-> 
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi
-> new file mode 100644
-> index 000000000000..4dfe3e1d8bdf
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/rockchip/rk3399-dram-default-timing.dtsi
-> @@ -0,0 +1,38 @@
-> +// SPDX-License-Identifier: (GPL-2.0+ OR X11)
-> +/*
-> + * Copyright (c) 2016-2018, Fuzhou Rockchip Electronics Co., Ltd
-> + *
-> + * Author: Lin Huang <hl@rock-chips.com>
-> + */
-> +
-> +#include "rk3399-dram.h"
-> +
-> +rockchip,ddr3_speed_bin = <21>;
-> +rockchip,pd_idle = <0x40>;
-> +rockchip,sr_idle = <0x2>;
+From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
 
-Don't do includes this way please. These should go under a node.
+Currently there is a chance of a schedutil cpufreq update request to be
+dropped if there is a pending update request. This pending request can
+be delayed if there is a scheduling delay of the irq_work and the wake
+up of the schedutil governor kthread.
 
-> +rockchip,sr_mc_gate_idle = <0x3>;
-> +rockchip,srpd_lite_idle	= <0x4>;
-> +rockchip,standby_idle = <0x2000>;
-> +rockchip,dram_dll_dis_freq = <300000000>;
-> +rockchip,phy_dll_dis_freq = <125000000>;
-> +rockchip,auto_pd_dis_freq = <666000000>;
-> +rockchip,ddr3_odt_dis_freq = <333000000>;
-> +rockchip,ddr3_drv = <DDR3_DS_40ohm>;
-> +rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
-> +rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
-> +rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
-> +rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
-> +rockchip,lpddr3_odt_dis_freq = <333000000>;
-> +rockchip,lpddr3_drv = <LP3_DS_34ohm>;
-> +rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
-> +rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
-> +rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
-> +rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
-> +rockchip,lpddr4_odt_dis_freq = <333000000>;
-> +rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
-> +rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
-> +rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
-> +rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
-> +rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
-> +rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
-> +rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
+A very bad scenario is when a schedutil request was already just made,
+such as to reduce the CPU frequency, then a newer request to increase
+CPU frequency (even sched deadline urgent frequency increase requests)
+can be dropped, even though the rate limits suggest that its Ok to
+process a request. This is because of the way the work_in_progress flag
+is used.
+
+This patch improves the situation by allowing new requests to happen
+even though the old one is still being processed. Note that in this
+approach, if an irq_work was already issued, we just update next_freq
+and don't bother to queue another request so there's no extra work being
+done to make this happen.
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Juri Lelli <juri.lelli@redhat.com>
+CC: Viresh Kumar <viresh.kumar@linaro.org>
+CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: Patrick Bellasi <patrick.bellasi@arm.com>
+CC: Juri Lelli <juri.lelli@redhat.com>
+Cc: Luca Abeni <luca.abeni@santannapisa.it>
+CC: Todd Kjos <tkjos@google.com>
+CC: claudio@evidence.eu.com
+CC: kernel-team@android.com
+CC: linux-pm@vger.kernel.org
+Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+---
+Only commit log update, no code change in v2->v3
+
+ kernel/sched/cpufreq_schedutil.c | 34 ++++++++++++++++++++++++--------
+ 1 file changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index e13df951aca7..5c482ec38610 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+ 	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
+ 		return false;
+ 
+-	if (sg_policy->work_in_progress)
+-		return false;
+-
+ 	if (unlikely(sg_policy->need_freq_update)) {
+ 		sg_policy->need_freq_update = false;
+ 		/*
+@@ -128,7 +125,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+ 
+ 		policy->cur = next_freq;
+ 		trace_cpu_frequency(next_freq, smp_processor_id());
+-	} else {
++	} else if (!sg_policy->work_in_progress) {
+ 		sg_policy->work_in_progress = true;
+ 		irq_work_queue(&sg_policy->irq_work);
+ 	}
+@@ -291,6 +288,13 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 
+ 	ignore_dl_rate_limit(sg_cpu, sg_policy);
+ 
++	/*
++	 * For slow-switch systems, single policy requests can't run at the
++	 * moment if update is in progress, unless we acquire update_lock.
++	 */
++	if (sg_policy->work_in_progress)
++		return;
++
+ 	if (!sugov_should_update_freq(sg_policy, time))
+ 		return;
+ 
+@@ -382,13 +386,27 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+ static void sugov_work(struct kthread_work *work)
+ {
+ 	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
++	unsigned int freq;
++	unsigned long flags;
++
++	/*
++	 * Hold sg_policy->update_lock shortly to handle the case where:
++	 * incase sg_policy->next_freq is read here, and then updated by
++	 * sugov_update_shared just before work_in_progress is set to false
++	 * here, we may miss queueing the new update.
++	 *
++	 * Note: If a work was queued after the update_lock is released,
++	 * sugov_work will just be called again by kthread_work code; and the
++	 * request will be proceed before the sugov thread sleeps.
++	 */
++	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
++	freq = sg_policy->next_freq;
++	sg_policy->work_in_progress = false;
++	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+ 
+ 	mutex_lock(&sg_policy->work_lock);
+-	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
+-				CPUFREQ_RELATION_L);
++	__cpufreq_driver_target(sg_policy->policy, freq, CPUFREQ_RELATION_L);
+ 	mutex_unlock(&sg_policy->work_lock);
+-
+-	sg_policy->work_in_progress = false;
+ }
+ 
+ static void sugov_irq_work(struct irq_work *irq_work)
+-- 
+2.17.0.441.gb46fe60e1d-goog
