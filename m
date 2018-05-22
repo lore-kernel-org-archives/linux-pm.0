@@ -1,65 +1,127 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Do not clear state_saved for devices that
- remain suspended
-Date: Tue, 22 May 2018 17:01:49 -0500
-Message-ID: <20180522220149.GB22385@bhelgaas-glaptop.roam.corp.google.com>
-References: <11415287.ki0m5Bqgns@aspire.rjw.lan>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
+ when kthread kicked
+Date: Tue, 22 May 2018 15:09:53 -0700
+Message-ID: <20180522220953.GB40506@joelaf.mtv.corp.google.com>
+References: <20180518185501.173552-1-joel@joelfernandes.org>
+ <20180522103415.cuutobi5kbhj4gcw@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <11415287.ki0m5Bqgns@aspire.rjw.lan>
+In-Reply-To: <20180522103415.cuutobi5kbhj4gcw@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Joel Fernandes (Google.)" <joelaf@google.com>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 18, 2018 at 10:17:42AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, May 22, 2018 at 04:04:15PM +0530, Viresh Kumar wrote:
+> Okay, me and Rafael were discussing this patch, locking and races around this.
 > 
-> The state_saved flag should not be cleared in pci_pm_suspend() if the
-> given device is going to remain suspended, or the device's config
-> space will not be restored properly during the subsequent resume.
+> On 18-05-18, 11:55, Joel Fernandes (Google.) wrote:
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index e13df951aca7..5c482ec38610 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+> >  	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
+> >  		return false;
+> >  
+> > -	if (sg_policy->work_in_progress)
+> > -		return false;
+> > -
+> >  	if (unlikely(sg_policy->need_freq_update)) {
+> >  		sg_policy->need_freq_update = false;
+> >  		/*
+> > @@ -128,7 +125,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+> >  
+> >  		policy->cur = next_freq;
+> >  		trace_cpu_frequency(next_freq, smp_processor_id());
+> > -	} else {
+> > +	} else if (!sg_policy->work_in_progress) {
+> >  		sg_policy->work_in_progress = true;
+> >  		irq_work_queue(&sg_policy->irq_work);
+> >  	}
+> > @@ -291,6 +288,13 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >  
+> >  	ignore_dl_rate_limit(sg_cpu, sg_policy);
+> >  
+> > +	/*
+> > +	 * For slow-switch systems, single policy requests can't run at the
+> > +	 * moment if update is in progress, unless we acquire update_lock.
+> > +	 */
+> > +	if (sg_policy->work_in_progress)
+> > +		return;
+> > +
+> >  	if (!sugov_should_update_freq(sg_policy, time))
+> >  		return;
+> >  
+> > @@ -382,13 +386,27 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+> >  static void sugov_work(struct kthread_work *work)
+> >  {
+> >  	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+> > +	unsigned int freq;
+> > +	unsigned long flags;
+> > +
+> > +	/*
+> > +	 * Hold sg_policy->update_lock shortly to handle the case where:
+> > +	 * incase sg_policy->next_freq is read here, and then updated by
+> > +	 * sugov_update_shared just before work_in_progress is set to false
+> > +	 * here, we may miss queueing the new update.
+> > +	 *
+> > +	 * Note: If a work was queued after the update_lock is released,
+> > +	 * sugov_work will just be called again by kthread_work code; and the
+> > +	 * request will be proceed before the sugov thread sleeps.
+> > +	 */
+> > +	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+> > +	freq = sg_policy->next_freq;
+> > +	sg_policy->work_in_progress = false;
+> > +	raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+> >  
+> >  	mutex_lock(&sg_policy->work_lock);
+> > -	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
+> > -				CPUFREQ_RELATION_L);
+> > +	__cpufreq_driver_target(sg_policy->policy, freq, CPUFREQ_RELATION_L);
+> >  	mutex_unlock(&sg_policy->work_lock);
+> > -
+> > -	sg_policy->work_in_progress = false;
+> >  }
 > 
-> Namely, if the device is going to stay in suspend, both the late
-> and noirq callbacks return early for it, so if its state_saved flag
-> is cleared in pci_pm_suspend(), it will remain unset throughout the
-> remaining part of suspend and resume and pci_restore_state() called
-> for the device going forward will return without doing anything.
+> And I do see a race here for single policy systems doing slow switching.
 > 
-> For this reason, change pci_pm_suspend() to only clear state_saved
-> if the given device is not going to remain suspended.  [This is
-> analogous to what commit ae860a19f37c (PCI / PM: Do not clear
-> state_saved in pci_pm_freeze() when smart suspend is set) did for
-> hibernation.]
+> Kthread                                                 Sched update
 > 
-> Fixes: c4b65157aeef (PCI / PM: Take SMART_SUSPEND driver flag into account)
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> sugov_work()                                            sugov_update_single()
+> 
+>         lock();
+>         // The CPU is free to rearrange below           
+>         // two in any order, so it may clear
+>         // the flag first and then read next
+>         // freq. Lets assume it does.
+>         work_in_progress = false
+> 
+>                                                         if (work_in_progress)
+>                                                                 return;
+> 
+>                                                         sg_policy->next_freq = 0;
+>         freq = sg_policy->next_freq;
+>                                                         sg_policy->next_freq = real-next-freq;
+>         unlock();
+> 
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+I agree with the race you describe for single policy slow-switch. Good find :)
 
-I assume you'll take this one, too.
+The mainline sugov_work could also do such reordering in sugov_work, I think. Even
+with the mutex_unlock in mainline's sugov_work, that work_in_progress write could
+be reordered by the CPU to happen before the read of next_freq. AIUI,
+mutex_unlock is expected to be only a release-barrier.
 
-> ---
->  drivers/pci/pci-driver.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -753,10 +753,11 @@ static int pci_pm_suspend(struct device
->  	 * better to resume the device from runtime suspend here.
->  	 */
->  	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) ||
-> -	    !pci_dev_keep_suspended(pci_dev))
-> +	    !pci_dev_keep_suspended(pci_dev)) {
->  		pm_runtime_resume(dev);
-> +		pci_dev->state_saved = false;
-> +	}
->  
-> -	pci_dev->state_saved = false;
->  	if (pm->suspend) {
->  		pci_power_t prev = pci_dev->current_state;
->  		int error;
-> 
+Although to be safe, I could just put an smp_mb() there. I believe with that,
+no locking would be needed for such case.
+
+I'll send out a v3 with Acks for the original patch, and the send out the
+smp_mb() as a separate patch if that's Ok.
+
+thanks,
+
+ - Joel
