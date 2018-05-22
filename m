@@ -1,44 +1,57 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v9 11/15] dt-bindings: cpufreq: Document
- operating-points-v2-kryo-cpu
-Date: Tue, 22 May 2018 10:55:29 -0500
-Message-ID: <20180522155529.GA30543@rob-hp-laptop>
-References: <1526901932-9514-1-git-send-email-ilialin@codeaurora.org>
- <1526901932-9514-12-git-send-email-ilialin@codeaurora.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 2/2] typec: tcpm: Provide fwnode pointer as part of
+ psy_cfg
+Date: Tue, 22 May 2018 09:08:15 -0700
+Message-ID: <20180522160815.GA22182@roeck-us.net>
+References: <cover.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
+ <449707040719c8845cf9fa6bc779bae25fca54a5.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1526901932-9514-12-git-send-email-ilialin@codeaurora.org>
+In-Reply-To: <449707040719c8845cf9fa6bc779bae25fca54a5.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, mark.rutland@arm.com, viresh.kumar@linaro.org, nm@ti.com, lgirdwood@gmail.com, broonie@kernel.org, andy.gross@linaro.org, david.brown@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, rjw@rjwysocki.net, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rnayak@codeaurora.org, amit.kucheria@linaro.org, nicolas.dechesne@linaro.org, celster@codeaurora.org, tfinkel@codeaurora.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 21, 2018 at 02:25:28PM +0300, Ilia Lin wrote:
-> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
-> to provide the OPP framework with required information.
-> This is used to determine the voltage and frequency value for each OPP of
-> operating-points-v2 table when it is parsed by the OPP framework.
+On Tue, May 22, 2018 at 04:16:24PM +0100, Adam Thomson wrote:
+> For supply registration, provide fwnode pointer of the port device,
+> via the power_supply_config structure, to allow other psy drivers
+> to add us as a supplier. At present this only applies to DT
+> based platforms using the 'power-supplies' DT property, but in the
+> future should also work for ACPI platforms when the relevant support
+> is added to the power_supply core.
 > 
-> This change adds documentation for the DT bindings.
-> The "operating-points-v2-kryo-cpu" DT extends the "operating-points-v2"
-> with following parameters:
-> - nvmem-cells (NVMEM area containig the speedbin information)
-> - opp-supported-hw: A single 32 bit bitmap value,
->   representing compatible HW:
-> 			0:	MSM8996 V3, speedbin 0
-> 			1:	MSM8996 V3, speedbin 1
-> 			2:	MSM8996 V3, speedbin 2
-> 			3:	unused
-> 			4:	MSM8996 SG, speedbin 0
-> 			5:	MSM8996 SG, speedbin 1
-> 			6:	MSM8996 SG, speedbin 2
-> 			7-31:	unused
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> Suggested-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+
+> ---
+>  drivers/usb/typec/tcpm.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Please add acks/reviewed-bys when posting new versions.
-
-Rob
+> diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
+> index 72996cc..0ccd2ce 100644
+> --- a/drivers/usb/typec/tcpm.c
+> +++ b/drivers/usb/typec/tcpm.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/power_supply.h>
+>  #include <linux/proc_fs.h>
+> +#include <linux/property.h>
+>  #include <linux/sched/clock.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/slab.h>
+> @@ -4500,6 +4501,7 @@ static int devm_tcpm_psy_register(struct tcpm_port *port)
+>  	char *psy_name;
+>  
+>  	psy_cfg.drv_data = port;
+> +	psy_cfg.fwnode = dev_fwnode(port->dev);
+>  	psy_name = devm_kzalloc(port->dev, psy_name_len, GFP_KERNEL);
+>  	if (!psy_name)
+>  		return -ENOMEM;
+> -- 
+> 1.9.1
+> 
