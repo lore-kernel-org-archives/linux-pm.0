@@ -1,92 +1,102 @@
-From: George Cherian <george.cherian@cavium.com>
-Subject: [PATCH] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
-Date: Tue, 22 May 2018 04:42:04 -0700
-Message-ID: <1526989324-4183-1-git-send-email-george.cherian@cavium.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even when
+ kthread kicked
+Date: Tue, 22 May 2018 13:42:05 +0200
+Message-ID: <CAJZ5v0hP+gCiLa+6YvKHaj7u-DuRfmVq_vjFRMj6CnVktJRxVg@mail.gmail.com>
+References: <20180518185501.173552-1-joel@joelfernandes.org>
+ <4393838.cQWhzXzUcj@aspire.rjw.lan> <20180522105429.yn2omuz63oa2w3ez@vireshk-i7>
+ <6163159.YL3rkaEOau@aspire.rjw.lan> <20180522113844.5rz3skjeck57arft@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180522113844.5rz3skjeck57arft@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, George Cherian <george.cherian@cavium.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Joel Fernandes (Google.)" <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Joel Fernandes (Google)" <joel@joelfernandes.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
-feedback via set of performance counters. To determine the actual
-performance level delivered over time, OSPM may read a set of
-performance counters from the Reference Performance Counter Register
-and the Delivered Performance Counter Register.
+On Tue, May 22, 2018 at 1:38 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 22-05-18, 13:31, Rafael J. Wysocki wrote:
+>> So below is my (compiled-only) version of the $subject patch, obviously based
+>> on the Joel's work.
+>>
+>> Roughly, what it does is to move the fast_switch_enabled path entirely to
+>> sugov_update_single() and take the spinlock around sugov_update_commit()
+>> in the one-CPU case too.
+>>
+>> ---
+>>  kernel/sched/cpufreq_schedutil.c |   57 ++++++++++++++++++++++++++-------------
+>>  1 file changed, 38 insertions(+), 19 deletions(-)
+>>
+>> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+>> ===================================================================
+>> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
+>> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
+>> @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(str
+>>           !cpufreq_can_do_remote_dvfs(sg_policy->policy))
+>>               return false;
+>>
+>> -     if (sg_policy->work_in_progress)
+>> -             return false;
+>> -
+>>       if (unlikely(sg_policy->need_freq_update))
+>>               return true;
+>>
+>> @@ -103,25 +100,25 @@ static bool sugov_should_update_freq(str
+>>       return delta_ns >= sg_policy->freq_update_delay_ns;
+>>  }
+>>
+>> -static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>> -                             unsigned int next_freq)
+>> +static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
+>> +                                unsigned int next_freq)
+>>  {
+>> -     struct cpufreq_policy *policy = sg_policy->policy;
+>> -
+>>       if (sg_policy->next_freq == next_freq)
+>> -             return;
+>> +             return false;
+>>
+>>       sg_policy->next_freq = next_freq;
+>>       sg_policy->last_freq_update_time = time;
+>>
+>> -     if (policy->fast_switch_enabled) {
+>> -             next_freq = cpufreq_driver_fast_switch(policy, next_freq);
+>> -             if (!next_freq)
+>> -                     return;
+>> +     return true;
+>> +}
+>>
+>> -             policy->cur = next_freq;
+>> -             trace_cpu_frequency(next_freq, smp_processor_id());
+>> -     } else {
+>> +static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>> +                             unsigned int next_freq)
+>> +{
+>> +     if (!sugov_update_next_freq(sg_policy, time, next_freq))
+>> +             return;
+>> +
+>> +     if (!sg_policy->work_in_progress) {
+>>               sg_policy->work_in_progress = true;
+>>               irq_work_queue(&sg_policy->irq_work);
+>>       }
+>> @@ -277,6 +274,7 @@ static void sugov_update_single(struct u
+>>  {
+>>       struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
+>>       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+>> +     struct cpufreq_policy *policy = sg_policy->policy;
+>>       unsigned long util, max;
+>>       unsigned int next_f;
+>>       bool busy;
+>> @@ -307,7 +305,23 @@ static void sugov_update_single(struct u
+>>               sg_policy->cached_raw_freq = 0;
+>>       }
+>>
+>> -     sugov_update_commit(sg_policy, time, next_f);
+>> +     if (policy->fast_switch_enabled) {
+>
+> Why do you assume that fast switch isn't possible in shared policy
+> cases ? It infact is already enabled for few drivers.
 
-OSPM calculates the delivered performance over a given time period by
-taking a beginning and ending snapshot of both the reference and
-delivered performance counters, and calculating:
-
-delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
-
-Implement the above and hook this to the cpufreq->get method.
-
-Signed-off-by: George Cherian <george.cherian@cavium.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index b15115a..a046915 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -240,10 +240,54 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
-+static int cppc_get_rate_from_fbctrs(struct cppc_perf_fb_ctrs fb_ctrs_t0,
-+				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
-+{
-+	u64 delta_reference, delta_delivered;
-+	u64 reference_perf, ratio;
-+
-+	reference_perf = fb_ctrs_t0.reference_perf;
-+	if (fb_ctrs_t1.reference > fb_ctrs_t0.reference)
-+		delta_reference = fb_ctrs_t1.reference - fb_ctrs_t0.reference;
-+	else /* Counters would have wrapped-around */
-+		delta_reference  = ((u64)(~((u64)0)) - fb_ctrs_t0.reference) +
-+					fb_ctrs_t1.reference;
-+
-+	if (fb_ctrs_t1.delivered > fb_ctrs_t0.delivered)
-+		delta_delivered = fb_ctrs_t1.delivered - fb_ctrs_t0.delivered;
-+	else /* Counters would have wrapped-around */
-+		delta_delivered  = ((u64)(~((u64)0)) - fb_ctrs_t0.delivered) +
-+					fb_ctrs_t1.delivered;
-+
-+	if (delta_reference)  /* Check to avoid divide-by zero */
-+		ratio = (delta_delivered * 1000) / delta_reference;
-+	else
-+		return -EINVAL;
-+
-+	return (reference_perf * ratio) / 1000;
-+}
-+
-+static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
-+{
-+	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
-+	int ret;
-+
-+	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
-+	if (ret)
-+		return ret;
-+
-+	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
-+	if (ret)
-+		return ret;
-+
-+	return cppc_get_rate_from_fbctrs(fb_ctrs_t0, fb_ctrs_t1);
-+}
-+
- static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.flags = CPUFREQ_CONST_LOOPS,
- 	.verify = cppc_verify_policy,
- 	.target = cppc_cpufreq_set_target,
-+	.get = cppc_cpufreq_get_rate,
- 	.init = cppc_cpufreq_cpu_init,
- 	.stop_cpu = cppc_cpufreq_stop_cpu,
- 	.name = "cppc_cpufreq",
--- 
-1.8.3.1
+OK, so the fast_switch thing needs to be left outside of the spinlock
+in the single case only.  Fair enough.
