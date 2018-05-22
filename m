@@ -1,77 +1,38 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
- when kthread kicked
-Date: Tue, 22 May 2018 15:28:37 -0700
-Message-ID: <20180522222837.GA55359@joelaf.mtv.corp.google.com>
-References: <20180518185501.173552-1-joel@joelfernandes.org>
- <20180522113844.5rz3skjeck57arft@vireshk-i7>
- <CAJZ5v0hP+gCiLa+6YvKHaj7u-DuRfmVq_vjFRMj6CnVktJRxVg@mail.gmail.com>
- <4237890.zlzv5C60QP@aspire.rjw.lan>
- <CAJZ5v0henS+LZ64JQwrXR8LrY7xzcsnnYS7AoBuR9dNaC4mTRw@mail.gmail.com>
- <20180522213113.GA40506@joelaf.mtv.corp.google.com>
- <CAJZ5v0ir7Chz6jCZTKRNT12oMd4uyu+JgFLKmZ8RJkcRkyrzBg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [RFC PATCH 02/10] dt-bindings: devfreq: rk3399_dmc: Add
+ rockchip,pmu phandle.
+Date: Tue, 22 May 2018 17:45:49 -0500
+Message-ID: <20180522224549.GA26650@rob-hp-laptop>
+References: <20180514211610.26618-1-enric.balletbo@collabora.com>
+ <20180514211610.26618-3-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ir7Chz6jCZTKRNT12oMd4uyu+JgFLKmZ8RJkcRkyrzBg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>, "Joel Fernandes (Google.)" <joelaf@google.com>
+In-Reply-To: <20180514211610.26618-3-enric.balletbo@collabora.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, David Airlie <airlied@linux.ie>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Derek Basehore <dbasehore@chromium.org>, Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-rockchip@lists.infradead.org, kernel@collabora.com, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lin Huang <hl@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 22, 2018 at 11:52:46PM +0200, Rafael J. Wysocki wrote:
-> On Tue, May 22, 2018 at 11:41 PM, Joel Fernandes <joel@joelfernandes.org> wrote:
-> > On Tue, May 22, 2018 at 05:27:11PM +0200, Rafael J. Wysocki wrote:
-> >> On Tue, May 22, 2018 at 2:22 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Tuesday, May 22, 2018 1:42:05 PM CEST Rafael J. Wysocki wrote:
-> >> >> On Tue, May 22, 2018 at 1:38 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> >> > On 22-05-18, 13:31, Rafael J. Wysocki wrote:
-> >> >> >> So below is my (compiled-only) version of the $subject patch, obviously based
-> >> >> >> on the Joel's work.
-> >> >> >>
-> >> >> >> Roughly, what it does is to move the fast_switch_enabled path entirely to
-> >> >> >> sugov_update_single() and take the spinlock around sugov_update_commit()
-> >> >> >> in the one-CPU case too.
-> >> >
-> >> > [cut]
-> >> >
-> >> >> >
-> >> >> > Why do you assume that fast switch isn't possible in shared policy
-> >> >> > cases ? It infact is already enabled for few drivers.
-> >> >
-> >> > I hope that fast_switch is not used with devfs_possible_from_any_cpu set in the
-> >> > one-CPU policy case, as that looks racy even without any patching.
-> >>
-> >> Which would be the only case in which sugov_update_single() would run
-> >> on a CPU that is not the target.
-> >>
-> >> And running sugov_update_single() concurrently on two different CPUs
-> >> for the same target is a no-no, as we don't prevent concurrent updates
-> >> from occurring in that path.
-> >>
-> >> Which means that the original patch from Joel will be sufficient as
-> >> long as we ensure that sugov_update_single() can only run on one CPU
-> >> at a time.
-> >
-> > Since target CPU's runqueue lock is held, I don't see how we can run
-> > sugov_update_single concurrently with any other CPU for single policy, so
-> > protecting such race shouldn't be necessary.
-> 
-> If dvfs_possible_from_any_cpu is set, any CPU can run
-> sugov_update_single(), but the kthread will only run on the target
-> itself.  So another CPU running sugov_update_single() for the target
-> may be racing with the target's kthread.
-> 
-Yes, I agree. I thought you meant the case of sugov_update_single running
-currently with other sugov_update_single. So just to be on the same page,
-I'll fix the commit log and repost this one as is.
-
-And then I'll post the smp_rmb() patch separately to address the memory order
-issue (which I believe is in mainline as well). Basically I was thinking to
-address Viresh's issue, there should be an smp_mb() after the next_freq is
-read, but before the write to work_in_progress.
-
-thanks,
-
- - Joel
+T24gTW9uLCBNYXkgMTQsIDIwMTggYXQgMTE6MTY6MDJQTSArMDIwMCwgRW5yaWMgQmFsbGV0Ym8g
+aSBTZXJyYSB3cm90ZToKPiBUaGUgUm9ja2NoaXAgRE1DIChEeW5hbWljIE1lbW9yeSBJbnRlcmZh
+Y2UpIG5lZWRzIHRvIGFjY2VzcyB0byB0aGUgUE1VCj4gZ2VuZXJhbCByZWdpc3RlciBmaWxlcyB0
+byBrbm93IHRoZSBEUkFNIHR5cGUsIHNvIGFkZCBhIHBoYW5kbGUgdG8gdGhlCj4gc3lzY29uIHRo
+YXQgbWFuYWdlcyB0aGVzZSByZWdpc3RlcnMuCj4gCj4gU2lnbmVkLW9mZi1ieTogRW5yaWMgQmFs
+bGV0Ym8gaSBTZXJyYSA8ZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbT4KPiAtLS0KPiAKPiAg
+RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvcmszMzk5X2RtYy50eHQg
+fCAyICsrCj4gIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKykKCkFja2VkLWJ5OiBSb2Ig
+SGVycmluZyA8cm9iaEBrZXJuZWwub3JnPgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5m
+cmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0
+aW5mby9kcmktZGV2ZWwK
