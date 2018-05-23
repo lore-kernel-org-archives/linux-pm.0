@@ -1,59 +1,72 @@
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Subject: Re: [PATCH 2/2] typec: tcpm: Provide fwnode pointer as part of
- psy_cfg
-Date: Wed, 23 May 2018 09:52:27 +0300
-Message-ID: <20180523065227.GB5289@kuha.fi.intel.com>
-References: <cover.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
- <449707040719c8845cf9fa6bc779bae25fca54a5.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
+From: Yisheng Xie <xieyisheng1@huawei.com>
+Subject: Re: [PATCH 19/33] thermal: db8500: use match_string() helper
+Date: Wed, 23 May 2018 15:47:45 +0800
+Message-ID: <c058971b-e072-a7b5-3f6e-d06458099c60@huawei.com>
+References: <1526903890-35761-1-git-send-email-xieyisheng1@huawei.com>
+ <1526903890-35761-20-git-send-email-xieyisheng1@huawei.com>
+ <CAHp75VfqEdoDZydwFmQaLiUN8cVtH3MbFHf3qixU8xUHXMwt1g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <449707040719c8845cf9fa6bc779bae25fca54a5.1527000797.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <CAHp75VfqEdoDZydwFmQaLiUN8cVtH3MbFHf3qixU8xUHXMwt1g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 22, 2018 at 04:16:24PM +0100, Adam Thomson wrote:
-> For supply registration, provide fwnode pointer of the port device,
-> via the power_supply_config structure, to allow other psy drivers
-> to add us as a supplier. At present this only applies to DT
-> based platforms using the 'power-supplies' DT property, but in the
-> future should also work for ACPI platforms when the relevant support
-> is added to the power_supply core.
+Hi Andy,
+
+On 2018/5/22 6:00, Andy Shevchenko wrote:
+> On Mon, May 21, 2018 at 2:57 PM, Yisheng Xie <xieyisheng1@huawei.com> wrote:
+>> match_string() returns the index of an array for a matching string,
+>> which can be used intead of open coded variant.
 > 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> Suggested-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-
-Reviewed-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-
-> ---
->  drivers/usb/typec/tcpm.c | 2 ++
->  1 file changed, 2 insertions(+)
+>> +       i = match_string((const char **)trip_point->cdev_name,
 > 
-> diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
-> index 72996cc..0ccd2ce 100644
-> --- a/drivers/usb/typec/tcpm.c
-> +++ b/drivers/usb/typec/tcpm.c
-> @@ -14,6 +14,7 @@
->  #include <linux/mutex.h>
->  #include <linux/power_supply.h>
->  #include <linux/proc_fs.h>
-> +#include <linux/property.h>
->  #include <linux/sched/clock.h>
->  #include <linux/seq_file.h>
->  #include <linux/slab.h>
-> @@ -4500,6 +4501,7 @@ static int devm_tcpm_psy_register(struct tcpm_port *port)
->  	char *psy_name;
->  
->  	psy_cfg.drv_data = port;
-> +	psy_cfg.fwnode = dev_fwnode(port->dev);
->  	psy_name = devm_kzalloc(port->dev, psy_name_len, GFP_KERNEL);
->  	if (!psy_name)
->  		return -ENOMEM;
+> Casting looks ugly. You need to constify the variable itself.
+When I tried to const cdev_name like:
++++ b/include/linux/platform_data/db8500_thermal.h
+@@ -27,7 +27,7 @@
+ struct db8500_trip_point {
+        unsigned long temp;
+        enum thermal_trip_type type;
+-       char cdev_name[COOLING_DEV_MAX][THERMAL_NAME_LENGTH];
++       char const cdev_name[COOLING_DEV_MAX][THERMAL_NAME_LENGTH]; // const char cdev_name[COOLING_DEV_MAX][THERMAL_NAME_LENGTH] will also the same
+ };
 
-Thanks,
+The compiler will also warning:
+drivers/thermal/db8500_thermal.c: In function ‘db8500_thermal_match_cdev’:
+drivers/thermal/db8500_thermal.c:53:2: warning: passing argument 1 of ‘match_string’ from incompatible pointer type [enabled by default]
+  i = match_string(trip_point->cdev_name, COOLING_DEV_MAX, cdev->type);
+  ^
+In file included from include/linux/bitmap.h:9:0,
+                 from include/linux/cpumask.h:12,
+                 from include/linux/rcupdate.h:44,
+                 from include/linux/radix-tree.h:28,
+                 from include/linux/idr.h:15,
+                 from include/linux/kernfs.h:14,
+                 from include/linux/sysfs.h:16,
+                 from kernel/include/linux/kobject.h:20,
+                 from kernel/include/linux/of.h:17,
+                 from include/linux/cpu_cooling.h:27,
+                 from drivers/thermal/db8500_thermal.c:20:
+include/linux/string.h:184:5: note: expected ‘const char * const*’ but argument is of type ‘const char (*)[20]’
 
--- 
-heikki
+Any idea?
+
+Thanks
+Yisheng
+> 
+>> +                        COOLING_DEV_MAX, cdev->type);
+>>
+>> -       return -ENODEV;
+>> +       return (i < 0) ? -ENODEV : 0;
+> 
+> I would rather go with
+> 
+> if (ret < 0)
+>  return -ENODEV;
+> 
+> return 0;
+> 
