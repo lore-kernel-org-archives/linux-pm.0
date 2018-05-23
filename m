@@ -1,151 +1,121 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: schedutil: Avoid missing updates for one-CPU policies
-Date: Wed, 23 May 2018 11:47:45 +0200
-Message-ID: <1672734.JYOlA1IWnU@aspire.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Wed, 23 May 2018 15:25:49 +0530
+Message-ID: <20180523095549.mbit5plvqoppnasu@vireshk-i7>
+References: <1526655056-24592-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180521103223.asejwsaf7pnrs777@vireshk-i7>
+ <7ff0d7d4-be5e-2384-1201-df8616519892@linaro.org>
+ <20180523054154.fvhnwgvq34ihivdj@vireshk-i7>
+ <61c2b628-6c38-463a-c6b5-5e5b7eeee1ab@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <61c2b628-6c38-463a-c6b5-5e5b7eeee1ab@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joel@joelfernandes.org>, Patrick Bellasi <patrick.bellasi@arm.com>, claudio@evidence.eu.com, Todd Kjos <tkjos@google.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 23-05-18, 10:00, Daniel Lezcano wrote:
+> On 23/05/2018 07:41, Viresh Kumar wrote:
+> > Right and that's why I said "Which is fine" in my comment above. My
+> > question was more on why we error out in idle_injection_start() if
+> > run_duration_ms is 0.
+> > 
+> > Just for my understanding, is it a valid usecase where we want to run
+> > the idle loop only once ? i.e. set idle_duration_ms to a non-zero
+> > value but run_duration_ms to 0 ? In that case we shouldn't check for
+> > zero run_duration_ms in idle_injection_start().
+> 
+> Yes, that could be a valid use case if we want to synchronously inject
+> idle cycles without period.
+> 
+> IOW, call play_idle() on a set of cpus at the same time. And the caller
+> of start is the one with the control of the period.
+> 
+> If you want this usecase, we need to implement more things:
 
-Commit 152db033d775 (schedutil: Allow cpufreq requests to be made
-even when kthread kicked) made changes to prevent utilization updates
-from being discarded during processing a previous request, but it
-left a small window in which that still can happen in the one-CPU
-policy case.  Namely, updates coming in after setting work_in_progress
-in sugov_update_commit() and clearing it in sugov_work() will still
-be dropped due to the work_in_progress check in sugov_update_single().
+Well I was trying to understand the use case you have in mind. Nothing
+else. So this stuff isn't required anymore.
 
-To close that window, rearrange the code so as to acquire the update
-lock around the deferred update branch in sugov_update_single()
-and drop the work_in_progress check from it.
+> >>>> +void idle_injection_set_duration(struct idle_injection_device *ii_dev,
+> >>>> +				 unsigned int run_duration_ms,
+> >>>> +				 unsigned int idle_duration_ms)
+> >>>> +{
+> >>>> +	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
+> >>>> +	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
+> >>>
+> >>> You check for valid values of these in idle_injection_start() but not
+> >>> here, why ?
+> >>
+> >> By checking against a zero values in the start function is a way to make
+> >> sure we are not starting the idle injection with uninitialized values
+> >> and by setting the duration to zero is a way to stop the idle injection.
+> > 
+> > Why do we need two ways of stopping the idle injection thread ? Why
+> > isn't just calling idle_injection_stop() the right thing to do in that
+> > case ?
+> 
+> How do we prevent the last kthread in the idle_injection_fn to set the
+> timer ?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/sched/cpufreq_schedutil.c |   70 ++++++++++++++++++++++++++-------------
- 1 file changed, 47 insertions(+), 23 deletions(-)
+Okay, I get the problem now. But this doesn't stop the kthread in a
+guaranteed way and we probably need a different solution. More later..
 
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -100,25 +100,41 @@ static bool sugov_should_update_freq(str
- 	return delta_ns >= sg_policy->freq_update_delay_ns;
- }
- 
--static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
--				unsigned int next_freq)
-+static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
-+				   unsigned int next_freq)
- {
--	struct cpufreq_policy *policy = sg_policy->policy;
--
- 	if (sg_policy->next_freq == next_freq)
--		return;
-+		return false;
- 
- 	sg_policy->next_freq = next_freq;
- 	sg_policy->last_freq_update_time = time;
- 
--	if (policy->fast_switch_enabled) {
--		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
--		if (!next_freq)
--			return;
-+	return true;
-+}
-+
-+static void sugov_fast_switch(struct sugov_policy *sg_policy, u64 time,
-+			      unsigned int next_freq)
-+{
-+	struct cpufreq_policy *policy = sg_policy->policy;
-+
-+	if (!sugov_update_next_freq(sg_policy, time, next_freq))
-+		return;
-+
-+	next_freq = cpufreq_driver_fast_switch(policy, next_freq);
-+	if (!next_freq)
-+		return;
- 
--		policy->cur = next_freq;
--		trace_cpu_frequency(next_freq, smp_processor_id());
--	} else if (!sg_policy->work_in_progress) {
-+	policy->cur = next_freq;
-+	trace_cpu_frequency(next_freq, smp_processor_id());
-+}
-+
-+static void sugov_deferred_update(struct sugov_policy *sg_policy, u64 time,
-+				  unsigned int next_freq)
-+{
-+	if (!sugov_update_next_freq(sg_policy, time, next_freq))
-+		return;
-+
-+	if (!sg_policy->work_in_progress) {
- 		sg_policy->work_in_progress = true;
- 		irq_work_queue(&sg_policy->irq_work);
- 	}
-@@ -363,13 +379,6 @@ static void sugov_update_single(struct u
- 
- 	ignore_dl_rate_limit(sg_cpu, sg_policy);
- 
--	/*
--	 * For slow-switch systems, single policy requests can't run at the
--	 * moment if update is in progress, unless we acquire update_lock.
--	 */
--	if (sg_policy->work_in_progress)
--		return;
--
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
-@@ -391,7 +400,18 @@ static void sugov_update_single(struct u
- 		sg_policy->cached_raw_freq = 0;
- 	}
- 
--	sugov_update_commit(sg_policy, time, next_f);
-+	/*
-+	 * This code runs under rq->lock for the target CPU, so it won't run
-+	 * concurrently on two different CPUs for the same target and it is not
-+	 * necessary to acquire the lock in the fast switch case.
-+	 */
-+	if (sg_policy->policy->fast_switch_enabled) {
-+		sugov_fast_switch(sg_policy, time, next_f);
-+	} else {
-+		raw_spin_lock(&sg_policy->update_lock);
-+		sugov_deferred_update(sg_policy, time, next_f);
-+		raw_spin_unlock(&sg_policy->update_lock);
-+	}
- }
- 
- static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
-@@ -435,7 +455,11 @@ sugov_update_shared(struct update_util_d
- 
- 	if (sugov_should_update_freq(sg_policy, time)) {
- 		next_f = sugov_next_freq_shared(sg_cpu, time);
--		sugov_update_commit(sg_policy, time, next_f);
-+
-+		if (sg_policy->policy->fast_switch_enabled)
-+			sugov_fast_switch(sg_policy, time, next_f);
-+		else
-+			sugov_deferred_update(sg_policy, time, next_f);
- 	}
- 
- 	raw_spin_unlock(&sg_policy->update_lock);
-@@ -450,11 +474,11 @@ static void sugov_work(struct kthread_wo
- 	/*
- 	 * Hold sg_policy->update_lock shortly to handle the case where:
- 	 * incase sg_policy->next_freq is read here, and then updated by
--	 * sugov_update_shared just before work_in_progress is set to false
-+	 * sugov_deferred_update() just before work_in_progress is set to false
- 	 * here, we may miss queueing the new update.
- 	 *
- 	 * Note: If a work was queued after the update_lock is released,
--	 * sugov_work will just be called again by kthread_work code; and the
-+	 * sugov_work() will just be called again by kthread_work code; and the
- 	 * request will be proceed before the sugov thread sleeps.
- 	 */
- 	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+> >>>> +void idle_injection_stop(struct idle_injection_device *ii_dev)
+> >>>> +{
+> >>>> +	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
+> >>>> +		 cpumask_pr_args(ii_dev->cpumask));
+> >>>> +
+> >>>> +	hrtimer_cancel(&ii_dev->timer);
+> >>>
+> >>> How are we sure that idle_injection_fn() isn't running at this point
+> >>> and it would start the timer cancelled here again ?
+> >>
+> >> Nothing will ensure that. We will have an extra idle injection in this
+> >> case. We can invert the set_duration(0,0) and the timer cancellation to
+> >> reduce to reduce the window.
+> > 
+> > That's what I thought and so its racy. If someone calls
+> > idle_injection_unregister(), then we call this routine and then free
+> > the data structures while they are still getting used by the thread :(
+> 
+> Yes, we need to make the framework single-user, a refcount should be
+> enough. However, register() returns a pointer and the caller of
+> unregister must have this pointer. If it is the case, then register and
+> unregister code collaborate, if the one calling unregister cuts the
+> branch of the user of the idle_injection then we have braindead code.
+> 
+> We can handle this case by adding locks or we can have a single-user of
+> the framework without lock. We don't expect a lot of idle injection
+> users (I see only two right now and they are mutually exclusive), so
+> having lockless code is ok for me.
+
+Maybe I wasn't able to explain the problem I see, but lemme retry
+that. Assume that there is only one use and that id cpu-idle-cooling.
+We are currently running the idle loop with idle duration X and run
+duration Y.
+
+Now lets say the cooling device gets unregistered itself (maybe module
+removal, etc). And it calls idle_injection_unregister() with a valid
+pointer. Not sure if the thermal framework will call set_cur_state
+anymore. But the problem will remain even if it does that.
+
+We call idle_injection_stop() from unregister, which will cancel
+hrtimer, set durations as 0 and return. Then we free the iidev. It is
+certainly possible at this point of time that the kthread is still
+running the idle loop which it may have started before unregister was
+called. And so after the idle loop is finished it will try to access
+ii_dev, which is already freed.
+
+So, idle_injection_stop() needs to guarantee that the kthread and the
+hrtimer are all stopped now and no one is using the ii_dev structure
+anymore.
+
+Perhaps you need some completion stuff here to give confirmation here,
+etc.
+
+-- 
+viresh
