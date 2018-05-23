@@ -1,47 +1,38 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v11 0/2] Kryo CPU scaling driver
-Date: Wed, 23 May 2018 14:54:41 +0100
-Message-ID: <b4c28b51-ecd5-649b-e8fa-e5ce1bbb3139@arm.com>
-References: <1527079139-3558-1-git-send-email-ilialin@codeaurora.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW bindings
+Date: Wed, 23 May 2018 09:18:23 -0500
+Message-ID: <CAL_JsqL7VdSjerOioc5cSOyKAAXJuVnPJqp_WbTtwr11UUxq=A@mail.gmail.com>
+References: <1526751291-17873-1-git-send-email-tdas@codeaurora.org>
+ <1526751291-17873-2-git-send-email-tdas@codeaurora.org> <20180522193139.GA21623@rob-hp-laptop>
+ <20180523054846.zn7gftt6aqyibd26@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527079139-3558-1-git-send-email-ilialin@codeaurora.org>
-Content-Language: en-US
+In-Reply-To: <20180523054846.zn7gftt6aqyibd26@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Taniya Das <tdas@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, Saravana Kannan <skannan@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, May 23, 2018 at 12:48 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 22-05-18, 14:31, Rob Herring wrote:
+>> On Sat, May 19, 2018 at 11:04:50PM +0530, Taniya Das wrote:
+>> > +           freq-domain-0 {
+>> > +                   compatible = "cpufreq";
+>> > +                   reg = <0x17d43920 0x4>,
+>> > +                        <0x17d43110 0x500>,
+>> > +                        <0x17d41000 0x4>;
+>> > +                   reg-names = "perf_base", "lut_base", "en_base";
+>> > +                   qcom,cpulist = <&CPU0 &CPU1 &CPU2 &CPU3>;
+>
+> I was thinking, can't we add platform specific properties in the CPU
+> nodes ? If yes, then we can point the phandle of fw node from the CPUs
+> and this awkward list can go away.
 
+Yes, that's fine. That would be more like OPP binding in that the CPU
+points to the OPP table rather than the OPP pointing to the CPUs.
 
-On 23/05/18 13:38, Ilia Lin wrote:
-> [v11]
->  * Addressed comment from Russel about device_node reference
->  * Addressed comment from Sudeep about the late_initcall
->  * Transformed init into probe to take care of deferals
-> 
-> [v10]
->  * Split the series into domains
->  * Addressed comments from Viresh and Sudeep about logical CPU numbering.
-> 
-> The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
-> The driver reads eFuse information and chooses the required OPP subset
-> by passing the OPP supported-hw parameter.
-> 
-> The series depends on the series from Viresh:
-> https://patchwork.kernel.org/patch/10418139/
-> 
-> The previous spin was here:
-> https://patchwork.kernel.org/patch/10420809/
-> 
+With that, you can get rid of the child nodes completely. Just make
+the parent reg property N sets of 3 addresses for N domains.
 
-IIUC, this depends on "CPU scaling support for msm8996" [1] for
-the functionality though the change is independent ?
-
--- 
-Regards,
-Sudeep
-
-[1] https://www.spinics.net/lists/arm-kernel/msg654978.html
+Rob
