@@ -1,57 +1,115 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 3/3] ARM: dts: imx6ull-colibri-wifi: remove operating
- points
-Date: Wed, 23 May 2018 10:00:32 +0530
-Message-ID: <20180523043032.2htohlypynnvpiye@vireshk-i7>
-References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
- <20180522062853.24799-3-sebastien.szymanski@armadeus.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH 8/9] PM / Domains: Add support for multi PM domains per
+ device to genpd
+Date: Wed, 23 May 2018 10:21:32 +0530
+Message-ID: <51f7de26-579a-8b9e-4e79-f4eee923ab38@codeaurora.org>
+References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
+ <1526639490-12167-9-git-send-email-ulf.hansson@linaro.org>
+ <f5589b88-acf8-b491-df79-e359e596c8d0@nvidia.com>
+ <CAPDyKFr_7hbs-MC1jQn5uAgSnb1UGufXZdEmUqNTM63KemTe1g@mail.gmail.com>
+ <5a79d3a2-d090-645b-da69-524b7e7a4d90@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180522062853.24799-3-sebastien.szymanski@armadeus.com>
+In-Reply-To: <5a79d3a2-d090-645b-da69-524b7e7a4d90@nvidia.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?S=C3=A9bastien?= Szymanski <sebastien.szymanski@armadeus.com>
-Cc: linux-arm-kernel@lists.infradead.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 22-05-18, 08:28, S�bastien Szymanski wrote:
-> Operating points are now defined in the imx6ull.dtsi file so remove
-> them from board device trees.
-> 
-> Signed-off-by: S�bastien Szymanski <sebastien.szymanski@armadeus.com>
-> ---
->  arch/arm/boot/dts/imx6ull-colibri-wifi.dtsi | 14 --------------
->  1 file changed, 14 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/imx6ull-colibri-wifi.dtsi b/arch/arm/boot/dts/imx6ull-colibri-wifi.dtsi
-> index 3dffbcd50bf6..183193e8580d 100644
-> --- a/arch/arm/boot/dts/imx6ull-colibri-wifi.dtsi
-> +++ b/arch/arm/boot/dts/imx6ull-colibri-wifi.dtsi
-> @@ -20,20 +20,6 @@
->  
->  &cpu0 {
->  	clock-frequency = <792000000>;
-> -	operating-points = <
-> -		/* kHz	uV */
-> -		792000  1225000
-> -		528000	1175000
-> -		396000	1025000
-> -		198000	950000
-> -	>;
-> -	fsl,soc-operating-points = <
-> -		/* KHz	uV */
-> -		792000  1175000
-> -		528000	1175000
-> -		396000	1175000
-> -		198000	1175000
-> -	>;
->  };
->  
->  &iomuxc {
 
-Maybe you should merge this with the previous patch itself.
+
+On 05/23/2018 02:25 AM, Jon Hunter wrote:
+> 
+> On 22/05/18 15:47, Ulf Hansson wrote:
+>> [...]
+>>
+>>>>
+>>>> +/**
+>>>> + * genpd_dev_pm_attach_by_id() - Attach a device to one of its PM domain.
+>>>> + * @dev: Device to attach.
+>>>> + * @index: The index of the PM domain.
+>>>> + *
+>>>> + * Parse device's OF node to find a PM domain specifier at the provided @index.
+>>>> + * If such is found, allocates a new device and attaches it to retrieved
+>>>> + * pm_domain ops.
+>>>> + *
+>>>> + * Returns the allocated device if successfully attached PM domain, NULL when
+>>>> + * the device don't need a PM domain or have a single PM domain, else PTR_ERR()
+>>>> + * in case of failures. Note that if a power-domain exists for the device, but
+>>>> + * cannot be found or turned on, then return PTR_ERR(-EPROBE_DEFER) to ensure
+>>>> + * that the device is not probed and to re-try again later.
+>>>> + */
+>>>> +struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+>>>> +                                      unsigned int index)
+>>>> +{
+>>>> +     struct device *genpd_dev;
+>>>> +     int num_domains;
+>>>> +     int ret;
+>>>> +
+>>>> +     if (!dev->of_node)
+>>>> +             return NULL;
+>>>> +
+>>>> +     /* Deal only with devices using multiple PM domains. */
+>>>> +     num_domains = of_count_phandle_with_args(dev->of_node, "power-domains",
+>>>> +                                              "#power-domain-cells");
+>>>> +     if (num_domains < 2 || index >= num_domains)
+>>>> +             return NULL;
+>>>> +
+>>>> +     /* Allocate and register device on the genpd bus. */
+>>>> +     genpd_dev = kzalloc(sizeof(*genpd_dev), GFP_KERNEL);
+>>>> +     if (!genpd_dev)
+>>>> +             return ERR_PTR(-ENOMEM);
+>>>> +
+>>>> +     dev_set_name(genpd_dev, "genpd:%u:%s", index, dev_name(dev));
+>>>> +     genpd_dev->bus = &genpd_bus_type;
+>>>> +     genpd_dev->release = genpd_release_dev;
+>>>> +
+>>>> +     ret = device_register(genpd_dev);
+>>>> +     if (ret) {
+>>>> +             kfree(genpd_dev);
+>>>> +             return ERR_PTR(ret);
+>>>> +     }
+>>>> +
+>>>> +     /* Try to attach the device to the PM domain at the specified index. */
+>>>> +     ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index);
+>>>> +     if (ret < 1) {
+>>>> +             device_unregister(genpd_dev);
+>>>> +             return ret ? ERR_PTR(ret) : NULL;
+>>>> +     }
+>>>> +
+>>>> +     pm_runtime_set_active(genpd_dev);
+>>>> +     pm_runtime_enable(genpd_dev);
+>>>> +
+>>>> +     return genpd_dev;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id);
+>>>
+>>> Thanks for sending this. Believe it or not this has still been on my to-do list
+>>> and so we definitely need a solution for Tegra.
+>>>
+>>> Looking at the above it appears that additional power-domains exposed as devices
+>>> to the client device. So I assume that this means that the drivers for devices
+>>> with multiple power-domains will need to call RPM APIs for each of these
+>>> additional power-domains. Is that correct?
+>>
+>> They can, but should not!
+>>
+>> Instead, the driver shall use device_link_add() and device_link_del(),
+>> dynamically, depending on what PM domain that their original device
+>> needs for the current running use case.
+>>
+>> In that way, they keep existing runtime PM deployment, operating on
+>> its original device.
+> 
+> OK, sounds good. Any reason why the linking cannot be handled by the above API? Is there a use-case where you would not want it linked?
+
+I am guessing the linking is what would give the driver the ability to decide which subset of powerdomains it actually wants to control
+at any point using runtime PM. If we have cases wherein the driver would want to turn on/off _all_ its associated powerdomains _always_
+then a default linking of all would help.
 
 -- 
-viresh
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
