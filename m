@@ -1,119 +1,103 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1 2/2] cpufreq: tegra20: Use PLL_C as intermediate clock source
-Date: Wed, 23 May 2018 19:00:20 +0300
-Message-ID: <20180523160020.15291-2-digetx@gmail.com>
-References: <20180523160020.15291-1-digetx@gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2] PM / devfreq: Add support for QCOM devfreq firmware
+Date: Wed, 23 May 2018 17:08:57 +0100
+Message-ID: <20180523160857.GA30950@e107155-lin>
+References: <1526629965-28729-1-git-send-email-skannan@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180523160020.15291-1-digetx@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1526629965-28729-1-git-send-email-skannan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-PLL_C is running at 600MHz which is significantly higher than the 216MHz
-of the PLL_P and it is known that PLL_C is always-ON because AHB BUS is
-running on that PLL. Let's use PLL_C as intermediate clock source, making
-CPU snappier a tad during of the frequency transition.
+As mentioned on the thread that add firmware based cpufreq support, IMO
+these 2 bindings look too similar and can be combined or at-least aligned.
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/cpufreq/tegra20-cpufreq.c | 25 +++++++++++++++++++++----
- 1 file changed, 21 insertions(+), 4 deletions(-)
+On Fri, May 18, 2018 at 12:52:40AM -0700, Saravana Kannan wrote:
+> The firmware present in some QCOM chipsets offloads the steps necessary for
+> changing the frequency of some devices (Eg: L3). This driver implements the
+> devfreq interface for this firmware so that various governors could be used
+> to scale the frequency of these devices.
+>
 
-diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
-index 3ad6bded6efc..4bf5ba7da40b 100644
---- a/drivers/cpufreq/tegra20-cpufreq.c
-+++ b/drivers/cpufreq/tegra20-cpufreq.c
-@@ -25,12 +25,13 @@
- #include <linux/types.h>
- 
- #define PLL_P_FREQ	216000
-+#define PLL_C_FREQ	600000
- 
- static struct cpufreq_frequency_table freq_table[] = {
- 	{ .frequency = 216000 },
- 	{ .frequency = 312000 },
- 	{ .frequency = 456000 },
--	{ .frequency = 608000 },
-+	{ .frequency = 600000 },
- 	{ .frequency = 760000 },
- 	{ .frequency = 816000 },
- 	{ .frequency = 912000 },
-@@ -44,6 +45,7 @@ struct tegra20_cpufreq {
- 	struct clk *cpu_clk;
- 	struct clk *pll_x_clk;
- 	struct clk *pll_p_clk;
-+	struct clk *pll_c_clk;
- 	bool pll_x_prepared;
- };
- 
-@@ -58,7 +60,10 @@ static unsigned int tegra_get_intermediate(struct cpufreq_policy *policy,
- 	if (index == 0 || policy->cur == PLL_P_FREQ)
- 		return 0;
- 
--	return PLL_P_FREQ;
-+	if (index == 3 || policy->cur == PLL_C_FREQ)
-+		return 0;
-+
-+	return PLL_C_FREQ;
- }
- 
- static int tegra_target_intermediate(struct cpufreq_policy *policy,
-@@ -79,7 +84,7 @@ static int tegra_target_intermediate(struct cpufreq_policy *policy,
- 	 */
- 	clk_prepare_enable(cpufreq->pll_x_clk);
- 
--	ret = clk_set_parent(cpufreq->cpu_clk, cpufreq->pll_p_clk);
-+	ret = clk_set_parent(cpufreq->cpu_clk, cpufreq->pll_c_clk);
- 	if (ret)
- 		clk_disable_unprepare(cpufreq->pll_x_clk);
- 	else
-@@ -101,6 +106,9 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- 	if (index == 0)
- 		return clk_set_parent(cpufreq->cpu_clk, cpufreq->pll_p_clk);
- 
-+	if (index == 3)
-+		return clk_set_parent(cpufreq->cpu_clk, cpufreq->pll_c_clk);
-+
- 	ret = clk_set_rate(cpufreq->pll_x_clk, rate * 1000);
- 	/* Restore to earlier frequency on error, i.e. pll_x */
- 	if (ret)
-@@ -174,6 +182,12 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
- 		goto put_pll_x;
- 	}
- 
-+	cpufreq->pll_c_clk = clk_get_sys(NULL, "pll_c");
-+	if (IS_ERR(cpufreq->pll_c_clk)) {
-+		err = PTR_ERR(cpufreq->pll_c_clk);
-+		goto put_pll_p;
-+	}
-+
- 	cpufreq->dev = &pdev->dev;
- 	cpufreq->driver.get = cpufreq_generic_get;
- 	cpufreq->driver.attr = cpufreq_generic_attr;
-@@ -190,12 +204,14 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
- 
- 	err = cpufreq_register_driver(&cpufreq->driver);
- 	if (err)
--		goto put_pll_p;
-+		goto put_pll_c;
- 
- 	platform_set_drvdata(pdev, cpufreq);
- 
- 	return 0;
- 
-+put_pll_c:
-+	clk_put(cpufreq->pll_c_clk);
- put_pll_p:
- 	clk_put(cpufreq->pll_p_clk);
- put_pll_x:
-@@ -212,6 +228,7 @@ static int tegra20_cpufreq_remove(struct platform_device *pdev)
- 
- 	cpufreq_unregister_driver(&cpufreq->driver);
- 
-+	clk_put(cpufreq->pll_c_clk);
- 	clk_put(cpufreq->pll_p_clk);
- 	clk_put(cpufreq->pll_x_clk);
- 	clk_put(cpufreq->cpu_clk);
--- 
-2.17.0
+Is this firmware the same one which controls the CPUFreq described in the
+other thread adding cpufreq support ?
+
+> Each client (say cluster 0 and cluster 1) that wants to vote for a
+> particular device's frequency (say, L3 frequency) is represented as a
+> separate voter device (qcom,devfreq-fw-voter) that's a child of the
+> firmware device (qcom,devfreq-fw).
+> 
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> ---
+>  .../bindings/devfreq/devfreq-qcom-fw.txt           |  41 +++
+>  drivers/devfreq/Kconfig                            |  14 +
+>  drivers/devfreq/Makefile                           |   1 +
+>  drivers/devfreq/devfreq_qcom_fw.c                  | 330 +++++++++++++++++++++
+>  4 files changed, 386 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
+>  create mode 100644 drivers/devfreq/devfreq_qcom_fw.c
+> 
+> diff --git a/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt b/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
+> new file mode 100644
+> index 0000000..f882a0b
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/devfreq-qcom-fw.txt
+> @@ -0,0 +1,41 @@
+> +QCOM Devfreq firmware device
+> +
+> +Some Qualcomm Technologies, Inc. (QTI) chipsets have a firmware that
+> +offloads the steps for frequency switching. It provides a table of
+> +supported frequencies and a register to request one of the supported
+> +freqencies.
+> +
+> +The qcom,devfreq-fw represents this firmware as a device. Sometimes,
+
+As a whole or just a part of it ? I am getting an impression that this
+firmware is divided into 'n' different pieces and each of them is
+represented as a separate device.
+
+> +multiple entities want to vote on the frequency request that is sent to the
+> +firmware. The qcom,devfreq-fw-voter represents these voters as child
+> +devices of the corresponding qcom,devfreq-fw device.
+> +
+> +Required properties:
+> +- compatible:		Must be "qcom,devfreq-fw" or "qcom,devfreq-fw-voter"
+
+If this is the same firmware, name it after. What do you need one name
+per subsystem in Linux for the same firmware ?
+
+> +Only for qcom,devfreq-fw:
+> +- reg:			Pairs of physical base addresses and region sizes of
+> +			memory mapped registers.
+> +- reg-names:		Names of the bases for the above registers.
+> +			Required register regions are:
+> +			- "en-base": address of register to check if the
+> +			  firmware is enabled.
+> +			- "ftbl-base": address region for the frequency
+> +			  table.
+
+It's called "lut-base" in the cpufreq binding and that's the only difference
+I see.
+
+> +			- "perf-base": address of register to request a
+> +			  frequency.
+> +
+
+[...]
+
+> +
+> +	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "lut-base");
+> +	if (!res) {
+> +		dev_err(dev, "Unable to find lut-base!\n");
+> +		return -EINVAL;
+> +	}
+> +
+...but in the binding it's called "ftbl-base"
+
+--
+Regards,
+Sudeep
