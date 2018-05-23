@@ -1,47 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 0/2] Fix and cleanup iowait boost
-Date: Wed, 23 May 2018 13:37:52 +0200
-Message-ID: <1864026.X9Jp3j4sSN@aspire.rjw.lan>
-References: <20180522110754.20832-1-patrick.bellasi@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v10 1/2] cpufreq: Add Kryo CPU scaling driver
+Date: Wed, 23 May 2018 17:16:14 +0530
+Message-ID: <CAKohponruWpcjuSDg-=ZbZ1=qm2iPZs36mfKYJ3nQZREkc3JCw@mail.gmail.com>
+References: <1527068454-28921-1-git-send-email-ilialin@codeaurora.org>
+ <1527068454-28921-2-git-send-email-ilialin@codeaurora.org>
+ <3f1ca60e-7aa8-fccc-ab1c-4b7c37731cce@arm.com> <002901d3f286$198878b0$4c996a10$@codeaurora.org>
+ <CAKohponbpErCeTYu9iQm_-dupz5SUr+TKsYXzqmmARB-pq95iA@mail.gmail.com> <002b01d3f28a$0d033900$2709ab00$@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180522110754.20832-1-patrick.bellasi@arm.com>
+In-Reply-To: <002b01d3f28a$0d033900$2709ab00$@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 22, 2018 1:07:52 PM CEST Patrick Bellasi wrote:
-> Here is the (hopefully) final update of:
-> 
->    https://lkml.org/lkml/2018/5/21/114
->    20180521085120.7902-1-patrick.bellasi@arm.com
-> 
-> which just includes the small typo fixes suggested by Jeol and the ack
-> and review tags collected so far.
-> 
-> Cheers Patrick
-> 
-> Changes in v4:
->  - fixed typos in changelog (Joel)
->  - added Reviewed-by Joel Fernandes
->  - added Acked-by Viresh and Peter
-> 
-> Changes in v3:
->  - renamed the iowait boost functions (Peter)
->  - moved boost reset into a dedicated function (Peter)
->  - split the fix into a separated patch (Viresh)
->  - added "Fixes" tag (Viresh)
-> 
-> Patrick Bellasi (2):
->   cpufreq: schedutil: Fix iowait boost reset
->   cpufreq: schedutil: Cleanup and document iowait boost
-> 
->  kernel/sched/cpufreq_schedutil.c | 152 +++++++++++++++++++++++++++------------
->  1 file changed, 108 insertions(+), 44 deletions(-)
-> 
-> 
+On 23 May 2018 at 17:04,  <ilialin@codeaurora.org> wrote:
+> You are right. I already checked that in the code...
+> However, with module_init() the driver fails on reading the nvmem.
 
-Both patches applied, thanks!
+And why is it failing ?
