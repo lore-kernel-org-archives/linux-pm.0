@@ -1,62 +1,94 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v10 1/2] cpufreq: Add Kryo CPU scaling driver
-Date: Wed, 23 May 2018 11:39:37 +0100
-Message-ID: <3f1ca60e-7aa8-fccc-ab1c-4b7c37731cce@arm.com>
-References: <1527068454-28921-1-git-send-email-ilialin@codeaurora.org>
- <1527068454-28921-2-git-send-email-ilialin@codeaurora.org>
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH v1] cpufreq: tegra20: Fix imbalanced clock enable count
+Date: Wed, 23 May 2018 13:44:18 +0300
+Message-ID: <68f62691-9108-9bee-a24d-5c978af8a5ab@gmail.com>
+References: <20180522211420.2006-1-digetx@gmail.com>
+ <20180523055817.subrv6oeckfecpcp@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527068454-28921-2-git-send-email-ilialin@codeaurora.org>
+In-Reply-To: <20180523055817.subrv6oeckfecpcp@vireshk-i7>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 23/05/18 10:40, Ilia Lin wrote:
-> In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
-> the CPU frequency subset and voltage value of each OPP varies
-> based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
-> defines the voltage and frequency value based on the msm-id in SMEM
-> and speedbin blown in the efuse combination.
-> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
-> to provide the OPP framework with required information.
-> This is used to determine the voltage and frequency value for each OPP of
-> operating-points-v2 table when it is parsed by the OPP framework.
+On 23.05.2018 08:58, Viresh Kumar wrote:
+> On 23-05-18, 00:14, Dmitry Osipenko wrote:
+>> Tegra20-cpufreq driver missed enabling the CPU clocks. This results in a
+>> clock-enable refcount disbalance on PLL_P <-> PLL_X reparent, causing
+>> PLL_X to get disabled while it shouldn't. Fix this by enabling the clocks
+>> on the driver probe.
+>>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>
+>> CPUFreq maintainers,
+>>
+>> Please take into account that this patch is made on top of my recent
+>> series of patches [0] "Clean up Tegra20 cpufreq driver" that was fully
+>> reviewed, but seems not applied yet. Let me know if you prefer to re-spin
+>> the [0], including this patch into the series.
+>>
+>> [0] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=45321
 > 
-> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
+> This is already picked by Rafael and is sitting in pm/bleeding-edge
+> branch. Should get merged into linux-next in a day or two.
+> 
+>>  drivers/cpufreq/tegra20-cpufreq.c | 16 +++++++++++++++-
+>>  1 file changed, 15 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+>> index 05f57dcd5215..ca5229265b60 100644
+>> --- a/drivers/cpufreq/tegra20-cpufreq.c
+>> +++ b/drivers/cpufreq/tegra20-cpufreq.c
+>> @@ -176,6 +176,14 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
+>>  		goto put_pll_x;
+>>  	}
+>>  
+>> +	err = clk_prepare_enable(cpufreq->pll_x_clk);
+>> +	if (err)
+>> +		goto put_pll_p;
+>> +
+>> +	err = clk_prepare_enable(cpufreq->pll_p_clk);
+>> +	if (err)
+>> +		goto disable_pll_x;
+>> +
+>>  	cpufreq->dev = &pdev->dev;
+>>  	cpufreq->driver.get = cpufreq_generic_get;
+>>  	cpufreq->driver.attr = cpufreq_generic_attr;
+>> @@ -192,12 +200,16 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
+>>  
+>>  	err = cpufreq_register_driver(&cpufreq->driver);
+>>  	if (err)
+>> -		goto put_pll_p;
+>> +		goto disable_pll_p;
+>>  
+>>  	platform_set_drvdata(pdev, cpufreq);
+>>  
+>>  	return 0;
+>>  
+>> +disable_pll_p:
+>> +	clk_disable_unprepare(cpufreq->pll_p_clk);
+>> +disable_pll_x:
+>> +	clk_disable_unprepare(cpufreq->pll_x_clk);
+>>  put_pll_p:
+>>  	clk_put(cpufreq->pll_p_clk);
+>>  put_pll_x:
+>> @@ -214,6 +226,8 @@ static int tegra20_cpufreq_remove(struct platform_device *pdev)
+>>  
+>>  	cpufreq_unregister_driver(&cpufreq->driver);
+>>  
+>> +	clk_disable_unprepare(cpufreq->pll_p_clk);
+>> +	clk_disable_unprepare(cpufreq->pll_x_clk);
+>>  	clk_put(cpufreq->pll_p_clk);
+>>  	clk_put(cpufreq->pll_x_clk);
+>>  	clk_put(cpufreq->cpu_clk);
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
 
-[...]
-
-> +	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-> +	if (!IS_ERR(pdev))
-> +		return 0;
-> +
-> +	ret = PTR_ERR(pdev);
-> +	dev_err(cpu_dev, "Failed to register platform device\n");
-> +
-> +free_opp:
-> +	for_each_possible_cpu(cpu) {
-> +		if (IS_ERR_OR_NULL(opp_tables[cpu]))
-> +			break;
-> +		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
-> +	}
-> +free_np:
-> +	of_node_put(np);
-> +
-> +	return ret;
-> +}
-> +late_initcall(qcom_cpufreq_kryo_driver_init);
-
-Any particular reason why this *has* to be late initcall ?
-Please change it to module_initcall otherwise.
-Also address the of_node comments from Viresh.
-
-Otherwise, it looks good.
--- 
-Regards,
-Sudeep
+Please hold on this patch, seems I interpreted the cpufreq driver logic
+incorrectly and it is probably fine as it is. I'll re-check later today.
