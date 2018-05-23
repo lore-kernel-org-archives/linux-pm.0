@@ -1,101 +1,249 @@
-From: Stefan Agner <stefan@agner.ch>
-Subject: Re: [PATCH v3 1/3] cpufreq: imx6q: check speed grades for i.MX6ULL
-Date: Wed, 23 May 2018 11:02:14 +0200
-Message-ID: <19d8d6b10d09a7794d9d4bf401cf4b51@agner.ch>
-References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH] cpufreq: Add Kryo CPU scaling driver
+Date: Wed, 23 May 2018 12:05:24 +0300
+Message-ID: <1527066324-24726-1-git-send-email-ilialin@codeaurora.org>
+References: <1526729701-8589-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
+In-Reply-To: <1526729701-8589-1-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?Q?S=C3=A9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
-Cc: linux-arm-kernel@lists.infradead.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org
+To: viresh.kumar@linaro.org, rjw@rjwysocki.net, sudeep.holla@arm.com, linux@armlinux.org.uk
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 22.05.2018 08:28, Sébastien Szymanski wrote:
-> Check the max speed supported from the fuses for i.MX6ULL and update the
-> operating points table accordingly.
-> 
-> Signed-off-by: Sébastien Szymanski <sebastien.szymanski@armadeus.com>
+In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
+the CPU frequency subset and voltage value of each OPP varies
+based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+defines the voltage and frequency value based on the msm-id in SMEM
+and speedbin blown in the efuse combination.
+The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
+to provide the OPP framework with required information.
+This is used to determine the voltage and frequency value for each OPP of
+operating-points-v2 table when it is parsed by the OPP framework.
 
-Tested with a 528MHz and 792MHz rated i.MX 6ULL, looks good!
+Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
+---
+ drivers/cpufreq/Kconfig.arm          |  10 +++
+ drivers/cpufreq/Makefile             |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c  | 163 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 177 insertions(+)
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
 
-Tested-by: Stefan Agner <stefan@agner.ch>
-Reviewed-by: Stefan Agner <stefan@agner.ch>
-
---
-Stefan
-
-> ---
-> 
-> Changes for v3:
->  - none
-> 
-> Changes for v2:
->  - none
-> 
->  drivers/cpufreq/imx6q-cpufreq.c | 29 +++++++++++++++++++++++------
->  1 file changed, 23 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 83cf631fc9bc..f094687cae52 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -266,6 +266,8 @@ static void imx6q_opp_check_speed_grading(struct
-> device *dev)
->  }
->  
->  #define OCOTP_CFG3_6UL_SPEED_696MHZ	0x2
-> +#define OCOTP_CFG3_6ULL_SPEED_792MHZ	0x2
-> +#define OCOTP_CFG3_6ULL_SPEED_900MHZ	0x3
->  
->  static void imx6ul_opp_check_speed_grading(struct device *dev)
->  {
-> @@ -287,16 +289,30 @@ static void
-> imx6ul_opp_check_speed_grading(struct device *dev)
->  	 * Speed GRADING[1:0] defines the max speed of ARM:
->  	 * 2b'00: Reserved;
->  	 * 2b'01: 528000000Hz;
-> -	 * 2b'10: 696000000Hz;
-> -	 * 2b'11: Reserved;
-> +	 * 2b'10: 696000000Hz on i.MX6UL, 792000000Hz on i.MX6ULL;
-> +	 * 2b'11: 900000000Hz on i.MX6ULL only;
->  	 * We need to set the max speed of ARM according to fuse map.
->  	 */
->  	val = readl_relaxed(base + OCOTP_CFG3);
->  	val >>= OCOTP_CFG3_SPEED_SHIFT;
->  	val &= 0x3;
-> -	if (val != OCOTP_CFG3_6UL_SPEED_696MHZ)
-> -		if (dev_pm_opp_disable(dev, 696000000))
-> -			dev_warn(dev, "failed to disable 696MHz OPP\n");
-> +
-> +	if (of_machine_is_compatible("fsl,imx6ul")) {
-> +		if (val != OCOTP_CFG3_6UL_SPEED_696MHZ)
-> +			if (dev_pm_opp_disable(dev, 696000000))
-> +				dev_warn(dev, "failed to disable 696MHz OPP\n");
-> +	}
-> +
-> +	if (of_machine_is_compatible("fsl,imx6ull")) {
-> +		if (val != OCOTP_CFG3_6ULL_SPEED_792MHZ)
-> +			if (dev_pm_opp_disable(dev, 792000000))
-> +				dev_warn(dev, "failed to disable 792MHz OPP\n");
-> +
-> +		if (val != OCOTP_CFG3_6ULL_SPEED_900MHZ)
-> +			if (dev_pm_opp_disable(dev, 900000000))
-> +				dev_warn(dev, "failed to disable 900MHz OPP\n");
-> +	}
-> +
->  	iounmap(base);
->  put_node:
->  	of_node_put(np);
-> @@ -356,7 +372,8 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		goto put_reg;
->  	}
->  
-> -	if (of_machine_is_compatible("fsl,imx6ul"))
-> +	if (of_machine_is_compatible("fsl,imx6ul") ||
-> +	    of_machine_is_compatible("fsl,imx6ull"))
->  		imx6ul_opp_check_speed_grading(cpu_dev);
->  	else
->  		imx6q_opp_check_speed_grading(cpu_dev);
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index de55c7d..0bfd40e 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -124,6 +124,16 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
+ 
++config ARM_QCOM_CPUFREQ_KRYO
++	bool "Qualcomm Kryo based CPUFreq"
++	depends on QCOM_QFPROM
++	depends on QCOM_SMEM
++	select PM_OPP
++	help
++	  This adds the CPUFreq driver for Qualcomm Kryo SoC based boards.
++
++	  If in doubt, say N.
++
+ config ARM_S3C_CPUFREQ
+ 	bool
+ 	help
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 8d24ade..fb4a2ec 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ_KRYO)	+= qcom-cpufreq-kryo.o
+ obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2412_CPUFREQ)	+= s3c2412-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 3b585e4..77d6ab8 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -118,6 +118,9 @@
+ 
+ 	{ .compatible = "nvidia,tegra124", },
+ 
++	{ .compatible = "qcom,apq8096", },
++	{ .compatible = "qcom,msm8996", },
++
+ 	{ .compatible = "st,stih407", },
+ 	{ .compatible = "st,stih410", },
+ 
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+new file mode 100644
+index 0000000..885051e
+--- /dev/null
++++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+@@ -0,0 +1,163 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
++ */
++
++/*
++ * In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
++ * the CPU frequency subset and voltage value of each OPP varies
++ * based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
++ * defines the voltage and frequency value based on the msm-id in SMEM
++ * and speedbin blown in the efuse combination.
++ * The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
++ * to provide the OPP framework with required information.
++ * This is used to determine the voltage and frequency value for each OPP of
++ * operating-points-v2 table when it is parsed by the OPP framework.
++ */
++
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/nvmem-consumer.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++#include <linux/soc/qcom/smem.h>
++
++#define MSM_ID_SMEM	137
++
++enum _msm_id {
++	MSM8996V3 = 0xF6ul,
++	APQ8096V3 = 0x123ul,
++	MSM8996SG = 0x131ul,
++	APQ8096SG = 0x138ul,
++};
++
++enum _msm8996_version {
++	MSM8996_V3,
++	MSM8996_SG,
++	NUM_OF_MSM8996_VERSIONS,
++};
++
++static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
++{
++	size_t len;
++	u32 *msm_id;
++	enum _msm8996_version version;
++
++	msm_id = qcom_smem_get(QCOM_SMEM_HOST_ANY, MSM_ID_SMEM, &len);
++	/* The first 4 bytes are format, next to them is the actual msm-id */
++	msm_id++;
++
++	switch ((enum _msm_id)*msm_id) {
++	case MSM8996V3:
++	case APQ8096V3:
++		version = MSM8996_V3;
++		break;
++	case MSM8996SG:
++	case APQ8096SG:
++		version = MSM8996_SG;
++		break;
++	default:
++		version = NUM_OF_MSM8996_VERSIONS;
++	}
++
++	return version;
++}
++
++static int __init qcom_cpufreq_kryo_driver_init(void)
++{
++	struct opp_table *opp_tables[NR_CPUS] = {0};
++	enum _msm8996_version msm8996_version;
++	struct nvmem_cell *speedbin_nvmem;
++	struct platform_device *pdev;
++	struct device_node *np;
++	struct device *cpu_dev;
++	unsigned cpu;
++	u8 *speedbin;
++	u32 versions;
++	size_t len;
++	int ret;
++
++	cpu_dev = get_cpu_device(0);
++	if (NULL == cpu_dev)
++		return -ENODEV;
++
++	msm8996_version = qcom_cpufreq_kryo_get_msm_id();
++	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
++		dev_err(cpu_dev, "Not Snapdragon 820/821!");
++		return -ENODEV;
++	}
++
++	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
++	if (IS_ERR(np))
++		return PTR_ERR(np);
++
++	if (!of_device_is_compatible(np, "operating-points-v2-kryo-cpu")) {
++		ret = -ENOENT;
++		goto free_np;
++	}
++
++	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
++	if (IS_ERR(speedbin_nvmem)) {
++		ret = PTR_ERR(speedbin_nvmem);
++		dev_err(cpu_dev, "Could not get nvmem cell: %d\n", ret);
++		goto free_np;
++	}
++
++	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++	nvmem_cell_put(speedbin_nvmem);
++
++	switch (msm8996_version) {
++	case MSM8996_V3:
++		versions = 1 << (unsigned int)(*speedbin);
++		break;
++	case MSM8996_SG:
++		versions = 1 << ((unsigned int)(*speedbin) + 4);
++		break;
++	default:
++		BUG();
++		break;
++	}
++
++	for_each_possible_cpu(cpu) {
++		cpu_dev = get_cpu_device(cpu);
++		if (NULL == cpu_dev) {
++			ret = -ENODEV;
++			goto free_opp;
++		}
++
++		opp_tables[cpu] = dev_pm_opp_set_supported_hw(cpu_dev,
++							      &versions, 1);
++		if (IS_ERR(opp_tables[cpu])) {
++			ret = PTR_ERR(opp_tables[cpu]);
++			dev_err(cpu_dev, "Failed to set supported hardware\n");
++			goto free_opp;
++		}
++	}
++
++	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
++	if (!IS_ERR(pdev))
++		return 0;
++
++	ret = PTR_ERR(pdev);
++	dev_err(cpu_dev, "Failed to register platform device\n");
++
++free_opp:
++	for_each_possible_cpu(cpu) {
++		if (IS_ERR_OR_NULL(opp_tables[cpu]))
++			break;
++		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
++	}
++free_np:
++	of_node_put(np);
++
++	return ret;
++}
++late_initcall(qcom_cpufreq_kryo_driver_init);
++
++MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
++MODULE_LICENSE("GPL v2");
+-- 
+1.9.1
