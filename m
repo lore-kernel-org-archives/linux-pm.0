@@ -1,85 +1,93 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH RFC] schedutil: Address the r/w ordering race in kthread
-Date: Wed, 23 May 2018 08:47:45 +0200
-Message-ID: <20180523064745.GA30909@localhost.localdomain>
-References: <20180522235028.80564-1-joel@joelfernandes.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Elaine Zhang <zhangqing@rock-chips.com>
+Subject: [PATCH v3 13/13] soc: rockchip: power-domain: add power domain support for px30
+Date: Wed, 23 May 2018 14:53:32 +0800
+Message-ID: <1527058412-10754-1-git-send-email-zhangqing@rock-chips.com>
+References: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180522235028.80564-1-joel@joelfernandes.org>
+In-Reply-To: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Joel Fernandes (Google)" <joelaf@google.com>
-Cc: linux-kernel@vger.kernel.org, "Joel Fernandes (Google)" <joel@joelfernandes.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
+To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Joel,
+From: Finley Xiao <finley.xiao@rock-chips.com>
 
-On 22/05/18 16:50, Joel Fernandes (Google) wrote:
-> Currently there is a race in schedutil code for slow-switch single-CPU
-> systems. Fix it by enforcing ordering the write to work_in_progress to
-> happen before the read of next_freq.
-> 
-> Kthread                                       Sched update
-> 
-> sugov_work()				      sugov_update_single()
-> 
->       lock();
->       // The CPU is free to rearrange below
->       // two in any order, so it may clear
->       // the flag first and then read next
->       // freq. Lets assume it does.
->       work_in_progress = false
-> 
->                                                if (work_in_progress)
->                                                      return;
-> 
->                                                sg_policy->next_freq = 0;
->       freq = sg_policy->next_freq;
->                                                sg_policy->next_freq = real-freq;
->       unlock();
-> 
-> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
-> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> CC: Peter Zijlstra <peterz@infradead.org>
-> CC: Ingo Molnar <mingo@redhat.com>
-> CC: Patrick Bellasi <patrick.bellasi@arm.com>
-> CC: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Luca Abeni <luca.abeni@santannapisa.it>
-> CC: Todd Kjos <tkjos@google.com>
-> CC: claudio@evidence.eu.com
-> CC: kernel-team@android.com
-> CC: linux-pm@vger.kernel.org
-> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
-> ---
-> I split this into separate patch, because this race can also happen in
-> mainline.
-> 
->  kernel/sched/cpufreq_schedutil.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 5c482ec38610..ce7749da7a44 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -401,6 +401,13 @@ static void sugov_work(struct kthread_work *work)
->  	 */
->  	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
->  	freq = sg_policy->next_freq;
-> +
-> +	/*
-> +	 * sugov_update_single can access work_in_progress without update_lock,
-> +	 * make sure next_freq is read before work_in_progress is set.
+This driver is modified to support PX30 SoC.
 
-s/set/reset/
+Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+---
+ drivers/soc/rockchip/pm_domains.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-> +	 */
-> +	smp_mb();
-> +
-
-Also, doesn't this need a corresponding barrier (I guess in
-sugov_should_update_freq)? That being a wmb and this a rmb?
-
-Best,
-
-- Juri
+diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
+index 90dcd5e21ae6..d0c5615132e3 100644
+--- a/drivers/soc/rockchip/pm_domains.c
++++ b/drivers/soc/rockchip/pm_domains.c
+@@ -18,6 +18,7 @@
+ #include <linux/clk.h>
+ #include <linux/regmap.h>
+ #include <linux/mfd/syscon.h>
++#include <dt-bindings/power/px30-power.h>
+ #include <dt-bindings/power/rk3036-power.h>
+ #include <dt-bindings/power/rk3128-power.h>
+ #include <dt-bindings/power/rk3228-power.h>
+@@ -114,6 +115,9 @@ struct rockchip_pmu {
+ 	.active_wakeup = wakeup,			\
+ }
+ 
++#define DOMAIN_PX30(pwr, status, req, wakeup)		\
++	DOMAIN_M(pwr, status, req, (req) + 16, req, wakeup)
++
+ #define DOMAIN_RK3288(pwr, status, req, wakeup)		\
+ 	DOMAIN(pwr, status, req, req, (req) + 16, wakeup)
+ 
+@@ -712,6 +716,17 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 	return error;
+ }
+ 
++static const struct rockchip_domain_info px30_pm_domains[] = {
++	[PX30_PD_USB]		= DOMAIN_PX30(5, 5, 10, false),
++	[PX30_PD_SDCARD]	= DOMAIN_PX30(8, 8, 9, false),
++	[PX30_PD_GMAC]		= DOMAIN_PX30(10, 10, 6, false),
++	[PX30_PD_MMC_NAND]	= DOMAIN_PX30(11, 11, 5, false),
++	[PX30_PD_VPU]		= DOMAIN_PX30(12, 12, 14, false),
++	[PX30_PD_VO]		= DOMAIN_PX30(13, 13, 7, false),
++	[PX30_PD_VI]		= DOMAIN_PX30(14, 14, 8, false),
++	[PX30_PD_GPU]		= DOMAIN_PX30(15, 15, 2, false),
++};
++
+ static const struct rockchip_domain_info rk3036_pm_domains[] = {
+ 	[RK3036_PD_MSCH]	= DOMAIN_RK3036(14, 23, 30, true),
+ 	[RK3036_PD_CORE]	= DOMAIN_RK3036(13, 17, 24, false),
+@@ -811,6 +826,17 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 	[RK3399_PD_SDIOAUDIO]	= DOMAIN_RK3399(31, 31, 29, true),
+ };
+ 
++static const struct rockchip_pmu_info px30_pmu = {
++	.pwr_offset = 0x18,
++	.status_offset = 0x20,
++	.req_offset = 0x64,
++	.idle_offset = 0x6c,
++	.ack_offset = 0x6c,
++
++	.num_domains = ARRAY_SIZE(px30_pm_domains),
++	.domain_info = px30_pm_domains,
++};
++
+ static const struct rockchip_pmu_info rk3036_pmu = {
+ 	.req_offset = 0x148,
+ 	.idle_offset = 0x14c,
+@@ -915,6 +941,10 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
+ 
+ static const struct of_device_id rockchip_pm_domain_dt_match[] = {
+ 	{
++		.compatible = "rockchip,px30-power-controller",
++		.data = (void *)&px30_pmu,
++	},
++	{
+ 		.compatible = "rockchip,rk3036-power-controller",
+ 		.data = (void *)&rk3036_pmu,
+ 	},
+-- 
+1.9.1
