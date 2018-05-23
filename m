@@ -1,130 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 8/9] PM / Domains: Add support for multi PM domains per
- device to genpd
-Date: Wed, 23 May 2018 08:12:27 +0200
-Message-ID: <CAPDyKFo_69kSS6UzdsJeyeiiED=S=chsdkP+R43qMHDEbZ8n_A@mail.gmail.com>
-References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
- <1526639490-12167-9-git-send-email-ulf.hansson@linaro.org>
- <f5589b88-acf8-b491-df79-e359e596c8d0@nvidia.com> <CAPDyKFr_7hbs-MC1jQn5uAgSnb1UGufXZdEmUqNTM63KemTe1g@mail.gmail.com>
- <5a79d3a2-d090-645b-da69-524b7e7a4d90@nvidia.com> <51f7de26-579a-8b9e-4e79-f4eee923ab38@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Elaine Zhang <zhangqing@rock-chips.com>
+Subject: [PATCH v3 00/13] add power domain support for Rockchip Socs
+Date: Wed, 23 May 2018 14:48:36 +0800
+Message-ID: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51f7de26-579a-8b9e-4e79-f4eee923ab38@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Rajendra, Jon,
+add power domain support for RK3036/RK3128/RK3228/PX30 Soc.
+fix up the wrong value when set power domain up.
 
-On 23 May 2018 at 06:51, Rajendra Nayak <rnayak@codeaurora.org> wrote:
->
->
-> On 05/23/2018 02:25 AM, Jon Hunter wrote:
->>
->> On 22/05/18 15:47, Ulf Hansson wrote:
->>> [...]
->>>
->>>>>
->>>>> +/**
->>>>> + * genpd_dev_pm_attach_by_id() - Attach a device to one of its PM domain.
->>>>> + * @dev: Device to attach.
->>>>> + * @index: The index of the PM domain.
->>>>> + *
->>>>> + * Parse device's OF node to find a PM domain specifier at the provided @index.
->>>>> + * If such is found, allocates a new device and attaches it to retrieved
->>>>> + * pm_domain ops.
->>>>> + *
->>>>> + * Returns the allocated device if successfully attached PM domain, NULL when
->>>>> + * the device don't need a PM domain or have a single PM domain, else PTR_ERR()
->>>>> + * in case of failures. Note that if a power-domain exists for the device, but
->>>>> + * cannot be found or turned on, then return PTR_ERR(-EPROBE_DEFER) to ensure
->>>>> + * that the device is not probed and to re-try again later.
->>>>> + */
->>>>> +struct device *genpd_dev_pm_attach_by_id(struct device *dev,
->>>>> +                                      unsigned int index)
->>>>> +{
->>>>> +     struct device *genpd_dev;
->>>>> +     int num_domains;
->>>>> +     int ret;
->>>>> +
->>>>> +     if (!dev->of_node)
->>>>> +             return NULL;
->>>>> +
->>>>> +     /* Deal only with devices using multiple PM domains. */
->>>>> +     num_domains = of_count_phandle_with_args(dev->of_node, "power-domains",
->>>>> +                                              "#power-domain-cells");
->>>>> +     if (num_domains < 2 || index >= num_domains)
->>>>> +             return NULL;
->>>>> +
->>>>> +     /* Allocate and register device on the genpd bus. */
->>>>> +     genpd_dev = kzalloc(sizeof(*genpd_dev), GFP_KERNEL);
->>>>> +     if (!genpd_dev)
->>>>> +             return ERR_PTR(-ENOMEM);
->>>>> +
->>>>> +     dev_set_name(genpd_dev, "genpd:%u:%s", index, dev_name(dev));
->>>>> +     genpd_dev->bus = &genpd_bus_type;
->>>>> +     genpd_dev->release = genpd_release_dev;
->>>>> +
->>>>> +     ret = device_register(genpd_dev);
->>>>> +     if (ret) {
->>>>> +             kfree(genpd_dev);
->>>>> +             return ERR_PTR(ret);
->>>>> +     }
->>>>> +
->>>>> +     /* Try to attach the device to the PM domain at the specified index. */
->>>>> +     ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index);
->>>>> +     if (ret < 1) {
->>>>> +             device_unregister(genpd_dev);
->>>>> +             return ret ? ERR_PTR(ret) : NULL;
->>>>> +     }
->>>>> +
->>>>> +     pm_runtime_set_active(genpd_dev);
->>>>> +     pm_runtime_enable(genpd_dev);
->>>>> +
->>>>> +     return genpd_dev;
->>>>> +}
->>>>> +EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id);
->>>>
->>>> Thanks for sending this. Believe it or not this has still been on my to-do list
->>>> and so we definitely need a solution for Tegra.
->>>>
->>>> Looking at the above it appears that additional power-domains exposed as devices
->>>> to the client device. So I assume that this means that the drivers for devices
->>>> with multiple power-domains will need to call RPM APIs for each of these
->>>> additional power-domains. Is that correct?
->>>
->>> They can, but should not!
->>>
->>> Instead, the driver shall use device_link_add() and device_link_del(),
->>> dynamically, depending on what PM domain that their original device
->>> needs for the current running use case.
->>>
->>> In that way, they keep existing runtime PM deployment, operating on
->>> its original device.
->>
->> OK, sounds good. Any reason why the linking cannot be handled by the above API? Is there a use-case where you would not want it linked?
->
-> I am guessing the linking is what would give the driver the ability to decide which subset of powerdomains it actually wants to control
-> at any point using runtime PM. If we have cases wherein the driver would want to turn on/off _all_ its associated powerdomains _always_
-> then a default linking of all would help.
+Change in V2:
+Fix up the commit message description and Assign author.
 
-First, I think we need to decide on *where* the linking should be
-done, not at both places, as that would just mess up synchronization
-of who is responsible for calling the device_link_del() at detach.
+Change in V3:
+[PATCH 01/13]: The Copyright description use SPDX tag instead.
+[PATCH 05/13]: The Copyright description use SPDX tag instead.
+[PATCH 08/13]: The Copyright description use SPDX tag instead.
+[PATCH 11/13]: The Copyright description use SPDX tag instead.
 
-Second, It would in principle be fine to call device_link_add() and
-device_link_del() as a part of the attach/detach APIs. However, there
-is a downside to such solution, which would be that the driver then
-needs call the detach API, just to do device_link_del(). Of course
-then it would also needs to call the attach API later if/when needed.
-Doing this adds unnecessary overhead - comparing to just let the
-driver call device_link_add|del() when needed. On the upside, yes, it
-would put less burden on the drivers as it then only needs to care
-about using one set of functions.
+Caesar Wang (3):
+  dt-bindings: power: add RK3036 SoCs header for power-domain
+  dt-bindings: add binding for rk3036 power domains
+  Soc: rockchip: power-domain: add power domain support for rk3036
 
-Which solution do you prefer?
+Elaine Zhang (6):
+  dt-bindings: power: add RK3128 SoCs header for power-domain
+  dt-bindings: add binding for rk3128 power domains
+  soc: rockchip: power-domain: add power domain support for rk3128
+  dt-bindings: power: add RK3228 SoCs header for power-domain
+  dt-bindings: add binding for rk3228 power domains
+  soc: rockchip: power-domain: add power domain support for rk3228
 
-Kind regards
-Uffe
+Finley Xiao (4):
+  soc: rockchip: power-domain: Fix wrong value when power up pd
+  dt-bindings: power: add PX30 SoCs header for power-domain
+  dt-bindings: add binding for px30 power domains
+  soc: rockchip: power-domain: add power domain support for px30
+
+ .../bindings/soc/rockchip/power_domain.txt         |  12 +++
+ drivers/soc/rockchip/pm_domains.c                  | 116 ++++++++++++++++++++-
+ include/dt-bindings/power/px30-power.h             |  27 +++++
+ include/dt-bindings/power/rk3036-power.h           |  13 +++
+ include/dt-bindings/power/rk3128-power.h           |  14 +++
+ include/dt-bindings/power/rk3228-power.h           |  21 ++++
+ 6 files changed, 202 insertions(+), 1 deletion(-)
+ create mode 100644 include/dt-bindings/power/px30-power.h
+ create mode 100644 include/dt-bindings/power/rk3036-power.h
+ create mode 100644 include/dt-bindings/power/rk3128-power.h
+ create mode 100644 include/dt-bindings/power/rk3228-power.h
+
+-- 
+1.9.1
