@@ -1,28 +1,31 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH RFC] schedutil: Address the r/w ordering race in kthread
-Date: Tue, 22 May 2018 17:18:08 -0700
-Message-ID: <20180523001808.GC55359@joelaf.mtv.corp.google.com>
-References: <20180522235028.80564-1-joel@joelfernandes.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/3] cpufreq: imx6q: check speed grades for i.MX6ULL
+Date: Wed, 23 May 2018 09:59:53 +0530
+Message-ID: <20180523042953.kcp2h5xtwjrjponn@vireshk-i7>
+References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180522235028.80564-1-joel@joelfernandes.org>
+In-Reply-To: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Joel Fernandes (Google)" <joelaf@google.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
+To: =?utf-8?Q?S=C3=A9bastien?= Szymanski <sebastien.szymanski@armadeus.com>
+Cc: linux-arm-kernel@lists.infradead.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 22, 2018 at 04:50:28PM -0700, Joel Fernandes (Google) wrote:
-> Currently there is a race in schedutil code for slow-switch single-CPU
-> systems. Fix it by enforcing ordering the write to work_in_progress to
-> happen before the read of next_freq.
+On 22-05-18, 08:28, Sébastien Szymanski wrote:
+> Check the max speed supported from the fuses for i.MX6ULL and update the
+> operating points table accordingly.
+> 
+> Signed-off-by: Sébastien Szymanski <sebastien.szymanski@armadeus.com>
+> ---
+> 
+> Changes for v3:
+>  - none
 
-Aargh, s/before/after/.
+@Sascha and Shawn: Can you guys please Ack this series if there is
+nothing wrong with it ?
 
-Commit log has above issue but code is Ok. Should I resend this patch or
-are there any additional comments? thanks!
-
- - Joel
-
-[..] 
+-- 
+viresh
