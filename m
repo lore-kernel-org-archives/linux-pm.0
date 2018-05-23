@@ -1,55 +1,54 @@
 From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v3 00/13] add power domain support for Rockchip Socs
-Date: Wed, 23 May 2018 14:48:36 +0800
-Message-ID: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
+Subject: [PATCH v3 02/13] dt-bindings: add binding for rk3036 power domains
+Date: Wed, 23 May 2018 14:48:38 +0800
+Message-ID: <1527058129-10260-3-git-send-email-zhangqing@rock-chips.com>
+References: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
 Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-add power domain support for RK3036/RK3128/RK3228/PX30 Soc.
-fix up the wrong value when set power domain up.
+From: Caesar Wang <wxt@rock-chips.com>
 
-Change in V2:
-Fix up the commit message description and Assign author.
+Add binding documentation for the power domains
+found on Rockchip RK3036 SoCs.
 
-Change in V3:
-[PATCH 01/13]: The Copyright description use SPDX tag instead.
-[PATCH 05/13]: The Copyright description use SPDX tag instead.
-[PATCH 08/13]: The Copyright description use SPDX tag instead.
-[PATCH 11/13]: The Copyright description use SPDX tag instead.
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+ Documentation/devicetree/bindings/soc/rockchip/power_domain.txt | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Caesar Wang (3):
-  dt-bindings: power: add RK3036 SoCs header for power-domain
-  dt-bindings: add binding for rk3036 power domains
-  Soc: rockchip: power-domain: add power domain support for rk3036
-
-Elaine Zhang (6):
-  dt-bindings: power: add RK3128 SoCs header for power-domain
-  dt-bindings: add binding for rk3128 power domains
-  soc: rockchip: power-domain: add power domain support for rk3128
-  dt-bindings: power: add RK3228 SoCs header for power-domain
-  dt-bindings: add binding for rk3228 power domains
-  soc: rockchip: power-domain: add power domain support for rk3228
-
-Finley Xiao (4):
-  soc: rockchip: power-domain: Fix wrong value when power up pd
-  dt-bindings: power: add PX30 SoCs header for power-domain
-  dt-bindings: add binding for px30 power domains
-  soc: rockchip: power-domain: add power domain support for px30
-
- .../bindings/soc/rockchip/power_domain.txt         |  12 +++
- drivers/soc/rockchip/pm_domains.c                  | 116 ++++++++++++++++++++-
- include/dt-bindings/power/px30-power.h             |  27 +++++
- include/dt-bindings/power/rk3036-power.h           |  13 +++
- include/dt-bindings/power/rk3128-power.h           |  14 +++
- include/dt-bindings/power/rk3228-power.h           |  21 ++++
- 6 files changed, 202 insertions(+), 1 deletion(-)
- create mode 100644 include/dt-bindings/power/px30-power.h
- create mode 100644 include/dt-bindings/power/rk3036-power.h
- create mode 100644 include/dt-bindings/power/rk3128-power.h
- create mode 100644 include/dt-bindings/power/rk3228-power.h
-
+diff --git a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
+index 301d2a9bc1b8..79924ee9ae86 100644
+--- a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
++++ b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
+@@ -5,6 +5,7 @@ powered up/down by software based on different application scenes to save power.
+ 
+ Required properties for power domain controller:
+ - compatible: Should be one of the following.
++	"rockchip,rk3036-power-controller" - for RK3036 SoCs.
+ 	"rockchip,rk3288-power-controller" - for RK3288 SoCs.
+ 	"rockchip,rk3328-power-controller" - for RK3328 SoCs.
+ 	"rockchip,rk3366-power-controller" - for RK3366 SoCs.
+@@ -17,6 +18,7 @@ Required properties for power domain controller:
+ 
+ Required properties for power domain sub nodes:
+ - reg: index of the power domain, should use macros in:
++	"include/dt-bindings/power/rk3036-power.h" - for RK3036 type power domain.
+ 	"include/dt-bindings/power/rk3288-power.h" - for RK3288 type power domain.
+ 	"include/dt-bindings/power/rk3328-power.h" - for RK3328 type power domain.
+ 	"include/dt-bindings/power/rk3366-power.h" - for RK3366 type power domain.
+@@ -93,6 +95,7 @@ Node of a device using power domains must have a power-domains property,
+ containing a phandle to the power device node and an index specifying which
+ power domain to use.
+ The index should use macros in:
++	"include/dt-bindings/power/rk3036-power.h" - for rk3036 type power domain.
+ 	"include/dt-bindings/power/rk3288-power.h" - for rk3288 type power domain.
+ 	"include/dt-bindings/power/rk3328-power.h" - for rk3328 type power domain.
+ 	"include/dt-bindings/power/rk3366-power.h" - for rk3366 type power domain.
 -- 
 1.9.1
