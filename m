@@ -1,141 +1,85 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even when
- kthread kicked
-Date: Wed, 23 May 2018 10:18:25 +0200
-Message-ID: <CAJZ5v0gEop-1Xp81fTuNQ+cxPwfYx-_1MMLyJSR3piCT8ifhFg@mail.gmail.com>
-References: <20180518185501.173552-1-joel@joelfernandes.org>
- <20180522103415.cuutobi5kbhj4gcw@vireshk-i7> <20180522220953.GB40506@joelaf.mtv.corp.google.com>
+Subject: Re: [PATCH RFC] schedutil: Address the r/w ordering race in kthread
+Date: Wed, 23 May 2018 10:23:56 +0200
+Message-ID: <CAJZ5v0hKB7s52K+=0Gk-_10tLzORN+VXnJuVe9odyEdwgK-PnQ@mail.gmail.com>
+References: <20180522235028.80564-1-joel@joelfernandes.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180522220953.GB40506@joelaf.mtv.corp.google.com>
+In-Reply-To: <20180522235028.80564-1-joel@joelfernandes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Joel Fernandes (Google.)" <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>
+To: "Joel Fernandes (Google)" <joelaf@google.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Joel Fernandes (Google)" <joel@joelfernandes.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, Claudio Scordino <claudio@evidence.eu.com>, kernel-team@android.com, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 23, 2018 at 12:09 AM, Joel Fernandes <joel@joelfernandes.org> wrote:
-> On Tue, May 22, 2018 at 04:04:15PM +0530, Viresh Kumar wrote:
->> Okay, me and Rafael were discussing this patch, locking and races around this.
->>
->> On 18-05-18, 11:55, Joel Fernandes (Google.) wrote:
->> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->> > index e13df951aca7..5c482ec38610 100644
->> > --- a/kernel/sched/cpufreq_schedutil.c
->> > +++ b/kernel/sched/cpufreq_schedutil.c
->> > @@ -92,9 +92,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->> >         !cpufreq_can_do_remote_dvfs(sg_policy->policy))
->> >             return false;
->> >
->> > -   if (sg_policy->work_in_progress)
->> > -           return false;
->> > -
->> >     if (unlikely(sg_policy->need_freq_update)) {
->> >             sg_policy->need_freq_update = false;
->> >             /*
->> > @@ -128,7 +125,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
->> >
->> >             policy->cur = next_freq;
->> >             trace_cpu_frequency(next_freq, smp_processor_id());
->> > -   } else {
->> > +   } else if (!sg_policy->work_in_progress) {
->> >             sg_policy->work_in_progress = true;
->> >             irq_work_queue(&sg_policy->irq_work);
->> >     }
->> > @@ -291,6 +288,13 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->> >
->> >     ignore_dl_rate_limit(sg_cpu, sg_policy);
->> >
->> > +   /*
->> > +    * For slow-switch systems, single policy requests can't run at the
->> > +    * moment if update is in progress, unless we acquire update_lock.
->> > +    */
->> > +   if (sg_policy->work_in_progress)
->> > +           return;
->> > +
->> >     if (!sugov_should_update_freq(sg_policy, time))
->> >             return;
->> >
->> > @@ -382,13 +386,27 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
->> >  static void sugov_work(struct kthread_work *work)
->> >  {
->> >     struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
->> > +   unsigned int freq;
->> > +   unsigned long flags;
->> > +
->> > +   /*
->> > +    * Hold sg_policy->update_lock shortly to handle the case where:
->> > +    * incase sg_policy->next_freq is read here, and then updated by
->> > +    * sugov_update_shared just before work_in_progress is set to false
->> > +    * here, we may miss queueing the new update.
->> > +    *
->> > +    * Note: If a work was queued after the update_lock is released,
->> > +    * sugov_work will just be called again by kthread_work code; and the
->> > +    * request will be proceed before the sugov thread sleeps.
->> > +    */
->> > +   raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
->> > +   freq = sg_policy->next_freq;
->> > +   sg_policy->work_in_progress = false;
->> > +   raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
->> >
->> >     mutex_lock(&sg_policy->work_lock);
->> > -   __cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
->> > -                           CPUFREQ_RELATION_L);
->> > +   __cpufreq_driver_target(sg_policy->policy, freq, CPUFREQ_RELATION_L);
->> >     mutex_unlock(&sg_policy->work_lock);
->> > -
->> > -   sg_policy->work_in_progress = false;
->> >  }
->>
->> And I do see a race here for single policy systems doing slow switching.
->>
->> Kthread                                                 Sched update
->>
->> sugov_work()                                            sugov_update_single()
->>
->>         lock();
->>         // The CPU is free to rearrange below
->>         // two in any order, so it may clear
->>         // the flag first and then read next
->>         // freq. Lets assume it does.
->>         work_in_progress = false
->>
->>                                                         if (work_in_progress)
->>                                                                 return;
->>
->>                                                         sg_policy->next_freq = 0;
->>         freq = sg_policy->next_freq;
->>                                                         sg_policy->next_freq = real-next-freq;
->>         unlock();
->>
+On Wed, May 23, 2018 at 1:50 AM, Joel Fernandes (Google)
+<joelaf@google.com> wrote:
+> Currently there is a race in schedutil code for slow-switch single-CPU
+> systems. Fix it by enforcing ordering the write to work_in_progress to
+> happen before the read of next_freq.
 >
-> I agree with the race you describe for single policy slow-switch. Good find :)
+> Kthread                                       Sched update
 >
-> The mainline sugov_work could also do such reordering in sugov_work, I think. Even
-> with the mutex_unlock in mainline's sugov_work, that work_in_progress write could
-> be reordered by the CPU to happen before the read of next_freq. AIUI,
-> mutex_unlock is expected to be only a release-barrier.
+> sugov_work()                                  sugov_update_single()
 >
-> Although to be safe, I could just put an smp_mb() there. I believe with that,
-> no locking would be needed for such case.
+>       lock();
+>       // The CPU is free to rearrange below
+>       // two in any order, so it may clear
+>       // the flag first and then read next
+>       // freq. Lets assume it does.
+>       work_in_progress = false
+>
+>                                                if (work_in_progress)
+>                                                      return;
+>
+>                                                sg_policy->next_freq = 0;
+>       freq = sg_policy->next_freq;
+>                                                sg_policy->next_freq = real-freq;
+>       unlock();
+>
+> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> CC: Peter Zijlstra <peterz@infradead.org>
+> CC: Ingo Molnar <mingo@redhat.com>
+> CC: Patrick Bellasi <patrick.bellasi@arm.com>
+> CC: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Luca Abeni <luca.abeni@santannapisa.it>
+> CC: Todd Kjos <tkjos@google.com>
+> CC: claudio@evidence.eu.com
+> CC: kernel-team@android.com
+> CC: linux-pm@vger.kernel.org
+> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+> ---
+> I split this into separate patch, because this race can also happen in
+> mainline.
+>
+>  kernel/sched/cpufreq_schedutil.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 5c482ec38610..ce7749da7a44 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -401,6 +401,13 @@ static void sugov_work(struct kthread_work *work)
+>          */
+>         raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+>         freq = sg_policy->next_freq;
+> +
+> +       /*
+> +        * sugov_update_single can access work_in_progress without update_lock,
+> +        * make sure next_freq is read before work_in_progress is set.
+> +        */
+> +       smp_mb();
+> +
 
-Yes, but leaving the work_in_progress check in sugov_update_single()
-means that the original problem is still there in the one-CPU policy
-case.  Namely, utilization updates coming in between setting
-work_in_progress in sugov_update_commit() and clearing it in
-sugov_work() will be discarded in the one-CPU policy case, but not in
-the shared policy case.
+This requires a corresponding barrier somewhere else.
 
-> I'll send out a v3 with Acks for the original patch,
+>         sg_policy->work_in_progress = false;
+>         raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+>
+> --
 
-OK
+Also, as I said I actually would prefer to use the spinlock in the
+one-CPU case when the kthread is used.
 
-> and the send out the smp_mb() as a separate patch if that's Ok.
-
-I would prefer to use a spinlock in the one-CPU policy non-fast-switch
-case and remove the work_in_progress check from sugov_update_single().
-
-I can do a patch on top of yours for that.  In fact, I've done that already. :-)
-
-Thanks,
-Rafael
+I'll have a patch for that shortly.
