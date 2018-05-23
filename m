@@ -1,94 +1,29 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v1] cpufreq: tegra20: Fix imbalanced clock enable count
-Date: Wed, 23 May 2018 13:44:18 +0300
-Message-ID: <68f62691-9108-9bee-a24d-5c978af8a5ab@gmail.com>
-References: <20180522211420.2006-1-digetx@gmail.com>
- <20180523055817.subrv6oeckfecpcp@vireshk-i7>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v3 01/13] dt-bindings: power: add RK3036 SoCs header for power-domain
+Date: Wed, 23 May 2018 12:55:43 +0200
+Message-ID: <2903523.1zsTO8Rtfs@diego>
+References: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com> <1527058129-10260-2-git-send-email-zhangqing@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180523055817.subrv6oeckfecpcp@vireshk-i7>
-Content-Language: en-US
+In-Reply-To: <1527058129-10260-2-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Elaine Zhang <zhangqing@rock-chips.com>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-On 23.05.2018 08:58, Viresh Kumar wrote:
-> On 23-05-18, 00:14, Dmitry Osipenko wrote:
->> Tegra20-cpufreq driver missed enabling the CPU clocks. This results in a
->> clock-enable refcount disbalance on PLL_P <-> PLL_X reparent, causing
->> PLL_X to get disabled while it shouldn't. Fix this by enabling the clocks
->> on the driver probe.
->>
->> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->> ---
->>
->> CPUFreq maintainers,
->>
->> Please take into account that this patch is made on top of my recent
->> series of patches [0] "Clean up Tegra20 cpufreq driver" that was fully
->> reviewed, but seems not applied yet. Let me know if you prefer to re-spin
->> the [0], including this patch into the series.
->>
->> [0] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=45321
+Am Mittwoch, 23. Mai 2018, 08:48:37 CEST schrieb Elaine Zhang:
+> From: Caesar Wang <wxt@rock-chips.com>
 > 
-> This is already picked by Rafael and is sitting in pm/bleeding-edge
-> branch. Should get merged into linux-next in a day or two.
+> According to a description from TRM, add all the power domains.
 > 
->>  drivers/cpufreq/tegra20-cpufreq.c | 16 +++++++++++++++-
->>  1 file changed, 15 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
->> index 05f57dcd5215..ca5229265b60 100644
->> --- a/drivers/cpufreq/tegra20-cpufreq.c
->> +++ b/drivers/cpufreq/tegra20-cpufreq.c
->> @@ -176,6 +176,14 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
->>  		goto put_pll_x;
->>  	}
->>  
->> +	err = clk_prepare_enable(cpufreq->pll_x_clk);
->> +	if (err)
->> +		goto put_pll_p;
->> +
->> +	err = clk_prepare_enable(cpufreq->pll_p_clk);
->> +	if (err)
->> +		goto disable_pll_x;
->> +
->>  	cpufreq->dev = &pdev->dev;
->>  	cpufreq->driver.get = cpufreq_generic_get;
->>  	cpufreq->driver.attr = cpufreq_generic_attr;
->> @@ -192,12 +200,16 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
->>  
->>  	err = cpufreq_register_driver(&cpufreq->driver);
->>  	if (err)
->> -		goto put_pll_p;
->> +		goto disable_pll_p;
->>  
->>  	platform_set_drvdata(pdev, cpufreq);
->>  
->>  	return 0;
->>  
->> +disable_pll_p:
->> +	clk_disable_unprepare(cpufreq->pll_p_clk);
->> +disable_pll_x:
->> +	clk_disable_unprepare(cpufreq->pll_x_clk);
->>  put_pll_p:
->>  	clk_put(cpufreq->pll_p_clk);
->>  put_pll_x:
->> @@ -214,6 +226,8 @@ static int tegra20_cpufreq_remove(struct platform_device *pdev)
->>  
->>  	cpufreq_unregister_driver(&cpufreq->driver);
->>  
->> +	clk_disable_unprepare(cpufreq->pll_p_clk);
->> +	clk_disable_unprepare(cpufreq->pll_x_clk);
->>  	clk_put(cpufreq->pll_p_clk);
->>  	clk_put(cpufreq->pll_x_clk);
->>  	clk_put(cpufreq->cpu_clk);
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
 
-Please hold on this patch, seems I interpreted the cpufreq driver logic
-incorrectly and it is probably fine as it is. I'll re-check later today.
+applied for 4.18 or 4.19 (not sure yet) after adding
+Rob's Review-tag from v2.
+
+
+Thanks
+Heiko
