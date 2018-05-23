@@ -1,69 +1,145 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 00/13] add power domain support for Rockchip Socs
-Date: Wed, 23 May 2018 12:02:22 +0200
-Message-ID: <CAPDyKFrMBS5-TckrB22=S-JCAooMpg+g1BgRModMWGaoBJcJLA@mail.gmail.com>
-References: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v10 1/2] cpufreq: Add Kryo CPU scaling driver
+Date: Wed, 23 May 2018 15:33:16 +0530
+Message-ID: <20180523100316.27m4epl7deitfrnt@vireshk-i7>
+References: <1527068454-28921-1-git-send-email-ilialin@codeaurora.org>
+ <1527068454-28921-2-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
+Content-Disposition: inline
+In-Reply-To: <1527068454-28921-2-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Elaine Zhang <zhangqing@rock-chips.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Caesar Wang <wxt@rock-chips.com>, xxx@rock-chips.com, Feng Xiao <xf@rock-chips.com>, Tao Huang <huangtao@rock-chips.com>
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23 May 2018 at 08:48, Elaine Zhang <zhangqing@rock-chips.com> wrote:
-> add power domain support for RK3036/RK3128/RK3228/PX30 Soc.
-> fix up the wrong value when set power domain up.
->
-> Change in V2:
-> Fix up the commit message description and Assign author.
->
-> Change in V3:
-> [PATCH 01/13]: The Copyright description use SPDX tag instead.
-> [PATCH 05/13]: The Copyright description use SPDX tag instead.
-> [PATCH 08/13]: The Copyright description use SPDX tag instead.
-> [PATCH 11/13]: The Copyright description use SPDX tag instead.
->
-> Caesar Wang (3):
->   dt-bindings: power: add RK3036 SoCs header for power-domain
->   dt-bindings: add binding for rk3036 power domains
->   Soc: rockchip: power-domain: add power domain support for rk3036
->
-> Elaine Zhang (6):
->   dt-bindings: power: add RK3128 SoCs header for power-domain
->   dt-bindings: add binding for rk3128 power domains
->   soc: rockchip: power-domain: add power domain support for rk3128
->   dt-bindings: power: add RK3228 SoCs header for power-domain
->   dt-bindings: add binding for rk3228 power domains
->   soc: rockchip: power-domain: add power domain support for rk3228
->
-> Finley Xiao (4):
->   soc: rockchip: power-domain: Fix wrong value when power up pd
->   dt-bindings: power: add PX30 SoCs header for power-domain
->   dt-bindings: add binding for px30 power domains
->   soc: rockchip: power-domain: add power domain support for px30
->
->  .../bindings/soc/rockchip/power_domain.txt         |  12 +++
->  drivers/soc/rockchip/pm_domains.c                  | 116 ++++++++++++++++++++-
->  include/dt-bindings/power/px30-power.h             |  27 +++++
->  include/dt-bindings/power/rk3036-power.h           |  13 +++
->  include/dt-bindings/power/rk3128-power.h           |  14 +++
->  include/dt-bindings/power/rk3228-power.h           |  21 ++++
->  6 files changed, 202 insertions(+), 1 deletion(-)
->  create mode 100644 include/dt-bindings/power/px30-power.h
->  create mode 100644 include/dt-bindings/power/rk3036-power.h
->  create mode 100644 include/dt-bindings/power/rk3128-power.h
->  create mode 100644 include/dt-bindings/power/rk3228-power.h
->
-> --
+On 23-05-18, 12:40, Ilia Lin wrote:
+> In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
+> the CPU frequency subset and voltage value of each OPP varies
+> based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+> defines the voltage and frequency value based on the msm-id in SMEM
+> and speedbin blown in the efuse combination.
+> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
+> to provide the OPP framework with required information.
+> This is used to determine the voltage and frequency value for each OPP of
+> operating-points-v2 table when it is parsed by the OPP framework.
+> 
+> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
+
+Well I gave you an Ack and you should have kept it here :(
+
+> +static int __init qcom_cpufreq_kryo_driver_init(void)
+> +{
+> +	struct opp_table *opp_tables[NR_CPUS] = {0};
+> +	enum _msm8996_version msm8996_version;
+> +	struct nvmem_cell *speedbin_nvmem;
+> +	struct platform_device *pdev;
+> +	struct device_node *np;
+> +	struct device *cpu_dev;
+> +	unsigned cpu;
+> +	u8 *speedbin;
+> +	u32 versions;
+> +	size_t len;
+> +	int ret;
+> +
+> +	cpu_dev = get_cpu_device(0);
+> +	if (NULL == cpu_dev)
+> +		return -ENODEV;
+> +
+> +	msm8996_version = qcom_cpufreq_kryo_get_msm_id();
+> +	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
+> +		dev_err(cpu_dev, "Not Snapdragon 820/821!");
+> +		return -ENODEV;
+> +	}
+> +
+> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
+> +	if (IS_ERR(np))
+> +		return PTR_ERR(np);
+> +
+> +	if (!of_device_is_compatible(np, "operating-points-v2-kryo-cpu")) {
+> +		ret = -ENOENT;
+> +		goto free_np;
+
+As Russell pointed out, drop this goto here and write:
+
+                of_node_put(np);
+                return -ENOENT;
+        }
+
+> +	}
+> +
+> +	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
+
+And do the same here unconditionally as you don't need to use np
+anymore, i.e.
+
+        of_node_put(np);
+
+> +	if (IS_ERR(speedbin_nvmem)) {
+> +		ret = PTR_ERR(speedbin_nvmem);
+> +		dev_err(cpu_dev, "Could not get nvmem cell: %d\n", ret);
+> +		goto free_np;
+> +	}
+> +
+> +	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
+> +	nvmem_cell_put(speedbin_nvmem);
+> +
+> +	switch (msm8996_version) {
+> +	case MSM8996_V3:
+> +		versions = 1 << (unsigned int)(*speedbin);
+> +		break;
+> +	case MSM8996_SG:
+> +		versions = 1 << ((unsigned int)(*speedbin) + 4);
+> +		break;
+> +	default:
+> +		BUG();
+> +		break;
+> +	}
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		cpu_dev = get_cpu_device(cpu);
+> +		if (NULL == cpu_dev) {
+> +			ret = -ENODEV;
+> +			goto free_opp;
+> +		}
+> +
+> +		opp_tables[cpu] = dev_pm_opp_set_supported_hw(cpu_dev,
+> +							      &versions, 1);
+> +		if (IS_ERR(opp_tables[cpu])) {
+> +			ret = PTR_ERR(opp_tables[cpu]);
+> +			dev_err(cpu_dev, "Failed to set supported hardware\n");
+> +			goto free_opp;
+> +		}
+> +	}
+> +
+> +	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> +	if (!IS_ERR(pdev))
+> +		return 0;
+> +
+> +	ret = PTR_ERR(pdev);
+> +	dev_err(cpu_dev, "Failed to register platform device\n");
+> +
+> +free_opp:
+> +	for_each_possible_cpu(cpu) {
+> +		if (IS_ERR_OR_NULL(opp_tables[cpu]))
+> +			break;
+> +		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
+> +	}
+> +free_np:
+> +	of_node_put(np);
+
+And then you can remove the label and above statement.
+
+> +
+> +	return ret;
+> +}
+> +late_initcall(qcom_cpufreq_kryo_driver_init);
+> +
+> +MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
+> +MODULE_LICENSE("GPL v2");
+> -- 
 > 1.9.1
->
->
 
-Seems like the changes in v3 is very small, so feel free to add, for the series:
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
+-- 
+viresh
