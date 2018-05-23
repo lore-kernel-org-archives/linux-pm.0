@@ -1,53 +1,85 @@
-From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v3 12/13] dt-bindings: add binding for px30 power domains
-Date: Wed, 23 May 2018 14:52:51 +0800
-Message-ID: <1527058371-10706-1-git-send-email-zhangqing@rock-chips.com>
-References: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH RFC] schedutil: Address the r/w ordering race in kthread
+Date: Wed, 23 May 2018 08:47:45 +0200
+Message-ID: <20180523064745.GA30909@localhost.localdomain>
+References: <20180522235028.80564-1-joel@joelfernandes.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
+Content-Disposition: inline
+In-Reply-To: <20180522235028.80564-1-joel@joelfernandes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: devicetree@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, wxt@rock-chips.com, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>, Elaine Zhang <zhangqing@rock-chips.com>
+To: "Joel Fernandes (Google)" <joelaf@google.com>
+Cc: linux-kernel@vger.kernel.org, "Joel Fernandes (Google)" <joel@joelfernandes.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Finley Xiao <finley.xiao@rock-chips.com>
+Hi Joel,
 
-Add binding documentation for the power domains
-found on Rockchip PX30 SoCs.
+On 22/05/18 16:50, Joel Fernandes (Google) wrote:
+> Currently there is a race in schedutil code for slow-switch single-CPU
+> systems. Fix it by enforcing ordering the write to work_in_progress to
+> happen before the read of next_freq.
+> 
+> Kthread                                       Sched update
+> 
+> sugov_work()				      sugov_update_single()
+> 
+>       lock();
+>       // The CPU is free to rearrange below
+>       // two in any order, so it may clear
+>       // the flag first and then read next
+>       // freq. Lets assume it does.
+>       work_in_progress = false
+> 
+>                                                if (work_in_progress)
+>                                                      return;
+> 
+>                                                sg_policy->next_freq = 0;
+>       freq = sg_policy->next_freq;
+>                                                sg_policy->next_freq = real-freq;
+>       unlock();
+> 
+> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> CC: Peter Zijlstra <peterz@infradead.org>
+> CC: Ingo Molnar <mingo@redhat.com>
+> CC: Patrick Bellasi <patrick.bellasi@arm.com>
+> CC: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Luca Abeni <luca.abeni@santannapisa.it>
+> CC: Todd Kjos <tkjos@google.com>
+> CC: claudio@evidence.eu.com
+> CC: kernel-team@android.com
+> CC: linux-pm@vger.kernel.org
+> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+> ---
+> I split this into separate patch, because this race can also happen in
+> mainline.
+> 
+>  kernel/sched/cpufreq_schedutil.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 5c482ec38610..ce7749da7a44 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -401,6 +401,13 @@ static void sugov_work(struct kthread_work *work)
+>  	 */
+>  	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+>  	freq = sg_policy->next_freq;
+> +
+> +	/*
+> +	 * sugov_update_single can access work_in_progress without update_lock,
+> +	 * make sure next_freq is read before work_in_progress is set.
 
-Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
-Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
----
- Documentation/devicetree/bindings/soc/rockchip/power_domain.txt | 3 +++
- 1 file changed, 3 insertions(+)
+s/set/reset/
 
-diff --git a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-index affe36dcfa17..5d49d0a2ff29 100644
---- a/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-+++ b/Documentation/devicetree/bindings/soc/rockchip/power_domain.txt
-@@ -5,6 +5,7 @@ powered up/down by software based on different application scenes to save power.
- 
- Required properties for power domain controller:
- - compatible: Should be one of the following.
-+	"rockchip,px30-power-controller" - for PX30 SoCs.
- 	"rockchip,rk3036-power-controller" - for RK3036 SoCs.
- 	"rockchip,rk3128-power-controller" - for RK3128 SoCs.
- 	"rockchip,rk3228-power-controller" - for RK3228 SoCs.
-@@ -20,6 +21,7 @@ Required properties for power domain controller:
- 
- Required properties for power domain sub nodes:
- - reg: index of the power domain, should use macros in:
-+	"include/dt-bindings/power/px30-power.h" - for PX30 type power domain.
- 	"include/dt-bindings/power/rk3036-power.h" - for RK3036 type power domain.
- 	"include/dt-bindings/power/rk3128-power.h" - for RK3128 type power domain.
- 	"include/dt-bindings/power/rk3228-power.h" - for RK3228 type power domain.
-@@ -99,6 +101,7 @@ Node of a device using power domains must have a power-domains property,
- containing a phandle to the power device node and an index specifying which
- power domain to use.
- The index should use macros in:
-+	"include/dt-bindings/power/px30-power.h" - for px30 type power domain.
- 	"include/dt-bindings/power/rk3036-power.h" - for rk3036 type power domain.
- 	"include/dt-bindings/power/rk3128-power.h" - for rk3128 type power domain.
- 	"include/dt-bindings/power/rk3128-power.h" - for rk3228 type power domain.
--- 
-1.9.1
+> +	 */
+> +	smp_mb();
+> +
+
+Also, doesn't this need a corresponding barrier (I guess in
+sugov_should_update_freq)? That being a wmb and this a rmb?
+
+Best,
+
+- Juri
