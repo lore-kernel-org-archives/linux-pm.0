@@ -1,7 +1,7 @@
 From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v3 03/13] Soc: rockchip: power-domain: add power domain support for rk3036
-Date: Wed, 23 May 2018 14:48:39 +0800
-Message-ID: <1527058129-10260-4-git-send-email-zhangqing@rock-chips.com>
+Subject: [PATCH v3 01/13] dt-bindings: power: add RK3036 SoCs header for power-domain
+Date: Wed, 23 May 2018 14:48:37 +0800
+Message-ID: <1527058129-10260-2-git-send-email-zhangqing@rock-chips.com>
 References: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1527058129-10260-1-git-send-email-zhangqing@rock-chips.com>
@@ -12,84 +12,33 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Caesar Wang <wxt@rock-chips.com>
 
-This driver is modified to support RK3036 SoC.
+According to a description from TRM, add all the power domains.
 
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
 ---
- drivers/soc/rockchip/pm_domains.c | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ include/dt-bindings/power/rk3036-power.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 include/dt-bindings/power/rk3036-power.h
 
-diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
-index 53efc386b1ad..ebd7c41898c0 100644
---- a/drivers/soc/rockchip/pm_domains.c
-+++ b/drivers/soc/rockchip/pm_domains.c
-@@ -18,6 +18,7 @@
- #include <linux/clk.h>
- #include <linux/regmap.h>
- #include <linux/mfd/syscon.h>
-+#include <dt-bindings/power/rk3036-power.h>
- #include <dt-bindings/power/rk3288-power.h>
- #include <dt-bindings/power/rk3328-power.h>
- #include <dt-bindings/power/rk3366-power.h>
-@@ -102,6 +103,14 @@ struct rockchip_pmu {
- 	.ack_mask = (ack >= 0) ? BIT(ack) : 0,		\
- 	.active_wakeup = wakeup,			\
- }
-+#define DOMAIN_RK3036(req, ack, idle, wakeup)		\
-+{							\
-+	.req_mask = (req >= 0) ? BIT(req) : 0,		\
-+	.req_w_mask = (req >= 0) ?  BIT(req + 16) : 0,	\
-+	.ack_mask = (ack >= 0) ? BIT(ack) : 0,		\
-+	.idle_mask = (idle >= 0) ? BIT(idle) : 0,	\
-+	.active_wakeup = wakeup,			\
-+}
- 
- #define DOMAIN_RK3288(pwr, status, req, wakeup)		\
- 	DOMAIN(pwr, status, req, req, (req) + 16, wakeup)
-@@ -701,6 +710,16 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 	return error;
- }
- 
-+static const struct rockchip_domain_info rk3036_pm_domains[] = {
-+	[RK3036_PD_MSCH]	= DOMAIN_RK3036(14, 23, 30, true),
-+	[RK3036_PD_CORE]	= DOMAIN_RK3036(13, 17, 24, false),
-+	[RK3036_PD_PERI]	= DOMAIN_RK3036(12, 18, 25, false),
-+	[RK3036_PD_VIO]		= DOMAIN_RK3036(11, 19, 26, false),
-+	[RK3036_PD_VPU]		= DOMAIN_RK3036(10, 20, 27, false),
-+	[RK3036_PD_GPU]		= DOMAIN_RK3036(9, 21, 28, false),
-+	[RK3036_PD_SYS]		= DOMAIN_RK3036(8, 22, 29, false),
-+};
+diff --git a/include/dt-bindings/power/rk3036-power.h b/include/dt-bindings/power/rk3036-power.h
+new file mode 100644
+index 000000000000..0bc6b5d5075e
+--- /dev/null
++++ b/include/dt-bindings/power/rk3036-power.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __DT_BINDINGS_POWER_RK3036_POWER_H__
++#define __DT_BINDINGS_POWER_RK3036_POWER_H__
 +
- static const struct rockchip_domain_info rk3288_pm_domains[] = {
- 	[RK3288_PD_VIO]		= DOMAIN_RK3288(7, 7, 4, false),
- 	[RK3288_PD_HEVC]	= DOMAIN_RK3288(14, 10, 9, false),
-@@ -768,6 +787,15 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 	[RK3399_PD_SDIOAUDIO]	= DOMAIN_RK3399(31, 31, 29, true),
- };
- 
-+static const struct rockchip_pmu_info rk3036_pmu = {
-+	.req_offset = 0x148,
-+	.idle_offset = 0x14c,
-+	.ack_offset = 0x14c,
++#define RK3036_PD_MSCH		0
++#define RK3036_PD_CORE		1
++#define RK3036_PD_PERI		2
++#define RK3036_PD_VIO		3
++#define RK3036_PD_VPU		4
++#define RK3036_PD_GPU		5
++#define RK3036_PD_SYS		6
 +
-+	.num_domains = ARRAY_SIZE(rk3036_pm_domains),
-+	.domain_info = rk3036_pm_domains,
-+};
-+
- static const struct rockchip_pmu_info rk3288_pmu = {
- 	.pwr_offset = 0x08,
- 	.status_offset = 0x0c,
-@@ -843,6 +871,10 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 
- static const struct of_device_id rockchip_pm_domain_dt_match[] = {
- 	{
-+		.compatible = "rockchip,rk3036-power-controller",
-+		.data = (void *)&rk3036_pmu,
-+	},
-+	{
- 		.compatible = "rockchip,rk3288-power-controller",
- 		.data = (void *)&rk3288_pmu,
- 	},
++#endif
 -- 
 1.9.1
