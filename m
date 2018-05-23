@@ -1,137 +1,197 @@
-From: <ilialin@codeaurora.org>
-Subject: RE: [PATCH v11 1/2] cpufreq: Add Kryo CPU scaling driver
-Date: Wed, 23 May 2018 20:42:15 +0300
-Message-ID: <004301d3f2bd$66cf03a0$346d0ae0$@codeaurora.org>
-References: <1527079139-3558-1-git-send-email-ilialin@codeaurora.org> <1527079139-3558-2-git-send-email-ilialin@codeaurora.org> <1ec7645d-72b6-5a1a-48c3-831a3c484a0e@arm.com>
+From: Thomas Garnier via Virtualization
+	<virtualization@lists.linux-foundation.org>
+Subject: [PATCH v3 00/27] x86: PIE support and option to extend KASLR
+	randomization
+Date: Wed, 23 May 2018 12:53:54 -0700
+Message-ID: <20180523195421.180248-1-thgarnie@google.com>
+Reply-To: Thomas Garnier <thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1ec7645d-72b6-5a1a-48c3-831a3c484a0e@arm.com>
-Content-Language: en-us
-Sender: linux-kernel-owner@vger.kernel.org
-To: 'Sudeep Holla' <sudeep.holla@arm.com>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Garnier <thgarnie@google.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Arnaldo Carvalho de Melo <acme@redhat.com>, Yonghong Song <yhs@fb.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>Len
+Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, linux-sparse@vger.kernel.org, linux-crypto@vger.kernel.org, kernel-hardening@lists.openwall.com, xen-devel@lists.xenproject.org
 List-Id: linux-pm@vger.kernel.org
 
+Changes:
+ - patch v3:
+   - Update on message to describe longer term PIE goal.
+   - Minor change on ftrace if condition.
+   - Changed code using xchgq.
+ - patch v2:
+   - Adapt patch to work post KPTI and compiler changes
+   - Redo all performance testing with latest configs and compilers
+   - Simplify mov macro on PIE (MOVABS now)
+   - Reduce GOT footprint
+ - patch v1:
+   - Simplify ftrace implementation.
+   - Use gcc mstack-protector-guard-reg=%gs with PIE when possible.
+ - rfc v3:
+   - Use --emit-relocs instead of -pie to reduce dynamic relocation space on
+     mapped memory. It also simplifies the relocation process.
+   - Move the start the module section next to the kernel. Remove the need for
+     -mcmodel=large on modules. Extends module space from 1 to 2G maximum.
+   - Support for XEN PVH as 32-bit relocations can be ignored with
+     --emit-relocs.
+   - Support for GOT relocations previously done automatically with -pie.
+   - Remove need for dynamic PLT in modules.
+   - Support dymamic GOT for modules.
+ - rfc v2:
+   - Add support for global stack cookie while compiler default to fs without
+     mcmodel=kernel
+   - Change patch 7 to correctly jump out of the identity mapping on kexec load
+     preserve.
 
+These patches make the changes necessary to build the kernel as Position
+Independent Executable (PIE) on x86_64. A PIE kernel can be relocated below
+the top 2G of the virtual address space. It allows to optionally extend the
+KASLR randomization range from 1G to 3G. The chosen range is the one currently
+available, future changes will allow the kernel module to have a wider
+randomization range.
 
-> -----Original Message-----
-> From: Sudeep Holla <sudeep.holla@arm.com>
-> Sent: Wednesday, May 23, 2018 16:25
-> To: Ilia Lin <ilialin@codeaurora.org>; vireshk@kernel.org; nm@ti.com;
-> sboyd@kernel.org; robh@kernel.org; mark.rutland@arm.com;
-> rjw@rjwysocki.net; linux-pm@vger.kernel.org; devicetree@vger.kernel.org;
-> linux-kernel@vger.kernel.org
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
-> Subject: Re: [PATCH v11 1/2] cpufreq: Add Kryo CPU scaling driver
-> 
-> 
-> 
-> On 23/05/18 13:38, Ilia Lin wrote:
-> > In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO
-> > processors, the CPU frequency subset and voltage value of each OPP
-> > varies based on the silicon variant in use. Qualcomm Process Voltage
-> > Scaling Tables defines the voltage and frequency value based on the
-> > msm-id in SMEM and speedbin blown in the efuse combination.
-> > The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the
-> > SoC to provide the OPP framework with required information.
-> > This is used to determine the voltage and frequency value for each OPP
-> > of
-> > operating-points-v2 table when it is parsed by the OPP framework.
-> >
-> > Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-> > ---
-> >  drivers/cpufreq/Kconfig.arm          |  10 ++
-> >  drivers/cpufreq/Makefile             |   1 +
-> >  drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
-> >  drivers/cpufreq/qcom-cpufreq-kryo.c  | 181
-> > +++++++++++++++++++++++++++++++++++
-> >  4 files changed, 195 insertions(+)
-> >  create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
-> >
-> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> > index de55c7d..0bfd40e 100644
-> > --- a/drivers/cpufreq/Kconfig.arm
-> > +++ b/drivers/cpufreq/Kconfig.arm
-> > @@ -124,6 +124,16 @@ config ARM_OMAP2PLUS_CPUFREQ
-> >  	depends on ARCH_OMAP2PLUS
-> >  	default ARCH_OMAP2PLUS
-> >
-> > +config ARM_QCOM_CPUFREQ_KRYO
-> > +	bool "Qualcomm Kryo based CPUFreq"
-> > +	depends on QCOM_QFPROM
-> > +	depends on QCOM_SMEM
-> > +	select PM_OPP
-> > +	help
-> > +	  This adds the CPUFreq driver for Qualcomm Kryo SoC based boards.
-> > +
-> > +	  If in doubt, say N.
-> > +
-> 
-> Sorry but just noticed now, any reason why this can't be module. I can't
-> imagine any.
+Thanks a lot to Ard Biesheuvel & Kees Cook on their feedback on compiler
+changes, PIE support and KASLR in general. Thanks to Roland McGrath on his
+feedback for using -pie versus --emit-relocs and details on compiler code
+generation.
 
-I was asked previously to change this from tristate to bool.
+The patches:
+ - 1-3, 5-13, 18-19: Change in assembly code to be PIE compliant.
+ - 4: Add a new _ASM_MOVABS macro to fetch a symbol address generically.
+ - 14: Adapt percpu design to work correctly when PIE is enabled.
+ - 15: Provide an option to default visibility to hidden except for key symbols.
+       It removes errors between compilation units.
+ - 16: Add PROVIDE_HIDDEN replacement on the linker script for weak symbols to
+       reduce GOT footprint.
+ - 17: Adapt relocation tool to handle PIE binary correctly.
+ - 20: Add support for global cookie.
+ - 21: Support ftrace with PIE (used on Ubuntu config).
+ - 22: Add option to move the module section just after the kernel.
+ - 23: Adapt module loading to support PIE with dynamic GOT.
+ - 24: Make the GOT read-only.
+ - 25: Add the CONFIG_X86_PIE option (off by default).
+ - 26: Adapt relocation tool to generate a 64-bit relocation table.
+ - 27: Add the CONFIG_RANDOMIZE_BASE_LARGE option to increase relocation range
+       from 1G to 3G (off by default).
 
-> 
-> [..]
-> 
-> > +static int qcom_cpufreq_kryo_probe(struct platform_device *pdev) {
-> > +	struct opp_table *opp_tables[NR_CPUS] = {0};
-> > +	struct platform_device *cpufreq_dt_pdev;
-> > +	enum _msm8996_version msm8996_version;
-> > +	struct nvmem_cell *speedbin_nvmem;
-> > +	struct device_node *np;
-> > +	struct device *cpu_dev;
-> 
-> [..]
-> 
-> > +
-> > +	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -
-> 1, NULL, 0);
-> > +	if (!IS_ERR(cpufreq_dt_pdev))
-> > +		return 0;
-> > +
-> > +	ret = PTR_ERR(cpufreq_dt_pdev);
-> > +	dev_err(cpu_dev, "Failed to register platform device\n");
-> > +
-> > +free_opp:
-> > +	for_each_possible_cpu(cpu) {
-> > +		if (IS_ERR_OR_NULL(opp_tables[cpu]))
-> > +			break;
-> > +		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int __init qcom_cpufreq_kryo_init(void) {
-> > +	/*
-> > +	 * Since the driver depends on smem and nvmem drivers, which may
-> > +	 * return EPROBE_DEFER, all the real activity is done in the probe,
-> > +	 * which may be defered as well. The init here is only registering
-> > +	 * a platform device.
-> > +	 */
-> > +	platform_device_register_simple("qcom-cpufreq-kryo", -1, NULL, 0);
-> > +	return 0;
-> > +}
-> > +module_init(qcom_cpufreq_kryo_init);
-> 
-> Do you need this at all ? See below on how to eliminate the need for this.
-> 
-> > +
-> > +static struct platform_driver qcom_cpufreq_kryo_driver = {
-> > +	.probe = qcom_cpufreq_kryo_probe,
-> > +	.driver = {
-> > +		.name = "qcom-cpufreq-kryo",
-> > +	},
-> > +};
-> > +builtin_platform_driver(qcom_cpufreq_kryo_driver);
-> 
-> Use builtin_platform_driver_probe and remove qcom_cpufreq_kryo_init or
-> use module_platform_driver_probe if it can be module.
-> 
-> --
-> Regards,
-> Sudeep
+Performance/Size impact:
+
+Size of vmlinux (Default configuration):
+ File size:
+ - PIE disabled: +0.18%
+ - PIE enabled: -1.977% (less relocations)
+ .text section:
+ - PIE disabled: same
+ - PIE enabled: same
+
+Size of vmlinux (Ubuntu configuration):
+ File size:
+ - PIE disabled: +0.21%
+ - PIE enabled: +10%
+ .text section:
+ - PIE disabled: same
+ - PIE enabled: +0.001%
+
+The size increase is mainly due to not having access to the 32-bit signed
+relocation that can be used with mcmodel=kernel. A small part is due to reduced
+optimization for PIE code. This bug [1] was opened with gcc to provide a better
+code generation for kernel PIE.
+
+Hackbench (50% and 1600% on thread/process for pipe/sockets):
+ - PIE disabled: no significant change (avg -/+ 0.5% on latest test).
+ - PIE enabled: between -1% to +1% in average (default and Ubuntu config).
+
+Kernbench (average of 10 Half and Optimal runs):
+ Elapsed Time:
+ - PIE disabled: no significant change (avg -0.5%)
+ - PIE enabled: average -0.5% to +0.5%
+ System Time:
+ - PIE disabled: no significant change (avg -0.1%)
+ - PIE enabled: average -0.4% to +0.4%.
+
+[1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82303
+
+diffstat:
+ Documentation/x86/x86_64/mm.txt              |    3 
+ arch/x86/Kconfig                             |   45 ++++++
+ arch/x86/Makefile                            |   58 ++++++++
+ arch/x86/boot/boot.h                         |    2 
+ arch/x86/boot/compressed/Makefile            |    5 
+ arch/x86/boot/compressed/misc.c              |   10 +
+ arch/x86/crypto/aes-x86_64-asm_64.S          |   45 ++++--
+ arch/x86/crypto/aesni-intel_asm.S            |    8 -
+ arch/x86/crypto/aesni-intel_avx-x86_64.S     |    6 
+ arch/x86/crypto/camellia-aesni-avx-asm_64.S  |   42 +++---
+ arch/x86/crypto/camellia-aesni-avx2-asm_64.S |   44 +++---
+ arch/x86/crypto/camellia-x86_64-asm_64.S     |    8 -
+ arch/x86/crypto/cast5-avx-x86_64-asm_64.S    |   50 ++++---
+ arch/x86/crypto/cast6-avx-x86_64-asm_64.S    |   44 +++---
+ arch/x86/crypto/des3_ede-asm_64.S            |   96 +++++++++-----
+ arch/x86/crypto/ghash-clmulni-intel_asm.S    |    4 
+ arch/x86/crypto/glue_helper-asm-avx.S        |    4 
+ arch/x86/crypto/glue_helper-asm-avx2.S       |    6 
+ arch/x86/crypto/sha256-avx2-asm.S            |   23 ++-
+ arch/x86/entry/calling.h                     |    2 
+ arch/x86/entry/entry_32.S                    |    3 
+ arch/x86/entry/entry_64.S                    |   25 ++-
+ arch/x86/include/asm/asm.h                   |    1 
+ arch/x86/include/asm/bug.h                   |    2 
+ arch/x86/include/asm/ftrace.h                |    6 
+ arch/x86/include/asm/jump_label.h            |    8 -
+ arch/x86/include/asm/kvm_host.h              |    8 -
+ arch/x86/include/asm/module.h                |   11 +
+ arch/x86/include/asm/page_64_types.h         |    9 +
+ arch/x86/include/asm/paravirt_types.h        |   12 +
+ arch/x86/include/asm/percpu.h                |   25 ++-
+ arch/x86/include/asm/pgtable_64_types.h      |    6 
+ arch/x86/include/asm/pm-trace.h              |    2 
+ arch/x86/include/asm/processor.h             |   16 +-
+ arch/x86/include/asm/sections.h              |    8 +
+ arch/x86/include/asm/setup.h                 |    2 
+ arch/x86/include/asm/stackprotector.h        |   19 ++
+ arch/x86/kernel/Makefile                     |    6 
+ arch/x86/kernel/acpi/wakeup_64.S             |   31 ++--
+ arch/x86/kernel/asm-offsets.c                |    3 
+ arch/x86/kernel/asm-offsets_32.c             |    3 
+ arch/x86/kernel/asm-offsets_64.c             |    3 
+ arch/x86/kernel/cpu/common.c                 |    3 
+ arch/x86/kernel/cpu/microcode/core.c         |    4 
+ arch/x86/kernel/ftrace.c                     |   42 +++++-
+ arch/x86/kernel/head64.c                     |   23 ++-
+ arch/x86/kernel/head_32.S                    |    3 
+ arch/x86/kernel/head_64.S                    |   41 +++++-
+ arch/x86/kernel/kvm.c                        |    6 
+ arch/x86/kernel/module.c                     |  181 ++++++++++++++++++++++++++-
+ arch/x86/kernel/module.lds                   |    3 
+ arch/x86/kernel/process.c                    |    5 
+ arch/x86/kernel/relocate_kernel_64.S         |   16 +-
+ arch/x86/kernel/setup_percpu.c               |    5 
+ arch/x86/kernel/vmlinux.lds.S                |   13 +
+ arch/x86/kvm/svm.c                           |    4 
+ arch/x86/lib/cmpxchg16b_emu.S                |    8 -
+ arch/x86/mm/dump_pagetables.c                |    3 
+ arch/x86/power/hibernate_asm_64.S            |    4 
+ arch/x86/tools/relocs.c                      |  169 +++++++++++++++++++++++--
+ arch/x86/tools/relocs.h                      |    4 
+ arch/x86/tools/relocs_common.c               |   15 +-
+ arch/x86/xen/xen-asm.S                       |   12 -
+ arch/x86/xen/xen-head.S                      |   11 -
+ arch/x86/xen/xen-pvh.S                       |   13 +
+ drivers/base/firmware_loader/main.c          |    4 
+ include/asm-generic/sections.h               |    6 
+ include/asm-generic/vmlinux.lds.h            |   12 +
+ include/linux/compiler.h                     |    7 +
+ init/Kconfig                                 |   16 ++
+ kernel/kallsyms.c                            |   16 +-
+ kernel/trace/trace.h                         |    4 
+ lib/dynamic_debug.c                          |    4 
+ scripts/link-vmlinux.sh                      |   14 ++
+ 74 files changed, 1070 insertions(+), 315 deletions(-)
