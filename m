@@ -1,28 +1,70 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v11 0/2] Kryo CPU scaling driver
-Date: Wed, 23 May 2018 16:41:25 +0100
-Message-ID: <20180523154125.GA30427@e107155-lin>
-References: <b4c28b51-ecd5-649b-e8fa-e5ce1bbb3139@arm.com>
- <f53d6035-d409-4535-9dd0-03baedc9b4a8@email.android.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: [PATCH v1 1/2] cpufreq: tegra20: Constify rate value of the intermediate clk
+Date: Wed, 23 May 2018 19:00:19 +0300
+Message-ID: <20180523160020.15291-1-digetx@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <f53d6035-d409-4535-9dd0-03baedc9b4a8@email.android.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 23, 2018 at 06:34:06PM +0300, Ilia Lin wrote:
-> It may be merged alone safely. However to actually work, it needs a clock
-> driver as well, and the OPP tables in tue device tree. Those are submitted now
-> 8n 2 separate series. This is in order to provide each maintainer with domain
-> specific series, as per Viresh's suggestion.
+PLL_P is known to be always running at 216MHz, hence there is no need to
+query its rate.
 
-I understand that. I was trying to get overall structure to better understand
-how it all glue together in the system(just for self education).
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/cpufreq/tegra20-cpufreq.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
---
-Regards,
-Sudeep
+diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+index 05f57dcd5215..3ad6bded6efc 100644
+--- a/drivers/cpufreq/tegra20-cpufreq.c
++++ b/drivers/cpufreq/tegra20-cpufreq.c
+@@ -24,6 +24,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/types.h>
+ 
++#define PLL_P_FREQ	216000
++
+ static struct cpufreq_frequency_table freq_table[] = {
+ 	{ .frequency = 216000 },
+ 	{ .frequency = 312000 },
+@@ -48,18 +50,15 @@ struct tegra20_cpufreq {
+ static unsigned int tegra_get_intermediate(struct cpufreq_policy *policy,
+ 					   unsigned int index)
+ {
+-	struct tegra20_cpufreq *cpufreq = cpufreq_get_driver_data();
+-	unsigned int ifreq = clk_get_rate(cpufreq->pll_p_clk) / 1000;
+-
+ 	/*
+ 	 * Don't switch to intermediate freq if:
+ 	 * - we are already at it, i.e. policy->cur == ifreq
+ 	 * - index corresponds to ifreq
+ 	 */
+-	if (freq_table[index].frequency == ifreq || policy->cur == ifreq)
++	if (index == 0 || policy->cur == PLL_P_FREQ)
+ 		return 0;
+ 
+-	return ifreq;
++	return PLL_P_FREQ;
+ }
+ 
+ static int tegra_target_intermediate(struct cpufreq_policy *policy,
+@@ -93,14 +92,13 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+ 	struct tegra20_cpufreq *cpufreq = cpufreq_get_driver_data();
+ 	unsigned long rate = freq_table[index].frequency;
+-	unsigned int ifreq = clk_get_rate(cpufreq->pll_p_clk) / 1000;
+ 	int ret;
+ 
+ 	/*
+ 	 * target freq == pll_p, don't need to take extra reference to pll_x_clk
+ 	 * as it isn't used anymore.
+ 	 */
+-	if (rate == ifreq)
++	if (index == 0)
+ 		return clk_set_parent(cpufreq->cpu_clk, cpufreq->pll_p_clk);
+ 
+ 	ret = clk_set_rate(cpufreq->pll_x_clk, rate * 1000);
+-- 
+2.17.0
