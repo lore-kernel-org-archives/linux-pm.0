@@ -1,32 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] schedutil: Allow cpufreq requests to be made even
- when kthread kicked
-Date: Wed, 23 May 2018 15:36:15 +0530
-Message-ID: <20180523100615.gxd35efqn3h6b55u@vireshk-i7>
-References: <20180518185501.173552-1-joel@joelfernandes.org>
- <20180522103415.cuutobi5kbhj4gcw@vireshk-i7>
- <20180522220953.GB40506@joelaf.mtv.corp.google.com>
- <20180523090101.6xifikvjpirqafox@vireshk-i7>
- <6A76301E-E383-439D-AD1E-6DC2B2CAC3CE@joelfernandes.org>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH] cpufreq: schedutil: Avoid missing updates for one-CPU
+ policies
+Date: Wed, 23 May 2018 12:13:44 +0200
+Message-ID: <20180523101344.GB30909@localhost.localdomain>
+References: <1672734.JYOlA1IWnU@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6A76301E-E383-439D-AD1E-6DC2B2CAC3CE@joelfernandes.org>
+In-Reply-To: <1672734.JYOlA1IWnU@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: "Joel Fernandes (Google.)" <joelaf@google.com>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Luca Abeni <luca.abeni@santannapisa.it>, Todd Kjos <tkjos@google.com>, claudio@evidence.eu.com, kernel-team@android.com, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Joel Fernandes <joel@joelfernandes.org>, Patrick Bellasi <patrick.bellasi@arm.com>, claudio@evidence.eu.com, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 23-05-18, 02:42, Joel Fernandes wrote:
-> Probably. But then Rafael is changing single policy to use the lock
-> so then barrier wouldn't be needed at all. In that case, both mine
-> and Rafael new patch can go into stable which handles your race (
-> optimization == fix in this case :P )
+On 23/05/18 11:47, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Commit 152db033d775 (schedutil: Allow cpufreq requests to be made
+> even when kthread kicked) made changes to prevent utilization updates
+> from being discarded during processing a previous request, but it
+> left a small window in which that still can happen in the one-CPU
+> policy case.  Namely, updates coming in after setting work_in_progress
+> in sugov_update_commit() and clearing it in sugov_work() will still
+> be dropped due to the work_in_progress check in sugov_update_single().
+> 
+> To close that window, rearrange the code so as to acquire the update
+> lock around the deferred update branch in sugov_update_single()
+> and drop the work_in_progress check from it.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Yeah, we discussed that offline.
+I don't have a platform at hand where to test this. But, it looks OK to
+me.
 
-Go get some sleep. There are no barriers in this world :)
+Reviewed-by: Juri Lelli <juri.lelli@redhat.com>
 
--- 
-viresh
+Best,
+
+- Juri
