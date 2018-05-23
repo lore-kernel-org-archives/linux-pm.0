@@ -1,65 +1,122 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V3] powercap/drivers/idle_injection: Add an idle injection
- framework
-Date: Wed, 23 May 2018 15:19:07 +0200
-Message-ID: <ff76b27a-b286-2e7f-d87e-bc5c9444937b@linaro.org>
-References: <1526655056-24592-1-git-send-email-daniel.lezcano@linaro.org>
- <20180521103223.asejwsaf7pnrs777@vireshk-i7>
- <7ff0d7d4-be5e-2384-1201-df8616519892@linaro.org>
- <20180523054154.fvhnwgvq34ihivdj@vireshk-i7>
- <61c2b628-6c38-463a-c6b5-5e5b7eeee1ab@linaro.org>
- <20180523095549.mbit5plvqoppnasu@vireshk-i7>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v11 1/2] cpufreq: Add Kryo CPU scaling driver
+Date: Wed, 23 May 2018 14:25:22 +0100
+Message-ID: <1ec7645d-72b6-5a1a-48c3-831a3c484a0e@arm.com>
+References: <1527079139-3558-1-git-send-email-ilialin@codeaurora.org>
+ <1527079139-3558-2-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180523095549.mbit5plvqoppnasu@vireshk-i7>
+In-Reply-To: <1527079139-3558-2-git-send-email-ilialin@codeaurora.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
+To: Ilia Lin <ilialin@codeaurora.org>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 23/05/2018 11:55, Viresh Kumar wrote:
-> On 23-05-18, 10:00, Daniel Lezcano wrote:
 
-[ ... ]
 
-> Maybe I wasn't able to explain the problem I see, but lemme retry
-> that. Assume that there is only one use and that id cpu-idle-cooling.
-> We are currently running the idle loop with idle duration X and run
-> duration Y.
+On 23/05/18 13:38, Ilia Lin wrote:
+> In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
+> the CPU frequency subset and voltage value of each OPP varies
+> based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+> defines the voltage and frequency value based on the msm-id in SMEM
+> and speedbin blown in the efuse combination.
+> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
+> to provide the OPP framework with required information.
+> This is used to determine the voltage and frequency value for each OPP of
+> operating-points-v2 table when it is parsed by the OPP framework.
 > 
-> Now lets say the cooling device gets unregistered itself (maybe module
-> removal, etc). And it calls idle_injection_unregister() with a valid
-> pointer. Not sure if the thermal framework will call set_cur_state
-> anymore. But the problem will remain even if it does that.
+> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm          |  10 ++
+>  drivers/cpufreq/Makefile             |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
+>  drivers/cpufreq/qcom-cpufreq-kryo.c  | 181 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 195 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
 > 
-> We call idle_injection_stop() from unregister, which will cancel
-> hrtimer, set durations as 0 and return. Then we free the iidev. It is
-> certainly possible at this point of time that the kthread is still
-> running the idle loop which it may have started before unregister was
-> called. And so after the idle loop is finished it will try to access
-> ii_dev, which is already freed.
-> 
-> So, idle_injection_stop() needs to guarantee that the kthread and the
-> hrtimer are all stopped now and no one is using the ii_dev structure
-> anymore.
-> 
-> Perhaps you need some completion stuff here to give confirmation here,
-> etc.
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index de55c7d..0bfd40e 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -124,6 +124,16 @@ config ARM_OMAP2PLUS_CPUFREQ
+>  	depends on ARCH_OMAP2PLUS
+>  	default ARCH_OMAP2PLUS
+>  
+> +config ARM_QCOM_CPUFREQ_KRYO
+> +	bool "Qualcomm Kryo based CPUFreq"
+> +	depends on QCOM_QFPROM
+> +	depends on QCOM_SMEM
+> +	select PM_OPP
+> +	help
+> +	  This adds the CPUFreq driver for Qualcomm Kryo SoC based boards.
+> +
+> +	  If in doubt, say N.
+> +
 
-Ok, let me come back with something.
+Sorry but just noticed now, any reason why this can't be module. I can't
+imagine any.
 
-Thanks for reviewing again.
+[..]
 
-  -- Daniel
+> +static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+> +{
+> +	struct opp_table *opp_tables[NR_CPUS] = {0};
+> +	struct platform_device *cpufreq_dt_pdev;
+> +	enum _msm8996_version msm8996_version;
+> +	struct nvmem_cell *speedbin_nvmem;
+> +	struct device_node *np;
+> +	struct device *cpu_dev;
 
+[..]
 
+> +
+> +	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> +	if (!IS_ERR(cpufreq_dt_pdev))
+> +		return 0;
+> +
+> +	ret = PTR_ERR(cpufreq_dt_pdev);
+> +	dev_err(cpu_dev, "Failed to register platform device\n");
+> +
+> +free_opp:
+> +	for_each_possible_cpu(cpu) {
+> +		if (IS_ERR_OR_NULL(opp_tables[cpu]))
+> +			break;
+> +		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int __init qcom_cpufreq_kryo_init(void)
+> +{
+> +	/*
+> +	 * Since the driver depends on smem and nvmem drivers, which may
+> +	 * return EPROBE_DEFER, all the real activity is done in the probe,
+> +	 * which may be defered as well. The init here is only registering
+> +	 * a platform device.
+> +	 */
+> +	platform_device_register_simple("qcom-cpufreq-kryo", -1, NULL, 0);
+> +	return 0;
+> +}
+> +module_init(qcom_cpufreq_kryo_init);
+
+Do you need this at all ? See below on how to eliminate the need for this.
+
+> +
+> +static struct platform_driver qcom_cpufreq_kryo_driver = {
+> +	.probe = qcom_cpufreq_kryo_probe,
+> +	.driver = {
+> +		.name = "qcom-cpufreq-kryo",
+> +	},
+> +};
+> +builtin_platform_driver(qcom_cpufreq_kryo_driver);
+
+Use builtin_platform_driver_probe and remove qcom_cpufreq_kryo_init
+or use module_platform_driver_probe if it can be module.
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Regards,
+Sudeep
