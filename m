@@ -1,150 +1,151 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 8/9] PM / Domains: Add support for multi PM domains per
- device to genpd
-Date: Wed, 23 May 2018 11:47:21 +0200
-Message-ID: <CAPDyKFoHwujfL4vpB8kq+rxDP4cThW4xB4nwb8Qc6_bZwTPbzA@mail.gmail.com>
-References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
- <1526639490-12167-9-git-send-email-ulf.hansson@linaro.org>
- <f5589b88-acf8-b491-df79-e359e596c8d0@nvidia.com>
- <CAPDyKFr_7hbs-MC1jQn5uAgSnb1UGufXZdEmUqNTM63KemTe1g@mail.gmail.com>
- <5a79d3a2-d090-645b-da69-524b7e7a4d90@nvidia.com>
- <51f7de26-579a-8b9e-4e79-f4eee923ab38@codeaurora.org>
- <CAPDyKFo_69kSS6UzdsJeyeiiED=S=chsdkP+R43qMHDEbZ8n_A@mail.gmail.com>
- <3838f17a-2ac8-bf3f-f0b1-f69bbe17629c@nvidia.com>
- <00ba829d-faf4-168c-db00-531621b9280f@codeaurora.org>
- <CAPDyKFoqLPRwEJ9b+XBpB4Zy79SGEC-a8V8shNhMkYOCQa0=oA@mail.gmail.com>
- <22068fb1-f6e8-f2ec-d7f4-ab9e93469d7f@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: schedutil: Avoid missing updates for one-CPU policies
+Date: Wed, 23 May 2018 11:47:45 +0200
+Message-ID: <1672734.JYOlA1IWnU@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <22068fb1-f6e8-f2ec-d7f4-ab9e93469d7f@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joel@joelfernandes.org>, Patrick Bellasi <patrick.bellasi@arm.com>, claudio@evidence.eu.com, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 23 May 2018 at 11:45, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 23/05/18 10:33, Ulf Hansson wrote:
->>
->> On 23 May 2018 at 11:27, Rajendra Nayak <rnayak@codeaurora.org> wrote:
->>>
->>>
->>>
->>> On 05/23/2018 02:37 PM, Jon Hunter wrote:
->>>>
->>>>
->>>> On 23/05/18 07:12, Ulf Hansson wrote:
->>>>
->>>> ...
->>>>
->>>>>>>>> Thanks for sending this. Believe it or not this has still been on
->>>>>>>>> my to-do list
->>>>>>>>> and so we definitely need a solution for Tegra.
->>>>>>>>>
->>>>>>>>> Looking at the above it appears that additional power-domains
->>>>>>>>> exposed as devices
->>>>>>>>> to the client device. So I assume that this means that the drivers
->>>>>>>>> for devices
->>>>>>>>> with multiple power-domains will need to call RPM APIs for each of
->>>>>>>>> these
->>>>>>>>> additional power-domains. Is that correct?
->>>>>>>>
->>>>>>>>
->>>>>>>> They can, but should not!
->>>>>>>>
->>>>>>>> Instead, the driver shall use device_link_add() and
->>>>>>>> device_link_del(),
->>>>>>>> dynamically, depending on what PM domain that their original device
->>>>>>>> needs for the current running use case.
->>>>>>>>
->>>>>>>> In that way, they keep existing runtime PM deployment, operating on
->>>>>>>> its original device.
->>>>>>>
->>>>>>>
->>>>>>> OK, sounds good. Any reason why the linking cannot be handled by the
->>>>>>> above API? Is there a use-case where you would not want it linked?
->>>>>>
->>>>>>
->>>>>> I am guessing the linking is what would give the driver the ability to
->>>>>> decide which subset of powerdomains it actually wants to control
->>>>>> at any point using runtime PM. If we have cases wherein the driver
->>>>>> would want to turn on/off _all_ its associated powerdomains _always_
->>>>>> then a default linking of all would help.
->>>>>
->>>>>
->>>>> First, I think we need to decide on *where* the linking should be
->>>>> done, not at both places, as that would just mess up synchronization
->>>>> of who is responsible for calling the device_link_del() at detach.
->>>>>
->>>>> Second, It would in principle be fine to call device_link_add() and
->>>>> device_link_del() as a part of the attach/detach APIs. However, there
->>>>> is a downside to such solution, which would be that the driver then
->>>>> needs call the detach API, just to do device_link_del(). Of course
->>>>> then it would also needs to call the attach API later if/when needed.
->>>>> Doing this adds unnecessary overhead - comparing to just let the
->>>>> driver call device_link_add|del() when needed. On the upside, yes, it
->>>>> would put less burden on the drivers as it then only needs to care
->>>>> about using one set of functions.
->>>>>
->>>>> Which solution do you prefer?
->>>>
->>>>
->>>> Any reason why we could not add a 'boolean' argument to the API to
->>>> indicate whether the new device should be linked? I think that I prefer the
->>>> API handles it, but I can see there could be instances where drivers may
->>>> wish to handle it themselves.
->>>>
->>>> Rajendra, do you have a use-case right now where the driver would want
->>>> to handle the linking?
->>>
->>>
->>> So if I understand this right, any driver which does want to control
->>> individual powerdomain state would
->>> need to do the linking itself right?
->>>
->>> What I am saying is, if I have device A, with powerdomains X and Y, and
->>> if I want to turn on only X,
->>> then I would want only X to be linked with A, and at a later point if I
->>> want both X and Y to be turned on,
->>> I would then go ahead and link both X and Y to A? Is that correct or did
->>> I get it all wrong?
->>
->>
->> Correct!
->>
->>>
->>> I know atleast Camera on msm8996 would need to do this since it has 2 vfe
->>> powerdoamins, which can be
->>> turned on one at a time (depending on what resolution needs to be
->>> supported) or both together if we
->>> really need very high resolution using both vfe modules.
->>
->>
->> I think this is also the case for the Tegra XUSB subsystem.
->>
->> The usb device is always attached to one PM domain, but depending on
->> if super-speed mode is used, another PM domain for that logic needs to
->> be powered on as well.
->>
->> Jon, please correct me if I am wrong!
->
->
-> Yes this is technically correct, however, in reality I think we are always
-> going to enable the superspeed domain if either the host or device domain is
-> enabled. So we would probably always link the superspeed with the host and
-> device devices.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Why? Wouldn't that waste power if the superspeed mode isn't used?
+Commit 152db033d775 (schedutil: Allow cpufreq requests to be made
+even when kthread kicked) made changes to prevent utilization updates
+from being discarded during processing a previous request, but it
+left a small window in which that still can happen in the one-CPU
+policy case.  Namely, updates coming in after setting work_in_progress
+in sugov_update_commit() and clearing it in sugov_work() will still
+be dropped due to the work_in_progress check in sugov_update_single().
 
-Kind regards
-Uffe
+To close that window, rearrange the code so as to acquire the update
+lock around the deferred update branch in sugov_update_single()
+and drop the work_in_progress check from it.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/sched/cpufreq_schedutil.c |   70 ++++++++++++++++++++++++++-------------
+ 1 file changed, 47 insertions(+), 23 deletions(-)
+
+Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+===================================================================
+--- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
++++ linux-pm/kernel/sched/cpufreq_schedutil.c
+@@ -100,25 +100,41 @@ static bool sugov_should_update_freq(str
+ 	return delta_ns >= sg_policy->freq_update_delay_ns;
+ }
+ 
+-static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+-				unsigned int next_freq)
++static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
++				   unsigned int next_freq)
+ {
+-	struct cpufreq_policy *policy = sg_policy->policy;
+-
+ 	if (sg_policy->next_freq == next_freq)
+-		return;
++		return false;
+ 
+ 	sg_policy->next_freq = next_freq;
+ 	sg_policy->last_freq_update_time = time;
+ 
+-	if (policy->fast_switch_enabled) {
+-		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
+-		if (!next_freq)
+-			return;
++	return true;
++}
++
++static void sugov_fast_switch(struct sugov_policy *sg_policy, u64 time,
++			      unsigned int next_freq)
++{
++	struct cpufreq_policy *policy = sg_policy->policy;
++
++	if (!sugov_update_next_freq(sg_policy, time, next_freq))
++		return;
++
++	next_freq = cpufreq_driver_fast_switch(policy, next_freq);
++	if (!next_freq)
++		return;
+ 
+-		policy->cur = next_freq;
+-		trace_cpu_frequency(next_freq, smp_processor_id());
+-	} else if (!sg_policy->work_in_progress) {
++	policy->cur = next_freq;
++	trace_cpu_frequency(next_freq, smp_processor_id());
++}
++
++static void sugov_deferred_update(struct sugov_policy *sg_policy, u64 time,
++				  unsigned int next_freq)
++{
++	if (!sugov_update_next_freq(sg_policy, time, next_freq))
++		return;
++
++	if (!sg_policy->work_in_progress) {
+ 		sg_policy->work_in_progress = true;
+ 		irq_work_queue(&sg_policy->irq_work);
+ 	}
+@@ -363,13 +379,6 @@ static void sugov_update_single(struct u
+ 
+ 	ignore_dl_rate_limit(sg_cpu, sg_policy);
+ 
+-	/*
+-	 * For slow-switch systems, single policy requests can't run at the
+-	 * moment if update is in progress, unless we acquire update_lock.
+-	 */
+-	if (sg_policy->work_in_progress)
+-		return;
+-
+ 	if (!sugov_should_update_freq(sg_policy, time))
+ 		return;
+ 
+@@ -391,7 +400,18 @@ static void sugov_update_single(struct u
+ 		sg_policy->cached_raw_freq = 0;
+ 	}
+ 
+-	sugov_update_commit(sg_policy, time, next_f);
++	/*
++	 * This code runs under rq->lock for the target CPU, so it won't run
++	 * concurrently on two different CPUs for the same target and it is not
++	 * necessary to acquire the lock in the fast switch case.
++	 */
++	if (sg_policy->policy->fast_switch_enabled) {
++		sugov_fast_switch(sg_policy, time, next_f);
++	} else {
++		raw_spin_lock(&sg_policy->update_lock);
++		sugov_deferred_update(sg_policy, time, next_f);
++		raw_spin_unlock(&sg_policy->update_lock);
++	}
+ }
+ 
+ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
+@@ -435,7 +455,11 @@ sugov_update_shared(struct update_util_d
+ 
+ 	if (sugov_should_update_freq(sg_policy, time)) {
+ 		next_f = sugov_next_freq_shared(sg_cpu, time);
+-		sugov_update_commit(sg_policy, time, next_f);
++
++		if (sg_policy->policy->fast_switch_enabled)
++			sugov_fast_switch(sg_policy, time, next_f);
++		else
++			sugov_deferred_update(sg_policy, time, next_f);
+ 	}
+ 
+ 	raw_spin_unlock(&sg_policy->update_lock);
+@@ -450,11 +474,11 @@ static void sugov_work(struct kthread_wo
+ 	/*
+ 	 * Hold sg_policy->update_lock shortly to handle the case where:
+ 	 * incase sg_policy->next_freq is read here, and then updated by
+-	 * sugov_update_shared just before work_in_progress is set to false
++	 * sugov_deferred_update() just before work_in_progress is set to false
+ 	 * here, we may miss queueing the new update.
+ 	 *
+ 	 * Note: If a work was queued after the update_lock is released,
+-	 * sugov_work will just be called again by kthread_work code; and the
++	 * sugov_work() will just be called again by kthread_work code; and the
+ 	 * request will be proceed before the sugov thread sleeps.
+ 	 */
+ 	raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
