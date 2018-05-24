@@ -1,80 +1,39 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH v3 23/27] x86/modules: Adapt module loading for PIE
- support
-Date: Wed, 23 May 2018 16:07:24 -0700
-Message-ID: <b7bd7c41-80ac-d5e9-29bb-dfca9b60eda3@infradead.org>
-References: <20180523195421.180248-1-thgarnie@google.com>
- <20180523195421.180248-24-thgarnie@google.com>
- <168ebedb-7c27-d1f3-c2f9-223d44186a52@infradead.org>
- <CAJcbSZHPc2w7g8Q4UZV3sx=s6LVL_+dsomro7to6RNhd-4F4Ag@mail.gmail.com>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH] cpufreq: schedutil: Avoid missing updates for one-CPU
+ policies
+Date: Wed, 23 May 2018 17:56:27 -0700
+Message-ID: <20180524005627.GB171060@joelaf.mtv.corp.google.com>
+References: <1672734.JYOlA1IWnU@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-hardening-return-13379-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAJcbSZHPc2w7g8Q4UZV3sx=s6LVL_+dsomro7to6RNhd-4F4Ag@mail.gmail.com>
-Content-Language: en-US
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg KH <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Arnaldo Carvalho de Melo <acme@redhat.com>, Yonghong Song <yhs@fb.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1672734.JYOlA1IWnU@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, claudio@evidence.eu.com, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/23/2018 03:01 PM, Thomas Garnier wrote:
-> On Wed, May 23, 2018 at 2:27 PM Randy Dunlap <rdunlap@infradead.org> wrote:
+On Wed, May 23, 2018 at 11:47:45AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
->> Hi,
+> Commit 152db033d775 (schedutil: Allow cpufreq requests to be made
+> even when kthread kicked) made changes to prevent utilization updates
+> from being discarded during processing a previous request, but it
+> left a small window in which that still can happen in the one-CPU
+> policy case.  Namely, updates coming in after setting work_in_progress
+> in sugov_update_commit() and clearing it in sugov_work() will still
+> be dropped due to the work_in_progress check in sugov_update_single().
 > 
->> (for several patches in this series:)
->> The commit message is confusing.  See below.
+> To close that window, rearrange the code so as to acquire the update
+> lock around the deferred update branch in sugov_update_single()
+> and drop the work_in_progress check from it.
 > 
-> Thanks for the edits, I will change the different commit messages.
-> 
-> 
-> 
->> On 05/23/2018 12:54 PM, Thomas Garnier wrote:
->>> Adapt module loading to support PIE relocations. Generate dynamic GOT if
->>> a symbol requires it but no entry exist in the kernel GOT.
-> 
->>                                      exists
-> 
->>>
->>> Position Independent Executable (PIE) support will allow to extended the
-> 
->>                                                  will allow us to extend
-> the
-> 
->>> KASLR randomization range below the -2G memory limit.
-> 
->> Does that say "below th negative 2G memory limit"?
->> I don't get it.
-> 
-> Yes, below 0xffffffff80000000 basically. I think I will just say that.
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Yes, please, that's much better.
+Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 
-> 
-> 
->>>
->>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->>> ---
->>>  arch/x86/Makefile               |   4 +
->>>  arch/x86/include/asm/module.h   |  11 ++
->>>  arch/x86/include/asm/sections.h |   4 +
->>>  arch/x86/kernel/module.c        | 181 +++++++++++++++++++++++++++++++-
->>>  arch/x86/kernel/module.lds      |   3 +
->>>  5 files changed, 198 insertions(+), 5 deletions(-)
->>>  create mode 100644 arch/x86/kernel/module.lds
-> 
-> 
->> Thanks,
->> --
->> ~Randy
-> 
-> 
-> 
+thanks,
 
-
--- 
-~Randy
+ - Joel
+ 
