@@ -1,50 +1,72 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / core: Fix direct_complete handling for devices with no callbacks
-Date: Thu, 24 May 2018 12:13:30 +0200
-Message-ID: <1553668.SPIWpq1Qe9@aspire.rjw.lan>
-References: <6238546.EnOBWIOf9o@aspire.rjw.lan> <CAPDyKFonGtpv+oEW5bm1XAO7VNuqRR7ZQ7NT5ow3OuoQJQPwmg@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 09/27] x86/acpi: Adapt assembly for PIE support
+Date: Thu, 24 May 2018 13:03:06 +0200
+Message-ID: <20180524110306.GA20225@amd>
+References: <20180523195421.180248-1-thgarnie@google.com>
+ <20180523195421.180248-10-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFonGtpv+oEW5bm1XAO7VNuqRR7ZQ7NT5ow3OuoQJQPwmg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Thomas Martitz <kugel@rockbox.org>, Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+Return-path: <kernel-hardening-return-13382-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Disposition: inline
+In-Reply-To: <20180523195421.180248-10-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Arnaldo Carvalho de Melo <acme@redhat.com>, Yonghong Song <yhs@fb.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Juerge
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 22, 2018 1:41:06 PM CEST Ulf Hansson wrote:
-> On 22 May 2018 at 13:02, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Commit 08810a4119aa (PM / core: Add NEVER_SKIP and SMART_PREPARE
-> > driver flags) inadvertently prevented the power.direct_complete flag
-> > from being set for devices without PM callbacks and with disabled
-> > runtime PM which also prevents power.direct_complete from being set
-> > for their parents.  That led to problems including a resume crash on
-> > HP ZBook 14u.
-> >
-> > Restore the previous behavior by causing power.direct_complete to be
-> > set for those devices again, but do that in a more direct way to
-> > avoid overlooking that case in the future.
-> >
-> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=199693
-> > Fixes: 08810a4119aa (PM / core: Add NEVER_SKIP and SMART_PREPARE driver flags)
-> > Reported-by: Thomas Martitz <kugel@rockbox.org>
-> > Tested-by: Thomas Martitz <kugel@rockbox.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> It seems like the resume path of HP ZBook 14u is kind of fragile,
 
-Yes, it is.
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> in case it *requires* dev->power.direct_complete to be set for devices
-> like these. And that makes me wonder, that perhaps we should try to
-> address that issue as well, no?
+On Wed 2018-05-23 12:54:03, Thomas Garnier wrote:
+> Change the assembly code to use only relative references of symbols for t=
+he
+> kernel to be PIE compatible.
+>=20
+> Position Independent Executable (PIE) support will allow to extended the
+> KASLR randomization range below the -2G memory limit.
 
-Yes, in principle.
+What testing did this get?
 
-But since the direct_complete handling needs to be fixed anyway, it doesn't
-matter a lot in practice, because the resume issue on HP ZBook 14u will not
-be reproducible anyway then.  And since the dependency clearly is on a device
-with no callbacks, I'm not worried too much about that.
+> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wake=
+up_64.S
+> index 50b8ed0317a3..472659c0f811 100644
+> --- a/arch/x86/kernel/acpi/wakeup_64.S
+> +++ b/arch/x86/kernel/acpi/wakeup_64.S
+> @@ -14,7 +14,7 @@
+>  	 * Hooray, we are in Long 64-bit mode (but still running in low memory)
+>  	 */
+>  ENTRY(wakeup_long64)
+> -	movq	saved_magic, %rax
+> +	movq	saved_magic(%rip), %rax
+>  	movq	$0x123456789abcdef0, %rdx
+>  	cmpq	%rdx, %rax
+>  	jne	bogus_64_magic
+
+Because, as comment says, this is rather tricky code.
+									Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlsGm+oACgkQMOfwapXb+vLLAACeNw4n8p5ND1PjVeejcndbG7LD
+PnoAn03Gtm+qB4eRF6elILLNbit31Tp4
+=fVC7
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
