@@ -1,96 +1,219 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 8/9] PM / Domains: Add support for multi PM domains per
- device to genpd
-Date: Thu, 24 May 2018 09:04:54 +0200
-Message-ID: <CAPDyKFo8e5FMrxF2ggxVZ+HQjw4s1Wtx-tMf5ka67knJpZMQcA@mail.gmail.com>
-References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
- <1526639490-12167-9-git-send-email-ulf.hansson@linaro.org>
- <f5589b88-acf8-b491-df79-e359e596c8d0@nvidia.com> <CAPDyKFr_7hbs-MC1jQn5uAgSnb1UGufXZdEmUqNTM63KemTe1g@mail.gmail.com>
- <5a79d3a2-d090-645b-da69-524b7e7a4d90@nvidia.com> <51f7de26-579a-8b9e-4e79-f4eee923ab38@codeaurora.org>
- <CAPDyKFo_69kSS6UzdsJeyeiiED=S=chsdkP+R43qMHDEbZ8n_A@mail.gmail.com> <3838f17a-2ac8-bf3f-f0b1-f69bbe17629c@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Kiran Gunda <kgunda@codeaurora.org>
+Subject: [PATCH V2] thermal: qcom-spmi-temp-alarm: add support for GEN2 PMIC peripherals
+Date: Thu, 24 May 2018 12:49:02 +0530
+Message-ID: <1527146342-13546-1-git-send-email-kgunda@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3838f17a-2ac8-bf3f-f0b1-f69bbe17629c@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: rui.zhang@intel.com, sboyd@codeaurora.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, bjorn.andersson@linaro.org, David Collins <collinsd@codeaurora.org>, Kiran Gunda <kgunda@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 23 May 2018 at 11:07, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 23/05/18 07:12, Ulf Hansson wrote:
->
-> ...
->
->
->>>>>> Thanks for sending this. Believe it or not this has still been on my
->>>>>> to-do list
->>>>>> and so we definitely need a solution for Tegra.
->>>>>>
->>>>>> Looking at the above it appears that additional power-domains exposed
->>>>>> as devices
->>>>>> to the client device. So I assume that this means that the drivers for
->>>>>> devices
->>>>>> with multiple power-domains will need to call RPM APIs for each of
->>>>>> these
->>>>>> additional power-domains. Is that correct?
->>>>>
->>>>>
->>>>> They can, but should not!
->>>>>
->>>>> Instead, the driver shall use device_link_add() and device_link_del(),
->>>>> dynamically, depending on what PM domain that their original device
->>>>> needs for the current running use case.
->>>>>
->>>>> In that way, they keep existing runtime PM deployment, operating on
->>>>> its original device.
->>>>
->>>>
->>>> OK, sounds good. Any reason why the linking cannot be handled by the
->>>> above API? Is there a use-case where you would not want it linked?
->>>
->>>
->>> I am guessing the linking is what would give the driver the ability to
->>> decide which subset of powerdomains it actually wants to control
->>> at any point using runtime PM. If we have cases wherein the driver would
->>> want to turn on/off _all_ its associated powerdomains _always_
->>> then a default linking of all would help.
->>
->>
->> First, I think we need to decide on *where* the linking should be
->> done, not at both places, as that would just mess up synchronization
->> of who is responsible for calling the device_link_del() at detach.
->>
->> Second, It would in principle be fine to call device_link_add() and
->> device_link_del() as a part of the attach/detach APIs. However, there
->> is a downside to such solution, which would be that the driver then
->> needs call the detach API, just to do device_link_del(). Of course
->> then it would also needs to call the attach API later if/when needed.
->> Doing this adds unnecessary overhead - comparing to just let the
->> driver call device_link_add|del() when needed. On the upside, yes, it
->> would put less burden on the drivers as it then only needs to care
->> about using one set of functions.
->>
->> Which solution do you prefer?
->
->
-> Any reason why we could not add a 'boolean' argument to the API to indicate
-> whether the new device should be linked? I think that I prefer the API
-> handles it, but I can see there could be instances where drivers may wish to
-> handle it themselves.
+From: David Collins <collinsd@codeaurora.org>
 
-Coming back to this question. Both Tegra XUSB and Qcom Camera use
-case, would benefit from doing the linking themselves, as it needs
-different PM domains to be powered on depending on the current use
-case - as to avoid wasting power.
+Add support for the TEMP_ALARM GEN2 PMIC peripheral subtype.  The
+GEN2 subtype defines an over temperature state with hysteresis
+instead of stage in the status register.  There are two GEN2
+states corresponding to stages 1 and 2.
 
-However, I can understand that you prefer some simplicity over
-optimizations, as you told us. Then, does it mean that you are
-insisting on extending the APIs with a boolean for linking, or are you
-fine with the driver to call device_link_add()?
+Signed-off-by: David Collins <collinsd@codeaurora.org>
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+ drivers/thermal/qcom-spmi-temp-alarm.c | 92 ++++++++++++++++++++++++++--------
+ 1 file changed, 71 insertions(+), 21 deletions(-)
 
-[...]
+Changes from [V1]:
+	Rebased on top of 4.17-rc6 
 
-Kind regards
-Uffe
+diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
+index 95f987d..ad4f3a8 100644
+--- a/drivers/thermal/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights reserved.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 and
+@@ -11,6 +11,7 @@
+  * GNU General Public License for more details.
+  */
+ 
++#include <linux/bitops.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/iio/consumer.h>
+@@ -29,13 +30,17 @@
+ #define QPNP_TM_REG_ALARM_CTRL		0x46
+ 
+ #define QPNP_TM_TYPE			0x09
+-#define QPNP_TM_SUBTYPE			0x08
++#define QPNP_TM_SUBTYPE_GEN1		0x08
++#define QPNP_TM_SUBTYPE_GEN2		0x09
+ 
+-#define STATUS_STAGE_MASK		0x03
++#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
++#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
++#define STATUS_GEN2_STATE_SHIFT		4
+ 
+-#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
++#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
++#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
+ 
+-#define ALARM_CTRL_FORCE_ENABLE		0x80
++#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
+ 
+ /*
+  * Trip point values based on threshold control
+@@ -58,6 +63,7 @@
+ struct qpnp_tm_chip {
+ 	struct regmap			*map;
+ 	struct thermal_zone_device	*tz_dev;
++	unsigned int			subtype;
+ 	long				temp;
+ 	unsigned int			thresh;
+ 	unsigned int			stage;
+@@ -66,6 +72,9 @@ struct qpnp_tm_chip {
+ 	struct iio_channel		*adc;
+ };
+ 
++/* This array maps from GEN2 alarm state to GEN1 alarm stage */
++static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2, 3, 3, 3};
++
+ static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8 *data)
+ {
+ 	unsigned int val;
+@@ -84,30 +93,59 @@ static int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 data)
+ 	return regmap_write(chip->map, chip->base + addr, data);
+ }
+ 
++/**
++ * qpnp_tm_get_temp_stage() - return over-temperature stage
++ * @chip:		Pointer to the qpnp_tm chip
++ *
++ * Return: stage (GEN1) or state (GEN2) on success, or errno on failure.
++ */
++static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
++{
++	int ret;
++	u8 reg = 0;
++
++	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
++	if (ret < 0)
++		return ret;
++
++	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
++		ret = reg & STATUS_GEN1_STAGE_MASK;
++	else
++		ret = (reg & STATUS_GEN2_STATE_MASK) >> STATUS_GEN2_STATE_SHIFT;
++
++	return ret;
++}
++
+ /*
+  * This function updates the internal temp value based on the
+  * current thermal stage and threshold as well as the previous stage
+  */
+ static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
+ {
+-	unsigned int stage;
++	unsigned int stage, stage_new, stage_old;
+ 	int ret;
+-	u8 reg = 0;
+ 
+-	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
++	ret = qpnp_tm_get_temp_stage(chip);
+ 	if (ret < 0)
+ 		return ret;
++	stage = ret;
+ 
+-	stage = reg & STATUS_STAGE_MASK;
++	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
++		stage_new = stage;
++		stage_old = chip->stage;
++	} else {
++		stage_new = alarm_state_map[stage];
++		stage_old = alarm_state_map[chip->stage];
++	}
+ 
+-	if (stage > chip->stage) {
++	if (stage_new > stage_old) {
+ 		/* increasing stage, use lower bound */
+-		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
++		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP +
+ 			     chip->thresh * TEMP_THRESH_STEP +
+ 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+-	} else if (stage < chip->stage) {
++	} else if (stage_new < stage_old) {
+ 		/* decreasing stage, use upper bound */
+-		chip->temp = stage * TEMP_STAGE_STEP +
++		chip->temp = stage_new * TEMP_STAGE_STEP +
+ 			     chip->thresh * TEMP_THRESH_STEP -
+ 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+ 	}
+@@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq, void *data)
+  */
+ static int qpnp_tm_init(struct qpnp_tm_chip *chip)
+ {
++	unsigned int stage;
+ 	int ret;
+-	u8 reg;
++	u8 reg = 0;
+ 
+-	chip->thresh = THRESH_MIN;
++	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
++	if (ret < 0)
++		return ret;
++
++	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+ 	chip->temp = DEFAULT_TEMP;
+ 
+-	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
++	ret = qpnp_tm_get_temp_stage(chip);
+ 	if (ret < 0)
+ 		return ret;
++	chip->stage = ret;
+ 
+-	chip->stage = reg & STATUS_STAGE_MASK;
++	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
++		? chip->stage : alarm_state_map[chip->stage];
+ 
+-	if (chip->stage)
++	if (stage)
+ 		chip->temp = chip->thresh * TEMP_THRESH_STEP +
+-			     (chip->stage - 1) * TEMP_STAGE_STEP +
++			     (stage - 1) * TEMP_STAGE_STEP +
+ 			     TEMP_THRESH_MIN;
+ 
+ 	/*
+ 	 * Set threshold and disable software override of stage 2 and 3
+ 	 * shutdowns.
+ 	 */
+-	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
++	chip->thresh = THRESH_MIN;
++	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK | SHUTDOWN_CTRL1_THRESHOLD_MASK);
++	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+ 	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
+ 	if (ret < 0)
+ 		return ret;
+@@ -246,12 +293,15 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
++	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
++				     && subtype != QPNP_TM_SUBTYPE_GEN2)) {
+ 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
+ 			type, subtype);
+ 		return -ENODEV;
+ 	}
+ 
++	chip->subtype = subtype;
++
+ 	ret = qpnp_tm_init(chip);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "init failed\n");
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project
