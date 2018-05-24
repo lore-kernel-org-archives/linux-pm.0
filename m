@@ -1,51 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v11 1/2] cpufreq: Add Kryo CPU scaling driver
-Date: Thu, 24 May 2018 10:07:29 +0530
-Message-ID: <20180524043729.3bzk5dazstoq6xfb@vireshk-i7>
-References: <1527079139-3558-1-git-send-email-ilialin@codeaurora.org>
- <1527079139-3558-2-git-send-email-ilialin@codeaurora.org>
- <1ec7645d-72b6-5a1a-48c3-831a3c484a0e@arm.com>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
+ bindings
+Date: Thu, 24 May 2018 10:48:10 +0530
+Message-ID: <cba1616d-ad12-599b-4351-3c7240de852a@codeaurora.org>
+References: <1526751291-17873-1-git-send-email-tdas@codeaurora.org>
+ <1526751291-17873-2-git-send-email-tdas@codeaurora.org>
+ <20180522193139.GA21623@rob-hp-laptop>
+ <20180523054846.zn7gftt6aqyibd26@vireshk-i7>
+ <CAL_JsqL7VdSjerOioc5cSOyKAAXJuVnPJqp_WbTtwr11UUxq=A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1ec7645d-72b6-5a1a-48c3-831a3c484a0e@arm.com>
+In-Reply-To: <CAL_JsqL7VdSjerOioc5cSOyKAAXJuVnPJqp_WbTtwr11UUxq=A@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Ilia Lin <ilialin@codeaurora.org>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, Saravana Kannan <skannan@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 23-05-18, 14:25, Sudeep Holla wrote:
-> On 23/05/18 13:38, Ilia Lin wrote:
-> > +static int __init qcom_cpufreq_kryo_init(void)
-> > +{
-> > +	/*
-> > +	 * Since the driver depends on smem and nvmem drivers, which may
-> > +	 * return EPROBE_DEFER, all the real activity is done in the probe,
-> > +	 * which may be defered as well. The init here is only registering
-> > +	 * a platform device.
-> > +	 */
-> > +	platform_device_register_simple("qcom-cpufreq-kryo", -1, NULL, 0);
-> > +	return 0;
-> > +}
-> > +module_init(qcom_cpufreq_kryo_init);
-> 
-> Do you need this at all ? See below on how to eliminate the need for this.
-> 
-> > +
-> > +static struct platform_driver qcom_cpufreq_kryo_driver = {
-> > +	.probe = qcom_cpufreq_kryo_probe,
-> > +	.driver = {
-> > +		.name = "qcom-cpufreq-kryo",
-> > +	},
-> > +};
-> > +builtin_platform_driver(qcom_cpufreq_kryo_driver);
-> 
-> Use builtin_platform_driver_probe and remove qcom_cpufreq_kryo_init
-> or use module_platform_driver_probe if it can be module.
+Hello Rob, Viresh,
 
-I agree with this, just use a single init routine to register both the driver
-and device.
+Thank you for the comments. If I understand correctly, the device tree 
+nodes should look something like the below.
+
+Though I am not sure if any vendor name could be associated in the cpu 
+nodes.
+
+Please suggest if my understanding is wrong.
+
+cpu@0 {
+	qcom,freq-domain = <&freq_domain_table0>;
+	…
+};
+
+same follows for cpu 1/2/3
+
+cpu@400 {
+	qcom,freq-domain = <&freq_domain_table1>;
+	…
+};
+same follows for cpu 5/6/7
+
+freq_domain_table0 : freq_table {
+	reg = < >, < >, < > ;
+	reg-names = "perf_base", "lut_base", "en_base";
+};
+
+freq_domain_table1 : freq_table {
+	reg = < >, < >, < > ;
+	reg-names = "perf_base", "lut_base", "en_base";
+};
+
+
+
+On 5/23/2018 7:48 PM, Rob Herring wrote:
+> On Wed, May 23, 2018 at 12:48 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 22-05-18, 14:31, Rob Herring wrote:
+>>> On Sat, May 19, 2018 at 11:04:50PM +0530, Taniya Das wrote:
+>>>> +           freq-domain-0 {
+>>>> +                   compatible = "cpufreq";
+>>>> +                   reg = <0x17d43920 0x4>,
+>>>> +                        <0x17d43110 0x500>,
+>>>> +                        <0x17d41000 0x4>;
+>>>> +                   reg-names = "perf_base", "lut_base", "en_base";
+>>>> +                   qcom,cpulist = <&CPU0 &CPU1 &CPU2 &CPU3>;
+>>
+>> I was thinking, can't we add platform specific properties in the CPU
+>> nodes ? If yes, then we can point the phandle of fw node from the CPUs
+>> and this awkward list can go away.
+> 
+> Yes, that's fine. That would be more like OPP binding in that the CPU
+> points to the OPP table rather than the OPP pointing to the CPUs.
+> 
+> With that, you can get rid of the child nodes completely. Just make
+> the parent reg property N sets of 3 addresses for N domains.
+> 
+> Rob
+> 
 
 -- 
-viresh
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
+
+--
