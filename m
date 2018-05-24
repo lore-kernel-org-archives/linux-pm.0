@@ -1,42 +1,65 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH RFC] suspend: Prevent might sleep splats
-Date: Thu, 24 May 2018 17:57:56 +0200
-Message-ID: <CAJZ5v0hKfAuEyf7YQhb0Cs4p=RK6DADCrqvdSz0bcSihjiYBsw@mail.gmail.com>
-References: <20180524142426.jeyszeqdrjvb3tob@linutronix.de>
- <CAJZ5v0jyGVP4h6B=wkhHb7UV2yePHZVjkzodj0Djx-gUBxyMkA@mail.gmail.com> <20180524154505.d5r77w7xinpbc36n@linutronix.de>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [PATCH v3 09/27] x86/acpi: Adapt assembly for PIE support
+Date: Thu, 24 May 2018 09:35:42 -0700
+Message-ID: <CAJcbSZFJ84+VC5xDQZGHctupdqwmMBgqzLzFRqCTBpi5t-2Gvw@mail.gmail.com>
+References: <20180523195421.180248-1-thgarnie@google.com> <20180523195421.180248-10-thgarnie@google.com>
+ <20180524110306.GA20225@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180524154505.d5r77w7xinpbc36n@linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Return-path: <kernel-hardening-return-13386-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20180524110306.GA20225@amd>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg KH <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Arnaldo Carvalho de Melo <acme@redhat.com>, Yonghong Song <yhs@fb.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Juergen Gross <jgros>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 24, 2018 at 5:45 PM, Sebastian Andrzej Siewior
-<bigeasy@linutronix.de> wrote:
-> On 2018-05-24 17:07:16 [+0200], Rafael J. Wysocki wrote:
->> On Thu, May 24, 2018 at 4:24 PM, Sebastian Andrzej Siewior
->> <bigeasy@linutronix.de> wrote:
->> > From: Thomas Gleixner <tglx@linutronix.de>
->> >
->> > timekeeping suspend/resume calls read_persistent_clock() which takes
->> > rtc_lock. That results in might sleep warnings because at that point
->> > we run with interrupts disabled.
->> >
->> > We cannot convert rtc_lock to a raw spinlock as that would trigger
->> > other might sleep warnings.
->> >
->> > As a workaround we disable the might sleep warnings by setting
->> > system_state to SYSTEM_SUSPEND before calling sysdev_suspend() and
->> > restoring it to SYSTEM_RUNNING afer sysdev_resume().
->> >
->> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->>
->> Hmm.  Don't we also need to cover suspend-to-idle?
->
-> Well, if you agree with the approach then I would look into it.
+On Thu, May 24, 2018 at 4:03 AM Pavel Machek <pavel@ucw.cz> wrote:
 
-As long as the SYSTEM_SUSPEND system state is defined unambiguously, I
-don't have a problem with doing this.
+> On Wed 2018-05-23 12:54:03, Thomas Garnier wrote:
+> > Change the assembly code to use only relative references of symbols for
+the
+> > kernel to be PIE compatible.
+> >
+> > Position Independent Executable (PIE) support will allow to extended the
+> > KASLR randomization range below the -2G memory limit.
+
+> What testing did this get?
+
+Tested boot, hibernation and performance on qemu and dedicated machine.
+
+
+> > diff --git a/arch/x86/kernel/acpi/wakeup_64.S
+b/arch/x86/kernel/acpi/wakeup_64.S
+> > index 50b8ed0317a3..472659c0f811 100644
+> > --- a/arch/x86/kernel/acpi/wakeup_64.S
+> > +++ b/arch/x86/kernel/acpi/wakeup_64.S
+> > @@ -14,7 +14,7 @@
+> >        * Hooray, we are in Long 64-bit mode (but still running in low
+memory)
+> >        */
+> >  ENTRY(wakeup_long64)
+> > -     movq    saved_magic, %rax
+> > +     movq    saved_magic(%rip), %rax
+> >       movq    $0x123456789abcdef0, %rdx
+> >       cmpq    %rdx, %rax
+> >       jne     bogus_64_magic
+
+> Because, as comment says, this is rather tricky code.
+
+I agree, I think maintainers feedback is very important for this patchset.
+
+
+Pavel
+
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures)
+http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+
+
+-- 
+Thomas
