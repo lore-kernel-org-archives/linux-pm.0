@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC/RFT] [PATCH v2 6/6] cpufreq: intel_pstate: enable boost for SKX
-Date: Wed, 23 May 2018 18:47:38 -0700
-Message-ID: <20180524014738.52924-7-srinivas.pandruvada@linux.intel.com>
+Subject: [RFC/RFT] [PATCH v2 1/6] cpufreq: intel_pstate: Cache last HWP capability/request value
+Date: Wed, 23 May 2018 18:47:33 -0700
+Message-ID: <20180524014738.52924-2-srinivas.pandruvada@linux.intel.com>
 References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
@@ -10,39 +10,54 @@ To: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingul
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Enable HWP boost on Skylake server platform.
+Store the HWP request value last set using MSR_HWP_REQUEST. This will
+allow us to save cycles used for reading last HWP request value for
+dynamic update of MSR_HWP_REQUEST.
+Also store HWP capability MSR value in local memory, to avoid reading
+MSR later for calculating limits for dynamic update of MSR_HWP_REQUEST.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/cpufreq/intel_pstate.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index b2613c9775d5..6f8214a40764 100644
+index 17e566afbb41..baed29c768e7 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -1801,6 +1801,11 @@ static const struct x86_cpu_id intel_pstate_cpu_ee_disable_ids[] = {
- 	{}
+@@ -221,6 +221,8 @@ struct global_params {
+  *			preference/bias
+  * @epp_saved:		Saved EPP/EPB during system suspend or CPU offline
+  *			operation
++ * @hwp_req_cached:	Cached value of the last HWP Request MSR
++ * @hwp_cap_cached:	Cached value of the last HWP Capabilities MSR
+  *
+  * This structure stores per CPU instance data for all CPUs.
+  */
+@@ -253,6 +255,8 @@ struct cpudata {
+ 	s16 epp_policy;
+ 	s16 epp_default;
+ 	s16 epp_saved;
++	u64 hwp_req_cached;
++	u64 hwp_cap_cached;
  };
  
-+static const struct x86_cpu_id intel_pstate_hwp_boost_ids[] __initconst = {
-+	ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
-+	{}
-+};
-+
- static int intel_pstate_init_cpu(unsigned int cpunum)
- {
- 	struct cpudata *cpu;
-@@ -1831,6 +1836,10 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
- 			intel_pstate_disable_ee(cpunum);
+ static struct cpudata **all_cpu_data;
+@@ -689,6 +693,7 @@ static void intel_pstate_get_hwp_max(unsigned int cpu, int *phy_max,
+ 	u64 cap;
  
- 		intel_pstate_hwp_enable(cpu);
-+
-+		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
-+		if (id)
-+			hwp_boost = true;
+ 	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
++	WRITE_ONCE(all_cpu_data[cpu]->hwp_cap_cached, cap);
+ 	if (global.no_turbo)
+ 		*current_max = HWP_GUARANTEED_PERF(cap);
+ 	else
+@@ -763,6 +768,7 @@ static void intel_pstate_hwp_set(unsigned int cpu)
+ 		intel_pstate_set_epb(cpu, epp);
  	}
+ skip_epp:
++	WRITE_ONCE(cpu_data->hwp_req_cached, value);
+ 	wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
+ }
  
- 	intel_pstate_get_cpu_pstates(cpu);
 -- 
 2.13.6
