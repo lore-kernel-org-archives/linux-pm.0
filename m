@@ -1,142 +1,90 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 9/9] PM / Domains: Add dev_pm_domain_attach_by_id() to
- manage multi PM domains
-Date: Thu, 24 May 2018 23:11:44 +0200
-Message-ID: <CAPDyKFozm88OM8cDFXXwvgdMirrt2=HhZtBdyhNjo2bgjHV2Mg@mail.gmail.com>
+Subject: Re: [PATCH 8/9] PM / Domains: Add support for multi PM domains per
+ device to genpd
+Date: Thu, 24 May 2018 23:21:30 +0200
+Message-ID: <CAPDyKFp3nMoUoM0LfxcSvJKthwrAKK7yCLAkZMGW-oapUsK7GA@mail.gmail.com>
 References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
- <1526639490-12167-10-git-send-email-ulf.hansson@linaro.org> <1c21d18e-954a-f3a8-9817-0117b7cb7e4f@nvidia.com>
+ <1526639490-12167-9-git-send-email-ulf.hansson@linaro.org>
+ <f5589b88-acf8-b491-df79-e359e596c8d0@nvidia.com> <CAPDyKFr_7hbs-MC1jQn5uAgSnb1UGufXZdEmUqNTM63KemTe1g@mail.gmail.com>
+ <5a79d3a2-d090-645b-da69-524b7e7a4d90@nvidia.com> <51f7de26-579a-8b9e-4e79-f4eee923ab38@codeaurora.org>
+ <CAPDyKFo_69kSS6UzdsJeyeiiED=S=chsdkP+R43qMHDEbZ8n_A@mail.gmail.com>
+ <3838f17a-2ac8-bf3f-f0b1-f69bbe17629c@nvidia.com> <CAPDyKFo8e5FMrxF2ggxVZ+HQjw4s1Wtx-tMf5ka67knJpZMQcA@mail.gmail.com>
+ <1687797a-93f1-7e5c-6060-01c12c070964@nvidia.com> <CAPDyKFravSx3h6UnsjNGM2ViZtkxvPMULyVQnoVT9jsEP5az+A@mail.gmail.com>
+ <96169281-49b2-121f-0b7e-f54aae66db91@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1c21d18e-954a-f3a8-9817-0117b7cb7e4f@nvidia.com>
+In-Reply-To: <96169281-49b2-121f-0b7e-f54aae66db91@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 May 2018 at 17:48, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 18/05/18 11:31, Ulf Hansson wrote:
+[...]
+
+>>>
+>>> * genpd_dev_pm_attach_by_id() - Attach a device to one of its PM domain.
+>>> * @dev: Device to attach.
+>>> * @index: The index of the PM domain.
+>>>
+>>> This naming and description is a bit misleading, because really it is not
+>>> attaching the device that is passed, but creating a new device to attach
+>>> a
+>>> PM domain to. So we should consider renaming and changing the description
+>>> and indicate that users need to link the device.
 >>
->> The existing dev_pm_domain_attach() function, allows a single PM domain to
->> be attached per device. To be able to support devices that are partitioned
->> across multiple PM domains, let's introduce a new interface,
->> dev_pm_domain_attach_by_id().
 >>
->> The dev_pm_domain_attach_by_id() returns a new allocated struct device
->> with
->> the corresponding attached PM domain. This enables for example a driver to
->> operate on the new device from a power management point of view. The
->> driver
->> may then also benefit from using the received device, to set up so called
->> device-links towards its original device. Depending on the situation,
->> these
->> links may then be dynamically changed.
+>> I picked the name to be consistent with the existing
+>> genpd_dev_pm_attach(). Do you have a better suggestion?
+>
+>
+> Well, it appears to get more of a 'get' function and so I don't see why we
+> could not have 'genpd_dev_get_by_id()' and then we could have a
+> genpd_dev_put() as well (which would call genpd_dev_pm_detach).
+>
+>> I agree, some details is missing to the description, let me try to
+>> improve it. Actually, I was trying to follow existing descriptions
+>> from genpd_dev_pm_attach(), so perhaps that also needs a little
+>> update.
 >>
->> The new interface is typically called by drivers during their probe phase,
->> in case they manages devices which uses multiple PM domains. If that is
->> the
->> case, the driver also becomes responsible of managing the detaching of the
->> PM domains, which typically should be done at the remove phase. Detaching
->> is done by calling the existing dev_pm_domain_detach() function and for
->> each of the received devices from dev_pm_domain_attach_by_id().
+>> However, do note that, neither genpd_dev_pm_attach() or
+>> genpd_dev_pm_attach_by_id() is supposed to be called by drivers, but
+>> rather only by the driver core. So description may not be so
+>> important.
 >>
->> Note, currently its only genpd that supports multiple PM domains per
->> device, but dev_pm_domain_attach_by_id() can easily by extended to cover
->> other PM domain types, if/when needed.
+>> In regards to good descriptions, for sure the API added in patch9,
+>> dev_pm_domain_attach_by_id(), needs a good one, as this is what
+>> drivers should be using.
+>
+>
+> OK. Same appears to apply here to the description as I mentioned above.
+> Still seems to be more of a 'get' than an attach. So I wonder if it should
+> be dev_pm_domain_get_by_id() instead?
+
+Regarding "get" vs "attach", I suggest we continue to discuss that in
+patch 9. Whatever is decided, $subject patch needs to follow.
+
+>
+>>> Finally, how is a PM domain attached via calling
+>>> genpd_dev_pm_attach_by_id()
+>>> detached?
 >>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>   drivers/base/power/common.c | 33 ++++++++++++++++++++++++++++++++-
->>   include/linux/pm_domain.h   |  7 +++++++
->>   2 files changed, 39 insertions(+), 1 deletion(-)
 >>
->> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
->> index 7ae62b6..d3db974 100644
->> --- a/drivers/base/power/common.c
->> +++ b/drivers/base/power/common.c
->> @@ -117,13 +117,44 @@ int dev_pm_domain_attach(struct device *dev, bool
->> power_on)
->>   EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
->>     /**
->> + * dev_pm_domain_attach_by_id - Attach a device to one of its PM domains.
+>> Via the existing genpd_dev_pm_detach(), according to what I have
+>> described in the change log. I clarify the description in regards to
+>> this as well.
 >
 >
-> Isn't this more of a 'get'?
+> OK, so this bit is a to-do as that is not yet exposed AFAICT. I see that you
+> said 'although we need to extend it to cover cleanup of the earlier
+> registered device, via calling device_unregister().' So if we do this then
+> that would be fine.
 
-I don't think so, at least according to the common understanding of
-how we use get and put APIs.
+Let me clarify the changelog. It's not a to-do, as it's already done
+as part of $subject patch.
 
-For example, clk_get() returns a cookie to a clk, which you then can
-do a hole bunch of different clk specific operations on.
-
-This is different, there are no specific PM domain operations the
-caller can or should do. Instead the idea is to keep drivers more or
-less transparent, still using runtime PM as before. The only care the
-caller need to take is to use device links, which BTW isn't a PM
-domain specific thing.
-
->
->> + * @index: The index of the PM domain.
->> + * @dev: Device to attach.
->
->
-> Isn't this just the device associated with the PM domain we are getting?
-
-Correct, but please note, as stated above, I don't think it's a good
-idea to return a special PM domain cookie, because we don't want the
-caller to run special PM domain operations.
-
->
->> + *
->> + * As @dev may only be attached to a single PM domain, the backend PM
->> domain
->> + * provider should create a virtual device to attach instead. As
->> attachment
->> + * succeeds, the ->detach() callback in the struct dev_pm_domain should
->> be
->> + * assigned by the corresponding backend attach function.
->> + *
->> + * This function should typically be invoked from drivers during probe
->> phase.
->> + * Especially for those that manages devices which requires power
->> management
->> + * through more than one PM domain.
->> + *
->> + * Callers must ensure proper synchronization of this function with power
->> + * management callbacks.
->> + *
->> + * Returns the virtual attached device in case successfully attached PM
->> domain,
->> + * NULL in case @dev don't need a PM domain, else a PTR_ERR().
->
->
-> Should this be 'NULL in the case where the @dev already has a power-domain'?
-
-Yes, I think so. The intent is to be consistent with how
-dev_pm_domain_attach() works and according to the latest changes I did
-for it. It's queued for 4.18, please have a look in Rafael's tree and
-you will see.
-
->
->> + */
->> +struct device *dev_pm_domain_attach_by_id(struct device *dev,
->> +                                         unsigned int index)
->> +{
->> +       if (dev->pm_domain)
->
->
-> I wonder if this is worthy of a ...
->
->         if (WARN_ON(dev->pm_domain))
->
->> +               return NULL;
->
->
-> Don't we consider this an error case? I wonder why not return PTR_ERR here
-> as well? This would be consistent with dev_pm_domain_attach().
-
-Please see above comment.
+So I guess we are in agreement that we don't need another API to deal
+with detach?
 
 Kind regards
 Uffe
