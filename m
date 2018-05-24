@@ -1,87 +1,74 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 3/3] sched/fair: schedutil: explicit update only when
- required
-Date: Thu, 24 May 2018 14:42:36 +0100
-Message-ID: <20180524134236.GA30654@e110439-lin>
-References: <20180510150553.28122-1-patrick.bellasi@arm.com>
- <20180510150553.28122-4-patrick.bellasi@arm.com>
- <20180513060443.GB64158@joelaf.mtv.corp.google.com>
- <20180513062538.GA116730@joelaf.mtv.corp.google.com>
- <20180514163206.GF30654@e110439-lin>
- <20180517151701.GC162290@joelaf.mtv.corp.google.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v12 1/2] cpufreq: Add Kryo CPU scaling driver
+Date: Thu, 24 May 2018 15:01:15 +0100
+Message-ID: <b4e221af-57f7-fd11-942d-6bc6f6b55a73@arm.com>
+References: <1527152242-31281-1-git-send-email-ilialin@codeaurora.org>
+ <1527152242-31281-2-git-send-email-ilialin@codeaurora.org>
+ <860be68b-cac0-9efc-b3c7-cc75b391a4c3@arm.com>
+ <000501d3f35f$96794910$c36bdb30$@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180517151701.GC162290@joelaf.mtv.corp.google.com>
+In-Reply-To: <000501d3f35f$96794910$c36bdb30$@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Todd Kjos <tkjos@google.com>, kernel-team@android.com, Steve Muckle <smuckle@google.com>
+To: ilialin@codeaurora.org, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Joel,
-sorry for the late reply, this thread is a bit confusing because we
-keep discussing while there was already a v2 posted on list.
 
-However, here are few comments below...
+
+On 24/05/18 14:03, ilialin@codeaurora.org wrote:
+> 
+> 
 
 [...]
 
-> > > > > @@ -5456,10 +5443,12 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> > > > >  		update_cfs_group(se);
-> > > > >  	}
-> > > > >  
-> > > > > +	/* The task is no more visible from the root cfs_rq */
-> > > > >  	if (!se)
-> > > > >  		sub_nr_running(rq, 1);
-> > > > >  
-> > > > >  	util_est_dequeue(&rq->cfs, p, task_sleep);
-> > > > > +	cpufreq_update_util(rq, 0);
-> > > > 
-> > > > One question about this change. In enqueue, throttle and unthrottle - you are
-> > > > conditionally calling cpufreq_update_util incase the task was
-> > > > visible/not-visible in the hierarchy.
-> > > > 
-> > > > But in dequeue you're unconditionally calling it. Seems a bit inconsistent.
-> > > > Is this because of util_est or something? Could you add a comment here
-> > > > explaining why this is so?
-> > > 
-> > > The big question I have is incase se != NULL, then its still visible at the
-> > > root RQ level.
-> > 
-> > My understanding it that you get !se at dequeue time when we are
-> > dequeuing a task from a throttled RQ. Isn't it?
+>>> +
+>>> +	ret = PTR_ERR_OR_ZERO(platform_device_register_simple(
+>>> +		"qcom-cpufreq-kryo", -1, NULL, 0));
+>>
+>>
+>> You simply can't do this unconditionally here. This will blow up on platforms
+>> where this driver is not supposed to work. The probe will be called on non-
+>> QCOM or non-Kryo QCOM platforms and I reckon it will crash trying to
+>> execute something in qcom_smem_get.
 > 
-> I don't think so? !se means the RQ is not throttled.
+> What do you mean by 'unconditionally'?
 
-Yes, I agree, I "just" forgot a "not" in the sentence above... my bad!
+Why should you even add/register a device "qcom-cpufreq-kryo" on other
+platforms. Drivers can get registered, but only devices that are present
+or required by the platform need to be registered.
 
-However, we are on the same page here.
- 
-> > Thus, this means you are dequeuing a throttled task, I guess for
-> > example because of a migration.
-> > However, the point is that a task dequeue from a throttled RQ _is
-> > already_ not visible from the root RQ, because of the sub_nr_running()
-> > done by throttle_cfs_rq().
+> The driver depends on the smem and nvmem drivers, which depend on ARCH_QCOM:
+>  +	depends on QCOM_QFPROM
+>  +	depends on QCOM_SMEM
 > 
-> Yes that's what I was wondering, so my point was if its already not visible,
-> then why call schedutil. I felt call schedutil only if its visible like you
-> were doing for the other paths.
 
-Agree, as discussed in Vincent in v2, we should likely move these
-schedutil updates at attach/detach time. This is when exectly we know
-that the utilization has changed for a CPU.
+Sure, but we have something called single image for all ARM64 platforms.
+May be QCOM still used to tweeking config to build binary for your
+particular mobile platform but the distro kernel need single binary to
+work on all platforms. We have moved far away from platform specific
+builds long back now IIRC.
 
-... and that's what I'll propose in the upcoming v3 for this patch.
+> And if SMEM read in the probe returns something other than Kryo, it will exit.
+> 
 
-[...]
+Check what this driver does ?
 
-> I agree with your assessments below and about not calling cpufreq
-> when CPU is about to idle.
+	msm_id = qcom_smem_get(QCOM_SMEM_HOST_ANY, MSM_ID_SMEM, &len);
+	msm_id++;
+	switch ((enum _msm_id)*msm_id)
 
-Cool ;)
+I think it *will and should* crash here ? You need to check the return
+value for sure. But since qcom_smem_get return -EPROBE_DEFER, we keep
+retrying even on non QCOM platforms which is something I would like to
+avoid.
+
+Therefore that's not the main concern. Why do I have to see
+"qcom-cpufreq-kryo" device registered on my non QCOM platform ?
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Regards,
+Sudeep
