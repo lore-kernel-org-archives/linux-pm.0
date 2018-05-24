@@ -1,39 +1,33 @@
-From: Juergen Gross <jgross@suse.com>
-Subject: Re: [PATCH v3 18/27] xen: Adapt assembly for PIE support
-Date: Thu, 24 May 2018 11:11:44 +0200
-Message-ID: <73524c81-ba3f-8245-9795-f2aebacd8403@suse.com>
-References: <20180523195421.180248-1-thgarnie@google.com>
-	<20180523195421.180248-19-thgarnie@google.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v7 00/26] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM)
+Date: Thu, 24 May 2018 11:16:13 +0200
+Message-ID: <CAPDyKFoZ16vhVvriLjyUSKwfym7HxHwn6Y92Q2ukXu9BG5GykA@mail.gmail.com>
+References: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-In-Reply-To: <20180523195421.180248-19-thgarnie@google.com>
-Content-Language: de-DE
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Arnaldo Carvalho de Melo <acme@redhat.com>, Yonghong Song <yhs@fb.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>Len
-Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, linux-sparse@vger.kernel.org, linux-crypto@vger.kernel.org, kernel-hardening@lists.openwall.com, xen-devel@lists.xenproject.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1523531671-27491-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lina Iyer <ilina@codeaurora.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 23/05/18 21:54, Thomas Garnier wrote:
-> Change the assembly code to use the new _ASM_MOVABS macro which get a
-> symbol reference while being PIE compatible. Adapt the relocation tool
-> to ignore 32-bit Xen code.
-> 
-> Position Independent Executable (PIE) support will allow to extended the
-> KASLR randomization range below the -2G memory limit.
-> 
-> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+Sudeep, Lorenzo, Mark
 
-Reviewed-by: Juergen Gross <jgross@suse.com>
+On 12 April 2018 at 13:14, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> Changes in v7:
+>  - Addressed comments concerning the PSCI changes from Mark Rutland, which moves
+>    the psci firmware driver to a new firmware subdir and change to force PSCI PC
+>    mode during boot to cope with kexec'ed booted kernels.
 
+Are you guys happy in general with the PSCI specific parts from this
+series? It would be nice if you could provide me with acks or
+reviewed-by tags for the rest of them in such case.
 
-Juergen
+I intend to re-post a new version very soon.
+
+[...]
+
+Kind regards
+Uffe
