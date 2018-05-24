@@ -1,219 +1,56 @@
-From: Kiran Gunda <kgunda@codeaurora.org>
-Subject: [PATCH V2] thermal: qcom-spmi-temp-alarm: add support for GEN2 PMIC peripherals
-Date: Thu, 24 May 2018 12:49:02 +0530
-Message-ID: <1527146342-13546-1-git-send-email-kgunda@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: reinitialize new policy min/max when writing scaling_(max|min)_freq
+Date: Thu, 24 May 2018 09:45:17 +0200
+Message-ID: <CAJZ5v0ih6s9WviSpg9D+kSt2h8T5Vnx-MziOmYuk1H4yZOYLNg@mail.gmail.com>
+References: <1527144234-96396-1-git-send-email-kevin.wangtao@hisilicon.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1527144234-96396-1-git-send-email-kevin.wangtao@hisilicon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, sboyd@codeaurora.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, bjorn.andersson@linaro.org, David Collins <collinsd@codeaurora.org>, Kiran Gunda <kgunda@codeaurora.org>
+To: Kevin Wangtao <kevin.wangtao@hisilicon.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gengyanping@hisilicon.com, sunzhaosheng@hisilicon.com
 List-Id: linux-pm@vger.kernel.org
 
-From: David Collins <collinsd@codeaurora.org>
+On Thu, May 24, 2018 at 8:43 AM, Kevin Wangtao
+<kevin.wangtao@hisilicon.com> wrote:
+> consider such situation, current user_policy.min is 1000000,
+> current user_policy.max is 1200000, in cpufreq_set_policy,
+> other driver may update policy.min to 1200000, policy.max to
+> 1300000. After that, If we input "echo 1300000 > scaling_min_freq",
+> then user_policy.min will be 1300000, and user_policy.max is
+> still 1200000, because the input value is checked with policy.max
+> not user_policy.max. if we get all related cpus offline and
+> online again, it will cause cpufreq_init_policy fail because
+> user_policy.min is higher than user_policy.max.
 
-Add support for the TEMP_ALARM GEN2 PMIC peripheral subtype.  The
-GEN2 subtype defines an over temperature state with hysteresis
-instead of stage in the status register.  There are two GEN2
-states corresponding to stages 1 and 2.
+How do you reproduce this, exactly?
 
-Signed-off-by: David Collins <collinsd@codeaurora.org>
-Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/thermal/qcom-spmi-temp-alarm.c | 92 ++++++++++++++++++++++++++--------
- 1 file changed, 71 insertions(+), 21 deletions(-)
+> The solution is when user space tries to write scaling_(max|min)_freq,
+> the min/max of new_policy should be reinitialized with min/max
+> of user_policy, like what cpufreq_update_policy does.
+>
+> Signed-off-by: Kevin Wangtao <kevin.wangtao@hisilicon.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b79c532..8b33e08 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -697,6 +697,8 @@ static ssize_t store_##file_name                                    \
+>         struct cpufreq_policy new_policy;                               \
+>                                                                         \
+>         memcpy(&new_policy, policy, sizeof(*policy));                   \
+> +       new_policy->min = policy->user_policy.min;                      \
+> +       new_policy->max = policy->user_policy.max;                      \
 
-Changes from [V1]:
-	Rebased on top of 4.17-rc6 
+It looks like you haven't even tried to build this, have you?
 
-diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-index 95f987d..ad4f3a8 100644
---- a/drivers/thermal/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights reserved.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 and
-@@ -11,6 +11,7 @@
-  * GNU General Public License for more details.
-  */
- 
-+#include <linux/bitops.h>
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/iio/consumer.h>
-@@ -29,13 +30,17 @@
- #define QPNP_TM_REG_ALARM_CTRL		0x46
- 
- #define QPNP_TM_TYPE			0x09
--#define QPNP_TM_SUBTYPE			0x08
-+#define QPNP_TM_SUBTYPE_GEN1		0x08
-+#define QPNP_TM_SUBTYPE_GEN2		0x09
- 
--#define STATUS_STAGE_MASK		0x03
-+#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
-+#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
-+#define STATUS_GEN2_STATE_SHIFT		4
- 
--#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
-+#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
-+#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
- 
--#define ALARM_CTRL_FORCE_ENABLE		0x80
-+#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
- 
- /*
-  * Trip point values based on threshold control
-@@ -58,6 +63,7 @@
- struct qpnp_tm_chip {
- 	struct regmap			*map;
- 	struct thermal_zone_device	*tz_dev;
-+	unsigned int			subtype;
- 	long				temp;
- 	unsigned int			thresh;
- 	unsigned int			stage;
-@@ -66,6 +72,9 @@ struct qpnp_tm_chip {
- 	struct iio_channel		*adc;
- };
- 
-+/* This array maps from GEN2 alarm state to GEN1 alarm stage */
-+static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2, 3, 3, 3};
-+
- static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8 *data)
- {
- 	unsigned int val;
-@@ -84,30 +93,59 @@ static int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 data)
- 	return regmap_write(chip->map, chip->base + addr, data);
- }
- 
-+/**
-+ * qpnp_tm_get_temp_stage() - return over-temperature stage
-+ * @chip:		Pointer to the qpnp_tm chip
-+ *
-+ * Return: stage (GEN1) or state (GEN2) on success, or errno on failure.
-+ */
-+static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
-+{
-+	int ret;
-+	u8 reg = 0;
-+
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
-+		ret = reg & STATUS_GEN1_STAGE_MASK;
-+	else
-+		ret = (reg & STATUS_GEN2_STATE_MASK) >> STATUS_GEN2_STATE_SHIFT;
-+
-+	return ret;
-+}
-+
- /*
-  * This function updates the internal temp value based on the
-  * current thermal stage and threshold as well as the previous stage
-  */
- static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
- {
--	unsigned int stage;
-+	unsigned int stage, stage_new, stage_old;
- 	int ret;
--	u8 reg = 0;
- 
--	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	ret = qpnp_tm_get_temp_stage(chip);
- 	if (ret < 0)
- 		return ret;
-+	stage = ret;
- 
--	stage = reg & STATUS_STAGE_MASK;
-+	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
-+		stage_new = stage;
-+		stage_old = chip->stage;
-+	} else {
-+		stage_new = alarm_state_map[stage];
-+		stage_old = alarm_state_map[chip->stage];
-+	}
- 
--	if (stage > chip->stage) {
-+	if (stage_new > stage_old) {
- 		/* increasing stage, use lower bound */
--		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
-+		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP +
- 			     chip->thresh * TEMP_THRESH_STEP +
- 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
--	} else if (stage < chip->stage) {
-+	} else if (stage_new < stage_old) {
- 		/* decreasing stage, use upper bound */
--		chip->temp = stage * TEMP_STAGE_STEP +
-+		chip->temp = stage_new * TEMP_STAGE_STEP +
- 			     chip->thresh * TEMP_THRESH_STEP -
- 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
- 	}
-@@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq, void *data)
-  */
- static int qpnp_tm_init(struct qpnp_tm_chip *chip)
- {
-+	unsigned int stage;
- 	int ret;
--	u8 reg;
-+	u8 reg = 0;
- 
--	chip->thresh = THRESH_MIN;
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
- 	chip->temp = DEFAULT_TEMP;
- 
--	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	ret = qpnp_tm_get_temp_stage(chip);
- 	if (ret < 0)
- 		return ret;
-+	chip->stage = ret;
- 
--	chip->stage = reg & STATUS_STAGE_MASK;
-+	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
-+		? chip->stage : alarm_state_map[chip->stage];
- 
--	if (chip->stage)
-+	if (stage)
- 		chip->temp = chip->thresh * TEMP_THRESH_STEP +
--			     (chip->stage - 1) * TEMP_STAGE_STEP +
-+			     (stage - 1) * TEMP_STAGE_STEP +
- 			     TEMP_THRESH_MIN;
- 
- 	/*
- 	 * Set threshold and disable software override of stage 2 and 3
- 	 * shutdowns.
- 	 */
--	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-+	chip->thresh = THRESH_MIN;
-+	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK | SHUTDOWN_CTRL1_THRESHOLD_MASK);
-+	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
- 	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
- 	if (ret < 0)
- 		return ret;
-@@ -246,12 +293,15 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
-+	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
-+				     && subtype != QPNP_TM_SUBTYPE_GEN2)) {
- 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
- 			type, subtype);
- 		return -ENODEV;
- 	}
- 
-+	chip->subtype = subtype;
-+
- 	ret = qpnp_tm_init(chip);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "init failed\n");
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
- a Linux Foundation Collaborative Project
+>                                                                         \
+>         ret = sscanf(buf, "%u", &new_policy.object);                    \
+>         if (ret != 1)                                                   \
+> --
+> 2.8.1
+>
