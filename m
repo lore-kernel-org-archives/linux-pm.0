@@ -1,53 +1,69 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / runtime: Drop usage count for suppliers at device link removal
-Date: Thu, 24 May 2018 10:33:36 +0200
-Message-ID: <1527150816-8459-1-git-send-email-ulf.hansson@linaro.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v4 2/3] power: supply: add cros-ec USBPD charger driver.
+Date: Thu, 24 May 2018 10:34:20 +0200
+Message-ID: <20180524083420.nna6znszz2lp6jwo@earth.universe>
+References: <20180502154418.2153-1-enric.balletbo@collabora.com>
+ <20180502154418.2153-3-enric.balletbo@collabora.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="pwewbge7wkntr4mt"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180502154418.2153-3-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-In the case consumer device is runtime resumed, while the link to the
-supplier is removed, the earlier call to pm_runtime_get_sync() made from
-rpm_get_suppliers() does not get properly balanced with a corresponding
-call to pm_runtime_put(). This leads to that suppliers remains to be
-runtime resumed forever, while they don't need to.
 
-Let's fix the behaviour by calling rpm_put_suppliers() when dropping a
-device link. Not that, since rpm_put_suppliers() checks the
-link->rpm_active flag, we can correctly avoid to call pm_runtime_put() in
-cases when we shouldn't.
+--pwewbge7wkntr4mt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reported-by: Todor Tomov <todor.tomov@linaro.org>
-Fixes: 21d5c57b3726 ("PM / runtime: Use device links")
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+Hi,
 
-Rafael, I am not sure if this is safe from locking point of view. The device
-link write lock has been taken when pm_runtime_drop_link() is called, hence I
-assume calling rpm_put_suppliers() should be fine!? If not, can you please
-advise how to change?
+On Wed, May 02, 2018 at 05:44:17PM +0200, Enric Balletbo i Serra wrote:
+> From: Sameer Nanda <snanda@chromium.org>
+>=20
+> This driver gets various bits of information about what is connected to
+> USB PD ports from the EC and converts that into power_supply properties.
+>=20
+> Signed-off-by: Sameer Nanda <snanda@chromium.org>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
 
-Kind regards
-Uffe
+I suppose Lee's Ack was mainly for the no longer relevant MFD part
+of this patch.
 
----
- drivers/base/power/runtime.c | 2 ++
- 1 file changed, 2 insertions(+)
+> ---
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 8bef3cb..beb85c3 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1607,6 +1607,8 @@ void pm_runtime_new_link(struct device *dev)
- 
- void pm_runtime_drop_link(struct device *dev)
- {
-+	rpm_put_suppliers(dev);
-+
- 	spin_lock_irq(&dev->power.lock);
- 	WARN_ON(dev->power.links_count == 0);
- 	dev->power.links_count--;
--- 
-2.7.4
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+
+I would be fine with merging this for 4.18, but it has a dependency
+on patch 1 for MFD. Lee, can you provide a immutable branch for
+patch 1?
+
+-- Sebastian
+
+--pwewbge7wkntr4mt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlsGeQQACgkQ2O7X88g7
++ppC0A/+Nm4Um14DqLqFzNJErM13glYFxXn6QLFxtLot+0mYhVdyJUubBsNsVcOe
+OtnAligIvxUxpPZOIA3eao57A+0mFHsHj4zyhFu9cPp5k8YkQcBNCGi38jxbJ9+P
+8Zo3daak7ipxDIyqTB07q2GE6SSo/X+LpmV7jLKbiN6RQhfeNIQpBRWhdy4ZDqKm
+wcLg45WxPgW30MXEpJSKv6CcJWNjxBfxijuSYW4OG6IReo2PUrE/aeogxHDBMUTn
+k4G1icHQIXbVqdxivZhPqlYktqTfOqkDlVN9RcseIdTqp5AjZ4uA/1Er+Ml8vAwV
+kQoIzI9jaIHcoA2xcQXn4cou+lMipYV4NSItjRbo+FWsOWdSJrD/PosrhJF3gmAC
+iHE6ytzn3VZt5YgNS7XB+pFlDr/ISgb6HQiOHrgDi3ujnFrcXTFbVHRvBBZcffBw
+fwcz9QOTzEhELDWjcf3/4bXs1kNFuZ/IyQ90QQkRYNbW0W6N/wpuTrMDlG22RARe
+BBfqygJ2ze6iqvkp+/sdcuzElTkEsQu27uI7/Qa/xYqezPDRlF6NahqtAFAwDqW1
+ddPOryMza/4CsCnSmkFRLbeOo8hBqzfq/QUoaSKcUOBZm4lCQaRT8SmfcZ+oiQLf
+ePrKRRxEZTcQOj8SoeUebvMnfDx/jPfsHJ6d6aICOxGvTIlcn4Y=
+=Pzq6
+-----END PGP SIGNATURE-----
+
+--pwewbge7wkntr4mt--
