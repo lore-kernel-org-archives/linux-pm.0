@@ -1,63 +1,80 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC/RFT] [PATCH v2 1/6] cpufreq: intel_pstate: Cache last HWP capability/request value
-Date: Wed, 23 May 2018 18:47:33 -0700
-Message-ID: <20180524014738.52924-2-srinivas.pandruvada@linux.intel.com>
-References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v1 1/2] cpufreq: tegra20: Constify rate value of the
+ intermediate clk
+Date: Thu, 24 May 2018 09:57:03 +0530
+Message-ID: <20180524042703.cnxaeqsvcskvbt2s@vireshk-i7>
+References: <20180523160020.15291-1-digetx@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <20180523160020.15291-1-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Store the HWP request value last set using MSR_HWP_REQUEST. This will
-allow us to save cycles used for reading last HWP request value for
-dynamic update of MSR_HWP_REQUEST.
-Also store HWP capability MSR value in local memory, to avoid reading
-MSR later for calculating limits for dynamic update of MSR_HWP_REQUEST.
+On 23-05-18, 19:00, Dmitry Osipenko wrote:
+> PLL_P is known to be always running at 216MHz, hence there is no need to
+> query its rate.
+> 
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/cpufreq/tegra20-cpufreq.c | 12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+> index 05f57dcd5215..3ad6bded6efc 100644
+> --- a/drivers/cpufreq/tegra20-cpufreq.c
+> +++ b/drivers/cpufreq/tegra20-cpufreq.c
+> @@ -24,6 +24,8 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/types.h>
+>  
+> +#define PLL_P_FREQ	216000
+> +
+>  static struct cpufreq_frequency_table freq_table[] = {
+>  	{ .frequency = 216000 },
+>  	{ .frequency = 312000 },
+> @@ -48,18 +50,15 @@ struct tegra20_cpufreq {
+>  static unsigned int tegra_get_intermediate(struct cpufreq_policy *policy,
+>  					   unsigned int index)
+>  {
+> -	struct tegra20_cpufreq *cpufreq = cpufreq_get_driver_data();
+> -	unsigned int ifreq = clk_get_rate(cpufreq->pll_p_clk) / 1000;
+> -
+>  	/*
+>  	 * Don't switch to intermediate freq if:
+>  	 * - we are already at it, i.e. policy->cur == ifreq
+>  	 * - index corresponds to ifreq
+>  	 */
+> -	if (freq_table[index].frequency == ifreq || policy->cur == ifreq)
+> +	if (index == 0 || policy->cur == PLL_P_FREQ)
+>  		return 0;
+>  
+> -	return ifreq;
+> +	return PLL_P_FREQ;
+>  }
+>  
+>  static int tegra_target_intermediate(struct cpufreq_policy *policy,
+> @@ -93,14 +92,13 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
+>  {
+>  	struct tegra20_cpufreq *cpufreq = cpufreq_get_driver_data();
+>  	unsigned long rate = freq_table[index].frequency;
+> -	unsigned int ifreq = clk_get_rate(cpufreq->pll_p_clk) / 1000;
+>  	int ret;
+>  
+>  	/*
+>  	 * target freq == pll_p, don't need to take extra reference to pll_x_clk
+>  	 * as it isn't used anymore.
+>  	 */
+> -	if (rate == ifreq)
+> +	if (index == 0)
+>  		return clk_set_parent(cpufreq->cpu_clk, cpufreq->pll_p_clk);
+>  
+>  	ret = clk_set_rate(cpufreq->pll_x_clk, rate * 1000);
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 17e566afbb41..baed29c768e7 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -221,6 +221,8 @@ struct global_params {
-  *			preference/bias
-  * @epp_saved:		Saved EPP/EPB during system suspend or CPU offline
-  *			operation
-+ * @hwp_req_cached:	Cached value of the last HWP Request MSR
-+ * @hwp_cap_cached:	Cached value of the last HWP Capabilities MSR
-  *
-  * This structure stores per CPU instance data for all CPUs.
-  */
-@@ -253,6 +255,8 @@ struct cpudata {
- 	s16 epp_policy;
- 	s16 epp_default;
- 	s16 epp_saved;
-+	u64 hwp_req_cached;
-+	u64 hwp_cap_cached;
- };
- 
- static struct cpudata **all_cpu_data;
-@@ -689,6 +693,7 @@ static void intel_pstate_get_hwp_max(unsigned int cpu, int *phy_max,
- 	u64 cap;
- 
- 	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
-+	WRITE_ONCE(all_cpu_data[cpu]->hwp_cap_cached, cap);
- 	if (global.no_turbo)
- 		*current_max = HWP_GUARANTEED_PERF(cap);
- 	else
-@@ -763,6 +768,7 @@ static void intel_pstate_hwp_set(unsigned int cpu)
- 		intel_pstate_set_epb(cpu, epp);
- 	}
- skip_epp:
-+	WRITE_ONCE(cpu_data->hwp_req_cached, value);
- 	wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
- }
- 
 -- 
-2.13.6
+viresh
