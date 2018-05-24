@@ -1,112 +1,46 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v2 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
- bindings
-Date: Thu, 24 May 2018 11:16:06 +0530
-Message-ID: <05796839-2584-a011-127f-ce193b0ae7c3@codeaurora.org>
-References: <1526751291-17873-1-git-send-email-tdas@codeaurora.org>
- <1526751291-17873-2-git-send-email-tdas@codeaurora.org>
- <34b510f5-fd0b-2e28-45b0-f200f9f8d2c5@arm.com>
+From: Kevin Wangtao <kevin.wangtao@hisilicon.com>
+Subject: [PATCH] cpufreq: reinitialize new policy min/max when writing scaling_(max|min)_freq
+Date: Thu, 24 May 2018 14:43:54 +0800
+Message-ID: <1527144234-96396-1-git-send-email-kevin.wangtao@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <34b510f5-fd0b-2e28-45b0-f200f9f8d2c5@arm.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gengyanping@hisilicon.com, sunzhaosheng@hisilicon.com, Kevin Wangtao <kevin.wangtao@hisilicon.com>
 List-Id: linux-pm@vger.kernel.org
 
+consider such situation, current user_policy.min is 1000000,
+current user_policy.max is 1200000, in cpufreq_set_policy,
+other driver may update policy.min to 1200000, policy.max to
+1300000. After that, If we input "echo 1300000 > scaling_min_freq",
+then user_policy.min will be 1300000, and user_policy.max is
+still 1200000, because the input value is checked with policy.max
+not user_policy.max. if we get all related cpus offline and
+online again, it will cause cpufreq_init_policy fail because
+user_policy.min is higher than user_policy.max.
 
+The solution is when user space tries to write scaling_(max|min)_freq,
+the min/max of new_policy should be reinitialized with min/max
+of user_policy, like what cpufreq_update_policy does.
 
-On 5/23/2018 8:43 PM, Sudeep Holla wrote:
-> 
-> 
-> On 19/05/18 18:34, Taniya Das wrote:
->> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
->> SoCs. This is required for managing the cpu frequency transitions which are
->> controlled by firmware.
->>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>   .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 68 ++++++++++++++++++++++
->>   1 file changed, 68 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->> new file mode 100644
->> index 0000000..bc912f4
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->> @@ -0,0 +1,68 @@
->> +Qualcomm Technologies, Inc. CPUFREQ Bindings
->> +
->> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
->> +SoCs to manage frequency in hardware. It is capable of controlling frequency
->> +for multiple clusters.
->> +
->> +Properties:
->> +- compatible
->> +	Usage:		required
->> +	Value type:	<string>
->> +	Definition:	must be "qcom,cpufreq-fw".
->> +
-> 
-> If the firmware is referred with some other name, better to use that
-> than cpufreq
->> +Note that #address-cells, #size-cells, and ranges shall be present to ensure
->> +the cpufreq can address a freq-domain registers.
->> +
->> +A freq-domain sub-node would be defined for the cpus with the following
->> +properties:
->> +
->> +- compatible:
->> +	Usage:		required
->> +	Value type:	<string>
->> +	Definition:	must be "cpufreq".
->> +
->> +- reg
->> +	Usage:		required
->> +	Value type:	<prop-encoded-array>
->> +	Definition:	Addresses and sizes for the memory of the perf_base
->> +			, lut_base and en_base.
-> 
-> Can you explicitly define each one of them ? Either here or in reg-names.
-> 
+Signed-off-by: Kevin Wangtao <kevin.wangtao@hisilicon.com>
+---
+ drivers/cpufreq/cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Sure will define each of them in the next series.
-
->> +- reg-names
->> +	Usage:		required
->> +	Value type:	<stringlist>
->> +	Definition:	Address names. Must be "perf_base", "lut_base",
->> +			"en_base".
->> +			Must be specified in the same order as the
->> +			corresponding addresses are specified in the reg
->> +			property.
->> +
->> +- qcom,cpulist
->> +	Usage:		required
->> +	Value type:	<phandles of CPU>
->> +	Definition:	List of related cpu handles which are under a cluster.
->> +
-> 
-> As already mentioned by Rob and Viresh, better to align with OPP style
-> to avoid phandle list of CPUs.
-> 
-
-I have put down an example device tree node for Rob & Viresh to review.
-
-> Also I see similar bindings for devfreq, can't they be aligned ?
-> E.g. lut_base here while it's ftbl_base in devfreq.
-> 
-
-It is actually the look up table, thus was the name given as "lut". Will 
-check with Saravana for devfreq and align accordingly.
-
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b79c532..8b33e08 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -697,6 +697,8 @@ static ssize_t store_##file_name					\
+ 	struct cpufreq_policy new_policy;				\
+ 									\
+ 	memcpy(&new_policy, policy, sizeof(*policy));			\
++	new_policy->min = policy->user_policy.min;			\
++	new_policy->max = policy->user_policy.max;			\
+ 									\
+ 	ret = sscanf(buf, "%u", &new_policy.object);			\
+ 	if (ret != 1)							\
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+2.8.1
