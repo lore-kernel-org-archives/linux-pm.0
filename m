@@ -1,56 +1,47 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFD] Add debugfs for cpuidle ?
-Date: Thu, 24 May 2018 10:47:54 +0200
-Message-ID: <bcdbf067-4213-18ed-6d30-dc0dd2376c02@linaro.org>
-References: <516d8599-8038-7b47-a3f5-640bf13856c2@linaro.org>
- <2682482.uFPN0cxrGI@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v12 0/2] Kryo CPU scaling driver
+Date: Thu, 24 May 2018 11:57:20 +0300
+Message-ID: <1527152242-31281-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2682482.uFPN0cxrGI@aspire.rjw.lan>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, ilialin@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 24/05/2018 10:28, Rafael J. Wysocki wrote:
-> On Thursday, May 24, 2018 10:14:31 AM CEST Daniel Lezcano wrote:
->> 
->> Hi all,
-> 
-> Hi,
-> 
->> would it be interesting to add debugfs metrics for cpuidle in order
->> to read some statistics from there and investigate the behavior ?
-> 
-> What exactly would you like to see in there?
+[v12]
+ * Addressed comments from Sudeep and Viresh about the single init
 
-It could be interesting to have statistics on a per cpu and global basis
-for:
+[v11]
+ * Addressed comment from Russel about device_node reference
+ * Addressed comment from Sudeep about the late_initcall
+ * Transformed init into probe to take care of deferals
 
-- prediction accuracy:
+[v10]
+ * Split the series into domains
+ * Addressed comments from Viresh and Sudeep about logical CPU numbering.
 
-/sys/kernel/debug/cpuidle/prediction/[good|over|under]
-/sys/kernel/debug/cpuidle/cpu*/state*/prediction/[good|over|under]
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
 
- - exit latency
+The series depends on the series from Viresh:
+https://patchwork.kernel.org/patch/10418139/
 
-In addition, it is often the case the idle states values are dropped
-randomly, it is interesting to see the average exit latency for the
-states. That could give also an indication the cluster idle state success.
+The previous spin was here:
+https://patchwork.kernel.org/patch/10421143/
 
-/sys/kernel/debug/cpuidle/state*/latency/[min|max|avg|stddev]
-/sys/kernel/debug/cpuidle/cpu*/state*/prediction/[min|max|avg|stddev]
+Ilia Lin (2):
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
 
-And perhaps more information like the tick stopped stat ?
-
-
+ .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 194 ++++++
+ 5 files changed, 888 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+1.9.1
