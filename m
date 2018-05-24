@@ -1,147 +1,142 @@
-From: Thomas Garnier via Virtualization
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH v3 21/27] x86/ftrace: Adapt function tracing for PIE
-	support
-Date: Thu, 24 May 2018 13:41:27 -0700
-Message-ID: <CAJcbSZGQmQM7PuER0kEqt3aG9O-8vh-g1EA2jnkVsJPx-Htvrw@mail.gmail.com>
-References: <20180523195421.180248-1-thgarnie@google.com>
-	<20180523195421.180248-22-thgarnie@google.com>
-	<20180524114024.pa67zjipy5qcg4tm@pathway.suse.cz>
-	<20180524161622.4202319f@gandalf.local.home>
-Reply-To: Thomas Garnier <thgarnie@google.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 9/9] PM / Domains: Add dev_pm_domain_attach_by_id() to
+ manage multi PM domains
+Date: Thu, 24 May 2018 23:11:44 +0200
+Message-ID: <CAPDyKFozm88OM8cDFXXwvgdMirrt2=HhZtBdyhNjo2bgjHV2Mg@mail.gmail.com>
+References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
+ <1526639490-12167-10-git-send-email-ulf.hansson@linaro.org> <1c21d18e-954a-f3a8-9817-0117b7cb7e4f@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-In-Reply-To: <20180524161622.4202319f@gandalf.local.home>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, the arch/x86 maintainers <x86@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Len Brown <len.brown@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>, Peter Zijlstra <peterz@infradead.org>, Yonghong Song <yhs@fb.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, LKML <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Beulich <JBeulich@suse.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>, Jonathan Corbet <corbet@>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1c21d18e-954a-f3a8-9817-0117b7cb7e4f@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 24, 2018 at 1:16 PM Steven Rostedt <rostedt@goodmis.org> wrote:
+On 24 May 2018 at 17:48, Jon Hunter <jonathanh@nvidia.com> wrote:
+>
+> On 18/05/18 11:31, Ulf Hansson wrote:
+>>
+>> The existing dev_pm_domain_attach() function, allows a single PM domain to
+>> be attached per device. To be able to support devices that are partitioned
+>> across multiple PM domains, let's introduce a new interface,
+>> dev_pm_domain_attach_by_id().
+>>
+>> The dev_pm_domain_attach_by_id() returns a new allocated struct device
+>> with
+>> the corresponding attached PM domain. This enables for example a driver to
+>> operate on the new device from a power management point of view. The
+>> driver
+>> may then also benefit from using the received device, to set up so called
+>> device-links towards its original device. Depending on the situation,
+>> these
+>> links may then be dynamically changed.
+>>
+>> The new interface is typically called by drivers during their probe phase,
+>> in case they manages devices which uses multiple PM domains. If that is
+>> the
+>> case, the driver also becomes responsible of managing the detaching of the
+>> PM domains, which typically should be done at the remove phase. Detaching
+>> is done by calling the existing dev_pm_domain_detach() function and for
+>> each of the received devices from dev_pm_domain_attach_by_id().
+>>
+>> Note, currently its only genpd that supports multiple PM domains per
+>> device, but dev_pm_domain_attach_by_id() can easily by extended to cover
+>> other PM domain types, if/when needed.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>   drivers/base/power/common.c | 33 ++++++++++++++++++++++++++++++++-
+>>   include/linux/pm_domain.h   |  7 +++++++
+>>   2 files changed, 39 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+>> index 7ae62b6..d3db974 100644
+>> --- a/drivers/base/power/common.c
+>> +++ b/drivers/base/power/common.c
+>> @@ -117,13 +117,44 @@ int dev_pm_domain_attach(struct device *dev, bool
+>> power_on)
+>>   EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
+>>     /**
+>> + * dev_pm_domain_attach_by_id - Attach a device to one of its PM domains.
+>
+>
+> Isn't this more of a 'get'?
 
-> On Thu, 24 May 2018 13:40:24 +0200
-> Petr Mladek <pmladek@suse.com> wrote:
+I don't think so, at least according to the common understanding of
+how we use get and put APIs.
 
-> > On Wed 2018-05-23 12:54:15, Thomas Garnier wrote:
-> > > When using -fPIE/PIC with function tracing, the compiler generates a
-> > > call through the GOT (call *__fentry__@GOTPCREL). This instruction
-> > > takes 6 bytes instead of 5 on the usual relative call.
-> > >
-> > > If PIE is enabled, replace the 6th byte of the GOT call by a 1-byte
-nop
-> > > so ftrace can handle the previous 5-bytes as before.
-> > >
-> > > Position Independent Executable (PIE) support will allow to extended
-the
-> > > KASLR randomization range below the -2G memory limit.
-> > >
-> > > Signed-off-by: Thomas Garnier <thgarnie@google.com>
-> > > ---
-> > >  arch/x86/include/asm/ftrace.h   |  6 +++--
-> > >  arch/x86/include/asm/sections.h |  4 ++++
-> > >  arch/x86/kernel/ftrace.c        | 42
-+++++++++++++++++++++++++++++++--
-> > >  3 files changed, 48 insertions(+), 4 deletions(-)
-> > >
-> > > diff --git a/arch/x86/include/asm/ftrace.h
-b/arch/x86/include/asm/ftrace.h
-> > > index c18ed65287d5..8f2decce38d8 100644
-> > > --- a/arch/x86/include/asm/ftrace.h
-> > > +++ b/arch/x86/include/asm/ftrace.h
-> > > @@ -25,9 +25,11 @@ extern void __fentry__(void);
-> > >  static inline unsigned long ftrace_call_adjust(unsigned long addr)
-> > >  {
-> > >     /*
-> > > -    * addr is the address of the mcount call instruction.
-> > > -    * recordmcount does the necessary offset calculation.
-> > > +    * addr is the address of the mcount call instruction. PIE has
-always a
-> > > +    * byte added to the start of the function.
-> > >      */
-> > > +   if (IS_ENABLED(CONFIG_X86_PIE))
-> > > +           addr -= 1;
-> >
-> > This seems to modify the address even for modules that are _not_
-compiled with
-> > PIE, see below.
+For example, clk_get() returns a cookie to a clk, which you then can
+do a hole bunch of different clk specific operations on.
 
-> Can one load a module not compiled for PIE in a kernel with PIE?
+This is different, there are no specific PM domain operations the
+caller can or should do. Instead the idea is to keep drivers more or
+less transparent, still using runtime PM as before. The only care the
+caller need to take is to use device links, which BTW isn't a PM
+domain specific thing.
 
-> >
-> > >     return addr;
-> > >  }
-> > >
-> > > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> > > index 01ebcb6f263e..73b3c30cb7a3 100644
-> > > --- a/arch/x86/kernel/ftrace.c
-> > > +++ b/arch/x86/kernel/ftrace.c
-> > > @@ -135,6 +135,44 @@ ftrace_modify_code_direct(unsigned long ip,
-unsigned const char *old_code,
-> > >     return 0;
-> > >  }
-> > >
-> > > +/* Bytes before call GOT offset */
-> > > +const unsigned char got_call_preinsn[] = { 0xff, 0x15 };
-> > > +
-> > > +static int
-> > > +ftrace_modify_initial_code(unsigned long ip, unsigned const char
-*old_code,
-> > > +                      unsigned const char *new_code)
-> > > +{
-> > > +   unsigned char replaced[MCOUNT_INSN_SIZE + 1];
-> > > +
-> > > +   ftrace_expected = old_code;
-> > > +
-> > > +   /*
-> > > +    * If PIE is not enabled or no GOT call was found, default to the
-> > > +    * original approach to code modification.
-> > > +    */
-> > > +   if (!IS_ENABLED(CONFIG_X86_PIE) ||
-> > > +       probe_kernel_read(replaced, (void *)ip, sizeof(replaced)) ||
-> > > +       memcmp(replaced, got_call_preinsn, sizeof(got_call_preinsn)))
-> > > +           return ftrace_modify_code_direct(ip, old_code, new_code);
-> >
-> > And this looks like an attempt to handle modules compiled without
-> > PIE. Does it works with the right ip in that case?
+>
+>> + * @index: The index of the PM domain.
+>> + * @dev: Device to attach.
+>
+>
+> Isn't this just the device associated with the PM domain we are getting?
 
-> I'm guessing the || is for the "or no GOT call was found", but it
-> doesn't explain why no GOT would be found.
+Correct, but please note, as stated above, I don't think it's a good
+idea to return a special PM domain cookie, because we don't want the
+caller to run special PM domain operations.
 
-Yes, maybe I could have made it work by using text_ip_addr earlier.
+>
+>> + *
+>> + * As @dev may only be attached to a single PM domain, the backend PM
+>> domain
+>> + * provider should create a virtual device to attach instead. As
+>> attachment
+>> + * succeeds, the ->detach() callback in the struct dev_pm_domain should
+>> be
+>> + * assigned by the corresponding backend attach function.
+>> + *
+>> + * This function should typically be invoked from drivers during probe
+>> phase.
+>> + * Especially for those that manages devices which requires power
+>> management
+>> + * through more than one PM domain.
+>> + *
+>> + * Callers must ensure proper synchronization of this function with power
+>> + * management callbacks.
+>> + *
+>> + * Returns the virtual attached device in case successfully attached PM
+>> domain,
+>> + * NULL in case @dev don't need a PM domain, else a PTR_ERR().
+>
+>
+> Should this be 'NULL in the case where the @dev already has a power-domain'?
 
+Yes, I think so. The intent is to be consistent with how
+dev_pm_domain_attach() works and according to the latest changes I did
+for it. It's queued for 4.18, please have a look in Rafael's tree and
+you will see.
 
-> >
-> > I wonder if a better solution would be to update
-> > scripts/recordmcount.c to store the incremented location into the
-module.
+>
+>> + */
+>> +struct device *dev_pm_domain_attach_by_id(struct device *dev,
+>> +                                         unsigned int index)
+>> +{
+>> +       if (dev->pm_domain)
+>
+>
+> I wonder if this is worthy of a ...
+>
+>         if (WARN_ON(dev->pm_domain))
+>
+>> +               return NULL;
+>
+>
+> Don't we consider this an error case? I wonder why not return PTR_ERR here
+> as well? This would be consistent with dev_pm_domain_attach().
 
-I will look into it.
+Please see above comment.
 
-
-> If recordmcount.c can handle this, then I think that's the preferred
-> approach. Thanks!
-
-> -- Steve
-
-> >
-> > IMPORTANT: I have only vague picture about how this all works. It is
-> > possible that I am completely wrong. The code might be correct,
-> > especially if you tested this situation.
-> >
-> > Best Regards,
-> > Petr
-
-
-
--- 
-Thomas
+Kind regards
+Uffe
