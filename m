@@ -1,89 +1,144 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC/RFT] [PATCH v2 0/6] Intel_pstate: HWP Dynamic performance boost
-Date: Wed, 23 May 2018 18:47:32 -0700
-Message-ID: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
+Subject: [RFC/RFT] [PATCH v2 2/6] cpufreq: intel_pstate: Add HWP boost utility functions
+Date: Wed, 23 May 2018 18:47:34 -0700
+Message-ID: <20180524014738.52924-3-srinivas.pandruvada@linux.intel.com>
+References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-v2
-This is a much simpler version than the previous one and only consider IO
-boost, using the existing mechanism. There is no change in this series
-beyond intel_pstate driver.
+Added two utility functions to HWP boost up gradually and boost down to
+the default cached HWP request values.
 
-Once PeterZ finishes his work on frequency invariant, I will revisit
-thread migration optimization in HWP mode.
+Boost up:
+Boost up updates HWP request minimum value in steps. This minimum value
+can reach upto at HWP request maximum values depends on how frequently,
+the IOWAIT flag is set. At max, boost up will take three steps to reach
+the maximum, depending on the current HWP request levels and HWP
+capabilities. For example, if the current settings are:
+If P0 (Turbo max) = P1 (Guaranteed max) = min
+	No boost at all.
+If P0 (Turbo max) > P1 (Guaranteed max) = min
+	Should result in one level boost only for P0.
+If P0 (Turbo max) = P1 (Guaranteed max) > min
+	Should result in two level boost:
+		(min + p1)/2 and P1.
+If P0 (Turbo max) > P1 (Guaranteed max) > min
+	Should result in three level boost:
+		(min + p1)/2, P1 and P0.
+We don't set any level between P0 and P1 as there is no guarantee that
+they will be honored.
 
-Other changes:
-- Gradual boost instead of single step as suggested by PeterZ.
-- Cross CPU synchronization concerns identified by Rafael.
-- Split the patch for HWP MSR value caching as suggested by PeterZ.
+Boost down:
+After the system is idle for hold time of 3ms, the HWP request is reset
+to the default cached value from HWP init or user modified one via sysfs.
 
-Not changed as suggested:
-There is no architecture way to identify platform with Per-core
-P-states, so still have to enable feature based on CPU model.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 74 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
 
------------
-v1
-
-This series tries to address some concern in performance particularly with IO
-workloads (Reported by Mel Gorman), when HWP is using intel_pstate powersave
-policy.
-
-Background
-HWP performance can be controlled by user space using sysfs interface for
-max/min frequency limits and energy performance preference settings. Based on
-workload characteristics these can be adjusted from user space. These limits
-are not changed dynamically by kernel based on workload.
-
-By default HWP defaults to energy performance preference value of 0x80 on
-majority of platforms(Scale is 0-255, 0 is max performance and 255 is min).
-This value offers best performance/watt and for majority of server workloads
-performance doesn't suffer. Also users always have option to use performance
-policy of intel_pstate, to get best performance. But user tend to run with
-out of box configuration, which is powersave policy on most of the distros.
-
-In some case it is possible to dynamically adjust performance, for example,
-when a CPU is woken up due to IO completion or thread migrate to a new CPU. In
-this case HWP algorithm will take some time to build utilization and ramp up
-P-states. So this may results in lower performance for some IO workloads and
-workloads which tend to migrate. The idea of this patch series is to
-temporarily boost performance dynamically in these cases. This is only
-applicable only when user is using powersave policy, not in performance policy.
-
-Results on a Skylake server:
-
-Benchmark                       Improvement %
-----------------------------------------------------------------------
-dbench                          50.36
-thread IO bench (tiobench)      10.35
-File IO                         9.81
-sqlite                          15.76
-X264 -104 cores                 9.75
-
-Spec Power                      (Negligible impact 7382 Vs. 7378)
-Idle Power                      No change observed
------------------------------------------------------------------------
-
-HWP brings in best performace/watt at EPP=0x80. Since we are boosting
-EPP here to 0, the performance/watt drops upto 10%. So there is a power
-penalty of these changes.
-
-Also Mel Gorman provided test results on a prior patchset, which shows
-benifits of this series.
-
-Srinivas Pandruvada (6):
-  cpufreq: intel_pstate: Cache last HWP capability/request value
-  cpufreq: intel_pstate: Add HWP boost utility functions
-  cpufreq: intel_pstate: Add update_util_hook for HWP
-  cpufreq: intel_pstate: HWP boost performance on IO wakeup
-  cpufreq: intel_pstate: New sysfs entry to control HWP boost
-  cpufreq: intel_pstate: enable boost for SKX
-
- drivers/cpufreq/intel_pstate.c | 183 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 179 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index baed29c768e7..6ad46e07cad6 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -223,6 +223,7 @@ struct global_params {
+  *			operation
+  * @hwp_req_cached:	Cached value of the last HWP Request MSR
+  * @hwp_cap_cached:	Cached value of the last HWP Capabilities MSR
++ * @hwp_boost_min:	Last HWP boosted min performance
+  *
+  * This structure stores per CPU instance data for all CPUs.
+  */
+@@ -257,6 +258,7 @@ struct cpudata {
+ 	s16 epp_saved;
+ 	u64 hwp_req_cached;
+ 	u64 hwp_cap_cached;
++	int hwp_boost_min;
+ };
+ 
+ static struct cpudata **all_cpu_data;
+@@ -1387,6 +1389,78 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ 	intel_pstate_set_min_pstate(cpu);
+ }
+ 
++/*
++ * Long hold time will keep high perf limits for long time,
++ * which negatively impacts perf/watt for some workloads,
++ * like specpower. 3ms is based on experiements on some
++ * workoads.
++ */
++static int hwp_boost_hold_time_ms = 3;
++
++static inline void intel_pstate_hwp_boost_up(struct cpudata *cpu)
++{
++	u64 hwp_req = READ_ONCE(cpu->hwp_req_cached);
++	int max_limit = (hwp_req & 0xff00) >> 8;
++	int min_limit = (hwp_req & 0xff);
++	int boost_level1;
++
++	/*
++	 * Cases to consider (User changes via sysfs or boot time):
++	 * If, P0 (Turbo max) = P1 (Guaranteed max) = min:
++	 *	No boost, return.
++	 * If, P0 (Turbo max) > P1 (Guaranteed max) = min:
++	 *     Should result in one level boost only for P0.
++	 * If, P0 (Turbo max) = P1 (Guaranteed max) > min:
++	 *     Should result in two level boost:
++	 *         (min + p1)/2 and P1.
++	 * If, P0 (Turbo max) > P1 (Guaranteed max) > min:
++	 *     Should result in three level boost:
++	 *        (min + p1)/2, P1 and P0.
++	 */
++
++	/* If max and min are equal or already at max, nothing to boost */
++	if (max_limit == min_limit || cpu->hwp_boost_min >= max_limit)
++		return;
++
++	if (!cpu->hwp_boost_min)
++		cpu->hwp_boost_min = min_limit;
++
++	/* level at half way mark between min and guranteed */
++	boost_level1 = (HWP_GUARANTEED_PERF(cpu->hwp_cap_cached) + min_limit) >> 1;
++
++	if (cpu->hwp_boost_min < boost_level1)
++		cpu->hwp_boost_min = boost_level1;
++	else if (cpu->hwp_boost_min < HWP_GUARANTEED_PERF(cpu->hwp_cap_cached))
++		cpu->hwp_boost_min = HWP_GUARANTEED_PERF(cpu->hwp_cap_cached);
++	else if (cpu->hwp_boost_min == HWP_GUARANTEED_PERF(cpu->hwp_cap_cached) &&
++		 max_limit != HWP_GUARANTEED_PERF(cpu->hwp_cap_cached))
++		cpu->hwp_boost_min = max_limit;
++	else
++		return;
++
++	hwp_req = (hwp_req & ~GENMASK_ULL(7, 0)) | cpu->hwp_boost_min;
++	wrmsrl(MSR_HWP_REQUEST, hwp_req);
++	cpu->last_update = cpu->sample.time;
++}
++
++static inline bool intel_pstate_hwp_boost_down(struct cpudata *cpu)
++{
++	if (cpu->hwp_boost_min) {
++		bool expired;
++
++		/* Check if we are idle for hold time to boost down */
++		expired = time_after64(cpu->sample.time, cpu->last_update +
++				       (hwp_boost_hold_time_ms * NSEC_PER_MSEC));
++		if (expired) {
++			wrmsrl(MSR_HWP_REQUEST, cpu->hwp_req_cached);
++			cpu->hwp_boost_min = 0;
++			return true;
++		}
++	}
++
++	return false;
++}
++
+ static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
 -- 
 2.13.6
