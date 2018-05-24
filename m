@@ -1,39 +1,89 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH] cpufreq: schedutil: Avoid missing updates for one-CPU
- policies
-Date: Wed, 23 May 2018 17:56:27 -0700
-Message-ID: <20180524005627.GB171060@joelaf.mtv.corp.google.com>
-References: <1672734.JYOlA1IWnU@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [RFC/RFT] [PATCH v2 0/6] Intel_pstate: HWP Dynamic performance boost
+Date: Wed, 23 May 2018 18:47:32 -0700
+Message-ID: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1672734.JYOlA1IWnU@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>, claudio@evidence.eu.com, Todd Kjos <tkjos@google.com>
+To: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 23, 2018 at 11:47:45AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Commit 152db033d775 (schedutil: Allow cpufreq requests to be made
-> even when kthread kicked) made changes to prevent utilization updates
-> from being discarded during processing a previous request, but it
-> left a small window in which that still can happen in the one-CPU
-> policy case.  Namely, updates coming in after setting work_in_progress
-> in sugov_update_commit() and clearing it in sugov_work() will still
-> be dropped due to the work_in_progress check in sugov_update_single().
-> 
-> To close that window, rearrange the code so as to acquire the update
-> lock around the deferred update branch in sugov_update_single()
-> and drop the work_in_progress check from it.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+v2
+This is a much simpler version than the previous one and only consider IO
+boost, using the existing mechanism. There is no change in this series
+beyond intel_pstate driver.
 
-Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+Once PeterZ finishes his work on frequency invariant, I will revisit
+thread migration optimization in HWP mode.
 
-thanks,
+Other changes:
+- Gradual boost instead of single step as suggested by PeterZ.
+- Cross CPU synchronization concerns identified by Rafael.
+- Split the patch for HWP MSR value caching as suggested by PeterZ.
 
- - Joel
- 
+Not changed as suggested:
+There is no architecture way to identify platform with Per-core
+P-states, so still have to enable feature based on CPU model.
+
+-----------
+v1
+
+This series tries to address some concern in performance particularly with IO
+workloads (Reported by Mel Gorman), when HWP is using intel_pstate powersave
+policy.
+
+Background
+HWP performance can be controlled by user space using sysfs interface for
+max/min frequency limits and energy performance preference settings. Based on
+workload characteristics these can be adjusted from user space. These limits
+are not changed dynamically by kernel based on workload.
+
+By default HWP defaults to energy performance preference value of 0x80 on
+majority of platforms(Scale is 0-255, 0 is max performance and 255 is min).
+This value offers best performance/watt and for majority of server workloads
+performance doesn't suffer. Also users always have option to use performance
+policy of intel_pstate, to get best performance. But user tend to run with
+out of box configuration, which is powersave policy on most of the distros.
+
+In some case it is possible to dynamically adjust performance, for example,
+when a CPU is woken up due to IO completion or thread migrate to a new CPU. In
+this case HWP algorithm will take some time to build utilization and ramp up
+P-states. So this may results in lower performance for some IO workloads and
+workloads which tend to migrate. The idea of this patch series is to
+temporarily boost performance dynamically in these cases. This is only
+applicable only when user is using powersave policy, not in performance policy.
+
+Results on a Skylake server:
+
+Benchmark                       Improvement %
+----------------------------------------------------------------------
+dbench                          50.36
+thread IO bench (tiobench)      10.35
+File IO                         9.81
+sqlite                          15.76
+X264 -104 cores                 9.75
+
+Spec Power                      (Negligible impact 7382 Vs. 7378)
+Idle Power                      No change observed
+-----------------------------------------------------------------------
+
+HWP brings in best performace/watt at EPP=0x80. Since we are boosting
+EPP here to 0, the performance/watt drops upto 10%. So there is a power
+penalty of these changes.
+
+Also Mel Gorman provided test results on a prior patchset, which shows
+benifits of this series.
+
+Srinivas Pandruvada (6):
+  cpufreq: intel_pstate: Cache last HWP capability/request value
+  cpufreq: intel_pstate: Add HWP boost utility functions
+  cpufreq: intel_pstate: Add update_util_hook for HWP
+  cpufreq: intel_pstate: HWP boost performance on IO wakeup
+  cpufreq: intel_pstate: New sysfs entry to control HWP boost
+  cpufreq: intel_pstate: enable boost for SKX
+
+ drivers/cpufreq/intel_pstate.c | 183 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 179 insertions(+), 4 deletions(-)
+
+-- 
+2.13.6
