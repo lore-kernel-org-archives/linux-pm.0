@@ -1,48 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFD] Add debugfs for cpuidle ?
-Date: Thu, 24 May 2018 11:39:30 +0200
-Message-ID: <11155078.TUGiezxXmY@aspire.rjw.lan>
-References: <516d8599-8038-7b47-a3f5-640bf13856c2@linaro.org> <2682482.uFPN0cxrGI@aspire.rjw.lan> <bcdbf067-4213-18ed-6d30-dc0dd2376c02@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.17-rc7
+Date: Thu, 24 May 2018 12:09:40 +0200
+Message-ID: <CAJZ5v0jEH2=cAh9EGZmOq-XvdKgZB9wUruFdKDKLYzotm+7KTg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <bcdbf067-4213-18ed-6d30-dc0dd2376c02@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 24, 2018 10:47:54 AM CEST Daniel Lezcano wrote:
-> On 24/05/2018 10:28, Rafael J. Wysocki wrote:
-> > On Thursday, May 24, 2018 10:14:31 AM CEST Daniel Lezcano wrote:
-> >> 
-> >> Hi all,
-> > 
-> > Hi,
-> > 
-> >> would it be interesting to add debugfs metrics for cpuidle in order
-> >> to read some statistics from there and investigate the behavior ?
-> > 
-> > What exactly would you like to see in there?
-> 
-> It could be interesting to have statistics on a per cpu and global basis
-> for:
-> 
-> - prediction accuracy:
-> 
-> /sys/kernel/debug/cpuidle/prediction/[good|over|under]
-> /sys/kernel/debug/cpuidle/cpu*/state*/prediction/[good|over|under]
-> 
->  - exit latency
-> 
-> In addition, it is often the case the idle states values are dropped
-> randomly, it is interesting to see the average exit latency for the
-> states. That could give also an indication the cluster idle state success.
-> 
-> /sys/kernel/debug/cpuidle/state*/latency/[min|max|avg|stddev]
-> /sys/kernel/debug/cpuidle/cpu*/state*/prediction/[min|max|avg|stddev]
-> 
-> And perhaps more information like the tick stopped stat ?
+Hi Linus,
 
-Fair enough, but that must be minimum overhead.
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.17-rc7
+
+with top-most commit c62ec4610c40bcc44f2d3d5ed1c312737279e2f3
+
+ PM / core: Fix direct_complete handling for devices with no callbacks
+
+on top of commit 771c577c23bac90597c685971d7297ea00f99d11
+
+ Linux 4.17-rc6
+
+to receive a power management fix for 4.17-rc7.
+
+This fixes a regression from the 4.15 cycle that caused the system
+suspend and resume overhead to increase on many systems and triggered
+more serious problems on some of them (Rafael Wysocki).
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (1):
+      PM / core: Fix direct_complete handling for devices with no callbacks
+
+---------------
+
+ drivers/base/power/main.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
