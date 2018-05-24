@@ -1,80 +1,58 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 11/27] x86/power/64: Adapt assembly for PIE support
-Date: Thu, 24 May 2018 13:03:41 +0200
-Message-ID: <20180524110341.GB20225@amd>
-References: <20180523195421.180248-1-thgarnie@google.com>
- <20180523195421.180248-12-thgarnie@google.com>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH v12 0/2] Kryo CPU scaling driver
+Date: Thu, 24 May 2018 14:20:29 +0300
+Message-ID: <CAHLCerONOOQLnwSUCvpi4wGrqg9HFRAN1xGUKxKekN9StTEJ7w@mail.gmail.com>
+References: <1527152242-31281-1-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
-Return-path: <kernel-hardening-return-13383-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Content-Disposition: inline
-In-Reply-To: <20180523195421.180248-12-thgarnie@google.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Arnaldo Carvalho de Melo <acme@redhat.com>, Yonghong Song <yhs@fb.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Juerge
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1527152242-31281-1-git-send-email-ilialin@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, May 24, 2018 at 11:57 AM, Ilia Lin <ilialin@codeaurora.org> wrote:
+> [v12]
+>  * Addressed comments from Sudeep and Viresh about the single init
+>
+> [v11]
+>  * Addressed comment from Russel about device_node reference
+>  * Addressed comment from Sudeep about the late_initcall
+>  * Transformed init into probe to take care of deferals
+>
+> [v10]
+>  * Split the series into domains
+>  * Addressed comments from Viresh and Sudeep about logical CPU numbering.
+>
+> The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+> The driver reads eFuse information and chooses the required OPP subset
+> by passing the OPP supported-hw parameter.
+>
+> The series depends on the series from Viresh:
+> https://patchwork.kernel.org/patch/10418139/
+>
+> The previous spin was here:
+> https://patchwork.kernel.org/patch/10421143/
+>
+> Ilia Lin (2):
+>   cpufreq: Add Kryo CPU scaling driver
+>   dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+>
+>  .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+>  drivers/cpufreq/Kconfig.arm                        |  10 +
+>  drivers/cpufreq/Makefile                           |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+>  drivers/cpufreq/qcom-cpufreq-kryo.c                | 194 ++++++
+>  5 files changed, 888 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+>
+> --
+> 1.9.1
+>
 
---KFztAG8eRSV9hGtP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For this series,
 
-On Wed 2018-05-23 12:54:05, Thomas Garnier wrote:
-> Change the assembly code to use only relative references of symbols for t=
-he
-> kernel to be PIE compatible.
->=20
-> Position Independent Executable (PIE) support will allow to extended the
-> KASLR randomization range below the -2G memory limit.
->=20
-> Signed-off-by: Thomas Garnier <thgarnie@google.com>
-
-Again, was this tested?
-
-> diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate=
-_asm_64.S
-> index ce8da3a0412c..6fdd7bbc3c33 100644
-> --- a/arch/x86/power/hibernate_asm_64.S
-> +++ b/arch/x86/power/hibernate_asm_64.S
-> @@ -24,7 +24,7 @@
->  #include <asm/frame.h>
-> =20
->  ENTRY(swsusp_arch_suspend)
-> -	movq	$saved_context, %rax
-> +	leaq	saved_context(%rip), %rax
->  	movq	%rsp, pt_regs_sp(%rax)
->  	movq	%rbp, pt_regs_bp(%rax)
->  	movq	%rsi, pt_regs_si(%rax)
-> @@ -115,7 +115,7 @@ ENTRY(restore_registers)
->  	movq	%rax, %cr4;  # turn PGE back on
-> =20
->  	/* We don't restore %rax, it must be 0 anyway */
-> -	movq	$saved_context, %rax
-> +	leaq	saved_context(%rip), %rax
->  	movq	pt_regs_sp(%rax), %rsp
->  	movq	pt_regs_bp(%rax), %rbp
->  	movq	pt_regs_si(%rax), %rsi
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---KFztAG8eRSV9hGtP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlsGnA0ACgkQMOfwapXb+vK3PwCgjIuOx9YZTN3evFcQKm9c41TU
-Q4sAoLZgV0pIcRgoHsgk/ecLa/CLhuIR
-=YTGF
------END PGP SIGNATURE-----
-
---KFztAG8eRSV9hGtP--
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+Tested-by: Amit Kucheria <amit.kucheria@linaro.org>
