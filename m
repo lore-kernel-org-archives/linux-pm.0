@@ -1,41 +1,50 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v12 1/2] cpufreq: Add Kryo CPU scaling driver
-Date: Thu, 24 May 2018 16:02:17 +0100
-Message-ID: <bf3662ca-3278-e218-2116-61d3583cf016@arm.com>
-References: <1527152242-31281-1-git-send-email-ilialin@codeaurora.org>
- <1527152242-31281-2-git-send-email-ilialin@codeaurora.org>
- <860be68b-cac0-9efc-b3c7-cc75b391a4c3@arm.com>
- <000501d3f35f$96794910$c36bdb30$@codeaurora.org>
- <b4e221af-57f7-fd11-942d-6bc6f6b55a73@arm.com>
- <000701d3f368$fd31e410$f795ac30$@codeaurora.org>
- <15d6025c-1307-64e0-6715-34240fcaf8eb@arm.com>
- <000901d3f36e$c9c995e0$5d5cc1a0$@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v13 0/2] Kryo CPU scaling driver
+Date: Thu, 24 May 2018 18:03:38 +0300
+Message-ID: <1527174220-13244-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000901d3f36e$c9c995e0$5d5cc1a0$@codeaurora.org>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: ilialin@codeaurora.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+To: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, ilialin@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
+[v13]
+ * Addressed comment from Sudeep about DT compatible check on init
 
+[v12]
+ * Addressed comments from Sudeep and Viresh about the single init
 
-On 24/05/18 15:52, ilialin@codeaurora.org wrote:
-> OK, got you.
-> Is "operating-points-v2-kryo-cpu" good enough?
-> 
+[v11]
+ * Addressed comment from Russel about device_node reference
+ * Addressed comment from Sudeep about the late_initcall
+ * Transformed init into probe to take care of deferals
 
-Not sure if I can answer that as I don't have full knowledge on PM on
-all Kryo CPUs. Will this driver work on all those platforms which will
-have "operating-points-v2-kryo-cpu" ? If yes, then go ahead.
+[v10]
+ * Split the series into domains
+ * Addressed comments from Viresh and Sudeep about logical CPU numbering.
 
-I would prefer using some compatible in the CPU node rather that OPP,
-but that's just my opinion. Check with other QCOM guys on the list who
-have worked on CPUFreq or still working.(Taniya, Saravana, S Boyd, ...?)
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
+
+The series depends on the series from Viresh:
+https://patchwork.kernel.org/patch/10418139/
+
+The previous spin was here:
+https://patchwork.kernel.org/patch/10423137/
+
+Ilia Lin (2):
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+
+ .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 206 +++++++
+ 5 files changed, 900 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
 
 -- 
-Regards,
-Sudeep
+1.9.1
