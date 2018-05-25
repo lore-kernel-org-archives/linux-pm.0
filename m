@@ -1,7 +1,7 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [PATCH 1/4] PM / suspend: Prevent might sleep splats
-Date: Fri, 25 May 2018 11:46:45 +0200
-Message-ID: <20180525094648.15464-2-bigeasy@linutronix.de>
+Subject: [PATCH 3/4] PM / s2idle: Make s2idle_wait_head swait based
+Date: Fri, 25 May 2018 11:46:47 +0200
+Message-ID: <20180525094648.15464-4-bigeasy@linutronix.de>
 References: <20180525094648.15464-1-bigeasy@linutronix.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -12,133 +12,56 @@ To: linux-pm@vger.kernel.org
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, bigeasy@linutronix.de, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
+s2idle_wait_head is used during s2idle with interrupts disabled even on
+RT. There is no "custom" wake up function so swait could be used instead
+which is also lower weight compared to the wait_queue.
+Make s2idle_wait_head a swait_queue_head.
 
-timekeeping suspend/resume calls read_persistent_clock() which takes
-rtc_lock. That results in might sleep warnings because at that point
-we run with interrupts disabled.
-
-We cannot convert rtc_lock to a raw spinlock as that would trigger
-other might sleep warnings.
-
-As a workaround we disable the might sleep warnings by setting
-system_state to SYSTEM_SUSPEND before calling sysdev_suspend() and
-restoring it to SYSTEM_RUNNING afer sysdev_resume().
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[bigeasy: cover s2idle]
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- include/linux/kernel.h   | 1 +
- kernel/power/hibernate.c | 7 +++++++
- kernel/power/suspend.c   | 6 ++++++
- 3 files changed, 14 insertions(+)
+ kernel/power/suspend.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 6a1eb0b0aad9..7aed92624531 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -542,6 +542,7 @@ extern enum system_states {
- 	SYSTEM_HALT,
- 	SYSTEM_POWER_OFF,
- 	SYSTEM_RESTART,
-+	SYSTEM_SUSPEND,
- } system_state;
-=20
- /* This cannot be an enum because some may be used in assembly source. */
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 5454cc639a8d..9c85c7822383 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -287,6 +287,8 @@ static int create_image(int platform_mode)
-=20
- 	local_irq_disable();
-=20
-+	system_state =3D SYSTEM_SUSPEND;
-+
- 	error =3D syscore_suspend();
- 	if (error) {
- 		pr_err("Some system devices failed to power down, aborting hibernation\n=
-");
-@@ -317,6 +319,7 @@ static int create_image(int platform_mode)
- 	syscore_resume();
-=20
-  Enable_irqs:
-+	system_state =3D SYSTEM_RUNNING;
- 	local_irq_enable();
-=20
-  Enable_cpus:
-@@ -445,6 +448,7 @@ static int resume_target_kernel(bool platform_mode)
- 		goto Enable_cpus;
-=20
- 	local_irq_disable();
-+	system_state =3D SYSTEM_SUSPEND;
-=20
- 	error =3D syscore_suspend();
- 	if (error)
-@@ -478,6 +482,7 @@ static int resume_target_kernel(bool platform_mode)
- 	syscore_resume();
-=20
-  Enable_irqs:
-+	system_state =3D SYSTEM_RUNNING;
- 	local_irq_enable();
-=20
-  Enable_cpus:
-@@ -563,6 +568,7 @@ int hibernation_platform_enter(void)
- 		goto Enable_cpus;
-=20
- 	local_irq_disable();
-+	system_state =3D SYSTEM_SUSPEND;
- 	syscore_suspend();
- 	if (pm_wakeup_pending()) {
- 		error =3D -EAGAIN;
-@@ -575,6 +581,7 @@ int hibernation_platform_enter(void)
-=20
-  Power_up:
- 	syscore_resume();
-+	system_state =3D SYSTEM_RUNNING;
- 	local_irq_enable();
-=20
-  Enable_cpus:
 diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 4c10be0f4843..9108a99878bf 100644
+index 9108a99878bf..f865aa934835 100644
 --- a/kernel/power/suspend.c
 +++ b/kernel/power/suspend.c
-@@ -110,6 +110,7 @@ static void s2idle_loop(void)
- {
- 	pm_pr_dbg("suspend-to-idle\n");
+@@ -27,6 +27,7 @@
+ #include <linux/export.h>
+ #include <linux/suspend.h>
+ #include <linux/syscore_ops.h>
++#include <linux/swait.h>
+ #include <linux/ftrace.h>
+ #include <trace/events/power.h>
+ #include <linux/compiler.h>
+@@ -57,7 +58,7 @@ EXPORT_SYMBOL_GPL(pm_suspend_global_flags);
 =20
-+	system_state =3D SYSTEM_SUSPEND;
- 	for (;;) {
- 		int error;
+ static const struct platform_suspend_ops *suspend_ops;
+ static const struct platform_s2idle_ops *s2idle_ops;
+-static DECLARE_WAIT_QUEUE_HEAD(s2idle_wait_head);
++static DECLARE_SWAIT_QUEUE_HEAD(s2idle_wait_head);
 =20
-@@ -148,6 +149,7 @@ static void s2idle_loop(void)
+ enum s2idle_states __read_mostly s2idle_state;
+ static DEFINE_SPINLOCK(s2idle_lock);
+@@ -91,8 +92,8 @@ static void s2idle_enter(void)
+ 	/* Push all the CPUs into the idle loop. */
+ 	wake_up_all_idle_cpus();
+ 	/* Make the current CPU wait so it can enter the idle loop too. */
+-	wait_event(s2idle_wait_head,
+-		   s2idle_state =3D=3D S2IDLE_STATE_WAKE);
++	swait_event(s2idle_wait_head,
++		    s2idle_state =3D=3D S2IDLE_STATE_WAKE);
 =20
- 		pm_wakeup_clear(false);
+ 	cpuidle_pause();
+ 	put_online_cpus();
+@@ -161,7 +162,7 @@ void s2idle_wake(void)
+ 	spin_lock_irqsave(&s2idle_lock, flags);
+ 	if (s2idle_state > S2IDLE_STATE_NONE) {
+ 		s2idle_state =3D S2IDLE_STATE_WAKE;
+-		wake_up(&s2idle_wait_head);
++		swake_up(&s2idle_wait_head);
  	}
-+	system_state =3D SYSTEM_RUNNING;
-=20
- 	pm_pr_dbg("resume from suspend-to-idle\n");
+ 	spin_unlock_irqrestore(&s2idle_lock, flags);
  }
-@@ -428,6 +430,8 @@ static int suspend_enter(suspend_state_t state, bool *w=
-akeup)
- 	arch_suspend_disable_irqs();
- 	BUG_ON(!irqs_disabled());
-=20
-+	system_state =3D SYSTEM_SUSPEND;
-+
- 	error =3D syscore_suspend();
- 	if (!error) {
- 		*wakeup =3D pm_wakeup_pending();
-@@ -443,6 +447,8 @@ static int suspend_enter(suspend_state_t state, bool *w=
-akeup)
- 		syscore_resume();
- 	}
-=20
-+	system_state =3D SYSTEM_RUNNING;
-+
- 	arch_suspend_enable_irqs();
- 	BUG_ON(irqs_disabled());
-=20
 --=20
 2.17.0
