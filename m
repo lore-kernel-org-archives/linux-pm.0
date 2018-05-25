@@ -1,167 +1,57 @@
-From: George Cherian <gcherian@caviumnetworks.com>
-Subject: Re: [PATCH] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
-Date: Fri, 25 May 2018 11:57:58 +0530
-Message-ID: <5ff2bebc-fc39-dc82-d7e6-0483e38f7d9c@caviumnetworks.com>
-References: <1526989324-4183-1-git-send-email-george.cherian@cavium.com>
- <ac2eb509-c1b0-521a-07e5-2bf8eaaa55c2@codeaurora.org>
+From: Peter De Schrijver <pdeschrijver@nvidia.com>
+Subject: Re: [PATCH v1 2/2] cpufreq: tegra20: Use PLL_C as intermediate clock
+ source
+Date: Fri, 25 May 2018 09:32:25 +0300
+Message-ID: <20180525063225.GN6835@tbergstrom-lnx.Nvidia.com>
+References: <20180523160020.15291-1-digetx@gmail.com>
+ <20180523160020.15291-2-digetx@gmail.com>
+ <20180524100413.GL6835@tbergstrom-lnx.Nvidia.com>
+ <e6ee8116-7f73-fa7a-3df4-b17ccd8dcb0e@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ac2eb509-c1b0-521a-07e5-2bf8eaaa55c2@codeaurora.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <e6ee8116-7f73-fa7a-3df4-b17ccd8dcb0e@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Prakash, Prashanth" <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Prashanth,
+On Thu, May 24, 2018 at 03:49:22PM +0300, Dmitry Osipenko wrote:
+> On 24.05.2018 13:04, Peter De Schrijver wrote:
+> > On Wed, May 23, 2018 at 07:00:20PM +0300, Dmitry Osipenko wrote:
+> >> PLL_C is running at 600MHz which is significantly higher than the 216MHz
+> >> of the PLL_P and it is known that PLL_C is always-ON because AHB BUS is
+> >> running on that PLL. Let's use PLL_C as intermediate clock source, making
+> >> CPU snappier a tad during of the frequency transition.
+> >>
+> > 
+> > pll_c isn't necessarily 600Mhz when used as a source for the second display
+> > head.
+> 
+> Hmm, indeed.
+> 
+> Even if PLL_C rate will be adjusted, it will be higher than the PLL_P.. won't
+> it? That's likely to be good enough.
+> 
 
-On 05/25/2018 12:55 AM, Prakash, Prashanth wrote:
-> Hi George,
-> 
-> On 5/22/2018 5:42 AM, George Cherian wrote:
->> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
->> feedback via set of performance counters. To determine the actual
->> performance level delivered over time, OSPM may read a set of
->> performance counters from the Reference Performance Counter Register
->> and the Delivered Performance Counter Register.
->>
->> OSPM calculates the delivered performance over a given time period by
->> taking a beginning and ending snapshot of both the reference and
->> delivered performance counters, and calculating:
->>
->> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
->>
->> Implement the above and hook this to the cpufreq->get method.
->>
->> Signed-off-by: George Cherian <george.cherian@cavium.com>
->> ---
->>   drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++
->>   1 file changed, 44 insertions(+)
->>
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index b15115a..a046915 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -240,10 +240,54 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>   	return ret;
->>   }
->>   
->> +static int cppc_get_rate_from_fbctrs(struct cppc_perf_fb_ctrs fb_ctrs_t0,
->> +				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
->> +{
->> +	u64 delta_reference, delta_delivered;
->> +	u64 reference_perf, ratio;
->> +
->> +	reference_perf = fb_ctrs_t0.reference_perf;
->> +	if (fb_ctrs_t1.reference > fb_ctrs_t0.reference)
->> +		delta_reference = fb_ctrs_t1.reference - fb_ctrs_t0.reference;
->> +	else /* Counters would have wrapped-around */
->> +		delta_reference  = ((u64)(~((u64)0)) - fb_ctrs_t0.reference) +
->> +					fb_ctrs_t1.reference;
->> +
->> +	if (fb_ctrs_t1.delivered > fb_ctrs_t0.delivered)
->> +		delta_delivered = fb_ctrs_t1.delivered - fb_ctrs_t0.delivered;
->> +	else /* Counters would have wrapped-around */
->> +		delta_delivered  = ((u64)(~((u64)0)) - fb_ctrs_t0.delivered) +
->> +					fb_ctrs_t1.delivered;
-> We need to check that the wraparound time is long enough to make sure that
-> the counters cannot wrap around more than once. We can register a  get() api
-> only after checking that wraparound time value is reasonably high.
-> 
-> I am not aware of any platforms where wraparound time is soo short, but
-> wouldn't hurt to check once during init.
-By design the wraparound time is a 64 bit counter, for that matter even
-all the feedback counters too are 64 bit counters. I don't see any
-chance in which the counters can wraparound twice in back to back reads.
-The only situation is in which system itself is running at a really high
-frequency. Even in that case today's spec is not sufficient to support 
-the same.
+Yes. I think it can be always higher than pll_p, but that assumes the display
+driver will always program the highest possible rate for pll_c for a given mode
+and then program the display divider to divide it down to the required rate.
 
->> +
->> +	if (delta_reference)  /* Check to avoid divide-by zero */
->> +		ratio = (delta_delivered * 1000) / delta_reference;
-> Why not just return the computed value here instead of *1000 and later /1000?
-> return (ref_per * delta_del) / delta_ref;
-Yes.
->> +	else
->> +		return -EINVAL;
-> Instead of EINVAL, i think we should return current frequency.
+> Do you know if any of the available CCLK parents has a glitch-less rate
+> switching? I.e. CPU won't hang on the rate switch.
 > 
-Sorry, I didn't get you, How do you calculate the current frequency?
-Did you mean reference performance?
 
-> The counters can pause if CPUs are in idle state during our sampling interval, so
-> If the counters did not progress, it is reasonable to assume the delivered perf was
-> equal to desired perf.
-No, that is wrong. Here the check is for reference performance delta.
-This counter can never pause. In case of cpuidle only the delivered 
-counters could pause. Delivered counters will pause only if the 
-particular core enters power down mode, Otherwise we would be still 
-clocking the core and we should be getting a delta across 2 sampling 
-periods. In case if the reference counter is paused which by design is 
-not correct then there is no point in returning reference performance 
-numbers. That too is wrong. In case the low level FW is not updating the
-counters properly then it should be evident till Linux, instead of 
-returning a bogus frequency.
-> 
-> Even if platform wanted to limit, since the CPUs were asleep(idle) we could not have
-> observed lower performance, so we will not throw off  any logic that could be driven
-> using the returned value.
->> +
->> +	return (reference_perf * ratio) / 1000;
-> This should be converted to KHz as cpufreq is not aware of CPPC abstract scale
-In our platform all performance registers are implemented in KHz. 
-Because of which we never had an issue with conversion. I am  not
-aware whether ACPI mandates to use any particular unit. How is that
-implemented in your platform? Just to avoid any extra conversion don't
-you feel it is better to always report in KHz from firmware.
+Tegra20 doesn't have dynamic ramp PLLs no. So you always have to switch to a
+backup clock source before changing the rate of pll_x.
 
->> +}
->> +
->> +static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
->> +{
->> +	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
->> +	int ret;
->> +
->> +	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return cppc_get_rate_from_fbctrs(fb_ctrs_t0, fb_ctrs_t1);
->> +}
-> We need to make sure that we get a reasonably sample so make sure the reported
-> performance is accurate.
-> The counters can capture short transient throttling/limiting, so by sampling a really
-> short duration of time we could return quite inaccurate measure of performance.
-> 
-I would say it as a momentary thing only when the frequency is being 
-ramped up/down.
+> There is other possible 600MHz source, the PLL_M. Can we use it? This one also
+> may become dynamic if we'll consider implementing the memory scaling, but the
+> memory frequency probably will fit the transition role pretty well.
 
-> We need to include some reasonable delay between the two calls. What is reasonable
-> is debatable - so this can be few(2-10) microseconds defined as default. If the same value
-> doesn't work for all the platforms, we might need to add a platform specific value.
-> 
-cppc_get_perf_ctrs itself is a slow call, we have to format the CPC 
-packet and ring a doorbell and then the response to be read from the 
-shared registers. My initial implementation had a delay but in testing,
-I found that it was unnecessary to have such a delay. Can you please
-let me know whether it works without delay in your platform?
+I think this should work, but as you mention it may very well be lower than
+pll_p if Tegra20 EMC scaling is re-introduced. I think that's why historically
+this was never done. 
 
-Or else let me know whether udelay(10) is sufficient in between the
-calls.
->> +
->>   static struct cpufreq_driver cppc_cpufreq_driver = {
->>   	.flags = CPUFREQ_CONST_LOOPS,
->>   	.verify = cppc_verify_policy,
->>   	.target = cppc_cpufreq_set_target,
->> +	.get = cppc_cpufreq_get_rate,
->>   	.init = cppc_cpufreq_cpu_init,
->>   	.stop_cpu = cppc_cpufreq_stop_cpu,
->>   	.name = "cppc_cpufreq",
-> 
+Peter.
