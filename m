@@ -1,61 +1,97 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/2] ACPI: EC: Dispatch the EC GPE directly on s2idle wake
-Date: Fri, 25 May 2018 11:24:37 +0200
-Message-ID: <CAPDyKFrs9kXOuE5ft2fX83mjUtf_5FyANeWFxeRNyg3yGRk-pA@mail.gmail.com>
-References: <3221007.8CUDle5b3u@aspire.rjw.lan> <201805181421.jU5hI6Bo%fengguang.wu@intel.com>
- <CAPDyKFpnrPeG23Q+i6ASCeohGR3vfGQRwQzjwGsKE=c4TyAiQA@mail.gmail.com>
- <CAJZ5v0jFmVd_SkvgoXmi2Psqg5ALJRDsKzV8PiFysHQt9f0uog@mail.gmail.com> <CAJZ5v0j_mLPw2VT6GbAxSDizu4Rr94muweiBs6ZhLuUJe2O7vQ@mail.gmail.com>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: [PATCH 2/4] PM / wakeup: Make events_lock a RAW_SPINLOCK
+Date: Fri, 25 May 2018 11:46:46 +0200
+Message-ID: <20180525094648.15464-3-bigeasy@linutronix.de>
+References: <20180525094648.15464-1-bigeasy@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j_mLPw2VT6GbAxSDizu4Rr94muweiBs6ZhLuUJe2O7vQ@mail.gmail.com>
+In-Reply-To: <20180525094648.15464-1-bigeasy@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kbuild-all@01.org, Linux ACPI <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Erik Schmauss <erik.schmauss@intel.com>, Bob Moore <robert.moore@intel.com>, "Wang, Wendy" <wendy.wang@intel.com>, kbuild test robot <lkp@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, bigeasy@linutronix.de, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25 May 2018 at 10:48, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, May 25, 2018 at 10:08 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Fri, May 25, 2018 at 8:49 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> Rafael,
->>>
->>> On 18 May 2018 at 08:10, kbuild test robot <lkp@intel.com> wrote:
->>>> Hi Rafael,
->>>>
->>>> I love your patch! Yet something to improve:
->>>>
->>>> [auto build test ERROR on pm/linux-next]
->>>> [also build test ERROR on v4.17-rc5]
->>>> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->>>>
->>>> url:    https://github.com/0day-ci/linux/commits/Rafael-J-Wysocki/ACPI-PM-Dispatch-EC-GPE-early-on-s2idle-resume-if-LPS0-_DSM-is-used/20180518-070817
->>>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
->>>> config: arm64-defconfig (attached as .config)
->>>> compiler: aarch64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
->>>> reproduce:
->>>>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->>>>         chmod +x ~/bin/make.cross
->>>>         # save the attached .config to linux build tree
->>>>         make.cross ARCH=arm64
->>>>
->>>> All errors (new ones prefixed by >>):
->>>>
->>>>    drivers/acpi/ec.o: In function `acpi_ec_dispatch_gpe':
->>>>>> ec.c:(.text+0x239c): undefined reference to `acpi_dispatch_gpe'
->>>>    ec.c:(.text+0x239c): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `acpi_dispatch_gpe'
->>>>
->>>> ---
->>>> 0-DAY kernel test infrastructure                Open Source Technology Center
->>>> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
->>>
->>> This breaks arm64 builds, would you mind to drop the offending patch
->>> from your linux-next branch?
->>
->> Not really, but I can fix it.
->
-> Should be fixed now, sorry for the breakage.
+The `events_lock' is acquired during suspend while interrupts are
+disabled even on RT. The lock is taken only for a very brief moment.
+Make it a RAW lock which avoids "sleeping while atomic" warnings on RT.
 
-Thanks, yes it builds fine now!
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ drivers/base/power/wakeup.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Kind regards
-Uffe
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index ea01621ed769..2e76fbcba76e 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -57,7 +57,7 @@ static void split_counters(unsigned int *cnt, unsigned in=
+t *inpr)
+ /* A preserved old value of the events counter. */
+ static unsigned int saved_count;
+=20
+-static DEFINE_SPINLOCK(events_lock);
++static DEFINE_RAW_SPINLOCK(events_lock);
+=20
+ static void pm_wakeup_timer_fn(struct timer_list *t);
+=20
+@@ -185,9 +185,9 @@ void wakeup_source_add(struct wakeup_source *ws)
+ 	ws->active =3D false;
+ 	ws->last_time =3D ktime_get();
+=20
+-	spin_lock_irqsave(&events_lock, flags);
++	raw_spin_lock_irqsave(&events_lock, flags);
+ 	list_add_rcu(&ws->entry, &wakeup_sources);
+-	spin_unlock_irqrestore(&events_lock, flags);
++	raw_spin_unlock_irqrestore(&events_lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(wakeup_source_add);
+=20
+@@ -202,9 +202,9 @@ void wakeup_source_remove(struct wakeup_source *ws)
+ 	if (WARN_ON(!ws))
+ 		return;
+=20
+-	spin_lock_irqsave(&events_lock, flags);
++	raw_spin_lock_irqsave(&events_lock, flags);
+ 	list_del_rcu(&ws->entry);
+-	spin_unlock_irqrestore(&events_lock, flags);
++	raw_spin_unlock_irqrestore(&events_lock, flags);
+ 	synchronize_srcu(&wakeup_srcu);
+ }
+ EXPORT_SYMBOL_GPL(wakeup_source_remove);
+@@ -843,7 +843,7 @@ bool pm_wakeup_pending(void)
+ 	unsigned long flags;
+ 	bool ret =3D false;
+=20
+-	spin_lock_irqsave(&events_lock, flags);
++	raw_spin_lock_irqsave(&events_lock, flags);
+ 	if (events_check_enabled) {
+ 		unsigned int cnt, inpr;
+=20
+@@ -851,7 +851,7 @@ bool pm_wakeup_pending(void)
+ 		ret =3D (cnt !=3D saved_count || inpr > 0);
+ 		events_check_enabled =3D !ret;
+ 	}
+-	spin_unlock_irqrestore(&events_lock, flags);
++	raw_spin_unlock_irqrestore(&events_lock, flags);
+=20
+ 	if (ret) {
+ 		pr_info("PM: Wakeup pending, aborting suspend\n");
+@@ -940,13 +940,13 @@ bool pm_save_wakeup_count(unsigned int count)
+ 	unsigned long flags;
+=20
+ 	events_check_enabled =3D false;
+-	spin_lock_irqsave(&events_lock, flags);
++	raw_spin_lock_irqsave(&events_lock, flags);
+ 	split_counters(&cnt, &inpr);
+ 	if (cnt =3D=3D count && inpr =3D=3D 0) {
+ 		saved_count =3D count;
+ 		events_check_enabled =3D true;
+ 	}
+-	spin_unlock_irqrestore(&events_lock, flags);
++	raw_spin_unlock_irqrestore(&events_lock, flags);
+ 	return events_check_enabled;
+ }
+=20
+--=20
+2.17.0
