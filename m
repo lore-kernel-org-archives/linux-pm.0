@@ -1,58 +1,56 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 9/9] PM / Domains: Add dev_pm_domain_attach_by_id() to
- manage multi PM domains
-Date: Fri, 25 May 2018 14:34:02 +0200
-Message-ID: <CAPDyKFphA8iEpRv2RipqDygt6i4W7VOE65JWCxOH=R_xzLCJzg@mail.gmail.com>
-References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
- <1526639490-12167-10-git-send-email-ulf.hansson@linaro.org>
- <1c21d18e-954a-f3a8-9817-0117b7cb7e4f@nvidia.com> <CAPDyKFozm88OM8cDFXXwvgdMirrt2=HhZtBdyhNjo2bgjHV2Mg@mail.gmail.com>
- <2c63af8c-4745-a751-8d3d-f7122e921e6f@nvidia.com> <CAPDyKFrTtvhxOhf9BPY1=cJ9VQyx9D=P3O0vCV+WXSVR82FozQ@mail.gmail.com>
- <b3a94d63-678c-eab6-47a8-43eca95da979@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v14 0/2] Kryo CPU scaling driver
+Date: Fri, 25 May 2018 15:41:50 +0300
+Message-ID: <1527252112-7015-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b3a94d63-678c-eab6-47a8-43eca95da979@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org
+To: ilia.lin@gmail.com, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, ilialin@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25 May 2018 at 13:07, Jon Hunter <jonathanh@nvidia.com> wrote:
->
->
-> On 25/05/18 11:45, Ulf Hansson wrote:
->
-> ...
->
->>> Right, but this case still seems like an error. My understanding is that
->>> only drivers will use this API directly and it will not be used by the
->>> device driver core (unlike dev_pm_domain_attach), so if anyone calls this
->>> attempting to attach another PM domain when one is already attached, they
->>> are doing something wrong.
->>
->>
->> [...]
->>
->> You may be right!
->>
->> What I was thinking of is whether multiple PM domains may be optional
->> in some cases, but instead a PM domain have already been attached by
->> dev_pm_domain_attach(), prior the driver starts to probe.
->>
->> Then, assuming we return an error for this case, that means the caller
->> then need to check the dev->pm_domain pointer, prior calling
->> dev_pm_domain_attach_by_id(). Wouldn't it? Perhaps that is more clear
->> though?
->
->
-> IMO the driver should know whether is needs multiple power-domains or not
-> and if it needs multiple then it should just call
-> dev_pm_domain_attach_by_id() N times without needing to checking
-> dev->pm_domain first. If it fails then either the PM domain core did
-> something wrong or power-domains are missing from DT, but either way there
-> is an error, so let it fail.
+[v14]
+ * Addressed comment from Sudeep about DT compatible
+ * Added MAINTAINERS entry
 
-Right, sounds reasonable!
+[v13]
+ * Addressed comment from Sudeep about DT compatible check on init
 
-Kind regards
-Uffe
+[v12]
+ * Addressed comments from Sudeep and Viresh about the single init
+
+[v11]
+ * Addressed comment from Russel about device_node reference
+ * Addressed comment from Sudeep about the late_initcall
+ * Transformed init into probe to take care of deferals
+
+[v10]
+ * Split the series into domains
+ * Addressed comments from Viresh and Sudeep about logical CPU numbering.
+
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
+
+The series depends on the series from Viresh:
+https://patchwork.kernel.org/patch/10418139/
+
+The previous spin was here:
+https://patchwork.kernel.org/patch/10424949/
+
+
+Ilia Lin (2):
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+
+ .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+ MAINTAINERS                                        |   7 +
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 212 +++++++
+ 6 files changed, 913 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+
+-- 
+1.9.1
