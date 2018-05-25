@@ -1,81 +1,43 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v3 09/27] x86/acpi: Adapt assembly for PIE support
-Date: Fri, 25 May 2018 10:00:04 -0700
-Message-ID: <CAJcbSZH17D01Stk4vRKKzjW6dxvK8x+S9sWL6vUopSP9=-x7Nw@mail.gmail.com>
-References: <20180523195421.180248-1-thgarnie@google.com> <20180523195421.180248-10-thgarnie@google.com>
- <20180524110306.GA20225@amd> <CAJcbSZFJ84+VC5xDQZGHctupdqwmMBgqzLzFRqCTBpi5t-2Gvw@mail.gmail.com>
- <20180525091447.GC9666@amd>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] tools/power/x86/intel_pstate_tracer: Add optional
+ setting of trace buffer memory allocation
+Date: Fri, 25 May 2018 11:04:45 -0700
+Message-ID: <1527271485.14836.49.camel@linux.intel.com>
+References: <1525441582-23855-1-git-send-email-dsmythies@telus.net>
+         <23851272.hyr4RImLsD@aspire.rjw.lan> <9152600.1bIX9UMnel@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-13392-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20180525091447.GC9666@amd>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Greg KH <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Arnaldo Carvalho de Melo <acme@redhat.com>, Yonghong Song <yhs@fb.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Kees Cook <keescook@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Juergen Gross <jgros>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <9152600.1bIX9UMnel@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <doug.smythies@gmail.com>
+Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 25, 2018 at 2:14 AM Pavel Machek <pavel@ucw.cz> wrote:
+On Thu, 2018-05-24 at 11:34 +0200, Rafael J. Wysocki wrote:
+> On Sunday, May 13, 2018 10:43:02 AM CEST Rafael J. Wysocki wrote:
+> > On Friday, May 4, 2018 3:46:22 PM CEST Doug Smythies wrote:
+> > > Allow the user to override the default trace buffer memory
+> > > allocation
+> > > by adding a command line option to override the default.
+> > > 
+> > > The patch also:
+> > > 
+> > > Adds a SIGINT (i.e. CTRL C exit) handler,
+> > > so that things can be cleaned up before exit.
+> > > 
+> > > Moves the postion of some other cleanup from after to
+> > > before the potential "No valid data to plot" exit.
+> > > 
+> > > Replaces all quit() calls with sys.exit, because
+> > > quit() is not supposed to be used in scripts.
+> > > 
+> > > Signed-off-by: Doug Smythies <dsmythies@telus.net>
+> > 
+> > Srinivas, any comments here?
+Somehow I missed this email. But looks fine.
 
-> On Thu 2018-05-24 09:35:42, Thomas Garnier wrote:
-> > On Thu, May 24, 2018 at 4:03 AM Pavel Machek <pavel@ucw.cz> wrote:
-> >
-> > > On Wed 2018-05-23 12:54:03, Thomas Garnier wrote:
-> > > > Change the assembly code to use only relative references of symbols
-for
-> > the
-> > > > kernel to be PIE compatible.
-> > > >
-> > > > Position Independent Executable (PIE) support will allow to
-extended the
-> > > > KASLR randomization range below the -2G memory limit.
-> >
-> > > What testing did this get?
-> >
-> > Tested boot, hibernation and performance on qemu and dedicated machine.
-
-> Well, this is suspend, not hibernation code.
-
-> So "sudo pm-suspend" or "echo mem > /sys/power/state" would be good
-> way to test this.
-
-Thanks, it worked. I added this to the testsuite I use for KASLR.
-
-
-> Thanks,
->                                                          Pavel
-
-> > > > diff --git a/arch/x86/kernel/acpi/wakeup_64.S
-> > b/arch/x86/kernel/acpi/wakeup_64.S
-> > > > index 50b8ed0317a3..472659c0f811 100644
-> > > > --- a/arch/x86/kernel/acpi/wakeup_64.S
-> > > > +++ b/arch/x86/kernel/acpi/wakeup_64.S
-> > > > @@ -14,7 +14,7 @@
-> > > >        * Hooray, we are in Long 64-bit mode (but still running in
-low
-> > memory)
-> > > >        */
-> > > >  ENTRY(wakeup_long64)
-> > > > -     movq    saved_magic, %rax
-> > > > +     movq    saved_magic(%rip), %rax
-> > > >       movq    $0x123456789abcdef0, %rdx
-> > > >       cmpq    %rdx, %rax
-> > > >       jne     bogus_64_magic
-> >
-> > > Because, as comment says, this is rather tricky code.
-> >
-> > I agree, I think maintainers feedback is very important for this
-patchset.
-
-
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures)
-http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
-
-
--- 
-Thomas
+> 
+> No concerns, so applied.  Thanks!
+> 
