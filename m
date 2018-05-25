@@ -1,57 +1,109 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] ACPI: EC: Dispatch the EC GPE directly on s2idle wake
-Date: Fri, 25 May 2018 10:08:22 +0200
-Message-ID: <CAJZ5v0jFmVd_SkvgoXmi2Psqg5ALJRDsKzV8PiFysHQt9f0uog@mail.gmail.com>
-References: <3221007.8CUDle5b3u@aspire.rjw.lan> <201805181421.jU5hI6Bo%fengguang.wu@intel.com>
- <CAPDyKFpnrPeG23Q+i6ASCeohGR3vfGQRwQzjwGsKE=c4TyAiQA@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] cpufreq: tegra20: Use PLL_C as intermediate clock source
+Date: Fri, 25 May 2018 10:14:48 +0200
+Message-ID: <CAJZ5v0j80jbqLKORZR87mftbKDbAophywnuDqTfNf-VSBYfyOQ@mail.gmail.com>
+References: <20180523160020.15291-1-digetx@gmail.com> <20180523160020.15291-2-digetx@gmail.com>
+ <20180524043040.25pld3ezs4lpabro@vireshk-i7> <56552c53-8868-af50-232e-b12e3c247ecd@gmail.com>
+ <CAJZ5v0iXibwwnAyjBXc+zO5YQ0=WwaoUqq1K3OWqojh8xX+Wjw@mail.gmail.com> <5f9364c0-4ef5-0883-583d-42da8f016a80@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpnrPeG23Q+i6ASCeohGR3vfGQRwQzjwGsKE=c4TyAiQA@mail.gmail.com>
+In-Reply-To: <5f9364c0-4ef5-0883-583d-42da8f016a80@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kbuild-all@01.org, Linux ACPI <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Erik Schmauss <erik.schmauss@intel.com>, Bob Moore <robert.moore@intel.com>, "Wang, Wendy" <wendy.wang@intel.com>, kbuild test robot <lkp@intel.com>
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, linux-tegra@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 25, 2018 at 8:49 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> Rafael,
+On Thu, May 24, 2018 at 2:28 PM, Dmitry Osipenko <digetx@gmail.com> wrote:
+> On 24.05.2018 11:01, Rafael J. Wysocki wrote:
+>> On Thu, May 24, 2018 at 7:37 AM, Dmitry Osipenko <digetx@gmail.com> wrote:
+>>> On 24.05.2018 07:30, Viresh Kumar wrote:
+>>>> On 23-05-18, 19:00, Dmitry Osipenko wrote:
+>>>>> PLL_C is running at 600MHz which is significantly higher than the 216MHz
+>>>>> of the PLL_P and it is known that PLL_C is always-ON because AHB BUS is
+>>>>> running on that PLL. Let's use PLL_C as intermediate clock source, making
+>>>>> CPU snappier a tad during of the frequency transition.
+>>>>>
+>>>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>>>> ---
+>>>>>  drivers/cpufreq/tegra20-cpufreq.c | 25 +++++++++++++++++++++----
+>>>>>  1 file changed, 21 insertions(+), 4 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+>>>>> index 3ad6bded6efc..4bf5ba7da40b 100644
+>>>>> --- a/drivers/cpufreq/tegra20-cpufreq.c
+>>>>> +++ b/drivers/cpufreq/tegra20-cpufreq.c
+>>>>> @@ -25,12 +25,13 @@
+>>>>>  #include <linux/types.h>
+>>>>>
+>>>>>  #define PLL_P_FREQ  216000
+>>>>> +#define PLL_C_FREQ  600000
+>>>>>
+>>>>>  static struct cpufreq_frequency_table freq_table[] = {
+>>>>>      { .frequency = 216000 },
+>>>>>      { .frequency = 312000 },
+>>>>>      { .frequency = 456000 },
+>>>>> -    { .frequency = 608000 },
+>>>>> +    { .frequency = 600000 },
+>>>>>      { .frequency = 760000 },
+>>>>>      { .frequency = 816000 },
+>>>>>      { .frequency = 912000 },
+>>>>> @@ -44,6 +45,7 @@ struct tegra20_cpufreq {
+>>>>>      struct clk *cpu_clk;
+>>>>>      struct clk *pll_x_clk;
+>>>>>      struct clk *pll_p_clk;
+>>>>> +    struct clk *pll_c_clk;
+>>>>>      bool pll_x_prepared;
+>>>>>  };
+>>>>>
+>>>>> @@ -58,7 +60,10 @@ static unsigned int tegra_get_intermediate(struct cpufreq_policy *policy,
+>>>>>      if (index == 0 || policy->cur == PLL_P_FREQ)
+>>>>>              return 0;
+>>>>>
+>>>>> -    return PLL_P_FREQ;
+>>>>> +    if (index == 3 || policy->cur == PLL_C_FREQ)
+>>>>> +            return 0;
+>>>>
+>>>> So we can choose between two different intermediate frequencies ? And
+>>>> I didn't like the way magic number 3 is used here. Its prone to errors
+>>>> and we better use a macro or something else here.
+>>>>
+>>>> Like instead of doing index == 3, what about freq_table[index].freq ==
+>>>> PLL_C_FREQ ? Same for the previous patch as well.
+>>>
+>>> The frequency is determined by the parent clock of CCLK (CPU clock), we can
+>>> choose between different parents for the CCLK. PLL_C as PLL_P and PLL_X are
+>>> among the available parents for the CCLK to choose from and there some others.
+>>>
+>>> I don't mind to use freq_table[index].freq, though I'd like to keep compiled
+>>> assembly minimal where possible. Hence the freq_table should be made constant to
+>>> tell compiler that it doesn't need to emit data fetches for the table values and
+>>> could embed the constants into the code where appropriate.
+>>>
+>>> Could we constify the "struct cpufreq_frequency_table" within the cpufreq core?
+>>> Seems nothing prevents this (I already tried to constify - there are no
+>>> obstacles), unless some cpufreq driver would try to modify
+>>> policy->freq_table->... within the cpufreq callback implementation.
+>>
+>> Some drivers generate frequency tables out of external data
+>> unavailable at compile time, like ACPI tables.
 >
-> On 18 May 2018 at 08:10, kbuild test robot <lkp@intel.com> wrote:
->> Hi Rafael,
->>
->> I love your patch! Yet something to improve:
->>
->> [auto build test ERROR on pm/linux-next]
->> [also build test ERROR on v4.17-rc5]
->> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->>
->> url:    https://github.com/0day-ci/linux/commits/Rafael-J-Wysocki/ACPI-PM-Dispatch-EC-GPE-early-on-s2idle-resume-if-LPS0-_DSM-is-used/20180518-070817
->> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
->> config: arm64-defconfig (attached as .config)
->> compiler: aarch64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
->> reproduce:
->>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->>         chmod +x ~/bin/make.cross
->>         # save the attached .config to linux build tree
->>         make.cross ARCH=arm64
->>
->> All errors (new ones prefixed by >>):
->>
->>    drivers/acpi/ec.o: In function `acpi_ec_dispatch_gpe':
->>>> ec.c:(.text+0x239c): undefined reference to `acpi_dispatch_gpe'
->>    ec.c:(.text+0x239c): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `acpi_dispatch_gpe'
->>
->> ---
->> 0-DAY kernel test infrastructure                Open Source Technology Center
->> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> Instead of making the table constant itself (with its values), seems we can just
+> make the policy->freq_table pointer constant. I'll try to make a patch for that,
+> adjusting the pointers in cpufreq core and the drivers. This works for the
+> acpi-cpufreq at least.
+
+Honestly, messing up with the whole subsystem in order to avoid an
+explicit pointer case doesn't sound right to me.
+
 >
-> This breaks arm64 builds, would you mind to drop the offending patch
-> from your linux-next branch?
+>> But if you know it for the fact that the core doesn't modify the
+>> frequency table, you could pass a constant table from the driver to
+>> it, can't you?
+>>
+>
+> Yes, but that will require to explicitly silencing the compiler warning about
+> const -> non-const pointer conversion (if you're meaning this pointer
+> conversion), which generally should be avoided.
 
-Not really, but I can fix it.
-
-> In case you haven't got time to check, I think the problem is caused
-> by CONFIG_ACPI_REDUCED_HARDWARE_ONLY being set for arm64 builds. I can
-> try to fix the problem, if you are busy and want help with it?
-
-I'll have a look.
+Why?
