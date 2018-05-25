@@ -1,54 +1,98 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] ACPI: EC: Dispatch the EC GPE directly on s2idle wake
-Date: Fri, 25 May 2018 10:48:11 +0200
-Message-ID: <CAJZ5v0j_mLPw2VT6GbAxSDizu4Rr94muweiBs6ZhLuUJe2O7vQ@mail.gmail.com>
-References: <3221007.8CUDle5b3u@aspire.rjw.lan> <201805181421.jU5hI6Bo%fengguang.wu@intel.com>
- <CAPDyKFpnrPeG23Q+i6ASCeohGR3vfGQRwQzjwGsKE=c4TyAiQA@mail.gmail.com> <CAJZ5v0jFmVd_SkvgoXmi2Psqg5ALJRDsKzV8PiFysHQt9f0uog@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 11/27] x86/power/64: Adapt assembly for PIE support
+Date: Fri, 25 May 2018 11:10:24 +0200
+Message-ID: <20180525091024.GA9666@amd>
+References: <20180523195421.180248-1-thgarnie@google.com>
+	<20180523195421.180248-12-thgarnie@google.com>
+	<20180524110341.GB20225@amd>
+	<CAJcbSZEnRhFDvYCG4ORH71LrcH2bAzOU5yF-oa9KkLpKo5UuSQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jFmVd_SkvgoXmi2Psqg5ALJRDsKzV8PiFysHQt9f0uog@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kbuild-all@01.org, Linux ACPI <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Erik Schmauss <erik.schmauss@intel.com>, Bob Moore <robert.moore@intel.com>, "Wang, Wendy" <wendy.wang@intel.com>, kbuild test robot <lkp@intel.com>
+Content-Type: multipart/mixed; boundary="===============4881854000865580682=="
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAJcbSZEnRhFDvYCG4ORH71LrcH2bAzOU5yF-oa9KkLpKo5UuSQ@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, the arch/x86 maintainers <x86@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, Yonghong Song <yhs@fb.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, LKML <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Beulich <JBeulich@suse.com>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Herbert Xu <herbert@gondor.>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 25, 2018 at 10:08 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, May 25, 2018 at 8:49 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> Rafael,
->>
->> On 18 May 2018 at 08:10, kbuild test robot <lkp@intel.com> wrote:
->>> Hi Rafael,
->>>
->>> I love your patch! Yet something to improve:
->>>
->>> [auto build test ERROR on pm/linux-next]
->>> [also build test ERROR on v4.17-rc5]
->>> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->>>
->>> url:    https://github.com/0day-ci/linux/commits/Rafael-J-Wysocki/ACPI-PM-Dispatch-EC-GPE-early-on-s2idle-resume-if-LPS0-_DSM-is-used/20180518-070817
->>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
->>> config: arm64-defconfig (attached as .config)
->>> compiler: aarch64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
->>> reproduce:
->>>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->>>         chmod +x ~/bin/make.cross
->>>         # save the attached .config to linux build tree
->>>         make.cross ARCH=arm64
->>>
->>> All errors (new ones prefixed by >>):
->>>
->>>    drivers/acpi/ec.o: In function `acpi_ec_dispatch_gpe':
->>>>> ec.c:(.text+0x239c): undefined reference to `acpi_dispatch_gpe'
->>>    ec.c:(.text+0x239c): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `acpi_dispatch_gpe'
->>>
->>> ---
->>> 0-DAY kernel test infrastructure                Open Source Technology Center
->>> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
->>
->> This breaks arm64 builds, would you mind to drop the offending patch
->> from your linux-next branch?
->
-> Not really, but I can fix it.
 
-Should be fixed now, sorry for the breakage.
+--===============4881854000865580682==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+Content-Disposition: inline
+
+
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu 2018-05-24 09:37:20, Thomas Garnier wrote:
+> On Thu, May 24, 2018 at 4:04 AM Pavel Machek <pavel@ucw.cz> wrote:
+>=20
+> > On Wed 2018-05-23 12:54:05, Thomas Garnier wrote:
+> > > Change the assembly code to use only relative references of symbols f=
+or
+> the
+> > > kernel to be PIE compatible.
+> > >
+> > > Position Independent Executable (PIE) support will allow to extended =
+the
+> > > KASLR randomization range below the -2G memory limit.
+> > >
+> > > Signed-off-by: Thomas Garnier <thgarnie@google.com>
+>=20
+> > Again, was this tested?
+>=20
+> Hibernation was tested as much as I can with qemu and my dedicated
+>machine.
+
+Ok, good.
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+> Any specific test you think I should use?
+
+Hibernation working should be good enough test for this.
+
+Thanks,
+								Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlsH0wAACgkQMOfwapXb+vJiPACbB1beNmXz4oS4/mXx8V6gi+hn
+3BMAmwQL+v/Mq6QFOs5pWL0flhKjfSRY
+=e7mZ
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
+
+--===============4881854000865580682==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Virtualization mailing list
+Virtualization@lists.linux-foundation.org
+https://lists.linuxfoundation.org/mailman/listinfo/virtualization
+--===============4881854000865580682==--
