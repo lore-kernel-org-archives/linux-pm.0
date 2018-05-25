@@ -1,7 +1,7 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH 11/11] misc/throttler: Add Chrome OS EC throttler
-Date: Fri, 25 May 2018 13:30:43 -0700
-Message-ID: <20180525203043.249193-12-mka@chromium.org>
+Subject: [PATCH 07/11] PM / devfreg: Add support policy notifiers
+Date: Fri, 25 May 2018 13:30:39 -0700
+Message-ID: <20180525203043.249193-8-mka@chromium.org>
 References: <20180525203043.249193-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180525203043.249193-1-mka@chromium.org>
@@ -10,175 +10,248 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-The driver subscribes to throttling events from the Chrome OS
-embedded controller and enables/disables system throttling based
-on these events.
+Policy notifiers are called before a frequency change and may narrow
+the min/max frequency range in devfreq_policy, which is used to adjust
+the target frequency if it is beyond this range.
+
+Also add a few helpers:
+ - devfreq_verify_within_[dev_]limits()
+    - should be used by the notifiers for policy adjustments.
+ - dev_to_devfreq()
+    - lookup a devfreq strict from a device pointer
 
 Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- drivers/misc/throttler/Kconfig             |  15 +++
- drivers/misc/throttler/Makefile            |   1 +
- drivers/misc/throttler/cros_ec_throttler.c | 122 +++++++++++++++++++++
- 3 files changed, 138 insertions(+)
- create mode 100644 drivers/misc/throttler/cros_ec_throttler.c
+ drivers/devfreq/devfreq.c | 47 +++++++++++++++++++++-------
+ include/linux/devfreq.h   | 66 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 102 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
-index ef8388f6bc0a..652b6817b75c 100644
---- a/drivers/misc/throttler/Kconfig
-+++ b/drivers/misc/throttler/Kconfig
-@@ -11,3 +11,18 @@ menuconfig THROTTLER
- 	  Note that you also need a event monitor module usually called
- 	  *_throttler.
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 7fd55b49c8ae..939b91f3a7e3 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -72,6 +72,20 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+ 	return ERR_PTR(-ENODEV);
+ }
  
-+if THROTTLER
-+
-+config CROS_EC_THROTTLER
-+	tristate "Throttler event monitor for the Chrome OS Embedded Controller"
-+	default n
-+	depends on MFD_CROS_EC
-+	---help---
-+	  This driver adds support to throttle the system in reaction to
-+	  Chrome OS EC events.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cros_ec_throttler.
-+
-+endif # THROTTLER
-+
-diff --git a/drivers/misc/throttler/Makefile b/drivers/misc/throttler/Makefile
-index c8d920cee315..d9b2a77dabc9 100644
---- a/drivers/misc/throttler/Makefile
-+++ b/drivers/misc/throttler/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_THROTTLER)		+= core.o
-+obj-$(CONFIG_CROS_EC_THROTTLER)	+= cros_ec_throttler.o
-diff --git a/drivers/misc/throttler/cros_ec_throttler.c b/drivers/misc/throttler/cros_ec_throttler.c
-new file mode 100644
-index 000000000000..ea6bc002d49c
---- /dev/null
-+++ b/drivers/misc/throttler/cros_ec_throttler.c
-@@ -0,0 +1,122 @@
-+/*
-+ * Driver for throttling triggered by EC events.
-+ *
-+ * Copyright (C) 2018 Google, Inc.
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
++/**
++ * dev_to_devfreq() - find devfreq struct using device pointer
++ * @dev:	device pointer used to lookup device devfreq.
 + */
++struct devfreq *dev_to_devfreq(struct device *dev) {
++	struct devfreq *devfreq;
 +
-+#include <linux/kernel.h>
-+#include <linux/mfd/cros_ec.h>
-+#include <linux/module.h>
-+#include <linux/notifier.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/throttler.h>
++	mutex_lock(&devfreq_list_lock);
++	devfreq = find_device_devfreq(dev);
++	mutex_unlock(&devfreq_list_lock);
 +
-+struct cros_ec_throttler {
-+	struct cros_ec_device *ec;
-+	struct throttler *throttler;
-+	struct notifier_block nb;
-+};
-+
-+static int cros_ec_throttler_event(struct notifier_block *nb,
-+	unsigned long queued_during_suspend, void *_notify)
-+{
-+	struct cros_ec_throttler *cte =
-+		container_of(nb, struct cros_ec_throttler, nb);
-+	u32 host_event;
-+
-+	host_event = cros_ec_get_host_event(cte->ec);
-+	if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_START)) {
-+		throttler_set_level(cte->throttler, 1);
-+
-+		return NOTIFY_OK;
-+	} else if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_STOP)) {
-+		throttler_set_level(cte->throttler, 0);
-+
-+		return NOTIFY_OK;
-+	}
-+
-+	return NOTIFY_DONE;
++	return devfreq;
 +}
 +
-+static int cros_ec_throttler_probe(struct platform_device *pdev)
+ static unsigned long find_available_min_freq(struct devfreq *devfreq)
+ {
+ 	struct dev_pm_opp *opp;
+@@ -269,20 +283,21 @@ int update_devfreq(struct devfreq *devfreq)
+ 	if (!policy->governor)
+ 		return -EINVAL;
+ 
++	policy->min = policy->devinfo.min_freq;
++	policy->max = policy->devinfo.max_freq;
++
++	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
++				DEVFREQ_ADJUST, policy);
++
+ 	/* Reevaluate the proper frequency */
+ 	err = policy->governor->get_target_freq(devfreq, &freq);
+ 	if (err)
+ 		return err;
+ 
+-	/*
+-	 * Adjust the frequency with user freq, QoS and available freq.
+-	 *
+-	 * List from the highest priority
+-	 * max_freq
+-	 * min_freq
+-	 */
+-	max_freq = MIN(policy->devinfo.max_freq, policy->user.max_freq);
+-	min_freq = MAX(policy->devinfo.min_freq, policy->user.min_freq);
++	/* Adjust the frequency */
++
++	max_freq = MIN(policy->max, policy->user.max_freq);
++	min_freq = MAX(policy->min, policy->user.min_freq);
+ 
+ 	if (freq < min_freq) {
+ 		freq = min_freq;
+@@ -645,6 +660,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->last_stat_updated = jiffies;
+ 
+ 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
++	srcu_init_notifier_head(&devfreq->policy_notifier_list);
+ 
+ 	mutex_unlock(&devfreq->lock);
+ 
+@@ -1432,7 +1448,7 @@ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
+  * devfreq_register_notifier() - Register a driver with devfreq
+  * @devfreq:	The devfreq object.
+  * @nb:		The notifier block to register.
+- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
+  */
+ int devfreq_register_notifier(struct devfreq *devfreq,
+ 				struct notifier_block *nb,
+@@ -1448,6 +1464,10 @@ int devfreq_register_notifier(struct devfreq *devfreq,
+ 		ret = srcu_notifier_chain_register(
+ 				&devfreq->transition_notifier_list, nb);
+ 		break;
++	case DEVFREQ_POLICY_NOTIFIER:
++		ret = srcu_notifier_chain_register(
++				&devfreq->policy_notifier_list, nb);
++		break;
+ 	default:
+ 		ret = -EINVAL;
+ 	}
+@@ -1460,7 +1480,7 @@ EXPORT_SYMBOL(devfreq_register_notifier);
+  * devfreq_unregister_notifier() - Unregister a driver with devfreq
+  * @devfreq:	The devfreq object.
+  * @nb:		The notifier block to be unregistered.
+- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
+  */
+ int devfreq_unregister_notifier(struct devfreq *devfreq,
+ 				struct notifier_block *nb,
+@@ -1476,6 +1496,11 @@ int devfreq_unregister_notifier(struct devfreq *devfreq,
+ 		ret = srcu_notifier_chain_unregister(
+ 				&devfreq->transition_notifier_list, nb);
+ 		break;
++	case DEVFREQ_POLICY_NOTIFIER:
++		ret = srcu_notifier_chain_unregister(
++				&devfreq->policy_notifier_list, nb);
++		break;
++
+ 	default:
+ 		ret = -EINVAL;
+ 	}
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 9bf23b976f4d..4a6ed61bbe49 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -33,6 +33,10 @@
+ #define	DEVFREQ_PRECHANGE		(0)
+ #define DEVFREQ_POSTCHANGE		(1)
+ 
++#define DEVFREQ_POLICY_NOTIFIER		1
++
++#define	DEVFREQ_ADJUST			0
++
+ struct devfreq;
+ struct devfreq_governor;
+ 
+@@ -121,12 +125,16 @@ struct devfreq_freq_limits {
+ 
+ /**
+  * struct devfreq_policy - Devfreq policy
++ * @min:	minimum frequency (adjustable by policy notifiers)
++ * @min:	maximum frequency (adjustable by policy notifiers)
+  * @user:	frequency limits requested by the user
+  * @devinfo:	frequency limits of the device (available OPPs)
+  * @governor:	method how to choose frequency based on the usage.
+  * @governor_name:	devfreq governor name for use with this devfreq
+  */
+ struct devfreq_policy {
++	unsigned long min;
++	unsigned long max;
+ 	struct devfreq_freq_limits user;
+ 	struct devfreq_freq_limits devinfo;
+ 	const struct devfreq_governor *governor;
+@@ -155,6 +163,7 @@ struct devfreq_policy {
+  * @time_in_state:	Statistics of devfreq states
+  * @last_stat_updated:	The last time stat updated
+  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
++ * @policy_notifier_list: list head of DEVFREQ_POLICY_NOTIFIER notifier
+  *
+  * This structure stores the devfreq information for a give device.
+  *
+@@ -188,6 +197,7 @@ struct devfreq {
+ 	unsigned long last_stat_updated;
+ 
+ 	struct srcu_notifier_head transition_notifier_list;
++	struct srcu_notifier_head policy_notifier_list;
+ };
+ 
+ struct devfreq_freqs {
+@@ -240,6 +250,46 @@ extern void devm_devfreq_unregister_notifier(struct device *dev,
+ extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
+ 						int index);
+ 
++/**
++ * devfreq_verify_within_limits() - Adjust a devfreq policy if needed to make
++ *                                  sure its min/max values are within a
++ *                                  specified range.
++ * @policy:	the policy
++ * @min:	the minimum frequency
++ * @max:	the maximum frequency
++ */
++static inline void devfreq_verify_within_limits(struct devfreq_policy *policy,
++		unsigned int min, unsigned int max)
 +{
-+	struct cros_ec_throttler *cte;
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = pdev->dev.of_node;
-+	int ret;
-+
-+	if (!np) {
-+		/* should never happen */
-+		return -EINVAL;
-+	}
-+
-+	cte = devm_kzalloc(dev, sizeof(*cte), GFP_KERNEL);
-+	if (!cte)
-+		return -ENOMEM;
-+
-+	cte->ec = dev_get_drvdata(pdev->dev.parent);
-+
-+	cte->throttler = throttler_setup(dev);
-+	if (IS_ERR(cte->throttler))
-+		return PTR_ERR(cte->throttler);
-+
-+	dev_set_drvdata(dev, cte);
-+
-+	cte->nb.notifier_call = cros_ec_throttler_event;
-+	ret = blocking_notifier_chain_register(&cte->ec->event_notifier,
-+					       &cte->nb);
-+	if (ret < 0) {
-+		dev_err(dev, "failed to register notifier\n");
-+		throttler_teardown(cte->throttler);
-+		return ret;
-+	}
-+
-+	return 0;
++	if (policy->min < min)
++		policy->min = min;
++	if (policy->max < min)
++		policy->max = min;
++	if (policy->min > max)
++		policy->min = max;
++	if (policy->max > max)
++		policy->max = max;
++	if (policy->min > policy->max)
++		policy->min = policy->max;
++	return;
 +}
 +
-+static int cros_ec_throttler_remove(struct platform_device *pdev)
++/**
++ * devfreq_verify_within_dev_limits() - Adjust a devfreq policy if needed to
++ *                                      make sure its min/max values are within
++ *                                      the frequency range supported by the
++ *                                      device.
++ * @policy:	the policy
++ */
++static inline void
++devfreq_verify_within_dev_limits(struct devfreq_policy *policy)
 +{
-+	struct cros_ec_throttler *cte = platform_get_drvdata(pdev);
-+
-+	blocking_notifier_chain_unregister(&cte->ec->event_notifier,
-+					   &cte->nb);
-+
-+	throttler_teardown(cte->throttler);
-+
-+	return 0;
++	devfreq_verify_within_limits(policy, policy->devinfo.min_freq,
++			policy->devinfo.max_freq);
 +}
 +
-+#ifdef CONFIG_OF
-+static const struct of_device_id cros_ec_throttler_of_match[] = {
-+        { .compatible = "google,cros-ec-throttler" },
-+        { /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, cros_ec_throttler_of_match);
-+#endif /* CONFIG_OF */
++struct devfreq *dev_to_devfreq(struct device *dev);
 +
-+static struct platform_driver cros_ec_throttler_driver = {
-+	.driver = {
-+		.name = "cros-ec-throttler",
-+		.of_match_table = of_match_ptr(cros_ec_throttler_of_match),
-+	},
-+	.probe		= cros_ec_throttler_probe,
-+	.remove		= cros_ec_throttler_remove,
-+};
+ #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
+ /**
+  * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
+@@ -394,10 +444,26 @@ static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
++static inline void devfreq_verify_within_limits(struct defreq_policy *policy,
++		unsigned int min, unsigned int max)
++{
++}
 +
-+module_platform_driver(cros_ec_throttler_driver);
++static inline void
++devfreq_verify_within_dev_limits(struct cpufreq_policy *policy)
++{
++}
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Matthias Kaehlcke <mka@chromium.org>");
-+MODULE_DESCRIPTION("Chrome OS EC Throttler");
+ static inline int devfreq_update_stats(struct devfreq *df)
+ {
+ 	return -EINVAL;
+ }
++
++static inline struct devfreq *dev_to_devfreq(struct device *dev)
++{
++	return NULL;
++}
++
+ #endif /* CONFIG_PM_DEVFREQ */
+ 
+ #endif /* __LINUX_DEVFREQ_H__ */
 -- 
 2.17.0.921.gf22659ad46-goog
