@@ -1,75 +1,59 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v13 1/2] cpufreq: Add Kryo CPU scaling driver
-Date: Fri, 25 May 2018 11:48:33 +0100
-Message-ID: <3aa2ced3-ad14-e02b-6702-c0fd1c48513b@arm.com>
-References: <1527174220-13244-1-git-send-email-ilialin@codeaurora.org>
- <1527174220-13244-2-git-send-email-ilialin@codeaurora.org>
- <20180525035412.3jjocp7ccmv5u2il@vireshk-i7>
- <DF878CBB-304A-4116-83D5-DF6BCEB7C131@codeaurora.org>
- <20180525040536.njrdqjn376oehw2b@vireshk-i7>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH 9/9] PM / Domains: Add dev_pm_domain_attach_by_id() to
+ manage multi PM domains
+Date: Fri, 25 May 2018 12:07:04 +0100
+Message-ID: <b3a94d63-678c-eab6-47a8-43eca95da979@nvidia.com>
+References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
+ <1526639490-12167-10-git-send-email-ulf.hansson@linaro.org>
+ <1c21d18e-954a-f3a8-9817-0117b7cb7e4f@nvidia.com>
+ <CAPDyKFozm88OM8cDFXXwvgdMirrt2=HhZtBdyhNjo2bgjHV2Mg@mail.gmail.com>
+ <2c63af8c-4745-a751-8d3d-f7122e921e6f@nvidia.com>
+ <CAPDyKFrTtvhxOhf9BPY1=cJ9VQyx9D=P3O0vCV+WXSVR82FozQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180525040536.njrdqjn376oehw2b@vireshk-i7>
+In-Reply-To: <CAPDyKFrTtvhxOhf9BPY1=cJ9VQyx9D=P3O0vCV+WXSVR82FozQ@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Ilia Lin <ilialin@codeaurora.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On 25/05/18 05:05, Viresh Kumar wrote:
-> On 25-05-18, 07:00, Ilia Lin wrote:
->>
->>
->> On May 25, 2018 6:54:12 AM GMT+03:00, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> On 24-05-18, 18:03, Ilia Lin wrote:
->>>> +static int __init qcom_cpufreq_kryo_init(void)
->>>> +{
->>>> +	struct device_node *np;
->>>> +	struct device *cpu_dev;
->>>> +	int ret;
->>>> +
->>>> +	cpu_dev = get_cpu_device(0);
->>>> +	if (NULL == cpu_dev)
->>>> +		ret = -ENODEV;
->>>> +
->>>> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
->>>> +	if (IS_ERR(np))
->>>> +		return PTR_ERR(np);
->>>> +
->>>> +	ret = of_device_is_compatible(np, "operating-points-v2-kryo-cpu");
->>>> +	of_node_put(np);
->>>> +	if (!ret)
->>>> +		return -ENOENT;
->>>> +
->>>
->>> I hate the fact that it is taking so long to get done with this. But
->>> can't you
->>> just check machine compatibility instead of this complicated setup to
->>> check OPP
->>> node ? Like:
->>>
->>>        if (!of_device_is_compatible("qcom,apq8096") &&
->>>            !of_device_is_compatible("qcom,msm8996"))
->>>                return;
->>
->> I have to check the "operating-points-v2-kryo-cpu" anyway, so I moved it from probe to the init.
-> 
-> Okay, leave it as is then. Don't send anything yet and wait for Sudeep to
-> respond.
-> 
+On 25/05/18 11:45, Ulf Hansson wrote:
 
-I have already mentioned that I can't suggest since I don't have much
-knowledge on QCOM PM. I see lots of patches flying around these days
-with multiple people doing same things in different ways. That's why I
-suggested Ilia to check with Taniya or Saravana or SBoyd to see what's
-the best thing to do in this context. I don't prefer using OPP
-compatible and would go with machine compatibility as you suggested.
-But I am fine with OPP, just wanted to make sure it won't clash with
-anything else.
+...
+
+>> Right, but this case still seems like an error. My understanding is that
+>> only drivers will use this API directly and it will not be used by the
+>> device driver core (unlike dev_pm_domain_attach), so if anyone calls this
+>> attempting to attach another PM domain when one is already attached, they
+>> are doing something wrong.
+> 
+> [...]
+> 
+> You may be right!
+> 
+> What I was thinking of is whether multiple PM domains may be optional
+> in some cases, but instead a PM domain have already been attached by
+> dev_pm_domain_attach(), prior the driver starts to probe.
+> 
+> Then, assuming we return an error for this case, that means the caller
+> then need to check the dev->pm_domain pointer, prior calling
+> dev_pm_domain_attach_by_id(). Wouldn't it? Perhaps that is more clear
+> though?
+
+IMO the driver should know whether is needs multiple power-domains or 
+not and if it needs multiple then it should just call 
+dev_pm_domain_attach_by_id() N times without needing to checking 
+dev->pm_domain first. If it fails then either the PM domain core did 
+something wrong or power-domains are missing from DT, but either way 
+there is an error, so let it fail.
+
+Cheers
+Jon
+
 -- 
-Regards,
-Sudeep
+nvpublic
