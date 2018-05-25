@@ -1,57 +1,54 @@
-From: Peter De Schrijver <pdeschrijver@nvidia.com>
-Subject: Re: [PATCH v1 2/2] cpufreq: tegra20: Use PLL_C as intermediate clock
- source
-Date: Fri, 25 May 2018 09:32:25 +0300
-Message-ID: <20180525063225.GN6835@tbergstrom-lnx.Nvidia.com>
-References: <20180523160020.15291-1-digetx@gmail.com>
- <20180523160020.15291-2-digetx@gmail.com>
- <20180524100413.GL6835@tbergstrom-lnx.Nvidia.com>
- <e6ee8116-7f73-fa7a-3df4-b17ccd8dcb0e@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 2/2] ACPI: EC: Dispatch the EC GPE directly on s2idle wake
+Date: Fri, 25 May 2018 08:49:32 +0200
+Message-ID: <CAPDyKFpnrPeG23Q+i6ASCeohGR3vfGQRwQzjwGsKE=c4TyAiQA@mail.gmail.com>
+References: <3221007.8CUDle5b3u@aspire.rjw.lan> <201805181421.jU5hI6Bo%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <e6ee8116-7f73-fa7a-3df4-b17ccd8dcb0e@gmail.com>
+In-Reply-To: <201805181421.jU5hI6Bo%fengguang.wu@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: kbuild-all@01.org, Linux ACPI <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Erik Schmauss <erik.schmauss@intel.com>, Bob Moore <robert.moore@intel.com>, "Wang, Wendy" <wendy.wang@intel.com>, kbuild test robot <lkp@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 24, 2018 at 03:49:22PM +0300, Dmitry Osipenko wrote:
-> On 24.05.2018 13:04, Peter De Schrijver wrote:
-> > On Wed, May 23, 2018 at 07:00:20PM +0300, Dmitry Osipenko wrote:
-> >> PLL_C is running at 600MHz which is significantly higher than the 216MHz
-> >> of the PLL_P and it is known that PLL_C is always-ON because AHB BUS is
-> >> running on that PLL. Let's use PLL_C as intermediate clock source, making
-> >> CPU snappier a tad during of the frequency transition.
-> >>
-> > 
-> > pll_c isn't necessarily 600Mhz when used as a source for the second display
-> > head.
-> 
-> Hmm, indeed.
-> 
-> Even if PLL_C rate will be adjusted, it will be higher than the PLL_P.. won't
-> it? That's likely to be good enough.
-> 
+Rafael,
 
-Yes. I think it can be always higher than pll_p, but that assumes the display
-driver will always program the highest possible rate for pll_c for a given mode
-and then program the display divider to divide it down to the required rate.
+On 18 May 2018 at 08:10, kbuild test robot <lkp@intel.com> wrote:
+> Hi Rafael,
+>
+> I love your patch! Yet something to improve:
+>
+> [auto build test ERROR on pm/linux-next]
+> [also build test ERROR on v4.17-rc5]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Rafael-J-Wysocki/ACPI-PM-Dispatch-EC-GPE-early-on-s2idle-resume-if-LPS0-_DSM-is-used/20180518-070817
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+> config: arm64-defconfig (attached as .config)
+> compiler: aarch64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+> reproduce:
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=arm64
+>
+> All errors (new ones prefixed by >>):
+>
+>    drivers/acpi/ec.o: In function `acpi_ec_dispatch_gpe':
+>>> ec.c:(.text+0x239c): undefined reference to `acpi_dispatch_gpe'
+>    ec.c:(.text+0x239c): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `acpi_dispatch_gpe'
+>
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-> Do you know if any of the available CCLK parents has a glitch-less rate
-> switching? I.e. CPU won't hang on the rate switch.
-> 
+This breaks arm64 builds, would you mind to drop the offending patch
+from your linux-next branch?
 
-Tegra20 doesn't have dynamic ramp PLLs no. So you always have to switch to a
-backup clock source before changing the rate of pll_x.
+In case you haven't got time to check, I think the problem is caused
+by CONFIG_ACPI_REDUCED_HARDWARE_ONLY being set for arm64 builds. I can
+try to fix the problem, if you are busy and want help with it?
 
-> There is other possible 600MHz source, the PLL_M. Can we use it? This one also
-> may become dynamic if we'll consider implementing the memory scaling, but the
-> memory frequency probably will fit the transition role pretty well.
-
-I think this should work, but as you mention it may very well be lower than
-pll_p if Tegra20 EMC scaling is re-introduced. I think that's why historically
-this was never done. 
-
-Peter.
+Kind regards
+Uffe
