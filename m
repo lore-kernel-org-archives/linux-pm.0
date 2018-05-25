@@ -1,72 +1,50 @@
-From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
-Subject: Re: [PATCH] cpufreq: reinitialize new policy min/max when writing
- scaling_(max|min)_freq
-Date: Fri, 25 May 2018 10:54:04 +0800
-Message-ID: <7700fad7-211d-d8b2-e4ee-975c1cf1f9dc@hisilicon.com>
-References: <1527144234-96396-1-git-send-email-kevin.wangtao@hisilicon.com>
- <CAJZ5v0ih6s9WviSpg9D+kSt2h8T5Vnx-MziOmYuk1H4yZOYLNg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v13 1/2] cpufreq: Add Kryo CPU scaling driver
+Date: Fri, 25 May 2018 09:24:12 +0530
+Message-ID: <20180525035412.3jjocp7ccmv5u2il@vireshk-i7>
+References: <1527174220-13244-1-git-send-email-ilialin@codeaurora.org>
+ <1527174220-13244-2-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ih6s9WviSpg9D+kSt2h8T5Vnx-MziOmYuk1H4yZOYLNg@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1527174220-13244-2-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gengyanping@hisilicon.com, sunzhaosheng@hisilicon.com
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 24-05-18, 18:03, Ilia Lin wrote:
+> +static int __init qcom_cpufreq_kryo_init(void)
+> +{
+> +	struct device_node *np;
+> +	struct device *cpu_dev;
+> +	int ret;
+> +
+> +	cpu_dev = get_cpu_device(0);
+> +	if (NULL == cpu_dev)
+> +		ret = -ENODEV;
+> +
+> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
+> +	if (IS_ERR(np))
+> +		return PTR_ERR(np);
+> +
+> +	ret = of_device_is_compatible(np, "operating-points-v2-kryo-cpu");
+> +	of_node_put(np);
+> +	if (!ret)
+> +		return -ENOENT;
+> +
 
+I hate the fact that it is taking so long to get done with this. But can't you
+just check machine compatibility instead of this complicated setup to check OPP
+node ? Like:
 
-在 2018/5/24 15:45, Rafael J. Wysocki 写道:
-> On Thu, May 24, 2018 at 8:43 AM, Kevin Wangtao
-> <kevin.wangtao@hisilicon.com> wrote:
->> consider such situation, current user_policy.min is 1000000,
->> current user_policy.max is 1200000, in cpufreq_set_policy,
->> other driver may update policy.min to 1200000, policy.max to
->> 1300000. After that, If we input "echo 1300000 > scaling_min_freq",
->> then user_policy.min will be 1300000, and user_policy.max is
->> still 1200000, because the input value is checked with policy.max
->> not user_policy.max. if we get all related cpus offline and
->> online again, it will cause cpufreq_init_policy fail because
->> user_policy.min is higher than user_policy.max.
-> 
-> How do you reproduce this, exactly?
-I write a driver register CPUFREQ_POLICY_NOTIFIER, and when event is CPUFREQ_ADJUST,
-it will modify policy's min/max according to some conditions, I test it with writing
-scaling_(max|min)_freq to traverse all frequencies repeatly, and also repeat hotplug
-as background.
-> 
->> The solution is when user space tries to write scaling_(max|min)_freq,
->> the min/max of new_policy should be reinitialized with min/max
->> of user_policy, like what cpufreq_update_policy does.
->>
->> Signed-off-by: Kevin Wangtao <kevin.wangtao@hisilicon.com>
->> ---
->>   drivers/cpufreq/cpufreq.c | 2 ++
->>   1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index b79c532..8b33e08 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -697,6 +697,8 @@ static ssize_t store_##file_name                                    \
->>          struct cpufreq_policy new_policy;                               \
->>                                                                          \
->>          memcpy(&new_policy, policy, sizeof(*policy));                   \
->> +       new_policy->min = policy->user_policy.min;                      \
-new_policy.min = policy->user_policy.min;
->> +       new_policy->max = policy->user_policy.max;                      \
-new_policy.max = policy->user_policy.max
-> 
-> It looks like you haven't even tried to build this, have you?
-sorry for that, I test it on another branch and write this patch manually without build
-> 
->>                                                                          \
->>          ret = sscanf(buf, "%u", &new_policy.object);                    \
->>          if (ret != 1)                                                   \
->> --
->> 2.8.1
->>
-> 
-> .
-> 
+        if (!of_device_is_compatible("qcom,apq8096") &&
+            !of_device_is_compatible("qcom,msm8996"))
+                return;
+
+And please see if you can add an entry in MAINTAINERS and add your working email
+id there.
+
+-- 
+viresh
