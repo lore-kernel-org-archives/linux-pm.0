@@ -1,149 +1,75 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 9/9] PM / Domains: Add dev_pm_domain_attach_by_id() to
- manage multi PM domains
-Date: Fri, 25 May 2018 12:45:51 +0200
-Message-ID: <CAPDyKFrTtvhxOhf9BPY1=cJ9VQyx9D=P3O0vCV+WXSVR82FozQ@mail.gmail.com>
-References: <1526639490-12167-1-git-send-email-ulf.hansson@linaro.org>
- <1526639490-12167-10-git-send-email-ulf.hansson@linaro.org>
- <1c21d18e-954a-f3a8-9817-0117b7cb7e4f@nvidia.com> <CAPDyKFozm88OM8cDFXXwvgdMirrt2=HhZtBdyhNjo2bgjHV2Mg@mail.gmail.com>
- <2c63af8c-4745-a751-8d3d-f7122e921e6f@nvidia.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v13 1/2] cpufreq: Add Kryo CPU scaling driver
+Date: Fri, 25 May 2018 11:48:33 +0100
+Message-ID: <3aa2ced3-ad14-e02b-6702-c0fd1c48513b@arm.com>
+References: <1527174220-13244-1-git-send-email-ilialin@codeaurora.org>
+ <1527174220-13244-2-git-send-email-ilialin@codeaurora.org>
+ <20180525035412.3jjocp7ccmv5u2il@vireshk-i7>
+ <DF878CBB-304A-4116-83D5-DF6BCEB7C131@codeaurora.org>
+ <20180525040536.njrdqjn376oehw2b@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2c63af8c-4745-a751-8d3d-f7122e921e6f@nvidia.com>
+In-Reply-To: <20180525040536.njrdqjn376oehw2b@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Ilia Lin <ilialin@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25 May 2018 at 10:31, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 24/05/18 22:11, Ulf Hansson wrote:
->>
->> On 24 May 2018 at 17:48, Jon Hunter <jonathanh@nvidia.com> wrote:
->>>
->>>
->>> On 18/05/18 11:31, Ulf Hansson wrote:
->>>>
->>>>
->>>> The existing dev_pm_domain_attach() function, allows a single PM domain
->>>> to
->>>> be attached per device. To be able to support devices that are
->>>> partitioned
->>>> across multiple PM domains, let's introduce a new interface,
->>>> dev_pm_domain_attach_by_id().
->>>>
->>>> The dev_pm_domain_attach_by_id() returns a new allocated struct device
->>>> with
->>>> the corresponding attached PM domain. This enables for example a driver
->>>> to
->>>> operate on the new device from a power management point of view. The
->>>> driver
->>>> may then also benefit from using the received device, to set up so
->>>> called
->>>> device-links towards its original device. Depending on the situation,
->>>> these
->>>> links may then be dynamically changed.
->>>>
->>>> The new interface is typically called by drivers during their probe
->>>> phase,
->>>> in case they manages devices which uses multiple PM domains. If that is
->>>> the
->>>> case, the driver also becomes responsible of managing the detaching of
->>>> the
->>>> PM domains, which typically should be done at the remove phase.
->>>> Detaching
->>>> is done by calling the existing dev_pm_domain_detach() function and for
->>>> each of the received devices from dev_pm_domain_attach_by_id().
->>>>
->>>> Note, currently its only genpd that supports multiple PM domains per
->>>> device, but dev_pm_domain_attach_by_id() can easily by extended to cover
->>>> other PM domain types, if/when needed.
->>>>
->>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>> ---
->>>>    drivers/base/power/common.c | 33 ++++++++++++++++++++++++++++++++-
->>>>    include/linux/pm_domain.h   |  7 +++++++
->>>>    2 files changed, 39 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
->>>> index 7ae62b6..d3db974 100644
->>>> --- a/drivers/base/power/common.c
->>>> +++ b/drivers/base/power/common.c
->>>> @@ -117,13 +117,44 @@ int dev_pm_domain_attach(struct device *dev, bool
->>>> power_on)
->>>>    EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
->>>>      /**
->>>> + * dev_pm_domain_attach_by_id - Attach a device to one of its PM
->>>> domains.
->>>
->>>
->>>
->>> Isn't this more of a 'get'?
->>
->>
->> I don't think so, at least according to the common understanding of
->> how we use get and put APIs.
->>
->> For example, clk_get() returns a cookie to a clk, which you then can
->> do a hole bunch of different clk specific operations on.
->>
->> This is different, there are no specific PM domain operations the
->> caller can or should do. Instead the idea is to keep drivers more or
->> less transparent, still using runtime PM as before. The only care the
->> caller need to take is to use device links, which BTW isn't a PM
->> domain specific thing.
->
->
-> Yes, but a user can still call pm_runtime_get/put with the device returned
-> if they wish to, right?
 
-Correct.
 
-[...]
-
->>>> + */
->>>> +struct device *dev_pm_domain_attach_by_id(struct device *dev,
->>>> +                                         unsigned int index)
+On 25/05/18 05:05, Viresh Kumar wrote:
+> On 25-05-18, 07:00, Ilia Lin wrote:
+>>
+>>
+>> On May 25, 2018 6:54:12 AM GMT+03:00, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 24-05-18, 18:03, Ilia Lin wrote:
+>>>> +static int __init qcom_cpufreq_kryo_init(void)
 >>>> +{
->>>> +       if (dev->pm_domain)
+>>>> +	struct device_node *np;
+>>>> +	struct device *cpu_dev;
+>>>> +	int ret;
+>>>> +
+>>>> +	cpu_dev = get_cpu_device(0);
+>>>> +	if (NULL == cpu_dev)
+>>>> +		ret = -ENODEV;
+>>>> +
+>>>> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
+>>>> +	if (IS_ERR(np))
+>>>> +		return PTR_ERR(np);
+>>>> +
+>>>> +	ret = of_device_is_compatible(np, "operating-points-v2-kryo-cpu");
+>>>> +	of_node_put(np);
+>>>> +	if (!ret)
+>>>> +		return -ENOENT;
+>>>> +
 >>>
+>>> I hate the fact that it is taking so long to get done with this. But
+>>> can't you
+>>> just check machine compatibility instead of this complicated setup to
+>>> check OPP
+>>> node ? Like:
 >>>
->>>
->>> I wonder if this is worthy of a ...
->>>
->>>          if (WARN_ON(dev->pm_domain))
->>>
->>>> +               return NULL;
->>>
->>>
->>>
->>> Don't we consider this an error case? I wonder why not return PTR_ERR
->>> here
->>> as well? This would be consistent with dev_pm_domain_attach().
+>>>        if (!of_device_is_compatible("qcom,apq8096") &&
+>>>            !of_device_is_compatible("qcom,msm8996"))
+>>>                return;
 >>
->>
->> Please see above comment.
->
->
-> Right, but this case still seems like an error. My understanding is that
-> only drivers will use this API directly and it will not be used by the
-> device driver core (unlike dev_pm_domain_attach), so if anyone calls this
-> attempting to attach another PM domain when one is already attached, they
-> are doing something wrong.
+>> I have to check the "operating-points-v2-kryo-cpu" anyway, so I moved it from probe to the init.
+> 
+> Okay, leave it as is then. Don't send anything yet and wait for Sudeep to
+> respond.
+> 
 
-[...]
-
-You may be right!
-
-What I was thinking of is whether multiple PM domains may be optional
-in some cases, but instead a PM domain have already been attached by
-dev_pm_domain_attach(), prior the driver starts to probe.
-
-Then, assuming we return an error for this case, that means the caller
-then need to check the dev->pm_domain pointer, prior calling
-dev_pm_domain_attach_by_id(). Wouldn't it? Perhaps that is more clear
-though?
-
-Kind regards
-Uffe
+I have already mentioned that I can't suggest since I don't have much
+knowledge on QCOM PM. I see lots of patches flying around these days
+with multiple people doing same things in different ways. That's why I
+suggested Ilia to check with Taniya or Saravana or SBoyd to see what's
+the best thing to do in this context. I don't prefer using OPP
+compatible and would go with machine compatibility as you suggested.
+But I am fine with OPP, just wanted to make sure it won't clash with
+anything else.
+-- 
+Regards,
+Sudeep
