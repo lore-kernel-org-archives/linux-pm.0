@@ -1,43 +1,41 @@
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [PATCH] PM / hibernate: Fix oops at snapshot_write().
-Date: Sat, 26 May 2018 09:59:36 +0900
-Message-ID: <1527296376-3540-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal: int340x: Prevent error in reading trip hysteresis attribute
+Date: Fri, 25 May 2018 18:10:10 -0700
+Message-ID: <20180526011010.15915-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, syzbot <syzbot+ae590932da6e45d6564d@syzkaller.appspotmail.com>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-syzbot is reporting NULL pointer dereference at snapshot_write() [1].
-This is because data->handle is zero-cleared by ioctl(SNAPSHOT_FREE).
-Fix this by checking data_of(data->handle) != NULL before using it.
+Some of the INT340X devices may not have hysteresis defined in the ACPI
+definition. In that case reading trip hysteresis results in error. This
+spams logs of user space utilities.
 
-[1] https://syzkaller.appspot.com/bug?id=828a3c71bd344a6de8b6a31233d51a72099f27fd
+In this case instead of returning error, just return hysteresis as 0,
+which is correct as there is no hysteresis defined for the device.
 
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Reported-by: syzbot <syzbot+ae590932da6e45d6564d@syzkaller.appspotmail.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- kernel/power/user.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/thermal/int340x_thermal/int340x_thermal_zone.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 75c959d..abd2255 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -186,6 +186,11 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
- 		res = PAGE_SIZE - pg_offp;
- 	}
+diff --git a/drivers/thermal/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+index 145a5c53ff5c..dfdf6dbc2ddc 100644
+--- a/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
++++ b/drivers/thermal/int340x_thermal/int340x_thermal_zone.c
+@@ -147,9 +147,9 @@ static int int340x_thermal_get_trip_hyst(struct thermal_zone_device *zone,
  
-+	if (!data_of(data->handle)) {
-+		res = -EINVAL;
-+		goto unlock;
-+	}
-+
- 	res = simple_write_to_buffer(data_of(data->handle), res, &pg_offp,
- 			buf, count);
- 	if (res > 0)
+ 	status = acpi_evaluate_integer(d->adev->handle, "GTSH", NULL, &hyst);
+ 	if (ACPI_FAILURE(status))
+-		return -EIO;
+-
+-	*temp = hyst * 100;
++		*temp = 0;
++	else
++		*temp = hyst * 100;
+ 
+ 	return 0;
+ }
 -- 
-1.8.3.1
+2.17.0
