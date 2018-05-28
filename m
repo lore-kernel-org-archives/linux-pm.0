@@ -1,100 +1,207 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.9 079/329] x86/power: Fix swsusp_arch_resume prototype
-Date: Mon, 28 May 2018 12:00:08 +0200
-Message-ID: <20180528100249.405566287@linuxfoundation.org>
-References: <20180528100241.796630982@linuxfoundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20180528100241.796630982@linuxfoundation.org>
-Sender: stable-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, Nicolas Pitre <nico@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Bart Van Assche <bart.vanassche@wdc.com>, Sasha Levin <alexander.levin@microsoft.com>
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH] cpupower : Fix header name to read idle state name
+Date: Mon, 28 May 2018 06:03:03 -0500
+Message-ID: <20180528110303.12860-1-huntbag@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: shuah@kernel.org, trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: s1seetee@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-4.9-stable review patch.  If anyone has any objections, please let me know.
+The names of the idle states in the output of cpupower monitor command are
+truncated to 4 characters. On POWER9, this creates ambiguity as the states
+are named "stop0", "stop1", etc.
 
-------------------
+root:~# cpupower monitor
+              |Idle_Stats
+PKG |CORE|CPU | snoo | stop | stop | stop | stop | stop | stop
+   0|   0|   0|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  1.90
+   0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+   0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+   0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
 
-From: Arnd Bergmann <arnd@arndb.de>
+This patch modifies the output to print the state name that results in a
+legible output. The names will be printed with atmost 1 padding in left.
 
-[ Upstream commit 328008a72d38b5bde6491e463405c34a81a65d3e ]
+root:~# cpupower monitor
+              | Idle_Stats
+ PKG|CORE| CPU|snooze|stop0L| stop0|stop1L| stop1|stop2L| stop2
+   0|   0|   0|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.72
+   0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+   0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+   0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
 
-The declaration for swsusp_arch_resume marks it as 'asmlinkage', but the
-definition in x86-32 does not, and it fails to include the header with the
-declaration. This leads to a warning when building with
-link-time-optimizations:
+This patch does not affect the output for intel.
+Output for intel before applying the patch:
 
-kernel/power/power.h:108:23: error: type of 'swsusp_arch_resume' does not match original declaration [-Werror=lto-type-mismatch]
- extern asmlinkage int swsusp_arch_resume(void);
-                       ^
-arch/x86/power/hibernate_32.c:148:0: note: 'swsusp_arch_resume' was previously declared here
- int swsusp_arch_resume(void)
+root:~# cpupower monitor
+    |Idle_Stats
+CPU | POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S | C9-S | C10-
+   0|  0.00|  0.14|  0.39|  0.35|  7.41|  0.00| 17.67|  1.01| 70.03
+   2|  0.00|  0.19|  0.47|  0.10|  6.50|  0.00| 29.66|  2.17| 58.07
+   1|  0.00|  0.11|  0.50|  1.50|  9.11|  0.18| 18.19|  0.40| 66.63
+   3|  0.00|  0.67|  0.42|  0.03|  5.84|  0.00| 12.58|  0.77| 77.14
 
-This moves the declaration into a globally visible header file and fixes up
-both x86 definitions to match it.
+Output for intel after applying the patch:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Nicolas Pitre <nico@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Bart Van Assche <bart.vanassche@wdc.com>
-Link: https://lkml.kernel.org/r/20180202145634.200291-2-arnd@arndb.de
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+root:~# cpupower monitor
+    | Idle_Stats
+ CPU| POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S | C9-S | C10-
+   0|  0.03|  0.33|  1.01|  0.27|  3.03|  0.00| 19.18|  0.00| 71.24
+   2|  0.00|  1.58|  0.58|  0.42|  8.55|  0.09| 21.11|  0.99| 63.32
+   1|  0.00|  1.26|  0.88|  0.43|  9.00|  0.02|  7.78|  4.65| 71.91
+   3|  0.00|  0.30|  0.42|  0.06| 13.62|  0.21| 30.29|  0.00| 52.45
+
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 ---
- arch/x86/power/hibernate_32.c |    2 +-
- arch/x86/power/hibernate_64.c |    2 +-
- include/linux/suspend.h       |    2 ++
- kernel/power/power.h          |    3 ---
- 4 files changed, 4 insertions(+), 5 deletions(-)
 
---- a/arch/x86/power/hibernate_32.c
-+++ b/arch/x86/power/hibernate_32.c
-@@ -142,7 +142,7 @@ static inline void resume_init_first_lev
- #endif
+Previous attempt was made by Seeteena Thoufeek. This is the patch list
+link: https://patchwork.kernel.org/project/linux-pm/list/?submitter=
+172041&state=*&archive=both
+
+ .../utils/idle_monitor/cpuidle_sysfs.c        | 15 ++++++++
+ .../utils/idle_monitor/cpupower-monitor.c     | 35 +++++++++++--------
+ .../utils/idle_monitor/cpupower-monitor.h     |  9 +++++
+ 3 files changed, 44 insertions(+), 15 deletions(-)
+
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+index 5b3205f16217..5b8c4956ff9a 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+@@ -126,6 +126,20 @@ void fix_up_intel_idle_driver_name(char *tmp, int num)
+ 	}
  }
  
--int swsusp_arch_resume(void)
-+asmlinkage int swsusp_arch_resume(void)
++#ifdef __powerpc__
++void map_power_idle_state_name(char *tmp)
++{
++	if (!strncmp(tmp, "stop0_lite", CSTATE_NAME_LEN))
++		strcpy(tmp, "stop0L");
++	else if (!strncmp(tmp, "stop1_lite", CSTATE_NAME_LEN))
++		strcpy(tmp, "stop1L");
++	else if (!strncmp(tmp, "stop2_lite", CSTATE_NAME_LEN))
++		strcpy(tmp, "stop2L");
++}
++#else
++void map_power_idle_state_name(char *tmp) { }
++#endif
++
+ static struct cpuidle_monitor *cpuidle_register(void)
  {
- 	int error;
+ 	int num;
+@@ -145,6 +159,7 @@ static struct cpuidle_monitor *cpuidle_register(void)
+ 		if (tmp == NULL)
+ 			continue;
  
---- a/arch/x86/power/hibernate_64.c
-+++ b/arch/x86/power/hibernate_64.c
-@@ -149,7 +149,7 @@ static int relocate_restore_code(void)
++		map_power_idle_state_name(tmp);
+ 		fix_up_intel_idle_driver_name(tmp, num);
+ 		strncpy(cpuidle_cstates[num].name, tmp, CSTATE_NAME_LEN - 1);
+ 		free(tmp);
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+index 05f953f0f0a0..051da0a7c454 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+@@ -70,36 +70,43 @@ void print_n_spaces(int n)
+ 		printf(" ");
+ }
+ 
+-/* size of s must be at least n + 1 */
++/*s is filled with left and right spaces
++ *to make its length atleast n+1
++ */
+ int fill_string_with_spaces(char *s, int n)
+ {
++	char *temp;
+ 	int len = strlen(s);
+-	if (len > n)
++
++	if (len >= n)
+ 		return -1;
++
++	temp = malloc(sizeof(char) * (n+1));
+ 	for (; len < n; len++)
+ 		s[len] = ' ';
+ 	s[len] = '\0';
++	snprintf(temp, n+1, " %s", s);
++	strcpy(s, temp);
++	free(temp);
  	return 0;
  }
  
--int swsusp_arch_resume(void)
-+asmlinkage int swsusp_arch_resume(void)
++#define MAX_COL_WIDTH 6
+ void print_header(int topology_depth)
  {
- 	int error;
+ 	int unsigned mon;
+ 	int state, need_len;
+ 	cstate_t s;
+ 	char buf[128] = "";
+-	int percent_width = 4;
  
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -378,6 +378,8 @@ extern int swsusp_page_is_forbidden(stru
- extern void swsusp_set_page_free(struct page *);
- extern void swsusp_unset_page_free(struct page *);
- extern unsigned long get_safe_page(gfp_t gfp_mask);
-+extern asmlinkage int swsusp_arch_suspend(void);
-+extern asmlinkage int swsusp_arch_resume(void);
+ 	fill_string_with_spaces(buf, topology_depth * 5 - 1);
+ 	printf("%s|", buf);
  
- extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
- extern int hibernate(void);
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -103,9 +103,6 @@ extern int in_suspend;
- extern dev_t swsusp_resume_device;
- extern sector_t swsusp_resume_block;
+ 	for (mon = 0; mon < avail_monitors; mon++) {
+-		need_len = monitors[mon]->hw_states_num * (percent_width + 3)
++		need_len = monitors[mon]->hw_states_num * (MAX_COL_WIDTH + 1)
+ 			- 1;
+-		if (mon != 0) {
+-			printf("|| ");
+-			need_len--;
+-		}
++		if (mon != 0)
++			printf("||");
+ 		sprintf(buf, "%s", monitors[mon]->name);
+ 		fill_string_with_spaces(buf, need_len);
+ 		printf("%s", buf);
+@@ -107,23 +114,21 @@ void print_header(int topology_depth)
+ 	printf("\n");
  
--extern asmlinkage int swsusp_arch_suspend(void);
--extern asmlinkage int swsusp_arch_resume(void);
--
- extern int create_basic_memory_bitmaps(void);
- extern void free_basic_memory_bitmaps(void);
- extern int hibernate_preallocate_memory(void);
+ 	if (topology_depth > 2)
+-		printf("PKG |");
++		printf(" PKG|");
+ 	if (topology_depth > 1)
+ 		printf("CORE|");
+ 	if (topology_depth > 0)
+-		printf("CPU |");
++		printf(" CPU|");
+ 
+ 	for (mon = 0; mon < avail_monitors; mon++) {
+ 		if (mon != 0)
+-			printf("|| ");
+-		else
+-			printf(" ");
++			printf("||");
+ 		for (state = 0; state < monitors[mon]->hw_states_num; state++) {
+ 			if (state != 0)
+-				printf(" | ");
++				printf("|");
+ 			s = monitors[mon]->hw_states[state];
+ 			sprintf(buf, "%s", s.name);
+-			fill_string_with_spaces(buf, percent_width);
++			fill_string_with_spaces(buf, MAX_COL_WIDTH);
+ 			printf("%s", buf);
+ 		}
+ 		printf(" ");
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+index 9e43f3371fbc..2ae50b499e0a 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+@@ -15,7 +15,16 @@
+ 
+ #define MONITORS_MAX 20
+ #define MONITOR_NAME_LEN 20
++
++/* CSTATE_NAME_LEN is limited by header field width defined
++ * in cpupower-monitor.c. Header field width is defined to be
++ * sum of percent width and two spaces for padding.
++ */
++#ifdef __powerpc__
++#define CSTATE_NAME_LEN 7
++#else
+ #define CSTATE_NAME_LEN 5
++#endif
+ #define CSTATE_DESC_LEN 60
+ 
+ int cpu_count;
+-- 
+2.17.0
