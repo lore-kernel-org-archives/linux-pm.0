@@ -1,34 +1,41 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH 04/11] PM / devfreq: Remove redundant frequency
- adjustment from governors
-Date: Mon, 28 May 2018 13:57:44 +0900
-Message-ID: <20180528045744epcms1p115f761df5eff88a1648639385425f02b@epcms1p1>
-References: <20180525203043.249193-5-mka@chromium.org>
-        <20180525203043.249193-1-mka@chromium.org>
-        <CGME20180525203124epcas2p2db3f1996b33348f19a6a91cee55abb0b@epcms1p1>
-Reply-To: myungjoo.ham@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v14 1/2] cpufreq: Add Kryo CPU scaling driver
+Date: Mon, 28 May 2018 10:33:38 +0530
+Message-ID: <20180528050338.p4zg6a2v5fu3oxwe@vireshk-i7>
+References: <1527252112-7015-1-git-send-email-ilialin@codeaurora.org>
+ <1527252112-7015-2-git-send-email-ilialin@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180525203043.249193-5-mka@chromium.org>
+Content-Disposition: inline
+In-Reply-To: <1527252112-7015-2-git-send-email-ilialin@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Ilia Lin <ilialin@codeaurora.org>
+Cc: ilia.lin@gmail.com, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> The userspace and simpleondemand governor determine a target frequency and
-> then adjust it according to the df->min/max_freq limits that might have
-> been set by user space. This adjustment is redundant, it is done in
-> update_devfreq() for any governor, right after returning from
-> governor->get_target_freq().
+On 25-05-18, 15:41, Ilia Lin wrote:
+> In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
+> the CPU frequency subset and voltage value of each OPP varies
+> based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+> defines the voltage and frequency value based on the msm-id in SMEM
+> and speedbin blown in the efuse combination.
+> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
+> to provide the OPP framework with required information.
+> This is used to determine the voltage and frequency value for each OPP of
+> operating-points-v2 table when it is parsed by the OPP framework.
 > 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
 > ---
->  drivers/devfreq/governor_simpleondemand.c |  5 -----
->  drivers/devfreq/governor_userspace.c      | 16 ++++------------
->  2 files changed, 4 insertions(+), 17 deletions(-)
-> 
+>  MAINTAINERS                          |   7 ++
+>  drivers/cpufreq/Kconfig.arm          |  10 ++
+>  drivers/cpufreq/Makefile             |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
+>  drivers/cpufreq/qcom-cpufreq-kryo.c  | 212 +++++++++++++++++++++++++++++++++++
+>  5 files changed, 233 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
 
-Yes, indeed. Governors are no longer required to be aware of min/max freq.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+-- 
+viresh
