@@ -1,41 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v14 1/2] cpufreq: Add Kryo CPU scaling driver
-Date: Mon, 28 May 2018 10:33:38 +0530
-Message-ID: <20180528050338.p4zg6a2v5fu3oxwe@vireshk-i7>
-References: <1527252112-7015-1-git-send-email-ilialin@codeaurora.org>
- <1527252112-7015-2-git-send-email-ilialin@codeaurora.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH 05/11] PM / devfreq: governors: Return device frequency
+ limits instead of user limits
+Date: Mon, 28 May 2018 14:04:44 +0900
+Message-ID: <20180528050444epcms1p8e6552d55231a099ec89304dfb1f819b9@epcms1p8>
+References: <20180525203043.249193-6-mka@chromium.org>
+        <20180525203043.249193-1-mka@chromium.org>
+        <CGME20180525203125epcas3p46c7cac352ede4b0ba5d2b36bc32ad566@epcms1p8>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1527252112-7015-2-git-send-email-ilialin@codeaurora.org>
+In-Reply-To: <20180525203043.249193-6-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilialin@codeaurora.org>
-Cc: ilia.lin@gmail.com, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25-05-18, 15:41, Ilia Lin wrote:
-> In Certain QCOM SoCs like apq8096 and msm8996 that have KRYO processors,
-> the CPU frequency subset and voltage value of each OPP varies
-> based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
-> defines the voltage and frequency value based on the msm-id in SMEM
-> and speedbin blown in the efuse combination.
-> The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
-> to provide the OPP framework with required information.
-> This is used to determine the voltage and frequency value for each OPP of
-> operating-points-v2 table when it is parsed by the OPP framework.
-> 
-> Signed-off-by: Ilia Lin <ilialin@codeaurora.org>
-> ---
->  MAINTAINERS                          |   7 ++
->  drivers/cpufreq/Kconfig.arm          |  10 ++
->  drivers/cpufreq/Makefile             |   1 +
->  drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
->  drivers/cpufreq/qcom-cpufreq-kryo.c  | 212 +++++++++++++++++++++++++++++++++++
->  5 files changed, 233 insertions(+)
->  create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+>The performance, powersave and simpleondemand governors can return
+>df->min/max_freq, which are the user defined frequency limits.
+>update_devfreq() already takes care of adjusting the target frequency
+>with the user limits if necessary, therefore we can return
+>df->scaling_min/max_freq instead, which is the min/max frequency
+>supported by the device at a given time (depending on the
+>enabled/disabled OPPs)
+>
+>Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+>---
+> drivers/devfreq/governor_performance.c    | 2 +-
+> drivers/devfreq/governor_powersave.c      | 2 +-
+> drivers/devfreq/governor_simpleondemand.c | 6 +++---
+> 3 files changed, 5 insertions(+), 5 deletions(-)
+>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Actually, even scaling_max_freq and scaling_min_freq are
+covered centerally at devfreq.c:update_devfreq();
 
--- 
-viresh
+Wouldn't it be sufficient to return UINT_MAX for performance
+and return UINT_MIN (0) for powersave, if the purpose is to
+remove redundancy?
+
+In the same sense, we may return UINT_MAX for freq-increasing
+case for simpleondemand as well, because they are filtered
+centrally anyway.
+
+(This commit might be better merged to 4/11 in that case as well.)
+
+
+Cheers,
+MyungJoo
