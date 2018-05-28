@@ -1,18 +1,18 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 3.18 034/185] x86/power: Fix swsusp_arch_resume prototype
-Date: Mon, 28 May 2018 12:01:15 +0200
-Message-ID: <20180528100052.803961873@linuxfoundation.org>
-References: <20180528100050.700971285@linuxfoundation.org>
+Subject: [PATCH 4.9 079/329] x86/power: Fix swsusp_arch_resume prototype
+Date: Mon, 28 May 2018 12:00:08 +0200
+Message-ID: <20180528100249.405566287@linuxfoundation.org>
+References: <20180528100241.796630982@linuxfoundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180528100050.700971285@linuxfoundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20180528100241.796630982@linuxfoundation.org>
+Sender: stable-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, Nicolas Pitre <nico@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Bart Van Assche <bart.vanassche@wdc.com>, Sasha Levin <alexander.levin@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
 
-3.18-stable review patch.  If anyone has any objections, please let me know.
+4.9-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -66,7 +66,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  
 --- a/arch/x86/power/hibernate_64.c
 +++ b/arch/x86/power/hibernate_64.c
-@@ -78,7 +78,7 @@ static int set_up_temporary_mappings(voi
+@@ -149,7 +149,7 @@ static int relocate_restore_code(void)
  	return 0;
  }
  
@@ -77,7 +77,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  
 --- a/include/linux/suspend.h
 +++ b/include/linux/suspend.h
-@@ -325,6 +325,8 @@ extern int swsusp_page_is_forbidden(stru
+@@ -378,6 +378,8 @@ extern int swsusp_page_is_forbidden(stru
  extern void swsusp_set_page_free(struct page *);
  extern void swsusp_unset_page_free(struct page *);
  extern unsigned long get_safe_page(gfp_t gfp_mask);
@@ -88,7 +88,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  extern int hibernate(void);
 --- a/kernel/power/power.h
 +++ b/kernel/power/power.h
-@@ -85,9 +85,6 @@ extern int in_suspend;
+@@ -103,9 +103,6 @@ extern int in_suspend;
  extern dev_t swsusp_resume_device;
  extern sector_t swsusp_resume_block;
  
