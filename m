@@ -1,85 +1,43 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 04/11] PM / devfreq: Remove redundant frequency
- adjustment from governors
-Date: Mon, 28 May 2018 14:36:06 +0900
-Message-ID: <5B0B9546.7070101@samsung.com>
-References: <20180525203043.249193-1-mka@chromium.org>
-        <CGME20180525203333epcas1p230489fbae43296516f3febb327dcdeca@epcas1p2.samsung.com>
-        <20180525203043.249193-5-mka@chromium.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH 2/2] PM / devfreq: Generic cpufreq governor
+Date: Mon, 28 May 2018 15:00:14 +0900
+Message-ID: <20180528060014epcms1p87ec68a4d44f9447b06f979a87e545b7d@epcms1p8>
+References: <1526631889-5084-3-git-send-email-skannan@codeaurora.org>
+        <1526631889-5084-1-git-send-email-skannan@codeaurora.org>
+        <CGME20180518082505epcas2p265038f51fc070a4aada4c692a71ebc3c@epcms1p8>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180525203043.249193-5-mka@chromium.org>
+In-Reply-To: <1526631889-5084-3-git-send-email-skannan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+To: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+>Many CPU architectures have caches that can scale independent of the CPUs.
+>Frequency scaling of the caches is necessary to make sure the cache is not
+>a performance bottleneck that leads to poor performance and power. The same
+>idea applies for RAM/DDR.
+>
+>To achieve this, this patch series adds a generic devfreq governor that can
+>listen to the frequency transitions of each CPU frequency domain and then
+>adjusts the frequency of the cache (or any devfreq device) based on the
+>frequency of the CPUs.
 
-On 2018년 05월 26일 05:30, Matthias Kaehlcke wrote:
-> The userspace and simpleondemand governor determine a target frequency and
-> then adjust it according to the df->min/max_freq limits that might have
-> been set by user space. This adjustment is redundant, it is done in
-> update_devfreq() for any governor, right after returning from
-> governor->get_target_freq().
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  drivers/devfreq/governor_simpleondemand.c |  5 -----
->  drivers/devfreq/governor_userspace.c      | 16 ++++------------
->  2 files changed, 4 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-> index 278964783fa6..3da7554b4837 100644
-> --- a/drivers/devfreq/governor_simpleondemand.c
-> +++ b/drivers/devfreq/governor_simpleondemand.c
-> @@ -84,11 +84,6 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
->  	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
->  	*freq = (unsigned long) b;
->  
-> -	if (df->min_freq && *freq < df->min_freq)
-> -		*freq = df->min_freq;
-> -	if (df->max_freq && *freq > df->max_freq)
-> -		*freq = df->max_freq;
-> -
->  	return 0;
->  }
->  
-> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-> index 080607c3f34d..378d84c011df 100644
-> --- a/drivers/devfreq/governor_userspace.c
-> +++ b/drivers/devfreq/governor_userspace.c
-> @@ -26,19 +26,11 @@ static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
->  {
->  	struct userspace_data *data = df->data;
->  
-> -	if (data->valid) {
-> -		unsigned long adjusted_freq = data->user_frequency;
-> -
-> -		if (df->max_freq && adjusted_freq > df->max_freq)
-> -			adjusted_freq = df->max_freq;
-> -
-> -		if (df->min_freq && adjusted_freq < df->min_freq)
-> -			adjusted_freq = df->min_freq;
-> -
-> -		*freq = adjusted_freq;
-> -	} else {
-> +	if (data->valid)
-> +		*freq = data->user_frequency;
-> +	else
->  		*freq = df->previous_freq; /* No user freq specified yet */
-> -	}
-> +
->  	return 0;
->  }
->  
-> 
+I agree that we have some hardware pieces that want to configure
+frequencies based on the CPUfreq.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Creating a devfreq governor that configures devfreq-freq
+based on incoming events (CPUFreq-transition-event in this case)
+is indeed a good idea.
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+However, I would like to ask the followings:
+The overall code appears to be overly complex compared what you need.
+- Do you really need to revive "CPUFREQ POLICY" events for this?
+especially when you are going to look at "first CPU" only?
+
+
+Cheers,
+MyungJoo
