@@ -1,82 +1,100 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3] vfio: platform: Fix using devices in PM Domains
-Date: Mon, 28 May 2018 17:26:05 +0200
-Message-ID: <1527521165-29345-1-git-send-email-geert+renesas@glider.be>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.4 054/268] x86/power: Fix swsusp_arch_resume prototype
+Date: Mon, 28 May 2018 12:00:28 +0200
+Message-ID: <20180528100208.059887729@linuxfoundation.org>
+References: <20180528100202.045206534@linuxfoundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180528100202.045206534@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eric Auger <eric.auger@redhat.com>, Alex Williamson <alex.williamson@redhat.com>
-Cc: kvm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, Nicolas Pitre <nico@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Bart Van Assche <bart.vanassche@wdc.com>, Sasha Levin <alexander.levin@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
 
-If a device is part of a PM Domain (e.g. power and/or clock domain), its
-power state is managed using Runtime PM.  Without Runtime PM, the device
-may not be powered up or clocked, causing subtle failures, crashes, or
-system lock-ups when the device is accessed by the guest.
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-Fix this by adding Runtime PM support, powering the device when the VFIO
-device is opened by the guest.
+------------------
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+From: Arnd Bergmann <arnd@arndb.de>
+
+[ Upstream commit 328008a72d38b5bde6491e463405c34a81a65d3e ]
+
+The declaration for swsusp_arch_resume marks it as 'asmlinkage', but the
+definition in x86-32 does not, and it fails to include the header with the
+declaration. This leads to a warning when building with
+link-time-optimizations:
+
+kernel/power/power.h:108:23: error: type of 'swsusp_arch_resume' does not match original declaration [-Werror=lto-type-mismatch]
+ extern asmlinkage int swsusp_arch_resume(void);
+                       ^
+arch/x86/power/hibernate_32.c:148:0: note: 'swsusp_arch_resume' was previously declared here
+ int swsusp_arch_resume(void)
+
+This moves the declaration into a globally visible header file and fixes up
+both x86 definitions to match it.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Nicolas Pitre <nico@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Bart Van Assche <bart.vanassche@wdc.com>
+Link: https://lkml.kernel.org/r/20180202145634.200291-2-arnd@arndb.de
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
-v3:
-  - Drop controversial note about unsafeness of exporting fine-grained
-    power management from host to guest,
+ arch/x86/power/hibernate_32.c |    2 +-
+ arch/x86/power/hibernate_64.c |    2 +-
+ include/linux/suspend.h       |    2 ++
+ kernel/power/power.h          |    3 ---
+ 4 files changed, 4 insertions(+), 5 deletions(-)
 
-v2:
-  - Improve wording,
-  - Add Reviewed-by.
----
- drivers/vfio/platform/vfio_platform_common.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/vfio/platform/vfio_platform_common.c b/drivers/vfio/platform/vfio_platform_common.c
-index b60bb5326668498c..41f862f055054543 100644
---- a/drivers/vfio/platform/vfio_platform_common.c
-+++ b/drivers/vfio/platform/vfio_platform_common.c
-@@ -17,6 +17,7 @@
- #include <linux/iommu.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/types.h>
- #include <linux/uaccess.h>
-@@ -233,6 +234,8 @@ static void vfio_platform_release(void *device_data)
- 		const char *extra_dbg = NULL;
- 		int ret;
+--- a/arch/x86/power/hibernate_32.c
++++ b/arch/x86/power/hibernate_32.c
+@@ -142,7 +142,7 @@ static inline void resume_init_first_lev
+ #endif
+ }
  
-+		pm_runtime_put(vdev->device);
-+
- 		ret = vfio_platform_call_reset(vdev, &extra_dbg);
- 		if (ret && vdev->reset_required) {
- 			dev_warn(vdev->device, "reset driver is required and reset call failed in release (%d) %s\n",
-@@ -275,6 +278,10 @@ static int vfio_platform_open(void *device_data)
- 				 ret, extra_dbg ? extra_dbg : "");
- 			goto err_rst;
- 		}
-+
-+		ret = pm_runtime_get_sync(vdev->device);
-+		if (ret < 0)
-+			goto err_rst;
- 	}
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
  
- 	vdev->refcnt++;
-@@ -690,6 +697,7 @@ int vfio_platform_probe_common(struct vfio_platform_device *vdev,
- 
- 	mutex_init(&vdev->igate);
- 
-+	pm_runtime_enable(vdev->device);
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -78,7 +78,7 @@ static int set_up_temporary_mappings(voi
  	return 0;
+ }
  
- put_iommu:
-@@ -707,6 +715,7 @@ struct vfio_platform_device *vfio_platform_remove_common(struct device *dev)
- 	vdev = vfio_del_group_dev(dev);
+-int swsusp_arch_resume(void)
++asmlinkage int swsusp_arch_resume(void)
+ {
+ 	int error;
  
- 	if (vdev) {
-+		pm_runtime_disable(vdev->device);
- 		vfio_platform_put_reset(vdev);
- 		vfio_iommu_group_put(dev->iommu_group, dev);
- 	}
--- 
-2.7.4
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -377,6 +377,8 @@ extern int swsusp_page_is_forbidden(stru
+ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+ extern unsigned long get_safe_page(gfp_t gfp_mask);
++extern asmlinkage int swsusp_arch_suspend(void);
++extern asmlinkage int swsusp_arch_resume(void);
+ 
+ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -85,9 +85,6 @@ extern int in_suspend;
+ extern dev_t swsusp_resume_device;
+ extern sector_t swsusp_resume_block;
+ 
+-extern asmlinkage int swsusp_arch_suspend(void);
+-extern asmlinkage int swsusp_arch_resume(void);
+-
+ extern int create_basic_memory_bitmaps(void);
+ extern void free_basic_memory_bitmaps(void);
+ extern int hibernate_preallocate_memory(void);
