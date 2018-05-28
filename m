@@ -1,89 +1,206 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 09/11] misc: throttler: Add core support for non-thermal
- throttling
-Date: Mon, 28 May 2018 10:08:26 +0200
-Message-ID: <20180528080826.GA17162@kroah.com>
-References: <20180525203043.249193-1-mka@chromium.org>
- <20180525203043.249193-10-mka@chromium.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC] platform: detach from PM domains on shutdown
+Date: Mon, 28 May 2018 10:31:34 +0200
+Message-ID: <3452357.3GIrXi3WAv@aspire.rjw.lan>
+References: <20180515090110.26820-1-peng.fan@nxp.com> <HE1PR04MB30041C742230314926032D4D88900@HE1PR04MB3004.eurprd04.prod.outlook.com> <HE1PR04MB300481B481F96F875DCBFB2B886E0@HE1PR04MB3004.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180525203043.249193-10-mka@chromium.org>
+In-Reply-To: <HE1PR04MB300481B481F96F875DCBFB2B886E0@HE1PR04MB3004.eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+To: Peng Fan <peng.fan@nxp.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 25, 2018 at 01:30:41PM -0700, Matthias Kaehlcke wrote:
-> diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-> index 20be70c3f118..01a1714dd2ad 100644
-> --- a/drivers/misc/Makefile
-> +++ b/drivers/misc/Makefile
-> @@ -57,3 +57,4 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
->  obj-$(CONFIG_PCI_ENDPOINT_TEST)	+= pci_endpoint_test.o
->  obj-$(CONFIG_OCXL)		+= ocxl/
->  obj-$(CONFIG_MISC_RTSX)		+= cardreader/
-> +obj-y				+= throttler/
+On Monday, May 28, 2018 10:01:09 AM CEST Peng Fan wrote:
+> Hi, Rafael & Uffe
+> 
+> > -----Original Message-----
+> > From: Peng Fan
+> > Sent: 2018年5月18日 16:53
+> > To: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > Cc: Rafael J. Wysocki <rafael@kernel.org>; Ulf Hansson
+> > <ulf.hansson@linaro.org>; Rafael J. Wysocki <rafael.j.wysocki@intel.com>;
+> > Fabio Estevam <fabio.estevam@nxp.com>; Greg Kroah-Hartman
+> > <gregkh@linuxfoundation.org>; Linux Kernel Mailing List
+> > <linux-kernel@vger.kernel.org>; Linux PM <linux-pm@vger.kernel.org>;
+> > dl-linux-imx <linux-imx@nxp.com>
+> > Subject: RE: [RFC] platform: detach from PM domains on shutdown
+> > 
+> > 
+> > 
+> > > -----Original Message-----
+> > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > > Sent: 2018年5月18日 15:55
+> > > To: Peng Fan <peng.fan@nxp.com>
+> > > Cc: Rafael J. Wysocki <rafael@kernel.org>; Ulf Hansson
+> > > <ulf.hansson@linaro.org>; Rafael J. Wysocki
+> > > <rafael.j.wysocki@intel.com>; Fabio Estevam <fabio.estevam@nxp.com>;
+> > > Greg Kroah-Hartman <gregkh@linuxfoundation.org>; Linux Kernel Mailing
+> > > List <linux-kernel@vger.kernel.org>; Linux PM
+> > > <linux-pm@vger.kernel.org>; dl-linux-imx <linux-imx@nxp.com>
+> > > Subject: Re: [RFC] platform: detach from PM domains on shutdown
+> > >
+> > > On Thursday, May 17, 2018 2:37:31 PM CEST Peng Fan wrote:
+> > > >
+> > > > > -----Original Message-----
+> > > > > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf
+> > > > > Of Rafael J. Wysocki
+> > > > > Sent: 2018年5月17日 16:01
+> > > > > To: Peng Fan <peng.fan@nxp.com>
+> > > > > Cc: Rafael J. Wysocki <rafael@kernel.org>; Ulf Hansson
+> > > > > <ulf.hansson@linaro.org>; Rafael J. Wysocki
+> > > > > <rafael.j.wysocki@intel.com>; Fabio Estevam
+> > > > > <fabio.estevam@nxp.com>; Greg Kroah-Hartman
+> > > > > <gregkh@linuxfoundation.org>; Linux Kernel Mailing List
+> > > > > <linux-kernel@vger.kernel.org>; Linux PM
+> > > > > <linux-pm@vger.kernel.org>; dl-linux-imx <linux-imx@nxp.com>
+> > > > > Subject: Re: [RFC] platform: detach from PM domains on shutdown
+> > > > >
+> > > > > On Thu, May 17, 2018 at 4:33 AM, Peng Fan <peng.fan@nxp.com> wrote:
+> > > > > >
+> > > > > >
+> > > > > >> -----Original Message-----
+> > > > > >> From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On
+> > > > > >> Behalf Of Rafael J. Wysocki
+> > > > > >> Sent: 2018年5月17日 5:35
+> > > > > >> To: Ulf Hansson <ulf.hansson@linaro.org>
+> > > > > >> Cc: Peng Fan <peng.fan@nxp.com>; Rafael J. Wysocki
+> > > > > >> <rafael.j.wysocki@intel.com>; Fabio Estevam
+> > > > > >> <fabio.estevam@nxp.com>; Greg Kroah-Hartman
+> > > > > >> <gregkh@linuxfoundation.org>; Linux Kernel Mailing List
+> > > > > >> <linux-kernel@vger.kernel.org>; Linux PM
+> > > > > >> <linux-pm@vger.kernel.org>; dl-linux-imx <linux-imx@nxp.com>
+> > > > > >> Subject: Re: [RFC] platform: detach from PM domains on shutdown
+> > > > > >>
+> > > > > >> On Wed, May 16, 2018 at 11:52 AM, Ulf Hansson
+> > > > > >> <ulf.hansson@linaro.org>
+> > > > > >> wrote:
+> > > > > >> > On 15 May 2018 at 11:01, Peng Fan <peng.fan@nxp.com> wrote:
+> > > > > >> >> When reboot Linux, the PM domains attached to a device are
+> > > > > >> >> not shutdown. To SoCs which relys on reset the whole SoC,
+> > > > > >> >> there is no need to shutdown PM domains, but to Linux
+> > > > > >> >> running in a virtual machine with devices pass-through, we
+> > > > > >> >> could not reset the
+> > > whole SoC.
+> > > > > >> >> Currently we need Linux to shutdown its PM domains when reboot.
+> > > > > >> >
+> > > > > >> > I am not sure I understand exactly why the PM domain needs to
+> > > > > >> > be shutdown for these cases, could you please elaborate a bit on that.
+> > > > > >> >
+> > > > > >> > BTW, what platform are you running on and also what PM
+> > > > > >> > domains are being
+> > > > > >> used?
+> > > > > >> >
+> > > > > >> > Anyway, it seems like there may be need for certain cases,
+> > > > > >> > but certainly not all - especially since it may slow down the
+> > > > > >> > shutdown process, when not needed.
+> > > > > >> >
+> > > > > >> > Can we make this runtime configurable, via sysfs or whatever
+> > > > > >> > that makes
+> > > > > >> sense!?
+> > > > > >> >
+> > > > > >> >>
+> > > > > >> >> commit 2d30bb0b3889 ("platform: Do not detach from PM
+> > > > > >> >> domains on shutdown"), removes what this patch tries to add,
+> > > > > >> >> because of a
+> > > warning.
+> > > > > >> >> commit e79aee49bcf9 ("PM: Avoid false-positive warnings in
+> > > > > >> >> dev_pm_domain_set()") already fixes the false alarm warning.
+> > > > > >> >> So let's detach the power domain to shutdown PM domains
+> > > > > >> >> after driver
+> > > > > shutdown.
+> > > > > >> >>
+> > > > > >> >> Signed-off-by: Peng Fan <peng.fan@nxp.com>
+> > > > > >> >> ---
+> > > > > >> >>
+> > > > > >> >> I do not find a better place to shutdown power domain when
+> > > > > >> >> reboot Linux, so add back the line that commit 2d30bb0b3889
+> > > > > >> >> removes, because it is a false alarm warning as commit
+> > > > > >> >> e79aee49bcf9
+> > > describes.
+> > > > > >> >>
+> > > > > >> >>  drivers/base/platform.c | 1 +
+> > > > > >> >>  1 file changed, 1 insertion(+)
+> > > > > >> >>
+> > > > > >> >> diff --git a/drivers/base/platform.c
+> > > > > >> >> b/drivers/base/platform.c index 8075ddc70a17..a5929f24dc3c
+> > > > > >> >> 100644
+> > > > > >> >> --- a/drivers/base/platform.c
+> > > > > >> >> +++ b/drivers/base/platform.c
+> > > > > >> >> @@ -616,6 +616,7 @@ static void platform_drv_shutdown(struct
+> > > > > >> >> device
+> > > > > >> >> *_dev)
+> > > > > >> >>
+> > > > > >> >>         if (drv->shutdown)
+> > > > > >> >>                 drv->shutdown(dev);
+> > > > > >> >> +       dev_pm_domain_detach(_dev, true);
+> > > > > >> >
+> > > > > >> > This would somewhat work, but only for platform devices. To
+> > > > > >> > make this fully work, we need to call dev_pm_domain_detach()
+> > > > > >> > from amba, spi, etc as well.
+> > > > > >> >
+> > > > > >> > Perhaps another option to manage this more generally, an
+> > > > > >> > without having detach devices, could be to extend the struct
+> > > > > >> > dev_pm_domain with a new callback, "->shutdown()" and then
+> > > > > >> > make the driver core call it from device_shutdown().
+> > > > > >>
+> > > > > >> I'm sensing a possible ordering slippery slope with this (it
+> > > > > >> will only work if all of the drivers/bus types etc do the right
+> > > > > >> thing in their
+> > > > > >> ->shutdown callbacks so nothing depends on the domain going
+> > forward).
+> > > > > >>
+> > > > > >> > Typically, for genpd, I would probably count the number of
+> > > > > >> > calls being made to ->shutdown() per PM domain, then when it
+> > > > > >> > reaches the number of attached devices to it, allow to power off it.
+> > > > > >> >
+> > > > > >> > Let's see what Rafael thinks about it.
+> > > > > >>
+> > > > > >> I'm not sure about the use case.  The hypervisor should be able
+> > > > > >> to take care of turning power domains off on the client OS
+> > > > > >> reboot in theory.  If the client OS leaving the hypervisor
+> > > > > >> needs to worry about what state it leaves behind, the design of
+> > > > > >> the hypervisor is sort of
+> > > > > questionable IMO.
+> > > > > >
+> > > > > > This is valid concern. But moving the power domain logic into
+> > > > > > hypervisor mostly micro-kernel design will introduce more
+> > > > > > complexity and
+> > > > > make certification harder.
+> > > > > > Currently, Let Linux shutdown it's power domain is the easiest
+> > > > > > way to me and make things work well after reboot.
+> > > > >
+> > > > > Well, to put it bluntly, if your hypervisor depends on the guest
+> > > > > to do the right thing on exit, it doesn't do its job.  I wouldn't
+> > > > > have certified it for you if that was my decision.
+> > > >
+> > > > It is guest os not work well after guest os reboot. The hypervisor
+> > > > is not
+> > > affected.
+> > > >
+> > > > Thinking another case without hypervisor, M4 core run RTOS, A35 Core
+> > > > run Linux, when Linux rebooting, RTOS should not be affected. After
+> > > > Linux reboot itself, because its power domain is not paired with
+> > > open/shutdown, some devices not function well.
+> > >
+> > > The question boils down to whether or not devices should be detached
+> > > from PM domains on shutdown IMO.
+> > >
+> > > They are detached from PM domains on driver removal, so I guess one
+> > > answer is "yes, in analogy with that".  However, the point about
+> > > performace brought up by Ulf seems to be valid too.
+> > >
+> > > In any case, the change should be made for all of the bus types using
+> > > PM domains, not just one.
+> > 
+> > Understand, it will increase shutdown time. How about shutdown the power
+> > domain in platform_driver->shutdown, let the driver handle it's power domain
+> > sthudown by itself?
+> > Then no need common framework change.
+> 
+> Do you have more suggestions on how to handle this the power domain shutdown?
 
-Shouldn't you depend on a Kconfig option to traverse into this
-directory?
-
-> diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
-> new file mode 100644
-> index 000000000000..ef8388f6bc0a
-> --- /dev/null
-> +++ b/drivers/misc/throttler/Kconfig
-> @@ -0,0 +1,13 @@
-> +menuconfig THROTTLER
-> +	bool "Throttler support"
-> +	default n
-
-the default is always 'n' no need to say it again here :)
-
-> +	depends on OF
-> +	select CPU_FREQ
-> +	select PM_DEVFREQ
-> +	help
-> +	  This option enables core support for non-thermal throttling of CPUs
-> +	  and devfreq devices.
-> +
-> +	  Note that you also need a event monitor module usually called
-> +	  *_throttler.
-> +
-> diff --git a/drivers/misc/throttler/Makefile b/drivers/misc/throttler/Makefile
-> new file mode 100644
-> index 000000000000..c8d920cee315
-> --- /dev/null
-> +++ b/drivers/misc/throttler/Makefile
-> @@ -0,0 +1 @@
-> +obj-$(CONFIG_THROTTLER)		+= core.o
-> diff --git a/drivers/misc/throttler/core.c b/drivers/misc/throttler/core.c
-> new file mode 100644
-> index 000000000000..c058d03212b8
-> --- /dev/null
-> +++ b/drivers/misc/throttler/core.c
-> @@ -0,0 +1,373 @@
-> +/*
-> + * Core code for non-thermal throttling
-> + *
-> + * Copyright (C) 2018 Google, Inc.
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-
-Please just use a single SPDX line, like checkpatch.pl would have warned
-you about.  No need for the full verbous license boiler-plate text here
-at all.
-
-thanks,
-
-greg k-h
+I think you could add a platform syscore_shutdown hook to turn all power
+domains off.
