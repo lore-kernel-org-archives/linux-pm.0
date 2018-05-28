@@ -1,174 +1,89 @@
-From: Peng Fan <peng.fan@nxp.com>
-Subject: RE: [RFC] platform: detach from PM domains on shutdown
-Date: Mon, 28 May 2018 08:01:09 +0000
-Message-ID: <HE1PR04MB300481B481F96F875DCBFB2B886E0@HE1PR04MB3004.eurprd04.prod.outlook.com>
-References: <20180515090110.26820-1-peng.fan@nxp.com>
- <CAJZ5v0ibwRXqaGJW0vFcy+YqMEc_ao9itBErP_w1YjLQWVVtQg@mail.gmail.com>
- <HE1PR04MB3004EF83E7AE2250E44C49A088910@HE1PR04MB3004.eurprd04.prod.outlook.com>
- <1580300.sK9GS2NB4b@aspire.rjw.lan>
- <HE1PR04MB30041C742230314926032D4D88900@HE1PR04MB3004.eurprd04.prod.outlook.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 09/11] misc: throttler: Add core support for non-thermal
+ throttling
+Date: Mon, 28 May 2018 10:08:26 +0200
+Message-ID: <20180528080826.GA17162@kroah.com>
+References: <20180525203043.249193-1-mka@chromium.org>
+ <20180525203043.249193-10-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <HE1PR04MB30041C742230314926032D4D88900@HE1PR04MB3004.eurprd04.prod.outlook.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180525203043.249193-10-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIFJhZmFlbCAmIFVmZmUNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9t
-OiBQZW5nIEZhbg0KPiBTZW50OiAyMDE45bm0NeaciDE45pelIDE2OjUzDQo+IFRvOiBSYWZhZWwg
-Si4gV3lzb2NraSA8cmp3QHJqd3lzb2NraS5uZXQ+DQo+IENjOiBSYWZhZWwgSi4gV3lzb2NraSA8
-cmFmYWVsQGtlcm5lbC5vcmc+OyBVbGYgSGFuc3Nvbg0KPiA8dWxmLmhhbnNzb25AbGluYXJvLm9y
-Zz47IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47DQo+IEZh
-YmlvIEVzdGV2YW0gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47IEdyZWcgS3JvYWgtSGFydG1hbg0K
-PiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0
-DQo+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0gPGxpbnV4LXBtQHZn
-ZXIua2VybmVsLm9yZz47DQo+IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+IFN1
-YmplY3Q6IFJFOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlucyBvbiBzaHV0
-ZG93bg0KPiANCj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJv
-bTogUmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gPiBTZW50
-OiAyMDE45bm0NeaciDE45pelIDE1OjU1DQo+ID4gVG86IFBlbmcgRmFuIDxwZW5nLmZhbkBueHAu
-Y29tPg0KPiA+IENjOiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+OyBVbGYg
-SGFuc3Nvbg0KPiA+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPjsgUmFmYWVsIEouIFd5c29ja2kN
-Cj4gPiA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+OyBGYWJpbyBFc3RldmFtIDxmYWJpby5l
-c3RldmFtQG54cC5jb20+Ow0KPiA+IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2toQGxpbnV4Zm91
-bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZw0KPiA+IExpc3QgPGxpbnV4LWtlcm5l
-bEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTQ0KPiA+IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
-cmc+OyBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0KPiA+IFN1YmplY3Q6IFJlOiBb
-UkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlucyBvbiBzaHV0ZG93bg0KPiA+DQo+
-ID4gT24gVGh1cnNkYXksIE1heSAxNywgMjAxOCAyOjM3OjMxIFBNIENFU1QgUGVuZyBGYW4gd3Jv
-dGU6DQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiBG
-cm9tOiByand5c29ja2lAZ21haWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24g
-QmVoYWxmDQo+ID4gPiA+IE9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiA+IFNlbnQ6IDIwMTjl
-ubQ15pyIMTfml6UgMTY6MDENCj4gPiA+ID4gVG86IFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29t
-Pg0KPiA+ID4gPiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPjsgVWxm
-IEhhbnNzb24NCj4gPiA+ID4gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+OyBSYWZhZWwgSi4gV3lz
-b2NraQ0KPiA+ID4gPiA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+OyBGYWJpbyBFc3RldmFt
-DQo+ID4gPiA+IDxmYWJpby5lc3RldmFtQG54cC5jb20+OyBHcmVnIEtyb2FoLUhhcnRtYW4NCj4g
-PiA+ID4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgTGludXggS2VybmVsIE1haWxpbmcg
-TGlzdA0KPiA+ID4gPiA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBNDQo+
-ID4gPiA+IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+OyBkbC1saW51eC1pbXggPGxpbnV4LWlt
-eEBueHAuY29tPg0KPiA+ID4gPiBTdWJqZWN0OiBSZTogW1JGQ10gcGxhdGZvcm06IGRldGFjaCBm
-cm9tIFBNIGRvbWFpbnMgb24gc2h1dGRvd24NCj4gPiA+ID4NCj4gPiA+ID4gT24gVGh1LCBNYXkg
-MTcsIDIwMTggYXQgNDozMyBBTSwgUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+IHdyb3RlOg0K
-PiA+ID4gPiA+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
-LS0NCj4gPiA+ID4gPj4gRnJvbTogcmp3eXNvY2tpQGdtYWlsLmNvbSBbbWFpbHRvOnJqd3lzb2Nr
-aUBnbWFpbC5jb21dIE9uDQo+ID4gPiA+ID4+IEJlaGFsZiBPZiBSYWZhZWwgSi4gV3lzb2NraQ0K
-PiA+ID4gPiA+PiBTZW50OiAyMDE45bm0NeaciDE35pelIDU6MzUNCj4gPiA+ID4gPj4gVG86IFVs
-ZiBIYW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPg0KPiA+ID4gPiA+PiBDYzogUGVuZyBG
-YW4gPHBlbmcuZmFuQG54cC5jb20+OyBSYWZhZWwgSi4gV3lzb2NraQ0KPiA+ID4gPiA+PiA8cmFm
-YWVsLmoud3lzb2NraUBpbnRlbC5jb20+OyBGYWJpbyBFc3RldmFtDQo+ID4gPiA+ID4+IDxmYWJp
-by5lc3RldmFtQG54cC5jb20+OyBHcmVnIEtyb2FoLUhhcnRtYW4NCj4gPiA+ID4gPj4gPGdyZWdr
-aEBsaW51eGZvdW5kYXRpb24ub3JnPjsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdA0KPiA+ID4g
-PiA+PiA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBNDQo+ID4gPiA+ID4+
-IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+OyBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAu
-Y29tPg0KPiA+ID4gPiA+PiBTdWJqZWN0OiBSZTogW1JGQ10gcGxhdGZvcm06IGRldGFjaCBmcm9t
-IFBNIGRvbWFpbnMgb24gc2h1dGRvd24NCj4gPiA+ID4gPj4NCj4gPiA+ID4gPj4gT24gV2VkLCBN
-YXkgMTYsIDIwMTggYXQgMTE6NTIgQU0sIFVsZiBIYW5zc29uDQo+ID4gPiA+ID4+IDx1bGYuaGFu
-c3NvbkBsaW5hcm8ub3JnPg0KPiA+ID4gPiA+PiB3cm90ZToNCj4gPiA+ID4gPj4gPiBPbiAxNSBN
-YXkgMjAxOCBhdCAxMTowMSwgUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+IHdyb3RlOg0KPiA+
-ID4gPiA+PiA+PiBXaGVuIHJlYm9vdCBMaW51eCwgdGhlIFBNIGRvbWFpbnMgYXR0YWNoZWQgdG8g
-YSBkZXZpY2UgYXJlDQo+ID4gPiA+ID4+ID4+IG5vdCBzaHV0ZG93bi4gVG8gU29DcyB3aGljaCBy
-ZWx5cyBvbiByZXNldCB0aGUgd2hvbGUgU29DLA0KPiA+ID4gPiA+PiA+PiB0aGVyZSBpcyBubyBu
-ZWVkIHRvIHNodXRkb3duIFBNIGRvbWFpbnMsIGJ1dCB0byBMaW51eA0KPiA+ID4gPiA+PiA+PiBy
-dW5uaW5nIGluIGEgdmlydHVhbCBtYWNoaW5lIHdpdGggZGV2aWNlcyBwYXNzLXRocm91Z2gsIHdl
-DQo+ID4gPiA+ID4+ID4+IGNvdWxkIG5vdCByZXNldCB0aGUNCj4gPiB3aG9sZSBTb0MuDQo+ID4g
-PiA+ID4+ID4+IEN1cnJlbnRseSB3ZSBuZWVkIExpbnV4IHRvIHNodXRkb3duIGl0cyBQTSBkb21h
-aW5zIHdoZW4gcmVib290Lg0KPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4+ID4gSSBhbSBub3Qgc3Vy
-ZSBJIHVuZGVyc3RhbmQgZXhhY3RseSB3aHkgdGhlIFBNIGRvbWFpbiBuZWVkcyB0bw0KPiA+ID4g
-PiA+PiA+IGJlIHNodXRkb3duIGZvciB0aGVzZSBjYXNlcywgY291bGQgeW91IHBsZWFzZSBlbGFi
-b3JhdGUgYSBiaXQgb24gdGhhdC4NCj4gPiA+ID4gPj4gPg0KPiA+ID4gPiA+PiA+IEJUVywgd2hh
-dCBwbGF0Zm9ybSBhcmUgeW91IHJ1bm5pbmcgb24gYW5kIGFsc28gd2hhdCBQTQ0KPiA+ID4gPiA+
-PiA+IGRvbWFpbnMgYXJlIGJlaW5nDQo+ID4gPiA+ID4+IHVzZWQ/DQo+ID4gPiA+ID4+ID4NCj4g
-PiA+ID4gPj4gPiBBbnl3YXksIGl0IHNlZW1zIGxpa2UgdGhlcmUgbWF5IGJlIG5lZWQgZm9yIGNl
-cnRhaW4gY2FzZXMsDQo+ID4gPiA+ID4+ID4gYnV0IGNlcnRhaW5seSBub3QgYWxsIC0gZXNwZWNp
-YWxseSBzaW5jZSBpdCBtYXkgc2xvdyBkb3duIHRoZQ0KPiA+ID4gPiA+PiA+IHNodXRkb3duIHBy
-b2Nlc3MsIHdoZW4gbm90IG5lZWRlZC4NCj4gPiA+ID4gPj4gPg0KPiA+ID4gPiA+PiA+IENhbiB3
-ZSBtYWtlIHRoaXMgcnVudGltZSBjb25maWd1cmFibGUsIHZpYSBzeXNmcyBvciB3aGF0ZXZlcg0K
-PiA+ID4gPiA+PiA+IHRoYXQgbWFrZXMNCj4gPiA+ID4gPj4gc2Vuc2UhPw0KPiA+ID4gPiA+PiA+
-DQo+ID4gPiA+ID4+ID4+DQo+ID4gPiA+ID4+ID4+IGNvbW1pdCAyZDMwYmIwYjM4ODkgKCJwbGF0
-Zm9ybTogRG8gbm90IGRldGFjaCBmcm9tIFBNDQo+ID4gPiA+ID4+ID4+IGRvbWFpbnMgb24gc2h1
-dGRvd24iKSwgcmVtb3ZlcyB3aGF0IHRoaXMgcGF0Y2ggdHJpZXMgdG8gYWRkLA0KPiA+ID4gPiA+
-PiA+PiBiZWNhdXNlIG9mIGENCj4gPiB3YXJuaW5nLg0KPiA+ID4gPiA+PiA+PiBjb21taXQgZTc5
-YWVlNDliY2Y5ICgiUE06IEF2b2lkIGZhbHNlLXBvc2l0aXZlIHdhcm5pbmdzIGluDQo+ID4gPiA+
-ID4+ID4+IGRldl9wbV9kb21haW5fc2V0KCkiKSBhbHJlYWR5IGZpeGVzIHRoZSBmYWxzZSBhbGFy
-bSB3YXJuaW5nLg0KPiA+ID4gPiA+PiA+PiBTbyBsZXQncyBkZXRhY2ggdGhlIHBvd2VyIGRvbWFp
-biB0byBzaHV0ZG93biBQTSBkb21haW5zDQo+ID4gPiA+ID4+ID4+IGFmdGVyIGRyaXZlcg0KPiA+
-ID4gPiBzaHV0ZG93bi4NCj4gPiA+ID4gPj4gPj4NCj4gPiA+ID4gPj4gPj4gU2lnbmVkLW9mZi1i
-eTogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+ID4gPiA+ID4+ID4+IC0tLQ0KPiA+ID4g
-PiA+PiA+Pg0KPiA+ID4gPiA+PiA+PiBJIGRvIG5vdCBmaW5kIGEgYmV0dGVyIHBsYWNlIHRvIHNo
-dXRkb3duIHBvd2VyIGRvbWFpbiB3aGVuDQo+ID4gPiA+ID4+ID4+IHJlYm9vdCBMaW51eCwgc28g
-YWRkIGJhY2sgdGhlIGxpbmUgdGhhdCBjb21taXQgMmQzMGJiMGIzODg5DQo+ID4gPiA+ID4+ID4+
-IHJlbW92ZXMsIGJlY2F1c2UgaXQgaXMgYSBmYWxzZSBhbGFybSB3YXJuaW5nIGFzIGNvbW1pdA0K
-PiA+ID4gPiA+PiA+PiBlNzlhZWU0OWJjZjkNCj4gPiBkZXNjcmliZXMuDQo+ID4gPiA+ID4+ID4+
-DQo+ID4gPiA+ID4+ID4+ICBkcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyB8IDEgKw0KPiA+ID4gPiA+
-PiA+PiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspDQo+ID4gPiA+ID4+ID4+DQo+ID4g
-PiA+ID4+ID4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+ID4gPiA+
-PiA+PiBiL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGluZGV4IDgwNzVkZGM3MGExNy4uYTU5Mjlm
-MjRkYzNjDQo+ID4gPiA+ID4+ID4+IDEwMDY0NA0KPiA+ID4gPiA+PiA+PiAtLS0gYS9kcml2ZXJz
-L2Jhc2UvcGxhdGZvcm0uYw0KPiA+ID4gPiA+PiA+PiArKysgYi9kcml2ZXJzL2Jhc2UvcGxhdGZv
-cm0uYw0KPiA+ID4gPiA+PiA+PiBAQCAtNjE2LDYgKzYxNiw3IEBAIHN0YXRpYyB2b2lkIHBsYXRm
-b3JtX2Rydl9zaHV0ZG93bihzdHJ1Y3QNCj4gPiA+ID4gPj4gPj4gZGV2aWNlDQo+ID4gPiA+ID4+
-ID4+ICpfZGV2KQ0KPiA+ID4gPiA+PiA+Pg0KPiA+ID4gPiA+PiA+PiAgICAgICAgIGlmIChkcnYt
-PnNodXRkb3duKQ0KPiA+ID4gPiA+PiA+PiAgICAgICAgICAgICAgICAgZHJ2LT5zaHV0ZG93bihk
-ZXYpOw0KPiA+ID4gPiA+PiA+PiArICAgICAgIGRldl9wbV9kb21haW5fZGV0YWNoKF9kZXYsIHRy
-dWUpOw0KPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4+ID4gVGhpcyB3b3VsZCBzb21ld2hhdCB3b3Jr
-LCBidXQgb25seSBmb3IgcGxhdGZvcm0gZGV2aWNlcy4gVG8NCj4gPiA+ID4gPj4gPiBtYWtlIHRo
-aXMgZnVsbHkgd29yaywgd2UgbmVlZCB0byBjYWxsIGRldl9wbV9kb21haW5fZGV0YWNoKCkNCj4g
-PiA+ID4gPj4gPiBmcm9tIGFtYmEsIHNwaSwgZXRjIGFzIHdlbGwuDQo+ID4gPiA+ID4+ID4NCj4g
-PiA+ID4gPj4gPiBQZXJoYXBzIGFub3RoZXIgb3B0aW9uIHRvIG1hbmFnZSB0aGlzIG1vcmUgZ2Vu
-ZXJhbGx5LCBhbg0KPiA+ID4gPiA+PiA+IHdpdGhvdXQgaGF2aW5nIGRldGFjaCBkZXZpY2VzLCBj
-b3VsZCBiZSB0byBleHRlbmQgdGhlIHN0cnVjdA0KPiA+ID4gPiA+PiA+IGRldl9wbV9kb21haW4g
-d2l0aCBhIG5ldyBjYWxsYmFjaywgIi0+c2h1dGRvd24oKSIgYW5kIHRoZW4NCj4gPiA+ID4gPj4g
-PiBtYWtlIHRoZSBkcml2ZXIgY29yZSBjYWxsIGl0IGZyb20gZGV2aWNlX3NodXRkb3duKCkuDQo+
-ID4gPiA+ID4+DQo+ID4gPiA+ID4+IEknbSBzZW5zaW5nIGEgcG9zc2libGUgb3JkZXJpbmcgc2xp
-cHBlcnkgc2xvcGUgd2l0aCB0aGlzIChpdA0KPiA+ID4gPiA+PiB3aWxsIG9ubHkgd29yayBpZiBh
-bGwgb2YgdGhlIGRyaXZlcnMvYnVzIHR5cGVzIGV0YyBkbyB0aGUgcmlnaHQNCj4gPiA+ID4gPj4g
-dGhpbmcgaW4gdGhlaXINCj4gPiA+ID4gPj4gLT5zaHV0ZG93biBjYWxsYmFja3Mgc28gbm90aGlu
-ZyBkZXBlbmRzIG9uIHRoZSBkb21haW4gZ29pbmcNCj4gZm9yd2FyZCkuDQo+ID4gPiA+ID4+DQo+
-ID4gPiA+ID4+ID4gVHlwaWNhbGx5LCBmb3IgZ2VucGQsIEkgd291bGQgcHJvYmFibHkgY291bnQg
-dGhlIG51bWJlciBvZg0KPiA+ID4gPiA+PiA+IGNhbGxzIGJlaW5nIG1hZGUgdG8gLT5zaHV0ZG93
-bigpIHBlciBQTSBkb21haW4sIHRoZW4gd2hlbiBpdA0KPiA+ID4gPiA+PiA+IHJlYWNoZXMgdGhl
-IG51bWJlciBvZiBhdHRhY2hlZCBkZXZpY2VzIHRvIGl0LCBhbGxvdyB0byBwb3dlciBvZmYgaXQu
-DQo+ID4gPiA+ID4+ID4NCj4gPiA+ID4gPj4gPiBMZXQncyBzZWUgd2hhdCBSYWZhZWwgdGhpbmtz
-IGFib3V0IGl0Lg0KPiA+ID4gPiA+Pg0KPiA+ID4gPiA+PiBJJ20gbm90IHN1cmUgYWJvdXQgdGhl
-IHVzZSBjYXNlLiAgVGhlIGh5cGVydmlzb3Igc2hvdWxkIGJlIGFibGUNCj4gPiA+ID4gPj4gdG8g
-dGFrZSBjYXJlIG9mIHR1cm5pbmcgcG93ZXIgZG9tYWlucyBvZmYgb24gdGhlIGNsaWVudCBPUw0K
-PiA+ID4gPiA+PiByZWJvb3QgaW4gdGhlb3J5LiAgSWYgdGhlIGNsaWVudCBPUyBsZWF2aW5nIHRo
-ZSBoeXBlcnZpc29yDQo+ID4gPiA+ID4+IG5lZWRzIHRvIHdvcnJ5IGFib3V0IHdoYXQgc3RhdGUg
-aXQgbGVhdmVzIGJlaGluZCwgdGhlIGRlc2lnbiBvZg0KPiA+ID4gPiA+PiB0aGUgaHlwZXJ2aXNv
-ciBpcyBzb3J0IG9mDQo+ID4gPiA+IHF1ZXN0aW9uYWJsZSBJTU8uDQo+ID4gPiA+ID4NCj4gPiA+
-ID4gPiBUaGlzIGlzIHZhbGlkIGNvbmNlcm4uIEJ1dCBtb3ZpbmcgdGhlIHBvd2VyIGRvbWFpbiBs
-b2dpYyBpbnRvDQo+ID4gPiA+ID4gaHlwZXJ2aXNvciBtb3N0bHkgbWljcm8ta2VybmVsIGRlc2ln
-biB3aWxsIGludHJvZHVjZSBtb3JlDQo+ID4gPiA+ID4gY29tcGxleGl0eSBhbmQNCj4gPiA+ID4g
-bWFrZSBjZXJ0aWZpY2F0aW9uIGhhcmRlci4NCj4gPiA+ID4gPiBDdXJyZW50bHksIExldCBMaW51
-eCBzaHV0ZG93biBpdCdzIHBvd2VyIGRvbWFpbiBpcyB0aGUgZWFzaWVzdA0KPiA+ID4gPiA+IHdh
-eSB0byBtZSBhbmQgbWFrZSB0aGluZ3Mgd29yayB3ZWxsIGFmdGVyIHJlYm9vdC4NCj4gPiA+ID4N
-Cj4gPiA+ID4gV2VsbCwgdG8gcHV0IGl0IGJsdW50bHksIGlmIHlvdXIgaHlwZXJ2aXNvciBkZXBl
-bmRzIG9uIHRoZSBndWVzdA0KPiA+ID4gPiB0byBkbyB0aGUgcmlnaHQgdGhpbmcgb24gZXhpdCwg
-aXQgZG9lc24ndCBkbyBpdHMgam9iLiAgSSB3b3VsZG4ndA0KPiA+ID4gPiBoYXZlIGNlcnRpZmll
-ZCBpdCBmb3IgeW91IGlmIHRoYXQgd2FzIG15IGRlY2lzaW9uLg0KPiA+ID4NCj4gPiA+IEl0IGlz
-IGd1ZXN0IG9zIG5vdCB3b3JrIHdlbGwgYWZ0ZXIgZ3Vlc3Qgb3MgcmVib290LiBUaGUgaHlwZXJ2
-aXNvcg0KPiA+ID4gaXMgbm90DQo+ID4gYWZmZWN0ZWQuDQo+ID4gPg0KPiA+ID4gVGhpbmtpbmcg
-YW5vdGhlciBjYXNlIHdpdGhvdXQgaHlwZXJ2aXNvciwgTTQgY29yZSBydW4gUlRPUywgQTM1IENv
-cmUNCj4gPiA+IHJ1biBMaW51eCwgd2hlbiBMaW51eCByZWJvb3RpbmcsIFJUT1Mgc2hvdWxkIG5v
-dCBiZSBhZmZlY3RlZC4gQWZ0ZXINCj4gPiA+IExpbnV4IHJlYm9vdCBpdHNlbGYsIGJlY2F1c2Ug
-aXRzIHBvd2VyIGRvbWFpbiBpcyBub3QgcGFpcmVkIHdpdGgNCj4gPiBvcGVuL3NodXRkb3duLCBz
-b21lIGRldmljZXMgbm90IGZ1bmN0aW9uIHdlbGwuDQo+ID4NCj4gPiBUaGUgcXVlc3Rpb24gYm9p
-bHMgZG93biB0byB3aGV0aGVyIG9yIG5vdCBkZXZpY2VzIHNob3VsZCBiZSBkZXRhY2hlZA0KPiA+
-IGZyb20gUE0gZG9tYWlucyBvbiBzaHV0ZG93biBJTU8uDQo+ID4NCj4gPiBUaGV5IGFyZSBkZXRh
-Y2hlZCBmcm9tIFBNIGRvbWFpbnMgb24gZHJpdmVyIHJlbW92YWwsIHNvIEkgZ3Vlc3Mgb25lDQo+
-ID4gYW5zd2VyIGlzICJ5ZXMsIGluIGFuYWxvZ3kgd2l0aCB0aGF0Ii4gIEhvd2V2ZXIsIHRoZSBw
-b2ludCBhYm91dA0KPiA+IHBlcmZvcm1hY2UgYnJvdWdodCB1cCBieSBVbGYgc2VlbXMgdG8gYmUg
-dmFsaWQgdG9vLg0KPiA+DQo+ID4gSW4gYW55IGNhc2UsIHRoZSBjaGFuZ2Ugc2hvdWxkIGJlIG1h
-ZGUgZm9yIGFsbCBvZiB0aGUgYnVzIHR5cGVzIHVzaW5nDQo+ID4gUE0gZG9tYWlucywgbm90IGp1
-c3Qgb25lLg0KPiANCj4gVW5kZXJzdGFuZCwgaXQgd2lsbCBpbmNyZWFzZSBzaHV0ZG93biB0aW1l
-LiBIb3cgYWJvdXQgc2h1dGRvd24gdGhlIHBvd2VyDQo+IGRvbWFpbiBpbiBwbGF0Zm9ybV9kcml2
-ZXItPnNodXRkb3duLCBsZXQgdGhlIGRyaXZlciBoYW5kbGUgaXQncyBwb3dlciBkb21haW4NCj4g
-c3RodWRvd24gYnkgaXRzZWxmPw0KPiBUaGVuIG5vIG5lZWQgY29tbW9uIGZyYW1ld29yayBjaGFu
-Z2UuDQoNCkRvIHlvdSBoYXZlIG1vcmUgc3VnZ2VzdGlvbnMgb24gaG93IHRvIGhhbmRsZSB0aGlz
-IHRoZSBwb3dlciBkb21haW4gc2h1dGRvd24/DQoNClRoYW5rcywNClBlbmcuDQoNCj4gDQo+IFRo
-YW5rcywNCj4gUGVuZw0KDQo=
+On Fri, May 25, 2018 at 01:30:41PM -0700, Matthias Kaehlcke wrote:
+> diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+> index 20be70c3f118..01a1714dd2ad 100644
+> --- a/drivers/misc/Makefile
+> +++ b/drivers/misc/Makefile
+> @@ -57,3 +57,4 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
+>  obj-$(CONFIG_PCI_ENDPOINT_TEST)	+= pci_endpoint_test.o
+>  obj-$(CONFIG_OCXL)		+= ocxl/
+>  obj-$(CONFIG_MISC_RTSX)		+= cardreader/
+> +obj-y				+= throttler/
+
+Shouldn't you depend on a Kconfig option to traverse into this
+directory?
+
+> diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
+> new file mode 100644
+> index 000000000000..ef8388f6bc0a
+> --- /dev/null
+> +++ b/drivers/misc/throttler/Kconfig
+> @@ -0,0 +1,13 @@
+> +menuconfig THROTTLER
+> +	bool "Throttler support"
+> +	default n
+
+the default is always 'n' no need to say it again here :)
+
+> +	depends on OF
+> +	select CPU_FREQ
+> +	select PM_DEVFREQ
+> +	help
+> +	  This option enables core support for non-thermal throttling of CPUs
+> +	  and devfreq devices.
+> +
+> +	  Note that you also need a event monitor module usually called
+> +	  *_throttler.
+> +
+> diff --git a/drivers/misc/throttler/Makefile b/drivers/misc/throttler/Makefile
+> new file mode 100644
+> index 000000000000..c8d920cee315
+> --- /dev/null
+> +++ b/drivers/misc/throttler/Makefile
+> @@ -0,0 +1 @@
+> +obj-$(CONFIG_THROTTLER)		+= core.o
+> diff --git a/drivers/misc/throttler/core.c b/drivers/misc/throttler/core.c
+> new file mode 100644
+> index 000000000000..c058d03212b8
+> --- /dev/null
+> +++ b/drivers/misc/throttler/core.c
+> @@ -0,0 +1,373 @@
+> +/*
+> + * Core code for non-thermal throttling
+> + *
+> + * Copyright (C) 2018 Google, Inc.
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+
+Please just use a single SPDX line, like checkpatch.pl would have warned
+you about.  No need for the full verbous license boiler-plate text here
+at all.
+
+thanks,
+
+greg k-h
