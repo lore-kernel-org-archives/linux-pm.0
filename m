@@ -1,119 +1,98 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle/powernv : Add Description for cpuidle state
-Date: Mon, 28 May 2018 23:04:42 +0530
-Message-ID: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
+From: Auger Eric <eric.auger@redhat.com>
+Subject: Re: [PATCH v3] vfio: platform: Fix using devices in PM Domains
+Date: Mon, 28 May 2018 22:27:41 +0200
+Message-ID: <ff3992c7-1d59-1fec-1393-47e2d278d8c9@redhat.com>
+References: <1527521165-29345-1-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1527521165-29345-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Alex Williamson <alex.williamson@redhat.com>
+Cc: kvm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Names of cpuidle states were being used for description of states
-in POWER as no descriptions were added in device tree. This patch
-reads description for idle states which have been added in device
-tree.
-The description for idle states in case of POWER can be printed
-using "cpupower monitor -l" or "cpupower idle-info".
+Hi Geert,
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
+On 05/28/2018 05:26 PM, Geert Uytterhoeven wrote:
+> If a device is part of a PM Domain (e.g. power and/or clock domain), its
+> power state is managed using Runtime PM.  Without Runtime PM, the device
+> may not be powered up or clocked, causing subtle failures, crashes, or
+> system lock-ups when the device is accessed by the guest.
+> 
+> Fix this by adding Runtime PM support, powering the device when the VFIO
+> device is opened by the guest.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+> ---
+> v3:
+>   - Drop controversial note about unsafeness of exporting fine-grained
+>     power management from host to guest,
+thanks ;-)
 
-The skiboot patch which adds description for idle states in device tree
-can be found here: https://patchwork.ozlabs.org/patch/921637/
+> 
+> v2:
+>   - Improve wording,
+>   - Add Reviewed-by.
+> ---
+>  drivers/vfio/platform/vfio_platform_common.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/drivers/vfio/platform/vfio_platform_common.c b/drivers/vfio/platform/vfio_platform_common.c
+> index b60bb5326668498c..41f862f055054543 100644
+> --- a/drivers/vfio/platform/vfio_platform_common.c
+> +++ b/drivers/vfio/platform/vfio_platform_common.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/iommu.h>
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/slab.h>
+>  #include <linux/types.h>
+>  #include <linux/uaccess.h>
+> @@ -233,6 +234,8 @@ static void vfio_platform_release(void *device_data)
+>  		const char *extra_dbg = NULL;
+>  		int ret;
+>  
+> +		pm_runtime_put(vdev->device);
 
- drivers/cpuidle/cpuidle-powernv.c | 17 +++++++++++++----
- include/linux/cpuidle.h           |  2 +-
- 2 files changed, 14 insertions(+), 5 deletions(-)
+> +
+>  		ret = vfio_platform_call_reset(vdev, &extra_dbg);
+While reading the code again, the reset is using the HW. Don't you want
+to call the get() before.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 1a8234e706bc..d3915a965128 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -133,7 +133,7 @@ static int stop_loop(struct cpuidle_device *dev,
- static struct cpuidle_state powernv_states[CPUIDLE_STATE_MAX] = {
- 	{ /* Snooze */
- 		.name = "snooze",
--		.desc = "snooze",
-+		.desc = "idle polling state",
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = snooze_loop },
-@@ -206,6 +206,7 @@ static int powernv_cpuidle_driver_init(void)
- }
- 
- static inline void add_powernv_state(int index, const char *name,
-+				     const char *desc,
- 				     unsigned int flags,
- 				     int (*idle_fn)(struct cpuidle_device *,
- 						    struct cpuidle_driver *,
-@@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
- 				     u64 psscr_val, u64 psscr_mask)
- {
- 	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
--	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
-+	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
- 	powernv_states[index].flags = flags;
- 	powernv_states[index].target_residency = target_residency;
- 	powernv_states[index].exit_latency = exit_latency;
-@@ -250,6 +251,7 @@ static int powernv_add_idle_states(void)
- 	u64 psscr_val[CPUIDLE_STATE_MAX];
- 	u64 psscr_mask[CPUIDLE_STATE_MAX];
- 	const char *names[CPUIDLE_STATE_MAX];
-+	const char *descs[CPUIDLE_STATE_MAX];
- 	u32 has_stop_states = 0;
- 	int i, rc;
- 	u32 supported_flags = pnv_get_supported_cpuidle_states();
-@@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
- 		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
- 		goto out;
- 	}
-+	if (of_property_read_string_array(power_mgt,
-+		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
-+		goto out;
-+	}
- 
- 	/*
- 	 * If the idle states use stop instruction, probe for psscr values
-@@ -414,10 +421,11 @@ static int powernv_add_idle_states(void)
- 				target_residency = 100;
- 			/* Add NAP state */
- 			add_powernv_state(nr_idle_states, "Nap",
-+					  "stop processor execution",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
- 		} else if (has_stop_states && !stops_timebase) {
--			add_powernv_state(nr_idle_states, names[i],
-+			add_powernv_state(nr_idle_states, names[i], descs[i],
- 					  CPUIDLE_FLAG_NONE, stop_loop,
- 					  target_residency, exit_latency,
- 					  psscr_val[i], psscr_mask[i]);
-@@ -434,11 +442,12 @@ static int powernv_add_idle_states(void)
- 				target_residency = 300000;
- 			/* Add FASTSLEEP state */
- 			add_powernv_state(nr_idle_states, "FastSleep",
-+					  "Core and L2 clock gating",
- 					  CPUIDLE_FLAG_TIMER_STOP,
- 					  fastsleep_loop,
- 					  target_residency, exit_latency, 0, 0);
- 		} else if (has_stop_states && stops_timebase) {
--			add_powernv_state(nr_idle_states, names[i],
-+			add_powernv_state(nr_idle_states, names[i], descs[i],
- 					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
- 					  target_residency, exit_latency,
- 					  psscr_val[i], psscr_mask[i]);
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 1eefabf1621f..5094755cb132 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -17,7 +17,7 @@
- 
- #define CPUIDLE_STATE_MAX	10
- #define CPUIDLE_NAME_LEN	16
--#define CPUIDLE_DESC_LEN	32
-+#define CPUIDLE_DESC_LEN	60
- 
- struct module;
- 
--- 
-2.14.1
+Thanks
+
+Eric
+>  		if (ret && vdev->reset_required) {
+>  			dev_warn(vdev->device, "reset driver is required and reset call failed in release (%d) %s\n",
+> @@ -275,6 +278,10 @@ static int vfio_platform_open(void *device_data)
+>  				 ret, extra_dbg ? extra_dbg : "");
+>  			goto err_rst;
+>  		}
+> +
+> +		ret = pm_runtime_get_sync(vdev->device);
+> +		if (ret < 0)
+> +			goto err_rst;
+>  	}
+>  
+>  	vdev->refcnt++;
+> @@ -690,6 +697,7 @@ int vfio_platform_probe_common(struct vfio_platform_device *vdev,
+>  
+>  	mutex_init(&vdev->igate);
+>  
+> +	pm_runtime_enable(vdev->device);
+>  	return 0;
+>  
+>  put_iommu:
+> @@ -707,6 +715,7 @@ struct vfio_platform_device *vfio_platform_remove_common(struct device *dev)
+>  	vdev = vfio_del_group_dev(dev);
+>  
+>  	if (vdev) {
+> +		pm_runtime_disable(vdev->device);
+>  		vfio_platform_put_reset(vdev);
+>  		vfio_iommu_group_put(dev->iommu_group, dev);
+>  	}
+> 
