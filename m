@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT] [PATCH v2 3/6] cpufreq: intel_pstate: Add
- update_util_hook for HWP
-Date: Tue, 29 May 2018 09:37:13 +0200
-Message-ID: <CAJZ5v0hHD-qH45bnw91w+ky=rnrTW4yTYMdizU47S8Y8Avqc_g@mail.gmail.com>
-References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com> <20180524014738.52924-4-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC/RFT] [PATCH v2 4/6] cpufreq: intel_pstate: HWP boost
+ performance on IO wakeup
+Date: Tue, 29 May 2018 09:44:16 +0200
+Message-ID: <CAJZ5v0iG+jNC77KCHNUAt5tAtrtgryz2U4P1s_d9vB0HzLyOFw@mail.gmail.com>
+References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com> <20180524014738.52924-5-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180524014738.52924-4-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20180524014738.52924-5-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Mel Gorman <mgorman@techsingularity.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>
@@ -15,81 +15,102 @@ List-Id: linux-pm@vger.kernel.org
 
 On Thu, May 24, 2018 at 3:47 AM, Srinivas Pandruvada
 <srinivas.pandruvada@linux.intel.com> wrote:
-> When HWP dynamic boost is active then set the HWP specific update util
-> hook.
+> This change uses SCHED_CPUFREQ_IOWAIT flag to boost HWP performance.
+> Since SCHED_CPUFREQ_IOWAIT flag is set frequently, we don't start
+> boosting steps unless we see two consecutive flags in two ticks. This
+> avoids boosting due to IO because of regular system activities.
+>
+> To avoid synchronization issues, the actual processing of the flag is
+> done on the local CPU callback.
 >
 > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
-Splitting this patch out of the next one is sort of artificial.
-
 > ---
->  drivers/cpufreq/intel_pstate.c | 21 +++++++++++++++++----
->  1 file changed, 17 insertions(+), 4 deletions(-)
+>  drivers/cpufreq/intel_pstate.c | 44 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 44 insertions(+)
 >
 > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 6ad46e07cad6..382160570b5f 100644
+> index 382160570b5f..6d0ebe4fe1c7 100644
 > --- a/drivers/cpufreq/intel_pstate.c
 > +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -291,6 +291,7 @@ static struct pstate_funcs pstate_funcs __read_mostly;
+> @@ -223,6 +223,8 @@ struct global_params {
+>   *                     operation
+>   * @hwp_req_cached:    Cached value of the last HWP Request MSR
+>   * @hwp_cap_cached:    Cached value of the last HWP Capabilities MSR
+> + * @last_io_update:    Last time when IO wake flag was set
+> + * @sched_flags:       Store scheduler flags for possible cross CPU update
+>   * @hwp_boost_min:     Last HWP boosted min performance
+>   *
+>   * This structure stores per CPU instance data for all CPUs.
+> @@ -258,6 +260,8 @@ struct cpudata {
+>         s16 epp_saved;
+>         u64 hwp_req_cached;
+>         u64 hwp_cap_cached;
+> +       u64 last_io_update;
+> +       unsigned long sched_flags;
+>         int hwp_boost_min;
+>  };
 >
->  static int hwp_active __read_mostly;
->  static bool per_cpu_limits __read_mostly;
-> +static bool hwp_boost __read_mostly;
-
-Because of this, among other things.
-
->
->  static struct cpufreq_driver *intel_pstate_driver __read_mostly;
->
-> @@ -1461,6 +1462,11 @@ static inline bool intel_pstate_hwp_boost_down(struct cpudata *cpu)
+> @@ -1462,9 +1466,49 @@ static inline bool intel_pstate_hwp_boost_down(struct cpudata *cpu)
 >         return false;
 >  }
 >
-> +static inline void intel_pstate_update_util_hwp(struct update_util_data *data,
-> +                                               u64 time, unsigned int flags)
+> +static inline void intel_pstate_update_util_hwp_local(struct cpudata *cpu,
+> +                                                     u64 time)
 > +{
+> +       bool io_flag;
+> +
+> +       cpu->sample.time = time;
+> +       io_flag = test_and_clear_bit(SCHED_CPUFREQ_IOWAIT, &cpu->sched_flags);
+
+I don't think you need to use bit ops here.
+
+_update_util() runs under rq->lock for the target CPU, so it will not
+run concurrently on two different CPUs for the same target anyway.
+
+> +       if (io_flag) {
+> +               bool do_io = false;
+> +
+> +               /*
+> +                * Set iowait_boost flag and update time. Since IO WAIT flag
+> +                * is set all the time, we can't just conclude that there is
+> +                * some IO bound activity is scheduled on this CPU with just
+> +                * one occurrence. If we receive at least two in two
+> +                * consecutive ticks, then we treat as boost candidate.
+> +                */
+> +               if (time_before64(time, cpu->last_io_update + 2 * TICK_NSEC))
+> +                       do_io = true;
+> +
+> +               cpu->last_io_update = time;
+> +
+> +               if (do_io)
+> +                       intel_pstate_hwp_boost_up(cpu);
+
+But what happens if user space wants to update the limits while
+boosting is in effect?  Shouldn't it take hwp_boost_min into account
+then?
+
+> +
+> +       } else {
+> +               if (intel_pstate_hwp_boost_down(cpu))
+> +                       return;
+> +       }
+> +
+> +       cpu->last_update = time;
 > +}
 > +
->  static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+>  static inline void intel_pstate_update_util_hwp(struct update_util_data *data,
+>                                                 u64 time, unsigned int flags)
 >  {
->         struct sample *sample = &cpu->sample;
-> @@ -1764,7 +1770,7 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
->  {
->         struct cpudata *cpu = all_cpu_data[cpu_num];
->
-> -       if (hwp_active)
-> +       if (hwp_active && !hwp_boost)
->                 return;
->
->         if (cpu->update_util_set)
-> @@ -1772,8 +1778,12 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
->
->         /* Prevent intel_pstate_update_util() from using stale data. */
->         cpu->sample.time = 0;
-> -       cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
-> -                                    intel_pstate_update_util);
-> +       if (hwp_active)
-> +               cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
-> +                                            intel_pstate_update_util_hwp);
-> +       else
-> +               cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
-> +                                            intel_pstate_update_util);
->         cpu->update_util_set = true;
+> +       struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+> +
+> +       if (flags & SCHED_CPUFREQ_IOWAIT)
+> +               set_bit(SCHED_CPUFREQ_IOWAIT, &cpu->sched_flags);
+> +
+> +       if (smp_processor_id() == cpu->cpu)
+> +               intel_pstate_update_util_hwp_local(cpu, time);
 >  }
 >
-> @@ -1885,8 +1895,11 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->                 intel_pstate_set_update_util_hook(policy->cpu);
->         }
->
-> -       if (hwp_active)
-> +       if (hwp_active) {
-> +               if (!hwp_boost)
-> +                       intel_pstate_clear_update_util_hook(policy->cpu);
->                 intel_pstate_hwp_set(policy->cpu);
-> +       }
->
->         mutex_unlock(&intel_pstate_limits_lock);
->
+>  static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
 > --
 > 2.13.6
 >
