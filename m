@@ -1,53 +1,95 @@
-From: Stewart Smith <stewart@linux.ibm.com>
-Subject: Re: [PATCH] cpuidle/powernv : Add Description for cpuidle state
-Date: Tue, 29 May 2018 11:39:01 +1000
-Message-ID: <87d0xf6y16.fsf@linux.vnet.ibm.com>
-References: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC/RFT] [PATCH v2 3/6] cpufreq: intel_pstate: Add
+ update_util_hook for HWP
+Date: Tue, 29 May 2018 09:37:13 +0200
+Message-ID: <CAJZ5v0hHD-qH45bnw91w+ky=rnrTW4yTYMdizU47S8Y8Avqc_g@mail.gmail.com>
+References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com> <20180524014738.52924-4-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
+In-Reply-To: <20180524014738.52924-4-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Mel Gorman <mgorman@techsingularity.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Abhishek Goel <huntbag@linux.vnet.ibm.com> writes:
-> @@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
->  				     u64 psscr_val, u64 psscr_mask)
->  {
->  	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
-> -	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
-> +	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
-
-We should still fall back to using name in the event of desc being null,
-as not all firmware will expose the descriptions.
-
-> @@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
->  		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
->  		goto out;
->  	}
-> +	if (of_property_read_string_array(power_mgt,
-> +		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
-> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
-> +		goto out;
-> +	}
-
-I don't think pr_warn is appropriate here, as for all current released
-firmware we don't have that property. I think perhaps just silently
-continuing on is okay, as we have to keep compatibility with that firmware.
-
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -17,7 +17,7 @@
+On Thu, May 24, 2018 at 3:47 AM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> When HWP dynamic boost is active then set the HWP specific update util
+> hook.
 >
->  #define CPUIDLE_STATE_MAX	10
->  #define CPUIDLE_NAME_LEN	16
-> -#define CPUIDLE_DESC_LEN	32
-> +#define CPUIDLE_DESC_LEN	60
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Do we really get that long?
+Splitting this patch out of the next one is sort of artificial.
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+> ---
+>  drivers/cpufreq/intel_pstate.c | 21 +++++++++++++++++----
+>  1 file changed, 17 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 6ad46e07cad6..382160570b5f 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -291,6 +291,7 @@ static struct pstate_funcs pstate_funcs __read_mostly;
+>
+>  static int hwp_active __read_mostly;
+>  static bool per_cpu_limits __read_mostly;
+> +static bool hwp_boost __read_mostly;
+
+Because of this, among other things.
+
+>
+>  static struct cpufreq_driver *intel_pstate_driver __read_mostly;
+>
+> @@ -1461,6 +1462,11 @@ static inline bool intel_pstate_hwp_boost_down(struct cpudata *cpu)
+>         return false;
+>  }
+>
+> +static inline void intel_pstate_update_util_hwp(struct update_util_data *data,
+> +                                               u64 time, unsigned int flags)
+> +{
+> +}
+> +
+>  static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+>  {
+>         struct sample *sample = &cpu->sample;
+> @@ -1764,7 +1770,7 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+>  {
+>         struct cpudata *cpu = all_cpu_data[cpu_num];
+>
+> -       if (hwp_active)
+> +       if (hwp_active && !hwp_boost)
+>                 return;
+>
+>         if (cpu->update_util_set)
+> @@ -1772,8 +1778,12 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+>
+>         /* Prevent intel_pstate_update_util() from using stale data. */
+>         cpu->sample.time = 0;
+> -       cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
+> -                                    intel_pstate_update_util);
+> +       if (hwp_active)
+> +               cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
+> +                                            intel_pstate_update_util_hwp);
+> +       else
+> +               cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
+> +                                            intel_pstate_update_util);
+>         cpu->update_util_set = true;
+>  }
+>
+> @@ -1885,8 +1895,11 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>                 intel_pstate_set_update_util_hook(policy->cpu);
+>         }
+>
+> -       if (hwp_active)
+> +       if (hwp_active) {
+> +               if (!hwp_boost)
+> +                       intel_pstate_clear_update_util_hook(policy->cpu);
+>                 intel_pstate_hwp_set(policy->cpu);
+> +       }
+>
+>         mutex_unlock(&intel_pstate_limits_lock);
+>
+> --
+> 2.13.6
+>
