@@ -1,169 +1,48 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] kernel/SRCU: provide a static initializer
-Date: Tue, 29 May 2018 05:04:43 -0700
-Message-ID: <20180529120443.GE3803@linux.vnet.ibm.com>
-References: <20180525101958.13277-1-bigeasy@linutronix.de>
- <20180525101958.13277-2-bigeasy@linutronix.de>
- <CAJZ5v0jEUR7YxzujvZn8WVK+dMxmOxoHNiLKcmgCq9awHR=vYg@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpuidle/powernv : Add Description for cpuidle state
+Date: Tue, 29 May 2018 22:30:57 +1000
+Message-ID: <87sh6a4pa6.fsf@concordia.ellerman.id.au>
+References: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com> <87d0xf6y16.fsf@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jEUR7YxzujvZn8WVK+dMxmOxoHNiLKcmgCq9awHR=vYg@mail.gmail.com>
+In-Reply-To: <87d0xf6y16.fsf@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Stewart Smith <stewart@linux.ibm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 29, 2018 at 10:09:51AM +0200, Rafael J. Wysocki wrote:
-> On Fri, May 25, 2018 at 12:19 PM, Sebastian Andrzej Siewior
-> <bigeasy@linutronix.de> wrote:
-> > There are macros for static initializer for the three out of four
-> > possible notifier types, that are:
-> >         ATOMIC_NOTIFIER_HEAD()
-> >         BLOCKING_NOTIFIER_HEAD()
-> >         RAW_NOTIFIER_HEAD()
-> >
-> > This patch provides a static initilizer for the forth type to make it
-> > complete.
-> >
-> > Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> 
-> I cannot apply this without an ACK from Paul.
+Stewart Smith <stewart@linux.ibm.com> writes:
 
-I have both queued, but if you would prefer to take them, then for the
-SRCU piece:
+> Abhishek Goel <huntbag@linux.vnet.ibm.com> writes:
+>> @@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
+>>  				     u64 psscr_val, u64 psscr_mask)
+>>  {
+>>  	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+>> -	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
+>> +	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
+>
+> We should still fall back to using name in the event of desc being null,
+> as not all firmware will expose the descriptions.
+>
+>> @@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
+>>  		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
+>>  		goto out;
+>>  	}
+>> +	if (of_property_read_string_array(power_mgt,
+>> +		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
+>> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
+>> +		goto out;
+>> +	}
+>
+> I don't think pr_warn is appropriate here, as for all current released
+> firmware we don't have that property. I think perhaps just silently
+> continuing on is okay, as we have to keep compatibility with that firmware.
 
-Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
++1
 
-							Thanx, Paul
+Anyone who's wondering why they're not seeing the names can just look at
+the device tree on the machine to see if the property is there or not,
+they don't need a printk in dmesg to tell them.
 
-> > ---
-> >  include/linux/notifier.h | 34 +++++++++++++++++++++++++++++-----
-> >  include/linux/srcutiny.h |  6 +++---
-> >  include/linux/srcutree.h |  6 +++---
-> >  3 files changed, 35 insertions(+), 11 deletions(-)
-> >
-> > diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-> > index 6d731110e0db..f35c7bf76143 100644
-> > --- a/include/linux/notifier.h
-> > +++ b/include/linux/notifier.h
-> > @@ -43,9 +43,7 @@
-> >   * in srcu_notifier_call_chain(): no cache bounces and no memory barriers.
-> >   * As compensation, srcu_notifier_chain_unregister() is rather expensive.
-> >   * SRCU notifier chains should be used when the chain will be called very
-> > - * often but notifier_blocks will seldom be removed.  Also, SRCU notifier
-> > - * chains are slightly more difficult to use because they require special
-> > - * runtime initialization.
-> > + * often but notifier_blocks will seldom be removed.
-> >   */
-> >
-> >  struct notifier_block;
-> > @@ -91,7 +89,7 @@ struct srcu_notifier_head {
-> >                 (name)->head = NULL;            \
-> >         } while (0)
-> >
-> > -/* srcu_notifier_heads must be initialized and cleaned up dynamically */
-> > +/* srcu_notifier_heads must be cleaned up dynamically */
-> >  extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
-> >  #define srcu_cleanup_notifier_head(name)       \
-> >                 cleanup_srcu_struct(&(name)->srcu);
-> > @@ -104,7 +102,13 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
-> >                 .head = NULL }
-> >  #define RAW_NOTIFIER_INIT(name)        {                               \
-> >                 .head = NULL }
-> > -/* srcu_notifier_heads cannot be initialized statically */
-> > +
-> > +#define SRCU_NOTIFIER_INIT(name, pcpu)                         \
-> > +       {                                                       \
-> > +               .mutex = __MUTEX_INITIALIZER(name.mutex),       \
-> > +               .head = NULL,                                   \
-> > +               .srcu = __SRCU_STRUCT_INIT(name.srcu, pcpu),    \
-> > +       }
-> >
-> >  #define ATOMIC_NOTIFIER_HEAD(name)                             \
-> >         struct atomic_notifier_head name =                      \
-> > @@ -116,6 +120,26 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
-> >         struct raw_notifier_head name =                         \
-> >                 RAW_NOTIFIER_INIT(name)
-> >
-> > +#ifdef CONFIG_TREE_SRCU
-> > +#define _SRCU_NOTIFIER_HEAD(name, mod)                         \
-> > +       static DEFINE_PER_CPU(struct srcu_data,                 \
-> > +                       name##_head_srcu_data);                 \
-> > +       mod struct srcu_notifier_head name =                    \
-> > +                       SRCU_NOTIFIER_INIT(name, name##_head_srcu_data)
-> > +
-> > +#else
-> > +#define _SRCU_NOTIFIER_HEAD(name, mod)                         \
-> > +       mod struct srcu_notifier_head name =                    \
-> > +                       SRCU_NOTIFIER_INIT(name, name)
-> > +
-> > +#endif
-> > +
-> > +#define SRCU_NOTIFIER_HEAD(name)                               \
-> > +       _SRCU_NOTIFIER_HEAD(name, /* not static */)
-> > +
-> > +#define SRCU_NOTIFIER_HEAD_STATIC(name)                                \
-> > +       _SRCU_NOTIFIER_HEAD(name, static)
-> > +
-> >  #ifdef __KERNEL__
-> >
-> >  extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
-> > diff --git a/include/linux/srcutiny.h b/include/linux/srcutiny.h
-> > index 261471f407a5..f41d2fb09f87 100644
-> > --- a/include/linux/srcutiny.h
-> > +++ b/include/linux/srcutiny.h
-> > @@ -43,7 +43,7 @@ struct srcu_struct {
-> >
-> >  void srcu_drive_gp(struct work_struct *wp);
-> >
-> > -#define __SRCU_STRUCT_INIT(name)                                       \
-> > +#define __SRCU_STRUCT_INIT(name, __ignored)                            \
-> >  {                                                                      \
-> >         .srcu_wq = __SWAIT_QUEUE_HEAD_INITIALIZER(name.srcu_wq),        \
-> >         .srcu_cb_tail = &name.srcu_cb_head,                             \
-> > @@ -56,9 +56,9 @@ void srcu_drive_gp(struct work_struct *wp);
-> >   * Tree SRCU, which needs some per-CPU data.
-> >   */
-> >  #define DEFINE_SRCU(name) \
-> > -       struct srcu_struct name = __SRCU_STRUCT_INIT(name)
-> > +       struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
-> >  #define DEFINE_STATIC_SRCU(name) \
-> > -       static struct srcu_struct name = __SRCU_STRUCT_INIT(name)
-> > +       static struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
-> >
-> >  void synchronize_srcu(struct srcu_struct *sp);
-> >
-> > diff --git a/include/linux/srcutree.h b/include/linux/srcutree.h
-> > index 4eda108abee0..745d4ca4dd50 100644
-> > --- a/include/linux/srcutree.h
-> > +++ b/include/linux/srcutree.h
-> > @@ -104,9 +104,9 @@ struct srcu_struct {
-> >  #define SRCU_STATE_SCAN1       1
-> >  #define SRCU_STATE_SCAN2       2
-> >
-> > -#define __SRCU_STRUCT_INIT(name)                                       \
-> > +#define __SRCU_STRUCT_INIT(name, pcpu_name)                            \
-> >         {                                                               \
-> > -               .sda = &name##_srcu_data,                               \
-> > +               .sda = &pcpu_name,                                      \
-> >                 .lock = __SPIN_LOCK_UNLOCKED(name.lock),                \
-> >                 .srcu_gp_seq_needed = 0 - 1,                            \
-> >                 __SRCU_DEP_MAP_INIT(name)                               \
-> > @@ -133,7 +133,7 @@ struct srcu_struct {
-> >   */
-> >  #define __DEFINE_SRCU(name, is_static)                                 \
-> >         static DEFINE_PER_CPU(struct srcu_data, name##_srcu_data);\
-> > -       is_static struct srcu_struct name = __SRCU_STRUCT_INIT(name)
-> > +       is_static struct srcu_struct name = __SRCU_STRUCT_INIT(name, name##_srcu_data)
-> >  #define DEFINE_SRCU(name)              __DEFINE_SRCU(name, /* not static */)
-> >  #define DEFINE_STATIC_SRCU(name)       __DEFINE_SRCU(name, static)
-> >
-> > --
-> > 2.17.0
-> >
-> 
+cheers
