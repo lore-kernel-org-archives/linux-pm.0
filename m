@@ -1,52 +1,176 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH 0/2] PCI: Initial imx7d pm support
-Date: Tue, 29 May 2018 22:39:15 +0300
-Message-ID: <cover.1527621510.git.leonard.crestez@nxp.com>
+Subject: [PATCH 2/2] PCI: imx: Initial imx7d pm support
+Date: Tue, 29 May 2018 22:39:17 +0300
+Message-ID: <a6176c8bcfbca08ce4e93e304bdcd48c4600f8e2.1527621510.git.leonard.crestez@nxp.com>
+References: <cover.1527621510.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1527621510.git.leonard.crestez@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Andrey Smirnov <andrew.smirnov@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Lucas Stach <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Joao Pinto <Joao.Pinto@synopsys.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Anson Huang <Anson.Huang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto <Joao.Pinto@synopsys.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Abel Vesa <abel.vesa@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-This series adds initial pm support on imx7d so that after
-suspend/resume lspci works again. This mostly copies the resume sequence
-from the imx tree.
+On imx7d the phy is turned off in suspend and must be reset on resume.
+Right now lspci -v fails after a suspend/resume cycle, fix this by
+adding minimal suspend/resume code from the nxp vendor tree.
 
-More can be done later to reduce power in suspend as well as adding
-support for other socs.
+This is currently only enabled for imx7 but the same sequence can be
+applied to other imx pcie variants.
 
-This is motivated mostly by a desire to bring imx PM code closer to
-upstream. It is possible that I am missing some things about how PM
-should be done for pci host drivers, it would be great if you could
-point me the right way.
+Tested on imx7d-sabresd with an Intel 5622ANHMW wireless pcie adapter.
 
-It also relies on this bugfix for PGC offsets:
-    https://lkml.org/lkml/2018/5/29/138
-Without that patch resume hangs on first PCI read from PCI-PM core. It
-is not strictly related to PCI but pci-imx6 is the only user of gpcv2
-power domains.
+The original author is mostly Richard Zhu <hongxing.zhu@nxp.com>, this
+patch adjusts the code to the upstream imx7d implemention using reset
+controls and power domains.
 
-Patch 1 in this series is also technically an unrelated bugfix, however
-pci-imx6 is the only user.
-
-Leonard Crestez (2):
-  reset: imx7: Fix always writing bits as 0
-  PCI: imx: Initial imx7d pm support
-
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
  drivers/pci/dwc/pci-imx6.c | 94 ++++++++++++++++++++++++++++++++++++--
- drivers/reset/reset-imx7.c |  2 +-
- 2 files changed, 90 insertions(+), 6 deletions(-)
+ 1 file changed, 89 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
+index 4818ef875f8a..ff6077eeb387 100644
+--- a/drivers/pci/dwc/pci-imx6.c
++++ b/drivers/pci/dwc/pci-imx6.c
+@@ -540,10 +540,27 @@ static int imx6_pcie_wait_for_speed_change(struct imx6_pcie *imx6_pcie)
+ 
+ 	dev_err(dev, "Speed change timeout\n");
+ 	return -EINVAL;
+ }
+ 
++static void imx6_pcie_ltssm_enable(struct device *dev)
++{
++	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
++
++	switch (imx6_pcie->variant) {
++	case IMX6Q:
++	case IMX6SX:
++	case IMX6QP:
++		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
++				   IMX6Q_GPR12_PCIE_CTL_2,
++				   IMX6Q_GPR12_PCIE_CTL_2);
++		break;
++	case IMX7D:
++		reset_control_deassert(imx6_pcie->apps_reset);
++	}
++}
++
+ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
+ {
+ 	struct dw_pcie *pci = imx6_pcie->pci;
+ 	struct device *dev = pci->dev;
+ 	u32 tmp;
+@@ -558,15 +575,11 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
+ 	tmp &= ~PCIE_RC_LCR_MAX_LINK_SPEEDS_MASK;
+ 	tmp |= PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN1;
+ 	dw_pcie_writel_dbi(pci, PCIE_RC_LCR, tmp);
+ 
+ 	/* Start LTSSM. */
+-	if (imx6_pcie->variant == IMX7D)
+-		reset_control_deassert(imx6_pcie->apps_reset);
+-	else
+-		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
+-				   IMX6Q_GPR12_PCIE_CTL_2, 1 << 10);
++	imx6_pcie_ltssm_enable(dev);
+ 
+ 	ret = imx6_pcie_wait_for_link(imx6_pcie);
+ 	if (ret)
+ 		goto err_reset_phy;
+ 
+@@ -681,10 +694,80 @@ static int imx6_add_pcie_port(struct imx6_pcie *imx6_pcie,
+ 
+ static const struct dw_pcie_ops dw_pcie_ops = {
+ 	.link_up = imx6_pcie_link_up,
+ };
+ 
++#ifdef CONFIG_PM_SLEEP
++static int imx6_pcie_suspend_noirq(struct device *dev)
++{
++	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
++
++	if (imx6_pcie->variant == IMX7D) {
++		/* Disable clks */
++		clk_disable_unprepare(imx6_pcie->pcie);
++		clk_disable_unprepare(imx6_pcie->pcie_phy);
++		clk_disable_unprepare(imx6_pcie->pcie_bus);
++		/* turn off external osc input */
++		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
++				   IMX7D_GPR12_PCIE_PHY_REFCLK_SEL,
++				   IMX7D_GPR12_PCIE_PHY_REFCLK_SEL);
++	}
++
++	return 0;
++}
++
++static void imx6_pcie_ltssm_disable(struct device *dev)
++{
++	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
++
++	switch (imx6_pcie->variant) {
++	case IMX6Q:
++	case IMX6SX:
++	case IMX6QP:
++		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
++				   IMX6Q_GPR12_PCIE_CTL_2, 0);
++		break;
++	case IMX7D:
++		reset_control_assert(imx6_pcie->apps_reset);
++		break;
++	}
++}
++
++static int imx6_pcie_resume_noirq(struct device *dev)
++{
++	int ret = 0;
++	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
++	struct pcie_port *pp = &imx6_pcie->pci->pp;
++
++	if (imx6_pcie->variant == IMX7D) {
++		imx6_pcie_ltssm_disable(dev);
++
++		imx6_pcie_assert_core_reset(imx6_pcie);
++		imx6_pcie_init_phy(imx6_pcie);
++		imx6_pcie_deassert_core_reset(imx6_pcie);
++
++		/*
++		 * controller maybe turn off, re-configure again
++		 */
++		dw_pcie_setup_rc(pp);
++
++		imx6_pcie_ltssm_enable(dev);
++
++		ret = imx6_pcie_wait_for_link(imx6_pcie);
++		if (ret < 0)
++			pr_info("pcie link is down after resume.\n");
++	}
++
++	return 0;
++}
++
++static const struct dev_pm_ops imx6_pcie_pm_ops = {
++	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(imx6_pcie_suspend_noirq,
++				      imx6_pcie_resume_noirq)
++};
++#endif
++
+ static int imx6_pcie_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct dw_pcie *pci;
+ 	struct imx6_pcie *imx6_pcie;
+@@ -847,10 +930,11 @@ static const struct of_device_id imx6_pcie_of_match[] = {
+ static struct platform_driver imx6_pcie_driver = {
+ 	.driver = {
+ 		.name	= "imx6q-pcie",
+ 		.of_match_table = imx6_pcie_of_match,
+ 		.suppress_bind_attrs = true,
++		.pm = &imx6_pcie_pm_ops,
+ 	},
+ 	.probe    = imx6_pcie_probe,
+ 	.shutdown = imx6_pcie_shutdown,
+ };
+ 
 -- 
 2.17.0
