@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT] [PATCH v2 4/6] cpufreq: intel_pstate: HWP boost
- performance on IO wakeup
-Date: Tue, 29 May 2018 09:44:16 +0200
-Message-ID: <CAJZ5v0iG+jNC77KCHNUAt5tAtrtgryz2U4P1s_d9vB0HzLyOFw@mail.gmail.com>
-References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com> <20180524014738.52924-5-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC/RFT] [PATCH v2 2/6] cpufreq: intel_pstate: Add HWP boost
+ utility functions
+Date: Tue, 29 May 2018 09:47:35 +0200
+Message-ID: <CAJZ5v0hCTAG8y07Y5ARotBPZJ2xjpBNbvd8MGUXc8NP09ode6A@mail.gmail.com>
+References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com> <20180524014738.52924-3-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180524014738.52924-5-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20180524014738.52924-3-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Mel Gorman <mgorman@techsingularity.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>
@@ -15,102 +15,140 @@ List-Id: linux-pm@vger.kernel.org
 
 On Thu, May 24, 2018 at 3:47 AM, Srinivas Pandruvada
 <srinivas.pandruvada@linux.intel.com> wrote:
-> This change uses SCHED_CPUFREQ_IOWAIT flag to boost HWP performance.
-> Since SCHED_CPUFREQ_IOWAIT flag is set frequently, we don't start
-> boosting steps unless we see two consecutive flags in two ticks. This
-> avoids boosting due to IO because of regular system activities.
+> Added two utility functions to HWP boost up gradually and boost down to
+> the default cached HWP request values.
 >
-> To avoid synchronization issues, the actual processing of the flag is
-> done on the local CPU callback.
+> Boost up:
+> Boost up updates HWP request minimum value in steps. This minimum value
+> can reach upto at HWP request maximum values depends on how frequently,
+> the IOWAIT flag is set. At max, boost up will take three steps to reach
+> the maximum, depending on the current HWP request levels and HWP
+> capabilities. For example, if the current settings are:
+> If P0 (Turbo max) = P1 (Guaranteed max) = min
+>         No boost at all.
+> If P0 (Turbo max) > P1 (Guaranteed max) = min
+>         Should result in one level boost only for P0.
+> If P0 (Turbo max) = P1 (Guaranteed max) > min
+>         Should result in two level boost:
+>                 (min + p1)/2 and P1.
+> If P0 (Turbo max) > P1 (Guaranteed max) > min
+>         Should result in three level boost:
+>                 (min + p1)/2, P1 and P0.
+> We don't set any level between P0 and P1 as there is no guarantee that
+> they will be honored.
+>
+> Boost down:
+> After the system is idle for hold time of 3ms, the HWP request is reset
+> to the default cached value from HWP init or user modified one via sysfs.
 >
 > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 > ---
->  drivers/cpufreq/intel_pstate.c | 44 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 44 insertions(+)
+>  drivers/cpufreq/intel_pstate.c | 74 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 74 insertions(+)
 >
 > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 382160570b5f..6d0ebe4fe1c7 100644
+> index baed29c768e7..6ad46e07cad6 100644
 > --- a/drivers/cpufreq/intel_pstate.c
 > +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -223,6 +223,8 @@ struct global_params {
+> @@ -223,6 +223,7 @@ struct global_params {
 >   *                     operation
 >   * @hwp_req_cached:    Cached value of the last HWP Request MSR
 >   * @hwp_cap_cached:    Cached value of the last HWP Capabilities MSR
-> + * @last_io_update:    Last time when IO wake flag was set
-> + * @sched_flags:       Store scheduler flags for possible cross CPU update
->   * @hwp_boost_min:     Last HWP boosted min performance
+> + * @hwp_boost_min:     Last HWP boosted min performance
 >   *
 >   * This structure stores per CPU instance data for all CPUs.
-> @@ -258,6 +260,8 @@ struct cpudata {
+>   */
+> @@ -257,6 +258,7 @@ struct cpudata {
 >         s16 epp_saved;
 >         u64 hwp_req_cached;
 >         u64 hwp_cap_cached;
-> +       u64 last_io_update;
-> +       unsigned long sched_flags;
->         int hwp_boost_min;
+> +       int hwp_boost_min;
 >  };
 >
-> @@ -1462,9 +1466,49 @@ static inline bool intel_pstate_hwp_boost_down(struct cpudata *cpu)
->         return false;
+>  static struct cpudata **all_cpu_data;
+> @@ -1387,6 +1389,78 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+>         intel_pstate_set_min_pstate(cpu);
 >  }
 >
-> +static inline void intel_pstate_update_util_hwp_local(struct cpudata *cpu,
-> +                                                     u64 time)
+> +/*
+> + * Long hold time will keep high perf limits for long time,
+> + * which negatively impacts perf/watt for some workloads,
+> + * like specpower. 3ms is based on experiements on some
+> + * workoads.
+> + */
+> +static int hwp_boost_hold_time_ms = 3;
+> +
+> +static inline void intel_pstate_hwp_boost_up(struct cpudata *cpu)
 > +{
-> +       bool io_flag;
-> +
-> +       cpu->sample.time = time;
-> +       io_flag = test_and_clear_bit(SCHED_CPUFREQ_IOWAIT, &cpu->sched_flags);
+> +       u64 hwp_req = READ_ONCE(cpu->hwp_req_cached);
 
-I don't think you need to use bit ops here.
+If user space updates the limits after this read, our decision below
+may be based on a stale value, may it not?
 
-_update_util() runs under rq->lock for the target CPU, so it will not
-run concurrently on two different CPUs for the same target anyway.
-
-> +       if (io_flag) {
-> +               bool do_io = false;
+> +       int max_limit = (hwp_req & 0xff00) >> 8;
+> +       int min_limit = (hwp_req & 0xff);
+> +       int boost_level1;
 > +
-> +               /*
-> +                * Set iowait_boost flag and update time. Since IO WAIT flag
-> +                * is set all the time, we can't just conclude that there is
-> +                * some IO bound activity is scheduled on this CPU with just
-> +                * one occurrence. If we receive at least two in two
-> +                * consecutive ticks, then we treat as boost candidate.
-> +                */
-> +               if (time_before64(time, cpu->last_io_update + 2 * TICK_NSEC))
-> +                       do_io = true;
+> +       /*
+> +        * Cases to consider (User changes via sysfs or boot time):
+> +        * If, P0 (Turbo max) = P1 (Guaranteed max) = min:
+> +        *      No boost, return.
+> +        * If, P0 (Turbo max) > P1 (Guaranteed max) = min:
+> +        *     Should result in one level boost only for P0.
+> +        * If, P0 (Turbo max) = P1 (Guaranteed max) > min:
+> +        *     Should result in two level boost:
+> +        *         (min + p1)/2 and P1.
+> +        * If, P0 (Turbo max) > P1 (Guaranteed max) > min:
+> +        *     Should result in three level boost:
+> +        *        (min + p1)/2, P1 and P0.
+> +        */
 > +
-> +               cpu->last_io_update = time;
+> +       /* If max and min are equal or already at max, nothing to boost */
+> +       if (max_limit == min_limit || cpu->hwp_boost_min >= max_limit)
+> +               return;
 > +
-> +               if (do_io)
-> +                       intel_pstate_hwp_boost_up(cpu);
-
-But what happens if user space wants to update the limits while
-boosting is in effect?  Shouldn't it take hwp_boost_min into account
-then?
-
+> +       if (!cpu->hwp_boost_min)
+> +               cpu->hwp_boost_min = min_limit;
 > +
-> +       } else {
-> +               if (intel_pstate_hwp_boost_down(cpu))
-> +                       return;
-> +       }
+> +       /* level at half way mark between min and guranteed */
+> +       boost_level1 = (HWP_GUARANTEED_PERF(cpu->hwp_cap_cached) + min_limit) >> 1;
 > +
-> +       cpu->last_update = time;
+> +       if (cpu->hwp_boost_min < boost_level1)
+> +               cpu->hwp_boost_min = boost_level1;
+> +       else if (cpu->hwp_boost_min < HWP_GUARANTEED_PERF(cpu->hwp_cap_cached))
+> +               cpu->hwp_boost_min = HWP_GUARANTEED_PERF(cpu->hwp_cap_cached);
+> +       else if (cpu->hwp_boost_min == HWP_GUARANTEED_PERF(cpu->hwp_cap_cached) &&
+> +                max_limit != HWP_GUARANTEED_PERF(cpu->hwp_cap_cached))
+> +               cpu->hwp_boost_min = max_limit;
+> +       else
+> +               return;
+> +
+> +       hwp_req = (hwp_req & ~GENMASK_ULL(7, 0)) | cpu->hwp_boost_min;
+> +       wrmsrl(MSR_HWP_REQUEST, hwp_req);
+> +       cpu->last_update = cpu->sample.time;
 > +}
 > +
->  static inline void intel_pstate_update_util_hwp(struct update_util_data *data,
->                                                 u64 time, unsigned int flags)
->  {
-> +       struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+> +static inline bool intel_pstate_hwp_boost_down(struct cpudata *cpu)
+> +{
+> +       if (cpu->hwp_boost_min) {
+> +               bool expired;
 > +
-> +       if (flags & SCHED_CPUFREQ_IOWAIT)
-> +               set_bit(SCHED_CPUFREQ_IOWAIT, &cpu->sched_flags);
+> +               /* Check if we are idle for hold time to boost down */
+> +               expired = time_after64(cpu->sample.time, cpu->last_update +
+> +                                      (hwp_boost_hold_time_ms * NSEC_PER_MSEC));
+> +               if (expired) {
+> +                       wrmsrl(MSR_HWP_REQUEST, cpu->hwp_req_cached);
+> +                       cpu->hwp_boost_min = 0;
+> +                       return true;
+> +               }
+> +       }
 > +
-> +       if (smp_processor_id() == cpu->cpu)
-> +               intel_pstate_update_util_hwp_local(cpu, time);
->  }
->
+> +       return false;
+> +}
+> +
 >  static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+>  {
+>         struct sample *sample = &cpu->sample;
 > --
 > 2.13.6
 >
