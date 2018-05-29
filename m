@@ -1,154 +1,202 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT] [PATCH v2 2/6] cpufreq: intel_pstate: Add HWP boost
- utility functions
-Date: Tue, 29 May 2018 09:47:35 +0200
-Message-ID: <CAJZ5v0hCTAG8y07Y5ARotBPZJ2xjpBNbvd8MGUXc8NP09ode6A@mail.gmail.com>
-References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com> <20180524014738.52924-3-srinivas.pandruvada@linux.intel.com>
+From: Peng Fan <peng.fan@nxp.com>
+Subject: RE: [RFC] platform: detach from PM domains on shutdown
+Date: Tue, 29 May 2018 07:52:00 +0000
+Message-ID: <HE1PR04MB30046668C9F4FFAB5C07E693886D0@HE1PR04MB3004.eurprd04.prod.outlook.com>
+References: <20180515090110.26820-1-peng.fan@nxp.com>
+ <HE1PR04MB30041C742230314926032D4D88900@HE1PR04MB3004.eurprd04.prod.outlook.com>
+ <HE1PR04MB300481B481F96F875DCBFB2B886E0@HE1PR04MB3004.eurprd04.prod.outlook.com>
+ <3452357.3GIrXi3WAv@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180524014738.52924-3-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <3452357.3GIrXi3WAv@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Mel Gorman <mgorman@techsingularity.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 24, 2018 at 3:47 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> Added two utility functions to HWP boost up gradually and boost down to
-> the default cached HWP request values.
->
-> Boost up:
-> Boost up updates HWP request minimum value in steps. This minimum value
-> can reach upto at HWP request maximum values depends on how frequently,
-> the IOWAIT flag is set. At max, boost up will take three steps to reach
-> the maximum, depending on the current HWP request levels and HWP
-> capabilities. For example, if the current settings are:
-> If P0 (Turbo max) = P1 (Guaranteed max) = min
->         No boost at all.
-> If P0 (Turbo max) > P1 (Guaranteed max) = min
->         Should result in one level boost only for P0.
-> If P0 (Turbo max) = P1 (Guaranteed max) > min
->         Should result in two level boost:
->                 (min + p1)/2 and P1.
-> If P0 (Turbo max) > P1 (Guaranteed max) > min
->         Should result in three level boost:
->                 (min + p1)/2, P1 and P0.
-> We don't set any level between P0 and P1 as there is no guarantee that
-> they will be honored.
->
-> Boost down:
-> After the system is idle for hold time of 3ms, the HWP request is reset
-> to the default cached value from HWP init or user modified one via sysfs.
->
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 74 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 74 insertions(+)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index baed29c768e7..6ad46e07cad6 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -223,6 +223,7 @@ struct global_params {
->   *                     operation
->   * @hwp_req_cached:    Cached value of the last HWP Request MSR
->   * @hwp_cap_cached:    Cached value of the last HWP Capabilities MSR
-> + * @hwp_boost_min:     Last HWP boosted min performance
->   *
->   * This structure stores per CPU instance data for all CPUs.
->   */
-> @@ -257,6 +258,7 @@ struct cpudata {
->         s16 epp_saved;
->         u64 hwp_req_cached;
->         u64 hwp_cap_cached;
-> +       int hwp_boost_min;
->  };
->
->  static struct cpudata **all_cpu_data;
-> @@ -1387,6 +1389,78 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
->         intel_pstate_set_min_pstate(cpu);
->  }
->
-> +/*
-> + * Long hold time will keep high perf limits for long time,
-> + * which negatively impacts perf/watt for some workloads,
-> + * like specpower. 3ms is based on experiements on some
-> + * workoads.
-> + */
-> +static int hwp_boost_hold_time_ms = 3;
-> +
-> +static inline void intel_pstate_hwp_boost_up(struct cpudata *cpu)
-> +{
-> +       u64 hwp_req = READ_ONCE(cpu->hwp_req_cached);
-
-If user space updates the limits after this read, our decision below
-may be based on a stale value, may it not?
-
-> +       int max_limit = (hwp_req & 0xff00) >> 8;
-> +       int min_limit = (hwp_req & 0xff);
-> +       int boost_level1;
-> +
-> +       /*
-> +        * Cases to consider (User changes via sysfs or boot time):
-> +        * If, P0 (Turbo max) = P1 (Guaranteed max) = min:
-> +        *      No boost, return.
-> +        * If, P0 (Turbo max) > P1 (Guaranteed max) = min:
-> +        *     Should result in one level boost only for P0.
-> +        * If, P0 (Turbo max) = P1 (Guaranteed max) > min:
-> +        *     Should result in two level boost:
-> +        *         (min + p1)/2 and P1.
-> +        * If, P0 (Turbo max) > P1 (Guaranteed max) > min:
-> +        *     Should result in three level boost:
-> +        *        (min + p1)/2, P1 and P0.
-> +        */
-> +
-> +       /* If max and min are equal or already at max, nothing to boost */
-> +       if (max_limit == min_limit || cpu->hwp_boost_min >= max_limit)
-> +               return;
-> +
-> +       if (!cpu->hwp_boost_min)
-> +               cpu->hwp_boost_min = min_limit;
-> +
-> +       /* level at half way mark between min and guranteed */
-> +       boost_level1 = (HWP_GUARANTEED_PERF(cpu->hwp_cap_cached) + min_limit) >> 1;
-> +
-> +       if (cpu->hwp_boost_min < boost_level1)
-> +               cpu->hwp_boost_min = boost_level1;
-> +       else if (cpu->hwp_boost_min < HWP_GUARANTEED_PERF(cpu->hwp_cap_cached))
-> +               cpu->hwp_boost_min = HWP_GUARANTEED_PERF(cpu->hwp_cap_cached);
-> +       else if (cpu->hwp_boost_min == HWP_GUARANTEED_PERF(cpu->hwp_cap_cached) &&
-> +                max_limit != HWP_GUARANTEED_PERF(cpu->hwp_cap_cached))
-> +               cpu->hwp_boost_min = max_limit;
-> +       else
-> +               return;
-> +
-> +       hwp_req = (hwp_req & ~GENMASK_ULL(7, 0)) | cpu->hwp_boost_min;
-> +       wrmsrl(MSR_HWP_REQUEST, hwp_req);
-> +       cpu->last_update = cpu->sample.time;
-> +}
-> +
-> +static inline bool intel_pstate_hwp_boost_down(struct cpudata *cpu)
-> +{
-> +       if (cpu->hwp_boost_min) {
-> +               bool expired;
-> +
-> +               /* Check if we are idle for hold time to boost down */
-> +               expired = time_after64(cpu->sample.time, cpu->last_update +
-> +                                      (hwp_boost_hold_time_ms * NSEC_PER_MSEC));
-> +               if (expired) {
-> +                       wrmsrl(MSR_HWP_REQUEST, cpu->hwp_req_cached);
-> +                       cpu->hwp_boost_min = 0;
-> +                       return true;
-> +               }
-> +       }
-> +
-> +       return false;
-> +}
-> +
->  static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
->  {
->         struct sample *sample = &cpu->sample;
-> --
-> 2.13.6
->
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogMjAxOOW5tDXmnIgyOOaXpSAx
+NjozMg0KPiBUbzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+IENjOiBSYWZhZWwgSi4g
+V3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+OyBVbGYgSGFuc3Nvbg0KPiA8dWxmLmhhbnNzb25A
+bGluYXJvLm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNv
+bT47DQo+IEZhYmlvIEVzdGV2YW0gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47IEdyZWcgS3JvYWgt
+SGFydG1hbg0KPiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFp
+bGluZyBMaXN0DQo+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0gPGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZz47DQo+IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5j
+b20+DQo+IFN1YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlu
+cyBvbiBzaHV0ZG93bg0KPiANCj4gT24gTW9uZGF5LCBNYXkgMjgsIDIwMTggMTA6MDE6MDkgQU0g
+Q0VTVCBQZW5nIEZhbiB3cm90ZToNCj4gPiBIaSwgUmFmYWVsICYgVWZmZQ0KPiA+DQo+ID4gPiAt
+LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogUGVuZyBGYW4NCj4gPiA+IFNl
+bnQ6IDIwMTjlubQ15pyIMTjml6UgMTY6NTMNCj4gPiA+IFRvOiBSYWZhZWwgSi4gV3lzb2NraSA8
+cmp3QHJqd3lzb2NraS5uZXQ+DQo+ID4gPiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBr
+ZXJuZWwub3JnPjsgVWxmIEhhbnNzb24NCj4gPiA+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPjsg
+UmFmYWVsIEouIFd5c29ja2kNCj4gPiA+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZh
+YmlvIEVzdGV2YW0gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47DQo+ID4gPiBHcmVnIEtyb2FoLUhh
+cnRtYW4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgTGludXggS2VybmVsDQo+ID4gPiBN
+YWlsaW5nIExpc3QgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTQ0KPiA+
+ID4gPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54
+cC5jb20+DQo+ID4gPiBTdWJqZWN0OiBSRTogW1JGQ10gcGxhdGZvcm06IGRldGFjaCBmcm9tIFBN
+IGRvbWFpbnMgb24gc2h1dGRvd24NCj4gPiA+DQo+ID4gPg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1P
+cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21h
+aWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gPiA+ID4gU2VudDogMjAxOOW5tDXmnIgxOOaXpSAx
+NTo1NQ0KPiA+ID4gPiBUbzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+ID4gPiA+IENj
+OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+OyBVbGYgSGFuc3Nvbg0KPiA+
+ID4gPiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiA+
+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZhYmlvIEVzdGV2YW0NCj4gPiA+ID4gPGZh
+YmlvLmVzdGV2YW1AbnhwLmNvbT47IEdyZWcgS3JvYWgtSGFydG1hbg0KPiA+ID4gPiA8Z3JlZ2to
+QGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0DQo+ID4gPiA+
+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0NCj4gPiA+ID4gPGxpbnV4
+LXBtQHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+
+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlu
+cyBvbiBzaHV0ZG93bg0KPiA+ID4gPg0KPiA+ID4gPiBPbiBUaHVyc2RheSwgTWF5IDE3LCAyMDE4
+IDI6Mzc6MzEgUE0gQ0VTVCBQZW5nIEZhbiB3cm90ZToNCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4g
+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+IEZyb206IHJqd3lzb2NraUBn
+bWFpbC5jb20gW21haWx0bzpyand5c29ja2lAZ21haWwuY29tXSBPbg0KPiA+ID4gPiA+ID4gQmVo
+YWxmIE9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiA+ID4gPiBTZW50OiAyMDE45bm0NeaciDE3
+5pelIDE2OjAxDQo+ID4gPiA+ID4gPiBUbzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+
+ID4gPiA+ID4gPiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPjsgVWxm
+IEhhbnNzb24NCj4gPiA+ID4gPiA+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPjsgUmFmYWVsIEou
+IFd5c29ja2kNCj4gPiA+ID4gPiA+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZhYmlv
+IEVzdGV2YW0NCj4gPiA+ID4gPiA+IDxmYWJpby5lc3RldmFtQG54cC5jb20+OyBHcmVnIEtyb2Fo
+LUhhcnRtYW4NCj4gPiA+ID4gPiA+IDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz47IExpbnV4
+IEtlcm5lbCBNYWlsaW5nIExpc3QNCj4gPiA+ID4gPiA+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJu
+ZWwub3JnPjsgTGludXggUE0NCj4gPiA+ID4gPiA+IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+
+OyBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0KPiA+ID4gPiA+ID4gU3ViamVjdDog
+UmU6IFtSRkNdIHBsYXRmb3JtOiBkZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uDQo+ID4gPiA+ID4g
+PiBzaHV0ZG93bg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IE9uIFRodSwgTWF5IDE3LCAyMDE4
+IGF0IDQ6MzMgQU0sIFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPg0KPiB3cm90ZToNCj4gPiA+
+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4+IC0tLS0tT3JpZ2luYWwgTWVz
+c2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+PiBGcm9tOiByand5c29ja2lAZ21haWwuY29tIFttYWls
+dG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24NCj4gPiA+ID4gPiA+ID4+IEJlaGFsZiBPZiBSYWZh
+ZWwgSi4gV3lzb2NraQ0KPiA+ID4gPiA+ID4gPj4gU2VudDogMjAxOOW5tDXmnIgxN+aXpSA1OjM1
+DQo+ID4gPiA+ID4gPiA+PiBUbzogVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+
+DQo+ID4gPiA+ID4gPiA+PiBDYzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+OyBSYWZhZWwg
+Si4gV3lzb2NraQ0KPiA+ID4gPiA+ID4gPj4gPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPjsg
+RmFiaW8gRXN0ZXZhbQ0KPiA+ID4gPiA+ID4gPj4gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47IEdy
+ZWcgS3JvYWgtSGFydG1hbg0KPiA+ID4gPiA+ID4gPj4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24u
+b3JnPjsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdA0KPiA+ID4gPiA+ID4gPj4gPGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTQ0KPiA+ID4gPiA+ID4gPj4gPGxpbnV4LXBt
+QHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteA0KPiA+ID4gPiA+ID4gPj4gPGxpbnV4LWlt
+eEBueHAuY29tPg0KPiA+ID4gPiA+ID4gPj4gU3ViamVjdDogUmU6IFtSRkNdIHBsYXRmb3JtOiBk
+ZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uDQo+ID4gPiA+ID4gPiA+PiBzaHV0ZG93bg0KPiA+ID4g
+PiA+ID4gPj4NCj4gPiA+ID4gPiA+ID4+IE9uIFdlZCwgTWF5IDE2LCAyMDE4IGF0IDExOjUyIEFN
+LCBVbGYgSGFuc3Nvbg0KPiA+ID4gPiA+ID4gPj4gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+DQo+
+ID4gPiA+ID4gPiA+PiB3cm90ZToNCj4gPiA+ID4gPiA+ID4+ID4gT24gMTUgTWF5IDIwMTggYXQg
+MTE6MDEsIFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPiB3cm90ZToNCj4gPiA+ID4gPiA+ID4+
+ID4+IFdoZW4gcmVib290IExpbnV4LCB0aGUgUE0gZG9tYWlucyBhdHRhY2hlZCB0byBhIGRldmlj
+ZQ0KPiA+ID4gPiA+ID4gPj4gPj4gYXJlIG5vdCBzaHV0ZG93bi4gVG8gU29DcyB3aGljaCByZWx5
+cyBvbiByZXNldCB0aGUgd2hvbGUNCj4gPiA+ID4gPiA+ID4+ID4+IFNvQywgdGhlcmUgaXMgbm8g
+bmVlZCB0byBzaHV0ZG93biBQTSBkb21haW5zLCBidXQgdG8NCj4gPiA+ID4gPiA+ID4+ID4+IExp
+bnV4IHJ1bm5pbmcgaW4gYSB2aXJ0dWFsIG1hY2hpbmUgd2l0aCBkZXZpY2VzDQo+ID4gPiA+ID4g
+PiA+PiA+PiBwYXNzLXRocm91Z2gsIHdlIGNvdWxkIG5vdCByZXNldCB0aGUNCj4gPiA+ID4gd2hv
+bGUgU29DLg0KPiA+ID4gPiA+ID4gPj4gPj4gQ3VycmVudGx5IHdlIG5lZWQgTGludXggdG8gc2h1
+dGRvd24gaXRzIFBNIGRvbWFpbnMgd2hlbg0KPiByZWJvb3QuDQo+ID4gPiA+ID4gPiA+PiA+DQo+
+ID4gPiA+ID4gPiA+PiA+IEkgYW0gbm90IHN1cmUgSSB1bmRlcnN0YW5kIGV4YWN0bHkgd2h5IHRo
+ZSBQTSBkb21haW4NCj4gPiA+ID4gPiA+ID4+ID4gbmVlZHMgdG8gYmUgc2h1dGRvd24gZm9yIHRo
+ZXNlIGNhc2VzLCBjb3VsZCB5b3UgcGxlYXNlIGVsYWJvcmF0ZQ0KPiBhIGJpdCBvbiB0aGF0Lg0K
+PiA+ID4gPiA+ID4gPj4gPg0KPiA+ID4gPiA+ID4gPj4gPiBCVFcsIHdoYXQgcGxhdGZvcm0gYXJl
+IHlvdSBydW5uaW5nIG9uIGFuZCBhbHNvIHdoYXQgUE0NCj4gPiA+ID4gPiA+ID4+ID4gZG9tYWlu
+cyBhcmUgYmVpbmcNCj4gPiA+ID4gPiA+ID4+IHVzZWQ/DQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4g
+PiA+ID4gPiA+PiA+IEFueXdheSwgaXQgc2VlbXMgbGlrZSB0aGVyZSBtYXkgYmUgbmVlZCBmb3Ig
+Y2VydGFpbg0KPiA+ID4gPiA+ID4gPj4gPiBjYXNlcywgYnV0IGNlcnRhaW5seSBub3QgYWxsIC0g
+ZXNwZWNpYWxseSBzaW5jZSBpdCBtYXkNCj4gPiA+ID4gPiA+ID4+ID4gc2xvdyBkb3duIHRoZSBz
+aHV0ZG93biBwcm9jZXNzLCB3aGVuIG5vdCBuZWVkZWQuDQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4g
+PiA+ID4gPiA+PiA+IENhbiB3ZSBtYWtlIHRoaXMgcnVudGltZSBjb25maWd1cmFibGUsIHZpYSBz
+eXNmcyBvcg0KPiA+ID4gPiA+ID4gPj4gPiB3aGF0ZXZlciB0aGF0IG1ha2VzDQo+ID4gPiA+ID4g
+PiA+PiBzZW5zZSE/DQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+Pg0KPiA+ID4g
+PiA+ID4gPj4gPj4gY29tbWl0IDJkMzBiYjBiMzg4OSAoInBsYXRmb3JtOiBEbyBub3QgZGV0YWNo
+IGZyb20gUE0NCj4gPiA+ID4gPiA+ID4+ID4+IGRvbWFpbnMgb24gc2h1dGRvd24iKSwgcmVtb3Zl
+cyB3aGF0IHRoaXMgcGF0Y2ggdHJpZXMgdG8NCj4gPiA+ID4gPiA+ID4+ID4+IGFkZCwgYmVjYXVz
+ZSBvZiBhDQo+ID4gPiA+IHdhcm5pbmcuDQo+ID4gPiA+ID4gPiA+PiA+PiBjb21taXQgZTc5YWVl
+NDliY2Y5ICgiUE06IEF2b2lkIGZhbHNlLXBvc2l0aXZlIHdhcm5pbmdzDQo+ID4gPiA+ID4gPiA+
+PiA+PiBpbg0KPiA+ID4gPiA+ID4gPj4gPj4gZGV2X3BtX2RvbWFpbl9zZXQoKSIpIGFscmVhZHkg
+Zml4ZXMgdGhlIGZhbHNlIGFsYXJtIHdhcm5pbmcuDQo+ID4gPiA+ID4gPiA+PiA+PiBTbyBsZXQn
+cyBkZXRhY2ggdGhlIHBvd2VyIGRvbWFpbiB0byBzaHV0ZG93biBQTSBkb21haW5zDQo+ID4gPiA+
+ID4gPiA+PiA+PiBhZnRlciBkcml2ZXINCj4gPiA+ID4gPiA+IHNodXRkb3duLg0KPiA+ID4gPiA+
+ID4gPj4gPj4NCj4gPiA+ID4gPiA+ID4+ID4+IFNpZ25lZC1vZmYtYnk6IFBlbmcgRmFuIDxwZW5n
+LmZhbkBueHAuY29tPg0KPiA+ID4gPiA+ID4gPj4gPj4gLS0tDQo+ID4gPiA+ID4gPiA+PiA+Pg0K
+PiA+ID4gPiA+ID4gPj4gPj4gSSBkbyBub3QgZmluZCBhIGJldHRlciBwbGFjZSB0byBzaHV0ZG93
+biBwb3dlciBkb21haW4NCj4gPiA+ID4gPiA+ID4+ID4+IHdoZW4gcmVib290IExpbnV4LCBzbyBh
+ZGQgYmFjayB0aGUgbGluZSB0aGF0IGNvbW1pdA0KPiA+ID4gPiA+ID4gPj4gPj4gMmQzMGJiMGIz
+ODg5IHJlbW92ZXMsIGJlY2F1c2UgaXQgaXMgYSBmYWxzZSBhbGFybQ0KPiA+ID4gPiA+ID4gPj4g
+Pj4gd2FybmluZyBhcyBjb21taXQNCj4gPiA+ID4gPiA+ID4+ID4+IGU3OWFlZTQ5YmNmOQ0KPiA+
+ID4gPiBkZXNjcmliZXMuDQo+ID4gPiA+ID4gPiA+PiA+Pg0KPiA+ID4gPiA+ID4gPj4gPj4gIGRy
+aXZlcnMvYmFzZS9wbGF0Zm9ybS5jIHwgMSArDQo+ID4gPiA+ID4gPiA+PiA+PiAgMSBmaWxlIGNo
+YW5nZWQsIDEgaW5zZXJ0aW9uKCspDQo+ID4gPiA+ID4gPiA+PiA+Pg0KPiA+ID4gPiA+ID4gPj4g
+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQo+ID4gPiA+ID4gPiA+PiA+
+PiBiL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGluZGV4DQo+ID4gPiA+ID4gPiA+PiA+PiA4MDc1
+ZGRjNzBhMTcuLmE1OTI5ZjI0ZGMzYw0KPiA+ID4gPiA+ID4gPj4gPj4gMTAwNjQ0DQo+ID4gPiA+
+ID4gPiA+PiA+PiAtLS0gYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+ID4gPiA+ID4gPj4g
+Pj4gKysrIGIvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMNCj4gPiA+ID4gPiA+ID4+ID4+IEBAIC02
+MTYsNiArNjE2LDcgQEAgc3RhdGljIHZvaWQNCj4gPiA+ID4gPiA+ID4+ID4+IHBsYXRmb3JtX2Ry
+dl9zaHV0ZG93bihzdHJ1Y3QgZGV2aWNlDQo+ID4gPiA+ID4gPiA+PiA+PiAqX2RldikNCj4gPiA+
+ID4gPiA+ID4+ID4+DQo+ID4gPiA+ID4gPiA+PiA+PiAgICAgICAgIGlmIChkcnYtPnNodXRkb3du
+KQ0KPiA+ID4gPiA+ID4gPj4gPj4gICAgICAgICAgICAgICAgIGRydi0+c2h1dGRvd24oZGV2KTsN
+Cj4gPiA+ID4gPiA+ID4+ID4+ICsgICAgICAgZGV2X3BtX2RvbWFpbl9kZXRhY2goX2RldiwgdHJ1
+ZSk7DQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+IFRoaXMgd291bGQgc29tZXdo
+YXQgd29yaywgYnV0IG9ubHkgZm9yIHBsYXRmb3JtIGRldmljZXMuDQo+ID4gPiA+ID4gPiA+PiA+
+IFRvIG1ha2UgdGhpcyBmdWxseSB3b3JrLCB3ZSBuZWVkIHRvIGNhbGwNCj4gPiA+ID4gPiA+ID4+
+ID4gZGV2X3BtX2RvbWFpbl9kZXRhY2goKSBmcm9tIGFtYmEsIHNwaSwgZXRjIGFzIHdlbGwuDQo+
+ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+IFBlcmhhcHMgYW5vdGhlciBvcHRpb24g
+dG8gbWFuYWdlIHRoaXMgbW9yZSBnZW5lcmFsbHksIGFuDQo+ID4gPiA+ID4gPiA+PiA+IHdpdGhv
+dXQgaGF2aW5nIGRldGFjaCBkZXZpY2VzLCBjb3VsZCBiZSB0byBleHRlbmQgdGhlDQo+ID4gPiA+
+ID4gPiA+PiA+IHN0cnVjdCBkZXZfcG1fZG9tYWluIHdpdGggYSBuZXcgY2FsbGJhY2ssICItPnNo
+dXRkb3duKCkiDQo+ID4gPiA+ID4gPiA+PiA+IGFuZCB0aGVuIG1ha2UgdGhlIGRyaXZlciBjb3Jl
+IGNhbGwgaXQgZnJvbSBkZXZpY2Vfc2h1dGRvd24oKS4NCj4gPiA+ID4gPiA+ID4+DQo+ID4gPiA+
+ID4gPiA+PiBJJ20gc2Vuc2luZyBhIHBvc3NpYmxlIG9yZGVyaW5nIHNsaXBwZXJ5IHNsb3BlIHdp
+dGggdGhpcw0KPiA+ID4gPiA+ID4gPj4gKGl0IHdpbGwgb25seSB3b3JrIGlmIGFsbCBvZiB0aGUg
+ZHJpdmVycy9idXMgdHlwZXMgZXRjIGRvDQo+ID4gPiA+ID4gPiA+PiB0aGUgcmlnaHQgdGhpbmcg
+aW4gdGhlaXINCj4gPiA+ID4gPiA+ID4+IC0+c2h1dGRvd24gY2FsbGJhY2tzIHNvIG5vdGhpbmcg
+ZGVwZW5kcyBvbiB0aGUgZG9tYWluIGdvaW5nDQo+ID4gPiBmb3J3YXJkKS4NCj4gPiA+ID4gPiA+
+ID4+DQo+ID4gPiA+ID4gPiA+PiA+IFR5cGljYWxseSwgZm9yIGdlbnBkLCBJIHdvdWxkIHByb2Jh
+Ymx5IGNvdW50IHRoZSBudW1iZXINCj4gPiA+ID4gPiA+ID4+ID4gb2YgY2FsbHMgYmVpbmcgbWFk
+ZSB0byAtPnNodXRkb3duKCkgcGVyIFBNIGRvbWFpbiwgdGhlbg0KPiA+ID4gPiA+ID4gPj4gPiB3
+aGVuIGl0IHJlYWNoZXMgdGhlIG51bWJlciBvZiBhdHRhY2hlZCBkZXZpY2VzIHRvIGl0LCBhbGxv
+dyB0bw0KPiBwb3dlciBvZmYgaXQuDQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+
+IExldCdzIHNlZSB3aGF0IFJhZmFlbCB0aGlua3MgYWJvdXQgaXQuDQo+ID4gPiA+ID4gPiA+Pg0K
+PiA+ID4gPiA+ID4gPj4gSSdtIG5vdCBzdXJlIGFib3V0IHRoZSB1c2UgY2FzZS4gIFRoZSBoeXBl
+cnZpc29yIHNob3VsZCBiZQ0KPiA+ID4gPiA+ID4gPj4gYWJsZSB0byB0YWtlIGNhcmUgb2YgdHVy
+bmluZyBwb3dlciBkb21haW5zIG9mZiBvbiB0aGUNCj4gPiA+ID4gPiA+ID4+IGNsaWVudCBPUyBy
+ZWJvb3QgaW4gdGhlb3J5LiAgSWYgdGhlIGNsaWVudCBPUyBsZWF2aW5nIHRoZQ0KPiA+ID4gPiA+
+ID4gPj4gaHlwZXJ2aXNvciBuZWVkcyB0byB3b3JyeSBhYm91dCB3aGF0IHN0YXRlIGl0IGxlYXZl
+cw0KPiA+ID4gPiA+ID4gPj4gYmVoaW5kLCB0aGUgZGVzaWduIG9mIHRoZSBoeXBlcnZpc29yIGlz
+IHNvcnQgb2YNCj4gPiA+ID4gPiA+IHF1ZXN0aW9uYWJsZSBJTU8uDQo+ID4gPiA+ID4gPiA+DQo+
+ID4gPiA+ID4gPiA+IFRoaXMgaXMgdmFsaWQgY29uY2Vybi4gQnV0IG1vdmluZyB0aGUgcG93ZXIg
+ZG9tYWluIGxvZ2ljDQo+ID4gPiA+ID4gPiA+IGludG8gaHlwZXJ2aXNvciBtb3N0bHkgbWljcm8t
+a2VybmVsIGRlc2lnbiB3aWxsIGludHJvZHVjZQ0KPiA+ID4gPiA+ID4gPiBtb3JlIGNvbXBsZXhp
+dHkgYW5kDQo+ID4gPiA+ID4gPiBtYWtlIGNlcnRpZmljYXRpb24gaGFyZGVyLg0KPiA+ID4gPiA+
+ID4gPiBDdXJyZW50bHksIExldCBMaW51eCBzaHV0ZG93biBpdCdzIHBvd2VyIGRvbWFpbiBpcyB0
+aGUNCj4gPiA+ID4gPiA+ID4gZWFzaWVzdCB3YXkgdG8gbWUgYW5kIG1ha2UgdGhpbmdzIHdvcmsg
+d2VsbCBhZnRlciByZWJvb3QuDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gV2VsbCwgdG8gcHV0
+IGl0IGJsdW50bHksIGlmIHlvdXIgaHlwZXJ2aXNvciBkZXBlbmRzIG9uIHRoZQ0KPiA+ID4gPiA+
+ID4gZ3Vlc3QgdG8gZG8gdGhlIHJpZ2h0IHRoaW5nIG9uIGV4aXQsIGl0IGRvZXNuJ3QgZG8gaXRz
+IGpvYi4gIEkNCj4gPiA+ID4gPiA+IHdvdWxkbid0IGhhdmUgY2VydGlmaWVkIGl0IGZvciB5b3Ug
+aWYgdGhhdCB3YXMgbXkgZGVjaXNpb24uDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBJdCBpcyBndWVz
+dCBvcyBub3Qgd29yayB3ZWxsIGFmdGVyIGd1ZXN0IG9zIHJlYm9vdC4gVGhlDQo+ID4gPiA+ID4g
+aHlwZXJ2aXNvciBpcyBub3QNCj4gPiA+ID4gYWZmZWN0ZWQuDQo+ID4gPiA+ID4NCj4gPiA+ID4g
+PiBUaGlua2luZyBhbm90aGVyIGNhc2Ugd2l0aG91dCBoeXBlcnZpc29yLCBNNCBjb3JlIHJ1biBS
+VE9TLCBBMzUNCj4gPiA+ID4gPiBDb3JlIHJ1biBMaW51eCwgd2hlbiBMaW51eCByZWJvb3Rpbmcs
+IFJUT1Mgc2hvdWxkIG5vdCBiZQ0KPiA+ID4gPiA+IGFmZmVjdGVkLiBBZnRlciBMaW51eCByZWJv
+b3QgaXRzZWxmLCBiZWNhdXNlIGl0cyBwb3dlciBkb21haW4gaXMNCj4gPiA+ID4gPiBub3QgcGFp
+cmVkIHdpdGgNCj4gPiA+ID4gb3Blbi9zaHV0ZG93biwgc29tZSBkZXZpY2VzIG5vdCBmdW5jdGlv
+biB3ZWxsLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGUgcXVlc3Rpb24gYm9pbHMgZG93biB0byB3aGV0
+aGVyIG9yIG5vdCBkZXZpY2VzIHNob3VsZCBiZQ0KPiA+ID4gPiBkZXRhY2hlZCBmcm9tIFBNIGRv
+bWFpbnMgb24gc2h1dGRvd24gSU1PLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGV5IGFyZSBkZXRhY2hl
+ZCBmcm9tIFBNIGRvbWFpbnMgb24gZHJpdmVyIHJlbW92YWwsIHNvIEkgZ3Vlc3MNCj4gPiA+ID4g
+b25lIGFuc3dlciBpcyAieWVzLCBpbiBhbmFsb2d5IHdpdGggdGhhdCIuICBIb3dldmVyLCB0aGUg
+cG9pbnQNCj4gPiA+ID4gYWJvdXQgcGVyZm9ybWFjZSBicm91Z2h0IHVwIGJ5IFVsZiBzZWVtcyB0
+byBiZSB2YWxpZCB0b28uDQo+ID4gPiA+DQo+ID4gPiA+IEluIGFueSBjYXNlLCB0aGUgY2hhbmdl
+IHNob3VsZCBiZSBtYWRlIGZvciBhbGwgb2YgdGhlIGJ1cyB0eXBlcw0KPiA+ID4gPiB1c2luZyBQ
+TSBkb21haW5zLCBub3QganVzdCBvbmUuDQo+ID4gPg0KPiA+ID4gVW5kZXJzdGFuZCwgaXQgd2ls
+bCBpbmNyZWFzZSBzaHV0ZG93biB0aW1lLiBIb3cgYWJvdXQgc2h1dGRvd24gdGhlDQo+ID4gPiBw
+b3dlciBkb21haW4gaW4gcGxhdGZvcm1fZHJpdmVyLT5zaHV0ZG93biwgbGV0IHRoZSBkcml2ZXIg
+aGFuZGxlDQo+ID4gPiBpdCdzIHBvd2VyIGRvbWFpbiBzdGh1ZG93biBieSBpdHNlbGY/DQo+ID4g
+PiBUaGVuIG5vIG5lZWQgY29tbW9uIGZyYW1ld29yayBjaGFuZ2UuDQo+ID4NCj4gPiBEbyB5b3Ug
+aGF2ZSBtb3JlIHN1Z2dlc3Rpb25zIG9uIGhvdyB0byBoYW5kbGUgdGhpcyB0aGUgcG93ZXIgZG9t
+YWluDQo+IHNodXRkb3duPw0KPiANCj4gSSB0aGluayB5b3UgY291bGQgYWRkIGEgcGxhdGZvcm0g
+c3lzY29yZV9zaHV0ZG93biBob29rIHRvIHR1cm4gYWxsIHBvd2VyDQo+IGRvbWFpbnMgb2ZmLg0K
+DQpUaGFua3MsIFJhZmFlbC4gVGhpcyBpcyBzaW1wbGUgZW5vdWdoIHRvIG1lLg0KDQpUaGFua3Ms
+DQpQZW5nLg0KDQo=
