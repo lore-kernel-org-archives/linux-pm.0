@@ -1,86 +1,166 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 01/11] PM / devfreq: Init user limits from OPP limits,
- not viceversa
-Date: Tue, 29 May 2018 11:06:08 -0700
-Message-ID: <20180529180608.GF168650@google.com>
-References: <20180525203043.249193-1-mka@chromium.org>
- <CGME20180525203410epcas1p2fd2a35468b9c37f2c542e499d3ed5a03@epcas1p2.samsung.com>
- <20180525203043.249193-2-mka@chromium.org>
- <5B0B9319.9060709@samsung.com>
+From: Thomas Garnier via Virtualization
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH v3 21/27] x86/ftrace: Adapt function tracing for PIE
+	support
+Date: Tue, 29 May 2018 11:37:45 -0700
+Message-ID: <CAJcbSZEBW0mE7x1tOUr9y2BJUfodyjix0EjO=oE7A4M+mGvZ3g@mail.gmail.com>
+References: <20180523195421.180248-1-thgarnie@google.com>
+	<20180523195421.180248-22-thgarnie@google.com>
+	<20180524114024.pa67zjipy5qcg4tm@pathway.suse.cz>
+	<20180524161622.4202319f@gandalf.local.home>
+	<CAJcbSZGQmQM7PuER0kEqt3aG9O-8vh-g1EA2jnkVsJPx-Htvrw@mail.gmail.com>
+Reply-To: Thomas Garnier <thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5B0B9319.9060709@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAJcbSZGQmQM7PuER0kEqt3aG9O-8vh-g1EA2jnkVsJPx-Htvrw@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, the arch/x86 maintainers <x86@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Len Brown <len.brown@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>, Peter Zijlstra <peterz@infradead.org>, Yonghong Song <yhs@fb.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, LKML <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Beulich <JBeulich@suse.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>, Jonathan Corbet <corbet@>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 28, 2018 at 02:26:49PM +0900, Chanwoo Choi wrote:
-> Hi,
-> 
-> On 2018년 05월 26일 05:30, Matthias Kaehlcke wrote:
-> > Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding
-> > the devfreq device") introduced the initialization of the user
-> > limits min/max_freq from the lowest/highest available OPPs. Later
-> > commit f1d981eaecf8 ("PM / devfreq: Use the available min/max
-> > frequency") added scaling_min/max_freq, which actually represent
-> > the frequencies of the lowest/highest available OPP. scaling_min/
-> > max_freq are initialized with the values from min/max_freq, which
-> > is totally correct in the context, but a bit awkward to read.
-> > 
-> > Swap the initialization and assign scaling_min/max_freq with the
-> > OPP freqs and then the user limts min/max_freq with scaling_min/
-> > max_freq.
-> > 
-> > Needless to say that this change is a NOP, intended to improve
-> > readability.
-> > 
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> >  drivers/devfreq/devfreq.c | 12 ++++++------
-> >  1 file changed, 6 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> > index fe2af6aa88fc..0057ef5b0a98 100644
-> > --- a/drivers/devfreq/devfreq.c
-> > +++ b/drivers/devfreq/devfreq.c
-> > @@ -604,21 +604,21 @@ struct devfreq *devfreq_add_device(struct device *dev,
-> >  		mutex_lock(&devfreq->lock);
-> >  	}
-> >  
-> > -	devfreq->min_freq = find_available_min_freq(devfreq);
-> > -	if (!devfreq->min_freq) {
-> > +	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
-> > +	if (!devfreq->scaling_min_freq) {
-> >  		mutex_unlock(&devfreq->lock);
-> >  		err = -EINVAL;
-> >  		goto err_dev;
-> >  	}
-> > -	devfreq->scaling_min_freq = devfreq->min_freq;
-> > +	devfreq->min_freq = devfreq->scaling_min_freq;
-> >  
-> > -	devfreq->max_freq = find_available_max_freq(devfreq);
-> > -	if (!devfreq->max_freq) {
-> > +	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
-> > +	if (!devfreq->scaling_max_freq) {
-> >  		mutex_unlock(&devfreq->lock);
-> >  		err = -EINVAL;
-> >  		goto err_dev;
-> >  	}
-> > -	devfreq->scaling_max_freq = devfreq->max_freq;
-> > +	devfreq->max_freq = devfreq->scaling_max_freq;
-> >  
-> >  	dev_set_name(&devfreq->dev, "devfreq%d",
-> >  				atomic_inc_return(&devfreq_no));
-> > 
-> 
-> I already replied with my Reviewed-by tag. You are missing my tag.
-> 
-> Again, 
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+On Thu, May 24, 2018 at 1:41 PM Thomas Garnier <thgarnie@google.com> wrote:
 
-Sorry, forgot to add the tag after creating the series. I now added it
-to my local tree.
+
+> On Thu, May 24, 2018 at 1:16 PM Steven Rostedt <rostedt@goodmis.org>
+wrote:
+
+> > On Thu, 24 May 2018 13:40:24 +0200
+> > Petr Mladek <pmladek@suse.com> wrote:
+
+> > > On Wed 2018-05-23 12:54:15, Thomas Garnier wrote:
+> > > > When using -fPIE/PIC with function tracing, the compiler generates a
+> > > > call through the GOT (call *__fentry__@GOTPCREL). This instruction
+> > > > takes 6 bytes instead of 5 on the usual relative call.
+> > > >
+> > > > If PIE is enabled, replace the 6th byte of the GOT call by a 1-byte
+> nop
+> > > > so ftrace can handle the previous 5-bytes as before.
+> > > >
+> > > > Position Independent Executable (PIE) support will allow to extended
+> the
+> > > > KASLR randomization range below the -2G memory limit.
+> > > >
+> > > > Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> > > > ---
+> > > >  arch/x86/include/asm/ftrace.h   |  6 +++--
+> > > >  arch/x86/include/asm/sections.h |  4 ++++
+> > > >  arch/x86/kernel/ftrace.c        | 42
+> +++++++++++++++++++++++++++++++--
+> > > >  3 files changed, 48 insertions(+), 4 deletions(-)
+> > > >
+> > > > diff --git a/arch/x86/include/asm/ftrace.h
+> b/arch/x86/include/asm/ftrace.h
+> > > > index c18ed65287d5..8f2decce38d8 100644
+> > > > --- a/arch/x86/include/asm/ftrace.h
+> > > > +++ b/arch/x86/include/asm/ftrace.h
+> > > > @@ -25,9 +25,11 @@ extern void __fentry__(void);
+> > > >  static inline unsigned long ftrace_call_adjust(unsigned long addr)
+> > > >  {
+> > > >     /*
+> > > > -    * addr is the address of the mcount call instruction.
+> > > > -    * recordmcount does the necessary offset calculation.
+> > > > +    * addr is the address of the mcount call instruction. PIE has
+> always a
+> > > > +    * byte added to the start of the function.
+> > > >      */
+> > > > +   if (IS_ENABLED(CONFIG_X86_PIE))
+> > > > +           addr -= 1;
+> > >
+> > > This seems to modify the address even for modules that are _not_
+> compiled with
+> > > PIE, see below.
+
+> > Can one load a module not compiled for PIE in a kernel with PIE?
+
+> > >
+> > > >     return addr;
+> > > >  }
+> > > >
+> > > > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> > > > index 01ebcb6f263e..73b3c30cb7a3 100644
+> > > > --- a/arch/x86/kernel/ftrace.c
+> > > > +++ b/arch/x86/kernel/ftrace.c
+> > > > @@ -135,6 +135,44 @@ ftrace_modify_code_direct(unsigned long ip,
+> unsigned const char *old_code,
+> > > >     return 0;
+> > > >  }
+> > > >
+> > > > +/* Bytes before call GOT offset */
+> > > > +const unsigned char got_call_preinsn[] = { 0xff, 0x15 };
+> > > > +
+> > > > +static int
+> > > > +ftrace_modify_initial_code(unsigned long ip, unsigned const char
+> *old_code,
+> > > > +                      unsigned const char *new_code)
+> > > > +{
+> > > > +   unsigned char replaced[MCOUNT_INSN_SIZE + 1];
+> > > > +
+> > > > +   ftrace_expected = old_code;
+> > > > +
+> > > > +   /*
+> > > > +    * If PIE is not enabled or no GOT call was found, default to
+the
+> > > > +    * original approach to code modification.
+> > > > +    */
+> > > > +   if (!IS_ENABLED(CONFIG_X86_PIE) ||
+> > > > +       probe_kernel_read(replaced, (void *)ip, sizeof(replaced)) ||
+> > > > +       memcmp(replaced, got_call_preinsn,
+sizeof(got_call_preinsn)))
+> > > > +           return ftrace_modify_code_direct(ip, old_code,
+new_code);
+> > >
+> > > And this looks like an attempt to handle modules compiled without
+> > > PIE. Does it works with the right ip in that case?
+
+> > I'm guessing the || is for the "or no GOT call was found", but it
+> > doesn't explain why no GOT would be found.
+
+> Yes, maybe I could have made it work by using text_ip_addr earlier.
+
+
+> > >
+> > > I wonder if a better solution would be to update
+> > > scripts/recordmcount.c to store the incremented location into the
+> module.
+
+> I will look into it.
+
+Found a way to properly change the __mcount_loc using the preprocessing
+(removing the need for -1 on the addr). It will be part of the next version.
+
+Thanks for the feedback.
+
+
+
+> > If recordmcount.c can handle this, then I think that's the preferred
+> > approach. Thanks!
+
+> > -- Steve
+
+> > >
+> > > IMPORTANT: I have only vague picture about how this all works. It is
+> > > possible that I am completely wrong. The code might be correct,
+> > > especially if you tested this situation.
+> > >
+> > > Best Regards,
+> > > Petr
+
+
+
+> --
+> Thomas
+
+
+
+-- 
+Thomas
