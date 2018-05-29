@@ -1,202 +1,155 @@
-From: Peng Fan <peng.fan@nxp.com>
-Subject: RE: [RFC] platform: detach from PM domains on shutdown
-Date: Tue, 29 May 2018 07:52:00 +0000
-Message-ID: <HE1PR04MB30046668C9F4FFAB5C07E693886D0@HE1PR04MB3004.eurprd04.prod.outlook.com>
-References: <20180515090110.26820-1-peng.fan@nxp.com>
- <HE1PR04MB30041C742230314926032D4D88900@HE1PR04MB3004.eurprd04.prod.outlook.com>
- <HE1PR04MB300481B481F96F875DCBFB2B886E0@HE1PR04MB3004.eurprd04.prod.outlook.com>
- <3452357.3GIrXi3WAv@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] kernel/SRCU: provide a static initializer
+Date: Tue, 29 May 2018 10:09:51 +0200
+Message-ID: <CAJZ5v0jEUR7YxzujvZn8WVK+dMxmOxoHNiLKcmgCq9awHR=vYg@mail.gmail.com>
+References: <20180525101958.13277-1-bigeasy@linutronix.de> <20180525101958.13277-2-bigeasy@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3452357.3GIrXi3WAv@aspire.rjw.lan>
-Content-Language: en-US
+In-Reply-To: <20180525101958.13277-2-bigeasy@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fabio Estevam <fabio.estevam@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
-a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogMjAxOOW5tDXmnIgyOOaXpSAx
-NjozMg0KPiBUbzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+IENjOiBSYWZhZWwgSi4g
-V3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+OyBVbGYgSGFuc3Nvbg0KPiA8dWxmLmhhbnNzb25A
-bGluYXJvLm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNv
-bT47DQo+IEZhYmlvIEVzdGV2YW0gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47IEdyZWcgS3JvYWgt
-SGFydG1hbg0KPiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFp
-bGluZyBMaXN0DQo+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0gPGxp
-bnV4LXBtQHZnZXIua2VybmVsLm9yZz47DQo+IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5j
-b20+DQo+IFN1YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlu
-cyBvbiBzaHV0ZG93bg0KPiANCj4gT24gTW9uZGF5LCBNYXkgMjgsIDIwMTggMTA6MDE6MDkgQU0g
-Q0VTVCBQZW5nIEZhbiB3cm90ZToNCj4gPiBIaSwgUmFmYWVsICYgVWZmZQ0KPiA+DQo+ID4gPiAt
-LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogUGVuZyBGYW4NCj4gPiA+IFNl
-bnQ6IDIwMTjlubQ15pyIMTjml6UgMTY6NTMNCj4gPiA+IFRvOiBSYWZhZWwgSi4gV3lzb2NraSA8
-cmp3QHJqd3lzb2NraS5uZXQ+DQo+ID4gPiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBr
-ZXJuZWwub3JnPjsgVWxmIEhhbnNzb24NCj4gPiA+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPjsg
-UmFmYWVsIEouIFd5c29ja2kNCj4gPiA+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZh
-YmlvIEVzdGV2YW0gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47DQo+ID4gPiBHcmVnIEtyb2FoLUhh
-cnRtYW4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgTGludXggS2VybmVsDQo+ID4gPiBN
-YWlsaW5nIExpc3QgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTQ0KPiA+
-ID4gPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54
-cC5jb20+DQo+ID4gPiBTdWJqZWN0OiBSRTogW1JGQ10gcGxhdGZvcm06IGRldGFjaCBmcm9tIFBN
-IGRvbWFpbnMgb24gc2h1dGRvd24NCj4gPiA+DQo+ID4gPg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1P
-cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21h
-aWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gPiA+ID4gU2VudDogMjAxOOW5tDXmnIgxOOaXpSAx
-NTo1NQ0KPiA+ID4gPiBUbzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+ID4gPiA+IENj
-OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+OyBVbGYgSGFuc3Nvbg0KPiA+
-ID4gPiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiA+
-IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZhYmlvIEVzdGV2YW0NCj4gPiA+ID4gPGZh
-YmlvLmVzdGV2YW1AbnhwLmNvbT47IEdyZWcgS3JvYWgtSGFydG1hbg0KPiA+ID4gPiA8Z3JlZ2to
-QGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0DQo+ID4gPiA+
-IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0NCj4gPiA+ID4gPGxpbnV4
-LXBtQHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+
-ID4gPiA+IFN1YmplY3Q6IFJlOiBbUkZDXSBwbGF0Zm9ybTogZGV0YWNoIGZyb20gUE0gZG9tYWlu
-cyBvbiBzaHV0ZG93bg0KPiA+ID4gPg0KPiA+ID4gPiBPbiBUaHVyc2RheSwgTWF5IDE3LCAyMDE4
-IDI6Mzc6MzEgUE0gQ0VTVCBQZW5nIEZhbiB3cm90ZToNCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4g
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+IEZyb206IHJqd3lzb2NraUBn
-bWFpbC5jb20gW21haWx0bzpyand5c29ja2lAZ21haWwuY29tXSBPbg0KPiA+ID4gPiA+ID4gQmVo
-YWxmIE9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiA+ID4gPiBTZW50OiAyMDE45bm0NeaciDE3
-5pelIDE2OjAxDQo+ID4gPiA+ID4gPiBUbzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+DQo+
-ID4gPiA+ID4gPiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPjsgVWxm
-IEhhbnNzb24NCj4gPiA+ID4gPiA+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPjsgUmFmYWVsIEou
-IFd5c29ja2kNCj4gPiA+ID4gPiA+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47IEZhYmlv
-IEVzdGV2YW0NCj4gPiA+ID4gPiA+IDxmYWJpby5lc3RldmFtQG54cC5jb20+OyBHcmVnIEtyb2Fo
-LUhhcnRtYW4NCj4gPiA+ID4gPiA+IDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz47IExpbnV4
-IEtlcm5lbCBNYWlsaW5nIExpc3QNCj4gPiA+ID4gPiA+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJu
-ZWwub3JnPjsgTGludXggUE0NCj4gPiA+ID4gPiA+IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+
-OyBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0KPiA+ID4gPiA+ID4gU3ViamVjdDog
-UmU6IFtSRkNdIHBsYXRmb3JtOiBkZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uDQo+ID4gPiA+ID4g
-PiBzaHV0ZG93bg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IE9uIFRodSwgTWF5IDE3LCAyMDE4
-IGF0IDQ6MzMgQU0sIFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPg0KPiB3cm90ZToNCj4gPiA+
-ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4+IC0tLS0tT3JpZ2luYWwgTWVz
-c2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+PiBGcm9tOiByand5c29ja2lAZ21haWwuY29tIFttYWls
-dG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24NCj4gPiA+ID4gPiA+ID4+IEJlaGFsZiBPZiBSYWZh
-ZWwgSi4gV3lzb2NraQ0KPiA+ID4gPiA+ID4gPj4gU2VudDogMjAxOOW5tDXmnIgxN+aXpSA1OjM1
-DQo+ID4gPiA+ID4gPiA+PiBUbzogVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+
-DQo+ID4gPiA+ID4gPiA+PiBDYzogUGVuZyBGYW4gPHBlbmcuZmFuQG54cC5jb20+OyBSYWZhZWwg
-Si4gV3lzb2NraQ0KPiA+ID4gPiA+ID4gPj4gPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPjsg
-RmFiaW8gRXN0ZXZhbQ0KPiA+ID4gPiA+ID4gPj4gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT47IEdy
-ZWcgS3JvYWgtSGFydG1hbg0KPiA+ID4gPiA+ID4gPj4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24u
-b3JnPjsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdA0KPiA+ID4gPiA+ID4gPj4gPGxpbnV4LWtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTQ0KPiA+ID4gPiA+ID4gPj4gPGxpbnV4LXBt
-QHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlteA0KPiA+ID4gPiA+ID4gPj4gPGxpbnV4LWlt
-eEBueHAuY29tPg0KPiA+ID4gPiA+ID4gPj4gU3ViamVjdDogUmU6IFtSRkNdIHBsYXRmb3JtOiBk
-ZXRhY2ggZnJvbSBQTSBkb21haW5zIG9uDQo+ID4gPiA+ID4gPiA+PiBzaHV0ZG93bg0KPiA+ID4g
-PiA+ID4gPj4NCj4gPiA+ID4gPiA+ID4+IE9uIFdlZCwgTWF5IDE2LCAyMDE4IGF0IDExOjUyIEFN
-LCBVbGYgSGFuc3Nvbg0KPiA+ID4gPiA+ID4gPj4gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+DQo+
-ID4gPiA+ID4gPiA+PiB3cm90ZToNCj4gPiA+ID4gPiA+ID4+ID4gT24gMTUgTWF5IDIwMTggYXQg
-MTE6MDEsIFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPiB3cm90ZToNCj4gPiA+ID4gPiA+ID4+
-ID4+IFdoZW4gcmVib290IExpbnV4LCB0aGUgUE0gZG9tYWlucyBhdHRhY2hlZCB0byBhIGRldmlj
-ZQ0KPiA+ID4gPiA+ID4gPj4gPj4gYXJlIG5vdCBzaHV0ZG93bi4gVG8gU29DcyB3aGljaCByZWx5
-cyBvbiByZXNldCB0aGUgd2hvbGUNCj4gPiA+ID4gPiA+ID4+ID4+IFNvQywgdGhlcmUgaXMgbm8g
-bmVlZCB0byBzaHV0ZG93biBQTSBkb21haW5zLCBidXQgdG8NCj4gPiA+ID4gPiA+ID4+ID4+IExp
-bnV4IHJ1bm5pbmcgaW4gYSB2aXJ0dWFsIG1hY2hpbmUgd2l0aCBkZXZpY2VzDQo+ID4gPiA+ID4g
-PiA+PiA+PiBwYXNzLXRocm91Z2gsIHdlIGNvdWxkIG5vdCByZXNldCB0aGUNCj4gPiA+ID4gd2hv
-bGUgU29DLg0KPiA+ID4gPiA+ID4gPj4gPj4gQ3VycmVudGx5IHdlIG5lZWQgTGludXggdG8gc2h1
-dGRvd24gaXRzIFBNIGRvbWFpbnMgd2hlbg0KPiByZWJvb3QuDQo+ID4gPiA+ID4gPiA+PiA+DQo+
-ID4gPiA+ID4gPiA+PiA+IEkgYW0gbm90IHN1cmUgSSB1bmRlcnN0YW5kIGV4YWN0bHkgd2h5IHRo
-ZSBQTSBkb21haW4NCj4gPiA+ID4gPiA+ID4+ID4gbmVlZHMgdG8gYmUgc2h1dGRvd24gZm9yIHRo
-ZXNlIGNhc2VzLCBjb3VsZCB5b3UgcGxlYXNlIGVsYWJvcmF0ZQ0KPiBhIGJpdCBvbiB0aGF0Lg0K
-PiA+ID4gPiA+ID4gPj4gPg0KPiA+ID4gPiA+ID4gPj4gPiBCVFcsIHdoYXQgcGxhdGZvcm0gYXJl
-IHlvdSBydW5uaW5nIG9uIGFuZCBhbHNvIHdoYXQgUE0NCj4gPiA+ID4gPiA+ID4+ID4gZG9tYWlu
-cyBhcmUgYmVpbmcNCj4gPiA+ID4gPiA+ID4+IHVzZWQ/DQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4g
-PiA+ID4gPiA+PiA+IEFueXdheSwgaXQgc2VlbXMgbGlrZSB0aGVyZSBtYXkgYmUgbmVlZCBmb3Ig
-Y2VydGFpbg0KPiA+ID4gPiA+ID4gPj4gPiBjYXNlcywgYnV0IGNlcnRhaW5seSBub3QgYWxsIC0g
-ZXNwZWNpYWxseSBzaW5jZSBpdCBtYXkNCj4gPiA+ID4gPiA+ID4+ID4gc2xvdyBkb3duIHRoZSBz
-aHV0ZG93biBwcm9jZXNzLCB3aGVuIG5vdCBuZWVkZWQuDQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4g
-PiA+ID4gPiA+PiA+IENhbiB3ZSBtYWtlIHRoaXMgcnVudGltZSBjb25maWd1cmFibGUsIHZpYSBz
-eXNmcyBvcg0KPiA+ID4gPiA+ID4gPj4gPiB3aGF0ZXZlciB0aGF0IG1ha2VzDQo+ID4gPiA+ID4g
-PiA+PiBzZW5zZSE/DQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+Pg0KPiA+ID4g
-PiA+ID4gPj4gPj4gY29tbWl0IDJkMzBiYjBiMzg4OSAoInBsYXRmb3JtOiBEbyBub3QgZGV0YWNo
-IGZyb20gUE0NCj4gPiA+ID4gPiA+ID4+ID4+IGRvbWFpbnMgb24gc2h1dGRvd24iKSwgcmVtb3Zl
-cyB3aGF0IHRoaXMgcGF0Y2ggdHJpZXMgdG8NCj4gPiA+ID4gPiA+ID4+ID4+IGFkZCwgYmVjYXVz
-ZSBvZiBhDQo+ID4gPiA+IHdhcm5pbmcuDQo+ID4gPiA+ID4gPiA+PiA+PiBjb21taXQgZTc5YWVl
-NDliY2Y5ICgiUE06IEF2b2lkIGZhbHNlLXBvc2l0aXZlIHdhcm5pbmdzDQo+ID4gPiA+ID4gPiA+
-PiA+PiBpbg0KPiA+ID4gPiA+ID4gPj4gPj4gZGV2X3BtX2RvbWFpbl9zZXQoKSIpIGFscmVhZHkg
-Zml4ZXMgdGhlIGZhbHNlIGFsYXJtIHdhcm5pbmcuDQo+ID4gPiA+ID4gPiA+PiA+PiBTbyBsZXQn
-cyBkZXRhY2ggdGhlIHBvd2VyIGRvbWFpbiB0byBzaHV0ZG93biBQTSBkb21haW5zDQo+ID4gPiA+
-ID4gPiA+PiA+PiBhZnRlciBkcml2ZXINCj4gPiA+ID4gPiA+IHNodXRkb3duLg0KPiA+ID4gPiA+
-ID4gPj4gPj4NCj4gPiA+ID4gPiA+ID4+ID4+IFNpZ25lZC1vZmYtYnk6IFBlbmcgRmFuIDxwZW5n
-LmZhbkBueHAuY29tPg0KPiA+ID4gPiA+ID4gPj4gPj4gLS0tDQo+ID4gPiA+ID4gPiA+PiA+Pg0K
-PiA+ID4gPiA+ID4gPj4gPj4gSSBkbyBub3QgZmluZCBhIGJldHRlciBwbGFjZSB0byBzaHV0ZG93
-biBwb3dlciBkb21haW4NCj4gPiA+ID4gPiA+ID4+ID4+IHdoZW4gcmVib290IExpbnV4LCBzbyBh
-ZGQgYmFjayB0aGUgbGluZSB0aGF0IGNvbW1pdA0KPiA+ID4gPiA+ID4gPj4gPj4gMmQzMGJiMGIz
-ODg5IHJlbW92ZXMsIGJlY2F1c2UgaXQgaXMgYSBmYWxzZSBhbGFybQ0KPiA+ID4gPiA+ID4gPj4g
-Pj4gd2FybmluZyBhcyBjb21taXQNCj4gPiA+ID4gPiA+ID4+ID4+IGU3OWFlZTQ5YmNmOQ0KPiA+
-ID4gPiBkZXNjcmliZXMuDQo+ID4gPiA+ID4gPiA+PiA+Pg0KPiA+ID4gPiA+ID4gPj4gPj4gIGRy
-aXZlcnMvYmFzZS9wbGF0Zm9ybS5jIHwgMSArDQo+ID4gPiA+ID4gPiA+PiA+PiAgMSBmaWxlIGNo
-YW5nZWQsIDEgaW5zZXJ0aW9uKCspDQo+ID4gPiA+ID4gPiA+PiA+Pg0KPiA+ID4gPiA+ID4gPj4g
-Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQo+ID4gPiA+ID4gPiA+PiA+
-PiBiL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jIGluZGV4DQo+ID4gPiA+ID4gPiA+PiA+PiA4MDc1
-ZGRjNzBhMTcuLmE1OTI5ZjI0ZGMzYw0KPiA+ID4gPiA+ID4gPj4gPj4gMTAwNjQ0DQo+ID4gPiA+
-ID4gPiA+PiA+PiAtLS0gYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYw0KPiA+ID4gPiA+ID4gPj4g
-Pj4gKysrIGIvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMNCj4gPiA+ID4gPiA+ID4+ID4+IEBAIC02
-MTYsNiArNjE2LDcgQEAgc3RhdGljIHZvaWQNCj4gPiA+ID4gPiA+ID4+ID4+IHBsYXRmb3JtX2Ry
-dl9zaHV0ZG93bihzdHJ1Y3QgZGV2aWNlDQo+ID4gPiA+ID4gPiA+PiA+PiAqX2RldikNCj4gPiA+
-ID4gPiA+ID4+ID4+DQo+ID4gPiA+ID4gPiA+PiA+PiAgICAgICAgIGlmIChkcnYtPnNodXRkb3du
-KQ0KPiA+ID4gPiA+ID4gPj4gPj4gICAgICAgICAgICAgICAgIGRydi0+c2h1dGRvd24oZGV2KTsN
-Cj4gPiA+ID4gPiA+ID4+ID4+ICsgICAgICAgZGV2X3BtX2RvbWFpbl9kZXRhY2goX2RldiwgdHJ1
-ZSk7DQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+IFRoaXMgd291bGQgc29tZXdo
-YXQgd29yaywgYnV0IG9ubHkgZm9yIHBsYXRmb3JtIGRldmljZXMuDQo+ID4gPiA+ID4gPiA+PiA+
-IFRvIG1ha2UgdGhpcyBmdWxseSB3b3JrLCB3ZSBuZWVkIHRvIGNhbGwNCj4gPiA+ID4gPiA+ID4+
-ID4gZGV2X3BtX2RvbWFpbl9kZXRhY2goKSBmcm9tIGFtYmEsIHNwaSwgZXRjIGFzIHdlbGwuDQo+
-ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+IFBlcmhhcHMgYW5vdGhlciBvcHRpb24g
-dG8gbWFuYWdlIHRoaXMgbW9yZSBnZW5lcmFsbHksIGFuDQo+ID4gPiA+ID4gPiA+PiA+IHdpdGhv
-dXQgaGF2aW5nIGRldGFjaCBkZXZpY2VzLCBjb3VsZCBiZSB0byBleHRlbmQgdGhlDQo+ID4gPiA+
-ID4gPiA+PiA+IHN0cnVjdCBkZXZfcG1fZG9tYWluIHdpdGggYSBuZXcgY2FsbGJhY2ssICItPnNo
-dXRkb3duKCkiDQo+ID4gPiA+ID4gPiA+PiA+IGFuZCB0aGVuIG1ha2UgdGhlIGRyaXZlciBjb3Jl
-IGNhbGwgaXQgZnJvbSBkZXZpY2Vfc2h1dGRvd24oKS4NCj4gPiA+ID4gPiA+ID4+DQo+ID4gPiA+
-ID4gPiA+PiBJJ20gc2Vuc2luZyBhIHBvc3NpYmxlIG9yZGVyaW5nIHNsaXBwZXJ5IHNsb3BlIHdp
-dGggdGhpcw0KPiA+ID4gPiA+ID4gPj4gKGl0IHdpbGwgb25seSB3b3JrIGlmIGFsbCBvZiB0aGUg
-ZHJpdmVycy9idXMgdHlwZXMgZXRjIGRvDQo+ID4gPiA+ID4gPiA+PiB0aGUgcmlnaHQgdGhpbmcg
-aW4gdGhlaXINCj4gPiA+ID4gPiA+ID4+IC0+c2h1dGRvd24gY2FsbGJhY2tzIHNvIG5vdGhpbmcg
-ZGVwZW5kcyBvbiB0aGUgZG9tYWluIGdvaW5nDQo+ID4gPiBmb3J3YXJkKS4NCj4gPiA+ID4gPiA+
-ID4+DQo+ID4gPiA+ID4gPiA+PiA+IFR5cGljYWxseSwgZm9yIGdlbnBkLCBJIHdvdWxkIHByb2Jh
-Ymx5IGNvdW50IHRoZSBudW1iZXINCj4gPiA+ID4gPiA+ID4+ID4gb2YgY2FsbHMgYmVpbmcgbWFk
-ZSB0byAtPnNodXRkb3duKCkgcGVyIFBNIGRvbWFpbiwgdGhlbg0KPiA+ID4gPiA+ID4gPj4gPiB3
-aGVuIGl0IHJlYWNoZXMgdGhlIG51bWJlciBvZiBhdHRhY2hlZCBkZXZpY2VzIHRvIGl0LCBhbGxv
-dyB0bw0KPiBwb3dlciBvZmYgaXQuDQo+ID4gPiA+ID4gPiA+PiA+DQo+ID4gPiA+ID4gPiA+PiA+
-IExldCdzIHNlZSB3aGF0IFJhZmFlbCB0aGlua3MgYWJvdXQgaXQuDQo+ID4gPiA+ID4gPiA+Pg0K
-PiA+ID4gPiA+ID4gPj4gSSdtIG5vdCBzdXJlIGFib3V0IHRoZSB1c2UgY2FzZS4gIFRoZSBoeXBl
-cnZpc29yIHNob3VsZCBiZQ0KPiA+ID4gPiA+ID4gPj4gYWJsZSB0byB0YWtlIGNhcmUgb2YgdHVy
-bmluZyBwb3dlciBkb21haW5zIG9mZiBvbiB0aGUNCj4gPiA+ID4gPiA+ID4+IGNsaWVudCBPUyBy
-ZWJvb3QgaW4gdGhlb3J5LiAgSWYgdGhlIGNsaWVudCBPUyBsZWF2aW5nIHRoZQ0KPiA+ID4gPiA+
-ID4gPj4gaHlwZXJ2aXNvciBuZWVkcyB0byB3b3JyeSBhYm91dCB3aGF0IHN0YXRlIGl0IGxlYXZl
-cw0KPiA+ID4gPiA+ID4gPj4gYmVoaW5kLCB0aGUgZGVzaWduIG9mIHRoZSBoeXBlcnZpc29yIGlz
-IHNvcnQgb2YNCj4gPiA+ID4gPiA+IHF1ZXN0aW9uYWJsZSBJTU8uDQo+ID4gPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gPiA+IFRoaXMgaXMgdmFsaWQgY29uY2Vybi4gQnV0IG1vdmluZyB0aGUgcG93ZXIg
-ZG9tYWluIGxvZ2ljDQo+ID4gPiA+ID4gPiA+IGludG8gaHlwZXJ2aXNvciBtb3N0bHkgbWljcm8t
-a2VybmVsIGRlc2lnbiB3aWxsIGludHJvZHVjZQ0KPiA+ID4gPiA+ID4gPiBtb3JlIGNvbXBsZXhp
-dHkgYW5kDQo+ID4gPiA+ID4gPiBtYWtlIGNlcnRpZmljYXRpb24gaGFyZGVyLg0KPiA+ID4gPiA+
-ID4gPiBDdXJyZW50bHksIExldCBMaW51eCBzaHV0ZG93biBpdCdzIHBvd2VyIGRvbWFpbiBpcyB0
-aGUNCj4gPiA+ID4gPiA+ID4gZWFzaWVzdCB3YXkgdG8gbWUgYW5kIG1ha2UgdGhpbmdzIHdvcmsg
-d2VsbCBhZnRlciByZWJvb3QuDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gV2VsbCwgdG8gcHV0
-IGl0IGJsdW50bHksIGlmIHlvdXIgaHlwZXJ2aXNvciBkZXBlbmRzIG9uIHRoZQ0KPiA+ID4gPiA+
-ID4gZ3Vlc3QgdG8gZG8gdGhlIHJpZ2h0IHRoaW5nIG9uIGV4aXQsIGl0IGRvZXNuJ3QgZG8gaXRz
-IGpvYi4gIEkNCj4gPiA+ID4gPiA+IHdvdWxkbid0IGhhdmUgY2VydGlmaWVkIGl0IGZvciB5b3Ug
-aWYgdGhhdCB3YXMgbXkgZGVjaXNpb24uDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBJdCBpcyBndWVz
-dCBvcyBub3Qgd29yayB3ZWxsIGFmdGVyIGd1ZXN0IG9zIHJlYm9vdC4gVGhlDQo+ID4gPiA+ID4g
-aHlwZXJ2aXNvciBpcyBub3QNCj4gPiA+ID4gYWZmZWN0ZWQuDQo+ID4gPiA+ID4NCj4gPiA+ID4g
-PiBUaGlua2luZyBhbm90aGVyIGNhc2Ugd2l0aG91dCBoeXBlcnZpc29yLCBNNCBjb3JlIHJ1biBS
-VE9TLCBBMzUNCj4gPiA+ID4gPiBDb3JlIHJ1biBMaW51eCwgd2hlbiBMaW51eCByZWJvb3Rpbmcs
-IFJUT1Mgc2hvdWxkIG5vdCBiZQ0KPiA+ID4gPiA+IGFmZmVjdGVkLiBBZnRlciBMaW51eCByZWJv
-b3QgaXRzZWxmLCBiZWNhdXNlIGl0cyBwb3dlciBkb21haW4gaXMNCj4gPiA+ID4gPiBub3QgcGFp
-cmVkIHdpdGgNCj4gPiA+ID4gb3Blbi9zaHV0ZG93biwgc29tZSBkZXZpY2VzIG5vdCBmdW5jdGlv
-biB3ZWxsLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGUgcXVlc3Rpb24gYm9pbHMgZG93biB0byB3aGV0
-aGVyIG9yIG5vdCBkZXZpY2VzIHNob3VsZCBiZQ0KPiA+ID4gPiBkZXRhY2hlZCBmcm9tIFBNIGRv
-bWFpbnMgb24gc2h1dGRvd24gSU1PLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGV5IGFyZSBkZXRhY2hl
-ZCBmcm9tIFBNIGRvbWFpbnMgb24gZHJpdmVyIHJlbW92YWwsIHNvIEkgZ3Vlc3MNCj4gPiA+ID4g
-b25lIGFuc3dlciBpcyAieWVzLCBpbiBhbmFsb2d5IHdpdGggdGhhdCIuICBIb3dldmVyLCB0aGUg
-cG9pbnQNCj4gPiA+ID4gYWJvdXQgcGVyZm9ybWFjZSBicm91Z2h0IHVwIGJ5IFVsZiBzZWVtcyB0
-byBiZSB2YWxpZCB0b28uDQo+ID4gPiA+DQo+ID4gPiA+IEluIGFueSBjYXNlLCB0aGUgY2hhbmdl
-IHNob3VsZCBiZSBtYWRlIGZvciBhbGwgb2YgdGhlIGJ1cyB0eXBlcw0KPiA+ID4gPiB1c2luZyBQ
-TSBkb21haW5zLCBub3QganVzdCBvbmUuDQo+ID4gPg0KPiA+ID4gVW5kZXJzdGFuZCwgaXQgd2ls
-bCBpbmNyZWFzZSBzaHV0ZG93biB0aW1lLiBIb3cgYWJvdXQgc2h1dGRvd24gdGhlDQo+ID4gPiBw
-b3dlciBkb21haW4gaW4gcGxhdGZvcm1fZHJpdmVyLT5zaHV0ZG93biwgbGV0IHRoZSBkcml2ZXIg
-aGFuZGxlDQo+ID4gPiBpdCdzIHBvd2VyIGRvbWFpbiBzdGh1ZG93biBieSBpdHNlbGY/DQo+ID4g
-PiBUaGVuIG5vIG5lZWQgY29tbW9uIGZyYW1ld29yayBjaGFuZ2UuDQo+ID4NCj4gPiBEbyB5b3Ug
-aGF2ZSBtb3JlIHN1Z2dlc3Rpb25zIG9uIGhvdyB0byBoYW5kbGUgdGhpcyB0aGUgcG93ZXIgZG9t
-YWluDQo+IHNodXRkb3duPw0KPiANCj4gSSB0aGluayB5b3UgY291bGQgYWRkIGEgcGxhdGZvcm0g
-c3lzY29yZV9zaHV0ZG93biBob29rIHRvIHR1cm4gYWxsIHBvd2VyDQo+IGRvbWFpbnMgb2ZmLg0K
-DQpUaGFua3MsIFJhZmFlbC4gVGhpcyBpcyBzaW1wbGUgZW5vdWdoIHRvIG1lLg0KDQpUaGFua3Ms
-DQpQZW5nLg0KDQo=
+On Fri, May 25, 2018 at 12:19 PM, Sebastian Andrzej Siewior
+<bigeasy@linutronix.de> wrote:
+> There are macros for static initializer for the three out of four
+> possible notifier types, that are:
+>         ATOMIC_NOTIFIER_HEAD()
+>         BLOCKING_NOTIFIER_HEAD()
+>         RAW_NOTIFIER_HEAD()
+>
+> This patch provides a static initilizer for the forth type to make it
+> complete.
+>
+> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+
+I cannot apply this without an ACK from Paul.
+
+> ---
+>  include/linux/notifier.h | 34 +++++++++++++++++++++++++++++-----
+>  include/linux/srcutiny.h |  6 +++---
+>  include/linux/srcutree.h |  6 +++---
+>  3 files changed, 35 insertions(+), 11 deletions(-)
+>
+> diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+> index 6d731110e0db..f35c7bf76143 100644
+> --- a/include/linux/notifier.h
+> +++ b/include/linux/notifier.h
+> @@ -43,9 +43,7 @@
+>   * in srcu_notifier_call_chain(): no cache bounces and no memory barriers.
+>   * As compensation, srcu_notifier_chain_unregister() is rather expensive.
+>   * SRCU notifier chains should be used when the chain will be called very
+> - * often but notifier_blocks will seldom be removed.  Also, SRCU notifier
+> - * chains are slightly more difficult to use because they require special
+> - * runtime initialization.
+> + * often but notifier_blocks will seldom be removed.
+>   */
+>
+>  struct notifier_block;
+> @@ -91,7 +89,7 @@ struct srcu_notifier_head {
+>                 (name)->head = NULL;            \
+>         } while (0)
+>
+> -/* srcu_notifier_heads must be initialized and cleaned up dynamically */
+> +/* srcu_notifier_heads must be cleaned up dynamically */
+>  extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
+>  #define srcu_cleanup_notifier_head(name)       \
+>                 cleanup_srcu_struct(&(name)->srcu);
+> @@ -104,7 +102,13 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
+>                 .head = NULL }
+>  #define RAW_NOTIFIER_INIT(name)        {                               \
+>                 .head = NULL }
+> -/* srcu_notifier_heads cannot be initialized statically */
+> +
+> +#define SRCU_NOTIFIER_INIT(name, pcpu)                         \
+> +       {                                                       \
+> +               .mutex = __MUTEX_INITIALIZER(name.mutex),       \
+> +               .head = NULL,                                   \
+> +               .srcu = __SRCU_STRUCT_INIT(name.srcu, pcpu),    \
+> +       }
+>
+>  #define ATOMIC_NOTIFIER_HEAD(name)                             \
+>         struct atomic_notifier_head name =                      \
+> @@ -116,6 +120,26 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
+>         struct raw_notifier_head name =                         \
+>                 RAW_NOTIFIER_INIT(name)
+>
+> +#ifdef CONFIG_TREE_SRCU
+> +#define _SRCU_NOTIFIER_HEAD(name, mod)                         \
+> +       static DEFINE_PER_CPU(struct srcu_data,                 \
+> +                       name##_head_srcu_data);                 \
+> +       mod struct srcu_notifier_head name =                    \
+> +                       SRCU_NOTIFIER_INIT(name, name##_head_srcu_data)
+> +
+> +#else
+> +#define _SRCU_NOTIFIER_HEAD(name, mod)                         \
+> +       mod struct srcu_notifier_head name =                    \
+> +                       SRCU_NOTIFIER_INIT(name, name)
+> +
+> +#endif
+> +
+> +#define SRCU_NOTIFIER_HEAD(name)                               \
+> +       _SRCU_NOTIFIER_HEAD(name, /* not static */)
+> +
+> +#define SRCU_NOTIFIER_HEAD_STATIC(name)                                \
+> +       _SRCU_NOTIFIER_HEAD(name, static)
+> +
+>  #ifdef __KERNEL__
+>
+>  extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
+> diff --git a/include/linux/srcutiny.h b/include/linux/srcutiny.h
+> index 261471f407a5..f41d2fb09f87 100644
+> --- a/include/linux/srcutiny.h
+> +++ b/include/linux/srcutiny.h
+> @@ -43,7 +43,7 @@ struct srcu_struct {
+>
+>  void srcu_drive_gp(struct work_struct *wp);
+>
+> -#define __SRCU_STRUCT_INIT(name)                                       \
+> +#define __SRCU_STRUCT_INIT(name, __ignored)                            \
+>  {                                                                      \
+>         .srcu_wq = __SWAIT_QUEUE_HEAD_INITIALIZER(name.srcu_wq),        \
+>         .srcu_cb_tail = &name.srcu_cb_head,                             \
+> @@ -56,9 +56,9 @@ void srcu_drive_gp(struct work_struct *wp);
+>   * Tree SRCU, which needs some per-CPU data.
+>   */
+>  #define DEFINE_SRCU(name) \
+> -       struct srcu_struct name = __SRCU_STRUCT_INIT(name)
+> +       struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
+>  #define DEFINE_STATIC_SRCU(name) \
+> -       static struct srcu_struct name = __SRCU_STRUCT_INIT(name)
+> +       static struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
+>
+>  void synchronize_srcu(struct srcu_struct *sp);
+>
+> diff --git a/include/linux/srcutree.h b/include/linux/srcutree.h
+> index 4eda108abee0..745d4ca4dd50 100644
+> --- a/include/linux/srcutree.h
+> +++ b/include/linux/srcutree.h
+> @@ -104,9 +104,9 @@ struct srcu_struct {
+>  #define SRCU_STATE_SCAN1       1
+>  #define SRCU_STATE_SCAN2       2
+>
+> -#define __SRCU_STRUCT_INIT(name)                                       \
+> +#define __SRCU_STRUCT_INIT(name, pcpu_name)                            \
+>         {                                                               \
+> -               .sda = &name##_srcu_data,                               \
+> +               .sda = &pcpu_name,                                      \
+>                 .lock = __SPIN_LOCK_UNLOCKED(name.lock),                \
+>                 .srcu_gp_seq_needed = 0 - 1,                            \
+>                 __SRCU_DEP_MAP_INIT(name)                               \
+> @@ -133,7 +133,7 @@ struct srcu_struct {
+>   */
+>  #define __DEFINE_SRCU(name, is_static)                                 \
+>         static DEFINE_PER_CPU(struct srcu_data, name##_srcu_data);\
+> -       is_static struct srcu_struct name = __SRCU_STRUCT_INIT(name)
+> +       is_static struct srcu_struct name = __SRCU_STRUCT_INIT(name, name##_srcu_data)
+>  #define DEFINE_SRCU(name)              __DEFINE_SRCU(name, /* not static */)
+>  #define DEFINE_STATIC_SRCU(name)       __DEFINE_SRCU(name, static)
+>
+> --
+> 2.17.0
+>
