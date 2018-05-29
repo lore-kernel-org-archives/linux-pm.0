@@ -1,42 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / runtime: Drop usage count for suppliers at device link removal
-Date: Tue, 29 May 2018 10:40:51 +0200
-Message-ID: <2305835.OJaHNvgZnB@aspire.rjw.lan>
-References: <1527150816-8459-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0gGLvKS6yDuBokJzm2gAhM=VMSaz5frvWq=eRPkAD-z6g@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: reinitialize new policy min/max when writing scaling_(max|min)_freq
+Date: Tue, 29 May 2018 10:45:57 +0200
+Message-ID: <3949526.VSbr9bPLlU@aspire.rjw.lan>
+References: <1527144234-96396-1-git-send-email-kevin.wangtao@hisilicon.com> <CAJZ5v0ih6s9WviSpg9D+kSt2h8T5Vnx-MziOmYuk1H4yZOYLNg@mail.gmail.com> <7700fad7-211d-d8b2-e4ee-975c1cf1f9dc@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gGLvKS6yDuBokJzm2gAhM=VMSaz5frvWq=eRPkAD-z6g@mail.gmail.com>
+In-Reply-To: <7700fad7-211d-d8b2-e4ee-975c1cf1f9dc@hisilicon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gengyanping@hisilicon.com, sunzhaosheng@hisilicon.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, May 27, 2018 12:18:05 PM CEST Rafael J. Wysocki wrote:
-> On Thu, May 24, 2018 at 10:33 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > In the case consumer device is runtime resumed, while the link to the
-> > supplier is removed, the earlier call to pm_runtime_get_sync() made from
-> > rpm_get_suppliers() does not get properly balanced with a corresponding
-> > call to pm_runtime_put(). This leads to that suppliers remains to be
-> > runtime resumed forever, while they don't need to.
-> >
-> > Let's fix the behaviour by calling rpm_put_suppliers() when dropping a
-> > device link. Not that, since rpm_put_suppliers() checks the
-> > link->rpm_active flag, we can correctly avoid to call pm_runtime_put() in
-> > cases when we shouldn't.
-> >
-> > Reported-by: Todor Tomov <todor.tomov@linaro.org>
-> > Fixes: 21d5c57b3726 ("PM / runtime: Use device links")
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > ---
-> >
-> > Rafael, I am not sure if this is safe from locking point of view. The device
-> > link write lock has been taken when pm_runtime_drop_link() is called, hence I
-> > assume calling rpm_put_suppliers() should be fine!? If not, can you please
-> > advise how to change?
+On Friday, May 25, 2018 4:54:04 AM CEST Wangtao (Kevin, Kirin) wrote:
 > 
-> Holding the lock should be sufficient for the list to be stable, so
-> AFAICS it is OK.
+> 在 2018/5/24 15:45, Rafael J. Wysocki 写道:
+> > On Thu, May 24, 2018 at 8:43 AM, Kevin Wangtao
+> > <kevin.wangtao@hisilicon.com> wrote:
+> >> consider such situation, current user_policy.min is 1000000,
+> >> current user_policy.max is 1200000, in cpufreq_set_policy,
+> >> other driver may update policy.min to 1200000, policy.max to
+> >> 1300000. After that, If we input "echo 1300000 > scaling_min_freq",
+> >> then user_policy.min will be 1300000, and user_policy.max is
+> >> still 1200000, because the input value is checked with policy.max
+> >> not user_policy.max. if we get all related cpus offline and
+> >> online again, it will cause cpufreq_init_policy fail because
+> >> user_policy.min is higher than user_policy.max.
+> > 
+> > How do you reproduce this, exactly?
+>
+> I write a driver register CPUFREQ_POLICY_NOTIFIER, and when event is CPUFREQ_ADJUST,
+> it will modify policy's min/max according to some conditions, I test it with writing
+> scaling_(max|min)_freq to traverse all frequencies repeatly, and also repeat hotplug
+> as background.
 
-So the patch has been applied, thanks!
+You are expected to use cpufreq_update_policy() to update the limits in policy
+notifiers.  Do you use it in your driver?
