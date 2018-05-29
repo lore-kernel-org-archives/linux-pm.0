@@ -1,57 +1,52 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 05/11] PM / devfreq: governors: Return device frequency
- limits instead of user limits
-Date: Tue, 29 May 2018 12:32:36 -0700
-Message-ID: <20180529193236.GH168650@google.com>
-References: <20180525203043.249193-6-mka@chromium.org>
- <20180525203043.249193-1-mka@chromium.org>
- <CGME20180525203125epcas3p46c7cac352ede4b0ba5d2b36bc32ad566@epcms1p8>
- <20180528050444epcms1p8e6552d55231a099ec89304dfb1f819b9@epcms1p8>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH 0/2] PCI: Initial imx7d pm support
+Date: Tue, 29 May 2018 22:39:15 +0300
+Message-ID: <cover.1527621510.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180528050444epcms1p8e6552d55231a099ec89304dfb1f819b9@epcms1p8>
-Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Andrey Smirnov <andrew.smirnov@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Lucas Stach <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Joao Pinto <Joao.Pinto@synopsys.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 28, 2018 at 02:04:44PM +0900, MyungJoo Ham wrote:
-> >The performance, powersave and simpleondemand governors can return
-> >df->min/max_freq, which are the user defined frequency limits.
-> >update_devfreq() already takes care of adjusting the target frequency
-> >with the user limits if necessary, therefore we can return
-> >df->scaling_min/max_freq instead, which is the min/max frequency
-> >supported by the device at a given time (depending on the
-> >enabled/disabled OPPs)
-> >
-> >Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> >---
-> > drivers/devfreq/governor_performance.c    | 2 +-
-> > drivers/devfreq/governor_powersave.c      | 2 +-
-> > drivers/devfreq/governor_simpleondemand.c | 6 +++---
-> > 3 files changed, 5 insertions(+), 5 deletions(-)
-> >
-> 
-> Actually, even scaling_max_freq and scaling_min_freq are
-> covered centerally at devfreq.c:update_devfreq();
-> 
-> Wouldn't it be sufficient to return UINT_MAX for performance
-> and return UINT_MIN (0) for powersave, if the purpose is to
-> remove redundancy?
-> 
-> In the same sense, we may return UINT_MAX for freq-increasing
-> case for simpleondemand as well, because they are filtered
-> centrally anyway.
-> 
-> (This commit might be better merged to 4/11 in that case as well.)
+This series adds initial pm support on imx7d so that after
+suspend/resume lspci works again. This mostly copies the resume sequence
+from the imx tree.
 
-I did this in the first variant of the patch (before sending it in a
-series), but Chanwoo Choi objected:
+More can be done later to reduce power in suspend as well as adding
+support for other socs.
 
-https://patchwork.kernel.org/patch/10404893/
+This is motivated mostly by a desire to bring imx PM code closer to
+upstream. It is possible that I am missing some things about how PM
+should be done for pci host drivers, it would be great if you could
+point me the right way.
 
-I also still think that returning a constant would be the cleanest
-solution if we can agree on this. What do you think about
-DEVFREQ_MIN/MAX_FREQ (0/UINT_MAX) to make things slightly clearer?
+It also relies on this bugfix for PGC offsets:
+    https://lkml.org/lkml/2018/5/29/138
+Without that patch resume hangs on first PCI read from PCI-PM core. It
+is not strictly related to PCI but pci-imx6 is the only user of gpcv2
+power domains.
+
+Patch 1 in this series is also technically an unrelated bugfix, however
+pci-imx6 is the only user.
+
+Leonard Crestez (2):
+  reset: imx7: Fix always writing bits as 0
+  PCI: imx: Initial imx7d pm support
+
+ drivers/pci/dwc/pci-imx6.c | 94 ++++++++++++++++++++++++++++++++++++--
+ drivers/reset/reset-imx7.c |  2 +-
+ 2 files changed, 90 insertions(+), 6 deletions(-)
+
+-- 
+2.17.0
