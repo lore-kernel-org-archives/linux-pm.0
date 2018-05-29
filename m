@@ -1,119 +1,134 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 1/9] PM / Domains: Drop extern declarations of functions in
- pm_domain.h
-Date: Tue, 29 May 2018 12:04:13 +0200
-Message-ID: <20180529100421.31022-2-ulf.hansson@linaro.org>
+Subject: [PATCH v2 9/9] PM / Domains: Add dev_pm_domain_attach_by_id() to manage multi PM domains
+Date: Tue, 29 May 2018 12:04:21 +0200
+Message-ID: <20180529100421.31022-10-ulf.hansson@linaro.org>
 References: <20180529100421.31022-1-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180529100421.31022-1-ulf.hansson@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Using "extern" to declare a function in a public header file is somewhat
-pointless, but also doesn't hurt. However, to make all the function
-declarations in pm_domain.h to be consistent, let's drop the use of
-"extern".
+The existing dev_pm_domain_attach() function, allows a single PM domain to
+be attached per device. To be able to support devices that are partitioned
+across multiple PM domains, let's introduce a new interface,
+dev_pm_domain_attach_by_id().
+
+The dev_pm_domain_attach_by_id() returns a new allocated struct device with
+the corresponding attached PM domain. This enables for example a driver to
+operate on the new device from a power management point of view. The driver
+may then also benefit from using the received device, to set up so called
+device-links towards its original device. Depending on the situation, these
+links may then be dynamically changed.
+
+The new interface is typically called by drivers during their probe phase,
+in case they manages devices which uses multiple PM domains. If that is the
+case, the driver also becomes responsible of managing the detaching of the
+PM domains, which typically should be done at the remove phase. Detaching
+is done by calling the existing dev_pm_domain_detach() function and for
+each of the received devices from dev_pm_domain_attach_by_id().
+
+Note, currently its only genpd that supports multiple PM domains per
+device, but dev_pm_domain_attach_by_id() can easily by extended to cover
+other PM domain types, if/when needed.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- include/linux/pm_domain.h | 51 ++++++++++++++++++---------------------
- 1 file changed, 23 insertions(+), 28 deletions(-)
 
+Changes in v2:
+	- Fixed comments from Jon. Clarified function descriptions/changelog and
+	return ERR_PTR(-EEXIST) in case a PM domain is already assigned.
+	- Fix build error when CONFIG_PM is unset.
+
+---
+ drivers/base/power/common.c | 43 ++++++++++++++++++++++++++++++++++---
+ include/linux/pm_domain.h   |  7 ++++++
+ 2 files changed, 47 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index 7ae62b6355b8..5e5ea0c239de 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -116,14 +116,51 @@ int dev_pm_domain_attach(struct device *dev, bool power_on)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
+ 
++/**
++ * dev_pm_domain_attach_by_id - Attach a device to one of its PM domains.
++ * @dev: Device to attach.
++ * @index: The index of the PM domain.
++ *
++ * As @dev may only be attached to a single PM domain, the backend PM domain
++ * provider creates a virtual device to attach instead. If attachment succeeds,
++ * the ->detach() callback in the struct dev_pm_domain are assigned by the
++ * corresponding backend attach function, as to deal with detaching of the
++ * created virtual device.
++ *
++ * This function should typically be invoked by a driver during the probe phase,
++ * in case its device requires power management through multiple PM domains. The
++ * driver may benefit from using the received device, to configure device-links
++ * towards its original device. Depending on the use-case and if needed, the
++ * links may be dynamically changed by the driver, which allows it to control
++ * the power to the PM domains independently from each other.
++ *
++ * Callers must ensure proper synchronization of this function with power
++ * management callbacks.
++ *
++ * Returns the virtual created device when successfully attached to its PM
++ * domain, NULL in case @dev don't need a PM domain, else an ERR_PTR().
++ * Note that, to detach the returned virtual device, the driver shall call
++ * dev_pm_domain_detach() on it, typically during the remove phase.
++ */
++struct device *dev_pm_domain_attach_by_id(struct device *dev,
++					  unsigned int index)
++{
++	if (dev->pm_domain)
++		return ERR_PTR(-EEXIST);
++
++	return genpd_dev_pm_attach_by_id(dev, index);
++}
++EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_id);
++
+ /**
+  * dev_pm_domain_detach - Detach a device from its PM domain.
+  * @dev: Device to detach.
+  * @power_off: Used to indicate whether we should power off the device.
+  *
+- * This functions will reverse the actions from dev_pm_domain_attach() and thus
+- * try to detach the @dev from its PM domain. Typically it should be invoked
+- * from subsystem level code during the remove phase.
++ * This functions will reverse the actions from dev_pm_domain_attach() and
++ * dev_pm_domain_attach_by_id(), thus it detaches @dev from its PM domain.
++ * Typically it should be invoked during the remove phase, either from
++ * subsystem level code or from drivers.
+  *
+  * Callers must ensure proper synchronization of this function with power
+  * management callbacks.
 diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 4e5764083fd8..c847e9a3033d 100644
+index 82458e8e2e01..9206a4fef9ac 100644
 --- a/include/linux/pm_domain.h
 +++ b/include/linux/pm_domain.h
-@@ -143,21 +143,17 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
- 	return to_gpd_data(dev->power.subsys_data->domain_data);
- }
- 
--extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
--				 struct device *dev,
--				 struct gpd_timing_data *td);
--
--extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
--				  struct device *dev);
--extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
--				  struct generic_pm_domain *new_subdomain);
--extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
--				     struct generic_pm_domain *target);
--extern int pm_genpd_init(struct generic_pm_domain *genpd,
--			 struct dev_power_governor *gov, bool is_off);
--extern int pm_genpd_remove(struct generic_pm_domain *genpd);
--extern int dev_pm_genpd_set_performance_state(struct device *dev,
--					      unsigned int state);
-+int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
-+			  struct gpd_timing_data *td);
-+int pm_genpd_remove_device(struct generic_pm_domain *genpd, struct device *dev);
-+int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
-+			   struct generic_pm_domain *new_subdomain);
-+int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
-+			      struct generic_pm_domain *target);
-+int pm_genpd_init(struct generic_pm_domain *genpd,
-+		  struct dev_power_governor *gov, bool is_off);
-+int pm_genpd_remove(struct generic_pm_domain *genpd);
-+int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -215,8 +211,8 @@ static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
- }
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
--extern void pm_genpd_syscore_poweroff(struct device *dev);
--extern void pm_genpd_syscore_poweron(struct device *dev);
-+void pm_genpd_syscore_poweroff(struct device *dev);
-+void pm_genpd_syscore_poweron(struct device *dev);
- #else
- static inline void pm_genpd_syscore_poweroff(struct device *dev) {}
- static inline void pm_genpd_syscore_poweron(struct device *dev) {}
-@@ -240,14 +236,13 @@ int of_genpd_add_provider_simple(struct device_node *np,
- int of_genpd_add_provider_onecell(struct device_node *np,
- 				  struct genpd_onecell_data *data);
- void of_genpd_del_provider(struct device_node *np);
--extern int of_genpd_add_device(struct of_phandle_args *args,
--			       struct device *dev);
--extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
--				  struct of_phandle_args *new_subdomain);
--extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
--extern int of_genpd_parse_idle_states(struct device_node *dn,
--			struct genpd_power_state **states, int *n);
--extern unsigned int of_genpd_opp_to_performance_state(struct device *dev,
-+int of_genpd_add_device(struct of_phandle_args *args, struct device *dev);
-+int of_genpd_add_subdomain(struct of_phandle_args *parent,
-+			   struct of_phandle_args *new_subdomain);
-+struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
-+int of_genpd_parse_idle_states(struct device_node *dn,
-+			       struct genpd_power_state **states, int *n);
-+unsigned int of_genpd_opp_to_performance_state(struct device *dev,
- 				struct device_node *opp_node);
- 
- int genpd_dev_pm_attach(struct device *dev);
-@@ -304,9 +299,9 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
- #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+@@ -299,6 +299,8 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
  
  #ifdef CONFIG_PM
--extern int dev_pm_domain_attach(struct device *dev, bool power_on);
--extern void dev_pm_domain_detach(struct device *dev, bool power_off);
--extern void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
-+int dev_pm_domain_attach(struct device *dev, bool power_on);
-+void dev_pm_domain_detach(struct device *dev, bool power_off);
-+void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
+ int dev_pm_domain_attach(struct device *dev, bool power_on);
++struct device *dev_pm_domain_attach_by_id(struct device *dev,
++					  unsigned int index);
+ void dev_pm_domain_detach(struct device *dev, bool power_off);
+ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
  #else
- static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
+@@ -306,6 +308,11 @@ static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
  {
+ 	return 0;
+ }
++static inline struct device *dev_pm_domain_attach_by_id(struct device *dev,
++							unsigned int index)
++{
++	return NULL;
++}
+ static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
+ static inline void dev_pm_domain_set(struct device *dev,
+ 				     struct dev_pm_domain *pd) {}
 -- 
 2.17.0
