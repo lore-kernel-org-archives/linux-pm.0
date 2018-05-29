@@ -1,276 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Tue, 29 May 2018 15:01:48 +0530
-Message-ID: <20180529093148.b2cxb5lwks7ka2tn@vireshk-i7>
-References: <1527241792-5860-1-git-send-email-daniel.lezcano@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v2 0/9] PM / Domains: Add support for multi PM domains per device
+Date: Tue, 29 May 2018 12:04:12 +0200
+Message-ID: <20180529100421.31022-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1527241792-5860-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
+Changes in v2:
+	- Addressed comments from Geert around DT doc.
+	- Addressed comments from Jon around clarification of how to use this
+	and changes to returned error codes.
+	- Fixed build error in case CONFIG_PM was unset.
 
-Thanks for yet another version :)
+There are devices that are partitioned across multiple PM domains. Currently
+these can't be supported well by the available PM infrastructures we have in
+the kernel. This series is an attempt to address this.
 
-On 25-05-18, 11:49, Daniel Lezcano wrote:
-> +++ b/drivers/powercap/idle_injection.c
-> +static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
-> +{
-> +	struct idle_injection_thread *iit;
-> +	int cpu;
-> +
-> +	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
-> +		iit = per_cpu_ptr(&idle_injection_thread, cpu);
-> +		iit->should_run = 1;
-> +		wake_up_process(iit->tsk);
-> +	}
-> +}
-> +
-> +/**
-> + * idle_injection_wakeup_fn - idle injection timer callback
-> + * @timer: a hrtimer structure
-> + *
-> + * This function is called when the idle injection timer expires which
-> + * will wake up the idle injection tasks and these ones, in turn, play
-> + * idle a specified amount of time.
-> + *
-> + * Return: HRTIMER_NORESTART.
-> + */
-> +static enum hrtimer_restart idle_injection_wakeup_fn(struct hrtimer *timer)
-> +{
-> +	struct idle_injection_device *ii_dev =
-> +		container_of(timer, struct idle_injection_device, timer);
-> +
-> +	idle_injection_wakeup(ii_dev);
-> +
-> +	return HRTIMER_NORESTART;
-> +}
-> +
-> +/**
-> + * idle_injection_fn - idle injection routine
-> + * @cpu: the CPU number the tasks belongs to
-> + *
-> + * The idle injection routine will stay idle the specified amount of
-> + * time
-> + */
-> +static void idle_injection_fn(unsigned int cpu)
-> +{
-> +	struct idle_injection_device *ii_dev;
-> +	struct idle_injection_thread *iit;
-> +	int run_duration_ms, idle_duration_ms;
-> +
-> +	ii_dev = per_cpu(idle_injection_device, cpu);
-> +
-> +	if (WARN_ON_ONCE(!ii_dev))
+The interesting parts happens from patch 5 an onwards, including a minor DT
+update to the existing power-domain bindings, the 4 earlier are just trivial
+clean-ups of some related code in genpd, which I happened to stumble over.
 
-Yes, this is marked as "unlikely" and is kind of not that harmful, but
-I would suggest to just drop it and let the kernel crash if that
-serious of a bug is present in this code where ii_dev can be NULL
-here.
+Some additional background:
 
-> +		return;
-> +
-> +	iit = per_cpu_ptr(&idle_injection_thread, cpu);
+One existing case where devices are partitioned across multiple PM domains, is
+the Nvida Tegra 124/210 X-USB subsystem. A while ago Jon Hunter (Nvidia) sent a
+series, trying to address these issues, however this is a new approach, while
+it re-uses the same concepts from DT point of view.
 
-See, we don't check this one, why check only ii_dev ? :)
+The Tegra 124/210 X-USB subsystem contains of a host controller and a device
+controller. Each controller have its own independent PM domain, but are being
+partitioned across another shared PM domain for the USB super-speed logic.
 
-> +
-> +	/*
-> +	 * Boolean used by the smpboot main loop and used as a
-> +	 * flip-flop in this function
-> +	 */
-> +	iit->should_run = 0;
-> +
-> +	atomic_inc(&ii_dev->count);
-> +
-> +	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
-> +	if (idle_duration_ms)
-> +		play_idle(idle_duration_ms);
-> +
-> +	/*
-> +	 * The last CPU waking up is in charge of setting the timer. If
-> +	 * the CPU is hotplugged, the timer will move to another CPU
-> +	 * (which may not belong to the same cluster) but that is not a
-> +	 * problem as the timer will be set again by another CPU
-> +	 * belonging to the cluster. This mechanism is self adaptive.
-> +	 */
+Currently to make the drivers work, either the related PM domains needs to stay
+powered on always or the PM domain topology needs to be in-correctly modelled
+through sub-domains. In both cases PM domains may be powered on while they
+don't need to be, so in the end this means - wasting power -.
 
-I am afraid that the above comment may not be completely true all the
-time. For a quad-core platform, it is possible for 3 CPUs (0,1,2) to
-run this function as soon as the kthread is woken up, but one of the
-CPUs (3) may be stuck servicing an IRQ, Deadline or RT activity.
-Because you do atomic_inc() also in this function (above) itself,
-below decrement may return a true value for the CPU2 and that will
-restart the hrtimer, while one of the CPUs never got a chance to
-increment count in the first place.
+As stated above, this series intends to address these problem from a PM
+infrastructure point of view. More details are available in each changelog.
 
-The fix is simple though, do the increment in idle_injection_wakeup()
-and things should be fine then.
+It should be noted that this series has been tested on HW, however only by using
+a home-cooked test PM domain driver for genpd and together with a test driver.
+This allowed me to play with PM domain (genpd), runtime PM and device links.
 
-> +	if (!atomic_dec_and_test(&ii_dev->count))
-> +		return;
-> +
-> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
-> +	if (run_duration_ms) {
-> +		hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
-> +			      HRTIMER_MODE_REL_PINNED);
-> +		return;
-> +	}
-> +
-> +	complete(&ii_dev->stop_complete);
+Any further deployment for real use cases are greatly appreciated. I am happy to
+to help, if needed!
 
-So you call complete() after hrtimer is potentially restarted. This
-can happen if idle_injection_stop() is called right after the above
-atomic_read() has finished :)
+Kind regards
+Ulf Hansson
 
-IOW, this doesn't look safe now as well.
 
-> +}
+Ulf Hansson (9):
+  PM / Domains: Drop extern declarations of functions in pm_domain.h
+  PM / Domains: Drop __pm_genpd_add_device()
+  PM / Domains: Drop genpd as in-param for pm_genpd_remove_device()
+  PM / Domains: Drop unused parameter in genpd_allocate_dev_data()
+  PM / Domains: dt: Allow power-domain property to be a list of
+    specifiers
+  PM / Domains: Don't attach devices in genpd with multi PM domains
+  PM / Domains: Split genpd_dev_pm_attach()
+  PM / Domains: Add support for multi PM domains per device to genpd
+  PM / Domains: Add dev_pm_domain_attach_by_id() to manage multi PM
+    domains
 
-> +/**
-> + * idle_injection_stop - stops the idle injections
-> + * @ii_dev: a pointer to an idle injection_device structure
-> + *
-> + * The function stops the idle injection by resetting the idle and
-> + * running durations and wait for the threads to complete. If we are
-> + * in the process of injecting an idle cycle, then this will wait the
-> + * end of the cycle.
-> + */
-> +void idle_injection_stop(struct idle_injection_device *ii_dev)
-> +{
-> +	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
-> +		 cpumask_pr_args(ii_dev->cpumask));
-> +
-> +	init_completion(&ii_dev->stop_complete);
-
-This looks completely Borken (yeah, broken :)). complete() may be
-running in parallel under spinlock and updating x->done while you just
-set it to 0 here without any locking in place. init_completion()
-should be used only once after ii_dev is allocated and I don't see
-that being done either, so that looks incorrect as well.
-
-> +
-> +	idle_injection_set_duration(ii_dev, 0, 0);
-> +
-> +	wait_for_completion_interruptible(&ii_dev->stop_complete);
-> +}
-> +
-> +/**
-> + * idle_injection_setup - initialize the current task as a RT task
-> + * @cpu: the CPU number where the kthread is running on (not used)
-> + *
-> + * Called one time, this function is in charge of setting the task
-> + * scheduler parameters.
-> + */
-> +static void idle_injection_setup(unsigned int cpu)
-> +{
-> +	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
-> +
-> +	set_freezable();
-> +
-> +	sched_setscheduler(current, SCHED_FIFO, &param);
-> +}
-> +
-> +/**
-> + * idle_injection_should_run - function helper for the smpboot API
-> + * @cpu: the CPU number where the kthread is running on
-> + *
-> + * Return: a boolean telling if the thread can run.
-> + */
-> +static int idle_injection_should_run(unsigned int cpu)
-> +{
-> +	struct idle_injection_thread *iit =
-> +		per_cpu_ptr(&idle_injection_thread, cpu);
-> +
-> +	return iit->should_run;
-> +}
-> +
-> +static struct idle_injection_device *ii_dev_alloc(void)
-> +{
-> +	struct idle_injection_device *ii_dev;
-> +
-> +	ii_dev = kzalloc(sizeof(*ii_dev), GFP_KERNEL);
-> +	if (!ii_dev)
-> +		return NULL;
-> +
-> +	if (!alloc_cpumask_var(&ii_dev->cpumask, GFP_KERNEL)) {
-> +		kfree(ii_dev);
-> +		return NULL;
-> +	}
-> +
-> +	return ii_dev;
-> +}
-> +
-> +static void ii_dev_free(struct idle_injection_device *ii_dev)
-> +{
-> +	free_cpumask_var(ii_dev->cpumask);
-> +	kfree(ii_dev);
-> +}
-> +
-> +/**
-> + * idle_injection_register - idle injection init routine
-> + * @cpumask: the list of CPUs managed by the idle injection device
-> + *
-> + * This is the initialization function in charge of creating the
-> + * initializing of the timer and allocate the structures. It does not
-> + * starts the idle injection cycles.
-> + *
-> + * Return: NULL if an allocation fails.
-> + */
-> +struct idle_injection_device *idle_injection_register(struct cpumask *cpumask)
-> +{
-> +	struct idle_injection_device *ii_dev;
-> +	int cpu, cpu2;
-> +
-> +	ii_dev = ii_dev_alloc();
-> +	if (!ii_dev)
-> +		return NULL;
-> +
-> +	cpumask_copy(ii_dev->cpumask, cpumask);
-> +	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +	ii_dev->timer.function = idle_injection_wakeup_fn;
-> +
-> +	for_each_cpu(cpu, ii_dev->cpumask) {
-> +
-> +		if (per_cpu(idle_injection_device, cpu)) {
-
-Maybe add unlikely here ?
-
-> +			pr_err("cpu%d is already registered\n", cpu);
-> +			goto out_rollback_per_cpu;
-> +		}
-> +
-> +		per_cpu(idle_injection_device, cpu) = ii_dev;
-> +	}
-> +
-> +	return ii_dev;
-> +
-> +out_rollback_per_cpu:
-> +	for_each_cpu(cpu2, ii_dev->cpumask) {
-> +		if (cpu == cpu2)
-
-And is this really required? Perhaps this conditional is making it
-worse and just setting the per-cpu variable forcefully to NULL would
-be much faster :)
-
-Maybe move this for-loop into iid_dev_free() and you can make this
-look simple then.
-
-> +			break;
-> +
-> +		per_cpu(idle_injection_device, cpu2) = NULL;
-> +	}
-> +
-> +	ii_dev_free(ii_dev);
-> +
-> +	return NULL;
-> +}
+ .../bindings/power/power_domain.txt           |  19 ++-
+ drivers/base/power/common.c                   |  39 ++++-
+ drivers/base/power/domain.c                   | 155 ++++++++++++++----
+ drivers/gpu/drm/amd/amdgpu/amdgpu_acp.c       |   2 +-
+ include/linux/pm_domain.h                     |  79 ++++-----
+ 5 files changed, 216 insertions(+), 78 deletions(-)
 
 -- 
-viresh
+2.17.0
