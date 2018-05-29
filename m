@@ -1,48 +1,104 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] cpuidle/powernv : Add Description for cpuidle state
-Date: Tue, 29 May 2018 22:30:57 +1000
-Message-ID: <87sh6a4pa6.fsf@concordia.ellerman.id.au>
-References: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com> <87d0xf6y16.fsf@linux.vnet.ibm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 09/27] x86/acpi: Adapt assembly for PIE support
+Date: Tue, 29 May 2018 14:31:14 +0200
+Message-ID: <20180529123114.GB21399@amd>
+References: <20180523195421.180248-1-thgarnie@google.com>
+	<20180523195421.180248-10-thgarnie@google.com>
+	<20180524110306.GA20225@amd>
+	<CAJcbSZFJ84+VC5xDQZGHctupdqwmMBgqzLzFRqCTBpi5t-2Gvw@mail.gmail.com>
+	<20180525091447.GC9666@amd>
+	<CAJcbSZH17D01Stk4vRKKzjW6dxvK8x+S9sWL6vUopSP9=-x7Nw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87d0xf6y16.fsf@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stewart Smith <stewart@linux.ibm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Content-Type: multipart/mixed; boundary="===============3574584313153394462=="
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAJcbSZH17D01Stk4vRKKzjW6dxvK8x+S9sWL6vUopSP9=-x7Nw@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, the arch/x86 maintainers <x86@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, Yonghong Song <yhs@fb.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, LKML <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Beulich <JBeulich@suse.com>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Herbert Xu <herbert@gondor.>
 List-Id: linux-pm@vger.kernel.org
 
-Stewart Smith <stewart@linux.ibm.com> writes:
 
-> Abhishek Goel <huntbag@linux.vnet.ibm.com> writes:
->> @@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
->>  				     u64 psscr_val, u64 psscr_mask)
->>  {
->>  	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
->> -	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
->> +	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
->
-> We should still fall back to using name in the event of desc being null,
-> as not all firmware will expose the descriptions.
->
->> @@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
->>  		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
->>  		goto out;
->>  	}
->> +	if (of_property_read_string_array(power_mgt,
->> +		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
->> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
->> +		goto out;
->> +	}
->
-> I don't think pr_warn is appropriate here, as for all current released
-> firmware we don't have that property. I think perhaps just silently
-> continuing on is okay, as we have to keep compatibility with that firmware.
+--===============3574584313153394462==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="IrhDeMKUP4DT/M7F"
+Content-Disposition: inline
 
-+1
 
-Anyone who's wondering why they're not seeing the names can just look at
-the device tree on the machine to see if the property is there or not,
-they don't need a printk in dmesg to tell them.
+--IrhDeMKUP4DT/M7F
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-cheers
+On Fri 2018-05-25 10:00:04, Thomas Garnier wrote:
+> On Fri, May 25, 2018 at 2:14 AM Pavel Machek <pavel@ucw.cz> wrote:
+>=20
+> > On Thu 2018-05-24 09:35:42, Thomas Garnier wrote:
+> > > On Thu, May 24, 2018 at 4:03 AM Pavel Machek <pavel@ucw.cz> wrote:
+> > >
+> > > > On Wed 2018-05-23 12:54:03, Thomas Garnier wrote:
+> > > > > Change the assembly code to use only relative references of symbo=
+ls
+> for
+> > > the
+> > > > > kernel to be PIE compatible.
+> > > > >
+> > > > > Position Independent Executable (PIE) support will allow to
+> extended the
+> > > > > KASLR randomization range below the -2G memory limit.
+> > >
+> > > > What testing did this get?
+> > >
+> > > Tested boot, hibernation and performance on qemu and dedicated machin=
+e.
+>=20
+> > Well, this is suspend, not hibernation code.
+>=20
+> > So "sudo pm-suspend" or "echo mem > /sys/power/state" would be good
+> > way to test this.
+>=20
+> Thanks, it worked. I added this to the testsuite I use for KASLR.
+
+Thanks!
+
+You can add my Acked-by:.
+
+								Pavel
+							=09
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--IrhDeMKUP4DT/M7F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlsNSBIACgkQMOfwapXb+vJcmwCfVtj/DQE+VyxRZUU8UjiQVdHr
+BO8AoIc6OVRZyFmsEwBtGucDDnQJI4fU
+=APXA
+-----END PGP SIGNATURE-----
+
+--IrhDeMKUP4DT/M7F--
+
+--===============3574584313153394462==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Virtualization mailing list
+Virtualization@lists.linux-foundation.org
+https://lists.linuxfoundation.org/mailman/listinfo/virtualization
+--===============3574584313153394462==--
