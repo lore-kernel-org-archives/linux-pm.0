@@ -1,166 +1,166 @@
-From: Thomas Garnier via Virtualization
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH v3 21/27] x86/ftrace: Adapt function tracing for PIE
-	support
-Date: Tue, 29 May 2018 11:37:45 -0700
-Message-ID: <CAJcbSZEBW0mE7x1tOUr9y2BJUfodyjix0EjO=oE7A4M+mGvZ3g@mail.gmail.com>
-References: <20180523195421.180248-1-thgarnie@google.com>
-	<20180523195421.180248-22-thgarnie@google.com>
-	<20180524114024.pa67zjipy5qcg4tm@pathway.suse.cz>
-	<20180524161622.4202319f@gandalf.local.home>
-	<CAJcbSZGQmQM7PuER0kEqt3aG9O-8vh-g1EA2jnkVsJPx-Htvrw@mail.gmail.com>
-Reply-To: Thomas Garnier <thgarnie@google.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 02/11] PM / devfreq: Fix handling of min/max_freq == 0
+Date: Tue, 29 May 2018 11:57:58 -0700
+Message-ID: <20180529185758.GG168650@google.com>
+References: <20180525203043.249193-1-mka@chromium.org>
+ <CGME20180525203323epcas4p45ba35c38413e227f76f68fe331011b19@epcas4p4.samsung.com>
+ <20180525203043.249193-3-mka@chromium.org>
+ <5B0BA3BB.8060505@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJcbSZGQmQM7PuER0kEqt3aG9O-8vh-g1EA2jnkVsJPx-Htvrw@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, the arch/x86 maintainers <x86@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Len Brown <len.brown@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>, Peter Zijlstra <peterz@infradead.org>, Yonghong Song <yhs@fb.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, LKML <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Beulich <JBeulich@suse.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>, Jonathan Corbet <corbet@>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5B0BA3BB.8060505@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, =?utf-8?B?w5hyamFu?= Eide <orjan.eide@arm.com>, John Einar Reitan <john.reitan@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 24, 2018 at 1:41 PM Thomas Garnier <thgarnie@google.com> wrote:
+On Mon, May 28, 2018 at 03:37:47PM +0900, Chanwoo Choi wrote:
+> Hi,
+> 
+> On 2018년 05월 26일 05:30, Matthias Kaehlcke wrote:
+> > Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
+> > devfreq device") initializes df->min/max_freq with the min/max OPP when
+> > the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
+> > available min/max frequency") adds df->scaling_min/max_freq and the
+> > following to the frequency adjustment code:
+> > 
+> >   max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+> > 
+> > With the current handling of min/max_freq this is incorrect:
+> > 
+> > Even though df->max_freq is now initialized to a value != 0 user space
+> > can still set it to 0, in this case max_freq would be 0 instead of
+> > df->scaling_max_freq as intended. In consequence the frequency adjustment
+> > is not performed:
+> > 
+> >   if (max_freq && freq > max_freq) {
+> > 	freq = max_freq;
+> > 
+> > To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
+> > when the user passes a value of 0. This also prevents df->max_freq from
+> > being set below the min OPP when df->min_freq is 0, and similar for
+> > min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
+> > checks for this case can be removed.
+> > 
+> > Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
+> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> >  drivers/devfreq/devfreq.c | 30 ++++++++++++++++++------------
+> >  1 file changed, 18 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> > index 0057ef5b0a98..67da4e7b486b 100644
+> > --- a/drivers/devfreq/devfreq.c
+> > +++ b/drivers/devfreq/devfreq.c
+> > @@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
+> >  	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+> >  	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
+> >  
+> > -	if (min_freq && freq < min_freq) {
+> > +	if (freq < min_freq) {
+> >  		freq = min_freq;
+> >  		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
+> >  	}
+> > -	if (max_freq && freq > max_freq) {
+> > +	if (freq > max_freq) {
+> >  		freq = max_freq;
+> >  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+> >  	}
+> > @@ -1123,17 +1123,20 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+> >  	struct devfreq *df = to_devfreq(dev);
+> >  	unsigned long value;
+> >  	int ret;
+> > -	unsigned long max;
+> >  
+> >  	ret = sscanf(buf, "%lu", &value);
+> >  	if (ret != 1)
+> >  		return -EINVAL;
+> >  
+> >  	mutex_lock(&df->lock);
+> > -	max = df->max_freq;
+> > -	if (value && max && value > max) {
+> > -		ret = -EINVAL;
+> > -		goto unlock;
+> > +
+> > +	if (value) {
+> > +		if (value > df->max_freq) {
+> > +			ret = -EINVAL;
+> > +			goto unlock;
+> > +		}
+> > +	} else {
+> > +		value = df->profile->freq_table[df->profile->max_state - 1];
+> >  	}
+> 
+> If you want to prevent that df->min_freq is zero, 
+> you should reinitialize 'value' as following.
+> Because freq_table must be in ascending order.
+> 	value = df->profile->freq_table[0];
 
+Thanks for pointing this out!
 
-> On Thu, May 24, 2018 at 1:16 PM Steven Rostedt <rostedt@goodmis.org>
-wrote:
+The devfreq device I tested with (a Mali GPU) uses descending order
+for some reason, and I assumed that's the usual order.
 
-> > On Thu, 24 May 2018 13:40:24 +0200
-> > Petr Mladek <pmladek@suse.com> wrote:
+https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_devfreq.c#208
 
-> > > On Wed 2018-05-23 12:54:15, Thomas Garnier wrote:
-> > > > When using -fPIE/PIC with function tracing, the compiler generates a
-> > > > call through the GOT (call *__fentry__@GOTPCREL). This instruction
-> > > > takes 6 bytes instead of 5 on the usual relative call.
-> > > >
-> > > > If PIE is enabled, replace the 6th byte of the GOT call by a 1-byte
-> nop
-> > > > so ftrace can handle the previous 5-bytes as before.
-> > > >
-> > > > Position Independent Executable (PIE) support will allow to extended
-> the
-> > > > KASLR randomization range below the -2G memory limit.
-> > > >
-> > > > Signed-off-by: Thomas Garnier <thgarnie@google.com>
-> > > > ---
-> > > >  arch/x86/include/asm/ftrace.h   |  6 +++--
-> > > >  arch/x86/include/asm/sections.h |  4 ++++
-> > > >  arch/x86/kernel/ftrace.c        | 42
-> +++++++++++++++++++++++++++++++--
-> > > >  3 files changed, 48 insertions(+), 4 deletions(-)
-> > > >
-> > > > diff --git a/arch/x86/include/asm/ftrace.h
-> b/arch/x86/include/asm/ftrace.h
-> > > > index c18ed65287d5..8f2decce38d8 100644
-> > > > --- a/arch/x86/include/asm/ftrace.h
-> > > > +++ b/arch/x86/include/asm/ftrace.h
-> > > > @@ -25,9 +25,11 @@ extern void __fentry__(void);
-> > > >  static inline unsigned long ftrace_call_adjust(unsigned long addr)
-> > > >  {
-> > > >     /*
-> > > > -    * addr is the address of the mcount call instruction.
-> > > > -    * recordmcount does the necessary offset calculation.
-> > > > +    * addr is the address of the mcount call instruction. PIE has
-> always a
-> > > > +    * byte added to the start of the function.
-> > > >      */
-> > > > +   if (IS_ENABLED(CONFIG_X86_PIE))
-> > > > +           addr -= 1;
-> > >
-> > > This seems to modify the address even for modules that are _not_
-> compiled with
-> > > PIE, see below.
+It seems the ordering doesn't have any impact beyond this patch. If
+the order isn't mandatory for drivers that set up their own freq_table
+we should probably support both cases to be safe.
 
-> > Can one load a module not compiled for PIE in a kernel with PIE?
+> > @@ -1158,17 +1161,20 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+> >  	struct devfreq *df = to_devfreq(dev);
+> >  	unsigned long value;
+> >  	int ret;
+> > -	unsigned long min;
+> >  
+> >  	ret = sscanf(buf, "%lu", &value);
+> >  	if (ret != 1)
+> >  		return -EINVAL;
+> >  
+> >  	mutex_lock(&df->lock);
+> > -	min = df->min_freq;
+> > -	if (value && min && value < min) {
+> > -		ret = -EINVAL;
+> > -		goto unlock;
+> > +
+> > +	if (!value) {
+> > +		value = df->profile->freq_table[0];
+> 
+> ditto.
+> 	value = df->profile->freq_table[df->profile->max_state - 1];
+> 
+> > +	} else {
+> > +		if (value < df->min_freq) {
+> > +			ret = -EINVAL;
+> > +			goto unlock;
+> > +		}
+> >  	}
+> >  
+> >  	df->max_freq = value;
+> > 
+> 
+> Actually, min_freq_store() and max_freq_store() are very similar.
+> But, this patch changed the order of conditional statement as following:
+> If there is no special reason, you better to keep the same format
+> for the readability.
+> 
+> 
+> min_freq_store()
+> 	if (value) {
+> 		...
+> 	} else {
+> 		value = df->profile->freq_table[df->profile->max_state - 1];
+> 	}
+> 
+> 
+> max_freq_store()
+> 	if (!value) {
+> 		value = df->profile->freq_table[0];
+> 	} else {
+> 		...
+> 
 
-> > >
-> > > >     return addr;
-> > > >  }
-> > > >
-> > > > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> > > > index 01ebcb6f263e..73b3c30cb7a3 100644
-> > > > --- a/arch/x86/kernel/ftrace.c
-> > > > +++ b/arch/x86/kernel/ftrace.c
-> > > > @@ -135,6 +135,44 @@ ftrace_modify_code_direct(unsigned long ip,
-> unsigned const char *old_code,
-> > > >     return 0;
-> > > >  }
-> > > >
-> > > > +/* Bytes before call GOT offset */
-> > > > +const unsigned char got_call_preinsn[] = { 0xff, 0x15 };
-> > > > +
-> > > > +static int
-> > > > +ftrace_modify_initial_code(unsigned long ip, unsigned const char
-> *old_code,
-> > > > +                      unsigned const char *new_code)
-> > > > +{
-> > > > +   unsigned char replaced[MCOUNT_INSN_SIZE + 1];
-> > > > +
-> > > > +   ftrace_expected = old_code;
-> > > > +
-> > > > +   /*
-> > > > +    * If PIE is not enabled or no GOT call was found, default to
-the
-> > > > +    * original approach to code modification.
-> > > > +    */
-> > > > +   if (!IS_ENABLED(CONFIG_X86_PIE) ||
-> > > > +       probe_kernel_read(replaced, (void *)ip, sizeof(replaced)) ||
-> > > > +       memcmp(replaced, got_call_preinsn,
-sizeof(got_call_preinsn)))
-> > > > +           return ftrace_modify_code_direct(ip, old_code,
-new_code);
-> > >
-> > > And this looks like an attempt to handle modules compiled without
-> > > PIE. Does it works with the right ip in that case?
-
-> > I'm guessing the || is for the "or no GOT call was found", but it
-> > doesn't explain why no GOT would be found.
-
-> Yes, maybe I could have made it work by using text_ip_addr earlier.
-
-
-> > >
-> > > I wonder if a better solution would be to update
-> > > scripts/recordmcount.c to store the incremented location into the
-> module.
-
-> I will look into it.
-
-Found a way to properly change the __mcount_loc using the preprocessing
-(removing the need for -1 on the addr). It will be part of the next version.
-
-Thanks for the feedback.
-
-
-
-> > If recordmcount.c can handle this, then I think that's the preferred
-> > approach. Thanks!
-
-> > -- Steve
-
-> > >
-> > > IMPORTANT: I have only vague picture about how this all works. It is
-> > > possible that I am completely wrong. The code might be correct,
-> > > especially if you tested this situation.
-> > >
-> > > Best Regards,
-> > > Petr
-
-
-
-> --
-> Thomas
-
-
-
--- 
-Thomas
+Agreed, better use the same format, I'll update it in the next revision.
