@@ -1,106 +1,57 @@
-From: Auger Eric <eric.auger@redhat.com>
-Subject: Re: [PATCH v4] vfio: platform: Fix using devices in PM Domains
-Date: Tue, 29 May 2018 21:06:08 +0200
-Message-ID: <8bcadbb5-064c-0ad2-30a2-4aeec6253dd1@redhat.com>
-References: <1527614128-30196-1-git-send-email-geert+renesas@glider.be>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 05/11] PM / devfreq: governors: Return device frequency
+ limits instead of user limits
+Date: Tue, 29 May 2018 12:32:36 -0700
+Message-ID: <20180529193236.GH168650@google.com>
+References: <20180525203043.249193-6-mka@chromium.org>
+ <20180525203043.249193-1-mka@chromium.org>
+ <CGME20180525203125epcas3p46c7cac352ede4b0ba5d2b36bc32ad566@epcms1p8>
+ <20180528050444epcms1p8e6552d55231a099ec89304dfb1f819b9@epcms1p8>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527614128-30196-1-git-send-email-geert+renesas@glider.be>
+Content-Disposition: inline
+In-Reply-To: <20180528050444epcms1p8e6552d55231a099ec89304dfb1f819b9@epcms1p8>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Alex Williamson <alex.williamson@redhat.com>
-Cc: kvm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On 05/29/2018 07:15 PM, Geert Uytterhoeven wrote:
-> If a device is part of a PM Domain (e.g. power and/or clock domain), its
-> power state is managed using Runtime PM.  Without Runtime PM, the device
-> may not be powered up or clocked, causing subtle failures, crashes, or
-> system lock-ups when the device is accessed by the guest.
+On Mon, May 28, 2018 at 02:04:44PM +0900, MyungJoo Ham wrote:
+> >The performance, powersave and simpleondemand governors can return
+> >df->min/max_freq, which are the user defined frequency limits.
+> >update_devfreq() already takes care of adjusting the target frequency
+> >with the user limits if necessary, therefore we can return
+> >df->scaling_min/max_freq instead, which is the min/max frequency
+> >supported by the device at a given time (depending on the
+> >enabled/disabled OPPs)
+> >
+> >Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> >---
+> > drivers/devfreq/governor_performance.c    | 2 +-
+> > drivers/devfreq/governor_powersave.c      | 2 +-
+> > drivers/devfreq/governor_simpleondemand.c | 6 +++---
+> > 3 files changed, 5 insertions(+), 5 deletions(-)
+> >
 > 
-> Fix this by adding Runtime PM support, powering the device when the VFIO
-> device is opened by the guest.
+> Actually, even scaling_max_freq and scaling_min_freq are
+> covered centerally at devfreq.c:update_devfreq();
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
-Acked-by: Eric Auger <eric.auger@redhat.com>
+> Wouldn't it be sufficient to return UINT_MAX for performance
+> and return UINT_MIN (0) for powersave, if the purpose is to
+> remove redundancy?
+> 
+> In the same sense, we may return UINT_MAX for freq-increasing
+> case for simpleondemand as well, because they are filtered
+> centrally anyway.
+> 
+> (This commit might be better merged to 4/11 in that case as well.)
 
-Thanks
+I did this in the first variant of the patch (before sending it in a
+series), but Chanwoo Choi objected:
 
-Eric
-> ---
-> Against linux-vfio/next
-> 
-> v4:
->   - Keep device powered while issuing reset,
-> 
-> v3:
->   - Drop controversial note about unsafeness of exporting fine-grained
->     power management from host to guest,
-> 
-> v2:
->   - Improve wording,
->   - Add Reviewed-by.
-> ---
->  drivers/vfio/platform/vfio_platform_common.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/drivers/vfio/platform/vfio_platform_common.c b/drivers/vfio/platform/vfio_platform_common.c
-> index b60bb5326668498c..c0cd824be2b767be 100644
-> --- a/drivers/vfio/platform/vfio_platform_common.c
-> +++ b/drivers/vfio/platform/vfio_platform_common.c
-> @@ -17,6 +17,7 @@
->  #include <linux/iommu.h>
->  #include <linux/module.h>
->  #include <linux/mutex.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/slab.h>
->  #include <linux/types.h>
->  #include <linux/uaccess.h>
-> @@ -239,6 +240,7 @@ static void vfio_platform_release(void *device_data)
->  				 ret, extra_dbg ? extra_dbg : "");
->  			WARN_ON(1);
->  		}
-> +		pm_runtime_put(vdev->device);
->  		vfio_platform_regions_cleanup(vdev);
->  		vfio_platform_irq_cleanup(vdev);
->  	}
-> @@ -269,6 +271,10 @@ static int vfio_platform_open(void *device_data)
->  		if (ret)
->  			goto err_irq;
->  
-> +		ret = pm_runtime_get_sync(vdev->device);
-> +		if (ret < 0)
-> +			goto err_pm;
-> +
->  		ret = vfio_platform_call_reset(vdev, &extra_dbg);
->  		if (ret && vdev->reset_required) {
->  			dev_warn(vdev->device, "reset driver is required and reset call failed in open (%d) %s\n",
-> @@ -283,6 +289,8 @@ static int vfio_platform_open(void *device_data)
->  	return 0;
->  
->  err_rst:
-> +	pm_runtime_put(vdev->device);
-> +err_pm:
->  	vfio_platform_irq_cleanup(vdev);
->  err_irq:
->  	vfio_platform_regions_cleanup(vdev);
-> @@ -690,6 +698,7 @@ int vfio_platform_probe_common(struct vfio_platform_device *vdev,
->  
->  	mutex_init(&vdev->igate);
->  
-> +	pm_runtime_enable(vdev->device);
->  	return 0;
->  
->  put_iommu:
-> @@ -707,6 +716,7 @@ struct vfio_platform_device *vfio_platform_remove_common(struct device *dev)
->  	vdev = vfio_del_group_dev(dev);
->  
->  	if (vdev) {
-> +		pm_runtime_disable(vdev->device);
->  		vfio_platform_put_reset(vdev);
->  		vfio_iommu_group_put(dev->iommu_group, dev);
->  	}
-> 
+https://patchwork.kernel.org/patch/10404893/
+
+I also still think that returning a constant would be the cleanest
+solution if we can agree on this. What do you think about
+DEVFREQ_MIN/MAX_FREQ (0/UINT_MAX) to make things slightly clearer?
