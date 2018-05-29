@@ -1,112 +1,53 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3] vfio: platform: Fix using devices in PM Domains
-Date: Tue, 29 May 2018 00:14:15 +0200
-Message-ID: <CAMuHMdVUZJeySfjd=cpjBDu8s2B-hwcZ3Rk4-0m1iOSzrhtYiw@mail.gmail.com>
-References: <1527521165-29345-1-git-send-email-geert+renesas@glider.be> <ff3992c7-1d59-1fec-1393-47e2d278d8c9@redhat.com>
+From: Stewart Smith <stewart@linux.ibm.com>
+Subject: Re: [PATCH] cpuidle/powernv : Add Description for cpuidle state
+Date: Tue, 29 May 2018 11:39:01 +1000
+Message-ID: <87d0xf6y16.fsf@linux.vnet.ibm.com>
+References: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ff3992c7-1d59-1fec-1393-47e2d278d8c9@redhat.com>
+In-Reply-To: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Auger Eric <eric.auger@redhat.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Alex Williamson <alex.williamson@redhat.com>, KVM list <kvm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eric,
+Abhishek Goel <huntbag@linux.vnet.ibm.com> writes:
+> @@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
+>  				     u64 psscr_val, u64 psscr_mask)
+>  {
+>  	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+> -	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
+> +	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
 
-On Mon, May 28, 2018 at 10:27 PM, Auger Eric <eric.auger@redhat.com> wrote:
-> On 05/28/2018 05:26 PM, Geert Uytterhoeven wrote:
->> If a device is part of a PM Domain (e.g. power and/or clock domain), its
->> power state is managed using Runtime PM.  Without Runtime PM, the device
->> may not be powered up or clocked, causing subtle failures, crashes, or
->> system lock-ups when the device is accessed by the guest.
->>
->> Fix this by adding Runtime PM support, powering the device when the VFIO
->> device is opened by the guest.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
->> ---
->> v3:
->>   - Drop controversial note about unsafeness of exporting fine-grained
->>     power management from host to guest,
-> thanks ;-)
+We should still fall back to using name in the event of desc being null,
+as not all firmware will expose the descriptions.
+
+> @@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
+>  		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
+>  		goto out;
+>  	}
+> +	if (of_property_read_string_array(power_mgt,
+> +		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
+> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
+> +		goto out;
+> +	}
+
+I don't think pr_warn is appropriate here, as for all current released
+firmware we don't have that property. I think perhaps just silently
+continuing on is okay, as we have to keep compatibility with that firmware.
+
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -17,7 +17,7 @@
 >
->>
->> v2:
->>   - Improve wording,
->>   - Add Reviewed-by.
->> ---
->>  drivers/vfio/platform/vfio_platform_common.c | 9 +++++++++
->>  1 file changed, 9 insertions(+)
->>
->> diff --git a/drivers/vfio/platform/vfio_platform_common.c b/drivers/vfio/platform/vfio_platform_common.c
->> index b60bb5326668498c..41f862f055054543 100644
->> --- a/drivers/vfio/platform/vfio_platform_common.c
->> +++ b/drivers/vfio/platform/vfio_platform_common.c
->> @@ -17,6 +17,7 @@
->>  #include <linux/iommu.h>
->>  #include <linux/module.h>
->>  #include <linux/mutex.h>
->> +#include <linux/pm_runtime.h>
->>  #include <linux/slab.h>
->>  #include <linux/types.h>
->>  #include <linux/uaccess.h>
->> @@ -233,6 +234,8 @@ static void vfio_platform_release(void *device_data)
->>               const char *extra_dbg = NULL;
->>               int ret;
->>
->> +             pm_runtime_put(vdev->device);
->
->> +
->>               ret = vfio_platform_call_reset(vdev, &extra_dbg);
-> While reading the code again, the reset is using the HW. Don't you want
-> to call the get() before.
+>  #define CPUIDLE_STATE_MAX	10
+>  #define CPUIDLE_NAME_LEN	16
+> -#define CPUIDLE_DESC_LEN	32
+> +#define CPUIDLE_DESC_LEN	60
 
-Thanks, you're right, it's safer to do the reset here first...
-
->>               if (ret && vdev->reset_required) {
->>                       dev_warn(vdev->device, "reset driver is required and reset call failed in release (%d) %s\n",
->> @@ -275,6 +278,10 @@ static int vfio_platform_open(void *device_data)
->>                                ret, extra_dbg ? extra_dbg : "");
->>                       goto err_rst;
->>               }
->> +
->> +             ret = pm_runtime_get_sync(vdev->device);
-
-... and to do the reset here last.
-
-Will fix and send v4.
-
->> +             if (ret < 0)
->> +                     goto err_rst;
->>       }
->>
->>       vdev->refcnt++;
->> @@ -690,6 +697,7 @@ int vfio_platform_probe_common(struct vfio_platform_device *vdev,
->>
->>       mutex_init(&vdev->igate);
->>
->> +     pm_runtime_enable(vdev->device);
->>       return 0;
->>
->>  put_iommu:
->> @@ -707,6 +715,7 @@ struct vfio_platform_device *vfio_platform_remove_common(struct device *dev)
->>       vdev = vfio_del_group_dev(dev);
->>
->>       if (vdev) {
->> +             pm_runtime_disable(vdev->device);
->>               vfio_platform_put_reset(vdev);
->>               vfio_iommu_group_put(dev->iommu_group, dev);
->>       }
-
-Gr{oetje,eeting}s,
-
-                        Geert
+Do we really get that long?
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Stewart Smith
+OPAL Architect, IBM.
