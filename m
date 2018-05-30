@@ -1,120 +1,121 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH v2 7/9] PM / Domains: Split genpd_dev_pm_attach()
-Date: Wed, 30 May 2018 17:08:33 +0100
-Message-ID: <67a50209-5049-4345-693a-5fd08afd6bb8@nvidia.com>
-References: <20180529100421.31022-1-ulf.hansson@linaro.org>
- <20180529100421.31022-8-ulf.hansson@linaro.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 1/2] sched/cpufreq: always consider blocked FAIR
+ utilization
+Date: Wed, 30 May 2018 17:50:10 +0100
+Message-ID: <20180530165010.GK30654@e110439-lin>
+References: <20180524141023.13765-1-patrick.bellasi@arm.com>
+ <20180524141023.13765-2-patrick.bellasi@arm.com>
+ <CAJZ5v0iq-k4QeeEm6vzfWNLkXxNtLZa0Y9_bBcYWCGQ_FjzgDQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180529100421.31022-8-ulf.hansson@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iq-k4QeeEm6vzfWNLkXxNtLZa0Y9_bBcYWCGQ_FjzgDQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-On 29/05/18 11:04, Ulf Hansson wrote:
-> To extend genpd to deal with allowing multiple PM domains per device, some
-> of the code in genpd_dev_pm_attach() can be re-used. Let's prepare for this
-> by moving some of the code into a sub-function.
+On 27-May 11:50, Rafael J. Wysocki wrote:
+> On Thu, May 24, 2018 at 4:10 PM, Patrick Bellasi
+> <patrick.bellasi@arm.com> wrote:
+> > Since the refactoring introduced by:
+> >
+> >    commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
+> >
+> > we aggregate FAIR utilization only if this class has runnable tasks.
+> > This was mainly due to avoid the risk to stay on an high frequency just
+> > because of the blocked utilization of a CPU not being properly decayed
+> > while the CPU was idle.
+> >
+> > However, since:
+> >
+> >    commit 31e77c93e432 ("sched/fair: Update blocked load when newly idle")
+> >
+> > the FAIR blocked utilization is properly decayed also for IDLE CPUs.
+> >
+> > This allows us to use the FAIR blocked utilization as a safe mechanism
+> > to gracefully reduce the frequency only if no FAIR tasks show up on a
+> > CPU for a reasonable period of time.
+> >
+> > Moreover, we also reduce the frequency drops of CPUs running periodic
+> > tasks which, depending on the task periodicity and the time required
+> > for a frequency switch, was increasing the chances to introduce some
+> > undesirable performance variations.
+> >
+> > Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > Tested-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Cc: Joel Fernandes <joelaf@google.com>
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/domain.c | 60 ++++++++++++++++++++-----------------
->  1 file changed, 33 insertions(+), 27 deletions(-)
+> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 12a20f21974d..2af99bfcbe3c 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2221,38 +2221,15 @@ static void genpd_dev_pm_sync(struct device *dev)
->  	genpd_queue_power_off_work(pd);
->  }
->  
-> -/**
-> - * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
-> - * @dev: Device to attach.
-> - *
-> - * Parse device's OF node to find a PM domain specifier. If such is found,
-> - * attaches the device to retrieved pm_domain ops.
-> - *
-> - * Returns 1 on successfully attached PM domain, 0 when the device don't need a
-> - * PM domain or when multiple power-domains exists for it, else a negative error
-> - * code. Note that if a power-domain exists for the device, but it cannot be
-> - * found or turned on, then return -EPROBE_DEFER to ensure that the device is
-> - * not probed and to re-try again later.
-> - */
-> -int genpd_dev_pm_attach(struct device *dev)
-> +static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
-> +				 unsigned int index)
->  {
->  	struct of_phandle_args pd_args;
->  	struct generic_pm_domain *pd;
->  	int ret;
->  
-> -	if (!dev->of_node)
-> -		return 0;
-> -
-> -	/*
-> -	 * Devices with multiple PM domains must be attached separately, as we
-> -	 * can only attach one PM domain per device.
-> -	 */
-> -	if (of_count_phandle_with_args(dev->of_node, "power-domains",
-> -				       "#power-domain-cells") != 1)
-> -		return 0;
-> -
-> -	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
-> -					"#power-domain-cells", 0, &pd_args);
-> +	ret = of_parse_phandle_with_args(np, "power-domains",
-> +				"#power-domain-cells", index, &pd_args);
->  	if (ret < 0)
->  		return ret;
->  
-> @@ -2290,6 +2267,35 @@ int genpd_dev_pm_attach(struct device *dev)
->  
->  	return ret ? -EPROBE_DEFER : 1;
->  }
-> +
-> +/**
-> + * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
-> + * @dev: Device to attach.
-> + *
-> + * Parse device's OF node to find a PM domain specifier. If such is found,
-> + * attaches the device to retrieved pm_domain ops.
-> + *
-> + * Returns 1 on successfully attached PM domain, 0 when the device don't need a
-> + * PM domain or when multiple power-domains exists for it, else a negative error
-> + * code. Note that if a power-domain exists for the device, but it cannot be
-> + * found or turned on, then return -EPROBE_DEFER to ensure that the device is
-> + * not probed and to re-try again later.
-> + */
-> +int genpd_dev_pm_attach(struct device *dev)
-> +{
-> +	if (!dev->of_node)
-> +		return 0;
-> +
-> +	/*
-> +	 * Devices with multiple PM domains must be attached separately, as we
-> +	 * can only attach one PM domain per device.
-> +	 */
-> +	if (of_count_phandle_with_args(dev->of_node, "power-domains",
-> +				       "#power-domain-cells") != 1)
-> +		return 0;
-> +
-> +	return __genpd_dev_pm_attach(dev, dev->of_node, 0);
-> +}
->  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
->  
->  static const struct of_device_id idle_state_match[] = {
+> Or please let me know if you want me to apply this one.
 
-Acked-by: Jon Hunter <jonathanh@nvidia.com>
-Tested-by: Jon Hunter <jonathanh@nvidia.com>
+Hi Rafael, seems this patch has already been applied in tip/sched/core.
+However is missing your tag above. :/
 
-Cheers
-Jon
+Dunno if I have / I can to do something about that.
+
+> > ---
+> > Changes in v3:
+> >  - add "Tested-by" and "Acked-by" Vincent tags
+> >
+> > Changes in v2:
+> >  - add "Acked-by" Viresh tag
+> > ---
+> >  kernel/sched/cpufreq_schedutil.c | 17 ++++++++---------
+> >  1 file changed, 8 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index e13df951aca7..28592b62b1d5 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -183,22 +183,21 @@ static void sugov_get_util(struct sugov_cpu *sg_cpu)
+> >  static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+> >  {
+> >         struct rq *rq = cpu_rq(sg_cpu->cpu);
+> > -       unsigned long util;
+> >
+> > -       if (rq->rt.rt_nr_running) {
+> > -               util = sg_cpu->max;
+> > -       } else {
+> > -               util = sg_cpu->util_dl;
+> > -               if (rq->cfs.h_nr_running)
+> > -                       util += sg_cpu->util_cfs;
+> > -       }
+> > +       if (rq->rt.rt_nr_running)
+> > +               return sg_cpu->max;
+> >
+> >         /*
+> > +        * Utilization required by DEADLINE must always be granted while, for
+> > +        * FAIR, we use blocked utilization of IDLE CPUs as a mechanism to
+> > +        * gracefully reduce the frequency when no tasks show up for longer
+> > +        * periods of time.
+> > +        *
+> >          * Ideally we would like to set util_dl as min/guaranteed freq and
+> >          * util_cfs + util_dl as requested freq. However, cpufreq is not yet
+> >          * ready for such an interface. So, we only do the latter for now.
+> >          */
+> > -       return min(util, sg_cpu->max);
+> > +       return min(sg_cpu->max, (sg_cpu->util_dl + sg_cpu->util_cfs));
+> >  }
+> >
+> >  static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time, unsigned int flags)
+> > --
+> > 2.15.1
+> >
 
 -- 
-nvpublic
+#include <best/regards.h>
+
+Patrick Bellasi
