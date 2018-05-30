@@ -1,55 +1,31 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 11/27] x86/power/64: Adapt assembly for PIE support
-Date: Wed, 30 May 2018 10:20:11 +0200
-Message-ID: <CAJZ5v0h9pagSOmLWcpu9Ewwy7gDGDofweN6fSaL5yVWUhntj4w@mail.gmail.com>
-References: <20180529221625.33541-1-thgarnie@google.com> <20180529221625.33541-12-thgarnie@google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v14 0/2] Kryo CPU scaling driver
+Date: Wed, 30 May 2018 14:45:35 +0530
+Message-ID: <20180530091535.bzvhg4bvn32mqwgq@vireshk-i7>
+References: <1527250067-1256-1-git-send-email-ilialin@codeaurora.org>
+ <CAJZ5v0gwtu-ptPskMeiXqWcRLhaGvvFVRyi-kX=nw_s6if7XGg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180529221625.33541-12-thgarnie@google.com>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gwtu-ptPskMeiXqWcRLhaGvvFVRyi-kX=nw_s6if7XGg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Kernel Hardening <kernel-hardening@lists.openwall.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ilia Lin <ilialin@codeaurora.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 30, 2018 at 12:15 AM, Thomas Garnier <thgarnie@google.com> wrote:
-> Change the assembly code to use only relative references of symbols for the
-> kernel to be PIE compatible.
->
-> Position Independent Executable (PIE) support will allow to extend the
-> KASLR randomization range 0xffffffff80000000.
->
-> Signed-off-by: Thomas Garnier <thgarnie@google.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+On 30-05-18, 10:08, Rafael J. Wysocki wrote:
+> On Fri, May 25, 2018 at 2:07 PM, Ilia Lin <ilialin@codeaurora.org> wrote:
+> > [v14]
+> >  * Addressed comment from Sudeep about DT compatible
+> >  * Added MAINTAINERS entry
+> 
+> This causes a build issue to occur in my bleeding-edge branch.
+> 
+> Does it depend on anything new in arm-soc?
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+He already sent a v15 and the changelog suggest he fixed that build
+issue.
 
-> ---
->  arch/x86/power/hibernate_asm_64.S | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
-> index ce8da3a0412c..6fdd7bbc3c33 100644
-> --- a/arch/x86/power/hibernate_asm_64.S
-> +++ b/arch/x86/power/hibernate_asm_64.S
-> @@ -24,7 +24,7 @@
->  #include <asm/frame.h>
->
->  ENTRY(swsusp_arch_suspend)
-> -       movq    $saved_context, %rax
-> +       leaq    saved_context(%rip), %rax
->         movq    %rsp, pt_regs_sp(%rax)
->         movq    %rbp, pt_regs_bp(%rax)
->         movq    %rsi, pt_regs_si(%rax)
-> @@ -115,7 +115,7 @@ ENTRY(restore_registers)
->         movq    %rax, %cr4;  # turn PGE back on
->
->         /* We don't restore %rax, it must be 0 anyway */
-> -       movq    $saved_context, %rax
-> +       leaq    saved_context(%rip), %rax
->         movq    pt_regs_sp(%rax), %rsp
->         movq    pt_regs_bp(%rax), %rbp
->         movq    pt_regs_si(%rax), %rsi
-> --
-> 2.17.0.921.gf22659ad46-goog
->
+-- 
+viresh
