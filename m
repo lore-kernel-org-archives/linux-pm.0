@@ -1,65 +1,157 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] OPP: Allow same OPP table to be used for multiple genpd
-Date: Wed, 30 May 2018 15:39:02 +0530
-Message-ID: <8a352fd8787cefcb19c25ca1390301f874797b9c.1527674939.git.viresh.kumar@linaro.org>
+From: Johan Hovold <johan@kernel.org>
+Subject: [PATCH RESEND] serdev: add controller runtime PM support
+Date: Wed, 30 May 2018 12:50:59 +0200
+Message-ID: <20180530105059.21409-1-johan@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Andreas Kemnade <andreas@kemnade.info>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@vger.kernel.org, Johan Hovold <johan@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The OPP binding says:
+Add support for controller runtime power management to serdev core. This
+is needed to allow slave drivers to manage the runtime PM state of the
+underlying serial controller when its driver, in turn, implements more
+aggressive runtime power management (e.g. using autosuspend).
 
-	Property: operating-points-v2
+For some applications, for example, where loss off initial data after a
+remote-wakeup event is acceptable or where rx is not used at all,
+aggressive serial controller runtime PM may be used without further
+involvement of the slave driver. But when this is not the case, the
+slave driver must be able to indicate when incoming data is expected in
+order to avoid data loss.
 
-	...
+To facilitate the common case, where the serial controller power state
+is active whenever the port is open (which is the case with just about
+every serial driver), and where data loss is not acceptable and cannot
+even be prevented by explicit controller runtime power management, an
+RPM reference is taken in serdev open and put again at close. This
+reference can later be balanced by any serdev driver which wants and/or
+can handle aggressive controller runtime PM.
 
-	This can contain more than one phandle for power domain
-	providers that provide multiple power domains. That is, one
-	phandle for each power domain. If only one phandle is available,
-	then the same OPP table will be used for all power domains
-	provided by the power domain provider.
+Note that the .ignore_children flag is set for the serdev controller to
+allow the underlying hardware to idle when no I/O is expected, regardless
+of the slave device RPM state.
 
-But the OPP core isn't allowing the same OPP table to be used for
-multiple domains. Update dev_pm_opp_of_add_table_indexed() to allow
-that.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
+Acked-by: Tony Lindgren <tony@atomide.com>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/opp/of.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 6d15f05bfc28..7af0ddec936b 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -554,11 +554,24 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table);
- int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
+Hi Rob and Greg,
+
+This is a resend of the serdev controller runtime PM patch, which you
+haven't commented on yet (possibly due to the following extensive
+discussions on how to generalise the aggressive OMAP serial runtime PM
+implementation).
+
+This patch works with what we have today, regardless of how we end up
+configuring the serial controller (active) runtime PM behaviour
+(currently done through sysfs for OMAP), which is a separate issue.
+
+No changes in this resend, besides me adding Tony's and Sebastian's ack
+and reviewed-by tags and dropping the second patch which only served as
+an example of how to use this in a serdev driver.
+
+Johan
+
+
+ drivers/tty/serdev/core.c | 33 ++++++++++++++++++++++++++++++---
+ 1 file changed, 30 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/tty/serdev/core.c b/drivers/tty/serdev/core.c
+index df93b727e984..e5e84303faca 100644
+--- a/drivers/tty/serdev/core.c
++++ b/drivers/tty/serdev/core.c
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/serdev.h>
+ #include <linux/slab.h>
+ 
+@@ -143,11 +144,28 @@ EXPORT_SYMBOL_GPL(serdev_device_remove);
+ int serdev_device_open(struct serdev_device *serdev)
  {
- 	struct device_node *opp_np;
--	int ret;
-+	int ret, count;
+ 	struct serdev_controller *ctrl = serdev->ctrl;
++	int ret;
  
-+again:
- 	opp_np = _opp_of_get_opp_desc_node(dev->of_node, index);
--	if (!opp_np)
-+	if (!opp_np) {
-+		/*
-+		 * If only one phandle is present, then the same OPP table
-+		 * applies for all index requests.
-+		 */
-+		count = of_count_phandle_with_args(dev->of_node,
-+						   "operating-points-v2", NULL);
-+		if (count == 1 && index) {
-+			index = 0;
-+			goto again;
-+		}
+ 	if (!ctrl || !ctrl->ops->open)
+ 		return -EINVAL;
+ 
+-	return ctrl->ops->open(ctrl);
++	ret = ctrl->ops->open(ctrl);
++	if (ret)
++		return ret;
 +
- 		return -ENODEV;
++	ret = pm_runtime_get_sync(&ctrl->dev);
++	if (ret < 0) {
++		pm_runtime_put_noidle(&ctrl->dev);
++		goto err_close;
 +	}
++
++	return 0;
++
++err_close:
++	if (ctrl->ops->close)
++		ctrl->ops->close(ctrl);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(serdev_device_open);
  
- 	ret = _of_add_opp_table_v2(dev, opp_np);
- 	of_node_put(opp_np);
+@@ -158,6 +176,8 @@ void serdev_device_close(struct serdev_device *serdev)
+ 	if (!ctrl || !ctrl->ops->close)
+ 		return;
+ 
++	pm_runtime_put(&ctrl->dev);
++
+ 	ctrl->ops->close(ctrl);
+ }
+ EXPORT_SYMBOL_GPL(serdev_device_close);
+@@ -416,6 +436,9 @@ struct serdev_controller *serdev_controller_alloc(struct device *parent,
+ 
+ 	dev_set_name(&ctrl->dev, "serial%d", id);
+ 
++	pm_runtime_no_callbacks(&ctrl->dev);
++	pm_suspend_ignore_children(&ctrl->dev, true);
++
+ 	dev_dbg(&ctrl->dev, "allocated controller 0x%p id %d\n", ctrl, id);
+ 	return ctrl;
+ 
+@@ -547,20 +570,23 @@ int serdev_controller_add(struct serdev_controller *ctrl)
+ 	if (ret)
+ 		return ret;
+ 
++	pm_runtime_enable(&ctrl->dev);
++
+ 	ret_of = of_serdev_register_devices(ctrl);
+ 	ret_acpi = acpi_serdev_register_devices(ctrl);
+ 	if (ret_of && ret_acpi) {
+ 		dev_dbg(&ctrl->dev, "no devices registered: of:%d acpi:%d\n",
+ 			ret_of, ret_acpi);
+ 		ret = -ENODEV;
+-		goto out_dev_del;
++		goto err_rpm_disable;
+ 	}
+ 
+ 	dev_dbg(&ctrl->dev, "serdev%d registered: dev:%p\n",
+ 		ctrl->nr, &ctrl->dev);
+ 	return 0;
+ 
+-out_dev_del:
++err_rpm_disable:
++	pm_runtime_disable(&ctrl->dev);
+ 	device_del(&ctrl->dev);
+ 	return ret;
+ };
+@@ -591,6 +617,7 @@ void serdev_controller_remove(struct serdev_controller *ctrl)
+ 
+ 	dummy = device_for_each_child(&ctrl->dev, NULL,
+ 				      serdev_remove_device);
++	pm_runtime_disable(&ctrl->dev);
+ 	device_del(&ctrl->dev);
+ }
+ EXPORT_SYMBOL_GPL(serdev_controller_remove);
 -- 
-2.15.0.194.g9af6a3dea062
+2.17.0
