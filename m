@@ -1,36 +1,56 @@
-From: Ilia Lin <ilialin@codeaurora.org>
-Subject: Re: [PATCH v14 0/2] Kryo CPU scaling driver
-Date: Wed, 30 May 2018 14:06:27 +0300
-Message-ID: <A7737343-1D4B-490C-9E08-DA1DBB25D5B8@codeaurora.org>
-References: <1527250067-1256-1-git-send-email-ilialin@codeaurora.org> <CAJZ5v0gwtu-ptPskMeiXqWcRLhaGvvFVRyi-kX=nw_s6if7XGg@mail.gmail.com> <20180530091535.bzvhg4bvn32mqwgq@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] kernel/SRCU: provide a static initializer
+Date: Wed, 30 May 2018 13:09:57 +0200
+Message-ID: <CAJZ5v0gYcFywNZh+-EHSmwU89AER=a8ouKtK93j=Lu4DSHUzNw@mail.gmail.com>
+References: <20180525101958.13277-1-bigeasy@linutronix.de> <20180525101958.13277-2-bigeasy@linutronix.de>
+ <CAJZ5v0jEUR7YxzujvZn8WVK+dMxmOxoHNiLKcmgCq9awHR=vYg@mail.gmail.com>
+ <20180529120443.GE3803@linux.vnet.ibm.com> <CAJZ5v0j_O=nL6Eym5GqGGDC8LPB5vu-YAp9DFfZSJsHd-TMEmg@mail.gmail.com>
+ <20180529172611.GL3803@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180530091535.bzvhg4bvn32mqwgq@vireshk-i7>
+In-Reply-To: <20180529172611.GL3803@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Just like Viresh said, this is fixed in the v15=2E
-
-On May 30, 2018 12:15:35 PM GMT+03:00, Viresh Kumar <viresh=2Ekumar@linaro=
-=2Eorg> wrote:
->On 30-05-18, 10:08, Rafael J=2E Wysocki wrote:
->> On Fri, May 25, 2018 at 2:07 PM, Ilia Lin <ilialin@codeaurora=2Eorg>
->wrote:
->> > [v14]
->> >  * Addressed comment from Sudeep about DT compatible
->> >  * Added MAINTAINERS entry
->>=20
->> This causes a build issue to occur in my bleeding-edge branch=2E
->>=20
->> Does it depend on anything new in arm-soc?
+On Tue, May 29, 2018 at 7:26 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+> On Tue, May 29, 2018 at 07:14:49PM +0200, Rafael J. Wysocki wrote:
+>> On Tue, May 29, 2018 at 2:04 PM, Paul E. McKenney
+>> <paulmck@linux.vnet.ibm.com> wrote:
+>> > On Tue, May 29, 2018 at 10:09:51AM +0200, Rafael J. Wysocki wrote:
+>> >> On Fri, May 25, 2018 at 12:19 PM, Sebastian Andrzej Siewior
+>> >> <bigeasy@linutronix.de> wrote:
+>> >> > There are macros for static initializer for the three out of four
+>> >> > possible notifier types, that are:
+>> >> >         ATOMIC_NOTIFIER_HEAD()
+>> >> >         BLOCKING_NOTIFIER_HEAD()
+>> >> >         RAW_NOTIFIER_HEAD()
+>> >> >
+>> >> > This patch provides a static initilizer for the forth type to make it
+>> >> > complete.
+>> >> >
+>> >> > Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+>> >> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+>> >>
+>> >> I cannot apply this without an ACK from Paul.
+>> >
+>> > I have both queued, but if you would prefer to take them, then for the
+>> > SRCU piece:
+>> >
+>> > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>>
+>> Thanks!
+>>
+>> I'll route them along with the other cpufreq material then.
 >
->He already sent a v15 and the changelog suggest he fixed that build
->issue=2E
+> Please let me know when you have them queued so that I can remove
+> them from -rcu.
 
---=20
-Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
+I've just added them to my linux-next branch.
+
+Cheers,
+Rafael
