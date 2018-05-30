@@ -1,48 +1,66 @@
-From: Fabien Parent <fparent@baylibre.com>
-Subject: [PATCH 1/3] mfd: cros: add charger port count command definition
-Date: Tue, 29 May 2018 20:17:02 -0700
-Message-ID: <20180530031704.18597-2-fparent@baylibre.com>
-References: <20180530031704.18597-1-fparent@baylibre.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: Use static SRCU initializer
+Date: Wed, 30 May 2018 10:20:34 +0530
+Message-ID: <20180530045034.xlxnjq42gkm6dbrs@vireshk-i7>
+References: <20180525101958.13277-1-bigeasy@linutronix.de>
+ <20180525101958.13277-3-bigeasy@linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180530031704.18597-1-fparent@baylibre.com>
+Content-Disposition: inline
+In-Reply-To: <20180525101958.13277-3-bigeasy@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eballetbo@gmail.com, gpain@baylibre.com, Fabien Parent <fparent@baylibre.com>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-A new more command has been added to the ChromeOS embedded controller
-that allows to get the number of charger port count. Unlike
-EC_CMD_USB_PD_PORTS, this new command also includes the dedicated
-port if present.
+On 25-05-18, 12:19, Sebastian Andrzej Siewior wrote:
+> Use the static SRCU initializer for `cpufreq_transition_notifier_list'.
+> This avoids the init_cpufreq_transition_notifier_list() initcall. Its
+> only purpose is to initialize the SRCU notifier once during boot and set
+> another variable which is used as an indicator whether the init was
+> perfromed before cpufreq_register_notifier() was used.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> CC: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+>  drivers/cpufreq/cpufreq.c | 13 +------------
+>  1 file changed, 1 insertion(+), 12 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 075d18f6ba7a..3f7b502cfb1e 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -89,16 +89,7 @@ static void cpufreq_governor_limits(struct cpufreq_policy *policy);
+>   * The mutex locks both lists.
+>   */
+>  static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
+> -static struct srcu_notifier_head cpufreq_transition_notifier_list;
+> -
+> -static bool init_cpufreq_transition_notifier_list_called;
+> -static int __init init_cpufreq_transition_notifier_list(void)
+> -{
+> -	srcu_init_notifier_head(&cpufreq_transition_notifier_list);
+> -	init_cpufreq_transition_notifier_list_called = true;
+> -	return 0;
+> -}
+> -pure_initcall(init_cpufreq_transition_notifier_list);
+> +SRCU_NOTIFIER_HEAD_STATIC(cpufreq_transition_notifier_list);
+>  
+>  static int off __read_mostly;
+>  static int cpufreq_disabled(void)
+> @@ -1764,8 +1755,6 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
+>  	if (cpufreq_disabled())
+>  		return -EINVAL;
+>  
+> -	WARN_ON(!init_cpufreq_transition_notifier_list_called);
+> -
+>  	switch (list) {
+>  	case CPUFREQ_TRANSITION_NOTIFIER:
+>  		mutex_lock(&cpufreq_fast_switch_lock);
 
-This command will be used to expose the dedicated charger port
-in the ChromeOS charger driver.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Fabien Parent <fparent@baylibre.com>
----
- include/linux/mfd/cros_ec_commands.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/include/linux/mfd/cros_ec_commands.h b/include/linux/mfd/cros_ec_commands.h
-index 0d926492ac3a..e3187f8bdb7e 100644
---- a/include/linux/mfd/cros_ec_commands.h
-+++ b/include/linux/mfd/cros_ec_commands.h
-@@ -3005,6 +3005,16 @@ struct ec_params_usb_pd_info_request {
- 	uint8_t port;
- } __packed;
- 
-+/*
-+ * This command will return the number of USB PD charge port + the number
-+ * of dedicated port present.
-+ * EC_CMD_USB_PD_PORTS does NOT include the dedicated ports
-+ */
-+#define EC_CMD_CHARGE_PORT_COUNT 0x0105
-+struct ec_response_charge_port_count {
-+	uint8_t port_count;
-+} __packed;
-+
- /* Read USB-PD Device discovery info */
- #define EC_CMD_USB_PD_DISCOVERY 0x0113
- struct ec_params_usb_pd_discovery_entry {
 -- 
-2.17.0
+viresh
