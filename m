@@ -1,110 +1,94 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH v2 8/9] PM / Domains: Add support for multi PM domains per
- device to genpd
-Date: Wed, 30 May 2018 17:04:37 +0100
-Message-ID: <a53f0970-22c4-444f-10e6-c115a21d05ea@nvidia.com>
+Subject: Re: [PATCH v2 6/9] PM / Domains: Don't attach devices in genpd with
+ multi PM domains
+Date: Wed, 30 May 2018 17:06:11 +0100
+Message-ID: <3b5072bb-f4bb-3f71-9575-5263cdf0b09f@nvidia.com>
 References: <20180529100421.31022-1-ulf.hansson@linaro.org>
- <20180529100421.31022-9-ulf.hansson@linaro.org>
+ <20180529100421.31022-7-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180529100421.31022-9-ulf.hansson@linaro.org>
+In-Reply-To: <20180529100421.31022-7-ulf.hansson@linaro.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
 On 29/05/18 11:04, Ulf Hansson wrote:
-> To support devices being partitioned across multiple PM domains, let's
-> begin with extending genpd to cope with these kind of configurations.
+> The power-domain DT property may now contain a list of PM domain
+> specifiers, which represents that a device are partitioned across multiple
+> PM domains. This leads to a new situation in genpd_dev_pm_attach(), as only
+> one PM domain can be attached per device.
 > 
-> Therefore, add a new exported function genpd_dev_pm_attach_by_id(), which
-> is similar to the existing genpd_dev_pm_attach(), but with the difference
-> that it allows its callers to provide an index to the PM domain that it
-> wants to attach.
+> To remain things simple for the most common configuration, when a single PM
+> domain is used, let's treat the multiple PM domain case as being specific.
 > 
-> Note that, genpd_dev_pm_attach_by_id() shall only be called by the driver
-> core / PM core, similar to how the existing dev_pm_domain_attach() makes
-> use of genpd_dev_pm_attach(). However, this is implemented by following
-> changes on top.
+> In other words, let's change genpd_dev_pm_attach() to check for multiple PM
+> domains and prevent it from attach any PM domain for this case. Instead,
+> leave this to be managed separately, from following changes to genpd.
 > 
-> Because, only one PM domain can be attached per device, genpd needs to
-> create a virtual device that it can attach/detach instead. More precisely,
-> let the new function genpd_dev_pm_attach_by_id() register a virtual struct
-> device via calling device_register(). Then let it attach this device to the
-> corresponding PM domain, rather than the one that is provided by the
-> caller. The actual attaching is done via re-using the existing genpd OF
-> functions.
-> 
-> At successful attachment, genpd_dev_pm_attach_by_id() returns the created
-> virtual device, which allows the caller to operate on it to deal with power
-> management. Following changes on top, provides more details in this
-> regards.
-> 
-> To deal with detaching of a PM domain for the multiple PM domains case,
-> let's also extend the existing genpd_dev_pm_detach() function, to cover the
-> cleanup of the created virtual device, via make it call device_unregister()
-> on it. In this way, there is no need to introduce a new function to deal
-> with detach for the multiple PM domain case, but instead the existing one
-> is re-used.
-> 
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Suggested-by: Jon Hunter <jonathanh@nvidia.com>
 > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
 > 
 > Changes in v2:
-> 	- Fixed comments from Jon. Clarified function descriptions
-> 	and changelog.
+> 	- Minor update to changelog to mention "PM domain specifiers" rather
+> 	than a "list of phandles".
 > 
 > ---
->  drivers/base/power/domain.c | 80 +++++++++++++++++++++++++++++++++++++
->  include/linux/pm_domain.h   |  8 ++++
->  2 files changed, 88 insertions(+)
+>  drivers/base/power/domain.c | 18 +++++++++++++-----
+>  1 file changed, 13 insertions(+), 5 deletions(-)
 > 
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 2af99bfcbe3c..2b496d79159d 100644
+> index 7ebf7993273a..12a20f21974d 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -2171,6 +2171,15 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
->  }
->  EXPORT_SYMBOL_GPL(of_genpd_remove_last);
+> @@ -2229,10 +2229,10 @@ static void genpd_dev_pm_sync(struct device *dev)
+>   * attaches the device to retrieved pm_domain ops.
+>   *
+>   * Returns 1 on successfully attached PM domain, 0 when the device don't need a
+> - * PM domain or a negative error code in case of failures. Note that if a
+> - * power-domain exists for the device, but it cannot be found or turned on,
+> - * then return -EPROBE_DEFER to ensure that the device is not probed and to
+> - * re-try again later.
+> + * PM domain or when multiple power-domains exists for it, else a negative error
+> + * code. Note that if a power-domain exists for the device, but it cannot be
+> + * found or turned on, then return -EPROBE_DEFER to ensure that the device is
+> + * not probed and to re-try again later.
+>   */
+>  int genpd_dev_pm_attach(struct device *dev)
+>  {
+> @@ -2243,10 +2243,18 @@ int genpd_dev_pm_attach(struct device *dev)
+>  	if (!dev->of_node)
+>  		return 0;
 >  
-> +static void genpd_release_dev(struct device *dev)
-> +{
-> +	kfree(dev);
-> +}
+> +	/*
+> +	 * Devices with multiple PM domains must be attached separately, as we
+> +	 * can only attach one PM domain per device.
+> +	 */
+> +	if (of_count_phandle_with_args(dev->of_node, "power-domains",
+> +				       "#power-domain-cells") != 1)
+> +		return 0;
 > +
-> +static struct bus_type genpd_bus_type = {
-> +	.name		= "genpd",
-> +};
-> +
->  /**
->   * genpd_dev_pm_detach - Detach a device from its PM domain.
->   * @dev: Device to detach.
-> @@ -2208,6 +2217,10 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+>  	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
+>  					"#power-domain-cells", 0, &pd_args);
+>  	if (ret < 0)
+> -		return 0;
+> +		return ret;
 >  
->  	/* Check if PM domain can be powered off after removing this device. */
->  	genpd_queue_power_off_work(pd);
-> +
-> +	/* Unregister the device if it was created by genpd. */
-> +	if (dev->bus == &genpd_bus_type)
-> +		device_unregister(dev);
->  }
->  
->  static void genpd_dev_pm_sync(struct device *dev)
-> @@ -2298,6 +2311,67 @@ int genpd_dev_pm_attach(struct device *dev)
->  }
->  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
->  
-> +/**
-> + * genpd_dev_pm_attach_by_id() - Attach a device to one of its PM domain.
-> + * @dev: Device to attach.
+>  	mutex_lock(&gpd_list_lock);
+>  	pd = genpd_get_from_provider(&pd_args);
+> 
 
-Can you update the description of the above as well?
+Acked-by: Jon Hunter <jonathanh@nvidia.com>
+Tested-by: Jon Hunter <jonathanh@nvidia.com>
 
-Thanks
+Cheers
 Jon
 
 -- 
