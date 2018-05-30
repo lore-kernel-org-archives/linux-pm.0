@@ -1,61 +1,111 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
-Date: Wed, 30 May 2018 08:55:10 -0700
-Message-ID: <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
-References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
- <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
- <20180524173926.GC14924@minitux>
- <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH v2 8/9] PM / Domains: Add support for multi PM domains per
+ device to genpd
+Date: Wed, 30 May 2018 17:04:37 +0100
+Message-ID: <a53f0970-22c4-444f-10e6-c115a21d05ea@nvidia.com>
+References: <20180529100421.31022-1-ulf.hansson@linaro.org>
+ <20180529100421.31022-9-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
+In-Reply-To: <20180529100421.31022-9-ulf.hansson@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>, Sricharan R <sricharan@codeaurora.org>
-Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Sricharan R (2018-05-24 22:40:11)
-> Hi Bjorn,
-> =
 
-> On 5/24/2018 11:09 PM, Bjorn Andersson wrote:
-> > On Tue 06 Mar 06:38 PST 2018, Sricharan R wrote:
-> > =
+On 29/05/18 11:04, Ulf Hansson wrote:
+> To support devices being partitioned across multiple PM domains, let's
+> begin with extending genpd to cope with these kind of configurations.
+> 
+> Therefore, add a new exported function genpd_dev_pm_attach_by_id(), which
+> is similar to the existing genpd_dev_pm_attach(), but with the difference
+> that it allows its callers to provide an index to the PM domain that it
+> wants to attach.
+> 
+> Note that, genpd_dev_pm_attach_by_id() shall only be called by the driver
+> core / PM core, similar to how the existing dev_pm_domain_attach() makes
+> use of genpd_dev_pm_attach(). However, this is implemented by following
+> changes on top.
+> 
+> Because, only one PM domain can be attached per device, genpd needs to
+> create a virtual device that it can attach/detach instead. More precisely,
+> let the new function genpd_dev_pm_attach_by_id() register a virtual struct
+> device via calling device_register(). Then let it attach this device to the
+> corresponding PM domain, rather than the one that is provided by the
+> caller. The actual attaching is done via re-using the existing genpd OF
+> functions.
+> 
+> At successful attachment, genpd_dev_pm_attach_by_id() returns the created
+> virtual device, which allows the caller to operate on it to deal with power
+> management. Following changes on top, provides more details in this
+> regards.
+> 
+> To deal with detaching of a PM domain for the multiple PM domains case,
+> let's also extend the existing genpd_dev_pm_detach() function, to cover the
+> cleanup of the created virtual device, via make it call device_unregister()
+> on it. In this way, there is no need to introduce a new function to deal
+> with detach for the multiple PM domain case, but instead the existing one
+> is re-used.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Changes in v2:
+> 	- Fixed comments from Jon. Clarified function descriptions
+> 	and changelog.
+> 
+> ---
+>  drivers/base/power/domain.c | 80 +++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  8 ++++
+>  2 files changed, 88 insertions(+)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 2af99bfcbe3c..2b496d79159d 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2171,6 +2171,15 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+>  }
+>  EXPORT_SYMBOL_GPL(of_genpd_remove_last);
+>  
+> +static void genpd_release_dev(struct device *dev)
+> +{
+> +	kfree(dev);
+> +}
+> +
+> +static struct bus_type genpd_bus_type = {
+> +	.name		= "genpd",
+> +};
+> +
+>  /**
+>   * genpd_dev_pm_detach - Detach a device from its PM domain.
+>   * @dev: Device to detach.
+> @@ -2208,6 +2217,10 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+>  
+>  	/* Check if PM domain can be powered off after removing this device. */
+>  	genpd_queue_power_off_work(pd);
+> +
+> +	/* Unregister the device if it was created by genpd. */
+> +	if (dev->bus == &genpd_bus_type)
+> +		device_unregister(dev);
+>  }
+>  
+>  static void genpd_dev_pm_sync(struct device *dev)
+> @@ -2298,6 +2311,67 @@ int genpd_dev_pm_attach(struct device *dev)
+>  }
+>  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+>  
+> +/**
+> + * genpd_dev_pm_attach_by_id() - Attach a device to one of its PM domain.
+> + * @dev: Device to attach.
 
-> >> From: Stephen Boyd <sboyd@codeaurora.org>
-> >>
-> >> Krait CPUs have a handful of L2 cache controller registers that
-> >> live behind a cp15 based indirection register. First you program
-> >> the indirection register (l2cpselr) to point the L2 'window'
-> >> register (l2cpdr) at what you want to read/write.  Then you
-> >> read/write the 'window' register to do what you want. The
-> >> l2cpselr register is not banked per-cpu so we must lock around
-> >> accesses to it to prevent other CPUs from re-pointing l2cpdr
-> >> underneath us.
-> >>
-> >> Cc: Mark Rutland <mark.rutland@arm.com>
-> >> Cc: Russell King <linux@arm.linux.org.uk>
-> >> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-> > =
+Can you update the description of the above as well?
 
-> > This should have your signed-off-by here as well.
-> > =
+Thanks
+Jon
 
-> =
-
->  ok.
-> =
-
-> > Apart from that:
-> > =
-
-> > Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> > =
-
-> =
-
-
-Will these patches come around again? I'll do a quick sweep on them
-today but I expect them to be resent.
+-- 
+nvpublic
