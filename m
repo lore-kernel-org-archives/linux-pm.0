@@ -1,49 +1,106 @@
-From: Kevin Wangtao <kevin.wangtao@hisilicon.com>
-Subject: [PATCH V3] cpufreq: reinitialize new policy min/max when writing scaling_(max|min)_freq
-Date: Wed, 30 May 2018 15:56:47 +0800
-Message-ID: <1527667007-48226-1-git-send-email-kevin.wangtao@hisilicon.com>
-References: <1527319008-66663-1-git-send-email-kevin.wangtao@hisilicon.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4 09/27] x86/acpi: Adapt assembly for PIE support
+Date: Wed, 30 May 2018 10:19:50 +0200
+Message-ID: <CAJZ5v0j8jcCfsq9QF=kZavoXhrGd+4RAuUEMPkupMXR5HNUmJQ@mail.gmail.com>
+References: <20180529221625.33541-1-thgarnie@google.com> <20180529221625.33541-10-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527319008-66663-1-git-send-email-kevin.wangtao@hisilicon.com>
+In-Reply-To: <20180529221625.33541-10-thgarnie@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gengyanping@hisilicon.com, sunzhaosheng@hisilicon.com, Kevin Wangtao <kevin.wangtao@hisilicon.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Kernel Hardening <kernel-hardening@lists.openwall.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-consider such situation, current user_policy.min is 1000000,
-current user_policy.max is 1200000, in cpufreq_set_policy,
-other driver may update policy.min to 1200000, policy.max to
-1300000. After that, If we input "echo 1300000 > scaling_min_freq",
-then user_policy.min will be 1300000, and user_policy.max is
-still 1200000, because the input value is checked with policy.max
-not user_policy.max. if we get all related cpus offline and
-online again, it will cause cpufreq_init_policy fail because
-user_policy.min is higher than user_policy.max.
+On Wed, May 30, 2018 at 12:15 AM, Thomas Garnier <thgarnie@google.com> wrote:
+> Change the assembly code to use only relative references of symbols for the
+> kernel to be PIE compatible.
+>
+> Position Independent Executable (PIE) support will allow to extend the
+> KASLR randomization range 0xffffffff80000000.
+>
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-The solution is when user space tries to write scaling_(max|min)_freq,
-the min/max of new_policy should be reinitialized with min/max
-of user_policy, like what cpufreq_update_policy does.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Kevin Wangtao <kevin.wangtao@hisilicon.com>
----
- drivers/cpufreq/cpufreq.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b79c532..a970113 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -697,6 +697,9 @@ static ssize_t store_##file_name					\
- 	struct cpufreq_policy new_policy;				\
- 									\
- 	memcpy(&new_policy, policy, sizeof(*policy));			\
-+	/* Initialized with user_policy to keep consistency */		\
-+	new_policy.min = policy->user_policy.min;			\
-+	new_policy.max = policy->user_policy.max;			\
- 									\
- 	ret = sscanf(buf, "%u", &new_policy.object);			\
- 	if (ret != 1)							\
--- 
-2.8.1
+> ---
+>  arch/x86/kernel/acpi/wakeup_64.S | 31 ++++++++++++++++---------------
+>  1 file changed, 16 insertions(+), 15 deletions(-)
+>
+> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
+> index 50b8ed0317a3..472659c0f811 100644
+> --- a/arch/x86/kernel/acpi/wakeup_64.S
+> +++ b/arch/x86/kernel/acpi/wakeup_64.S
+> @@ -14,7 +14,7 @@
+>          * Hooray, we are in Long 64-bit mode (but still running in low memory)
+>          */
+>  ENTRY(wakeup_long64)
+> -       movq    saved_magic, %rax
+> +       movq    saved_magic(%rip), %rax
+>         movq    $0x123456789abcdef0, %rdx
+>         cmpq    %rdx, %rax
+>         jne     bogus_64_magic
+> @@ -25,14 +25,14 @@ ENTRY(wakeup_long64)
+>         movw    %ax, %es
+>         movw    %ax, %fs
+>         movw    %ax, %gs
+> -       movq    saved_rsp, %rsp
+> +       movq    saved_rsp(%rip), %rsp
+>
+> -       movq    saved_rbx, %rbx
+> -       movq    saved_rdi, %rdi
+> -       movq    saved_rsi, %rsi
+> -       movq    saved_rbp, %rbp
+> +       movq    saved_rbx(%rip), %rbx
+> +       movq    saved_rdi(%rip), %rdi
+> +       movq    saved_rsi(%rip), %rsi
+> +       movq    saved_rbp(%rip), %rbp
+>
+> -       movq    saved_rip, %rax
+> +       movq    saved_rip(%rip), %rax
+>         jmp     *%rax
+>  ENDPROC(wakeup_long64)
+>
+> @@ -45,7 +45,7 @@ ENTRY(do_suspend_lowlevel)
+>         xorl    %eax, %eax
+>         call    save_processor_state
+>
+> -       movq    $saved_context, %rax
+> +       leaq    saved_context(%rip), %rax
+>         movq    %rsp, pt_regs_sp(%rax)
+>         movq    %rbp, pt_regs_bp(%rax)
+>         movq    %rsi, pt_regs_si(%rax)
+> @@ -64,13 +64,14 @@ ENTRY(do_suspend_lowlevel)
+>         pushfq
+>         popq    pt_regs_flags(%rax)
+>
+> -       movq    $.Lresume_point, saved_rip(%rip)
+> +       leaq    .Lresume_point(%rip), %rax
+> +       movq    %rax, saved_rip(%rip)
+>
+> -       movq    %rsp, saved_rsp
+> -       movq    %rbp, saved_rbp
+> -       movq    %rbx, saved_rbx
+> -       movq    %rdi, saved_rdi
+> -       movq    %rsi, saved_rsi
+> +       movq    %rsp, saved_rsp(%rip)
+> +       movq    %rbp, saved_rbp(%rip)
+> +       movq    %rbx, saved_rbx(%rip)
+> +       movq    %rdi, saved_rdi(%rip)
+> +       movq    %rsi, saved_rsi(%rip)
+>
+>         addq    $8, %rsp
+>         movl    $3, %edi
+> @@ -82,7 +83,7 @@ ENTRY(do_suspend_lowlevel)
+>         .align 4
+>  .Lresume_point:
+>         /* We don't restore %rax, it must be 0 anyway */
+> -       movq    $saved_context, %rax
+> +       leaq    saved_context(%rip), %rax
+>         movq    saved_context_cr4(%rax), %rbx
+>         movq    %rbx, %cr4
+>         movq    saved_context_cr3(%rax), %rbx
+> --
+> 2.17.0.921.gf22659ad46-goog
+>
