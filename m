@@ -1,126 +1,139 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC/RFT] [PATCH 02/10] cpufreq: intel_pstate: Conditional
- frequency invariant accounting
-Date: Wed, 30 May 2018 17:57:34 +0100
-Message-ID: <20180530165734.GL30654@e110439-lin>
-References: <20180517105907.GC22493@localhost.localdomain>
- <20180517150418.GF22493@localhost.localdomain>
- <1526571692.11765.10.camel@linux.intel.com>
- <20180517161649.GX12217@hirez.programming.kicks-ass.net>
- <1526575358.11765.14.camel@linux.intel.com>
- <CAJZ5v0j82sm94iCpLOVMBwoSksKx1Y49RfJv=nhhJiKhenZykg@mail.gmail.com>
- <20180517182803.GY12217@hirez.programming.kicks-ass.net>
- <20180518105742.GN30654@e110439-lin>
- <20180518112919.GI12217@hirez.programming.kicks-ass.net>
- <20180518133353.GO30654@e110439-lin>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 02/11] PM / devfreq: Fix handling of min/max_freq == 0
+Date: Wed, 30 May 2018 14:13:01 -0700
+Message-ID: <20180530211301.GA194977@google.com>
+References: <20180525203043.249193-1-mka@chromium.org>
+ <CGME20180525203323epcas4p45ba35c38413e227f76f68fe331011b19@epcas4p4.samsung.com>
+ <20180525203043.249193-3-mka@chromium.org>
+ <5B0BA3BB.8060505@samsung.com>
+ <20180529185758.GG168650@google.com>
+ <5B0E5AFE.8090703@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180518133353.GO30654@e110439-lin>
+In-Reply-To: <5B0E5AFE.8090703@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, =?utf-8?B?w5hyamFu?= Eide <orjan.eide@arm.com>, John Einar Reitan <john.reitan@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Peter,
-maybe you missed this previous my response:
-   20180518133353.GO30654@e110439-lin
-?
-
-Would like to have your tought about the concept of "transient maximum
-capacity" I was describing...
-
-On 18-May 14:33, Patrick Bellasi wrote:
-> On 18-May 13:29, Peter Zijlstra wrote:
-> > On Fri, May 18, 2018 at 11:57:42AM +0100, Patrick Bellasi wrote:
-> > > Thus, my simple (maybe dumb) questions are:
-> > > - why can't we just fold turbo boost frequency into the existing concepts?
-> > > - what are the limitations of such a "simple" approach?
+On Wed, May 30, 2018 at 05:04:14PM +0900, Chanwoo Choi wrote:
+> Hi,
+> 
+> On 2018년 05월 30일 03:57, Matthias Kaehlcke wrote:
+> > On Mon, May 28, 2018 at 03:37:47PM +0900, Chanwoo Choi wrote:
+> >> Hi,
+> >>
+> >> On 2018년 05월 26일 05:30, Matthias Kaehlcke wrote:
+> >>> Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
+> >>> devfreq device") initializes df->min/max_freq with the min/max OPP when
+> >>> the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
+> >>> available min/max frequency") adds df->scaling_min/max_freq and the
+> >>> following to the frequency adjustment code:
+> >>>
+> >>>   max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+> >>>
+> >>> With the current handling of min/max_freq this is incorrect:
+> >>>
+> >>> Even though df->max_freq is now initialized to a value != 0 user space
+> >>> can still set it to 0, in this case max_freq would be 0 instead of
+> >>> df->scaling_max_freq as intended. In consequence the frequency adjustment
+> >>> is not performed:
+> >>>
+> >>>   if (max_freq && freq > max_freq) {
+> >>> 	freq = max_freq;
+> >>>
+> >>> To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
+> >>> when the user passes a value of 0. This also prevents df->max_freq from
+> >>> being set below the min OPP when df->min_freq is 0, and similar for
+> >>> min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
+> >>> checks for this case can be removed.
+> >>>
+> >>> Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
+> >>> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> >>> ---
+> >>>  drivers/devfreq/devfreq.c | 30 ++++++++++++++++++------------
+> >>>  1 file changed, 18 insertions(+), 12 deletions(-)
+> >>>
+> >>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> >>> index 0057ef5b0a98..67da4e7b486b 100644
+> >>> --- a/drivers/devfreq/devfreq.c
+> >>> +++ b/drivers/devfreq/devfreq.c
+> >>> @@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
+> >>>  	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+> >>>  	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
+> >>>  
+> >>> -	if (min_freq && freq < min_freq) {
+> >>> +	if (freq < min_freq) {
+> >>>  		freq = min_freq;
+> >>>  		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
+> >>>  	}
+> >>> -	if (max_freq && freq > max_freq) {
+> >>> +	if (freq > max_freq) {
+> >>>  		freq = max_freq;
+> >>>  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+> >>>  	}
+> >>> @@ -1123,17 +1123,20 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+> >>>  	struct devfreq *df = to_devfreq(dev);
+> >>>  	unsigned long value;
+> >>>  	int ret;
+> >>> -	unsigned long max;
+> >>>  
+> >>>  	ret = sscanf(buf, "%lu", &value);
+> >>>  	if (ret != 1)
+> >>>  		return -EINVAL;
+> >>>  
+> >>>  	mutex_lock(&df->lock);
+> >>> -	max = df->max_freq;
+> >>> -	if (value && max && value > max) {
+> >>> -		ret = -EINVAL;
+> >>> -		goto unlock;
+> >>> +
+> >>> +	if (value) {
+> >>> +		if (value > df->max_freq) {
+> >>> +			ret = -EINVAL;
+> >>> +			goto unlock;
+> >>> +		}
+> >>> +	} else {
+> >>> +		value = df->profile->freq_table[df->profile->max_state - 1];
+> >>>  	}
+> >>
+> >> If you want to prevent that df->min_freq is zero, 
+> >> you should reinitialize 'value' as following.
+> >> Because freq_table must be in ascending order.
+> >> 	value = df->profile->freq_table[0];
 > > 
-> > Perhaps... but does this not further complicate the whole capacity vs
-> > util thing we already have in say the misfit patches?
+> > Thanks for pointing this out!
+> > 
+> > The devfreq device I tested with (a Mali GPU) uses descending order
+> > for some reason, and I assumed that's the usual order.
+> > 
+> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_devfreq.c#208
+> > 
+> > It seems the ordering doesn't have any impact beyond this patch. If
+> > the order isn't mandatory for drivers that set up their own freq_table
+> > we should probably support both cases to be safe.
 > 
-> Not sure about that...
+> Prior to that 'freq_table' is optional. So, patch[1] initialize the 'freq_table'
+> by using OPP interface if 'freq_table' is NULL.
+> [1] commit 0ec09ac2cebe ("PM / devfreq: Set the freq_table of devfreq device")
 > 
-> > And the  util_fits_capacity() thing from the EAS ones.
+> Current devfreq recommend the ascending order for 'freq_table'.
+> But, as you know, it might be not enough to support them.
 > 
-> In this case instead, if we can track somehow (not saying we can)
-> what is the currently available "transient maximum capacity"...
-> then a util_fits_capacity() should just look at that.
+> I agree that we should support the both cases (ascending or descending order).
 > 
-> If the transient capacity is already folded into cpu_capacity, as it
-> is now for RT and IRQ pressure, then likely we don't have to change
-> anything.
-> 
-> > The thing is, we either need to dynamically scale the util or the
-> > capacity or both. I think for Thermal there are patches out there that
-> > drop the capacity.
-> 
-> Not sure... but I would feel more comfortable by something which caps
-> the maximum capacity. Meaning, eventually you can fill up the maximum
-> possible capacity only "up to" a given value, because of thermal or other
-> reasons most of the scheduler maybe doesn't even have to know why?
-> 
-> > But we'd then have to do the same for turbo/vector and all the other
-> > stuff as well. Otherwise we risk things like running at low U with 0%
-> > idle and not triggering the tipping point between eas and regular
-> > balancing.
-> 
-> Interacting with the tipping point and/or OPP changes is indeed an
-> interesting side of the problem I was not considering so far...
-> 
-> But again, the tipping point could not be defined as a delta
-> with respect to the "transient maximum capacity" ?
-> 
-> > So either way around we need to know the 'true' max, either to fudge
-> > util or to fudge capacity.
-> 
-> Right, but what I see from a concepts standpoint is something like:
-> 
->      +--+--+   cpu_capacity_orig (CONSTANT at boot time)
->      |  |  |
->      |  |  |       HW generated constraints
->      |  v  |
->      +-----+   cpu_capacity_max (depending on thermal/turbo boost)
->      |  |  |
->      |  |  |       SW generated constraints
->      |  v  |
->      +-----+   cpu_capacity (depending on RT/IRQ pressure)
->      |  |  |
->      |  |  |       tipping point delta
->      +--v--+
->      |     |   Energy Aware mode available capacity
->      +-----+
-> 
-> Where all the wkp/lb heuristics are updated to properly consider the
-> cpu_capacity_max metrics whenever it comes to know what is the max
-> speed we can reach now on a CPU.
-> 
-> > And I'm not sure we can know in some of these cases :/
-> 
-> Right, this schema will eventually work only under the hypothesis that
-> "somehow" we can update cpu_capacity_max from HW events.
-> 
-> Not entirely sure that's possible and/or at which time granularity on
-> all different platforms.
-> 
-> > And while Vincent's patches might have been inspired by another problem,
-> > they do have the effect of always allowing util to go to 1, which is
-> > nice for this.
-> 
-> Sure, that's a nice point, but still I have the feeling that always
-> reaching u=1 can defeat other interesting properties of a task,
-> For example, comparing task requirements in different CPUs and/or at
-> different times, which plays a big role for energy aware task
-> placement decisions.
-> 
-> -- 
-> #include <best/regards.h>
-> 
-> Patrick Bellasi
+> Maybe, it might be not proper to access the freq_table[] directly
+> because we don't know the ordering style of 'freq_table'
+> if 'freq_table' is made by devfreq user instead of devfreq core.
 
--- 
-#include <best/regards.h>
+If we can assume that it is either ascending or descending, but not
+random order than a simple check if freq_table[0] <
+freq_table[max_state - 1] would be sufficient.
 
-Patrick Bellasi
+Otherwise we could also determine the min/max after initialization and
+save the result, though that would leave us with yet another frequency
+pair, which might be confusing, especially if we don't come up with
+good names to distinguish between them.
