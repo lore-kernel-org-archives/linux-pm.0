@@ -1,125 +1,58 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [RFC/RFT] [PATCH v2 4/6] cpufreq: intel_pstate: HWP boost
- performance on IO wakeup
-Date: Tue, 29 May 2018 22:24:25 +0000
-Message-ID: <1527632663.2951.44.camel@intel.com>
-References: <20180524014738.52924-1-srinivas.pandruvada@linux.intel.com>
-         <20180524014738.52924-5-srinivas.pandruvada@linux.intel.com>
-         <CAJZ5v0iG+jNC77KCHNUAt5tAtrtgryz2U4P1s_d9vB0HzLyOFw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=sha-1;
-        protocol="application/x-pkcs7-signature"; boundary="=-1s1yTxBCvNZ7xdWDtX2w"
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: [PATCH v15 0/2] Kryo CPU scaling driver
+Date: Wed, 30 May 2018 05:39:27 +0300
+Message-ID: <1527647969-15716-1-git-send-email-ilialin@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iG+jNC77KCHNUAt5tAtrtgryz2U4P1s_d9vB0HzLyOFw@mail.gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rafael@kernel.org" <rafael@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "juri.lelli@redhat.com" <juri.lelli@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "mgorman@techsingularity.net" <mgorman@techsingularity.net>, "lenb@kernel.org" <lenb@kernel.org>
+To: ilia.lin@gmail.com, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, ilialin@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
---=-1s1yTxBCvNZ7xdWDtX2w
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+[v15]
+ * Addressed the kbuild error
 
-T24gVHVlLCAyMDE4LTA1LTI5IGF0IDA5OjQ0ICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBUaHUsIE1heSAyNCwgMjAxOCBhdCAzOjQ3IEFNLCBTcmluaXZhcyBQYW5kcnV2YWRh
-Cj4gPHNyaW5pdmFzLnBhbmRydXZhZGFAbGludXguaW50ZWwuY29tPiB3cm90ZToKClsuLi5dCgo+
-ID4gCj4gPiArwqDCoMKgwqDCoMKgwqBjcHUtPnNhbXBsZS50aW1lID0gdGltZTsKPiA+ICvCoMKg
-wqDCoMKgwqDCoGlvX2ZsYWcgPSB0ZXN0X2FuZF9jbGVhcl9iaXQoU0NIRURfQ1BVRlJFUV9JT1dB
-SVQsICZjcHUtCj4gPiA+c2NoZWRfZmxhZ3MpOwo+IAo+IEkgZG9uJ3QgdGhpbmsgeW91IG5lZWQg
-dG8gdXNlIGJpdCBvcHMgaGVyZS4KCkFncmVlLiBUaGlzIGlzIG5vdCByZXF1aXJlZCBoZXJlIGZv
-ciBqdXN0IElPIGJvb3N0IHN1cHBvcnQuCgo+IAo+IF91cGRhdGVfdXRpbCgpIHJ1bnMgdW5kZXIg
-cnEtPmxvY2sgZm9yIHRoZSB0YXJnZXQgQ1BVLCBzbyBpdCB3aWxsIG5vdAo+IHJ1biBjb25jdXJy
-ZW50bHkgb24gdHdvIGRpZmZlcmVudCBDUFVzIGZvciB0aGUgc2FtZSB0YXJnZXQgYW55d2F5Lgo+
-IAo+ID4gK8KgwqDCoMKgwqDCoMKgaWYgKGlvX2ZsYWcpIHsKPiA+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqBib29sIGRvX2lvID0gZmFsc2U7Cj4gPiArCj4gPiArwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgLyoKPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oCogU2V0IGlvd2FpdF9ib29zdCBmbGFnIGFuZCB1cGRhdGUgdGltZS4gU2luY2UgSU8KPiA+IFdB
-SVQgZmxhZwo+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgKiBpcyBzZXQgYWxs
-IHRoZSB0aW1lLCB3ZSBjYW4ndCBqdXN0IGNvbmNsdWRlIHRoYXQKPiA+IHRoZXJlIGlzCj4gPiAr
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAqIHNvbWUgSU8gYm91bmQgYWN0aXZpdHkg
-aXMgc2NoZWR1bGVkIG9uIHRoaXMgQ1BVCj4gPiB3aXRoIGp1c3QKPiA+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoCogb25lIG9jY3VycmVuY2UuIElmIHdlIHJlY2VpdmUgYXQgbGVh
-c3QgdHdvIGluCj4gPiB0d28KPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCog
-Y29uc2VjdXRpdmUgdGlja3MsIHRoZW4gd2UgdHJlYXQgYXMgYm9vc3QKPiA+IGNhbmRpZGF0ZS4K
-PiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCovCj4gPiArwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgaWYgKHRpbWVfYmVmb3JlNjQodGltZSwgY3B1LT5sYXN0X2lvX3Vw
-ZGF0ZSArIDIgKgo+ID4gVElDS19OU0VDKSkKPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgZG9faW8gPSB0cnVlOwo+ID4gKwo+ID4gK8KgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoGNwdS0+bGFzdF9pb191cGRhdGUgPSB0aW1lOwo+ID4gKwo+ID4g
-K8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGlmIChkb19pbykKPiA+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaW50ZWxfcHN0YXRlX2h3cF9ib29z
-dF91cChjcHUpOwo+IAo+IEJ1dCB3aGF0IGhhcHBlbnMgaWYgdXNlciBzcGFjZSB3YW50cyB0byB1
-cGRhdGUgdGhlIGxpbWl0cyB3aGlsZQo+IGJvb3N0aW5nIGlzIGluIGVmZmVjdD/CoMKgU2hvdWxk
-bid0IGl0IHRha2UgaHdwX2Jvb3N0X21pbiBpbnRvIGFjY291bnQKPiB0aGVuPwpVc2VyIHJlcXVl
-c3QgaGFzIGFsd2F5cyBoaWdoZXIgcHJpb3JpdHkuIFVzZXIgbWluIHdpbGwgYmUgdGFrZW4gaW50
-bwphY2NvdW50IGFzIHRoZSBib29zdCBtaW4gaXMgdXBkYXRlZCB1bmRlciB0aGUgdGhlIHVwZGF0
-ZSB1dGlsIGNhbGwKYmFjaywgbm90IGp1c3Qgb25lIHRpbWUuCgpUaGFua3MsClNyaW5pdmFzCg==
+[v14]
+ * Addressed comment from Sudeep about DT compatible
+ * Added MAINTAINERS entry
 
+[v13]
+ * Addressed comment from Sudeep about DT compatible check on init
 
---=-1s1yTxBCvNZ7xdWDtX2w
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
+[v12]
+ * Addressed comments from Sudeep and Viresh about the single init
 
-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
-aQGEV8ArjHXcotL/yLNh30JyB9sygYzIQadqyFvtvhUyiHwAh7Pf6Gl7Gsz0i/QSq7MK49JvgbUM
-F1TCZwc7AgMBAAGjggI9MIICOTAdBgNVHQ4EFgQUf6YLVqF1vjXfk2h4J2GzgJAOB/8wHwYDVR0j
-BBgwFoAUHmkqtNwo/kcYTiELP7ysES/wmPUwZQYDVR0fBF4wXDBaoFigVoZUaHR0cDovL3d3dy5p
-bnRlbC5jb20vcmVwb3NpdG9yeS9DUkwvSW50ZWwlMjBFeHRlcm5hbCUyMEJhc2ljJTIwSXNzdWlu
-ZyUyMENBJTIwNEEuY3JsMIGfBggrBgEFBQcBAQSBkjCBjzBpBggrBgEFBQcwAoZdaHR0cDovL3d3
-dy5pbnRlbC5jb20vcmVwb3NpdG9yeS9jZXJ0aWZpY2F0ZXMvSW50ZWwlMjBFeHRlcm5hbCUyMEJh
-c2ljJTIwSXNzdWluZyUyMENBJTIwNEEuY3J0MCIGCCsGAQUFBzABhhZodHRwOi8vb2NzcC5pbnRl
-bC5jb20vMAsGA1UdDwQEAwIHgDA8BgkrBgEEAYI3FQcELzAtBiUrBgEEAYI3FQiGw4x1hJnlUYP9
-gSiFjp9TgpHACWeB3r05lfBDAgFkAgEJMB8GA1UdJQQYMBYGCCsGAQUFBwMEBgorBgEEAYI3CgMM
-MCkGCSsGAQQBgjcVCgQcMBowCgYIKwYBBQUHAwQwDAYKKwYBBAGCNwoDDDBXBgNVHREEUDBOoC0G
-CisGAQQBgjcUAgOgHwwdc3Jpbml2YXMucGFuZHJ1dmFkYUBpbnRlbC5jb22BHXNyaW5pdmFzLnBh
-bmRydXZhZGFAaW50ZWwuY29tMA0GCSqGSIb3DQEBBQUAA4IBAQDDpWcY9zqtG5P0e1FRJpG/RPQ6
-p6sQJHZ5UwykMtYFqBJYOZn9B8koeLEhE4vOAh6v6fgVoCfOvwxJ57BUAdP3jvkbCaLz3r6nUHNr
-6w6KwnT9rHykdDjZsRUGs2yP+139qVqoXRHTOLfqvnAzcirjgf4Fz3JRPJZraRWrICBehqhYVfFH
-sxxBgOauQ+DTHjZARkomjmrATvlDpLMlN74L/BKZI4rl4R/BjSaLBzAKQnAN0nvWefpPzdeSYuxK
-XaN1xDzINPDnmShXSbQzee0h2CvEnIMtPQDM9DJACUi14Cc9y4o7DqRky4r1+XnksN2lKnu83l4E
-oSxCkDMhszkFMYICFzCCAhMCAQEwgZAweTELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRQwEgYD
-VQQHEwtTYW50YSBDbGFyYTEaMBgGA1UEChMRSW50ZWwgQ29ycG9yYXRpb24xKzApBgNVBAMTIklu
-dGVsIEV4dGVybmFsIEJhc2ljIElzc3VpbmcgQ0EgNEECEzMAAK0KIyEkTMbH5OYAAAAArQowCQYF
-Kw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE4MDUy
-OTIyMjQyM1owIwYJKoZIhvcNAQkEMRYEFBVS1bXvgseVRp/sNVbEJ7z/KRuXMA0GCSqGSIb3DQEB
-AQUABIIBABs0ObB596HUkgnASTBoZ3awqPmQtOhnKf4vVKMM7JCFVXn3nKJDZH+ca+OE1EG4cz5Z
-ohZrcXJBUidYaaiNBv45/fvFvO+45Qmi3jAVDwuaYV/sDdqB0aGKcUOF7dQ6xUbTiSu/GeRhxjOf
-PTOQHekgz7iMi/xjR/cSCWMDmzexj/umyoXstb5C9N/jxmiVT/L89ubKhyraBWTs1ogcFxnI8dFu
-pSOEAa4kyj9GZcQIJEVO8rsPybzcd3VJz8ZGxMbDGLAMxEVkIQc1E7+vFRTi73dzqQGDJR0VlklT
-mrLHvke5js1/ZXy18FMMUUegTnVDMBNHQuNz1obdseTBEe0AAAAAAAA=
+[v11]
+ * Addressed comment from Russel about device_node reference
+ * Addressed comment from Sudeep about the late_initcall
+ * Transformed init into probe to take care of deferals
 
+[v10]
+ * Split the series into domains
+ * Addressed comments from Viresh and Sudeep about logical CPU numbering.
 
---=-1s1yTxBCvNZ7xdWDtX2w--
+The qcom-cpufreq-kryo driver is aimed to support different SOC versions.
+The driver reads eFuse information and chooses the required OPP subset
+by passing the OPP supported-hw parameter.
+
+The series depends on the series from Viresh:
+https://patchwork.kernel.org/patch/10418139/
+
+The previous spin was here:
+https://patchwork.kernel.org/patch/10427315/
+
+Ilia Lin (2):
+  cpufreq: Add Kryo CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-kryo-cpu
+
+ .../devicetree/bindings/opp/kryo-cpufreq.txt       | 680 +++++++++++++++++++++
+ MAINTAINERS                                        |   7 +
+ drivers/cpufreq/Kconfig.arm                        |  11 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 212 +++++++
+ 6 files changed, 914 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+
+-- 
+1.9.1
