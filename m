@@ -1,66 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: Use static SRCU initializer
-Date: Wed, 30 May 2018 10:20:34 +0530
-Message-ID: <20180530045034.xlxnjq42gkm6dbrs@vireshk-i7>
-References: <20180525101958.13277-1-bigeasy@linutronix.de>
- <20180525101958.13277-3-bigeasy@linutronix.de>
+From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
+Subject: Re: [PATCH V2] cpufreq: reinitialize new policy min/max when writing
+ scaling_(max|min)_freq
+Date: Wed, 30 May 2018 16:03:37 +0800
+Message-ID: <46d37d2b-f410-63de-721c-27843d25a326@hisilicon.com>
+References: <1527144234-96396-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <1527319008-66663-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <20180529102638.ikmw2xjf523sf4kf@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="gbk"; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180525101958.13277-3-bigeasy@linutronix.de>
+In-Reply-To: <20180529102638.ikmw2xjf523sf4kf@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gengyanping@hisilicon.com, sunzhaosheng@hisilicon.com
 List-Id: linux-pm@vger.kernel.org
 
-On 25-05-18, 12:19, Sebastian Andrzej Siewior wrote:
-> Use the static SRCU initializer for `cpufreq_transition_notifier_list'.
-> This avoids the init_cpufreq_transition_notifier_list() initcall. Its
-> only purpose is to initialize the SRCU notifier once during boot and set
-> another variable which is used as an indicator whether the init was
-> perfromed before cpufreq_register_notifier() was used.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> CC: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
->  drivers/cpufreq/cpufreq.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 075d18f6ba7a..3f7b502cfb1e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -89,16 +89,7 @@ static void cpufreq_governor_limits(struct cpufreq_policy *policy);
->   * The mutex locks both lists.
->   */
->  static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
-> -static struct srcu_notifier_head cpufreq_transition_notifier_list;
-> -
-> -static bool init_cpufreq_transition_notifier_list_called;
-> -static int __init init_cpufreq_transition_notifier_list(void)
-> -{
-> -	srcu_init_notifier_head(&cpufreq_transition_notifier_list);
-> -	init_cpufreq_transition_notifier_list_called = true;
-> -	return 0;
-> -}
-> -pure_initcall(init_cpufreq_transition_notifier_list);
-> +SRCU_NOTIFIER_HEAD_STATIC(cpufreq_transition_notifier_list);
->  
->  static int off __read_mostly;
->  static int cpufreq_disabled(void)
-> @@ -1764,8 +1755,6 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
->  	if (cpufreq_disabled())
->  		return -EINVAL;
->  
-> -	WARN_ON(!init_cpufreq_transition_notifier_list_called);
-> -
->  	switch (list) {
->  	case CPUFREQ_TRANSITION_NOTIFIER:
->  		mutex_lock(&cpufreq_fast_switch_lock);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
--- 
-viresh
+ÔÚ 2018/5/29 18:26, Viresh Kumar Ð´µÀ:
+> On 26-05-18, 15:16, Kevin Wangtao wrote:
+>> consider such situation, current user_policy.min is 1000000,
+>> current user_policy.max is 1200000, in cpufreq_set_policy,
+>> other driver may update policy.min to 1200000, policy.max to
+>> 1300000. After that, If we input "echo 1300000 > scaling_min_freq",
+>> then user_policy.min will be 1300000, and user_policy.max is
+>> still 1200000, because the input value is checked with policy.max
+>> not user_policy.max. if we get all related cpus offline and
+>> online again, it will cause cpufreq_init_policy fail because
+>> user_policy.min is higher than user_policy.max.
+>>
+>> The solution is when user space tries to write scaling_(max|min)_freq,
+>> the min/max of new_policy should be reinitialized with min/max
+>> of user_policy, like what cpufreq_update_policy does.
+>>
+>> Signed-off-by: Kevin Wangtao <kevin.wangtao@hisilicon.com>
+>> ---
+>>   drivers/cpufreq/cpufreq.c | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index b79c532..82123a1 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -697,6 +697,8 @@ static ssize_t store_##file_name					\
+>>   	struct cpufreq_policy new_policy;				\
+>>   									\
+>>   	memcpy(&new_policy, policy, sizeof(*policy));			\
+> 
+> Maybe add a comment here on why this is required ?
+OK
+> 
+>> +	new_policy.min = policy->user_policy.min;			\
+>> +	new_policy.max = policy->user_policy.max;			\
+>>   									\
+>>   	ret = sscanf(buf, "%u", &new_policy.object);			\
+>>   	if (ret != 1)							\
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
