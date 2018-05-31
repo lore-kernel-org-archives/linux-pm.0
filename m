@@ -1,44 +1,95 @@
-From: Suman Anna <s-anna@ti.com>
-Subject: [PATCH v3 1/2] cpufreq: ti-cpufreq: Fix an incorrect error return value
-Date: Thu, 31 May 2018 17:21:43 -0500
-Message-ID: <20180531222144.26739-2-s-anna@ti.com>
-References: <20180531222144.26739-1-s-anna@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [RFC/RFT] [PATCH v3 0/4] Intel_pstate: HWP Dynamic performance boost
+Date: Thu, 31 May 2018 15:51:39 -0700
+Message-ID: <20180531225143.34270-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180531222144.26739-1-s-anna@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dave Gerlach <d-gerlach@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Suman Anna <s-anna@ti.com>, Zumeng Chen <zumeng.chen@gmail.com>, stable@vger.kernel.org
+To: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Commit 05829d9431df ("cpufreq: ti-cpufreq: kfree opp_data when
-failure") has fixed a memory leak in the failure path, however
-the patch returned a positive value on get_cpu_device() failure
-instead of the previous negative value. Fix this incorrect error
-return value properly.
+v3
+- Removed atomic bit operation as suggested.
+- Added description of contention with user space.
+- Removed hwp cache, boost utililty function patch and merged with util callback
+  patch. This way any value set is used somewhere.
 
-Fixes: 05829d9431df ("cpufreq: ti-cpufreq: kfree opp_data when failure")
-Cc: Zumeng Chen <zumeng.chen@gmail.com>
-Cc: <stable@vger.kernel.org> # v4.14+
-Signed-off-by: Suman Anna <s-anna@ti.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/ti-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Waiting for test results from Mel Gorman, who is the original reporter.
 
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index 6ba709b6f095..896caba5dfe5 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -226,7 +226,7 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
- 	opp_data->cpu_dev = get_cpu_device(0);
- 	if (!opp_data->cpu_dev) {
- 		pr_err("%s: Failed to get device for CPU0\n", __func__);
--		ret = ENODEV;
-+		ret = -ENODEV;
- 		goto free_opp_data;
- 	}
- 
+v2
+This is a much simpler version than the previous one and only consider IO
+boost, using the existing mechanism. There is no change in this series
+beyond intel_pstate driver.
+
+Once PeterZ finishes his work on frequency invariant, I will revisit
+thread migration optimization in HWP mode.
+
+Other changes:
+- Gradual boost instead of single step as suggested by PeterZ.
+- Cross CPU synchronization concerns identified by Rafael.
+- Split the patch for HWP MSR value caching as suggested by PeterZ.
+
+Not changed as suggested:
+There is no architecture way to identify platform with Per-core
+P-states, so still have to enable feature based on CPU model.
+
+-----------
+v1
+
+This series tries to address some concern in performance particularly with IO
+workloads (Reported by Mel Gorman), when HWP is using intel_pstate powersave
+policy.
+
+Background
+HWP performance can be controlled by user space using sysfs interface for
+max/min frequency limits and energy performance preference settings. Based on
+workload characteristics these can be adjusted from user space. These limits
+are not changed dynamically by kernel based on workload.
+
+By default HWP defaults to energy performance preference value of 0x80 on
+majority of platforms(Scale is 0-255, 0 is max performance and 255 is min).
+This value offers best performance/watt and for majority of server workloads
+performance doesn't suffer. Also users always have option to use performance
+policy of intel_pstate, to get best performance. But user tend to run with
+out of box configuration, which is powersave policy on most of the distros.
+
+In some case it is possible to dynamically adjust performance, for example,
+when a CPU is woken up due to IO completion or thread migrate to a new CPU. In
+this case HWP algorithm will take some time to build utilization and ramp up
+P-states. So this may results in lower performance for some IO workloads and
+workloads which tend to migrate. The idea of this patch series is to
+temporarily boost performance dynamically in these cases. This is only
+applicable only when user is using powersave policy, not in performance policy.
+
+Results on a Skylake server:
+
+Benchmark                       Improvement %
+----------------------------------------------------------------------
+dbench                          50.36
+thread IO bench (tiobench)      10.35
+File IO                         9.81
+sqlite                          15.76
+X264 -104 cores                 9.75
+
+Spec Power                      (Negligible impact 7382 Vs. 7378)
+Idle Power                      No change observed
+-----------------------------------------------------------------------
+
+HWP brings in best performace/watt at EPP=0x80. Since we are boosting
+EPP here to 0, the performance/watt drops upto 10%. So there is a power
+penalty of these changes.
+
+Also Mel Gorman provided test results on a prior patchset, which shows
+benifits of this series.
+
+Srinivas Pandruvada (4):
+  cpufreq: intel_pstate: Add HWP boost utility and sched util hooks
+  cpufreq: intel_pstate: HWP boost performance on IO wakeup
+  cpufreq: intel_pstate: New sysfs entry to control HWP boost
+  cpufreq: intel_pstate: enable boost for SKX
+
+ drivers/cpufreq/intel_pstate.c | 177 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 173 insertions(+), 4 deletions(-)
+
 -- 
-2.17.0
+2.13.6
