@@ -1,71 +1,90 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
-Date: Thu, 31 May 2018 10:27:20 +0530
-Message-ID: <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
-References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
- <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
- <20180524173926.GC14924@minitux>
- <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
- <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Akhil P Oommen <akhilpo@codeaurora.org>
+Subject: [RFC] PM / devfreq: Add support for alerts
+Date: Thu, 31 May 2018 11:06:59 +0530
+Message-ID: <1527745019-25155-1-git-send-email-akhilpo@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: jcrouse@codeaurora.org, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Stephen,
+Currently, DEVFREQ reevaluates the device state periodically and/or
+based on the OPP list changes. Private API has to be exposed to allow
+the device driver to alert/notify the governor to reevaluate when a new
+set of data is available. This makes the governor more coupled to a
+particular device driver. We can improve here by exposing a DEVFREQ API
+to allow the device drivers to send generic alerts to the governor.
 
-On 5/30/2018 9:25 PM, Stephen Boyd wrote:
-> Quoting Sricharan R (2018-05-24 22:40:11)
->> Hi Bjorn,
->>
->> On 5/24/2018 11:09 PM, Bjorn Andersson wrote:
->>> On Tue 06 Mar 06:38 PST 2018, Sricharan R wrote:
->>>
->>>> From: Stephen Boyd <sboyd@codeaurora.org>
->>>>
->>>> Krait CPUs have a handful of L2 cache controller registers that
->>>> live behind a cp15 based indirection register. First you program
->>>> the indirection register (l2cpselr) to point the L2 'window'
->>>> register (l2cpdr) at what you want to read/write.  Then you
->>>> read/write the 'window' register to do what you want. The
->>>> l2cpselr register is not banked per-cpu so we must lock around
->>>> accesses to it to prevent other CPUs from re-pointing l2cpdr
->>>> underneath us.
->>>>
->>>> Cc: Mark Rutland <mark.rutland@arm.com>
->>>> Cc: Russell King <linux@arm.linux.org.uk>
->>>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->>>
->>> This should have your signed-off-by here as well.
->>>
->>
->>  ok.
->>
->>> Apart from that:
->>>
->>> Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
->>>
->>
-> 
-> Will these patches come around again? I'll do a quick sweep on them
-> today but I expect them to be resent.
-
-Sure, i will have to resend them again, fixing couple of Bjorn's
-minor comments. Will address your comments that you would give
-as well along with that.
-
-Regards,
- Sricharan
-
--- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
-
+Signed-off-by: Akhil P Oommen <akhilpo@codeaurora.org>
 ---
-This email has been checked for viruses by Avast antivirus software.
-https://www.avast.com/antivirus
+ drivers/devfreq/devfreq.c  | 21 +++++++++++++++++++++
+ drivers/devfreq/governor.h |  1 +
+ include/linux/devfreq.h    |  5 +++++
+ 3 files changed, 27 insertions(+)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index fe2af6a..24a8046 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1532,3 +1532,24 @@ void devm_devfreq_unregister_notifier(struct device *dev,
+ 			       devm_devfreq_dev_match, devfreq));
+ }
+ EXPORT_SYMBOL(devm_devfreq_unregister_notifier);
++
++/**
++ * devfreq_alert_governor() - Alert governor about an event
++ * @devfreq:	The devfreq object.
++ * @type:	Optional alert type.
++ *
++ * This function lets the device alert the governor about an event.
++ * A governor may not implement or choose to completely ignore this alert.
++ */
++void devfreq_alert_governor(struct devfreq *devfreq, unsigned int type)
++{
++	/* Don't let someone change the governor until we are done here. */
++	mutex_lock(&devfreq_list_lock);
++
++	if (devfreq)
++		devfreq->governor->event_handler(devfreq,
++				DEVFREQ_GOV_ALERT, &type);
++
++	mutex_unlock(&devfreq_list_lock);
++}
++EXPORT_SYMBOL(devfreq_alert_governor);
+diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+index cfc50a6..e5da3442 100644
+--- a/drivers/devfreq/governor.h
++++ b/drivers/devfreq/governor.h
+@@ -24,6 +24,7 @@
+ #define DEVFREQ_GOV_INTERVAL			0x3
+ #define DEVFREQ_GOV_SUSPEND			0x4
+ #define DEVFREQ_GOV_RESUME			0x5
++#define DEVFREQ_GOV_ALERT			0x6
+ 
+ /**
+  * struct devfreq_governor - Devfreq policy governor
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 3aae5b3..740c228 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -193,6 +193,7 @@ extern struct devfreq *devm_devfreq_add_device(struct device *dev,
+ 				  void *data);
+ extern void devm_devfreq_remove_device(struct device *dev,
+ 				  struct devfreq *devfreq);
++extern void devfreq_alert_governor(struct devfreq *devfreq, unsigned int type);
+ 
+ /* Supposed to be called by PM callbacks */
+ extern int devfreq_suspend_device(struct devfreq *devfreq);
+@@ -306,6 +307,10 @@ static inline void devm_devfreq_remove_device(struct device *dev,
+ {
+ }
+ 
++static void devfreq_alert_governor(struct devfreq *devfreq, unsigned int type)
++{
++}
++
+ static inline int devfreq_suspend_device(struct devfreq *devfreq)
+ {
+ 	return 0;
+-- 
+1.9.1
