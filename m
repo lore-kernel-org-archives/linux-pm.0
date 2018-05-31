@@ -1,139 +1,69 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 02/11] PM / devfreq: Fix handling of min/max_freq == 0
-Date: Wed, 30 May 2018 14:13:01 -0700
-Message-ID: <20180530211301.GA194977@google.com>
-References: <20180525203043.249193-1-mka@chromium.org>
- <CGME20180525203323epcas4p45ba35c38413e227f76f68fe331011b19@epcas4p4.samsung.com>
- <20180525203043.249193-3-mka@chromium.org>
- <5B0BA3BB.8060505@samsung.com>
- <20180529185758.GG168650@google.com>
- <5B0E5AFE.8090703@samsung.com>
+From: Shuah Khan <shuah@kernel.org>
+Subject: Re: [PATCH] cpupower : Fix header name to read idle state name
+Date: Wed, 30 May 2018 21:39:36 -0600
+Message-ID: <12c6dd21-32ef-2ea7-ab61-ff57f36803a1@kernel.org>
+References: <20180528110303.12860-1-huntbag@linux.vnet.ibm.com>
+Reply-To: shuah@kernel.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5B0E5AFE.8090703@samsung.com>
+In-Reply-To: <20180528110303.12860-1-huntbag@linux.vnet.ibm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, =?utf-8?B?w5hyamFu?= Eide <orjan.eide@arm.com>, John Einar Reitan <john.reitan@arm.com>
+To: Abhishek Goel <huntbag@linux.vnet.ibm.com>, trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: s1seetee@linux.vnet.ibm.com, Shuah Khan <shuah@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 30, 2018 at 05:04:14PM +0900, Chanwoo Choi wrote:
-> Hi,
+On 05/28/2018 05:03 AM, Abhishek Goel wrote:
+> The names of the idle states in the output of cpupower monitor command are
+> truncated to 4 characters. On POWER9, this creates ambiguity as the states
+> are named "stop0", "stop1", etc.
 > 
-> On 2018년 05월 30일 03:57, Matthias Kaehlcke wrote:
-> > On Mon, May 28, 2018 at 03:37:47PM +0900, Chanwoo Choi wrote:
-> >> Hi,
-> >>
-> >> On 2018년 05월 26일 05:30, Matthias Kaehlcke wrote:
-> >>> Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
-> >>> devfreq device") initializes df->min/max_freq with the min/max OPP when
-> >>> the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
-> >>> available min/max frequency") adds df->scaling_min/max_freq and the
-> >>> following to the frequency adjustment code:
-> >>>
-> >>>   max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
-> >>>
-> >>> With the current handling of min/max_freq this is incorrect:
-> >>>
-> >>> Even though df->max_freq is now initialized to a value != 0 user space
-> >>> can still set it to 0, in this case max_freq would be 0 instead of
-> >>> df->scaling_max_freq as intended. In consequence the frequency adjustment
-> >>> is not performed:
-> >>>
-> >>>   if (max_freq && freq > max_freq) {
-> >>> 	freq = max_freq;
-> >>>
-> >>> To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
-> >>> when the user passes a value of 0. This also prevents df->max_freq from
-> >>> being set below the min OPP when df->min_freq is 0, and similar for
-> >>> min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
-> >>> checks for this case can be removed.
-> >>>
-> >>> Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
-> >>> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> >>> ---
-> >>>  drivers/devfreq/devfreq.c | 30 ++++++++++++++++++------------
-> >>>  1 file changed, 18 insertions(+), 12 deletions(-)
-> >>>
-> >>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> >>> index 0057ef5b0a98..67da4e7b486b 100644
-> >>> --- a/drivers/devfreq/devfreq.c
-> >>> +++ b/drivers/devfreq/devfreq.c
-> >>> @@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
-> >>>  	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
-> >>>  	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
-> >>>  
-> >>> -	if (min_freq && freq < min_freq) {
-> >>> +	if (freq < min_freq) {
-> >>>  		freq = min_freq;
-> >>>  		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
-> >>>  	}
-> >>> -	if (max_freq && freq > max_freq) {
-> >>> +	if (freq > max_freq) {
-> >>>  		freq = max_freq;
-> >>>  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
-> >>>  	}
-> >>> @@ -1123,17 +1123,20 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
-> >>>  	struct devfreq *df = to_devfreq(dev);
-> >>>  	unsigned long value;
-> >>>  	int ret;
-> >>> -	unsigned long max;
-> >>>  
-> >>>  	ret = sscanf(buf, "%lu", &value);
-> >>>  	if (ret != 1)
-> >>>  		return -EINVAL;
-> >>>  
-> >>>  	mutex_lock(&df->lock);
-> >>> -	max = df->max_freq;
-> >>> -	if (value && max && value > max) {
-> >>> -		ret = -EINVAL;
-> >>> -		goto unlock;
-> >>> +
-> >>> +	if (value) {
-> >>> +		if (value > df->max_freq) {
-> >>> +			ret = -EINVAL;
-> >>> +			goto unlock;
-> >>> +		}
-> >>> +	} else {
-> >>> +		value = df->profile->freq_table[df->profile->max_state - 1];
-> >>>  	}
-> >>
-> >> If you want to prevent that df->min_freq is zero, 
-> >> you should reinitialize 'value' as following.
-> >> Because freq_table must be in ascending order.
-> >> 	value = df->profile->freq_table[0];
-> > 
-> > Thanks for pointing this out!
-> > 
-> > The devfreq device I tested with (a Mali GPU) uses descending order
-> > for some reason, and I assumed that's the usual order.
-> > 
-> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_devfreq.c#208
-> > 
-> > It seems the ordering doesn't have any impact beyond this patch. If
-> > the order isn't mandatory for drivers that set up their own freq_table
-> > we should probably support both cases to be safe.
+> root:~# cpupower monitor
+>               |Idle_Stats
+> PKG |CORE|CPU | snoo | stop | stop | stop | stop | stop | stop
+>    0|   0|   0|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  1.90
+>    0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+>    0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+>    0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
 > 
-> Prior to that 'freq_table' is optional. So, patch[1] initialize the 'freq_table'
-> by using OPP interface if 'freq_table' is NULL.
-> [1] commit 0ec09ac2cebe ("PM / devfreq: Set the freq_table of devfreq device")
+> This patch modifies the output to print the state name that results in a
+> legible output. The names will be printed with atmost 1 padding in left.
 > 
-> Current devfreq recommend the ascending order for 'freq_table'.
-> But, as you know, it might be not enough to support them.
+> root:~# cpupower monitor
+>               | Idle_Stats
+>  PKG|CORE| CPU|snooze|stop0L| stop0|stop1L| stop1|stop2L| stop2
+>    0|   0|   0|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.72
+>    0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+>    0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+>    0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
 > 
-> I agree that we should support the both cases (ascending or descending order).
+> This patch does not affect the output for intel.
+> Output for intel before applying the patch:
 > 
-> Maybe, it might be not proper to access the freq_table[] directly
-> because we don't know the ordering style of 'freq_table'
-> if 'freq_table' is made by devfreq user instead of devfreq core.
+> root:~# cpupower monitor
+>     |Idle_Stats
+> CPU | POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S | C9-S | C10-
+>    0|  0.00|  0.14|  0.39|  0.35|  7.41|  0.00| 17.67|  1.01| 70.03
+>    2|  0.00|  0.19|  0.47|  0.10|  6.50|  0.00| 29.66|  2.17| 58.07
+>    1|  0.00|  0.11|  0.50|  1.50|  9.11|  0.18| 18.19|  0.40| 66.63
+>    3|  0.00|  0.67|  0.42|  0.03|  5.84|  0.00| 12.58|  0.77| 77.14
+> 
+> Output for intel after applying the patch:
+> 
+> root:~# cpupower monitor
+>     | Idle_Stats
+>  CPU| POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S | C9-S | C10-
+>    0|  0.03|  0.33|  1.01|  0.27|  3.03|  0.00| 19.18|  0.00| 71.24
+>    2|  0.00|  1.58|  0.58|  0.42|  8.55|  0.09| 21.11|  0.99| 63.32
+>    1|  0.00|  1.26|  0.88|  0.43|  9.00|  0.02|  7.78|  4.65| 71.91
+>    3|  0.00|  0.30|  0.42|  0.06| 13.62|  0.21| 30.29|  0.00| 52.45
+> 
+> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+> ---
+> 
 
-If we can assume that it is either ascending or descending, but not
-random order than a simple check if freq_table[0] <
-freq_table[max_state - 1] would be sufficient.
+Thanks - I have this queued for 4.18-rc1
 
-Otherwise we could also determine the min/max after initialization and
-save the result, though that would leave us with yet another frequency
-pair, which might be confusing, especially if we don't come up with
-good names to distinguish between them.
+-- Shuah
