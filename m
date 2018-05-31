@@ -1,40 +1,67 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 8/9] PM / Domains: Add support for multi PM domains per
- device to genpd
-Date: Thu, 31 May 2018 12:44:51 +0200
-Message-ID: <CAPDyKFrtSGF79pFf-sx41ru_EVLk3BMg_f_5rK64k==dW=OXPA@mail.gmail.com>
-References: <20180529100421.31022-1-ulf.hansson@linaro.org>
- <20180529100421.31022-9-ulf.hansson@linaro.org> <a53f0970-22c4-444f-10e6-c115a21d05ea@nvidia.com>
- <CAPDyKFrV5fosZ1QZ4un+okzpeQDM3QSCBWJB1YZH4WNxKf_FVQ@mail.gmail.com> <e313f870-ef27-7721-9395-31671f00ef4a@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 1/2] sched/cpufreq: always consider blocked FAIR utilization
+Date: Thu, 31 May 2018 12:46:55 +0200
+Message-ID: <1882135.N2Fi74R5Qz@aspire.rjw.lan>
+References: <20180524141023.13765-1-patrick.bellasi@arm.com> <CAJZ5v0iq-k4QeeEm6vzfWNLkXxNtLZa0Y9_bBcYWCGQ_FjzgDQ@mail.gmail.com> <20180530165010.GK30654@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e313f870-ef27-7721-9395-31671f00ef4a@nvidia.com>
+In-Reply-To: <20180530165010.GK30654@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 31 May 2018 at 10:03, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 31/05/18 07:17, Ulf Hansson wrote:
->> [...]
->>
->>>> +/**
->>>> + * genpd_dev_pm_attach_by_id() - Attach a device to one of its PM domain.
->>>> + * @dev: Device to attach.
->>>
->>> Can you update the description of the above as well?
->>
->> Yes, like below?
->>
->> genpd_dev_pm_attach_by_id() - Associate a device with one of its PM domains.
->> @dev: The device used to lookup the PM domain.
->
-> Yes perfect.
+On Wednesday, May 30, 2018 6:50:10 PM CEST Patrick Bellasi wrote:
+> On 27-May 11:50, Rafael J. Wysocki wrote:
+> > On Thu, May 24, 2018 at 4:10 PM, Patrick Bellasi
+> > <patrick.bellasi@arm.com> wrote:
+> > > Since the refactoring introduced by:
+> > >
+> > >    commit 8f111bc357aa ("cpufreq/schedutil: Rewrite CPUFREQ_RT support")
+> > >
+> > > we aggregate FAIR utilization only if this class has runnable tasks.
+> > > This was mainly due to avoid the risk to stay on an high frequency just
+> > > because of the blocked utilization of a CPU not being properly decayed
+> > > while the CPU was idle.
+> > >
+> > > However, since:
+> > >
+> > >    commit 31e77c93e432 ("sched/fair: Update blocked load when newly idle")
+> > >
+> > > the FAIR blocked utilization is properly decayed also for IDLE CPUs.
+> > >
+> > > This allows us to use the FAIR blocked utilization as a safe mechanism
+> > > to gracefully reduce the frequency only if no FAIR tasks show up on a
+> > > CPU for a reasonable period of time.
+> > >
+> > > Moreover, we also reduce the frequency drops of CPUs running periodic
+> > > tasks which, depending on the task periodicity and the time required
+> > > for a frequency switch, was increasing the chances to introduce some
+> > > undesirable performance variations.
+> > >
+> > > Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > > Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > > Tested-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > > Cc: Ingo Molnar <mingo@redhat.com>
+> > > Cc: Peter Zijlstra <peterz@infradead.org>
+> > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Cc: Joel Fernandes <joelaf@google.com>
+> > > Cc: linux-kernel@vger.kernel.org
+> > > Cc: linux-pm@vger.kernel.org
+> > 
+> > Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Or please let me know if you want me to apply this one.
+> 
+> Hi Rafael, seems this patch has already been applied in tip/sched/core.
+> However is missing your tag above. :/
 
-I assume I can consider this as an ack and tested by tag, both for
-patch 8 and 9?
+That's OK.
 
-Kind regards
-Uffe
+I just wanted to let people know my opinion. :-)
