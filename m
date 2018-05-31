@@ -1,31 +1,40 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 8/9] PM / Domains: Add support for multi PM domains per
- device to genpd
-Date: Thu, 31 May 2018 08:17:18 +0200
-Message-ID: <CAPDyKFrV5fosZ1QZ4un+okzpeQDM3QSCBWJB1YZH4WNxKf_FVQ@mail.gmail.com>
-References: <20180529100421.31022-1-ulf.hansson@linaro.org>
- <20180529100421.31022-9-ulf.hansson@linaro.org> <a53f0970-22c4-444f-10e6-c115a21d05ea@nvidia.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [RFC] PM / devfreq: Add support for alerts
+Date: Thu, 31 May 2018 15:17:20 +0900
+Message-ID: <20180531061720epcms1p31f5451bcf3150a7dddd33e1e415bb730@epcms1p3>
+References: <1527745019-25155-1-git-send-email-akhilpo@codeaurora.org>
+        <CGME20180531053717epcas5p48e0d962e2108d04529b4582a70cd7d5a@epcms1p3>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a53f0970-22c4-444f-10e6-c115a21d05ea@nvidia.com>
+In-Reply-To: <1527745019-25155-1-git-send-email-akhilpo@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-tegra@vger.kernel.org
+To: Akhil P Oommen <akhilpo@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mka@chromium.org" <mka@chromium.org>
+Cc: "jcrouse@codeaurora.org" <jcrouse@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
+> Currently, DEVFREQ reevaluates the device state periodically and/or
+> based on the OPP list changes. Private API has to be exposed to allow
+> the device driver to alert/notify the governor to reevaluate when a new
+> set of data is available. This makes the governor more coupled to a
+> particular device driver. We can improve here by exposing a DEVFREQ API
+> to allow the device drivers to send generic alerts to the governor.
+> 
+> Signed-off-by: Akhil P Oommen <akhilpo@codeaurora.org>
+> ---
+>  drivers/devfreq/devfreq.c  | 21 +++++++++++++++++++++
+>  drivers/devfreq/governor.h |  1 +
+>  include/linux/devfreq.h    |  5 +++++
+>  3 files changed, 27 insertions(+)
+> 
 
->> +/**
->> + * genpd_dev_pm_attach_by_id() - Attach a device to one of its PM domain.
->> + * @dev: Device to attach.
->
-> Can you update the description of the above as well?
+Hello Akhil,
 
-Yes, like below?
+It appears that this will have the same effect with
+"[PATCH 08/11] PM / devfreq: Make update_devfreq() public" from Matthias Kaehlcke, doesn't it?
 
-genpd_dev_pm_attach_by_id() - Associate a device with one of its PM domains.
-@dev: The device used to lookup the PM domain.
 
-Kind regards
-Uffe
+Cheers,
+MyungJoo
