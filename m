@@ -1,229 +1,301 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 11/11] misc/throttler: Add Chrome OS EC throttler
-Date: Thu, 31 May 2018 10:33:31 -0700
-Message-ID: <20180531173331.GA88063@google.com>
-References: <20180525203043.249193-1-mka@chromium.org>
- <20180525203043.249193-12-mka@chromium.org>
- <CAFqH_53iMhvq+6NXoXu50sD=PuXBf-2_D3K1Mf+iggLeGSu_mg@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V4] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Thu, 31 May 2018 20:25:45 +0200
+Message-ID: <c7c4143d-77c4-a41b-b770-e5c38e346320@linaro.org>
+References: <1527241792-5860-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180529093148.b2cxb5lwks7ka2tn@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAFqH_53iMhvq+6NXoXu50sD=PuXBf-2_D3K1Mf+iggLeGSu_mg@mail.gmail.com>
+In-Reply-To: <20180529093148.b2cxb5lwks7ka2tn@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo Serra <eballetbo@gmail.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
+On 29/05/2018 11:31, Viresh Kumar wrote:
+> Hi Daniel,
+> 
+> Thanks for yet another version :)
+> 
+> On 25-05-18, 11:49, Daniel Lezcano wrote:
+>> +++ b/drivers/powercap/idle_injection.c
+>> +static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
+>> +{
+>> +	struct idle_injection_thread *iit;
+>> +	int cpu;
+>> +
+>> +	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
+>> +		iit = per_cpu_ptr(&idle_injection_thread, cpu);
+>> +		iit->should_run = 1;
+>> +		wake_up_process(iit->tsk);
+>> +	}
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_wakeup_fn - idle injection timer callback
+>> + * @timer: a hrtimer structure
+>> + *
+>> + * This function is called when the idle injection timer expires which
+>> + * will wake up the idle injection tasks and these ones, in turn, play
+>> + * idle a specified amount of time.
+>> + *
+>> + * Return: HRTIMER_NORESTART.
+>> + */
+>> +static enum hrtimer_restart idle_injection_wakeup_fn(struct hrtimer *timer)
+>> +{
+>> +	struct idle_injection_device *ii_dev =
+>> +		container_of(timer, struct idle_injection_device, timer);
+>> +
+>> +	idle_injection_wakeup(ii_dev);
+>> +
+>> +	return HRTIMER_NORESTART;
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_fn - idle injection routine
+>> + * @cpu: the CPU number the tasks belongs to
+>> + *
+>> + * The idle injection routine will stay idle the specified amount of
+>> + * time
+>> + */
+>> +static void idle_injection_fn(unsigned int cpu)
+>> +{
+>> +	struct idle_injection_device *ii_dev;
+>> +	struct idle_injection_thread *iit;
+>> +	int run_duration_ms, idle_duration_ms;
+>> +
+>> +	ii_dev = per_cpu(idle_injection_device, cpu);
+>> +
+>> +	if (WARN_ON_ONCE(!ii_dev))
+> 
+> Yes, this is marked as "unlikely" and is kind of not that harmful, but
+> I would suggest to just drop it and let the kernel crash if that
+> serious of a bug is present in this code where ii_dev can be NULL
+> here.
 
-thanks for the review!
+Ok.
 
-I'll address your comments in the next revision.
+>> +		return;
+>> +
+>> +	iit = per_cpu_ptr(&idle_injection_thread, cpu);
+> 
+> See, we don't check this one, why check only ii_dev ? :)
+> 
+>> +
+>> +	/*
+>> +	 * Boolean used by the smpboot main loop and used as a
+>> +	 * flip-flop in this function
+>> +	 */
+>> +	iit->should_run = 0;
+>> +
+>> +	atomic_inc(&ii_dev->count);
+>> +
+>> +	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
+>> +	if (idle_duration_ms)
+>> +		play_idle(idle_duration_ms);
+>> +
+>> +	/*
+>> +	 * The last CPU waking up is in charge of setting the timer. If
+>> +	 * the CPU is hotplugged, the timer will move to another CPU
+>> +	 * (which may not belong to the same cluster) but that is not a
+>> +	 * problem as the timer will be set again by another CPU
+>> +	 * belonging to the cluster. This mechanism is self adaptive.
+>> +	 */
+> 
+> I am afraid that the above comment may not be completely true all the
+> time. For a quad-core platform, it is possible for 3 CPUs (0,1,2) to
+> run this function as soon as the kthread is woken up, but one of the
+> CPUs (3) may be stuck servicing an IRQ, Deadline or RT activity.
+> Because you do atomic_inc() also in this function (above) itself,
+> below decrement may return a true value for the CPU2 and that will
+> restart the hrtimer, while one of the CPUs never got a chance to
+> increment count in the first place.
+>
+> The fix is simple though, do the increment in idle_injection_wakeup()
+> and things should be fine then.
 
-On Thu, May 31, 2018 at 11:05:09AM +0200, Enric Balletbo Serra wrote:
-> Hi Matthias,
+Ok.
+
+>> +	if (!atomic_dec_and_test(&ii_dev->count))
+>> +		return;
+>> +
+>> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+>> +	if (run_duration_ms) {
+>> +		hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
+>> +			      HRTIMER_MODE_REL_PINNED);
+>> +		return;
+>> +	}
+>> +
+>> +	complete(&ii_dev->stop_complete);
 > 
-> The patch looks good to me, just three minor comments to be more
-> coherent with other cros-ec drivers.
+> So you call complete() after hrtimer is potentially restarted. This
+> can happen if idle_injection_stop() is called right after the above
+> atomic_read() has finished :)
 > 
-> 2018-05-25 22:30 GMT+02:00 Matthias Kaehlcke <mka@chromium.org>:
-> > The driver subscribes to throttling events from the Chrome OS
-> > embedded controller and enables/disables system throttling based
-> > on these events.
-> >
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> >  drivers/misc/throttler/Kconfig             |  15 +++
-> >  drivers/misc/throttler/Makefile            |   1 +
-> >  drivers/misc/throttler/cros_ec_throttler.c | 122 +++++++++++++++++++++
-> >  3 files changed, 138 insertions(+)
-> >  create mode 100644 drivers/misc/throttler/cros_ec_throttler.c
-> >
-> > diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
-> > index ef8388f6bc0a..652b6817b75c 100644
-> > --- a/drivers/misc/throttler/Kconfig
-> > +++ b/drivers/misc/throttler/Kconfig
-> > @@ -11,3 +11,18 @@ menuconfig THROTTLER
-> >           Note that you also need a event monitor module usually called
-> >           *_throttler.
-> >
-> > +if THROTTLER
-> > +
-> > +config CROS_EC_THROTTLER
-> > +       tristate "Throttler event monitor for the Chrome OS Embedded Controller"
+> IOW, this doesn't look safe now as well.
+
+It is safe, we just missed a cycle and the stop will block until the
+next cycle. I did it on purpose and for me it is correct.
+
+>> +}
 > 
-> s/Chrome OS/ChromeOS/ This is how other cros-ec drivers refer to the
-> embedded controller, so will be good if you could maintain this
-> denomination.
+>> +/**
+>> + * idle_injection_stop - stops the idle injections
+>> + * @ii_dev: a pointer to an idle injection_device structure
+>> + *
+>> + * The function stops the idle injection by resetting the idle and
+>> + * running durations and wait for the threads to complete. If we are
+>> + * in the process of injecting an idle cycle, then this will wait the
+>> + * end of the cycle.
+>> + */
+>> +void idle_injection_stop(struct idle_injection_device *ii_dev)
+>> +{
+>> +	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
+>> +		 cpumask_pr_args(ii_dev->cpumask));
+>> +
+>> +	init_completion(&ii_dev->stop_complete);
 > 
-> > +       default n
-> > +       depends on MFD_CROS_EC
-> > +       ---help---
-> > +         This driver adds support to throttle the system in reaction to
-> > +         Chrome OS EC events.
-> > +
+> This looks completely Borken (yeah, broken :)). complete() may be
+> running in parallel under spinlock and updating x->done while you just
+> set it to 0 here without any locking in place. init_completion()
+> should be used only once after ii_dev is allocated and I don't see
+> that being done either, so that looks incorrect as well.
+
+Ok.
+
+>> +
+>> +	idle_injection_set_duration(ii_dev, 0, 0);
+>> +
+>> +	wait_for_completion_interruptible(&ii_dev->stop_complete);
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_setup - initialize the current task as a RT task
+>> + * @cpu: the CPU number where the kthread is running on (not used)
+>> + *
+>> + * Called one time, this function is in charge of setting the task
+>> + * scheduler parameters.
+>> + */
+>> +static void idle_injection_setup(unsigned int cpu)
+>> +{
+>> +	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
+>> +
+>> +	set_freezable();
+>> +
+>> +	sched_setscheduler(current, SCHED_FIFO, &param);
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_should_run - function helper for the smpboot API
+>> + * @cpu: the CPU number where the kthread is running on
+>> + *
+>> + * Return: a boolean telling if the thread can run.
+>> + */
+>> +static int idle_injection_should_run(unsigned int cpu)
+>> +{
+>> +	struct idle_injection_thread *iit =
+>> +		per_cpu_ptr(&idle_injection_thread, cpu);
+>> +
+>> +	return iit->should_run;
+>> +}
+>> +
+>> +static struct idle_injection_device *ii_dev_alloc(void)
+>> +{
+>> +	struct idle_injection_device *ii_dev;
+>> +
+>> +	ii_dev = kzalloc(sizeof(*ii_dev), GFP_KERNEL);
+>> +	if (!ii_dev)
+>> +		return NULL;
+>> +
+>> +	if (!alloc_cpumask_var(&ii_dev->cpumask, GFP_KERNEL)) {
+>> +		kfree(ii_dev);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	return ii_dev;
+>> +}
+>> +
+>> +static void ii_dev_free(struct idle_injection_device *ii_dev)
+>> +{
+>> +	free_cpumask_var(ii_dev->cpumask);
+>> +	kfree(ii_dev);
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_register - idle injection init routine
+>> + * @cpumask: the list of CPUs managed by the idle injection device
+>> + *
+>> + * This is the initialization function in charge of creating the
+>> + * initializing of the timer and allocate the structures. It does not
+>> + * starts the idle injection cycles.
+>> + *
+>> + * Return: NULL if an allocation fails.
+>> + */
+>> +struct idle_injection_device *idle_injection_register(struct cpumask *cpumask)
+>> +{
+>> +	struct idle_injection_device *ii_dev;
+>> +	int cpu, cpu2;
+>> +
+>> +	ii_dev = ii_dev_alloc();
+>> +	if (!ii_dev)
+>> +		return NULL;
+>> +
+>> +	cpumask_copy(ii_dev->cpumask, cpumask);
+>> +	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+>> +	ii_dev->timer.function = idle_injection_wakeup_fn;
+>> +
+>> +	for_each_cpu(cpu, ii_dev->cpumask) {
+>> +
+>> +		if (per_cpu(idle_injection_device, cpu)) {
 > 
-> ditto
+> Maybe add unlikely here ?
+
+For this kind of init function and tight loop, there is no benefit of
+adding the unlikely / likely. I can add it if you want, but it is useless.
+
+>> +			pr_err("cpu%d is already registered\n", cpu);
+>> +			goto out_rollback_per_cpu;
+>> +		}
+>> +
+>> +		per_cpu(idle_injection_device, cpu) = ii_dev;
+>> +	}
+>> +
+>> +	return ii_dev;
+>> +
+>> +out_rollback_per_cpu:
+>> +	for_each_cpu(cpu2, ii_dev->cpumask) {
+>> +		if (cpu == cpu2)
 > 
-> > +         To compile this driver as a module, choose M here: the
-> > +         module will be called cros_ec_throttler.
-> > +
-> > +endif # THROTTLER
-> > +
-> > diff --git a/drivers/misc/throttler/Makefile b/drivers/misc/throttler/Makefile
-> > index c8d920cee315..d9b2a77dabc9 100644
-> > --- a/drivers/misc/throttler/Makefile
-> > +++ b/drivers/misc/throttler/Makefile
-> > @@ -1 +1,2 @@
-> >  obj-$(CONFIG_THROTTLER)                += core.o
-> > +obj-$(CONFIG_CROS_EC_THROTTLER)        += cros_ec_throttler.o
-> > diff --git a/drivers/misc/throttler/cros_ec_throttler.c b/drivers/misc/throttler/cros_ec_throttler.c
-> > new file mode 100644
-> > index 000000000000..ea6bc002d49c
-> > --- /dev/null
-> > +++ b/drivers/misc/throttler/cros_ec_throttler.c
-> > @@ -0,0 +1,122 @@
-> > +/*
-> > + * Driver for throttling triggered by EC events.
-> > + *
-> > + * Copyright (C) 2018 Google, Inc.
-> > + *
-> > + * This software is licensed under the terms of the GNU General Public
-> > + * License version 2, as published by the Free Software Foundation, and
-> > + * may be copied, distributed, and modified under those terms.
-> > + *
-> > + * This program is distributed in the hope that it will be useful,
-> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > + * GNU General Public License for more details.
-> > + *
-> > + */
-> > +
+> And is this really required? Perhaps this conditional is making it
+> worse and just setting the per-cpu variable forcefully to NULL would
+> be much faster :)
+
+We want undo what was done, setting all variables to NULL resets the
+values from a previous register and we don't want that.
+
+
+> Maybe move this for-loop into iid_dev_free() and you can make this
+> look simple then.
 > 
-> Replace this for the SPDX header format
+>> +			break;
+>> +
+>> +		per_cpu(idle_injection_device, cpu2) = NULL;
+>> +	}
+>> +
+>> +	ii_dev_free(ii_dev);
+>> +
+>> +	return NULL;
+>> +}
 > 
-> // SPDX-License-Identifier: GPL-2.0+
-> // Driver for throttling triggered by EC events.
-> //
-> // Copyright (C) 2018 Google, Inc.
-> // Author: Matthias Kaehlcke <mka@chromium.org>
-> 
-> > +#include <linux/kernel.h>
-> > +#include <linux/mfd/cros_ec.h>
-> > +#include <linux/module.h>
-> > +#include <linux/notifier.h>
-> > +#include <linux/of.h>
-> > +#include <linux/of_platform.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/throttler.h>
-> > +
-> > +struct cros_ec_throttler {
-> > +       struct cros_ec_device *ec;
-> > +       struct throttler *throttler;
-> > +       struct notifier_block nb;
-> > +};
-> > +
-> > +static int cros_ec_throttler_event(struct notifier_block *nb,
-> > +       unsigned long queued_during_suspend, void *_notify)
-> > +{
-> > +       struct cros_ec_throttler *cte =
-> > +               container_of(nb, struct cros_ec_throttler, nb);
-> 
-> nit: Better add a define here instead of split the line like this ?
-> 
-> > +       u32 host_event;
-> > +
-> > +       host_event = cros_ec_get_host_event(cte->ec);
-> > +       if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_START)) {
-> > +               throttler_set_level(cte->throttler, 1);
-> > +
-> > +               return NOTIFY_OK;
-> > +       } else if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_STOP)) {
-> > +               throttler_set_level(cte->throttler, 0);
-> > +
-> > +               return NOTIFY_OK;
-> > +       }
-> > +
-> > +       return NOTIFY_DONE;
-> > +}
-> > +
-> > +static int cros_ec_throttler_probe(struct platform_device *pdev)
-> > +{
-> > +       struct cros_ec_throttler *cte;
-> > +       struct device *dev = &pdev->dev;
-> > +       struct device_node *np = pdev->dev.of_node;
-> > +       int ret;
-> > +
-> > +       if (!np) {
-> > +               /* should never happen */
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +       cte = devm_kzalloc(dev, sizeof(*cte), GFP_KERNEL);
-> > +       if (!cte)
-> > +               return -ENOMEM;
-> > +
-> > +       cte->ec = dev_get_drvdata(pdev->dev.parent);
-> > +
-> > +       cte->throttler = throttler_setup(dev);
-> > +       if (IS_ERR(cte->throttler))
-> > +               return PTR_ERR(cte->throttler);
-> > +
-> > +       dev_set_drvdata(dev, cte);
-> > +
-> > +       cte->nb.notifier_call = cros_ec_throttler_event;
-> > +       ret = blocking_notifier_chain_register(&cte->ec->event_notifier,
-> > +                                              &cte->nb);
-> > +       if (ret < 0) {
-> > +               dev_err(dev, "failed to register notifier\n");
-> > +               throttler_teardown(cte->throttler);
-> > +               return ret;
-> > +       }
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int cros_ec_throttler_remove(struct platform_device *pdev)
-> > +{
-> > +       struct cros_ec_throttler *cte = platform_get_drvdata(pdev);
-> > +
-> > +       blocking_notifier_chain_unregister(&cte->ec->event_notifier,
-> > +                                          &cte->nb);
-> > +
-> > +       throttler_teardown(cte->throttler);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +#ifdef CONFIG_OF
-> > +static const struct of_device_id cros_ec_throttler_of_match[] = {
-> > +        { .compatible = "google,cros-ec-throttler" },
-> > +        { /* sentinel */ }
-> > +};
-> > +MODULE_DEVICE_TABLE(of, cros_ec_throttler_of_match);
-> > +#endif /* CONFIG_OF */
-> > +
-> > +static struct platform_driver cros_ec_throttler_driver = {
-> > +       .driver = {
-> > +               .name = "cros-ec-throttler",
-> > +               .of_match_table = of_match_ptr(cros_ec_throttler_of_match),
-> > +       },
-> > +       .probe          = cros_ec_throttler_probe,
-> > +       .remove         = cros_ec_throttler_remove,
-> > +};
-> > +
-> > +module_platform_driver(cros_ec_throttler_driver);
-> > +
-> > +MODULE_LICENSE("GPL");
-> > +MODULE_AUTHOR("Matthias Kaehlcke <mka@chromium.org>");
-> > +MODULE_DESCRIPTION("Chrome OS EC Throttler");
-> 
-> s/Chrome OS/ChromeOS/
-> 
-> >
-> 
-> Reviewed-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> 
-> Thanks,
->   Enric
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
