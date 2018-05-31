@@ -1,30 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 7/9] PM / Domains: Split genpd_dev_pm_attach()
-Date: Thu, 31 May 2018 12:34:26 +0530
-Message-ID: <20180531070426.3olmew36foji32ge@vireshk-i7>
-References: <20180529100421.31022-1-ulf.hansson@linaro.org>
- <20180529100421.31022-8-ulf.hansson@linaro.org>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
+Date: Thu, 31 May 2018 00:41:37 -0700
+Message-ID: <152775249799.144038.9269415086304305030@swboyd.mtv.corp.google.com>
+References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
+ <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
+ <20180524173926.GC14924@minitux>
+ <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
+ <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
+ <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180529100421.31022-8-ulf.hansson@linaro.org>
+In-Reply-To: <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@linaro.org>, Sricharan R <sricharan@codeaurora.org>
+Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On 29-05-18, 12:04, Ulf Hansson wrote:
-> To extend genpd to deal with allowing multiple PM domains per device, some
-> of the code in genpd_dev_pm_attach() can be re-used. Let's prepare for this
-> by moving some of the code into a sub-function.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/domain.c | 60 ++++++++++++++++++++-----------------
->  1 file changed, 33 insertions(+), 27 deletions(-)
+Quoting Sricharan R (2018-05-30 21:57:20)
+> Hi Stephen,
+> =
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> On 5/30/2018 9:25 PM, Stephen Boyd wrote:
+> > Quoting Sricharan R (2018-05-24 22:40:11)
+> >> Hi Bjorn,
+> >>
+> >> On 5/24/2018 11:09 PM, Bjorn Andersson wrote:
+> >>> On Tue 06 Mar 06:38 PST 2018, Sricharan R wrote:
+> >>>
+> >>>> From: Stephen Boyd <sboyd@codeaurora.org>
+> >>>>
+> >>>> Krait CPUs have a handful of L2 cache controller registers that
+> >>>> live behind a cp15 based indirection register. First you program
+> >>>> the indirection register (l2cpselr) to point the L2 'window'
+> >>>> register (l2cpdr) at what you want to read/write.  Then you
+> >>>> read/write the 'window' register to do what you want. The
+> >>>> l2cpselr register is not banked per-cpu so we must lock around
+> >>>> accesses to it to prevent other CPUs from re-pointing l2cpdr
+> >>>> underneath us.
+> >>>>
+> >>>> Cc: Mark Rutland <mark.rutland@arm.com>
+> >>>> Cc: Russell King <linux@arm.linux.org.uk>
+> >>>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+> >>>
+> >>> This should have your signed-off-by here as well.
+> >>>
+> >>
+> >>  ok.
+> >>
+> >>> Apart from that:
+> >>>
+> >>> Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+> >>>
+> >>
+> > =
 
--- 
-viresh
+> > Will these patches come around again? I'll do a quick sweep on them
+> > today but I expect them to be resent.
+> =
+
+> Sure, i will have to resend them again, fixing couple of Bjorn's
+> minor comments. Will address your comments that you would give
+> as well along with that.
+> =
+
+
+Ok. One general comment is that it would be nice if the bindings for all
+the nodes that are introduced included 'clocks' properties and also
+maybe 'clock-names' properties for the clocks that are consumed by each
+node. Right now, we hide those details from DT and rely on the string
+names to hook the clk tree up for us. That sort of prevents us from
+moving away from string easily, so I would just throw the clocks into
+the binding right now and always have them there just in case we want to
+use the binding to figure out the hierarchy in the future.
+
+I've been thinking we need to do something similar for the gcc and other
+nodes for any clks they use, but I haven't gotten around to it.
+
+Otherwise the patches look mostly ok to me. Not sure I'll have any other
+comments.
