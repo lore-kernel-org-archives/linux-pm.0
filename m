@@ -1,109 +1,65 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 3/5] PM / Domains: Split genpd_dev_pm_attach()
-Date: Thu, 31 May 2018 12:59:57 +0200
-Message-ID: <20180531105959.14843-4-ulf.hansson@linaro.org>
+Subject: [PATCH v3 1/5] PM / Domains: dt: Allow power-domain property to be a list of specifiers
+Date: Thu, 31 May 2018 12:59:55 +0200
+Message-ID: <20180531105959.14843-2-ulf.hansson@linaro.org>
 References: <20180531105959.14843-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180531105959.14843-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-To extend genpd to deal with allowing multiple PM domains per device, some
-of the code in genpd_dev_pm_attach() can be re-used. Let's prepare for this
-by moving some of the code into a sub-function.
+To be able to describe topologies where devices are partitioned across
+multiple power domains, let's extend the power-domain property to allow
+being a list of PM domain specifiers.
 
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org
+Suggested-by: Jon Hunter <jonathanh@nvidia.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Jon Hunter <jonathanh@nvidia.com>
-Tested-by: Jon Hunter <jonathanh@nvidia.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 60 ++++++++++++++++++++-----------------
- 1 file changed, 33 insertions(+), 27 deletions(-)
+ .../bindings/power/power_domain.txt           | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 908c44779ae7..b1fcbf917974 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2221,38 +2221,15 @@ static void genpd_dev_pm_sync(struct device *dev)
- 	genpd_queue_power_off_work(pd);
- }
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 4733f76cbe48..9b387f861aed 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -111,8 +111,8 @@ Example 3:
+ ==PM domain consumers==
  
--/**
-- * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
-- * @dev: Device to attach.
-- *
-- * Parse device's OF node to find a PM domain specifier. If such is found,
-- * attaches the device to retrieved pm_domain ops.
-- *
-- * Returns 1 on successfully attached PM domain, 0 when the device don't need a
-- * PM domain or when multiple power-domains exists for it, else a negative error
-- * code. Note that if a power-domain exists for the device, but it cannot be
-- * found or turned on, then return -EPROBE_DEFER to ensure that the device is
-- * not probed and to re-try again later.
-- */
--int genpd_dev_pm_attach(struct device *dev)
-+static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
-+				 unsigned int index)
- {
- 	struct of_phandle_args pd_args;
- 	struct generic_pm_domain *pd;
- 	int ret;
+ Required properties:
+- - power-domains : A phandle and PM domain specifier as defined by bindings of
+-                   the power controller specified by phandle.
++ - power-domains : A list of PM domain specifiers, as defined by bindings of
++		the power controller that is the PM domain provider.
  
--	if (!dev->of_node)
--		return 0;
--
--	/*
--	 * Devices with multiple PM domains must be attached separately, as we
--	 * can only attach one PM domain per device.
--	 */
--	if (of_count_phandle_with_args(dev->of_node, "power-domains",
--				       "#power-domain-cells") != 1)
--		return 0;
--
--	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
--					"#power-domain-cells", 0, &pd_args);
-+	ret = of_parse_phandle_with_args(np, "power-domains",
-+				"#power-domain-cells", index, &pd_args);
- 	if (ret < 0)
- 		return ret;
+ Example:
  
-@@ -2290,6 +2267,35 @@ int genpd_dev_pm_attach(struct device *dev)
+@@ -122,9 +122,18 @@ Example:
+ 		power-domains = <&power 0>;
+ 	};
  
- 	return ret ? -EPROBE_DEFER : 1;
- }
+-The node above defines a typical PM domain consumer device, which is located
+-inside a PM domain with index 0 of a power controller represented by a node
+-with the label "power".
++	leaky-device@12351000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12351000 0x1000>;
++		power-domains = <&power 0>, <&power 1> ;
++	};
 +
-+/**
-+ * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
-+ * @dev: Device to attach.
-+ *
-+ * Parse device's OF node to find a PM domain specifier. If such is found,
-+ * attaches the device to retrieved pm_domain ops.
-+ *
-+ * Returns 1 on successfully attached PM domain, 0 when the device don't need a
-+ * PM domain or when multiple power-domains exists for it, else a negative error
-+ * code. Note that if a power-domain exists for the device, but it cannot be
-+ * found or turned on, then return -EPROBE_DEFER to ensure that the device is
-+ * not probed and to re-try again later.
-+ */
-+int genpd_dev_pm_attach(struct device *dev)
-+{
-+	if (!dev->of_node)
-+		return 0;
-+
-+	/*
-+	 * Devices with multiple PM domains must be attached separately, as we
-+	 * can only attach one PM domain per device.
-+	 */
-+	if (of_count_phandle_with_args(dev->of_node, "power-domains",
-+				       "#power-domain-cells") != 1)
-+		return 0;
-+
-+	return __genpd_dev_pm_attach(dev, dev->of_node, 0);
-+}
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
++The first example above defines a typical PM domain consumer device, which is
++located inside a PM domain with index 0 of a power controller represented by a
++node with the label "power".
++In the second example the consumer device are partitioned across two PM domains,
++the first with index 0 and the second with index 1, of a power controller that
++is represented by a node with the label "power.
  
- static const struct of_device_id idle_state_match[] = {
+ Optional properties:
+ - required-opps: This contains phandle to an OPP node in another device's OPP
 -- 
 2.17.0
