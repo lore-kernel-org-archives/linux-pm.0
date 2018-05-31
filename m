@@ -1,37 +1,71 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 5/9] PM / Domains: dt: Allow power-domain property to
- be a list of specifiers
-Date: Wed, 30 May 2018 22:53:42 -0500
-Message-ID: <20180531035342.GA14184@rob-hp-laptop>
-References: <20180529100421.31022-1-ulf.hansson@linaro.org>
- <20180529100421.31022-6-ulf.hansson@linaro.org>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
+Date: Thu, 31 May 2018 10:27:20 +0530
+Message-ID: <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
+References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
+ <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
+ <20180524173926.GC14924@minitux>
+ <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
+ <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180529100421.31022-6-ulf.hansson@linaro.org>
+In-Reply-To: <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org
+To: Stephen Boyd <sboyd@kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 29, 2018 at 12:04:17PM +0200, Ulf Hansson wrote:
-> To be able to describe topologies where devices are partitioned across
-> multiple power domains, let's extend the power-domain property to allow
-> being a list of PM domain specifiers.
-> 
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> Suggested-by: Jon Hunter <jonathanh@nvidia.com>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Changes in v2:
-> 	- Fixed comments from Geert. Re-worded to "PM domain specifiers" and
-> 	clarified DT example.
-> 
-> ---
->  .../bindings/power/power_domain.txt           | 19 ++++++++++++++-----
->  1 file changed, 14 insertions(+), 5 deletions(-)
+Hi Stephen,
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+On 5/30/2018 9:25 PM, Stephen Boyd wrote:
+> Quoting Sricharan R (2018-05-24 22:40:11)
+>> Hi Bjorn,
+>>
+>> On 5/24/2018 11:09 PM, Bjorn Andersson wrote:
+>>> On Tue 06 Mar 06:38 PST 2018, Sricharan R wrote:
+>>>
+>>>> From: Stephen Boyd <sboyd@codeaurora.org>
+>>>>
+>>>> Krait CPUs have a handful of L2 cache controller registers that
+>>>> live behind a cp15 based indirection register. First you program
+>>>> the indirection register (l2cpselr) to point the L2 'window'
+>>>> register (l2cpdr) at what you want to read/write.  Then you
+>>>> read/write the 'window' register to do what you want. The
+>>>> l2cpselr register is not banked per-cpu so we must lock around
+>>>> accesses to it to prevent other CPUs from re-pointing l2cpdr
+>>>> underneath us.
+>>>>
+>>>> Cc: Mark Rutland <mark.rutland@arm.com>
+>>>> Cc: Russell King <linux@arm.linux.org.uk>
+>>>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+>>>
+>>> This should have your signed-off-by here as well.
+>>>
+>>
+>>  ok.
+>>
+>>> Apart from that:
+>>>
+>>> Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+>>>
+>>
+> 
+> Will these patches come around again? I'll do a quick sweep on them
+> today but I expect them to be resent.
+
+Sure, i will have to resend them again, fixing couple of Bjorn's
+minor comments. Will address your comments that you would give
+as well along with that.
+
+Regards,
+ Sricharan
+
+-- 
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+
+---
+This email has been checked for viruses by Avast antivirus software.
+https://www.avast.com/antivirus
