@@ -1,69 +1,37 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH] cpupower : Fix header name to read idle state name
-Date: Wed, 30 May 2018 21:39:36 -0600
-Message-ID: <12c6dd21-32ef-2ea7-ab61-ff57f36803a1@kernel.org>
-References: <20180528110303.12860-1-huntbag@linux.vnet.ibm.com>
-Reply-To: shuah@kernel.org
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 5/9] PM / Domains: dt: Allow power-domain property to
+ be a list of specifiers
+Date: Wed, 30 May 2018 22:53:42 -0500
+Message-ID: <20180531035342.GA14184@rob-hp-laptop>
+References: <20180529100421.31022-1-ulf.hansson@linaro.org>
+ <20180529100421.31022-6-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180528110303.12860-1-huntbag@linux.vnet.ibm.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180529100421.31022-6-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>, trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: s1seetee@linux.vnet.ibm.com, Shuah Khan <shuah@kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/28/2018 05:03 AM, Abhishek Goel wrote:
-> The names of the idle states in the output of cpupower monitor command are
-> truncated to 4 characters. On POWER9, this creates ambiguity as the states
-> are named "stop0", "stop1", etc.
+On Tue, May 29, 2018 at 12:04:17PM +0200, Ulf Hansson wrote:
+> To be able to describe topologies where devices are partitioned across
+> multiple power domains, let's extend the power-domain property to allow
+> being a list of PM domain specifiers.
 > 
-> root:~# cpupower monitor
->               |Idle_Stats
-> PKG |CORE|CPU | snoo | stop | stop | stop | stop | stop | stop
->    0|   0|   0|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  1.90
->    0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
->    0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
->    0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
-> 
-> This patch modifies the output to print the state name that results in a
-> legible output. The names will be printed with atmost 1 padding in left.
-> 
-> root:~# cpupower monitor
->               | Idle_Stats
->  PKG|CORE| CPU|snooze|stop0L| stop0|stop1L| stop1|stop2L| stop2
->    0|   0|   0|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.72
->    0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
->    0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
->    0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
-> 
-> This patch does not affect the output for intel.
-> Output for intel before applying the patch:
-> 
-> root:~# cpupower monitor
->     |Idle_Stats
-> CPU | POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S | C9-S | C10-
->    0|  0.00|  0.14|  0.39|  0.35|  7.41|  0.00| 17.67|  1.01| 70.03
->    2|  0.00|  0.19|  0.47|  0.10|  6.50|  0.00| 29.66|  2.17| 58.07
->    1|  0.00|  0.11|  0.50|  1.50|  9.11|  0.18| 18.19|  0.40| 66.63
->    3|  0.00|  0.67|  0.42|  0.03|  5.84|  0.00| 12.58|  0.77| 77.14
-> 
-> Output for intel after applying the patch:
-> 
-> root:~# cpupower monitor
->     | Idle_Stats
->  CPU| POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S | C9-S | C10-
->    0|  0.03|  0.33|  1.01|  0.27|  3.03|  0.00| 19.18|  0.00| 71.24
->    2|  0.00|  1.58|  0.58|  0.42|  8.55|  0.09| 21.11|  0.99| 63.32
->    1|  0.00|  1.26|  0.88|  0.43|  9.00|  0.02|  7.78|  4.65| 71.91
->    3|  0.00|  0.30|  0.42|  0.06| 13.62|  0.21| 30.29|  0.00| 52.45
-> 
-> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Suggested-by: Jon Hunter <jonathanh@nvidia.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
 > 
+> Changes in v2:
+> 	- Fixed comments from Geert. Re-worded to "PM domain specifiers" and
+> 	clarified DT example.
+> 
+> ---
+>  .../bindings/power/power_domain.txt           | 19 ++++++++++++++-----
+>  1 file changed, 14 insertions(+), 5 deletions(-)
 
-Thanks - I have this queued for 4.18-rc1
-
--- Shuah
+Reviewed-by: Rob Herring <robh@kernel.org>
