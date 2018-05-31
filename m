@@ -1,90 +1,37 @@
-From: Akhil P Oommen <akhilpo@codeaurora.org>
-Subject: [RFC] PM / devfreq: Add support for alerts
-Date: Thu, 31 May 2018 11:06:59 +0530
-Message-ID: <1527745019-25155-1-git-send-email-akhilpo@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 1/9] PM / Domains: Drop extern declarations of
+ functions in pm_domain.h
+Date: Thu, 31 May 2018 11:42:26 +0530
+Message-ID: <20180531061226.r3zrwypmiud2ksef@vireshk-i7>
+References: <20180529100421.31022-1-ulf.hansson@linaro.org>
+ <20180529100421.31022-2-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180529100421.31022-2-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: jcrouse@codeaurora.org, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, linux-arm-msm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently, DEVFREQ reevaluates the device state periodically and/or
-based on the OPP list changes. Private API has to be exposed to allow
-the device driver to alert/notify the governor to reevaluate when a new
-set of data is available. This makes the governor more coupled to a
-particular device driver. We can improve here by exposing a DEVFREQ API
-to allow the device drivers to send generic alerts to the governor.
+On 29-05-18, 12:04, Ulf Hansson wrote:
+> Using "extern" to declare a function in a public header file is somewhat
+> pointless, but also doesn't hurt. However, to make all the function
+> declarations in pm_domain.h to be consistent, let's drop the use of
+> "extern".
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  include/linux/pm_domain.h | 51 ++++++++++++++++++---------------------
+>  1 file changed, 23 insertions(+), 28 deletions(-)
 
-Signed-off-by: Akhil P Oommen <akhilpo@codeaurora.org>
----
- drivers/devfreq/devfreq.c  | 21 +++++++++++++++++++++
- drivers/devfreq/governor.h |  1 +
- include/linux/devfreq.h    |  5 +++++
- 3 files changed, 27 insertions(+)
+Finally.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index fe2af6a..24a8046 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -1532,3 +1532,24 @@ void devm_devfreq_unregister_notifier(struct device *dev,
- 			       devm_devfreq_dev_match, devfreq));
- }
- EXPORT_SYMBOL(devm_devfreq_unregister_notifier);
-+
-+/**
-+ * devfreq_alert_governor() - Alert governor about an event
-+ * @devfreq:	The devfreq object.
-+ * @type:	Optional alert type.
-+ *
-+ * This function lets the device alert the governor about an event.
-+ * A governor may not implement or choose to completely ignore this alert.
-+ */
-+void devfreq_alert_governor(struct devfreq *devfreq, unsigned int type)
-+{
-+	/* Don't let someone change the governor until we are done here. */
-+	mutex_lock(&devfreq_list_lock);
-+
-+	if (devfreq)
-+		devfreq->governor->event_handler(devfreq,
-+				DEVFREQ_GOV_ALERT, &type);
-+
-+	mutex_unlock(&devfreq_list_lock);
-+}
-+EXPORT_SYMBOL(devfreq_alert_governor);
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index cfc50a6..e5da3442 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -24,6 +24,7 @@
- #define DEVFREQ_GOV_INTERVAL			0x3
- #define DEVFREQ_GOV_SUSPEND			0x4
- #define DEVFREQ_GOV_RESUME			0x5
-+#define DEVFREQ_GOV_ALERT			0x6
- 
- /**
-  * struct devfreq_governor - Devfreq policy governor
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 3aae5b3..740c228 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -193,6 +193,7 @@ extern struct devfreq *devm_devfreq_add_device(struct device *dev,
- 				  void *data);
- extern void devm_devfreq_remove_device(struct device *dev,
- 				  struct devfreq *devfreq);
-+extern void devfreq_alert_governor(struct devfreq *devfreq, unsigned int type);
- 
- /* Supposed to be called by PM callbacks */
- extern int devfreq_suspend_device(struct devfreq *devfreq);
-@@ -306,6 +307,10 @@ static inline void devm_devfreq_remove_device(struct device *dev,
- {
- }
- 
-+static void devfreq_alert_governor(struct devfreq *devfreq, unsigned int type)
-+{
-+}
-+
- static inline int devfreq_suspend_device(struct devfreq *devfreq)
- {
- 	return 0;
+I wanted to do that earlier as checkpatch complained non stop about
+such declarations :)
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
 -- 
-1.9.1
+viresh
