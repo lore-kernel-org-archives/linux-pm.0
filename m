@@ -1,149 +1,51 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
-Date: Thu, 31 May 2018 17:45:09 +0530
-Message-ID: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH v3 4/5] PM / Domains: Add support for multi PM domains per
+ device to genpd
+Date: Thu, 31 May 2018 13:47:48 +0100
+Message-ID: <191ed832-3b15-f47d-c171-4039da665b36@nvidia.com>
+References: <20180531105959.14843-1-ulf.hansson@linaro.org>
+ <20180531105959.14843-5-ulf.hansson@linaro.org>
+ <5fc1d3ee51c8dbc264fb21edf33a879c7db4056b.camel@lynxeye.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5fc1d3ee51c8dbc264fb21edf33a879c7db4056b.camel@lynxeye.de>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, Stewart Smith <stewart@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Lucas Stach <dev@lynxeye.de>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-The commit 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of
-snooze to deeper idle state") introduced a timeout for the snooze idle
-state so that it could be eventually be promoted to a deeper idle
-state. The snooze timeout value is static and set to the target
-residency of the next idle state, which would train the cpuidle
-governor to pick the next idle state eventually.
+On 31/05/18 12:40, Lucas Stach wrote:
+> Hi Ulf,
+> 
+> Am Donnerstag, den 31.05.2018, 12:59 +0200 schrieb Ulf Hansson:
+>> To support devices being partitioned across multiple PM domains, let's
+>> begin with extending genpd to cope with these kind of configurations.
+>>
+>> Therefore, add a new exported function genpd_dev_pm_attach_by_id(), which
+>> is similar to the existing genpd_dev_pm_attach(), but with the difference
+>> that it allows its callers to provide an index to the PM domain that it
+>> wants to attach.
+>>
+>> Note that, genpd_dev_pm_attach_by_id() shall only be called by the driver
+>> core / PM core, similar to how the existing dev_pm_domain_attach() makes
+>> use of genpd_dev_pm_attach(). However, this is implemented by following
+>> changes on top.
+> 
+> by_id() APIs are not really intuitive to use for driver writers. Other
+> subsystems have solved this by providing a "-names" property to give
+> the phandles a bit more meaning and then providing a by_name API. I
+> would really appreciate if PM domains could move in the same direction.
 
-The unfortunate side-effect of this is that if the next idle state(s)
-is disabled, the CPU will forever remain in snooze, despite the fact
-that the system is completely idle, and other deeper idle states are
-available.
+As discussed here [0], there are plans to add that.
 
-This patch fixes the issue by dynamically setting the snooze timeout
-to the target residency of the next enabled state on the device.
+Cheers
+Jon
 
-Before Patch
-==================
-POWER8 : Only nap disabled.
- $cpupower monitor sleep 30
-sleep took 30.01297 seconds and exited with status 0
-              |Idle_Stats
-PKG |CORE|CPU | snoo | Nap  | Fast
-   0|   8|   0| 96.41|  0.00|  0.00
-   0|   8|   1| 96.43|  0.00|  0.00
-   0|   8|   2| 96.47|  0.00|  0.00
-   0|   8|   3| 96.35|  0.00|  0.00
-   0|   8|   4| 96.37|  0.00|  0.00
-   0|   8|   5| 96.37|  0.00|  0.00
-   0|   8|   6| 96.47|  0.00|  0.00
-   0|   8|   7| 96.47|  0.00|  0.00
+[0] https://patchwork.ozlabs.org/patch/921938/
 
-POWER9: Shallow states (stop0lite, stop1lite, stop2lite, stop0, stop1,
-stop2) disabled:
-$cpupower monitor sleep 30
-sleep took 30.05033 seconds and exited with status 0
-              |Idle_Stats
-PKG |CORE|CPU | snoo | stop | stop | stop | stop | stop | stop | stop | stop
-   0|  16|   0| 89.79|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
-   0|  16|   1| 90.12|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
-   0|  16|   2| 90.21|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
-   0|  16|   3| 90.29|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
-
-After Patch
-======================
-POWER8 : Only nap disabled.
-$ cpupower monitor sleep 30
-sleep took 30.01200 seconds and exited with status 0
-              |Idle_Stats
-PKG |CORE|CPU | snoo | Nap  | Fast
-   0|   8|   0| 16.58|  0.00| 77.21
-   0|   8|   1| 18.42|  0.00| 75.38
-   0|   8|   2|  4.70|  0.00| 94.09
-   0|   8|   3| 17.06|  0.00| 81.73
-   0|   8|   4|  3.06|  0.00| 95.73
-   0|   8|   5|  7.00|  0.00| 96.80
-   0|   8|   6|  1.00|  0.00| 98.79
-   0|   8|   7|  5.62|  0.00| 94.17
-
-POWER9: Shallow states (stop0lite, stop1lite, stop2lite, stop0, stop1,
-stop2) disabled:
-
-$cpupower monitor sleep 30
-sleep took 30.02110 seconds and exited with status 0
-              |Idle_Stats
-PKG |CORE|CPU | snoo | stop | stop | stop | stop | stop | stop | stop | stop
-   0|   0|   0|  0.69|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  9.39| 89.70
-   0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.05| 93.21
-   0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00| 89.93
-   0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00| 93.26
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 32 ++++++++++++++++++++++++++------
- 1 file changed, 26 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 1a8234e..d29e4f0 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -43,9 +43,31 @@ struct stop_psscr_table {
- 
- static struct stop_psscr_table stop_psscr_table[CPUIDLE_STATE_MAX] __read_mostly;
- 
--static u64 snooze_timeout __read_mostly;
-+static u64 default_snooze_timeout __read_mostly;
- static bool snooze_timeout_en __read_mostly;
- 
-+static u64 get_snooze_timeout(struct cpuidle_device *dev,
-+			      struct cpuidle_driver *drv,
-+			      int index)
-+{
-+	int i;
-+
-+	if (unlikely(!snooze_timeout_en))
-+		return default_snooze_timeout;
-+
-+	for (i = index + 1; i < drv->state_count; i++) {
-+		struct cpuidle_state *s = &drv->states[i];
-+		struct cpuidle_state_usage *su = &dev->states_usage[i];
-+
-+		if (s->disabled || su->disable)
-+			continue;
-+
-+		return s->target_residency * tb_ticks_per_usec;
-+	}
-+
-+	return default_snooze_timeout;
-+}
-+
- static int snooze_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
-@@ -56,7 +78,7 @@ static int snooze_loop(struct cpuidle_device *dev,
- 
- 	local_irq_enable();
- 
--	snooze_exit_time = get_tb() + snooze_timeout;
-+	snooze_exit_time = get_tb() + get_snooze_timeout(dev, drv, index);
- 	ppc64_runlatch_off();
- 	HMT_very_low();
- 	while (!need_resched()) {
-@@ -465,11 +487,9 @@ static int powernv_idle_probe(void)
- 		cpuidle_state_table = powernv_states;
- 		/* Device tree can indicate more idle states */
- 		max_idle_state = powernv_add_idle_states();
--		if (max_idle_state > 1) {
-+		default_snooze_timeout = TICK_USEC * tb_ticks_per_usec;
-+		if (max_idle_state > 1)
- 			snooze_timeout_en = true;
--			snooze_timeout = powernv_states[1].target_residency *
--					 tb_ticks_per_usec;
--		}
-  	} else
-  		return -ENODEV;
- 
 -- 
-1.9.4
+nvpublic
