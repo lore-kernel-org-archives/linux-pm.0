@@ -1,60 +1,47 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCH 1/3] mfd: cros: add charger port count command definition
-Date: Fri, 1 Jun 2018 18:40:18 +0200
-Message-ID: <CAFqH_525z=b2etKO7SGKjJNnsqLrzPp+QL35YPa+EZoiiyN0ug@mail.gmail.com>
-References: <20180530031704.18597-1-fparent@baylibre.com> <20180530031704.18597-2-fparent@baylibre.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
+Date: Fri, 01 Jun 2018 10:12:39 -0700
+Message-ID: <152787315975.144038.15271372565967690313@swboyd.mtv.corp.google.com>
+References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
+ <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
+ <20180524173926.GC14924@minitux>
+ <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
+ <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
+ <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
+ <152775249799.144038.9269415086304305030@swboyd.mtv.corp.google.com>
+ <9ca51832-6095-c8a5-1347-f57abf99e8f9@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180530031704.18597-2-fparent@baylibre.com>
+In-Reply-To: <9ca51832-6095-c8a5-1347-f57abf99e8f9@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Fabien Parent <fparent@baylibre.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, gpain@baylibre.com
+To: Bjorn Andersson <bjorn.andersson@linaro.org>, Sricharan R <sricharan@codeaurora.org>
+Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-2018-05-30 5:17 GMT+02:00 Fabien Parent <fparent@baylibre.com>:
-> A new more command has been added to the ChromeOS embedded controller
-> that allows to get the number of charger port count. Unlike
-> EC_CMD_USB_PD_PORTS, this new command also includes the dedicated
-> port if present.
->
-> This command will be used to expose the dedicated charger port
-> in the ChromeOS charger driver.
->
-> Signed-off-by: Fabien Parent <fparent@baylibre.com>
-> ---
->  include/linux/mfd/cros_ec_commands.h | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/include/linux/mfd/cros_ec_commands.h b/include/linux/mfd/cros_ec_commands.h
-> index 0d926492ac3a..e3187f8bdb7e 100644
-> --- a/include/linux/mfd/cros_ec_commands.h
-> +++ b/include/linux/mfd/cros_ec_commands.h
-> @@ -3005,6 +3005,16 @@ struct ec_params_usb_pd_info_request {
->         uint8_t port;
->  } __packed;
->
-> +/*
-> + * This command will return the number of USB PD charge port + the number
-> + * of dedicated port present.
-> + * EC_CMD_USB_PD_PORTS does NOT include the dedicated ports
-> + */
-> +#define EC_CMD_CHARGE_PORT_COUNT 0x0105
-> +struct ec_response_charge_port_count {
-> +       uint8_t port_count;
-> +} __packed;
-> +
->  /* Read USB-PD Device discovery info */
->  #define EC_CMD_USB_PD_DISCOVERY 0x0113
->  struct ec_params_usb_pd_discovery_entry {
-> --
-> 2.17.0
->
+Quoting Sricharan R (2018-06-01 06:20:37)
+> Hi Stephen,
+> =
 
-The patch looks good to me, ideally, will be good if you can add the
-kernel-doc documentation for the struct, in any case
+> On 5/31/2018 1:11 PM, Stephen Boyd wrote:
+> > =
 
-Reviewed-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> > Ok. One general comment is that it would be nice if the bindings for all
+> > the nodes that are introduced included 'clocks' properties and also
+> > maybe 'clock-names' properties for the clocks that are consumed by each
+> > node. Right now, we hide those details from DT and rely on the string
+> > names to hook the clk tree up for us. That sort of prevents us from
+> > moving away from string easily, so I would just throw the clocks into
+> > the binding right now and always have them there just in case we want to
+> > use the binding to figure out the hierarchy in the future.
+> > =
 
-Thanks,
-  Enric
+> =
+
+>  ok, understand that mostly. So will try to revamp those patches with
+>  the 'clocks' property in the binding added, reading them in the driver
+>  from DT.
+
+Yeah. You don't even have to actually use the clocks property right now
+from the drivers. Just add the properties in the binding.
