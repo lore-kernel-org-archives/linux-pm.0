@@ -1,47 +1,43 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
-Date: Fri, 01 Jun 2018 10:12:39 -0700
-Message-ID: <152787315975.144038.15271372565967690313@swboyd.mtv.corp.google.com>
-References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
- <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
- <20180524173926.GC14924@minitux>
- <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
- <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
- <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
- <152775249799.144038.9269415086304305030@swboyd.mtv.corp.google.com>
- <9ca51832-6095-c8a5-1347-f57abf99e8f9@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+From: Brian Norris <briannorris@chromium.org>
+Subject: [PATCH v2 2/2] dt-bindings: power: sbs-battery: re-document "ti,bq20z75"
+Date: Fri,  1 Jun 2018 10:24:00 -0700
+Message-ID: <20180601172400.50737-2-briannorris@chromium.org>
+References: <20180601172400.50737-1-briannorris@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9ca51832-6095-c8a5-1347-f57abf99e8f9@codeaurora.org>
+In-Reply-To: <20180601172400.50737-1-briannorris@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>, Sricharan R <sricharan@codeaurora.org>
-Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Sricharan R (2018-06-01 06:20:37)
-> Hi Stephen,
-> =
+This compatible property was documented before the driver was renamed to
+"SBS" (see commit e57f1b68c406 ("devicetree-bindings: Propagate
+bq20z75->sbs rename to dt bindings")). The driver has continued to
+support this property as an alternative to "sbs,sbs-battery", and
+because we've noticed there are some lingering TI specifics (in the
+manufacturer-specific portion of the SBS spec), we'd like to start using
+this property again to differentiate.
 
-> On 5/31/2018 1:11 PM, Stephen Boyd wrote:
-> > =
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+Acked-by: Rhyland Klein <rklein@nvidia.com>
+---
+v2: add Rhyland's Acked-by
+---
+ .../devicetree/bindings/power/supply/sbs_sbs-battery.txt        | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > Ok. One general comment is that it would be nice if the bindings for all
-> > the nodes that are introduced included 'clocks' properties and also
-> > maybe 'clock-names' properties for the clocks that are consumed by each
-> > node. Right now, we hide those details from DT and rely on the string
-> > names to hook the clk tree up for us. That sort of prevents us from
-> > moving away from string easily, so I would just throw the clocks into
-> > the binding right now and always have them there just in case we want to
-> > use the binding to figure out the hierarchy in the future.
-> > =
-
-> =
-
->  ok, understand that mostly. So will try to revamp those patches with
->  the 'clocks' property in the binding added, reading them in the driver
->  from DT.
-
-Yeah. You don't even have to actually use the clocks property right now
-from the drivers. Just add the properties in the binding.
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+index c40e8926facf..a7a9c3366f82 100644
+--- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+@@ -2,7 +2,7 @@ SBS sbs-battery
+ ~~~~~~~~~~
+ 
+ Required properties :
+- - compatible : "sbs,sbs-battery"
++ - compatible : "sbs,sbs-battery" or "ti,bq20z75"
+ 
+ Optional properties :
+  - sbs,i2c-retry-count : The number of times to retry i2c transactions on i2c
+-- 
+2.17.0.921.gf22659ad46-goog
