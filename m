@@ -1,29 +1,60 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH 1/4] clk: renesas: cpg-mssr: Stop using printk format %pCr
-Date: Fri, 01 Jun 2018 09:37:33 -0700
-Message-ID: <152787105335.144038.419639779875099925@swboyd.mtv.corp.google.com>
-References: <1527845302-12159-1-git-send-email-geert+renesas@glider.be>
- <1527845302-12159-2-git-send-email-geert+renesas@glider.be>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Subject: Re: [PATCH 1/3] mfd: cros: add charger port count command definition
+Date: Fri, 1 Jun 2018 18:40:18 +0200
+Message-ID: <CAFqH_525z=b2etKO7SGKjJNnsqLrzPp+QL35YPa+EZoiiyN0ug@mail.gmail.com>
+References: <20180530031704.18597-1-fparent@baylibre.com> <20180530031704.18597-2-fparent@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527845302-12159-2-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <20180530031704.18597-2-fparent@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jia-Ju Bai <baijiaju1990@gmail.com>, Jonathan Corbet <corbet@lwn.net>, Michael Turquette <mturquette@baylibre.com>, Stefan Wahren <stefan.wahren@i2se.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, linux-renesas-soc@vger.kernel.org, linux-serial@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Fabien Parent <fparent@baylibre.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, gpain@baylibre.com
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Geert Uytterhoeven (2018-06-01 02:28:19)
-> Printk format "%pCr" will be removed soon, as clk_get_rate() must not be
-> called in atomic context.
-> =
-
-> Replace it by open-coding the operation.  This is safe here, as the code
-> runs in task context.
-> =
-
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+2018-05-30 5:17 GMT+02:00 Fabien Parent <fparent@baylibre.com>:
+> A new more command has been added to the ChromeOS embedded controller
+> that allows to get the number of charger port count. Unlike
+> EC_CMD_USB_PD_PORTS, this new command also includes the dedicated
+> port if present.
+>
+> This command will be used to expose the dedicated charger port
+> in the ChromeOS charger driver.
+>
+> Signed-off-by: Fabien Parent <fparent@baylibre.com>
 > ---
+>  include/linux/mfd/cros_ec_commands.h | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>
+> diff --git a/include/linux/mfd/cros_ec_commands.h b/include/linux/mfd/cros_ec_commands.h
+> index 0d926492ac3a..e3187f8bdb7e 100644
+> --- a/include/linux/mfd/cros_ec_commands.h
+> +++ b/include/linux/mfd/cros_ec_commands.h
+> @@ -3005,6 +3005,16 @@ struct ec_params_usb_pd_info_request {
+>         uint8_t port;
+>  } __packed;
+>
+> +/*
+> + * This command will return the number of USB PD charge port + the number
+> + * of dedicated port present.
+> + * EC_CMD_USB_PD_PORTS does NOT include the dedicated ports
+> + */
+> +#define EC_CMD_CHARGE_PORT_COUNT 0x0105
+> +struct ec_response_charge_port_count {
+> +       uint8_t port_count;
+> +} __packed;
+> +
+>  /* Read USB-PD Device discovery info */
+>  #define EC_CMD_USB_PD_DISCOVERY 0x0113
+>  struct ec_params_usb_pd_discovery_entry {
+> --
+> 2.17.0
+>
 
-Acked-by: Stephen Boyd <sboyd@kernel.org>
+The patch looks good to me, ideally, will be good if you can add the
+kernel-doc documentation for the struct, in any case
+
+Reviewed-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+
+Thanks,
+  Enric
