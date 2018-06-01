@@ -1,44 +1,101 @@
-From: Colin King <colin.king@canonical.com>
-Subject: [PATCH] cpufreq: ACPI: make function acpi_cpufreq_fast_switch static
-Date: Fri,  1 Jun 2018 14:05:12 +0100
-Message-ID: <20180601130512.30857-1-colin.king@canonical.com>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
+Date: Fri, 1 Jun 2018 18:50:37 +0530
+Message-ID: <9ca51832-6095-c8a5-1347-f57abf99e8f9@codeaurora.org>
+References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
+ <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
+ <20180524173926.GC14924@minitux>
+ <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
+ <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
+ <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
+ <152775249799.144038.9269415086304305030@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <152775249799.144038.9269415086304305030@swboyd.mtv.corp.google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Stephen Boyd <sboyd@kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+Hi Stephen,
 
-The function acpi_cpufreq_fast_switch is local to the source and does
-not need to be in global scope, so make it static.
+On 5/31/2018 1:11 PM, Stephen Boyd wrote:
+> Quoting Sricharan R (2018-05-30 21:57:20)
+>> Hi Stephen,
+>>
+>> On 5/30/2018 9:25 PM, Stephen Boyd wrote:
+>>> Quoting Sricharan R (2018-05-24 22:40:11)
+>>>> Hi Bjorn,
+>>>>
+>>>> On 5/24/2018 11:09 PM, Bjorn Andersson wrote:
+>>>>> On Tue 06 Mar 06:38 PST 2018, Sricharan R wrote:
+>>>>>
+>>>>>> From: Stephen Boyd <sboyd@codeaurora.org>
+>>>>>>
+>>>>>> Krait CPUs have a handful of L2 cache controller registers that
+>>>>>> live behind a cp15 based indirection register. First you program
+>>>>>> the indirection register (l2cpselr) to point the L2 'window'
+>>>>>> register (l2cpdr) at what you want to read/write.  Then you
+>>>>>> read/write the 'window' register to do what you want. The
+>>>>>> l2cpselr register is not banked per-cpu so we must lock around
+>>>>>> accesses to it to prevent other CPUs from re-pointing l2cpdr
+>>>>>> underneath us.
+>>>>>>
+>>>>>> Cc: Mark Rutland <mark.rutland@arm.com>
+>>>>>> Cc: Russell King <linux@arm.linux.org.uk>
+>>>>>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+>>>>>
+>>>>> This should have your signed-off-by here as well.
+>>>>>
+>>>>
+>>>>  ok.
+>>>>
+>>>>> Apart from that:
+>>>>>
+>>>>> Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+>>>>>
+>>>>
+>>>
+>>> Will these patches come around again? I'll do a quick sweep on them
+>>> today but I expect them to be resent.
+>>
+>> Sure, i will have to resend them again, fixing couple of Bjorn's
+>> minor comments. Will address your comments that you would give
+>> as well along with that.
+>>
+> 
+> Ok. One general comment is that it would be nice if the bindings for all
+> the nodes that are introduced included 'clocks' properties and also
+> maybe 'clock-names' properties for the clocks that are consumed by each
+> node. Right now, we hide those details from DT and rely on the string
+> names to hook the clk tree up for us. That sort of prevents us from
+> moving away from string easily, so I would just throw the clocks into
+> the binding right now and always have them there just in case we want to
+> use the binding to figure out the hierarchy in the future.
+> 
 
-Cleans up sparse warning:
-drivers/cpufreq/acpi-cpufreq.c:468:14: warning: symbol
-'acpi_cpufreq_fast_switch' was not declared. Should it be static?
+ ok, understand that mostly. So will try to revamp those patches with
+ the 'clocks' property in the binding added, reading them in the driver
+ from DT.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> I've been thinking we need to do something similar for the gcc and other
+> nodes for any clks they use, but I haven't gotten around to it.
+> 
+> Otherwise the patches look mostly ok to me. Not sure I'll have any other
+> comments.
+> 
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 9449657d72f0..32ba4bc972e7 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -465,8 +465,8 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 	return result;
- }
- 
--unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
--				      unsigned int target_freq)
-+static unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-+					     unsigned int target_freq)
- {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 	struct acpi_processor_performance *perf;
+ Thanks, will respin.
+
+Regards,
+ Sricharan
+
 -- 
-2.17.0
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+
+---
+This email has been checked for viruses by Avast antivirus software.
+https://www.avast.com/antivirus
