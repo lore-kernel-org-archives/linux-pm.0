@@ -1,220 +1,70 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 1/2] power: supply: sbs-battery: don't assume
- MANUFACTURER_DATA formats
-Date: Thu, 31 May 2018 18:20:27 -0700
-Message-ID: <0b2a6fde-4b5a-bccb-d6bf-18a1feac7632@roeck-us.net>
-References: <20180601003252.42810-1-briannorris@chromium.org>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
+Date: Fri, 1 Jun 2018 10:24:33 +0530
+Message-ID: <20180601045433.GA17425@in.ibm.com>
+References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKTCnz=WhC_vamKPZruEqc04WKpD5ZqZm0zTcCtagRHib6OZPw@mail.gmail.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180601003252.42810-1-briannorris@chromium.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Alexandru Stan <amstan@chromium.org>, Doug Anderson <dianders@chromium.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <CAKTCnz=WhC_vamKPZruEqc04WKpD5ZqZm0zTcCtagRHib6OZPw@mail.gmail.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Brian,
+Hi Balbir,
 
-On 05/31/2018 05:32 PM, Brian Norris wrote:
-> This driver was originally submitted for the TI BQ20Z75 battery IC
-> (commit a7640bfa10c5 ("power_supply: Add driver for TI BQ20Z75 gas gauge
-> IC")) and later renamed to express generic SBS support. While it's
-> mostly true that this driver implemented a standard SBS command set, it
-> takes liberties with the REG_MANUFACTURER_DATA register. This register
-> is specified in the SBS spec, but it doesn't make any mention of what
-> its actual contents are.
-> 
-> We've sort of noticed this optionality previously, with commit
-> 17c6d3979e5b ("sbs-battery: make writes to ManufacturerAccess
-> optional"), where we found that some batteries NAK writes to this
-> register.
-> 
-> What this really means is that so far, we've just been lucky that most
-> batteries have either been compatible with the TI chip, or else at least
-> haven't reported highly-unexpected values.
-> 
-> For instance, one battery I have here seems to report either 0x0000 or
-> 0x0100 to the MANUFACTURER_ACCESS_STATUS command -- while this seems to
-> match either Wake Up (bits[11:8] = 0000b) or Normal Discharge
-> (bits[11:8] = 0001b) status for the TI part [1], they don't seem to
-> actually correspond to real states (for instance, I never see 0101b =
-> Charge, even when charging).
-> 
-> On other batteries, I'm getting apparently random data in return, which
-> means that occasionally, we interpret this as "battery not present" or
-> "battery is not healthy".
-> 
-> All in all, it seems to be a really bad idea to make assumptions about
-> REG_MANUFACTURER_DATA, unless we already know what battery we're using.
-> Therefore, this patch reimplements the "present" and "health" checks to
-> the following on most SBS batteries:
-> 
-> 1. HEALTH: report "unknown" -- I couldn't find a standard SBS command
->     that gives us much useful here
-> 2. PRESENT: just send a REG_STATUS command; if it succeeds, then the
->     battery is present
-> 
-> Also, we stop sending MANUFACTURER_ACCESS_SLEEP to non-TI parts. I have
-> no proof that this is useful and supported.
-> 
-> If someone explicitly provided a 'ti,bq20z75' compatible property, then
-> we retain the existing TI command behaviors.
-> 
-> [1] http://www.ti.com/lit/er/sluu265a/sluu265a.pdf
-> 
+Thanks for reviewing the patch!
 
-Excellent idea. Couple of comments below.
+On Fri, Jun 01, 2018 at 12:51:05AM +1000, Balbir Singh wrote:
+> On Thu, May 31, 2018 at 10:15 PM, Gautham R. Shenoy
 
-Thanks,
-Guenter
-
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> ---
->   drivers/power/supply/sbs-battery.c | 61 +++++++++++++++++++++++++-----
->   1 file changed, 52 insertions(+), 9 deletions(-)
+[..snip..]
+> >
+> > +static u64 get_snooze_timeout(struct cpuidle_device *dev,
+> > +                             struct cpuidle_driver *drv,
+> > +                             int index)
+> > +{
+> > +       int i;
+> > +
+> > +       if (unlikely(!snooze_timeout_en))
+> > +               return default_snooze_timeout;
+> > +
+> > +       for (i = index + 1; i < drv->state_count; i++) {
+> > +               struct cpuidle_state *s = &drv->states[i];
+> > +               struct cpuidle_state_usage *su = &dev->states_usage[i];
+> > +
+> > +               if (s->disabled || su->disable)
+> > +                       continue;
+> > +
+> > +               return s->target_residency * tb_ticks_per_usec;
 > 
-> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-> index 83d7b4115857..e15d0ca4729d 100644
-> --- a/drivers/power/supply/sbs-battery.c
-> +++ b/drivers/power/supply/sbs-battery.c
-> @@ -23,6 +23,7 @@
->   #include <linux/kernel.h>
->   #include <linux/module.h>
->   #include <linux/of.h>
-> +#include <linux/of_device.h>
->   #include <linux/power/sbs-battery.h>
->   #include <linux/power_supply.h>
->   #include <linux/slab.h>
-> @@ -84,8 +85,9 @@ static const struct chip_data {
->   	int min_value;
->   	int max_value;
->   } sbs_data[] = {
-> +	/* Manuf. data isn't directly useful as a POWER_SUPPLY_PROP */
->   	[REG_MANUFACTURER_DATA] =
-> -		SBS_DATA(POWER_SUPPLY_PROP_PRESENT, 0x00, 0, 65535),
-> +		SBS_DATA(-1, 0x00, 0, 65535),
+> Can we ensure this is not prone to overflow?
 
-I don't think this change is necessary. For example, POWER_SUPPLY_PROP_SERIAL_NUMBER
-is also not directly accessed, yet the REG_SERIAL_NUMBER array entry includes
-POWER_SUPPLY_PROP_SERIAL_NUMBER.
+s->target_residency is an "unsigned int" so can take a maximum value
+of UINT_MAX. tb_ticks_per_usec is an "unsigned long" with a value in
+the range of 100-1000. The return value is a u64. The product of
+s->target_residency and tb_ticks_per_usec should be contained in u64.
 
->   	[REG_TEMPERATURE] =
->   		SBS_DATA(POWER_SUPPLY_PROP_TEMP, 0x08, 0, 65535),
->   	[REG_VOLTAGE] =
-> @@ -156,6 +158,9 @@ static enum power_supply_property sbs_properties[] = {
->   	POWER_SUPPLY_PROP_MODEL_NAME
->   };
->   
-> +/* Supports special manufacturer commands from TI BQ20Z75 IC. */
-> +#define SBS_FLAGS_TI_BQ20Z75		BIT(0)
-> +
->   struct sbs_info {
->   	struct i2c_client		*client;
->   	struct power_supply		*power_supply;
-> @@ -168,6 +173,7 @@ struct sbs_info {
->   	u32				poll_retry_count;
->   	struct delayed_work		work;
->   	struct mutex			mode_lock;
-> +	u32				flags;
->   };
->   
->   static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
-> @@ -315,6 +321,31 @@ static int sbs_status_correct(struct i2c_client *client, int *intval)
->   static int sbs_get_battery_presence_and_health(
->   	struct i2c_client *client, enum power_supply_property psp,
->   	union power_supply_propval *val)
-> +{
-> +	int ret;
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_PRESENT:
-> +		/* Dummy command; if it succeeds, battery is present. */
-> +		ret = sbs_read_word_data(client, sbs_data[REG_STATUS].addr);
-> +		if (ret < 0)
-> +			val->intval = 0; /* battery disconnected */
+Is there a potential case of overflow that I am missing ?
 
-I don't know the relevance, but the original code returns the error
-in this situation.
-
-> +		else
-> +			val->intval = 1; /* battery present */
-> +		return 0;
-> +	case POWER_SUPPLY_PROP_HEALTH:
-> +		/* SBS spec doesn't have a general health command. */
-> +		val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
-> +		return 0;
-> +	default:
-> +		dev_err(&client->dev, "unexpected prop %d\n", psp);
-> +		return -EINVAL;
-
-Personally I would prefer if/else here, for the simple reason that the default case
-will never be executed and just wastes a bit of code space.
-
-> +	}
-> +}
-> +
-> +static int sbs_get_ti_battery_presence_and_health(
-> +	struct i2c_client *client, enum power_supply_property psp,
-> +	union power_supply_propval *val)
->   {
->   	s32 ret;
->   
-> @@ -600,7 +631,12 @@ static int sbs_get_property(struct power_supply *psy,
->   	switch (psp) {
->   	case POWER_SUPPLY_PROP_PRESENT:
->   	case POWER_SUPPLY_PROP_HEALTH:
-> -		ret = sbs_get_battery_presence_and_health(client, psp, val);
-> +		if (client->flags & SBS_FLAGS_TI_BQ20Z75)
-> +			ret = sbs_get_ti_battery_presence_and_health(client,
-> +								     psp, val);
-> +		else
-> +			ret = sbs_get_battery_presence_and_health(client, psp,
-> +								  val);
->   		if (psp == POWER_SUPPLY_PROP_PRESENT)
->   			return 0;
->   		break;
-> @@ -806,6 +842,7 @@ static int sbs_probe(struct i2c_client *client,
->   	if (!chip)
->   		return -ENOMEM;
->   
-> +	chip->flags = (u32)(uintptr_t)of_device_get_match_data(&client->dev);
->   	chip->client = client;
->   	chip->enable_detection = false;
->   	psy_cfg.of_node = client->dev.of_node;
-> @@ -915,12 +952,15 @@ static int sbs_suspend(struct device *dev)
->   	if (chip->poll_time > 0)
->   		cancel_delayed_work_sync(&chip->work);
->   
-> -	/*
-> -	 * Write to manufacturer access with sleep command.
-> -	 * Support is manufacturer dependend, so ignore errors.
-> -	 */
-> -	sbs_write_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr,
-> -		MANUFACTURER_ACCESS_SLEEP);
-> +	if (chip->flags & SBS_FLAGS_TI_BQ20Z75) {
-> +		/*
-> +		 * Write to manufacturer access with sleep command.
-> +		 * Support is manufacturer dependent, so ignore errors.
-> +		 */
-> +		sbs_write_word_data(client,
-> +				    sbs_data[REG_MANUFACTURER_DATA].addr,
-> +				    MANUFACTURER_ACCESS_SLEEP);
-> +	}
->   
->   	return 0;
->   }
-> @@ -941,7 +981,10 @@ MODULE_DEVICE_TABLE(i2c, sbs_id);
->   
->   static const struct of_device_id sbs_dt_ids[] = {
->   	{ .compatible = "sbs,sbs-battery" },
-> -	{ .compatible = "ti,bq20z75" },
-> +	{
-> +		.compatible = "ti,bq20z75",
-> +		.data = (void *)SBS_FLAGS_TI_BQ20Z75,
-> +	},
->   	{ }
->   };
->   MODULE_DEVICE_TABLE(of, sbs_dt_ids);
 > 
+> Otherwise looks good
+> 
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+
+--
+Thanks and Regards
+gautham.
