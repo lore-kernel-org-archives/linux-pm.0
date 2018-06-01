@@ -1,58 +1,38 @@
-From: Akhil P Oommen <akhilpo@codeaurora.org>
-Subject: Re: [RFC] PM / devfreq: Add support for alerts
-Date: Fri, 1 Jun 2018 17:13:47 +0530
-Message-ID: <f099a5b1-bd4e-d888-92c1-7366820881e8@codeaurora.org>
-References: <1527745019-25155-1-git-send-email-akhilpo@codeaurora.org>
- <CGME20180531053717epcas5p48e0d962e2108d04529b4582a70cd7d5a@epcms1p3>
- <20180531061720epcms1p31f5451bcf3150a7dddd33e1e415bb730@epcms1p3>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH 0/4] lib/vsprintf: Remove atomic-unsafe support for
+ printk format %pCr
+Date: Fri, 1 Jun 2018 13:47:38 +0200
+Message-ID: <20180601114738.kdoggkha2yosjgbv@pathway.suse.cz>
+References: <1527845302-12159-1-git-send-email-geert+renesas@glider.be>
+ <CA+55aFxHHSRnDbbNGq6SwNAwEt0EhX15n_pNqon3MzGYJgMJmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180531061720epcms1p31f5451bcf3150a7dddd33e1e415bb730@epcms1p3>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CA+55aFxHHSRnDbbNGq6SwNAwEt0EhX15n_pNqon3MzGYJgMJmA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mka@chromium.org" <mka@chromium.org>
-Cc: "jcrouse@codeaurora.org" <jcrouse@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, baijiaju1990@gmail.com, Jonathan Corbet <corbet@lwn.net>, Michael Turquette <mturquette@baylibre.com>, sboyd@kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, linux-clk@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, linux-serial <linux-serial@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kerne>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri 2018-06-01 06:00:47, Linus Torvalds wrote:
+> On Fri, Jun 1, 2018 at 4:29 AM Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+> >
+> > This patch series:
+> >   - Changes all existing users of "%pCr" to print the result of
+> >     clk_get_rate() directly, which is safe as they all do this in task
+> >     context only,
+> >   - Removes support for the "%pCr" printk format.
+> 
+> Looks good to me.
+> 
+> What tree will this go through? The normal printk one? Just checking
+> that this doesn't end up falling through the cracks because nobody
+> knows who would take it...
 
+I will take it via printk.git. There already is bunch of vsprintf
+changes for-4.18.
 
-On 5/31/2018 11:47 AM, MyungJoo Ham wrote:
->> Currently, DEVFREQ reevaluates the device state periodically and/or
->> based on the OPP list changes. Private API has to be exposed to allow
->> the device driver to alert/notify the governor to reevaluate when a new
->> set of data is available. This makes the governor more coupled to a
->> particular device driver. We can improve here by exposing a DEVFREQ API
->> to allow the device drivers to send generic alerts to the governor.
->>
->> Signed-off-by: Akhil P Oommen <akhilpo@codeaurora.org>
->> ---
->>   drivers/devfreq/devfreq.c  | 21 +++++++++++++++++++++
->>   drivers/devfreq/governor.h |  1 +
->>   include/linux/devfreq.h    |  5 +++++
->>   3 files changed, 27 insertions(+)
->>
-> Hello Akhil,
->
-> It appears that this will have the same effect with
-> "[PATCH 08/11] PM / devfreq: Make update_devfreq() public" from Matthias Kaehlcke, doesn't it?
->
->
-> Cheers,
-> MyungJoo
->
-Hi MyngJoo,
-
-The patch you mentioned is a step in the right direction. But this patch 
-allows:
-1. the governor to decide whether to reevaluate or not. I feel it would 
-be a better architecture (better Separation of Concern) if that decision 
-is left to the governor alone.
-2. the devices to share multiple types of alerts. A governor may use 
-these alerts for internal bookkeeping/algorithm and decide to reevaluate 
-policy when it is necessary. Since we are opening up a new devfreq API 
-for devices, isn't it better to go for a generic one?
-
-Regards,
-Akhil.
+Best Regards,
+Petr
