@@ -1,90 +1,44 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC/RFT] [PATCH v3 4/4] cpufreq: intel_pstate: enable boost
- for SKX
-Date: Fri, 01 Jun 2018 07:57:48 -0700
-Message-ID: <1527865068.3871.3.camel@linux.intel.com>
-References: <20180531225143.34270-1-srinivas.pandruvada@linux.intel.com>
-         <20180531225143.34270-5-srinivas.pandruvada@linux.intel.com>
-         <20180601120103.olsxfhj6b5d5tahz@linux-h043>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH 0/4] lib/vsprintf: Remove atomic-unsafe support for
+ printk format %pCr
+Date: Fri, 1 Jun 2018 17:19:05 +0200
+Message-ID: <20180601151905.yilldc6vbachfw4k@pathway.suse.cz>
+References: <1527845302-12159-1-git-send-email-geert+renesas@glider.be>
+ <CA+55aFxHHSRnDbbNGq6SwNAwEt0EhX15n_pNqon3MzGYJgMJmA@mail.gmail.com>
+ <20180601114738.kdoggkha2yosjgbv@pathway.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180601120103.olsxfhj6b5d5tahz@linux-h043>
+Content-Disposition: inline
+In-Reply-To: <20180601114738.kdoggkha2yosjgbv@pathway.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Giovanni Gherdovich <ggherdovich@suse.cz>
-Cc: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, baijiaju1990@gmail.com, Jonathan Corbet <corbet@lwn.net>, Michael Turquette <mturquette@baylibre.com>, sboyd@kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, linux-clk@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, linux-serial <linux-serial@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kerne>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-06-01 at 14:01 +0200, Giovanni Gherdovich wrote:
-> On Thu, May 31, 2018 at 03:51:43PM -0700, Srinivas Pandruvada wrote:
-> > Enable HWP boost on Skylake server platform.
+On Fri 2018-06-01 13:47:38, Petr Mladek wrote:
+> On Fri 2018-06-01 06:00:47, Linus Torvalds wrote:
+> > On Fri, Jun 1, 2018 at 4:29 AM Geert Uytterhoeven
+> > <geert+renesas@glider.be> wrote:
+> > >
+> > > This patch series:
+> > >   - Changes all existing users of "%pCr" to print the result of
+> > >     clk_get_rate() directly, which is safe as they all do this in task
+> > >     context only,
+> > >   - Removes support for the "%pCr" printk format.
 > > 
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
-> > .com>
-> > ---
-> >  drivers/cpufreq/intel_pstate.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
+> > Looks good to me.
 > > 
-> > diff --git a/drivers/cpufreq/intel_pstate.c
-> > b/drivers/cpufreq/intel_pstate.c
-> > index 254e30a6c1e0..75c5a95bc0ac 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -1794,6 +1794,11 @@ static const struct x86_cpu_id
-> > intel_pstate_cpu_ee_disable_ids[] = {
-> >  	{}
-> >  };
-> >  
-> > +static const struct x86_cpu_id intel_pstate_hwp_boost_ids[]
-> > __initconst = {
-> > +	ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
-> > +	{}
-> > +};
-> > +
-> >  static int intel_pstate_init_cpu(unsigned int cpunum)
-> >  {
-> >  	struct cpudata *cpu;
-> > @@ -1824,6 +1829,10 @@ static int intel_pstate_init_cpu(unsigned
-> > int cpunum)
-> >  			intel_pstate_disable_ee(cpunum);
-> >  
-> >  		intel_pstate_hwp_enable(cpu);
-> > +
-> > +		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
-> > +		if (id)
-> > +			hwp_boost = true;
-> >  	}
-> >  
-> >  	intel_pstate_get_cpu_pstates(cpu);
-> > -- 
-> > 2.13.6
-> > 
-> > 
+> > What tree will this go through? The normal printk one? Just checking
+> > that this doesn't end up falling through the cracks because nobody
+> > knows who would take it...
 > 
-> I have a Skylake server, HWP capable, but it doesn't trigger this
-> bit; I had
-> to do "echo 1 >
-> /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost".
-> 
-> Just out of curiosity, do you see reasons for leaving some SKL out of
-> the
-> default setting? Or maybe I'm missing something.
-This is entry level server using SKL desktop CPU model. We will see
-some  improvements, but not as big as Xeon E5s. So we can add based on
-your test results.
+> I will take it via printk.git. There already is bunch of vsprintf
+> changes for-4.18.
 
-Thanks,
-Srinivas
+It is in printk.git, branch for-4.18-vsprintf-pcr-removal now.
 
-> 
-> /proc/cpuinfo says that the model name is "Intel(R) Xeon(R) CPU E3-
-> 1240 v5";
-> the outputs of `cpuid -1` and `cpuid -1 --raw` are in this pastebin:
-> http://paste.opensuse.org/view/raw/34255499
+Also I have added Cc: stable@vger.kernel.org into the commit messages.
 
-
-> 
-> 
-> Giovanni Gherdovich
-> SUSE Labs
+Best Regards,
+Petr
