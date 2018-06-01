@@ -1,70 +1,44 @@
-From: Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: Re: [RFC/RFT] [PATCH v3 4/4] cpufreq: intel_pstate: enable boost for
- SKX
-Date: Fri, 1 Jun 2018 14:01:03 +0200
-Message-ID: <20180601120103.olsxfhj6b5d5tahz@linux-h043>
-References: <20180531225143.34270-1-srinivas.pandruvada@linux.intel.com>
- <20180531225143.34270-5-srinivas.pandruvada@linux.intel.com>
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] cpufreq: ACPI: make function acpi_cpufreq_fast_switch static
+Date: Fri,  1 Jun 2018 14:05:12 +0100
+Message-ID: <20180601130512.30857-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180531225143.34270-5-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 31, 2018 at 03:51:43PM -0700, Srinivas Pandruvada wrote:
-> Enable HWP boost on Skylake server platform.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 254e30a6c1e0..75c5a95bc0ac 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1794,6 +1794,11 @@ static const struct x86_cpu_id intel_pstate_cpu_ee_disable_ids[] = {
->  	{}
->  };
->  
-> +static const struct x86_cpu_id intel_pstate_hwp_boost_ids[] __initconst = {
-> +	ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
-> +	{}
-> +};
-> +
->  static int intel_pstate_init_cpu(unsigned int cpunum)
->  {
->  	struct cpudata *cpu;
-> @@ -1824,6 +1829,10 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
->  			intel_pstate_disable_ee(cpunum);
->  
->  		intel_pstate_hwp_enable(cpu);
-> +
-> +		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
-> +		if (id)
-> +			hwp_boost = true;
->  	}
->  
->  	intel_pstate_get_cpu_pstates(cpu);
-> -- 
-> 2.13.6
-> 
-> 
+From: Colin Ian King <colin.king@canonical.com>
 
-I have a Skylake server, HWP capable, but it doesn't trigger this bit; I had
-to do "echo 1 > /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost".
+The function acpi_cpufreq_fast_switch is local to the source and does
+not need to be in global scope, so make it static.
 
-Just out of curiosity, do you see reasons for leaving some SKL out of the
-default setting? Or maybe I'm missing something.
+Cleans up sparse warning:
+drivers/cpufreq/acpi-cpufreq.c:468:14: warning: symbol
+'acpi_cpufreq_fast_switch' was not declared. Should it be static?
 
-/proc/cpuinfo says that the model name is "Intel(R) Xeon(R) CPU E3-1240 v5";
-the outputs of `cpuid -1` and `cpuid -1 --raw` are in this pastebin:
-http://paste.opensuse.org/view/raw/34255499
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-Giovanni Gherdovich
-SUSE Labs
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 9449657d72f0..32ba4bc972e7 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -465,8 +465,8 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+ 	return result;
+ }
+ 
+-unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+-				      unsigned int target_freq)
++static unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
++					     unsigned int target_freq)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 	struct acpi_processor_performance *perf;
+-- 
+2.17.0
