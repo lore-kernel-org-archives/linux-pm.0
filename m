@@ -1,70 +1,54 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
-Date: Fri, 1 Jun 2018 10:24:33 +0530
-Message-ID: <20180601045433.GA17425@in.ibm.com>
-References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com>
- <CAKTCnz=WhC_vamKPZruEqc04WKpD5ZqZm0zTcCtagRHib6OZPw@mail.gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-Content-Disposition: inline
-In-Reply-To: <CAKTCnz=WhC_vamKPZruEqc04WKpD5ZqZm0zTcCtagRHib6OZPw@mail.gmail.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 0/4] lib/vsprintf: Remove atomic-unsafe support for printk format %pCr
+Date: Fri,  1 Jun 2018 11:28:18 +0200
+Message-ID: <1527845302-12159-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jia-Ju Bai <baijiaju1990@gmail.com>, Jonathan Corbet <corbet@lwn.net>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, Linus Torvalds <torvalds@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>, linux-doc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Balbir,
+	Hi all,
 
-Thanks for reviewing the patch!
+"%pCr" formats the current rate of a clock, and calls clk_get_rate().
+The latter obtains a mutex, hence it must not be called from atomic
+context.  As vsprintf() (and e.g. printk()) must be callable from any
+context, it's better to remove support for this (rarely-used) format.
 
-On Fri, Jun 01, 2018 at 12:51:05AM +1000, Balbir Singh wrote:
-> On Thu, May 31, 2018 at 10:15 PM, Gautham R. Shenoy
+This patch series:
+  - Changes all existing users of "%pCr" to print the result of
+    clk_get_rate() directly, which is safe as they all do this in task
+    context only,
+  - Removes support for the "%pCr" printk format.
 
-[..snip..]
-> >
-> > +static u64 get_snooze_timeout(struct cpuidle_device *dev,
-> > +                             struct cpuidle_driver *drv,
-> > +                             int index)
-> > +{
-> > +       int i;
-> > +
-> > +       if (unlikely(!snooze_timeout_en))
-> > +               return default_snooze_timeout;
-> > +
-> > +       for (i = index + 1; i < drv->state_count; i++) {
-> > +               struct cpuidle_state *s = &drv->states[i];
-> > +               struct cpuidle_state_usage *su = &dev->states_usage[i];
-> > +
-> > +               if (s->disabled || su->disable)
-> > +                       continue;
-> > +
-> > +               return s->target_residency * tb_ticks_per_usec;
-> 
-> Can we ensure this is not prone to overflow?
+Note that any remaining out-of-tree users will start seeing the clock's
+name printed instead of its rate.
 
-s->target_residency is an "unsigned int" so can take a maximum value
-of UINT_MAX. tb_ticks_per_usec is an "unsigned long" with a value in
-the range of 100-1000. The return value is a u64. The product of
-s->target_residency and tb_ticks_per_usec should be contained in u64.
+Thanks for your comments!
 
-Is there a potential case of overflow that I am missing ?
+Geert Uytterhoeven (4):
+  clk: renesas: cpg-mssr: Stop using printk format %pCr
+  thermal: bcm2835: Stop using printk format %pCr
+  serial: sh-sci: Stop using printk format %pCr
+  lib/vsprintf: Remove atomic-unsafe support for %pCr
 
-> 
-> Otherwise looks good
-> 
-> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+ Documentation/core-api/printk-formats.rst  | 3 +--
+ drivers/clk/renesas/renesas-cpg-mssr.c     | 9 +++++----
+ drivers/thermal/broadcom/bcm2835_thermal.c | 4 ++--
+ drivers/tty/serial/sh-sci.c                | 4 ++--
+ lib/vsprintf.c                             | 3 ---
+ 5 files changed, 10 insertions(+), 13 deletions(-)
+
+-- 
+2.7.4
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Thanks and Regards
-gautham.
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
