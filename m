@@ -1,101 +1,156 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v9 01/15] ARM: Add Krait L2 register accessor functions
-Date: Fri, 1 Jun 2018 18:50:37 +0530
-Message-ID: <9ca51832-6095-c8a5-1347-f57abf99e8f9@codeaurora.org>
-References: <1520347148-27852-1-git-send-email-sricharan@codeaurora.org>
- <1520347148-27852-2-git-send-email-sricharan@codeaurora.org>
- <20180524173926.GC14924@minitux>
- <664089d4-b30d-99bb-2021-12128b2895ba@codeaurora.org>
- <152769571081.144038.4314499217001219157@swboyd.mtv.corp.google.com>
- <9f2e1aa8-21c1-10b0-6193-e6bc16993a0d@codeaurora.org>
- <152775249799.144038.9269415086304305030@swboyd.mtv.corp.google.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC/RFT] [PATCH v3 0/4] Intel_pstate: HWP Dynamic performance
+ boost
+Date: Fri, 01 Jun 2018 07:57:37 -0700
+Message-ID: <1527865057.3871.2.camel@linux.intel.com>
+References: <20180531225143.34270-1-srinivas.pandruvada@linux.intel.com>
+         <20180601113209.rp35aukgstkqbxtc@linux-h043>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <152775249799.144038.9269415086304305030@swboyd.mtv.corp.google.com>
-Content-Language: en-US
+In-Reply-To: <20180601113209.rp35aukgstkqbxtc@linux-h043>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk
+To: Giovanni Gherdovich <ggherdovich@suse.cz>
+Cc: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Stephen,
+Hi Giovanni,
 
-On 5/31/2018 1:11 PM, Stephen Boyd wrote:
-> Quoting Sricharan R (2018-05-30 21:57:20)
->> Hi Stephen,
->>
->> On 5/30/2018 9:25 PM, Stephen Boyd wrote:
->>> Quoting Sricharan R (2018-05-24 22:40:11)
->>>> Hi Bjorn,
->>>>
->>>> On 5/24/2018 11:09 PM, Bjorn Andersson wrote:
->>>>> On Tue 06 Mar 06:38 PST 2018, Sricharan R wrote:
->>>>>
->>>>>> From: Stephen Boyd <sboyd@codeaurora.org>
->>>>>>
->>>>>> Krait CPUs have a handful of L2 cache controller registers that
->>>>>> live behind a cp15 based indirection register. First you program
->>>>>> the indirection register (l2cpselr) to point the L2 'window'
->>>>>> register (l2cpdr) at what you want to read/write.  Then you
->>>>>> read/write the 'window' register to do what you want. The
->>>>>> l2cpselr register is not banked per-cpu so we must lock around
->>>>>> accesses to it to prevent other CPUs from re-pointing l2cpdr
->>>>>> underneath us.
->>>>>>
->>>>>> Cc: Mark Rutland <mark.rutland@arm.com>
->>>>>> Cc: Russell King <linux@arm.linux.org.uk>
->>>>>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->>>>>
->>>>> This should have your signed-off-by here as well.
->>>>>
->>>>
->>>>  ok.
->>>>
->>>>> Apart from that:
->>>>>
->>>>> Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
->>>>>
->>>>
->>>
->>> Will these patches come around again? I'll do a quick sweep on them
->>> today but I expect them to be resent.
->>
->> Sure, i will have to resend them again, fixing couple of Bjorn's
->> minor comments. Will address your comments that you would give
->> as well along with that.
->>
+On Fri, 2018-06-01 at 13:32 +0200, Giovanni Gherdovich wrote:
+> On Thu, May 31, 2018 at 03:51:39PM -0700, Srinivas Pandruvada wrote:
+> > v3
+> > - Removed atomic bit operation as suggested.
+> > - Added description of contention with user space.
+> > - Removed hwp cache, boost utililty function patch and merged with
+> > util callback
+> >   patch. This way any value set is used somewhere.
+> > 
+> > Waiting for test results from Mel Gorman, who is the original
+> > reporter.
+> > 
 > 
-> Ok. One general comment is that it would be nice if the bindings for all
-> the nodes that are introduced included 'clocks' properties and also
-> maybe 'clock-names' properties for the clocks that are consumed by each
-> node. Right now, we hide those details from DT and rely on the string
-> names to hook the clk tree up for us. That sort of prevents us from
-> moving away from string easily, so I would just throw the clocks into
-> the binding right now and always have them there just in case we want to
-> use the binding to figure out the hierarchy in the future.
+> Hello Srinivas,
 > 
+> thanks for this series. I'm testing it on behalf of Mel; while I'm
+> waiting for
+> more benchmarks to finish, an initial report I've got from dbench on
+> ext4
+> looks very promising. Good!
+> Later when I have it all I'll post my detailed results.
+Thanks. 
 
- ok, understand that mostly. So will try to revamp those patches with
- the 'clocks' property in the binding added, reading them in the driver
- from DT.
 
-> I've been thinking we need to do something similar for the gcc and other
-> nodes for any clks they use, but I haven't gotten around to it.
+-Srinivas
 > 
-> Otherwise the patches look mostly ok to me. Not sure I'll have any other
-> comments.
 > 
-
- Thanks, will respin.
-
-Regards,
- Sricharan
-
--- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
-
----
-This email has been checked for viruses by Avast antivirus software.
-https://www.avast.com/antivirus
+> Giovanni Gherdovich
+> SUSE Labs
+> 
+> 
+> > v2
+> > This is a much simpler version than the previous one and only
+> > consider IO
+> > boost, using the existing mechanism. There is no change in this
+> > series
+> > beyond intel_pstate driver.
+> > 
+> > Once PeterZ finishes his work on frequency invariant, I will
+> > revisit
+> > thread migration optimization in HWP mode.
+> > 
+> > Other changes:
+> > - Gradual boost instead of single step as suggested by PeterZ.
+> > - Cross CPU synchronization concerns identified by Rafael.
+> > - Split the patch for HWP MSR value caching as suggested by PeterZ.
+> > 
+> > Not changed as suggested:
+> > There is no architecture way to identify platform with Per-core
+> > P-states, so still have to enable feature based on CPU model.
+> > 
+> > -----------
+> > v1
+> > 
+> > This series tries to address some concern in performance
+> > particularly with IO
+> > workloads (Reported by Mel Gorman), when HWP is using intel_pstate
+> > powersave
+> > policy.
+> > 
+> > Background
+> > HWP performance can be controlled by user space using sysfs
+> > interface for
+> > max/min frequency limits and energy performance preference
+> > settings. Based on
+> > workload characteristics these can be adjusted from user space.
+> > These limits
+> > are not changed dynamically by kernel based on workload.
+> > 
+> > By default HWP defaults to energy performance preference value of
+> > 0x80 on
+> > majority of platforms(Scale is 0-255, 0 is max performance and 255
+> > is min).
+> > This value offers best performance/watt and for majority of server
+> > workloads
+> > performance doesn't suffer. Also users always have option to use
+> > performance
+> > policy of intel_pstate, to get best performance. But user tend to
+> > run with
+> > out of box configuration, which is powersave policy on most of the
+> > distros.
+> > 
+> > In some case it is possible to dynamically adjust performance, for
+> > example,
+> > when a CPU is woken up due to IO completion or thread migrate to a
+> > new CPU. In
+> > this case HWP algorithm will take some time to build utilization
+> > and ramp up
+> > P-states. So this may results in lower performance for some IO
+> > workloads and
+> > workloads which tend to migrate. The idea of this patch series is
+> > to
+> > temporarily boost performance dynamically in these cases. This is
+> > only
+> > applicable only when user is using powersave policy, not in
+> > performance policy.
+> > 
+> > Results on a Skylake server:
+> > 
+> > Benchmark                       Improvement %
+> > -----------------------------------------------------------------
+> > -----
+> > dbench                          50.36
+> > thread IO bench (tiobench)      10.35
+> > File IO                         9.81
+> > sqlite                          15.76
+> > X264 -104 cores                 9.75
+> > 
+> > Spec Power                      (Negligible impact 7382 Vs. 7378)
+> > Idle Power                      No change observed
+> > -----------------------------------------------------------------
+> > ------
+> > 
+> > HWP brings in best performace/watt at EPP=0x80. Since we are
+> > boosting
+> > EPP here to 0, the performance/watt drops upto 10%. So there is a
+> > power
+> > penalty of these changes.
+> > 
+> > Also Mel Gorman provided test results on a prior patchset, which
+> > shows
+> > benifits of this series.
+> > 
+> > Srinivas Pandruvada (4):
+> >   cpufreq: intel_pstate: Add HWP boost utility and sched util hooks
+> >   cpufreq: intel_pstate: HWP boost performance on IO wakeup
+> >   cpufreq: intel_pstate: New sysfs entry to control HWP boost
+> >   cpufreq: intel_pstate: enable boost for SKX
+> > 
+> >  drivers/cpufreq/intel_pstate.c | 177
+> > ++++++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 173 insertions(+), 4 deletions(-)
+> > 
+> > -- 
+> > 2.13.6
+> > 
+> > 
