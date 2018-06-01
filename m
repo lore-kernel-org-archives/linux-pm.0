@@ -1,58 +1,52 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/4] lib/vsprintf: Remove atomic-unsafe support for printk
- format %pCr
-Date: Fri, 1 Jun 2018 17:28:06 +0200
-Message-ID: <CAMuHMdX6ACCiEs=EEbQV3=Ah7BZT1RJ1G0kZKeYKi_KzWoKZgQ@mail.gmail.com>
-References: <1527845302-12159-1-git-send-email-geert+renesas@glider.be>
- <CA+55aFxHHSRnDbbNGq6SwNAwEt0EhX15n_pNqon3MzGYJgMJmA@mail.gmail.com>
- <20180601114738.kdoggkha2yosjgbv@pathway.suse.cz> <20180601151905.yilldc6vbachfw4k@pathway.suse.cz>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH 2/2] dt-bindings: power: sbs-battery: re-document
+ "ti,bq20z75"
+Date: Fri, 1 Jun 2018 12:14:04 -0400
+Message-ID: <22411469-af79-604f-c56a-1680359b1629@nvidia.com>
+References: <20180601003252.42810-1-briannorris@chromium.org>
+ <20180601003252.42810-2-briannorris@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20180601151905.yilldc6vbachfw4k@pathway.suse.cz>
-Sender: stable-owner@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Jia-Ju Bai <baijiaju1990@gmail.com>, Jonathan Corbet <corbet@lwn.net>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-serial <linux-serial@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180601003252.42810-2-briannorris@chromium.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Petr,
+On 5/31/2018 8:32 PM, Brian Norris wrote:
+> This compatible property was documented before the driver was renamed to
+> "SBS" (see commit e57f1b68c406 ("devicetree-bindings: Propagate
+> bq20z75->sbs rename to dt bindings")). The driver has continued to
+> support this property as an alternative to "sbs,sbs-battery", and
+> because we've noticed there are some lingering TI specifics (in the
+> manufacturer-specific portion of the SBS spec), we'd like to start using
+> this property again to differentiate.
+> 
+> Cc: Rhyland Klein <rklein@nvidia.com>
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> ---
+>  .../devicetree/bindings/power/supply/sbs_sbs-battery.txt        | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+> index c40e8926facf..a7a9c3366f82 100644
+> --- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+> @@ -2,7 +2,7 @@ SBS sbs-battery
+>  ~~~~~~~~~~
+>  
+>  Required properties :
+> - - compatible : "sbs,sbs-battery"
+> + - compatible : "sbs,sbs-battery" or "ti,bq20z75"
+>  
+>  Optional properties :
+>   - sbs,i2c-retry-count : The number of times to retry i2c transactions on i2c
+> 
 
-On Fri, Jun 1, 2018 at 5:19 PM, Petr Mladek <pmladek@suse.com> wrote:
-> On Fri 2018-06-01 13:47:38, Petr Mladek wrote:
->> On Fri 2018-06-01 06:00:47, Linus Torvalds wrote:
->> > On Fri, Jun 1, 2018 at 4:29 AM Geert Uytterhoeven
->> > <geert+renesas@glider.be> wrote:
->> > >
->> > > This patch series:
->> > >   - Changes all existing users of "%pCr" to print the result of
->> > >     clk_get_rate() directly, which is safe as they all do this in task
->> > >     context only,
->> > >   - Removes support for the "%pCr" printk format.
->> >
->> > Looks good to me.
->> >
->> > What tree will this go through? The normal printk one? Just checking
->> > that this doesn't end up falling through the cracks because nobody
->> > knows who would take it...
->>
->> I will take it via printk.git. There already is bunch of vsprintf
->> changes for-4.18.
->
-> It is in printk.git, branch for-4.18-vsprintf-pcr-removal now.
-
-Thank you.
-
-> Also I have added Cc: stable@vger.kernel.org into the commit messages.
-
-I can confirm all stable version references ("v4.x+") match.
-
-Gr{oetje,eeting}s,
-
-                        Geert
+Acked-by: Rhyland Klein <rklein@nvidia.com>
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+nvpublic
