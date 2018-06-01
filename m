@@ -1,117 +1,58 @@
-From: Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: Re: [RFC/RFT] [PATCH v3 0/4] Intel_pstate: HWP Dynamic performance
- boost
-Date: Fri, 1 Jun 2018 13:32:09 +0200
-Message-ID: <20180601113209.rp35aukgstkqbxtc@linux-h043>
-References: <20180531225143.34270-1-srinivas.pandruvada@linux.intel.com>
+From: Akhil P Oommen <akhilpo@codeaurora.org>
+Subject: Re: [RFC] PM / devfreq: Add support for alerts
+Date: Fri, 1 Jun 2018 17:13:47 +0530
+Message-ID: <f099a5b1-bd4e-d888-92c1-7366820881e8@codeaurora.org>
+References: <1527745019-25155-1-git-send-email-akhilpo@codeaurora.org>
+ <CGME20180531053717epcas5p48e0d962e2108d04529b4582a70cd7d5a@epcms1p3>
+ <20180531061720epcms1p31f5451bcf3150a7dddd33e1e415bb730@epcms1p3>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180531225143.34270-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20180531061720epcms1p31f5451bcf3150a7dddd33e1e415bb730@epcms1p3>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org
+To: myungjoo.ham@samsung.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mka@chromium.org" <mka@chromium.org>
+Cc: "jcrouse@codeaurora.org" <jcrouse@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 31, 2018 at 03:51:39PM -0700, Srinivas Pandruvada wrote:
-> v3
-> - Removed atomic bit operation as suggested.
-> - Added description of contention with user space.
-> - Removed hwp cache, boost utililty function patch and merged with util callback
->   patch. This way any value set is used somewhere.
-> 
-> Waiting for test results from Mel Gorman, who is the original reporter.
-> 
-
-Hello Srinivas,
-
-thanks for this series. I'm testing it on behalf of Mel; while I'm waiting for
-more benchmarks to finish, an initial report I've got from dbench on ext4
-looks very promising. Good!
-Later when I have it all I'll post my detailed results.
 
 
-Giovanni Gherdovich
-SUSE Labs
+On 5/31/2018 11:47 AM, MyungJoo Ham wrote:
+>> Currently, DEVFREQ reevaluates the device state periodically and/or
+>> based on the OPP list changes. Private API has to be exposed to allow
+>> the device driver to alert/notify the governor to reevaluate when a new
+>> set of data is available. This makes the governor more coupled to a
+>> particular device driver. We can improve here by exposing a DEVFREQ API
+>> to allow the device drivers to send generic alerts to the governor.
+>>
+>> Signed-off-by: Akhil P Oommen <akhilpo@codeaurora.org>
+>> ---
+>>   drivers/devfreq/devfreq.c  | 21 +++++++++++++++++++++
+>>   drivers/devfreq/governor.h |  1 +
+>>   include/linux/devfreq.h    |  5 +++++
+>>   3 files changed, 27 insertions(+)
+>>
+> Hello Akhil,
+>
+> It appears that this will have the same effect with
+> "[PATCH 08/11] PM / devfreq: Make update_devfreq() public" from Matthias Kaehlcke, doesn't it?
+>
+>
+> Cheers,
+> MyungJoo
+>
+Hi MyngJoo,
 
+The patch you mentioned is a step in the right direction. But this patch 
+allows:
+1. the governor to decide whether to reevaluate or not. I feel it would 
+be a better architecture (better Separation of Concern) if that decision 
+is left to the governor alone.
+2. the devices to share multiple types of alerts. A governor may use 
+these alerts for internal bookkeeping/algorithm and decide to reevaluate 
+policy when it is necessary. Since we are opening up a new devfreq API 
+for devices, isn't it better to go for a generic one?
 
-> v2
-> This is a much simpler version than the previous one and only consider IO
-> boost, using the existing mechanism. There is no change in this series
-> beyond intel_pstate driver.
-> 
-> Once PeterZ finishes his work on frequency invariant, I will revisit
-> thread migration optimization in HWP mode.
-> 
-> Other changes:
-> - Gradual boost instead of single step as suggested by PeterZ.
-> - Cross CPU synchronization concerns identified by Rafael.
-> - Split the patch for HWP MSR value caching as suggested by PeterZ.
-> 
-> Not changed as suggested:
-> There is no architecture way to identify platform with Per-core
-> P-states, so still have to enable feature based on CPU model.
-> 
-> -----------
-> v1
-> 
-> This series tries to address some concern in performance particularly with IO
-> workloads (Reported by Mel Gorman), when HWP is using intel_pstate powersave
-> policy.
-> 
-> Background
-> HWP performance can be controlled by user space using sysfs interface for
-> max/min frequency limits and energy performance preference settings. Based on
-> workload characteristics these can be adjusted from user space. These limits
-> are not changed dynamically by kernel based on workload.
-> 
-> By default HWP defaults to energy performance preference value of 0x80 on
-> majority of platforms(Scale is 0-255, 0 is max performance and 255 is min).
-> This value offers best performance/watt and for majority of server workloads
-> performance doesn't suffer. Also users always have option to use performance
-> policy of intel_pstate, to get best performance. But user tend to run with
-> out of box configuration, which is powersave policy on most of the distros.
-> 
-> In some case it is possible to dynamically adjust performance, for example,
-> when a CPU is woken up due to IO completion or thread migrate to a new CPU. In
-> this case HWP algorithm will take some time to build utilization and ramp up
-> P-states. So this may results in lower performance for some IO workloads and
-> workloads which tend to migrate. The idea of this patch series is to
-> temporarily boost performance dynamically in these cases. This is only
-> applicable only when user is using powersave policy, not in performance policy.
-> 
-> Results on a Skylake server:
-> 
-> Benchmark                       Improvement %
-> ----------------------------------------------------------------------
-> dbench                          50.36
-> thread IO bench (tiobench)      10.35
-> File IO                         9.81
-> sqlite                          15.76
-> X264 -104 cores                 9.75
-> 
-> Spec Power                      (Negligible impact 7382 Vs. 7378)
-> Idle Power                      No change observed
-> -----------------------------------------------------------------------
-> 
-> HWP brings in best performace/watt at EPP=0x80. Since we are boosting
-> EPP here to 0, the performance/watt drops upto 10%. So there is a power
-> penalty of these changes.
-> 
-> Also Mel Gorman provided test results on a prior patchset, which shows
-> benifits of this series.
-> 
-> Srinivas Pandruvada (4):
->   cpufreq: intel_pstate: Add HWP boost utility and sched util hooks
->   cpufreq: intel_pstate: HWP boost performance on IO wakeup
->   cpufreq: intel_pstate: New sysfs entry to control HWP boost
->   cpufreq: intel_pstate: enable boost for SKX
-> 
->  drivers/cpufreq/intel_pstate.c | 177 ++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 173 insertions(+), 4 deletions(-)
-> 
-> -- 
-> 2.13.6
-> 
-> 
+Regards,
+Akhil.
