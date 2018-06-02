@@ -1,50 +1,80 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] power: Print wakeup_count instead of event_count in the
- sysfs attribute.
-Date: Sat, 2 Jun 2018 21:02:27 +0200
-Message-ID: <20180602190227.GA19946@amd>
-References: <20180602023215.176521-1-ravisadineni@chromium.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: [PATCH v2] thermal: qcom: tsens: Allow number of sensors to come from DT
+Date: Sat,  2 Jun 2018 12:32:11 -0700
+Message-ID: <20180602193211.25731-1-bjorn.andersson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180602023215.176521-1-ravisadineni@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ravi Chandra Sadineni <ravisadineni@chromium.org>
-Cc: rjw@rjwysocki.net, chenhong3@huawei.com, ravisadineni@google.com, dtor@google.com, len.brown@intel.com, gregkh@linuxfoundation.org, tbroch@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rajatja@google.com, bleung@google.com
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+For platforms that has multiple copies of the TSENS hardware block it's
+convenient to specify the number of sensors per block in DeviceTree.
 
---WIyZ46R2i8wDzkSu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Rob Herring <robh@kernel.org> [binding]
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
 
-On Fri 2018-06-01 19:32:15, Ravi Chandra Sadineni wrote:
-> Currently we show event_count instead of wakeup_count as part of per
-> device wakeup_count sysfs attribute. Change it to wakeup_count to make
-> it more meaningful.
->=20
-> Signed-off-by: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Changes since v1:
+- Added comment as suggested by Amit
+- Picked up Amit and Rob's R-b
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+ .../devicetree/bindings/thermal/qcom-tsens.txt      |  1 +
+ drivers/thermal/qcom/tsens.c                        | 13 ++++++++++---
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---WIyZ46R2i8wDzkSu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlsS6cMACgkQMOfwapXb+vIP7wCeL74QOuUejgN08PA+1PEuh8QP
-wVcAnAjb093p71AEH+d0wnEkpVLSAxzY
-=X4MI
------END PGP SIGNATURE-----
-
---WIyZ46R2i8wDzkSu--
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+index 292ed89d900b..06195e8f35e2 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+@@ -8,6 +8,7 @@ Required properties:
+ 
+ - reg: Address range of the thermal registers
+ - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
++- #qcom,sensors: Number of sensors in tsens block
+ - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
+ nvmem cells
+ 
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 3f9fe6aa51cc..b212bebcfc36 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -116,6 +116,7 @@ static int tsens_probe(struct platform_device *pdev)
+ 	struct tsens_device *tmdev;
+ 	const struct tsens_data *data;
+ 	const struct of_device_id *id;
++	u32 num_sensors;
+ 
+ 	if (pdev->dev.of_node)
+ 		dev = &pdev->dev;
+@@ -130,18 +131,24 @@ static int tsens_probe(struct platform_device *pdev)
+ 	else
+ 		data = &data_8960;
+ 
+-	if (data->num_sensors <= 0) {
++	num_sensors = data->num_sensors;
++
++	/* Override driver provided num_sensors, if specified in DT */
++	if (np)
++		of_property_read_u32(np, "#qcom,sensors", &num_sensors);
++
++	if (num_sensors <= 0) {
+ 		dev_err(dev, "invalid number of sensors\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	tmdev = devm_kzalloc(dev, sizeof(*tmdev) +
+-			     data->num_sensors * sizeof(*s), GFP_KERNEL);
++			     num_sensors * sizeof(*s), GFP_KERNEL);
+ 	if (!tmdev)
+ 		return -ENOMEM;
+ 
+ 	tmdev->dev = dev;
+-	tmdev->num_sensors = data->num_sensors;
++	tmdev->num_sensors = num_sensors;
+ 	tmdev->ops = data->ops;
+ 	for (i = 0;  i < tmdev->num_sensors; i++) {
+ 		if (data->hw_ids)
+-- 
+2.17.0
