@@ -1,37 +1,50 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH 2/2] tsens: Get rid of unused fields in structure
-Date: Sat,  2 Jun 2018 14:11:13 +0300
-Message-ID: <40aa5b9760b09be0970dbe82997db71756927eb0.1527937396.git.amit.kucheria@linaro.org>
-References: <cover.1527937396.git.amit.kucheria@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] power: Print wakeup_count instead of event_count in the
+ sysfs attribute.
+Date: Sat, 2 Jun 2018 21:02:27 +0200
+Message-ID: <20180602190227.GA19946@amd>
+References: <20180602023215.176521-1-ravisadineni@chromium.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1527937396.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1527937396.git.amit.kucheria@linaro.org>
-References: <cover.1527937396.git.amit.kucheria@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20180602023215.176521-1-ravisadineni@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-arm-msm@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Cc: rjw@rjwysocki.net, chenhong3@huawei.com, ravisadineni@google.com, dtor@google.com, len.brown@intel.com, gregkh@linuxfoundation.org, tbroch@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rajatja@google.com, bleung@google.com
 List-Id: linux-pm@vger.kernel.org
 
-status_field and trdy are unused in any of the tsens drivers. Remove them.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/qcom/tsens.h | 2 --
- 1 file changed, 2 deletions(-)
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index f15660d..77ed8dc 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -77,9 +77,7 @@ struct tsens_device {
- 	struct device			*dev;
- 	u32				num_sensors;
- 	struct regmap			*map;
--	struct regmap_field		*status_field;
- 	struct tsens_context		ctx;
--	bool				trdy;
- 	const struct tsens_ops		*ops;
- 	struct tsens_sensor		sensor[0];
- };
--- 
-2.7.4
+On Fri 2018-06-01 19:32:15, Ravi Chandra Sadineni wrote:
+> Currently we show event_count instead of wakeup_count as part of per
+> device wakeup_count sysfs attribute. Change it to wakeup_count to make
+> it more meaningful.
+>=20
+> Signed-off-by: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--WIyZ46R2i8wDzkSu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlsS6cMACgkQMOfwapXb+vIP7wCeL74QOuUejgN08PA+1PEuh8QP
+wVcAnAjb093p71AEH+d0wnEkpVLSAxzY
+=X4MI
+-----END PGP SIGNATURE-----
+
+--WIyZ46R2i8wDzkSu--
