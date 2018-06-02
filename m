@@ -1,42 +1,31 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH] OPP: Allow same OPP table to be used for multiple genpd
-Date: Fri, 01 Jun 2018 23:45:20 -0700
-Message-ID: <152792192058.225090.13082340679675758540@swboyd.mtv.corp.google.com>
-References: <8a352fd8787cefcb19c25ca1390301f874797b9c.1527674939.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH 0/2] thermal: tsens: SDM845 support
+Date: Sat,  2 Jun 2018 14:11:11 +0300
+Message-ID: <cover.1527937396.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8a352fd8787cefcb19c25ca1390301f874797b9c.1527674939.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
+To: linux-arm-msm@vger.kernel.org
+Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, edubezval@gmail.com, "open list:OPEN FIRMWARE AND FLATTENED
+        DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Viresh Kumar (2018-05-30 03:09:02)
-> The OPP binding says:
-> =
+Add SDM845 support in the tsens driver. I've create a separate file
+(tsens-sdm845.c) because I expect it to diverge from the other drivers.
 
->         Property: operating-points-v2
-> =
+Cleanup the tsens_device structure while we're at it.
 
->         ...
-> =
 
->         This can contain more than one phandle for power domain
->         providers that provide multiple power domains. That is, one
->         phandle for each power domain. If only one phandle is available,
->         then the same OPP table will be used for all power domains
->         provided by the power domain provider.
-> =
+Amit Kucheria (2):
+  thermal: tsens: Add support for SDM845 platform
+  tsens: Get rid of unused fields in structure
 
-> But the OPP core isn't allowing the same OPP table to be used for
-> multiple domains. Update dev_pm_opp_of_add_table_indexed() to allow
-> that.
-> =
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |  1 +
+ drivers/thermal/qcom/Makefile                      |  2 +-
+ drivers/thermal/qcom/tsens-sdm845.c                | 98 ++++++++++++++++++++++
+ drivers/thermal/qcom/tsens.c                       |  3 +
+ drivers/thermal/qcom/tsens.h                       |  3 +-
+ 5 files changed, 104 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/thermal/qcom/tsens-sdm845.c
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-> ---
-
-Reviewed-by: Stephen Boyd <sboyd@kernel.org>
+-- 
+2.7.4
