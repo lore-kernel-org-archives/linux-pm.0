@@ -1,34 +1,42 @@
-From: Ravi Chandra Sadineni <ravisadineni@chromium.org>
-Subject: [PATCH] power: Print wakeup_count instead of event_count in the sysfs attribute.
-Date: Fri,  1 Jun 2018 19:32:15 -0700
-Message-ID: <20180602023215.176521-1-ravisadineni@chromium.org>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH] OPP: Allow same OPP table to be used for multiple genpd
+Date: Fri, 01 Jun 2018 23:45:20 -0700
+Message-ID: <152792192058.225090.13082340679675758540@swboyd.mtv.corp.google.com>
+References: <8a352fd8787cefcb19c25ca1390301f874797b9c.1527674939.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8a352fd8787cefcb19c25ca1390301f874797b9c.1527674939.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, chenhong3@huawei.com, ravisadineni@chromium.org, pavel@ucw.cz, ravisadineni@google.com, dtor@google.com, len.brown@intel.com, gregkh@linuxfoundation.org
-Cc: tbroch@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rajatja@google.com, bleung@google.com
+To: Nishanth Menon <nm@ti.com>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently we show event_count instead of wakeup_count as part of per
-device wakeup_count sysfs attribute. Change it to wakeup_count to make
-it more meaningful.
+Quoting Viresh Kumar (2018-05-30 03:09:02)
+> The OPP binding says:
+> =
 
-Signed-off-by: Ravi Chandra Sadineni <ravisadineni@chromium.org>
----
- drivers/base/power/sysfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>         Property: operating-points-v2
+> =
 
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index 0f651efc58a1a..d713738ce7967 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -353,7 +353,7 @@ static ssize_t wakeup_count_show(struct device *dev,
- 
- 	spin_lock_irq(&dev->power.lock);
- 	if (dev->power.wakeup) {
--		count = dev->power.wakeup->event_count;
-+		count = dev->power.wakeup->wakeup_count;
- 		enabled = true;
- 	}
- 	spin_unlock_irq(&dev->power.lock);
--- 
-2.17.1.1185.g55be947832-goog
+>         ...
+> =
+
+>         This can contain more than one phandle for power domain
+>         providers that provide multiple power domains. That is, one
+>         phandle for each power domain. If only one phandle is available,
+>         then the same OPP table will be used for all power domains
+>         provided by the power domain provider.
+> =
+
+> But the OPP core isn't allowing the same OPP table to be used for
+> multiple domains. Update dev_pm_opp_of_add_table_indexed() to allow
+> that.
+> =
+
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
+> ---
+
+Reviewed-by: Stephen Boyd <sboyd@kernel.org>
