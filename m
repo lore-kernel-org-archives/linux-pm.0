@@ -1,44 +1,34 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: [PATCH v3 2/2] dt-bindings: power: sbs-battery: re-document "ti,bq20z75"
-Date: Fri,  1 Jun 2018 18:29:00 -0700
-Message-ID: <20180602012900.181352-2-briannorris@chromium.org>
-References: <20180602012900.181352-1-briannorris@chromium.org>
+From: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Subject: [PATCH] power: Print wakeup_count instead of event_count in the sysfs attribute.
+Date: Fri,  1 Jun 2018 19:32:15 -0700
+Message-ID: <20180602023215.176521-1-ravisadineni@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180602012900.181352-1-briannorris@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>
+To: rjw@rjwysocki.net, chenhong3@huawei.com, ravisadineni@chromium.org, pavel@ucw.cz, ravisadineni@google.com, dtor@google.com, len.brown@intel.com, gregkh@linuxfoundation.org
+Cc: tbroch@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rajatja@google.com, bleung@google.com
 List-Id: linux-pm@vger.kernel.org
 
-This compatible property was documented before the driver was renamed to
-"SBS" (see commit e57f1b68c406 ("devicetree-bindings: Propagate
-bq20z75->sbs rename to dt bindings")). The driver has continued to
-support this property as an alternative to "sbs,sbs-battery", and
-because we've noticed there are some lingering TI specifics (in the
-manufacturer-specific portion of the SBS spec), we'd like to start using
-this property again to differentiate.
+Currently we show event_count instead of wakeup_count as part of per
+device wakeup_count sysfs attribute. Change it to wakeup_count to make
+it more meaningful.
 
-Signed-off-by: Brian Norris <briannorris@chromium.org>
-Acked-by: Rhyland Klein <rklein@nvidia.com>
+Signed-off-by: Ravi Chandra Sadineni <ravisadineni@chromium.org>
 ---
-v2: add Rhyland's Acked-by
-v3: no change
----
- .../devicetree/bindings/power/supply/sbs_sbs-battery.txt        | 2 +-
+ drivers/base/power/sysfs.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-index c40e8926facf..a7a9c3366f82 100644
---- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-@@ -2,7 +2,7 @@ SBS sbs-battery
- ~~~~~~~~~~
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 0f651efc58a1a..d713738ce7967 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -353,7 +353,7 @@ static ssize_t wakeup_count_show(struct device *dev,
  
- Required properties :
-- - compatible : "sbs,sbs-battery"
-+ - compatible : "sbs,sbs-battery" or "ti,bq20z75"
- 
- Optional properties :
-  - sbs,i2c-retry-count : The number of times to retry i2c transactions on i2c
+ 	spin_lock_irq(&dev->power.lock);
+ 	if (dev->power.wakeup) {
+-		count = dev->power.wakeup->event_count;
++		count = dev->power.wakeup->wakeup_count;
+ 		enabled = true;
+ 	}
+ 	spin_unlock_irq(&dev->power.lock);
 -- 
 2.17.1.1185.g55be947832-goog
