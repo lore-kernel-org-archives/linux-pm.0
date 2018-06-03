@@ -1,54 +1,50 @@
-From: Nicholas Mc Guire <der.herr@hofr.at>
-Subject: Re: [SIL2review] [PATCH] power: reset: zx-reboot: put device node in
- zx_reboot_probe()
-Date: Sun, 3 Jun 2018 09:03:08 +0000
-Message-ID: <20180603090308.GA1287@osadl.at>
-References: <1527978125-29850-1-git-send-email-khoroshilov@ispras.ru>
+From: Ravi Chandra Sadineni <ravisadineni@google.com>
+Subject: Re: [PATCH] power: Print wakeup_count instead of event_count in the
+ sysfs attribute.
+Date: Sun, 3 Jun 2018 10:14:09 -0700
+Message-ID: <CAOGSYL0ga-H=0a5EEDmOWSZjnmG1Qc=9AxAbM_-ifHDj_FbREg@mail.gmail.com>
+References: <20180602023215.176521-1-ravisadineni@chromium.org> <CAJZ5v0gWeq034sObmHsbJoiBri4a=Av8xroeuW+eqyv_W=cHjQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1527978125-29850-1-git-send-email-khoroshilov@ispras.ru>
+In-Reply-To: <CAJZ5v0gWeq034sObmHsbJoiBri4a=Av8xroeuW+eqyv_W=cHjQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Cc: Sebastian Reichel <sre@kernel.org>, ldv-project@linuxtesting.org, sil2review@lists.osadl.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ravi Chandra Sadineni <ravisadineni@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, chenhong3@huawei.com, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dtor@google.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Todd Broch <tbroch@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rajat Jain <rajatja@google.com>, Benson Leung <bleung@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 03, 2018 at 01:22:05AM +0300, Alexey Khoroshilov wrote:
-> zx_reboot_probe() increments refcnt of zx296702-pcu device node by
-> of_find_compatible_node() and leaves it undecremented on both
-> successful and error paths.
+Hi Rafael,
+
+On Sun, Jun 3, 2018 at 1:05 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Sat, Jun 2, 2018 at 4:32 AM, Ravi Chandra Sadineni
+> <ravisadineni@chromium.org> wrote:
+>> Currently we show event_count instead of wakeup_count as part of per
+>> device wakeup_count sysfs attribute. Change it to wakeup_count to make
+>> it more meaningful.
 >
+> More information, please.
+>
+> In particular, why it is more meaningful.
+Wakeup_count increments only when events_check_enabled is set. This
+bool is set whenever we write current wakeup count to
+/sys/power/wakeup_count from the user land. Also events_check_enabled
+is cleared on every resume. My understanding is that, userland is
+expected to write to this just before suspend. This way
+pm_wakeup_event() when called from irqs will increment the
+wakeup_count only if we are in system wide suspend resume cycle and
+should give a fair approximation of how many times a device might have
+caused a wake from S3/S0iX.  event_count on the other hand will
+increment every time pm_wakeup_event() is called irrespective of
+whether we are in a suspend/resume cycle.  For example when I try
+doing something like this (https://lkml.org/lkml/2018/6/1/890), we see
+the wakeup_count sysfs attribute for the particular device
+incrementing every time there is a irq. If it is important to expose
+event_count via sysfs attribute, should we create another attribute ?
+Also we do expose each of these counters via
+debugfs(/sys/kernel/debug/wake_sources).
 
-Just wonder - if it warns on the failed case it probably should also
-note if it failed in of_find_compatible_node() or not to allow
-diagnosing the problem (the compatible_node score was 0) ? 
-
-> Found by Linux Driver Verification project (linuxtesting.org).
-> 
-> Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Reviewed-by: Nicholas Mc Guire <der.herr@hofr.at>
-
-> ---
->  drivers/power/reset/zx-reboot.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/power/reset/zx-reboot.c b/drivers/power/reset/zx-reboot.c
-> index c03e96e6a041..186901c96c01 100644
-> --- a/drivers/power/reset/zx-reboot.c
-> +++ b/drivers/power/reset/zx-reboot.c
-> @@ -51,6 +51,7 @@ static int zx_reboot_probe(struct platform_device *pdev)
->  
->  	np = of_find_compatible_node(NULL, NULL, "zte,zx296702-pcu");
->  	pcu_base = of_iomap(np, 0);
-> +	of_node_put(np);
->  	if (!pcu_base) {
->  		iounmap(base);
->  		WARN(1, "failed to map pcu_base address");
-> -- 
-> 2.7.4
-> 
-> _______________________________________________
-> SIL2review mailing list
-> SIL2review@lists.osadl.org
-> https://lists.osadl.org/mailman/listinfo/sil2review
+Please correct me if I am wrong or missing something. Also if there is
+a better way to do this, please let me know.
+>
+> Thanks,
+> Rafael
