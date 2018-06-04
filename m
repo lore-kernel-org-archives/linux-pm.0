@@ -1,344 +1,225 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC/RFT] [PATCH v3 0/4] Intel_pstate: HWP Dynamic performance
- boost
-Date: Mon, 04 Jun 2018 11:24:29 -0700
-Message-ID: <1528136669.83760.11.camel@linux.intel.com>
-References: <20180531225143.34270-1-srinivas.pandruvada@linux.intel.com>
-         <20180604180156.4uvb6t4xqxmuwayq@linux-h043>
+From: Shuah Khan <shuah@kernel.org>
+Subject: [GIT PULL] cpupower update for Linux 4.18-rc1
+Date: Mon, 4 Jun 2018 16:03:44 -0600
+Message-ID: <559de2f1-fdf6-7010-2e01-d20765551065@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed;
+ boundary="------------73ED410EA6EFE97E134D4DB7"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180604180156.4uvb6t4xqxmuwayq@linux-h043>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Giovanni Gherdovich <ggherdovich@suse.cz>
-Cc: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, mgorman@techsingularity.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Shuah Khan <shuah@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-06-04 at 20:01 +0200, Giovanni Gherdovich wrote:
-> On Thu, May 31, 2018 at 03:51:39PM -0700, Srinivas Pandruvada wrote:
-> > v3
-> > - Removed atomic bit operation as suggested.
-> > - Added description of contention with user space.
-> > - Removed hwp cache, boost utililty function patch and merged with
-> > util callback
-> >   patch. This way any value set is used somewhere.
-> > 
-> > Waiting for test results from Mel Gorman, who is the original
-> > reporter.
-> > [SNIP]
-> 
-> Tested-by: Giovanni Gherdovich <ggherdovich@suse.cz>
-> 
-> This series has an overall positive performance impact on IO both on
-> xfs and
-> ext4, and I'd be vary happy if it lands in v4.18. You dropped the
-> migration
-> optimization from v1 to v2 after the reviewers' suggestion; I'm
-> looking
-> forward to test that part too, so please add me to CC when you'll
-> resend it.
-Thanks Giovanni. Since 4.17 is already released and 4.18 pulls already
-started, we have to wait for 4.19.
+This is a multi-part message in MIME format.
+--------------73ED410EA6EFE97E134D4DB7
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
+Hi Rafael,
 
-> 
-> I've tested your series on a single socket Xeon E3-1240 v5 (Skylake,
-> 4 cores /
-> 8 threads) with SSD storage. The platform is a Dell PowerEdge R230.
-> 
-> The benchmarks used are a mix of I/O intensive workloads on ext4 and
-> xfs
-> (dbench4, sqlite, pgbench in read/write and read-only configuration,
-> Flexible
-> IO aka FIO, etc) and scheduler stressers just to check that
-> everything is okay
-> in that department too (hackbench, pipetest, schbench, sockperf on
-> localhost
-> both in "throughput" and "under-load" mode, netperf in localhost,
-> etc). There
-> is also some HPC with the NAS Parallel Benchmark, as when using
-> openMPI as IPC
-> mechanism it ends up being write-intensive and that could be a good
-> experiment, even if the HPC people aren't exactly the target audience
-> for a
-> frequency governor.
-> 
-> The large improvements are in areas you already highlighted in your
-> cover
-> letter (dbench4, sqlite, and pgbench read/write too, very impressive
-> honestly). Minor wins are also observed in sockperf and running the
-> git unit
-> tests (gitsource below). The scheduler stressers ends up, as
-> expected, in the
-> "neutral" category where you'll also find FIO (which given other
-> results I'd
-> have expected to improve a little at least). Marked "neutral" are
-> also those
-> results where statistical significance wasn't reached (2 standard
-> deviations,
-> which is roughly like a 0.05 p-value) even if they showed some
-> difference in a
-> direction or the other. In the "small losses" section I found
-> hackbench run
-> with processes (not threads) and pipes (not sockets) which I report
-> for due
-> diligence but looking at the raw numbers it's more of a mixed bag
-> than a real
-> loss, 
-I think so. But I will see why there is even difference.
+If it isn't too late, please pull this update. A fix came in last
+week to refine the cpupower monitor command.
 
-Thanks,
-Srinivas
+This cpupower update for 4.18-rc1 consists of two minor fixes.
 
-> and the NAS high-perf computing benchmark when it uses openMP (as
-> opposed to openMPI) for IPC -- but again, we often find that
-> supercomputers
-> people run the machines at full speed all the time.
-> 
-> At the bottom of this message you'll find some directions if you want
-> to run
-> some test yourself using the same framework I used, MMTests from
-> https://github.com/gormanm/mmtests (we store a fair amount of
-> benchmarks
-> parametrization up there).
-> 
-> Large wins:
-> 
->     - dbench4:              +20% on ext4,
->                             +14% on xfs (always asynch IO)
->     - sqlite (insert):       +9% on both ext4 and xfs
->     - pgbench (read/write):  +9% on ext4,
->                             +10% on xfs
-> 
-> Moderate wins:
-> 
->     - sockperf (type: under-load, localhost):              +1% with
-> TCP,
->                                                            +5% with
-> UDP
->     - gisource (git unit tests, shell intensive):          +3% on
-> ext4
->     - NAS Parallel Benchmark (HPC, using openMPI, on xfs): +1%
->     - tbench4 (network part of dbench4, localhost):        +1%
-> 
-> Neutral:
-> 
->     - pgbench (read-only) on ext4 and xfs
->     - siege
->     - netperf (streaming and round-robin) with TCP and UDP
->     - hackbench (sockets/process, sockets/thread and pipes/thread)
->     - pipetest
->     - Linux kernel build
->     - schbench
->     - sockperf (type: throughput) with TCP and UDP
->     - git unit tests on xfs
->     - FIO (both random and seq. read, both random and seq. write)
->       on ext4 and xfs, async IO
-> 
-> Moderate losses:
-> 
->     - hackbench (pipes/process):          -10%
->     - NAS Parallel Benchmark with openMP:  -1%
-> 
-> 
-> Each benchmark is run with a variety of configuration parameters (eg:
-> number
-> of threads, number of clients, etc); to reach a final "score" the
-> geometric
-> mean is used (with a few exceptions depending on the type of
-> benchmark).
-> Detailed results follow. Amean, Hmean and Gmean are respectively
-> arithmetic,
-> harmonic and geometric means.
-> 
-> For brevity I won't report all tables but only those for "large wins"
-> and
-> "moderate losses". Note that I'm not overly worried for the
-> hackbench-pipes
-> situation, as we've studied it in the past and determined that such
-> configuration is particularly weak, time is mostly spent on
-> contention and the
-> scheduler code path isn't exercised. See the comment in the file
-> configs/config-global-dhp__scheduler-unbound in MMTests for a brief
-> description of the issue.
-> 
-> DBENCH4
-> =======
-> 
-> NOTES: asyncronous IO; varies the number of clients up to NUMCPUS*8.
-> MMTESTS CONFIG: global-dhp__io-dbench4-async-{ext4, xfs}
-> MEASURES: latency (millisecs)
-> LOWER is better
-> 
-> EXT4
->                               4.16.0                 4.16.0
->                              vanilla              hwp-boost
-> Amean      1        28.49 (   0.00%)       19.68 (  30.92%)
-> Amean      2        26.70 (   0.00%)       25.59 (   4.14%)
-> Amean      4        54.59 (   0.00%)       43.56 (  20.20%)
-> Amean      8        91.19 (   0.00%)       77.56 (  14.96%)
-> Amean      64      538.09 (   0.00%)      438.67 (  18.48%)
-> Stddev     1         6.70 (   0.00%)        3.24 (  51.66%)
-> Stddev     2         4.35 (   0.00%)        3.57 (  17.85%)
-> Stddev     4         7.99 (   0.00%)        7.24 (   9.29%)
-> Stddev     8        17.51 (   0.00%)       15.80 (   9.78%)
-> Stddev     64       49.54 (   0.00%)       46.98 (   5.17%)
-> 
-> XFS
->                               4.16.0                 4.16.0
->                              vanilla              hwp-boost
-> Amean      1        21.88 (   0.00%)       16.03 (  26.75%)
-> Amean      2        19.72 (   0.00%)       19.82 (  -0.50%)
-> Amean      4        37.55 (   0.00%)       29.52 (  21.38%)
-> Amean      8        56.73 (   0.00%)       51.83 (   8.63%)
-> Amean      64      808.80 (   0.00%)      698.12 (  13.68%)
-> Stddev     1         6.29 (   0.00%)        2.33 (  62.99%)
-> Stddev     2         3.12 (   0.00%)        2.26 (  27.73%)
-> Stddev     4         7.56 (   0.00%)        5.88 (  22.28%)
-> Stddev     8        14.15 (   0.00%)       12.49 (  11.71%)
-> Stddev     64      380.54 (   0.00%)      367.88 (   3.33%)
-> 
-> SQLITE
-> ======
-> 
-> NOTES: SQL insert test on a table that will be 2M in size.
-> MMTESTS CONFIG: global-dhp__db-sqlite-insert-medium-{ext4, xfs}
-> MEASURES: transactions per second
-> HIGHER is better
-> 
-> EXT4
->                                 4.16.0                 4.16.0
->                                vanilla              hwp-boost
-> Hmean     Trans     2098.79 (   0.00%)     2292.16 (   9.21%)
-> Stddev    Trans       78.79 (   0.00%)       95.73 ( -21.50%)
-> 
-> XFS
->                                 4.16.0                 4.16.0
->                                vanilla              hwp-boost
-> Hmean     Trans     1890.27 (   0.00%)     2058.62 (   8.91%)
-> Stddev    Trans       52.54 (   0.00%)       29.56 (  43.73%)
-> 
-> PGBENCH-RW
-> ==========
-> 
-> NOTES: packaged with Postgres. Varies the number of thread up to
-> NUMCPUS. The
->   workload is scaled so that the approximate size is 80% of of the
-> database
->   shared buffer which itself is 20% of RAM. The page cache is not
-> flushed
->   after the database is populated for the test and starts cache-hot.
-> MMTESTS CONFIG: global-dhp__db-pgbench-timed-rw-small-{ext4, xfs}
-> MEASURES: transactions per second
-> HIGHER is better
-> 
-> EXT4
->                             4.16.0                 4.16.0
->                            vanilla              hwp-boost
-> Hmean     1     2692.19 (   0.00%)     2660.98 (  -1.16%)
-> Hmean     4     5218.93 (   0.00%)     5610.10 (   7.50%)
-> Hmean     7     7332.68 (   0.00%)     8378.24 (  14.26%)
-> Hmean     8     7462.03 (   0.00%)     8713.36 (  16.77%)
-> Stddev    1      231.85 (   0.00%)      257.49 ( -11.06%)
-> Stddev    4      681.11 (   0.00%)      312.64 (  54.10%)
-> Stddev    7     1072.07 (   0.00%)      730.29 (  31.88%)
-> Stddev    8     1472.77 (   0.00%)     1057.34 (  28.21%)
-> 
-> XFS
->                             4.16.0                 4.16.0
->                            vanilla              hwp-boost
-> Hmean     1     2675.02 (   0.00%)     2661.69 (  -0.50%)
-> Hmean     4     5049.45 (   0.00%)     5601.45 (  10.93%)
-> Hmean     7     7302.18 (   0.00%)     8348.16 (  14.32%)
-> Hmean     8     7596.83 (   0.00%)     8693.29 (  14.43%)
-> Stddev    1      225.41 (   0.00%)      246.74 (  -9.46%)
-> Stddev    4      761.33 (   0.00%)      334.77 (  56.03%)
-> Stddev    7     1093.93 (   0.00%)      811.30 (  25.84%)
-> Stddev    8     1465.06 (   0.00%)     1118.81 (  23.63%)
-> 
-> HACKBENCH
-> =========
-> 
-> NOTES: Varies the number of groups between 1 and NUMCPUS*4
-> MMTESTS CONFIG: global-dhp__scheduler-unbound
-> MEASURES: time (seconds)
-> LOWER is better
-> 
->                              4.16.0                 4.16.0
->                             vanilla              hwp-boost
-> Amean     1       0.8350 (   0.00%)      1.1577 ( -38.64%)
-> Amean     3       2.8367 (   0.00%)      3.7457 ( -32.04%)
-> Amean     5       6.7503 (   0.00%)      5.7977 (  14.11%)
-> Amean     7       7.8290 (   0.00%)      8.0343 (  -2.62%)
-> Amean     12     11.0560 (   0.00%)     11.9673 (  -8.24%)
-> Amean     18     15.2603 (   0.00%)     15.5247 (  -1.73%)
-> Amean     24     17.0283 (   0.00%)     17.9047 (  -5.15%)
-> Amean     30     19.9193 (   0.00%)     23.4670 ( -17.81%)
-> Amean     32     21.4637 (   0.00%)     23.4097 (  -9.07%)
-> Stddev    1       0.0636 (   0.00%)      0.0255 (  59.93%)
-> Stddev    3       0.1188 (   0.00%)      0.0235 (  80.22%)
-> Stddev    5       0.0755 (   0.00%)      0.1398 ( -85.13%)
-> Stddev    7       0.2778 (   0.00%)      0.1634 (  41.17%)
-> Stddev    12      0.5785 (   0.00%)      0.1030 (  82.19%)
-> Stddev    18      1.2099 (   0.00%)      0.7986 (  33.99%)
-> Stddev    24      0.2057 (   0.00%)      0.7030 (-241.72%)
-> Stddev    30      1.1303 (   0.00%)      0.7654 (  32.28%)
-> Stddev    32      0.2032 (   0.00%)      3.1626 (-1456.69%)
-> 
-> NAS PARALLEL BENCHMARK, C-CLASS (w/ openMP)
-> ===========================================
-> 
-> NOTES: The various computational kernels are run separately; see
->   https://www.nas.nasa.gov/publications/npb.html for the list of
-> tasks (IS =
->   Integer Sort, EP = Embarrassingly Parallel, etc)
-> MMTESTS CONFIG: global-dhp__nas-c-class-omp-full
-> MEASURES: time (seconds)
-> LOWER is better
-> 
->                                4.16.0                 4.16.0
->                               vanilla              hwp-boost
-> Amean     bt.C      169.82 (   0.00%)      170.54 (  -0.42%)
-> Stddev    bt.C        1.07 (   0.00%)        0.97 (   9.34%)
-> Amean     cg.C       41.81 (   0.00%)       42.08 (  -0.65%)
-> Stddev    cg.C        0.06 (   0.00%)        0.03 (  48.24%)
-> Amean     ep.C       26.63 (   0.00%)       26.47 (   0.61%)
-> Stddev    ep.C        0.37 (   0.00%)        0.24 (  35.35%)
-> Amean     ft.C       38.17 (   0.00%)       38.41 (  -0.64%)
-> Stddev    ft.C        0.33 (   0.00%)        0.32 (   3.78%)
-> Amean     is.C        1.49 (   0.00%)        1.40 (   6.02%)
-> Stddev    is.C        0.20 (   0.00%)        0.16 (  19.40%)
-> Amean     lu.C      217.46 (   0.00%)      220.21 (  -1.26%)
-> Stddev    lu.C        0.23 (   0.00%)        0.22 (   0.74%)
-> Amean     mg.C       18.56 (   0.00%)       18.80 (  -1.31%)
-> Stddev    mg.C        0.01 (   0.00%)        0.01 (  22.54%)
-> Amean     sp.C      293.25 (   0.00%)      296.73 (  -1.19%)
-> Stddev    sp.C        0.10 (   0.00%)        0.06 (  42.67%)
-> Amean     ua.C      170.74 (   0.00%)      172.02 (  -0.75%)
-> Stddev    ua.C        0.28 (   0.00%)        0.31 ( -12.89%)
-> 
-> HOW TO REPRODUCE
-> ================
-> 
-> To install MMTests, clone the git repo at
-> https://github.com/gormanm/mmtests.git
-> 
-> To run a config (ie a set of benchmarks, such as
-> config-global-dhp__nas-c-class-omp-full), use the command
-> ./run-mmtests.sh --config configs/$CONFIG $MNEMONIC-NAME
-> from the top-level directory; the benchmark source will be downloaded
-> from its
-> canonical internet location, compiled and run.
-> 
-> To compare results from two runs, use
-> ./bin/compare-mmtests.pl --directory ./work/log \
->                          --benchmark $BENCHMARK-NAME \
-> 			 --names $MNEMONIC-NAME-1,$MNEMONIC-NAME-2
-> from the top-level directory.
-> 
-> 
-> 
-> Thanks,
-> Giovanni Gherdovich
-> SUSE Labs
+diff is attached.
+
+thanks,
+-- Shuah
+
+----------------------------------------------------------------
+
+The following changes since commit 75bc37fefc4471e718ba8e651aa74673d4e0a9eb:
+
+  Linux 4.17-rc4 (2018-05-06 16:57:38 -1000)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-cpupower-4.18-rc1
+
+for you to fetch changes up to f9652d5cae04eb5e85303c087f5842d320499c65:
+
+  cpupower : Fix header name to read idle state name (2018-05-29 10:48:33 -0600)
+
+----------------------------------------------------------------
+linux-cpupower-4.18-rc1
+
+This cpupower update for 4.18-rc1 consists of two minor fixes.
+
+----------------------------------------------------------------
+Abhishek Goel (1):
+      cpupower : Fix header name to read idle state name
+
+Colin Ian King (1):
+      cpupower: fix spelling mistake: "logilename" -> "logfilename"
+
+ tools/power/cpupower/bench/parse.c                 |  2 +-
+ .../cpupower/utils/idle_monitor/cpuidle_sysfs.c    | 15 ++++++++++
+ .../cpupower/utils/idle_monitor/cpupower-monitor.c | 35 ++++++++++++----------
+ .../cpupower/utils/idle_monitor/cpupower-monitor.h |  9 ++++++
+ 4 files changed, 45 insertions(+), 16 deletions(-)
+----------------------------------------------------------------
+
+--------------73ED410EA6EFE97E134D4DB7
+Content-Type: text/x-patch;
+ name="linux-cpupower-4.18-rc1.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="linux-cpupower-4.18-rc1.diff"
+
+diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
+index 9b65f052081f..9ba8a44ad2a7 100644
+--- a/tools/power/cpupower/bench/parse.c
++++ b/tools/power/cpupower/bench/parse.c
+@@ -104,7 +104,7 @@ FILE *prepare_output(const char *dirname)
+ 			dirname, time(NULL));
+ 	}
+ 
+-	dprintf("logilename: %s\n", filename);
++	dprintf("logfilename: %s\n", filename);
+ 
+ 	output = fopen(filename, "w+");
+ 	if (output == NULL) {
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+index 5b3205f16217..5b8c4956ff9a 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+@@ -126,6 +126,20 @@ void fix_up_intel_idle_driver_name(char *tmp, int num)
+ 	}
+ }
+ 
++#ifdef __powerpc__
++void map_power_idle_state_name(char *tmp)
++{
++	if (!strncmp(tmp, "stop0_lite", CSTATE_NAME_LEN))
++		strcpy(tmp, "stop0L");
++	else if (!strncmp(tmp, "stop1_lite", CSTATE_NAME_LEN))
++		strcpy(tmp, "stop1L");
++	else if (!strncmp(tmp, "stop2_lite", CSTATE_NAME_LEN))
++		strcpy(tmp, "stop2L");
++}
++#else
++void map_power_idle_state_name(char *tmp) { }
++#endif
++
+ static struct cpuidle_monitor *cpuidle_register(void)
+ {
+ 	int num;
+@@ -145,6 +159,7 @@ static struct cpuidle_monitor *cpuidle_register(void)
+ 		if (tmp == NULL)
+ 			continue;
+ 
++		map_power_idle_state_name(tmp);
+ 		fix_up_intel_idle_driver_name(tmp, num);
+ 		strncpy(cpuidle_cstates[num].name, tmp, CSTATE_NAME_LEN - 1);
+ 		free(tmp);
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+index 05f953f0f0a0..051da0a7c454 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+@@ -70,36 +70,43 @@ void print_n_spaces(int n)
+ 		printf(" ");
+ }
+ 
+-/* size of s must be at least n + 1 */
++/*s is filled with left and right spaces
++ *to make its length atleast n+1
++ */
+ int fill_string_with_spaces(char *s, int n)
+ {
++	char *temp;
+ 	int len = strlen(s);
+-	if (len > n)
++
++	if (len >= n)
+ 		return -1;
++
++	temp = malloc(sizeof(char) * (n+1));
+ 	for (; len < n; len++)
+ 		s[len] = ' ';
+ 	s[len] = '\0';
++	snprintf(temp, n+1, " %s", s);
++	strcpy(s, temp);
++	free(temp);
+ 	return 0;
+ }
+ 
++#define MAX_COL_WIDTH 6
+ void print_header(int topology_depth)
+ {
+ 	int unsigned mon;
+ 	int state, need_len;
+ 	cstate_t s;
+ 	char buf[128] = "";
+-	int percent_width = 4;
+ 
+ 	fill_string_with_spaces(buf, topology_depth * 5 - 1);
+ 	printf("%s|", buf);
+ 
+ 	for (mon = 0; mon < avail_monitors; mon++) {
+-		need_len = monitors[mon]->hw_states_num * (percent_width + 3)
++		need_len = monitors[mon]->hw_states_num * (MAX_COL_WIDTH + 1)
+ 			- 1;
+-		if (mon != 0) {
+-			printf("|| ");
+-			need_len--;
+-		}
++		if (mon != 0)
++			printf("||");
+ 		sprintf(buf, "%s", monitors[mon]->name);
+ 		fill_string_with_spaces(buf, need_len);
+ 		printf("%s", buf);
+@@ -107,23 +114,21 @@ void print_header(int topology_depth)
+ 	printf("\n");
+ 
+ 	if (topology_depth > 2)
+-		printf("PKG |");
++		printf(" PKG|");
+ 	if (topology_depth > 1)
+ 		printf("CORE|");
+ 	if (topology_depth > 0)
+-		printf("CPU |");
++		printf(" CPU|");
+ 
+ 	for (mon = 0; mon < avail_monitors; mon++) {
+ 		if (mon != 0)
+-			printf("|| ");
+-		else
+-			printf(" ");
++			printf("||");
+ 		for (state = 0; state < monitors[mon]->hw_states_num; state++) {
+ 			if (state != 0)
+-				printf(" | ");
++				printf("|");
+ 			s = monitors[mon]->hw_states[state];
+ 			sprintf(buf, "%s", s.name);
+-			fill_string_with_spaces(buf, percent_width);
++			fill_string_with_spaces(buf, MAX_COL_WIDTH);
+ 			printf("%s", buf);
+ 		}
+ 		printf(" ");
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+index 9e43f3371fbc..2ae50b499e0a 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+@@ -15,7 +15,16 @@
+ 
+ #define MONITORS_MAX 20
+ #define MONITOR_NAME_LEN 20
++
++/* CSTATE_NAME_LEN is limited by header field width defined
++ * in cpupower-monitor.c. Header field width is defined to be
++ * sum of percent width and two spaces for padding.
++ */
++#ifdef __powerpc__
++#define CSTATE_NAME_LEN 7
++#else
+ #define CSTATE_NAME_LEN 5
++#endif
+ #define CSTATE_DESC_LEN 60
+ 
+ int cpu_count;
+
+--------------73ED410EA6EFE97E134D4DB7--
