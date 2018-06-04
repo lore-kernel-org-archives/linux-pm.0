@@ -1,50 +1,191 @@
-From: Ravi Chandra Sadineni <ravisadineni@google.com>
-Subject: Re: [PATCH] power: Print wakeup_count instead of event_count in the
- sysfs attribute.
-Date: Sun, 3 Jun 2018 10:14:09 -0700
-Message-ID: <CAOGSYL0ga-H=0a5EEDmOWSZjnmG1Qc=9AxAbM_-ifHDj_FbREg@mail.gmail.com>
-References: <20180602023215.176521-1-ravisadineni@chromium.org> <CAJZ5v0gWeq034sObmHsbJoiBri4a=Av8xroeuW+eqyv_W=cHjQ@mail.gmail.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH 1/2] thermal: tsens: Add support for SDM845 platform
+Date: Mon, 4 Jun 2018 09:55:28 +0530
+Message-ID: <31b21293-ae00-0146-c196-6c8e964473f9@codeaurora.org>
+References: <cover.1527937396.git.amit.kucheria@linaro.org>
+ <7a0f33cff94f41110bdbff14d28d36074fae2a7d.1527937396.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gWeq034sObmHsbJoiBri4a=Av8xroeuW+eqyv_W=cHjQ@mail.gmail.com>
+In-Reply-To: <7a0f33cff94f41110bdbff14d28d36074fae2a7d.1527937396.git.amit.kucheria@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ravi Chandra Sadineni <ravisadineni@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, chenhong3@huawei.com, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dtor@google.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Todd Broch <tbroch@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rajat Jain <rajatja@google.com>, Benson Leung <bleung@google.com>
+To: Amit Kucheria <amit.kucheria@linaro.org>, linux-arm-msm@vger.kernel.org
+Cc: bjorn.andersson@linaro.org, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
 
-On Sun, Jun 3, 2018 at 1:05 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Sat, Jun 2, 2018 at 4:32 AM, Ravi Chandra Sadineni
-> <ravisadineni@chromium.org> wrote:
->> Currently we show event_count instead of wakeup_count as part of per
->> device wakeup_count sysfs attribute. Change it to wakeup_count to make
->> it more meaningful.
->
-> More information, please.
->
-> In particular, why it is more meaningful.
-Wakeup_count increments only when events_check_enabled is set. This
-bool is set whenever we write current wakeup count to
-/sys/power/wakeup_count from the user land. Also events_check_enabled
-is cleared on every resume. My understanding is that, userland is
-expected to write to this just before suspend. This way
-pm_wakeup_event() when called from irqs will increment the
-wakeup_count only if we are in system wide suspend resume cycle and
-should give a fair approximation of how many times a device might have
-caused a wake from S3/S0iX.  event_count on the other hand will
-increment every time pm_wakeup_event() is called irrespective of
-whether we are in a suspend/resume cycle.  For example when I try
-doing something like this (https://lkml.org/lkml/2018/6/1/890), we see
-the wakeup_count sysfs attribute for the particular device
-incrementing every time there is a irq. If it is important to expose
-event_count via sysfs attribute, should we create another attribute ?
-Also we do expose each of these counters via
-debugfs(/sys/kernel/debug/wake_sources).
 
-Please correct me if I am wrong or missing something. Also if there is
-a better way to do this, please let me know.
->
-> Thanks,
-> Rafael
+On 06/02/2018 04:41 PM, Amit Kucheria wrote:
+> There are two tsens blocks on the SDM845. These will be configured through
+> the devicetree.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  .../devicetree/bindings/thermal/qcom-tsens.txt     |  1 +
+>  drivers/thermal/qcom/Makefile                      |  2 +-
+>  drivers/thermal/qcom/tsens-sdm845.c                | 98 ++++++++++++++++++++++
+>  drivers/thermal/qcom/tsens.c                       |  3 +
+>  drivers/thermal/qcom/tsens.h                       |  1 +
+>  5 files changed, 104 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/thermal/qcom/tsens-sdm845.c
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> index 292ed89..8652499 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> @@ -5,6 +5,7 @@ Required properties:
+>   - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+>   - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+>   - "qcom,msm8996-tsens" : For 8996 Family of SoCs
+> + - "qcom,sdm845-tsens"  : For SDM845 Family of SoCs
+>  
+>  - reg: Address range of the thermal registers
+>  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
+> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+> index 2cc2193..dc9f169 100644
+> --- a/drivers/thermal/qcom/Makefile
+> +++ b/drivers/thermal/qcom/Makefile
+> @@ -1,2 +1,2 @@
+>  obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
+> -qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-8996.o
+> +qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-8996.o tsens-sdm845.o
+> diff --git a/drivers/thermal/qcom/tsens-sdm845.c b/drivers/thermal/qcom/tsens-sdm845.c
+> new file mode 100644
+> index 0000000..5d78f0b
+> --- /dev/null
+> +++ b/drivers/thermal/qcom/tsens-sdm845.c
+> @@ -0,0 +1,98 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2018, Linaro Limited
+> + */
+> +
+> +#include <linux/of_address.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include "tsens.h"
+> +
+> +#define CNTL_OFFSET	4
+> +/* CNTL_OFFSET bitmasks */
+> +#define EN		BIT(0)
+> +#define SW_RST		BIT(1)
+> +
+> +#define SENSOR0_SHIFT	3
+> +
+> +#define TRDY_OFFSET     0xe4
+> +#define TRDY_READY_BIT  BIT(1)
+> +
+> +#define STATUS_OFFSET	0xa0
+> +#define LAST_TEMP_MASK	0xfff
+> +#define STATUS_VALID_BIT	BIT(21)
+> +#define CODE_SIGN_BIT		BIT(11)
+> +
+> +static int get_temp_sdm845(struct tsens_device *tmdev, int id, int *temp)
+> +{
+> +	struct tsens_sensor *s = &tmdev->sensor[id];
+> +	u32 code;
+> +	unsigned int sensor_addr;
+> +	int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
+> +
+> +	ret = regmap_read(tmdev->map, TRDY_OFFSET, &code);
+> +	if (ret)
+> +		return ret;
+> +	if (code & TRDY_READY_BIT)
+> +		return -ENODATA;
+> +
+> +	sensor_addr = STATUS_OFFSET + s->hw_id * 4;
+> +	ret = regmap_read(tmdev->map, sensor_addr, &code);
+> +	if (ret)
+> +		return ret;
+> +	last_temp = code & LAST_TEMP_MASK;
+> +	if (code & STATUS_VALID_BIT)
+> +		goto done;
+> +
+> +	/* Try a second time */
+> +	ret = regmap_read(tmdev->map, sensor_addr, &code);
+> +	if (ret)
+> +		return ret;
+> +	if (code & STATUS_VALID_BIT) {
+> +		last_temp = code & LAST_TEMP_MASK;
+> +		goto done;
+> +	} else {
+> +		last_temp2 = code & LAST_TEMP_MASK;
+> +	}
+> +
+> +	/* Try a third/last time */
+> +	ret = regmap_read(tmdev->map, sensor_addr, &code);
+> +	if (ret)
+> +		return ret;
+> +	if (code & STATUS_VALID_BIT) {
+> +		last_temp = code & LAST_TEMP_MASK;
+> +		goto done;
+> +	} else {
+> +		last_temp3 = code & LAST_TEMP_MASK;
+> +	}
+> +
+> +	if (last_temp == last_temp2)
+> +		last_temp = last_temp2;
+> +	else if (last_temp2 == last_temp3)
+> +		last_temp = last_temp3;
+> +done:
+> +	/* Code sign bit is the sign extension for a negative value */
+> +	if (last_temp & CODE_SIGN_BIT)
+> +		last_temp |= ~CODE_SIGN_BIT;
+> +
+> +	/* Temperatures are in deciCelicius */
+> +	*temp = last_temp * 100;
+
+This looks the same as what we do for 8996. Does it make sense to move this
+to tsens-common and reuse in both 8996 and 845?
+
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct regmap_config tsens_config = {
+> +	.reg_bits	= 32,
+> +	.val_bits	= 32,
+> +	.reg_stride	= 4,
+> +};
+> +
+> +
+> +static const struct tsens_ops ops_sdm845 = {
+> +  	.init		= init_common,
+> +	.get_temp	= get_temp_sdm845,
+> +};
+> +
+> +const struct tsens_data data_sdm845 = {
+> +	.ops		= &ops_sdm845,
+> +};
+> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> index 3f9fe6a..314a20f 100644
+> --- a/drivers/thermal/qcom/tsens.c
+> +++ b/drivers/thermal/qcom/tsens.c
+> @@ -72,6 +72,9 @@ static const struct of_device_id tsens_table[] = {
+>  	}, {
+>  		.compatible = "qcom,msm8996-tsens",
+>  		.data = &data_8996,
+> +	}, {
+> +		.compatible = "qcom,sdm845-tsens",
+> +		.data = &data_sdm845,
+>  	},
+>  	{}
+>  };
+> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+> index 911c197..f15660d 100644
+> --- a/drivers/thermal/qcom/tsens.h
+> +++ b/drivers/thermal/qcom/tsens.h
+> @@ -90,5 +90,6 @@ int init_common(struct tsens_device *);
+>  int get_temp_common(struct tsens_device *, int, int *);
+>  
+>  extern const struct tsens_data data_8916, data_8974, data_8960, data_8996;
+> +extern const struct tsens_data data_sdm845;
+>  
+>  #endif /* __QCOM_TSENS_H__ */
+> 
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
