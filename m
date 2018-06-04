@@ -1,40 +1,37 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 1/3] mfd: cros: add charger port count command definition
-Date: Mon, 4 Jun 2018 09:59:00 +0100
-Message-ID: <20180604085900.GN25455@dell>
-References: <20180530031704.18597-1-fparent@baylibre.com>
- <20180530031704.18597-2-fparent@baylibre.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] cpuidle/powernv : Add Description for cpuidle state
+Date: Mon, 04 Jun 2018 19:04:14 +1000
+Message-ID: <0a28154deb468669a59c120a90d4aedc1e1e705b.camel@kernel.crashing.org>
+References: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180530031704.18597-2-fparent@baylibre.com>
+In-Reply-To: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Fabien Parent <fparent@baylibre.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eballetbo@gmail.com, gpain@baylibre.com
+To: Abhishek Goel <huntbag@linux.vnet.ibm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: stewart@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 29 May 2018, Fabien Parent wrote:
+On Mon, 2018-06-04 at 13:47 +0530, Abhishek Goel wrote:
+> +       if (of_property_read_string_array(power_mgt,
+> +               "ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
+> +               of_property_read_string_array(power_mgt,
+> +                               "ibm,cpu-idle-state-names", descs, dt_idle_states);
+> +               pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n"
+> +                       "Name will be used for description\n");
+> +       }
+>  
+>         /*
 
-> A new more command has been added to the ChromeOS embedded controller
-> that allows to get the number of charger port count. Unlike
-> EC_CMD_USB_PD_PORTS, this new command also includes the dedicated
-> port if present.
-> 
-> This command will be used to expose the dedicated charger port
-> in the ChromeOS charger driver.
-> 
-> Signed-off-by: Fabien Parent <fparent@baylibre.com>
-> ---
->  include/linux/mfd/cros_ec_commands.h | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+Is this a new property ? I'm not fan of adding yet another of those
+silly arrays.
 
-Does not want to apply.  I didn't investigate why.
+I would say this is the right time now to switch over to a node per
+state instead, as we discussed with Vaidy.
 
-Please rebase and resend?
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Additionally, while doing that, we can provide the versioning mechanism
+I proposed so we can deal with state specific issues and erratas.
+
+Cheers,
+Ben.
