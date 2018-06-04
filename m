@@ -1,79 +1,52 @@
-From: Stefan Popa <stefan.popa@analog.com>
-Subject: [PATCH] iio:dac:ad5686: Add AD5311R support
-Date: Mon, 4 Jun 2018 17:22:07 +0300
-Message-ID: <1528122127-1911-1-git-send-email-stefan.popa@analog.com>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH 1/2] thermal: tsens: Add support for SDM845 platform
+Date: Mon, 4 Jun 2018 08:03:19 -0700
+Message-ID: <20180604150319.GC510@tuxbook-pro>
+References: <cover.1527937396.git.amit.kucheria@linaro.org>
+ <7a0f33cff94f41110bdbff14d28d36074fae2a7d.1527937396.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <7a0f33cff94f41110bdbff14d28d36074fae2a7d.1527937396.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: jic23@kernel.org, Michael.Hennerich@analog.com, lars@metafoo.de
-Cc: knaack.h@gmx.de, pmeerw@pmeerw.net, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, stefan.popa@analog.com
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, rnayak@codeaurora.org, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-AD5311R is a single channel DAC with 10-bit precision and i2c interface.
-The device includes a 2.5V internal reference which is enabled by default.
+On Sat 02 Jun 04:11 PDT 2018, Amit Kucheria wrote:
+> diff --git a/drivers/thermal/qcom/tsens-sdm845.c b/drivers/thermal/qcom/tsens-sdm845.c
+[..]
+> +#define TRDY_OFFSET     0xe4
+> +#define TRDY_READY_BIT  BIT(1)
 
-This device is similar to AD5691R/AD5692R/AD5693/AD5693R, the only
-difference is that it has 10-bit precision.
+This is bit 0.
 
-Datasheet:
-http://www.analog.com/media/en/technical-documentation/data-sheets/AD5310R_5311R.pdf
+> +
+> +#define STATUS_OFFSET	0xa0
+> +#define LAST_TEMP_MASK	0xfff
+> +#define STATUS_VALID_BIT	BIT(21)
+> +#define CODE_SIGN_BIT		BIT(11)
+> +
+> +static int get_temp_sdm845(struct tsens_device *tmdev, int id, int *temp)
+> +{
+> +	struct tsens_sensor *s = &tmdev->sensor[id];
+> +	u32 code;
+> +	unsigned int sensor_addr;
+> +	int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
+> +
+> +	ret = regmap_read(tmdev->map, TRDY_OFFSET, &code);
+> +	if (ret)
+> +		return ret;
+> +	if (code & TRDY_READY_BIT)
+> +		return -ENODATA;
 
-Signed-off-by: Stefan Popa <stefan.popa@analog.com>
----
- drivers/iio/dac/ad5686.c     | 7 +++++++
- drivers/iio/dac/ad5686.h     | 1 +
- drivers/iio/dac/ad5696-i2c.c | 1 +
- 3 files changed, 9 insertions(+)
+This section is the only difference from 8996, but this register is
+identical to 8996 and 8998. So I think you should add this to
+tsens-8996.c and we can use that for 8996, 8998 and sdm845.
 
-diff --git a/drivers/iio/dac/ad5686.c b/drivers/iio/dac/ad5686.c
-index e136f0f..2ddbfc3 100644
---- a/drivers/iio/dac/ad5686.c
-+++ b/drivers/iio/dac/ad5686.c
-@@ -221,6 +221,7 @@ static struct iio_chan_spec name[] = {				\
- 		AD5868_CHANNEL(7, 7, bits, _shift),		\
- }
- 
-+DECLARE_AD5693_CHANNELS(ad5311r_channels, 10, 6);
- DECLARE_AD5676_CHANNELS(ad5672_channels, 12, 4);
- DECLARE_AD5676_CHANNELS(ad5676_channels, 16, 0);
- DECLARE_AD5686_CHANNELS(ad5684_channels, 12, 4);
-@@ -231,6 +232,12 @@ DECLARE_AD5693_CHANNELS(ad5692r_channels, 14, 2);
- DECLARE_AD5693_CHANNELS(ad5691r_channels, 12, 4);
- 
- static const struct ad5686_chip_info ad5686_chip_info_tbl[] = {
-+	[ID_AD5311R] = {
-+		.channels = ad5311r_channels,
-+		.int_vref_mv = 2500,
-+		.num_channels = 1,
-+		.regmap_type = AD5693_REGMAP,
-+	},
- 	[ID_AD5671R] = {
- 		.channels = ad5672_channels,
- 		.int_vref_mv = 2500,
-diff --git a/drivers/iio/dac/ad5686.h b/drivers/iio/dac/ad5686.h
-index d05cda9..57b3c61 100644
---- a/drivers/iio/dac/ad5686.h
-+++ b/drivers/iio/dac/ad5686.h
-@@ -45,6 +45,7 @@
-  * ad5686_supported_device_ids:
-  */
- enum ad5686_supported_device_ids {
-+	ID_AD5311R,
- 	ID_AD5671R,
- 	ID_AD5672R,
- 	ID_AD5675R,
-diff --git a/drivers/iio/dac/ad5696-i2c.c b/drivers/iio/dac/ad5696-i2c.c
-index d18735d..7350d98 100644
---- a/drivers/iio/dac/ad5696-i2c.c
-+++ b/drivers/iio/dac/ad5696-i2c.c
-@@ -71,6 +71,7 @@ static int ad5686_i2c_remove(struct i2c_client *i2c)
- }
- 
- static const struct i2c_device_id ad5686_i2c_id[] = {
-+	{"ad5311r", ID_AD5311R},
- 	{"ad5671r", ID_AD5671R},
- 	{"ad5675r", ID_AD5675R},
- 	{"ad5691r", ID_AD5691R},
--- 
-2.7.4
+Perhaps we should name it tsens-v2, as that seems to be the common
+denominator for these, according to the documentation.
+
+Regards,
+Bjorn
