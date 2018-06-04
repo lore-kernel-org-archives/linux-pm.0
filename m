@@ -1,37 +1,57 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] cpuidle/powernv : Add Description for cpuidle state
-Date: Mon, 04 Jun 2018 19:04:14 +1000
-Message-ID: <0a28154deb468669a59c120a90d4aedc1e1e705b.camel@kernel.crashing.org>
-References: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Taniya Das <tdas@codeaurora.org>
+Subject: [PATCH v3 0/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
+Date: Mon,  4 Jun 2018 16:16:32 +0530
+Message-ID: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: stewart@linux.vnet.ibm.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-06-04 at 13:47 +0530, Abhishek Goel wrote:
-> +       if (of_property_read_string_array(power_mgt,
-> +               "ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
-> +               of_property_read_string_array(power_mgt,
-> +                               "ibm,cpu-idle-state-names", descs, dt_idle_states);
-> +               pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n"
-> +                       "Name will be used for description\n");
-> +       }
->  
->         /*
+ [v3]
+  * Remove index check from 'qcom_cpufreq_fw_target_index'.
+  * Update the Documentation binding to add the platform specific properties in
+    the CPU nodes, node name "qcom,freq-domain".
+  * Update return value to '0' from -ENODEV from 'qcom_cpufreq_fw_get'.
+  * Update the logic for boost frequency to use local variables instead of
+    cpufreq driver data in 'qcom_read_lut'.
+  * Update the logic in 'qcom_get_related_cpus' to find the related cpus.
+  * Update the reg-names to remove "_base" and also update the binding with the
+    description of these registers.
+  * Update the logic in 'qcom_resources_init' to address the new device tree
+    notation of handling the frequency domain phandles.
 
-Is this a new property ? I'm not fan of adding yet another of those
-silly arrays.
+ [v2]
+ * Fixed the alignment issues in "qcom_cpufreq_fw_target_index" for dev_err and
+   also for "qcom_cpu_resources_init".
+ * Removed ret = 0 from qcom_get_related_cpus and added to check for
+   cpu_mask_empty to return -ENOENT.
+ * Fixes qcom_cpu_resources_init function
+   * Remove initialization of 'index'
+   * Check for valid 'c'
+ * Removed initialization of 'prev_cc' from 'qcom_read_lut'.
+ * Remove initialization of 'ret' from function qcom_resources_init and add
+   return -ENODEV based on 'of_get_available_child_count'.
+ * Removed initialization of 'rc' from qcom_cpufreq_fw_driver_probe
+ * Removed module_exit as this driver would not be used as module, also updated
+   the Kconfig to bool from tristate.
+ * Updated the subsystem in device tree bindings.
 
-I would say this is the right time now to switch over to a node per
-state instead, as we discussed with Vaidy.
+ [v1]
+   * Fixed compilation reported by Amit K.
 
-Additionally, while doing that, we can provide the versioning mechanism
-I proposed so we can deal with state specific issues and erratas.
+Taniya Das (2):
+  dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW bindings
+  cpufreq: qcom-fw: Add support for QCOM cpufreq FW driver
 
-Cheers,
-Ben.
+ .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 173 +++++++++++
+ drivers/cpufreq/Kconfig.arm                        |   9 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/qcom-cpufreq-fw.c                  | 318 +++++++++++++++++++++
+ 4 files changed, 501 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-fw.c
+
+--
+Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+of the Code Aurora Forum, hosted by the  Linux Foundation.
