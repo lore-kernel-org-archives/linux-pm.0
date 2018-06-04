@@ -1,121 +1,40 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpuidle/powernv : Add Description for cpuidle state
-Date: Mon,  4 Jun 2018 13:47:58 +0530
-Message-ID: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 1/3] mfd: cros: add charger port count command definition
+Date: Mon, 4 Jun 2018 09:59:00 +0100
+Message-ID: <20180604085900.GN25455@dell>
+References: <20180530031704.18597-1-fparent@baylibre.com>
+ <20180530031704.18597-2-fparent@baylibre.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180530031704.18597-2-fparent@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: stewart@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: Fabien Parent <fparent@baylibre.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eballetbo@gmail.com, gpain@baylibre.com
 List-Id: linux-pm@vger.kernel.org
 
-    Names of cpuidle states were being used for description of states
-    in POWER as no descriptions were added in device tree. This patch
-    reads description for idle states which have been added in device
-    tree.
-    The description for idle states in case of POWER can be printed
-    using "cpupower monitor -l" or "cpupower idle-info".
+On Tue, 29 May 2018, Fabien Parent wrote:
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
+> A new more command has been added to the ChromeOS embedded controller
+> that allows to get the number of charger port count. Unlike
+> EC_CMD_USB_PD_PORTS, this new command also includes the dedicated
+> port if present.
+> 
+> This command will be used to expose the dedicated charger port
+> in the ChromeOS charger driver.
+> 
+> Signed-off-by: Fabien Parent <fparent@baylibre.com>
+> ---
+>  include/linux/mfd/cros_ec_commands.h | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 
-The skiboot patch which adds description for idle states in device tree
-can be found here: https://patchwork.ozlabs.org/patch/924879/
+Does not want to apply.  I didn't investigate why.
 
- drivers/cpuidle/cpuidle-powernv.c | 19 +++++++++++++++----
- include/linux/cpuidle.h           |  2 +-
- 2 files changed, 16 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 1a8234e706bc..08d8b0953a14 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -133,7 +133,7 @@ static int stop_loop(struct cpuidle_device *dev,
- static struct cpuidle_state powernv_states[CPUIDLE_STATE_MAX] = {
- 	{ /* Snooze */
- 		.name = "snooze",
--		.desc = "snooze",
-+		.desc = "idle polling state",
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = snooze_loop },
-@@ -206,6 +206,7 @@ static int powernv_cpuidle_driver_init(void)
- }
- 
- static inline void add_powernv_state(int index, const char *name,
-+				     const char *desc,
- 				     unsigned int flags,
- 				     int (*idle_fn)(struct cpuidle_device *,
- 						    struct cpuidle_driver *,
-@@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
- 				     u64 psscr_val, u64 psscr_mask)
- {
- 	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
--	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
-+	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
- 	powernv_states[index].flags = flags;
- 	powernv_states[index].target_residency = target_residency;
- 	powernv_states[index].exit_latency = exit_latency;
-@@ -250,6 +251,7 @@ static int powernv_add_idle_states(void)
- 	u64 psscr_val[CPUIDLE_STATE_MAX];
- 	u64 psscr_mask[CPUIDLE_STATE_MAX];
- 	const char *names[CPUIDLE_STATE_MAX];
-+	const char *descs[CPUIDLE_STATE_MAX];
- 	u32 has_stop_states = 0;
- 	int i, rc;
- 	u32 supported_flags = pnv_get_supported_cpuidle_states();
-@@ -311,6 +313,13 @@ static int powernv_add_idle_states(void)
- 		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
- 		goto out;
- 	}
-+	if (of_property_read_string_array(power_mgt,
-+		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
-+		of_property_read_string_array(power_mgt,
-+				"ibm,cpu-idle-state-names", descs, dt_idle_states);
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n"
-+			"Name will be used for description\n");
-+	}
- 
- 	/*
- 	 * If the idle states use stop instruction, probe for psscr values
-@@ -414,10 +423,11 @@ static int powernv_add_idle_states(void)
- 				target_residency = 100;
- 			/* Add NAP state */
- 			add_powernv_state(nr_idle_states, "Nap",
-+					  "stop processor execution",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
- 		} else if (has_stop_states && !stops_timebase) {
--			add_powernv_state(nr_idle_states, names[i],
-+			add_powernv_state(nr_idle_states, names[i], descs[i],
- 					  CPUIDLE_FLAG_NONE, stop_loop,
- 					  target_residency, exit_latency,
- 					  psscr_val[i], psscr_mask[i]);
-@@ -434,11 +444,12 @@ static int powernv_add_idle_states(void)
- 				target_residency = 300000;
- 			/* Add FASTSLEEP state */
- 			add_powernv_state(nr_idle_states, "FastSleep",
-+					  "Core and L2 clock gating",
- 					  CPUIDLE_FLAG_TIMER_STOP,
- 					  fastsleep_loop,
- 					  target_residency, exit_latency, 0, 0);
- 		} else if (has_stop_states && stops_timebase) {
--			add_powernv_state(nr_idle_states, names[i],
-+			add_powernv_state(nr_idle_states, names[i], descs[i],
- 					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
- 					  target_residency, exit_latency,
- 					  psscr_val[i], psscr_mask[i]);
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 1eefabf1621f..5094755cb132 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -17,7 +17,7 @@
- 
- #define CPUIDLE_STATE_MAX	10
- #define CPUIDLE_NAME_LEN	16
--#define CPUIDLE_DESC_LEN	32
-+#define CPUIDLE_DESC_LEN	60
- 
- struct module;
- 
+Please rebase and resend?
 -- 
-2.14.1
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
