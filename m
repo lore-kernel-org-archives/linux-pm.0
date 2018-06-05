@@ -1,41 +1,61 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] cpufreq: kryo: allow building as a loadable module
-Date: Tue,  5 Jun 2018 13:44:24 +0200
-Message-ID: <20180605114453.1381941-1-arnd@arndb.de>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
+Date: Tue, 05 Jun 2018 22:18:40 +1000
+Message-ID: <87zi09mnof.fsf@concordia.ellerman.id.au>
+References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com> <87fu22bxlf.fsf@concordia.ellerman.id.au> <20180605084529.GA5656@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180605084529.GA5656@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Ilia Lin <ilialin@codeaurora.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stewart Smith <stewart@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Building the kryo cpufreq driver while QCOM_SMEM is a loadable module
-results in a link error:
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
+> Hello Michael,
+>
+> On Mon, Jun 04, 2018 at 09:27:40PM +1000, Michael Ellerman wrote:
+>> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+>> 
+>> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>> >
+>> > The commit 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of
+>> > snooze to deeper idle state") introduced a timeout for the snooze idle
+>> > state so that it could be eventually be promoted to a deeper idle
+>> > state. The snooze timeout value is static and set to the target
+>> > residency of the next idle state, which would train the cpuidle
+>> > governor to pick the next idle state eventually.
+>> >
+>> > The unfortunate side-effect of this is that if the next idle state(s)
+>> > is disabled, the CPU will forever remain in snooze, despite the fact
+>> > that the system is completely idle, and other deeper idle states are
+>> > available.
+>> 
+>> That sounds like a bug, I'll add?
+>
+> Yes, this is a bug-fix for a customer scenario which we encountered
+> recently.
 
-drivers/cpufreq/qcom-cpufreq-kryo.o: In function `qcom_cpufreq_kryo_probe':
-qcom-cpufreq-kryo.c:(.text+0xbc): undefined reference to `qcom_smem_get'
+OK, the change log could have used some more scary words to make that
+clearer ;)
 
-The problem is that Kconfig ignores interprets the dependency as met
-when the dependent symbol is a 'bool' one. By making it 'tristate',
-it will be forced to be a module here, which builds successfully.
+I changed the subject to:
 
-Fixes: 46e2856b8e18 ("cpufreq: Add Kryo CPU scaling driver")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/cpufreq/Kconfig.arm | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  cpuidle: powernv: Fix promotion from snooze if next state disabled
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index c7ce928fbf1f..52f5f1a2040c 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -125,7 +125,7 @@ config ARM_OMAP2PLUS_CPUFREQ
- 	default ARCH_OMAP2PLUS
- 
- config ARM_QCOM_CPUFREQ_KRYO
--	bool "Qualcomm Kryo based CPUFreq"
-+	tristate "Qualcomm Kryo based CPUFreq"
- 	depends on ARM64
- 	depends on QCOM_QFPROM
- 	depends on QCOM_SMEM
--- 
-2.9.0
+Which hopefully makes sense.
+
+>> Fixes: 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of snooze to deeper idle state")
+>> Cc: stable@vger.kernel.org # v4.2+
+>
+> This patch applies cleanly from v4.13 onwards. Prior to that there are
+> some (minor) conflicts.
+>
+> Should I spin a version separately for the prior stable versions ?
+
+Yes please, that would be great.
+
+You might want to avoid "=====" in the change log too, as patchwork and
+possibly other tools will think it's part of the diff.
+
+cheers
