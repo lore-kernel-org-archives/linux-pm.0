@@ -1,41 +1,38 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V4] powercap/drivers/idle_injection: Add an idle injection
- framework
-Date: Tue, 5 Jun 2018 08:53:36 +0200
-Message-ID: <8d29a3c2-056c-3a70-3ecf-56cdf6e37931@linaro.org>
-References: <1527241792-5860-1-git-send-email-daniel.lezcano@linaro.org>
- <20180529093148.b2cxb5lwks7ka2tn@vireshk-i7>
- <c7c4143d-77c4-a41b-b770-e5c38e346320@linaro.org>
- <20180605051421.xbpkupxem5movm57@vireshk-i7>
- <898e23f9-7e91-b708-dd06-e3d3056abe61@linaro.org>
- <20180605055334.mnffwgcvca3zzwub@vireshk-i7>
+From: =?UTF-8?Q?S=c3=a9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
+Subject: Re: [PATCH v3 1/3] cpufreq: imx6q: check speed grades for i.MX6ULL
+Date: Tue, 5 Jun 2018 09:07:00 +0200
+Message-ID: <717f24e1-3846-7685-b440-0754da883c2a@armadeus.com>
+References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
+ <20180523042953.kcp2h5xtwjrjponn@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180605055334.mnffwgcvca3zzwub@vireshk-i7>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180523042953.kcp2h5xtwjrjponn@vireshk-i7>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawnguo@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Stefan Agner <stefan@agner.ch>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/06/2018 07:53, Viresh Kumar wrote:
-> On 05-06-18, 07:48, Daniel Lezcano wrote:
->> As soon as we reach complete(), no timer can be set because of the
->> condition before.
-> 
-> Why not ? We aren't using any locks here and it is possible that run_duration_ms
-> is set to 0 from idle_injection_stop() only after the first thread has restarted
-> the hrtimer. Isn't it ?
-
-If he restarted the timer, complete() won't be called and
-idle_injection_stop() will wait until the idle cycle injection is finished.
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+T24gMDUvMjMvMjAxOCAwNjoyOSBBTSwgVmlyZXNoIEt1bWFyIHdyb3RlOgo+IE9uIDIyLTA1LTE4
+LCAwODoyOCwgU8OpYmFzdGllbiBTenltYW5za2kgd3JvdGU6Cj4+IENoZWNrIHRoZSBtYXggc3Bl
+ZWQgc3VwcG9ydGVkIGZyb20gdGhlIGZ1c2VzIGZvciBpLk1YNlVMTCBhbmQgdXBkYXRlIHRoZQo+
+PiBvcGVyYXRpbmcgcG9pbnRzIHRhYmxlIGFjY29yZGluZ2x5Lgo+Pgo+PiBTaWduZWQtb2ZmLWJ5
+OiBTw6liYXN0aWVuIFN6eW1hbnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1hZGV1cy5jb20+
+Cj4+IC0tLQo+Pgo+PiBDaGFuZ2VzIGZvciB2MzoKPj4gIC0gbm9uZQo+IAo+IEBTYXNjaGEgYW5k
+IFNoYXduOiBDYW4geW91IGd1eXMgcGxlYXNlIEFjayB0aGlzIHNlcmllcyBpZiB0aGVyZSBpcwo+
+IG5vdGhpbmcgd3Jvbmcgd2l0aCBpdCA/Cj4gCgpwaW5nLi4uCgotLSAKU8OpYmFzdGllbiBTenlt
+YW5za2kKU29mdHdhcmUgZW5naW5lZXIsIEFybWFkZXVzIFN5c3RlbXMKVGVsOiArMzMgKDApOSA3
+MiAyOSA0MSA0NApGYXg6ICszMyAoMCk5IDcyIDI4IDc5IDI2CgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
+dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
+ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
