@@ -1,24 +1,41 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH v3 1/3] cpufreq: imx6q: check speed grades for i.MX6ULL
-Date: Tue, 5 Jun 2018 08:01:47 -0300
-Message-ID: <CAOMZO5CsX-oiUXGicL1P61PcT67S9mhTTO5ibuXsQNd+UGt-Kg@mail.gmail.com>
-References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cpufreq: kryo: allow building as a loadable module
+Date: Tue,  5 Jun 2018 13:44:24 +0200
+Message-ID: <20180605114453.1381941-1-arnd@arndb.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?Q?S=C3=A9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
-Cc: "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Stefan Agner <stefan@agner.ch>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Ilia Lin <ilialin@codeaurora.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 22, 2018 at 3:28 AM, S=C3=A9bastien Szymanski
-<sebastien.szymanski@armadeus.com> wrote:
-> Check the max speed supported from the fuses for i.MX6ULL and update the
-> operating points table accordingly.
->
-> Signed-off-by: S=C3=A9bastien Szymanski <sebastien.szymanski@armadeus.com=
->
+Building the kryo cpufreq driver while QCOM_SMEM is a loadable module
+results in a link error:
 
-Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+drivers/cpufreq/qcom-cpufreq-kryo.o: In function `qcom_cpufreq_kryo_probe':
+qcom-cpufreq-kryo.c:(.text+0xbc): undefined reference to `qcom_smem_get'
+
+The problem is that Kconfig ignores interprets the dependency as met
+when the dependent symbol is a 'bool' one. By making it 'tristate',
+it will be forced to be a module here, which builds successfully.
+
+Fixes: 46e2856b8e18 ("cpufreq: Add Kryo CPU scaling driver")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/cpufreq/Kconfig.arm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index c7ce928fbf1f..52f5f1a2040c 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -125,7 +125,7 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	default ARCH_OMAP2PLUS
+ 
+ config ARM_QCOM_CPUFREQ_KRYO
+-	bool "Qualcomm Kryo based CPUFreq"
++	tristate "Qualcomm Kryo based CPUFreq"
+ 	depends on ARM64
+ 	depends on QCOM_QFPROM
+ 	depends on QCOM_SMEM
+-- 
+2.9.0
