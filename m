@@ -1,74 +1,63 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 19/33] thermal: db8500: use match_string() helper
-Date: Tue, 5 Jun 2018 19:14:33 +0300
-Message-ID: <CAHp75Vf=DJ2U6_XrBNdbHwHOnDPKe5ZVUtsHzi0WPJAw3bBR7g@mail.gmail.com>
-References: <1526903890-35761-1-git-send-email-xieyisheng1@huawei.com>
- <1526903890-35761-20-git-send-email-xieyisheng1@huawei.com>
- <CAHp75VfqEdoDZydwFmQaLiUN8cVtH3MbFHf3qixU8xUHXMwt1g@mail.gmail.com> <c058971b-e072-a7b5-3f6e-d06458099c60@huawei.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH 2/2] sched/fair: util_est: add running_sum tracking
+Date: Tue, 5 Jun 2018 17:54:31 +0100
+Message-ID: <20180605165431.GF32302@e110439-lin>
+References: <20180604160600.22052-1-patrick.bellasi@arm.com>
+ <20180604160600.22052-3-patrick.bellasi@arm.com>
+ <CAKfTPtD8RDxT=-oO2VYJRbtwoEyEKEAau-Ad-bAd8L2T2zKWEg@mail.gmail.com>
+ <20180605151129.GC32302@e110439-lin>
+ <20180605153105.GM16081@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c058971b-e072-a7b5-3f6e-d06458099c60@huawei.com>
+Content-Disposition: inline
+In-Reply-To: <20180605153105.GM16081@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yisheng Xie <xieyisheng1@huawei.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 23, 2018 at 10:47 AM, Yisheng Xie <xieyisheng1@huawei.com> wrot=
-e:
-> Hi Andy,
->
-> On 2018/5/22 6:00, Andy Shevchenko wrote:
->> On Mon, May 21, 2018 at 2:57 PM, Yisheng Xie <xieyisheng1@huawei.com> wr=
-ote:
->>> match_string() returns the index of an array for a matching string,
->>> which can be used intead of open coded variant.
->>
->>> +       i =3D match_string((const char **)trip_point->cdev_name,
->>
->> Casting looks ugly. You need to constify the variable itself.
-> When I tried to const cdev_name like:
-> +++ b/include/linux/platform_data/db8500_thermal.h
-> @@ -27,7 +27,7 @@
->  struct db8500_trip_point {
->         unsigned long temp;
->         enum thermal_trip_type type;
-> -       char cdev_name[COOLING_DEV_MAX][THERMAL_NAME_LENGTH];
-> +       char const cdev_name[COOLING_DEV_MAX][THERMAL_NAME_LENGTH]; // co=
-nst char cdev_name[COOLING_DEV_MAX][THERMAL_NAME_LENGTH] will also the same
->  };
->
-> The compiler will also warning:
-> drivers/thermal/db8500_thermal.c: In function =E2=80=98db8500_thermal_mat=
-ch_cdev=E2=80=99:
-> drivers/thermal/db8500_thermal.c:53:2: warning: passing argument 1 of =E2=
-=80=98match_string=E2=80=99 from incompatible pointer type [enabled by defa=
-ult]
->   i =3D match_string(trip_point->cdev_name, COOLING_DEV_MAX, cdev->type);
->   ^
-> In file included from include/linux/bitmap.h:9:0,
->                  from include/linux/cpumask.h:12,
->                  from include/linux/rcupdate.h:44,
->                  from include/linux/radix-tree.h:28,
->                  from include/linux/idr.h:15,
->                  from include/linux/kernfs.h:14,
->                  from include/linux/sysfs.h:16,
->                  from kernel/include/linux/kobject.h:20,
->                  from kernel/include/linux/of.h:17,
->                  from include/linux/cpu_cooling.h:27,
->                  from drivers/thermal/db8500_thermal.c:20:
-> include/linux/string.h:184:5: note: expected =E2=80=98const char * const*=
-=E2=80=99 but argument is of type =E2=80=98const char (*)[20]=E2=80=99
->
-> Any idea?
+On 05-Jun 17:31, Juri Lelli wrote:
+> On 05/06/18 16:11, Patrick Bellasi wrote:
+> 
+> [...]
+> 
+> > If I run an experiment with your example above, while using the
+> > performance governor to rule out any possible scale invariance
+> > difference, here is what I measure:
+> > 
+> >    Task1 (40ms delayed by the following Task2):
+> >                                mean          std     max
+> >       running_avg        455.387449    22.940168   492.0
+> >       util_avg           433.233288    17.395477   458.0
+> > 
+> >    Task2 (waking up at same time of Task1 and running before):
+> >                                mean          std     max
+> >       running_avg        430.281834    22.405175   455.0
+> >       util_avg           421.745331    22.098873   456.0
+> > 
+> > and if I compare Task1 above with another experiment where Task1 is
+> > running alone:
+> > 
+> >    Task1 (running alone):
+> >                                mean          std     min
+> >       running_avg        460.257895    22.103704   460.0
+> >       util_avg           435.119737    17.647556   461.0
+> 
+> Wait, why again in this last case running_avg != util_avg? :)
 
-Yes.
-If you wish to continue, you need to do two patches instead, where in
-first you are changing fixed array size of pointers to dynamic one and
-replace or loops from being by size to ones being NULL terminated.
+I _think_ it's mostly due to the rouding errors we have because of the
+reasons I've explained in the reply to Joel:
 
+   https://lkml.org/lkml/2018/6/5/559
+   20180605152156.GD32302@e110439-lin
 
---=20
-With Best Regards,
-Andy Shevchenko
+at the end, while commenting about the division overhead.
+
+I should try the above examples while tracking the full signal at
+___update_load_avg() time.
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
