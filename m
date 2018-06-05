@@ -1,43 +1,132 @@
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
-Date: Tue, 05 Jun 2018 13:47:55 +1000
-Message-ID: <87k1rd28t0.fsf@linux.vnet.ibm.com>
-References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com> <87fu22bxlf.fsf@concordia.ellerman.id.au>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Tue, 5 Jun 2018 10:44:21 +0530
+Message-ID: <20180605051421.xbpkupxem5movm57@vireshk-i7>
+References: <1527241792-5860-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180529093148.b2cxb5lwks7ka2tn@vireshk-i7>
+ <c7c4143d-77c4-a41b-b770-e5c38e346320@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87fu22bxlf.fsf@concordia.ellerman.id.au>
+Content-Disposition: inline
+In-Reply-To: <c7c4143d-77c4-a41b-b770-e5c38e346320@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, edubezval@gmail.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, vincent.guittot@linaro.org, linux-kernel@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, daniel.thompson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
->
->> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>
->> The commit 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of
->> snooze to deeper idle state") introduced a timeout for the snooze idle
->> state so that it could be eventually be promoted to a deeper idle
->> state. The snooze timeout value is static and set to the target
->> residency of the next idle state, which would train the cpuidle
->> governor to pick the next idle state eventually.
->>
->> The unfortunate side-effect of this is that if the next idle state(s)
->> is disabled, the CPU will forever remain in snooze, despite the fact
->> that the system is completely idle, and other deeper idle states are
->> available.
->
-> That sounds like a bug, I'll add?
->
-> Fixes: 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of snooze to deeper idle state")
-> Cc: stable@vger.kernel.org # v4.2+
+On 31-05-18, 20:25, Daniel Lezcano wrote:
+> On 29/05/2018 11:31, Viresh Kumar wrote:
+> > On 25-05-18, 11:49, Daniel Lezcano wrote:
+> >> +	/*
+> >> +	 * The last CPU waking up is in charge of setting the timer. If
+> >> +	 * the CPU is hotplugged, the timer will move to another CPU
+> >> +	 * (which may not belong to the same cluster) but that is not a
+> >> +	 * problem as the timer will be set again by another CPU
+> >> +	 * belonging to the cluster. This mechanism is self adaptive.
+> >> +	 */
+> > 
+> > I am afraid that the above comment may not be completely true all the
+> > time. For a quad-core platform, it is possible for 3 CPUs (0,1,2) to
+> > run this function as soon as the kthread is woken up, but one of the
+> > CPUs (3) may be stuck servicing an IRQ, Deadline or RT activity.
+> > Because you do atomic_inc() also in this function (above) itself,
+> > below decrement may return a true value for the CPU2 and that will
+> > restart the hrtimer, while one of the CPUs never got a chance to
+> > increment count in the first place.
+> >
+> > The fix is simple though, do the increment in idle_injection_wakeup()
+> > and things should be fine then.
+> 
+> Ok.
+> 
+> >> +	if (!atomic_dec_and_test(&ii_dev->count))
+> >> +		return;
+> >> +
+> >> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+> >> +	if (run_duration_ms) {
+> >> +		hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
+> >> +			      HRTIMER_MODE_REL_PINNED);
+> >> +		return;
+> >> +	}
+> >> +
+> >> +	complete(&ii_dev->stop_complete);
+> > 
+> > So you call complete() after hrtimer is potentially restarted. This
+> > can happen if idle_injection_stop() is called right after the above
+> > atomic_read() has finished :)
+> > 
+> > IOW, this doesn't look safe now as well.
+> 
+> It is safe, we just missed a cycle and the stop will block until the
+> next cycle. I did it on purpose and for me it is correct.
 
-Yes, it's a bug - we had a customer bug because we lacked this that
-meant we had to do firmware changes rather than just tweaking what stop
-states were used.
+Okay, what about this then:
+
+Path A                                         Path B
+
+idle_injection_fn()                            idle_injection_unregister()
+  hrtimer_start()                                idle_injection_stop()
+
+  complete()
+
+                                                   wait_for_completion()
+                                                 kfree(ii_dev);
+  
+  Hrtimer is still used here after
+  getting freed.
+
+
+Is this not possible ?
+
+> >> +struct idle_injection_device *idle_injection_register(struct cpumask *cpumask)
+> >> +{
+> >> +	struct idle_injection_device *ii_dev;
+> >> +	int cpu, cpu2;
+> >> +
+> >> +	ii_dev = ii_dev_alloc();
+> >> +	if (!ii_dev)
+> >> +		return NULL;
+> >> +
+> >> +	cpumask_copy(ii_dev->cpumask, cpumask);
+> >> +	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> >> +	ii_dev->timer.function = idle_injection_wakeup_fn;
+> >> +
+> >> +	for_each_cpu(cpu, ii_dev->cpumask) {
+> >> +
+> >> +		if (per_cpu(idle_injection_device, cpu)) {
+> > 
+> > Maybe add unlikely here ?
+> 
+> For this kind of init function and tight loop, there is no benefit of
+> adding the unlikely / likely. I can add it if you want, but it is useless.
+
+Okay.
+
+> >> +			pr_err("cpu%d is already registered\n", cpu);
+> >> +			goto out_rollback_per_cpu;
+> >> +		}
+> >> +
+> >> +		per_cpu(idle_injection_device, cpu) = ii_dev;
+> >> +	}
+> >> +
+> >> +	return ii_dev;
+> >> +
+> >> +out_rollback_per_cpu:
+> >> +	for_each_cpu(cpu2, ii_dev->cpumask) {
+> >> +		if (cpu == cpu2)
+> > 
+> > And is this really required? Perhaps this conditional is making it
+> > worse and just setting the per-cpu variable forcefully to NULL would
+> > be much faster :)
+> 
+> We want undo what was done, setting all variables to NULL resets the
+> values from a previous register and we don't want that.
+
+Why will that happen ? We are only iterating over a particular cpumask and not
+all possible CPUs. Yes I understand the "undo only what we did" part, but the
+conditional is more expensive than that I feel.
 
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+viresh
