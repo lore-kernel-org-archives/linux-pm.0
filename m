@@ -1,72 +1,61 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 2/2] sched/fair: util_est: add running_sum tracking
-Date: Tue, 5 Jun 2018 16:15:01 -0700
-Message-ID: <af0e3158-d97c-b546-ea51-03b77d4cd501@codeaurora.org>
-References: <20180604160600.22052-1-patrick.bellasi@arm.com>
- <20180604160600.22052-3-patrick.bellasi@arm.com>
- <CAKfTPtD8RDxT=-oO2VYJRbtwoEyEKEAau-Ad-bAd8L2T2zKWEg@mail.gmail.com>
- <20180605151129.GC32302@e110439-lin>
- <20180605153105.GM16081@localhost.localdomain>
- <20180605165431.GF32302@e110439-lin>
- <20180605204608.GA3510@joelaf.mtv.corp.google.com>
+Subject: Re: [PATCH 2/2] PM / devfreq: Generic cpufreq governor
+Date: Tue, 5 Jun 2018 16:26:31 -0700
+Message-ID: <7a7f2e59-1109-eb49-e26f-ed052fccd5c7@codeaurora.org>
+References: <1526631889-5084-3-git-send-email-skannan@codeaurora.org>
+ <1526631889-5084-1-git-send-email-skannan@codeaurora.org>
+ <CGME20180518082505epcas2p265038f51fc070a4aada4c692a71ebc3c@epcms1p8>
+ <20180528060014epcms1p87ec68a4d44f9447b06f979a87e545b7d@epcms1p8>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180605204608.GA3510@joelaf.mtv.corp.google.com>
+In-Reply-To: <20180528060014epcms1p87ec68a4d44f9447b06f979a87e545b7d@epcms1p8>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>, Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, connoro@google.com, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
+To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: Rajendra Nayak <rjendra@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/05/2018 01:46 PM, Joel Fernandes wrote:
-> On Tue, Jun 05, 2018 at 05:54:31PM +0100, Patrick Bellasi wrote:
->> On 05-Jun 17:31, Juri Lelli wrote:
->>> On 05/06/18 16:11, Patrick Bellasi wrote:
->>>
->>> [...]
->>>
->>>> If I run an experiment with your example above, while using the
->>>> performance governor to rule out any possible scale invariance
->>>> difference, here is what I measure:
->>>>
->>>>     Task1 (40ms delayed by the following Task2):
->>>>                                 mean          std     max
->>>>        running_avg        455.387449    22.940168   492.0
->>>>        util_avg           433.233288    17.395477   458.0
->>>>
->>>>     Task2 (waking up at same time of Task1 and running before):
->>>>                                 mean          std     max
->>>>        running_avg        430.281834    22.405175   455.0
->>>>        util_avg           421.745331    22.098873   456.0
->>>>
->>>> and if I compare Task1 above with another experiment where Task1 is
->>>> running alone:
->>>>
->>>>     Task1 (running alone):
->>>>                                 mean          std     min
->>>>        running_avg        460.257895    22.103704   460.0
->>>>        util_avg           435.119737    17.647556   461.0
->>> Wait, why again in this last case running_avg != util_avg? :)
->> I _think_ it's mostly due to the rouding errors we have because of the
->> reasons I've explained in the reply to Joel:
+
+
+On 05/27/2018 11:00 PM, MyungJoo Ham wrote:
+>> Many CPU architectures have caches that can scale independent of the CPUs.
+>> Frequency scaling of the caches is necessary to make sure the cache is not
+>> a performance bottleneck that leads to poor performance and power. The same
+>> idea applies for RAM/DDR.
 >>
->>     https://lkml.org/lkml/2018/6/5/559
->>     20180605152156.GD32302@e110439-lin
->>
->> at the end, while commenting about the division overhead.
->>
->> I should try the above examples while tracking the full signal at
->> ___update_load_avg() time.
-> Is that the only issue? I think if a CFS task is blocked by another CFS task
-> due to preemption, then with your patch we would account the CFS blocked time
-> as well into the blocked task's running utilization, which seems incorrect.
-> Or did I miss something?
-This is my concern too. This will negatively affect any task packing 
-because more tasks are going to be runnable but not running and that 
-going to increase the over all frequency (I'm assuming you want to use 
-this for frequency guidance eventually?).
+>> To achieve this, this patch series adds a generic devfreq governor that can
+>> listen to the frequency transitions of each CPU frequency domain and then
+>> adjusts the frequency of the cache (or any devfreq device) based on the
+>> frequency of the CPUs.
+> I agree that we have some hardware pieces that want to configure
+> frequencies based on the CPUfreq.
+>
+> Creating a devfreq governor that configures devfreq-freq
+> based on incoming events (CPUFreq-transition-event in this case)
+> is indeed a good idea.
+>
+> However, I would like to ask the followings:
+> The overall code appears to be overly complex compared what you need.
+> - Do you really need to revive "CPUFREQ POLICY" events for this?
+> especially when you are going to look at "first CPU" only?
+>
+>
+> Cheers,
+> MyungJoo
+>
+Sorry, didn't notice this email earlier. My message filters seem to be 
+messed up.
+
+The POLICY notifiers are necessary for cases when all CPUs in a policy 
+are hotplugged off -- we need to ignore their frequencies to avoid 
+getting the devfreq device stuck at a high frequency. Looking at "first 
+CPU" is just an optimization to ignore multiple transition notifiers for 
+the each CPU in a policy -- we'd want to do that even if we don't have 
+policy notifiers. Not having policy notifier won't really simplify the 
+code by much. We'd be forced to check for policy->related_cpus for every 
+transition notifier call if the CPU state hasn't been already initialized.
 
 -Saravana
 
