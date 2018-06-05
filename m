@@ -1,63 +1,109 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
+From: Joel Fernandes <joel@joelfernandes.org>
 Subject: Re: [PATCH 2/2] sched/fair: util_est: add running_sum tracking
-Date: Tue, 5 Jun 2018 17:54:31 +0100
-Message-ID: <20180605165431.GF32302@e110439-lin>
+Date: Tue, 5 Jun 2018 12:33:17 -0700
+Message-ID: <20180605193317.GA239272@joelaf.mtv.corp.google.com>
 References: <20180604160600.22052-1-patrick.bellasi@arm.com>
  <20180604160600.22052-3-patrick.bellasi@arm.com>
- <CAKfTPtD8RDxT=-oO2VYJRbtwoEyEKEAau-Ad-bAd8L2T2zKWEg@mail.gmail.com>
- <20180605151129.GC32302@e110439-lin>
- <20180605153105.GM16081@localhost.localdomain>
+ <20180604174618.GA222053@joelaf.mtv.corp.google.com>
+ <20180605152156.GD32302@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180605153105.GM16081@localhost.localdomain>
+In-Reply-To: <20180605152156.GD32302@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 05-Jun 17:31, Juri Lelli wrote:
-> On 05/06/18 16:11, Patrick Bellasi wrote:
+On Tue, Jun 05, 2018 at 04:21:56PM +0100, Patrick Bellasi wrote:
+[..]
+> > > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > > index f74441be3f44..5d54d6a4c31f 100644
+> > > --- a/kernel/sched/fair.c
+> > > +++ b/kernel/sched/fair.c
+> > > @@ -3161,6 +3161,8 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+> > >  		sa->runnable_load_sum =
+> > >  			decay_load(sa->runnable_load_sum, periods);
+> > >  		sa->util_sum = decay_load((u64)(sa->util_sum), periods);
+> > > +		if (running)
+> > > +			sa->running_sum = decay_load(sa->running_sum, periods);
+> > >  
+> > >  		/*
+> > >  		 * Step 2
+> > > @@ -3176,8 +3178,10 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+> > >  		sa->load_sum += load * contrib;
+> > >  	if (runnable)
+> > >  		sa->runnable_load_sum += runnable * contrib;
+> > > -	if (running)
+> > > +	if (running) {
+> > >  		sa->util_sum += contrib * scale_cpu;
+> > > +		sa->running_sum += contrib * scale_cpu;
+> > > +	}
+> > >  
+> > >  	return periods;
+> > >  }
+> > > @@ -3963,6 +3967,12 @@ static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
+> > >  	WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
+> > >  }
+> > 
+> > PELT changes look nice and makes sense :)
 > 
-> [...]
+> That's not strictly speaking a PELT change... it's still more in the
+> idea to work "on top of PELT" to make it more effective in measuring
+> the tasks expected required CPU bandwidth.
+
+I meant "PELT change" as in change to the code that calculates PELT signals..
+
+> > > +static inline void util_est_enqueue_running(struct task_struct *p)
+> > > +{
+> > > +	/* Initilize the (non-preempted) utilization */
+> > > +	p->se.avg.running_sum = p->se.avg.util_sum;
+> > > +}
+> > > +
+> > >  /*
+> > >   * Check if a (signed) value is within a specified (unsigned) margin,
+> > >   * based on the observation that:
+> > > @@ -4018,7 +4028,7 @@ util_est_dequeue(struct cfs_rq *cfs_rq, struct task_struct *p, bool task_sleep)
+> > >  	 * Skip update of task's estimated utilization when its EWMA is
+> > >  	 * already ~1% close to its last activation value.
+> > >  	 */
+> > > -	ue.enqueued = (task_util(p) | UTIL_AVG_UNCHANGED);
+> > > +	ue.enqueued = p->se.avg.running_sum / LOAD_AVG_MAX;
+> > 
+> > I guess we are doing extra division here which adds some cost. Does
+> > performance look Ok with the change?
 > 
-> > If I run an experiment with your example above, while using the
-> > performance governor to rule out any possible scale invariance
-> > difference, here is what I measure:
-> > 
-> >    Task1 (40ms delayed by the following Task2):
-> >                                mean          std     max
-> >       running_avg        455.387449    22.940168   492.0
-> >       util_avg           433.233288    17.395477   458.0
-> > 
-> >    Task2 (waking up at same time of Task1 and running before):
-> >                                mean          std     max
-> >       running_avg        430.281834    22.405175   455.0
-> >       util_avg           421.745331    22.098873   456.0
-> > 
-> > and if I compare Task1 above with another experiment where Task1 is
-> > running alone:
-> > 
-> >    Task1 (running alone):
-> >                                mean          std     min
-> >       running_avg        460.257895    22.103704   460.0
-> >       util_avg           435.119737    17.647556   461.0
+> This extra division is there and done only at dequeue time instead of
+> doing it at each update_load_avg.
+
+I know. :)
+
+> To be more precise, at each ___update_load_avg we should really update
+> running_avg by:
 > 
-> Wait, why again in this last case running_avg != util_avg? :)
+>    u32 divider = LOAD_AVG_MAX - 1024 + sa->period_contrib;
+>    sa->running_avg = sa->running_sum / divider;
+> 
+> but, this would imply tracking an additional signal in sched_avg and
+> doing an additional division at ___update_load_avg() time.
+> 
+> Morten suggested that, if we accept the rounding errors due to
+> considering
+> 
+>       divider ~= LOAD_AVG_MAX
+> 
+> thus discarding the (sa->period_contrib - 1024) correction, then we
+> can completely skip the tracking of running_avg (thus saving space in
+> sched_avg) and approximate it at dequeue time as per the code line,
+> just to compute the new util_est sample to accumulate.
+> 
+> Does that make sense now?
 
-I _think_ it's mostly due to the rouding errors we have because of the
-reasons I've explained in the reply to Joel:
+The patch always made sense to me.. I was just pointing out the extra
+division this patch adds. I agree since its done on dequeue-only, then its
+probably Ok to do..
 
-   https://lkml.org/lkml/2018/6/5/559
-   20180605152156.GD32302@e110439-lin
+thanks,
 
-at the end, while commenting about the division overhead.
-
-I should try the above examples while tracking the full signal at
-___update_load_avg() time.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+ - Joel
