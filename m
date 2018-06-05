@@ -1,56 +1,36 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH 2/2] sched/fair: util_est: add running_sum tracking
-Date: Tue, 5 Jun 2018 12:43:44 -0700
-Message-ID: <20180605194344.GB239272@joelaf.mtv.corp.google.com>
-References: <20180604160600.22052-1-patrick.bellasi@arm.com>
- <20180604160600.22052-3-patrick.bellasi@arm.com>
- <20180604174618.GA222053@joelaf.mtv.corp.google.com>
- <20180605152156.GD32302@e110439-lin>
- <20180605193317.GA239272@joelaf.mtv.corp.google.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 2/2] dt-bindings: power: sbs-battery: re-document
+ "ti,bq20z75"
+Date: Tue, 5 Jun 2018 14:18:32 -0600
+Message-ID: <20180605201832.GA6966@rob-hp-laptop>
+References: <20180602012900.181352-1-briannorris@chromium.org>
+ <20180602012900.181352-2-briannorris@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180605193317.GA239272@joelaf.mtv.corp.google.com>
+In-Reply-To: <20180602012900.181352-2-briannorris@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
+To: Brian Norris <briannorris@chromium.org>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 05, 2018 at 12:33:17PM -0700, Joel Fernandes wrote:
-> On Tue, Jun 05, 2018 at 04:21:56PM +0100, Patrick Bellasi wrote:
-[..]
-> > To be more precise, at each ___update_load_avg we should really update
-> > running_avg by:
-> > 
-> >    u32 divider = LOAD_AVG_MAX - 1024 + sa->period_contrib;
-> >    sa->running_avg = sa->running_sum / divider;
-> > 
-> > but, this would imply tracking an additional signal in sched_avg and
-> > doing an additional division at ___update_load_avg() time.
-> > 
-> > Morten suggested that, if we accept the rounding errors due to
-> > considering
-> > 
-> >       divider ~= LOAD_AVG_MAX
-> > 
-> > thus discarding the (sa->period_contrib - 1024) correction, then we
-> > can completely skip the tracking of running_avg (thus saving space in
-> > sched_avg) and approximate it at dequeue time as per the code line,
-> > just to compute the new util_est sample to accumulate.
-> > 
-> > Does that make sense now?
+On Fri, Jun 01, 2018 at 06:29:00PM -0700, Brian Norris wrote:
+> This compatible property was documented before the driver was renamed to
+> "SBS" (see commit e57f1b68c406 ("devicetree-bindings: Propagate
+> bq20z75->sbs rename to dt bindings")). The driver has continued to
+> support this property as an alternative to "sbs,sbs-battery", and
+> because we've noticed there are some lingering TI specifics (in the
+> manufacturer-specific portion of the SBS spec), we'd like to start using
+> this property again to differentiate.
 > 
-> The patch always made sense to me.. I was just pointing out the extra
-> division this patch adds. I agree since its done on dequeue-only, then its
-> probably Ok to do..
-> 
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> Acked-by: Rhyland Klein <rklein@nvidia.com>
+> ---
+> v2: add Rhyland's Acked-by
+> v3: no change
+> ---
+>  .../devicetree/bindings/power/supply/sbs_sbs-battery.txt        | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-One thing to note about this error is I remember not compensating for it
-would make the utilization reduce... which is kind of weird. But yeah if we
-can find a way compensate for the error and also keep the overhead low,
-that's super.. I know this is probably low in priority considering the other
-concerns Vincent brought up which are being discussed in the other thread,..
-but just saying. :)
-
- - Joel
+Reviewed-by: Rob Herring <robh@kernel.org>
