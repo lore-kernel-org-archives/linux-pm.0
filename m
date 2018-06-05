@@ -1,38 +1,173 @@
-From: =?UTF-8?Q?S=c3=a9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
-Subject: Re: [PATCH v3 1/3] cpufreq: imx6q: check speed grades for i.MX6ULL
-Date: Tue, 5 Jun 2018 09:07:00 +0200
-Message-ID: <717f24e1-3846-7685-b440-0754da883c2a@armadeus.com>
-References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
- <20180523042953.kcp2h5xtwjrjponn@vireshk-i7>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH 2/2] sched/fair: util_est: add running_sum tracking
+Date: Tue, 5 Jun 2018 08:57:05 +0200
+Message-ID: <CAKfTPtD8RDxT=-oO2VYJRbtwoEyEKEAau-Ad-bAd8L2T2zKWEg@mail.gmail.com>
+References: <20180604160600.22052-1-patrick.bellasi@arm.com> <20180604160600.22052-3-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180523042953.kcp2h5xtwjrjponn@vireshk-i7>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawnguo@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Stefan Agner <stefan@agner.ch>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180604160600.22052-3-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDUvMjMvMjAxOCAwNjoyOSBBTSwgVmlyZXNoIEt1bWFyIHdyb3RlOgo+IE9uIDIyLTA1LTE4
-LCAwODoyOCwgU8OpYmFzdGllbiBTenltYW5za2kgd3JvdGU6Cj4+IENoZWNrIHRoZSBtYXggc3Bl
-ZWQgc3VwcG9ydGVkIGZyb20gdGhlIGZ1c2VzIGZvciBpLk1YNlVMTCBhbmQgdXBkYXRlIHRoZQo+
-PiBvcGVyYXRpbmcgcG9pbnRzIHRhYmxlIGFjY29yZGluZ2x5Lgo+Pgo+PiBTaWduZWQtb2ZmLWJ5
-OiBTw6liYXN0aWVuIFN6eW1hbnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1hZGV1cy5jb20+
-Cj4+IC0tLQo+Pgo+PiBDaGFuZ2VzIGZvciB2MzoKPj4gIC0gbm9uZQo+IAo+IEBTYXNjaGEgYW5k
-IFNoYXduOiBDYW4geW91IGd1eXMgcGxlYXNlIEFjayB0aGlzIHNlcmllcyBpZiB0aGVyZSBpcwo+
-IG5vdGhpbmcgd3Jvbmcgd2l0aCBpdCA/Cj4gCgpwaW5nLi4uCgotLSAKU8OpYmFzdGllbiBTenlt
-YW5za2kKU29mdHdhcmUgZW5naW5lZXIsIEFybWFkZXVzIFN5c3RlbXMKVGVsOiArMzMgKDApOSA3
-MiAyOSA0MSA0NApGYXg6ICszMyAoMCk5IDcyIDI4IDc5IDI2CgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
-dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
-ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 4 June 2018 at 18:06, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> The estimated utilization of a task is affected by the task being
+> preempted, either by another FAIR task of by a task of an higher
+> priority class (i.e. RT or DL). Indeed, when a preemption happens, the
+> PELT utilization of the preempted task is going to be decayed a bit.
+> That's actually correct for utilization, which goal is to measure the
+> actual CPU bandwidth consumed by a task.
+>
+> However, the above behavior does not allow to know exactly what is the
+> utilization a task "would have used" if it was running without
+> being preempted. Thus, this reduces the effectiveness of util_est for a
+> task because it does not always allow to predict how much CPU a task is
+> likely to require.
+>
+> Let's improve the estimated utilization by adding a new "sort-of" PELT
+> signal, explicitly only for SE which has the following behavior:
+>  a) at each enqueue time of a task, its value is the (already decayed)
+>     util_avg of the task being enqueued
+>  b) it's updated at each update_load_avg
+>  c) it can just increase, whenever the task is actually RUNNING on a
+>     CPU, while it's kept stable while the task is RUNNANBLE but not
+>     actively consuming CPU bandwidth
+>
+> Such a defined signal is exactly equivalent to the util_avg for a task
+> running alone on a CPU while, in case the task is preempted, it allows
+> to know at dequeue time how much would have been the task utilization if
+> it was running alone on that CPU.
+
+I don't agree with this statement above
+Let say that you have 2 periodic tasks which wants to run 4ms in every
+period of 10ms and wakes up at the same time.
+One task will execute 1st and the other will wait but at the end they
+have the same period and running time and as a result the same
+util_avg which is exactly what they need.
+
+>
+> This new signal is named "running_avg", since it tracks the actual
+> RUNNING time of a task by ignoring any form of preemption.
+
+In fact, you still take into account this preemption as you remove
+some time whereas it's only a shift of the excution
+
+>
+> From an implementation standpoint, since the sched_avg should fit into a
+> single cache line, we save space by tracking only a new runnable sum:
+>    p->se.avg.running_sum
+> while the conversion into a running_avg is done on demand whenever we
+> need it, which is at task dequeue time when a new util_est sample has to
+> be collected.
+>
+> The conversion from "running_sum" to "running_avg" is done by performing
+> a single division by LOAD_AVG_MAX, which introduces a small error since
+> in the division we do not consider the (sa->period_contrib - 1024)
+> compensation factor used in ___update_load_avg(). However:
+>  a) this error is expected to be limited (~2-3%)
+>  b) it can be safely ignored since the estimated utilization is the only
+>     consumer which is already subject to small estimation errors
+>
+> The additional corresponding benefit is that, at run-time, we pay the
+> cost for a additional sum and multiply, while the more expensive
+> division is required only at dequeue time.
+>
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Todd Kjos <tkjos@google.com>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Steve Muckle <smuckle@google.com>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  include/linux/sched.h |  1 +
+>  kernel/sched/fair.c   | 16 ++++++++++++++--
+>  2 files changed, 15 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 9d8732dab264..2bd5f1c68da9 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -399,6 +399,7 @@ struct sched_avg {
+>         u64                             load_sum;
+>         u64                             runnable_load_sum;
+>         u32                             util_sum;
+> +       u32                             running_sum;
+>         u32                             period_contrib;
+>         unsigned long                   load_avg;
+>         unsigned long                   runnable_load_avg;
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index f74441be3f44..5d54d6a4c31f 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -3161,6 +3161,8 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+>                 sa->runnable_load_sum =
+>                         decay_load(sa->runnable_load_sum, periods);
+>                 sa->util_sum = decay_load((u64)(sa->util_sum), periods);
+> +               if (running)
+> +                       sa->running_sum = decay_load(sa->running_sum, periods);
+
+so you make some time disappearing from the equation as the signal
+will not be decayed and make the period looking shorter than reality.
+With the example I mentioned above, the 2nd task will be seen as if
+its period becomes 6ms instead of 10ms which is not true and the
+utilization of the task is overestimated without any good reason
+Furthermore, this new signal doesn't have clear meaning because it's
+not utilization but it's also not the waiting time of the task.
+
+>
+>                 /*
+>                  * Step 2
+> @@ -3176,8 +3178,10 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+>                 sa->load_sum += load * contrib;
+>         if (runnable)
+>                 sa->runnable_load_sum += runnable * contrib;
+> -       if (running)
+> +       if (running) {
+>                 sa->util_sum += contrib * scale_cpu;
+> +               sa->running_sum += contrib * scale_cpu;
+> +       }
+>
+>         return periods;
+>  }
+> @@ -3963,6 +3967,12 @@ static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
+>         WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
+>  }
+>
+> +static inline void util_est_enqueue_running(struct task_struct *p)
+> +{
+> +       /* Initilize the (non-preempted) utilization */
+> +       p->se.avg.running_sum = p->se.avg.util_sum;
+> +}
+> +
+>  /*
+>   * Check if a (signed) value is within a specified (unsigned) margin,
+>   * based on the observation that:
+> @@ -4018,7 +4028,7 @@ util_est_dequeue(struct cfs_rq *cfs_rq, struct task_struct *p, bool task_sleep)
+>          * Skip update of task's estimated utilization when its EWMA is
+>          * already ~1% close to its last activation value.
+>          */
+> -       ue.enqueued = (task_util(p) | UTIL_AVG_UNCHANGED);
+> +       ue.enqueued = p->se.avg.running_sum / LOAD_AVG_MAX;
+>         last_ewma_diff = ue.enqueued - ue.ewma;
+>         if (within_margin(last_ewma_diff, (SCHED_CAPACITY_SCALE / 100)))
+>                 return;
+> @@ -5437,6 +5447,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>         if (!se)
+>                 add_nr_running(rq, 1);
+>
+> +       util_est_enqueue_running(p);
+> +
+>         hrtick_update(rq);
+>  }
+>
+> --
+> 2.15.1
+>
