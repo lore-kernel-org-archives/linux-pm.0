@@ -1,61 +1,255 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
-Date: Tue, 05 Jun 2018 22:18:40 +1000
-Message-ID: <87zi09mnof.fsf@concordia.ellerman.id.au>
-References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com> <87fu22bxlf.fsf@concordia.ellerman.id.au> <20180605084529.GA5656@in.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Tue, 5 Jun 2018 16:54:14 +0200
+Message-ID: <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
+References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180605084529.GA5656@in.ibm.com>
+In-Reply-To: <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stewart Smith <stewart@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
-> Hello Michael,
->
-> On Mon, Jun 04, 2018 at 09:27:40PM +1000, Michael Ellerman wrote:
->> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
->> 
->> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->> >
->> > The commit 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of
->> > snooze to deeper idle state") introduced a timeout for the snooze idle
->> > state so that it could be eventually be promoted to a deeper idle
->> > state. The snooze timeout value is static and set to the target
->> > residency of the next idle state, which would train the cpuidle
->> > governor to pick the next idle state eventually.
->> >
->> > The unfortunate side-effect of this is that if the next idle state(s)
->> > is disabled, the CPU will forever remain in snooze, despite the fact
->> > that the system is completely idle, and other deeper idle states are
->> > available.
->> 
->> That sounds like a bug, I'll add?
->
-> Yes, this is a bug-fix for a customer scenario which we encountered
-> recently.
+On 05/06/2018 12:39, Viresh Kumar wrote:
+> On 05-06-18, 11:16, Daniel Lezcano wrote:
+>> diff --git a/drivers/powercap/idle_injection.c b/drivers/powercap/idle_injection.c
+>> +/**
+>> + * idle_injection_wakeup - Wake up all idle injection threads
+>> + * @ii_dev: the idle injection device
+>> + *
+>> + * Every idle injection task belonging to the idle injection device
+>> + * and running on an online CPU will be wake up by this call.
+>> + */
+>> +static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
+>> +{
+>> +	struct idle_injection_thread *iit;
+>> +	int cpu;
+>> +
+>> +	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
+>> +		atomic_inc(&ii_dev->count);
+> 
+> This may not be sufficient enough in some extremely corner cases, as it is
+> possible that the idle_injection_fn() starts running for the first cpu in the
+> cpumask right after first iteration of this loop completes. And so
+> atomic_dec_and_test() may return true there before idle_injection_fn() task gets
+> a chance to run on all cpus in the cpumask. Normally this wouldn't be a big
+> problem as the hrtimer can get reprogrammed in that case, but there is a case I
+> am worried about. More on this later..
+> 
+>> +		iit = per_cpu_ptr(&idle_injection_thread, cpu);
+>> +		iit->should_run = 1;
+>> +		wake_up_process(iit->tsk);
+>> +	}
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_wakeup_fn - idle injection timer callback
+>> + * @timer: a hrtimer structure
+>> + *
+>> + * This function is called when the idle injection timer expires which
+>> + * will wake up the idle injection tasks and these ones, in turn, play
+>> + * idle a specified amount of time.
+>> + *
+>> + * Return: HRTIMER_NORESTART.
+>> + */
+>> +static enum hrtimer_restart idle_injection_wakeup_fn(struct hrtimer *timer)
+>> +{
+>> +	struct idle_injection_device *ii_dev =
+>> +		container_of(timer, struct idle_injection_device, timer);
+>> +
+>> +	idle_injection_wakeup(ii_dev);
+>> +
+>> +	return HRTIMER_NORESTART;
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_fn - idle injection routine
+>> + * @cpu: the CPU number the tasks belongs to
+>> + *
+>> + * The idle injection routine will stay idle the specified amount of
+>> + * time
+>> + */
+>> +static void idle_injection_fn(unsigned int cpu)
+>> +{
+>> +	struct idle_injection_device *ii_dev;
+>> +	struct idle_injection_thread *iit;
+>> +	int run_duration_ms, idle_duration_ms;
+>> +
+>> +	ii_dev = per_cpu(idle_injection_device, cpu);
+>> +	iit = per_cpu_ptr(&idle_injection_thread, cpu);
+>> +
+>> +	/*
+>> +	 * Boolean used by the smpboot main loop and used as a
+>> +	 * flip-flop in this function
+>> +	 */
+>> +	iit->should_run = 0;
+>> +
+>> +	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
+>> +	if (idle_duration_ms)
+>> +		play_idle(idle_duration_ms);
+>> +
+>> +	/*
+>> +	 * The last CPU waking up is in charge of setting the timer. If
+>> +	 * the CPU is hotplugged, the timer will move to another CPU
+>> +	 * (which may not belong to the same cluster) but that is not a
+>> +	 * problem as the timer will be set again by another CPU
+>> +	 * belonging to the cluster. This mechanism is self adaptive.
+>> +	 */
+>> +	if (!atomic_dec_and_test(&ii_dev->count))
+>> +		return;
+>> +
+>> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+>> +	if (run_duration_ms) {
+>> +		hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
+>> +			      HRTIMER_MODE_REL_PINNED);
+>> +		return;
+>> +	}
+>> +
+>> +	complete(&ii_dev->stop_complete);
+>> +}
+> 
+> Here is the corner case I was talking about. Consider the cpumask contains
+> CPU0/1/2/3.
+> 
+> PATH A                                                  PATH B
+> 
+>                                                         unregister()
+>                                                           -> idle_injection_stop()
+> 
+> idle_injection_wakeup()
+>   -> Running loop for CPU0
+>   -> atomic inc (count == 1)
+>   -> wake_up_process(tsk)
+>   -> At this point the current task stops
+>   running and idle_injection_fn() starts running
+>   (maybe on a different CPU)
+> 
+>                                                         
+> 
+> 
+> idle_injection_fn()
+>   -> atomic_dec_and_test(), returns true
+>   as count == 0
+> 
+> 
+>                                                              -> set-duration to 0
+>                                                              -> wait for completion
+> 
+> 
+>   -> atomic_read(run_duration), returns 0
+>   -> complete()
+> 
+>                                                              -> kfree(ii_dev);   
+> 
+> 
+> But the initial loop idle_injection_wakeup() has only run for CPU0 until now and
+> will continue running for other CPUs and will crash as ii_dev is already freed.
+> 
+> Am I still making a mistake here ?
 
-OK, the change log could have used some more scary words to make that
-clearer ;)
+I don't think you are doing a mistake. Even if this can happen
+theoretically, I don't think practically that is the case.
 
-I changed the subject to:
+The play_idle() has 1ms minimum sleep time.
 
-  cpuidle: powernv: Fix promotion from snooze if next state disabled
+The scenario you are describing means:
 
-Which hopefully makes sense.
+1. the loop in idle_injection_wakeup() takes more than 1ms to achieve
 
->> Fixes: 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of snooze to deeper idle state")
->> Cc: stable@vger.kernel.org # v4.2+
->
-> This patch applies cleanly from v4.13 onwards. Prior to that there are
-> some (minor) conflicts.
->
-> Should I spin a version separately for the prior stable versions ?
+2. at the same time, the user of the idle injection unregisters while
+the idle injection is acting precisely at CPU0 and exits before another
+task was wakeup by the loop in 1. more than 1ms after.
 
-Yes please, that would be great.
+>From my POV, this scenario can't happen.
 
-You might want to avoid "=====" in the change log too, as patchwork and
-possibly other tools will think it's part of the diff.
+Anyway, we must write rock solid code so may be we can use a refcount to
+protect against that, so instead of freeing in unregister, we refput the
+ii_dev pointer.
 
-cheers
+
+>> +static struct idle_injection_device *ii_dev_alloc(void)
+>> +{
+>> +	struct idle_injection_device *ii_dev;
+>> +
+>> +	ii_dev = kzalloc(sizeof(*ii_dev), GFP_KERNEL);
+>> +	if (!ii_dev)
+>> +		return NULL;
+>> +
+>> +	if (!alloc_cpumask_var(&ii_dev->cpumask, GFP_KERNEL)) {
+>> +		kfree(ii_dev);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	return ii_dev;
+>> +}
+>> +
+>> +static void ii_dev_free(struct idle_injection_device *ii_dev)
+>> +{
+>> +	free_cpumask_var(ii_dev->cpumask);
+>> +	kfree(ii_dev);
+>> +}
+>> +
+>> +/**
+>> + * idle_injection_register - idle injection init routine
+>> + * @cpumask: the list of CPUs managed by the idle injection device
+>> + *
+>> + * This is the initialization function in charge of creating the
+>> + * initializing of the timer and allocate the structures. It does not
+>> + * starts the idle injection cycles.
+>> + *
+>> + * Return: NULL if an allocation fails.
+>> + */
+>> +struct idle_injection_device *idle_injection_register(struct cpumask *cpumask)
+>> +{
+>> +	struct idle_injection_device *ii_dev;
+>> +	int cpu;
+>> +
+>> +	ii_dev = ii_dev_alloc();
+>> +	if (!ii_dev)
+>> +		return NULL;
+>> +
+>> +	cpumask_copy(ii_dev->cpumask, cpumask);
+>> +	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+>> +	ii_dev->timer.function = idle_injection_wakeup_fn;
+>> +	init_completion(&ii_dev->stop_complete);
+>> +
+>> +	for_each_cpu(cpu, ii_dev->cpumask) {
+>> +
+>> +		if (per_cpu(idle_injection_device, cpu)) {
+>> +			pr_err("cpu%d is already registered\n", cpu);
+>> +			goto out_rollback_per_cpu;
+>> +		}
+>> +
+>> +		per_cpu(idle_injection_device, cpu) = ii_dev;
+>> +	}
+>> +
+>> +	return ii_dev;
+>> +
+>> +out_rollback_per_cpu:
+>> +	for_each_cpu(cpu, ii_dev->cpumask)
+>> +		per_cpu(idle_injection_device, cpu) = NULL;
+> 
+> Maybe move above into ii_dev_free(), as I suggested earlier, as that will remove
+> same code from unregister routine as well.
+
+I don't like to mix operations when the function name define clearly
+what is doing. The ii_dev_free() frees a structure,
+idle_injection_device refers to a global variable.
+
+Anyway if we are talking about using a refcount, we can add a release
+which frees the structure and sets the per cpu idle_injection_device
+global variable to NULL.
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
