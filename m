@@ -1,58 +1,53 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 1/3] mfd: cros: add charger port count command definition
-Date: Tue, 5 Jun 2018 08:11:20 +0100
-Message-ID: <20180605071120.GI21163@dell>
-References: <20180530031704.18597-1-fparent@baylibre.com>
- <20180530031704.18597-2-fparent@baylibre.com>
- <20180604085900.GN25455@dell>
- <CAOwMV_xyqj027+iRAQtZ5Hv8NDUc6s9OfS0vAkumUyyc4LUjzw@mail.gmail.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
+Date: Tue, 5 Jun 2018 14:15:30 +0530
+Message-ID: <20180605084529.GA5656@in.ibm.com>
+References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com>
+ <87fu22bxlf.fsf@concordia.ellerman.id.au>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAOwMV_xyqj027+iRAQtZ5Hv8NDUc6s9OfS0vAkumUyyc4LUjzw@mail.gmail.com>
+In-Reply-To: <87fu22bxlf.fsf@concordia.ellerman.id.au>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Fabien Parent <fparent@baylibre.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo Serra <eballetbo@gmail.com>, Guillaume Pain <gpain@baylibre.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stewart Smith <stewart@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 04 Jun 2018, Fabien Parent wrote:
+Hello Michael,
 
-> On Mon, Jun 4, 2018 at 1:59 AM, Lee Jones <lee.jones@linaro.org> wrote:
-> > On Tue, 29 May 2018, Fabien Parent wrote:
-> >
-> >> A new more command has been added to the ChromeOS embedded controller
-> >> that allows to get the number of charger port count. Unlike
-> >> EC_CMD_USB_PD_PORTS, this new command also includes the dedicated
-> >> port if present.
-> >>
-> >> This command will be used to expose the dedicated charger port
-> >> in the ChromeOS charger driver.
-> >>
-> >> Signed-off-by: Fabien Parent <fparent@baylibre.com>
-> >> ---
-> >>  include/linux/mfd/cros_ec_commands.h | 10 ++++++++++
-> >>  1 file changed, 10 insertions(+)
-> >
-> > Does not want to apply.  I didn't investigate why.
-> >
-> > Please rebase and resend?
+On Mon, Jun 04, 2018 at 09:27:40PM +1000, Michael Ellerman wrote:
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
 > 
-> Sorry, I forgot to add you as "to:" to the patch series.
-> This patch applies on top of https://lkml.org/lkml/2018/5/2/590
-> ([PATCH v4 1/3] mfd: cros_ec: Add USBPD charger commands and struct
-> definitions)
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >
+> > The commit 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of
+> > snooze to deeper idle state") introduced a timeout for the snooze idle
+> > state so that it could be eventually be promoted to a deeper idle
+> > state. The snooze timeout value is static and set to the target
+> > residency of the next idle state, which would train the cpuidle
+> > governor to pick the next idle state eventually.
+> >
+> > The unfortunate side-effect of this is that if the next idle state(s)
+> > is disabled, the CPU will forever remain in snooze, despite the fact
+> > that the system is completely idle, and other deeper idle states are
+> > available.
+> 
+> That sounds like a bug, I'll add?
+>
 
-Okay.  Please re-submit after that set has landed then.
+Yes, this is a bug-fix for a customer scenario which we encountered
+recently.
 
-Please, also add my Ack to the patch:
+> Fixes: 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of snooze to deeper idle state")
+> Cc: stable@vger.kernel.org # v4.2+
 
-For my own reference:
-  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+This patch applies cleanly from v4.13 onwards. Prior to that there are
+some (minor) conflicts.
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Should I spin a version separately for the prior stable versions ?
+
+> 
+> cheers
+> 
