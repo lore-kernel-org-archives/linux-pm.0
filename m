@@ -1,242 +1,94 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 2/2] sched/fair: util_est: add running_sum tracking
-Date: Tue, 5 Jun 2018 16:11:29 +0100
-Message-ID: <20180605151129.GC32302@e110439-lin>
-References: <20180604160600.22052-1-patrick.bellasi@arm.com>
- <20180604160600.22052-3-patrick.bellasi@arm.com>
- <CAKfTPtD8RDxT=-oO2VYJRbtwoEyEKEAau-Ad-bAd8L2T2zKWEg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: cpuidle:powernv: Make the snooze timeout dynamic.
+Date: Wed,  6 Jun 2018 01:19:32 +1000 (AEST)
+Message-ID: <410b7m522wz9s47@ozlabs.org>
+References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtD8RDxT=-oO2VYJRbtwoEyEKEAau-Ad-bAd8L2T2zKWEg@mail.gmail.com>
+In-Reply-To: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stewart Smith <stewart@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vincent,
-
-On 05-Jun 08:57, Vincent Guittot wrote:
-> On 4 June 2018 at 18:06, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-
-[...]
-
-> > Let's improve the estimated utilization by adding a new "sort-of" PELT
-> > signal, explicitly only for SE which has the following behavior:
-> >  a) at each enqueue time of a task, its value is the (already decayed)
-> >     util_avg of the task being enqueued
-> >  b) it's updated at each update_load_avg
-> >  c) it can just increase, whenever the task is actually RUNNING on a
-> >     CPU, while it's kept stable while the task is RUNNANBLE but not
-> >     actively consuming CPU bandwidth
-> >
-> > Such a defined signal is exactly equivalent to the util_avg for a task
-> > running alone on a CPU while, in case the task is preempted, it allows
-> > to know at dequeue time how much would have been the task utilization if
-> > it was running alone on that CPU.
+On Thu, 2018-05-31 at 12:15:09 UTC, "Gautham R. Shenoy" wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> I don't agree with this statement above
-> Let say that you have 2 periodic tasks which wants to run 4ms in every
-> period of 10ms and wakes up at the same time.
-> One task will execute 1st and the other will wait but at the end they
-> have the same period and running time and as a result the same
-> util_avg which is exactly what they need.
-
-In your example above you say that both tasks will end up with a 40%
-util_avg, and that's exactly also the value reported by the new
-"running_avg" metric.
-
-Both tasks, if they where running alone, they would have generated a
-40% utilization, and above I'm saying:
-
-        it allows to know at dequeue time
-   how much would have been the task utilization
-      if it it was running alone on that CPU
-
-Don't see where is not correct, maybe I should explain it better?
-
-> > This new signal is named "running_avg", since it tracks the actual
-> > RUNNING time of a task by ignoring any form of preemption.
+> The commit 78eaa10f027c ("cpuidle: powernv/pseries: Auto-promotion of
+> snooze to deeper idle state") introduced a timeout for the snooze idle
+> state so that it could be eventually be promoted to a deeper idle
+> state. The snooze timeout value is static and set to the target
+> residency of the next idle state, which would train the cpuidle
+> governor to pick the next idle state eventually.
 > 
-> In fact, you still take into account this preemption as you remove
-> some time whereas it's only a shift of the excution
-
-When the task is enqueued we cache the (already decayed) util_avg, and
-from this time on the running_avg can only increase. It increases only
-for the portion of CPU time the task is running and it's never decayed
-while the task is preempted.
-
-In your example above, if we look at the second task running, the one
-"delayed", you will have:
-
- @t1 wakeup time:    running_avg@t1 = util_avg@t1
-                        since we initialize it with the
-                        "sleep decayed" util_avg
-
-  NOTE: this initialization is the important part, more on that on your
-  next comment below related to the period being changed.
-
- @t2 switch_in time: running_avg@t2 = running_avg@t1
-                        since it's not decayed while RUNNUBLE but !RUNNING
-
-                     while, meanwhile:
-
-                     util_avg@t2 < util_avg@t1
-                        since it's decayed while RUNNABLE but !RUNNING
-
- @t3 dequeue time:   running_avg@t3 > running_avg@t2
-
-
-When you say "it's only a shift of the execution" I agree, and indeed
-the running_avg is not affected at all.
-
-So, we can say that I'm "accounting for preemption time" but really,
-the way I do it, is just by _not decaying_ PELT when the task is:
-
-                 RUNNABLE but !RUNNING
-
-and that's why I say that running_avg gives you the same behavior of
-util_avg _if_ the task was running alone, because in that case you never
-have the condition above, and thus util_avg is never decayed.
-
-[...]
-
-> > @@ -3161,6 +3161,8 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
-> >                 sa->runnable_load_sum =
-> >                         decay_load(sa->runnable_load_sum, periods);
-> >                 sa->util_sum = decay_load((u64)(sa->util_sum), periods);
-> > +               if (running)
-> > +                       sa->running_sum = decay_load(sa->running_sum, periods);
+> The unfortunate side-effect of this is that if the next idle state(s)
+> is disabled, the CPU will forever remain in snooze, despite the fact
+> that the system is completely idle, and other deeper idle states are
+> available.
 > 
-> so you make some time disappearing from the equation as the signal
-> will not be decayed and make the period looking shorter than reality.
+> This patch fixes the issue by dynamically setting the snooze timeout
+> to the target residency of the next enabled state on the device.
+> 
+> Before Patch
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+> 
+> ==================
+> POWER8 : Only nap disabled.
+>  $cpupower monitor sleep 30
+> sleep took 30.01297 seconds and exited with status 0
+>               |Idle_Stats
+> PKG |CORE|CPU | snoo | Nap  | Fast
+>    0|   8|   0| 96.41|  0.00|  0.00
+>    0|   8|   1| 96.43|  0.00|  0.00
+>    0|   8|   2| 96.47|  0.00|  0.00
+>    0|   8|   3| 96.35|  0.00|  0.00
+>    0|   8|   4| 96.37|  0.00|  0.00
+>    0|   8|   5| 96.37|  0.00|  0.00
+>    0|   8|   6| 96.47|  0.00|  0.00
+>    0|   8|   7| 96.47|  0.00|  0.00
+> 
+> POWER9: Shallow states (stop0lite, stop1lite, stop2lite, stop0, stop1,
+> stop2) disabled:
+> $cpupower monitor sleep 30
+> sleep took 30.05033 seconds and exited with status 0
+>               |Idle_Stats
+> PKG |CORE|CPU | snoo | stop | stop | stop | stop | stop | stop | stop | stop
+>    0|  16|   0| 89.79|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+>    0|  16|   1| 90.12|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+>    0|  16|   2| 90.21|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+>    0|  16|   3| 90.29|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00
+> 
+> After Patch
+> ======================
+> POWER8 : Only nap disabled.
+> $ cpupower monitor sleep 30
+> sleep took 30.01200 seconds and exited with status 0
+>               |Idle_Stats
+> PKG |CORE|CPU | snoo | Nap  | Fast
+>    0|   8|   0| 16.58|  0.00| 77.21
+>    0|   8|   1| 18.42|  0.00| 75.38
+>    0|   8|   2|  4.70|  0.00| 94.09
+>    0|   8|   3| 17.06|  0.00| 81.73
+>    0|   8|   4|  3.06|  0.00| 95.73
+>    0|   8|   5|  7.00|  0.00| 96.80
+>    0|   8|   6|  1.00|  0.00| 98.79
+>    0|   8|   7|  5.62|  0.00| 94.17
+> 
+> POWER9: Shallow states (stop0lite, stop1lite, stop2lite, stop0, stop1,
+> stop2) disabled:
+> 
+> $cpupower monitor sleep 30
+> sleep took 30.02110 seconds and exited with status 0
+>               |Idle_Stats
+> PKG |CORE|CPU | snoo | stop | stop | stop | stop | stop | stop | stop | stop
+>    0|   0|   0|  0.69|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  9.39| 89.70
+>    0|   0|   1|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.05| 93.21
+>    0|   0|   2|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00| 89.93
+>    0|   0|   3|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|  0.00| 93.26
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Since at enqueue time we always initialize running_avg to whatever is
-util_avg, I don't think we are messing up with the period at all.
+Applied to powerpc next, thanks.
 
-The util_avg signal properly accounts for the period.
-Thus, the combined effect of:
+https://git.kernel.org/powerpc/c/0a4ec6aa035a52c422eceb2ed51ed8
 
-  - initializing running_avg at enqueue time with the value of
-    util_avg, already decayed to properly account for the task period
-  - not decaying running_avg when the task is RUNNABLE but !RUNNING
-
-should just result into "virtually" considering the two tasks of your
-example "as if" they was running concurrently on two different CPUs.
-
-Isn't it?
-
-> With the example I mentioned above, the 2nd task will be seen as if
-> its period becomes 6ms instead of 10ms which is not true and the
-> utilization of the task is overestimated without any good reason
-
-I don't see that overestimation... and I cannot even measure it.
-
-If I run an experiment with your example above, while using the
-performance governor to rule out any possible scale invariance
-difference, here is what I measure:
-
-   Task1 (40ms delayed by the following Task2):
-                               mean          std     max
-      running_avg        455.387449    22.940168   492.0
-      util_avg           433.233288    17.395477   458.0
-
-   Task2 (waking up at same time of Task1 and running before):
-                               mean          std     max
-      running_avg        430.281834    22.405175   455.0
-      util_avg           421.745331    22.098873   456.0
-
-and if I compare Task1 above with another experiment where Task1 is
-running alone:
-
-   Task1 (running alone):
-                               mean          std     min
-      running_avg        460.257895    22.103704   460.0
-      util_avg           435.119737    17.647556   461.0
-
-
-Thus, there are some variations ok, but I think they are more due to
-the rounding errors we have.
-Task1 is still seen as a 455 expected utilization, which is not the
-4/6 ~= 660 you say above if it should be accounted as a task running
-4ms every 6ms.
-
-> Furthermore, this new signal doesn't have clear meaning because it's
-> not utilization but it's also not the waiting time of the task.
-
-The meaning is: the utilization of the task _if_ it should be running
-alone on that CPU. Tehe numbers above shows that since
-    455 (Task1 delayed) ~= 460 (Task1 running alone)
-
-If it's running alone it would be exactly util_avg (minus rounding
-errors), but if it's preempted it will be a better representation of
-the task's needed CPU bandwidth.
-
-Unless we really need to track the "waiting time of a task" I would
-say that the signal above should make util_est much more accurate on
-knowing, at wakeup time, how much CPU a task will likely need...
-independently from preemption sources.
-
-Here are some other experiments / workloads I'm testing:
-
-   https://gist.github.com/derkling/fe01e5ddf639e18b5d85a3b1d2e84b7d
-
-> >
-> >                 /*
-> >                  * Step 2
-> > @@ -3176,8 +3178,10 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
-> >                 sa->load_sum += load * contrib;
-> >         if (runnable)
-> >                 sa->runnable_load_sum += runnable * contrib;
-> > -       if (running)
-> > +       if (running) {
-> >                 sa->util_sum += contrib * scale_cpu;
-> > +               sa->running_sum += contrib * scale_cpu;
-> > +       }
-> >
-> >         return periods;
-> >  }
-> > @@ -3963,6 +3967,12 @@ static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-> >         WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
-> >  }
-> >
-> > +static inline void util_est_enqueue_running(struct task_struct *p)
-> > +{
-> > +       /* Initilize the (non-preempted) utilization */
-> > +       p->se.avg.running_sum = p->se.avg.util_sum;
-
-This line above is what should ensure we do not mess up with the task
-period.
-
-> > +}
-> > +
-> >  /*
-> >   * Check if a (signed) value is within a specified (unsigned) margin,
-> >   * based on the observation that:
-> > @@ -4018,7 +4028,7 @@ util_est_dequeue(struct cfs_rq *cfs_rq, struct task_struct *p, bool task_sleep)
-> >          * Skip update of task's estimated utilization when its EWMA is
-> >          * already ~1% close to its last activation value.
-> >          */
-> > -       ue.enqueued = (task_util(p) | UTIL_AVG_UNCHANGED);
-> > +       ue.enqueued = p->se.avg.running_sum / LOAD_AVG_MAX;
-> >         last_ewma_diff = ue.enqueued - ue.ewma;
-> >         if (within_margin(last_ewma_diff, (SCHED_CAPACITY_SCALE / 100)))
-> >                 return;
-> > @@ -5437,6 +5447,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >         if (!se)
-> >                 add_nr_running(rq, 1);
-> >
-> > +       util_est_enqueue_running(p);
-> > +
-> >         hrtick_update(rq);
-> >  }
-> >
-> > --
-> > 2.15.1
-> >
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+cheers
