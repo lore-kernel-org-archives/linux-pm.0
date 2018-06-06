@@ -1,156 +1,91 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v4 5/7] interconnect: qcom: Add msm8916 interconnect
- provider driver
-Date: Wed, 6 Jun 2018 18:14:28 +0300
-Message-ID: <0f03e7b9-aed6-b012-08da-5921061e3db2@linaro.org>
-References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-6-georgi.djakov@linaro.org>
- <CAHLCerNnoNowC6CfNc7O9Nbj+xy0GGw0qmadOxzGsy5iSrOtOg@mail.gmail.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
+ framework
+Date: Wed, 6 Jun 2018 17:20:00 +0200
+Message-ID: <20180606152000.GB15894@localhost.localdomain>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-4-quentin.perret@arm.com>
+ <b47cb1f1-6ca1-7674-903f-724be43a57a0@arm.com>
+ <20180606143739.GF10870@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHLCerNnoNowC6CfNc7O9Nbj+xy0GGw0qmadOxzGsy5iSrOtOg@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180606143739.GF10870@e108498-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, gregkh@linuxfoundation.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, seansw@qti.qualcomm.com, davidai@quicinc.com, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, LKML <linux-kernel@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Amit,
-
-On 25.05.18 г. 11:27, Amit Kucheria wrote:
-> On Fri, Mar 9, 2018 at 11:09 PM, Georgi Djakov <georgi.djakov@linaro.org> wrote:
->> Add driver for the Qualcomm interconnect buses found in msm8916 based
->> platforms.
->>
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>  drivers/interconnect/Kconfig        |   5 +
->>  drivers/interconnect/Makefile       |   1 +
->>  drivers/interconnect/qcom/Kconfig   |  11 +
->>  drivers/interconnect/qcom/Makefile  |   2 +
->>  drivers/interconnect/qcom/msm8916.c | 482 ++++++++++++++++++++++++++++++++++++
->>  include/linux/interconnect/qcom.h   | 350 ++++++++++++++++++++++++++
->>  6 files changed, 851 insertions(+)
->>  create mode 100644 drivers/interconnect/qcom/Kconfig
->>  create mode 100644 drivers/interconnect/qcom/msm8916.c
->>  create mode 100644 include/linux/interconnect/qcom.h
-
-[..]
-
->> +#define DEFINE_QNODE(_name, _id, _port, _buswidth, _ap_owned,          \
->> +                       _mas_rpm_id, _slv_rpm_id, _qos_mode,            \
->> +                       _numlinks, ...)                                 \
->> +               static struct qcom_icc_node _name = {                   \
->> +               .id = _id,                                              \
->> +               .name = #_name,                                         \
->> +               .port = _port,                                          \
->> +               .buswidth = _buswidth,                                  \
->> +               .qos_mode = _qos_mode,                                  \
->> +               .ap_owned = _ap_owned,                                  \
->> +               .mas_rpm_id = _mas_rpm_id,                              \
->> +               .slv_rpm_id = _slv_rpm_id,                              \
->> +               .num_links = _numlinks,                                 \
->> +               .links = { __VA_ARGS__ },                               \
->> +       }
+On 06/06/18 15:37, Quentin Perret wrote:
+> Hi Dietmar,
 > 
-> Move this macro definition just above its use below.
+> On Wednesday 06 Jun 2018 at 15:12:15 (+0200), Dietmar Eggemann wrote:
+> > > +static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
+> > > +{
+> > > +	unsigned long cmax = arch_scale_cpu_capacity(NULL, cpu);
+> > > +	int max_cap_state = cs_table->nr_cap_states - 1;
+> > > +	unsigned long fmax = cs_table->state[max_cap_state].frequency;
+> > > +	int i;
+> > > +
+> > > +	for (i = 0; i < cs_table->nr_cap_states; i++)
+> > > +		cs_table->state[i].capacity = cmax *
+> > > +					cs_table->state[i].frequency / fmax;
+> > > +}
+> > 
+> > This has issues on a 32bit system. cs_table->state[i].capacity (unsigned
+> > long) overflows with the frequency values stored in Hz.
 > 
-
-Ok.
-
->> +enum qcom_qos_mode {
->> +       QCOM_QOS_MODE_BYPASS = 0,
->> +       QCOM_QOS_MODE_FIXED,
->> +       QCOM_QOS_MODE_MAX,
->> +};
->> +
->> +struct qcom_icc_provider {
->> +       struct icc_provider     provider;
->> +       void __iomem            *base;
->> +       struct clk              *bus_clk;
->> +       struct clk              *bus_a_clk;
->> +};
->> +
->> +#define MSM8916_MAX_LINKS      8
->> +
->> +/**
->> + * struct qcom_icc_node - Qualcomm specific interconnect nodes
->> + * @name: the node name used in debugfs
->> + * @links: an array of nodes where we can go next while traversing
->> + * @id: a unique node identifier
->> + * @num_links: the total number of @links
->> + * @port: the offset index into the masters QoS register space
->> + * @buswidth: width of the interconnect between a node and the bus
+> Ah, thank you very much for pointing this out ! I haven't tried on a 32bit
+> machine yet, my bad. I'll fix that for v4.
 > 
-> units?
-
-Will add.
-
-[..]
-
->> +static int qcom_icc_init(struct icc_node *node)
->> +{
->> +       struct qcom_icc_provider *qp = to_qcom_provider(node->provider);
->> +       /* TODO: init qos and priority */
->> +
+> > 
+> > Maybe something like this to cure it:
+> > 
+> > diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+> > index 6ad53f1cf7e6..c13b3eb8bf35 100644
+> > --- a/kernel/power/energy_model.c
+> > +++ b/kernel/power/energy_model.c
+> > @@ -144,9 +144,11 @@ static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
+> >  	unsigned long fmax = cs_table->state[max_cap_state].frequency;
+> >  	int i;
+> >  
+> > -	for (i = 0; i < cs_table->nr_cap_states; i++)
+> > -		cs_table->state[i].capacity = cmax *
+> > -					cs_table->state[i].frequency / fmax;
+> > +	for (i = 0; i < cs_table->nr_cap_states; i++) {
+> > +		u64 val = (u64)cmax * cs_table->state[i].frequency;
+> > +		do_div(val, fmax);
+> > +		cs_table->state[i].capacity = (unsigned long)val;
+> > +	}
+> >  }
 > 
-> No need to set_rate here before enabling the clock?
+> Hmmm yes, that should work.
+> 
+> > 
+> > This brings me to another question. Let's say there are multiple users of
+> > the Energy Model in the system. Shouldn't the units of frequency and power
+> > not standardized, maybe Mhz and mW?
+> > The task scheduler doesn't care since it is only interested in power diffs
+> > but other user might do.
+> 
+> So the good thing about specifying units is that we can probably assume
+> ranges on the values. If the power is in mW, assuming that we're talking
+> about a single CPU, it'll probably fit in 16 bits. 65W/core should be
+> a reasonable upper-bound ?
+> But there are also vendors who might not be happy with disclosing absolute
+> values ... These are sometimes considered sensitive and only relative
+> numbers are discussed publicly. Now, you can also argue that we already
+> have units specified in IPA for ex, and that it doesn't really matter if
+> a driver "lies" about the real value, as long as the ratios are correct.
+> And I guess that anyone can do measurement on the hardware and get those
+> values anyway. So specifying a unit (mW) for the power is probably a
+> good idea.
 
-Yes, i am planing to initially set the bus clocks at max rate. The rate
-would be adjusted as soon as the consumers start placing requests.
+Mmm, I remember we fought quite a bit while getting capacity-dmpis-mhz
+binding accepted, and one of the musts was that the values were going to
+be normalized. So, normalized power values again maybe?
 
-> 
->> +       clk_prepare_enable(qp->bus_clk);
->> +       clk_prepare_enable(qp->bus_a_clk);
->> +
->> +       return 0;
->> +}
->> +
->> +static int qcom_icc_set(struct icc_node *src, struct icc_node *dst,
->> +                       u32 avg, u32 peak)
->> +{
->> +       struct qcom_icc_provider *qp;
->> +       struct qcom_icc_node *qn;
->> +       struct icc_node *node;
->> +       struct icc_provider *provider;
->> +       u64 avg_bw;
->> +       u64 peak_bw;
->> +       u64 rate = 0;
->> +       int ret = 0;
->> +
->> +       if (!src)
->> +               node = dst;
->> +       else
->> +               node = src;
->> +
->> +       qn = node->data;
->> +       provider = node->provider;
->> +       qp = to_qcom_provider(node->provider);
->> +
->> +       /* convert from kbps to bps */
->> +       avg_bw = avg * 1000ULL;
->> +       peak_bw = peak * 1000ULL;
->> +
-> 
-> Since the core uses kbps and various SoC HW might use bps (or other
-> units), perhaps consider providing a macro in the core header such as:
-> 
-> #define icc_units_to_bps(bw)  (bw * 1000ULL)
-> 
-> and then move this conversion to the top of the function where you
-> define the variable
-> 
-> u64 avg_bw = icc_units_to_bps(avg);
-> u64 peak_bw = icc_units_to_bps(peak);
-> 
-> Since other drivers will end up copying this driver, it might help
-> prevent silly errors in the drivers and has a side-effect of allowing
-> the core to change internal units w/o any driver changes down the
-> line, if needed.
+Best,
 
-Ok, i am fine with this.
-
-Thanks,
-Georgi
+- Juri
