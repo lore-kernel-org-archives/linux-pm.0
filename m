@@ -1,107 +1,53 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
  framework
-Date: Wed, 6 Jun 2018 15:12:15 +0200
-Message-ID: <b47cb1f1-6ca1-7674-903f-724be43a57a0@arm.com>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-4-quentin.perret@arm.com>
+Date: Wed, 6 Jun 2018 15:42:08 +0200
+Message-ID: <22f5cf0b-049e-7938-55f6-4b4b154f8389@linaro.org>
+References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180606122357.GN12258@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180521142505.6522-4-quentin.perret@arm.com>
+In-Reply-To: <20180606122357.GN12258@hirez.programming.kicks-ass.net>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/21/2018 04:24 PM, Quentin Perret wrote:
-> Several subsystems in the kernel (scheduler and/or thermal at the time
-> of writing) can benefit from knowing about the energy consumed by CPUs.
-> Yet, this information can come from different sources (DT or firmware for
-> example), in different formats, hence making it hard to exploit without
-> a standard API.
+On 06/06/2018 14:23, Peter Zijlstra wrote:
+> On Tue, Jun 05, 2018 at 11:16:40AM +0200, Daniel Lezcano wrote:
+>> +	atomic_t idle_duration_ms;
+>> +	atomic_t run_duration_ms;
 > 
-> This patch attempts to solve this issue by introducing a centralized
-> Energy Model (EM) framework which can be used to interface the data
-> providers with the client subsystems. This framework standardizes the
-> API to expose power costs, and to access them from multiple locations.
+>> +	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
 > 
-> The current design assumes that all CPUs in a frequency domain share the
-> same micro-architecture. As such, the EM data is structured in a
-> per-frequency-domain fashion. Drivers aware of frequency domains
-> (typically, but not limited to, CPUFreq drivers) are expected to register
-> data in the EM framework using the em_register_freq_domain() API. To do
-> so, the drivers must provide a callback function that will be called by
-> the EM framework to populate the tables. As of today, only the active
-> power of the CPUs is considered. For each frequency domain, the EM
-> includes a list of <frequency, power, capacity> tuples for the capacity
-> states of the domain alongside a cpumask covering the involved CPUs.
+>> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
 > 
-> The EM framework also provides an API to re-scale the capacity values
-> of the model asynchronously, after it has been created. This is required
-> for architectures where the capacity scale factor of CPUs can change at
-> run-time. This is the case for Arm/Arm64 for example where the
-> arch_topology driver recomputes the capacity scale factors of the CPUs
-> after the maximum frequency of all CPUs has been discovered. Although
-> complex, the process of creating and re-scaling the EM has to be kept in
-> two separate steps to fulfill the needs of the different users. The thermal
-> subsystem doesn't use the capacity values and shouldn't have dependencies
-> on subsystems providing them. On the other hand, the task scheduler needs
-> the capacity values, and it will benefit from seeing them up-to-date when
-> applicable.
+>> +	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
+>> +	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
 > 
-> Because of this need for asynchronous update, the capacity state table
-> of each frequency domain is protected by RCU, hence guaranteeing a safe
-> modification of the table and a fast access to readers in latency-sensitive
-> code paths.
+>> +	*run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+>> +	*idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
 > 
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+>> +	if (!atomic_read(&ii_dev->idle_duration_ms))
+> 
+>> +	if (!atomic_read(&ii_dev->run_duration_ms))
+> 
+> What is the point of atomic_t here ?!
 
-[...]
+idle_duration and run_duration can be changed from different places at
+the same time. The atomic is here to ensure the read/write are consistent.
 
-> +static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
-> +{
-> +	unsigned long cmax = arch_scale_cpu_capacity(NULL, cpu);
-> +	int max_cap_state = cs_table->nr_cap_states - 1;
-> +	unsigned long fmax = cs_table->state[max_cap_state].frequency;
-> +	int i;
-> +
-> +	for (i = 0; i < cs_table->nr_cap_states; i++)
-> +		cs_table->state[i].capacity = cmax *
-> +					cs_table->state[i].frequency / fmax;
-> +}
+Do you think it is pointless ?
 
-This has issues on a 32bit system. cs_table->state[i].capacity (unsigned
-long) overflows with the frequency values stored in Hz.
 
-Maybe something like this to cure it:
 
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index 6ad53f1cf7e6..c13b3eb8bf35 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -144,9 +144,11 @@ static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
- 	unsigned long fmax = cs_table->state[max_cap_state].frequency;
- 	int i;
- 
--	for (i = 0; i < cs_table->nr_cap_states; i++)
--		cs_table->state[i].capacity = cmax *
--					cs_table->state[i].frequency / fmax;
-+	for (i = 0; i < cs_table->nr_cap_states; i++) {
-+		u64 val = (u64)cmax * cs_table->state[i].frequency;
-+		do_div(val, fmax);
-+		cs_table->state[i].capacity = (unsigned long)val;
-+	}
- }
 
-This brings me to another question. Let's say there are multiple users of
-the Energy Model in the system. Shouldn't the units of frequency and power
-not standardized, maybe Mhz and mW?
-The task scheduler doesn't care since it is only interested in power diffs
-but other user might do.
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-[...]
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
