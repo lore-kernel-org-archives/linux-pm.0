@@ -1,53 +1,89 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
  framework
-Date: Wed, 6 Jun 2018 15:42:08 +0200
-Message-ID: <22f5cf0b-049e-7938-55f6-4b4b154f8389@linaro.org>
-References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
- <20180606122357.GN12258@hirez.programming.kicks-ass.net>
+Date: Wed, 6 Jun 2018 15:37:39 +0100
+Message-ID: <20180606143739.GF10870@e108498-lin.cambridge.arm.com>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-4-quentin.perret@arm.com>
+ <b47cb1f1-6ca1-7674-903f-724be43a57a0@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180606122357.GN12258@hirez.programming.kicks-ass.net>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <b47cb1f1-6ca1-7674-903f-724be43a57a0@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/06/2018 14:23, Peter Zijlstra wrote:
-> On Tue, Jun 05, 2018 at 11:16:40AM +0200, Daniel Lezcano wrote:
->> +	atomic_t idle_duration_ms;
->> +	atomic_t run_duration_ms;
-> 
->> +	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
-> 
->> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
-> 
->> +	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
->> +	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
-> 
->> +	*run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
->> +	*idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
-> 
->> +	if (!atomic_read(&ii_dev->idle_duration_ms))
-> 
->> +	if (!atomic_read(&ii_dev->run_duration_ms))
-> 
-> What is the point of atomic_t here ?!
+Hi Dietmar,
 
-idle_duration and run_duration can be changed from different places at
-the same time. The atomic is here to ensure the read/write are consistent.
+On Wednesday 06 Jun 2018 at 15:12:15 (+0200), Dietmar Eggemann wrote:
+> > +static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
+> > +{
+> > +	unsigned long cmax = arch_scale_cpu_capacity(NULL, cpu);
+> > +	int max_cap_state = cs_table->nr_cap_states - 1;
+> > +	unsigned long fmax = cs_table->state[max_cap_state].frequency;
+> > +	int i;
+> > +
+> > +	for (i = 0; i < cs_table->nr_cap_states; i++)
+> > +		cs_table->state[i].capacity = cmax *
+> > +					cs_table->state[i].frequency / fmax;
+> > +}
+> 
+> This has issues on a 32bit system. cs_table->state[i].capacity (unsigned
+> long) overflows with the frequency values stored in Hz.
 
-Do you think it is pointless ?
+Ah, thank you very much for pointing this out ! I haven't tried on a 32bit
+machine yet, my bad. I'll fix that for v4.
 
+> 
+> Maybe something like this to cure it:
+> 
+> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+> index 6ad53f1cf7e6..c13b3eb8bf35 100644
+> --- a/kernel/power/energy_model.c
+> +++ b/kernel/power/energy_model.c
+> @@ -144,9 +144,11 @@ static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
+>  	unsigned long fmax = cs_table->state[max_cap_state].frequency;
+>  	int i;
+>  
+> -	for (i = 0; i < cs_table->nr_cap_states; i++)
+> -		cs_table->state[i].capacity = cmax *
+> -					cs_table->state[i].frequency / fmax;
+> +	for (i = 0; i < cs_table->nr_cap_states; i++) {
+> +		u64 val = (u64)cmax * cs_table->state[i].frequency;
+> +		do_div(val, fmax);
+> +		cs_table->state[i].capacity = (unsigned long)val;
+> +	}
+>  }
 
+Hmmm yes, that should work.
 
+> 
+> This brings me to another question. Let's say there are multiple users of
+> the Energy Model in the system. Shouldn't the units of frequency and power
+> not standardized, maybe Mhz and mW?
+> The task scheduler doesn't care since it is only interested in power diffs
+> but other user might do.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+So the good thing about specifying units is that we can probably assume
+ranges on the values. If the power is in mW, assuming that we're talking
+about a single CPU, it'll probably fit in 16 bits. 65W/core should be
+a reasonable upper-bound ?
+But there are also vendors who might not be happy with disclosing absolute
+values ... These are sometimes considered sensitive and only relative
+numbers are discussed publicly. Now, you can also argue that we already
+have units specified in IPA for ex, and that it doesn't really matter if
+a driver "lies" about the real value, as long as the ratios are correct.
+And I guess that anyone can do measurement on the hardware and get those
+values anyway. So specifying a unit (mW) for the power is probably a
+good idea.
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+For the frequency, I would rather keep it consistent with what CPUFreq
+manages. But that should be specified somewhere, I agree.
+
+What do you think ?
+
+Thanks !
+Quentin
