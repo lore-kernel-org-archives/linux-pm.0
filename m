@@ -1,216 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
- bindings
-Date: Wed, 6 Jun 2018 10:12:38 +0530
-Message-ID: <20180606044238.qquy2hkwdm3muhoj@vireshk-i7>
-References: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
- <1528109194-16864-2-git-send-email-tdas@codeaurora.org>
+From: Ilia Lin <ilialin@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: kryo: allow building as a loadable module
+Date: Wed, 06 Jun 2018 07:44:39 +0300
+Message-ID: <85F1CCF0-F937-4EAA-9628-D8AA6C4EDE0E@codeaurora.org>
+References: <20180605114453.1381941-1-arnd@arndb.de> <20180606040929.tksvznlmb3ogtgur@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1528109194-16864-2-git-send-email-tdas@codeaurora.org>
+In-Reply-To: <20180606040929.tksvznlmb3ogtgur@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04-06-18, 16:16, Taniya Das wrote:
-> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
-> SoCs. This is required for managing the cpu frequency transitions which are
-> controlled by firmware.
-> 
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 173 +++++++++++++++++++++
->  1 file changed, 173 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
-> new file mode 100644
-> index 0000000..e3087ec
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
-> @@ -0,0 +1,173 @@
-> +Qualcomm Technologies, Inc. CPUFREQ Bindings
-> +
-> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
-> +SoCs to manage frequency in hardware. It is capable of controlling frequency
-> +for multiple clusters.
-> +
-> +Properties:
-> +- compatible
-> +	Usage:		required
-> +	Value type:	<string>
-> +	Definition:	must be "qcom,cpufreq-fw".
-> +
-> +* Property qcom,freq-domain
-> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
-> +phandle to a freq_domain_table in their DT node.
-> +
-> +* Frequency Domain Table Node
-> +
-> +This describes the frequency domain belonging to a device.
-> +This node can have following properties:
-> +
-> +- reg
-> +	Usage:		required
-> +	Value type:	<prop-encoded-array>
-> +	Definition:	Addresses and sizes for the memory of the perf
-> +			, lut and enable bases.
-> +			perf - indicates the base address for the desired
-> +			performance state to be set.
-> +			lut - indicates the look up table base address for the
-> +			cpufreq	driver to read frequencies.
-> +			enable - indicates the enable register for firmware.
-> +- reg-names
-> +	Usage:		required
-> +	Value type:	<stringlist>
-> +	Definition:	Address names. Must be "perf", "lut", "enable".
-> +			Must be specified in the same order as the reg property.
-> +
-> +Example:
-> +
-> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
-> +DCVS state together.
-> +
-> +/ {
-> +	cpus {
-> +		#address-cells = <2>;
-> +		#size-cells = <0>;
-> +
-> +		CPU0: cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x0>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_0>;
-> +			qcom,freq-domain = <&freq_domain_table0>;
-> +			L2_0: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +				L3_0: l3-cache {
-> +				      compatible = "cache";
-> +				};
-> +			};
-> +		};
-> +
-> +		CPU1: cpu@100 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x100>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_100>;
-> +			qcom,freq-domain = <&freq_domain_table0>;
-> +			L2_100: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU2: cpu@200 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x200>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_200>;
-> +			qcom,freq-domain = <&freq_domain_table0>;
-> +			L2_200: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU3: cpu@300 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x300>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_300>;
-> +			qcom,freq-domain = <&freq_domain_table0>;
-> +			L2_300: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU4: cpu@400 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x400>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_400>;
-> +			qcom,freq-domain = <&freq_domain_table1>;
-> +			L2_400: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU5: cpu@500 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x500>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_500>;
-> +			qcom,freq-domain = <&freq_domain_table1>;
-> +			L2_500: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU6: cpu@600 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x600>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_600>;
-> +			qcom,freq-domain = <&freq_domain_table1>;
-> +			L2_600: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU7: cpu@700 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x700>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_700>;
-> +			qcom,freq-domain = <&freq_domain_table1>;
-> +			L2_700: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +	};
-> +
-> +	qcom,cpufreq-fw {
-> +		compatible = "qcom,cpufreq-fw";
-> +
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +
-> +		freq_domain_table0 : freq_table0 {
-> +			reg = <0x17d43920 0x4>, <0x17d43110 0x500>,
-> +				 <0x17d41000 0x4>;
-> +			reg-names = "perf", "lut", "enable";
-> +		};
-> +
-> +		freq_domain_table1 : freq_table1 {
-> +			reg = <0x17d46120 0x4>, <0x17d45910 0x500>,
-> +				<0x17d45800 0x4> ;
-> +			reg-names = "perf", "lut", "enable";
-> +		};
-> +	};
+Viresh got ahead of my answer a bit=2E :)
+Sure I'll post the module exit later=2E
 
-Looks better now from design point of view now, no ugly CPU lists :)
+On June 6, 2018 7:09:29 AM GMT+03:00, Viresh Kumar <viresh=2Ekumar@linaro=
+=2Eorg> wrote:
+>On 05-06-18, 13:44, Arnd Bergmann wrote:
+>> Building the kryo cpufreq driver while QCOM_SMEM is a loadable module
+>> results in a link error:
+>>=20
+>> drivers/cpufreq/qcom-cpufreq-kryo=2Eo: In function
+>`qcom_cpufreq_kryo_probe':
+>> qcom-cpufreq-kryo=2Ec:(=2Etext+0xbc): undefined reference to
+>`qcom_smem_get'
+>>=20
+>> The problem is that Kconfig ignores interprets the dependency as met
+>> when the dependent symbol is a 'bool' one=2E By making it 'tristate',
+>> it will be forced to be a module here, which builds successfully=2E
+>>=20
+>> Fixes: 46e2856b8e18 ("cpufreq: Add Kryo CPU scaling driver")
+>> Signed-off-by: Arnd Bergmann <arnd@arndb=2Ede>
+>> ---
+>>  drivers/cpufreq/Kconfig=2Earm | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>=20
+>> diff --git a/drivers/cpufreq/Kconfig=2Earm
+>b/drivers/cpufreq/Kconfig=2Earm
+>> index c7ce928fbf1f=2E=2E52f5f1a2040c 100644
+>> --- a/drivers/cpufreq/Kconfig=2Earm
+>> +++ b/drivers/cpufreq/Kconfig=2Earm
+>> @@ -125,7 +125,7 @@ config ARM_OMAP2PLUS_CPUFREQ
+>>  	default ARCH_OMAP2PLUS
+>> =20
+>>  config ARM_QCOM_CPUFREQ_KRYO
+>> -	bool "Qualcomm Kryo based CPUFreq"
+>> +	tristate "Qualcomm Kryo based CPUFreq"
+>>  	depends on ARM64
+>>  	depends on QCOM_QFPROM
+>>  	depends on QCOM_SMEM
+>
+>Okay, so we really need this to be a module=2E But the driver can't
+>really work as
+>a module right now if we do this: insmod, rmmod, insmod=2E Because it
+>doesn't free
+>resources at rmmmod and will fail on second insmod=2E
+>
+>Because what you are fixing is a critical build error, we better get it
+>merged
+>right now=2E
+>
+>Acked-by: Viresh Kumar <viresh=2Ekumar@linaro=2Eorg>
+>
+>But Ilia needs to cook another patch to add the module removal code for
+>the
+>driver and mark your patch's commit id in the fixes tag=2E
 
-Unless Rob finds something wrong with the bindings:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+--=20
+Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
