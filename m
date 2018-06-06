@@ -1,301 +1,102 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 2/2] sched/fair: util_est: add running_sum tracking
-Date: Wed, 6 Jun 2018 10:26:40 +0200
-Message-ID: <20180606082640.GA14694@linaro.org>
-References: <20180604160600.22052-1-patrick.bellasi@arm.com>
- <20180604160600.22052-3-patrick.bellasi@arm.com>
- <CAKfTPtD8RDxT=-oO2VYJRbtwoEyEKEAau-Ad-bAd8L2T2zKWEg@mail.gmail.com>
- <20180605151129.GC32302@e110439-lin>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Wed, 6 Jun 2018 12:22:07 +0200
+Message-ID: <2bebd1bc-e1ad-6d22-ad1e-aee2cf8ba878@linaro.org>
+References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
+ <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
+ <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180605151129.GC32302@e110439-lin>
+In-Reply-To: <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Todd Kjos <tkjos@google.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Le Tuesday 05 Jun 2018 à 16:11:29 (+0100), Patrick Bellasi a écrit :
-> Hi Vincent,
+On 06/06/2018 06:27, Viresh Kumar wrote:
+> On 05-06-18, 16:54, Daniel Lezcano wrote:
+>> On 05/06/2018 12:39, Viresh Kumar wrote:
+>> I don't think you are doing a mistake. Even if this can happen
+>> theoretically, I don't think practically that is the case.
+>>
+>> The play_idle() has 1ms minimum sleep time.
+>>
+>> The scenario you are describing means:
+>>
+>> 1. the loop in idle_injection_wakeup() takes more than 1ms to achieve
 > 
-> On 05-Jun 08:57, Vincent Guittot wrote:
-> > On 4 June 2018 at 18:06, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> There are many ways in which idle_injection_wakeup() can get called.
 > 
-> [...]
+> - from hrtimer handler, this happens in softirq context, right? So interrupts
+>   can still block the handler to run ?
 > 
-> > > Let's improve the estimated utilization by adding a new "sort-of" PELT
-> > > signal, explicitly only for SE which has the following behavior:
-> > >  a) at each enqueue time of a task, its value is the (already decayed)
-> > >     util_avg of the task being enqueued
-> > >  b) it's updated at each update_load_avg
-> > >  c) it can just increase, whenever the task is actually RUNNING on a
-> > >     CPU, while it's kept stable while the task is RUNNANBLE but not
-> > >     actively consuming CPU bandwidth
-> > >
-> > > Such a defined signal is exactly equivalent to the util_avg for a task
-> > > running alone on a CPU while, in case the task is preempted, it allows
-> > > to know at dequeue time how much would have been the task utilization if
-> > > it was running alone on that CPU.
-> > 
-> > I don't agree with this statement above
-> > Let say that you have 2 periodic tasks which wants to run 4ms in every
-> > period of 10ms and wakes up at the same time.
-> > One task will execute 1st and the other will wait but at the end they
-> > have the same period and running time and as a result the same
-> > util_avg which is exactly what they need.
+> - from idle_injection_start(), process context. RT or DL or IRQ activity can
+>   block the CPU for long durations sometimes.
 > 
-> In your example above you say that both tasks will end up with a 40%
-> util_avg, and that's exactly also the value reported by the new
-> "running_avg" metric.
-
-It's not really possible because the util_avg of the 2 tasks already give the exact same
-right value. So running_avg, which removes some decay for the 2nd task, can't
-give same results.
-
-I add more details below
-
+>> 2. at the same time, the user of the idle injection unregisters while
+>> the idle injection is acting precisely at CPU0 and exits before another
+>> task was wakeup by the loop in 1. more than 1ms after.
+>>
+>> >From my POV, this scenario can't happen.
+> 
+> Maybe something else needs to be buggy as well to make this crap happen.
+> 
+>> Anyway, we must write rock solid code
+> 
+> That's my point.
+> 
+>> so may be we can use a refcount to
+>> protect against that, so instead of freeing in unregister, we refput the
+>> ii_dev pointer.
+> 
+> I think the solution can be a simple change in implementation of
+> idle_injection_wakeup(), something like this..
+> 
+> +static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
+> +{
+> +	struct idle_injection_thread *iit;
+> +	int cpu;
+> +
+> +	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask)
+> +		atomic_inc(&ii_dev->count);
 >
-> 
-> Both tasks, if they where running alone, they would have generated a
-> 40% utilization, and above I'm saying:
-> 
->         it allows to know at dequeue time
->    how much would have been the task utilization
->       if it it was running alone on that CPU
-> 
-> Don't see where is not correct, maybe I should explain it better?
-> 
-> > > This new signal is named "running_avg", since it tracks the actual
-> > > RUNNING time of a task by ignoring any form of preemption.
-> > 
-> > In fact, you still take into account this preemption as you remove
-> > some time whereas it's only a shift of the excution
-> 
-> When the task is enqueued we cache the (already decayed) util_avg, and
-> from this time on the running_avg can only increase. It increases only
-> for the portion of CPU time the task is running and it's never decayed
-> while the task is preempted.
-> 
-> In your example above, if we look at the second task running, the one
-> "delayed", you will have:
-> 
->  @t1 wakeup time:    running_avg@t1 = util_avg@t1
->                         since we initialize it with the
->                         "sleep decayed" util_avg
-> 
->   NOTE: this initialization is the important part, more on that on your
->   next comment below related to the period being changed.
-> 
->  @t2 switch_in time: running_avg@t2 = running_avg@t1
->                         since it's not decayed while RUNNUBLE but !RUNNING
-> 
->                      while, meanwhile:
-> 
->                      util_avg@t2 < util_avg@t1
->                         since it's decayed while RUNNABLE but !RUNNING
-> 
->  @t3 dequeue time:   running_avg@t3 > running_avg@t2
-> 
-> 
-> When you say "it's only a shift of the execution" I agree, and indeed
-> the running_avg is not affected at all.
-> 
-> So, we can say that I'm "accounting for preemption time" but really,
-> the way I do it, is just by _not decaying_ PELT when the task is:
-> 
->                  RUNNABLE but !RUNNING
-> 
-> and that's why I say that running_avg gives you the same behavior of
-> util_avg _if_ the task was running alone, because in that case you never
-> have the condition above, and thus util_avg is never decayed.
->
+> +
+> +       mb(); //I am not sure but I think we need some kind of barrier here ?
 
-For the above 2 tasks of the example example we have the pattern
+(mb() are done in the atomic operations AFAICT).
 
-Task 1
-state       RRRRSSSSSSERRRRSSSSSSERRRRSSSSSS
-util_avg    AAAADDDDDD AAAADDDDDD AAAADDDDDD
+What about:
 
-Task 2
-state       WWWWRRRRSSEWWWWRRRRSSEWWWWRRRRSS
-util_avg    DDDDAAAADD DDDDAAAADD DDDDAAAADD
-running_avg     AAAADDC    AAAADDC    AAAADD
+	get_online_cpus();
 
-R : Running 1ms, S: Sleep 1ms , W: Wait 1ms, E: Enqueue event 
-A: Accumulate 1ms, D: Decay 1ms, C: Copy util_avg value
+	nr_tasks = cpumask_weight(
+		cpumask_and(ii_dev->cpumask, cpu_online_mask);
+			
+	atomic_set(&ii_dev->count, nr_tasks);
 
-the util_avg of T1 and T2 have the same pattern which is:
-  AAAADDDDDDAAAADDDDDDAAAADDDDDD
-and as a result, the same value which represents their utilization
+	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
+		iit = per_cpu_ptr(&idle_injection_thread, cpu);
+		iit->should_run = 1;
+		wake_up_process(iit->tsk);
+	}
 
-For the running_avg of T2, there is only 2 decays aftert the last running
-phase and before the next enqueue
-so the pattern will be AAAADDAAAA
-instead of the         AAAADDDDDDAAAA
+	put_online_cpus();
+?
 
-the runninh_avg will report a higher value than reality
+I'm wondering if we can have a CPU hotplugged right after the
+'put_online_cpus', resulting in the 'should park' flag set and then the
+thread goes in the kthread_parkme instead of jumping back the idle
+injection function and decrease the count, leading up to the timer not
+being set again.
 
->
-> 
-> [...]
-> 
-> > > @@ -3161,6 +3161,8 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
-> > >                 sa->runnable_load_sum =
-> > >                         decay_load(sa->runnable_load_sum, periods);
-> > >                 sa->util_sum = decay_load((u64)(sa->util_sum), periods);
-> > > +               if (running)
-> > > +                       sa->running_sum = decay_load(sa->running_sum, periods);
-> > 
-> > so you make some time disappearing from the equation as the signal
-> > will not be decayed and make the period looking shorter than reality.
-> 
-> Since at enqueue time we always initialize running_avg to whatever is
-> util_avg, I don't think we are messing up with the period at all.
-> 
-> The util_avg signal properly accounts for the period.
-> Thus, the combined effect of:
-> 
->   - initializing running_avg at enqueue time with the value of
->     util_avg, already decayed to properly account for the task period
->   - not decaying running_avg when the task is RUNNABLE but !RUNNING
-> 
-> should just result into "virtually" considering the two tasks of your
-> example "as if" they was running concurrently on two different CPUs.
-> 
-> Isn't it?
+-- 
+ <http://www.linaro.org/> Linaro.org â”‚ Open source software for ARM SoCs
 
-No because part of the "sleep" phase is done during the waiting time and
-you don't take into account this sleep time
-
-see my explanation above
-
-> 
-> > With the example I mentioned above, the 2nd task will be seen as if
-> > its period becomes 6ms instead of 10ms which is not true and the
-> > utilization of the task is overestimated without any good reason
-> 
-> I don't see that overestimation... and I cannot even measure it.
-> 
-> If I run an experiment with your example above, while using the
-> performance governor to rule out any possible scale invariance
-> difference, here is what I measure:
-> 
->    Task1 (40ms delayed by the following Task2):
-
-the 40ms above is a typo mistake ? you mean 4ms, isn't it ?
-
->                                mean          std     max
->       running_avg        455.387449    22.940168   492.i0
-
-the 492 is the overestimation generated by running_avg and not a rounding
-effect. With 4ms and 10ms the number of missing decay steps is small but if
-you use 40ms/100ms instead you will see a greater difference in the max number
-
->       util_avg           433.233288    17.395477   458.0
-> 
->    Task2 (waking up at same time of Task1 and running before):
->                                mean          std     max
->       running_avg        430.281834    22.405175   455.0
->       util_avg           421.745331    22.098873   456.0
-> 
-> and if I compare Task1 above with another experiment where Task1 is
-> running alone:
-> 
->    Task1 (running alone):
->                                mean          std     min
->       running_avg        460.257895    22.103704   460.0
->       util_avg           435.119737    17.647556   461.0
-> 
-> 
-> Thus, there are some variations ok, but I think they are more due to
-> the rounding errors we have.
-> Task1 is still seen as a 455 expected utilization, which is not the
-> 4/6 ~= 660 you say above if it should be accounted as a task running
-> 4ms every 6ms.
-> 
-> > Furthermore, this new signal doesn't have clear meaning because it's
-> > not utilization but it's also not the waiting time of the task.
-> 
-> The meaning is: the utilization of the task _if_ it should be running
-> alone on that CPU. Tehe numbers above shows that since
->     455 (Task1 delayed) ~= 460 (Task1 running alone)
-
-you should look at the max and not the mean that what util_est is interested
-in IIUC
-
-Vincent
-
-> 
-> If it's running alone it would be exactly util_avg (minus rounding
-> errors), but if it's preempted it will be a better representation of
-> the task's needed CPU bandwidth.
-> 
-> Unless we really need to track the "waiting time of a task" I would
-> say that the signal above should make util_est much more accurate on
-> knowing, at wakeup time, how much CPU a task will likely need...
-> independently from preemption sources.
-> 
-> Here are some other experiments / workloads I'm testing:
-> 
->    https://gist.github.com/derkling/fe01e5ddf639e18b5d85a3b1d2e84b7d
-> 
-> > >
-> > >                 /*
-> > >                  * Step 2
-> > > @@ -3176,8 +3178,10 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
-> > >                 sa->load_sum += load * contrib;
-> > >         if (runnable)
-> > >                 sa->runnable_load_sum += runnable * contrib;
-> > > -       if (running)
-> > > +       if (running) {
-> > >                 sa->util_sum += contrib * scale_cpu;
-> > > +               sa->running_sum += contrib * scale_cpu;
-> > > +       }
-> > >
-> > >         return periods;
-> > >  }
-> > > @@ -3963,6 +3967,12 @@ static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-> > >         WRITE_ONCE(cfs_rq->avg.util_est.enqueued, enqueued);
-> > >  }
-> > >
-> > > +static inline void util_est_enqueue_running(struct task_struct *p)
-> > > +{
-> > > +       /* Initilize the (non-preempted) utilization */
-> > > +       p->se.avg.running_sum = p->se.avg.util_sum;
-> 
-> This line above is what should ensure we do not mess up with the task
-> period.
-> 
-> > > +}
-> > > +
-> > >  /*
-> > >   * Check if a (signed) value is within a specified (unsigned) margin,
-> > >   * based on the observation that:
-> > > @@ -4018,7 +4028,7 @@ util_est_dequeue(struct cfs_rq *cfs_rq, struct task_struct *p, bool task_sleep)
-> > >          * Skip update of task's estimated utilization when its EWMA is
-> > >          * already ~1% close to its last activation value.
-> > >          */
-> > > -       ue.enqueued = (task_util(p) | UTIL_AVG_UNCHANGED);
-> > > +       ue.enqueued = p->se.avg.running_sum / LOAD_AVG_MAX;
-> > >         last_ewma_diff = ue.enqueued - ue.ewma;
-> > >         if (within_margin(last_ewma_diff, (SCHED_CAPACITY_SCALE / 100)))
-> > >                 return;
-> > > @@ -5437,6 +5447,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> > >         if (!se)
-> > >                 add_nr_running(rq, 1);
-> > >
-> > > +       util_est_enqueue_running(p);
-> > > +
-> > >         hrtick_update(rq);
-> > >  }
-> > >
-> > > --
-> > > 2.15.1
-> > >
-> 
-> -- 
-> #include <best/regards.h>
-> 
-> Patrick Bellasi
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
