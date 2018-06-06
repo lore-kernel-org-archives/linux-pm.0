@@ -1,75 +1,216 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Wed, 6 Jun 2018 09:57:08 +0530
-Message-ID: <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
-References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
- <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
- <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
+Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
+ bindings
+Date: Wed, 6 Jun 2018 10:12:38 +0530
+Message-ID: <20180606044238.qquy2hkwdm3muhoj@vireshk-i7>
+References: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
+ <1528109194-16864-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
+In-Reply-To: <1528109194-16864-2-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05-06-18, 16:54, Daniel Lezcano wrote:
-> On 05/06/2018 12:39, Viresh Kumar wrote:
-> I don't think you are doing a mistake. Even if this can happen
-> theoretically, I don't think practically that is the case.
+On 04-06-18, 16:16, Taniya Das wrote:
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by firmware.
 > 
-> The play_idle() has 1ms minimum sleep time.
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 173 +++++++++++++++++++++
+>  1 file changed, 173 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
 > 
-> The scenario you are describing means:
-> 
-> 1. the loop in idle_injection_wakeup() takes more than 1ms to achieve
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> new file mode 100644
+> index 0000000..e3087ec
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> @@ -0,0 +1,173 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "qcom,cpufreq-fw".
+> +
+> +* Property qcom,freq-domain
+> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+> +phandle to a freq_domain_table in their DT node.
+> +
+> +* Frequency Domain Table Node
+> +
+> +This describes the frequency domain belonging to a device.
+> +This node can have following properties:
+> +
+> +- reg
+> +	Usage:		required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Addresses and sizes for the memory of the perf
+> +			, lut and enable bases.
+> +			perf - indicates the base address for the desired
+> +			performance state to be set.
+> +			lut - indicates the look up table base address for the
+> +			cpufreq	driver to read frequencies.
+> +			enable - indicates the enable register for firmware.
+> +- reg-names
+> +	Usage:		required
+> +	Value type:	<stringlist>
+> +	Definition:	Address names. Must be "perf", "lut", "enable".
+> +			Must be specified in the same order as the reg property.
+> +
+> +Example:
+> +
+> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+> +DCVS state together.
+> +
+> +/ {
+> +	cpus {
+> +		#address-cells = <2>;
+> +		#size-cells = <0>;
+> +
+> +		CPU0: cpu@0 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x0>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_0>;
+> +			qcom,freq-domain = <&freq_domain_table0>;
+> +			L2_0: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +				L3_0: l3-cache {
+> +				      compatible = "cache";
+> +				};
+> +			};
+> +		};
+> +
+> +		CPU1: cpu@100 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x100>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_100>;
+> +			qcom,freq-domain = <&freq_domain_table0>;
+> +			L2_100: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU2: cpu@200 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x200>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_200>;
+> +			qcom,freq-domain = <&freq_domain_table0>;
+> +			L2_200: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU3: cpu@300 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x300>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_300>;
+> +			qcom,freq-domain = <&freq_domain_table0>;
+> +			L2_300: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU4: cpu@400 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x400>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_400>;
+> +			qcom,freq-domain = <&freq_domain_table1>;
+> +			L2_400: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU5: cpu@500 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x500>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_500>;
+> +			qcom,freq-domain = <&freq_domain_table1>;
+> +			L2_500: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU6: cpu@600 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x600>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_600>;
+> +			qcom,freq-domain = <&freq_domain_table1>;
+> +			L2_600: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU7: cpu@700 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x700>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_700>;
+> +			qcom,freq-domain = <&freq_domain_table1>;
+> +			L2_700: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +	};
+> +
+> +	qcom,cpufreq-fw {
+> +		compatible = "qcom,cpufreq-fw";
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +
+> +		freq_domain_table0 : freq_table0 {
+> +			reg = <0x17d43920 0x4>, <0x17d43110 0x500>,
+> +				 <0x17d41000 0x4>;
+> +			reg-names = "perf", "lut", "enable";
+> +		};
+> +
+> +		freq_domain_table1 : freq_table1 {
+> +			reg = <0x17d46120 0x4>, <0x17d45910 0x500>,
+> +				<0x17d45800 0x4> ;
+> +			reg-names = "perf", "lut", "enable";
+> +		};
+> +	};
 
-There are many ways in which idle_injection_wakeup() can get called.
+Looks better now from design point of view now, no ugly CPU lists :)
 
-- from hrtimer handler, this happens in softirq context, right? So interrupts
-  can still block the handler to run ?
+Unless Rob finds something wrong with the bindings:
 
-- from idle_injection_start(), process context. RT or DL or IRQ activity can
-  block the CPU for long durations sometimes.
-
-> 2. at the same time, the user of the idle injection unregisters while
-> the idle injection is acting precisely at CPU0 and exits before another
-> task was wakeup by the loop in 1. more than 1ms after.
-> 
-> >From my POV, this scenario can't happen.
-
-Maybe something else needs to be buggy as well to make this crap happen.
-
-> Anyway, we must write rock solid code
-
-That's my point.
-
-> so may be we can use a refcount to
-> protect against that, so instead of freeing in unregister, we refput the
-> ii_dev pointer.
-
-I think the solution can be a simple change in implementation of
-idle_injection_wakeup(), something like this..
-
-+static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
-+{
-+	struct idle_injection_thread *iit;
-+	int cpu;
-+
-+	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask)
-+		atomic_inc(&ii_dev->count);
-+
-+       mb(); //I am not sure but I think we need some kind of barrier here ?
-+
-+	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
-+		iit = per_cpu_ptr(&idle_injection_thread, cpu);
-+		iit->should_run = 1;
-+		wake_up_process(iit->tsk);
-+	}
-+}
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
