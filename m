@@ -1,52 +1,107 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Wed, 6 Jun 2018 14:29:57 +0200
-Message-ID: <20180606122957.GO12258@hirez.programming.kicks-ass.net>
-References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
- <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
- <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
- <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
- <2bebd1bc-e1ad-6d22-ad1e-aee2cf8ba878@linaro.org>
- <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
- <20180606120539.GA13130@andrea>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
+ framework
+Date: Wed, 6 Jun 2018 15:12:15 +0200
+Message-ID: <b47cb1f1-6ca1-7674-903f-724be43a57a0@arm.com>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-4-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180606120539.GA13130@andrea>
+In-Reply-To: <20180521142505.6522-4-quentin.perret@arm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrea Parri <andrea.parri@amarulasolutions.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 06, 2018 at 02:05:39PM +0200, Andrea Parri wrote:
-> Hi Daniel, Viresh,
+On 05/21/2018 04:24 PM, Quentin Perret wrote:
+> Several subsystems in the kernel (scheduler and/or thermal at the time
+> of writing) can benefit from knowing about the energy consumed by CPUs.
+> Yet, this information can come from different sources (DT or firmware for
+> example), in different formats, hence making it hard to exploit without
+> a standard API.
 > 
-> On Wed, Jun 06, 2018 at 04:15:28PM +0530, Viresh Kumar wrote:
-> > On 06-06-18, 12:22, Daniel Lezcano wrote:
-> > > (mb() are done in the atomic operations AFAICT).
+> This patch attempts to solve this issue by introducing a centralized
+> Energy Model (EM) framework which can be used to interface the data
+> providers with the client subsystems. This framework standardizes the
+> API to expose power costs, and to access them from multiple locations.
 > 
-> To do my bit, not all atomic ops do/imply memory barriers; e.g.,
+> The current design assumes that all CPUs in a frequency domain share the
+> same micro-architecture. As such, the EM data is structured in a
+> per-frequency-domain fashion. Drivers aware of frequency domains
+> (typically, but not limited to, CPUFreq drivers) are expected to register
+> data in the EM framework using the em_register_freq_domain() API. To do
+> so, the drivers must provide a callback function that will be called by
+> the EM framework to populate the tables. As of today, only the active
+> power of the CPUs is considered. For each frequency domain, the EM
+> includes a list of <frequency, power, capacity> tuples for the capacity
+> states of the domain alongside a cpumask covering the involved CPUs.
 > 
->   [from Documentation/atomic_t.txt]
+> The EM framework also provides an API to re-scale the capacity values
+> of the model asynchronously, after it has been created. This is required
+> for architectures where the capacity scale factor of CPUs can change at
+> run-time. This is the case for Arm/Arm64 for example where the
+> arch_topology driver recomputes the capacity scale factors of the CPUs
+> after the maximum frequency of all CPUs has been discovered. Although
+> complex, the process of creating and re-scaling the EM has to be kept in
+> two separate steps to fulfill the needs of the different users. The thermal
+> subsystem doesn't use the capacity values and shouldn't have dependencies
+> on subsystems providing them. On the other hand, the task scheduler needs
+> the capacity values, and it will benefit from seeing them up-to-date when
+> applicable.
 > 
->   - non-RMW operations [e.g., atomic_set()] are unordered
+> Because of this need for asynchronous update, the capacity state table
+> of each frequency domain is protected by RCU, hence guaranteeing a safe
+> modification of the table and a fast access to readers in latency-sensitive
+> code paths.
 > 
->   - RMW operations that have no return value [e.g., atomic_inc()] are unordered
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 
-Quite so indeed.
+[...]
 
-> > AFAIU, it is required to make sure the operations are seen in a particular order
-> > on another CPU and the compiler doesn't reorganize code to optimize it.
-> > 
-> > For example, in our case what if the compiler reorganizes the atomic-set
-> > operation after wakeup-process ? But maybe that wouldn't happen across function
-> > calls and we should be safe then.
-> 
-> IIUC, wake_up_process() implies a full memory barrier and a compiler barrier,
-> due to:
+> +static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
+> +{
+> +	unsigned long cmax = arch_scale_cpu_capacity(NULL, cpu);
+> +	int max_cap_state = cs_table->nr_cap_states - 1;
+> +	unsigned long fmax = cs_table->state[max_cap_state].frequency;
+> +	int i;
+> +
+> +	for (i = 0; i < cs_table->nr_cap_states; i++)
+> +		cs_table->state[i].capacity = cmax *
+> +					cs_table->state[i].frequency / fmax;
+> +}
 
-Yes, the wakeup being a RELEASE (at least) is a fairly fundamental
-property for causality. You expect the woken task to observe the
-condition it got woken up on.
+This has issues on a 32bit system. cs_table->state[i].capacity (unsigned
+long) overflows with the frequency values stored in Hz.
+
+Maybe something like this to cure it:
+
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 6ad53f1cf7e6..c13b3eb8bf35 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -144,9 +144,11 @@ static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
+ 	unsigned long fmax = cs_table->state[max_cap_state].frequency;
+ 	int i;
+ 
+-	for (i = 0; i < cs_table->nr_cap_states; i++)
+-		cs_table->state[i].capacity = cmax *
+-					cs_table->state[i].frequency / fmax;
++	for (i = 0; i < cs_table->nr_cap_states; i++) {
++		u64 val = (u64)cmax * cs_table->state[i].frequency;
++		do_div(val, fmax);
++		cs_table->state[i].capacity = (unsigned long)val;
++	}
+ }
+
+This brings me to another question. Let's say there are multiple users of
+the Energy Model in the system. Shouldn't the units of frequency and power
+not standardized, maybe Mhz and mW?
+The task scheduler doesn't care since it is only interested in power diffs
+but other user might do.
+
+[...]
