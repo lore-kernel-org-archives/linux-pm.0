@@ -1,223 +1,215 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v4 5/7] interconnect: qcom: Add msm8916 interconnect
- provider driver
-Date: Wed, 6 Jun 2018 18:03:21 +0300
-Message-ID: <21c5adcc-dc18-73a1-e07a-d84f2e6ae534@linaro.org>
+Subject: Re: [PATCH v4 1/7] interconnect: Add generic on-chip interconnect API
+Date: Wed, 6 Jun 2018 18:08:19 +0300
+Message-ID: <3f0e5606-c28d-6bd9-387e-23be1d0185fc@linaro.org>
 References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-6-georgi.djakov@linaro.org>
- <CAE=gft4LT_JSGytuiSx5uwzfeGc0DK140+D4c_J8FVUHioHdcg@mail.gmail.com>
+ <20180309210958.16672-2-georgi.djakov@linaro.org>
+ <CAHLCerNmBAbu4UcQ+uksXN8z-o-kxLct9ryfy5qBY0Z2jDNRGg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE=gft4LT_JSGytuiSx5uwzfeGc0DK140+D4c_J8FVUHioHdcg@mail.gmail.com>
+In-Reply-To: <CAHLCerNmBAbu4UcQ+uksXN8z-o-kxLct9ryfy5qBY0Z2jDNRGg@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Evan Green <evgreen@chromium.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, gregkh@linuxfoundation.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Saravana Kannan <skannan@codeaurora.org>, seansw@qti.qualcomm.com, khilman@baylibre.com, Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-msm@vger.kernel.org, davidai@quicinc.com, Vincent Guittot <vincent.guittot@linaro.org>, lakml <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Evan,
+Hi Amit,
 
-On 12.05.18 г. 0:29, Evan Green wrote:
-> Hi Georgi,
-> 
-> On Fri, Mar 9, 2018 at 1:11 PM Georgi Djakov <georgi.djakov@linaro.org>
-> wrote:
-> 
->> Add driver for the Qualcomm interconnect buses found in msm8916 based
->> platforms.
-> 
+On 25.05.18 г. 11:26, Amit Kucheria wrote:
+> On Fri, Mar 9, 2018 at 11:09 PM, Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>> This patch introduce a new API to get requirements and configure the
+>> interconnect buses across the entire chipset to fit with the current
+>> demand.
+>>
+>> The API is using a consumer/provider-based model, where the providers are
+>> the interconnect buses and the consumers could be various drivers.
+>> The consumers request interconnect resources (path) between endpoints and
+>> set the desired constraints on this data flow path. The providers receive
+>> requests from consumers and aggregate these requests for all master-slave
+>> pairs on that path. Then the providers configure each participating in the
+>> topology node according to the requested data flow path, physical links and
+>> constraints. The topology could be complicated and multi-tiered and is SoC
+>> specific.
+>>
 >> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 >> ---
->>    drivers/interconnect/Kconfig        |   5 +
->>    drivers/interconnect/Makefile       |   1 +
->>    drivers/interconnect/qcom/Kconfig   |  11 +
->>    drivers/interconnect/qcom/Makefile  |   2 +
->>    drivers/interconnect/qcom/msm8916.c | 482
-> ++++++++++++++++++++++++++++++++++++
->>    include/linux/interconnect/qcom.h   | 350 ++++++++++++++++++++++++++
->>    6 files changed, 851 insertions(+)
->>    create mode 100644 drivers/interconnect/qcom/Kconfig
->>    create mode 100644 drivers/interconnect/qcom/msm8916.c
->>    create mode 100644 include/linux/interconnect/qcom.h
-> ...
->> diff --git a/drivers/interconnect/qcom/msm8916.c
-> b/drivers/interconnect/qcom/msm8916.c
->> new file mode 100644
->> index 000000000000..d5b54f8261c8
->> --- /dev/null
->> +++ b/drivers/interconnect/qcom/msm8916.c
-> ...
->> +static int qnoc_probe(struct platform_device *pdev)
+[..]
+
+>> +Interconnect consumers
+>> +----------------------
+>> +
+>> +Interconnect consumers are the clients which use the interconnect APIs to
+>> +get paths between endpoints and set their bandwidth/latency/QoS requirements
+>> +for these interconnect paths.
+>> +
+> 
+> This document is missing a section on the locking semantics of the
+> framework. Does the core ensure that the entire path is locked for
+> set() to propagate?
+
+Yes, the core will ensure that the path is locked. Will add this to the
+function description.
+
+[..]
+
+>> +
+>> +static int path_init(struct icc_path *path)
 >> +{
->> +       const struct qcom_icc_desc *desc;
->> +       struct qcom_icc_node **qnodes;
->> +       struct qcom_icc_provider *qp;
->> +       struct resource *res;
->> +       struct icc_provider *provider;
->> +       size_t num_nodes, i;
->> +       int ret;
+>> +       struct icc_node *node;
+>> +       size_t i;
 >> +
->> +       /* wait for RPM */
->> +       if (!qcom_icc_rpm_smd_available())
->> +               return -EPROBE_DEFER;
+>> +       for (i = 0; i < path->num_nodes; i++) {
+>> +               node = path->reqs[i].node;
 >> +
->> +       desc = of_device_get_match_data(&pdev->dev);
->> +       if (!desc)
->> +               return -EINVAL;
->> +
->> +       qnodes = desc->nodes;
->> +       num_nodes = desc->num_nodes;
->> +
->> +       qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
->> +       if (!qp)
->> +               return -ENOMEM;
->> +
->> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> +       qp->base = devm_ioremap_resource(&pdev->dev, res);
->> +       if (IS_ERR(qp->base))
->> +               return PTR_ERR(qp->base);
->> +
->> +       qp->bus_clk = devm_clk_get(&pdev->dev, "bus_clk");
->> +       if (IS_ERR(qp->bus_clk))
->> +               return PTR_ERR(qp->bus_clk);
->> +
->> +       qp->bus_a_clk = devm_clk_get(&pdev->dev, "bus_a_clk");
->> +       if (IS_ERR(qp->bus_a_clk))
->> +               return PTR_ERR(qp->bus_a_clk);
->> +
->> +       provider = &qp->provider;
->> +       provider->dev = &pdev->dev;
->> +       provider->set = &qcom_icc_set;
->> +       INIT_LIST_HEAD(&provider->nodes);
->> +       provider->data = qp;
->> +
->> +       ret = icc_add_provider(provider);
->> +       if (ret) {
->> +               dev_err(&pdev->dev, "error adding interconnect
-> provider\n");
->> +               return ret;
+>> +               mutex_lock(&node->provider->lock);
+>> +               node->provider->users++;
+>> +               mutex_unlock(&node->provider->lock);
 >> +       }
->> +
->> +       for (i = 0; i < num_nodes; i++) {
->> +               struct icc_node *node;
->> +               int ret;
->> +               size_t j;
->> +
->> +               node = icc_node_create(qnodes[i]->id);
->> +               if (IS_ERR(node)) {
->> +                       ret = PTR_ERR(node);
->> +                       goto err;
->> +               }
->> +
->> +               node->name = qnodes[i]->name;
->> +               node->data = qnodes[i];
->> +               icc_node_add(node, provider);
->> +
->> +               dev_dbg(&pdev->dev, "registered node %p %s %d\n", node,
->> +                       qnodes[i]->name, node->id);
->> +
->> +               /* populate links */
->> +               for (j = 0; j < qnodes[i]->num_links; j++)
->> +                       if (qnodes[i]->links[j])
->> +                               icc_link_create(node,
-> qnodes[i]->links[j]);
->> +
->> +               ret = qcom_icc_init(node);
->> +               if (ret)
->> +                       dev_err(&pdev->dev, "%s init error (%d)\n",
-> node->name,
->> +                               ret);
-> 
-> Don't you want to call qcom_icc_init before icc_link_create? As soon as
-> icc_link_create is called, the node is connected to the graph, and
-> qcom_icc_set can be called.
-> 
-
-I agree.
-
->> +       }
->> +
->> +       platform_set_drvdata(pdev, provider);
->> +
->> +       return ret;
->> +err:
->> +       icc_del_provider(provider);
->> +       return ret;
->> +}
->> +
->> +static int qnoc_remove(struct platform_device *pdev)
->> +{
->> +       struct icc_provider *provider = platform_get_drvdata(pdev);
->> +
->> +       icc_del_provider(provider);
-> 
-> Presumably in the framework nodes and links ought to get cleaned up
-> somewhere too, right? As it is now, the devm code frees provider when this
-> device is removed, even though provider is still very connected in the
-> graph via the nodes and links.
-
-Sorry, this part is incomplete. Will implement the rest of the cleanup code.
-
 >> +
 >> +       return 0;
 >> +}
 >> +
->> +static const struct of_device_id qnoc_of_match[] = {
->> +       { .compatible = "qcom,msm8916-pnoc", .data = &msm8916_pnoc },
->> +       { .compatible = "qcom,msm8916-snoc", .data = &msm8916_snoc },
->> +       { .compatible = "qcom,msm8916-bimc", .data = &msm8916_bimc },
->> +       { },
->> +};
->> +MODULE_DEVICE_TABLE(of, qnoc_of_match);
->> +
->> +static struct platform_driver qnoc_driver = {
->> +       .probe = qnoc_probe,
->> +       .remove = qnoc_remove,
->> +       .driver = {
->> +               .name = "qnoc-msm8916",
->> +               .of_match_table = qnoc_of_match,
->> +       },
->> +};
->> +module_platform_driver(qnoc_driver);
->> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org>");
->> +MODULE_DESCRIPTION("Qualcomm msm8916 NoC driver");
->> +MODULE_LICENSE("GPL v2");
->> diff --git a/include/linux/interconnect/qcom.h
-> b/include/linux/interconnect/qcom.h
->> new file mode 100644
->> index 000000000000..2cd378d2f575
->> --- /dev/null
->> +++ b/include/linux/interconnect/qcom.h
->> @@ -0,0 +1,350 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +/*
->> + * Qualcomm interconnect IDs
->> + *
->> + * Copyright (c) 2018, Linaro Ltd.
->> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
->> + */
->> +
->> +#ifndef __QCOM_INTERCONNECT_IDS_H
->> +#define __QCOM_INTERCONNECT_IDS_H
->> +
->> +#define FAB_BIMC 0
->> +#define FAB_SYS_NOC 1024
->> +#define FAB_MMSS_NOC 2048
->> +#define FAB_OCMEM_NOC 3072
->> +#define FAB_PERIPH_NOC 4096
->> +#define FAB_CONFIG_NOC 5120
->> +#define FAB_OCMEM_VNOC 6144
 > 
-> Looks like you're still following that downstream convention of NoCs being
-> divisible by 1024, masters in 1-512, and slaves in 512-1023, then I don't
-> know about the 10000s. This was documented somewhere downstream, can you
-> add that documentation somewhere in here?
+> Consider adding some comments for node_aggregate and
+> provider_aggregate's aggregation algorithm
+> 
+> "We want the path to honor all bandwidth requests, so the average
+> bandwidth requirements from each consumer are aggregated at each node
+> and provider level. The peak bandwidth requirements will then be the
+> highest of all the peak bw requests"
+> 
+> or something to the effect that.
 
-Yes, i am currently following the existing IDs. The 10000s are the nodes
-used for the interconnects between the NoCs. I don't think it's worth
-documenting this, as the plan is to switch to arbitrary numbers.
+Ok, thanks.
+
+>> +static void node_aggregate(struct icc_node *node)
+>> +{
+>> +       struct icc_req *r;
+>> +       u32 agg_avg = 0;
+>> +       u32 agg_peak = 0;
+>> +
+>> +       hlist_for_each_entry(r, &node->req_list, req_node) {
+>> +               /* sum(averages) and max(peaks) */
+>> +               agg_avg += r->avg_bw;
+>> +               agg_peak = max(agg_peak, r->peak_bw);
+>> +       }
+>> +
+>> +       node->avg_bw = agg_avg;
+>> +       node->peak_bw = agg_peak;
+>> +}
+>> +
+>> +static void provider_aggregate(struct icc_provider *provider, u32 *avg_bw,
+>> +                              u32 *peak_bw)
+>> +{
+>> +       struct icc_node *n;
+>> +       u32 agg_avg = 0;
+>> +       u32 agg_peak = 0;
+>> +
+>> +       /* aggregate for the interconnect provider */
+> 
+> You could get rid of this, the function name says as much.
+
+Ok.
+
+>> +       list_for_each_entry(n, &provider->nodes, node_list) {
+>> +               /* sum the average and max the peak */
+>> +               agg_avg += n->avg_bw;
+>> +               agg_peak = max(agg_peak, n->peak_bw);
+>> +       }
+>> +
+>> +       *avg_bw = agg_avg;
+>> +       *peak_bw = agg_peak;
+>> +}
+>> +
+>> +static int constraints_apply(struct icc_path *path)
+>> +{
+>> +       struct icc_node *next, *prev = NULL;
+>> +       int i;
+>> +
+>> +       for (i = 0; i < path->num_nodes; i++, prev = next) {
+>> +               struct icc_provider *provider;
+>> +               u32 avg_bw = 0;
+>> +               u32 peak_bw = 0;
+>> +               int ret;
+>> +
+>> +               next = path->reqs[i].node;
+>> +               /*
+>> +                * Both endpoints should be valid master-slave pairs of the
+>> +                * same interconnect provider that will be configured.
+>> +                */
+>> +               if (!next || !prev)
+>> +                       continue;
+>> +
+>> +               if (next->provider != prev->provider)
+>> +                       continue;
+>> +
+>> +               provider = next->provider;
+>> +               mutex_lock(&provider->lock);
+>> +
+>> +               /* aggregate requests for the provider */
+> 
+> Get rid of comment.
+
+Ok.
+
+>> +               provider_aggregate(provider, &avg_bw, &peak_bw);
+>> +
+>> +               if (provider->set) {
+>> +                       /* set the constraints */
+>> +                       ret = provider->set(prev, next, avg_bw, peak_bw);
+>> +               }
+>> +
+>> +               mutex_unlock(&provider->lock);
+>> +
+>> +               if (ret)
+>> +                       return ret;
+>> +       }
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +/**
+>> + * icc_set() - set constraints on an interconnect path between two endpoints
+>> + * @path: reference to the path returned by icc_get()
+>> + * @avg_bw: average bandwidth in kbps
+>> + * @peak_bw: peak bandwidth in kbps
+>> + *
+>> + * This function is used by an interconnect consumer to express its own needs
+>> + * in term of bandwidth and QoS for a previously requested path between two
+>> + * endpoints. The requests are aggregated and each node is updated accordingly.
+>> + *
+>> + * Returns 0 on success, or an approproate error code otherwise.
+> 
+> *appropriate*
+
+Ok.
+
+[..]
+>> +/**
+>> + * struct icc_node - entity that is part of the interconnect topology
+>> + *
+>> + * @id: platform specific node id
+>> + * @name: node name used in debugfs
+>> + * @links: a list of targets where we can go next when traversing
+>> + * @num_links: number of links to other interconnect nodes
+>> + * @provider: points to the interconnect provider of this node
+>> + * @node_list: list of interconnect nodes associated with @provider
+>> + * @search_list: list used when walking the nodes graph
+>> + * @reverse: pointer to previous node when walking the nodes graph
+>> + * @is_traversed: flag that is used when walking the nodes graph
+>> + * @req_list: a list of QoS constraint requests associated with this node
+> 
+> 
+>> + * @avg_bw: aggregated value of average bandwidth
+>> + * @peak_bw: aggregated value of peak bandwidth
+> 
+> Consider changing to "aggregated value of {average|peak} bandwidth
+> requests from all consumers"
+
+Ok, will clarify.
 
 Thanks,
 Georgi
