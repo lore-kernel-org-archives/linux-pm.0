@@ -1,67 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Andrea Parri <andrea.parri@amarulasolutions.com>
 Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle
  injection framework
-Date: Wed, 6 Jun 2018 16:15:28 +0530
-Message-ID: <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
+Date: Wed, 6 Jun 2018 14:05:39 +0200
+Message-ID: <20180606120539.GA13130@andrea>
 References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
  <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
  <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
  <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
  <2bebd1bc-e1ad-6d22-ad1e-aee2cf8ba878@linaro.org>
+ <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2bebd1bc-e1ad-6d22-ad1e-aee2cf8ba878@linaro.org>
+In-Reply-To: <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06-06-18, 12:22, Daniel Lezcano wrote:
-> (mb() are done in the atomic operations AFAICT).
+Hi Daniel, Viresh,
 
-AFAIU, it is required to make sure the operations are seen in a particular order
-on another CPU and the compiler doesn't reorganize code to optimize it.
+On Wed, Jun 06, 2018 at 04:15:28PM +0530, Viresh Kumar wrote:
+> On 06-06-18, 12:22, Daniel Lezcano wrote:
+> > (mb() are done in the atomic operations AFAICT).
 
-For example, in our case what if the compiler reorganizes the atomic-set
-operation after wakeup-process ? But maybe that wouldn't happen across function
-calls and we should be safe then.
+To do my bit, not all atomic ops do/imply memory barriers; e.g.,
 
-> What about:
+  [from Documentation/atomic_t.txt]
+
+  - non-RMW operations [e.g., atomic_set()] are unordered
+
+  - RMW operations that have no return value [e.g., atomic_inc()] are unordered
+
+
 > 
-> 	get_online_cpus();
+> AFAIU, it is required to make sure the operations are seen in a particular order
+> on another CPU and the compiler doesn't reorganize code to optimize it.
 > 
-> 	nr_tasks = cpumask_weight(
-> 		cpumask_and(ii_dev->cpumask, cpu_online_mask);
-> 			
-> 	atomic_set(&ii_dev->count, nr_tasks);
-> 
-> 	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
-> 		iit = per_cpu_ptr(&idle_injection_thread, cpu);
-> 		iit->should_run = 1;
-> 		wake_up_process(iit->tsk);
-> 	}
-> 
-> 	put_online_cpus();
-> ?
+> For example, in our case what if the compiler reorganizes the atomic-set
+> operation after wakeup-process ? But maybe that wouldn't happen across function
+> calls and we should be safe then.
 
-Looks good this time.
+IIUC, wake_up_process() implies a full memory barrier and a compiler barrier,
+due to:
 
-> I'm wondering if we can have a CPU hotplugged right after the
-> 'put_online_cpus', resulting in the 'should park' flag set and then the
-> thread goes in the kthread_parkme instead of jumping back the idle
-> injection function and decrease the count, leading up to the timer not
-> being set again.
+  raw_spin_lock_irqsave(&p->pi_lock, flags);
+  smp_mb__after_spinlock();
 
-True. That looks like a valid problem to me as well.
+The pattern under discussion isn't clear to me, but if you'll end up relying
+on this "implicit" barrier I'd suggest documenting it with a comment.
 
-What about starting the hrtimer right from this routine itself, after taking
-into account running-time, idle-time, delay, etc ? That would get rid of the
-count stuff, this get_online_cpus(), etc.
-
-Even if we restart the next play-idle cycle a bit early or with some delay, sky
-wouldn't fall :)
-
--- 
-viresh
+  Andrea
