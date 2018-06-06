@@ -1,66 +1,47 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v4 4/7] interconnect: qcom: Add RPM communication
-Date: Wed, 6 Jun 2018 18:00:58 +0300
-Message-ID: <43302039-a056-b73d-50a9-d54f7dc90219@linaro.org>
-References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-5-georgi.djakov@linaro.org>
- <CAE=gft6HTU76M8AqzvN-VeDWE6c8Bgk+TimHHLMfLztWYhCSYQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Wed, 6 Jun 2018 17:02:03 +0200
+Message-ID: <20180606150203.GE12180@hirez.programming.kicks-ass.net>
+References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180606122357.GN12258@hirez.programming.kicks-ass.net>
+ <22f5cf0b-049e-7938-55f6-4b4b154f8389@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE=gft6HTU76M8AqzvN-VeDWE6c8Bgk+TimHHLMfLztWYhCSYQ@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <22f5cf0b-049e-7938-55f6-4b4b154f8389@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Evan Green <evgreen@chromium.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Evan,
+On Wed, Jun 06, 2018 at 03:42:08PM +0200, Daniel Lezcano wrote:
+> On 06/06/2018 14:23, Peter Zijlstra wrote:
+> > On Tue, Jun 05, 2018 at 11:16:40AM +0200, Daniel Lezcano wrote:
+> >> +	atomic_t idle_duration_ms;
+> >> +	atomic_t run_duration_ms;
+> > 
+> >> +	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
+> > 
+> >> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+> > 
+> >> +	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
+> >> +	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
+> > 
+> >> +	*run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+> >> +	*idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
+> > 
+> >> +	if (!atomic_read(&ii_dev->idle_duration_ms))
+> > 
+> >> +	if (!atomic_read(&ii_dev->run_duration_ms))
+> > 
+> > What is the point of atomic_t here ?!
+> 
+> idle_duration and run_duration can be changed from different places at
+> the same time. The atomic is here to ensure the read/write are consistent.
+> 
+> Do you think it is pointless ?
 
-On 12.05.18 г. 0:30, Evan Green wrote:
-> On Fri, Mar 9, 2018 at 1:11 PM Georgi Djakov <georgi.djakov@linaro.org>
-> wrote:
-> 
->> On some Qualcomm SoCs, there is a remote processor, which controls some of
->> the Network-On-Chip interconnect resources. Other CPUs express their needs
->> by communicating with this processor. Add a driver to handle comminication
->> with this remote processor.
-> 
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>   .../devicetree/bindings/interconnect/qcom-smd.txt  | 31 ++++++++
->>   drivers/interconnect/qcom/Makefile                 |  1 +
->>   drivers/interconnect/qcom/smd-rpm.c                | 90
-> ++++++++++++++++++++++
->>   drivers/interconnect/qcom/smd-rpm.h                | 15 ++++
->>   4 files changed, 137 insertions(+)
->>   create mode 100644
-> Documentation/devicetree/bindings/interconnect/qcom-smd.txt
->>   create mode 100644 drivers/interconnect/qcom/Makefile
->>   create mode 100644 drivers/interconnect/qcom/smd-rpm.c
->>   create mode 100644 drivers/interconnect/qcom/smd-rpm.h
-> 
->> diff --git a/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
-> b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
->> new file mode 100644
->> index 000000000000..14e83ed7019b
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
->> @@ -0,0 +1,31 @@
->> +Qualcomm SMD-RPM interconnect driver binding
->> +------------------------------------------------
->> +The RPM is a dedicated hardware engine for managing the shared
->> +SoC resources in order to keep the lowest power profile. It
->> +communicates with other hardware subsystems via shared memory
->> +and accepts requests for various resources.
-> 
-> You never say what RPM or SMD stands for. RPM is Resource Power Manager,
-> right? But I'm not in the know about SMD. Can you define these somewhere?
-> 
-
-Sure, it's the Shared Memory Driver back-end used for communicating with
-RPM. Now added this explanation into the docs.
-
-Thanks,
-Georgi
+Yes, atomic_read() / atomic_set() are no more atomic than READ_ONCE() /
+WRITE_ONCE().
