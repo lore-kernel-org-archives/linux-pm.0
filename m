@@ -1,69 +1,58 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
- framework
-Date: Wed, 6 Jun 2018 17:59:46 +0100
-Message-ID: <20180606165946.GK10870@e108498-lin.cambridge.arm.com>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-4-quentin.perret@arm.com>
- <20180606164734.GC15894@localhost.localdomain>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v4 1/7] interconnect: Add generic on-chip interconnect API
+Date: Wed, 6 Jun 2018 21:09:24 +0300
+Message-ID: <c98d2ee2-c4fa-eb35-e6ae-f6d9c91ffe6c@linaro.org>
+References: <20180309210958.16672-1-georgi.djakov@linaro.org>
+ <20180309210958.16672-2-georgi.djakov@linaro.org>
+ <CAE=gft76VpU1mXgNPK9-XTj6WoLHj-_SxAGuV-bUSNYVpfSn6w@mail.gmail.com>
+ <43fedb5b-f4a5-8362-d0a2-534b85473bc1@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180606164734.GC15894@localhost.localdomain>
+In-Reply-To: <43fedb5b-f4a5-8362-d0a2-534b85473bc1@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Evan Green <evgreen@chromium.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 06 Jun 2018 at 18:47:34 (+0200), Juri Lelli wrote:
-> Hi Quentin,
-> 
-> On 21/05/18 15:24, Quentin Perret wrote:
-> 
-> [...]
-> 
-> > +#ifdef CONFIG_ENERGY_MODEL
-> 
-> [...]
-> 
-> > +struct em_data_callback {
-> > +	/**
-> > +	 * active_power() - Provide power at the next capacity state of a CPU
-> > +	 * @power	: Active power at the capacity state (modified)
-> > +	 * @freq	: Frequency at the capacity state (modified)
-> > +	 * @cpu		: CPU for which we do this operation
-> > +	 *
-> > +	 * active_power() must find the lowest capacity state of 'cpu' above
-> > +	 * 'freq' and update 'power' and 'freq' to the matching active power
-> > +	 * and frequency.
-> > +	 *
-> > +	 * Return 0 on success.
-> > +	 */
-> > +	int (*active_power) (unsigned long *power, unsigned long *freq, int cpu);
-> > +};
-> 
-> [...]
-> 
-> > +#else
-> > +struct em_freq_domain;
-> > +struct em_data_callback;
-> 
-> This doesn't compile for CONFIG_ENERGY_MODEL=n:
-> 
-> drivers/cpufreq/cpufreq-dt.c:164:9: error: variable 'em_cb' has initializer but incomplete type                                                          
->   struct em_data_callback em_cb = { &dev_pm_opp_of_estimate_power };                       
->            ^~~~~~~~~~~~~~~~
+Hi Evan,
 
-Ah, this is an issue with a patch which isn't part of this patch-set ...
-But yeah, that's a valid point :-)
+On 06/06/2018 05:59 PM, Georgi Djakov wrote:
+>>> +
+>>> +/**
+>>> + * icc_node_create() - create a node
+>>> + * @id: node id
+>>> + *
+>>> + * Return: icc_node pointer on success, or ERR_PTR() on error
+>>> + */
+>>> +struct icc_node *icc_node_create(int id)
+>>> +{
+>>> +       struct icc_node *node;
+>>> +
+>>> +       /* check if node already exists */
+>>> +       node = node_find(id);
+>>> +       if (node)
+>>> +               return node;
+>>
+>> This is probably going to do more harm than good once icc_node_delete comes
+>> in, since it almost certainly indicates a programmer error or ID collision,
+>> and will likely result in a double free. We should probably fail with
+>> EEXIST instead.
+> 
+> In the current approach we create the nodes one by one, and the linked
+> nodes are created when they are referenced. The other way around would
+> be to create first all the nodes and then populate the links to avoid
+> the "chicken and egg" problem.
+> 
 
-> Guess you need some sort of macro to init the struct (w/o introducing
-> ifdeffery into drivers code)?
+Just to elaborate a bit more on that: We can't actually register all the
+nodes in advance, as we might have multiple interconnect providers
+probing in different order. Each provider may have nodes linking to
+nodes belonging to other providers (not probed yet). That's why we
+create the nodes on the first reference and then, when the actual
+provider driver is probed, the rest of the node data is filled.
 
-Yes, the EM framework should provide a generic way of doing this
-initialization with nice stubs for CONFIG_ENERGY_MODEL=n, otherwise we
-risk wild fixes in the drivers I suppose. I'll fix that in v4.
-
-Thanks for pointing that out !
-Quentin
+Thanks,
+Georgi
