@@ -1,69 +1,75 @@
-From: Evan Green <evgreen@chromium.org>
-Subject: Re: [PATCH v4 1/7] interconnect: Add generic on-chip interconnect API
-Date: Wed, 6 Jun 2018 18:06:05 -0700
-Message-ID: <CAE=gft71Y+0dcYtJmq6nxG99--yRGUXf+B9_+GWPTTrin+TBjA@mail.gmail.com>
-References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-2-georgi.djakov@linaro.org>
- <CAE=gft76VpU1mXgNPK9-XTj6WoLHj-_SxAGuV-bUSNYVpfSn6w@mail.gmail.com>
- <43fedb5b-f4a5-8362-d0a2-534b85473bc1@linaro.org>
- <c98d2ee2-c4fa-eb35-e6ae-f6d9c91ffe6c@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <c98d2ee2-c4fa-eb35-e6ae-f6d9c91ffe6c@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: georgi.djakov@linaro.org
-Cc: mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, seansw@qti.qualcomm.com, gregkh@linuxfoundation.org, Michael Turquette <mturquette@baylibre.com>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, amit.kucheria@linaro.org, Bjorn Andersson <bjorn.andersson@linaro.org>, robh+dt@kernel.org, Saravana Kannan <skannan@codeaurora.org>, khilman@baylibre.com, davidai@quicinc.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC] sched: cpufreq: Fix long idle judgement logic in load calculation
+Date: Thu,  7 Jun 2018 11:17:34 +0800
+Message-ID: <1528341454-16991-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Artem S Tashkinov <t.artem@mailcity.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 6, 2018 at 11:09 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->
-> Hi Evan,
->
-> On 06/06/2018 05:59 PM, Georgi Djakov wrote:
-> >>> +
-> >>> +/**
-> >>> + * icc_node_create() - create a node
-> >>> + * @id: node id
-> >>> + *
-> >>> + * Return: icc_node pointer on success, or ERR_PTR() on error
-> >>> + */
-> >>> +struct icc_node *icc_node_create(int id)
-> >>> +{
-> >>> +       struct icc_node *node;
-> >>> +
-> >>> +       /* check if node already exists */
-> >>> +       node = node_find(id);
-> >>> +       if (node)
-> >>> +               return node;
-> >>
-> >> This is probably going to do more harm than good once icc_node_delete comes
-> >> in, since it almost certainly indicates a programmer error or ID collision,
-> >> and will likely result in a double free. We should probably fail with
-> >> EEXIST instead.
-> >
-> > In the current approach we create the nodes one by one, and the linked
-> > nodes are created when they are referenced. The other way around would
-> > be to create first all the nodes and then populate the links to avoid
-> > the "chicken and egg" problem.
-> >
->
-> Just to elaborate a bit more on that: We can't actually register all the
-> nodes in advance, as we might have multiple interconnect providers
-> probing in different order. Each provider may have nodes linking to
-> nodes belonging to other providers (not probed yet). That's why we
-> create the nodes on the first reference and then, when the actual
-> provider driver is probed, the rest of the node data is filled.
->
+According to current code implementation, detecting the long
+idle period is done by checking if the interval between two
+adjacent utilization update handers is long enough. Although
+this mechanism can detect if the idle period is long enough
+(no utilization hooks invoked during idle period), it might
+not contain a corner case: if the task has occupied the cpu
+for too long which causes no context switch during that
+period, then no utilization handler will be launched until this
+high prio task is switched out. As a result, the idle_periods
+field might be calculated incorrectly because it regards the
+100% load as 0% and makes the conservative governor who uses
+this field confusing.
 
-Ah ok, the extra explanation helped a lot. This makes sense to me. Thanks.
--Evan
+Change the judgement to compare the idle_time with sampling_rate
+directly.
+
+Reported-by: Artem S. Tashkinov <t.artem@mailcity.com>
+Cc: Artem S Tashkinov <t.artem@mailcity.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/cpufreq/cpufreq_governor.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 871bf9c..9792c80 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -165,7 +165,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			 * calls, so the previous load value can be used then.
+ 			 */
+ 			load = j_cdbs->prev_load;
+-		} else if (unlikely(time_elapsed > 2 * sampling_rate &&
++		} else if (((int)idle_time > 0) && unlikely(idle_time > 2 * sampling_rate &&
+ 				    j_cdbs->prev_load)) {
+ 			/*
+ 			 * If the CPU had gone completely idle and a task has
+@@ -185,10 +185,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			 * clear prev_load to guarantee that the load will be
+ 			 * computed again next time.
+ 			 *
+-			 * Detecting this situation is easy: the governor's
+-			 * utilization update handler would not have run during
+-			 * CPU-idle periods.  Hence, an unusually large
+-			 * 'time_elapsed' (as compared to the sampling rate)
++			 * Detecting this situation is easy: an unusually large
++			 * 'idle_time' (as compared to the sampling rate)
+ 			 * indicates this scenario.
+ 			 */
+ 			load = j_cdbs->prev_load;
+@@ -217,8 +215,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			j_cdbs->prev_load = load;
+ 		}
+ 
+-		if (time_elapsed > 2 * sampling_rate) {
+-			unsigned int periods = time_elapsed / sampling_rate;
++		if (((int)idle_time > 0) && (idle_time > 2 * sampling_rate)) {
++			unsigned int periods = idle_time / sampling_rate;
+ 
+ 			if (periods < idle_periods)
+ 				idle_periods = periods;
+-- 
+2.7.4
