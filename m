@@ -1,111 +1,63 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
- bindings
-Date: Thu, 7 Jun 2018 12:50:32 +0530
-Message-ID: <17e458c1-872a-08f0-c67d-15bc8352055b@codeaurora.org>
-References: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
- <1528109194-16864-2-git-send-email-tdas@codeaurora.org>
- <20180604105531.GB13977@e107155-lin>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] kernel/SRCU: provide a static initializer
+Date: Thu, 7 Jun 2018 00:32:52 -0700
+Message-ID: <20180607073252.GD3593@linux.vnet.ibm.com>
+References: <20180525101958.13277-1-bigeasy@linutronix.de>
+ <20180525101958.13277-2-bigeasy@linutronix.de>
+ <CAJZ5v0jEUR7YxzujvZn8WVK+dMxmOxoHNiLKcmgCq9awHR=vYg@mail.gmail.com>
+ <20180529120443.GE3803@linux.vnet.ibm.com>
+ <CAJZ5v0j_O=nL6Eym5GqGGDC8LPB5vu-YAp9DFfZSJsHd-TMEmg@mail.gmail.com>
+ <20180529172611.GL3803@linux.vnet.ibm.com>
+ <CAJZ5v0gYcFywNZh+-EHSmwU89AER=a8ouKtK93j=Lu4DSHUzNw@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180604105531.GB13977@e107155-lin>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gYcFywNZh+-EHSmwU89AER=a8ouKtK93j=Lu4DSHUzNw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Sudeep,
-
-Thanks for the review comments.
-
-On 6/4/2018 4:25 PM, Sudeep Holla wrote:
-> On Mon, Jun 04, 2018 at 04:16:33PM +0530, Taniya Das wrote:
->> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
->> SoCs. This is required for managing the cpu frequency transitions which are
->> controlled by firmware.
->>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>   .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 173 +++++++++++++++++++++
->>   1 file changed, 173 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->> new file mode 100644
->> index 0000000..e3087ec
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->> @@ -0,0 +1,173 @@
->> +Qualcomm Technologies, Inc. CPUFREQ Bindings
->> +
->> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
->> +SoCs to manage frequency in hardware. It is capable of controlling frequency
->> +for multiple clusters.
->> +
->> +Properties:
->> +- compatible
->> +	Usage:		required
->> +	Value type:	<string>
->> +	Definition:	must be "qcom,cpufreq-fw".
->> +
->> +* Property qcom,freq-domain
->> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
->> +phandle to a freq_domain_table in their DT node.
->> +
->> +* Frequency Domain Table Node
->> +
->> +This describes the frequency domain belonging to a device.
->> +This node can have following properties:
->> +
->> +- reg
->> +	Usage:		required
->> +	Value type:	<prop-encoded-array>
->> +	Definition:	Addresses and sizes for the memory of the perf
->> +			, lut and enable bases.
->> +			perf - indicates the base address for the desired
->> +			performance state to be set.
->> +			lut - indicates the look up table base address for the
->> +			cpufreq	driver to read frequencies.
->> +			enable - indicates the enable register for firmware.
->> +- reg-names
->> +	Usage:		required
->> +	Value type:	<stringlist>
->> +	Definition:	Address names. Must be "perf", "lut", "enable".
->> +			Must be specified in the same order as the reg property.
->> +
+On Wed, May 30, 2018 at 01:09:57PM +0200, Rafael J. Wysocki wrote:
+> On Tue, May 29, 2018 at 7:26 PM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > On Tue, May 29, 2018 at 07:14:49PM +0200, Rafael J. Wysocki wrote:
+> >> On Tue, May 29, 2018 at 2:04 PM, Paul E. McKenney
+> >> <paulmck@linux.vnet.ibm.com> wrote:
+> >> > On Tue, May 29, 2018 at 10:09:51AM +0200, Rafael J. Wysocki wrote:
+> >> >> On Fri, May 25, 2018 at 12:19 PM, Sebastian Andrzej Siewior
+> >> >> <bigeasy@linutronix.de> wrote:
+> >> >> > There are macros for static initializer for the three out of four
+> >> >> > possible notifier types, that are:
+> >> >> >         ATOMIC_NOTIFIER_HEAD()
+> >> >> >         BLOCKING_NOTIFIER_HEAD()
+> >> >> >         RAW_NOTIFIER_HEAD()
+> >> >> >
+> >> >> > This patch provides a static initilizer for the forth type to make it
+> >> >> > complete.
+> >> >> >
+> >> >> > Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> >> >> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> >> >>
+> >> >> I cannot apply this without an ACK from Paul.
+> >> >
+> >> > I have both queued, but if you would prefer to take them, then for the
+> >> > SRCU piece:
+> >> >
+> >> > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> >> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> >>
+> >> Thanks!
+> >>
+> >> I'll route them along with the other cpufreq material then.
+> >
+> > Please let me know when you have them queued so that I can remove
+> > them from -rcu.
 > 
-> [...]
-> 
->> +
->> +	qcom,cpufreq-fw {
->> +		compatible = "qcom,cpufreq-fw";
->> +
->> +		#address-cells = <1>;
->> +		#size-cells = <1>;
->> +
->> +		freq_domain_table0 : freq_table0 {
->> +			reg = <0x17d43920 0x4>, <0x17d43110 0x500>,
->> +				 <0x17d41000 0x4>;
-> 
-> Are "perf", "lut", "enable" registers part of single IP block / share memory ?
-> I am just trying to understand the reason for separate entries in this fashion
-> as part of DT register property. I am wondering if there will be multiple
-> entries that fall with the page size.
-> 
+> I've just added them to my linux-next branch.
 
-They are part of the same IP block and these are the only register 
-offsets which is required to be accessed by HLOS.
+And I have removed them, thank you!
 
-> --
-> Regards,
-> Sudeep
-> 
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+							Thanx, Paul
