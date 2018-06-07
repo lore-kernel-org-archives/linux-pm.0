@@ -1,7 +1,7 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v2 07/11] PM / devfreq: export devfreq_class
-Date: Thu,  7 Jun 2018 11:12:10 -0700
-Message-ID: <20180607181214.30338-8-mka@chromium.org>
+Subject: [PATCH v2 06/11] PM / devfreq: Make update_devfreq() public
+Date: Thu,  7 Jun 2018 11:12:09 -0700
+Message-ID: <20180607181214.30338-7-mka@chromium.org>
 References: <20180607181214.30338-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180607181214.30338-1-mka@chromium.org>
@@ -10,45 +10,52 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Exporting the device class allows other parts of the kernel to enumerate
-the devfreq devices and receive notification when a devfreq device is
-added or removed.
+Currently update_devfreq() is only visible to devfreq governors outside
+of devfreq.c. Make it public to allow drivers that adjust devfreq policies
+to cause a re-evaluation of the frequency after a policy change.
 
 Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
 Changes in v2:
-- patch added to series
+- added 'Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>' tag
 
- drivers/devfreq/devfreq.c | 3 ++-
- include/linux/devfreq.h   | 2 ++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ drivers/devfreq/governor.h | 3 ---
+ include/linux/devfreq.h    | 8 ++++++++
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 4cbaa7ad1972..38b90b64fc6e 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -31,7 +31,8 @@
- #define MAX(a,b)	((a > b) ? a : b)
- #define MIN(a,b)	((a < b) ? a : b)
- 
--static struct class *devfreq_class;
-+struct class *devfreq_class;
-+EXPORT_SYMBOL_GPL(devfreq_class);
- 
- /*
-  * devfreq core provides delayed work based load monitoring helper
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 781edefb0087..99d1e02531dc 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -206,6 +206,8 @@ struct devfreq_freqs {
+diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+index b81700244ce3..f53339ca610f 100644
+--- a/drivers/devfreq/governor.h
++++ b/drivers/devfreq/governor.h
+@@ -57,9 +57,6 @@ struct devfreq_governor {
+ 				unsigned int event, void *data);
  };
  
- #if defined(CONFIG_PM_DEVFREQ)
-+extern struct class *devfreq_class;
+-/* Caution: devfreq->lock must be locked before calling update_devfreq */
+-extern int update_devfreq(struct devfreq *devfreq);
+-
+ extern void devfreq_monitor_start(struct devfreq *devfreq);
+ extern void devfreq_monitor_stop(struct devfreq *devfreq);
+ extern void devfreq_monitor_suspend(struct devfreq *devfreq);
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 8a4c0f10a394..781edefb0087 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -222,6 +222,14 @@ extern void devm_devfreq_remove_device(struct device *dev,
+ extern int devfreq_suspend_device(struct devfreq *devfreq);
+ extern int devfreq_resume_device(struct devfreq *devfreq);
+ 
++/**
++ * update_devfreq() - Reevaluate the device and configure frequency
++ * @devfreq:	the devfreq device
++ *
++ * Note: devfreq->lock must be held
++ */
++extern int update_devfreq(struct devfreq *devfreq);
 +
- extern struct devfreq *devfreq_add_device(struct device *dev,
- 				  struct devfreq_dev_profile *profile,
- 				  const char *governor_name,
+ /* Helper functions for devfreq user device driver with OPP. */
+ extern struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
+ 					   unsigned long *freq, u32 flags);
 -- 
 2.18.0.rc1.242.g61856ae69a-goog
