@@ -1,75 +1,71 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
- framework
-Date: Thu, 7 Jun 2018 18:31:43 +0100
-Message-ID: <20180607173143.GD3597@e108498-lin.cambridge.arm.com>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-4-quentin.perret@arm.com>
- <20180607144409.GB3311@localhost.localdomain>
- <20180607151954.GA3597@e108498-lin.cambridge.arm.com>
- <20180607160419.GD3311@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH v2 01/11] PM / devfreq: Init user limits from OPP limits, not viceversa
+Date: Thu,  7 Jun 2018 11:12:04 -0700
+Message-ID: <20180607181214.30338-2-mka@chromium.org>
+References: <20180607181214.30338-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180607160419.GD3311@localhost.localdomain>
+In-Reply-To: <20180607181214.30338-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 Jun 2018 at 18:04:19 (+0200), Juri Lelli wrote:
-> On 07/06/18 16:19, Quentin Perret wrote:
-> > On Thursday 07 Jun 2018 at 16:44:09 (+0200), Juri Lelli wrote:
-> > > > +	if (!fd->cs_table)
-> > > > +		goto free_fd;
-> > > > +
-> > > > +	/* Copy the span of the frequency domain */
-> > > > +	cpumask_copy(&fd->cpus, span);
-> > > > +
-> > > > +	/* Build the list of capacity states for this freq domain */
-> > > > +	for (i = 0, freq = 0; i < nr_states; i++, freq++) {
-> > >                      ^                              ^
-> > > The fact that this relies on active_power() to use ceil OPP for a given
-> > > freq might deserve a comment. Also, is this behaviour of active_power()
-> > > standardized?
-> > 
-> > Right, this can get confusing pretty quickly. There is a comment in
-> > include/linux/energy_model.h where the expected behaviour of
-> > active_power is explained, but a reminder above this function shouldn't
-> > hurt.
-> 
-> Mmm, not sure if you could actually check that returned freq values are
-> actually consistent with the assumption (just in case one didn't do
-> homework).
+Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding
+the devfreq device") introduced the initialization of the user
+limits min/max_freq from the lowest/highest available OPPs. Later
+commit f1d981eaecf8 ("PM / devfreq: Use the available min/max
+frequency") added scaling_min/max_freq, which actually represent
+the frequencies of the lowest/highest available OPP. scaling_min/
+max_freq are initialized with the values from min/max_freq, which
+is totally correct in the context, but a bit awkward to read.
 
-Right, that's a good point. I'll add checks on the parameters modified by
-active_power(). Monotonically increasing freq, monotonically increasing
-power as well I guess, something along those lines.
+Swap the initialization and assign scaling_min/max_freq with the
+OPP freqs and then the user limts min/max_freq with scaling_min/
+max_freq.
 
-> > > > +{
-> > > > +	struct em_cs_table *old_table, *new_table;
-> > > > +	struct em_freq_domain *fd;
-> > > > +	unsigned long flags;
-> > > > +	int nr_states, cpu;
-> > > > +
-> > > > +	read_lock_irqsave(&em_data_lock, flags);
-> > > 
-> > > Don't you need write_lock_ here, since you are going to exchange the
-> > > em tables?
-> > 
-> > This lock protects the per_cpu() variable itself. Here we only read
-> > pointers from that per_cpu variable, and we modify one attribute in
-> > the pointed structure. We don't modify the per_cpu table itself. Does
-> > that make sense ?
-> 
-> So, I don't seem to understand what protects the rcu_assign_pointer(s)
-> below (as in
-> https://elixir.bootlin.com/linux/latest/source/Documentation/RCU/whatisRCU.txt#L395).
+Needless to say that this change is a NOP, intended to improve
+readability.
 
-Sigh, that's not right :(
-I take back my previous message, the write lock _is_ needed. Thanks for
-pointing that out ...
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+Changes in v2:
+- added 'Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>' tag
 
-Thanks,
-Quentin
+ drivers/devfreq/devfreq.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index fe2af6aa88fc..0057ef5b0a98 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -604,21 +604,21 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		mutex_lock(&devfreq->lock);
+ 	}
+ 
+-	devfreq->min_freq = find_available_min_freq(devfreq);
+-	if (!devfreq->min_freq) {
++	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
++	if (!devfreq->scaling_min_freq) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -EINVAL;
+ 		goto err_dev;
+ 	}
+-	devfreq->scaling_min_freq = devfreq->min_freq;
++	devfreq->min_freq = devfreq->scaling_min_freq;
+ 
+-	devfreq->max_freq = find_available_max_freq(devfreq);
+-	if (!devfreq->max_freq) {
++	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
++	if (!devfreq->scaling_max_freq) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -EINVAL;
+ 		goto err_dev;
+ 	}
+-	devfreq->scaling_max_freq = devfreq->max_freq;
++	devfreq->max_freq = devfreq->scaling_max_freq;
+ 
+ 	dev_set_name(&devfreq->dev, "devfreq%d",
+ 				atomic_inc_return(&devfreq_no));
+-- 
+2.18.0.rc1.242.g61856ae69a-goog
