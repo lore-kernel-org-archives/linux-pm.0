@@ -1,10 +1,9 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle
  injection framework
-Date: Thu, 7 Jun 2018 11:32:01 +0200
-Message-ID: <20180607093201.GL12198@hirez.programming.kicks-ass.net>
-References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
- <20180606122357.GN12258@hirez.programming.kicks-ass.net>
+Date: Thu, 7 Jun 2018 11:39:27 +0200
+Message-ID: <20180607093927.GE12235@hirez.programming.kicks-ass.net>
+References: <20180606122357.GN12258@hirez.programming.kicks-ass.net>
  <22f5cf0b-049e-7938-55f6-4b4b154f8389@linaro.org>
  <20180606150203.GE12180@hirez.programming.kicks-ass.net>
  <ea347237-7cef-095a-5ddb-19c181d10c23@linaro.org>
@@ -13,50 +12,72 @@ References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
  <9996fb40-c7aa-db61-5445-52c146f44d85@linaro.org>
  <20180607084921.toctrooftl6y7kkx@vireshk-i7>
  <d2b8c964-ea0f-624c-a178-721537893541@linaro.org>
+ <20180607093201.GL12198@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <d2b8c964-ea0f-624c-a178-721537893541@linaro.org>
+In-Reply-To: <20180607093201.GL12198@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 07, 2018 at 11:09:13AM +0200, Daniel Lezcano wrote:
-> On 07/06/2018 10:49, Viresh Kumar wrote:
-> > On 07-06-18, 10:46, Daniel Lezcano wrote:
-> >> Yes, correct.
-> >>
-> >> But if we don't care about who wins to store to value, is there a risk
-> >> of scramble variable if we just assign a value ?
+On Thu, Jun 07, 2018 at 11:32:01AM +0200, Peter Zijlstra wrote:
+> On Thu, Jun 07, 2018 at 11:09:13AM +0200, Daniel Lezcano wrote:
+> > On 07/06/2018 10:49, Viresh Kumar wrote:
+> > > On 07-06-18, 10:46, Daniel Lezcano wrote:
+> > >> Yes, correct.
+> > >>
+> > >> But if we don't care about who wins to store to value, is there a risk
+> > >> of scramble variable if we just assign a value ?
+> > > 
+> > > Normally no, as the compiler wouldn't screw it up badly. But there is no rule
+> > > which stops the compiler from doing this:
+> > > 
+> > > idle_duration_ms = 5;
+> > > idle_duration_ms = -5;
+> > > idle_duration_ms = 0;
+> > > idle_duration_ms = <real-value-we-want-to-write>;
+> > > 
+> > > So we *must* use READ/WRITE_ONCE() to make sure garbage values aren't seen by
+> > > readers.
 > > 
-> > Normally no, as the compiler wouldn't screw it up badly. But there is no rule
-> > which stops the compiler from doing this:
-> > 
-> > idle_duration_ms = 5;
-> > idle_duration_ms = -5;
-> > idle_duration_ms = 0;
-> > idle_duration_ms = <real-value-we-want-to-write>;
-> > 
-> > So we *must* use READ/WRITE_ONCE() to make sure garbage values aren't seen by
-> > readers.
+> > Ok understood. Why would a compiler do this kind of things ?
 > 
-> Ok understood. Why would a compiler do this kind of things ?
+> I think the above can happen when the compiler uses the variable as a
+> scratch pad -- very rare I would say.
+> 
+> In general a compiler needs to proof that doing this makes no observable
+> difference ("as-if" rule). And since it is a regular variable it can
+> assume data-race-free and do the above (or something like that). Because
+> if there is a data-race it is UB and it can still do whatever it
+> pleases.
+> 
+> And here I think the point is that regular variables are considered only
+> in the context of a single linear execution context. Locks are assumed
+> to bound observability.
+> 
+> And here the "volatile" and "_atomic" type specifiers again tell the
+> compiler something 'special' is going on and you should not muck with
+> things.
 
-I think the above can happen when the compiler uses the variable as a
-scratch pad -- very rare I would say.
+Also, I think, more likely:
 
-In general a compiler needs to proof that doing this makes no observable
-difference ("as-if" rule). And since it is a regular variable it can
-assume data-race-free and do the above (or something like that). Because
-if there is a data-race it is UB and it can still do whatever it
-pleases.
+	if (cond)
+		X = 5;
+	else
+		X = 4;
 
-And here I think the point is that regular variables are considered only
-in the context of a single linear execution context. Locks are assumed
-to bound observability.
+is allowed to be transformed into:
 
-And here the "volatile" and "_atomic" type specifiers again tell the
-compiler something 'special' is going on and you should not muck with
-things.
+	X = 4;
+	if (cond)
+		X = 5;
+
+as long as cond doesn't involve a sequence point of sorts (think
+function call).
+
+For the single execution context case, this transformation is valid, but
+it is not in the threaded case. But then we go back to the assumption
+that regular variables are data-race-free.
