@@ -1,235 +1,228 @@
 From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
- framework
-Date: Thu, 7 Jun 2018 16:44:09 +0200
-Message-ID: <20180607144409.GB3311@localhost.localdomain>
+Subject: Re: [RFC PATCH v3 05/10] sched/topology: Reference the Energy Model
+ of CPUs when available
+Date: Thu, 7 Jun 2018 16:44:22 +0200
+Message-ID: <20180607144422.GA17216@localhost.localdomain>
 References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-4-quentin.perret@arm.com>
+ <20180521142505.6522-6-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180521142505.6522-4-quentin.perret@arm.com>
+In-Reply-To: <20180521142505.6522-6-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
 Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21/05/18 15:24, Quentin Perret wrote:
-> Several subsystems in the kernel (scheduler and/or thermal at the time
-> of writing) can benefit from knowing about the energy consumed by CPUs.
-> Yet, this information can come from different sources (DT or firmware for
-> example), in different formats, hence making it hard to exploit without
-> a standard API.
+Hi,
+
+On 21/05/18 15:25, Quentin Perret wrote:
+> In order to use EAS, the task scheduler has to know about the Energy
+> Model (EM) of the platform. This commit extends the scheduler topology
+> code to take references on the frequency domains objects of the EM
+> framework for all online CPUs. Hence, the availability of the EM for
+> those CPUs is guaranteed to the scheduler at runtime without further
+> checks in latency sensitive code paths (i.e. task wake-up).
 > 
-> This patch attempts to solve this issue by introducing a centralized
-> Energy Model (EM) framework which can be used to interface the data
-> providers with the client subsystems. This framework standardizes the
-> API to expose power costs, and to access them from multiple locations.
+> A (RCU-protected) private list of online frequency domains is maintained
+> by the scheduler to enable fast iterations. Furthermore, the availability
+> of an EM is notified to the rest of the scheduler with a static key,
+> which ensures a low impact on non-EAS systems.
 > 
-> The current design assumes that all CPUs in a frequency domain share the
-> same micro-architecture. As such, the EM data is structured in a
-> per-frequency-domain fashion. Drivers aware of frequency domains
-> (typically, but not limited to, CPUFreq drivers) are expected to register
-> data in the EM framework using the em_register_freq_domain() API. To do
-> so, the drivers must provide a callback function that will be called by
-> the EM framework to populate the tables. As of today, only the active
-> power of the CPUs is considered. For each frequency domain, the EM
-> includes a list of <frequency, power, capacity> tuples for the capacity
-> states of the domain alongside a cpumask covering the involved CPUs.
-> 
-> The EM framework also provides an API to re-scale the capacity values
-> of the model asynchronously, after it has been created. This is required
-> for architectures where the capacity scale factor of CPUs can change at
-> run-time. This is the case for Arm/Arm64 for example where the
-> arch_topology driver recomputes the capacity scale factors of the CPUs
-> after the maximum frequency of all CPUs has been discovered. Although
-> complex, the process of creating and re-scaling the EM has to be kept in
-> two separate steps to fulfill the needs of the different users. The thermal
-> subsystem doesn't use the capacity values and shouldn't have dependencies
-> on subsystems providing them. On the other hand, the task scheduler needs
-> the capacity values, and it will benefit from seeing them up-to-date when
-> applicable.
-> 
-> Because of this need for asynchronous update, the capacity state table
-> of each frequency domain is protected by RCU, hence guaranteeing a safe
-> modification of the table and a fast access to readers in latency-sensitive
-> code paths.
-> 
+> Energy Aware Scheduling can be started if and only if:
+>    1. all online CPUs are covered by the EM;
+>    2. the EM complexity is low enough to keep scheduling overheads low;
+>    3. the platform has an asymmetric CPU capacity topology (detected by
+>       looking for the SD_ASYM_CPUCAPACITY flag in the sched_domain
+>       hierarchy).
+
+Not sure about this. How about multi-freq domain same max capacity
+systems. I understand that most of the energy saving come from selecting
+the right (big/LITTLE) cluster, but EM should still be useful to drive
+OPP selection (that was one of the use-cases we discussed lately IIRC)
+and also to decide between packing or spreading, no?
+
+> The sched_energy_enabled() function which returns the status of the
+> static key is stubbed to false when CONFIG_ENERGY_MODEL=n, hence making
+> sure that all the code behind it can be compiled out by constant
+> propagation.
+
+Actually, do we need a config option at all? Shouldn't the static key
+(and RCU machinery) guard against unwanted overheads when EM is not
+present/used?
+
+I was thinking it should be pretty similar to schedutil setup, no?
+
+> Cc: Ingo Molnar <mingo@redhat.com>
 > Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 > ---
-
-OK, I think I'll start with a few comments while I get more into
-understanding the set. :)
-
-> +static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
-> +{
-> +	unsigned long cmax = arch_scale_cpu_capacity(NULL, cpu);
-> +	int max_cap_state = cs_table->nr_cap_states - 1;
-                 ^
-You don't need this on the stack, right?
-
-> +	unsigned long fmax = cs_table->state[max_cap_state].frequency;
-> +	int i;
+>  kernel/sched/sched.h    |  27 ++++++++++
+>  kernel/sched/topology.c | 113 ++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 140 insertions(+)
+> 
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index ce562d3b7526..7c517076a74a 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -63,6 +63,7 @@
+>  #include <linux/syscalls.h>
+>  #include <linux/task_work.h>
+>  #include <linux/tsacct_kern.h>
+> +#include <linux/energy_model.h>
+>  
+>  #include <asm/tlb.h>
+>  
+> @@ -2162,3 +2163,29 @@ static inline unsigned long cpu_util_cfs(struct rq *rq)
+>  	return util;
+>  }
+>  #endif
 > +
-> +	for (i = 0; i < cs_table->nr_cap_states; i++)
-> +		cs_table->state[i].capacity = cmax *
-> +					cs_table->state[i].frequency / fmax;
+> +struct sched_energy_fd {
+> +	struct em_freq_domain *fd;
+> +	struct list_head next;
+> +	struct rcu_head rcu;
+> +};
+> +
+> +#ifdef CONFIG_ENERGY_MODEL
+> +extern struct static_key_false sched_energy_present;
+> +static inline bool sched_energy_enabled(void)
+> +{
+> +	return static_branch_unlikely(&sched_energy_present);
 > +}
 > +
-> +static struct em_freq_domain *em_create_fd(cpumask_t *span, int nr_states,
-> +						struct em_data_callback *cb)
+> +extern struct list_head sched_energy_fd_list;
+> +#define for_each_freq_domain(sfd) \
+> +		list_for_each_entry_rcu(sfd, &sched_energy_fd_list, next)
+> +#define freq_domain_span(sfd) (&((sfd)->fd->cpus))
+> +#else
+> +static inline bool sched_energy_enabled(void)
 > +{
-> +	unsigned long opp_eff, prev_opp_eff = ULONG_MAX;
-> +	int i, ret, cpu = cpumask_first(span);
-> +	struct em_freq_domain *fd;
-> +	unsigned long power, freq;
+> +	return false;
+> +}
+> +#define for_each_freq_domain(sfd) for (sfd = NULL; sfd;)
+> +#define freq_domain_span(sfd) NULL
+> +#endif
+> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+> index 64cc564f5255..3e22c798f18d 100644
+> --- a/kernel/sched/topology.c
+> +++ b/kernel/sched/topology.c
+> @@ -1500,6 +1500,116 @@ void sched_domains_numa_masks_clear(unsigned int cpu)
+>  
+>  #endif /* CONFIG_NUMA */
+>  
+> +#ifdef CONFIG_ENERGY_MODEL
 > +
-> +	if (!cb->active_power)
-> +		return NULL;
-> +
-> +	fd = kzalloc(sizeof(*fd), GFP_KERNEL);
-> +	if (!fd)
-> +		return NULL;
-> +
-> +	fd->cs_table = alloc_cs_table(nr_states);
+> +/*
+> + * The complexity of the Energy Model is defined as the product of the number
+> + * of frequency domains with the sum of the number of CPUs and the total
+> + * number of OPPs in all frequency domains. It is generally not a good idea
+> + * to use such a model on very complex platform because of the associated
+> + * scheduling overheads. The arbitrary constraint below prevents that. It
+> + * makes EAS usable up to 16 CPUs with per-CPU DVFS and less than 8 OPPs each,
+> + * for example.
+> + */
+> +#define EM_MAX_COMPLEXITY 2048
 
-Mmm, don't you need to rcu_assign_pointer this first one as well?
+Do we really need this hardcoded constant?
 
-> +	if (!fd->cs_table)
-> +		goto free_fd;
-> +
-> +	/* Copy the span of the frequency domain */
-> +	cpumask_copy(&fd->cpus, span);
-> +
-> +	/* Build the list of capacity states for this freq domain */
-> +	for (i = 0, freq = 0; i < nr_states; i++, freq++) {
-                     ^                              ^
-The fact that this relies on active_power() to use ceil OPP for a given
-freq might deserve a comment. Also, is this behaviour of active_power()
-standardized?
+I guess if one spent time deriving an EM for a big system with lot of
+OPPs, she/he already knows what is doing? :)
 
-> +		ret = cb->active_power(&power, &freq, cpu);
-> +		if (ret)
-> +			goto free_cs_table;
 > +
-> +		fd->cs_table->state[i].power = power;
-> +		fd->cs_table->state[i].frequency = freq;
+> +DEFINE_STATIC_KEY_FALSE(sched_energy_present);
+> +LIST_HEAD(sched_energy_fd_list);
 > +
-> +		/*
-> +		 * The hertz/watts efficiency ratio should decrease as the
-> +		 * frequency grows on sane platforms. If not, warn the user
-> +		 * that some high OPPs are more power efficient than some
-> +		 * of the lower ones.
-> +		 */
-> +		opp_eff = freq / power;
-> +		if (opp_eff >= prev_opp_eff)
-> +			pr_warn("%*pbl: hz/watt efficiency: OPP %d >= OPP%d\n",
-> +					cpumask_pr_args(span), i, i - 1);
-> +		prev_opp_eff = opp_eff;
+> +static struct sched_energy_fd *find_sched_energy_fd(int cpu)
+> +{
+> +	struct sched_energy_fd *sfd;
+> +
+> +	for_each_freq_domain(sfd) {
+> +		if (cpumask_test_cpu(cpu, freq_domain_span(sfd)))
+> +			return sfd;
 > +	}
-> +	fd_update_cs_table(fd->cs_table, cpu);
-> +
-> +	return fd;
-> +
-> +free_cs_table:
-> +	free_cs_table(fd->cs_table);
-> +free_fd:
-> +	kfree(fd);
 > +
 > +	return NULL;
 > +}
 > +
-> +static void rcu_free_cs_table(struct rcu_head *rp)
+> +static void free_sched_energy_fd(struct rcu_head *rp)
 > +{
-> +	struct em_cs_table *table;
+> +	struct sched_energy_fd *sfd;
 > +
-> +	table = container_of(rp, struct em_cs_table, rcu);
-> +	free_cs_table(table);
+> +	sfd = container_of(rp, struct sched_energy_fd, rcu);
+> +	kfree(sfd);
 > +}
 > +
-> +/**
-> + * em_rescale_cpu_capacity() - Re-scale capacity values of the Energy Model
-> + *
-> + * This re-scales the capacity values for all capacity states of all frequency
-> + * domains of the Energy Model. This should be used when the capacity values
-> + * of the CPUs are updated at run-time, after the EM was registered.
-> + */
-> +void em_rescale_cpu_capacity(void)
-
-So, is this thought to be called eventually also after thermal capping
-events and such?
-
+> +static void build_sched_energy(void)
 > +{
-> +	struct em_cs_table *old_table, *new_table;
+> +	struct sched_energy_fd *sfd, *tmp;
 > +	struct em_freq_domain *fd;
-> +	unsigned long flags;
-> +	int nr_states, cpu;
+> +	struct sched_domain *sd;
+> +	int cpu, nr_fd = 0, nr_opp = 0;
 > +
-> +	read_lock_irqsave(&em_data_lock, flags);
-
-Don't you need write_lock_ here, since you are going to exchange the
-em tables?
-
-> +	for_each_cpu(cpu, cpu_possible_mask) {
-> +		fd = per_cpu(em_data, cpu);
-> +		if (!fd || cpu != cpumask_first(&fd->cpus))
+> +	rcu_read_lock();
+> +
+> +	/* Disable EAS entirely whenever the system isn't asymmetric. */
+> +	cpu = cpumask_first(cpu_online_mask);
+> +	sd = lowest_flag_domain(cpu, SD_ASYM_CPUCAPACITY);
+> +	if (!sd) {
+> +		pr_debug("%s: no SD_ASYM_CPUCAPACITY\n", __func__);
+> +		goto disable;
+> +	}
+> +
+> +	/* Make sure to have an energy model for all CPUs. */
+> +	for_each_online_cpu(cpu) {
+> +		/* Skip CPUs with a known energy model. */
+> +		sfd = find_sched_energy_fd(cpu);
+> +		if (sfd)
 > +			continue;
 > +
-> +		/* Copy the existing table. */
-> +		old_table = rcu_dereference(fd->cs_table);
-> +		nr_states = old_table->nr_cap_states;
-> +		new_table = alloc_cs_table(nr_states);
-> +		if (!new_table) {
-> +			read_unlock_irqrestore(&em_data_lock, flags);
-> +			return;
-> +		}
-> +		memcpy(new_table->state, old_table->state,
-> +					nr_states * sizeof(*new_table->state));
-> +
-> +		/* Re-scale the capacity values on the copy. */
-> +		fd_update_cs_table(new_table, cpumask_first(&fd->cpus));
-> +
-> +		/* Replace the table with the rescaled version. */
-> +		rcu_assign_pointer(fd->cs_table, new_table);
-> +		call_rcu(&old_table->rcu, rcu_free_cs_table);
+> +		/* Add the energy model of others. */
+> +		fd = em_cpu_get(cpu);
+> +		if (!fd)
+> +			goto disable;
+> +		sfd = kzalloc(sizeof(*sfd), GFP_NOWAIT);
+> +		if (!sfd)
+> +			goto disable;
+> +		sfd->fd = fd;
+> +		list_add_rcu(&sfd->next, &sched_energy_fd_list);
 > +	}
-> +	read_unlock_irqrestore(&em_data_lock, flags);
-> +	pr_debug("Re-scaled CPU capacities\n");
-> +}
-> +EXPORT_SYMBOL_GPL(em_rescale_cpu_capacity);
 > +
-> +/**
-> + * em_cpu_get() - Return the frequency domain for a CPU
-> + * @cpu : CPU to find the frequency domain for
-> + *
-> + * Return: the frequency domain to which 'cpu' belongs, or NULL if it doesn't
-> + * exist.
-> + */
-> +struct em_freq_domain *em_cpu_get(int cpu)
-> +{
-> +	struct em_freq_domain *fd;
-> +	unsigned long flags;
+> +	list_for_each_entry_safe(sfd, tmp, &sched_energy_fd_list, next) {
+> +		if (cpumask_intersects(freq_domain_span(sfd),
+> +							cpu_online_mask)) {
+> +			nr_opp += em_fd_nr_cap_states(sfd->fd);
+> +			nr_fd++;
+> +			continue;
+> +		}
 > +
-> +	read_lock_irqsave(&em_data_lock, flags);
-> +	fd = per_cpu(em_data, cpu);
-> +	read_unlock_irqrestore(&em_data_lock, flags);
+> +		/* Remove the unused frequency domains */
+> +		list_del_rcu(&sfd->next);
+> +		call_rcu(&sfd->rcu, free_sched_energy_fd);
+
+Unused because of? Hotplug?
+
+Not sure, but I guess you have considered the idea of tearing all this
+down when sched domains are destroied and then rebuilding it again? Why
+did you decide for this approach? Or maybe I just missed where you do
+that. :/
+
+> +	}
 > +
-> +	return fd;
-> +}
-> +EXPORT_SYMBOL_GPL(em_cpu_get);
+> +	/* Bail out if the Energy Model complexity is too high. */
+> +	if (nr_fd * (nr_opp + num_online_cpus()) > EM_MAX_COMPLEXITY) {
+> +		pr_warn("%s: EM complexity too high, stopping EAS", __func__);
+> +		goto disable;
+> +	}
+> +
+> +	rcu_read_unlock();
+> +	static_branch_enable_cpuslocked(&sched_energy_present);
+> +	pr_debug("%s: EAS started\n", __func__);
 
-Mmm, this gets complicated pretty fast eh? :)
-
-I had to go back and forth between patches to start understanding the
-different data structures and how they are use, and I'm not sure yet
-I've got the full picture. I guess some nice diagram (cover letter or
-documentation patch) would help a lot.
-
-Locking of such data structures is pretty involved as well, adding
-comments/docs shouldn't harm. :)
+I'd vote for a pr_info here instead, maybe printing info about the em as
+well. Looks pretty useful to me to have that in dmesg. Maybe guarded by
+sched_debug?
 
 Best,
 
