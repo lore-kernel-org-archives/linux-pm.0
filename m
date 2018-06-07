@@ -1,63 +1,61 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] kernel/SRCU: provide a static initializer
-Date: Thu, 7 Jun 2018 00:32:52 -0700
-Message-ID: <20180607073252.GD3593@linux.vnet.ibm.com>
-References: <20180525101958.13277-1-bigeasy@linutronix.de>
- <20180525101958.13277-2-bigeasy@linutronix.de>
- <CAJZ5v0jEUR7YxzujvZn8WVK+dMxmOxoHNiLKcmgCq9awHR=vYg@mail.gmail.com>
- <20180529120443.GE3803@linux.vnet.ibm.com>
- <CAJZ5v0j_O=nL6Eym5GqGGDC8LPB5vu-YAp9DFfZSJsHd-TMEmg@mail.gmail.com>
- <20180529172611.GL3803@linux.vnet.ibm.com>
- <CAJZ5v0gYcFywNZh+-EHSmwU89AER=a8ouKtK93j=Lu4DSHUzNw@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Thu, 7 Jun 2018 10:18:27 +0200
+Message-ID: <ea347237-7cef-095a-5ddb-19c181d10c23@linaro.org>
+References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180606122357.GN12258@hirez.programming.kicks-ass.net>
+ <22f5cf0b-049e-7938-55f6-4b4b154f8389@linaro.org>
+ <20180606150203.GE12180@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gYcFywNZh+-EHSmwU89AER=a8ouKtK93j=Lu4DSHUzNw@mail.gmail.com>
+In-Reply-To: <20180606150203.GE12180@hirez.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 30, 2018 at 01:09:57PM +0200, Rafael J. Wysocki wrote:
-> On Tue, May 29, 2018 at 7:26 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > On Tue, May 29, 2018 at 07:14:49PM +0200, Rafael J. Wysocki wrote:
-> >> On Tue, May 29, 2018 at 2:04 PM, Paul E. McKenney
-> >> <paulmck@linux.vnet.ibm.com> wrote:
-> >> > On Tue, May 29, 2018 at 10:09:51AM +0200, Rafael J. Wysocki wrote:
-> >> >> On Fri, May 25, 2018 at 12:19 PM, Sebastian Andrzej Siewior
-> >> >> <bigeasy@linutronix.de> wrote:
-> >> >> > There are macros for static initializer for the three out of four
-> >> >> > possible notifier types, that are:
-> >> >> >         ATOMIC_NOTIFIER_HEAD()
-> >> >> >         BLOCKING_NOTIFIER_HEAD()
-> >> >> >         RAW_NOTIFIER_HEAD()
-> >> >> >
-> >> >> > This patch provides a static initilizer for the forth type to make it
-> >> >> > complete.
-> >> >> >
-> >> >> > Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> >> >> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> >> >>
-> >> >> I cannot apply this without an ACK from Paul.
-> >> >
-> >> > I have both queued, but if you would prefer to take them, then for the
-> >> > SRCU piece:
-> >> >
-> >> > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> >> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> >>
-> >> Thanks!
-> >>
-> >> I'll route them along with the other cpufreq material then.
-> >
-> > Please let me know when you have them queued so that I can remove
-> > them from -rcu.
+On 06/06/2018 17:02, Peter Zijlstra wrote:
+> On Wed, Jun 06, 2018 at 03:42:08PM +0200, Daniel Lezcano wrote:
+>> On 06/06/2018 14:23, Peter Zijlstra wrote:
+>>> On Tue, Jun 05, 2018 at 11:16:40AM +0200, Daniel Lezcano wrote:
+>>>> +	atomic_t idle_duration_ms;
+>>>> +	atomic_t run_duration_ms;
+>>>
+>>>> +	idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
+>>>
+>>>> +	run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+>>>
+>>>> +	atomic_set(&ii_dev->run_duration_ms, run_duration_ms);
+>>>> +	atomic_set(&ii_dev->idle_duration_ms, idle_duration_ms);
+>>>
+>>>> +	*run_duration_ms = atomic_read(&ii_dev->run_duration_ms);
+>>>> +	*idle_duration_ms = atomic_read(&ii_dev->idle_duration_ms);
+>>>
+>>>> +	if (!atomic_read(&ii_dev->idle_duration_ms))
+>>>
+>>>> +	if (!atomic_read(&ii_dev->run_duration_ms))
+>>>
+>>> What is the point of atomic_t here ?!
+>>
+>> idle_duration and run_duration can be changed from different places at
+>> the same time. The atomic is here to ensure the read/write are consistent.
+>>
+>> Do you think it is pointless ?
 > 
-> I've just added them to my linux-next branch.
+> Yes, atomic_read() / atomic_set() are no more atomic than READ_ONCE() /
+> WRITE_ONCE().
 
-And I have removed them, thank you!
+So IIUC, neither atomic or WRITE|READ_ONCE are necessary in this code
+because of the wake_up_process() barrier is enough, right ?
 
-							Thanx, Paul
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
