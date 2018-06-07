@@ -1,98 +1,130 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
- framework
-Date: Thu, 7 Jun 2018 14:31:54 +0200
-Message-ID: <d0d3f817-6cd1-fd4c-91e3-304090270efe@linaro.org>
-References: <20180606122357.GN12258@hirez.programming.kicks-ass.net>
- <22f5cf0b-049e-7938-55f6-4b4b154f8389@linaro.org>
- <20180606150203.GE12180@hirez.programming.kicks-ass.net>
- <ea347237-7cef-095a-5ddb-19c181d10c23@linaro.org>
- <20180607083229.GJ12198@hirez.programming.kicks-ass.net>
- <20180607084251.rv2tg3kgz4aohlpd@vireshk-i7>
- <9996fb40-c7aa-db61-5445-52c146f44d85@linaro.org>
- <20180607084921.toctrooftl6y7kkx@vireshk-i7>
- <d2b8c964-ea0f-624c-a178-721537893541@linaro.org>
- <20180607093201.GL12198@hirez.programming.kicks-ass.net>
- <20180607093927.GE12235@hirez.programming.kicks-ass.net>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
+ bindings
+Date: Thu, 7 Jun 2018 13:57:41 +0100
+Message-ID: <4128f86b-5d03-a0e1-b483-8acc7417b190@arm.com>
+References: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
+ <1528109194-16864-2-git-send-email-tdas@codeaurora.org>
+ <20180604105531.GB13977@e107155-lin>
+ <17e458c1-872a-08f0-c67d-15bc8352055b@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180607093927.GE12235@hirez.programming.kicks-ass.net>
+In-Reply-To: <17e458c1-872a-08f0-c67d-15bc8352055b@codeaurora.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Taniya Das <tdas@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07/06/2018 11:39, Peter Zijlstra wrote:
-> On Thu, Jun 07, 2018 at 11:32:01AM +0200, Peter Zijlstra wrote:
->> On Thu, Jun 07, 2018 at 11:09:13AM +0200, Daniel Lezcano wrote:
->>> On 07/06/2018 10:49, Viresh Kumar wrote:
->>>> On 07-06-18, 10:46, Daniel Lezcano wrote:
->>>>> Yes, correct.
->>>>>
->>>>> But if we don't care about who wins to store to value, is there a risk
->>>>> of scramble variable if we just assign a value ?
->>>>
->>>> Normally no, as the compiler wouldn't screw it up badly. But there is no rule
->>>> which stops the compiler from doing this:
->>>>
->>>> idle_duration_ms = 5;
->>>> idle_duration_ms = -5;
->>>> idle_duration_ms = 0;
->>>> idle_duration_ms = <real-value-we-want-to-write>;
->>>>
->>>> So we *must* use READ/WRITE_ONCE() to make sure garbage values aren't seen by
->>>> readers.
+
+
+On 07/06/18 08:20, Taniya Das wrote:
+> Hello Sudeep,
+> 
+> Thanks for the review comments.
+> 
+> On 6/4/2018 4:25 PM, Sudeep Holla wrote:
+>> On Mon, Jun 04, 2018 at 04:16:33PM +0530, Taniya Das wrote:
+>>> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+>>> SoCs. This is required for managing the cpu frequency transitions
+>>> which are
+>>> controlled by firmware.
 >>>
->>> Ok understood. Why would a compiler do this kind of things ?
+>>> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+>>> ---
+>>>   .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 173
+>>> +++++++++++++++++++++
+>>>   1 file changed, 173 insertions(+)
+>>>   create mode 100644
+>>> Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+>>>
+>>> diff --git
+>>> a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+>>> b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+>>> new file mode 100644
+>>> index 0000000..e3087ec
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+>>> @@ -0,0 +1,173 @@
+>>> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+>>> +
+>>> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies,
+>>> Inc. (QTI)
+>>> +SoCs to manage frequency in hardware. It is capable of controlling
+>>> frequency
+>>> +for multiple clusters.
+>>> +
+>>> +Properties:
+>>> +- compatible
+>>> +    Usage:        required
+>>> +    Value type:    <string>
+>>> +    Definition:    must be "qcom,cpufreq-fw".
+>>> +
+>>> +* Property qcom,freq-domain
+>>> +Devices supporting freq-domain must set their "qcom,freq-domain"
+>>> property with
+>>> +phandle to a freq_domain_table in their DT node.
+>>> +
+>>> +* Frequency Domain Table Node
+>>> +
+>>> +This describes the frequency domain belonging to a device.
+>>> +This node can have following properties:
+>>> +
+>>> +- reg
+>>> +    Usage:        required
+>>> +    Value type:    <prop-encoded-array>
+>>> +    Definition:    Addresses and sizes for the memory of the perf
+>>> +            , lut and enable bases.
+>>> +            perf - indicates the base address for the desired
+>>> +            performance state to be set.
+>>> +            lut - indicates the look up table base address for the
+>>> +            cpufreq    driver to read frequencies.
+>>> +            enable - indicates the enable register for firmware.
+>>> +- reg-names
+>>> +    Usage:        required
+>>> +    Value type:    <stringlist>
+>>> +    Definition:    Address names. Must be "perf", "lut", "enable".
+>>> +            Must be specified in the same order as the reg property.
+>>> +
 >>
->> I think the above can happen when the compiler uses the variable as a
->> scratch pad -- very rare I would say.
+>> [...]
 >>
->> In general a compiler needs to proof that doing this makes no observable
->> difference ("as-if" rule). And since it is a regular variable it can
->> assume data-race-free and do the above (or something like that). Because
->> if there is a data-race it is UB and it can still do whatever it
->> pleases.
+>>> +
+>>> +    qcom,cpufreq-fw {
+>>> +        compatible = "qcom,cpufreq-fw";
+>>> +
+>>> +        #address-cells = <1>;
+>>> +        #size-cells = <1>;
+>>> +
+>>> +        freq_domain_table0 : freq_table0 {
+>>> +            reg = <0x17d43920 0x4>, <0x17d43110 0x500>,
+>>> +                 <0x17d41000 0x4>;
 >>
->> And here I think the point is that regular variables are considered only
->> in the context of a single linear execution context. Locks are assumed
->> to bound observability.
+>> Are "perf", "lut", "enable" registers part of single IP block / share
+>> memory ?
+>> I am just trying to understand the reason for separate entries in this
+>> fashion
+>> as part of DT register property. I am wondering if there will be multiple
+>> entries that fall with the page size.
 >>
->> And here the "volatile" and "_atomic" type specifiers again tell the
->> compiler something 'special' is going on and you should not muck with
->> things.
 > 
-> Also, I think, more likely:
+> They are part of the same IP block and these are the only register
+> offsets which is required to be accessed by HLOS.
 > 
-> 	if (cond)
-> 		X = 5;
-> 	else
-> 		X = 4;
-> 
-> is allowed to be transformed into:
-> 
-> 	X = 4;
-> 	if (cond)
-> 		X = 5;
-> 
-> as long as cond doesn't involve a sequence point of sorts (think
-> function call).
-> 
-> For the single execution context case, this transformation is valid, but
-> it is not in the threaded case. But then we go back to the assumption
-> that regular variables are data-race-free.
 
-Thank you very much for the explanations.
+HLOS ?
 
-  -- Daniel
-
+Anyways, OS might touch one or 2 registers in lots of IP blocks. I am
+not sure why those are any different from these. Are you trying to align
+with any other bindings or specification. Are you trying to make this
+binding generic here ? I understand if it was trying to generalize the
+firmware interface, but you state it's a hardware engine. So I fail to
+see the need for such specificity here. Why not define the whole IP
+block and the driver knows where to access these specific ones as they
+are specific to this hardware block.
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Regards,
+Sudeep
