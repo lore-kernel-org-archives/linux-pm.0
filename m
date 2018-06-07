@@ -1,78 +1,236 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
  framework
-Date: Thu, 7 Jun 2018 16:11:02 +0200
-Message-ID: <1d542490-fcb5-33fd-ab3b-eddf3d300bd4@linaro.org>
-References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
- <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
- <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
- <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
- <2bebd1bc-e1ad-6d22-ad1e-aee2cf8ba878@linaro.org>
- <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
+Date: Thu, 7 Jun 2018 16:44:09 +0200
+Message-ID: <20180607144409.GB3311@localhost.localdomain>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-4-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180521142505.6522-4-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/06/2018 12:45, Viresh Kumar wrote:
-> On 06-06-18, 12:22, Daniel Lezcano wrote:
->> (mb() are done in the atomic operations AFAICT).
+On 21/05/18 15:24, Quentin Perret wrote:
+> Several subsystems in the kernel (scheduler and/or thermal at the time
+> of writing) can benefit from knowing about the energy consumed by CPUs.
+> Yet, this information can come from different sources (DT or firmware for
+> example), in different formats, hence making it hard to exploit without
+> a standard API.
 > 
-> AFAIU, it is required to make sure the operations are seen in a particular order
-> on another CPU and the compiler doesn't reorganize code to optimize it.
+> This patch attempts to solve this issue by introducing a centralized
+> Energy Model (EM) framework which can be used to interface the data
+> providers with the client subsystems. This framework standardizes the
+> API to expose power costs, and to access them from multiple locations.
 > 
-> For example, in our case what if the compiler reorganizes the atomic-set
-> operation after wakeup-process ? But maybe that wouldn't happen across function
-> calls and we should be safe then.
+> The current design assumes that all CPUs in a frequency domain share the
+> same micro-architecture. As such, the EM data is structured in a
+> per-frequency-domain fashion. Drivers aware of frequency domains
+> (typically, but not limited to, CPUFreq drivers) are expected to register
+> data in the EM framework using the em_register_freq_domain() API. To do
+> so, the drivers must provide a callback function that will be called by
+> the EM framework to populate the tables. As of today, only the active
+> power of the CPUs is considered. For each frequency domain, the EM
+> includes a list of <frequency, power, capacity> tuples for the capacity
+> states of the domain alongside a cpumask covering the involved CPUs.
 > 
->> What about:
->>
->> 	get_online_cpus();
->>
->> 	nr_tasks = cpumask_weight(
->> 		cpumask_and(ii_dev->cpumask, cpu_online_mask);
->> 			
->> 	atomic_set(&ii_dev->count, nr_tasks);
->>
->> 	for_each_cpu_and(cpu, ii_dev->cpumask, cpu_online_mask) {
->> 		iit = per_cpu_ptr(&idle_injection_thread, cpu);
->> 		iit->should_run = 1;
->> 		wake_up_process(iit->tsk);
->> 	}
->>
->> 	put_online_cpus();
->> ?
+> The EM framework also provides an API to re-scale the capacity values
+> of the model asynchronously, after it has been created. This is required
+> for architectures where the capacity scale factor of CPUs can change at
+> run-time. This is the case for Arm/Arm64 for example where the
+> arch_topology driver recomputes the capacity scale factors of the CPUs
+> after the maximum frequency of all CPUs has been discovered. Although
+> complex, the process of creating and re-scaling the EM has to be kept in
+> two separate steps to fulfill the needs of the different users. The thermal
+> subsystem doesn't use the capacity values and shouldn't have dependencies
+> on subsystems providing them. On the other hand, the task scheduler needs
+> the capacity values, and it will benefit from seeing them up-to-date when
+> applicable.
 > 
-> Looks good this time.
+> Because of this need for asynchronous update, the capacity state table
+> of each frequency domain is protected by RCU, hence guaranteeing a safe
+> modification of the table and a fast access to readers in latency-sensitive
+> code paths.
 > 
->> I'm wondering if we can have a CPU hotplugged right after the
->> 'put_online_cpus', resulting in the 'should park' flag set and then the
->> thread goes in the kthread_parkme instead of jumping back the idle
->> injection function and decrease the count, leading up to the timer not
->> being set again.
-> 
-> True. That looks like a valid problem to me as well.
-> 
-> What about starting the hrtimer right from this routine itself, after taking
-> into account running-time, idle-time, delay, etc ? That would get rid of the
-> count stuff, this get_online_cpus(), etc.
-> 
-> Even if we restart the next play-idle cycle a bit early or with some delay, sky
-> wouldn't fall :)
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
 
-We won't be able to call completion() in this case.
+OK, I think I'll start with a few comments while I get more into
+understanding the set. :)
 
+> +static void fd_update_cs_table(struct em_cs_table *cs_table, int cpu)
+> +{
+> +	unsigned long cmax = arch_scale_cpu_capacity(NULL, cpu);
+> +	int max_cap_state = cs_table->nr_cap_states - 1;
+                 ^
+You don't need this on the stack, right?
 
+> +	unsigned long fmax = cs_table->state[max_cap_state].frequency;
+> +	int i;
+> +
+> +	for (i = 0; i < cs_table->nr_cap_states; i++)
+> +		cs_table->state[i].capacity = cmax *
+> +					cs_table->state[i].frequency / fmax;
+> +}
+> +
+> +static struct em_freq_domain *em_create_fd(cpumask_t *span, int nr_states,
+> +						struct em_data_callback *cb)
+> +{
+> +	unsigned long opp_eff, prev_opp_eff = ULONG_MAX;
+> +	int i, ret, cpu = cpumask_first(span);
+> +	struct em_freq_domain *fd;
+> +	unsigned long power, freq;
+> +
+> +	if (!cb->active_power)
+> +		return NULL;
+> +
+> +	fd = kzalloc(sizeof(*fd), GFP_KERNEL);
+> +	if (!fd)
+> +		return NULL;
+> +
+> +	fd->cs_table = alloc_cs_table(nr_states);
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Mmm, don't you need to rcu_assign_pointer this first one as well?
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> +	if (!fd->cs_table)
+> +		goto free_fd;
+> +
+> +	/* Copy the span of the frequency domain */
+> +	cpumask_copy(&fd->cpus, span);
+> +
+> +	/* Build the list of capacity states for this freq domain */
+> +	for (i = 0, freq = 0; i < nr_states; i++, freq++) {
+                     ^                              ^
+The fact that this relies on active_power() to use ceil OPP for a given
+freq might deserve a comment. Also, is this behaviour of active_power()
+standardized?
+
+> +		ret = cb->active_power(&power, &freq, cpu);
+> +		if (ret)
+> +			goto free_cs_table;
+> +
+> +		fd->cs_table->state[i].power = power;
+> +		fd->cs_table->state[i].frequency = freq;
+> +
+> +		/*
+> +		 * The hertz/watts efficiency ratio should decrease as the
+> +		 * frequency grows on sane platforms. If not, warn the user
+> +		 * that some high OPPs are more power efficient than some
+> +		 * of the lower ones.
+> +		 */
+> +		opp_eff = freq / power;
+> +		if (opp_eff >= prev_opp_eff)
+> +			pr_warn("%*pbl: hz/watt efficiency: OPP %d >= OPP%d\n",
+> +					cpumask_pr_args(span), i, i - 1);
+> +		prev_opp_eff = opp_eff;
+> +	}
+> +	fd_update_cs_table(fd->cs_table, cpu);
+> +
+> +	return fd;
+> +
+> +free_cs_table:
+> +	free_cs_table(fd->cs_table);
+> +free_fd:
+> +	kfree(fd);
+> +
+> +	return NULL;
+> +}
+> +
+> +static void rcu_free_cs_table(struct rcu_head *rp)
+> +{
+> +	struct em_cs_table *table;
+> +
+> +	table = container_of(rp, struct em_cs_table, rcu);
+> +	free_cs_table(table);
+> +}
+> +
+> +/**
+> + * em_rescale_cpu_capacity() - Re-scale capacity values of the Energy Model
+> + *
+> + * This re-scales the capacity values for all capacity states of all frequency
+> + * domains of the Energy Model. This should be used when the capacity values
+> + * of the CPUs are updated at run-time, after the EM was registered.
+> + */
+> +void em_rescale_cpu_capacity(void)
+
+So, is this thought to be called eventually also after thermal capping
+events and such?
+
+> +{
+> +	struct em_cs_table *old_table, *new_table;
+> +	struct em_freq_domain *fd;
+> +	unsigned long flags;
+> +	int nr_states, cpu;
+> +
+> +	read_lock_irqsave(&em_data_lock, flags);
+
+Don't you need write_lock_ here, since you are going to exchange the
+em tables?
+
+> +	for_each_cpu(cpu, cpu_possible_mask) {
+> +		fd = per_cpu(em_data, cpu);
+> +		if (!fd || cpu != cpumask_first(&fd->cpus))
+> +			continue;
+> +
+> +		/* Copy the existing table. */
+> +		old_table = rcu_dereference(fd->cs_table);
+> +		nr_states = old_table->nr_cap_states;
+> +		new_table = alloc_cs_table(nr_states);
+> +		if (!new_table) {
+> +			read_unlock_irqrestore(&em_data_lock, flags);
+> +			return;
+> +		}
+> +		memcpy(new_table->state, old_table->state,
+> +					nr_states * sizeof(*new_table->state));
+> +
+> +		/* Re-scale the capacity values on the copy. */
+> +		fd_update_cs_table(new_table, cpumask_first(&fd->cpus));
+> +
+> +		/* Replace the table with the rescaled version. */
+> +		rcu_assign_pointer(fd->cs_table, new_table);
+> +		call_rcu(&old_table->rcu, rcu_free_cs_table);
+> +	}
+> +	read_unlock_irqrestore(&em_data_lock, flags);
+> +	pr_debug("Re-scaled CPU capacities\n");
+> +}
+> +EXPORT_SYMBOL_GPL(em_rescale_cpu_capacity);
+> +
+> +/**
+> + * em_cpu_get() - Return the frequency domain for a CPU
+> + * @cpu : CPU to find the frequency domain for
+> + *
+> + * Return: the frequency domain to which 'cpu' belongs, or NULL if it doesn't
+> + * exist.
+> + */
+> +struct em_freq_domain *em_cpu_get(int cpu)
+> +{
+> +	struct em_freq_domain *fd;
+> +	unsigned long flags;
+> +
+> +	read_lock_irqsave(&em_data_lock, flags);
+> +	fd = per_cpu(em_data, cpu);
+> +	read_unlock_irqrestore(&em_data_lock, flags);
+> +
+> +	return fd;
+> +}
+> +EXPORT_SYMBOL_GPL(em_cpu_get);
+
+Mmm, this gets complicated pretty fast eh? :)
+
+I had to go back and forth between patches to start understanding the
+different data structures and how they are use, and I'm not sure yet
+I've got the full picture. I guess some nice diagram (cover letter or
+documentation patch) would help a lot.
+
+Locking of such data structures is pretty involved as well, adding
+comments/docs shouldn't harm. :)
+
+Best,
+
+- Juri
