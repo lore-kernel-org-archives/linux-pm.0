@@ -1,75 +1,39 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC] sched: cpufreq: Fix long idle judgement logic in load calculation
-Date: Thu,  7 Jun 2018 11:17:34 +0800
-Message-ID: <1528341454-16991-1-git-send-email-yu.c.chen@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH][RFC] sched: cpufreq: Fix long idle judgement logic in
+ load calculation
+Date: Thu, 7 Jun 2018 10:15:43 +0530
+Message-ID: <20180607044543.d7pswad5tshw26lc@vireshk-i7>
+References: <1528341454-16991-1-git-send-email-yu.c.chen@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1528341454-16991-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Artem S Tashkinov <t.artem@mailcity.com>, linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Artem S Tashkinov <t.artem@mailcity.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-According to current code implementation, detecting the long
-idle period is done by checking if the interval between two
-adjacent utilization update handers is long enough. Although
-this mechanism can detect if the idle period is long enough
-(no utilization hooks invoked during idle period), it might
-not contain a corner case: if the task has occupied the cpu
-for too long which causes no context switch during that
-period, then no utilization handler will be launched until this
-high prio task is switched out. As a result, the idle_periods
-field might be calculated incorrectly because it regards the
-100% load as 0% and makes the conservative governor who uses
-this field confusing.
+On 07-06-18, 11:17, Chen Yu wrote:
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 871bf9c..9792c80 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -165,7 +165,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>  			 * calls, so the previous load value can be used then.
+>  			 */
+>  			load = j_cdbs->prev_load;
+> -		} else if (unlikely(time_elapsed > 2 * sampling_rate &&
+> +		} else if (((int)idle_time > 0) && unlikely(idle_time > 2 * sampling_rate &&
 
-Change the judgement to compare the idle_time with sampling_rate
-directly.
+Yes the figures are insane, but if the idle time is around 36 minutes, the
+conversion to int will make a positive value look negative and we will exit the
+conditional block. And if we don't think that we will ever get such insane idle
+times or we don't want to care about them, then what about doing this instead:
 
-Reported-by: Artem S. Tashkinov <t.artem@mailcity.com>
-Cc: Artem S Tashkinov <t.artem@mailcity.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/cpufreq/cpufreq_governor.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+		} else if ((unlikely((int)idle_time > 2 * sampling_rate &&
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 871bf9c..9792c80 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -165,7 +165,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			 * calls, so the previous load value can be used then.
- 			 */
- 			load = j_cdbs->prev_load;
--		} else if (unlikely(time_elapsed > 2 * sampling_rate &&
-+		} else if (((int)idle_time > 0) && unlikely(idle_time > 2 * sampling_rate &&
- 				    j_cdbs->prev_load)) {
- 			/*
- 			 * If the CPU had gone completely idle and a task has
-@@ -185,10 +185,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			 * clear prev_load to guarantee that the load will be
- 			 * computed again next time.
- 			 *
--			 * Detecting this situation is easy: the governor's
--			 * utilization update handler would not have run during
--			 * CPU-idle periods.  Hence, an unusually large
--			 * 'time_elapsed' (as compared to the sampling rate)
-+			 * Detecting this situation is easy: an unusually large
-+			 * 'idle_time' (as compared to the sampling rate)
- 			 * indicates this scenario.
- 			 */
- 			load = j_cdbs->prev_load;
-@@ -217,8 +215,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			j_cdbs->prev_load = load;
- 		}
- 
--		if (time_elapsed > 2 * sampling_rate) {
--			unsigned int periods = time_elapsed / sampling_rate;
-+		if (((int)idle_time > 0) && (idle_time > 2 * sampling_rate)) {
-+			unsigned int periods = idle_time / sampling_rate;
- 
- 			if (periods < idle_periods)
- 				idle_periods = periods;
+same below.
+
 -- 
-2.7.4
+viresh
