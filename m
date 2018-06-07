@@ -1,37 +1,50 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v2 10/11] dt-bindings: misc: add bindings for cros_ec_throttler
-Date: Thu,  7 Jun 2018 11:12:13 -0700
-Message-ID: <20180607181214.30338-11-mka@chromium.org>
-References: <20180607181214.30338-1-mka@chromium.org>
+From: Craig Tatlor <ctatlor97@gmail.com>
+Subject: [PATCH v5 1/4] fixp-arith: add a linear interpolation function
+Date: Thu,  7 Jun 2018 19:12:49 +0100
+Message-ID: <20180607181306.9766-1-ctatlor97@gmail.com>
+References: <20180407135934.26122-1-ctatlor97@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180607181214.30338-1-mka@chromium.org>
+In-Reply-To: <20180407135934.26122-1-ctatlor97@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Matthias Kaehlcke <mka@chromium.org>
+Cc: ctatlor97@gmail.com, linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Walleij <linus.walleij@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The cros_ec_throttler monitors events from the Chrome OS Embedded
-Controller to throttle the system if needed, using the mechanisms
-provided by the throttler core.
+Adds a function to interpolate against two points,
+this is carried arount as a helper function by tons of drivers.
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
 ---
-Changes in v2:
-- patch added to series
+ include/linux/fixp-arith.h | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
- Documentation/devicetree/bindings/misc/cros_ec_throttler.txt | 4 ++++
- 1 file changed, 4 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-
-diff --git a/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-new file mode 100644
-index 000000000000..7316dcc0ef75
---- /dev/null
-+++ b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-@@ -0,0 +1,4 @@
-+* cros_ec_throttler driver
+diff --git a/include/linux/fixp-arith.h b/include/linux/fixp-arith.h
+index d4686fe1cac7..c21de4f358dd 100644
+--- a/include/linux/fixp-arith.h
++++ b/include/linux/fixp-arith.h
+@@ -153,4 +153,24 @@ static inline s32 fixp_sin32_rad(u32 radians, u32 twopi)
+ #define fixp_cos32_rad(rad, twopi)	\
+ 	fixp_sin32_rad(rad + twopi / 4, twopi)
+ 
 +
-+Required properties:
-+- compatible: "google,cros-ec-throttler"
++/**
++ * fixp_linear_interpolate() - interpolates a value from two known points
++ *
++ * @x0: x value of point 0
++ * @y0: y value of point 0
++ * @x1: x value of point 1
++ * @y1: y value of point 1
++ * @x: the linear interpolant
++ */
++static inline int fixp_linear_interpolate(int x0, int y0, int x1, int y1, int x)
++{
++	if (y0 == y1 || x == x0)
++		return y0;
++	if (x1 == x0 || x == x1)
++		return y1;
++
++	return y0 + ((y1 - y0) * (x - x0) / (x1 - x0));
++}
++
+ #endif
 -- 
-2.18.0.rc1.242.g61856ae69a-goog
+2.17.0
