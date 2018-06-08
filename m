@@ -1,102 +1,214 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
- framework
-Date: Fri, 8 Jun 2018 18:02:37 +0100
-Message-ID: <20180608170237.GB17720@e108498-lin.cambridge.arm.com>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-4-quentin.perret@arm.com>
- <20180607144409.GB3311@localhost.localdomain>
- <20180607151954.GA3597@e108498-lin.cambridge.arm.com>
- <52b9575b-4c2a-01df-fadd-10ccf3146112@arm.com>
- <20180608082511.GE3597@e108498-lin.cambridge.arm.com>
- <5a7b8177-7cbe-df90-7d00-8aad0a0f5f08@arm.com>
- <20180608131104.GA7838@e108498-lin.cambridge.arm.com>
- <a51f0aee-8d4b-1149-9cb5-ad1777a93f34@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Brian Norris <briannorris@chromium.org>
+Subject: [PATCH v4 1/2] power: supply: sbs-battery: don't assume MANUFACTURER_DATA formats
+Date: Fri,  8 Jun 2018 15:36:54 -0700
+Message-ID: <20180608223655.33565-1-briannorris@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <a51f0aee-8d4b-1149-9cb5-ad1777a93f34@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>, Phil Reid <preid@electromag.com.au>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 08 Jun 2018 at 18:39:56 (+0200), Dietmar Eggemann wrote:
-> On 06/08/2018 03:11 PM, Quentin Perret wrote:
-> > On Friday 08 Jun 2018 at 14:39:33 (+0200), Dietmar Eggemann wrote:
-> 
-> [...]
-> 
-> > > > > Even though we would be forced to get cpufreq's related cpumask from
-> > > > > somewhere.
-> > > > 
-> > > > That's the easy part. The difficult part is, where do you get power
-> > > > values from ? You have to let the lower layers register those values
-> > > > in a centralized location on a voluntary basis. And then it becomes easy
-> > > > for consumers to access that data, because they know where it is.
-> > > 
-> > > The code in the arch could use the same struct em_data_callback em_cb = {
-> > > &dev_pm_opp_of_estimate_power } that the cpufreq driver is currently using?
-> > 
-> > How do you know from the arch code if you should get power from DT
-> > with dev_pm_opp_of_estimate_power or use another callback that reads
-> > power from firmware (SCMI) ?
-> 
-> Ah, ok, cpufreq dt, scpi and arm_big_little are dt, cpufreq scmi can be
-> different ...
-> 
-> > 
-> > I don't think it is reasonable to assume a single source of information for
-> > an arch. It is is already an incorrect assumption even if just you look at
-> > the Arm world.
-> 
-> Ok, I see.
-> 
-> > 
-> > > > Again, I don't think that's possible. You have to let the lower layers
-> > > > tell you where the power values come from, at the very least. You could
-> > > > let the archs do that aggregation I suppose, but I don't really see the
-> > > > benefit over one centralized framework with a generic interface ...
-> > > > What's your opinion ?
-> > > 
-> > > Don't understand the '... let the lower layers tell you where the power
-> > > values come from ...' part. Where is the difference whether the arch or the
-> > > cpufreq driver uses em_data_callback?
-> > 
-> > Because different CPUFreq drivers can be used for one arch. There are
-> > different CPUFreq drivers because there are different ways of getting
-> > information about the platform, even just for the Arm world (DT, SCPI,
-> > SCMI, ...). It's the same thing for power values, they don't necessarily
-> > come from DT.
-> 
-> scpi is dt ? At least scpi-cpufreq.c uses this dev_pm_opp_of_estimate_power
-> too.
+This driver was originally submitted for the TI BQ20Z75 battery IC
+(commit a7640bfa10c5 ("power_supply: Add driver for TI BQ20Z75 gas gauge
+IC")) and later renamed to express generic SBS support. While it's
+mostly true that this driver implemented a standard SBS command set, it
+takes liberties with the REG_MANUFACTURER_DATA register. This register
+is specified in the SBS spec, but it doesn't make any mention of what
+its actual contents are.
 
-Hrmpf, SCPI isn't really DT. The voltage and freq values don't come from
-DT at least. The reason dev_pm_opp_of_estimate_power() is in PM_OPP in my
-tree is precisely because PM_OPP take cares about the SCPI/DT abstraction
-for me. That makes it easier to factorize a bit of code between cpufreq-dt
-and scpi-cpufreq to compute the CVVf thing, but that's a different story,
-and could be implemented differently. The common thing between the two is
-that the "C" value is in DT. The rest is fairly different.
+We've sort of noticed this optionality previously, with commit
+17c6d3979e5b ("sbs-battery: make writes to ManufacturerAccess
+optional"), where we found that some batteries NAK writes to this
+register.
 
-> 
-> > The point of having a centralized EM framework with a standardized
-> > callback prototype is flexibility. You can implement a callback that
-> > estimates power from the DT. You can implement a callback that reads
-> > power from firmware. But you can also have a completely ad-hoc EM
-> > provider in a module if you like. All you have to do to provide data to
-> > the framework is respect the callback API.
-> 
-> IMHO, this idea is good, there should be also user of this outside arm/arm64
+What this really means is that so far, we've just been lucky that most
+batteries have either been compatible with the TI chip, or else at least
+haven't reported highly-unexpected values.
 
-Cool :-). Indeed one of the things I had in mind is that basically this
-API based on a callback lets you put what you like in the EM. In the Arm
-world, we will most likely register power values for all OPPs when we
-know them. But if you want to use this on x86 on a platform where the OS
-isn't aware of the OPPs for ex, you can still register something in there
-if you really want to. It doesn't have to be "real" OPPs.
+For instance, one battery I have here seems to report either 0x0000 or
+0x0100 to the MANUFACTURER_ACCESS_STATUS command -- while this seems to
+match either Wake Up (bits[11:8] = 0000b) or Normal Discharge
+(bits[11:8] = 0001b) status for the TI part [1], they don't seem to
+actually correspond to real states (for instance, I never see 0101b =
+Charge, even when charging).
 
-Thanks !
-Quentin
+On other batteries, I'm getting apparently random data in return, which
+means that occasionally, we interpret this as "battery not present" or
+"battery is not healthy".
+
+All in all, it seems to be a really bad idea to make assumptions about
+REG_MANUFACTURER_DATA, unless we already know what battery we're using.
+Therefore, this patch reimplements the "present" and "health" checks to
+the following on most SBS batteries:
+
+1. HEALTH: report "unknown" -- I couldn't find a standard SBS command
+   that gives us much useful here
+2. PRESENT: just send a REG_STATUS command; if it succeeds, then the
+   battery is present
+
+Also, we stop sending MANUFACTURER_ACCESS_SLEEP to non-TI parts. I have
+no proof that this is useful and supported.
+
+If someone explicitly provided a 'ti,bq20z75' compatible property, then
+we continue to use the existing TI command behaviors, and we effectively
+revert commit 17c6d3979e5b ("sbs-battery: make writes to
+ManufacturerAccess optional") to again make these commands required.
+
+[1] http://www.ti.com/lit/er/sluu265a/sluu265a.pdf
+
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Acked-by: Rhyland Klein <rklein@nvidia.com>
+---
+v2:
+ * don't stub out POWER_SUPPLY_PROP_PRESENT from sbs_data[]
+ * use if/else instead of switch/case
+
+v3:
+ * pull 'return 0' out of if/else, to satisfy braindead tooling
+
+v4:
+ * make ManufacturerAccess non-optional for TI parts again
+---
+ drivers/power/supply/sbs-battery.c | 67 ++++++++++++++++++++++++------
+ 1 file changed, 54 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 83d7b4115857..8ba6abf584de 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -23,6 +23,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/power/sbs-battery.h>
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
+@@ -156,6 +157,9 @@ static enum power_supply_property sbs_properties[] = {
+ 	POWER_SUPPLY_PROP_MODEL_NAME
+ };
+ 
++/* Supports special manufacturer commands from TI BQ20Z75 IC. */
++#define SBS_FLAGS_TI_BQ20Z75		BIT(0)
++
+ struct sbs_info {
+ 	struct i2c_client		*client;
+ 	struct power_supply		*power_supply;
+@@ -168,6 +172,7 @@ struct sbs_info {
+ 	u32				poll_retry_count;
+ 	struct delayed_work		work;
+ 	struct mutex			mode_lock;
++	u32				flags;
+ };
+ 
+ static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
+@@ -315,17 +320,41 @@ static int sbs_status_correct(struct i2c_client *client, int *intval)
+ static int sbs_get_battery_presence_and_health(
+ 	struct i2c_client *client, enum power_supply_property psp,
+ 	union power_supply_propval *val)
++{
++	int ret;
++
++	if (psp == POWER_SUPPLY_PROP_PRESENT) {
++		/* Dummy command; if it succeeds, battery is present. */
++		ret = sbs_read_word_data(client, sbs_data[REG_STATUS].addr);
++		if (ret < 0)
++			val->intval = 0; /* battery disconnected */
++		else
++			val->intval = 1; /* battery present */
++	} else { /* POWER_SUPPLY_PROP_HEALTH */
++		/* SBS spec doesn't have a general health command. */
++		val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
++	}
++
++	return 0;
++}
++
++static int sbs_get_ti_battery_presence_and_health(
++	struct i2c_client *client, enum power_supply_property psp,
++	union power_supply_propval *val)
+ {
+ 	s32 ret;
+ 
+ 	/*
+ 	 * Write to ManufacturerAccess with ManufacturerAccess command
+-	 * and then read the status. Do not check for error on the write
+-	 * since not all batteries implement write access to this command,
+-	 * while others mandate it.
++	 * and then read the status.
+ 	 */
+-	sbs_write_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr,
+-			    MANUFACTURER_ACCESS_STATUS);
++	ret = sbs_write_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr,
++				  MANUFACTURER_ACCESS_STATUS);
++	if (ret < 0) {
++		if (psp == POWER_SUPPLY_PROP_PRESENT)
++			val->intval = 0; /* battery removed */
++		return ret;
++	}
+ 
+ 	ret = sbs_read_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr);
+ 	if (ret < 0) {
+@@ -600,7 +629,12 @@ static int sbs_get_property(struct power_supply *psy,
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 	case POWER_SUPPLY_PROP_HEALTH:
+-		ret = sbs_get_battery_presence_and_health(client, psp, val);
++		if (client->flags & SBS_FLAGS_TI_BQ20Z75)
++			ret = sbs_get_ti_battery_presence_and_health(client,
++								     psp, val);
++		else
++			ret = sbs_get_battery_presence_and_health(client, psp,
++								  val);
+ 		if (psp == POWER_SUPPLY_PROP_PRESENT)
+ 			return 0;
+ 		break;
+@@ -806,6 +840,7 @@ static int sbs_probe(struct i2c_client *client,
+ 	if (!chip)
+ 		return -ENOMEM;
+ 
++	chip->flags = (u32)(uintptr_t)of_device_get_match_data(&client->dev);
+ 	chip->client = client;
+ 	chip->enable_detection = false;
+ 	psy_cfg.of_node = client->dev.of_node;
+@@ -911,16 +946,19 @@ static int sbs_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct sbs_info *chip = i2c_get_clientdata(client);
++	int ret;
+ 
+ 	if (chip->poll_time > 0)
+ 		cancel_delayed_work_sync(&chip->work);
+ 
+-	/*
+-	 * Write to manufacturer access with sleep command.
+-	 * Support is manufacturer dependend, so ignore errors.
+-	 */
+-	sbs_write_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr,
+-		MANUFACTURER_ACCESS_SLEEP);
++	if (chip->flags & SBS_FLAGS_TI_BQ20Z75) {
++		/* Write to manufacturer access with sleep command. */
++		ret = sbs_write_word_data(client,
++					  sbs_data[REG_MANUFACTURER_DATA].addr,
++					  MANUFACTURER_ACCESS_SLEEP);
++		if (chip->is_present && ret < 0)
++			return ret;
++	}
+ 
+ 	return 0;
+ }
+@@ -941,7 +979,10 @@ MODULE_DEVICE_TABLE(i2c, sbs_id);
+ 
+ static const struct of_device_id sbs_dt_ids[] = {
+ 	{ .compatible = "sbs,sbs-battery" },
+-	{ .compatible = "ti,bq20z75" },
++	{
++		.compatible = "ti,bq20z75",
++		.data = (void *)SBS_FLAGS_TI_BQ20Z75,
++	},
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, sbs_dt_ids);
+-- 
+2.18.0.rc1.242.g61856ae69a-goog
