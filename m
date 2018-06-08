@@ -1,92 +1,217 @@
-From: Javi Merino <javi.merino@kernel.org>
-Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
- framework
-Date: Fri, 8 Jun 2018 14:39:42 +0100
-Message-ID: <20180608133942.GB4359@tesla>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-4-quentin.perret@arm.com>
- <b47cb1f1-6ca1-7674-903f-724be43a57a0@arm.com>
- <20180606143739.GF10870@e108498-lin.cambridge.arm.com>
- <20180606152000.GB15894@localhost.localdomain>
- <20180606152950.GH10870@e108498-lin.cambridge.arm.com>
- <20180606162647.GI10870@e108498-lin.cambridge.arm.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: Re: [PATCH v2 11/11] misc: throttler: Add Chrome OS EC throttler
+Date: Fri, 8 Jun 2018 16:09:18 +0200
+Message-ID: <e1681e0f-2141-12a7-bed1-4d27a43ac9e8@collabora.com>
+References: <20180607181214.30338-1-mka@chromium.org>
+ <20180607181214.30338-12-mka@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180606162647.GI10870@e108498-lin.cambridge.arm.com>
+In-Reply-To: <20180607181214.30338-12-mka@chromium.org>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net
+To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 06, 2018 at 05:26:47PM +0100, Quentin Perret wrote:
-> On Wednesday 06 Jun 2018 at 16:29:50 (+0100), Quentin Perret wrote:
-> > On Wednesday 06 Jun 2018 at 17:20:00 (+0200), Juri Lelli wrote:
-> > > > > This brings me to another question. Let's say there are multiple users of
-> > > > > the Energy Model in the system. Shouldn't the units of frequency and power
-> > > > > not standardized, maybe Mhz and mW?
-> > > > > The task scheduler doesn't care since it is only interested in power diffs
-> > > > > but other user might do.
-> > > > 
-> > > > So the good thing about specifying units is that we can probably assume
-> > > > ranges on the values. If the power is in mW, assuming that we're talking
-> > > > about a single CPU, it'll probably fit in 16 bits. 65W/core should be
-> > > > a reasonable upper-bound ?
-> > > > But there are also vendors who might not be happy with disclosing absolute
-> > > > values ... These are sometimes considered sensitive and only relative
-> > > > numbers are discussed publicly. Now, you can also argue that we already
-> > > > have units specified in IPA for ex, and that it doesn't really matter if
-> > > > a driver "lies" about the real value, as long as the ratios are correct.
-> > > > And I guess that anyone can do measurement on the hardware and get those
-> > > > values anyway. So specifying a unit (mW) for the power is probably a
-> > > > good idea.
-> > > 
-> > > Mmm, I remember we fought quite a bit while getting capacity-dmpis-mhz
-> > > binding accepted, and one of the musts was that the values were going to
-> > > be normalized. So, normalized power values again maybe?
-> > 
-> > Hmmm, that's a very good point ... There should be no problems on the
-> > scheduler side -- we're only interested in correct ratios. But I'm not
-> > sure on the thermal side ... I will double check that.
-> 
-> So, IPA needs to compare the power of the CPUs with the power of other
-> things (e.g. GPUs). So we can't normalize the power of the CPUs without
-> normalizing in the same scale the power of the other devices. I see two
-> possibilities:
-> 
-> 1) we don't normalize the CPU power values, we specify them in mW, and
->    we document (and maybe throw a warning if we see an issue at runtime)
->    the max range of values. The max expected power for a single core
->    could be 65K for ex (16bits). And based on that we can verify
->    overflow and precision issues in the algorithms, and we keep it easy
->    to compare the CPU power numbers with other devices.
-> 
-> 2) we normalize the power values, but that means that the EM framework
->    has to manage not only CPUs, but also other types of devices, and
->    normalized their power values as well. That's required to keep the
->    scale consistent across all of them, and keep comparisons doable.
->    But if we do this, we still have to keep a normalized and a "raw"
->    version of the power for all devices. And the "raw" power must still
->    be in the same unit across all devices, otherwise the re-scaling is
->    broken. The main benefit of doing this is that the range of
->    acceptable "raw" power values can be larger, probably 32bits, and
->    that the precision of the normalized range is arbitrary.
-> 
-> I feel like 2) involves a lot of complexity, and not so many benefits,
-> so I'd be happy to go with 1). Unless I forgot something ?
+Hi Matthias,
 
->From the thermal point of view, the power values don't need to have
-any given unit, as long as the values are comparable to each other.
-Do we need to normalize anything in the kernel though?  Can't we just
-assume that whatever the platform is telling us is correct?  Quentin
-mentioned it earlier: sometimes absolute values are considered
-sensitive and we only get ones that are correct relative to the rest
-of the system.
+On 07/06/18 20:12, Matthias Kaehlcke wrote:
+> The driver subscribes to throttling events from the Chrome OS
+> embedded controller and enables/disables system throttling based
+> on these events.
+> 
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> Reviewed-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> Changes in v2:
+> - added SPDX line instead of license boiler-plate
+> - use macro to avoid splitting line
+> - changed variable name for throttler from 'cte' to 'ce_thr'
+> - formatting fixes
+> - Kconfig: removed odd dashes around 'help'
+> - added 'Reviewed-by' tag
+> 
+> Note: I finally decided to keep 'Chrome OS' instead of changing it
+> to 'ChromeOS'. Both are currently used in the kernel, the latter is
+> currently more prevalent, however the official name is 'Chrome OS',
+> so there is no good reason to keep introducing the 'alternative' name.
+> 
 
-(This reminds me that the units in
-Documentation/thermal/cpu-cooling-api.txt are wrong and I need to fix
-it :-X )
+I am pretty sure that somebody from Google told me the contrary, so
 
-Cheers,
-Javi
+¯\_(ツ)_/¯
+
+Anyway, you will probably know better than me :)
+
+>  drivers/misc/throttler/Kconfig             |  14 +++
+>  drivers/misc/throttler/Makefile            |   1 +
+>  drivers/misc/throttler/cros_ec_throttler.c | 116 +++++++++++++++++++++
+>  3 files changed, 131 insertions(+)
+>  create mode 100644 drivers/misc/throttler/cros_ec_throttler.c
+> 
+> diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
+> index e561f1df5085..da6fb70b96d9 100644
+> --- a/drivers/misc/throttler/Kconfig
+> +++ b/drivers/misc/throttler/Kconfig
+> @@ -12,3 +12,17 @@ menuconfig THROTTLER
+>  	  Note that you also need a event monitor module usually called
+>  	  *_throttler.
+>  
+> +if THROTTLER
+> +
+> +config CROS_EC_THROTTLER
+> +	tristate "Throttler event monitor for the Chrome OS Embedded Controller"
+> +	depends on MFD_CROS_EC
+> +	help
+> +	  This driver adds support to throttle the system in reaction to
+> +	  Chrome OS EC events.
+> +
+> +	  To compile this driver as a module, choose M here: the
+> +	  module will be called cros_ec_throttler.
+> +
+> +endif # THROTTLER
+> +
+> diff --git a/drivers/misc/throttler/Makefile b/drivers/misc/throttler/Makefile
+> index c8d920cee315..d9b2a77dabc9 100644
+> --- a/drivers/misc/throttler/Makefile
+> +++ b/drivers/misc/throttler/Makefile
+> @@ -1 +1,2 @@
+>  obj-$(CONFIG_THROTTLER)		+= core.o
+> +obj-$(CONFIG_CROS_EC_THROTTLER)	+= cros_ec_throttler.o
+> diff --git a/drivers/misc/throttler/cros_ec_throttler.c b/drivers/misc/throttler/cros_ec_throttler.c
+> new file mode 100644
+> index 000000000000..432135c55600
+> --- /dev/null
+> +++ b/drivers/misc/throttler/cros_ec_throttler.c
+> @@ -0,0 +1,116 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Driver for throttling triggered by events from the Chrome OS Embedded
+> + * Controller.
+> + *
+> + * Copyright (C) 2018 Google, Inc.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/mfd/cros_ec.h>
+> +#include <linux/module.h>
+> +#include <linux/notifier.h>
+> +#include <linux/of.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/throttler.h>
+> +
+> +#define nb_to_ce_thr(nb) container_of(nb, struct cros_ec_throttler, nb)
+> +
+> +struct cros_ec_throttler {
+> +	struct cros_ec_device *ec;
+> +	struct throttler *throttler;
+> +	struct notifier_block nb;
+> +};
+> +
+> +static int cros_ec_throttler_event(struct notifier_block *nb,
+> +	unsigned long queued_during_suspend, void *_notify)
+> +{
+> +	struct cros_ec_throttler *ce_thr = nb_to_ce_thr(nb);
+> +	u32 host_event;
+> +
+> +	host_event = cros_ec_get_host_event(ce_thr->ec);
+> +	if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_START)) {
+> +		throttler_set_level(ce_thr->throttler, 1);
+> +
+> +		return NOTIFY_OK;
+> +	} else if (host_event &
+> +		   EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_STOP)) {
+> +		throttler_set_level(ce_thr->throttler, 0);
+> +
+> +		return NOTIFY_OK;
+> +	}
+> +
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static int cros_ec_throttler_probe(struct platform_device *pdev)
+> +{
+> +	struct cros_ec_throttler *ce_thr;
+> +	struct device *dev = &pdev->dev;
+> +	struct device_node *np = pdev->dev.of_node;
+> +	int ret;
+> +
+> +	if (!np) {
+> +		/* should never happen */
+> +		return -EINVAL;
+> +	}
+> +
+> +	ce_thr = devm_kzalloc(dev, sizeof(*ce_thr), GFP_KERNEL);
+> +	if (!ce_thr)
+> +		return -ENOMEM;
+> +
+> +	ce_thr->ec = dev_get_drvdata(pdev->dev.parent);
+> +
+> +	ce_thr->throttler = throttler_setup(dev);
+> +	if (IS_ERR(ce_thr->throttler))
+> +		return PTR_ERR(ce_thr->throttler);
+> +
+> +	dev_set_drvdata(dev, ce_thr);
+> +
+> +	ce_thr->nb.notifier_call = cros_ec_throttler_event;
+> +	ret = blocking_notifier_chain_register(&ce_thr->ec->event_notifier,
+> +					       &ce_thr->nb);
+> +	if (ret < 0) {
+> +		dev_err(dev, "failed to register notifier\n");
+> +		throttler_teardown(ce_thr->throttler);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int cros_ec_throttler_remove(struct platform_device *pdev)
+> +{
+> +	struct cros_ec_throttler *ce_thr = platform_get_drvdata(pdev);
+> +
+> +	blocking_notifier_chain_unregister(&ce_thr->ec->event_notifier,
+> +					   &ce_thr->nb);
+> +
+> +	throttler_teardown(ce_thr->throttler);
+> +
+> +	return 0;
+> +}
+> +
+> +#ifdef CONFIG_OF
+> +static const struct of_device_id cros_ec_throttler_of_match[] = {
+> +	{ .compatible = "google,cros-ec-throttler" },
+> +	{ /* sentinel */ }
+> +};
+> +MODULE_DEVICE_TABLE(of, cros_ec_throttler_of_match);
+> +#endif /* CONFIG_OF */
+> +
+> +static struct platform_driver cros_ec_throttler_driver = {
+> +	.driver = {
+> +		.name = "cros-ec-throttler",
+> +		.of_match_table = of_match_ptr(cros_ec_throttler_of_match),
+> +	},
+> +	.probe		= cros_ec_throttler_probe,
+> +	.remove		= cros_ec_throttler_remove,
+> +};
+> +
+> +module_platform_driver(cros_ec_throttler_driver);
+> +
+> +MODULE_LICENSE("GPL");
+
+Something that I learnt recently. To match the SPDX-license tag you should set
+this to "GPL v2" [1]
+
+ *	"GPL"				[GNU Public License v2 or later]
+ *	"GPL v2"			[GNU Public License v2]
+
+[1] https://elixir.bootlin.com/linux/v4.17/source/include/linux/module.h#L172
+
+> +MODULE_AUTHOR("Matthias Kaehlcke <mka@chromium.org>");
+> +MODULE_DESCRIPTION("Chrome OS EC Throttler");
+> 
+
+Best regards,
+ Enric
