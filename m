@@ -1,111 +1,107 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [RFC PATCH v3 09/10] sched/fair: Select an energy-efficient CPU
- on task wake-up
-Date: Fri, 8 Jun 2018 13:59:28 +0200
-Message-ID: <20180608115928.GC16089@localhost.localdomain>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
+ framework
+Date: Fri, 8 Jun 2018 14:39:33 +0200
+Message-ID: <5a7b8177-7cbe-df90-7d00-8aad0a0f5f08@arm.com>
 References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-10-quentin.perret@arm.com>
- <20180608102446.GE658@localhost.localdomain>
- <20180608111909.GC418@e108498-lin.cambridge.arm.com>
+ <20180521142505.6522-4-quentin.perret@arm.com>
+ <20180607144409.GB3311@localhost.localdomain>
+ <20180607151954.GA3597@e108498-lin.cambridge.arm.com>
+ <52b9575b-4c2a-01df-fadd-10ccf3146112@arm.com>
+ <20180608082511.GE3597@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180608111909.GC418@e108498-lin.cambridge.arm.com>
+In-Reply-To: <20180608082511.GE3597@e108498-lin.cambridge.arm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Cc: Juri Lelli <juri.lelli@redhat.com>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/06/18 12:19, Quentin Perret wrote:
-> On Friday 08 Jun 2018 at 12:24:46 (+0200), Juri Lelli wrote:
-> > Hi,
-> > 
-> > On 21/05/18 15:25, Quentin Perret wrote:
-> > 
-> > [...]
-> > 
-> > > +static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
-> > > +{
-> > > +	unsigned long cur_energy, prev_energy, best_energy, cpu_cap, task_util;
-> > > +	int cpu, best_energy_cpu = prev_cpu;
-> > > +	struct sched_energy_fd *sfd;
-> > > +	struct sched_domain *sd;
-> > > +
-> > > +	sync_entity_load_avg(&p->se);
-> > > +
-> > > +	task_util = task_util_est(p);
-> > > +	if (!task_util)
-> > > +		return prev_cpu;
-> > > +
-> > > +	/*
-> > > +	 * Energy-aware wake-up happens on the lowest sched_domain starting
-> > > +	 * from sd_ea spanning over this_cpu and prev_cpu.
-> > > +	 */
-> > > +	sd = rcu_dereference(*this_cpu_ptr(&sd_ea));
-> > > +	while (sd && !cpumask_test_cpu(prev_cpu, sched_domain_span(sd)))
-> > > +		sd = sd->parent;
-> > > +	if (!sd)
-> > > +		return -1;
-> > 
-> > Shouldn't this be return prev_cpu?
+On 06/08/2018 10:25 AM, Quentin Perret wrote:
+> Hi Dietmar,
 > 
-> Well, you shouldn't be entering this function without an sd_ea pointer,
-> so this case is a sort of bug I think. By returning -1 I think we should
-> end-up picking a CPU using select_fallback_rq(), which sort of makes
-> sense ?
+> On Thursday 07 Jun 2018 at 17:55:32 (+0200), Dietmar Eggemann wrote:
+>> On 06/07/2018 05:19 PM, Quentin Perret wrote:
+>>> Hi Juri,
+>>>
+>>> On Thursday 07 Jun 2018 at 16:44:09 (+0200), Juri Lelli wrote:
+>>>> On 21/05/18 15:24, Quentin Perret wrote:
 
-I fear cpumask_test_cpu() and such won't be happy with a -1 arg.
-If it's a recoverable bug, I'd say return prev and WARN_ON_ONCE() ?
+[...]
 
-> > > +
-> > > +	if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))
-> > > +		prev_energy = best_energy = compute_energy(p, prev_cpu);
-> > > +	else
-> > > +		prev_energy = best_energy = ULONG_MAX;
-> > > +
-> > > +	for_each_freq_domain(sfd) {
-> > > +		unsigned long spare_cap, max_spare_cap = 0;
-> > > +		int max_spare_cap_cpu = -1;
-> > > +		unsigned long util;
-> > > +
-> > > +		/* Find the CPU with the max spare cap in the freq. dom. */
-> > 
-> > I undestand this being a heuristic to cut some overhead, but shouldn't
-> > the model tell between packing vs. spreading?
+> The comment above em_register_freq_domain() explains that, at least
+> partially. In the current implementation, if multiple providers register
+> the same frequency domain, all but the first will be ignored. The reason
+> I implemented this that way is because: 1) it's simple; 2) it should
+> cover the current use-cases for EAS and IPA.
 > 
-> Ah, that's a very interesting one :-) !
-> 
-> So, with only active costs of the CPUs in the model, we can't really
-> tell what's best between packing or spreading between identical CPUs if
-> the migration of the task doesn't change the OPP request.
-> 
-> In a frequency domain, all the "best" CPU candidates for a task are
-> those for which we'll request a low OPP. When there are several CPUs for
-> which the OPP request will be the same, we just don't know which one to
-> pick from an energy standpoint, because we don't have other energy costs
-> (for idle states for ex) to break the tie.
-> 
-> With this EM, the interesting thing is that if you assume that OPP
-> requests follow utilization, you are _guaranteed_ that the CPU with
-> the max spare capacity in a freq domain will always be among the best
-> candidates of this freq domain. And since we don't know how to
-> differentiate those candidates, why not using this one ?
-> 
-> Yes, it _might_ be better from an energy standpoint to pack small tasks
-> on a CPU in order to let other CPUs go in deeper idle states. But that
-> also hurts your chances to go cluster idle. Which solution is the best ?
-> It depends, and we have no ways to tell with this EM.
-> 
-> This approach basically favors cluster-packing, and spreading inside a
-> cluster. That should at least be a good thing for latency, and this is
-> consistent with the idea that most of the energy savings come from the
-> asymmetry of the system, and not so much from breaking the tie between
-> identical CPUs. That's also the reason why EAS is enabled only if your
-> system has SD_ASYM_CPUCAPACITY set, as we already discussed for patch
-> 05/10 :-).
-> 
-> Does that make sense ?
+> But we could do something more clever. We could add a parameter to
+> em_register_freq_domain() that would represent some sort of priority. In
+> this case, if multiple providers register the same freq domain, the
+> higher priority would override the lower priority. For example, power
+> values coming from firmware could overwrite power values estimated with
+> P=CV^2f for example.
 
-Yes, thanks for the explanation. It would probably make sense to copy
-and paste your text above somewhere in comment/doc for future ref.
+In your current '(3)* Arm/Arm64 init code' (* see at the end of this 
+email) you have this dev_pm_opp_of_estimate_power() em_data_callback 
+active_power function.
+
+Let's say thermal and the task scheduler would initialize the EM 
+independently. They would still end up using C from dt, and f, V and P 
+from opp library in your example.
+
+IMHO, this information should be only provided once from one source per 
+platform.
+
+>> The re-scaling thing comes from the requirement that the final cpu capacity
+>> values are only known after the arch_topology driver was able to scale the
+>> dmipz-capacity-values with the policy->cpuinfo.max_freq but why can't we
+>> create the EM on arm/arm64 after this?
+> 
+> What if you don't have dmips-capacity-mhz values in the DT and still
+> want to use IPA ? There is no good reason to create a dependency between
+> the thermal subsystem and the arch_topology driver IMO.
+
+Mmmmh, that's correct. So it can't be simply called in 
+init_cpu_capacity_callback() [drivers/base/arch_topology.c] in case the 
+cpus_to_visit mask is empty. There is this dependency that cpufreq can 
+be loaded at any time, requiring this re-scaling of capacity values ... 
+That's not nice ...
+
+>> Even though we would be forced to get cpufreq's related cpumask from
+>> somewhere.
+> 
+> That's the easy part. The difficult part is, where do you get power
+> values from ? You have to let the lower layers register those values
+> in a centralized location on a voluntary basis. And then it becomes easy
+> for consumers to access that data, because they know where it is.
+
+The code in the arch could use the same struct em_data_callback em_cb = 
+{ &dev_pm_opp_of_estimate_power } that the cpufreq driver is currently 
+using?
+
+>> I guess the easiest model will be that the Energy Model (EM) is fully
+>> initialized with one init call (from the arch) and fixed after that.
+> 
+> Again, I don't think that's possible. You have to let the lower layers
+> tell you where the power values come from, at the very least. You could
+> let the archs do that aggregation I suppose, but I don't really see the
+> benefit over one centralized framework with a generic interface ...
+> What's your opinion ?
+
+Don't understand the '... let the lower layers tell you where the power 
+values come from ...' part. Where is the difference whether the arch or 
+the cpufreq driver uses em_data_callback?
+
+[...]
+
+> So I think I'll drop patch 10/10 for v4 ... That part should be
+> discussed separately, with the rest of the Arm-specific changes.
+
+Maybe 3 clearly separated parts of the patch-set; (1) EM (2) EAS uses EM 
+(3) Arm/Arm64 init code ?
+
+[...]
