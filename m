@@ -1,115 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: kryo: Add module remove and exit
-Date: Fri, 8 Jun 2018 09:59:17 +0530
-Message-ID: <20180608042917.2t3el22xgwaezuqe@vireshk-i7>
-References: <20180607205827.1588-1-ilia.lin@gmail.com>
+Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Fri, 8 Jun 2018 10:18:39 +0530
+Message-ID: <20180608044839.eyaib5gkbw7biu2a@vireshk-i7>
+References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
+ <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
+ <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
+ <2bebd1bc-e1ad-6d22-ad1e-aee2cf8ba878@linaro.org>
+ <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
+ <1d542490-fcb5-33fd-ab3b-eddf3d300bd4@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180607205827.1588-1-ilia.lin@gmail.com>
+In-Reply-To: <1d542490-fcb5-33fd-ab3b-eddf3d300bd4@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ilia.lin@gmail.com
-Cc: Ilia Lin <ilialin@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07-06-18, 20:58, ilia.lin@gmail.com wrote:
-> From: Ilia Lin <ilia.lin@gmail.com>
+On 07-06-18, 16:11, Daniel Lezcano wrote:
+> >> I'm wondering if we can have a CPU hotplugged right after the
+> >> 'put_online_cpus', resulting in the 'should park' flag set and then the
+> >> thread goes in the kthread_parkme instead of jumping back the idle
+> >> injection function and decrease the count, leading up to the timer not
+> >> being set again.
+> > 
+> > True. That looks like a valid problem to me as well.
+> > 
+> > What about starting the hrtimer right from this routine itself, after taking
+> > into account running-time, idle-time, delay, etc ? That would get rid of the
+> > count stuff, this get_online_cpus(), etc.
+> > 
+> > Even if we restart the next play-idle cycle a bit early or with some delay, sky
+> > wouldn't fall :)
 > 
-> Add device remove and module exit code to make the driver
-> functioning as a loadable module.
-> 
-> Fixes: ac28927659be (cpufreq: kryo: allow building as a loadable module)
-> Signed-off-by: Ilia Lin <ilia.lin@gmail.com>
-> ---
->  drivers/cpufreq/qcom-cpufreq-kryo.c | 24 +++++++++++++++++++++---
->  1 file changed, 21 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> index d049fe4b80c4..a08de0253169 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> @@ -71,10 +71,10 @@ static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
->  	return version;
->  }
->  
-> +struct platform_device *cpufreq_dt_pdev;
+> We won't be able to call completion() in this case.
 
-Move this and the other platform device pointer at the top of the file after the
-enum declarations. They don't look nice in the middle of nowhere.
-
->  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  {
->  	struct opp_table *opp_tables[NR_CPUS] = {0};
-> -	struct platform_device *cpufreq_dt_pdev;
->  	enum _msm8996_version msm8996_version;
->  	struct nvmem_cell *speedbin_nvmem;
->  	struct device_node *np;
-> @@ -115,6 +115,8 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  
->  	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
->  	nvmem_cell_put(speedbin_nvmem);
-> +	if (IS_ERR(speedbin))
-> +		return PTR_ERR(speedbin);
-
-This doesn't look related to this patch. Should it be a different commit ?
-
-And I just saw definition of nvmem_cell_read() and it says the returned buffer
-must be freed by caller using kfree(). I dont' see you doing that. Please also
-check if any other such resources are there which you forgot to free.
-
->  
->  	switch (msm8996_version) {
->  	case MSM8996_V3:
-> @@ -162,8 +164,15 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  	return ret;
->  }
->  
-> +static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
-> +{
-> +	platform_device_unregister(cpufreq_dt_pdev);
-> +	return 0;
-> +}
-> +
->  static struct platform_driver qcom_cpufreq_kryo_driver = {
->  	.probe = qcom_cpufreq_kryo_probe,
-> +	.remove = qcom_cpufreq_kryo_remove,
->  	.driver = {
->  		.name = "qcom-cpufreq-kryo",
->  	},
-> @@ -174,6 +183,7 @@ static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
->  	{ .compatible = "qcom,msm8996", },
->  };
->  
-> +struct platform_device *kryo_cpufreq_pdev;
->  /*
->   * Since the driver depends on smem and nvmem drivers, which may
->   * return EPROBE_DEFER, all the real activity is done in the probe,
-> @@ -198,8 +208,9 @@ static int __init qcom_cpufreq_kryo_init(void)
->  	if (unlikely(ret < 0))
->  		return ret;
->  
-> -	ret = PTR_ERR_OR_ZERO(platform_device_register_simple(
-> -		"qcom-cpufreq-kryo", -1, NULL, 0));
-> +	kryo_cpufreq_pdev = platform_device_register_simple(
-> +		"qcom-cpufreq-kryo", -1, NULL, 0);
-> +	ret = PTR_ERR_OR_ZERO(kryo_cpufreq_pdev);
->  	if (0 == ret)
->  		return 0;
->  
-> @@ -208,5 +219,12 @@ static int __init qcom_cpufreq_kryo_init(void)
->  }
->  module_init(qcom_cpufreq_kryo_init);
->  
-> +static void __init qcom_cpufreq_kryo_exit(void)
-> +{
-> +	platform_device_unregister(kryo_cpufreq_pdev);
-> +	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
-> +}
-> +module_exit(qcom_cpufreq_kryo_exit);
-> +
->  MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
->  MODULE_LICENSE("GPL v2");
+I was just having a look at smpboot.h and saw the park/unpark callbacks. I think
+you can very much use them to align things with CPU hotplug.
 
 -- 
 viresh
