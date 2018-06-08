@@ -1,55 +1,24 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V5] powercap/drivers/idle_injection: Add an idle injection
- framework
-Date: Fri, 8 Jun 2018 10:31:52 +0200
-Message-ID: <39960620-dc59-92a5-0e57-f00a4d930f7f@linaro.org>
-References: <1528190208-22915-1-git-send-email-daniel.lezcano@linaro.org>
- <20180605103917.pyhhcobdvaivqv6g@vireshk-i7>
- <57d769f8-46ea-512e-8f89-a0439c9d053f@linaro.org>
- <20180606042708.mtwd66ecy2cnjp7a@vireshk-i7>
- <2bebd1bc-e1ad-6d22-ad1e-aee2cf8ba878@linaro.org>
- <20180606104528.nhwcd2qnxeouk6il@vireshk-i7>
- <1d542490-fcb5-33fd-ab3b-eddf3d300bd4@linaro.org>
- <20180608044839.eyaib5gkbw7biu2a@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] power: Print wakeup_count instead of event_count in the sysfs attribute.
+Date: Fri, 08 Jun 2018 11:16:52 +0200
+Message-ID: <3644427.ot4qJK4Njo@aspire.rjw.lan>
+References: <20180602023215.176521-1-ravisadineni@chromium.org> <CAOGSYL0ga-H=0a5EEDmOWSZjnmG1Qc=9AxAbM_-ifHDj_FbREg@mail.gmail.com> <CAOGSYL3ZHZ2Desafp5bmyEnfUW6xdu3CAhKu2=P7X_omb8Cavw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180608044839.eyaib5gkbw7biu2a@vireshk-i7>
-Content-Language: en-US
+In-Reply-To: <CAOGSYL3ZHZ2Desafp5bmyEnfUW6xdu3CAhKu2=P7X_omb8Cavw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Ravi Chandra Sadineni <ravisadineni@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ravi Chandra Sadineni <ravisadineni@chromium.org>, chenhong3@huawei.com, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dtor@google.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Todd Broch <tbroch@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rajat Jain <rajatja@google.com>, Benson Leung <bleung@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/06/2018 06:48, Viresh Kumar wrote:
-> On 07-06-18, 16:11, Daniel Lezcano wrote:
->>>> I'm wondering if we can have a CPU hotplugged right after the
->>>> 'put_online_cpus', resulting in the 'should park' flag set and then the
->>>> thread goes in the kthread_parkme instead of jumping back the idle
->>>> injection function and decrease the count, leading up to the timer not
->>>> being set again.
->>>
->>> True. That looks like a valid problem to me as well.
->>>
->>> What about starting the hrtimer right from this routine itself, after taking
->>> into account running-time, idle-time, delay, etc ? That would get rid of the
->>> count stuff, this get_online_cpus(), etc.
->>>
->>> Even if we restart the next play-idle cycle a bit early or with some delay, sky
->>> wouldn't fall :)
->>
->> We won't be able to call completion() in this case.
+On Thursday, June 7, 2018 6:47:24 PM CEST Ravi Chandra Sadineni wrote:
+> Hi Rafeal,
 > 
-> I was just having a look at smpboot.h and saw the park/unpark callbacks. I think
-> you can very much use them to align things with CPU hotplug.
+> Soft ping. Is this patch good to be merged ?
 
-Hmm, perhaps. I will have a look at it.
+Yes, it is.  It's there in my linux-next branch.
 
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Rafael
