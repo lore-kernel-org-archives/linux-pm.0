@@ -1,97 +1,78 @@
-From: ilia.lin@gmail.com
-Subject: [PATCH] cpufreq: kryo: Add module remove and exit
-Date: Thu,  7 Jun 2018 20:58:26 +0000
-Message-ID: <20180607205827.1588-1-ilia.lin@gmail.com>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v2] sched: cpufreq: Fix long idle judgement logic in load calculation
+Date: Fri,  8 Jun 2018 09:07:33 +0800
+Message-ID: <1528420053-22884-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilia Lin <ilia.lin@gmail.com>, Ilia Lin <ilialin@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Artem S Tashkinov <t.artem@mailcity.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Ilia Lin <ilia.lin@gmail.com>
+According to current code implementation, detecting the long
+idle period is done by checking if the interval between two
+adjacent utilization update handers is long enough. Although
+this mechanism can detect if the idle period is long enough
+(no utilization hooks invoked during idle period), it might
+not contain a corner case: if the task has occupied the cpu
+for too long which causes no context switch during that
+period, then no utilization handler will be launched until this
+high prio task is switched out. As a result, the idle_periods
+field might be calculated incorrectly because it regards the
+100% load as 0% and makes the conservative governor who uses
+this field confusing.
 
-Add device remove and module exit code to make the driver
-functioning as a loadable module.
+Change the judgement to compare the idle_time with sampling_rate
+directly.
 
-Fixes: ac28927659be (cpufreq: kryo: allow building as a loadable module)
-Signed-off-by: Ilia Lin <ilia.lin@gmail.com>
+Reported-by: Artem S. Tashkinov <t.artem@mailcity.com>
+Cc: Artem S Tashkinov <t.artem@mailcity.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- drivers/cpufreq/qcom-cpufreq-kryo.c | 24 +++++++++++++++++++++---
- 1 file changed, 21 insertions(+), 3 deletions(-)
+v2: Per Viresh's suggestion, ignore idle_time longer than 30mins and
+    simplify the code.
+---
+ drivers/cpufreq/cpufreq_governor.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-index d049fe4b80c4..a08de0253169 100644
---- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-+++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-@@ -71,10 +71,10 @@ static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
- 	return version;
- }
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 871bf9c..1d50e97 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -165,7 +165,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			 * calls, so the previous load value can be used then.
+ 			 */
+ 			load = j_cdbs->prev_load;
+-		} else if (unlikely(time_elapsed > 2 * sampling_rate &&
++		} else if (unlikely((int)idle_time > 2 * sampling_rate &&
+ 				    j_cdbs->prev_load)) {
+ 			/*
+ 			 * If the CPU had gone completely idle and a task has
+@@ -185,10 +185,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			 * clear prev_load to guarantee that the load will be
+ 			 * computed again next time.
+ 			 *
+-			 * Detecting this situation is easy: the governor's
+-			 * utilization update handler would not have run during
+-			 * CPU-idle periods.  Hence, an unusually large
+-			 * 'time_elapsed' (as compared to the sampling rate)
++			 * Detecting this situation is easy: an unusually large
++			 * 'idle_time' (as compared to the sampling rate)
+ 			 * indicates this scenario.
+ 			 */
+ 			load = j_cdbs->prev_load;
+@@ -217,8 +215,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			j_cdbs->prev_load = load;
+ 		}
  
-+struct platform_device *cpufreq_dt_pdev;
- static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
- {
- 	struct opp_table *opp_tables[NR_CPUS] = {0};
--	struct platform_device *cpufreq_dt_pdev;
- 	enum _msm8996_version msm8996_version;
- 	struct nvmem_cell *speedbin_nvmem;
- 	struct device_node *np;
-@@ -115,6 +115,8 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+-		if (time_elapsed > 2 * sampling_rate) {
+-			unsigned int periods = time_elapsed / sampling_rate;
++		if (unlikely((int)idle_time > 2 * sampling_rate)) {
++			unsigned int periods = idle_time / sampling_rate;
  
- 	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
- 	nvmem_cell_put(speedbin_nvmem);
-+	if (IS_ERR(speedbin))
-+		return PTR_ERR(speedbin);
- 
- 	switch (msm8996_version) {
- 	case MSM8996_V3:
-@@ -162,8 +164,15 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
-+static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
-+{
-+	platform_device_unregister(cpufreq_dt_pdev);
-+	return 0;
-+}
-+
- static struct platform_driver qcom_cpufreq_kryo_driver = {
- 	.probe = qcom_cpufreq_kryo_probe,
-+	.remove = qcom_cpufreq_kryo_remove,
- 	.driver = {
- 		.name = "qcom-cpufreq-kryo",
- 	},
-@@ -174,6 +183,7 @@ static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
- 	{ .compatible = "qcom,msm8996", },
- };
- 
-+struct platform_device *kryo_cpufreq_pdev;
- /*
-  * Since the driver depends on smem and nvmem drivers, which may
-  * return EPROBE_DEFER, all the real activity is done in the probe,
-@@ -198,8 +208,9 @@ static int __init qcom_cpufreq_kryo_init(void)
- 	if (unlikely(ret < 0))
- 		return ret;
- 
--	ret = PTR_ERR_OR_ZERO(platform_device_register_simple(
--		"qcom-cpufreq-kryo", -1, NULL, 0));
-+	kryo_cpufreq_pdev = platform_device_register_simple(
-+		"qcom-cpufreq-kryo", -1, NULL, 0);
-+	ret = PTR_ERR_OR_ZERO(kryo_cpufreq_pdev);
- 	if (0 == ret)
- 		return 0;
- 
-@@ -208,5 +219,12 @@ static int __init qcom_cpufreq_kryo_init(void)
- }
- module_init(qcom_cpufreq_kryo_init);
- 
-+static void __init qcom_cpufreq_kryo_exit(void)
-+{
-+	platform_device_unregister(kryo_cpufreq_pdev);
-+	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
-+}
-+module_exit(qcom_cpufreq_kryo_exit);
-+
- MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
- MODULE_LICENSE("GPL v2");
+ 			if (periods < idle_periods)
+ 				idle_periods = periods;
 -- 
-2.11.0
+2.7.4
