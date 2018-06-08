@@ -1,217 +1,53 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH v2 11/11] misc: throttler: Add Chrome OS EC throttler
-Date: Fri, 8 Jun 2018 16:09:18 +0200
-Message-ID: <e1681e0f-2141-12a7-bed1-4d27a43ac9e8@collabora.com>
-References: <20180607181214.30338-1-mka@chromium.org>
- <20180607181214.30338-12-mka@chromium.org>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH 1/2] reset: imx7: Fix always writing bits as 0
+Date: Fri, 08 Jun 2018 16:23:52 +0200
+Message-ID: <1528467832.26356.18.camel@pengutronix.de>
+References: <cover.1527621510.git.leonard.crestez@nxp.com>
+         <c441872d7dd355ae09e945447441389e93e3b888.1527621510.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180607181214.30338-12-mka@chromium.org>
-Content-Language: en-GB
+In-Reply-To: <c441872d7dd355ae09e945447441389e93e3b888.1527621510.git.leonard.crestez@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>
+To: Leonard Crestez <leonard.crestez@nxp.com>, Andrey Smirnov <andrew.smirnov@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Joao Pinto <Joao.Pinto@synopsys.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
-
-On 07/06/18 20:12, Matthias Kaehlcke wrote:
-> The driver subscribes to throttling events from the Chrome OS
-> embedded controller and enables/disables system throttling based
-> on these events.
+Am Dienstag, den 29.05.2018, 22:39 +0300 schrieb Leonard Crestez:
+> Right now the only user of reset-imx7 is pci-imx6 and the
+> reset_control_assert and deassert calls on pciephy_reset don't toggle
+> the PCIEPHY_BTN and PCIEPHY_G_RST bits as expected. Fix this by writing
+> 1 or 0 respectively.
 > 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Reviewed-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> The reference manual is not very clear regarding SRC_PCIEPHY_RCR but for
+> other registers like MIPIPHY and HSICPHY the bits are explicitly
+> documented as "1 means assert, 0 means deassert".
+> 
+> The values are still reversed for IMX7_RESET_PCIE_CTRL_APPS_EN.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+
+Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+
 > ---
-> Changes in v2:
-> - added SPDX line instead of license boiler-plate
-> - use macro to avoid splitting line
-> - changed variable name for throttler from 'cte' to 'ce_thr'
-> - formatting fixes
-> - Kconfig: removed odd dashes around 'help'
-> - added 'Reviewed-by' tag
+>  drivers/reset/reset-imx7.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Note: I finally decided to keep 'Chrome OS' instead of changing it
-> to 'ChromeOS'. Both are currently used in the kernel, the latter is
-> currently more prevalent, however the official name is 'Chrome OS',
-> so there is no good reason to keep introducing the 'alternative' name.
-> 
-
-I am pretty sure that somebody from Google told me the contrary, so
-
-¯\_(ツ)_/¯
-
-Anyway, you will probably know better than me :)
-
->  drivers/misc/throttler/Kconfig             |  14 +++
->  drivers/misc/throttler/Makefile            |   1 +
->  drivers/misc/throttler/cros_ec_throttler.c | 116 +++++++++++++++++++++
->  3 files changed, 131 insertions(+)
->  create mode 100644 drivers/misc/throttler/cros_ec_throttler.c
-> 
-> diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
-> index e561f1df5085..da6fb70b96d9 100644
-> --- a/drivers/misc/throttler/Kconfig
-> +++ b/drivers/misc/throttler/Kconfig
-> @@ -12,3 +12,17 @@ menuconfig THROTTLER
->  	  Note that you also need a event monitor module usually called
->  	  *_throttler.
->  
-> +if THROTTLER
-> +
-> +config CROS_EC_THROTTLER
-> +	tristate "Throttler event monitor for the Chrome OS Embedded Controller"
-> +	depends on MFD_CROS_EC
-> +	help
-> +	  This driver adds support to throttle the system in reaction to
-> +	  Chrome OS EC events.
-> +
-> +	  To compile this driver as a module, choose M here: the
-> +	  module will be called cros_ec_throttler.
-> +
-> +endif # THROTTLER
-> +
-> diff --git a/drivers/misc/throttler/Makefile b/drivers/misc/throttler/Makefile
-> index c8d920cee315..d9b2a77dabc9 100644
-> --- a/drivers/misc/throttler/Makefile
-> +++ b/drivers/misc/throttler/Makefile
-> @@ -1 +1,2 @@
->  obj-$(CONFIG_THROTTLER)		+= core.o
-> +obj-$(CONFIG_CROS_EC_THROTTLER)	+= cros_ec_throttler.o
-> diff --git a/drivers/misc/throttler/cros_ec_throttler.c b/drivers/misc/throttler/cros_ec_throttler.c
-> new file mode 100644
-> index 000000000000..432135c55600
-> --- /dev/null
-> +++ b/drivers/misc/throttler/cros_ec_throttler.c
-> @@ -0,0 +1,116 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Driver for throttling triggered by events from the Chrome OS Embedded
-> + * Controller.
-> + *
-> + * Copyright (C) 2018 Google, Inc.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/mfd/cros_ec.h>
-> +#include <linux/module.h>
-> +#include <linux/notifier.h>
-> +#include <linux/of.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/throttler.h>
-> +
-> +#define nb_to_ce_thr(nb) container_of(nb, struct cros_ec_throttler, nb)
-> +
-> +struct cros_ec_throttler {
-> +	struct cros_ec_device *ec;
-> +	struct throttler *throttler;
-> +	struct notifier_block nb;
-> +};
-> +
-> +static int cros_ec_throttler_event(struct notifier_block *nb,
-> +	unsigned long queued_during_suspend, void *_notify)
-> +{
-> +	struct cros_ec_throttler *ce_thr = nb_to_ce_thr(nb);
-> +	u32 host_event;
-> +
-> +	host_event = cros_ec_get_host_event(ce_thr->ec);
-> +	if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_START)) {
-> +		throttler_set_level(ce_thr->throttler, 1);
-> +
-> +		return NOTIFY_OK;
-> +	} else if (host_event &
-> +		   EC_HOST_EVENT_MASK(EC_HOST_EVENT_THROTTLE_STOP)) {
-> +		throttler_set_level(ce_thr->throttler, 0);
-> +
-> +		return NOTIFY_OK;
-> +	}
-> +
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static int cros_ec_throttler_probe(struct platform_device *pdev)
-> +{
-> +	struct cros_ec_throttler *ce_thr;
-> +	struct device *dev = &pdev->dev;
-> +	struct device_node *np = pdev->dev.of_node;
-> +	int ret;
-> +
-> +	if (!np) {
-> +		/* should never happen */
-> +		return -EINVAL;
-> +	}
-> +
-> +	ce_thr = devm_kzalloc(dev, sizeof(*ce_thr), GFP_KERNEL);
-> +	if (!ce_thr)
-> +		return -ENOMEM;
-> +
-> +	ce_thr->ec = dev_get_drvdata(pdev->dev.parent);
-> +
-> +	ce_thr->throttler = throttler_setup(dev);
-> +	if (IS_ERR(ce_thr->throttler))
-> +		return PTR_ERR(ce_thr->throttler);
-> +
-> +	dev_set_drvdata(dev, ce_thr);
-> +
-> +	ce_thr->nb.notifier_call = cros_ec_throttler_event;
-> +	ret = blocking_notifier_chain_register(&ce_thr->ec->event_notifier,
-> +					       &ce_thr->nb);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to register notifier\n");
-> +		throttler_teardown(ce_thr->throttler);
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int cros_ec_throttler_remove(struct platform_device *pdev)
-> +{
-> +	struct cros_ec_throttler *ce_thr = platform_get_drvdata(pdev);
-> +
-> +	blocking_notifier_chain_unregister(&ce_thr->ec->event_notifier,
-> +					   &ce_thr->nb);
-> +
-> +	throttler_teardown(ce_thr->throttler);
-> +
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_OF
-> +static const struct of_device_id cros_ec_throttler_of_match[] = {
-> +	{ .compatible = "google,cros-ec-throttler" },
-> +	{ /* sentinel */ }
-> +};
-> +MODULE_DEVICE_TABLE(of, cros_ec_throttler_of_match);
-> +#endif /* CONFIG_OF */
-> +
-> +static struct platform_driver cros_ec_throttler_driver = {
-> +	.driver = {
-> +		.name = "cros-ec-throttler",
-> +		.of_match_table = of_match_ptr(cros_ec_throttler_of_match),
-> +	},
-> +	.probe		= cros_ec_throttler_probe,
-> +	.remove		= cros_ec_throttler_remove,
-> +};
-> +
-> +module_platform_driver(cros_ec_throttler_driver);
-> +
-> +MODULE_LICENSE("GPL");
-
-Something that I learnt recently. To match the SPDX-license tag you should set
-this to "GPL v2" [1]
-
- *	"GPL"				[GNU Public License v2 or later]
- *	"GPL v2"			[GNU Public License v2]
-
-[1] https://elixir.bootlin.com/linux/v4.17/source/include/linux/module.h#L172
-
-> +MODULE_AUTHOR("Matthias Kaehlcke <mka@chromium.org>");
-> +MODULE_DESCRIPTION("Chrome OS EC Throttler");
-> 
-
-Best regards,
- Enric
+> diff --git a/drivers/reset/reset-imx7.c b/drivers/reset/reset-imx7.c
+> index 4db177bc89bc..fdeac1946429 100644
+> --- a/drivers/reset/reset-imx7.c
+> +++ b/drivers/reset/reset-imx7.c
+> @@ -78,11 +78,11 @@ static struct imx7_src *to_imx7_src(struct reset_controller_dev *rcdev)
+>  static int imx7_reset_set(struct reset_controller_dev *rcdev,
+> >  			  unsigned long id, bool assert)
+>  {
+> >  	struct imx7_src *imx7src = to_imx7_src(rcdev);
+> >  	const struct imx7_src_signal *signal = &imx7_src_signals[id];
+> > -	unsigned int value = 0;
+> > +	unsigned int value = assert ? signal->bit : 0;
+>  
+> >  	switch (id) {
+> >  	case IMX7_RESET_PCIEPHY:
+> >  		/*
+> >  		 * wait for more than 10us to release phy g_rst and
