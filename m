@@ -1,137 +1,261 @@
-From: Pu Wen <puwen@hygon.cn>
-Subject: [PATCH 10/11] driver/edac: Add support for Hygon's Dhyana Family 18h processor
-Date: Sat,  9 Jun 2018 21:24:30 +0800
-Message-ID: <1528550670-28529-1-git-send-email-puwen@hygon.cn>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power-supply changes for 4.18
+Date: Sat, 9 Jun 2018 20:55:06 +0200
+Message-ID: <20180609185506.6pogmj5jd3swacwh@earth.universe>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="akmbbgfpvgyqgtxt"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: bp@alien8.de, mchehab@kernel.org, zhangpanyong@hygon.cn
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, lenb@kernel.org, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, peterz@infradead.org, tony.luck@intel.com, pbonzini@redhat.com, rkrcmar@redhat.com, boris.ostrovsky@oracle.com, jgross@suse.com, trenn@suse.com, shuah@kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-x86_64@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, Pu Wen <puwen@hygon.cn>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch enables the EDAC driver support to Hygon Family 18h CPU:
-- Add MCE support for Hygon Family 18h.
-- Add HYGON_F18_CPUS in amd_families enum to enable Hygon Family 18h support.
-- Add HYGON_F18_CPUS in family_types[] to support Hygon Family 18h.
-- Add Hygon Family 18h support in determine_memory_type(), per_family_init()
-  and scrub rate codes.
-- Add X86_VENDOR_HYGON in amd64_cpuids[].
 
-Signed-off-by: Pu Wen <puwen@hygon.cn>
----
- drivers/edac/amd64_edac.c | 20 +++++++++++++++++++-
- drivers/edac/amd64_edac.h |  4 ++++
- drivers/edac/mce_amd.c    |  4 +++-
- 3 files changed, 26 insertions(+), 2 deletions(-)
+--akmbbgfpvgyqgtxt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 329cb96..a2e02c5 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -211,7 +211,7 @@ static int __set_scrub_rate(struct amd64_pvt *pvt, u32 new_bw, u32 min_rate)
- 
- 	scrubval = scrubrates[i].scrubval;
- 
--	if (pvt->fam == 0x17) {
-+	if (pvt->fam == 0x17 || pvt->fam == 0x18) {
- 		__f17h_set_scrubval(pvt, scrubval);
- 	} else if (pvt->fam == 0x15 && pvt->model == 0x60) {
- 		f15h_select_dct(pvt, 0);
-@@ -264,6 +264,7 @@ static int get_scrub_rate(struct mem_ctl_info *mci)
- 		break;
- 
- 	case 0x17:
-+	case 0x18:
- 		amd64_read_pci_cfg(pvt->F6, F17H_SCR_BASE_ADDR, &scrubval);
- 		if (scrubval & BIT(0)) {
- 			amd64_read_pci_cfg(pvt->F6, F17H_SCR_LIMIT_ADDR, &scrubval);
-@@ -1044,6 +1045,7 @@ static void determine_memory_type(struct amd64_pvt *pvt)
- 		goto ddr3;
- 
- 	case 0x17:
-+	case 0x18:
- 		if ((pvt->umc[0].dimm_cfg | pvt->umc[1].dimm_cfg) & BIT(5))
- 			pvt->dram_type = MEM_LRDDR4;
- 		else if ((pvt->umc[0].dimm_cfg | pvt->umc[1].dimm_cfg) & BIT(4))
-@@ -2200,6 +2202,16 @@ static struct amd64_family_type family_types[] = {
- 			.dbam_to_cs		= f17_base_addr_to_cs_size,
- 		}
- 	},
-+	[HYGON_F18_CPUS] = {
-+		/* Hygon F18h uses the same AMD F17h support */
-+		.ctl_name = "Hygon_F18h",
-+		.f0_id = PCI_DEVICE_ID_HYGON_18H_DF_F0,
-+		.f6_id = PCI_DEVICE_ID_HYGON_18H_DF_F6,
-+		.ops = {
-+			.early_channel_count	= f17_early_channel_count,
-+			.dbam_to_cs		= f17_base_addr_to_cs_size,
-+		}
-+	},
- };
- 
- /*
-@@ -3192,6 +3204,11 @@ static struct amd64_family_type *per_family_init(struct amd64_pvt *pvt)
- 		pvt->ops	= &family_types[F17_CPUS].ops;
- 		break;
- 
-+	case 0x18:
-+		fam_type	= &family_types[HYGON_F18_CPUS];
-+		pvt->ops	= &family_types[HYGON_F18_CPUS].ops;
-+		break;
-+
- 	default:
- 		amd64_err("Unsupported family!\n");
- 		return NULL;
-@@ -3428,6 +3445,7 @@ static const struct x86_cpu_id amd64_cpuids[] = {
- 	{ X86_VENDOR_AMD, 0x15, X86_MODEL_ANY,	X86_FEATURE_ANY, 0 },
- 	{ X86_VENDOR_AMD, 0x16, X86_MODEL_ANY,	X86_FEATURE_ANY, 0 },
- 	{ X86_VENDOR_AMD, 0x17, X86_MODEL_ANY,	X86_FEATURE_ANY, 0 },
-+	{ X86_VENDOR_HYGON, 0x18, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
- 	{ }
- };
- MODULE_DEVICE_TABLE(x86cpu, amd64_cpuids);
-diff --git a/drivers/edac/amd64_edac.h b/drivers/edac/amd64_edac.h
-index 1d4b74e..3dec27d 100644
---- a/drivers/edac/amd64_edac.h
-+++ b/drivers/edac/amd64_edac.h
-@@ -116,6 +116,9 @@
- #define PCI_DEVICE_ID_AMD_17H_DF_F0	0x1460
- #define PCI_DEVICE_ID_AMD_17H_DF_F6	0x1466
- 
-+#define PCI_DEVICE_ID_HYGON_18H_DF_F0	PCI_DEVICE_ID_AMD_17H_DF_F0
-+#define PCI_DEVICE_ID_HYGON_18H_DF_F6	PCI_DEVICE_ID_AMD_17H_DF_F6
-+
- /*
-  * Function 1 - Address Map
-  */
-@@ -281,6 +284,7 @@ enum amd_families {
- 	F16_CPUS,
- 	F16_M30H_CPUS,
- 	F17_CPUS,
-+	HYGON_F18_CPUS,
- 	NUM_FAMILIES,
- };
- 
-diff --git a/drivers/edac/mce_amd.c b/drivers/edac/mce_amd.c
-index 2ab4d61..c605089 100644
---- a/drivers/edac/mce_amd.c
-+++ b/drivers/edac/mce_amd.c
-@@ -1059,7 +1059,8 @@ static int __init mce_amd_init(void)
- {
- 	struct cpuinfo_x86 *c = &boot_cpu_data;
- 
--	if (c->x86_vendor != X86_VENDOR_AMD)
-+	if (c->x86_vendor != X86_VENDOR_AMD &&
-+	    c->x86_vendor != X86_VENDOR_HYGON)
- 		return -ENODEV;
- 
- 	fam_ops = kzalloc(sizeof(struct amd_decoder_ops), GFP_KERNEL);
-@@ -1113,6 +1114,7 @@ static int __init mce_amd_init(void)
- 		break;
- 
- 	case 0x17:
-+	case 0x18:
- 		xec_mask = 0x3f;
- 		if (!boot_cpu_has(X86_FEATURE_SMCA)) {
- 			printk(KERN_WARNING "Decoding supported only on Scalable MCA processors.\n");
--- 
-2.7.4
+Hi Linus,
+
+Stephen reported a merge conflict in the USB tree, that I pulled
+into power-supply via a tag Greg prepared for me. The issue has
+been fixed by Greg in the USB tree in the meantime, so I suppose
+git will figure it out by itself.
+
+-- Sebastian
+
+The following changes since commit 6d08b06e67cd117f6992c46611dfb4ce267cd71e:
+
+  Linux 4.17-rc2 (2018-04-22 19:20:09 -0700)
+
+are available in the Git repository at:
+
+  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.18
+
+for you to fetch changes up to c42812da1395bf57a6f7b5934b5339a3a42c2c7d:
+
+  MAINTAINERS: add entry for LEGO MINDSTORMS EV3 (2018-06-01 13:11:31 +0200)
+
+----------------------------------------------------------------
+power supply and reset changes for the v4.18 series
+
+* bq27xxx: Add BQ27426 support
+* ab8500: Drop AB8540/9540 support
+* Introduced new usb_type property
+* Properly document the power-supply ABI
+* misc. cleanups and fixes
+
+----------------------------------------------------------------
+Adam Thomson (6):
+      typec: tcpm: Add core support for sink side PPS
+      Documentation: power: Initial effort to document power_supply ABI
+      power: supply: Add error checking of psy desc during registration
+      power: supply: Add 'usb_type' property and supporting code
+      typec: tcpm: Represent source supply through power_supply
+      typec: tcpm: Add support for sink PPS related messages
+
+Andrew F. Davis (1):
+      power: supply: bq27xxx: Add support for BQ27426
+
+Colin Ian King (2):
+      power: supply: ab8500_fg: fix spelling mistake: "Disharge" -> "Discharge"
+      power: supply: ab8500_charger: fix spelling mistake: "faile" -> "failed"
+
+David Lechner (1):
+      MAINTAINERS: add entry for LEGO MINDSTORMS EV3
+
+Dmitry Osipenko (3):
+      usb: phy: tegra: Cleanup error messages
+      usb: tegra: Move utmi-pads reset from ehci-tegra to tegra-phy
+      usb: phy: Add Kconfig entry for Tegra PHY driver
+
+Dominik Bozek (1):
+      usb: hub: Don't wait for connect state at resume for powered-off ports
+
+Geert Uytterhoeven (1):
+      usb: Remove depends on HAS_DMA in case of platform dependency
+
+Greg Kroah-Hartman (1):
+      typec: tcpm: fix compiler warning about stupid things
+
+Gregory CLEMENT (2):
+      usb: host: xhci-plat: Remove useless test before clk_disable_unprepare
+      usb: host: xhci-plat: Fix clock resource by adding a register clock
+
+Gustavo A. R. Silva (1):
+      usb: core: hcd: mark expected switch fall-through
+
+Hans de Goede (4):
+      power: supply: axp288_charger: Support 3500 and 4000 mA input current limit
+      power: supply: axp288_charger: Do not bind when the charge function is not used
+      power: supply: axp288_fuelguage: Do not bind when the fg function is not used
+      power: supply: axp288_fuel_gauge: Remove polling from the driver
+
+Jia-Ju Bai (3):
+      usb: storage: Replace mdelay with msleep in init_freecom
+      usb: isp1760: Replace mdelay with msleep in isp1760_init_core
+      usb: isp1760: Replace mdelay with msleep in isp1760_stop
+
+Johan Hovold (6):
+      USB: phy: drop unused legacy controller-phy bind helper
+      USB: core: hcd: drop support for legacy phys
+      USB: ehci-omap: drop unused legacy phy support
+      USB: musb: omap2430: drop non-DT support
+      USB: renesas_usbhs: drop unused legacy-phy support
+      USB: phy: drop legacy board-file support
+
+Ladislav Michl (2):
+      power: supply: sysfs: Use enum to specify property
+      power: supply: charger-manager: Verify polling interval only when polling requested
+
+Li Jun (5):
+      usb: typec: tcpm: pdo matching optimization
+      usb: typec: fusb302: remove max_snk_* for sink config
+      dt-bindings: usb: fusb302: remove max-sink-* properties
+      usb: typec: wcove: remove max_snk_* for sink config
+      usb: typec: tcpm: remove max_snk_mv/ma/mw
+
+Linus Walleij (1):
+      power: supply: ab8500: Drop AB8540/9540 support
+
+Mathias Nyman (6):
+      usb: define HCD_USB32 speed option for hosts that support USB 3.2 dual-lane
+      USB: Add support to store lane count used by USB 3.2
+      usb: set root hub lane counts
+      USB: show USB 3.2 Dual-lane devices as Gen Xx2 during device enumeration
+      USB: USB 3.2 Add sysfs entries for a usb device rx_lanes and tx_lanes
+      Documentation sysfs-bus-usb: Add rx_lanes and tx_lanes introduced in USB 3.2
+
+Maxim Moseychuk (1):
+      usb: do not reset if a low-speed or full-speed device timed out
+
+Mike Looijmans (1):
+      gpio-poweroff: Use gpiod_set_value_cansleep
+
+Sebastian Reichel (1):
+      Merge tag 'tags/tcpm-pps-4.18' into psy-next
+
+Sergiy Kibrik (1):
+      power: supply: s3c-adc-battery: fix driver data initialization
+
+ShuFan Lee (2):
+      staging: typec: rt1711h typec chip driver
+      dt-bindings: usb: rt1711h device tree binding document
+
+Shuah Khan (1):
+      usbip: usbip_host: refine probe and disconnect debug msgs to be useful
+
+Souptick Joarder (1):
+      usb: mon: Change return type to vm_fault_t
+
+Takashi Iwai (1):
+      usb: audio-v2: Correct the comment for struct uac_clock_selector_descriptor
+
+Wei Yongjun (1):
+      usb: roles: Fix potential NULL dereference in intel_xhci_usb_probe()
+
+Wolfram Sang (3):
+      usb: phy: simplify getting .drvdata
+      usb: mtu3: simplify getting .drvdata
+      power: supply: simplify getting .drvdata
+
+Yossi Mansharoff (1):
+      doc: usb: ci-hdrc-usb2: Add property "mux-controls"
+
+ Documentation/ABI/testing/sysfs-bus-usb            |   18 +
+ Documentation/ABI/testing/sysfs-class-power        |  455 +++++++++
+ .../devicetree/bindings/power/supply/bq27xxx.txt   |    1 +
+ .../devicetree/bindings/usb/ci-hdrc-usb2.txt       |    6 +
+ .../devicetree/bindings/usb/fcs,fusb302.txt        |    6 -
+ .../devicetree/bindings/usb/richtek,rt1711h.txt    |   17 +
+ Documentation/devicetree/bindings/usb/usb-xhci.txt |    5 +-
+ MAINTAINERS                                        |    8 +
+ drivers/power/reset/gpio-poweroff.c                |    4 +-
+ drivers/power/supply/ab8500_bmdata.c               |   63 --
+ drivers/power/supply/ab8500_btemp.c                |   93 +-
+ drivers/power/supply/ab8500_charger.c              |  133 +--
+ drivers/power/supply/ab8500_fg.c                   |   14 +-
+ drivers/power/supply/abx500_chargalg.c             |   62 --
+ drivers/power/supply/axp288_charger.c              |   26 +-
+ drivers/power/supply/axp288_fuel_gauge.c           |   27 +-
+ drivers/power/supply/bq27xxx_battery.c             |    9 +
+ drivers/power/supply/bq27xxx_battery_i2c.c         |    2 +
+ drivers/power/supply/charger-manager.c             |    5 +-
+ drivers/power/supply/gpio-charger.c                |    3 +-
+ drivers/power/supply/power_supply_core.c           |   11 +-
+ drivers/power/supply/power_supply_sysfs.c          |  123 ++-
+ drivers/power/supply/s3c_adc_battery.c             |    8 +-
+ drivers/staging/typec/Kconfig                      |    8 +
+ drivers/staging/typec/Makefile                     |    1 +
+ drivers/staging/typec/tcpci.h                      |    1 +
+ drivers/staging/typec/tcpci_rt1711h.c              |  312 ++++++
+ drivers/usb/core/hcd.c                             |   47 +-
+ drivers/usb/core/hub.c                             |   23 +-
+ drivers/usb/core/sysfs.c                           |   22 +
+ drivers/usb/gadget/udc/Kconfig                     |    4 +-
+ drivers/usb/host/Kconfig                           |    4 +-
+ drivers/usb/host/ehci-omap.c                       |    5 +-
+ drivers/usb/host/ehci-tegra.c                      |   87 +-
+ drivers/usb/host/xhci-plat.c                       |   31 +-
+ drivers/usb/host/xhci.h                            |    3 +-
+ drivers/usb/isp1760/isp1760-core.c                 |    2 +-
+ drivers/usb/isp1760/isp1760-hcd.c                  |    2 +-
+ drivers/usb/mon/mon_bin.c                          |    2 +-
+ drivers/usb/mtu3/Kconfig                           |    2 +-
+ drivers/usb/mtu3/mtu3_plat.c                       |    6 +-
+ drivers/usb/musb/omap2430.c                        |   95 +-
+ drivers/usb/phy/Kconfig                            |    9 +
+ drivers/usb/phy/Makefile                           |    2 +-
+ drivers/usb/phy/phy-am335x.c                       |    6 +-
+ drivers/usb/phy/phy-tegra-usb.c                    |  140 ++-
+ drivers/usb/phy/phy.c                              |  133 +--
+ drivers/usb/renesas_usbhs/common.h                 |    1 -
+ drivers/usb/renesas_usbhs/rcar2.c                  |   29 -
+ drivers/usb/roles/intel-xhci-usb-role-switch.c     |    2 +
+ drivers/usb/storage/freecom.c                      |    4 +-
+ drivers/usb/typec/Kconfig                          |    1 +
+ drivers/usb/typec/fusb302/Kconfig                  |    2 +-
+ drivers/usb/typec/fusb302/fusb302.c                |  105 +-
+ drivers/usb/typec/tcpm.c                           | 1059 ++++++++++++++++++--
+ drivers/usb/typec/typec_wcove.c                    |    4 +-
+ drivers/usb/usbip/stub_dev.c                       |    4 +-
+ include/linux/mfd/abx500.h                         |    1 -
+ include/linux/mfd/abx500/ab8500-bm.h               |    2 -
+ include/linux/mfd/abx500/ux500_chargalg.h          |    4 -
+ include/linux/power/bq27xxx_battery.h              |    3 +-
+ include/linux/power_supply.h                       |   16 +
+ include/linux/usb.h                                |    4 +
+ include/linux/usb/audio-v2.h                       |    2 +-
+ include/linux/usb/hcd.h                            |    2 +-
+ include/linux/usb/pd.h                             |    4 +-
+ include/linux/usb/phy.h                            |   36 -
+ include/linux/usb/tcpm.h                           |   10 +-
+ include/linux/usb/tegra_usb_phy.h                  |    2 +
+ include/uapi/linux/usb/ch11.h                      |    5 +
+ 70 files changed, 2383 insertions(+), 965 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/usb/richtek,rt1711h.txt
+ create mode 100644 drivers/staging/typec/tcpci_rt1711h.c
+
+--akmbbgfpvgyqgtxt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlscIogACgkQ2O7X88g7
++poAwA/+KQvfPJzeNynYexn+d+kruUctmMwgggRnYXIK72oxCEk0Lc6QetfA/+TI
+zjkPQ5GNm9omZwi2HO+eHwUOcfLVSsr0HB9NHOyD9i2Tqzx90knSnMKeU1jlXaB9
+SVpfmpr2BD/+8AXs2JZrzmUL6P1Ir7FpZRURt87HKl2Wy/IEMLrcxuEAGyyCLMPs
+mx5y98+YIfneMuh2bgviaJ9tqKsjCDr1fWjZFkxKvd92ltMVZjB+mhh19oiRJF2T
+USrRjwZHdnqrYxms5vW5MUTxZmJQngJDsptUFC8kLvHQSonFVbqEKyx62lC0tDz5
+uk1v0F/QsRh+R1gEYr/SrucM1nlKfloetc4bsZxeG7ivqMp2H//SxuTcCDB9I13z
+YecZ/lyRcy4Y9C2IABNOkcnyFw870Codn7P72px5cwddjSaZ4fLanLOZYMdf87AT
+wTQw376J3alGNnO5/1JtMQJy0ZtnyOMKIFt6r3/HyQxDmb3fSzVg19kjT5w7nkbN
+JyN+hJUZSvPj4/OmwRjnhXf3EpTNtDcElScz/i4vmHFuly/65hpfU+QiLtqr08xp
+/EXdDxW2bDxxUfS/n89ROhUV5yvTGJ9sYh5kwqePia1xxEnzUX4dTzd4pskl9ELa
+Zzfp+9cck5isriQk5yFWk5YlYNE6kIKsf3VB6ac5or3ltoS/SIQ=
+=34Gm
+-----END PGP SIGNATURE-----
+
+--akmbbgfpvgyqgtxt--
