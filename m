@@ -1,75 +1,42 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v4 1/7] interconnect: Add generic on-chip interconnect API
-Date: Sat, 9 Jun 2018 22:15:41 +0300
-Message-ID: <625a529a-ae01-8615-e89b-409a20596806@linaro.org>
-References: <20180309210958.16672-1-georgi.djakov@linaro.org>
- <20180309210958.16672-2-georgi.djakov@linaro.org>
- <ffd493a7-8c01-3f6b-074f-b4b67707dc83@baylibre.com>
+From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 2/3] thinkpad_acpi: add support for
+ force_discharge
+Date: Sun, 10 Jun 2018 09:25:55 +0200
+Message-ID: <20180610072555.GA16179@thinkpad>
+References: <20180513153000.GA5117@thinkpad> <20180521133112.GA4578@kevinolos>
+ <20180524113555.wrwpdun64ai4cqwj@khazad-dum.debian.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ffd493a7-8c01-3f6b-074f-b4b67707dc83@baylibre.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Bailon <abailon@baylibre.com>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, skannan@codeaurora.org, seansw@qti.qualcomm.com, khilman@baylibre.com, mturquette@baylibre.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, amit.kucheria@linaro.org, bjorn.andersson@linaro.org, robh+dt@kernel.org, linux-arm-msm@vger.kernel.org, davidai@quicinc.com, vincent.guittot@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180524113555.wrwpdun64ai4cqwj-ZGHd14iZgfaRjzvQDGKj+xxZW9W5cXbT@public.gmane.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
+List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
+ <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: Henrique de Moraes Holschuh <hmh-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>
+Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alexandre,
+On Thu, May 24, 2018 at 08:35:55AM -0300, Henrique de Moraes Holschuh wrote:
+> On Mon, 21 May 2018, Kevin Locke wrote:
+> > as-expected.  The only oddity I noticed is that force_discharge has a
+> > delay taking effect (<1 sec) transitioning from 0 to 1 (but not 1 to
+> > 0).
+> 
+> The EC can take its sweet time to obey any such requests ;-)
+> 
 
-On 8.06.18 г. 18:57, Alexandre Bailon wrote:
-> On 03/09/2018 10:09 PM, Georgi Djakov wrote:
->> This patch introduce a new API to get requirements and configure the
->> interconnect buses across the entire chipset to fit with the current
->> demand.
->>
->> The API is using a consumer/provider-based model, where the providers are
->> the interconnect buses and the consumers could be various drivers.
->> The consumers request interconnect resources (path) between endpoints and
->> set the desired constraints on this data flow path. The providers receive
->> requests from consumers and aggregate these requests for all master-slave
->> pairs on that path. Then the providers configure each participating in the
->> topology node according to the requested data flow path, physical links and
->> constraints. The topology could be complicated and multi-tiered and is SoC
->> specific.
->>
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>  Documentation/interconnect/interconnect.rst |  96 ++++++
->>  drivers/Kconfig                             |   2 +
->>  drivers/Makefile                            |   1 +
->>  drivers/interconnect/Kconfig                |  10 +
->>  drivers/interconnect/Makefile               |   1 +
->>  drivers/interconnect/core.c                 | 489 ++++++++++++++++++++++++++++
->>  include/linux/interconnect-provider.h       | 109 +++++++
->>  include/linux/interconnect.h                |  40 +++
->>  8 files changed, 748 insertions(+)
->>  create mode 100644 Documentation/interconnect/interconnect.rst
->>  create mode 100644 drivers/interconnect/Kconfig
->>  create mode 100644 drivers/interconnect/Makefile
->>  create mode 100644 drivers/interconnect/core.c
->>  create mode 100644 include/linux/interconnect-provider.h
->>  create mode 100644 include/linux/interconnect.h
->>
+What is the status on this patch? Do I need some revisional work or?
 
-[..]
+> -- 
+>   Henrique Holschuh
 
->> +
->> +/**
->> + * icc_link_create() - create a link between two nodes
->> + * @src_id: source node id
-> I guess src_id has become node and is not an id anymore,
-> so it should be updated.
-
-Yes, absolutely!
-
->> + * @dst_id: destination node id
->> + *
->> + * Return: 0 on success, or an error code otherwise
->> + */
->> +int icc_link_create(struct icc_node *node, const int dst_id)
->> +{
-
-Thanks,
-Georgi
+------------------------------------------------------------------------------
+Check out the vibrant tech community on one of the world's most
+engaging tech sites, Slashdot.org! http://sdm.link/slashdot
