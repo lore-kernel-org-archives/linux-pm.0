@@ -1,42 +1,90 @@
-From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 2/3] thinkpad_acpi: add support for
- force_discharge
-Date: Sun, 10 Jun 2018 09:25:55 +0200
-Message-ID: <20180610072555.GA16179@thinkpad>
-References: <20180513153000.GA5117@thinkpad> <20180521133112.GA4578@kevinolos>
- <20180524113555.wrwpdun64ai4cqwj@khazad-dum.debian.net>
+From: Jonathan Cameron <jic23@kernel.org>
+Subject: Re: [PATCH] iio:dac:ad5686: Add AD5311R support
+Date: Sun, 10 Jun 2018 14:30:34 +0100
+Message-ID: <20180610143034.37279fe0@archlinux>
+References: <1528122127-1911-1-git-send-email-stefan.popa@analog.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20180524113555.wrwpdun64ai4cqwj-ZGHd14iZgfaRjzvQDGKj+xxZW9W5cXbT@public.gmane.org>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
-List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-To: Henrique de Moraes Holschuh <hmh-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>
-Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1528122127-1911-1-git-send-email-stefan.popa@analog.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stefan Popa <stefan.popa@analog.com>
+Cc: Michael.Hennerich@analog.com, lars@metafoo.de, knaack.h@gmx.de, pmeerw@pmeerw.net, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 24, 2018 at 08:35:55AM -0300, Henrique de Moraes Holschuh wrote:
-> On Mon, 21 May 2018, Kevin Locke wrote:
-> > as-expected.  The only oddity I noticed is that force_discharge has a
-> > delay taking effect (<1 sec) transitioning from 0 to 1 (but not 1 to
-> > 0).
+On Mon, 4 Jun 2018 17:22:07 +0300
+Stefan Popa <stefan.popa@analog.com> wrote:
+
+> AD5311R is a single channel DAC with 10-bit precision and i2c interface.
+> The device includes a 2.5V internal reference which is enabled by default.
 > 
-> The EC can take its sweet time to obey any such requests ;-)
+> This device is similar to AD5691R/AD5692R/AD5693/AD5693R, the only
+> difference is that it has 10-bit precision.
 > 
+> Datasheet:
+> http://www.analog.com/media/en/technical-documentation/data-sheets/AD5310R_5311R.pdf
+> 
+> Signed-off-by: Stefan Popa <stefan.popa@analog.com>
+Applied to the togreg branch of iio.git and pushed out as testing
+for the autobuilders to play with it.
 
-What is the status on this patch? Do I need some revisional work or?
+Thanks,
 
-> -- 
->   Henrique Holschuh
+Jonathan
 
-------------------------------------------------------------------------------
-Check out the vibrant tech community on one of the world's most
-engaging tech sites, Slashdot.org! http://sdm.link/slashdot
+> ---
+>  drivers/iio/dac/ad5686.c     | 7 +++++++
+>  drivers/iio/dac/ad5686.h     | 1 +
+>  drivers/iio/dac/ad5696-i2c.c | 1 +
+>  3 files changed, 9 insertions(+)
+> 
+> diff --git a/drivers/iio/dac/ad5686.c b/drivers/iio/dac/ad5686.c
+> index e136f0f..2ddbfc3 100644
+> --- a/drivers/iio/dac/ad5686.c
+> +++ b/drivers/iio/dac/ad5686.c
+> @@ -221,6 +221,7 @@ static struct iio_chan_spec name[] = {				\
+>  		AD5868_CHANNEL(7, 7, bits, _shift),		\
+>  }
+>  
+> +DECLARE_AD5693_CHANNELS(ad5311r_channels, 10, 6);
+>  DECLARE_AD5676_CHANNELS(ad5672_channels, 12, 4);
+>  DECLARE_AD5676_CHANNELS(ad5676_channels, 16, 0);
+>  DECLARE_AD5686_CHANNELS(ad5684_channels, 12, 4);
+> @@ -231,6 +232,12 @@ DECLARE_AD5693_CHANNELS(ad5692r_channels, 14, 2);
+>  DECLARE_AD5693_CHANNELS(ad5691r_channels, 12, 4);
+>  
+>  static const struct ad5686_chip_info ad5686_chip_info_tbl[] = {
+> +	[ID_AD5311R] = {
+> +		.channels = ad5311r_channels,
+> +		.int_vref_mv = 2500,
+> +		.num_channels = 1,
+> +		.regmap_type = AD5693_REGMAP,
+> +	},
+>  	[ID_AD5671R] = {
+>  		.channels = ad5672_channels,
+>  		.int_vref_mv = 2500,
+> diff --git a/drivers/iio/dac/ad5686.h b/drivers/iio/dac/ad5686.h
+> index d05cda9..57b3c61 100644
+> --- a/drivers/iio/dac/ad5686.h
+> +++ b/drivers/iio/dac/ad5686.h
+> @@ -45,6 +45,7 @@
+>   * ad5686_supported_device_ids:
+>   */
+>  enum ad5686_supported_device_ids {
+> +	ID_AD5311R,
+>  	ID_AD5671R,
+>  	ID_AD5672R,
+>  	ID_AD5675R,
+> diff --git a/drivers/iio/dac/ad5696-i2c.c b/drivers/iio/dac/ad5696-i2c.c
+> index d18735d..7350d98 100644
+> --- a/drivers/iio/dac/ad5696-i2c.c
+> +++ b/drivers/iio/dac/ad5696-i2c.c
+> @@ -71,6 +71,7 @@ static int ad5686_i2c_remove(struct i2c_client *i2c)
+>  }
+>  
+>  static const struct i2c_device_id ad5686_i2c_id[] = {
+> +	{"ad5311r", ID_AD5311R},
+>  	{"ad5671r", ID_AD5671R},
+>  	{"ad5675r", ID_AD5675R},
+>  	{"ad5691r", ID_AD5691R},
