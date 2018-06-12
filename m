@@ -1,63 +1,134 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 3/5] thermal: tsens: Move 8996 get_temp() to common
- code for reuse
-Date: Tue, 12 Jun 2018 23:55:37 +0300
-Message-ID: <CAP245DVQw1QwwKUGsB2gF=HrWfv7o0cLrt0wWLJA3jdWdciNnQ@mail.gmail.com>
-References: <cover.1528799892.git.amit.kucheria@linaro.org>
- <ed6b51a1b08e195968f5423a86e40146279a8807.1528799892.git.amit.kucheria@linaro.org>
- <20180612194302.GP14924@minitux>
+From: Anchal Agarwal <anchalag@amazon.com>
+Subject: [RFC PATCH 01/12] xen/manage: keep track of the on-going suspend mode
+Date: Tue, 12 Jun 2018 20:56:08 +0000
+Message-ID: <20180612205619.28156-2-anchalag@amazon.com>
+References: <20180612205619.28156-1-anchalag@amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180612194302.GP14924@minitux>
+In-Reply-To: <20180612205619.28156-1-anchalag@amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
+Cc: boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, roger.pau@citrix.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, anchalag@amazon.com, fllinden@amazon.com, vallish@amazon.com, guruanb@amazon.com, eduval@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 12, 2018 at 10:43 PM Bjorn Andersson
-<bjorn.andersson@linaro.org> wrote:
->
-> On Tue 12 Jun 03:54 PDT 2018, Amit Kucheria wrote:
-> > diff --git a/drivers/thermal/qcom/tsens-8996.c b/drivers/thermal/qcom/tsens-8996.c
-> [..]
-> >  static const struct tsens_ops ops_8996 = {
-> >       .init           = init_common,
-> > -     .get_temp       = get_temp_8996,
-> > +     .get_temp       = get_temp_tsens_v2,
-> >  };
-> >
-> >  const struct tsens_data data_8996 = {
-> > diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-> [..]
-> > +int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
->
-> I like the function name, but it's not really common for tsens, it's
-> just common for tsens v2. Also as patch 4 shows we end up adding a set
-> of essentially empty platform specific files for referencing this
-> function.
+From: Munehisa Kamata <kamatam@amazon.com>
 
-> I would suggest that you instead rename tsens-8996.c to tsens-v2.c,
-> rename ops_8996 to ops_v2 and either add new tsens_data for each
-> platform or simply rename that too to data_v2 which we point to from
-> tsens_table.
+To differentiate between Xen suspend, PM suspend and PM hibernation,
+keep track of the on-going suspend mode by mainly using a new PM
+notifier. Since Xen suspend doesn't have corresponding PM event, its
+main logic is modfied to acquire pm_mutex and set the current mode.
 
-I was thinking of tsens-common.c as a library of tsens functions (v1
-and v2). Do you want tsens-common.c to essentially become tsens-v1.c?
-We'll end up with quite a bit of duplicated code in that case.
+Note that we may see deadlock if PM suspend/hibernation is interrupted
+by Xen suspend. PM suspend/hibernation depends on xenwatch thread to
+process xenbus state transactions, but the thread will sleep to wait
+pm_mutex which is already held by PM suspend/hibernation context in the
+scenario. Though, acquirng pm_mutex is still right thing to do, and we
+would need to modify Xen shutdown code to avoid the issue. This will be
+fixed by a separate patch.
 
-IIUC what you are suggesting, we'll still need to compile in
-tsens-common.c even on v2 platforms.
+Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
+Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
+Reviewed-by: Sebastian Biemueller <sbiemue@amazon.com>
+Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
+Reviewed-by: Eduardo Valentin <eduval@amazon.com>
+---
+ drivers/xen/manage.c | 58 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-> I think we should take it once step further and add "qcom,tsens-v2" as a
-> valid compatible in tsens_table and make the dts do:
-
-I like that idea.
-
->         comaptible = "qcom,msm8996-tsens", "qcom,tsens-v2";
->
-> and
->         compatible = "qcom,sdm845-tsens", "qcom,tsens-v2";
->
-> Regards,
-> Bjorn
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index 8835065..8f9ea87 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -13,6 +13,7 @@
+ #include <linux/freezer.h>
+ #include <linux/syscore_ops.h>
+ #include <linux/export.h>
++#include <linux/suspend.h>
+ 
+ #include <xen/xen.h>
+ #include <xen/xenbus.h>
+@@ -39,6 +40,16 @@ enum shutdown_state {
+ /* Ignore multiple shutdown requests. */
+ static enum shutdown_state shutting_down = SHUTDOWN_INVALID;
+ 
++enum suspend_modes {
++	NO_SUSPEND = 0,
++	XEN_SUSPEND,
++	PM_SUSPEND,
++	PM_HIBERNATION,
++};
++
++/* Protected by pm_mutex */
++static enum suspend_modes suspend_mode = NO_SUSPEND;
++
+ struct suspend_info {
+ 	int cancelled;
+ };
+@@ -98,6 +109,10 @@ static void do_suspend(void)
+ 	int err;
+ 	struct suspend_info si;
+ 
++	lock_system_sleep();
++
++	suspend_mode = XEN_SUSPEND;
++
+ 	shutting_down = SHUTDOWN_SUSPEND;
+ 
+ 	err = freeze_processes();
+@@ -161,6 +176,10 @@ static void do_suspend(void)
+ 	thaw_processes();
+ out:
+ 	shutting_down = SHUTDOWN_INVALID;
++
++	suspend_mode = NO_SUSPEND;
++
++	unlock_system_sleep();
+ }
+ #endif	/* CONFIG_HIBERNATE_CALLBACKS */
+ 
+@@ -372,3 +391,42 @@ int xen_setup_shutdown_event(void)
+ EXPORT_SYMBOL_GPL(xen_setup_shutdown_event);
+ 
+ subsys_initcall(xen_setup_shutdown_event);
++
++static int xen_pm_notifier(struct notifier_block *notifier,
++			   unsigned long pm_event, void *unused)
++{
++	switch (pm_event) {
++	case PM_SUSPEND_PREPARE:
++		suspend_mode = PM_SUSPEND;
++		break;
++	case PM_HIBERNATION_PREPARE:
++	case PM_RESTORE_PREPARE:
++		suspend_mode = PM_HIBERNATION;
++		break;
++	case PM_POST_SUSPEND:
++	case PM_POST_RESTORE:
++	case PM_POST_HIBERNATION:
++		/* Set back to the default */
++		suspend_mode = NO_SUSPEND;
++		break;
++	default:
++		pr_warn("Receive unknown PM event 0x%lx\n", pm_event);
++		return -EINVAL;
++	}
++
++	return 0;
++};
++
++static struct notifier_block xen_pm_notifier_block = {
++	.notifier_call = xen_pm_notifier
++};
++
++static int xen_setup_pm_notifier(void)
++{
++	if (!xen_hvm_domain())
++		return -ENODEV;
++
++	return register_pm_notifier(&xen_pm_notifier_block);
++}
++
++subsys_initcall(xen_setup_pm_notifier);
+-- 
+2.7.4
