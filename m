@@ -1,200 +1,216 @@
 From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH v2 09/11] misc: throttler: Add core support for
- non-thermal throttling
-Date: Tue, 12 Jun 2018 13:00:14 -0700
-Message-ID: <20180612200012.GA99983@rodete-desktop-imager.corp.google.com>
-References: <20180607181214.30338-1-mka@chromium.org>
- <20180607181214.30338-10-mka@chromium.org>
- <20180612014911.GA35749@rodete-desktop-imager.corp.google.com>
- <20180612171140.GH88063@google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 1/2] power: supply: sbs-battery: don't assume MANUFACTURER_DATA formats
+Date: Tue, 12 Jun 2018 13:20:41 -0700
+Message-ID: <20180612202042.107603-1-briannorris@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180612171140.GH88063@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>, Phil Reid <preid@electromag.com.au>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This driver was originally submitted for the TI BQ20Z75 battery IC
+(commit a7640bfa10c5 ("power_supply: Add driver for TI BQ20Z75 gas gauge
+IC")) and later renamed to express generic SBS support. While it's
+mostly true that this driver implemented a standard SBS command set, it
+takes liberties with the REG_MANUFACTURER_DATA register. This register
+is specified in the SBS spec, but it doesn't make any mention of what
+its actual contents are.
 
-On Tue, Jun 12, 2018 at 10:11:40AM -0700, Matthias Kaehlcke wrote:
-> On Mon, Jun 11, 2018 at 06:49:13PM -0700, Brian Norris wrote:
-> > On Thu, Jun 07, 2018 at 11:12:12AM -0700, Matthias Kaehlcke wrote:
-> > > The purpose of the throttler is to provide support for non-thermal
-> > > throttling. Throttling is triggered by external event, e.g. the
-> > > detection of a high battery discharge current, close to the OCP limit
-> > > of the battery. The throttler is only in charge of the throttling, not
-> > > the monitoring, which is done by another (possibly platform specific)
-> > > driver.
-> > > 
-> > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > > ---
-> > > Changes in v2:
-> > > - completely reworked the driver to support configuration through OPPs, which
-> > >   requires a more dynamic handling
-> > > - added sysfs attribute to set the level for debugging and testing
-> > > - Makefile: depend on Kconfig option to traverse throttler directory
-> > > - Kconfig: removed 'default n'
-> > > - added SPDX line instead of license boiler-plate
-> > > - added entry to MAINTAINERS file
-> > > 
-> > > 
-> > >  MAINTAINERS                     |   7 +
-> > >  drivers/misc/Kconfig            |   1 +
-> > >  drivers/misc/Makefile           |   1 +
-> > >  drivers/misc/throttler/Kconfig  |  14 +
-> > >  drivers/misc/throttler/Makefile |   1 +
-> > >  drivers/misc/throttler/core.c   | 642 ++++++++++++++++++++++++++++++++
-> > >  include/linux/throttler.h       |  11 +
-> > >  7 files changed, 677 insertions(+)
-> > >  create mode 100644 drivers/misc/throttler/Kconfig
-> > >  create mode 100644 drivers/misc/throttler/Makefile
-> > >  create mode 100644 drivers/misc/throttler/core.c
-> > >  create mode 100644 include/linux/throttler.h
-> > > 
+We've sort of noticed this optionality previously, with commit
+17c6d3979e5b ("sbs-battery: make writes to ManufacturerAccess
+optional"), where we found that some batteries NAK writes to this
+register.
 
-...
+What this really means is that so far, we've just been lucky that most
+batteries have either been compatible with the TI chip, or else at least
+haven't reported highly-unexpected values.
 
-> > > diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
-> > > new file mode 100644
-> > > index 000000000000..e561f1df5085
-> > > --- /dev/null
-> > > +++ b/drivers/misc/throttler/Kconfig
-> > > @@ -0,0 +1,14 @@
-> > > +# SPDX-License-Identifier: GPL-2.0
-> > > +
-> > > +menuconfig THROTTLER
-> > > +	bool "Throttler support"
-> > > +	depends on OF
-> > > +	select CPU_FREQ
-> > > +	select PM_DEVFREQ
-> > 
-> > I'm curious whether we're actually truly compile-time dependent on
-> > {CPU,DEV}FREQ? It seems like those subsystems mostly stub out stuff so
-> > they fall back to no-ops if not built in.
-> >
-> > I know that's not very useful for your existing throttler, since it
-> > wouldn't be very effective if one or both were disabled.
-> 
-> The idea is not to depend on both options being enabled, since
-> throttling of one type might be all that is needed.
+For instance, one battery I have here seems to report either 0x0000 or
+0x0100 to the MANUFACTURER_ACCESS_STATUS command -- while this seems to
+match either Wake Up (bits[11:8] = 0000b) or Normal Discharge
+(bits[11:8] = 0001b) status for the TI part [1], they don't seem to
+actually correspond to real states (for instance, I never see 0101b =
+Charge, even when charging).
 
-OK, then if you fix the build errors...don't do these 'select's here?
+On other batteries, I'm getting apparently random data in return, which
+means that occasionally, we interpret this as "battery not present" or
+"battery is not healthy".
 
-> As the build bot pointed out cpufreq doesn't stub out all functions.
-> Probably the cleanest way to work around this is to define a stub for
-> cpufreq_update_policy() in the throttler when CONFIG_CPU_FREQ is not
-> defined.
+All in all, it seems to be a really bad idea to make assumptions about
+REG_MANUFACTURER_DATA, unless we already know what battery we're using.
+Therefore, this patch reimplements the "present" and "health" checks to
+the following on most SBS batteries:
 
-Might make sense.
+1. HEALTH: report "unknown" -- I couldn't find a standard SBS command
+   that gives us much useful here
+2. PRESENT: just send a REG_STATUS command; if it succeeds, then the
+   battery is present
 
-Also, how is it that CONFIG_CPU_FREQ managed to not be defined, even
-though you 'select'ed it? Was the kbuild error on some oddball
-architecture that doesn't support CPU_FREQ?
+Also, we stop sending MANUFACTURER_ACCESS_SLEEP to non-TI parts. I have
+no proof that this is useful and supported.
 
-> > > diff --git a/drivers/misc/throttler/core.c b/drivers/misc/throttler/core.c
-> > > new file mode 100644
-> > > index 000000000000..15b50c111032
-> > > --- /dev/null
-> > > +++ b/drivers/misc/throttler/core.c
-> > > ...
-> > > +// #define DEBUG_THROTTLER
-> > 
-> > Did you mean to leave your debug code in? Seems like you have some
-> > related dead code under #ifdefs.
-> 
-> Yes, I left it in intentionally.
-> 
-> > (If you do want this, maybe it'd be better under debugfs, until somebody
-> > really wants to formalize and document it.)
-> 
-> Since it is code that is never enabled in an official kernel build I
-> found it simpler to use sysfs with a direct association with the
-> device, instead of having <debugfs>/throttler/<throttler_name>/level.
-> 
-> If folks have strong opinions about using debugfs or not having the
-> debug code at all I'm fine with changing/dropping it.
+If someone explicitly provided a 'ti,bq20z75' compatible property, then
+we continue to use the existing TI command behaviors, and we effectively
+revert commit 17c6d3979e5b ("sbs-battery: make writes to
+ManufacturerAccess optional") to again make these commands required.
 
-If you ever expect this to actually get merged, I'd think we should go
-with one way or the other. Dead code is not appreciated in mainline, so
-either make it something people can actually have a chance of using
-(e.g., a CONFIG_* option or debugfs), or else drop it.
+[1] http://www.ti.com/lit/er/sluu265a/sluu265a.pdf
 
-> > > +static int thr_init_freq_table(struct throttler *thr, struct device *opp_dev,
-> > > +			       struct thr_freq_table *ft)
-> > > +{
-> > > +	struct device_node *np_opp_desc, *np_opp;
-> > > +	int nchilds;
-> > > +	uint32_t *freqs;
-> > > +	int nfreqs = 0;
-> > > +	int err = 0;
-> > > +
-> > > +	np_opp_desc = dev_pm_opp_of_get_opp_desc_node(opp_dev);
-> > > +	if (!np_opp_desc)
-> > > +		return -EINVAL;
-> > > +
-> > > +	nchilds = of_get_child_count(np_opp_desc);
-> > > +	if (!nchilds) {
-> > > +		err = -EINVAL;
-> > > +		goto out_node_put;
-> > > +	}
-> > > +
-> > > +	freqs = kzalloc(nchilds * sizeof(uint32_t), GFP_KERNEL);
-> > > +	if (!freqs) {
-> > > +		err = -ENOMEM;
-> > > +		goto out_node_put;
-> > > +	}
-> > > +
-> > > +	/* determine which OPPs are used by this throttler (if any) */
-> > > +	for_each_child_of_node(np_opp_desc, np_opp) {
-> > > +		int num_thr;
-> > > +		int i;
-> > > +
-> > > +		num_thr = of_property_count_u32_elems(np_opp, "opp-throttlers");
-> > > +		if (num_thr < 0)
-> > > +			continue;
-> > > +
-> > > +		for (i = 0; i < num_thr; i++) {
-> > > +			struct device_node *np_thr;
-> > > +			struct platform_device *pdev;
-> > > +
-> > > +			np_thr = of_parse_phandle(np_opp, "opp-throttlers", i);
-> > > +			if (!np_thr) {
-> > > +				dev_err(thr->dev,
-> > > +					"failed to parse phandle %d: %s\n", i,
-> > > +					np_opp->full_name);
-> > > +				continue;
-> > > +			}
-> > > +
-> > > +			pdev = of_find_device_by_node(np_thr);
-> > > +			if (!pdev) {
-> > > +				dev_err(thr->dev,
-> > > +					"could not find throttler dev: %s\n",
-> > > +					 np_thr->full_name);
-> > > +				of_node_put(np_thr);
-> > > +				continue;
-> > > +			}
-> > > +
-> > > +			/* OPP is used by this throttler */
-> > > +			if (&pdev->dev == thr->dev) {
-> > 
-> > So you're assuming that all throttlers are platform devices? Seems
-> > slightly shaky; I could easily imagine a similar device that's a SPI or
-> > I2C device.
-> 
-> As of now that's the only existing throttler. Adding handling for
-> throttlers on other buses that might never be implemented seems
-> premature. If throttlers with other bus types are added the core
-> code can be extended to support this using
-> of_find_i2c_device_by_node(), of_find_spi_device_by_node(), etc
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Acked-by: Rhyland Klein <rklein@nvidia.com>
+---
+v2:
+ * don't stub out POWER_SUPPLY_PROP_PRESENT from sbs_data[]
+ * use if/else instead of switch/case
 
-I suppose...but it feels like there should be a better way to do this
-that isn't specific to a particular bus.
+v3:
+ * pull 'return 0' out of if/else, to satisfy braindead tooling
 
-If you're not going to fix this, then maybe you should force callers to
-pass a plaform_device instead of device, to make it extra clear that
-other devices are not supported.
+v4:
+ * make ManufacturerAccess non-optional for TI parts again
 
-Brian
+v5: no change
+---
+ drivers/power/supply/sbs-battery.c | 67 ++++++++++++++++++++++++------
+ 1 file changed, 54 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 83d7b4115857..8ba6abf584de 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -23,6 +23,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/power/sbs-battery.h>
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
+@@ -156,6 +157,9 @@ static enum power_supply_property sbs_properties[] = {
+ 	POWER_SUPPLY_PROP_MODEL_NAME
+ };
+ 
++/* Supports special manufacturer commands from TI BQ20Z75 IC. */
++#define SBS_FLAGS_TI_BQ20Z75		BIT(0)
++
+ struct sbs_info {
+ 	struct i2c_client		*client;
+ 	struct power_supply		*power_supply;
+@@ -168,6 +172,7 @@ struct sbs_info {
+ 	u32				poll_retry_count;
+ 	struct delayed_work		work;
+ 	struct mutex			mode_lock;
++	u32				flags;
+ };
+ 
+ static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
+@@ -315,17 +320,41 @@ static int sbs_status_correct(struct i2c_client *client, int *intval)
+ static int sbs_get_battery_presence_and_health(
+ 	struct i2c_client *client, enum power_supply_property psp,
+ 	union power_supply_propval *val)
++{
++	int ret;
++
++	if (psp == POWER_SUPPLY_PROP_PRESENT) {
++		/* Dummy command; if it succeeds, battery is present. */
++		ret = sbs_read_word_data(client, sbs_data[REG_STATUS].addr);
++		if (ret < 0)
++			val->intval = 0; /* battery disconnected */
++		else
++			val->intval = 1; /* battery present */
++	} else { /* POWER_SUPPLY_PROP_HEALTH */
++		/* SBS spec doesn't have a general health command. */
++		val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
++	}
++
++	return 0;
++}
++
++static int sbs_get_ti_battery_presence_and_health(
++	struct i2c_client *client, enum power_supply_property psp,
++	union power_supply_propval *val)
+ {
+ 	s32 ret;
+ 
+ 	/*
+ 	 * Write to ManufacturerAccess with ManufacturerAccess command
+-	 * and then read the status. Do not check for error on the write
+-	 * since not all batteries implement write access to this command,
+-	 * while others mandate it.
++	 * and then read the status.
+ 	 */
+-	sbs_write_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr,
+-			    MANUFACTURER_ACCESS_STATUS);
++	ret = sbs_write_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr,
++				  MANUFACTURER_ACCESS_STATUS);
++	if (ret < 0) {
++		if (psp == POWER_SUPPLY_PROP_PRESENT)
++			val->intval = 0; /* battery removed */
++		return ret;
++	}
+ 
+ 	ret = sbs_read_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr);
+ 	if (ret < 0) {
+@@ -600,7 +629,12 @@ static int sbs_get_property(struct power_supply *psy,
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 	case POWER_SUPPLY_PROP_HEALTH:
+-		ret = sbs_get_battery_presence_and_health(client, psp, val);
++		if (client->flags & SBS_FLAGS_TI_BQ20Z75)
++			ret = sbs_get_ti_battery_presence_and_health(client,
++								     psp, val);
++		else
++			ret = sbs_get_battery_presence_and_health(client, psp,
++								  val);
+ 		if (psp == POWER_SUPPLY_PROP_PRESENT)
+ 			return 0;
+ 		break;
+@@ -806,6 +840,7 @@ static int sbs_probe(struct i2c_client *client,
+ 	if (!chip)
+ 		return -ENOMEM;
+ 
++	chip->flags = (u32)(uintptr_t)of_device_get_match_data(&client->dev);
+ 	chip->client = client;
+ 	chip->enable_detection = false;
+ 	psy_cfg.of_node = client->dev.of_node;
+@@ -911,16 +946,19 @@ static int sbs_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct sbs_info *chip = i2c_get_clientdata(client);
++	int ret;
+ 
+ 	if (chip->poll_time > 0)
+ 		cancel_delayed_work_sync(&chip->work);
+ 
+-	/*
+-	 * Write to manufacturer access with sleep command.
+-	 * Support is manufacturer dependend, so ignore errors.
+-	 */
+-	sbs_write_word_data(client, sbs_data[REG_MANUFACTURER_DATA].addr,
+-		MANUFACTURER_ACCESS_SLEEP);
++	if (chip->flags & SBS_FLAGS_TI_BQ20Z75) {
++		/* Write to manufacturer access with sleep command. */
++		ret = sbs_write_word_data(client,
++					  sbs_data[REG_MANUFACTURER_DATA].addr,
++					  MANUFACTURER_ACCESS_SLEEP);
++		if (chip->is_present && ret < 0)
++			return ret;
++	}
+ 
+ 	return 0;
+ }
+@@ -941,7 +979,10 @@ MODULE_DEVICE_TABLE(i2c, sbs_id);
+ 
+ static const struct of_device_id sbs_dt_ids[] = {
+ 	{ .compatible = "sbs,sbs-battery" },
+-	{ .compatible = "ti,bq20z75" },
++	{
++		.compatible = "ti,bq20z75",
++		.data = (void *)SBS_FLAGS_TI_BQ20Z75,
++	},
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, sbs_dt_ids);
+-- 
+2.18.0.rc1.242.g61856ae69a-goog
