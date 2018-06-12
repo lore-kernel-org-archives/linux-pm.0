@@ -1,25 +1,71 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/3] cpufreq: imx6q: check speed grades for i.MX6ULL
-Date: Tue, 12 Jun 2018 16:57:43 +0200
-Message-ID: <1843576.EaGtSTJKjV@aspire.rjw.lan>
-References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com> <20180611053826.GC16091@dragon>
+Subject: Re: [PATCH v3 0/5] PM / Domains: Add support for multi PM domains per device
+Date: Tue, 12 Jun 2018 16:58:57 +0200
+Message-ID: <3721375.shleKqokg2@aspire.rjw.lan>
+References: <20180531105959.14843-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180611053826.GC16091@dragon>
+In-Reply-To: <20180531105959.14843-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>, =?ISO-8859-1?Q?S=E9bastien?= Szymanski <sebastien.szymanski@armadeus.com>
-Cc: linux-arm-kernel@lists.infradead.org, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, Stefan Agner <stefan@agner.ch>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 11, 2018 7:38:27 AM CEST Shawn Guo wrote:
-> On Tue, May 22, 2018 at 08:28:51AM +0200, Sébastien Szymanski wrote:
-> > Check the max speed supported from the fuses for i.MX6ULL and update the
-> > operating points table accordingly.
-> > 
-> > Signed-off-by: Sébastien Szymanski <sebastien.szymanski@armadeus.com>
+On Thursday, May 31, 2018 12:59:54 PM CEST Ulf Hansson wrote:
+> Changes in v3:
+> 	- Drop patch 1->4 as they have already been applied.
+> 	- Collected tags, for tests and reviews.
+> 	- Minor update to function descriptions in patch 4 (earlier 8) and 5
+> 	(earlier9).
+> 	- Note, because of the minor changes, no history is provided per patch.
 > 
-> Acked-by: Shawn Guo <shawnguo@kernel.org>
+> Changes in v2:
+> 	- Addressed comments from Geert around DT doc.
+> 	- Addressed comments from Jon around clarification of how to use this
+> 	and changes to returned error codes.
+> 	- Fixed build error in case CONFIG_PM was unset.
+> 
+> There are devices that are partitioned across multiple PM domains. Currently
+> these can't be supported well by the available PM infrastructures we have in
+> the kernel. This series is an attempt to address this.
+> 
+> One existing case where devices are partitioned across multiple PM domains, is
+> the Nvida Tegra 124/210 X-USB subsystem. A while ago Jon Hunter (Nvidia) sent a
+> series, trying to address these issues, however this is a new approach, while
+> it re-uses the same concepts from DT point of view.
+> 
+> The Tegra 124/210 X-USB subsystem contains of a host controller and a device
+> controller. Each controller have its own independent PM domain, but are being
+> partitioned across another shared PM domain for the USB super-speed logic.
+> 
+> Currently to make the drivers work, either the related PM domains needs to stay
+> powered on always or the PM domain topology needs to be in-correctly modelled
+> through sub-domains. In both cases PM domains may be powered on while they
+> don't need to be, so in the end this means - wasting power -.
+> 
+> As stated above, this series intends to address these problem from a PM
+> infrastructure point of view. More details are available in each changelog.
+> 
+> Kind regards
+> Ulf Hansson
+> 
+> Ulf Hansson (5):
+>   PM / Domains: dt: Allow power-domain property to be a list of
+>     specifiers
+>   PM / Domains: Don't attach devices in genpd with multi PM domains
+>   PM / Domains: Split genpd_dev_pm_attach()
+>   PM / Domains: Add support for multi PM domains per device to genpd
+>   PM / Domains: Add dev_pm_domain_attach_by_id() to manage multi PM
+>     domains
+> 
+>  .../bindings/power/power_domain.txt           |  19 ++-
+>  drivers/base/power/common.c                   |  43 +++++-
+>  drivers/base/power/domain.c                   | 134 +++++++++++++++---
+>  include/linux/pm_domain.h                     |  15 ++
+>  4 files changed, 183 insertions(+), 28 deletions(-)
+> 
+> 
 
-Patch applied, thanks!
+Applied, thanks!
