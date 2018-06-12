@@ -1,68 +1,50 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V6] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Tue, 12 Jun 2018 19:35:14 +0200
-Message-ID: <20180612173514.GV12217@hirez.programming.kicks-ass.net>
-References: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
- <20180612123036.GJ12180@hirez.programming.kicks-ass.net>
- <16d5649d-863c-10c7-9287-202568e713e6@linaro.org>
- <20180612125247.GO12217@hirez.programming.kicks-ass.net>
- <16770447-afe3-0fd7-19f9-1bd52c4c8ced@linaro.org>
- <20180612140654.GQ12217@hirez.programming.kicks-ass.net>
- <cce05d92-d51a-ab4f-83f2-37dcdee0cd6a@linaro.org>
- <20180612155841.GT12217@hirez.programming.kicks-ass.net>
- <7190a58e-05f2-216c-8b36-70692fa722bf@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 10/11] dt-bindings: misc: add bindings for
+ cros_ec_throttler
+Date: Tue, 12 Jun 2018 13:10:11 -0600
+Message-ID: <20180612191011.GA26266@rob-hp-laptop>
+References: <20180607181214.30338-1-mka@chromium.org>
+ <20180607181214.30338-11-mka@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <7190a58e-05f2-216c-8b36-70692fa722bf@linaro.org>
+In-Reply-To: <20180607181214.30338-11-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 12, 2018 at 07:02:57PM +0200, Daniel Lezcano wrote:
-> Mmh, it is unclear for me if the park() vs wakeup() can happen at the
-> same time.
+On Thu, Jun 07, 2018 at 11:12:13AM -0700, Matthias Kaehlcke wrote:
+> The cros_ec_throttler monitors events from the Chrome OS Embedded
+> Controller to throttle the system if needed, using the mechanisms
+> provided by the throttler core.
 > 
-> If the park() function is called, that means the hotplug is allowed.
-
-No, it means we're inside hot-un-plug, but that doesn't stop the hrtimer
-from firing.
-
-> If the hotplug is allowed, we can modify the online mask.
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+> Changes in v2:
+> - patch added to series
 > 
-> What happens with the online mask when we are processing it in an
-> interrupt context ?
-
-RCU-like, if you observe a CPU in the online mask, it will stay
-available, but the bit might get cleared.
-
-> > Maybe avoid the issue entire by having a
-> > {period,idle} tuple, where your old run := period - idle.
+>  Documentation/devicetree/bindings/misc/cros_ec_throttler.txt | 4 ++++
+>  1 file changed, 4 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
 > 
-> Can you elaborate ? I don't get it.
+> diff --git a/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
+> new file mode 100644
+> index 000000000000..7316dcc0ef75
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
+> @@ -0,0 +1,4 @@
+> +* cros_ec_throttler driver
 
-Have a period parameter that specifies the interval in which you have
-one injected idle, and specify for how long you want to inject idle;
-then obviously idle < period.
+Bindings are for h/w, not drivers.
 
-> >>> Furthermore, should you not be using hrtimer_forward(&timer,
-> >>> idle_duration + run_duration) instead? AFAICT the current scheme is
-> >>> prone to drifting.
-> >>
-> >> (I assume you meant setting the timer in the wakeup task function).
-> >>
-> >> Yes, drifting is not an issue if that happens. This scheme is simpler
-> >> and safer than setting the timer ahead before waking up the tasks with
-> >> the risk it expires before all the tasks ended their idle cycles.
-> > 
-> > sloppy though..
+I continue to fail to see why this needs to be in DT. There are other 
+ways to instantiate drivers.
+
+> +
+> +Required properties:
+> +- compatible: "google,cros-ec-throttler"
+> -- 
+> 2.18.0.rc1.242.g61856ae69a-goog
 > 
-> Ok, do you prefer to see the timer set in the wakeup function and thus
-> having a periodic tick for the idle injection ?
-
-I think having a HRTIMER_RESTART handler that does hrtimer_forward() is
-the most sensible. You will end up having to deal with threads not being
-ready, but I think that's not a real problem.
