@@ -1,88 +1,63 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH v2 10/11] dt-bindings: misc: add bindings for
- cros_ec_throttler
-Date: Tue, 12 Jun 2018 13:40:22 -0700
-Message-ID: <20180612204018.GB99983@rodete-desktop-imager.corp.google.com>
-References: <20180607181214.30338-1-mka@chromium.org>
- <20180607181214.30338-11-mka@chromium.org>
- <20180612191011.GA26266@rob-hp-laptop>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v2 3/5] thermal: tsens: Move 8996 get_temp() to common
+ code for reuse
+Date: Tue, 12 Jun 2018 23:55:37 +0300
+Message-ID: <CAP245DVQw1QwwKUGsB2gF=HrWfv7o0cLrt0wWLJA3jdWdciNnQ@mail.gmail.com>
+References: <cover.1528799892.git.amit.kucheria@linaro.org>
+ <ed6b51a1b08e195968f5423a86e40146279a8807.1528799892.git.amit.kucheria@linaro.org>
+ <20180612194302.GP14924@minitux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180612191011.GA26266@rob-hp-laptop>
+In-Reply-To: <20180612194302.GP14924@minitux>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+On Tue, Jun 12, 2018 at 10:43 PM Bjorn Andersson
+<bjorn.andersson@linaro.org> wrote:
+>
+> On Tue 12 Jun 03:54 PDT 2018, Amit Kucheria wrote:
+> > diff --git a/drivers/thermal/qcom/tsens-8996.c b/drivers/thermal/qcom/tsens-8996.c
+> [..]
+> >  static const struct tsens_ops ops_8996 = {
+> >       .init           = init_common,
+> > -     .get_temp       = get_temp_8996,
+> > +     .get_temp       = get_temp_tsens_v2,
+> >  };
+> >
+> >  const struct tsens_data data_8996 = {
+> > diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> [..]
+> > +int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
+>
+> I like the function name, but it's not really common for tsens, it's
+> just common for tsens v2. Also as patch 4 shows we end up adding a set
+> of essentially empty platform specific files for referencing this
+> function.
 
-On Tue, Jun 12, 2018 at 01:10:11PM -0600, Rob Herring wrote:
-> On Thu, Jun 07, 2018 at 11:12:13AM -0700, Matthias Kaehlcke wrote:
-> > The cros_ec_throttler monitors events from the Chrome OS Embedded
-> > Controller to throttle the system if needed, using the mechanisms
-> > provided by the throttler core.
-> > 
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> > Changes in v2:
-> > - patch added to series
-> > 
-> >  Documentation/devicetree/bindings/misc/cros_ec_throttler.txt | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-> > new file mode 100644
-> > index 000000000000..7316dcc0ef75
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-> > @@ -0,0 +1,4 @@
-> > +* cros_ec_throttler driver
-> 
-> Bindings are for h/w, not drivers.
+> I would suggest that you instead rename tsens-8996.c to tsens-v2.c,
+> rename ops_8996 to ops_v2 and either add new tsens_data for each
+> platform or simply rename that too to data_v2 which we point to from
+> tsens_table.
 
-(OK, sure, don't call this "driver". And maybe this could use some more
-description about what kind of events are emitted by this sort of
-device.)
+I was thinking of tsens-common.c as a library of tsens functions (v1
+and v2). Do you want tsens-common.c to essentially become tsens-v1.c?
+We'll end up with quite a bit of duplicated code in that case.
 
-> I continue to fail to see why this needs to be in DT. There are other 
-> ways to instantiate drivers.
+IIUC what you are suggesting, we'll still need to compile in
+tsens-common.c even on v2 platforms.
 
-This is mostly relevant to:
-[PATCH v2 08/11] dt-bindings: PM / OPP: add opp-throttlers property
+> I think we should take it once step further and add "qcom,tsens-v2" as a
+> valid compatible in tsens_table and make the dts do:
 
-so it's probably good to take a look at that one too.
+I like that idea.
 
-The primary purpose is to have a target to point at when determining who
-is the source of throttling. This is similar to other CrOS EC subdevices
-(e.g., PWM) where we technically don't require a subnode (the EC
-firmware can its own PWM hardware without DT), but it is important that,
-e.g., a backlight device has something to point at when it's using a PWM
-attached to the EC. So we have a PWM subnode.
-
-In this case, we're a little vague about what exactly the hardware is
-here, but there *is* hardware that's emitting "throttle" events (hint:
-here, it's related to sensing too high of system current). This is all
-abstracted by firmware, which simply tells us we need to scale back our
-power usage.
-
-So, what do you think of patch 8? Should OPPs have phandles to such a
-throttler? If so, should the phandle just point at the main EC device
-(see mfd/cros-ec.txt), or is it reasonable to have a subnode to
-represent something more specific?
-
-Or maybe this is entirely on the wrong track. But this is the resulting
-proposal after your comments on v1, so it's probably best we have a
-clearer overall review of what makes sense here, so we don't just go in
-cycles on new proposals that get rejected.
-
-Brian
-
-> > +
-> > +Required properties:
-> > +- compatible: "google,cros-ec-throttler"
-> > -- 
-> > 2.18.0.rc1.242.g61856ae69a-goog
-> > 
+>         comaptible = "qcom,msm8996-tsens", "qcom,tsens-v2";
+>
+> and
+>         compatible = "qcom,sdm845-tsens", "qcom,tsens-v2";
+>
+> Regards,
+> Bjorn
