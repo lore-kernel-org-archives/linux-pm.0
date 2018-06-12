@@ -1,70 +1,38 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/5] PM / Domains: Add support for multi PM domains per device
-Date: Tue, 12 Jun 2018 16:58:57 +0200
-Message-ID: <3721375.shleKqokg2@aspire.rjw.lan>
-References: <20180531105959.14843-1-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 0/2] ti-cpufreq: minor fixes/cleanups
+Date: Tue, 12 Jun 2018 16:59:46 +0200
+Message-ID: <3941876.itVUMqcnQG@aspire.rjw.lan>
+References: <20180531222144.26739-1-s-anna@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180531105959.14843-1-ulf.hansson@linaro.org>
+In-Reply-To: <20180531222144.26739-1-s-anna@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Todor Tomov <todor.tomov@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+To: Suman Anna <s-anna@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dave Gerlach <d-gerlach@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 31, 2018 12:59:54 PM CEST Ulf Hansson wrote:
-> Changes in v3:
-> 	- Drop patch 1->4 as they have already been applied.
-> 	- Collected tags, for tests and reviews.
-> 	- Minor update to function descriptions in patch 4 (earlier 8) and 5
-> 	(earlier9).
-> 	- Note, because of the minor changes, no history is provided per patch.
+On Friday, June 1, 2018 12:21:42 AM CEST Suman Anna wrote:
+> Hi Rafael,
 > 
-> Changes in v2:
-> 	- Addressed comments from Geert around DT doc.
-> 	- Addressed comments from Jon around clarification of how to use this
-> 	and changes to returned error codes.
-> 	- Fixed build error in case CONFIG_PM was unset.
+> This is a repost of the v2 patches Ccing the proper linux-pm list.
+> There are no code changes, I have picked up Viresh's acks and
+> also added the stable kernel versions the first patch needs to be
+> applied to.
 > 
-> There are devices that are partitioned across multiple PM domains. Currently
-> these can't be supported well by the available PM infrastructures we have in
-> the kernel. This series is an attempt to address this.
+> regards
+> Suman
 > 
-> One existing case where devices are partitioned across multiple PM domains, is
-> the Nvida Tegra 124/210 X-USB subsystem. A while ago Jon Hunter (Nvidia) sent a
-> series, trying to address these issues, however this is a new approach, while
-> it re-uses the same concepts from DT point of view.
+> v2: https://marc.info/?l=linux-omap&m=152268780921259&w=2
+> v1: https://patchwork.kernel.org/patch/10308925/
 > 
-> The Tegra 124/210 X-USB subsystem contains of a host controller and a device
-> controller. Each controller have its own independent PM domain, but are being
-> partitioned across another shared PM domain for the USB super-speed logic.
+> Suman Anna (2):
+>   cpufreq: ti-cpufreq: Fix an incorrect error return value
+>   cpufreq: ti-cpufreq: Use devres managed API in probe()
 > 
-> Currently to make the drivers work, either the related PM domains needs to stay
-> powered on always or the PM domain topology needs to be in-correctly modelled
-> through sub-domains. In both cases PM domains may be powered on while they
-> don't need to be, so in the end this means - wasting power -.
-> 
-> As stated above, this series intends to address these problem from a PM
-> infrastructure point of view. More details are available in each changelog.
-> 
-> Kind regards
-> Ulf Hansson
-> 
-> Ulf Hansson (5):
->   PM / Domains: dt: Allow power-domain property to be a list of
->     specifiers
->   PM / Domains: Don't attach devices in genpd with multi PM domains
->   PM / Domains: Split genpd_dev_pm_attach()
->   PM / Domains: Add support for multi PM domains per device to genpd
->   PM / Domains: Add dev_pm_domain_attach_by_id() to manage multi PM
->     domains
-> 
->  .../bindings/power/power_domain.txt           |  19 ++-
->  drivers/base/power/common.c                   |  43 +++++-
->  drivers/base/power/domain.c                   | 134 +++++++++++++++---
->  include/linux/pm_domain.h                     |  15 ++
->  4 files changed, 183 insertions(+), 28 deletions(-)
+>  drivers/cpufreq/ti-cpufreq.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
 > 
 > 
 
