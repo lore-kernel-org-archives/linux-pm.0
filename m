@@ -1,82 +1,88 @@
 From: Anchal Agarwal <anchalag@amazon.com>
-Subject: [RFC PATCH 09/12] x86/xen: save and restore steal clock
-Date: Tue, 12 Jun 2018 20:56:16 +0000
-Message-ID: <20180612205619.28156-10-anchalag@amazon.com>
+Subject: [RFC PATCH 11/12] x86/xen: close event channels for PIRQs in system core suspend callback
+Date: Tue, 12 Jun 2018 20:56:18 +0000
+Message-ID: <20180612205619.28156-12-anchalag@amazon.com>
 References: <20180612205619.28156-1-anchalag@amazon.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <netdev-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180612205619.28156-1-anchalag@amazon.com>
-Sender: netdev-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
 Cc: boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, roger.pau@citrix.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, anchalag@amazon.com, fllinden@amazon.com, vallish@amazon.com, guruanb@amazon.com, eduval@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
 List-Id: linux-pm@vger.kernel.org
 
 From: Munehisa Kamata <kamatam@amazon.com>
 
-Save steal clock values of all present CPUs in the system core ops
-suspend callbacks. Also, restore a boot CPU's steal clock in the system
-core resume callback. For non-boot CPUs, restore after they're brought
-up, because runstate info for non-boot CPUs are not active until then.
+Close event channels allocated for devices which are backed by PIRQ and
+still active when suspending the system core. Normally, the devices are
+emulated legacy devices, e.g. PS/2 keyboard, floppy controller and etc.
+
+Without this, in PM hibernation, information about the event channel
+remains in hibernation image, but there is no guarantee that the same
+event channel numbers are assigned to the devices when restoring the
+system. This may cause conflict like the following and prevent some
+devices from being restored correctly.
+
+[  102.330821] ------------[ cut here ]------------
+[  102.333264] WARNING: CPU: 0 PID: 2324 at
+drivers/xen/events/events_base.c:878 bind_evtchn_to_irq+0x88/0xf0
+...
+[  102.348057] Call Trace:
+[  102.348057]  [<ffffffff813001df>] dump_stack+0x63/0x84
+[  102.348057]  [<ffffffff81071811>] __warn+0xd1/0xf0
+[  102.348057]  [<ffffffff810718fd>] warn_slowpath_null+0x1d/0x20
+[  102.348057]  [<ffffffff8139a1f8>] bind_evtchn_to_irq+0x88/0xf0
+[  102.348057]  [<ffffffffa00cd420>] ? blkif_copy_from_grant+0xb0/0xb0 [xen_blkfront]
+[  102.348057]  [<ffffffff8139a307>] bind_evtchn_to_irqhandler+0x27/0x80
+[  102.348057]  [<ffffffffa00cc785>] talk_to_blkback+0x425/0xcd0 [xen_blkfront]
+[  102.348057]  [<ffffffff811e0c8a>] ? __kmalloc+0x1ea/0x200
+[  102.348057]  [<ffffffffa00ce84d>] blkfront_restore+0x2d/0x60 [xen_blkfront]
+[  102.348057]  [<ffffffff813a0078>] xenbus_dev_restore+0x58/0x100
+[  102.348057]  [<ffffffff813a1ff0>] ?  xenbus_frontend_delayed_resume+0x20/0x20
+[  102.348057]  [<ffffffff813a200e>] xenbus_dev_cond_restore+0x1e/0x30
+[  102.348057]  [<ffffffff813f797e>] dpm_run_callback+0x4e/0x130
+[  102.348057]  [<ffffffff813f7f17>] device_resume+0xe7/0x210
+[  102.348057]  [<ffffffff813f7810>] ? pm_dev_dbg+0x80/0x80
+[  102.348057]  [<ffffffff813f9374>] dpm_resume+0x114/0x2f0
+[  102.348057]  [<ffffffff810c00cf>] hibernation_snapshot+0x15f/0x380
+[  102.348057]  [<ffffffff810c0ac3>] hibernate+0x183/0x290
+[  102.348057]  [<ffffffff810be1af>] state_store+0xcf/0xe0
+[  102.348057]  [<ffffffff813020bf>] kobj_attr_store+0xf/0x20
+[  102.348057]  [<ffffffff8127c88a>] sysfs_kf_write+0x3a/0x50
+[  102.348057]  [<ffffffff8127c3bb>] kernfs_fop_write+0x10b/0x190
+[  102.348057]  [<ffffffff81200008>] __vfs_write+0x28/0x120
+[  102.348057]  [<ffffffff81200c19>] ? rw_verify_area+0x49/0xb0
+[  102.348057]  [<ffffffff81200e62>] vfs_write+0xb2/0x1b0
+[  102.348057]  [<ffffffff81202196>] SyS_write+0x46/0xa0
+[  102.348057]  [<ffffffff81520cf7>] entry_SYSCALL_64_fastpath+0x1a/0xa9
+[  102.423005] ---[ end trace b8d6718e22e2b107 ]---
+[  102.425031] genirq: Flags mismatch irq 6. 00000000 (blkif) vs. 00000000 (floppy)
+
+Note that we don't explicitly re-allocate event channels for such
+devices in the resume callback. Re-allocation will occur when PM core
+re-enable IRQs for the devices at later point.
 
 Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
 Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
 Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 ---
- arch/x86/xen/suspend.c | 13 ++++++++++++-
- arch/x86/xen/time.c    |  3 +++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ arch/x86/xen/suspend.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
-index 784c448..dae0f74 100644
+index dae0f74..affa63d 100644
 --- a/arch/x86/xen/suspend.c
 +++ b/arch/x86/xen/suspend.c
-@@ -91,12 +91,20 @@ void xen_arch_suspend(void)
- static int xen_syscore_suspend(void)
- {
- 	struct xen_remove_from_physmap xrfp;
--	int ret;
-+	int cpu, ret;
+@@ -105,6 +105,8 @@ static int xen_syscore_suspend(void)
+ 		xen_save_steal_clock(cpu);
+ 	}
  
- 	/* Xen suspend does similar stuffs in its own logic */
- 	if (xen_suspend_mode_is_xen_suspend())
- 		return 0;
- 
-+	for_each_present_cpu(cpu) {
-+		/*
-+		 * Nonboot CPUs are already offline, but the last copy of
-+		 * runstate info is still accessible.
-+		 */
-+		xen_save_steal_clock(cpu);
-+	}
++	xen_shutdown_pirqs();
 +
  	xrfp.domid = DOMID_SELF;
  	xrfp.gpfn = __pa(HYPERVISOR_shared_info) >> PAGE_SHIFT;
  
-@@ -118,6 +126,9 @@ static void xen_syscore_resume(void)
- 
- 	pvclock_resume();
- 
-+	/* Nonboot CPUs will be resumed when they're brought up */
-+	xen_restore_steal_clock(smp_processor_id());
-+
- 	gnttab_resume();
- }
- 
-diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-index e0f1bcf..85f8534 100644
---- a/arch/x86/xen/time.c
-+++ b/arch/x86/xen/time.c
-@@ -523,6 +523,9 @@ static void xen_hvm_setup_cpu_clockevents(void)
- {
- 	int cpu = smp_processor_id();
- 	xen_setup_runstate_info(cpu);
-+	if (cpu)
-+		xen_restore_steal_clock(cpu);
-+
- 	/*
- 	 * xen_setup_timer(cpu) - snprintf is bad in atomic context. Hence
- 	 * doing it xen_hvm_cpu_notify (which gets called by smp_init during
 -- 
 2.7.4
