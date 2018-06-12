@@ -1,134 +1,82 @@
 From: Anchal Agarwal <anchalag@amazon.com>
-Subject: [RFC PATCH 01/12] xen/manage: keep track of the on-going suspend mode
-Date: Tue, 12 Jun 2018 20:56:08 +0000
-Message-ID: <20180612205619.28156-2-anchalag@amazon.com>
+Subject: [RFC PATCH 09/12] x86/xen: save and restore steal clock
+Date: Tue, 12 Jun 2018 20:56:16 +0000
+Message-ID: <20180612205619.28156-10-anchalag@amazon.com>
 References: <20180612205619.28156-1-anchalag@amazon.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <netdev-owner@vger.kernel.org>
 In-Reply-To: <20180612205619.28156-1-anchalag@amazon.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: netdev-owner@vger.kernel.org
 To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
 Cc: boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, roger.pau@citrix.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, anchalag@amazon.com, fllinden@amazon.com, vallish@amazon.com, guruanb@amazon.com, eduval@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
 List-Id: linux-pm@vger.kernel.org
 
 From: Munehisa Kamata <kamatam@amazon.com>
 
-To differentiate between Xen suspend, PM suspend and PM hibernation,
-keep track of the on-going suspend mode by mainly using a new PM
-notifier. Since Xen suspend doesn't have corresponding PM event, its
-main logic is modfied to acquire pm_mutex and set the current mode.
-
-Note that we may see deadlock if PM suspend/hibernation is interrupted
-by Xen suspend. PM suspend/hibernation depends on xenwatch thread to
-process xenbus state transactions, but the thread will sleep to wait
-pm_mutex which is already held by PM suspend/hibernation context in the
-scenario. Though, acquirng pm_mutex is still right thing to do, and we
-would need to modify Xen shutdown code to avoid the issue. This will be
-fixed by a separate patch.
+Save steal clock values of all present CPUs in the system core ops
+suspend callbacks. Also, restore a boot CPU's steal clock in the system
+core resume callback. For non-boot CPUs, restore after they're brought
+up, because runstate info for non-boot CPUs are not active until then.
 
 Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
 Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
-Reviewed-by: Sebastian Biemueller <sbiemue@amazon.com>
 Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 ---
- drivers/xen/manage.c | 58 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+ arch/x86/xen/suspend.c | 13 ++++++++++++-
+ arch/x86/xen/time.c    |  3 +++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
-index 8835065..8f9ea87 100644
---- a/drivers/xen/manage.c
-+++ b/drivers/xen/manage.c
-@@ -13,6 +13,7 @@
- #include <linux/freezer.h>
- #include <linux/syscore_ops.h>
- #include <linux/export.h>
-+#include <linux/suspend.h>
+diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
+index 784c448..dae0f74 100644
+--- a/arch/x86/xen/suspend.c
++++ b/arch/x86/xen/suspend.c
+@@ -91,12 +91,20 @@ void xen_arch_suspend(void)
+ static int xen_syscore_suspend(void)
+ {
+ 	struct xen_remove_from_physmap xrfp;
+-	int ret;
++	int cpu, ret;
  
- #include <xen/xen.h>
- #include <xen/xenbus.h>
-@@ -39,6 +40,16 @@ enum shutdown_state {
- /* Ignore multiple shutdown requests. */
- static enum shutdown_state shutting_down = SHUTDOWN_INVALID;
+ 	/* Xen suspend does similar stuffs in its own logic */
+ 	if (xen_suspend_mode_is_xen_suspend())
+ 		return 0;
  
-+enum suspend_modes {
-+	NO_SUSPEND = 0,
-+	XEN_SUSPEND,
-+	PM_SUSPEND,
-+	PM_HIBERNATION,
-+};
-+
-+/* Protected by pm_mutex */
-+static enum suspend_modes suspend_mode = NO_SUSPEND;
-+
- struct suspend_info {
- 	int cancelled;
- };
-@@ -98,6 +109,10 @@ static void do_suspend(void)
- 	int err;
- 	struct suspend_info si;
- 
-+	lock_system_sleep();
-+
-+	suspend_mode = XEN_SUSPEND;
-+
- 	shutting_down = SHUTDOWN_SUSPEND;
- 
- 	err = freeze_processes();
-@@ -161,6 +176,10 @@ static void do_suspend(void)
- 	thaw_processes();
- out:
- 	shutting_down = SHUTDOWN_INVALID;
-+
-+	suspend_mode = NO_SUSPEND;
-+
-+	unlock_system_sleep();
- }
- #endif	/* CONFIG_HIBERNATE_CALLBACKS */
- 
-@@ -372,3 +391,42 @@ int xen_setup_shutdown_event(void)
- EXPORT_SYMBOL_GPL(xen_setup_shutdown_event);
- 
- subsys_initcall(xen_setup_shutdown_event);
-+
-+static int xen_pm_notifier(struct notifier_block *notifier,
-+			   unsigned long pm_event, void *unused)
-+{
-+	switch (pm_event) {
-+	case PM_SUSPEND_PREPARE:
-+		suspend_mode = PM_SUSPEND;
-+		break;
-+	case PM_HIBERNATION_PREPARE:
-+	case PM_RESTORE_PREPARE:
-+		suspend_mode = PM_HIBERNATION;
-+		break;
-+	case PM_POST_SUSPEND:
-+	case PM_POST_RESTORE:
-+	case PM_POST_HIBERNATION:
-+		/* Set back to the default */
-+		suspend_mode = NO_SUSPEND;
-+		break;
-+	default:
-+		pr_warn("Receive unknown PM event 0x%lx\n", pm_event);
-+		return -EINVAL;
++	for_each_present_cpu(cpu) {
++		/*
++		 * Nonboot CPUs are already offline, but the last copy of
++		 * runstate info is still accessible.
++		 */
++		xen_save_steal_clock(cpu);
 +	}
 +
-+	return 0;
-+};
+ 	xrfp.domid = DOMID_SELF;
+ 	xrfp.gpfn = __pa(HYPERVISOR_shared_info) >> PAGE_SHIFT;
+ 
+@@ -118,6 +126,9 @@ static void xen_syscore_resume(void)
+ 
+ 	pvclock_resume();
+ 
++	/* Nonboot CPUs will be resumed when they're brought up */
++	xen_restore_steal_clock(smp_processor_id());
 +
-+static struct notifier_block xen_pm_notifier_block = {
-+	.notifier_call = xen_pm_notifier
-+};
+ 	gnttab_resume();
+ }
+ 
+diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+index e0f1bcf..85f8534 100644
+--- a/arch/x86/xen/time.c
++++ b/arch/x86/xen/time.c
+@@ -523,6 +523,9 @@ static void xen_hvm_setup_cpu_clockevents(void)
+ {
+ 	int cpu = smp_processor_id();
+ 	xen_setup_runstate_info(cpu);
++	if (cpu)
++		xen_restore_steal_clock(cpu);
 +
-+static int xen_setup_pm_notifier(void)
-+{
-+	if (!xen_hvm_domain())
-+		return -ENODEV;
-+
-+	return register_pm_notifier(&xen_pm_notifier_block);
-+}
-+
-+subsys_initcall(xen_setup_pm_notifier);
+ 	/*
+ 	 * xen_setup_timer(cpu) - snprintf is bad in atomic context. Hence
+ 	 * doing it xen_hvm_cpu_notify (which gets called by smp_init during
 -- 
 2.7.4
