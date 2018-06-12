@@ -1,219 +1,68 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v2 09/11] misc: throttler: Add core support for
- non-thermal throttling
-Date: Tue, 12 Jun 2018 10:11:40 -0700
-Message-ID: <20180612171140.GH88063@google.com>
-References: <20180607181214.30338-1-mka@chromium.org>
- <20180607181214.30338-10-mka@chromium.org>
- <20180612014911.GA35749@rodete-desktop-imager.corp.google.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V6] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Tue, 12 Jun 2018 19:35:14 +0200
+Message-ID: <20180612173514.GV12217@hirez.programming.kicks-ass.net>
+References: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180612123036.GJ12180@hirez.programming.kicks-ass.net>
+ <16d5649d-863c-10c7-9287-202568e713e6@linaro.org>
+ <20180612125247.GO12217@hirez.programming.kicks-ass.net>
+ <16770447-afe3-0fd7-19f9-1bd52c4c8ced@linaro.org>
+ <20180612140654.GQ12217@hirez.programming.kicks-ass.net>
+ <cce05d92-d51a-ab4f-83f2-37dcdee0cd6a@linaro.org>
+ <20180612155841.GT12217@hirez.programming.kicks-ass.net>
+ <7190a58e-05f2-216c-8b36-70692fa722bf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180612014911.GA35749@rodete-desktop-imager.corp.google.com>
+In-Reply-To: <7190a58e-05f2-216c-8b36-70692fa722bf@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, Jun 12, 2018 at 07:02:57PM +0200, Daniel Lezcano wrote:
+> Mmh, it is unclear for me if the park() vs wakeup() can happen at the
+> same time.
+> 
+> If the park() function is called, that means the hotplug is allowed.
 
-On Mon, Jun 11, 2018 at 06:49:13PM -0700, Brian Norris wrote:
-> Hi!
+No, it means we're inside hot-un-plug, but that doesn't stop the hrtimer
+from firing.
+
+> If the hotplug is allowed, we can modify the online mask.
 > 
-> A few comments, but I didn't get to finish a thorough review yet.
+> What happens with the online mask when we are processing it in an
+> interrupt context ?
+
+RCU-like, if you observe a CPU in the online mask, it will stay
+available, but the bit might get cleared.
+
+> > Maybe avoid the issue entire by having a
+> > {period,idle} tuple, where your old run := period - idle.
 > 
-> 
-> On Thu, Jun 07, 2018 at 11:12:12AM -0700, Matthias Kaehlcke wrote:
-> > The purpose of the throttler is to provide support for non-thermal
-> > throttling. Throttling is triggered by external event, e.g. the
-> > detection of a high battery discharge current, close to the OCP limit
-> > of the battery. The throttler is only in charge of the throttling, not
-> > the monitoring, which is done by another (possibly platform specific)
-> > driver.
+> Can you elaborate ? I don't get it.
+
+Have a period parameter that specifies the interval in which you have
+one injected idle, and specify for how long you want to inject idle;
+then obviously idle < period.
+
+> >>> Furthermore, should you not be using hrtimer_forward(&timer,
+> >>> idle_duration + run_duration) instead? AFAICT the current scheme is
+> >>> prone to drifting.
+> >>
+> >> (I assume you meant setting the timer in the wakeup task function).
+> >>
+> >> Yes, drifting is not an issue if that happens. This scheme is simpler
+> >> and safer than setting the timer ahead before waking up the tasks with
+> >> the risk it expires before all the tasks ended their idle cycles.
 > > 
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> > Changes in v2:
-> > - completely reworked the driver to support configuration through OPPs, which
-> >   requires a more dynamic handling
-> > - added sysfs attribute to set the level for debugging and testing
-> > - Makefile: depend on Kconfig option to traverse throttler directory
-> > - Kconfig: removed 'default n'
-> > - added SPDX line instead of license boiler-plate
-> > - added entry to MAINTAINERS file
-> > 
-> > 
-> >  MAINTAINERS                     |   7 +
-> >  drivers/misc/Kconfig            |   1 +
-> >  drivers/misc/Makefile           |   1 +
-> >  drivers/misc/throttler/Kconfig  |  14 +
-> >  drivers/misc/throttler/Makefile |   1 +
-> >  drivers/misc/throttler/core.c   | 642 ++++++++++++++++++++++++++++++++
-> >  include/linux/throttler.h       |  11 +
-> >  7 files changed, 677 insertions(+)
-> >  create mode 100644 drivers/misc/throttler/Kconfig
-> >  create mode 100644 drivers/misc/throttler/Makefile
-> >  create mode 100644 drivers/misc/throttler/core.c
-> >  create mode 100644 include/linux/throttler.h
-> > 
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 92e47b5b0480..f9550e5680ce 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -13938,6 +13938,13 @@ T:	git git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git
-> >  S:	Maintained
-> >  F:	drivers/platform/x86/thinkpad_acpi.c
-> >  
-> > +THROTTLER DRIVERS
-> > +M:	Matthias Kaehlcke <mka@chromium.org>
-> > +L:	linux-pm@vger.kernel.org
-> > +S:	Maintained
-> > +F:	drivers/misc/throttler/
-> > +F:	include/linux/throttler.h
-> > +
-> >  THUNDERBOLT DRIVER
-> >  M:	Andreas Noever <andreas.noever@gmail.com>
-> >  M:	Michael Jamet <michael.jamet@intel.com>
-> > diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-> > index 5d713008749b..691d9625d83c 100644
-> > --- a/drivers/misc/Kconfig
-> > +++ b/drivers/misc/Kconfig
-> > @@ -513,4 +513,5 @@ source "drivers/misc/echo/Kconfig"
-> >  source "drivers/misc/cxl/Kconfig"
-> >  source "drivers/misc/ocxl/Kconfig"
-> >  source "drivers/misc/cardreader/Kconfig"
-> > +source "drivers/misc/throttler/Kconfig"
-> >  endmenu
-> > diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-> > index 20be70c3f118..b549ccad5215 100644
-> > --- a/drivers/misc/Makefile
-> > +++ b/drivers/misc/Makefile
-> > @@ -57,3 +57,4 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
-> >  obj-$(CONFIG_PCI_ENDPOINT_TEST)	+= pci_endpoint_test.o
-> >  obj-$(CONFIG_OCXL)		+= ocxl/
-> >  obj-$(CONFIG_MISC_RTSX)		+= cardreader/
-> > +obj-$(CONFIG_THROTTLER)		+= throttler/
-> > diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
-> > new file mode 100644
-> > index 000000000000..e561f1df5085
-> > --- /dev/null
-> > +++ b/drivers/misc/throttler/Kconfig
-> > @@ -0,0 +1,14 @@
-> > +# SPDX-License-Identifier: GPL-2.0
-> > +
-> > +menuconfig THROTTLER
-> > +	bool "Throttler support"
-> > +	depends on OF
-> > +	select CPU_FREQ
-> > +	select PM_DEVFREQ
+> > sloppy though..
 > 
-> I'm curious whether we're actually truly compile-time dependent on
-> {CPU,DEV}FREQ? It seems like those subsystems mostly stub out stuff so
-> they fall back to no-ops if not built in.
->
-> I know that's not very useful for your existing throttler, since it
-> wouldn't be very effective if one or both were disabled.
+> Ok, do you prefer to see the timer set in the wakeup function and thus
+> having a periodic tick for the idle injection ?
 
-The idea is not to depend on both options being enabled, since
-throttling of one type might be all that is needed.
-
-As the build bot pointed out cpufreq doesn't stub out all functions.
-Probably the cleanest way to work around this is to define a stub for
-cpufreq_update_policy() in the throttler when CONFIG_CPU_FREQ is not
-defined.
-
-> > diff --git a/drivers/misc/throttler/core.c b/drivers/misc/throttler/core.c
-> > new file mode 100644
-> > index 000000000000..15b50c111032
-> > --- /dev/null
-> > +++ b/drivers/misc/throttler/core.c
-> > ...
-> > +// #define DEBUG_THROTTLER
-> 
-> Did you mean to leave your debug code in? Seems like you have some
-> related dead code under #ifdefs.
-
-Yes, I left it in intentionally.
-
-> (If you do want this, maybe it'd be better under debugfs, until somebody
-> really wants to formalize and document it.)
-
-Since it is code that is never enabled in an official kernel build I
-found it simpler to use sysfs with a direct association with the
-device, instead of having <debugfs>/throttler/<throttler_name>/level.
-
-If folks have strong opinions about using debugfs or not having the
-debug code at all I'm fine with changing/dropping it.
-
-> > +static int thr_init_freq_table(struct throttler *thr, struct device *opp_dev,
-> > +			       struct thr_freq_table *ft)
-> > +{
-> > +	struct device_node *np_opp_desc, *np_opp;
-> > +	int nchilds;
-> > +	uint32_t *freqs;
-> > +	int nfreqs = 0;
-> > +	int err = 0;
-> > +
-> > +	np_opp_desc = dev_pm_opp_of_get_opp_desc_node(opp_dev);
-> > +	if (!np_opp_desc)
-> > +		return -EINVAL;
-> > +
-> > +	nchilds = of_get_child_count(np_opp_desc);
-> > +	if (!nchilds) {
-> > +		err = -EINVAL;
-> > +		goto out_node_put;
-> > +	}
-> > +
-> > +	freqs = kzalloc(nchilds * sizeof(uint32_t), GFP_KERNEL);
-> > +	if (!freqs) {
-> > +		err = -ENOMEM;
-> > +		goto out_node_put;
-> > +	}
-> > +
-> > +	/* determine which OPPs are used by this throttler (if any) */
-> > +	for_each_child_of_node(np_opp_desc, np_opp) {
-> > +		int num_thr;
-> > +		int i;
-> > +
-> > +		num_thr = of_property_count_u32_elems(np_opp, "opp-throttlers");
-> > +		if (num_thr < 0)
-> > +			continue;
-> > +
-> > +		for (i = 0; i < num_thr; i++) {
-> > +			struct device_node *np_thr;
-> > +			struct platform_device *pdev;
-> > +
-> > +			np_thr = of_parse_phandle(np_opp, "opp-throttlers", i);
-> > +			if (!np_thr) {
-> > +				dev_err(thr->dev,
-> > +					"failed to parse phandle %d: %s\n", i,
-> > +					np_opp->full_name);
-> > +				continue;
-> > +			}
-> > +
-> > +			pdev = of_find_device_by_node(np_thr);
-> > +			if (!pdev) {
-> > +				dev_err(thr->dev,
-> > +					"could not find throttler dev: %s\n",
-> > +					 np_thr->full_name);
-> > +				of_node_put(np_thr);
-> > +				continue;
-> > +			}
-> > +
-> > +			/* OPP is used by this throttler */
-> > +			if (&pdev->dev == thr->dev) {
-> 
-> So you're assuming that all throttlers are platform devices? Seems
-> slightly shaky; I could easily imagine a similar device that's a SPI or
-> I2C device.
-
-As of now that's the only existing throttler. Adding handling for
-throttlers on other buses that might never be implemented seems
-premature. If throttlers with other bus types are added the core
-code can be extended to support this using
-of_find_i2c_device_by_node(), of_find_spi_device_by_node(), etc
-
-Thanks
-
-Matthias
+I think having a HRTIMER_RESTART handler that does hrtimer_forward() is
+the most sensible. You will end up having to deal with threads not being
+ready, but I think that's not a real problem.
