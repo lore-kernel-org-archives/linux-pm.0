@@ -1,48 +1,76 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 5/5] thermal: tsens: Check if we have valid data before reading
-Date: Tue, 12 Jun 2018 13:54:57 +0300
-Message-ID: <021331bdb04642e9ddf34accda65a93b850c4a23.1528799892.git.amit.kucheria@linaro.org>
-References: <cover.1528799892.git.amit.kucheria@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / core: Fix supplier device runtime PM usage counter imbalance
+Date: Tue, 12 Jun 2018 13:00:20 +0200
+Message-ID: <10125310.W3e2TP0641@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1528799892.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1528799892.git.amit.kucheria@linaro.org>
-References: <cover.1528799892.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lukas Wunner <lukas@wunner.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/qcom/tsens-common.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 961ace4..f510e61 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -114,6 +114,9 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
- #define STATUS_VALID_BIT	BIT(21)
- #define CODE_SIGN_BIT		BIT(11)
- 
-+#define TRDY_OFFSET     	0xe4
-+#define TRDY_READY_BIT  	BIT(0)
-+
- int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
- {
- 	struct tsens_sensor *s = &tmdev->sensor[id];
-@@ -121,6 +124,12 @@ int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
- 	unsigned int sensor_addr;
- 	int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
- 
-+	ret = regmap_read(tmdev->map, TRDY_OFFSET, &code);
-+	if (ret)
-+		return ret;
-+	if (code & TRDY_READY_BIT)
-+		return -ENODATA;
-+
- 	sensor_addr = STATUS_OFFSET + s->hw_id * 4;
- 	ret = regmap_read(tmdev->map, sensor_addr, &code);
- 	if (ret)
--- 
-2.7.4
+If a device link is added via device_link_add() by the driver of the
+link's consumer device, the supplier's runtime PM usage counter is
+going to be dropped by the pm_runtime_put_suppliers() call in
+driver_probe_device().  However, in that case it is not incremented
+unless the supplier driver is already present and the link is not
+stateless.  That leads to a runtime PM usage counter imbalance for
+the supplier device in a few cases.
+
+To prevent that from happening, bump up the supplier runtime
+PM usage counter in device_link_add() for all links with the
+DL_FLAG_PM_RUNTIME flag set that are added at the consumer probe
+time.  Use pm_runtime_get_noresume() for that as the callers of
+device_link_add() who want the supplier to be resumed by it should
+pass DL_FLAG_RPM_ACTIVE in flags to it anyway.
+
+Fixes: 21d5c57b3726 (PM / runtime: Use device links)
+Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This is a replacement for commit 1e8378619841 (PM / runtime: Fixup
+reference counting of device link suppliers at probe) that is going
+to be reverted.
+
+---
+ drivers/base/core.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+Index: linux-pm/drivers/base/core.c
+===================================================================
+--- linux-pm.orig/drivers/base/core.c
++++ linux-pm/drivers/base/core.c
+@@ -216,6 +216,13 @@ struct device_link *device_link_add(stru
+ 			link->rpm_active = true;
+ 		}
+ 		pm_runtime_new_link(consumer);
++		/*
++		 * If the link is being added by the consumer driver at probe
++		 * time, balance the decrementation of the supplier's runtime PM
++		 * usage counter after consumer probe in driver_probe_device().
++		 */
++		if (consumer->links.status == DL_DEV_PROBING)
++			pm_runtime_get_noresume(supplier);
+ 	}
+ 	get_device(supplier);
+ 	link->supplier = supplier;
+@@ -234,14 +241,6 @@ struct device_link *device_link_add(stru
+ 		case DL_DEV_DRIVER_BOUND:
+ 			switch (consumer->links.status) {
+ 			case DL_DEV_PROBING:
+-				/*
+-				 * Balance the decrementation of the supplier's
+-				 * runtime PM usage counter after consumer probe
+-				 * in driver_probe_device().
+-				 */
+-				if (flags & DL_FLAG_PM_RUNTIME)
+-					pm_runtime_get_sync(supplier);
+-
+ 				link->status = DL_STATE_CONSUMER_PROBE;
+ 				break;
+ 			case DL_DEV_DRIVER_BOUND:
