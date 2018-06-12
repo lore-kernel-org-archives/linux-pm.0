@@ -1,95 +1,200 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / core: Fix supplier device runtime PM usage counter imbalance
-Date: Tue, 12 Jun 2018 21:43:45 +0200
-Message-ID: <CAPDyKFpSx7Kif_AtrVNtPSW0gy4058VBCfFQgMqMWVQGq+2BXA@mail.gmail.com>
-References: <CGME20180612110807epcas5p10e076681eac6f50b01840c0052748d12@epcas5p1.samsung.com>
- <10125310.W3e2TP0641@aspire.rjw.lan> <20180612124424eucas1p101e61369a42132234d103ce52918b08e~3akoRUwbQ3138731387eucas1p17@eucas1p1.samsung.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH v2 09/11] misc: throttler: Add core support for
+ non-thermal throttling
+Date: Tue, 12 Jun 2018 13:00:14 -0700
+Message-ID: <20180612200012.GA99983@rodete-desktop-imager.corp.google.com>
+References: <20180607181214.30338-1-mka@chromium.org>
+ <20180607181214.30338-10-mka@chromium.org>
+ <20180612014911.GA35749@rodete-desktop-imager.corp.google.com>
+ <20180612171140.GH88063@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180612124424eucas1p101e61369a42132234d103ce52918b08e~3akoRUwbQ3138731387eucas1p17@eucas1p1.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20180612171140.GH88063@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 June 2018 at 14:44, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
-> Hi Rafael,
->
-> On 2018-06-12 13:00, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> If a device link is added via device_link_add() by the driver of the
->> link's consumer device, the supplier's runtime PM usage counter is
->> going to be dropped by the pm_runtime_put_suppliers() call in
->> driver_probe_device().  However, in that case it is not incremented
->> unless the supplier driver is already present and the link is not
->> stateless.  That leads to a runtime PM usage counter imbalance for
->> the supplier device in a few cases.
->>
->> To prevent that from happening, bump up the supplier runtime
->> PM usage counter in device_link_add() for all links with the
->> DL_FLAG_PM_RUNTIME flag set that are added at the consumer probe
->> time.  Use pm_runtime_get_noresume() for that as the callers of
->> device_link_add() who want the supplier to be resumed by it should
->> pass DL_FLAG_RPM_ACTIVE in flags to it anyway.
->>
->> Fixes: 21d5c57b3726 (PM / runtime: Use device links)
->> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>
->> This is a replacement for commit 1e8378619841 (PM / runtime: Fixup
->> reference counting of device link suppliers at probe) that is going
->> to be reverted.
->
-> Thanks Rafael for the patch. I've applied it and now I'm a bit puzzled.
-> Let's get back to my IOMMU and codec case, mentioned here:
-> https://marc.info/?l=linux-pm&m=152878741527962&w=2
->
-> Now, after applying your patch, when IOMMU creates a link with
-> DL_FLAG_PM_RUNTIME to the jpeg device (this happens when jpeg device is
-> being probed), it is not IOMMU is not runtime resumed anymore (that's
-> because the patch changes pm_runtime_get_sync to pm_runtime_get_noresume).
+Hi,
 
-According to your earlier replies, I thought this is what you wanted. No?
+On Tue, Jun 12, 2018 at 10:11:40AM -0700, Matthias Kaehlcke wrote:
+> On Mon, Jun 11, 2018 at 06:49:13PM -0700, Brian Norris wrote:
+> > On Thu, Jun 07, 2018 at 11:12:12AM -0700, Matthias Kaehlcke wrote:
+> > > The purpose of the throttler is to provide support for non-thermal
+> > > throttling. Throttling is triggered by external event, e.g. the
+> > > detection of a high battery discharge current, close to the OCP limit
+> > > of the battery. The throttler is only in charge of the throttling, not
+> > > the monitoring, which is done by another (possibly platform specific)
+> > > driver.
+> > > 
+> > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > > ---
+> > > Changes in v2:
+> > > - completely reworked the driver to support configuration through OPPs, which
+> > >   requires a more dynamic handling
+> > > - added sysfs attribute to set the level for debugging and testing
+> > > - Makefile: depend on Kconfig option to traverse throttler directory
+> > > - Kconfig: removed 'default n'
+> > > - added SPDX line instead of license boiler-plate
+> > > - added entry to MAINTAINERS file
+> > > 
+> > > 
+> > >  MAINTAINERS                     |   7 +
+> > >  drivers/misc/Kconfig            |   1 +
+> > >  drivers/misc/Makefile           |   1 +
+> > >  drivers/misc/throttler/Kconfig  |  14 +
+> > >  drivers/misc/throttler/Makefile |   1 +
+> > >  drivers/misc/throttler/core.c   | 642 ++++++++++++++++++++++++++++++++
+> > >  include/linux/throttler.h       |  11 +
+> > >  7 files changed, 677 insertions(+)
+> > >  create mode 100644 drivers/misc/throttler/Kconfig
+> > >  create mode 100644 drivers/misc/throttler/Makefile
+> > >  create mode 100644 drivers/misc/throttler/core.c
+> > >  create mode 100644 include/linux/throttler.h
+> > > 
 
-> This means that until jpeg driver enables runtime pm for its device and
-> finally performs runtime pm suspends/resume cycle, the supplier won't be
-> resumed.
+...
 
-What's the problem with that? When does the IOMMU device needs to be
-runtime resumed?
+> > > diff --git a/drivers/misc/throttler/Kconfig b/drivers/misc/throttler/Kconfig
+> > > new file mode 100644
+> > > index 000000000000..e561f1df5085
+> > > --- /dev/null
+> > > +++ b/drivers/misc/throttler/Kconfig
+> > > @@ -0,0 +1,14 @@
+> > > +# SPDX-License-Identifier: GPL-2.0
+> > > +
+> > > +menuconfig THROTTLER
+> > > +	bool "Throttler support"
+> > > +	depends on OF
+> > > +	select CPU_FREQ
+> > > +	select PM_DEVFREQ
+> > 
+> > I'm curious whether we're actually truly compile-time dependent on
+> > {CPU,DEV}FREQ? It seems like those subsystems mostly stub out stuff so
+> > they fall back to no-ops if not built in.
+> >
+> > I know that's not very useful for your existing throttler, since it
+> > wouldn't be very effective if one or both were disabled.
+> 
+> The idea is not to depend on both options being enabled, since
+> throttling of one type might be all that is needed.
 
-> On the other hand, when I add DL_FLAG_RPM_ACTIVE flag to link
-> creation, the supplier is properly resumed, but then, once the jpeg
-> device probe finishes, the supplier is still in runtime active state
-> until a next runtime suspend/resume cycle of jpeg device.
+OK, then if you fix the build errors...don't do these 'select's here?
 
-Could you elaborate on the what happens in jpeg driver during probe,
-in regards to runtime PM. Perhaps you can also point me to what driver
-it is?
+> As the build bot pointed out cpufreq doesn't stub out all functions.
+> Probably the cleanest way to work around this is to define a stub for
+> cpufreq_update_policy() in the throttler when CONFIG_CPU_FREQ is not
+> defined.
 
-> If I understand
-> right, the DL_FLAG_RPM_ACTIVE flag should be there from the beginning,
-> but that time it runtime pm part of links worked in a bit different way
-> than now.
+Might make sense.
 
-Just to make sure, you also reverted 1e8378619841, before trying
-Rafael's change on top?
+Also, how is it that CONFIG_CPU_FREQ managed to not be defined, even
+though you 'select'ed it? Was the kbuild error on some oddball
+architecture that doesn't support CPU_FREQ?
 
->
-> Is there any way to keep old behavior?
+> > > diff --git a/drivers/misc/throttler/core.c b/drivers/misc/throttler/core.c
+> > > new file mode 100644
+> > > index 000000000000..15b50c111032
+> > > --- /dev/null
+> > > +++ b/drivers/misc/throttler/core.c
+> > > ...
+> > > +// #define DEBUG_THROTTLER
+> > 
+> > Did you mean to leave your debug code in? Seems like you have some
+> > related dead code under #ifdefs.
+> 
+> Yes, I left it in intentionally.
+> 
+> > (If you do want this, maybe it'd be better under debugfs, until somebody
+> > really wants to formalize and document it.)
+> 
+> Since it is code that is never enabled in an official kernel build I
+> found it simpler to use sysfs with a direct association with the
+> device, instead of having <debugfs>/throttler/<throttler_name>/level.
+> 
+> If folks have strong opinions about using debugfs or not having the
+> debug code at all I'm fine with changing/dropping it.
 
-I think the old behavior is sub-optimal. I am sure there are users
-that really don't want the driver core to runtime resume the supplier
-unconditionally.
+If you ever expect this to actually get merged, I'd think we should go
+with one way or the other. Dead code is not appreciated in mainline, so
+either make it something people can actually have a chance of using
+(e.g., a CONFIG_* option or debugfs), or else drop it.
 
-I would rather go and fix the few users of device_link_add(), to use
-DL_FLAG_RPM_ACTIVE, in cases when they need it. Of course I am fine if
-we do these changes in a step by step basis as well.
+> > > +static int thr_init_freq_table(struct throttler *thr, struct device *opp_dev,
+> > > +			       struct thr_freq_table *ft)
+> > > +{
+> > > +	struct device_node *np_opp_desc, *np_opp;
+> > > +	int nchilds;
+> > > +	uint32_t *freqs;
+> > > +	int nfreqs = 0;
+> > > +	int err = 0;
+> > > +
+> > > +	np_opp_desc = dev_pm_opp_of_get_opp_desc_node(opp_dev);
+> > > +	if (!np_opp_desc)
+> > > +		return -EINVAL;
+> > > +
+> > > +	nchilds = of_get_child_count(np_opp_desc);
+> > > +	if (!nchilds) {
+> > > +		err = -EINVAL;
+> > > +		goto out_node_put;
+> > > +	}
+> > > +
+> > > +	freqs = kzalloc(nchilds * sizeof(uint32_t), GFP_KERNEL);
+> > > +	if (!freqs) {
+> > > +		err = -ENOMEM;
+> > > +		goto out_node_put;
+> > > +	}
+> > > +
+> > > +	/* determine which OPPs are used by this throttler (if any) */
+> > > +	for_each_child_of_node(np_opp_desc, np_opp) {
+> > > +		int num_thr;
+> > > +		int i;
+> > > +
+> > > +		num_thr = of_property_count_u32_elems(np_opp, "opp-throttlers");
+> > > +		if (num_thr < 0)
+> > > +			continue;
+> > > +
+> > > +		for (i = 0; i < num_thr; i++) {
+> > > +			struct device_node *np_thr;
+> > > +			struct platform_device *pdev;
+> > > +
+> > > +			np_thr = of_parse_phandle(np_opp, "opp-throttlers", i);
+> > > +			if (!np_thr) {
+> > > +				dev_err(thr->dev,
+> > > +					"failed to parse phandle %d: %s\n", i,
+> > > +					np_opp->full_name);
+> > > +				continue;
+> > > +			}
+> > > +
+> > > +			pdev = of_find_device_by_node(np_thr);
+> > > +			if (!pdev) {
+> > > +				dev_err(thr->dev,
+> > > +					"could not find throttler dev: %s\n",
+> > > +					 np_thr->full_name);
+> > > +				of_node_put(np_thr);
+> > > +				continue;
+> > > +			}
+> > > +
+> > > +			/* OPP is used by this throttler */
+> > > +			if (&pdev->dev == thr->dev) {
+> > 
+> > So you're assuming that all throttlers are platform devices? Seems
+> > slightly shaky; I could easily imagine a similar device that's a SPI or
+> > I2C device.
+> 
+> As of now that's the only existing throttler. Adding handling for
+> throttlers on other buses that might never be implemented seems
+> premature. If throttlers with other bus types are added the core
+> code can be extended to support this using
+> of_find_i2c_device_by_node(), of_find_spi_device_by_node(), etc
 
-[...]
+I suppose...but it feels like there should be a better way to do this
+that isn't specific to a particular bus.
 
-Kind regards
-Uffe
+If you're not going to fix this, then maybe you should force callers to
+pass a plaform_device instead of device, to make it extra clear that
+other devices are not supported.
+
+Brian
