@@ -1,7 +1,7 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v4.18-rc1 #1
-Date: Wed, 13 Jun 2018 00:14:58 +0800
-Message-ID: <1528820098.2661.28.camel@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.18-rc1 #2
+Date: Wed, 13 Jun 2018 00:23:16 +0800
+Message-ID: <1528820596.2661.34.camel@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
@@ -14,61 +14,163 @@ List-Id: linux-pm@vger.kernel.org
 Hi, Linus,
 
 Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
+thermal.git linus
 
-to receive the latest Thermal Management updates for v4.18-rc1 with
-top-most commit e9ed3ee61aa62ce280aadeeea1ec959f0c66a290:
+to receive the latest Thermal SoC management updates for v4.18-rc1 with
+top-most commit 6d7c70d1cd6526dc79e3d3b3faae1c40c1681168:
 
-  Merge branches 'thermal-core' and 'thermal-intel' into next (2018-05-30 14:54:20 +0800)
+  thermal: qcom: tsens: Allow number of sensors to come from DT (2018-
+06-01 15:09:15 -0700)
 
-on top of commit 771c577c23bac90597c685971d7297ea00f99d11:
+on top of commit 701e39d05119229b92ecca4add7b7ed2193622c3:
 
-  Linux 4.17-rc6 (2018-05-20 15:31:38 -0700)
+  Merge tag 'for-linus' of git://git.kernel.org/pub/scm/virt/kvm/kvm
+(2018-05-06 05:46:29 -1000)
 
 Specifics:
 
-- convert thermal sysfs attributes to use DEVICE_ATTR_{RO|RW|WO}() variants (Viresh Kumar).
+- imx thermal driver now supports i.MX7 thermal sensor (Anson Huang).
 
-- update license to SPDX format (Lina Iyer).
+- exynos thermal driver dropped support for exynos 5440 (Krzysztof
+Kozlowski).
 
-- add GeminiLake support for int340x processor_thermal driver (Sumeet Pawnikar).
+- rcar_thermal now supports r8a77995 (Yoshihiro Kaneko).
 
-- Prevent error in reading trip hysteresis attribute for int340x thermal driver (Srinivas Pandruvada).
+- rcar_gen3_thermal now supports r8a77965 (Niklas Söderlund).
 
-I merged the thermal-soc changes from Eduardo some days ago, but without any merge message in the changelog. And I realize this is wrong after reading the discussion for the libnvdimm pull request. So, to avoid a pretty new merge commit in my pull request, I decided to send the pull requests separately this time, one for thermal core and intel thermal driver changes, and another for the other thermal soc driver changes.
+- qcom-spmi-temp-alarm now supports GEN2 PMIC peripherals (David
+Collins).
 
-BTW, for the top-most merge commit in this pull request, thermal-core and thermal-intel are not strictly topic branches, they are just collections of small patches, for thermal core framework and for Intel platform specific thermal drivers. Are you suggesting I should append the detailed specifics (like above) into the merge message as well?
+- uniphier thermal now supports UniPhier PXs3 (Kunihiko Hayashi).
+
+- mediatek thermal now supports MT7622 SoC (Sean Wang).
+
+- considerable refactoring of exynos driver (Bartlomiej
+Zolnierkiewicz).
+
+- Small fixes all over the place on different drivers.
 
 thanks,
 rui
 
 ----------------------------------------------------------------
-Lina Iyer (1):
-      drivers: thermal: Update license to SPDX format
+Anson Huang (1):
+      thermal: imx: add i.MX7 thermal sensor support
 
-Srinivas Pandruvada (1):
-      thermal: int340x: Prevent error in reading trip hysteresis
-attribute
+Bartlomiej Zolnierkiewicz (28):
+      thermal: exynos: remove unused "type" field from struct
+exynos_tmu_platform_data
+      thermal: exynos: remove parsing of samsung,
+tmu_default_temp_offset property
+      thermal: exynos: remove parsing of samsung, tmu_[first,
+second]_point_trim properties
+      thermal: exynos: remove parsing of samsung, tmu_noise_cancel_mode
+property
+      thermal: exynos: remove parsing of samsung, tmu[_min,
+_max]_efuse_value properties
+      thermal: exynos: remove parsing of samsung, tmu_reference_voltage
+property
+      thermal: exynos: remove parsing of samsung,tmu_gain property
+      thermal: exynos: remove parsing of samsung, tmu_cal_type property
+      thermal: exynos: remove separate exynos_tmu.h header file
+      thermal: exynos: fix setting rising_threshold for Exynos5433
+      thermal: exynos: always check for trips points existence
+      thermal: exynos: always check for critical trip points existence
+      thermal: exynos: check STATUS register in exynos_tmu_initialize()
+      thermal: exynos: use sanitize_temp_error() in
+exynos7_tmu_initialize()
+      thermal: exynos: fix trips limit checking in get_th_reg()
+      thermal: exynos: remove threshold_code checking from
+exynos4210_tmu_initialize()
+      thermal: exynos: make ->tmu_initialize method void
+      thermal: exynos: clear IRQs later in exynos4412_tmu_initialize()
+      thermal: exynos: move IRQs clearing to exynos_tmu_initialize()
+      thermal: exynos: add exynos*_tmu_set_[trip,hyst]() helpers
+      thermal: exynos: do not use trips structure directly in
+->tmu_initialize
+      thermal: exynos: set trips in ascending order in
+exynos7_tmu_initialize()
+      thermal: exynos: move trips setting to exynos_tmu_initialize()
+      thermal: exynos: check return values of ->get_trip_[temp, hyst]
+methods
+      thermal: exynos: cleanup code for enabling threshold interrupts
+      thermal: exynos: remove unused defines for Exynos5433
+      thermal: exynos: remove trip reporting to user-space
+      thermal: ti-soc-thermal: fix incorrect entry in
+omap5430_adc_to_temp[]
 
-Sumeet Pawnikar (1):
-      thermal: int340x: processor_thermal: Add GeminiLake support
+Bjorn Andersson (1):
+      thermal: qcom: tsens: Allow number of sensors to come from DT
 
-Viresh Kumar (2):
-      thermal: Shorten name of sysfs callbacks
-      thermal: Use DEVICE_ATTR_{RO|RW|WO}() variants
+David Collins (1):
+      thermal: qcom-spmi-temp-alarm: add support for GEN2 PMIC
+peripherals
 
-Zhang Rui (1):
-      Merge branches 'thermal-core' and 'thermal-intel' into next
+Ezequiel Garcia (1):
+      thermal: tegra: Nuke clk_{readl,writel} helpers
 
- .../thermal/int340x_thermal/int340x_thermal_zone.c |  6 +-
- .../int340x_thermal/processor_thermal_device.c     |  4 ++
- drivers/thermal/of-thermal.c                       | 19 +----
- drivers/thermal/thermal_core.c                     | 11 ++-
- drivers/thermal/thermal_core.h                     | 30 ++------
- drivers/thermal/thermal_helpers.c                  |  5 +-
- drivers/thermal/thermal_hwmon.c                    | 17 +----
- drivers/thermal/thermal_hwmon.h                    | 17 +----
- drivers/thermal/thermal_sysfs.c                    | 81 ++++++++----
-----------
- include/linux/thermal.h                            | 17 +----
- 10 files changed, 50 insertions(+), 157 deletions(-)
+Fabio Estevam (1):
+      thermal: imx: Switch to SPDX identifier
+
+Hien Dang (1):
+      thermal: rcar_gen3_thermal: Update calculation formula due to HW
+evaluation
+
+Krzysztof Kozlowski (2):
+      thermal: samsung: Remove support for Exynos5440
+      thermal: exynos: Reduce severity of too early temperature read
+
+Kunihiko Hayashi (2):
+      dt-bindings: thermal: uniphier: add a compatible string for PXs3
+      thermal: uniphier: add UniPhier PXs3 support
+
+Maciej Purski (1):
+      thermal: exynos: Read soc_type from match data
+
+Marek Szyprowski (2):
+      thermal: exynos: Reading temperature makes sense only when TMU is
+turned on
+      thermal: exynos: Propagate error value from tmu_read()
+
+Niklas Söderlund (3):
+      thermal: rcar_gen3_thermal: update max temperature clamp
+      dt-bindings: thermal: rcar-gen3-thermal: add r8a77965
+      thermal: rcar_gen3_thermal: add r8a77965 support
+
+Ryder Lee (1):
+      thermal: mediatek: use of_device_get_match_data()
+
+Sean Wang (2):
+      dt-bindings: thermal: add binding for MT7622 SoC
+      thermal: mediatek: add support for MT7622 SoC
+
+Yoshihiro Kaneko (2):
+      dt-bindings: thermal: rcar-thermal: add R8A77995 support
+      thermal: rcar_thermal: add r8a77995 support
+
+srplinux2008 (1):
+      thermal: tegra: soctherm: add const to struct
+thermal_cooling_device_ops
+
+ .../devicetree/bindings/thermal/exynos-thermal.txt |  14 +-
+ .../devicetree/bindings/thermal/imx-thermal.txt    |   9 +-
+ .../bindings/thermal/mediatek-thermal.txt          |   1 +
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |   1 +
+ .../bindings/thermal/rcar-gen3-thermal.txt         |   3 +-
+ .../devicetree/bindings/thermal/rcar-thermal.txt   |   7 +-
+ .../bindings/thermal/uniphier-thermal.txt          |   1 +
+ drivers/thermal/imx_thermal.c                      | 306 +++++--
+ drivers/thermal/mtk_thermal.c                      |  40 +-
+ drivers/thermal/qcom-spmi-temp-alarm.c             |  92 +-
+ drivers/thermal/qcom/tsens.c                       |  12 +-
+ drivers/thermal/rcar_gen3_thermal.c                |  17 +-
+ drivers/thermal/rcar_thermal.c                     | 158 +++-
+ drivers/thermal/samsung/exynos_tmu.c               | 971 ++++++++-----
+--------
+ drivers/thermal/samsung/exynos_tmu.h               |  75 --
+ drivers/thermal/tegra/soctherm.c                   |  31 +-
+ .../thermal/ti-soc-thermal/omap5-thermal-data.c    |   2 +-
+ drivers/thermal/uniphier_thermal.c                 |   4 +
+ 18 files changed, 861 insertions(+), 883 deletions(-)
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu.h
