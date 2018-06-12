@@ -1,51 +1,66 @@
 From: Anchal Agarwal <anchalag@amazon.com>
-Subject: [RFC PATCH 12/12] PM / hibernate: update the resume
- offset on SNAPSHOT_SET_SWAP_AREA
-Date: Tue, 12 Jun 2018 20:56:19 +0000
-Message-ID: <20180612205619.28156-13-anchalag@amazon.com>
+Subject: [RFC PATCH 10/12] xen/events: add xen_shutdown_pirqs helper function
+Date: Tue, 12 Jun 2018 20:56:17 +0000
+Message-ID: <20180612205619.28156-11-anchalag@amazon.com>
 References: <20180612205619.28156-1-anchalag@amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xenproject.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180612205619.28156-1-anchalag@amazon.com>
-List-Unsubscribe: <https://lists.xenproject.org/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xenproject.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xenproject.org>
-List-Help: <mailto:xen-devel-request@lists.xenproject.org?subject=help>
-List-Subscribe: <https://lists.xenproject.org/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xenproject.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xenproject.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xenproject.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
-Cc: jgross@suse.com, len.brown@intel.com, eduval@amazon.com, vallish@amazon.com, netdev@vger.kernel.org, fllinden@amazon.com, kamatam@amazon.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anchalag@amazon.com, cyberax@amazon.com, pavel@ucw.cz, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, boris.ostrovsky@oracle.com, guruanb@amazon.com, roger.pau@citrix.com
+Cc: boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, roger.pau@citrix.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, anchalag@amazon.com, fllinden@amazon.com, vallish@amazon.com, guruanb@amazon.com, eduval@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogQWxla3NlaSBCZXNvZ29ub3YgPGN5YmVyYXhAYW1hem9uLmNvbT4KClRoZSBTTkFQU0hP
-VF9TRVRfU1dBUF9BUkVBIGlzIHN1cHBvc2VkIHRvIGJlIHVzZWQgdG8gc2V0IHRoZSBoaWJlcm5h
-dGlvbgpvZmZzZXQgb24gYSBydW5uaW5nIGtlcm5lbCB0byBlbmFibGUgaGliZXJuYXRpbmcgdG8g
-YSBzd2FwIGZpbGUuCkhvd2V2ZXIsIGl0IGRvZXNuJ3QgYWN0dWFsbHkgdXBkYXRlIHRoZSBzd3N1
-c3BfcmVzdW1lX2Jsb2NrIHZhcmlhYmxlLiBBcwphIHJlc3VsdCwgdGhlIGhpYmVybmF0aW9uIGZh
-aWxzIGF0IHRoZSBsYXN0IHN0ZXAgKGFmdGVyIGFsbCB0aGUgZGF0YSBpcwp3cml0dGVuIG91dCkg
-aW4gdGhlIHZhbGlkYXRpb24gb2YgdGhlIHN3YXAgc2lnbmF0dXJlIGluCm1hcmtfc3dhcGZpbGVz
-KCkuCgpCZWZvcmUgdGhpcyBwYXRjaCwgdGhlIGNvbW1hbmQgbGluZSBwcm9jZXNzaW5nIHdhcyB0
-aGUgb25seSBwbGFjZSB3aGVyZQpzd3N1c3BfcmVzdW1lX2Jsb2NrIHdhcyBzZXQuCgpTaWduZWQt
-b2ZmLWJ5OiBBbGVrc2VpIEJlc29nb25vdiA8Y3liZXJheEBhbWF6b24uY29tPgpTaWduZWQtb2Zm
-LWJ5OiBNdW5laGlzYSBLYW1hdGEgPGthbWF0YW1AYW1hem9uLmNvbT4KU2lnbmVkLW9mZi1ieTog
-QW5jaGFsIEFnYXJ3YWwgPGFuY2hhbGFnQGFtYXpvbi5jb20+ClJldmlld2VkLWJ5OiBNdW5laGlz
-YSBLYW1hdGEgPGthbWF0YW1AYW1hem9uLmNvbT4KUmV2aWV3ZWQtYnk6IEVkdWFyZG8gVmFsZW50
-aW4gPGVkdXZhbEBhbWF6b24uY29tPgotLS0KIGtlcm5lbC9wb3dlci91c2VyLmMgfCA2ICsrKysr
-LQogMSBmaWxlIGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAt
-LWdpdCBhL2tlcm5lbC9wb3dlci91c2VyLmMgYi9rZXJuZWwvcG93ZXIvdXNlci5jCmluZGV4IGFi
-ZDIyNTUuLmI1MjJhNDIgMTAwNjQ0Ci0tLSBhL2tlcm5lbC9wb3dlci91c2VyLmMKKysrIGIva2Vy
-bmVsL3Bvd2VyL3VzZXIuYwpAQCAtMzc5LDggKzM3OSwxMiBAQCBzdGF0aWMgbG9uZyBzbmFwc2hv
-dF9pb2N0bChzdHJ1Y3QgZmlsZSAqZmlscCwgdW5zaWduZWQgaW50IGNtZCwKIAkJCWlmIChzd2Rl
-dikgewogCQkJCW9mZnNldCA9IHN3YXBfYXJlYS5vZmZzZXQ7CiAJCQkJZGF0YS0+c3dhcCA9IHN3
-YXBfdHlwZV9vZihzd2Rldiwgb2Zmc2V0LCBOVUxMKTsKLQkJCQlpZiAoZGF0YS0+c3dhcCA8IDAp
-CisJCQkJaWYgKGRhdGEtPnN3YXAgPCAwKSB7CiAJCQkJCWVycm9yID0gLUVOT0RFVjsKKwkJCQl9
-IGVsc2UgeworCQkJCQlzd3N1c3BfcmVzdW1lX2RldmljZSA9IHN3ZGV2OworCQkJCQlzd3N1c3Bf
-cmVzdW1lX2Jsb2NrID0gb2Zmc2V0OworCQkJCX0KIAkJCX0gZWxzZSB7CiAJCQkJZGF0YS0+c3dh
-cCA9IC0xOwogCQkJCWVycm9yID0gLUVJTlZBTDsKLS0gCjIuNy40CgoKX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVsIG1haWxpbmcgbGlzdApY
-ZW4tZGV2ZWxAbGlzdHMueGVucHJvamVjdC5vcmcKaHR0cHM6Ly9saXN0cy54ZW5wcm9qZWN0Lm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL3hlbi1kZXZlbA==
+From: Munehisa Kamata <kamatam@amazon.com>
+
+Add a simple helper function to "shutdown" active PIRQs, which actually
+closes event channels but keeps related IRQ structures intact. PM
+suspend/hibernation code will rely on this.
+
+Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
+Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
+Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
+Reviewed-by: Eduardo Valentin <eduval@amazon.com>
+---
+ drivers/xen/events/events_base.c | 12 ++++++++++++
+ include/xen/events.h             |  1 +
+ 2 files changed, 13 insertions(+)
+
+diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
+index 762378f..88137c8 100644
+--- a/drivers/xen/events/events_base.c
++++ b/drivers/xen/events/events_base.c
+@@ -1581,6 +1581,18 @@ void xen_irq_resume(void)
+ 	restore_pirqs();
+ }
+ 
++void xen_shutdown_pirqs(void)
++{
++	struct irq_info *info;
++
++	list_for_each_entry(info, &xen_irq_list_head, list) {
++		if (info->type != IRQT_PIRQ || !VALID_EVTCHN(info->evtchn))
++			continue;
++
++		shutdown_pirq(irq_get_irq_data(info->irq));
++	}
++}
++
+ static struct irq_chip xen_dynamic_chip __read_mostly = {
+ 	.name			= "xen-dyn",
+ 
+diff --git a/include/xen/events.h b/include/xen/events.h
+index c3e6bc6..e4d5ccb 100644
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -70,6 +70,7 @@ static inline void notify_remote_via_evtchn(int port)
+ void notify_remote_via_irq(int irq);
+ 
+ void xen_irq_resume(void);
++void xen_shutdown_pirqs(void);
+ 
+ /* Clear an irq's pending state, in preparation for polling on it */
+ void xen_clear_irq_pending(int irq);
+-- 
+2.7.4
