@@ -1,559 +1,94 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V6] powercap/drivers/idle_injection: Add an idle injection framework
-Date: Tue, 12 Jun 2018 14:00:11 +0200
-Message-ID: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v4 2/2] dt-bindings: power: sbs-battery: re-document
+ "ti,bq20z75"
+Date: Tue, 12 Jun 2018 14:30:30 +0200
+Message-ID: <20180612123030.l4ezeaw7674ig5kq@earth.universe>
+References: <20180608223655.33565-1-briannorris@chromium.org>
+ <20180608223655.33565-2-briannorris@chromium.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="h4ysnlvpkncnk5pp"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180608223655.33565-2-briannorris@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org, rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
+To: Brian Norris <briannorris@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
 
-Initially, the cpu_cooling device for ARM was changed by adding a new
-policy inserting idle cycles. The intel_powerclamp driver does a
-similar action.
 
-Instead of implementing idle injections privately in the cpu_cooling
-device, move the idle injection code in a dedicated framework and give
-the opportunity to other frameworks to make use of it.
+--h4ysnlvpkncnk5pp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The framework relies on the smpboot kthreads which handles via its
-main loop the common code for hotplugging and [un]parking.
+Hi,
 
-This code was previously tested with the cpu cooling device and went
-through several iterations. It results now in split code and API
-exported in the header file. It was tested with the cpu cooling device
-with success.
+On Fri, Jun 08, 2018 at 03:36:55PM -0700, Brian Norris wrote:
+> This compatible property was documented before the driver was renamed to
+> "SBS" (see commit e57f1b68c406 ("devicetree-bindings: Propagate
+> bq20z75->sbs rename to dt bindings")). The driver has continued to
+> support this property as an alternative to "sbs,sbs-battery", and
+> because we've noticed there are some lingering TI specifics (in the
+> manufacturer-specific portion of the SBS spec), we'd like to start using
+> this property again to differentiate.
+>=20
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> Acked-by: Rhyland Klein <rklein@nvidia.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> ---
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Javi Merino <javi.merino@kernel.org>
-Cc: Leo Yan <leo.yan@linaro.org>
-Cc: Kevin Wangtao <kevin.wangtao@linaro.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Rui Zhang <rui.zhang@intel.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrea Parri <andrea.parri@amarulasolutions.com>
----
-V6:
-   - Move count to wake up function (Viresh Kumar)
-   - Split atomic/non-atomic context to wake up tasks
-   - Add the park callback to handle unplug/inject race
-   - Replace atomic by READ_ONCE and WRITE_ONCE (Peter Zijlstra)
+Please use "sbs,sbs-battery" as fallback, just like sbs-manager and
+sbs-charger, see for example:
 
-V5:
-   - Move init_completion in the init function (Viresh Kumar)
-   - Increment task count in the wakeup function (Viresh Kumar)
-   - Remove rollback at init time (Viresh Kumar)
+Documentation/devicetree/bindings/power/supply/sbs_sbs-charger.txt
 
-V4:
-   - Wait for completion when stopping (Viresh Kumar)
-   - Check init already done and rollback (Viresh Kumar)
+-- Sebastian
 
-V3:
-   - Fixed typos (Viresh Kumar)
-   - Removed extra blank line (Viresh Kumar)
-   - Added full stop (Viresh Kumar)
-   - Fixed Return kerneldoc format (Viresh Kumar)
-   - Fixed multiple kthreads initialization (Viresh Kumar)
-   - Fixed rollbacking the actions in the unregister function (Viresh Kumar)
-   - Make idle injection kthreads name hardcoded
-   - Kthreads are created in the initcall process
+> v2: add Rhyland's Acked-by
+> v3: no change
+> v4: add Rob's Reviewed-by
+> ---
+>  .../devicetree/bindings/power/supply/sbs_sbs-battery.txt        | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-batte=
+ry.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+> index c40e8926facf..a7a9c3366f82 100644
+> --- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+> @@ -2,7 +2,7 @@ SBS sbs-battery
+>  ~~~~~~~~~~
+> =20
+>  Required properties :
+> - - compatible : "sbs,sbs-battery"
+> + - compatible : "sbs,sbs-battery" or "ti,bq20z75"
+> =20
+>  Optional properties :
+>   - sbs,i2c-retry-count : The number of times to retry i2c transactions o=
+n i2c
+> --=20
+> 2.18.0.rc1.242.g61856ae69a-goog
+>=20
 
- V2: Fixed checkpatch warnings
+--h4ysnlvpkncnk5pp
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/powercap/Kconfig          |  10 +
- drivers/powercap/Makefile         |   1 +
- drivers/powercap/idle_injection.c | 414 ++++++++++++++++++++++++++++++++++++++
- include/linux/idle_injection.h    |  29 +++
- 4 files changed, 454 insertions(+)
- create mode 100644 drivers/powercap/idle_injection.c
- create mode 100644 include/linux/idle_injection.h
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-index 85727ef..a767ef2 100644
---- a/drivers/powercap/Kconfig
-+++ b/drivers/powercap/Kconfig
-@@ -29,4 +29,14 @@ config INTEL_RAPL
- 	  controller, CPU core (Power Plance 0), graphics uncore (Power Plane
- 	  1), etc.
- 
-+config IDLE_INJECTION
-+	bool "Idle injection framework"
-+	depends on CPU_IDLE
-+	default n
-+	help
-+	  This enables support for the idle injection framework. It
-+	  provides a way to force idle periods on a set of specified
-+	  CPUs for power capping. Idle period can be injected
-+	  synchronously on a set of specified CPUs or alternatively
-+	  on a per CPU basis.
- endif
-diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
-index 0a21ef3..c3bbfee 100644
---- a/drivers/powercap/Makefile
-+++ b/drivers/powercap/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_POWERCAP)	+= powercap_sys.o
- obj-$(CONFIG_INTEL_RAPL) += intel_rapl.o
-+obj-$(CONFIG_IDLE_INJECTION) += idle_injection.o
-diff --git a/drivers/powercap/idle_injection.c b/drivers/powercap/idle_injection.c
-new file mode 100644
-index 0000000..1ff1a46
---- /dev/null
-+++ b/drivers/powercap/idle_injection.c
-@@ -0,0 +1,414 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright 2018 Linaro Limited
-+ *
-+ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
-+ *
-+ * The idle injection framework proposes a way to force a cpu to enter
-+ * an idle state during a specified amount of time for a specified
-+ * period.
-+ *
-+ * It relies on the smpboot kthreads which handles, via its main loop,
-+ * the common code for hotplugging and [un]parking.
-+ *
-+ * At init time, all the kthreads are created and parked.
-+ *
-+ * A cpumask is specified as parameter for the idle injection
-+ * registering function. The kthreads will be synchronized regarding
-+ * this cpumask.
-+ *
-+ * The idle + run duration is specified via the helpers and then the
-+ * idle injection can be started at this point.
-+ *
-+ * A kthread will call play_idle() with the specified idle duration
-+ * from above.
-+ *
-+ * A timer is set after waking up all the tasks, to the next idle
-+ * injection cycle.
-+ *
-+ * The task handling the timer interrupt will wakeup all the kthreads
-+ * belonging to the cpumask.
-+ */
-+#define pr_fmt(fmt) "ii_dev: " fmt
-+
-+#include <linux/cpu.h>
-+#include <linux/freezer.h>
-+#include <linux/hrtimer.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/smpboot.h>
-+
-+#include <uapi/linux/sched/types.h>
-+
-+/**
-+ * struct idle_injection_thread - task on/off switch structure
-+ * @tsk: a pointer to a task_struct injecting the idle cycles
-+ * @should_run: a integer used as a boolean by the smpboot kthread API
-+ */
-+struct idle_injection_thread {
-+	struct task_struct *tsk;
-+	int should_run;
-+};
-+
-+/**
-+ * struct idle_injection_device - data for the idle injection
-+ * @cpumask: a cpumask containing the list of CPUs managed by the device
-+ * @timer: a hrtimer giving the tempo for the idle injection
-+ * @count: an atomic to keep track of the last task exiting the idle cycle
-+ * @idle_duration_ms: an unsigned int specifying the idle duration
-+ * @run_duration_ms: an unsigned int specifying the running duration
-+ */
-+struct idle_injection_device {
-+	cpumask_var_t cpumask;
-+	struct hrtimer timer;
-+	struct completion stop_complete;
-+	unsigned int idle_duration_ms;
-+	unsigned int run_duration_ms;
-+	atomic_t count;
-+};
-+
-+static DEFINE_PER_CPU(struct idle_injection_thread, idle_injection_thread);
-+static DEFINE_PER_CPU(struct idle_injection_device *, idle_injection_device);
-+
-+/**
-+ * __idle_injection_wakeup - Wake up all idle injection threads
-+ * @ii_dev: the idle injection device
-+ *
-+ * Every idle injection task belonging to the idle injection device
-+ * and running on an online CPU will be wake up by this call.
-+ */
-+static void __idle_injection_wakeup(struct idle_injection_device *ii_dev)
-+{
-+	struct idle_injection_thread *iit;
-+	struct cpumask tmp;
-+	unsigned int cpu;
-+
-+	cpumask_and(&tmp, ii_dev->cpumask, cpu_online_mask);
-+
-+	atomic_set(&ii_dev->count, cpumask_weight(&tmp));
-+
-+	for_each_cpu(cpu, &tmp) {
-+		iit = per_cpu_ptr(&idle_injection_thread, cpu);
-+		iit->should_run = 1;
-+		wake_up_process(iit->tsk);
-+	}
-+}
-+
-+/**
-+ * idle_injection_wakeup - Wake up all idle injection threads
-+ * @ii_dev: the idle injection device
-+ *
-+ * This function wakes up all the idle injection tasks belonging to
-+ * @ii_dev by invoking __idle_injection_wakeup() but with the cpu
-+ * hoplug disabled.
-+ */
-+static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
-+{
-+	get_online_cpus();
-+	__idle_injection_wakeup(ii_dev);
-+	put_online_cpus();
-+}
-+
-+/**
-+ * idle_injection_wakeup_fn - idle injection timer callback
-+ * @timer: a hrtimer structure
-+ *
-+ * This function is called when the idle injection timer expires which
-+ * will wake up the idle injection tasks and these ones, in turn, play
-+ * idle a specified amount of time.
-+ *
-+ * Return: HRTIMER_NORESTART.
-+ */
-+static enum hrtimer_restart idle_injection_wakeup_fn(struct hrtimer *timer)
-+{
-+	struct idle_injection_device *ii_dev =
-+		container_of(timer, struct idle_injection_device, timer);
-+
-+	__idle_injection_wakeup(ii_dev);
-+
-+	return HRTIMER_NORESTART;
-+}
-+
-+/**
-+ * idle_injection_last_man - operations by the last task
-+ * @ii_dev: a pointer to an idle_injection_device structure
-+ *
-+ * This function groups the operations done by the last idle injection
-+ * task. It can be called from the idle injection callback as well as
-+ * from the park callback when the thread is parked at hotplug time.
-+ */
-+static void idle_injection_last_man(struct idle_injection_device *ii_dev)
-+{
-+	unsigned int run_duration_ms;
-+
-+	run_duration_ms = READ_ONCE(ii_dev->run_duration_ms);
-+	if (run_duration_ms) {
-+		hrtimer_start(&ii_dev->timer, ms_to_ktime(run_duration_ms),
-+			      HRTIMER_MODE_REL_PINNED);
-+		return;
-+	}
-+
-+	complete(&ii_dev->stop_complete);
-+}
-+
-+/**
-+ * idle_injection_fn - idle injection routine
-+ * @cpu: the CPU number the tasks belongs to
-+ *
-+ * The idle injection routine will stay idle the specified amount of
-+ * time
-+ */
-+static void idle_injection_fn(unsigned int cpu)
-+{
-+	struct idle_injection_device *ii_dev;
-+	struct idle_injection_thread *iit;
-+	unsigned int idle_duration_ms;
-+
-+	ii_dev = per_cpu(idle_injection_device, cpu);
-+	iit = per_cpu_ptr(&idle_injection_thread, cpu);
-+
-+	/*
-+	 * Boolean used by the smpboot main loop and used as a
-+	 * flip-flop in this function
-+	 */
-+	iit->should_run = 0;
-+
-+	idle_duration_ms = READ_ONCE(ii_dev->idle_duration_ms);
-+	if (idle_duration_ms)
-+		play_idle(idle_duration_ms);
-+
-+	if (atomic_dec_and_test(&ii_dev->count))
-+		idle_injection_last_man(ii_dev);
-+}
-+
-+/**
-+ * idle_injection_set_duration - idle and run duration helper
-+ * @run_duration_ms: an unsigned int giving the running time in milliseconds
-+ * @idle_duration_ms: an unsigned int giving the idle time in milliseconds
-+ */
-+void idle_injection_set_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int run_duration_ms,
-+				 unsigned int idle_duration_ms)
-+{
-+	WRITE_ONCE(ii_dev->run_duration_ms, run_duration_ms);
-+	WRITE_ONCE(ii_dev->idle_duration_ms, idle_duration_ms);
-+}
-+
-+/**
-+ * idle_injection_get_duration - idle and run duration helper
-+ * @run_duration_ms: a pointer to an unsigned int to store the running time
-+ * @idle_duration_ms: a pointer to an unsigned int to store the idle time
-+ */
-+void idle_injection_get_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int *run_duration_ms,
-+				 unsigned int *idle_duration_ms)
-+{
-+	*run_duration_ms = READ_ONCE(ii_dev->run_duration_ms);
-+	*idle_duration_ms = READ_ONCE(ii_dev->idle_duration_ms);
-+}
-+
-+/**
-+ * idle_injection_start - starts the idle injections
-+ * @ii_dev: a pointer to an idle_injection_device structure
-+ *
-+ * The function starts the idle injection cycles by first waking up
-+ * all the tasks the ii_dev is attached to and let them handle the
-+ * idle-run periods.
-+ *
-+ * Return: -EINVAL if the idle or the running durations are not set.
-+ */
-+int idle_injection_start(struct idle_injection_device *ii_dev)
-+{
-+	if (!READ_ONCE(ii_dev->idle_duration_ms))
-+		return -EINVAL;
-+
-+	if (!READ_ONCE(ii_dev->run_duration_ms))
-+		return -EINVAL;
-+
-+	pr_debug("Starting injecting idle cycles on CPUs '%*pbl'\n",
-+		 cpumask_pr_args(ii_dev->cpumask));
-+
-+	idle_injection_wakeup(ii_dev);
-+
-+	return 0;
-+}
-+
-+/**
-+ * idle_injection_stop - stops the idle injections
-+ * @ii_dev: a pointer to an idle injection_device structure
-+ *
-+ * The function stops the idle injection by resetting the idle and
-+ * running durations and wait for the threads to complete. If we are
-+ * in the process of injecting an idle cycle, then this will wait the
-+ * end of the cycle.
-+ */
-+void idle_injection_stop(struct idle_injection_device *ii_dev)
-+{
-+	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
-+		 cpumask_pr_args(ii_dev->cpumask));
-+
-+	idle_injection_set_duration(ii_dev, 0, 0);
-+
-+	wait_for_completion_interruptible(&ii_dev->stop_complete);
-+}
-+
-+/**
-+ * idle_injection_setup - initialize the current task as a RT task
-+ * @cpu: the CPU number where the kthread is running on (not used)
-+ *
-+ * Called one time, this function is in charge of setting the task
-+ * scheduler parameters.
-+ */
-+static void idle_injection_setup(unsigned int cpu)
-+{
-+	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
-+
-+	set_freezable();
-+
-+	sched_setscheduler(current, SCHED_FIFO, &param);
-+}
-+
-+/**
-+ * idle_injection_park - move out of the idle injection threads pool
-+ * @cpu: the CPU number where the kthread is running on
-+ *
-+ * Catch the situation where the CPU is hotplugged while we were about
-+ * to inject an idle cycle.
-+ */
-+static void idle_injection_park(unsigned int cpu)
-+{
-+	struct idle_injection_device *ii_dev;
-+	struct idle_injection_thread *iit;
-+
-+	ii_dev = per_cpu(idle_injection_device, cpu);
-+	iit = per_cpu_ptr(&idle_injection_thread, cpu);
-+
-+	/*
-+	 * If we are supposed to run an idle cycle but obviously we
-+	 * can't because we are in the process of parking, so bail out
-+	 * from the pool of idle injection tasks, do nothing otherwise.
-+	 */
-+	if (!iit->should_run)
-+		return;
-+
-+	iit->should_run = 0;
-+
-+	if (atomic_dec_and_test(&ii_dev->count))
-+		idle_injection_last_man(ii_dev);
-+}
-+
-+/**
-+ * idle_injection_should_run - function helper for the smpboot API
-+ * @cpu: the CPU number where the kthread is running on
-+ *
-+ * Return: a boolean telling if the thread can run.
-+ */
-+static int idle_injection_should_run(unsigned int cpu)
-+{
-+	struct idle_injection_thread *iit =
-+		per_cpu_ptr(&idle_injection_thread, cpu);
-+
-+	return iit->should_run;
-+}
-+
-+static struct idle_injection_device *ii_dev_alloc(void)
-+{
-+	struct idle_injection_device *ii_dev;
-+
-+	ii_dev = kzalloc(sizeof(*ii_dev), GFP_KERNEL);
-+	if (!ii_dev)
-+		return NULL;
-+
-+	if (!alloc_cpumask_var(&ii_dev->cpumask, GFP_KERNEL)) {
-+		kfree(ii_dev);
-+		return NULL;
-+	}
-+
-+	return ii_dev;
-+}
-+
-+static void ii_dev_free(struct idle_injection_device *ii_dev)
-+{
-+	free_cpumask_var(ii_dev->cpumask);
-+	kfree(ii_dev);
-+}
-+
-+/**
-+ * idle_injection_register - idle injection init routine
-+ * @cpumask: the list of CPUs managed by the idle injection device
-+ *
-+ * This is the initialization function in charge of creating the
-+ * initializing of the timer and allocate the structures. It does not
-+ * starts the idle injection cycles.
-+ *
-+ * Return: NULL if an allocation fails.
-+ */
-+struct idle_injection_device *idle_injection_register(struct cpumask *cpumask)
-+{
-+	struct idle_injection_device *ii_dev;
-+	int cpu;
-+
-+	ii_dev = ii_dev_alloc();
-+	if (!ii_dev)
-+		return NULL;
-+
-+	cpumask_copy(ii_dev->cpumask, cpumask);
-+	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	ii_dev->timer.function = idle_injection_wakeup_fn;
-+	init_completion(&ii_dev->stop_complete);
-+
-+	for_each_cpu(cpu, ii_dev->cpumask) {
-+
-+		if (per_cpu(idle_injection_device, cpu)) {
-+			pr_err("cpu%d is already registered\n", cpu);
-+			goto out_rollback_per_cpu;
-+		}
-+
-+		per_cpu(idle_injection_device, cpu) = ii_dev;
-+	}
-+
-+	return ii_dev;
-+
-+out_rollback_per_cpu:
-+	for_each_cpu(cpu, ii_dev->cpumask)
-+		per_cpu(idle_injection_device, cpu) = NULL;
-+
-+	ii_dev_free(ii_dev);
-+
-+	return NULL;
-+}
-+
-+/**
-+ * idle_injection_unregister - Unregister the idle injection device
-+ * @ii_dev: a pointer to an idle injection device
-+ *
-+ * The function is in charge of stopping the idle injections,
-+ * unregister the kthreads and free the allocated memory in the
-+ * register function.
-+ */
-+void idle_injection_unregister(struct idle_injection_device *ii_dev)
-+{
-+	int cpu;
-+
-+	idle_injection_stop(ii_dev);
-+
-+	for_each_cpu(cpu, ii_dev->cpumask)
-+		per_cpu(idle_injection_device, cpu) = NULL;
-+
-+	ii_dev_free(ii_dev);
-+}
-+
-+static struct smp_hotplug_thread idle_injection_threads = {
-+	.store = &idle_injection_thread.tsk,
-+	.setup = idle_injection_setup,
-+	.park = idle_injection_park,
-+	.thread_fn = idle_injection_fn,
-+	.thread_comm = "idle_inject/%u",
-+	.thread_should_run = idle_injection_should_run,
-+};
-+
-+static int __init idle_injection_init(void)
-+{
-+	return smpboot_register_percpu_thread(&idle_injection_threads);
-+}
-+early_initcall(idle_injection_init);
-diff --git a/include/linux/idle_injection.h b/include/linux/idle_injection.h
-new file mode 100644
-index 0000000..ffd20d7
---- /dev/null
-+++ b/include/linux/idle_injection.h
-@@ -0,0 +1,29 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2018 Linaro Ltd
-+ *
-+ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
-+ *
-+ */
-+#ifndef __IDLE_INJECTION_H__
-+#define __IDLE_INJECTION_H__
-+
-+/* private idle injection device structure */
-+struct idle_injection_device;
-+
-+struct idle_injection_device *idle_injection_register(struct cpumask *cpumask);
-+
-+void idle_injection_unregister(struct idle_injection_device *ii_dev);
-+
-+int idle_injection_start(struct idle_injection_device *ii_dev);
-+
-+void idle_injection_stop(struct idle_injection_device *ii_dev);
-+
-+void idle_injection_set_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int run_duration_ms,
-+				 unsigned int idle_duration_ms);
-+
-+void idle_injection_get_duration(struct idle_injection_device *ii_dev,
-+				 unsigned int *run_duration_ms,
-+				 unsigned int *idle_duration_ms);
-+#endif /* __IDLE_INJECTION_H__ */
--- 
-2.7.4
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlsfvOMACgkQ2O7X88g7
++ppGjQ/8C5j/WJve+ASLo2oQ2CHvSdAHDBW4I0VWP5mRkdlfgtLMOvAOkHoBvBcT
+VZRP7aip9LLQuEdTsy/Dalqs3kzZRXCXY1oFfdweL2NBvM/qevAO1fZ2CYAqVuz/
+0fB0w2LFBgXXHzy2MJ+YdFju5wp7FaYkAUFQ7xJAQJIVeJHQiK6qlohw8pOx00TD
+QrXcXVO6nnhXTNgT//Kwa0rtdF/cBLr7DhFMUZ7uINcxuHg04nLkAZTQAwlqtSdY
+UJ8vo/xfyzfVZ2myXGSRdToa9Cw95TeYER1uLxYm4V3GtIB5zLmC1gOfhQD4ZLMu
+11PnfPdm+bMp8cO5RR3wWROmEUmr2XIo4fkyI+JH23dwxpGgv0z0XVoCqEyX2rko
+VTyTKGQquXavsIeBAtOtWn2+YzQSAVB6ndurxUA6PBH/ztmNeO7EIl/iGTikacPp
+53A4u+sFD1piUEBHTYf2CHYpm8WwBfBM6gMertL/M5SN52s8ZcZS2IjkTOgreAud
+Bb/JR1UbExXY6OjsmxOvXwT6CWUQ9tTykctWzIfz08+QCFtoXVOURzN4KT7JPMrX
+mJXPk8m5dTvVNG+Vo+XxXnvnPy2rZDpISzOnvO3UtNMEQNG0MqE6hBs8EzaCKeJG
+etfKKzZOnmFpRMnh9+G00AqB9PW0w9BrkvJdeNlMD/hUauBGDJQ=
+=tLAL
+-----END PGP SIGNATURE-----
+
+--h4ysnlvpkncnk5pp--
