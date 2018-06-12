@@ -1,88 +1,56 @@
 From: Anchal Agarwal <anchalag@amazon.com>
-Subject: [RFC PATCH 11/12] x86/xen: close event channels for PIRQs in system core suspend callback
-Date: Tue, 12 Jun 2018 20:56:18 +0000
-Message-ID: <20180612205619.28156-12-anchalag@amazon.com>
+Subject: [RFC PATCH 02/12] xen/manage: introduce helper function
+ to know the on-going suspend mode
+Date: Tue, 12 Jun 2018 20:56:09 +0000
+Message-ID: <20180612205619.28156-3-anchalag@amazon.com>
 References: <20180612205619.28156-1-anchalag@amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <xen-devel-bounces@lists.xenproject.org>
 In-Reply-To: <20180612205619.28156-1-anchalag@amazon.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.xenproject.org/mailman/options/xen-devel>,
+ <mailto:xen-devel-request@lists.xenproject.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xenproject.org>
+List-Help: <mailto:xen-devel-request@lists.xenproject.org?subject=help>
+List-Subscribe: <https://lists.xenproject.org/mailman/listinfo/xen-devel>,
+ <mailto:xen-devel-request@lists.xenproject.org?subject=subscribe>
+Errors-To: xen-devel-bounces@lists.xenproject.org
+Sender: "Xen-devel" <xen-devel-bounces@lists.xenproject.org>
 To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
-Cc: boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, roger.pau@citrix.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, anchalag@amazon.com, fllinden@amazon.com, vallish@amazon.com, guruanb@amazon.com, eduval@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
+Cc: jgross@suse.com, len.brown@intel.com, eduval@amazon.com, vallish@amazon.com, netdev@vger.kernel.org, fllinden@amazon.com, kamatam@amazon.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anchalag@amazon.com, cyberax@amazon.com, pavel@ucw.cz, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, boris.ostrovsky@oracle.com, guruanb@amazon.com, roger.pau@citrix.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Munehisa Kamata <kamatam@amazon.com>
-
-Close event channels allocated for devices which are backed by PIRQ and
-still active when suspending the system core. Normally, the devices are
-emulated legacy devices, e.g. PS/2 keyboard, floppy controller and etc.
-
-Without this, in PM hibernation, information about the event channel
-remains in hibernation image, but there is no guarantee that the same
-event channel numbers are assigned to the devices when restoring the
-system. This may cause conflict like the following and prevent some
-devices from being restored correctly.
-
-[  102.330821] ------------[ cut here ]------------
-[  102.333264] WARNING: CPU: 0 PID: 2324 at
-drivers/xen/events/events_base.c:878 bind_evtchn_to_irq+0x88/0xf0
-...
-[  102.348057] Call Trace:
-[  102.348057]  [<ffffffff813001df>] dump_stack+0x63/0x84
-[  102.348057]  [<ffffffff81071811>] __warn+0xd1/0xf0
-[  102.348057]  [<ffffffff810718fd>] warn_slowpath_null+0x1d/0x20
-[  102.348057]  [<ffffffff8139a1f8>] bind_evtchn_to_irq+0x88/0xf0
-[  102.348057]  [<ffffffffa00cd420>] ? blkif_copy_from_grant+0xb0/0xb0 [xen_blkfront]
-[  102.348057]  [<ffffffff8139a307>] bind_evtchn_to_irqhandler+0x27/0x80
-[  102.348057]  [<ffffffffa00cc785>] talk_to_blkback+0x425/0xcd0 [xen_blkfront]
-[  102.348057]  [<ffffffff811e0c8a>] ? __kmalloc+0x1ea/0x200
-[  102.348057]  [<ffffffffa00ce84d>] blkfront_restore+0x2d/0x60 [xen_blkfront]
-[  102.348057]  [<ffffffff813a0078>] xenbus_dev_restore+0x58/0x100
-[  102.348057]  [<ffffffff813a1ff0>] ?  xenbus_frontend_delayed_resume+0x20/0x20
-[  102.348057]  [<ffffffff813a200e>] xenbus_dev_cond_restore+0x1e/0x30
-[  102.348057]  [<ffffffff813f797e>] dpm_run_callback+0x4e/0x130
-[  102.348057]  [<ffffffff813f7f17>] device_resume+0xe7/0x210
-[  102.348057]  [<ffffffff813f7810>] ? pm_dev_dbg+0x80/0x80
-[  102.348057]  [<ffffffff813f9374>] dpm_resume+0x114/0x2f0
-[  102.348057]  [<ffffffff810c00cf>] hibernation_snapshot+0x15f/0x380
-[  102.348057]  [<ffffffff810c0ac3>] hibernate+0x183/0x290
-[  102.348057]  [<ffffffff810be1af>] state_store+0xcf/0xe0
-[  102.348057]  [<ffffffff813020bf>] kobj_attr_store+0xf/0x20
-[  102.348057]  [<ffffffff8127c88a>] sysfs_kf_write+0x3a/0x50
-[  102.348057]  [<ffffffff8127c3bb>] kernfs_fop_write+0x10b/0x190
-[  102.348057]  [<ffffffff81200008>] __vfs_write+0x28/0x120
-[  102.348057]  [<ffffffff81200c19>] ? rw_verify_area+0x49/0xb0
-[  102.348057]  [<ffffffff81200e62>] vfs_write+0xb2/0x1b0
-[  102.348057]  [<ffffffff81202196>] SyS_write+0x46/0xa0
-[  102.348057]  [<ffffffff81520cf7>] entry_SYSCALL_64_fastpath+0x1a/0xa9
-[  102.423005] ---[ end trace b8d6718e22e2b107 ]---
-[  102.425031] genirq: Flags mismatch irq 6. 00000000 (blkif) vs. 00000000 (floppy)
-
-Note that we don't explicitly re-allocate event channels for such
-devices in the resume callback. Re-allocation will occur when PM core
-re-enable IRQs for the devices at later point.
-
-Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
-Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
-Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
-Reviewed-by: Eduardo Valentin <eduval@amazon.com>
----
- arch/x86/xen/suspend.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
-index dae0f74..affa63d 100644
---- a/arch/x86/xen/suspend.c
-+++ b/arch/x86/xen/suspend.c
-@@ -105,6 +105,8 @@ static int xen_syscore_suspend(void)
- 		xen_save_steal_clock(cpu);
- 	}
- 
-+	xen_shutdown_pirqs();
-+
- 	xrfp.domid = DOMID_SELF;
- 	xrfp.gpfn = __pa(HYPERVISOR_shared_info) >> PAGE_SHIFT;
- 
--- 
-2.7.4
+RnJvbTogTXVuZWhpc2EgS2FtYXRhIDxrYW1hdGFtQGFtYXpvbi5jb20+CgpJbnRyb2R1Y2Ugc2lt
+cGxlIGZ1bmN0aW9ucyB3aGljaCBoZWxwIHRvIGtub3cgdGhlIG9uLWdvaW5nIHN1c3BlbmQgbW9k
+ZQpzbyB0aGF0IG90aGVyIFhlbi1yZWxhdGVkIGNvZGUgY2FuIGJlaGF2ZSBkaWZmZXJlbnRseSBh
+Y2NvcmRpbmcgdG8gdGhlCmN1cnJlbnQgc3VzcGVuZCBtb2RlLgoKU2lnbmVkLW9mZi1ieTogTXVu
+ZWhpc2EgS2FtYXRhIDxrYW1hdGFtQGFtYXpvbi5jb20+ClNpZ25lZC1vZmYtYnk6IEFuY2hhbCBB
+Z2Fyd2FsIDxhbmNoYWxhZ0BhbWF6b24uY29tPgpSZXZpZXdlZC1ieTogQWxha2VzaCBIYWxvaSA8
+YWxha2VzaGhAYW1hem9uLmNvbT4KUmV2aWV3ZWQtYnk6IFNlYmFzdGlhbiBCaWVtdWVsbGVyIDxz
+YmllbXVlQGFtYXpvbi5jb20+ClJldmlld2VkLWJ5OiBNdW5laGlzYSBLYW1hdGEgPGthbWF0YW1A
+YW1hem9uLmNvbT4KUmV2aWV3ZWQtYnk6IEVkdWFyZG8gVmFsZW50aW4gPGVkdXZhbEBhbWF6b24u
+Y29tPgotLS0KIGRyaXZlcnMveGVuL21hbmFnZS5jICB8IDE1ICsrKysrKysrKysrKysrKwogaW5j
+bHVkZS94ZW4veGVuLW9wcy5oIHwgIDQgKysrKwogMiBmaWxlcyBjaGFuZ2VkLCAxOSBpbnNlcnRp
+b25zKCspCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy94ZW4vbWFuYWdlLmMgYi9kcml2ZXJzL3hlbi9t
+YW5hZ2UuYwppbmRleCA4ZjllYTg3Li4zMjY2MzFkIDEwMDY0NAotLS0gYS9kcml2ZXJzL3hlbi9t
+YW5hZ2UuYworKysgYi9kcml2ZXJzL3hlbi9tYW5hZ2UuYwpAQCAtNTAsNiArNTAsMjEgQEAgZW51
+bSBzdXNwZW5kX21vZGVzIHsKIC8qIFByb3RlY3RlZCBieSBwbV9tdXRleCAqLwogc3RhdGljIGVu
+dW0gc3VzcGVuZF9tb2RlcyBzdXNwZW5kX21vZGUgPSBOT19TVVNQRU5EOwogCitib29sIHhlbl9z
+dXNwZW5kX21vZGVfaXNfeGVuX3N1c3BlbmQodm9pZCkKK3sKKwlyZXR1cm4gc3VzcGVuZF9tb2Rl
+ID09IFhFTl9TVVNQRU5EOworfQorCitib29sIHhlbl9zdXNwZW5kX21vZGVfaXNfcG1fc3VzcGVu
+ZCh2b2lkKQoreworCXJldHVybiBzdXNwZW5kX21vZGUgPT0gUE1fU1VTUEVORDsKK30KKworYm9v
+bCB4ZW5fc3VzcGVuZF9tb2RlX2lzX3BtX2hpYmVybmF0aW9uKHZvaWQpCit7CisJcmV0dXJuIHN1
+c3BlbmRfbW9kZSA9PSBQTV9ISUJFUk5BVElPTjsKK30KKwogc3RydWN0IHN1c3BlbmRfaW5mbyB7
+CiAJaW50IGNhbmNlbGxlZDsKIH07CmRpZmYgLS1naXQgYS9pbmNsdWRlL3hlbi94ZW4tb3BzLmgg
+Yi9pbmNsdWRlL3hlbi94ZW4tb3BzLmgKaW5kZXggZmQyM2U0Mi4uYmU3OGY2ZiAxMDA2NDQKLS0t
+IGEvaW5jbHVkZS94ZW4veGVuLW9wcy5oCisrKyBiL2luY2x1ZGUveGVuL3hlbi1vcHMuaApAQCAt
+MzksNiArMzksMTAgQEAgdTY0IHhlbl9zdGVhbF9jbG9jayhpbnQgY3B1KTsKIAogaW50IHhlbl9z
+ZXR1cF9zaHV0ZG93bl9ldmVudCh2b2lkKTsKIAorYm9vbCB4ZW5fc3VzcGVuZF9tb2RlX2lzX3hl
+bl9zdXNwZW5kKHZvaWQpOworYm9vbCB4ZW5fc3VzcGVuZF9tb2RlX2lzX3BtX3N1c3BlbmQodm9p
+ZCk7Citib29sIHhlbl9zdXNwZW5kX21vZGVfaXNfcG1faGliZXJuYXRpb24odm9pZCk7CisKIGV4
+dGVybiB1bnNpZ25lZCBsb25nICp4ZW5fY29udGlndW91c19iaXRtYXA7CiAKICNpZmRlZiBDT05G
+SUdfWEVOX1BWCi0tIAoyLjcuNAoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fClhlbi1kZXZlbCBtYWlsaW5nIGxpc3QKWGVuLWRldmVsQGxpc3RzLnhlbnBy
+b2plY3Qub3JnCmh0dHBzOi8vbGlzdHMueGVucHJvamVjdC5vcmcvbWFpbG1hbi9saXN0aW5mby94
+ZW4tZGV2ZWw=
