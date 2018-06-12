@@ -1,50 +1,31 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 10/11] dt-bindings: misc: add bindings for
- cros_ec_throttler
-Date: Tue, 12 Jun 2018 13:10:11 -0600
-Message-ID: <20180612191011.GA26266@rob-hp-laptop>
-References: <20180607181214.30338-1-mka@chromium.org>
- <20180607181214.30338-11-mka@chromium.org>
+Subject: Re: [PATCH v2 4/5] thermal: tsens: Add support for SDM845
+Date: Tue, 12 Jun 2018 13:28:59 -0600
+Message-ID: <20180612192859.GA14933@rob-hp-laptop>
+References: <cover.1528799892.git.amit.kucheria@linaro.org>
+ <f048a97d1599a54aef3d00126a379f4e5c937057.1528799892.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180607181214.30338-11-mka@chromium.org>
+In-Reply-To: <f048a97d1599a54aef3d00126a379f4e5c937057.1528799892.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 07, 2018 at 11:12:13AM -0700, Matthias Kaehlcke wrote:
-> The cros_ec_throttler monitors events from the Chrome OS Embedded
-> Controller to throttle the system if needed, using the mechanisms
-> provided by the throttler core.
+On Tue, Jun 12, 2018 at 01:54:56PM +0300, Amit Kucheria wrote:
+> SDM845 uses the TSENS v2 IP block
 > 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 > ---
-> Changes in v2:
-> - patch added to series
-> 
->  Documentation/devicetree/bindings/misc/cros_ec_throttler.txt | 4 ++++
->  1 file changed, 4 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-> new file mode 100644
-> index 000000000000..7316dcc0ef75
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/misc/cros_ec_throttler.txt
-> @@ -0,0 +1,4 @@
-> +* cros_ec_throttler driver
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.txt |  1 +
 
-Bindings are for h/w, not drivers.
+Acked-by: Rob Herring <robh@kernel.org>
 
-I continue to fail to see why this needs to be in DT. There are other 
-ways to instantiate drivers.
-
-> +
-> +Required properties:
-> +- compatible: "google,cros-ec-throttler"
-> -- 
-> 2.18.0.rc1.242.g61856ae69a-goog
-> 
+>  drivers/thermal/qcom/Makefile                            |  2 +-
+>  drivers/thermal/qcom/tsens-sdm845.c                      | 15 +++++++++++++++
+>  drivers/thermal/qcom/tsens.c                             |  3 +++
+>  drivers/thermal/qcom/tsens.h                             |  5 ++++-
+>  5 files changed, 24 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/thermal/qcom/tsens-sdm845.c
