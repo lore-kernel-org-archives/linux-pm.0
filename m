@@ -1,83 +1,189 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 2/5] dt: qcom: 8996: thermal: Move to DT initialisation
-Date: Wed, 13 Jun 2018 11:13:10 +0300
-Message-ID: <CAHLCerOaQ6LmuGkBNu6SuVXXX8hQ+yJJ9-N6NAyLhtTp_yCK-w@mail.gmail.com>
-References: <cover.1528799892.git.amit.kucheria@linaro.org>
- <683ceb9a7d283bcad47fc6e8e4fcfbd7e76c1018.1528799892.git.amit.kucheria@linaro.org>
- <20180612193507.GO14924@minitux>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / core: Fix supplier device runtime PM usage counter imbalance
+Date: Wed, 13 Jun 2018 10:16:40 +0200
+Message-ID: <CAJZ5v0gh-Vq=6X9Dn2x-x_REnOwPVAfNj+CTJRUkKNmsAPmsnQ@mail.gmail.com>
+References: <CGME20180612110807epcas5p10e076681eac6f50b01840c0052748d12@epcas5p1.samsung.com>
+ <10125310.W3e2TP0641@aspire.rjw.lan> <20180612124424eucas1p101e61369a42132234d103ce52918b08e~3akoRUwbQ3138731387eucas1p17@eucas1p1.samsung.com>
+ <1692795.7GA92aXxMT@aspire.rjw.lan> <20180613062316eucas1p2655d6b1f286e8d374fc4e7570ede0c95~3pBJGh1rJ0735307353eucas1p2O@eucas1p2.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180612193507.GO14924@minitux>
+In-Reply-To: <20180613062316eucas1p2655d6b1f286e8d374fc4e7570ede0c95~3pBJGh1rJ0735307353eucas1p2O@eucas1p2.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "moderated list:ARM64 PORT (AARCH64 ARCHITECTURE)" <linux-arm-kernel@lists.infradead.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lukas Wunner <lukas@wunner.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 12, 2018 at 10:35 PM, Bjorn Andersson
-<bjorn.andersson@linaro.org> wrote:
-> On Tue 12 Jun 03:54 PDT 2018, Amit Kucheria wrote:
->
->> We also split up the regmap address space into two, one for the TM
->> registers, the other for the SROT registers. This was required to deal with
->> different address offsets for the TM and SROT registers across different
->> SoC families.
+On Wed, Jun 13, 2018 at 8:23 AM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
+> Hi Rafael,
+
+Hi Marek,
+
+> On 2018-06-12 16:24, Rafael J. Wysocki wrote:
+>> On Tuesday, June 12, 2018 2:44:23 PM CEST Marek Szyprowski wrote:
+>>> On 2018-06-12 13:00, Rafael J. Wysocki wrote:
+>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>
+>>>> If a device link is added via device_link_add() by the driver of the
+>>>> link's consumer device, the supplier's runtime PM usage counter is
+>>>> going to be dropped by the pm_runtime_put_suppliers() call in
+>>>> driver_probe_device().  However, in that case it is not incremented
+>>>> unless the supplier driver is already present and the link is not
+>>>> stateless.  That leads to a runtime PM usage counter imbalance for
+>>>> the supplier device in a few cases.
+>>>>
+>>>> To prevent that from happening, bump up the supplier runtime
+>>>> PM usage counter in device_link_add() for all links with the
+>>>> DL_FLAG_PM_RUNTIME flag set that are added at the consumer probe
+>>>> time.  Use pm_runtime_get_noresume() for that as the callers of
+>>>> device_link_add() who want the supplier to be resumed by it should
+>>>> pass DL_FLAG_RPM_ACTIVE in flags to it anyway.
+>>>>
+>>>> Fixes: 21d5c57b3726 (PM / runtime: Use device links)
+>>>> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>> ---
+>>>>
+>>>> This is a replacement for commit 1e8378619841 (PM / runtime: Fixup
+>>>> reference counting of device link suppliers at probe) that is going
+>>>> to be reverted.
+>>> Thanks Rafael for the patch. I've applied it and now I'm a bit puzzled.
+>> Thanks for testing! :-)
 >>
->> Since tsens-common.c/init_common() currently only registers one address space, the order is important (TM before SROT).This is OK since the code doesn't really use the SROT functionality yet.
->
-> Please line wrap this.
->
+>>> Let's get back to my IOMMU and codec case, mentioned here:
+>>> https://marc.info/?l=linux-pm&m=152878741527962&w=2
+>>>
+>>> Now, after applying your patch, when IOMMU creates a link with
+>>> DL_FLAG_PM_RUNTIME to the jpeg device (this happens when jpeg device is
+>>> being probed), it is not IOMMU is not runtime resumed anymore (that's
+>>> because the patch changes pm_runtime_get_sync to pm_runtime_get_noresume).
+>>> This means that until jpeg driver enables runtime pm for its device and
+>>> finally performs runtime pm suspends/resume cycle, the supplier won't be
+>>> resumed. On the other hand, when I add DL_FLAG_RPM_ACTIVE flag to link
+>>> creation, the supplier is properly resumed, but then, once the jpeg
+>>> device probe finishes, the supplier is still in runtime active state
+>>> until a next runtime suspend/resume cycle of jpeg device.
+>> That additional suspend-resume cycle should not be necessary in theory
+>> unless I'm missing something.
 >>
->> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+>> The pm_request_idle() call in driver_probe_device() should trigger a
+>> suspend of the jpeg device after probe (unless blocked by something)
+>> and that should drop the RPM usage counter of the IOMMU.  Next, the
+>> pm_runtime_put_suppliers() in there should actually suspend it.
+>
+> I've also would expect such behavior of PM core, but checks on real
+> hardware gives other results.
+>
+>> It looks like the pm_request_idle() doesn't work as expected.
+>
+> pm_request_idle() calls rpm_idle(), which returns early with -EAGAIN due to
+> (dev->power.runtime_status != RPM_ACTIVE) check. The device runtime_status
+> is RPM_SUSPENDED as initially set by pm_runtime_init() on device creation.
+> Notice that JPEG driver only calls pm_runtime_enable() and nothing more.
+
+But is the device really suspended during probe?
+
+Note that "suspend" means basically "not accessible to software", but
+I guess software needs to access it to set it up, right?  If that is
+the case, maybe the driver should set the initial RPM status of the
+device to "active" before enabling runtime PM for it?  That at least
+would be consistent with passing DL_FLAG_RPM_ACTIVE to
+device_link_add().
+
+There are drivers that don't actually touch the hardware in ->probe(),
+but it follows from your description that this is not one of them.
+
+>>> If I understand right, the DL_FLAG_RPM_ACTIVE flag should be there from the
+>>> beginning, but that time it runtime pm part of links worked in a bit
+>>> different way than now.
+>> Right, and evidently there are callers depending on the existing behavior.
+>>
+>>> Is there any way to keep old behavior?
+>> Yes, there is, please test the appended v2 of the $subject patch.
+>>
+>> That said, I'd like to remove the extra supplier resume from there going
+>> forward as there may be callers who actually don't want that to happen and
+>> DL_FLAG_RPM_ACTIVE is there for a purpose.
+>
+> Frankly, if the current behavior matches the designed behavior of
+> DL_FLAG_RPM_ACTIVE flag,
+
+It doesn't match the DL_FLAG_RPM_ACTIVE exactly as you've already noticed.
+
+DL_FLAG_RPM_ACTIVE assumes that the initial RPM status of the device
+will be RPM_ACTIVE and therefore the suppliers need to be resumed at
+link creation time.  Therefore device_link_add() causes the suppliers
+to remain in the RPM_ACTIVE state with the rpm_active status bit of
+the link set, whereas currently they are simply suspended again by the
+pm_runtime_put_suppliers() in driver_probe_device() and the link is
+not marked as "rpm_active".
+
+> then maybe instead of adding workarounds now, we
+> should simply fix all existing callers of device_link_add()? 'git grep'
+> shows
+> only 6 places where links are created with DL_FLAG_PM_RUNTIME flag, I see no
+> problem to add DL_FLAG_RPM_ACTIVE there to keep current behavior after a fix
+> in runtime PM core. The description of DL_FLAG_RPM_ACTIVE should also be
+> a bit
+> updated, because I initially thought that it means that the runtime pm
+> counter
+> on supplier is increased for the whole lifetime of the device link (it
+> is not
+> clear when core will call a corresponding pm_runtime_put()).
+>
+> The other question is what need to be fixed to get proper behavior
+> without the
+> additional suspend/resume cycle mentioned a few paragraphs above.
+
+As stated already, if the driver passes DL_FLAG_RPM_ACTIVE to
+device_link_add() at probe time, then the initial RPM status of the
+device being probed is expected to be RPM_ACTIVE.
+
 >> ---
->>  arch/arm64/boot/dts/qcom/msm8996.dtsi | 12 +++++++++++-
->>  drivers/thermal/qcom/tsens-8996.c     |  1 -
->>  2 files changed, 11 insertions(+), 2 deletions(-)
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Subject: [PATCH v2] PM / core: Fix supplier device runtime PM usage counter imbalance
 >>
->> diff --git a/arch/arm64/boot/dts/qcom/msm8996.dtsi b/arch/arm64/boot/dts/qcom/msm8996.dtsi
->> index 410ae78..b4aab18 100644
->> --- a/arch/arm64/boot/dts/qcom/msm8996.dtsi
->> +++ b/arch/arm64/boot/dts/qcom/msm8996.dtsi
->> @@ -451,7 +451,17 @@
+>> If a device link is added via device_link_add() by the driver of the
+>> link's consumer device, the supplier's runtime PM usage counter is
+>> going to be dropped by the pm_runtime_put_suppliers() call in
+>> driver_probe_device().  However, in that case it is not incremented
+>> unless the supplier driver is already present and the link is not
+>> stateless.  That leads to a runtime PM usage counter imbalance for
+>> the supplier device in a few cases.
 >>
->>               tsens0: thermal-sensor@4a8000 {
->>                       compatible = "qcom,msm8996-tsens";
->> -                     reg = <0x4a8000 0x2000>;
->> +                     reg = <0x4a9000 0x1000>, /* TM */
->> +                           <0x4a8000 0x1000>; /* SROT */
->> +                     #qcom,sensors = <13>;
->> +                     #thermal-sensor-cells = <1>;
->> +             };
->> +
->> +             tsens1: thermal-sensor@4ac000 {
->> +                     compatible = "qcom,msm8996-tsens";
->> +                     reg = <0x4ad000 0x1000>, /* TM */
->> +                           <0x4ac000 0x1000>; /* SROT */
->> +                     #qcom,sensors = <8>;
->>                       #thermal-sensor-cells = <1>;
->>               };
+>> To prevent that from happening, bump up the supplier runtime
+>> PM usage counter in device_link_add() for all links with the
+>> DL_FLAG_PM_RUNTIME flag set that are added at the consumer probe
+>> time.  Use pm_runtime_get_noresume() for that as the callers of
+>> device_link_add() who want the supplier to be resumed by it are
+>> expected to pass DL_FLAG_RPM_ACTIVE in flags to it anyway, but
+>> additionally resume the supplier if the link is added during
+>> consumer driver probe to retain the existing behavior for the
+>> callers depending on it.
 >>
->> diff --git a/drivers/thermal/qcom/tsens-8996.c b/drivers/thermal/qcom/tsens-8996.c
->> index e1f7781..6e59078 100644
->> --- a/drivers/thermal/qcom/tsens-8996.c
->> +++ b/drivers/thermal/qcom/tsens-8996.c
->> @@ -79,6 +79,5 @@ static const struct tsens_ops ops_8996 = {
->>  };
->>
->>  const struct tsens_data data_8996 = {
->> -     .num_sensors    = 13,
+>> Fixes: 21d5c57b3726 (PM / runtime: Use device links)
+>> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> This will cause the current 8996 dts to fail probing the tsens. I think
-> you should just leave this as is, because specifying qcom,sensors in dts
-> will overwrite this number regardless.
+> I've tested this version of the patch and it keeps the current behavior for
+> links created with DL_FLAG_PM_RUNTIME flag. The questions is if we really
+> want it?
 
-Ack, I didn't consider backword compatility of the code with the
-current dts. Will fix.
+I think so.
 
-> It also would make this change dts specific, which is convenient as it
-> breaks the interdependency between the different subsystems.
->
->>       .ops            = &ops_8996,
->
-> Regards,
-> Bjorn
+Basically, there are two changes at hand: fixing the behavior for
+stateless links (and for stateful ones if the supplier driver is not
+present, but that arguably is a corner case) and the behavior change
+for stateful links (with supplier drivers present).
+
+Arguably, the former is more important than the latter and I'd like to
+be able to push that fix into -stable without dependencies.  The
+latter can be done when all of the current callers depending on the
+existing behavior have been adjusted.
+
+So, I'm going to add a Tested-by from you to this patch, if you don't
+mind, and queue it up.
+
+Thanks,
+Rafael
