@@ -1,63 +1,89 @@
-From: Roger Pau =?utf-8?B?TW9ubsOp?= <roger.pau@citrix.com>
-Subject: Re: [RFC PATCH 06/12] xen-blkfront: add callbacks for PM suspend and
- hibernation
-Date: Wed, 13 Jun 2018 10:24:28 +0200
-Message-ID: <20180613082428.bjdko4k6cnq6eid3@mac>
-References: <20180612205619.28156-1-anchalag@amazon.com>
- <20180612205619.28156-7-anchalag@amazon.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / core: Fix supplier device runtime PM usage counter imbalance
+Date: Wed, 13 Jun 2018 10:28:11 +0200
+Message-ID: <CAPDyKFqEKAfCC3Zp9v4f8xKJ64qt6vvtnzC+jia5SGTEg3x9tg@mail.gmail.com>
+References: <CGME20180612110807epcas5p10e076681eac6f50b01840c0052748d12@epcas5p1.samsung.com>
+ <10125310.W3e2TP0641@aspire.rjw.lan> <20180612124424eucas1p101e61369a42132234d103ce52918b08e~3akoRUwbQ3138731387eucas1p17@eucas1p1.samsung.com>
+ <1692795.7GA92aXxMT@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180612205619.28156-7-anchalag@amazon.com>
+In-Reply-To: <1692795.7GA92aXxMT@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anchal Agarwal <anchalag@amazon.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, fllinden@amazon.com, vallish@amazon.com, guruanb@amazon.com, eduval@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 12, 2018 at 08:56:13PM +0000, Anchal Agarwal wrote:
-> From: Munehisa Kamata <kamatam@amazon.com>
-> 
-> Add freeze and restore callbacks for PM suspend and hibernation support.
-> The freeze handler stops a block-layer queue and disconnect the frontend
-> from the backend while freeing ring_info and associated resources. The
-> restore handler re-allocates ring_info and re-connect to the backedend,
-> so the rest of the kernel can continue to use the block device
-> transparently.Also, the handlers are used for both PM
-> suspend and hibernation so that we can keep the existing suspend/resume
-> callbacks for Xen suspend without modification.
-> If a backend doesn't have commit 12ea729645ac ("xen/blkback: unmap all
-> persistent grants when frontend gets disconnected"), the frontend may see
-> massive amount of grant table warning when freeing resources.
-> 
->  [   36.852659] deferring g.e. 0xf9 (pfn 0xffffffffffffffff)
->  [   36.855089] xen:grant_table: WARNING: g.e. 0x112 still in use!
-> 
-> In this case, persistent grants would need to be disabled.
-> 
-> Ensure no reqs/rsps in rings before disconnecting. When disconnecting
-> the frontend from the backend in blkfront_freeze(), there still may be
-> unconsumed requests or responses in the rings, especially when the
-> backend is backed by network-based device. If the frontend gets
-> disconnected with such reqs/rsps remaining there, it can cause
-> grant warnings and/or losing reqs/rsps by freeing pages afterward.
+[...]
 
-I'm not sure why having pending requests can cause grant warnings or
-lose of requests. If handled properly this shouldn't be an issue.
-Linux blkfront already does live migration (which also involves a
-reconnection of the frontend) with pending requests and that doesn't
-seem to be an issue.
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH v2] PM / core: Fix supplier device runtime PM usage counter imbalance
+>
+> If a device link is added via device_link_add() by the driver of the
+> link's consumer device, the supplier's runtime PM usage counter is
+> going to be dropped by the pm_runtime_put_suppliers() call in
+> driver_probe_device().  However, in that case it is not incremented
+> unless the supplier driver is already present and the link is not
+> stateless.  That leads to a runtime PM usage counter imbalance for
+> the supplier device in a few cases.
+>
+> To prevent that from happening, bump up the supplier runtime
+> PM usage counter in device_link_add() for all links with the
+> DL_FLAG_PM_RUNTIME flag set that are added at the consumer probe
+> time.  Use pm_runtime_get_noresume() for that as the callers of
+> device_link_add() who want the supplier to be resumed by it are
+> expected to pass DL_FLAG_RPM_ACTIVE in flags to it anyway, but
+> additionally resume the supplier if the link is added during
+> consumer driver probe to retain the existing behavior for the
+> callers depending on it.
+>
+> Fixes: 21d5c57b3726 (PM / runtime: Use device links)
+> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> This can lead resumed kernel into unrecoverable state like unexpected
-> freeing of grant page and/or hung task due to the lost reqs or rsps.
-> Therefore we have to ensure that there is no unconsumed requests or
-> responses before disconnecting.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Given that we have multiqueue, plus multipage rings, I'm not sure
-waiting for the requests on the rings to complete is a good idea.
+Kind regards
+Uffe
 
-Why can't you just disconnect the frontend and requeue all the
-requests in flight? When the frontend connects on resume those
-requests will be queued again.
-
-Thanks, Roger.
+> ---
+>  drivers/base/core.c |   15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
+>
+> Index: linux-pm/drivers/base/core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/core.c
+> +++ linux-pm/drivers/base/core.c
+> @@ -216,6 +216,13 @@ struct device_link *device_link_add(stru
+>                         link->rpm_active = true;
+>                 }
+>                 pm_runtime_new_link(consumer);
+> +               /*
+> +                * If the link is being added by the consumer driver at probe
+> +                * time, balance the decrementation of the supplier's runtime PM
+> +                * usage counter after consumer probe in driver_probe_device().
+> +                */
+> +               if (consumer->links.status == DL_DEV_PROBING)
+> +                       pm_runtime_get_noresume(supplier);
+>         }
+>         get_device(supplier);
+>         link->supplier = supplier;
+> @@ -235,12 +242,12 @@ struct device_link *device_link_add(stru
+>                         switch (consumer->links.status) {
+>                         case DL_DEV_PROBING:
+>                                 /*
+> -                                * Balance the decrementation of the supplier's
+> -                                * runtime PM usage counter after consumer probe
+> -                                * in driver_probe_device().
+> +                                * Some callers expect the link creation during
+> +                                * consumer driver probe to resume the supplier
+> +                                * even without DL_FLAG_RPM_ACTIVE.
+>                                  */
+>                                 if (flags & DL_FLAG_PM_RUNTIME)
+> -                                       pm_runtime_get_sync(supplier);
+> +                                       pm_runtime_resume(supplier);
+>
+>                                 link->status = DL_STATE_CONSUMER_PROBE;
+>                                 break;
+>
