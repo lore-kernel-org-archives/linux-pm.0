@@ -1,56 +1,98 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 00/11] Add support for Hygon's Dhyana Family 18h processor
-Date: Wed, 13 Jun 2018 22:51:29 +0200
-Message-ID: <20180613205129.GD26375@zn.tnic>
-References: <1528550410-28080-1-git-send-email-puwen@hygon.cn>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V6] powercap/drivers/idle_injection: Add an idle injection framework
+Date: Wed, 13 Jun 2018 23:27:28 +0200
+Message-ID: <CAJZ5v0jKsc6RjYWv9kYQmg3xEbXop0AH0J5Q=XmJG+K2rFJdcw@mail.gmail.com>
+References: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
+ <1528905257.48473.4.camel@intel.com> <0b72e862-6bbe-e706-79f8-e1b690982920@linaro.org>
+ <1528920447.48473.11.camel@intel.com> <ac38f5d9-80d1-09f2-6f8e-c58085f9a32a@linaro.org>
+ <1528921968.48473.15.camel@intel.com> <55e8799f-9af2-f311-72fd-3f52439b5b97@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1528550410-28080-1-git-send-email-puwen@hygon.cn>
+In-Reply-To: <55e8799f-9af2-f311-72fd-3f52439b5b97@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pu Wen <puwen@hygon.cn>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, peterz@infradead.org, tony.luck@intel.com, pbonzini@redhat.com, rkrcmar@redhat.com, boris.ostrovsky@oracle.com, jgross@suse.com, rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org, mchehab@kernel.org, trenn@suse.com, shuah@kernel.org, zhangpanyong@hygon.cn, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-x86_64@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "andrea.parri@amarulasolutions.com" <andrea.parri@amarulasolutions.com>, "kevin.wangtao@linaro.org" <kevin.wangtao@linaro.org>, "leo.yan@linaro.org" <leo.yan@linaro.org>, "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>, "javi.merino@kernel.org" <javi.merino@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jun 09, 2018 at 09:20:10PM +0800, Pu Wen wrote:
-> As a new x86 CPU Vendor, Chengdu Haiguang IC Design Co., Ltd (Hygon)
-> is a Joint Venture between AMD and Haiguang Information Technology Co.,
-> Ltd., and aims at providing high performance x86 processor for China
-> server market.
-> 
-> The first generation Hygon's processor(Dhyana) originates from AMD
-> technology and shares most of the architecture with AMD's family 17h,
-> but with different CPU Vendor ID("HygonGenuine")/PCIE Device Vendor ID
-> (0x1D94)/Family series number(Family 18h).
-> 
-> To enable the support of Linux kernel to Hygon's CPU, we added a new
-> vendor type (X86_VENDOR_HYGON, with value of 9) in arch/x86/include/
-> asm/processor.h, and shared most of kernel support codes with AMD
-> family 17h.
-> 
-> These patches have been applied and tested successfully in Hygon's
-> Dhyana SoC silicon. Also tested on AMD's EPYC (Family 17h) processor
-> works fine and makes no harm to existing codes.
+On Wed, Jun 13, 2018 at 10:35 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> On 13/06/2018 22:32, Pandruvada, Srinivas wrote:
+>> On Wed, 2018-06-13 at 22:19 +0200, Daniel Lezcano wrote:
+>>> On 13/06/2018 22:07, Pandruvada, Srinivas wrote:
+>>>> On Wed, 2018-06-13 at 22:00 +0200, Daniel Lezcano wrote:
+>>>>> On 13/06/2018 17:54, Pandruvada, Srinivas wrote:
+>>>>>> On Tue, 2018-06-12 at 14:00 +0200, Daniel Lezcano wrote:
+>>>>>>> Initially, the cpu_cooling device for ARM was changed by
+>>>>>>> adding a
+>>>>>>> new
+>>>>>>> policy inserting idle cycles. The intel_powerclamp driver
+>>>>>>> does a
+>>>>>>> similar action.
+>>>>>>>
+>>>>>>> Instead of implementing idle injections privately in the
+>>>>>>> cpu_cooling
+>>>>>>> device, move the idle injection code in a dedicated framework
+>>>>>>> and
+>>>>>>> give
+>>>>>>> the opportunity to other frameworks to make use of it.
+>>>>>>>
+>>>>>>> The framework relies on the smpboot kthreads which handles
+>>>>>>> via
+>>>>>>> its
+>>>>>>> main loop the common code for hotplugging and [un]parking.
+>>>>>>>
+>>>>>>> This code was previously tested with the cpu cooling device
+>>>>>>> and
+>>>>>>> went
+>>>>>>> through several iterations. It results now in split code and
+>>>>>>> API
+>>>>>>> exported in the header file. It was tested with the cpu
+>>>>>>> cooling
+>>>>>>> device
+>>>>>>> with success.
+>>>>>>>
+>>>>>>
+>>>>>> May be I have missed, but I don't see any use of powercap
+>>>>>> sysfs.
+>>>>>>
+>>>>>> We created powercap sys that user space is presented a common
+>>>>>> interface
+>>>>>> for power capping. The RAPL driver was also submitted as
+>>>>>> cooling
+>>>>>> device
+>>>>>> before, but suggestion was to create this powercap.
+>>>>>>
+>>>>>> So if powercap interface is not enough then may be we should
+>>>>>> enhance
+>>>>>> that.
+>>>>>
+>>>>> We are creating a framework for idle injection. This framework
+>>>>> can
+>>>>> then
+>>>>> be used by the cpu_cooling device, the power_clamp and in
+>>>>> addition a
+>>>>> power capping for ARM (if it makes sense).
+>>>>
+>>>> But in this case, why in drivers/powercap folder as this is another
+>>>> framework?
+>>>
+>>> I presented at OSPM 2nd the cpu idle cooling device. It is ARM
+>>> specific
+>>> but has some similarities with the power clamp driver.
+>>>
+>>> Some board come with power numbers defined in their DT and from there
+>>> we
+>>> are able to compute a targeted power by injecting idle cycles.
+>>>
+>>> As the idle injection allows to do also power capping, Rafael told me
+>>> to
+>>> move that to a framework (may be better say a component with exported
+>>> services or library) and put it in drivers/powercap.
+>> So Rafael wants it to be in powercap.
+>
+> That is what I understood.
 
-Well, I don't like this diffstat:
-
- 37 files changed, 183 insertions(+), 56 deletions(-)
-
-which adds a lot of code checking this new vendor. But then it adds in
-the AMD paths and I don't see it being any different from an AMD CPU. So
-it does the same a Zen does but then it is Hygon.
-
-So I'd prefer to *not* sprinkle those X86_VENDOR_HYGON checks everywhere
-but simply have the vendor be X86_VENDOR_AMD and only the user-visible
-reporting to show that it is Hygon. Because to the kernel it is an AMD
-CPU - only the superficial attributes are something else. Oh well, and
-PCI device IDs but that's like another CPU revision.
-
-Thx.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+While this is not exactly power capping, the purpose of this mechanism
+is to prevent too much power from being drawn by the system, so IMO it
+falls under the same broad category.
