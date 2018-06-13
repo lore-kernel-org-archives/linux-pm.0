@@ -1,120 +1,59 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
- bindings
-Date: Wed, 13 Jun 2018 23:43:41 +0530
-Message-ID: <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org>
-References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
- <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
- <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V6] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Wed, 13 Jun 2018 22:00:39 +0200
+Message-ID: <0b72e862-6bbe-e706-79f8-e1b690982920@linaro.org>
+References: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
+ <1528905257.48473.4.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
+In-Reply-To: <1528905257.48473.4.camel@intel.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "andrea.parri@amarulasolutions.com" <andrea.parri@amarulasolutions.com>, "kevin.wangtao@linaro.org" <kevin.wangtao@linaro.org>, "leo.yan@linaro.org" <leo.yan@linaro.org>, "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>, "javi.merino@kernel.org" <javi.merino@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Sudeep,
-
-Thanks for review comments.
-
-On 6/13/2018 4:56 PM, Sudeep Holla wrote:
-> 
-> 
-> On 12/06/18 12:02, Taniya Das wrote:
->> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
->> SoCs. This is required for managing the cpu frequency transitions which are
->> controlled by firmware.
+On 13/06/2018 17:54, Pandruvada, Srinivas wrote:
+> On Tue, 2018-06-12 at 14:00 +0200, Daniel Lezcano wrote:
+>> Initially, the cpu_cooling device for ARM was changed by adding a new
+>> policy inserting idle cycles. The intel_powerclamp driver does a
+>> similar action.
 >>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>   .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 173 +++++++++++++++++++++
->>   1 file changed, 173 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+>> Instead of implementing idle injections privately in the cpu_cooling
+>> device, move the idle injection code in a dedicated framework and
+>> give
+>> the opportunity to other frameworks to make use of it.
 >>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->> new file mode 100644
->> index 0000000..e3087ec
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
->> @@ -0,0 +1,173 @@
->> +Qualcomm Technologies, Inc. CPUFREQ Bindings
->> +
->> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
->> +SoCs to manage frequency in hardware. It is capable of controlling frequency
->> +for multiple clusters.
->> +
+>> The framework relies on the smpboot kthreads which handles via its
+>> main loop the common code for hotplugging and [un]parking.
+>>
+>> This code was previously tested with the cpu cooling device and went
+>> through several iterations. It results now in split code and API
+>> exported in the header file. It was tested with the cpu cooling
+>> device
+>> with success.
+>>
+> May be I have missed, but I don't see any use of powercap sysfs.
 > 
-> You are bit inconsistent on the wordings. Some places you refer this as
-> hardware engine. If so, please drop all references to firmware/FW. If
-> it's firmware then update accordingly.
+> We created powercap sys that user space is presented a common interface
+> for power capping. The RAPL driver was also submitted as cooling device
+> before, but suggestion was to create this powercap.
 > 
+> So if powercap interface is not enough then may be we should enhance
+> that.
 
-It is a hardware engine which has a firmware to take care of the
-managing the frequency request from OS. That is reason to refer it as a 
-firmware.
+We are creating a framework for idle injection. This framework can then
+be used by the cpu_cooling device, the power_clamp and in addition a
+power capping for ARM (if it makes sense).
 
->> +Properties:
->> +- compatible
->> +	Usage:		required
->> +	Value type:	<string>
->> +	Definition:	must be "qcom,cpufreq-fw".
->> +
->> +* Property qcom,freq-domain
->> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
->> +phandle to a freq_domain_table in their DT node.
->> +
->> +* Frequency Domain Table Node
->> +
->> +This describes the frequency domain belonging to a device.
->> +This node can have following properties:
->> +
->> +- reg
->> +	Usage:		required
->> +	Value type:	<prop-encoded-array>
->> +	Definition:	Addresses and sizes for the memory of the perf
->> +			, lut and enable bases.
->> +			perf - indicates the base address for the desired
->> +			performance state to be set.
->> +			lut - indicates the look up table base address for the
->> +			cpufreq	driver to read frequencies.
->> +			enable - indicates the enable register for firmware.
-> 
-> 
-> You still didn't answer my earlier question.
-> 
-> OS might touch one or 2 registers in lots of IP blocks. I am not sure
-> why those are any different from these. Are you trying to align with any
-> other bindings or specification. Are you trying to make this binding
-> generic here ? I understand if it was trying to generalize the firmware
-> interface, but you also state it's a hardware engine. So I fail to see
-> the need for such specificity here. Why not define the whole IP block
-> and the driver knows where to access these specific ones as they are
-> specific to this hardware block. In that way if you decide to add more
-> data, it's extensible easily without the need for patching DT.
-> 
 
-Sorry Sudeep I missed replying to your earlier query.
-The High level OS(HLOS) would require to access only these specific 
-registers from this IP block and just mapping the whole block(huge 
-region) is unnecessary from the OS point of View. As of now it is a 
-generic binding for all using this IP block to manage frequency 
-requests. The OS would only have to know the frequencies supported i.e 
-to read the lookup table registers and put across the OS request using 
-the performance state register.
-
-> Eg. Suppose you need some information on power curve for EAS energy
-> model, I really hate to update DT for that or even do a mix with DT just
-> because f/w is no longer modifiable.
-> 
-
-For now we are safe.
 
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
---
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
