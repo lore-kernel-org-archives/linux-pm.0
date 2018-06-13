@@ -1,98 +1,84 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V6] powercap/drivers/idle_injection: Add an idle injection framework
-Date: Wed, 13 Jun 2018 23:27:28 +0200
-Message-ID: <CAJZ5v0jKsc6RjYWv9kYQmg3xEbXop0AH0J5Q=XmJG+K2rFJdcw@mail.gmail.com>
-References: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
- <1528905257.48473.4.camel@intel.com> <0b72e862-6bbe-e706-79f8-e1b690982920@linaro.org>
- <1528920447.48473.11.camel@intel.com> <ac38f5d9-80d1-09f2-6f8e-c58085f9a32a@linaro.org>
- <1528921968.48473.15.camel@intel.com> <55e8799f-9af2-f311-72fd-3f52439b5b97@linaro.org>
+From: Anchal Agarwal <anchalag@amazon.com>
+Subject: Re: [RFC PATCH 06/12] xen-blkfront: add callbacks for
+ PM suspend and hibernation
+Date: Wed, 13 Jun 2018 22:20:48 +0000
+Message-ID: <20180613222048.GB33296@kaos-source-ops-60001.pdx1.amazon.com>
+References: <20180612205619.28156-1-anchalag@amazon.com>
+ <20180612205619.28156-7-anchalag@amazon.com>
+ <20180613082428.bjdko4k6cnq6eid3@mac>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55e8799f-9af2-f311-72fd-3f52439b5b97@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "andrea.parri@amarulasolutions.com" <andrea.parri@amarulasolutions.com>, "kevin.wangtao@linaro.org" <kevin.wangtao@linaro.org>, "leo.yan@linaro.org" <leo.yan@linaro.org>, "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>, "javi.merino@kernel.org" <javi.merino@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <xen-devel-bounces@lists.xenproject.org>
+Content-Disposition: inline
+In-Reply-To: <20180613082428.bjdko4k6cnq6eid3@mac>
+List-Unsubscribe: <https://lists.xenproject.org/mailman/options/xen-devel>,
+ <mailto:xen-devel-request@lists.xenproject.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xenproject.org>
+List-Help: <mailto:xen-devel-request@lists.xenproject.org?subject=help>
+List-Subscribe: <https://lists.xenproject.org/mailman/listinfo/xen-devel>,
+ <mailto:xen-devel-request@lists.xenproject.org?subject=subscribe>
+Errors-To: xen-devel-bounces@lists.xenproject.org
+Sender: "Xen-devel" <xen-devel-bounces@lists.xenproject.org>
+To: Roger Pau Monn?? <roger.pau@citrix.com>
+Cc: jgross@suse.com, len.brown@intel.com, kamatam@amazon.com, eduval@amazon.com, vallish@amazon.com, netdev@vger.kernel.org, fllinden@amazon.com, x86@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anchalag@amazon.com, cyberax@amazon.com, mingo@redhat.com, pavel@ucw.cz, hpa@zytor.com, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, boris.ostrovsky@oracle.com, guruanb@amazon.com, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 13, 2018 at 10:35 PM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> On 13/06/2018 22:32, Pandruvada, Srinivas wrote:
->> On Wed, 2018-06-13 at 22:19 +0200, Daniel Lezcano wrote:
->>> On 13/06/2018 22:07, Pandruvada, Srinivas wrote:
->>>> On Wed, 2018-06-13 at 22:00 +0200, Daniel Lezcano wrote:
->>>>> On 13/06/2018 17:54, Pandruvada, Srinivas wrote:
->>>>>> On Tue, 2018-06-12 at 14:00 +0200, Daniel Lezcano wrote:
->>>>>>> Initially, the cpu_cooling device for ARM was changed by
->>>>>>> adding a
->>>>>>> new
->>>>>>> policy inserting idle cycles. The intel_powerclamp driver
->>>>>>> does a
->>>>>>> similar action.
->>>>>>>
->>>>>>> Instead of implementing idle injections privately in the
->>>>>>> cpu_cooling
->>>>>>> device, move the idle injection code in a dedicated framework
->>>>>>> and
->>>>>>> give
->>>>>>> the opportunity to other frameworks to make use of it.
->>>>>>>
->>>>>>> The framework relies on the smpboot kthreads which handles
->>>>>>> via
->>>>>>> its
->>>>>>> main loop the common code for hotplugging and [un]parking.
->>>>>>>
->>>>>>> This code was previously tested with the cpu cooling device
->>>>>>> and
->>>>>>> went
->>>>>>> through several iterations. It results now in split code and
->>>>>>> API
->>>>>>> exported in the header file. It was tested with the cpu
->>>>>>> cooling
->>>>>>> device
->>>>>>> with success.
->>>>>>>
->>>>>>
->>>>>> May be I have missed, but I don't see any use of powercap
->>>>>> sysfs.
->>>>>>
->>>>>> We created powercap sys that user space is presented a common
->>>>>> interface
->>>>>> for power capping. The RAPL driver was also submitted as
->>>>>> cooling
->>>>>> device
->>>>>> before, but suggestion was to create this powercap.
->>>>>>
->>>>>> So if powercap interface is not enough then may be we should
->>>>>> enhance
->>>>>> that.
->>>>>
->>>>> We are creating a framework for idle injection. This framework
->>>>> can
->>>>> then
->>>>> be used by the cpu_cooling device, the power_clamp and in
->>>>> addition a
->>>>> power capping for ARM (if it makes sense).
->>>>
->>>> But in this case, why in drivers/powercap folder as this is another
->>>> framework?
->>>
->>> I presented at OSPM 2nd the cpu idle cooling device. It is ARM
->>> specific
->>> but has some similarities with the power clamp driver.
->>>
->>> Some board come with power numbers defined in their DT and from there
->>> we
->>> are able to compute a targeted power by injecting idle cycles.
->>>
->>> As the idle injection allows to do also power capping, Rafael told me
->>> to
->>> move that to a framework (may be better say a component with exported
->>> services or library) and put it in drivers/powercap.
->> So Rafael wants it to be in powercap.
->
-> That is what I understood.
-
-While this is not exactly power capping, the purpose of this mechanism
-is to prevent too much power from being drawn by the system, so IMO it
-falls under the same broad category.
+SGkgUm9nZXIsClRvIGFuc3dlciB5b3VyIHF1ZXN0aW9uLCBkdWUgdG8gdGhlIGxhY2sgb2YgbWVu
+dGlvbmVkIGNvbW1pdAooY29tbWl0IDEyZWE3Mjk2NDVhYyAoInhlbi9ibGtiYWNrOiB1bm1hcCBh
+bGwgcGVyc2lzdGVudCBncmFudHMgd2hlbgpmcm9udGVuZCBnZXRzIGRpc2Nvbm5lY3RlZCIpIGlu
+IHRoZSBvbGRlciBkb20wIGtlcm5lbHMoPDMuMikscmVzdW1lIGZyb20KaGliZXJuYXRpb24gY2Fu
+IGZhaWwgb24gZ3Vlc3Qgc2lkZS4gSW4gdGhlIGFic2VuY2Ugb2YgdGhlIGNvbW1pdCwKUGVyc2lz
+dGFudCBHcmFudHMgYXJlIG5vdCB1bm1hcHBlZCBpbW1lZGlhdGVseSB3aGVuIGZyb250ZW5kIGlz
+IApkaXNjb25uZWN0ZWQgZnJvbSBiYWNrZW5kIGFuZCBoZW5jZSBsZWF2ZSB0aGUgYmxvY2sgZGV2
+aWNlIGluIGFuIAppbmNvbnNpc3RlbnQgc3RhdGUuIFRvIGF2b2lkIHRoaXMgdW5zdGFiaWxpdHkg
+YW5kIHdvcmsgd2l0aCBsYXJnZXIgc2V0IApvZiBrZXJuZWwgdmVyc2lvbnMsIHRoaXMgYXBwcm9h
+Y2ggaGFkIGJlZW4gdXNlZC4gT25jZSB5b3UgZG9uJ3QgaGF2ZSAKYW55IHBlbmRpbmcgcmVxL3Jl
+c3AgaXQgaXMgc2FmZXIgZm9yIGd1ZXN0IHRvIHJlc3VtZSBmcm9tIGhpYmVybmF0aW9uLgoKVGhh
+bmtzLApBbmNoYWwKCk9uIFdlZCwgSnVuIDEzLCAyMDE4IGF0IDEwOjI0OjI4QU0gKzAyMDAsIFJv
+Z2VyIFBhdSBNb25uPz8gd3JvdGU6Cj4gT24gVHVlLCBKdW4gMTIsIDIwMTggYXQgMDg6NTY6MTNQ
+TSArMDAwMCwgQW5jaGFsIEFnYXJ3YWwgd3JvdGU6Cj4gPiBGcm9tOiBNdW5laGlzYSBLYW1hdGEg
+PGthbWF0YW1AYW1hem9uLmNvbT4KPiA+IAo+ID4gQWRkIGZyZWV6ZSBhbmQgcmVzdG9yZSBjYWxs
+YmFja3MgZm9yIFBNIHN1c3BlbmQgYW5kIGhpYmVybmF0aW9uIHN1cHBvcnQuCj4gPiBUaGUgZnJl
+ZXplIGhhbmRsZXIgc3RvcHMgYSBibG9jay1sYXllciBxdWV1ZSBhbmQgZGlzY29ubmVjdCB0aGUg
+ZnJvbnRlbmQKPiA+IGZyb20gdGhlIGJhY2tlbmQgd2hpbGUgZnJlZWluZyByaW5nX2luZm8gYW5k
+IGFzc29jaWF0ZWQgcmVzb3VyY2VzLiBUaGUKPiA+IHJlc3RvcmUgaGFuZGxlciByZS1hbGxvY2F0
+ZXMgcmluZ19pbmZvIGFuZCByZS1jb25uZWN0IHRvIHRoZSBiYWNrZWRlbmQsCj4gPiBzbyB0aGUg
+cmVzdCBvZiB0aGUga2VybmVsIGNhbiBjb250aW51ZSB0byB1c2UgdGhlIGJsb2NrIGRldmljZQo+
+ID4gdHJhbnNwYXJlbnRseS5BbHNvLCB0aGUgaGFuZGxlcnMgYXJlIHVzZWQgZm9yIGJvdGggUE0K
+PiA+IHN1c3BlbmQgYW5kIGhpYmVybmF0aW9uIHNvIHRoYXQgd2UgY2FuIGtlZXAgdGhlIGV4aXN0
+aW5nIHN1c3BlbmQvcmVzdW1lCj4gPiBjYWxsYmFja3MgZm9yIFhlbiBzdXNwZW5kIHdpdGhvdXQg
+bW9kaWZpY2F0aW9uLgo+ID4gSWYgYSBiYWNrZW5kIGRvZXNuJ3QgaGF2ZSBjb21taXQgMTJlYTcy
+OTY0NWFjICgieGVuL2Jsa2JhY2s6IHVubWFwIGFsbAo+ID4gcGVyc2lzdGVudCBncmFudHMgd2hl
+biBmcm9udGVuZCBnZXRzIGRpc2Nvbm5lY3RlZCIpLCB0aGUgZnJvbnRlbmQgbWF5IHNlZQo+ID4g
+bWFzc2l2ZSBhbW91bnQgb2YgZ3JhbnQgdGFibGUgd2FybmluZyB3aGVuIGZyZWVpbmcgcmVzb3Vy
+Y2VzLgo+ID4gCj4gPiAgWyAgIDM2Ljg1MjY1OV0gZGVmZXJyaW5nIGcuZS4gMHhmOSAocGZuIDB4
+ZmZmZmZmZmZmZmZmZmZmZikKPiA+ICBbICAgMzYuODU1MDg5XSB4ZW46Z3JhbnRfdGFibGU6IFdB
+Uk5JTkc6IGcuZS4gMHgxMTIgc3RpbGwgaW4gdXNlIQo+ID4gCj4gPiBJbiB0aGlzIGNhc2UsIHBl
+cnNpc3RlbnQgZ3JhbnRzIHdvdWxkIG5lZWQgdG8gYmUgZGlzYWJsZWQuCj4gPiAKPiA+IEVuc3Vy
+ZSBubyByZXFzL3JzcHMgaW4gcmluZ3MgYmVmb3JlIGRpc2Nvbm5lY3RpbmcuIFdoZW4gZGlzY29u
+bmVjdGluZwo+ID4gdGhlIGZyb250ZW5kIGZyb20gdGhlIGJhY2tlbmQgaW4gYmxrZnJvbnRfZnJl
+ZXplKCksIHRoZXJlIHN0aWxsIG1heSBiZQo+ID4gdW5jb25zdW1lZCByZXF1ZXN0cyBvciByZXNw
+b25zZXMgaW4gdGhlIHJpbmdzLCBlc3BlY2lhbGx5IHdoZW4gdGhlCj4gPiBiYWNrZW5kIGlzIGJh
+Y2tlZCBieSBuZXR3b3JrLWJhc2VkIGRldmljZS4gSWYgdGhlIGZyb250ZW5kIGdldHMKPiA+IGRp
+c2Nvbm5lY3RlZCB3aXRoIHN1Y2ggcmVxcy9yc3BzIHJlbWFpbmluZyB0aGVyZSwgaXQgY2FuIGNh
+dXNlCj4gPiBncmFudCB3YXJuaW5ncyBhbmQvb3IgbG9zaW5nIHJlcXMvcnNwcyBieSBmcmVlaW5n
+IHBhZ2VzIGFmdGVyd2FyZC4KPiAKPiBJJ20gbm90IHN1cmUgd2h5IGhhdmluZyBwZW5kaW5nIHJl
+cXVlc3RzIGNhbiBjYXVzZSBncmFudCB3YXJuaW5ncyBvcgo+IGxvc2Ugb2YgcmVxdWVzdHMuIElm
+IGhhbmRsZWQgcHJvcGVybHkgdGhpcyBzaG91bGRuJ3QgYmUgYW4gaXNzdWUuCj4gTGludXggYmxr
+ZnJvbnQgYWxyZWFkeSBkb2VzIGxpdmUgbWlncmF0aW9uICh3aGljaCBhbHNvIGludm9sdmVzIGEK
+PiByZWNvbm5lY3Rpb24gb2YgdGhlIGZyb250ZW5kKSB3aXRoIHBlbmRpbmcgcmVxdWVzdHMgYW5k
+IHRoYXQgZG9lc24ndAo+IHNlZW0gdG8gYmUgYW4gaXNzdWUuCj4gCj4gPiBUaGlzIGNhbiBsZWFk
+IHJlc3VtZWQga2VybmVsIGludG8gdW5yZWNvdmVyYWJsZSBzdGF0ZSBsaWtlIHVuZXhwZWN0ZWQK
+PiA+IGZyZWVpbmcgb2YgZ3JhbnQgcGFnZSBhbmQvb3IgaHVuZyB0YXNrIGR1ZSB0byB0aGUgbG9z
+dCByZXFzIG9yIHJzcHMuCj4gPiBUaGVyZWZvcmUgd2UgaGF2ZSB0byBlbnN1cmUgdGhhdCB0aGVy
+ZSBpcyBubyB1bmNvbnN1bWVkIHJlcXVlc3RzIG9yCj4gPiByZXNwb25zZXMgYmVmb3JlIGRpc2Nv
+bm5lY3RpbmcuCj4gCj4gR2l2ZW4gdGhhdCB3ZSBoYXZlIG11bHRpcXVldWUsIHBsdXMgbXVsdGlw
+YWdlIHJpbmdzLCBJJ20gbm90IHN1cmUKPiB3YWl0aW5nIGZvciB0aGUgcmVxdWVzdHMgb24gdGhl
+IHJpbmdzIHRvIGNvbXBsZXRlIGlzIGEgZ29vZCBpZGVhLgo+IAo+IFdoeSBjYW4ndCB5b3UganVz
+dCBkaXNjb25uZWN0IHRoZSBmcm9udGVuZCBhbmQgcmVxdWV1ZSBhbGwgdGhlCj4gcmVxdWVzdHMg
+aW4gZmxpZ2h0PyBXaGVuIHRoZSBmcm9udGVuZCBjb25uZWN0cyBvbiByZXN1bWUgdGhvc2UKPiBy
+ZXF1ZXN0cyB3aWxsIGJlIHF1ZXVlZCBhZ2Fpbi4KPiAKPiBUaGFua3MsIFJvZ2VyLgo+IAoKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVsIG1h
+aWxpbmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVucHJvamVjdC5vcmcKaHR0cHM6Ly9saXN0cy54
+ZW5wcm9qZWN0Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL3hlbi1kZXZlbA==
