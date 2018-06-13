@@ -1,135 +1,42 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 Subject: Re: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from
  S3
-Date: Wed, 13 Jun 2018 15:53:07 +0300
-Message-ID: <6a387b8b67497fa4a656c252a010d6d4e72e7774.camel@linux.intel.com>
+Date: Wed, 13 Jun 2018 15:58:27 +0300
+Message-ID: <20180613125827.GZ2384@lahna.fi.intel.com>
 References: <DEA1AE84-B0FD-481E-8E0D-788CD4EF59AE@canonical.com>
-         <2505591.oRh3ktjo9V@aspire.rjw.lan>
-         <A05971DC-4453-4615-9AE9-8C4608569427@canonical.com>
-         <1568228.RgPNub1osy@aspire.rjw.lan>
+ <2505591.oRh3ktjo9V@aspire.rjw.lan>
+ <A05971DC-4453-4615-9AE9-8C4608569427@canonical.com>
+ <1568228.RgPNub1osy@aspire.rjw.lan>
+ <6a387b8b67497fa4a656c252a010d6d4e72e7774.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1568228.RgPNub1osy@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <6a387b8b67497fa4a656c252a010d6d4e72e7774.camel@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Kai Heng Feng <kai.heng.feng@canonical.com>, Ulf Hansson <ulf.hansson@linaro.org>, P HeLiOn <perryhelionsemail@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kai Heng Feng <kai.heng.feng@canonical.com>, Ulf Hansson <ulf.hansson@linaro.org>, P HeLiOn <perryhelionsemail@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2018-06-13 at 13:17 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Jun 13, 2018 at 03:53:07PM +0300, Andy Shevchenko wrote:
+> On Wed, 2018-06-13 at 13:17 +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > It is reported that commit a192aa923b66a (ACPI / LPSS: Consolidate
+> > runtime PM and system sleep handling) introduced a system suspend
+> > regression on some machines, but the only functional change made by
+> > it was to cause the PM quirks in the LPSS to also be used during
+> > system suspend and resume.  While that should always work for
+> > suspend-to-idle, it turns out to be problematic for S3
+> > (suspend-to-RAM).
+> > 
+> > To address that issue restore the previous S3 suspend and resume
+> > behavior of the LPSS to avoid applying PM quirks then.
+> > 
 > 
-> It is reported that commit a192aa923b66a (ACPI / LPSS: Consolidate
-> runtime PM and system sleep handling) introduced a system suspend
-> regression on some machines, but the only functional change made by
-> it was to cause the PM quirks in the LPSS to also be used during
-> system suspend and resume.  While that should always work for
-> suspend-to-idle, it turns out to be problematic for S3
-> (suspend-to-RAM).
-> 
-> To address that issue restore the previous S3 suspend and resume
-> behavior of the LPSS to avoid applying PM quirks then.
-> 
+> LGTM,
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-LGTM,
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Also,
 
-> Fixes: a192aa923b66a (ACPI / LPSS: Consolidate runtime PM and system
-> sleep handling)
-> Link: https://bugs.launchpad.net/bugs/1774950
-> Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> Tested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/acpi/acpi_lpss.c |   18 +++++++++++-------
->  1 file changed, 11 insertions(+), 7 deletions(-)
-> 
-> Index: linux-pm/drivers/acpi/acpi_lpss.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/acpi_lpss.c
-> +++ linux-pm/drivers/acpi/acpi_lpss.c
-> @@ -22,6 +22,7 @@
->  #include <linux/pm_domain.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/pwm.h>
-> +#include <linux/suspend.h>
->  #include <linux/delay.h>
->  
->  #include "internal.h"
-> @@ -940,9 +941,10 @@ static void lpss_iosf_exit_d3_state(void
->  	mutex_unlock(&lpss_iosf_mutex);
->  }
->  
-> -static int acpi_lpss_suspend(struct device *dev, bool wakeup)
-> +static int acpi_lpss_suspend(struct device *dev, bool runtime)
->  {
->  	struct lpss_private_data *pdata =
-> acpi_driver_data(ACPI_COMPANION(dev));
-> +	bool wakeup = runtime || device_may_wakeup(dev);
->  	int ret;
->  
->  	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
-> @@ -955,13 +957,14 @@ static int acpi_lpss_suspend(struct devi
->  	 * wrong status for devices being about to be powered off.
-> See
->  	 * lpss_iosf_enter_d3_state() for further information.
->  	 */
-> -	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON &&
-> iosf_mbi_available())
-> +	if ((runtime || !pm_suspend_via_firmware()) &&
-> +	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON &&
-> iosf_mbi_available())
->  		lpss_iosf_enter_d3_state();
->  
->  	return ret;
->  }
->  
-> -static int acpi_lpss_resume(struct device *dev)
-> +static int acpi_lpss_resume(struct device *dev, bool runtime)
->  {
->  	struct lpss_private_data *pdata =
-> acpi_driver_data(ACPI_COMPANION(dev));
->  	int ret;
-> @@ -970,7 +973,8 @@ static int acpi_lpss_resume(struct devic
->  	 * This call is kept first to be in symmetry with
->  	 * acpi_lpss_runtime_suspend() one.
->  	 */
-> -	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON &&
-> iosf_mbi_available())
-> +	if ((runtime || !pm_resume_via_firmware()) &&
-> +	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON &&
-> iosf_mbi_available())
->  		lpss_iosf_exit_d3_state();
->  
->  	ret = acpi_dev_resume(dev);
-> @@ -994,12 +998,12 @@ static int acpi_lpss_suspend_late(struct
->  		return 0;
->  
->  	ret = pm_generic_suspend_late(dev);
-> -	return ret ? ret : acpi_lpss_suspend(dev,
-> device_may_wakeup(dev));
-> +	return ret ? ret : acpi_lpss_suspend(dev, false);
->  }
->  
->  static int acpi_lpss_resume_early(struct device *dev)
->  {
-> -	int ret = acpi_lpss_resume(dev);
-> +	int ret = acpi_lpss_resume(dev, false);
->  
->  	return ret ? ret : pm_generic_resume_early(dev);
->  }
-> @@ -1014,7 +1018,7 @@ static int acpi_lpss_runtime_suspend(str
->  
->  static int acpi_lpss_runtime_resume(struct device *dev)
->  {
-> -	int ret = acpi_lpss_resume(dev);
-> +	int ret = acpi_lpss_resume(dev, true);
->  
->  	return ret ? ret : pm_generic_runtime_resume(dev);
->  }
-> 
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
