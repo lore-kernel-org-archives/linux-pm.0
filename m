@@ -1,71 +1,147 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V6] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Wed, 13 Jun 2018 13:54:31 +0530
-Message-ID: <20180613082431.wsouzw25dx7wugni@vireshk-i7>
-References: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
- <20180612125930.GP12217@hirez.programming.kicks-ass.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / core: Fix supplier device runtime PM usage counter imbalance
+Date: Wed, 13 Jun 2018 10:25:09 +0200
+Message-ID: <CAPDyKFpUE_nr3kxugTxAdxacB3e6KOi9ioa-zcVtd=VCyFL11Q@mail.gmail.com>
+References: <CGME20180612110807epcas5p10e076681eac6f50b01840c0052748d12@epcas5p1.samsung.com>
+ <10125310.W3e2TP0641@aspire.rjw.lan> <20180612124424eucas1p101e61369a42132234d103ce52918b08e~3akoRUwbQ3138731387eucas1p17@eucas1p1.samsung.com>
+ <CAPDyKFpSx7Kif_AtrVNtPSW0gy4058VBCfFQgMqMWVQGq+2BXA@mail.gmail.com> <20180613064258eucas1p2f8a082548d80bbc02f26aaa8773383b9~3pSVbThtx0723907239eucas1p2l@eucas1p2.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180612125930.GP12217@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180613064258eucas1p2f8a082548d80bbc02f26aaa8773383b9~3pSVbThtx0723907239eucas1p2l@eucas1p2.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12-06-18, 14:59, Peter Zijlstra wrote:
-> On Tue, Jun 12, 2018 at 02:00:11PM +0200, Daniel Lezcano wrote:
-> > +struct idle_injection_device {
-> 
-> remove this:
-> > +	cpumask_var_t cpumask;
-> 
-> > +	struct hrtimer timer;
-> > +	struct completion stop_complete;
-> > +	unsigned int idle_duration_ms;
-> > +	unsigned int run_duration_ms;
-> > +	atomic_t count;
-> 
-> add:
-> 	unsigned long cpumask[0];
-> > +};
-> 
-> 
-> > +static struct idle_injection_device *ii_dev_alloc(void)
-> > +{
-> > +	struct idle_injection_device *ii_dev;
-> > +
-> > +	ii_dev = kzalloc(sizeof(*ii_dev), GFP_KERNEL);
-> 
-> use:
-> 
-> 	sizeof(*ii_dev) + cpumask_size()
-> 
-> > +	if (!ii_dev)
-> > +		return NULL;
-> > +
-> 
-> delete:
-> 
-> > +	if (!alloc_cpumask_var(&ii_dev->cpumask, GFP_KERNEL)) {
-> > +		kfree(ii_dev);
-> > +		return NULL;
-> > +	}
-> > +
-> > +	return ii_dev;
-> > +}
-> 
-> And use:
-> 
-> 	to_cpumask(ii_dev->cpumask)
+On 13 June 2018 at 08:42, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+> Hi Ulf,
+>
+> On 2018-06-12 21:43, Ulf Hansson wrote:
+>> On 12 June 2018 at 14:44, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+>>> On 2018-06-12 13:00, Rafael J. Wysocki wrote:
+>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>
+>>>> If a device link is added via device_link_add() by the driver of the
+>>>> link's consumer device, the supplier's runtime PM usage counter is
+>>>> going to be dropped by the pm_runtime_put_suppliers() call in
+>>>> driver_probe_device().  However, in that case it is not incremented
+>>>> unless the supplier driver is already present and the link is not
+>>>> stateless.  That leads to a runtime PM usage counter imbalance for
+>>>> the supplier device in a few cases.
+>>>>
+>>>> To prevent that from happening, bump up the supplier runtime
+>>>> PM usage counter in device_link_add() for all links with the
+>>>> DL_FLAG_PM_RUNTIME flag set that are added at the consumer probe
+>>>> time.  Use pm_runtime_get_noresume() for that as the callers of
+>>>> device_link_add() who want the supplier to be resumed by it should
+>>>> pass DL_FLAG_RPM_ACTIVE in flags to it anyway.
+>>>>
+>>>> Fixes: 21d5c57b3726 (PM / runtime: Use device links)
+>>>> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>> ---
+>>>>
+>>>> This is a replacement for commit 1e8378619841 (PM / runtime: Fixup
+>>>> reference counting of device link suppliers at probe) that is going
+>>>> to be reverted.
+>>> Thanks Rafael for the patch. I've applied it and now I'm a bit puzzled.
+>>> Let's get back to my IOMMU and codec case, mentioned here:
+>>> https://marc.info/?l=linux-pm&m=152878741527962&w=2
+>>>
+>>> Now, after applying your patch, when IOMMU creates a link with
+>>> DL_FLAG_PM_RUNTIME to the jpeg device (this happens when jpeg device is
+>>> being probed), it is not IOMMU is not runtime resumed anymore (that's
+>>> because the patch changes pm_runtime_get_sync to pm_runtime_get_noresume).
+>> According to your earlier replies, I thought this is what you wanted. No?
+>>
+>>> This means that until jpeg driver enables runtime pm for its device and
+>>> finally performs runtime pm suspends/resume cycle, the supplier won't be
+>>> resumed.
+>> What's the problem with that?
+>
+> Wasted power. IOMMU device is left enabled until first use of JPEG device,
+> what means that respective power domain is also turned on unnecessarily.
 
-What's the benefit of these changes? Is it just about not allocating memory
-twice or more than that ?
+I understand the PM domain (genpd) gets powered on during probe, for
+the respective device.
 
-And what could we do in situations where we need two cpumask variables (we have
-a case in cpufreq core for that) ?
+Now, that shouldn't be a problem, because, if the driver enables
+runtime PM and leaves its device in runtime suspend state when probe
+is complete, then when driver core invokes the dev->pm_domain->sync()
+callback (set to genpd_dev_pm_sync()), genpd should be able to power
+off the PM domain.
 
--- 
-viresh
+>
+>> When does the IOMMU device needs to be
+>> runtime resumed?
+>
+> I would like to have IOMMU (supplier) runtime active all the time the JPEG
+> (consumer) device is runtime active AND all the time between probe() and
+> remove() if JPEG (consumer) doesn't support runtime PM (if it doesn't
+> enable runtime PM at all).
+
+Right, that explains why you need the existing behavior. Thanks for clarifying!
+
+I do see an opportunity for optimizations here, as clearly there are
+cases when you don't need the supplier, the IOMMU device, to be
+runtime resumed during link creation.
+
+However, currently this seems not feasible, as
+exynos_iommu_add_device() is called from a bus notifier, when the jpeg
+device is added. The point is, exynos_iommu_add_device() has no clue
+whether runtime PM is or will become enabled for the supplier device.
+Thus using DL_FLAG_RPM_ACTIVE is needed. To address this, I think the
+device link creation needs to be closer managed by the jpeg driver,
+somehow.
+
+>
+>>> On the other hand, when I add DL_FLAG_RPM_ACTIVE flag to link
+>>> creation, the supplier is properly resumed, but then, once the jpeg
+>>> device probe finishes, the supplier is still in runtime active state
+>>> until a next runtime suspend/resume cycle of jpeg device.
+>> Could you elaborate on the what happens in jpeg driver during probe,
+>> in regards to runtime PM. Perhaps you can also point me to what driver
+>> it is?
+>
+> s5p_jpeg_probe() doesn't touch hardware at all and only calls
+> pm_runtime_enable(),
+> see drivers/media/platform/s5p-jpeg/jpeg-core.c
+
+Thanks!
+
+>
+>>> If I understand
+>>> right, the DL_FLAG_RPM_ACTIVE flag should be there from the beginning,
+>>> but that time it runtime pm part of links worked in a bit different way
+>>> than now.
+>> Just to make sure, you also reverted 1e8378619841, before trying
+>> Rafael's change on top?
+>
+> Yes
+
+Great!
+
+>
+>>> Is there any way to keep old behavior?
+>> I think the old behavior is sub-optimal. I am sure there are users
+>> that really don't want the driver core to runtime resume the supplier
+>> unconditionally.
+>>
+>> I would rather go and fix the few users of device_link_add(), to use
+>> DL_FLAG_RPM_ACTIVE, in cases when they need it. Of course I am fine if
+>> we do these changes in a step by step basis as well.
+>
+> I also agree that the old behavior is sub-optimal and there are use
+> cases for the new (corrected) approach. I see no problems to add
+> DL_FLAG_RPM_ACTIVE to exynos-iommu driver (and probably the 5 other
+> drivers, which create links with DL_FLAG_PM_RUNTIME flag set to avoid
+> regressions). The question is what else should be changed/fixed to get
+> old behavior now.
+
+I think Rafael's v2, may take care of the problem. No?
+
+If not, then we need to investigate further.
+
+Kind regards
+Uffe
