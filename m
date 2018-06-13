@@ -1,112 +1,94 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from S3
-Date: Wed, 13 Jun 2018 13:17:26 +0200
-Message-ID: <1568228.RgPNub1osy@aspire.rjw.lan>
-References: <DEA1AE84-B0FD-481E-8E0D-788CD4EF59AE@canonical.com> <2505591.oRh3ktjo9V@aspire.rjw.lan> <A05971DC-4453-4615-9AE9-8C4608569427@canonical.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
+ bindings
+Date: Wed, 13 Jun 2018 12:26:53 +0100
+Message-ID: <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
+References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
+ <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <A05971DC-4453-4615-9AE9-8C4608569427@canonical.com>
+In-Reply-To: <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Kai Heng Feng <kai.heng.feng@canonical.com>, Ulf Hansson <ulf.hansson@linaro.org>, P HeLiOn <perryhelionsemail@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Taniya Das <tdas@codeaurora.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It is reported that commit a192aa923b66a (ACPI / LPSS: Consolidate
-runtime PM and system sleep handling) introduced a system suspend
-regression on some machines, but the only functional change made by
-it was to cause the PM quirks in the LPSS to also be used during
-system suspend and resume.  While that should always work for
-suspend-to-idle, it turns out to be problematic for S3
-(suspend-to-RAM).
 
-To address that issue restore the previous S3 suspend and resume
-behavior of the LPSS to avoid applying PM quirks then.
+On 12/06/18 12:02, Taniya Das wrote:
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by firmware.
+> 
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-fw.txt           | 173 +++++++++++++++++++++
+>  1 file changed, 173 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> new file mode 100644
+> index 0000000..e3087ec
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-fw.txt
+> @@ -0,0 +1,173 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ FW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
 
-Fixes: a192aa923b66a (ACPI / LPSS: Consolidate runtime PM and system sleep handling)
-Link: https://bugs.launchpad.net/bugs/1774950
-Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Tested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/acpi_lpss.c |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+You are bit inconsistent on the wordings. Some places you refer this as
+hardware engine. If so, please drop all references to firmware/FW. If
+it's firmware then update accordingly.
 
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -22,6 +22,7 @@
- #include <linux/pm_domain.h>
- #include <linux/pm_runtime.h>
- #include <linux/pwm.h>
-+#include <linux/suspend.h>
- #include <linux/delay.h>
- 
- #include "internal.h"
-@@ -940,9 +941,10 @@ static void lpss_iosf_exit_d3_state(void
- 	mutex_unlock(&lpss_iosf_mutex);
- }
- 
--static int acpi_lpss_suspend(struct device *dev, bool wakeup)
-+static int acpi_lpss_suspend(struct device *dev, bool runtime)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-+	bool wakeup = runtime || device_may_wakeup(dev);
- 	int ret;
- 
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
-@@ -955,13 +957,14 @@ static int acpi_lpss_suspend(struct devi
- 	 * wrong status for devices being about to be powered off. See
- 	 * lpss_iosf_enter_d3_state() for further information.
- 	 */
--	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
-+	if ((runtime || !pm_suspend_via_firmware()) &&
-+	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
- 		lpss_iosf_enter_d3_state();
- 
- 	return ret;
- }
- 
--static int acpi_lpss_resume(struct device *dev)
-+static int acpi_lpss_resume(struct device *dev, bool runtime)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
- 	int ret;
-@@ -970,7 +973,8 @@ static int acpi_lpss_resume(struct devic
- 	 * This call is kept first to be in symmetry with
- 	 * acpi_lpss_runtime_suspend() one.
- 	 */
--	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
-+	if ((runtime || !pm_resume_via_firmware()) &&
-+	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
- 		lpss_iosf_exit_d3_state();
- 
- 	ret = acpi_dev_resume(dev);
-@@ -994,12 +998,12 @@ static int acpi_lpss_suspend_late(struct
- 		return 0;
- 
- 	ret = pm_generic_suspend_late(dev);
--	return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
-+	return ret ? ret : acpi_lpss_suspend(dev, false);
- }
- 
- static int acpi_lpss_resume_early(struct device *dev)
- {
--	int ret = acpi_lpss_resume(dev);
-+	int ret = acpi_lpss_resume(dev, false);
- 
- 	return ret ? ret : pm_generic_resume_early(dev);
- }
-@@ -1014,7 +1018,7 @@ static int acpi_lpss_runtime_suspend(str
- 
- static int acpi_lpss_runtime_resume(struct device *dev)
- {
--	int ret = acpi_lpss_resume(dev);
-+	int ret = acpi_lpss_resume(dev, true);
- 
- 	return ret ? ret : pm_generic_runtime_resume(dev);
- }
+> +Properties:
+> +- compatible
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "qcom,cpufreq-fw".
+> +
+> +* Property qcom,freq-domain
+> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+> +phandle to a freq_domain_table in their DT node.
+> +
+> +* Frequency Domain Table Node
+> +
+> +This describes the frequency domain belonging to a device.
+> +This node can have following properties:
+> +
+> +- reg
+> +	Usage:		required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Addresses and sizes for the memory of the perf
+> +			, lut and enable bases.
+> +			perf - indicates the base address for the desired
+> +			performance state to be set.
+> +			lut - indicates the look up table base address for the
+> +			cpufreq	driver to read frequencies.
+> +			enable - indicates the enable register for firmware.
+
+
+You still didn't answer my earlier question.
+
+OS might touch one or 2 registers in lots of IP blocks. I am not sure
+why those are any different from these. Are you trying to align with any
+other bindings or specification. Are you trying to make this binding
+generic here ? I understand if it was trying to generalize the firmware
+interface, but you also state it's a hardware engine. So I fail to see
+the need for such specificity here. Why not define the whole IP block
+and the driver knows where to access these specific ones as they are
+specific to this hardware block. In that way if you decide to add more
+data, it's extensible easily without the need for patching DT.
+
+Eg. Suppose you need some information on power curve for EAS energy
+model, I really hate to update DT for that or even do a mix with DT just
+because f/w is no longer modifiable.
+
+-- 
+Regards,
+Sudeep
