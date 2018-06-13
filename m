@@ -1,84 +1,72 @@
-From: Anchal Agarwal <anchalag@amazon.com>
-Subject: Re: [RFC PATCH 06/12] xen-blkfront: add callbacks for
- PM suspend and hibernation
-Date: Wed, 13 Jun 2018 22:20:48 +0000
-Message-ID: <20180613222048.GB33296@kaos-source-ops-60001.pdx1.amazon.com>
-References: <20180612205619.28156-1-anchalag@amazon.com>
- <20180612205619.28156-7-anchalag@amazon.com>
- <20180613082428.bjdko4k6cnq6eid3@mac>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v6 3/4] dt-bindings: power: supply: qcom_bms: Add bindings
+Date: Wed, 13 Jun 2018 15:53:23 -0700
+Message-ID: <20180613225323.GM88063@google.com>
+References: <20180407135934.26122-1-ctatlor97@gmail.com>
+ <20180613160643.12638-1-ctatlor97@gmail.com>
+ <20180613160643.12638-3-ctatlor97@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xenproject.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180613082428.bjdko4k6cnq6eid3@mac>
-List-Unsubscribe: <https://lists.xenproject.org/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xenproject.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xenproject.org>
-List-Help: <mailto:xen-devel-request@lists.xenproject.org?subject=help>
-List-Subscribe: <https://lists.xenproject.org/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xenproject.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xenproject.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xenproject.org>
-To: Roger Pau Monn?? <roger.pau@citrix.com>
-Cc: jgross@suse.com, len.brown@intel.com, kamatam@amazon.com, eduval@amazon.com, vallish@amazon.com, netdev@vger.kernel.org, fllinden@amazon.com, x86@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anchalag@amazon.com, cyberax@amazon.com, mingo@redhat.com, pavel@ucw.cz, hpa@zytor.com, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, boris.ostrovsky@oracle.com, guruanb@amazon.com, tglx@linutronix.de
+In-Reply-To: <20180613160643.12638-3-ctatlor97@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Craig Tatlor <ctatlor97@gmail.com>
+Cc: linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9nZXIsClRvIGFuc3dlciB5b3VyIHF1ZXN0aW9uLCBkdWUgdG8gdGhlIGxhY2sgb2YgbWVu
-dGlvbmVkIGNvbW1pdAooY29tbWl0IDEyZWE3Mjk2NDVhYyAoInhlbi9ibGtiYWNrOiB1bm1hcCBh
-bGwgcGVyc2lzdGVudCBncmFudHMgd2hlbgpmcm9udGVuZCBnZXRzIGRpc2Nvbm5lY3RlZCIpIGlu
-IHRoZSBvbGRlciBkb20wIGtlcm5lbHMoPDMuMikscmVzdW1lIGZyb20KaGliZXJuYXRpb24gY2Fu
-IGZhaWwgb24gZ3Vlc3Qgc2lkZS4gSW4gdGhlIGFic2VuY2Ugb2YgdGhlIGNvbW1pdCwKUGVyc2lz
-dGFudCBHcmFudHMgYXJlIG5vdCB1bm1hcHBlZCBpbW1lZGlhdGVseSB3aGVuIGZyb250ZW5kIGlz
-IApkaXNjb25uZWN0ZWQgZnJvbSBiYWNrZW5kIGFuZCBoZW5jZSBsZWF2ZSB0aGUgYmxvY2sgZGV2
-aWNlIGluIGFuIAppbmNvbnNpc3RlbnQgc3RhdGUuIFRvIGF2b2lkIHRoaXMgdW5zdGFiaWxpdHkg
-YW5kIHdvcmsgd2l0aCBsYXJnZXIgc2V0IApvZiBrZXJuZWwgdmVyc2lvbnMsIHRoaXMgYXBwcm9h
-Y2ggaGFkIGJlZW4gdXNlZC4gT25jZSB5b3UgZG9uJ3QgaGF2ZSAKYW55IHBlbmRpbmcgcmVxL3Jl
-c3AgaXQgaXMgc2FmZXIgZm9yIGd1ZXN0IHRvIHJlc3VtZSBmcm9tIGhpYmVybmF0aW9uLgoKVGhh
-bmtzLApBbmNoYWwKCk9uIFdlZCwgSnVuIDEzLCAyMDE4IGF0IDEwOjI0OjI4QU0gKzAyMDAsIFJv
-Z2VyIFBhdSBNb25uPz8gd3JvdGU6Cj4gT24gVHVlLCBKdW4gMTIsIDIwMTggYXQgMDg6NTY6MTNQ
-TSArMDAwMCwgQW5jaGFsIEFnYXJ3YWwgd3JvdGU6Cj4gPiBGcm9tOiBNdW5laGlzYSBLYW1hdGEg
-PGthbWF0YW1AYW1hem9uLmNvbT4KPiA+IAo+ID4gQWRkIGZyZWV6ZSBhbmQgcmVzdG9yZSBjYWxs
-YmFja3MgZm9yIFBNIHN1c3BlbmQgYW5kIGhpYmVybmF0aW9uIHN1cHBvcnQuCj4gPiBUaGUgZnJl
-ZXplIGhhbmRsZXIgc3RvcHMgYSBibG9jay1sYXllciBxdWV1ZSBhbmQgZGlzY29ubmVjdCB0aGUg
-ZnJvbnRlbmQKPiA+IGZyb20gdGhlIGJhY2tlbmQgd2hpbGUgZnJlZWluZyByaW5nX2luZm8gYW5k
-IGFzc29jaWF0ZWQgcmVzb3VyY2VzLiBUaGUKPiA+IHJlc3RvcmUgaGFuZGxlciByZS1hbGxvY2F0
-ZXMgcmluZ19pbmZvIGFuZCByZS1jb25uZWN0IHRvIHRoZSBiYWNrZWRlbmQsCj4gPiBzbyB0aGUg
-cmVzdCBvZiB0aGUga2VybmVsIGNhbiBjb250aW51ZSB0byB1c2UgdGhlIGJsb2NrIGRldmljZQo+
-ID4gdHJhbnNwYXJlbnRseS5BbHNvLCB0aGUgaGFuZGxlcnMgYXJlIHVzZWQgZm9yIGJvdGggUE0K
-PiA+IHN1c3BlbmQgYW5kIGhpYmVybmF0aW9uIHNvIHRoYXQgd2UgY2FuIGtlZXAgdGhlIGV4aXN0
-aW5nIHN1c3BlbmQvcmVzdW1lCj4gPiBjYWxsYmFja3MgZm9yIFhlbiBzdXNwZW5kIHdpdGhvdXQg
-bW9kaWZpY2F0aW9uLgo+ID4gSWYgYSBiYWNrZW5kIGRvZXNuJ3QgaGF2ZSBjb21taXQgMTJlYTcy
-OTY0NWFjICgieGVuL2Jsa2JhY2s6IHVubWFwIGFsbAo+ID4gcGVyc2lzdGVudCBncmFudHMgd2hl
-biBmcm9udGVuZCBnZXRzIGRpc2Nvbm5lY3RlZCIpLCB0aGUgZnJvbnRlbmQgbWF5IHNlZQo+ID4g
-bWFzc2l2ZSBhbW91bnQgb2YgZ3JhbnQgdGFibGUgd2FybmluZyB3aGVuIGZyZWVpbmcgcmVzb3Vy
-Y2VzLgo+ID4gCj4gPiAgWyAgIDM2Ljg1MjY1OV0gZGVmZXJyaW5nIGcuZS4gMHhmOSAocGZuIDB4
-ZmZmZmZmZmZmZmZmZmZmZikKPiA+ICBbICAgMzYuODU1MDg5XSB4ZW46Z3JhbnRfdGFibGU6IFdB
-Uk5JTkc6IGcuZS4gMHgxMTIgc3RpbGwgaW4gdXNlIQo+ID4gCj4gPiBJbiB0aGlzIGNhc2UsIHBl
-cnNpc3RlbnQgZ3JhbnRzIHdvdWxkIG5lZWQgdG8gYmUgZGlzYWJsZWQuCj4gPiAKPiA+IEVuc3Vy
-ZSBubyByZXFzL3JzcHMgaW4gcmluZ3MgYmVmb3JlIGRpc2Nvbm5lY3RpbmcuIFdoZW4gZGlzY29u
-bmVjdGluZwo+ID4gdGhlIGZyb250ZW5kIGZyb20gdGhlIGJhY2tlbmQgaW4gYmxrZnJvbnRfZnJl
-ZXplKCksIHRoZXJlIHN0aWxsIG1heSBiZQo+ID4gdW5jb25zdW1lZCByZXF1ZXN0cyBvciByZXNw
-b25zZXMgaW4gdGhlIHJpbmdzLCBlc3BlY2lhbGx5IHdoZW4gdGhlCj4gPiBiYWNrZW5kIGlzIGJh
-Y2tlZCBieSBuZXR3b3JrLWJhc2VkIGRldmljZS4gSWYgdGhlIGZyb250ZW5kIGdldHMKPiA+IGRp
-c2Nvbm5lY3RlZCB3aXRoIHN1Y2ggcmVxcy9yc3BzIHJlbWFpbmluZyB0aGVyZSwgaXQgY2FuIGNh
-dXNlCj4gPiBncmFudCB3YXJuaW5ncyBhbmQvb3IgbG9zaW5nIHJlcXMvcnNwcyBieSBmcmVlaW5n
-IHBhZ2VzIGFmdGVyd2FyZC4KPiAKPiBJJ20gbm90IHN1cmUgd2h5IGhhdmluZyBwZW5kaW5nIHJl
-cXVlc3RzIGNhbiBjYXVzZSBncmFudCB3YXJuaW5ncyBvcgo+IGxvc2Ugb2YgcmVxdWVzdHMuIElm
-IGhhbmRsZWQgcHJvcGVybHkgdGhpcyBzaG91bGRuJ3QgYmUgYW4gaXNzdWUuCj4gTGludXggYmxr
-ZnJvbnQgYWxyZWFkeSBkb2VzIGxpdmUgbWlncmF0aW9uICh3aGljaCBhbHNvIGludm9sdmVzIGEK
-PiByZWNvbm5lY3Rpb24gb2YgdGhlIGZyb250ZW5kKSB3aXRoIHBlbmRpbmcgcmVxdWVzdHMgYW5k
-IHRoYXQgZG9lc24ndAo+IHNlZW0gdG8gYmUgYW4gaXNzdWUuCj4gCj4gPiBUaGlzIGNhbiBsZWFk
-IHJlc3VtZWQga2VybmVsIGludG8gdW5yZWNvdmVyYWJsZSBzdGF0ZSBsaWtlIHVuZXhwZWN0ZWQK
-PiA+IGZyZWVpbmcgb2YgZ3JhbnQgcGFnZSBhbmQvb3IgaHVuZyB0YXNrIGR1ZSB0byB0aGUgbG9z
-dCByZXFzIG9yIHJzcHMuCj4gPiBUaGVyZWZvcmUgd2UgaGF2ZSB0byBlbnN1cmUgdGhhdCB0aGVy
-ZSBpcyBubyB1bmNvbnN1bWVkIHJlcXVlc3RzIG9yCj4gPiByZXNwb25zZXMgYmVmb3JlIGRpc2Nv
-bm5lY3RpbmcuCj4gCj4gR2l2ZW4gdGhhdCB3ZSBoYXZlIG11bHRpcXVldWUsIHBsdXMgbXVsdGlw
-YWdlIHJpbmdzLCBJJ20gbm90IHN1cmUKPiB3YWl0aW5nIGZvciB0aGUgcmVxdWVzdHMgb24gdGhl
-IHJpbmdzIHRvIGNvbXBsZXRlIGlzIGEgZ29vZCBpZGVhLgo+IAo+IFdoeSBjYW4ndCB5b3UganVz
-dCBkaXNjb25uZWN0IHRoZSBmcm9udGVuZCBhbmQgcmVxdWV1ZSBhbGwgdGhlCj4gcmVxdWVzdHMg
-aW4gZmxpZ2h0PyBXaGVuIHRoZSBmcm9udGVuZCBjb25uZWN0cyBvbiByZXN1bWUgdGhvc2UKPiBy
-ZXF1ZXN0cyB3aWxsIGJlIHF1ZXVlZCBhZ2Fpbi4KPiAKPiBUaGFua3MsIFJvZ2VyLgo+IAoKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVsIG1h
-aWxpbmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVucHJvamVjdC5vcmcKaHR0cHM6Ly9saXN0cy54
-ZW5wcm9qZWN0Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL3hlbi1kZXZlbA==
+(sorry if you receive two variants of this mail, I sent one earlier
+today but for some reason it didn't make it to the lists)
+
+On Wed, Jun 13, 2018 at 05:06:24PM +0100, Craig Tatlor wrote:
+> Add bindings for the Qualcomm Battery Monitoring system.
+> 
+> Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
+> ---
+> 
+> * Changes from v5:
+>   Mentions which values are 8 bit.
+> 
+> * Changes from v4:
+>   Uses proper units and expands some definitions,
+>   along with changing vadc@ to adc@.
+>  .../bindings/power/supply/qcom_bms.txt        | 92 +++++++++++++++++++
+>  1 file changed, 92 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/qcom_bms.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/qcom_bms.txt b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
+> new file mode 100644
+> index 000000000000..9a29a2eb9f04
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/qcom_bms.txt
+> @@ -0,0 +1,92 @@
+> +Qualcomm Battery Monitoring System
+> +
+> +The Qualcomm Battery Monitoring System is found inside of Qualcomm PM8941
+> +PMICs. It provides open circuit voltage (OCV) and coulomb counter registers
+> +that allow the OS to infer a capacity level.
+> +
+> +Required properties:
+> +- compatible:                   Should contain "qcom,pm8941-bms".
+> +- reg:                          Specifies the SPMI address and length of the
+> +				controller's registers.
+> +- interrupts:                   OCV threshold interrupt.
+> +- io-channels:                  Should contain IIO channel specifier for the
+> +				ADC channel that reports battery temperature.
+> +- io-channel-names:             Should contain "temp".
+> +- qcom,fcc-temp-legend-celcius: An 8 bit array containing the temperature,
+> +				in degC, for each column of the full charge
+> +				capacity lookup table.
+
+s/celcius/celsius/
+
+same for qcom,ocv-temp-legend-celcius
+
+> +- qcom,fcc-lut-microamp-hours:  An array of full charge capacity values in uah,
+> +				one entry for each temperature defined in in
+
+nit: s/uah/uAh/
+
+Thanks
+
+Matthias
