@@ -1,35 +1,72 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v6 2/4] power: supply: Add support for the Qualcomm
- Battery Monitoring System
-Date: Thu, 14 Jun 2018 16:06:40 +0200
-Message-ID: <CACRpkdYzCN1cFBDwznO6p-US1B94+kbBcWmH-o-qxvXdvCCsiw@mail.gmail.com>
-References: <20180407135934.26122-1-ctatlor97@gmail.com> <20180613160643.12638-1-ctatlor97@gmail.com>
- <20180613160643.12638-2-ctatlor97@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.17 25/45] serial: sh-sci: Stop using printk format %pCr
+Date: Thu, 14 Jun 2018 16:04:16 +0200
+Message-ID: <20180614132128.135775884@linuxfoundation.org>
+References: <20180614132126.797006529@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180613160643.12638-2-ctatlor97@gmail.com>
+In-Reply-To: <20180614132126.797006529@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Craig Tatlor <ctatlor97@gmail.com>
-Cc: linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>, Jonathan Corbet <corbet@lwn.net>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, Linus Torvalds <torvalds@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>, linux-doc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 13, 2018 at 6:06 PM, Craig Tatlor <ctatlor97@gmail.com> wrote:
+4.17-stable review patch.  If anyone has any objections, please let me know.
 
-> This patch adds a driver for the BMS (Battery Monitoring System)
-> block of the PM8941 PMIC, it uses a lookup table defined in the
-> device tree to generate a capacity from the BMS supplied OCV, it
-> then amends the coulomb counter to that to increase the accuracy
-> of the estimated capacity.
->
-> Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
-> ---
->
-> * Changes from v5:
->   Uses select for REGMAP_SPMI.
+------------------
 
-Looks very nice to me!
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Yours,
-Linus Walleij
+commit d63c16f8e1ab761775275adcf54f4bef7c330295 upstream.
+
+Printk format "%pCr" will be removed soon, as clk_get_rate() must not be
+called in atomic context.
+
+Replace it by open-coding the operation.  This is safe here, as the code
+runs in task context.
+
+Link: http://lkml.kernel.org/r/1527845302-12159-4-git-send-email-geert+renesas@glider.be
+To: Jia-Ju Bai <baijiaju1990@gmail.com>
+To: Jonathan Corbet <corbet@lwn.net>
+To: Michael Turquette <mturquette@baylibre.com>
+To: Stephen Boyd <sboyd@kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+To: Eric Anholt <eric@anholt.net>
+To: Stefan Wahren <stefan.wahren@i2se.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-clk@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-serial@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-renesas-soc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: stable@vger.kernel.org # 4.5+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ drivers/tty/serial/sh-sci.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/tty/serial/sh-sci.c
++++ b/drivers/tty/serial/sh-sci.c
+@@ -2704,8 +2704,8 @@ found:
+ 			dev_dbg(dev, "failed to get %s (%ld)\n", clk_names[i],
+ 				PTR_ERR(clk));
+ 		else
+-			dev_dbg(dev, "clk %s is %pC rate %pCr\n", clk_names[i],
+-				clk, clk);
++			dev_dbg(dev, "clk %s is %pC rate %lu\n", clk_names[i],
++				clk, clk_get_rate(clk));
+ 		sci_port->clks[i] = IS_ERR(clk) ? NULL : clk;
+ 	}
+ 	return 0;
