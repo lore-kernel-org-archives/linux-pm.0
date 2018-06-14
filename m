@@ -1,136 +1,39 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v3 02/12] PM / devfreq: Fix handling of min/max_freq == 0
-Date: Thu, 14 Jun 2018 12:47:02 -0700
-Message-ID: <20180614194712.102134-3-mka@chromium.org>
-References: <20180614194712.102134-1-mka@chromium.org>
+From: "Besogonov, Aleksei" <cyberax@amazon.com>
+Subject: Re: [RFC PATCH 12/12] PM / hibernate: update the resume offset on
+ SNAPSHOT_SET_SWAP_AREA
+Date: Thu, 14 Jun 2018 19:50:15 +0000
+Message-ID: <23092841-89AD-4D68-9790-AF0BD8702F0A@amazon.com>
+References: <20180612205619.28156-1-anchalag@amazon.com>
+ <20180612205619.28156-13-anchalag@amazon.com> <20180614194515.GE17808@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180614194712.102134-1-mka@chromium.org>
+In-Reply-To: <20180614194515.GE17808@amd>
+Content-Language: en-US
+Content-ID: <D00608EDB57CB446B588E18069F89FA0@amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Pavel Machek <pavel@ucw.cz>, "Agarwal, Anchal" <anchalag@amazon.com>
+Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, "konrad.wilk@oracle.com" <konrad.wilk@oracle.com>, "roger.pau@citrix.com" <roger.pau@citrix.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "jgross@suse.com" <jgross@suse.com>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kamata, Munehisa" <kamatam@amazon.com>, "van der Linden, Frank" <fllinden@amazon.com>, "Vaidyeshwara, Vallish" <vallish@amazon.com>, "Anbalagane, Guru" <guruanb@amazon.com>, "Valentin, Eduardo" <eduval@amazon.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.>
 List-Id: linux-pm@vger.kernel.org
 
-Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
-devfreq device") initializes df->min/max_freq with the min/max OPP when
-the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
-available min/max frequency") adds df->scaling_min/max_freq and the
-following to the frequency adjustment code:
-
-  max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
-
-With the current handling of min/max_freq this is incorrect:
-
-Even though df->max_freq is now initialized to a value != 0 user space
-can still set it to 0, in this case max_freq would be 0 instead of
-df->scaling_max_freq as intended. In consequence the frequency adjustment
-is not performed:
-
-  if (max_freq && freq > max_freq) {
-	freq = max_freq;
-
-To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
-when the user passes a value of 0. This also prevents df->max_freq from
-being set below the min OPP when df->min_freq is 0, and similar for
-min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
-checks for this case can be removed.
-
-Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
----
-Changes in v3:
-- none
-
-Changes in v2:
-- handle freq tables sorted in ascending and descending order in
-  min/max_freq_store()
-- use same order for conditional statements in min/max_freq_store()
-
- drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
- 1 file changed, 30 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0057ef5b0a98..6f604f8b2b81 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
- 	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
- 	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
- 
--	if (min_freq && freq < min_freq) {
-+	if (freq < min_freq) {
- 		freq = min_freq;
- 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
- 	}
--	if (max_freq && freq > max_freq) {
-+	if (freq > max_freq) {
- 		freq = max_freq;
- 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
- 	}
-@@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 	unsigned long value;
-+	unsigned long *freq_table;
- 	int ret;
--	unsigned long max;
- 
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&df->lock);
--	max = df->max_freq;
--	if (value && max && value > max) {
--		ret = -EINVAL;
--		goto unlock;
-+
-+	if (value) {
-+		if (value > df->max_freq) {
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+	} else {
-+		freq_table = df->profile->freq_table;
-+		/* typical order is ascending, some drivers use descending */
-+		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-+			value = freq_table[0];
-+		else
-+			value = freq_table[df->profile->max_state - 1];
- 	}
- 
- 	df->min_freq = value;
-@@ -1157,18 +1166,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 	unsigned long value;
-+	unsigned long *freq_table;
- 	int ret;
--	unsigned long min;
- 
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&df->lock);
--	min = df->min_freq;
--	if (value && min && value < min) {
--		ret = -EINVAL;
--		goto unlock;
-+
-+	if (value) {
-+		if (value < df->min_freq) {
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+	} else {
-+		freq_table = df->profile->freq_table;
-+		/* typical order is ascending, some drivers use descending */
-+		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-+			value = freq_table[df->profile->max_state - 1];
-+		else
-+			value = freq_table[0];
- 	}
- 
- 	df->max_freq = value;
--- 
-2.18.0.rc1.242.g61856ae69a-goog
+KHNvcnJ5IGZvciB0b3AtcG9zdGluZykNCg0KV2VsbCwgbm90IGNvbXBsZXRlbHkgYnJva2VuLiBJ
+dCBqdXN0IHJlcXVpcmVkIGEgcmVzdGFydCBmb3IgdGhlIG9mZnNldCBzZXR0aW5nIHRvIHRha2Ug
+YW4gZWZmZWN0Lg0KDQrvu79PbiA2LzE0LzE4LCAxMjo0NiwgIlBhdmVsIE1hY2hlayIgPHBhdmVs
+QHVjdy5jej4gd3JvdGU6DQoNCiAgICBIaSENCiAgICANCiAgICA+IEZyb206IEFsZWtzZWkgQmVz
+b2dvbm92IDxjeWJlcmF4QGFtYXpvbi5jb20+DQogICAgPiANCiAgICA+IFRoZSBTTkFQU0hPVF9T
+RVRfU1dBUF9BUkVBIGlzIHN1cHBvc2VkIHRvIGJlIHVzZWQgdG8gc2V0IHRoZSBoaWJlcm5hdGlv
+bg0KICAgID4gb2Zmc2V0IG9uIGEgcnVubmluZyBrZXJuZWwgdG8gZW5hYmxlIGhpYmVybmF0aW5n
+IHRvIGEgc3dhcCBmaWxlLg0KICAgID4gSG93ZXZlciwgaXQgZG9lc24ndCBhY3R1YWxseSB1cGRh
+dGUgdGhlIHN3c3VzcF9yZXN1bWVfYmxvY2sgdmFyaWFibGUuIEFzDQogICAgPiBhIHJlc3VsdCwg
+dGhlIGhpYmVybmF0aW9uIGZhaWxzIGF0IHRoZSBsYXN0IHN0ZXAgKGFmdGVyIGFsbCB0aGUgZGF0
+YSBpcw0KICAgID4gd3JpdHRlbiBvdXQpIGluIHRoZSB2YWxpZGF0aW9uIG9mIHRoZSBzd2FwIHNp
+Z25hdHVyZSBpbg0KICAgID4gbWFya19zd2FwZmlsZXMoKS4NCiAgICA+IA0KICAgID4gQmVmb3Jl
+IHRoaXMgcGF0Y2gsIHRoZSBjb21tYW5kIGxpbmUgcHJvY2Vzc2luZyB3YXMgdGhlIG9ubHkgcGxh
+Y2Ugd2hlcmUNCiAgICA+IHN3c3VzcF9yZXN1bWVfYmxvY2sgd2FzIHNldC4NCiAgICANCiAgICBB
+cmUgeW91IHNheWluZyB0aGF0IHN1c3BlbmQtdG8tZmlsZSB3YXMgYnJva2VuLCBldmVuIG9uDQog
+ICAgbm9uLXZpcnR1YWxpemVkIHN5c3RlbXM/DQogICAgDQogICAgSWYgc28sIHdlIG1heSB0aGlz
+IHRvIGdvIGluIGZpcnN0Li4uDQogICAgCQkJCQkJCQlQYXZlbA0KICAgIAkJCQkJCQkJDQogICAg
+LS0gDQogICAgKGVuZ2xpc2gpIGh0dHA6Ly93d3cubGl2ZWpvdXJuYWwuY29tL35wYXZlbG1hY2hl
+aw0KICAgIChjZXNreSwgcGljdHVyZXMpIGh0dHA6Ly9hdHJleS5rYXJsaW4ubWZmLmN1bmkuY3ov
+fnBhdmVsL3BpY3R1cmUvaG9yc2VzL2Jsb2cuaHRtbA0KICAgIA0KDQo=
