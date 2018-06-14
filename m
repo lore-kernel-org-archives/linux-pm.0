@@ -1,145 +1,160 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v3 27/27] fix a series of Documentation/ broken file name references
-Date: Thu, 14 Jun 2018 20:21:12 +0300
-Message-ID: <CAHp75VdVf3wfT=Cg2OrPSmvv9OLARtSQZjdF5GWxhFqOy_iVqw@mail.gmail.com>
-References: <cover.1528990947.git.mchehab+samsung@kernel.org> <a98dcea5ad61aad741c88be991d6446b4d6bc029.1528990947.git.mchehab+samsung@kernel.org>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
+ bindings
+Date: Thu, 14 Jun 2018 23:54:32 +0530
+Message-ID: <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org>
+References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
+ <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
+ <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
+ <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org>
+ <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a98dcea5ad61aad741c88be991d6446b4d6bc029.1528990947.git.mchehab+samsung@kernel.org>
+In-Reply-To: <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Harry Wei <harryxiyou@gmail.com>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vkoul@kernel.org>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, "David S. Miller" <davem@davemloft.net>, Luis de Bethencourt <luisbg@kernel.org>, Salah Triki <salah.triki@gmail.com>, Mike Marshall <hubcap@omnibond.com>, Martin Brandenburg <martin@omnibond.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@zh-kernel.org, dmaengine <dmaengine@vger.kernel.org>, Platform Driver <plat>
+To: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 14, 2018 at 7:09 PM, Mauro Carvalho Chehab
-<mchehab+samsung@kernel.org> wrote:
-> As files move around, their previous links break. Fix the
-> references for them.
->
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-> ---
->  Documentation/translations/zh_CN/io_ordering.txt | 2 +-
->  drivers/dma/dmaengine.c                          | 2 +-
->  drivers/platform/x86/Kconfig                     | 2 +-
->  drivers/sbus/char/oradax.c                       | 2 +-
->  fs/befs/ChangeLog                                | 2 +-
->  fs/orangefs/orangefs-sysfs.c                     | 2 +-
->  include/linux/platform_data/sc18is602.h          | 2 +-
->  kernel/power/main.c                              | 2 +-
->  8 files changed, 8 insertions(+), 8 deletions(-)
->
-> diff --git a/Documentation/translations/zh_CN/io_ordering.txt b/Documentation/translations/zh_CN/io_ordering.txt
-> index e592daf4e014..1f8127bdd415 100644
-> --- a/Documentation/translations/zh_CN/io_ordering.txt
-> +++ b/Documentation/translations/zh_CN/io_ordering.txt
-> @@ -1,4 +1,4 @@
-> -Chinese translated version of Documentation/io_orderings.txt
-> +Chinese translated version of Documentation/io_ordering.txt
->
->  If you have any comment or update to the content, please contact the
->  original document maintainer directly.  However, if you have a problem
-> diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-> index b451354735d3..08ba8473a284 100644
-> --- a/drivers/dma/dmaengine.c
-> +++ b/drivers/dma/dmaengine.c
-> @@ -38,7 +38,7 @@
->   * Each device has a channels list, which runs unlocked but is never modified
->   * once the device is registered, it's just setup by the driver.
->   *
-> - * See Documentation/dmaengine.txt for more details
-> + * See Documentation/driver-api/dmaengine for more details
->   */
->
->  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-> index f27cb186437d..ac4d48830415 100644
-> --- a/drivers/platform/x86/Kconfig
-> +++ b/drivers/platform/x86/Kconfig
-> @@ -1052,7 +1052,7 @@ config SAMSUNG_LAPTOP
->           function keys, wireless LED, LCD backlight level.
->
->           It may also provide some sysfs files described in
-> -         <file:Documentation/ABI/testing/sysfs-platform-samsung-laptop>
-> +         <file:Documentation/ABI/testing/sysfs-driver-samsung-laptop>
->
+Hello Sudeep,
 
-Acked-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Thanks for your comments.
 
-(PDx86 bits)
+On 6/14/2018 4:17 PM, Sudeep Holla wrote:
+> 
+> 
+> On 13/06/18 19:13, Taniya Das wrote:
+>> Hello Sudeep,
+>>
+>> Thanks for review comments.
+>>
+>> On 6/13/2018 4:56 PM, Sudeep Holla wrote:
+>>>
+>>>
+> 
+> [...]
+> 
+>>> You are bit inconsistent on the wordings. Some places you refer this as
+>>> hardware engine. If so, please drop all references to firmware/FW. If
+>>> it's firmware then update accordingly.
+>>>
+>>
+>> It is a hardware engine which has a firmware to take care of the
+>> managing the frequency request from OS. That is reason to refer it as a
+>> firmware.
+>>
+> 
+> Yes I did guess that initially, but I failed to understand when
+> different bindings were posted to deal with devfreq and cpufreq with the
+> same firmware. Ideally if it's the firmware you are talking to, place
+> all these under /firmware node and align all those with single binding.
+> 
 
->           To compile this driver as a module, choose M here: the module
->           will be called samsung-laptop.
-> diff --git a/drivers/sbus/char/oradax.c b/drivers/sbus/char/oradax.c
-> index 1754f55e2fac..524f9ea62e52 100644
-> --- a/drivers/sbus/char/oradax.c
-> +++ b/drivers/sbus/char/oradax.c
-> @@ -30,7 +30,7 @@
->   * the recommended way for applications to use the coprocessor, and
->   * the driver interface is not intended for general use.
->   *
-> - * See Documentation/sparc/oradax/oracle_dax.txt for more details.
-> + * See Documentation/sparc/oradax/oracle-dax.txt for more details.
->   */
->
->  #include <linux/uaccess.h>
-> diff --git a/fs/befs/ChangeLog b/fs/befs/ChangeLog
-> index 16f2dfe8c2f7..aff7eec8f327 100644
-> --- a/fs/befs/ChangeLog
-> +++ b/fs/befs/ChangeLog
-> @@ -389,7 +389,7 @@ Version 0.4 (2001-10-28)
->         (fs/nls/Config.in)
->
->  * Added Configure.help entries for CONFIG_BEFS_FS and CONFIG_DEBUG_BEFS
-> -       (Documentation/Configure.help)
-> +       (currently at fs/befs/Kconfig)
->
->  2001-08-??
->  ==========
-> diff --git a/fs/orangefs/orangefs-sysfs.c b/fs/orangefs/orangefs-sysfs.c
-> index 079a465796f3..dd28079f518c 100644
-> --- a/fs/orangefs/orangefs-sysfs.c
-> +++ b/fs/orangefs/orangefs-sysfs.c
-> @@ -1,6 +1,6 @@
->  // SPDX-License-Identifier: GPL-2.0
->  /*
-> - * Documentation/ABI/stable/orangefs-sysfs:
-> + * Documentation/ABI/stable/sysfs-fs-orangefs:
->   *
->   * What:               /sys/fs/orangefs/perf_counter_reset
->   * Date:               June 2015
-> diff --git a/include/linux/platform_data/sc18is602.h b/include/linux/platform_data/sc18is602.h
-> index 997b06634152..18602cab7799 100644
-> --- a/include/linux/platform_data/sc18is602.h
-> +++ b/include/linux/platform_data/sc18is602.h
-> @@ -7,7 +7,7 @@
->   * it under the terms of the GNU General Public License version 2 as
->   * published by the Free Software Foundation.
->   *
-> - * For further information, see the Documentation/spi/sc18is602 file.
-> + * For further information, see the Documentation/spi/spi-sc18is602 file.
->   */
->
->  /**
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 705c2366dafe..3345ced80112 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -455,7 +455,7 @@ struct kobject *power_kobj;
->   * state - control system sleep states.
->   *
->   * show() returns available sleep state labels, which may be "mem", "standby",
-> - * "freeze" and "disk" (hibernation).  See Documentation/power/states.txt for a
-> + * "freeze" and "disk" (hibernation).  See Documentation/power/interface.txt for a
->   * description of what they mean.
->   *
->   * store() accepts one of those strings, translates it into the proper
-> --
-> 2.17.1
->
+The OS is not aware of the firmware and OS only knows about the hardware 
+engine and has to put forward it's request to the hardware engine using 
+the "Perf" state register in both devfreq & cpufreq. So would it be 
+still required to put under the /firmware node?
 
+> Is there anything else that this firmware deals with ? If so all those
+> need to be put in one place.
+> 
 
+We deal only with the CPU frequency and L3 frequency(devfreq).
+
+>>>> +Properties:
+>>>> +- compatible
+>>>> +    Usage:        required
+>>>> +    Value type:    <string>
+>>>> +    Definition:    must be "qcom,cpufreq-fw".
+>>>> +
+>>>> +* Property qcom,freq-domain
+>>>> +Devices supporting freq-domain must set their "qcom,freq-domain"
+>>>> property with
+>>>> +phandle to a freq_domain_table in their DT node.
+>>>> +
+>>>> +* Frequency Domain Table Node
+>>>> +
+>>>> +This describes the frequency domain belonging to a device.
+>>>> +This node can have following properties:
+>>>> +
+>>>> +- reg
+>>>> +    Usage:        required
+>>>> +    Value type:    <prop-encoded-array>
+>>>> +    Definition:    Addresses and sizes for the memory of the perf
+>>>> +            , lut and enable bases.
+>>>> +            perf - indicates the base address for the desired
+>>>> +            performance state to be set.
+>>>> +            lut - indicates the look up table base address for the
+>>>> +            cpufreq    driver to read frequencies.
+>>>> +            enable - indicates the enable register for firmware.
+>>>
+>>>
+>>> You still didn't answer my earlier question.
+>>>
+>>> OS might touch one or 2 registers in lots of IP blocks. I am not sure
+>>> why those are any different from these. Are you trying to align with any
+>>> other bindings or specification. Are you trying to make this binding
+>>> generic here ? I understand if it was trying to generalize the firmware
+>>> interface, but you also state it's a hardware engine. So I fail to see
+>>> the need for such specificity here. Why not define the whole IP block
+>>> and the driver knows where to access these specific ones as they are
+>>> specific to this hardware block. In that way if you decide to add more
+>>> data, it's extensible easily without the need for patching DT.
+>>>
+>>
+>> Sorry Sudeep I missed replying to your earlier query.
+>> The High level OS(HLOS) would require to access only these specific
+>> registers from this IP block and just mapping the whole block(huge
+>> region) is unnecessary from the OS point of View. As of now it is a
+>> generic binding for all using this IP block to manage frequency
+>> requests. The OS would only have to know the frequencies supported i.e
+>> to read the lookup table registers and put across the OS request using
+>> the performance state register.
+>>
+> 
+> I am not sure if you need to defining bindings to save OSPM IO mapping.
+> In-fact you may be adding more mapping unnecessarily. The mappings are
+> page aligned and spiting the registers and mapping them individually may
+> result in more mappings.
+> 
+> I just need to know the rational for such specific choice of registers.
+> I assume it's aligned to some other standard specifications like CPPC
+> though not identical.
+> 
+
+I am not sure of the query but there is no other register that the OS is 
+required to use other than the ones defined here.
+
+>>> Eg. Suppose you need some information on power curve for EAS energy
+>>> model, I really hate to update DT for that or even do a mix with DT just
+>>> because f/w is no longer modifiable.
+>>>
+>>
+>> For now we are safe.
+>>
+>
+> What do you mean by that ?
+
+I meant here was currently there is no such known case where the f/w is 
+no longer modifiable and we need to extend device tree bindings.
+
+> It should be easily extensible is what I am
+> trying to say. You can add more info and alter the information in the
+> driver with compatibles if you keep the register info as minimum as
+> possible. For now, you have enable, set and lut registers. What if you
+> want to provide power numbers ?
+> 
+
+Yes I do understand the intent of mapping the whole register space, but 
+as per the HW specs these 3 registers would be the only ones required 
+for now. I do not think this hardware engine has any information on the 
+power numbers.
 
 -- 
-With Best Regards,
-Andy Shevchenko
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
+
+--
