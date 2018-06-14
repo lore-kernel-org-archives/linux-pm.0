@@ -1,46 +1,47 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/2] PM / Domains: Fix return value of of_genpd_opp_to_performance_state()
-Date: Thu, 14 Jun 2018 09:14:59 +0200
-Message-ID: <CAPDyKFooucRfxtk768LMjLR6scj6XdHDzOSuqznTLNrbF19qaw@mail.gmail.com>
-References: <b90f44d35e8e0fa9c81b3a88d05449a580be5567.1528953706.git.viresh.kumar@linaro.org>
- <3d3687c030535189885d84c57dbffb034c4461c2.1528953706.git.viresh.kumar@linaro.org>
+From: Roger Pau =?utf-8?B?TW9ubsOp?= <roger.pau@citrix.com>
+Subject: Re: [RFC PATCH 06/12] xen-blkfront: add callbacks for PM suspend and
+ hibernation
+Date: Thu, 14 Jun 2018 10:43:13 +0200
+Message-ID: <20180614084313.43njg3hbhqoptlqc@mac>
+References: <20180612205619.28156-1-anchalag@amazon.com>
+ <20180612205619.28156-7-anchalag@amazon.com>
+ <20180613082428.bjdko4k6cnq6eid3@mac>
+ <20180613222048.GB33296@kaos-source-ops-60001.pdx1.amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3d3687c030535189885d84c57dbffb034c4461c2.1528953706.git.viresh.kumar@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20180613222048.GB33296@kaos-source-ops-60001.pdx1.amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Anchal Agarwal <anchalag@amazon.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, eduval@amazon.com, vallish@amazon.com, fllinden@amazon.com, guruanb@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
 List-Id: linux-pm@vger.kernel.org
 
-On 14 June 2018 at 07:23, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> of_genpd_opp_to_performance_state() should return 0 for errors, but the
-> dummy routine isn't doing that. Fix it.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Please try to avoid top posting.
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Wed, Jun 13, 2018 at 10:20:48PM +0000, Anchal Agarwal wrote:
+> Hi Roger,
+> To answer your question, due to the lack of mentioned commit
+> (commit 12ea729645ac ("xen/blkback: unmap all persistent grants when
+> frontend gets disconnected") in the older dom0 kernels(<3.2),resume from
 
-Kind regards
-Uffe
+This fix that you mention is only present in kernels >= 3.18 AFAICT,
+and persistent grants where introduced in 3.8 (0a8704a51f38), so
+anything < 3.8 should work fine. Not sure why you mention 3.2 here.
 
-> ---
->  include/linux/pm_domain.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 9206a4fef9ac..139f79c8477a 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -276,7 +276,7 @@ static inline unsigned int
->  of_genpd_opp_to_performance_state(struct device *dev,
->                                   struct device_node *opp_node)
->  {
-> -       return -ENODEV;
-> +       return 0;
->  }
->
->  static inline int genpd_dev_pm_attach(struct device *dev)
-> --
-> 2.18.0.rc1.242.g61856ae69a2c
->
+> hibernation can fail on guest side. In the absence of the commit,
+> Persistant Grants are not unmapped immediately when frontend is 
+> disconnected from backend and hence leave the block device in an 
+> inconsistent state. To avoid this unstability and work with larger set 
+> of kernel versions, this approach had been used. Once you don't have 
+> any pending req/resp it is safer for guest to resume from hibernation.
+
+I think the fix should be backported (if it hasn't been done yet) to
+kernels between 3.8 and 3.18. I don't like to add all this code just
+to work around a Linux backend kernel bug.
+
+AFAICT if persistent grants work as expected you could use almost the
+same path that's used for migration, greatly reducing the amount of
+code that you need to add.
+
+Thanks, Roger.
