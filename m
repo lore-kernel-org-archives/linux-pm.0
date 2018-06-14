@@ -1,7 +1,7 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v3 08/12] cpufreq: Add stub for cpufreq_update_policy()
-Date: Thu, 14 Jun 2018 12:47:08 -0700
-Message-ID: <20180614194712.102134-9-mka@chromium.org>
+Subject: [PATCH v3 06/12] PM / devfreq: Make update_devfreq() public
+Date: Thu, 14 Jun 2018 12:47:06 -0700
+Message-ID: <20180614194712.102134-7-mka@chromium.org>
 References: <20180614194712.102134-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180614194712.102134-1-mka@chromium.org>
@@ -10,32 +10,55 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-cpufreq stubs out some functions when CONFIG_CPU_FREQ=n , but
-cpufreq_update_policy() is not among them. The throttler driver
-(https://patchwork.kernel.org/patch/10453351/) uses cpufreq as one
-possible throttling mechanism, but it can still be useful without
-cpufreq. Stubbing out cpufreq_update_policy() allows the throttler
-driver to be built without ugly #ifdef'ery when cpufreq is disabled.
+Currently update_devfreq() is only visible to devfreq governors outside
+of devfreq.c. Make it public to allow drivers that adjust devfreq policies
+to cause a re-evaluation of the frequency after a policy change.
 
 Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
 Changes in v3:
-- patch added to series
+- none
 
- include/linux/cpufreq.h | 1 +
- 1 file changed, 1 insertion(+)
+Changes in v2:
+- added 'Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>' tag
 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 882a9b9e34bc..dba8c4951e2e 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -210,6 +210,7 @@ static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
- 	return 0;
- }
- static inline void disable_cpufreq(void) { }
-+static inline void cpufreq_update_policy(unsigned int cpu) { }
- #endif
+ drivers/devfreq/governor.h | 3 ---
+ include/linux/devfreq.h    | 8 ++++++++
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+index b81700244ce3..f53339ca610f 100644
+--- a/drivers/devfreq/governor.h
++++ b/drivers/devfreq/governor.h
+@@ -57,9 +57,6 @@ struct devfreq_governor {
+ 				unsigned int event, void *data);
+ };
  
- #ifdef CONFIG_CPU_FREQ_STAT
+-/* Caution: devfreq->lock must be locked before calling update_devfreq */
+-extern int update_devfreq(struct devfreq *devfreq);
+-
+ extern void devfreq_monitor_start(struct devfreq *devfreq);
+ extern void devfreq_monitor_stop(struct devfreq *devfreq);
+ extern void devfreq_monitor_suspend(struct devfreq *devfreq);
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 7c8dce96db73..c4f84a769cb5 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -222,6 +222,14 @@ extern void devm_devfreq_remove_device(struct device *dev,
+ extern int devfreq_suspend_device(struct devfreq *devfreq);
+ extern int devfreq_resume_device(struct devfreq *devfreq);
+ 
++/**
++ * update_devfreq() - Reevaluate the device and configure frequency
++ * @devfreq:	the devfreq device
++ *
++ * Note: devfreq->lock must be held
++ */
++extern int update_devfreq(struct devfreq *devfreq);
++
+ /* Helper functions for devfreq user device driver with OPP. */
+ extern struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
+ 					   unsigned long *freq, u32 flags);
 -- 
 2.18.0.rc1.242.g61856ae69a-goog
