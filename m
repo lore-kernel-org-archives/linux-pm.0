@@ -1,47 +1,51 @@
-From: Roger Pau =?utf-8?B?TW9ubsOp?= <roger.pau@citrix.com>
-Subject: Re: [RFC PATCH 06/12] xen-blkfront: add callbacks for PM suspend and
- hibernation
-Date: Thu, 14 Jun 2018 10:43:13 +0200
-Message-ID: <20180614084313.43njg3hbhqoptlqc@mac>
-References: <20180612205619.28156-1-anchalag@amazon.com>
- <20180612205619.28156-7-anchalag@amazon.com>
- <20180613082428.bjdko4k6cnq6eid3@mac>
- <20180613222048.GB33296@kaos-source-ops-60001.pdx1.amazon.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v2 4/5] thermal: tsens: Add support for SDM845
+Date: Thu, 14 Jun 2018 13:24:28 +0300
+Message-ID: <CAHLCerOn=_29CAx0sdmyxt62duWOb5LfUvrAcWf7bBsE8OR_1g@mail.gmail.com>
+References: <cover.1528799892.git.amit.kucheria@linaro.org>
+ <f048a97d1599a54aef3d00126a379f4e5c937057.1528799892.git.amit.kucheria@linaro.org>
+ <CAFp+6iEnep3ogEkdfmaSOn_2w+09huae2NOwBF1o7-vn3iQMCA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180613222048.GB33296@kaos-source-ops-60001.pdx1.amazon.com>
+In-Reply-To: <CAFp+6iEnep3ogEkdfmaSOn_2w+09huae2NOwBF1o7-vn3iQMCA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anchal Agarwal <anchalag@amazon.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, eduval@amazon.com, vallish@amazon.com, fllinden@amazon.com, guruanb@amazon.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
+To: Vivek Gautam <vivek.gautam@codeaurora.org>
+Cc: open list <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Please try to avoid top posting.
+On Thu, Jun 14, 2018 at 9:48 AM, Vivek Gautam
+<vivek.gautam@codeaurora.org> wrote:
+> Hi Amit,
+>
+> On Tue, Jun 12, 2018 at 4:24 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>> SDM845 uses the TSENS v2 IP block
+>>
+>> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+>> ---
 
-On Wed, Jun 13, 2018 at 10:20:48PM +0000, Anchal Agarwal wrote:
-> Hi Roger,
-> To answer your question, due to the lack of mentioned commit
-> (commit 12ea729645ac ("xen/blkback: unmap all persistent grants when
-> frontend gets disconnected") in the older dom0 kernels(<3.2),resume from
+<snip>
 
-This fix that you mention is only present in kernels >= 3.18 AFAICT,
-and persistent grants where introduced in 3.8 (0a8704a51f38), so
-anything < 3.8 should work fine. Not sure why you mention 3.2 here.
+>> +
+>> +static const struct tsens_ops ops_sdm845 = {
+>> +       .init           = init_common,
+>> +       .get_temp       = get_temp_tsens_v2,
+>> +};
+>> +
+>> +const struct tsens_data data_sdm845 = {
+>
+> Just a minor nit. 'static' here?
 
-> hibernation can fail on guest side. In the absence of the commit,
-> Persistant Grants are not unmapped immediately when frontend is 
-> disconnected from backend and hence leave the block device in an 
-> inconsistent state. To avoid this unstability and work with larger set 
-> of kernel versions, this approach had been used. Once you don't have 
-> any pending req/resp it is safer for guest to resume from hibernation.
+Thanks for the review.
 
-I think the fix should be backported (if it hasn't been done yet) to
-kernels between 3.8 and 3.18. I don't like to add all this code just
-to work around a Linux backend kernel bug.
+This file just went away in favour of a common tsens-v2.c that will
+support all v2 SoCs. I'll be sending out an updated patchset soon.
 
-AFAICT if persistent grants work as expected you could use almost the
-same path that's used for migration, greatly reducing the amount of
-code that you need to add.
-
-Thanks, Roger.
+>
+>> +       .ops            = &ops_sdm845,
+>> +};
+>
+> [snip]
+>
+> Thanks & Regards
+> Vivek
