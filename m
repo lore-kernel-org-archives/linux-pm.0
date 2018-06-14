@@ -1,13 +1,13 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.16 25/43] serial: sh-sci: Stop using printk format %pCr
-Date: Thu, 14 Jun 2018 16:04:29 +0200
-Message-ID: <20180614132136.880991791@linuxfoundation.org>
-References: <20180614132135.111973468@linuxfoundation.org>
+Subject: [PATCH 4.14 18/36] serial: sh-sci: Stop using printk format %pCr
+Date: Thu, 14 Jun 2018 16:04:41 +0200
+Message-ID: <20180614132158.085822615@linuxfoundation.org>
+References: <20180614132157.333004166@linuxfoundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180614132135.111973468@linuxfoundation.org>
+In-Reply-To: <20180614132157.333004166@linuxfoundation.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,7 +21,7 @@ To: linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>, Jonathan 
 Cc: Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, linux-renesas-soc@vger.kernel.org, stable@vger.kernel.org, linux-serial@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-4.16-stable review patch.  If anyone has any objections, please let me know.
+4.14-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -68,7 +68,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/drivers/tty/serial/sh-sci.c
 +++ b/drivers/tty/serial/sh-sci.c
-@@ -2691,8 +2691,8 @@ found:
+@@ -2669,8 +2669,8 @@ found:
  			dev_dbg(dev, "failed to get %s (%ld)\n", clk_names[i],
  				PTR_ERR(clk));
  		else
