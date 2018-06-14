@@ -1,62 +1,63 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH 12/12] PM / hibernate: update the resume offset on
- SNAPSHOT_SET_SWAP_AREA
-Date: Thu, 14 Jun 2018 21:45:15 +0200
-Message-ID: <20180614194515.GE17808@amd>
-References: <20180612205619.28156-1-anchalag@amazon.com>
- <20180612205619.28156-13-anchalag@amazon.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="5Mfx4RzfBqgnTE/w"
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH v3 00/12] Add throttler driver for non-thermal throttling
+Date: Thu, 14 Jun 2018 12:47:00 -0700
+Message-ID: <20180614194712.102134-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180612205619.28156-13-anchalag@amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anchal Agarwal <anchalag@amazon.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, roger.pau@citrix.com, netdev@vger.kernel.org, jgross@suse.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, kamatam@amazon.com, fllinden@amazon.com, vallish@amazon.com, guruanb@amazon.com, eduval@amazon.com, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, cyberax@amazon.com
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
+This series adds the throttler driver, for non-thermal throttling of
+CPUs and devfreq devices. A use case for non-thermal throttling could
+be the detection of a high battery discharge voltage, close to the
+over-current protection (OCP) limit of the battery.
 
---5Mfx4RzfBqgnTE/w
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+To support throttling of devfreq devices the series introduces the
+concept of a devfreq policy and the DEVFREQ_ADJUST notifier (similar
+to CPUFREQ_ADJUST). Further it includes some related devfreq bugfixes
+and improvements that change some of the code that is also touched
+by the policy changes.
 
-Hi!
+Matthias Kaehlcke (12):
+  PM / devfreq: Init user limits from OPP limits, not viceversa
+  PM / devfreq: Fix handling of min/max_freq == 0
+  PM / devfreq: Don't adjust to user limits in governors
+  PM / devfreq: Add struct devfreq_policy
+  PM / devfreg: Add support for policy notifiers
+  PM / devfreq: Make update_devfreq() public
+  PM / devfreq: export devfreq_class
+  cpufreq: Add stub for cpufreq_update_policy()
+  dt-bindings: PM / OPP: add opp-throttlers property
+  misc: throttler: Add core support for non-thermal throttling
+  misc: throttler: Add Chrome OS EC throttler
+  mfd: cros_ec: Add throttler sub-device
 
-> From: Aleksei Besogonov <cyberax@amazon.com>
->=20
-> The SNAPSHOT_SET_SWAP_AREA is supposed to be used to set the hibernation
-> offset on a running kernel to enable hibernating to a swap file.
-> However, it doesn't actually update the swsusp_resume_block variable. As
-> a result, the hibernation fails at the last step (after all the data is
-> written out) in the validation of the swap signature in
-> mark_swapfiles().
->=20
-> Before this patch, the command line processing was the only place where
-> swsusp_resume_block was set.
+ Documentation/devicetree/bindings/opp/opp.txt |   3 +
+ MAINTAINERS                                   |   7 +
+ drivers/devfreq/devfreq.c                     | 222 +++---
+ drivers/devfreq/governor.h                    |   6 +-
+ drivers/devfreq/governor_passive.c            |   4 +-
+ drivers/devfreq/governor_performance.c        |   5 +-
+ drivers/devfreq/governor_powersave.c          |   2 +-
+ drivers/devfreq/governor_simpleondemand.c     |  12 +-
+ drivers/devfreq/governor_userspace.c          |  16 +-
+ drivers/mfd/cros_ec.c                         |  16 +
+ drivers/misc/Kconfig                          |   1 +
+ drivers/misc/Makefile                         |   1 +
+ drivers/misc/throttler/Kconfig                |  33 +
+ drivers/misc/throttler/Makefile               |   2 +
+ drivers/misc/throttler/core.c                 | 687 ++++++++++++++++++
+ drivers/misc/throttler/cros_ec_throttler.c    | 109 +++
+ include/linux/cpufreq.h                       |   1 +
+ include/linux/devfreq.h                       | 113 ++-
+ include/linux/throttler.h                     |  21 +
+ 19 files changed, 1136 insertions(+), 125 deletions(-)
+ create mode 100644 drivers/misc/throttler/Kconfig
+ create mode 100644 drivers/misc/throttler/Makefile
+ create mode 100644 drivers/misc/throttler/core.c
+ create mode 100644 drivers/misc/throttler/cros_ec_throttler.c
+ create mode 100644 include/linux/throttler.h
 
-Are you saying that suspend-to-file was broken, even on
-non-virtualized systems?
-
-If so, we may this to go in first...
-								Pavel
-							=09
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---5Mfx4RzfBqgnTE/w
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlsixcsACgkQMOfwapXb+vLC3wCfX4tTCT4FWhC5Eamk0GflW7HU
-XwQAoJSlWbWAf4T9Kkoe+rMuMl+uDnkz
-=yswn
------END PGP SIGNATURE-----
-
---5Mfx4RzfBqgnTE/w--
+-- 
+2.18.0.rc1.242.g61856ae69a-goog
