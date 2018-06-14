@@ -1,35 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] PM / Domains: Fix return value of of_genpd_opp_to_performance_state()
-Date: Thu, 14 Jun 2018 10:53:34 +0530
-Message-ID: <3d3687c030535189885d84c57dbffb034c4461c2.1528953706.git.viresh.kumar@linaro.org>
-References: <b90f44d35e8e0fa9c81b3a88d05449a580be5567.1528953706.git.viresh.kumar@linaro.org>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH v2 4/5] thermal: tsens: Add support for SDM845
+Date: Thu, 14 Jun 2018 12:18:47 +0530
+Message-ID: <CAFp+6iEnep3ogEkdfmaSOn_2w+09huae2NOwBF1o7-vn3iQMCA@mail.gmail.com>
+References: <cover.1528799892.git.amit.kucheria@linaro.org> <f048a97d1599a54aef3d00126a379f4e5c937057.1528799892.git.amit.kucheria@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b90f44d35e8e0fa9c81b3a88d05449a580be5567.1528953706.git.viresh.kumar@linaro.org>
+In-Reply-To: <f048a97d1599a54aef3d00126a379f4e5c937057.1528799892.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: open list <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-of_genpd_opp_to_performance_state() should return 0 for errors, but the
-dummy routine isn't doing that. Fix it.
+Hi Amit,
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- include/linux/pm_domain.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Tue, Jun 12, 2018 at 4:24 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> SDM845 uses the TSENS v2 IP block
+>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.txt |  1 +
+>  drivers/thermal/qcom/Makefile                            |  2 +-
+>  drivers/thermal/qcom/tsens-sdm845.c                      | 15 +++++++++++++++
+>  drivers/thermal/qcom/tsens.c                             |  3 +++
+>  drivers/thermal/qcom/tsens.h                             |  5 ++++-
+>  5 files changed, 24 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/thermal/qcom/tsens-sdm845.c
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> index 292ed89..8652499 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> @@ -5,6 +5,7 @@ Required properties:
+>   - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+>   - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+>   - "qcom,msm8996-tsens" : For 8996 Family of SoCs
+> + - "qcom,sdm845-tsens"  : For SDM845 Family of SoCs
+>
+>  - reg: Address range of the thermal registers
+>  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
+> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+> index 2cc2193..dc9f169 100644
+> --- a/drivers/thermal/qcom/Makefile
+> +++ b/drivers/thermal/qcom/Makefile
+> @@ -1,2 +1,2 @@
+>  obj-$(CONFIG_QCOM_TSENS)       += qcom_tsens.o
+> -qcom_tsens-y                   += tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-8996.o
+> +qcom_tsens-y                   += tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-8996.o tsens-sdm845.o
+> diff --git a/drivers/thermal/qcom/tsens-sdm845.c b/drivers/thermal/qcom/tsens-sdm845.c
+> new file mode 100644
+> index 0000000..a647265
+> --- /dev/null
+> +++ b/drivers/thermal/qcom/tsens-sdm845.c
+> @@ -0,0 +1,15 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2018, Linaro Limited
+> + */
+> +
+> +#include "tsens.h"
+> +
+> +static const struct tsens_ops ops_sdm845 = {
+> +       .init           = init_common,
+> +       .get_temp       = get_temp_tsens_v2,
+> +};
+> +
+> +const struct tsens_data data_sdm845 = {
 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 9206a4fef9ac..139f79c8477a 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -276,7 +276,7 @@ static inline unsigned int
- of_genpd_opp_to_performance_state(struct device *dev,
- 				  struct device_node *opp_node)
- {
--	return -ENODEV;
-+	return 0;
- }
- 
- static inline int genpd_dev_pm_attach(struct device *dev)
+Just a minor nit. 'static' here?
+
+> +       .ops            = &ops_sdm845,
+> +};
+
+[snip]
+
+Thanks & Regards
+Vivek
+
+
 -- 
-2.18.0.rc1.242.g61856ae69a2c
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
