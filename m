@@ -1,91 +1,95 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH] PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.
-Date: Fri, 15 Jun 2018 12:04:52 +0200
-Message-ID: <20180615100452.17466-1-enric.balletbo@collabora.com>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW bindings
+Date: Fri, 15 Jun 2018 14:59:13 +0300
+Message-ID: <CAHLCerMCM1qf1MJ3bz+ZwBQMjshKSCWKXjHCiuqxJTDBdauamQ@mail.gmail.com>
+References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
+ <1528801355-18719-2-git-send-email-tdas@codeaurora.org> <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
+ <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org> <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
+ <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-When the devfreq driver and the governor driver are built as modules,
-the call to devfreq_add_device() fails because the governor driver is
-not loaded at the time the devfreq driver loads. The devfreq driver has
-a build dependency on the governor but also should have a runtime
-dependency. We need to make sure that the governor driver is loaded
-before the devfreq driver.
+On Thu, Jun 14, 2018 at 9:24 PM, Taniya Das <tdas@codeaurora.org> wrote:
 
-This patch fixes this bug in devfreq_add_device(). First tries to find
-the governor, and then, if was not found, it requests the module and
-tries again.
+>>> Sorry Sudeep I missed replying to your earlier query.
+>>> The High level OS(HLOS) would require to access only these specific
+>>> registers from this IP block and just mapping the whole block(huge
+>>> region) is unnecessary from the OS point of View. As of now it is a
+>>> generic binding for all using this IP block to manage frequency
+>>> requests. The OS would only have to know the frequencies supported i.e
+>>> to read the lookup table registers and put across the OS request using
+>>> the performance state register.
+>>>
+>>
+>> I am not sure if you need to defining bindings to save OSPM IO mapping.
+>> In-fact you may be adding more mapping unnecessarily. The mappings are
+>> page aligned and spiting the registers and mapping them individually may
+>> result in more mappings.
+>>
+>> I just need to know the rational for such specific choice of registers.
+>> I assume it's aligned to some other standard specifications like CPPC
+>> though not identical.
+>>
+>
+> I am not sure of the query but there is no other register that the OS is
+> required to use other than the ones defined here.
+>
+>>>> Eg. Suppose you need some information on power curve for EAS energy
+>>>> model, I really hate to update DT for that or even do a mix with DT just
+>>>> because f/w is no longer modifiable.
+>>>>
+>>>
+>>> For now we are safe.
+>>>
+>>
+>> What do you mean by that ?
+>
+>
+> I meant here was currently there is no such known case where the f/w is no
+> longer modifiable and we need to extend device tree bindings.
+>
+>> It should be easily extensible is what I am
+>> trying to say. You can add more info and alter the information in the
+>> driver with compatibles if you keep the register info as minimum as
+>> possible. For now, you have enable, set and lut registers. What if you
+>> want to provide power numbers ?
+>>
+>
+> Yes I do understand the intent of mapping the whole register space, but as
+> per the HW specs these 3 registers would be the only ones required for now.
+> I do not think this hardware engine has any information on the power
+> numbers.
 
-Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
+"For now" - I think this is exactly the point that Sudeep is trying to make.
 
- drivers/devfreq/devfreq.c | 36 +++++++++++++++++++++++++++++++-----
- 1 file changed, 31 insertions(+), 5 deletions(-)
+A future version of the HW engine, or more likely, a firmware
+revision, will make more functionality available. Say, this needs
+access to another register or two. This will require changing the DT
+bindings. Instead, if you map the entire address space, you can just
+add offsets to the new registers.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index fe2af6aa88fc..1d917f043e30 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -11,6 +11,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/kmod.h>
- #include <linux/sched.h>
- #include <linux/errno.h>
- #include <linux/err.h>
-@@ -648,10 +649,35 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	governor = find_devfreq_governor(devfreq->governor_name);
- 	if (IS_ERR(governor)) {
--		dev_err(dev, "%s: Unable to find governor for the device\n",
--			__func__);
--		err = PTR_ERR(governor);
--		goto err_init;
-+		list_del(&devfreq->node);
-+		mutex_unlock(&devfreq_list_lock);
-+
-+		/*
-+		 * If the governor is not found, then request the module and
-+		 * try again. This can happen when both drivers (the governor
-+		 * driver and the driver that calls devfreq_add_device) are
-+		 * built as modules.
-+		 */
-+		if (!strncmp(devfreq->governor_name,
-+			     DEVFREQ_GOV_SIMPLE_ONDEMAND, DEVFREQ_NAME_LEN))
-+			err = request_module("governor_%s", "simpleondemand");
-+		else
-+			err = request_module("governor_%s",
-+					     devfreq->governor_name);
-+		if (err)
-+			goto err_unregister;
-+
-+		mutex_lock(&devfreq_list_lock);
-+		list_add(&devfreq->node, &devfreq_list);
-+
-+		governor = find_devfreq_governor(devfreq->governor_name);
-+		if (IS_ERR(governor)) {
-+			dev_err(dev,
-+				"%s: Unable to find governor for the device\n",
-+				__func__);
-+			err = PTR_ERR(governor);
-+			goto err_init;
-+		}
- 	}
- 
- 	devfreq->governor = governor;
-@@ -669,7 +695,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- err_init:
- 	list_del(&devfreq->node);
- 	mutex_unlock(&devfreq_list_lock);
--
-+err_unregister:
- 	device_unregister(&devfreq->dev);
- err_dev:
- 	if (devfreq)
--- 
-2.17.1
+So in this case, I think you should define the following addresses
+(size 0x1400) for the two frequency domains
+
+0x17d43000, 0x1400 (power cluster)
+0x17d45800, 0x1400 (perf cluster)
+
+And in the driver simply add offsets as follows:
+
+#define ENABLE_OFFSET               0x0
+#define LUT_OFFSET                      0x110
+#define PERF_DESIRED_OFFSET 0x920
+
+This will allow you add any new registers in the future w/o modifying
+the DT binding and reduce qcom_cpu_resources_init() to a handful of
+lines since you no longer need so many OF string matches, and
+devm_ioremap()s.
+
+Regards,
+Amit
