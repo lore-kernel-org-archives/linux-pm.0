@@ -1,120 +1,91 @@
-From: George Cherian <george.cherian@cavium.com>
-Subject: [PATCH v2] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
-Date: Fri, 15 Jun 2018 03:03:15 -0700
-Message-ID: <1529056995-122792-1-git-send-email-george.cherian@cavium.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [PATCH] PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.
+Date: Fri, 15 Jun 2018 12:04:52 +0200
+Message-ID: <20180615100452.17466-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, pprakash@codeaurora.org, George Cherian <george.cherian@cavium.com>
+To: linux-kernel@vger.kernel.org
+Cc: kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
-feedback via set of performance counters. To determine the actual
-performance level delivered over time, OSPM may read a set of
-performance counters from the Reference Performance Counter Register
-and the Delivered Performance Counter Register.
+When the devfreq driver and the governor driver are built as modules,
+the call to devfreq_add_device() fails because the governor driver is
+not loaded at the time the devfreq driver loads. The devfreq driver has
+a build dependency on the governor but also should have a runtime
+dependency. We need to make sure that the governor driver is loaded
+before the devfreq driver.
 
-OSPM calculates the delivered performance over a given time period by
-taking a beginning and ending snapshot of both the reference and
-delivered performance counters, and calculating:
+This patch fixes this bug in devfreq_add_device(). First tries to find
+the governor, and then, if was not found, it requests the module and
+tries again.
 
-delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
-
-Implement the above and hook this to the cpufreq->get method.
-
-Signed-off-by: George Cherian <george.cherian@cavium.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
- drivers/cpufreq/cppc_cpufreq.c | 71 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 71 insertions(+)
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 3464580..3fe7625 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -296,10 +296,81 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return ret;
- }
+ drivers/devfreq/devfreq.c | 36 +++++++++++++++++++++++++++++++-----
+ 1 file changed, 31 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index fe2af6aa88fc..1d917f043e30 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -11,6 +11,7 @@
+  */
  
-+static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
-+				     struct cppc_perf_fb_ctrs fb_ctrs_t0,
-+				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
-+{
-+	u64 delta_reference, delta_delivered;
-+	u64 reference_perf, delivered_perf;
+ #include <linux/kernel.h>
++#include <linux/kmod.h>
+ #include <linux/sched.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+@@ -648,10 +649,35 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 
+ 	governor = find_devfreq_governor(devfreq->governor_name);
+ 	if (IS_ERR(governor)) {
+-		dev_err(dev, "%s: Unable to find governor for the device\n",
+-			__func__);
+-		err = PTR_ERR(governor);
+-		goto err_init;
++		list_del(&devfreq->node);
++		mutex_unlock(&devfreq_list_lock);
 +
-+	reference_perf = fb_ctrs_t0.reference_perf;
-+	if (fb_ctrs_t1.reference > fb_ctrs_t0.reference) {
-+		delta_reference = fb_ctrs_t1.reference - fb_ctrs_t0.reference;
-+	} else {
 +		/*
-+		 * Counters would have wrapped-around
-+		 * We also need to find whether the low level fw
-+		 * maintains 32 bit or 64 bit counters, to calculate
-+		 * the correct delta.
++		 * If the governor is not found, then request the module and
++		 * try again. This can happen when both drivers (the governor
++		 * driver and the driver that calls devfreq_add_device) are
++		 * built as modules.
 +		 */
-+		if (fb_ctrs_t0.reference > (~(u32)0))
-+			delta_reference  = (~((u64)0) - fb_ctrs_t0.reference) +
-+					fb_ctrs_t1.reference;
++		if (!strncmp(devfreq->governor_name,
++			     DEVFREQ_GOV_SIMPLE_ONDEMAND, DEVFREQ_NAME_LEN))
++			err = request_module("governor_%s", "simpleondemand");
 +		else
-+			delta_reference  = (~((u32)0) - fb_ctrs_t0.reference) +
-+					fb_ctrs_t1.reference;
-+	}
++			err = request_module("governor_%s",
++					     devfreq->governor_name);
++		if (err)
++			goto err_unregister;
 +
-+	if (fb_ctrs_t1.delivered > fb_ctrs_t0.delivered) {
-+		delta_delivered = fb_ctrs_t1.delivered - fb_ctrs_t0.delivered;
-+	} else {
-+		/*
-+		 * Counters would have wrapped-around
-+		 * We also need to find whether the low level fw
-+		 * maintains 32 bit or 64 bit counters, to calculate
-+		 * the correct delta.
-+		 */
-+		if (fb_ctrs_t0.delivered > (~(u32)0))
-+			delta_delivered  = (~((u64)0) - fb_ctrs_t0.delivered) +
-+					fb_ctrs_t1.delivered;
-+		else
-+			delta_delivered  = (~((u32)0) - fb_ctrs_t0.delivered) +
-+					fb_ctrs_t1.delivered;
-+	}
++		mutex_lock(&devfreq_list_lock);
++		list_add(&devfreq->node, &devfreq_list);
 +
-+	if (delta_reference)  /* Check to avoid divide-by zero */
-+		delivered_perf = (reference_perf * delta_delivered) /
-+					delta_reference;
-+	else
-+		delivered_perf = reference_perf;
-+
-+	return cppc_cpufreq_perf_to_khz(cpu, delivered_perf);
-+}
-+
-+static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
-+{
-+	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
-+	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
-+	int ret;
-+
-+	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
-+	if (ret)
-+		return ret;
-+
-+	udelay(2); /* 2usec delay between sampling */
-+
-+	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
-+	if (ret)
-+		return ret;
-+
-+	return cppc_get_rate_from_fbctrs(cpu, fb_ctrs_t0, fb_ctrs_t1);
-+}
-+
- static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.flags = CPUFREQ_CONST_LOOPS,
- 	.verify = cppc_verify_policy,
- 	.target = cppc_cpufreq_set_target,
-+	.get = cppc_cpufreq_get_rate,
- 	.init = cppc_cpufreq_cpu_init,
- 	.stop_cpu = cppc_cpufreq_stop_cpu,
- 	.name = "cppc_cpufreq",
++		governor = find_devfreq_governor(devfreq->governor_name);
++		if (IS_ERR(governor)) {
++			dev_err(dev,
++				"%s: Unable to find governor for the device\n",
++				__func__);
++			err = PTR_ERR(governor);
++			goto err_init;
++		}
+ 	}
+ 
+ 	devfreq->governor = governor;
+@@ -669,7 +695,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ err_init:
+ 	list_del(&devfreq->node);
+ 	mutex_unlock(&devfreq_list_lock);
+-
++err_unregister:
+ 	device_unregister(&devfreq->dev);
+ err_dev:
+ 	if (devfreq)
 -- 
-2.7.4
+2.17.1
