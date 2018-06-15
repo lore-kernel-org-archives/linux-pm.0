@@ -1,115 +1,65 @@
-From: Taniya Das <tdas@codeaurora.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
 Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
  bindings
-Date: Fri, 15 Jun 2018 23:10:07 +0530
-Message-ID: <32e8f874-a58b-8ba3-7a53-dc89cb34f7d9@codeaurora.org>
+Date: Fri, 15 Jun 2018 18:42:48 +0100
+Message-ID: <7f3ee013-bd12-7411-f90d-ed0fa1418ac3@arm.com>
 References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
  <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
  <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
  <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org>
  <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
  <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org>
- <CAHLCerMCM1qf1MJ3bz+ZwBQMjshKSCWKXjHCiuqxJTDBdauamQ@mail.gmail.com>
+ <a01f2528-f696-3819-73eb-e321d2256b85@arm.com>
+ <c456625c-e61c-b07e-b355-478813d9a182@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHLCerMCM1qf1MJ3bz+ZwBQMjshKSCWKXjHCiuqxJTDBdauamQ@mail.gmail.com>
+In-Reply-To: <c456625c-e61c-b07e-b355-478813d9a182@codeaurora.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Taniya Das <tdas@codeaurora.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On 6/15/2018 5:29 PM, Amit Kucheria wrote:
-> On Thu, Jun 14, 2018 at 9:24 PM, Taniya Das <tdas@codeaurora.org> wrote:
+On 15/06/18 18:31, Taniya Das wrote:
 > 
->>>> Sorry Sudeep I missed replying to your earlier query.
->>>> The High level OS(HLOS) would require to access only these specific
->>>> registers from this IP block and just mapping the whole block(huge
->>>> region) is unnecessary from the OS point of View. As of now it is a
->>>> generic binding for all using this IP block to manage frequency
->>>> requests. The OS would only have to know the frequencies supported i.e
->>>> to read the lookup table registers and put across the OS request using
->>>> the performance state register.
+> 
+> On 6/15/2018 6:53 PM, Sudeep Holla wrote:
+>>
+
+[...]
+
+>>>
+>>>> It should be easily extensible is what I am
+>>>> trying to say. You can add more info and alter the information in the
+>>>> driver with compatibles if you keep the register info as minimum as
+>>>> possible. For now, you have enable, set and lut registers. What if you
+>>>> want to provide power numbers ?
 >>>>
 >>>
->>> I am not sure if you need to defining bindings to save OSPM IO mapping.
->>> In-fact you may be adding more mapping unnecessarily. The mappings are
->>> page aligned and spiting the registers and mapping them individually may
->>> result in more mappings.
->>>
->>> I just need to know the rational for such specific choice of registers.
->>> I assume it's aligned to some other standard specifications like CPPC
->>> though not identical.
+>>> Yes I do understand the intent of mapping the whole register space, but
+>>> as per the HW specs these 3 registers would be the only ones required
+>>> for now. I do not think this hardware engine has any information on the
+>>> power numbers.
 >>>
 >>
->> I am not sure of the query but there is no other register that the OS is
->> required to use other than the ones defined here.
+>> That's fine. So on this platform DT, will you list only the registers
+>> touched by the OS for all the IP ? I am sure that will not be the case.
 >>
->>>>> Eg. Suppose you need some information on power curve for EAS energy
->>>>> model, I really hate to update DT for that or even do a mix with DT just
->>>>> because f/w is no longer modifiable.
->>>>>
->>>>
->>>> For now we are safe.
->>>>
->>>
->>> What do you mean by that ?
->>
->>
->> I meant here was currently there is no such known case where the f/w is no
->> longer modifiable and we need to extend device tree bindings.
->>
->>> It should be easily extensible is what I am
->>> trying to say. You can add more info and alter the information in the
->>> driver with compatibles if you keep the register info as minimum as
->>> possible. For now, you have enable, set and lut registers. What if you
->>> want to provide power numbers ?
->>>
->>
->> Yes I do understand the intent of mapping the whole register space, but as
->> per the HW specs these 3 registers would be the only ones required for now.
->> I do not think this hardware engine has any information on the power
->> numbers.
 > 
-> "For now" - I think this is exactly the point that Sudeep is trying to make.
-> 
-> A future version of the HW engine, or more likely, a firmware
-> revision, will make more functionality available. Say, this needs
-> access to another register or two. This will require changing the DT
-> bindings. Instead, if you map the entire address space, you can just
-> add offsets to the new registers.
-> 
-> So in this case, I think you should define the following addresses
-> (size 0x1400) for the two frequency domains
-> 
-> 0x17d43000, 0x1400 (power cluster)
-> 0x17d45800, 0x1400 (perf cluster)
-> 
-> And in the driver simply add offsets as follows:
-> 
-> #define ENABLE_OFFSET               0x0
-> #define LUT_OFFSET                      0x110
-> #define PERF_DESIRED_OFFSET 0x920
+> Yes, registers list those would be touched by OS only.
 > 
 
-The offsets could vary across versions of this IP and that is the reason 
-to provide them through the DT and not define any such offsets.
+You are still missing the point.
+Look at other IP blocks like pinmux/gpio/...(choose your pick).
 
-> This will allow you add any new registers in the future w/o modifying
-> the DT binding and reduce qcom_cpu_resources_init() to a handful of
-> lines since you no longer need so many OF string matches, and
-> devm_ioremap()s.
-> 
-> Regards,
-> Amit
-> 
+E.g. Lets say gpio controller driver touches only status set and get
+registers in a port, will you list then individually in the DT for 'n'
+ports on the platform ?
 
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Regards,
+Sudeep
