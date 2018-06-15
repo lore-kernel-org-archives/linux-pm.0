@@ -1,47 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: kryo: Fix possible error code dereference
-Date: Fri, 15 Jun 2018 08:16:25 +0530
-Message-ID: <20180615024625.rzr4644n77zrtomm@vireshk-i7>
-References: <20180614202921.32535-1-ilia.lin@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V6] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Fri, 15 Jun 2018 10:13:37 +0200
+Message-ID: <4eaf5987-4532-5c81-ec3a-89614bf339f5@linaro.org>
+References: <1528804816-32636-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180612123036.GJ12180@hirez.programming.kicks-ass.net>
+ <16d5649d-863c-10c7-9287-202568e713e6@linaro.org>
+ <20180612125247.GO12217@hirez.programming.kicks-ass.net>
+ <16770447-afe3-0fd7-19f9-1bd52c4c8ced@linaro.org>
+ <20180612140654.GQ12217@hirez.programming.kicks-ass.net>
+ <cce05d92-d51a-ab4f-83f2-37dcdee0cd6a@linaro.org>
+ <20180612155841.GT12217@hirez.programming.kicks-ass.net>
+ <7190a58e-05f2-216c-8b36-70692fa722bf@linaro.org>
+ <20180612173514.GV12217@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180614202921.32535-1-ilia.lin@gmail.com>
+In-Reply-To: <20180612173514.GV12217@hirez.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: ilia.lin@gmail.com
-Cc: Ilia Lin <ilialin@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 14-06-18, 22:29, ilia.lin@gmail.com wrote:
-> From: Ilia Lin <ilia.lin@gmail.com>
-> 
-> In event of error returned by the nvmem_cell_read() non-pointer value
-> may be dereferenced. Fix this with error handling.
-> 
-> Signed-off-by: Ilia Lin <ilia.lin@gmail.com>
+On 12/06/2018 19:35, Peter Zijlstra wrote:
 
-Fixes tag ?
+[ ... ]
 
-> ---
->  drivers/cpufreq/qcom-cpufreq-kryo.c | 2 ++
->  1 file changed, 2 insertions(+)
+>>>> Yes, drifting is not an issue if that happens. This scheme is simpler
+>>>> and safer than setting the timer ahead before waking up the tasks with
+>>>> the risk it expires before all the tasks ended their idle cycles.
+>>>
+>>> sloppy though..
+>>
+>> Ok, do you prefer to see the timer set in the wakeup function and thus
+>> having a periodic tick for the idle injection ?
 > 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> index d049fe4b80c4..5e9511223ce9 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> @@ -115,6 +115,8 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  
->  	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
->  	nvmem_cell_put(speedbin_nvmem);
-> +	if (IS_ERR(speedbin))
-> +		return PTR_ERR(speedbin);
->  
->  	switch (msm8996_version) {
->  	case MSM8996_V3:
-> -- 
-> 2.11.0
+> I think having a HRTIMER_RESTART handler that does hrtimer_forward() is
+> the most sensible. You will end up having to deal with threads not being
+> ready, but I think that's not a real problem.
+
+Thanks for the restartable timer suggestion. I'm finishing polishing the
+code and definitively the result is much more nicer.
+
 
 -- 
-viresh
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
