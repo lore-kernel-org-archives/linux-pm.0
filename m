@@ -1,92 +1,127 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH v3 01/12] PM / devfreq: Init user limits from OPP limits,
- not viceversa
-Date: Fri, 15 Jun 2018 14:06:21 -0700
-Message-ID: <20180615210619.GA249892@rodete-desktop-imager.corp.google.com>
-References: <20180614194712.102134-1-mka@chromium.org>
- <20180614194712.102134-2-mka@chromium.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Fix scaling max/min limits with Turbo 3.0
+Date: Fri, 15 Jun 2018 14:12:09 -0700
+Message-ID: <20180615211209.58478-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180614194712.102134-2-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>
+To: lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+When scaling max/min settings are changed, internally they are converted
+to a ratio using the max turbo 1 core turbo frequency. This works fine
+when 1 core max is same irrespective of the core. But under Turbo 3.0,
+this will not be the case. For example:
+Core 0: max turbo pstate: 43 (4.3GHz)
+Core 1: max turbo pstate: 45 (4.5GHz)
+In this case 1 core turbo ratio will be maximum of all, so it will be
+45 (4.5GHz). Suppose scaling max is set to 4GHz (ratio 40) for all cores
+,then on core one it will be
+ = max_state * policy->max / max_freq;
+ = 43 * (4000000/4500000) = 38 (3.8GHz)
+ = 38
+which is 200MHz less than the desired.
+On core2, it will be correctly set to ratio 40 (4GHz). Same holds true
+for scaling min frequency limit. So this requires usage of correct turbo
+max frequency for core one, which in this case is 4.3GHz. So we need to
+adjust per CPU cpu->pstate.turbo_freq using the maximum HWP ratio of that
+core.
 
-On Thu, Jun 14, 2018 at 12:47:01PM -0700, Matthias Kaehlcke wrote:
-> Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding
-> the devfreq device") introduced the initialization of the user
-> limits min/max_freq from the lowest/highest available OPPs. Later
-> commit f1d981eaecf8 ("PM / devfreq: Use the available min/max
-> frequency") added scaling_min/max_freq, which actually represent
-> the frequencies of the lowest/highest available OPP. scaling_min/
-> max_freq are initialized with the values from min/max_freq, which
-> is totally correct in the context, but a bit awkward to read.
-> 
-> Swap the initialization and assign scaling_min/max_freq with the
-> OPP freqs and then the user limts min/max_freq with scaling_min/
-> max_freq.
-> 
-> Needless to say that this change is a NOP, intended to improve
-> readability.
-> ---
+This change uses the HWP capability of a core to adjust max turbo
+frequency. But since Broadwell HWP doesn't use ratios in the HWP
+capabilities, we have use legacy max 1 core turbo ratio. This is not a
+problem as the HWP capabilities don't differ among cores in Broadwell.
+So we need to check for non Broadwell CPU model for applying this change.
 
-BTW, putting the '---' here means that stuff below it usually gets
-dropped when applied (e.g., with git-am). So it'll drop your
-Signed-off-by and Reviewed-by. Not a huge problem if the maintainers
-look out for that.
+While doing this change also optimize usage of x86_match_cpu(). Currently
+using, different x86_cpu_id structure values for each feature. We can
+consolidate, so that we don't have to introduce one more here. Added HWP
+feature flag to each CPU model, instead of a new definition.
 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 43 ++++++++++++++++++++++++++++++------------
+ 1 file changed, 31 insertions(+), 12 deletions(-)
 
-Reviewed-by: Brian Norris <briannorris@chromium.org>
-
-> 
-> Changes in v3:
-> - none
-> 
-> Changes in v2:
-> - added 'Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>' tag
-> 
->  drivers/devfreq/devfreq.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index fe2af6aa88fc..0057ef5b0a98 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -604,21 +604,21 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  		mutex_lock(&devfreq->lock);
->  	}
->  
-> -	devfreq->min_freq = find_available_min_freq(devfreq);
-> -	if (!devfreq->min_freq) {
-> +	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
-> +	if (!devfreq->scaling_min_freq) {
->  		mutex_unlock(&devfreq->lock);
->  		err = -EINVAL;
->  		goto err_dev;
->  	}
-> -	devfreq->scaling_min_freq = devfreq->min_freq;
-> +	devfreq->min_freq = devfreq->scaling_min_freq;
->  
-> -	devfreq->max_freq = find_available_max_freq(devfreq);
-> -	if (!devfreq->max_freq) {
-> +	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
-> +	if (!devfreq->scaling_max_freq) {
->  		mutex_unlock(&devfreq->lock);
->  		err = -EINVAL;
->  		goto err_dev;
->  	}
-> -	devfreq->scaling_max_freq = devfreq->max_freq;
-> +	devfreq->max_freq = devfreq->scaling_max_freq;
->  
->  	dev_set_name(&devfreq->dev, "devfreq%d",
->  				atomic_inc_return(&devfreq_no));
-> -- 
-> 2.18.0.rc1.242.g61856ae69a-goog
-> 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1de5ec8..26d1fc7 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -308,6 +308,12 @@ static struct global_params global;
+ static DEFINE_MUTEX(intel_pstate_driver_lock);
+ static DEFINE_MUTEX(intel_pstate_limits_lock);
+ 
++#define INTEL_PSTATE_HWP_FEATURE_DISABLE_EE	0x01
++#define INTEL_PSTATE_HWP_PERF_BOOST		0x02
++#define INTEL_PSTATE_HWP_BROADWELL		0x04
++
++static u32 intel_pstate_hwp_features;
++
+ #ifdef CONFIG_ACPI
+ 
+ static bool intel_pstate_get_ppc_enable_status(void)
+@@ -1413,7 +1419,16 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+ 	cpu->pstate.scaling = pstate_funcs.get_scaling();
+ 	cpu->pstate.max_freq = cpu->pstate.max_pstate * cpu->pstate.scaling;
+-	cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++
++	if (hwp_active &&
++	    !(intel_pstate_hwp_features & INTEL_PSTATE_HWP_BROADWELL)) {
++		unsigned int phy_max, current_max;
++
++		intel_pstate_get_hwp_max(cpu->cpu, &phy_max, &current_max);
++		cpu->pstate.turbo_freq = phy_max * cpu->pstate.scaling;
++	} else {
++		cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++	}
+ 
+ 	if (pstate_funcs.get_aperf_mperf_shift)
+ 		cpu->aperf_mperf_shift = pstate_funcs.get_aperf_mperf_shift();
+@@ -1789,14 +1804,16 @@ static const struct x86_cpu_id intel_pstate_cpu_oob_ids[] __initconst = {
+ 	{}
+ };
+ 
+-static const struct x86_cpu_id intel_pstate_cpu_ee_disable_ids[] = {
+-	ICPU(INTEL_FAM6_KABYLAKE_DESKTOP, core_funcs),
+-	{}
+-};
+-
+-static const struct x86_cpu_id intel_pstate_hwp_boost_ids[] = {
+-	ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
+-	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP, core_funcs),
++#define ICPU1(model, feature) \
++	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF,\
++	 feature}
++
++static const struct x86_cpu_id intel_pstate_hwp_feature_ids[] = {
++	ICPU1(INTEL_FAM6_BROADWELL_X, INTEL_PSTATE_HWP_BROADWELL),
++	ICPU1(INTEL_FAM6_BROADWELL_XEON_D, INTEL_PSTATE_HWP_BROADWELL),
++	ICPU1(INTEL_FAM6_KABYLAKE_DESKTOP, INTEL_PSTATE_HWP_FEATURE_DISABLE_EE),
++	ICPU1(INTEL_FAM6_SKYLAKE_DESKTOP, INTEL_PSTATE_HWP_PERF_BOOST),
++	ICPU1(INTEL_FAM6_SKYLAKE_X, INTEL_PSTATE_HWP_PERF_BOOST),
+ 	{}
+ };
+ 
+@@ -1825,14 +1842,16 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+ 	if (hwp_active) {
+ 		const struct x86_cpu_id *id;
+ 
+-		id = x86_match_cpu(intel_pstate_cpu_ee_disable_ids);
++		id = x86_match_cpu(intel_pstate_hwp_feature_ids);
+ 		if (id)
++			intel_pstate_hwp_features = id->driver_data;
++
++		if (intel_pstate_hwp_features & INTEL_PSTATE_HWP_FEATURE_DISABLE_EE)
+ 			intel_pstate_disable_ee(cpunum);
+ 
+ 		intel_pstate_hwp_enable(cpu);
+ 
+-		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
+-		if (id)
++		if (intel_pstate_hwp_features & INTEL_PSTATE_HWP_PERF_BOOST)
+ 			hwp_boost = true;
+ 	}
+ 
+-- 
+2.7.5
