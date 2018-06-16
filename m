@@ -1,168 +1,141 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [RFC PATCH 03/10] devfreq: rk3399_dmc: Pass ODT and auto power
- down parameters to TF-A.
-Date: Sat, 16 Jun 2018 12:15:34 +0200
-Message-ID: <CAFqH_51jDy6hvwTtVQf52OZ2QFwAACzH8bh2bUZdxAnvKqM6=A@mail.gmail.com>
-References: <20180514211610.26618-1-enric.balletbo@collabora.com>
- <CGME20180514211840epcas3p41708e430bc22d7e61e8b894b12a083f9@epcas3p4.samsung.com>
- <20180514211610.26618-4-enric.balletbo@collabora.com>
- <5AFA0B94.4000100@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4 26/26] fix a series of Documentation/ broken file name references
+Date: Sat, 16 Jun 2018 17:52:29 +0200
+Message-ID: <CAJZ5v0gVBxDZnNXG4Kf9M0wMwR1R97kg6uNmAYi5Rf-5kPBNQQ@mail.gmail.com>
+References: <cover.1529079119.git.mchehab+samsung@kernel.org> <041e7a803fc0e5c5dfc1fb8b2f761074ca0baa2c.1529079120.git.mchehab+samsung@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <5AFA0B94.4000100@samsung.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, sboyd@kernel.org, Michael Turquette <mturquette@baylibre.com>, dbasehore@chromium.org, Will Deacon <will.deacon@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, kernel@collabora.com, linux-clk@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, huang lin <hl@rock-chips.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <041e7a803fc0e5c5dfc1fb8b2f761074ca0baa2c.1529079120.git.mchehab+samsung@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Mauro Carvalho Chehab <mchehab@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Harry Wei <harryxiyou@gmail.com>, Vinod Koul <vkoul@kernel.org>, Dan Williams <dan.j.williams@intel.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, "David S. Miller" <davem@davemloft.net>, Luis de Bethencourt <luisbg@kernel.org>, Salah Triki <salah.triki@gmail.com>, Mike Marshall <hubcap@omnibond.com>, Martin Brandenburg <martin@omnibond.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@zh-kernel.org, dmaengine <dmaengine@vger.kernel.org>, Platform Driver <plat>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgQ2hhbndvbywKCkknbGwgc2VuZCBhIG5ldyB2ZXJzaW9uIHNvb24sIGp1c3Qgd2FudGVkIHRv
-IGFzayBzb21lIHF1ZXN0aW9ucyBoZXJlLiBTZWUgYmVsb3cuCgpNaXNzYXRnZSBkZSBDaGFud29v
-IENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4gZGVsIGRpYSBkdC4sIDE1IGRlCm1haWcgMjAx
-OCBhIGxlcyAwOjIxOgo+Cj4gSGksCj4KPiBPbiAyMDE464WEIDA17JuUIDE17J28IDA2OjE2LCBF
-bnJpYyBCYWxsZXRibyBpIFNlcnJhIHdyb3RlOgo+ID4gVHJ1c3RlZCBGaXJtd2FyZS1BIChURi1B
-KSBmb3IgcmszMzk5IGltcGxlbWVudHMgYSBTaVAgY2FsbCB0byBnZXQgdGhlCj4gPiBvbi1kaWUg
-dGVybWluYXRpb24gKE9EVCkgYW5kIGF1dG8gcG93ZXIgZG93biBwYXJhbWV0ZXJzIGZyb20ga2Vy
-bmVsLAo+ID4gdGhpcyBwYXRjaCBhZGRzIHRoZSBmdW5jdGlvbmFsaXR5IHRvIGRvIHRoaXMuIEFs
-c28sIGlmIEREUiBjbG9jawo+ID4gZnJlcXVlbmN5IGlzIGxvd2VyIHRoYW4gdGhlIG9uLWRpZSB0
-ZXJtaW5hdGlvbiAoT0RUKSBkaXNhYmxlIGZyZXF1ZW5jeQo+ID4gdGhpcyBkcml2ZXIgc2hvdWxk
-IGRpc2FibGUgdGhlIEREUiBPRFQuCj4KPiBJIGhhdmUgYSBxdWVzdGlvbi4KPiAnZGlzYWJsZSBm
-cmVxdWVuY3knIGlzIHRoZSBzYW1lIG1lYW5pbmcgb2YgJ2Rpc2FibGUgdGhlIEREUiBPRFQnPwo+
-CgpZZXMsIHRoZSBEVCBkZWZpbmVzIGFuIG9kdF9kaXNfZnJlcSBwYXJhbWV0ZXIsIHdoZW4gdGhl
-IEREUiBmcmVxdWVuY3kKaXMgbGVzcyB0aGFuIHRoZSB2YWx1ZSBpbiB0aGlzIHBhcmFtZXRlciB3
-ZSBkaXNhYmxlIHRoZSBPRFQgb24gdGhlCkRSQU0uCgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IEVu
-cmljIEJhbGxldGJvIGkgU2VycmEgPGVucmljLmJhbGxldGJvQGNvbGxhYm9yYS5jb20+Cj4gPiAt
-LS0KPiA+Cj4gPiAgZHJpdmVycy9kZXZmcmVxL3JrMzM5OV9kbWMuYyAgICAgICAgfCA1MCArKysr
-KysrKysrKysrKysrKysrKysrKysrKysrLQo+ID4gIGluY2x1ZGUvc29jL3JvY2tjaGlwL3JvY2tj
-aGlwX3NpcC5oIHwgIDEgKwo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgNTAgaW5zZXJ0aW9ucygrKSwg
-MSBkZWxldGlvbigtKQo+ID4KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvcmszMzk5
-X2RtYy5jIGIvZHJpdmVycy9kZXZmcmVxL3JrMzM5OV9kbWMuYwo+ID4gaW5kZXggZDVjMDNlNWFi
-ZTEzLi5jYzFiYmNhM2ZiMTUgMTAwNjQ0Cj4gPiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvcmszMzk5
-X2RtYy5jCj4gPiArKysgYi9kcml2ZXJzL2RldmZyZXEvcmszMzk5X2RtYy5jCj4gPiBAQCAtMTgs
-MTQgKzE4LDE3IEBACj4gPiAgI2luY2x1ZGUgPGxpbnV4L2RldmZyZXEuaD4KPiA+ICAjaW5jbHVk
-ZSA8bGludXgvZGV2ZnJlcS1ldmVudC5oPgo+ID4gICNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQu
-aD4KPiA+ICsjaW5jbHVkZSA8bGludXgvbWZkL3N5c2Nvbi5oPgo+ID4gICNpbmNsdWRlIDxsaW51
-eC9tb2R1bGUuaD4KPiA+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4KPiA+ICAjaW5jbHVkZSA8bGlu
-dXgvcGxhdGZvcm1fZGV2aWNlLmg+Cj4gPiAgI2luY2x1ZGUgPGxpbnV4L3BtX29wcC5oPgo+ID4g
-KyNpbmNsdWRlIDxsaW51eC9yZWdtYXAuaD4KPiA+ICAjaW5jbHVkZSA8bGludXgvcmVndWxhdG9y
-L2NvbnN1bWVyLmg+Cj4gPiAgI2luY2x1ZGUgPGxpbnV4L3J3c2VtLmg+Cj4gPiAgI2luY2x1ZGUg
-PGxpbnV4L3N1c3BlbmQuaD4KPiA+Cj4gPiArI2luY2x1ZGUgPHNvYy9yb2NrY2hpcC9yazMzOTlf
-Z3JmLmg+Cj4gPiAgI2luY2x1ZGUgPHNvYy9yb2NrY2hpcC9yb2NrY2hpcF9zaXAuaD4KPiA+Cj4g
-PiAgc3RydWN0IGRyYW1fdGltaW5nIHsKPiA+IEBAIC02OSw4ICs3MiwxMSBAQCBzdHJ1Y3Qgcmsz
-Mzk5X2RtY2ZyZXEgewo+ID4gICAgICAgc3RydWN0IG11dGV4IGxvY2s7Cj4gPiAgICAgICBzdHJ1
-Y3QgZHJhbV90aW1pbmcgdGltaW5nOwo+ID4gICAgICAgc3RydWN0IHJlZ3VsYXRvciAqdmRkX2Nl
-bnRlcjsKPiA+ICsgICAgIHN0cnVjdCByZWdtYXAgKnJlZ21hcF9wbXU7Cj4gPiAgICAgICB1bnNp
-Z25lZCBsb25nIHJhdGUsIHRhcmdldF9yYXRlOwo+ID4gICAgICAgdW5zaWduZWQgbG9uZyB2b2x0
-LCB0YXJnZXRfdm9sdDsKPiA+ICsgICAgIHVuc2lnbmVkIGludCBvZHRfZGlzX2ZyZXE7Cj4gPiAr
-ICAgICBpbnQgb2R0X3BkX2FyZzAsIG9kdF9wZF9hcmcxOwo+ID4gIH07Cj4gPgo+ID4gIHN0YXRp
-YyBpbnQgcmszMzk5X2RtY2ZyZXFfdGFyZ2V0KHN0cnVjdCBkZXZpY2UgKmRldiwgdW5zaWduZWQg
-bG9uZyAqZnJlcSwKPiA+IEBAIC04MCw2ICs4Niw4IEBAIHN0YXRpYyBpbnQgcmszMzk5X2RtY2Zy
-ZXFfdGFyZ2V0KHN0cnVjdCBkZXZpY2UgKmRldiwgdW5zaWduZWQgbG9uZyAqZnJlcSwKPiA+ICAg
-ICAgIHN0cnVjdCBkZXZfcG1fb3BwICpvcHA7Cj4gPiAgICAgICB1bnNpZ25lZCBsb25nIG9sZF9j
-bGtfcmF0ZSA9IGRtY2ZyZXEtPnJhdGU7Cj4gPiAgICAgICB1bnNpZ25lZCBsb25nIHRhcmdldF92
-b2x0LCB0YXJnZXRfcmF0ZTsKPiA+ICsgICAgIHN0cnVjdCBhcm1fc21jY2NfcmVzIHJlczsKPiA+
-ICsgICAgIGludCBkcmFtX2ZsYWc7Cj4gPiAgICAgICBpbnQgZXJyOwo+ID4KPiA+ICAgICAgIG9w
-cCA9IGRldmZyZXFfcmVjb21tZW5kZWRfb3BwKGRldiwgZnJlcSwgZmxhZ3MpOwo+ID4gQEAgLTk1
-LDYgKzEwMywxNSBAQCBzdGF0aWMgaW50IHJrMzM5OV9kbWNmcmVxX3RhcmdldChzdHJ1Y3QgZGV2
-aWNlICpkZXYsIHVuc2lnbmVkIGxvbmcgKmZyZXEsCj4gPgo+ID4gICAgICAgbXV0ZXhfbG9jaygm
-ZG1jZnJlcS0+bG9jayk7Cj4gPgo+ID4gKyAgICAgZHJhbV9mbGFnID0gMDsKPgo+IEFsc28sIGlm
-IGRyYW1fZmxhZyBpcyAwLCBpdCBtZWFuIHRoYXQgZGlzYWJsZSBPRFQgZnJlcXVlbmN5PwoKWWVz
-LCBub3QgYSBnb29kIG5hbWUsIG1heWJlIEkgc2hvdWxkIGp1c3QgcmVuYW1lIGl0IHRvIG9kdF9l
-bmFibGUgdG8KYmUgbW9yZSBjbGVhci4KCj4gSWYgaXQncyByaWdodCwgeW91IGJldHRlciB0byBk
-ZWZpbmUgdGhlIHByZWNpc2UgdmFyaWFibGVzIGFzIGZvbGxvd2luZwo+IGluc3RlYWQgb2YganVz
-dCBpbnRlZ2VyKDAgb3IgMSkuCj4gRm9yIGV4YW1wbGUsCj4gLSBST0NLQ0hJUF9TSVBfRFJBTV9G
-UkVRX0VOQUJMRQo+IC0gUk9DS0NISVBfU0lQX0RSQU1fRlJFUV9ESVNBQkxFCj4KPiA+ICsgICAg
-IGlmICh0YXJnZXRfcmF0ZSA+PSBkbWNmcmVxLT5vZHRfZGlzX2ZyZXEpCj4gPiArICAgICAgICAg
-ICAgIGRyYW1fZmxhZyA9IDE7Cj4gPiArCj4gPiArICAgICBhcm1fc21jY2Nfc21jKFJPQ0tDSElQ
-X1NJUF9EUkFNX0ZSRVEsIGRtY2ZyZXEtPm9kdF9wZF9hcmcwLAo+ID4gKyAgICAgICAgICAgICAg
-ICAgICBkbWNmcmVxLT5vZHRfcGRfYXJnMSwKPiA+ICsgICAgICAgICAgICAgICAgICAgUk9DS0NI
-SVBfU0lQX0NPTkZJR19EUkFNX1NFVF9PRFRfUEQsCj4gPiArICAgICAgICAgICAgICAgICAgIGRy
-YW1fZmxhZywgMCwgMCwgMCwgJnJlcyk7Cj4gPiArCj4KPiBUaGlzIG9wZXJhdGlvbiBpcyBzcGVj
-aWFsIGZvciBvbmx5IHJrMzM5OV9kbWMuIEl0IGlzIGRpZmZpY3VsdAo+IHRvIHVuZGVyc3RhbmQg
-d2hhdCB0byBkby4gSSByZWNvbW1lbmQgeW91IGJldHRlciB0byBhZGQgdGhlIGRldGFpbGVkIGNv
-bW1lbnQKPiB3aXRoIGNvZGUuCgpXaWxsIGRvLgoKPgo+ID4gICAgICAgLyoKPiA+ICAgICAgICAq
-IElmIGZyZXF1ZW5jeSBzY2FsaW5nIGZyb20gbG93IHRvIGhpZ2gsIGFkanVzdCB2b2x0YWdlIGZp
-cnN0Lgo+ID4gICAgICAgICogSWYgZnJlcXVlbmN5IHNjYWxpbmcgZnJvbSBoaWdoIHRvIGxvdywg
-YWRqdXN0IGZyZXF1ZW5jeSBmaXJzdC4KPiA+IEBAIC0yOTQsMTEgKzMxMSwxMyBAQCBzdGF0aWMg
-aW50IHJrMzM5OV9kbWNmcmVxX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4g
-PiAgewo+ID4gICAgICAgc3RydWN0IGFybV9zbWNjY19yZXMgcmVzOwo+ID4gICAgICAgc3RydWN0
-IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsKPiA+IC0gICAgIHN0cnVjdCBkZXZpY2Vfbm9kZSAq
-bnAgPSBwZGV2LT5kZXYub2Zfbm9kZTsKPiA+ICsgICAgIHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAg
-PSBwZGV2LT5kZXYub2Zfbm9kZSwgKm5vZGU7Cj4gPiAgICAgICBzdHJ1Y3QgcmszMzk5X2RtY2Zy
-ZXEgKmRhdGE7Cj4gPiAgICAgICBpbnQgcmV0LCBpbmRleCwgc2l6ZTsKPiA+ICAgICAgIHVpbnQz
-Ml90ICp0aW1pbmc7Cj4gPiAgICAgICBzdHJ1Y3QgZGV2X3BtX29wcCAqb3BwOwo+ID4gKyAgICAg
-dTMyIGRkcl90eXBlOwo+ID4gKyAgICAgdTMyIHZhbDsKPiA+Cj4gPiAgICAgICBkYXRhID0gZGV2
-bV9remFsbG9jKGRldiwgc2l6ZW9mKHN0cnVjdCByazMzOTlfZG1jZnJlcSksIEdGUF9LRVJORUwp
-Owo+ID4gICAgICAgaWYgKCFkYXRhKQo+ID4gQEAgLTMzNCw2ICszNTMsMjkgQEAgc3RhdGljIGlu
-dCByazMzOTlfZG1jZnJlcV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ID4g
-ICAgICAgICAgICAgICByZXR1cm4gcmV0Owo+ID4gICAgICAgfQo+ID4KPiA+ICsgICAgIC8qIFRy
-eSB0byBmaW5kIHRoZSBvcHRpb25hbCByZWZlcmVuY2UgdG8gdGhlIHBtdSBzeXNjb24gKi8KPiA+
-ICsgICAgIG5vZGUgPSBvZl9wYXJzZV9waGFuZGxlKG5wLCAicm9ja2NoaXAscG11IiwgMCk7Cj4g
-PiArICAgICBpZiAobm9kZSkgewo+ID4gKyAgICAgICAgICAgICBkYXRhLT5yZWdtYXBfcG11ID0g
-c3lzY29uX25vZGVfdG9fcmVnbWFwKG5vZGUpOwo+ID4gKyAgICAgICAgICAgICBpZiAoSVNfRVJS
-KGRhdGEtPnJlZ21hcF9wbXUpKQo+ID4gKyAgICAgICAgICAgICAgICAgICAgIHJldHVybiBQVFJf
-RVJSKGRhdGEtPnJlZ21hcF9wbXUpOwo+ID4gKyAgICAgfQo+ID4gKwo+ID4gKyAgICAgLyogR2V0
-IEREUiB0eXBlICovCj4gPiArICAgICByZWdtYXBfcmVhZChkYXRhLT5yZWdtYXBfcG11LCBSSzMz
-OTlfUE1VR1JGX09TX1JFRzIsICZ2YWwpOwo+ID4gKyAgICAgZGRyX3R5cGUgPSAodmFsID4+IFJL
-MzM5OV9QTVVHUkZfRERSVFlQRV9TSElGVCkgJgo+ID4gKyAgICAgICAgICAgICAgICAgUkszMzk5
-X1BNVUdSRl9ERFJUWVBFX01BU0s7Cj4gPiArCj4gPiArICAgICAvKiBHZXQgdGhlIG9kdF9kaXNf
-ZnJlcSBwYXJhbWV0ZXIgaW4gZnVuY3Rpb24gb2YgdGhlIEREUiB0eXBlICovCj4gPiArICAgICBp
-ZiAoZGRyX3R5cGUgPT0gUkszMzk5X1BNVUdSRl9ERFJUWVBFX0REUjMpCj4gPiArICAgICAgICAg
-ICAgIGRhdGEtPm9kdF9kaXNfZnJlcSA9IGRhdGEtPnRpbWluZy5kZHIzX29kdF9kaXNfZnJlcTsK
-PiA+ICsgICAgIGVsc2UgaWYgKGRkcl90eXBlID09IFJLMzM5OV9QTVVHUkZfRERSVFlQRV9MUERE
-UjMpCj4gPiArICAgICAgICAgICAgIGRhdGEtPm9kdF9kaXNfZnJlcSA9IGRhdGEtPnRpbWluZy5s
-cGRkcjNfb2R0X2Rpc19mcmVxOwo+ID4gKyAgICAgZWxzZSBpZiAoZGRyX3R5cGUgPT0gUkszMzk5
-X1BNVUdSRl9ERFJUWVBFX0xQRERSNCkKPiA+ICsgICAgICAgICAgICAgZGF0YS0+b2R0X2Rpc19m
-cmVxID0gZGF0YS0+dGltaW5nLmxwZGRyNF9vZHRfZGlzX2ZyZXE7Cj4gPiArICAgICBlbHNlCj4g
-PiArICAgICAgICAgICAgIHJldHVybiAtRUlOVkFMOwo+ID4gKwo+Cj4gaG93IGFib3V0IHVzaW5n
-ICdzd2l0Y2gnIHN0YXRlbWVudD8KPgoKT2sKCj4gPiAgICAgICAvKgo+ID4gICAgICAgICogR2V0
-IGRyYW0gdGltaW5nIGFuZCBwYXNzIGl0IHRvIGFybSB0cnVzdCBmaXJtd2FyZSwKPiA+ICAgICAg
-ICAqIHRoZSBkcmFtIGRydmllciBpbiBhcm0gdHJ1c3QgZmlybXdhcmUgd2lsbCBnZXQgdGhlc2UK
-PiA+IEBAIC0zNTgsNiArNDAwLDEyIEBAIHN0YXRpYyBpbnQgcmszMzk5X2RtY2ZyZXFfcHJvYmUo
-c3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPiA+ICAgICAgICAgICAgICAgICAgICAgUk9D
-S0NISVBfU0lQX0NPTkZJR19EUkFNX0lOSVQsCj4gPiAgICAgICAgICAgICAgICAgICAgIDAsIDAs
-IDAsIDAsICZyZXMpOwo+ID4KPiA+ICsgICAgIGRhdGEtPm9kdF9wZF9hcmcwID0gKGRhdGEtPnRp
-bWluZy5zcl9pZGxlICYgMHhmZikgfAo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAoKGRh
-dGEtPnRpbWluZy5zcl9tY19nYXRlX2lkbGUgJiAweGZmKSA8PCA4KSB8Cj4gPiArICAgICAgICAg
-ICAgICAgICAgICAgICAgICgoZGF0YS0+dGltaW5nLnN0YW5kYnlfaWRsZSAmIDB4ZmZmZikgPDwg
-MTYpOwo+ID4gKyAgICAgZGF0YS0+b2R0X3BkX2FyZzEgPSAoZGF0YS0+dGltaW5nLnBkX2lkbGUg
-JiAweGZmZikgfAo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAoKGRhdGEtPnRpbWluZy5z
-cnBkX2xpdGVfaWRsZSAmIDB4ZmZmKSA8PCAxNik7Cj4gPiArCj4KPiBvZHRfcGRfYXJnMCBhbmQg
-b2R0X3BkX2FyZzEgbWlnaHQgYmUgdXNlZCBmb3IgZGlzYWJsaW5nL2VuYWJsaW5nIHRoZSBPRFQg
-ZnJlcXVlbmN5Lgo+IEFzIEkgY29tbWVudGVkLCBpdCBkZXBlbmQgb24gb25seSByazMzOTlfZG1j
-LiBZb3UgYmV0dGVyIHRvIGFkZCBkZXRhaWxlZCBjb21tZW50Lgo+CgpPawoKPiBBbmQgSSBwcmVm
-ZXIgdG8gZGVmaW5lIHRoZSBYWFhfU0hJRlQvWFhYX01BU0sgZGVmaW5pdGlvbiBpbnN0ZWFkIG9m
-Cj4gdXNpbmcgOC8xNi8weGZmLzB4ZmZmZiBmb3IgdGhlIHJlYWRhYmlsaXR5Lgo+CgpJIHRyaWVk
-IHRvIGFkZCB0aGUgWFhYX1NISUZUL1hYWF9NQVNLIGRlZmluaXRpb25zIGFuZCBJTUhPIHRoZQpy
-ZWFkYWJpbGl0eSBpcyB3b3JzdCBpZiBJIHVzZSBhIG1heGltdW0gbGluZSBsZW5ndGggb2YgODAg
-Y2hhcmFjdGVycy4KVGhlc2UgbWFza3MgYXJlIG9ubHkgdXNlZCBoZXJlLCBsZXQgbWUgdHJ5IHRv
-IGNvbnZpbmNlIHlvdSBieSBhZGRpbmcgYQpnb29kIGRvYyBpbiB0aGUgbmV4dCB2ZXJzaW9uIGFu
-ZCBpZiB5b3Ugc3RpbGwgcHJlZmVyIEkgYWRkIHRoZQpkZWZpbml0aW9uIEknbGwgZG8uCgo+ID4g
-ICAgICAgLyoKPiA+ICAgICAgICAqIFdlIGFkZCBhIGRldmZyZXEgZHJpdmVyIHRvIG91ciBwYXJl
-bnQgc2luY2UgaXQgaGFzIGEgZGV2aWNlIHRyZWUgbm9kZQo+ID4gICAgICAgICogd2l0aCBvcGVy
-YXRpbmcgcG9pbnRzLgo+ID4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvc29jL3JvY2tjaGlwL3JvY2tj
-aGlwX3NpcC5oIGIvaW5jbHVkZS9zb2Mvcm9ja2NoaXAvcm9ja2NoaXBfc2lwLmgKPiA+IGluZGV4
-IDdlMjgwOTJjNGQzZC4uYWQ5NDgyYzU2Nzk3IDEwMDY0NAo+ID4gLS0tIGEvaW5jbHVkZS9zb2Mv
-cm9ja2NoaXAvcm9ja2NoaXBfc2lwLmgKPiA+ICsrKyBiL2luY2x1ZGUvc29jL3JvY2tjaGlwL3Jv
-Y2tjaGlwX3NpcC5oCj4gPiBAQCAtMjMsNSArMjMsNiBAQAo+ID4gICNkZWZpbmUgUk9DS0NISVBf
-U0lQX0NPTkZJR19EUkFNX0dFVF9SQVRFICAgIDB4MDUKPiA+ICAjZGVmaW5lIFJPQ0tDSElQX1NJ
-UF9DT05GSUdfRFJBTV9DTFJfSVJRICAgICAweDA2Cj4gPiAgI2RlZmluZSBST0NLQ0hJUF9TSVBf
-Q09ORklHX0RSQU1fU0VUX1BBUkFNICAgMHgwNwo+ID4gKyNkZWZpbmUgUk9DS0NISVBfU0lQX0NP
-TkZJR19EUkFNX1NFVF9PRFRfUEQgIDB4MDgKPiA+Cj4gPiAgI2VuZGlmCj4gPgo+Cj4KPiAtLQo+
-IEJlc3QgUmVnYXJkcywKPiBDaGFud29vIENob2kKPiBTYW1zdW5nIEVsZWN0cm9uaWNzCj4KPiBf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IExpbnV4LXJv
-Y2tjaGlwIG1haWxpbmcgbGlzdAo+IExpbnV4LXJvY2tjaGlwQGxpc3RzLmluZnJhZGVhZC5vcmcK
-PiBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tj
-aGlwCkNoZWVycywKIEVucmljCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNr
-dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Ry
-aS1kZXZlbAo=
+On Fri, Jun 15, 2018 at 6:30 PM, Mauro Carvalho Chehab
+<mchehab+samsung@kernel.org> wrote:
+> As files move around, their previous links break. Fix the
+> references for them.
+>
+> Acked-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+> ---
+>  Documentation/translations/zh_CN/io_ordering.txt | 2 +-
+>  drivers/dma/dmaengine.c                          | 2 +-
+>  drivers/platform/x86/Kconfig                     | 2 +-
+>  drivers/sbus/char/oradax.c                       | 2 +-
+>  fs/befs/ChangeLog                                | 2 +-
+>  fs/orangefs/orangefs-sysfs.c                     | 2 +-
+>  include/linux/platform_data/sc18is602.h          | 2 +-
+>  kernel/power/main.c                              | 5 +++--
+>  8 files changed, 10 insertions(+), 9 deletions(-)
+>
+> diff --git a/Documentation/translations/zh_CN/io_ordering.txt b/Documentation/translations/zh_CN/io_ordering.txt
+> index e592daf4e014..1f8127bdd415 100644
+> --- a/Documentation/translations/zh_CN/io_ordering.txt
+> +++ b/Documentation/translations/zh_CN/io_ordering.txt
+> @@ -1,4 +1,4 @@
+> -Chinese translated version of Documentation/io_orderings.txt
+> +Chinese translated version of Documentation/io_ordering.txt
+>
+>  If you have any comment or update to the content, please contact the
+>  original document maintainer directly.  However, if you have a problem
+> diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+> index b451354735d3..08ba8473a284 100644
+> --- a/drivers/dma/dmaengine.c
+> +++ b/drivers/dma/dmaengine.c
+> @@ -38,7 +38,7 @@
+>   * Each device has a channels list, which runs unlocked but is never modified
+>   * once the device is registered, it's just setup by the driver.
+>   *
+> - * See Documentation/dmaengine.txt for more details
+> + * See Documentation/driver-api/dmaengine for more details
+>   */
+>
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> index f27cb186437d..ac4d48830415 100644
+> --- a/drivers/platform/x86/Kconfig
+> +++ b/drivers/platform/x86/Kconfig
+> @@ -1052,7 +1052,7 @@ config SAMSUNG_LAPTOP
+>           function keys, wireless LED, LCD backlight level.
+>
+>           It may also provide some sysfs files described in
+> -         <file:Documentation/ABI/testing/sysfs-platform-samsung-laptop>
+> +         <file:Documentation/ABI/testing/sysfs-driver-samsung-laptop>
+>
+>           To compile this driver as a module, choose M here: the module
+>           will be called samsung-laptop.
+> diff --git a/drivers/sbus/char/oradax.c b/drivers/sbus/char/oradax.c
+> index 1754f55e2fac..524f9ea62e52 100644
+> --- a/drivers/sbus/char/oradax.c
+> +++ b/drivers/sbus/char/oradax.c
+> @@ -30,7 +30,7 @@
+>   * the recommended way for applications to use the coprocessor, and
+>   * the driver interface is not intended for general use.
+>   *
+> - * See Documentation/sparc/oradax/oracle_dax.txt for more details.
+> + * See Documentation/sparc/oradax/oracle-dax.txt for more details.
+>   */
+>
+>  #include <linux/uaccess.h>
+> diff --git a/fs/befs/ChangeLog b/fs/befs/ChangeLog
+> index 16f2dfe8c2f7..aff7eec8f327 100644
+> --- a/fs/befs/ChangeLog
+> +++ b/fs/befs/ChangeLog
+> @@ -389,7 +389,7 @@ Version 0.4 (2001-10-28)
+>         (fs/nls/Config.in)
+>
+>  * Added Configure.help entries for CONFIG_BEFS_FS and CONFIG_DEBUG_BEFS
+> -       (Documentation/Configure.help)
+> +       (currently at fs/befs/Kconfig)
+>
+>  2001-08-??
+>  ==========
+> diff --git a/fs/orangefs/orangefs-sysfs.c b/fs/orangefs/orangefs-sysfs.c
+> index 079a465796f3..dd28079f518c 100644
+> --- a/fs/orangefs/orangefs-sysfs.c
+> +++ b/fs/orangefs/orangefs-sysfs.c
+> @@ -1,6 +1,6 @@
+>  // SPDX-License-Identifier: GPL-2.0
+>  /*
+> - * Documentation/ABI/stable/orangefs-sysfs:
+> + * Documentation/ABI/stable/sysfs-fs-orangefs:
+>   *
+>   * What:               /sys/fs/orangefs/perf_counter_reset
+>   * Date:               June 2015
+> diff --git a/include/linux/platform_data/sc18is602.h b/include/linux/platform_data/sc18is602.h
+> index 997b06634152..18602cab7799 100644
+> --- a/include/linux/platform_data/sc18is602.h
+> +++ b/include/linux/platform_data/sc18is602.h
+> @@ -7,7 +7,7 @@
+>   * it under the terms of the GNU General Public License version 2 as
+>   * published by the Free Software Foundation.
+>   *
+> - * For further information, see the Documentation/spi/sc18is602 file.
+> + * For further information, see the Documentation/spi/spi-sc18is602 file.
+>   */
+>
+>  /**
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 705c2366dafe..d9706da10930 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -455,8 +455,9 @@ struct kobject *power_kobj;
+>   * state - control system sleep states.
+>   *
+>   * show() returns available sleep state labels, which may be "mem", "standby",
+> - * "freeze" and "disk" (hibernation).  See Documentation/power/states.txt for a
+> - * description of what they mean.
+> + * "freeze" and "disk" (hibernation).
+> + * See Documentation/admin-guide/pm/sleep-states.rst for a description of
+> + * what they mean.
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+for the PM part above.
+
+>   *
+>   * store() accepts one of those strings, translates it into the proper
+>   * enumerated value, and initiates a suspend transition.
+> --
