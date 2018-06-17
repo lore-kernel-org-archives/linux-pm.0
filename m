@@ -1,113 +1,184 @@
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW bindings
-Date: Sun, 17 Jun 2018 12:03:31 +0300
-Message-ID: <CAHLCerNQ8Zy8xTbn3h6t7FvuB6Nvq1F14M8=UfnmChUBLKOvSw@mail.gmail.com>
-References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
- <1528801355-18719-2-git-send-email-tdas@codeaurora.org> <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
- <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org> <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
- <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org> <CAHLCerMCM1qf1MJ3bz+ZwBQMjshKSCWKXjHCiuqxJTDBdauamQ@mail.gmail.com>
- <32e8f874-a58b-8ba3-7a53-dc89cb34f7d9@codeaurora.org>
+From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Subject: [PATCH] dt-bindings: Fix unbalanced quotation marks
+Date: Sun, 17 Jun 2018 16:31:18 +0200
+Message-ID: <20180617143127.11421-1-j.neuschaefer@gmx.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <32e8f874-a58b-8ba3-7a53-dc89cb34f7d9@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: devicetree@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-mips@linux-mips.org, Ulf Hansson <ulf.hansson@linaro.org>, Madalin Bucur <madalin.bucur@nxp.com>, James Hogan <jhogan@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, linux-samsung-soc@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, Kukjin Kim <kgene@kernel.org>, linux-input@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, Hauke Mehrtens <hauke@hauke-m.de>, =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, linux-gpio@vge
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 15, 2018 at 8:40 PM, Taniya Das <tdas@codeaurora.org> wrote:
->
->
-> On 6/15/2018 5:29 PM, Amit Kucheria wrote:
->>
->> On Thu, Jun 14, 2018 at 9:24 PM, Taniya Das <tdas@codeaurora.org> wrote:
->>
->>>>> Sorry Sudeep I missed replying to your earlier query.
->>>>> The High level OS(HLOS) would require to access only these specific
->>>>> registers from this IP block and just mapping the whole block(huge
->>>>> region) is unnecessary from the OS point of View. As of now it is a
->>>>> generic binding for all using this IP block to manage frequency
->>>>> requests. The OS would only have to know the frequencies supported i.e
->>>>> to read the lookup table registers and put across the OS request using
->>>>> the performance state register.
->>>>>
->>>>
->>>> I am not sure if you need to defining bindings to save OSPM IO mapping.
->>>> In-fact you may be adding more mapping unnecessarily. The mappings are
->>>> page aligned and spiting the registers and mapping them individually may
->>>> result in more mappings.
->>>>
->>>> I just need to know the rational for such specific choice of registers.
->>>> I assume it's aligned to some other standard specifications like CPPC
->>>> though not identical.
->>>>
->>>
->>> I am not sure of the query but there is no other register that the OS is
->>> required to use other than the ones defined here.
->>>
->>>>>> Eg. Suppose you need some information on power curve for EAS energy
->>>>>> model, I really hate to update DT for that or even do a mix with DT
->>>>>> just
->>>>>> because f/w is no longer modifiable.
->>>>>>
->>>>>
->>>>> For now we are safe.
->>>>>
->>>>
->>>> What do you mean by that ?
->>>
->>>
->>>
->>> I meant here was currently there is no such known case where the f/w is
->>> no
->>> longer modifiable and we need to extend device tree bindings.
->>>
->>>> It should be easily extensible is what I am
->>>> trying to say. You can add more info and alter the information in the
->>>> driver with compatibles if you keep the register info as minimum as
->>>> possible. For now, you have enable, set and lut registers. What if you
->>>> want to provide power numbers ?
->>>>
->>>
->>> Yes I do understand the intent of mapping the whole register space, but
->>> as
->>> per the HW specs these 3 registers would be the only ones required for
->>> now.
->>> I do not think this hardware engine has any information on the power
->>> numbers.
->>
->>
->> "For now" - I think this is exactly the point that Sudeep is trying to
->> make.
->>
->> A future version of the HW engine, or more likely, a firmware
->> revision, will make more functionality available. Say, this needs
->> access to another register or two. This will require changing the DT
->> bindings. Instead, if you map the entire address space, you can just
->> add offsets to the new registers.
->>
->> So in this case, I think you should define the following addresses
->> (size 0x1400) for the two frequency domains
->>
->> 0x17d43000, 0x1400 (power cluster)
->> 0x17d45800, 0x1400 (perf cluster)
->>
->> And in the driver simply add offsets as follows:
->>
->> #define ENABLE_OFFSET               0x0
->> #define LUT_OFFSET                      0x110
->> #define PERF_DESIRED_OFFSET 0x920
->>
->
-> The offsets could vary across versions of this IP and that is the reason to
-> provide them through the DT and not define any such offsets.
-
-If that is a known fact internally, you should already introduce
-versioning information in the DT. e.g qcom,cpufreq-fw-v1. This will
-give you the ability to deal with IP versions across SoC families.
-
-We're currently trying to do the same thing for the TSENS IP.
-
-Regards,
-Amit
+TXVsdGlwbGUgYmluZGluZyBkb2N1bWVudHMgaGF2ZSB2YXJpb3VzIGZvcm1zIG9mIHVuYmFsYW5j
+ZWQgcXVvdGF0aW9uCm1hcmtzLiBGaXggdGhlbS4KClNpZ25lZC1vZmYtYnk6IEpvbmF0aGFuIE5l
+dXNjaMOkZmVyIDxqLm5ldXNjaGFlZmVyQGdteC5uZXQ+Ci0tLQoKU2hvdWxkIEkgc3BsaXQgdGhp
+cyBwYXRjaCBzbyB0aGF0IGRpZmZlcmVudCBwYXJ0cyBjYW4gZ28gdGhyb3VnaCBkaWZmZXJlbnQg
+dHJlZXM/Ci0tLQogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL3NhbXN1bmcvc2Ftc3VuZy1i
+b2FyZHMudHh0ICAgICAgICAgIHwgMiArLQogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvZ3Bpby9u
+aW50ZW5kbyxob2xseXdvb2QtZ3Bpby50eHQgICAgICAgIHwgMiArLQogRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL2lucHV0L3RvdWNoc2NyZWVuL2hpZGVlcC50eHQgIHwgMiArLQog
+Li4uL2JpbmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL252aWRpYSx0ZWdyYTIwLWljdGxyLnR4
+dCAgICAgIHwgMiArLQogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvaW50ZXJydXB0LWNvbnRyb2xs
+ZXIvc3Qsc3RtMzItZXh0aS50eHQgIHwgMiArLQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL21pcHMvYnJjbS9zb2MudHh0ICAgICAgICAgICAgIHwgMiArLQogRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL25ldC9mc2wtZm1hbi50eHQgICAgICAgICAgICAgIHwgMiAr
+LQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Bvd2VyX2RvbWFpbi50
+eHQgICAgICAgIHwgMiArLQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3JlZ3Vs
+YXRvci90cHM2NTA5MC50eHQgICAgICAgIHwgMiArLQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL3Jlc2V0L3N0LHN0aS1zb2Z0cmVzZXQudHh0ICAgIHwgMiArLQogRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvdW5kL3Fjb20sYXBxODAxNi1zYmMudHh0ICAgIHwg
+MiArLQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvdW5kL3Fjb20sYXBxODA5
+Ni50eHQgICAgICAgIHwgMiArLQogMTIgZmlsZXMgY2hhbmdlZCwgMTIgaW5zZXJ0aW9ucygrKSwg
+MTIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL2FybS9zYW1zdW5nL3NhbXN1bmctYm9hcmRzLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2
+aWNldHJlZS9iaW5kaW5ncy9hcm0vc2Ftc3VuZy9zYW1zdW5nLWJvYXJkcy50eHQKaW5kZXggYmRh
+ZGMzZGE5NTU2Li42OTcwZjMwYTM3NzAgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9hcm0vc2Ftc3VuZy9zYW1zdW5nLWJvYXJkcy50eHQKKysrIGIvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9zYW1zdW5nL3NhbXN1bmctYm9hcmRzLnR4
+dApAQCAtNjYsNyArNjYsNyBAQCBSZXF1aXJlZCByb290IG5vZGUgcHJvcGVydGllczoKIAktICJp
+bnNpZ25hbCxhcm5kYWxlLW9jdGEiIC0gZm9yIEV4eW5vczU0MjAtYmFzZWQgSW5zaWduYWwgQXJu
+ZGFsZQogCQkJCSAgICBPY3RhIGJvYXJkLgogCS0gImluc2lnbmFsLG9yaWdlbiIgICAgICAgLSBm
+b3IgRXh5bm9zNDIxMC1iYXNlZCBJbnNpZ25hbCBPcmlnZW4gYm9hcmQuCi0JLSAiaW5zaWduYWws
+b3JpZ2VuNDQxMiAgICAtIGZvciBFeHlub3M0NDEyLWJhc2VkIEluc2lnbmFsIE9yaWdlbiBib2Fy
+ZC4KKwktICJpbnNpZ25hbCxvcmlnZW40NDEyIiAgIC0gZm9yIEV4eW5vczQ0MTItYmFzZWQgSW5z
+aWduYWwgT3JpZ2VuIGJvYXJkLgogCiAKIE9wdGlvbmFsIG5vZGVzOgpkaWZmIC0tZ2l0IGEvRG9j
+dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2dwaW8vbmludGVuZG8saG9sbHl3b29kLWdw
+aW8udHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2dwaW8vbmludGVuZG8s
+aG9sbHl3b29kLWdwaW8udHh0CmluZGV4IDIwZmM3MmQ5ZTYxZS4uNDVhNjFiNDYyMjg3IDEwMDY0
+NAotLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZ3Bpby9uaW50ZW5kbyxo
+b2xseXdvb2QtZ3Bpby50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
+L2dwaW8vbmludGVuZG8saG9sbHl3b29kLWdwaW8udHh0CkBAIC0xLDcgKzEsNyBAQAogTmludGVu
+ZG8gV2lpIChIb2xseXdvb2QpIEdQSU8gY29udHJvbGxlcgogCiBSZXF1aXJlZCBwcm9wZXJ0aWVz
+OgotLSBjb21wYXRpYmxlOiAibmludGVuZG8saG9sbHl3b29kLWdwaW8KKy0gY29tcGF0aWJsZTog
+Im5pbnRlbmRvLGhvbGx5d29vZC1ncGlvIgogLSByZWc6IFBoeXNpY2FsIGJhc2UgYWRkcmVzcyBh
+bmQgbGVuZ3RoIG9mIHRoZSBjb250cm9sbGVyJ3MgcmVnaXN0ZXJzLgogLSBncGlvLWNvbnRyb2xs
+ZXI6IE1hcmtzIHRoZSBkZXZpY2Ugbm9kZSBhcyBhIEdQSU8gY29udHJvbGxlci4KIC0gI2dwaW8t
+Y2VsbHM6IFNob3VsZCBiZSA8Mj4uIFRoZSBmaXJzdCBjZWxsIGlzIHRoZSBwaW4gbnVtYmVyIGFu
+ZCB0aGUKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pbnB1
+dC90b3VjaHNjcmVlbi9oaWRlZXAudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL2lucHV0L3RvdWNoc2NyZWVuL2hpZGVlcC50eHQKaW5kZXggMTIxZDliN2M3OWEyLi4xMDYz
+YzMwZDUzZjcgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9p
+bnB1dC90b3VjaHNjcmVlbi9oaWRlZXAudHh0CisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9pbnB1dC90b3VjaHNjcmVlbi9oaWRlZXAudHh0CkBAIC0zMiw3ICszMiw3IEBA
+IGkyY0AwMDAwMDAwMCB7CiAJCXJlZyA9IDwweDZjPjsKIAkJaW50ZXJydXB0LXBhcmVudCA9IDwm
+Z3B4MT47CiAJCWludGVycnVwdHMgPSA8MiBJUlFfVFlQRV9MRVZFTF9MT1c+OwotCQl2ZGQtc3Vw
+cGx5ID0gPCZsZG8xNV9yZWc+IjsKKwkJdmRkLXN1cHBseSA9IDwmbGRvMTVfcmVnPjsKIAkJdmlk
+LXN1cHBseSA9IDwmbGRvMThfcmVnPjsKIAkJcmVzZXQtZ3Bpb3MgPSA8JmdweDEgNSAwPjsKIAkJ
+dG91Y2hzY3JlZW4tc2l6ZS14ID0gPDEwODA+OwpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL252aWRpYSx0ZWdyYTIwLWlj
+dGxyLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pbnRlcnJ1cHQtY29u
+dHJvbGxlci9udmlkaWEsdGVncmEyMC1pY3Rsci50eHQKaW5kZXggMTA5OWZlMDc4OGZhLi5mMjQ2
+Y2NiZjg4MzggMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9p
+bnRlcnJ1cHQtY29udHJvbGxlci9udmlkaWEsdGVncmEyMC1pY3Rsci50eHQKKysrIGIvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL252aWRpYSx0
+ZWdyYTIwLWljdGxyLnR4dApAQCAtMTUsNyArMTUsNyBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOgog
+ICBpbmNsdWRlICJudmlkaWEsdGVncmEzMC1pY3RsciIuCQogLSByZWcgOiBTcGVjaWZpZXMgYmFz
+ZSBwaHlzaWNhbCBhZGRyZXNzIGFuZCBzaXplIG9mIHRoZSByZWdpc3RlcnMuCiAgIEVhY2ggY29u
+dHJvbGxlciBtdXN0IGJlIGRlc2NyaWJlZCBzZXBhcmF0ZWx5IChUZWdyYTIwIGhhcyA0IG9mIHRo
+ZW0sCi0gIHdoZXJlYXMgVGVncmEzMCBhbmQgbGF0ZXIgaGF2ZSA1IiAgCisgIHdoZXJlYXMgVGVn
+cmEzMCBhbmQgbGF0ZXIgaGF2ZSA1KS4KIC0gaW50ZXJydXB0LWNvbnRyb2xsZXIgOiBJZGVudGlm
+aWVzIHRoZSBub2RlIGFzIGFuIGludGVycnVwdCBjb250cm9sbGVyLgogLSAjaW50ZXJydXB0LWNl
+bGxzIDogU3BlY2lmaWVzIHRoZSBudW1iZXIgb2YgY2VsbHMgbmVlZGVkIHRvIGVuY29kZSBhbgog
+ICBpbnRlcnJ1cHQgc291cmNlLiBUaGUgdmFsdWUgbXVzdCBiZSAzLgpkaWZmIC0tZ2l0IGEvRG9j
+dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL3N0LHN0
+bTMyLWV4dGkudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2ludGVycnVw
+dC1jb250cm9sbGVyL3N0LHN0bTMyLWV4dGkudHh0CmluZGV4IDEzNmJkNjEyYmQ4My4uNmEzNmJm
+NjZkOTMyIDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaW50
+ZXJydXB0LWNvbnRyb2xsZXIvc3Qsc3RtMzItZXh0aS50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL3N0LHN0bTMyLWV4dGkudHh0
+CkBAIC0xMiw3ICsxMiw3IEBAIFJlcXVpcmVkIHByb3BlcnRpZXM6CiAgIHNwZWNpZmllciwgc2hh
+bGwgYmUgMgogLSBpbnRlcnJ1cHRzOiBpbnRlcnJ1cHRzIHJlZmVyZW5jZXMgdG8gcHJpbWFyeSBp
+bnRlcnJ1cHQgY29udHJvbGxlcgogICAob25seSBuZWVkZWQgZm9yIGV4dGkgY29udHJvbGxlciB3
+aXRoIG11bHRpcGxlIGV4dGkgdW5kZXIKLSAgc2FtZSBwYXJlbnQgaW50ZXJydXB0OiBzdCxzdG0z
+Mi1leHRpIGFuZCBzdCxzdG0zMmg3LWV4dGkiKQorICBzYW1lIHBhcmVudCBpbnRlcnJ1cHQ6IHN0
+LHN0bTMyLWV4dGkgYW5kIHN0LHN0bTMyaDctZXh0aSkKIAogRXhhbXBsZToKIApkaWZmIC0tZ2l0
+IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21pcHMvYnJjbS9zb2MudHh0IGIv
+RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21pcHMvYnJjbS9zb2MudHh0CmluZGV4
+IDM1NmMyOTc4OWNmNS4uM2E2NmQzYzQ4M2UxIDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvbWlwcy9icmNtL3NvYy50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL21pcHMvYnJjbS9zb2MudHh0CkBAIC0xNTIsNyArMTUyLDcgQEAg
+UmVxdWlyZWQgcHJvcGVydGllczoKIC0gY29tcGF0aWJsZQk6IHNob3VsZCBjb250YWluIG9uZSBv
+ZjoKIAkJICAiYnJjbSxiY203NDI1LXRpbWVycyIKIAkJICAiYnJjbSxiY203NDI5LXRpbWVycyIK
+LQkJICAiYnJjbSxiY203NDM1LXRpbWVycyBhbmQKKwkJICAiYnJjbSxiY203NDM1LXRpbWVycyIg
+YW5kCiAJCSAgImJyY20sYnJjbXN0Yi10aW1lcnMiCiAtIHJlZwkJOiB0aGUgdGltZXJzIHJlZ2lz
+dGVyIHJhbmdlCiAtIGludGVycnVwdHMJOiB0aGUgaW50ZXJydXB0IGxpbmUgZm9yIHRoaXMgdGlt
+ZXIgYmxvY2sKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9u
+ZXQvZnNsLWZtYW4udHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL25ldC9m
+c2wtZm1hbi50eHQKaW5kZXggZGY4NzNkMWYzYjdjLi5mOGMzMzg5MGJjMjkgMTAwNjQ0Ci0tLSBh
+L0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvZnNsLWZtYW4udHh0CisrKyBi
+L0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvZnNsLWZtYW4udHh0CkBAIC0y
+MzgsNyArMjM4LDcgQEAgUFJPUEVSVElFUwogCQlNdXN0IGluY2x1ZGUgb25lIG9mIHRoZSBmb2xs
+b3dpbmc6CiAJCS0gImZzbCxmbWFuLWR0c2VjIiBmb3IgZFRTRUMgTUFDCiAJCS0gImZzbCxmbWFu
+LXhnZWMiIGZvciBYR0VDIE1BQwotCQktICJmc2wsZm1hbi1tZW1hYyBmb3IgbUVNQUMgTUFDCisJ
+CS0gImZzbCxmbWFuLW1lbWFjIiBmb3IgbUVNQUMgTUFDCiAKIC0gY2VsbC1pbmRleAogCQlVc2Fn
+ZTogcmVxdWlyZWQKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+cy9wb3dlci9wb3dlcl9kb21haW4udHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL3Bvd2VyL3Bvd2VyX2RvbWFpbi50eHQKaW5kZXggOWIzODdmODYxYWVkLi43ZGVjNTA4OTg3
+YzcgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9w
+b3dlcl9kb21haW4udHh0CisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9w
+b3dlci9wb3dlcl9kb21haW4udHh0CkBAIC0xMzMsNyArMTMzLDcgQEAgbG9jYXRlZCBpbnNpZGUg
+YSBQTSBkb21haW4gd2l0aCBpbmRleCAwIG9mIGEgcG93ZXIgY29udHJvbGxlciByZXByZXNlbnRl
+ZCBieSBhCiBub2RlIHdpdGggdGhlIGxhYmVsICJwb3dlciIuCiBJbiB0aGUgc2Vjb25kIGV4YW1w
+bGUgdGhlIGNvbnN1bWVyIGRldmljZSBhcmUgcGFydGl0aW9uZWQgYWNyb3NzIHR3byBQTSBkb21h
+aW5zLAogdGhlIGZpcnN0IHdpdGggaW5kZXggMCBhbmQgdGhlIHNlY29uZCB3aXRoIGluZGV4IDEs
+IG9mIGEgcG93ZXIgY29udHJvbGxlciB0aGF0Ci1pcyByZXByZXNlbnRlZCBieSBhIG5vZGUgd2l0
+aCB0aGUgbGFiZWwgInBvd2VyLgoraXMgcmVwcmVzZW50ZWQgYnkgYSBub2RlIHdpdGggdGhlIGxh
+YmVsICJwb3dlciIuCiAKIE9wdGlvbmFsIHByb3BlcnRpZXM6CiAtIHJlcXVpcmVkLW9wcHM6IFRo
+aXMgY29udGFpbnMgcGhhbmRsZSB0byBhbiBPUFAgbm9kZSBpbiBhbm90aGVyIGRldmljZSdzIE9Q
+UApkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3JlZ3VsYXRv
+ci90cHM2NTA5MC50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcmVndWxh
+dG9yL3RwczY1MDkwLnR4dAppbmRleCBjYTY5ZjVlMzA0MGMuLmFlMzI2ZjI2MzU5NyAxMDA2NDQK
+LS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3JlZ3VsYXRvci90cHM2NTA5
+MC50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3JlZ3VsYXRvci90
+cHM2NTA5MC50eHQKQEAgLTE2LDcgKzE2LDcgQEAgUmVxdWlyZWQgcHJvcGVydGllczoKIE9wdGlv
+bmFsIHByb3BlcnRpZXM6CiAtIHRpLGVuYWJsZS1leHQtY29udHJvbDogVGhpcyBpcyBhcHBsaWNh
+YmxlIGZvciBEQ0RDMSwgRENEQzIgYW5kIERDREMzLgogICBJZiBEQ0RDcyBhcmUgZXh0ZXJuYWxs
+eSBjb250cm9sbGVkIHRoZW4gdGhpcyBwcm9wZXJ0eSBzaG91bGQgYmUgdGhlcmUuCi0tICJkY2Rj
+LWV4dC1jb250cm9sLWdwaW9zOiBUaGlzIGlzIGFwcGxpY2FibGUgZm9yIERDREMxLCBEQ0RDMiBh
+bmQgRENEQzMuCistIGRjZGMtZXh0LWNvbnRyb2wtZ3Bpb3M6IFRoaXMgaXMgYXBwbGljYWJsZSBm
+b3IgRENEQzEsIERDREMyIGFuZCBEQ0RDMy4KICAgSWYgRENEQ3MgYXJlIGV4dGVybmFsbHkgY29u
+dHJvbGxlZCBhbmQgaWYgaXQgaXMgZnJvbSBHUElPIHRoZW4gR1BJTwogICBudW1iZXIgc2hvdWxk
+IGJlIHByb3ZpZGVkLiBJZiBpdCBpcyBleHRlcm5hbGx5IGNvbnRyb2xsZWQgYW5kIG5vIEdQSU8K
+ICAgZW50cnkgdGhlbiBkcml2ZXIgd2lsbCBqdXN0IGNvbmZpZ3VyZSB0aGlzIHJhaWxzIGFzIGV4
+dGVybmFsIGNvbnRyb2wKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
+aW5ncy9yZXNldC9zdCxzdGktc29mdHJlc2V0LnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9yZXNldC9zdCxzdGktc29mdHJlc2V0LnR4dAppbmRleCBhMjE2NThmMThmZTYu
+LjM2NjFlNjE1M2E5MiAxMDA2NDQKLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL3Jlc2V0L3N0LHN0aS1zb2Z0cmVzZXQudHh0CisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9yZXNldC9zdCxzdGktc29mdHJlc2V0LnR4dApAQCAtMTUsNyArMTUsNyBA
+QCBQbGVhc2UgcmVmZXIgdG8gcmVzZXQudHh0IGluIHRoaXMgZGlyZWN0b3J5IGZvciBjb21tb24g
+cmVzZXQKIGNvbnRyb2xsZXIgYmluZGluZyB1c2FnZS4KIAogUmVxdWlyZWQgcHJvcGVydGllczoK
+LS0gY29tcGF0aWJsZTogU2hvdWxkIGJlIHN0LHN0aWg0MDctc29mdHJlc2V0IjsKKy0gY29tcGF0
+aWJsZTogU2hvdWxkIGJlICJzdCxzdGloNDA3LXNvZnRyZXNldCI7CiAtICNyZXNldC1jZWxsczog
+MSwgc2VlIGJlbG93CiAKIGV4YW1wbGU6CmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3Mvc291bmQvcWNvbSxhcHE4MDE2LXNiYy50eHQgYi9Eb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3Mvc291bmQvcWNvbSxhcHE4MDE2LXNiYy50eHQKaW5kZXggNmE0
+YWFkYzRjZTA2Li44NGIyOGRiZTlmMTUgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9zb3VuZC9xY29tLGFwcTgwMTYtc2JjLnR4dAorKysgYi9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvc291bmQvcWNvbSxhcHE4MDE2LXNiYy50eHQKQEAgLTMw
+LDcgKzMwLDcgQEAgUmVxdWlyZWQgcHJvcGVydGllczoKIAogCQkJICBCb2FyZCBjb25uZWN0b3Jz
+OgogCQkJICAqIEhlYWRzZXQgTWljCi0JCQkgICogU2Vjb25kYXJ5IE1pYyIsCisJCQkgICogU2Vj
+b25kYXJ5IE1pYwogCQkJICAqIERNSUMKIAkJCSAgKiBFeHQgU3BrCiAKZGlmZiAtLWdpdCBhL0Rv
+Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9zb3VuZC9xY29tLGFwcTgwOTYudHh0IGIv
+RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvdW5kL3Fjb20sYXBxODA5Ni50eHQK
+aW5kZXggYWE1NGU0OWZjOGEyLi5jNzYwMGE5M2FiMzkgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9zb3VuZC9xY29tLGFwcTgwOTYudHh0CisrKyBiL0RvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9zb3VuZC9xY29tLGFwcTgwOTYudHh0CkBAIC0z
+NSw3ICszNSw3IEBAIFRoaXMgYmluZGluZyBkZXNjcmliZXMgdGhlIEFQUTgwOTYgc291bmQgY2Fy
+ZCwgd2hpY2ggdXNlcyBxZHNwIGZvciBhdWRpby4KIAkJCSJEaWdpdGFsIE1pYzMiCiAKIAkJQXVk
+aW8gcGlucyBhbmQgTWljQmlhcyBvbiBXQ0Q5MzM1IENvZGVjOgotCQkJIk1JQ19CSUFTMQorCQkJ
+Ik1JQ19CSUFTMSIKIAkJCSJNSUNfQklBUzIiCiAJCQkiTUlDX0JJQVMzIgogCQkJIk1JQ19CSUFT
+NCIKLS0gCjIuMTcuMQoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlz
+dHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2xpbnV4LWFybS1rZXJuZWwK
