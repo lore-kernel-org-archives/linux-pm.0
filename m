@@ -1,118 +1,65 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH] PM / devfreq: Fix devfreq_add_device() when drivers are
- built as modules.
-Date: Sun, 17 Jun 2018 12:50:30 +0900
-Message-ID: <CAGTfZH1QkzBjDPfsS23DgVF=EqO1P9RK+YdAnAwt2rDL6eGPTg@mail.gmail.com>
-References: <20180615100452.17466-1-enric.balletbo@collabora.com>
-Reply-To: cwchoi00@gmail.com
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH v7 3/6] kernel/reboot.c: export pm_power_off_prepare
+Date: Sun, 17 Jun 2018 15:05:28 +0800
+Message-ID: <20180617070527.GL16091@dragon>
+References: <20180517055014.6607-1-o.rempel@pengutronix.de>
+ <20180517055014.6607-4-o.rempel@pengutronix.de>
+ <daba73df-037c-2583-3a08-f3f27c4129d1@pengutronix.de>
+ <2307533.g32PyNi9fl@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180615100452.17466-1-enric.balletbo@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <2307533.g32PyNi9fl@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Oleksij Rempel <o.rempel@pengutronix.de>, Mark Brown <broonie@kernel.org>, kernel@pengutronix.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Liam Girdwood <lgirdwood@gmail.com>, Leonard Crestez <leonard.crestez@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Fabio Estevam <fabio.estevam@nxp.com>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
+On Tue, Jun 12, 2018 at 04:33:05PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, June 12, 2018 2:42:12 PM CEST Oleksij Rempel wrote:
+> >  This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+> > --Sj2PRcQlY7eZybdA0sq9wWzJEO8fKS924
+> > Content-Type: multipart/mixed; boundary="d6BZYFRi4L3iCmOh3nm6wjii3dWC9QFDg";
+> >  protected-headers="v1"
+> > From: Oleksij Rempel <o.rempel@pengutronix.de>
+> > To: Shawn Guo <shawnguo@kernel.org>, Mark Brown <broonie@kernel.org>,
+> >  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> > Cc: kernel@pengutronix.de, devicetree@vger.kernel.org,
+> >  linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
+> >  linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+> >  Liam Girdwood <lgirdwood@gmail.com>,
+> >  Leonard Crestez <leonard.crestez@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+> >  Mark Rutland <mark.rutland@arm.com>,
+> >  Michael Turquette <mturquette@baylibre.com>,
+> >  Stephen Boyd <sboyd@codeaurora.org>, Fabio Estevam <fabio.estevam@nxp.com>,
+> >  Russell King <linux@armlinux.org.uk>
+> > Message-ID: <daba73df-037c-2583-3a08-f3f27c4129d1@pengutronix.de>
+> > Subject: Re: [PATCH v7 3/6] kernel/reboot.c: export pm_power_off_prepare
+> > References: <20180517055014.6607-1-o.rempel@pengutronix.de>
+> >  <20180517055014.6607-4-o.rempel@pengutronix.de>
+> > In-Reply-To: <20180517055014.6607-4-o.rempel@pengutronix.de>
+> > 
+> > --d6BZYFRi4L3iCmOh3nm6wjii3dWC9QFDg
+> > Content-Type: text/plain; charset=utf-8
+> > Content-Language: en-US
+> > Content-Transfer-Encoding: quoted-printable
+> > 
+> > Hi Rafael,
+> > 
+> > Last version of this patch was send at 17.05.2018. No other comment was
+> > provided and this patch is a blocker for other patches in this serie.
+> > Can you please give some feedback on it.
+> 
+> I would have done that had I not missed the patch.
+> 
+> Which probably wouldn't have happened had you CCed it to linux-pm.
+> 
+> Anyway, I have no particular problems with exporting pm_power_off_prepare via
+> EXPORT_SYMBOL_GPL().
 
-This issue will happen on the position to use find_devfreq_governor()
-as following:
-- devfreq_add_governora() and governor_store()
+Rafael,
 
-If device driver with module type after loaded want to change the
-scaling governor,
-new governor might be not yet loaded. So, devfreq bettero to consider this case
-in the find_devfreq_governor().
+Can we have your explicit Acked-by tag on this patch?  Thanks.
 
-2018-06-15 19:04 GMT+09:00 Enric Balletbo i Serra
-<enric.balletbo@collabora.com>:
-> When the devfreq driver and the governor driver are built as modules,
-> the call to devfreq_add_device() fails because the governor driver is
-> not loaded at the time the devfreq driver loads. The devfreq driver has
-> a build dependency on the governor but also should have a runtime
-> dependency. We need to make sure that the governor driver is loaded
-> before the devfreq driver.
->
-> This patch fixes this bug in devfreq_add_device(). First tries to find
-> the governor, and then, if was not found, it requests the module and
-> tries again.
->
-> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
->
->  drivers/devfreq/devfreq.c | 36 +++++++++++++++++++++++++++++++-----
->  1 file changed, 31 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index fe2af6aa88fc..1d917f043e30 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -11,6 +11,7 @@
->   */
->
->  #include <linux/kernel.h>
-> +#include <linux/kmod.h>
->  #include <linux/sched.h>
->  #include <linux/errno.h>
->  #include <linux/err.h>
-> @@ -648,10 +649,35 @@ struct devfreq *devfreq_add_device(struct device *dev,
->
->         governor = find_devfreq_governor(devfreq->governor_name);
->         if (IS_ERR(governor)) {
-> -               dev_err(dev, "%s: Unable to find governor for the device\n",
-> -                       __func__);
-> -               err = PTR_ERR(governor);
-> -               goto err_init;
-> +               list_del(&devfreq->node);
-> +               mutex_unlock(&devfreq_list_lock);
-> +
-> +               /*
-> +                * If the governor is not found, then request the module and
-> +                * try again. This can happen when both drivers (the governor
-> +                * driver and the driver that calls devfreq_add_device) are
-> +                * built as modules.
-> +                */
-> +               if (!strncmp(devfreq->governor_name,
-> +                            DEVFREQ_GOV_SIMPLE_ONDEMAND, DEVFREQ_NAME_LEN))
-> +                       err = request_module("governor_%s", "simpleondemand");
-> +               else
-> +                       err = request_module("governor_%s",
-> +                                            devfreq->governor_name);
-> +               if (err)
-> +                       goto err_unregister;
-> +
-> +               mutex_lock(&devfreq_list_lock);
-> +               list_add(&devfreq->node, &devfreq_list);
-> +
-> +               governor = find_devfreq_governor(devfreq->governor_name);
-> +               if (IS_ERR(governor)) {
-> +                       dev_err(dev,
-> +                               "%s: Unable to find governor for the device\n",
-> +                               __func__);
-> +                       err = PTR_ERR(governor);
-> +                       goto err_init;
-> +               }
->         }
->
->         devfreq->governor = governor;
-> @@ -669,7 +695,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  err_init:
->         list_del(&devfreq->node);
->         mutex_unlock(&devfreq_list_lock);
-> -
-> +err_unregister:
->         device_unregister(&devfreq->dev);
->  err_dev:
->         if (devfreq)
-> --
-> 2.17.1
->
-
-
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Shawn
