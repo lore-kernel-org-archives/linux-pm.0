@@ -1,272 +1,98 @@
 From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [RFC PATCH 03/10] devfreq: rk3399_dmc: Pass ODT and auto power
- down parameters to TF-A.
-Date: Sun, 17 Jun 2018 09:00:29 +0900
-Message-ID: <CAGTfZH3DqzOXNy-w6x=DC9PJ-XPe8SPtZqkONwVO2aL5OGAcqA@mail.gmail.com>
-References: <20180514211610.26618-1-enric.balletbo@collabora.com>
- <CGME20180514211840epcas3p41708e430bc22d7e61e8b894b12a083f9@epcas3p4.samsung.com>
- <20180514211610.26618-4-enric.balletbo@collabora.com> <5AFA0B94.4000100@samsung.com>
- <CAFqH_51jDy6hvwTtVQf52OZ2QFwAACzH8bh2bUZdxAnvKqM6=A@mail.gmail.com>
+Subject: Re: [PATCH] devfreq: rk3399_dmc: Fix duplicated opp table on reload.
+Date: Sun, 17 Jun 2018 12:23:13 +0900
+Message-ID: <CAGTfZH16O6u_3QJ2u1eecUnGptSBf1ho47RPefOTmrw+Syxr0w@mail.gmail.com>
+References: <20180615151217.29872-1-enric.balletbo@collabora.com>
 Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAFqH_51jDy6hvwTtVQf52OZ2QFwAACzH8bh2bUZdxAnvKqM6=A@mail.gmail.com>
+In-Reply-To: <20180615151217.29872-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo Serra <eballetbo@gmail.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, sboyd@kernel.org, hjc@rock-chips.com, David Airlie <airlied@linux.ie>, huang lin <hl@rock-chips.com>, Linux PM list <linux-pm@vger.kernel.org>, dbasehore@chromium.org, linux-kernel <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Sean Paul <seanpaul@chromium.org>, kernel@collabora.com, linux-clk@vger.kernel.orgLinux
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric
+Hi Enric,
 
-2018-06-16 19:15 GMT+09:00 Enric Balletbo Serra <eballetbo@gmail.com>:
-> Hi Chanwoo,
+2018-06-16 0:12 GMT+09:00 Enric Balletbo i Serra <enric.balletbo@collabora.com>:
+> The opp table is not removed when the driver is unloaded neither when
+> there is an error within probe, so if the driver is reloaded the opp
+> core shows the following warning:
 >
-> I'll send a new version soon, just wanted to ask some questions here. See=
- below.
+>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
+>                200000000, volt: 900000, enabled: 1. New: freq: 200000000,
+>                volt: 900000, enabled: 1
+>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
+>                400000000, volt: 900000, enabled: 1. New: freq: 400000000,
+>                volt: 900000, enabled: 1
+>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
+>                666000000, volt: 900000, enabled: 1. New: freq: 666000000,
+>                volt: 900000, enabled: 1
+>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
+>                800000000, volt: 900000, enabled: 1. New: freq: 800000000,
+>                volt: 900000, enabled: 1
+>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
+>                928000000, volt: 900000, enabled: 1. New: freq: 928000000,
+>                volt: 900000, enabled: 1
 >
-> Missatge de Chanwoo Choi <cw00.choi@samsung.com> del dia dt., 15 de
-> maig 2018 a les 0:21:
->>
->> Hi,
->>
->> On 2018=EB=85=84 05=EC=9B=94 15=EC=9D=BC 06:16, Enric Balletbo i Serra w=
-rote:
->> > Trusted Firmware-A (TF-A) for rk3399 implements a SiP call to get the
->> > on-die termination (ODT) and auto power down parameters from kernel,
->> > this patch adds the functionality to do this. Also, if DDR clock
->> > frequency is lower than the on-die termination (ODT) disable frequency
->> > this driver should disable the DDR ODT.
->>
->> I have a question.
->> 'disable frequency' is the same meaning of 'disable the DDR ODT'?
->>
+> This patch fixes the error path in the probe function and adds a .remove
+> function to properly cleanup the opp table on unloading.
 >
-> Yes, the DT defines an odt_dis_freq parameter, when the DDR frequency
-> is less than the value in this parameter we disable the ODT on the
-> DRAM.
+> Fixes: 5a893e31a636c (PM / devfreq: rockchip: add devfreq driver for rk3399 dmc)
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
 >
->> >
->> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> > ---
->> >
->> >  drivers/devfreq/rk3399_dmc.c        | 50 ++++++++++++++++++++++++++++=
--
->> >  include/soc/rockchip/rockchip_sip.h |  1 +
->> >  2 files changed, 50 insertions(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc=
-.c
->> > index d5c03e5abe13..cc1bbca3fb15 100644
->> > --- a/drivers/devfreq/rk3399_dmc.c
->> > +++ b/drivers/devfreq/rk3399_dmc.c
->> > @@ -18,14 +18,17 @@
->> >  #include <linux/devfreq.h>
->> >  #include <linux/devfreq-event.h>
->> >  #include <linux/interrupt.h>
->> > +#include <linux/mfd/syscon.h>
->> >  #include <linux/module.h>
->> >  #include <linux/of.h>
->> >  #include <linux/platform_device.h>
->> >  #include <linux/pm_opp.h>
->> > +#include <linux/regmap.h>
->> >  #include <linux/regulator/consumer.h>
->> >  #include <linux/rwsem.h>
->> >  #include <linux/suspend.h>
->> >
->> > +#include <soc/rockchip/rk3399_grf.h>
->> >  #include <soc/rockchip/rockchip_sip.h>
->> >
->> >  struct dram_timing {
->> > @@ -69,8 +72,11 @@ struct rk3399_dmcfreq {
->> >       struct mutex lock;
->> >       struct dram_timing timing;
->> >       struct regulator *vdd_center;
->> > +     struct regmap *regmap_pmu;
->> >       unsigned long rate, target_rate;
->> >       unsigned long volt, target_volt;
->> > +     unsigned int odt_dis_freq;
->> > +     int odt_pd_arg0, odt_pd_arg1;
->> >  };
->> >
->> >  static int rk3399_dmcfreq_target(struct device *dev, unsigned long *f=
-req,
->> > @@ -80,6 +86,8 @@ static int rk3399_dmcfreq_target(struct device *dev,=
- unsigned long *freq,
->> >       struct dev_pm_opp *opp;
->> >       unsigned long old_clk_rate =3D dmcfreq->rate;
->> >       unsigned long target_volt, target_rate;
->> > +     struct arm_smccc_res res;
->> > +     int dram_flag;
->> >       int err;
->> >
->> >       opp =3D devfreq_recommended_opp(dev, freq, flags);
->> > @@ -95,6 +103,15 @@ static int rk3399_dmcfreq_target(struct device *de=
-v, unsigned long *freq,
->> >
->> >       mutex_lock(&dmcfreq->lock);
->> >
->> > +     dram_flag =3D 0;
->>
->> Also, if dram_flag is 0, it mean that disable ODT frequency?
+>  drivers/devfreq/rk3399_dmc.c | 31 +++++++++++++++++++++++++++----
+>  1 file changed, 27 insertions(+), 4 deletions(-)
 >
-> Yes, not a good name, maybe I should just rename it to odt_enable to
-> be more clear.
+> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> index d5c03e5abe13..e795ad2b3f6b 100644
+> --- a/drivers/devfreq/rk3399_dmc.c
+> +++ b/drivers/devfreq/rk3399_dmc.c
+> @@ -375,8 +375,10 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>         data->rate = clk_get_rate(data->dmc_clk);
 >
->> If it's right, you better to define the precise variables as following
->> instead of just integer(0 or 1).
->> For example,
->> - ROCKCHIP_SIP_DRAM_FREQ_ENABLE
->> - ROCKCHIP_SIP_DRAM_FREQ_DISABLE
->>
->> > +     if (target_rate >=3D dmcfreq->odt_dis_freq)
->> > +             dram_flag =3D 1;
->> > +
->> > +     arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, dmcfreq->odt_pd_arg0,
->> > +                   dmcfreq->odt_pd_arg1,
->> > +                   ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD,
->> > +                   dram_flag, 0, 0, 0, &res);
->> > +
->>
->> This operation is special for only rk3399_dmc. It is difficult
->> to understand what to do. I recommend you better to add the detailed com=
-ment
->> with code.
+>         opp = devfreq_recommended_opp(dev, &data->rate, 0);
+> -       if (IS_ERR(opp))
+> -               return PTR_ERR(opp);
+> +       if (IS_ERR(opp)) {
+> +               ret = PTR_ERR(opp);
+> +               goto err_free_opp;
+> +       }
 >
-> Will do.
+>         data->rate = dev_pm_opp_get_freq(opp);
+>         data->volt = dev_pm_opp_get_voltage(opp);
+> @@ -388,13 +390,33 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>                                            &rk3399_devfreq_dmc_profile,
+>                                            DEVFREQ_GOV_SIMPLE_ONDEMAND,
+>                                            &data->ondemand_data);
+> -       if (IS_ERR(data->devfreq))
+> -               return PTR_ERR(data->devfreq);
+> +       if (IS_ERR(data->devfreq)) {
+> +               ret = PTR_ERR(data->devfreq);
+> +               goto err_free_opp;
+> +       }
+> +
+>         devm_devfreq_register_opp_notifier(dev, data->devfreq);
 >
->>
->> >       /*
->> >        * If frequency scaling from low to high, adjust voltage first.
->> >        * If frequency scaling from high to low, adjust frequency first=
-.
->> > @@ -294,11 +311,13 @@ static int rk3399_dmcfreq_probe(struct platform_=
-device *pdev)
->> >  {
->> >       struct arm_smccc_res res;
->> >       struct device *dev =3D &pdev->dev;
->> > -     struct device_node *np =3D pdev->dev.of_node;
->> > +     struct device_node *np =3D pdev->dev.of_node, *node;
->> >       struct rk3399_dmcfreq *data;
->> >       int ret, index, size;
->> >       uint32_t *timing;
->> >       struct dev_pm_opp *opp;
->> > +     u32 ddr_type;
->> > +     u32 val;
->> >
->> >       data =3D devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KE=
-RNEL);
->> >       if (!data)
->> > @@ -334,6 +353,29 @@ static int rk3399_dmcfreq_probe(struct platform_d=
-evice *pdev)
->> >               return ret;
->> >       }
->> >
->> > +     /* Try to find the optional reference to the pmu syscon */
->> > +     node =3D of_parse_phandle(np, "rockchip,pmu", 0);
->> > +     if (node) {
->> > +             data->regmap_pmu =3D syscon_node_to_regmap(node);
->> > +             if (IS_ERR(data->regmap_pmu))
->> > +                     return PTR_ERR(data->regmap_pmu);
->> > +     }
->> > +
->> > +     /* Get DDR type */
->> > +     regmap_read(data->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
->> > +     ddr_type =3D (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
->> > +                 RK3399_PMUGRF_DDRTYPE_MASK;
->> > +
->> > +     /* Get the odt_dis_freq parameter in function of the DDR type */
->> > +     if (ddr_type =3D=3D RK3399_PMUGRF_DDRTYPE_DDR3)
->> > +             data->odt_dis_freq =3D data->timing.ddr3_odt_dis_freq;
->> > +     else if (ddr_type =3D=3D RK3399_PMUGRF_DDRTYPE_LPDDR3)
->> > +             data->odt_dis_freq =3D data->timing.lpddr3_odt_dis_freq;
->> > +     else if (ddr_type =3D=3D RK3399_PMUGRF_DDRTYPE_LPDDR4)
->> > +             data->odt_dis_freq =3D data->timing.lpddr4_odt_dis_freq;
->> > +     else
->> > +             return -EINVAL;
->> > +
->>
->> how about using 'switch' statement?
->>
+>         data->dev = dev;
+>         platform_set_drvdata(pdev, data);
 >
-> Ok
->
->> >       /*
->> >        * Get dram timing and pass it to arm trust firmware,
->> >        * the dram drvier in arm trust firmware will get these
->> > @@ -358,6 +400,12 @@ static int rk3399_dmcfreq_probe(struct platform_d=
-evice *pdev)
->> >                     ROCKCHIP_SIP_CONFIG_DRAM_INIT,
->> >                     0, 0, 0, 0, &res);
->> >
->> > +     data->odt_pd_arg0 =3D (data->timing.sr_idle & 0xff) |
->> > +                         ((data->timing.sr_mc_gate_idle & 0xff) << 8)=
- |
->> > +                         ((data->timing.standby_idle & 0xffff) << 16)=
-;
->> > +     data->odt_pd_arg1 =3D (data->timing.pd_idle & 0xfff) |
->> > +                         ((data->timing.srpd_lite_idle & 0xfff) << 16=
-);
->> > +
->>
->> odt_pd_arg0 and odt_pd_arg1 might be used for disabling/enabling the ODT=
- frequency.
->> As I commented, it depend on only rk3399_dmc. You better to add detailed=
- comment.
->>
->
-> Ok
->
->> And I prefer to define the XXX_SHIFT/XXX_MASK definition instead of
->> using 8/16/0xff/0xffff for the readability.
->>
->
-> I tried to add the XXX_SHIFT/XXX_MASK definitions and IMHO the
-> readability is worst if I use a maximum line length of 80 characters.
-> These masks are only used here, let me try to convince you by adding a
-> good doc in the next version and if you still prefer I add the
-> definition I'll do.
+> +       return 0;
 
-If you add the some description and it would be only used on here,
-I don't force to add some definition such as _SHIFT, _MASK as you suggested=
-.
+It looks strange. Because rk3399_dmcfreq_probe() already include
+'return 0' when success.
+What is the base commit of this patch?
 
->
->> >       /*
->> >        * We add a devfreq driver to our parent since it has a device t=
-ree node
->> >        * with operating points.
->> > diff --git a/include/soc/rockchip/rockchip_sip.h b/include/soc/rockchi=
-p/rockchip_sip.h
->> > index 7e28092c4d3d..ad9482c56797 100644
->> > --- a/include/soc/rockchip/rockchip_sip.h
->> > +++ b/include/soc/rockchip/rockchip_sip.h
->> > @@ -23,5 +23,6 @@
->> >  #define ROCKCHIP_SIP_CONFIG_DRAM_GET_RATE    0x05
->> >  #define ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ     0x06
->> >  #define ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM   0x07
->> > +#define ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD  0x08
->> >
->> >  #endif
->> >
->>
->>
->> --
->> Best Regards,
->> Chanwoo Choi
->> Samsung Electronics
->>
->> _______________________________________________
->> Linux-rockchip mailing list
->> Linux-rockchip@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/linux-rockchip
-> Cheers,
->  Enric
+[snip]
 
+Anyway, if probe fail, device driver have to remove registered OPP table.
+Looks good to me.
 
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
---=20
+-- 
 Best Regards,
 Chanwoo Choi
 Samsung Electronics
