@@ -1,106 +1,86 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V7] powercap/drivers/idle_injection: Add an idle injection
- framework
-Date: Mon, 18 Jun 2018 13:28:22 +0200
-Message-ID: <883320cc-5677-6612-1565-b5a05b8684e1@linaro.org>
-References: <1529054393-27077-1-git-send-email-daniel.lezcano@linaro.org>
- <20180618102245.x5cfei3i7voq65zc@vireshk-i7>
- <bb11af50-1089-43af-abfa-0824e0db1e77@linaro.org>
- <20180618103844.t2minxwc7tiu2qgd@vireshk-i7>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH] power: vexpress: fix corruption in notifier registration
+Date: Mon, 18 Jun 2018 12:40:07 +0100
+Message-ID: <1529322007-4637-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180618103844.t2minxwc7tiu2qgd@vireshk-i7>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Sebastian Reichel <sre@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 18/06/2018 12:38, Viresh Kumar wrote:
-> On 18-06-18, 12:35, Daniel Lezcano wrote:
->> On 18/06/2018 12:22, Viresh Kumar wrote:
->>> On 15-06-18, 11:19, Daniel Lezcano wrote:
->>>> +/**
->>>> + * idle_injection_stop - stops the idle injections
->>>> + * @ii_dev: a pointer to an idle injection_device structure
->>>> + *
->>>> + * The function stops the idle injection and waits for the threads to
->>>> + * complete. If we are in the process of injecting an idle cycle, then
->>>> + * this will wait the end of the cycle.
->>>> + *
->>>> + * When the function returns there is no more idle injection
->>>> + * activity. The kthreads are scheduled out and the periodic timer is
->>>> + * off.
->>>> + */
->>>> +void idle_injection_stop(struct idle_injection_device *ii_dev)
->>>> +{
->>>> +	struct idle_injection_thread *iit;
->>>> +	unsigned int cpu;
->>>> +
->>>> +	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
->>>> +		 cpumask_pr_args(to_cpumask(ii_dev->cpumask)));
->>>> +
->>>> +	hrtimer_cancel(&ii_dev->timer);
->>>> +
->>>> +	/*
->>>> +	 * We want the guarantee we have a quescient point where
->>>> +	 * parked threads stay in there state while we are stopping
->>>> +	 * the idle injection. After exiting the loop, if any CPU is
->>>> +	 * plugged in, the 'should_run' boolean being false, the
->>>> +	 * smpboot main loop schedules the task out.
->>>> +	 */
->>>> +	cpu_hotplug_disable();
->>>> +
->>>> +	for_each_cpu_and(cpu, to_cpumask(ii_dev->cpumask), cpu_online_mask) {
->>>
->>> Maybe you should do below for all CPUs in the mask. Is the below usecase
->>> possible ?
->>>
->>> - CPU0-4 are part of the mask and are all online.
->>> - hrtimer fires and sets should_run for all of them to 1.
->>
->>     ^^
->> hrtimer_cancel gives you the guarantee, the timer is no longer active
->> and there is no execution in the timer handler. So the timer can no
->> longer fire after hrtimer_cancel() is called (which is a blocking call).
-> 
-> Right but that isn't called yet in my sequence.
-> 
->>> - Right at this time CPU3 goes offline, so the thread gets parked with
->>>   should_run == 1. Is there a reason why this can't happen ?
+Vexpress platforms provide two different restart handlers: SYS_REBOOT
+that restart the entire system, while DB_RESET only restarts the
+daughter board containing the CPU. DB_RESET is overridden by SYS_REBOOT
+if it exists.
 
-for this specific case, we can use the park() callback to set should_run
-to false, no ?
+notifier_chain_register used in register_restart_handler by design
+allows notifier to be registered once only, however vexpress restart
+notifier can get registered twice. When this happen it corrupts list
+of notifiers, as result some notifiers can be not called on proper
+event, traverse on list can be cycled forever, and second unregister
+can access already freed memory.
 
->>> - Now we unregister the stuff and CPU3 again comes online.
-> 
-> It gets called here from unregister/stop.
-> 
->>> - Because it had should_run as true, we again run the thread and Crash.
->>>
->>> makes sense ?
-> 
->>>> +out_rollback_per_cpu:
->>>> +	for_each_cpu(cpu, to_cpumask(ii_dev->cpumask))
->>>> +		per_cpu(idle_injection_device, cpu) = NULL;
->>>
->>> So if two parts of the kernel call this routine with the same cpumask, then the
->>> second call will also overwrite the masks with NULL and return error. That will
->>> screw up things a bit here.
->>
->> Apparently there is a misunderstanding :)
->>
->> https://lkml.org/lkml/2018/5/29/209 (at the end)
-> 
-> Right, your earlier version was doing the right thing :)
-> 
+So far, since this was the only restart handler in the system, no issue
+was observed even if the same notifier was registered twice. However
+commit 6c5c0d48b686 ("watchdog: sp805: add restart handler") added
+support for SP805 restart handlers and since the system under test
+contains two vexpress restart and two SP805 watchdog instances, it was
+observed that during the boot traversing the restart handler list looped
+forever as there's a cycle in that list resulting in boot hang.
 
+This patch fixes the issues by ensuring that the notifier is installed
+only once.
 
+Cc: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/power/reset/vexpress-poweroff.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
+index 102f95a09460..cdc68eb06a91 100644
+--- a/drivers/power/reset/vexpress-poweroff.c
++++ b/drivers/power/reset/vexpress-poweroff.c
+@@ -35,6 +35,7 @@ static void vexpress_reset_do(struct device *dev, const char *what)
+ }
+ 
+ static struct device *vexpress_power_off_device;
++static atomic_t vexpress_restart_nb_refcnt = ATOMIC_INIT(0);
+ 
+ static void vexpress_power_off(void)
+ {
+@@ -96,13 +97,16 @@ static const struct of_device_id vexpress_reset_of_match[] = {
+ 
+ static int _vexpress_register_restart_handler(struct device *dev)
+ {
+-	int err;
++	int err = 0;
+ 
+ 	vexpress_restart_device = dev;
+-	err = register_restart_handler(&vexpress_restart_nb);
+-	if (err) {
+-		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
+-		return err;
++	if (atomic_inc_return(&vexpress_restart_nb_refcnt) == 1) {
++		err = register_restart_handler(&vexpress_restart_nb);
++		if (err) {
++			dev_err(dev, "cannot register restart handler (err=%d)\n", err);
++			atomic_dec(&vexpress_restart_nb_refcnt);
++			return err;
++		}
+ 	}
+ 	device_create_file(dev, &dev_attr_active);
+ 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.7.4
