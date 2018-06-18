@@ -1,142 +1,106 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix scaling max/min limits with
- Turbo 3.0
-Date: Mon, 18 Jun 2018 12:53:59 +0200
-Message-ID: <CAJZ5v0gUyr1B2YUrPDf62rXjHxWR3Ss1noLbm6wDW5QJdv=jKA@mail.gmail.com>
-References: <20180615211209.58478-1-srinivas.pandruvada@linux.intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V7] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Mon, 18 Jun 2018 13:28:22 +0200
+Message-ID: <883320cc-5677-6612-1565-b5a05b8684e1@linaro.org>
+References: <1529054393-27077-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180618102245.x5cfei3i7voq65zc@vireshk-i7>
+ <bb11af50-1089-43af-abfa-0824e0db1e77@linaro.org>
+ <20180618103844.t2minxwc7tiu2qgd@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180615211209.58478-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20180618103844.t2minxwc7tiu2qgd@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 15, 2018 at 11:12 PM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> When scaling max/min settings are changed, internally they are converted
-> to a ratio using the max turbo 1 core turbo frequency. This works fine
-> when 1 core max is same irrespective of the core. But under Turbo 3.0,
-> this will not be the case. For example:
-> Core 0: max turbo pstate: 43 (4.3GHz)
-> Core 1: max turbo pstate: 45 (4.5GHz)
-> In this case 1 core turbo ratio will be maximum of all, so it will be
-> 45 (4.5GHz). Suppose scaling max is set to 4GHz (ratio 40) for all cores
-> ,then on core one it will be
->  = max_state * policy->max / max_freq;
->  = 43 * (4000000/4500000) = 38 (3.8GHz)
->  = 38
-> which is 200MHz less than the desired.
-> On core2, it will be correctly set to ratio 40 (4GHz). Same holds true
-> for scaling min frequency limit. So this requires usage of correct turbo
-> max frequency for core one, which in this case is 4.3GHz. So we need to
-> adjust per CPU cpu->pstate.turbo_freq using the maximum HWP ratio of that
-> core.
->
-> This change uses the HWP capability of a core to adjust max turbo
-> frequency. But since Broadwell HWP doesn't use ratios in the HWP
-> capabilities, we have use legacy max 1 core turbo ratio. This is not a
-> problem as the HWP capabilities don't differ among cores in Broadwell.
-> So we need to check for non Broadwell CPU model for applying this change.
->
-> While doing this change also optimize usage of x86_match_cpu(). Currently
-> using, different x86_cpu_id structure values for each feature. We can
-> consolidate, so that we don't have to introduce one more here. Added HWP
-> feature flag to each CPU model, instead of a new definition.
+On 18/06/2018 12:38, Viresh Kumar wrote:
+> On 18-06-18, 12:35, Daniel Lezcano wrote:
+>> On 18/06/2018 12:22, Viresh Kumar wrote:
+>>> On 15-06-18, 11:19, Daniel Lezcano wrote:
+>>>> +/**
+>>>> + * idle_injection_stop - stops the idle injections
+>>>> + * @ii_dev: a pointer to an idle injection_device structure
+>>>> + *
+>>>> + * The function stops the idle injection and waits for the threads to
+>>>> + * complete. If we are in the process of injecting an idle cycle, then
+>>>> + * this will wait the end of the cycle.
+>>>> + *
+>>>> + * When the function returns there is no more idle injection
+>>>> + * activity. The kthreads are scheduled out and the periodic timer is
+>>>> + * off.
+>>>> + */
+>>>> +void idle_injection_stop(struct idle_injection_device *ii_dev)
+>>>> +{
+>>>> +	struct idle_injection_thread *iit;
+>>>> +	unsigned int cpu;
+>>>> +
+>>>> +	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
+>>>> +		 cpumask_pr_args(to_cpumask(ii_dev->cpumask)));
+>>>> +
+>>>> +	hrtimer_cancel(&ii_dev->timer);
+>>>> +
+>>>> +	/*
+>>>> +	 * We want the guarantee we have a quescient point where
+>>>> +	 * parked threads stay in there state while we are stopping
+>>>> +	 * the idle injection. After exiting the loop, if any CPU is
+>>>> +	 * plugged in, the 'should_run' boolean being false, the
+>>>> +	 * smpboot main loop schedules the task out.
+>>>> +	 */
+>>>> +	cpu_hotplug_disable();
+>>>> +
+>>>> +	for_each_cpu_and(cpu, to_cpumask(ii_dev->cpumask), cpu_online_mask) {
+>>>
+>>> Maybe you should do below for all CPUs in the mask. Is the below usecase
+>>> possible ?
+>>>
+>>> - CPU0-4 are part of the mask and are all online.
+>>> - hrtimer fires and sets should_run for all of them to 1.
+>>
+>>     ^^
+>> hrtimer_cancel gives you the guarantee, the timer is no longer active
+>> and there is no execution in the timer handler. So the timer can no
+>> longer fire after hrtimer_cancel() is called (which is a blocking call).
+> 
+> Right but that isn't called yet in my sequence.
+> 
+>>> - Right at this time CPU3 goes offline, so the thread gets parked with
+>>>   should_run == 1. Is there a reason why this can't happen ?
 
-I'd prefer a fix that can be propagated to -stable and then the
-optimization as a separate patch.
+for this specific case, we can use the park() callback to set should_run
+to false, no ?
 
->
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 43 ++++++++++++++++++++++++++++++------------
->  1 file changed, 31 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 1de5ec8..26d1fc7 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -308,6 +308,12 @@ static struct global_params global;
->  static DEFINE_MUTEX(intel_pstate_driver_lock);
->  static DEFINE_MUTEX(intel_pstate_limits_lock);
->
-> +#define INTEL_PSTATE_HWP_FEATURE_DISABLE_EE    0x01
-> +#define INTEL_PSTATE_HWP_PERF_BOOST            0x02
-> +#define INTEL_PSTATE_HWP_BROADWELL             0x04
-> +
-> +static u32 intel_pstate_hwp_features;
+>>> - Now we unregister the stuff and CPU3 again comes online.
+> 
+> It gets called here from unregister/stop.
+> 
+>>> - Because it had should_run as true, we again run the thread and Crash.
+>>>
+>>> makes sense ?
+> 
+>>>> +out_rollback_per_cpu:
+>>>> +	for_each_cpu(cpu, to_cpumask(ii_dev->cpumask))
+>>>> +		per_cpu(idle_injection_device, cpu) = NULL;
+>>>
+>>> So if two parts of the kernel call this routine with the same cpumask, then the
+>>> second call will also overwrite the masks with NULL and return error. That will
+>>> screw up things a bit here.
+>>
+>> Apparently there is a misunderstanding :)
+>>
+>> https://lkml.org/lkml/2018/5/29/209 (at the end)
+> 
+> Right, your earlier version was doing the right thing :)
+> 
 
-Why isn't it a member of strict cpudata?
 
-> +
->  #ifdef CONFIG_ACPI
->
->  static bool intel_pstate_get_ppc_enable_status(void)
-> @@ -1413,7 +1419,16 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
->         cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
->         cpu->pstate.scaling = pstate_funcs.get_scaling();
->         cpu->pstate.max_freq = cpu->pstate.max_pstate * cpu->pstate.scaling;
-> -       cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
-> +
-> +       if (hwp_active &&
-> +           !(intel_pstate_hwp_features & INTEL_PSTATE_HWP_BROADWELL)) {
-> +               unsigned int phy_max, current_max;
-> +
-> +               intel_pstate_get_hwp_max(cpu->cpu, &phy_max, &current_max);
-> +               cpu->pstate.turbo_freq = phy_max * cpu->pstate.scaling;
-> +       } else {
-> +               cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
-> +       }
->
->         if (pstate_funcs.get_aperf_mperf_shift)
->                 cpu->aperf_mperf_shift = pstate_funcs.get_aperf_mperf_shift();
-> @@ -1789,14 +1804,16 @@ static const struct x86_cpu_id intel_pstate_cpu_oob_ids[] __initconst = {
->         {}
->  };
->
-> -static const struct x86_cpu_id intel_pstate_cpu_ee_disable_ids[] = {
-> -       ICPU(INTEL_FAM6_KABYLAKE_DESKTOP, core_funcs),
-> -       {}
-> -};
-> -
-> -static const struct x86_cpu_id intel_pstate_hwp_boost_ids[] = {
-> -       ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
-> -       ICPU(INTEL_FAM6_SKYLAKE_DESKTOP, core_funcs),
-> +#define ICPU1(model, feature) \
-> +       { X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF,\
-> +        feature}
-> +
-> +static const struct x86_cpu_id intel_pstate_hwp_feature_ids[] = {
-> +       ICPU1(INTEL_FAM6_BROADWELL_X, INTEL_PSTATE_HWP_BROADWELL),
-> +       ICPU1(INTEL_FAM6_BROADWELL_XEON_D, INTEL_PSTATE_HWP_BROADWELL),
-> +       ICPU1(INTEL_FAM6_KABYLAKE_DESKTOP, INTEL_PSTATE_HWP_FEATURE_DISABLE_EE),
-> +       ICPU1(INTEL_FAM6_SKYLAKE_DESKTOP, INTEL_PSTATE_HWP_PERF_BOOST),
-> +       ICPU1(INTEL_FAM6_SKYLAKE_X, INTEL_PSTATE_HWP_PERF_BOOST),
->         {}
->  };
->
-> @@ -1825,14 +1842,16 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
->         if (hwp_active) {
->                 const struct x86_cpu_id *id;
->
-> -               id = x86_match_cpu(intel_pstate_cpu_ee_disable_ids);
-> +               id = x86_match_cpu(intel_pstate_hwp_feature_ids);
->                 if (id)
-> +                       intel_pstate_hwp_features = id->driver_data;
-> +
-> +               if (intel_pstate_hwp_features & INTEL_PSTATE_HWP_FEATURE_DISABLE_EE)
->                         intel_pstate_disable_ee(cpunum);
->
->                 intel_pstate_hwp_enable(cpu);
->
-> -               id = x86_match_cpu(intel_pstate_hwp_boost_ids);
-> -               if (id)
-> +               if (intel_pstate_hwp_features & INTEL_PSTATE_HWP_PERF_BOOST)
->                         hwp_boost = true;
->         }
->
-> --
-> 2.7.5
->
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
