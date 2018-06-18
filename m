@@ -1,60 +1,127 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] dt-bindings: Fix unbalanced quotation marks
-Date: Mon, 18 Jun 2018 09:06:53 +0200
-Message-ID: <CAJKOXPcAVovxU2mHSbkAG0axutFbd=_92bNdd2P_CnQGmhAfCg@mail.gmail.com>
-References: <20180617143127.11421-1-j.neuschaefer@gmx.net>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Subject: Re: [PATCH] PM / devfreq: Fix devfreq_add_device() when drivers are
+ built as modules.
+Date: Mon, 18 Jun 2018 11:02:54 +0200
+Message-ID: <CAFqH_5344NDHup+u0QtimTJjKaVVj46YB6UDMKtdMr70JJmkng@mail.gmail.com>
+References: <20180615100452.17466-1-enric.balletbo@collabora.com> <CAGTfZH1QkzBjDPfsS23DgVF=EqO1P9RK+YdAnAwt2rDL6eGPTg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180617143127.11421-1-j.neuschaefer@gmx.net>
+In-Reply-To: <CAGTfZH1QkzBjDPfsS23DgVF=EqO1P9RK+YdAnAwt2rDL6eGPTg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Cc: devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, Hauke Mehrtens <hauke@hauke-m.de>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Madalin Bucur <madalin.bucur@nxp.com>
+To: cwchoi00@gmail.com
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 17, 2018 at 4:31 PM, Jonathan Neusch=C3=A4fer
-<j.neuschaefer@gmx.net> wrote:
-> Multiple binding documents have various forms of unbalanced quotation
-> marks. Fix them.
+Hi Chanwoo,
+Missatge de Chanwoo Choi <cwchoi00@gmail.com> del dia dg., 17 de juny
+2018 a les 5:50:
 >
-> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-> ---
+> Hi Enric,
 >
-> Should I split this patch so that different parts can go through differen=
-t trees?
-> ---
->  .../devicetree/bindings/arm/samsung/samsung-boards.txt          | 2 +-
->  .../devicetree/bindings/gpio/nintendo,hollywood-gpio.txt        | 2 +-
->  Documentation/devicetree/bindings/input/touchscreen/hideep.txt  | 2 +-
->  .../bindings/interrupt-controller/nvidia,tegra20-ictlr.txt      | 2 +-
->  .../devicetree/bindings/interrupt-controller/st,stm32-exti.txt  | 2 +-
->  Documentation/devicetree/bindings/mips/brcm/soc.txt             | 2 +-
->  Documentation/devicetree/bindings/net/fsl-fman.txt              | 2 +-
->  Documentation/devicetree/bindings/power/power_domain.txt        | 2 +-
->  Documentation/devicetree/bindings/regulator/tps65090.txt        | 2 +-
->  Documentation/devicetree/bindings/reset/st,sti-softreset.txt    | 2 +-
->  Documentation/devicetree/bindings/sound/qcom,apq8016-sbc.txt    | 2 +-
->  Documentation/devicetree/bindings/sound/qcom,apq8096.txt        | 2 +-
->  12 files changed, 12 insertions(+), 12 deletions(-)
+> This issue will happen on the position to use find_devfreq_governor()
+> as following:
+> - devfreq_add_governora() and governor_store()
 >
-> diff --git a/Documentation/devicetree/bindings/arm/samsung/samsung-boards=
-.txt b/Documentation/devicetree/bindings/arm/samsung/samsung-boards.txt
-> index bdadc3da9556..6970f30a3770 100644
-> --- a/Documentation/devicetree/bindings/arm/samsung/samsung-boards.txt
-> +++ b/Documentation/devicetree/bindings/arm/samsung/samsung-boards.txt
-> @@ -66,7 +66,7 @@ Required root node properties:
->         - "insignal,arndale-octa" - for Exynos5420-based Insignal Arndale
->                                     Octa board.
->         - "insignal,origen"       - for Exynos4210-based Insignal Origen =
-board.
-> -       - "insignal,origen4412    - for Exynos4412-based Insignal Origen =
-board.
-> +       - "insignal,origen4412"   - for Exynos4412-based Insignal Origen =
-board.
+> If device driver with module type after loaded want to change the
+> scaling governor,
+> new governor might be not yet loaded. So, devfreq bettero to consider this case
+> in the find_devfreq_governor().
 >
+Ok, I'll move there and send a v2.
 
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+Thanks
+ Enric.
 
-Best regards,
-Krzysztof
+
+> 2018-06-15 19:04 GMT+09:00 Enric Balletbo i Serra
+> <enric.balletbo@collabora.com>:
+> > When the devfreq driver and the governor driver are built as modules,
+> > the call to devfreq_add_device() fails because the governor driver is
+> > not loaded at the time the devfreq driver loads. The devfreq driver has
+> > a build dependency on the governor but also should have a runtime
+> > dependency. We need to make sure that the governor driver is loaded
+> > before the devfreq driver.
+> >
+> > This patch fixes this bug in devfreq_add_device(). First tries to find
+> > the governor, and then, if was not found, it requests the module and
+> > tries again.
+> >
+> > Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
+> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> > ---
+> >
+> >  drivers/devfreq/devfreq.c | 36 +++++++++++++++++++++++++++++++-----
+> >  1 file changed, 31 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> > index fe2af6aa88fc..1d917f043e30 100644
+> > --- a/drivers/devfreq/devfreq.c
+> > +++ b/drivers/devfreq/devfreq.c
+> > @@ -11,6 +11,7 @@
+> >   */
+> >
+> >  #include <linux/kernel.h>
+> > +#include <linux/kmod.h>
+> >  #include <linux/sched.h>
+> >  #include <linux/errno.h>
+> >  #include <linux/err.h>
+> > @@ -648,10 +649,35 @@ struct devfreq *devfreq_add_device(struct device *dev,
+> >
+> >         governor = find_devfreq_governor(devfreq->governor_name);
+> >         if (IS_ERR(governor)) {
+> > -               dev_err(dev, "%s: Unable to find governor for the device\n",
+> > -                       __func__);
+> > -               err = PTR_ERR(governor);
+> > -               goto err_init;
+> > +               list_del(&devfreq->node);
+> > +               mutex_unlock(&devfreq_list_lock);
+> > +
+> > +               /*
+> > +                * If the governor is not found, then request the module and
+> > +                * try again. This can happen when both drivers (the governor
+> > +                * driver and the driver that calls devfreq_add_device) are
+> > +                * built as modules.
+> > +                */
+> > +               if (!strncmp(devfreq->governor_name,
+> > +                            DEVFREQ_GOV_SIMPLE_ONDEMAND, DEVFREQ_NAME_LEN))
+> > +                       err = request_module("governor_%s", "simpleondemand");
+> > +               else
+> > +                       err = request_module("governor_%s",
+> > +                                            devfreq->governor_name);
+> > +               if (err)
+> > +                       goto err_unregister;
+> > +
+> > +               mutex_lock(&devfreq_list_lock);
+> > +               list_add(&devfreq->node, &devfreq_list);
+> > +
+> > +               governor = find_devfreq_governor(devfreq->governor_name);
+> > +               if (IS_ERR(governor)) {
+> > +                       dev_err(dev,
+> > +                               "%s: Unable to find governor for the device\n",
+> > +                               __func__);
+> > +                       err = PTR_ERR(governor);
+> > +                       goto err_init;
+> > +               }
+> >         }
+> >
+> >         devfreq->governor = governor;
+> > @@ -669,7 +695,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+> >  err_init:
+> >         list_del(&devfreq->node);
+> >         mutex_unlock(&devfreq_list_lock);
+> > -
+> > +err_unregister:
+> >         device_unregister(&devfreq->dev);
+> >  err_dev:
+> >         if (devfreq)
+> > --
+> > 2.17.1
+> >
+>
+>
+>
+> --
+> Best Regards,
+> Chanwoo Choi
+> Samsung Electronics
