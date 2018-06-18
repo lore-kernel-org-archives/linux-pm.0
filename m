@@ -1,93 +1,85 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V7] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Mon, 18 Jun 2018 16:08:44 +0530
-Message-ID: <20180618103844.t2minxwc7tiu2qgd@vireshk-i7>
-References: <1529054393-27077-1-git-send-email-daniel.lezcano@linaro.org>
- <20180618102245.x5cfei3i7voq65zc@vireshk-i7>
- <bb11af50-1089-43af-abfa-0824e0db1e77@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Update voltage in case freq == old_freq
+Date: Mon, 18 Jun 2018 16:21:32 +0530
+Message-ID: <20180618105132.xky2ayan7q24jsp3@vireshk-i7>
+References: <20180614135609.20574-1-waldemar.rymarkiewicz@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <bb11af50-1089-43af-abfa-0824e0db1e77@linaro.org>
+In-Reply-To: <20180614135609.20574-1-waldemar.rymarkiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
+To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18-06-18, 12:35, Daniel Lezcano wrote:
-> On 18/06/2018 12:22, Viresh Kumar wrote:
-> > On 15-06-18, 11:19, Daniel Lezcano wrote:
-> >> +/**
-> >> + * idle_injection_stop - stops the idle injections
-> >> + * @ii_dev: a pointer to an idle injection_device structure
-> >> + *
-> >> + * The function stops the idle injection and waits for the threads to
-> >> + * complete. If we are in the process of injecting an idle cycle, then
-> >> + * this will wait the end of the cycle.
-> >> + *
-> >> + * When the function returns there is no more idle injection
-> >> + * activity. The kthreads are scheduled out and the periodic timer is
-> >> + * off.
-> >> + */
-> >> +void idle_injection_stop(struct idle_injection_device *ii_dev)
-> >> +{
-> >> +	struct idle_injection_thread *iit;
-> >> +	unsigned int cpu;
-> >> +
-> >> +	pr_debug("Stopping injecting idle cycles on CPUs '%*pbl'\n",
-> >> +		 cpumask_pr_args(to_cpumask(ii_dev->cpumask)));
-> >> +
-> >> +	hrtimer_cancel(&ii_dev->timer);
-> >> +
-> >> +	/*
-> >> +	 * We want the guarantee we have a quescient point where
-> >> +	 * parked threads stay in there state while we are stopping
-> >> +	 * the idle injection. After exiting the loop, if any CPU is
-> >> +	 * plugged in, the 'should_run' boolean being false, the
-> >> +	 * smpboot main loop schedules the task out.
-> >> +	 */
-> >> +	cpu_hotplug_disable();
-> >> +
-> >> +	for_each_cpu_and(cpu, to_cpumask(ii_dev->cpumask), cpu_online_mask) {
-> > 
-> > Maybe you should do below for all CPUs in the mask. Is the below usecase
-> > possible ?
-> > 
-> > - CPU0-4 are part of the mask and are all online.
-> > - hrtimer fires and sets should_run for all of them to 1.
+On 14-06-18, 15:56, Waldemar Rymarkiewicz wrote:
+> This commit fixes a rare but possible case when the clk rate is updated
+> without update of the regulator voltage.
 > 
->     ^^
-> hrtimer_cancel gives you the guarantee, the timer is no longer active
-> and there is no execution in the timer handler. So the timer can no
-> longer fire after hrtimer_cancel() is called (which is a blocking call).
-
-Right but that isn't called yet in my sequence.
-
-> > - Right at this time CPU3 goes offline, so the thread gets parked with
-> >   should_run == 1. Is there a reason why this can't happen ?
-> > - Now we unregister the stuff and CPU3 again comes online.
-
-It gets called here from unregister/stop.
-
-> > - Because it had should_run as true, we again run the thread and Crash.
-> > 
-> > makes sense ?
-
-> >> +out_rollback_per_cpu:
-> >> +	for_each_cpu(cpu, to_cpumask(ii_dev->cpumask))
-> >> +		per_cpu(idle_injection_device, cpu) = NULL;
-> > 
-> > So if two parts of the kernel call this routine with the same cpumask, then the
-> > second call will also overwrite the masks with NULL and return error. That will
-> > screw up things a bit here.
+> At boot up, CPUfreq checks if the system is running at the right freq. This
+> is a sanity check in case a bootloader set clk rate that is outside of freq
+> table present with cpufreq core. In such cases system can be unstable so
+> better to change it to a freq that is preset in freq-table.
 > 
-> Apparently there is a misunderstanding :)
+> The CPUfreq takes next freq that is >= policy->cur and this is our
+> target_freq that needs to be set now.
 > 
-> https://lkml.org/lkml/2018/5/29/209 (at the end)
+> dev_pm_opp_set_rate(dev, target_freq) checks the target_freq and the
+> old_freq (a current rate). If these are equal it returns early. If not,
+> it searches for OPP (old_opp) that fits best to old_freq (not listed in
+> the table) and updates old_freq (!).
+> 
+> Here, we can end up with old_freq = old_opp.rate = target_freq, which
+> is not handled in _generic_set_opp_regulator(). It's supposed to update
+> voltage only when freq > old_freq  || freq > old_freq.
+> 
+> if (freq > old_freq) {
+> 		ret = _set_opp_voltage(dev, reg, new_supply);
+> [...]
+> if (freq < old_freq) {
+> 		ret = _set_opp_voltage(dev, reg, new_supply);
+> 		if (ret)
+> 
+> It results in, no voltage update while clk rate is updated.
+> 
+> Example:
+> freq-table = {
+> 	1000MHz   1.15V
+> 	 666MHZ   1.10V
+> 	 333MHz   1.05V
+> }
+> boot-up-freq        = 800MHz   # not listed in freq-table
+> freq = target_freq  = 1GHz
+> old_freq            = 800Mhz
+> old_opp = _find_freq_ceil(opp_table, &old_freq);  #(old_freq is modified!)
+> old_freq            = 1GHz
+> 
+> Signed-off-by: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+> ---
+>  drivers/opp/core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index ab2f3fe..31ff03d 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -598,7 +598,7 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
+>  	}
+>  
+>  	/* Scaling up? Scale voltage before frequency */
+> -	if (freq > old_freq) {
+> +	if (freq >= old_freq) {
+>  		ret = _set_opp_voltage(dev, reg, new_supply);
+>  		if (ret)
+>  			goto restore_voltage;
 
-Right, your earlier version was doing the right thing :)
+Applied with:
+
+Fixes: 6a0712f6f199 ("PM / OPP: Add dev_pm_opp_set_rate()")
+Cc: 4.6+ <stable@vger.kernel.org> # v4.6+
+
+Thanks.
 
 -- 
 viresh
