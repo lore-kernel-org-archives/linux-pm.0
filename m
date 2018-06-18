@@ -1,95 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: kryo: Add module remove and exit
-Date: Mon, 18 Jun 2018 10:25:50 +0530
-Message-ID: <20180618045550.sasilydvnlsmxzpk@vireshk-i7>
-References: <20180614204212.2028-1-ilia.lin@gmail.com>
- <20180617200146.16425-1-ilia.lin@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] dt-bindings: Fix unbalanced quotation marks
+Date: Mon, 18 Jun 2018 09:06:53 +0200
+Message-ID: <CAJKOXPcAVovxU2mHSbkAG0axutFbd=_92bNdd2P_CnQGmhAfCg@mail.gmail.com>
+References: <20180617143127.11421-1-j.neuschaefer@gmx.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180617200146.16425-1-ilia.lin@gmail.com>
+In-Reply-To: <20180617143127.11421-1-j.neuschaefer@gmx.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ilia.lin@gmail.com
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Cc: devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, Hauke Mehrtens <hauke@hauke-m.de>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Madalin Bucur <madalin.bucur@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 17-06-18, 22:01, ilia.lin@gmail.com wrote:
-> From: Ilia Lin <ilia.lin@gmail.com>
-> 
-> Add device remove and module exit code to make the driver
-> functioning as a loadable module.
-> 
-> Fixes: ac28927659be (cpufreq: kryo: allow building as a loadable module)
-> Signed-off-by: Ilia Lin <ilia.lin@gmail.com>
+On Sun, Jun 17, 2018 at 4:31 PM, Jonathan Neusch=C3=A4fer
+<j.neuschaefer@gmx.net> wrote:
+> Multiple binding documents have various forms of unbalanced quotation
+> marks. Fix them.
+>
+> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
 > ---
->  drivers/cpufreq/qcom-cpufreq-kryo.c | 22 +++++++++++++++++++---
->  1 file changed, 19 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> index 74b9b93d511b..01bddacf5c3b 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> @@ -42,6 +42,8 @@ enum _msm8996_version {
->  	NUM_OF_MSM8996_VERSIONS,
->  };
->  
-> +struct platform_device *cpufreq_dt_pdev, *kryo_cpufreq_pdev;
-> +
->  static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
->  {
->  	size_t len;
-> @@ -74,7 +76,6 @@ static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
->  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  {
->  	struct opp_table *opp_tables[NR_CPUS] = {0};
-> -	struct platform_device *cpufreq_dt_pdev;
->  	enum _msm8996_version msm8996_version;
->  	struct nvmem_cell *speedbin_nvmem;
->  	struct device_node *np;
-> @@ -165,8 +166,15 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  	return ret;
->  }
->  
-> +static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
-> +{
-> +	platform_device_unregister(cpufreq_dt_pdev);
-> +	return 0;
-> +}
-> +
->  static struct platform_driver qcom_cpufreq_kryo_driver = {
->  	.probe = qcom_cpufreq_kryo_probe,
-> +	.remove = qcom_cpufreq_kryo_remove,
->  	.driver = {
->  		.name = "qcom-cpufreq-kryo",
->  	},
-> @@ -201,8 +209,9 @@ static int __init qcom_cpufreq_kryo_init(void)
->  	if (unlikely(ret < 0))
->  		return ret;
->  
-> -	ret = PTR_ERR_OR_ZERO(platform_device_register_simple(
-> -		"qcom-cpufreq-kryo", -1, NULL, 0));
-> +	kryo_cpufreq_pdev = platform_device_register_simple(
-> +		"qcom-cpufreq-kryo", -1, NULL, 0);
-> +	ret = PTR_ERR_OR_ZERO(kryo_cpufreq_pdev);
->  	if (0 == ret)
->  		return 0;
->  
-> @@ -211,5 +220,12 @@ static int __init qcom_cpufreq_kryo_init(void)
->  }
->  module_init(qcom_cpufreq_kryo_init);
->  
-> +static void __init qcom_cpufreq_kryo_exit(void)
-> +{
-> +	platform_device_unregister(kryo_cpufreq_pdev);
-> +	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
-> +}
-> +module_exit(qcom_cpufreq_kryo_exit);
-> +
->  MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
->  MODULE_LICENSE("GPL v2");
+>
+> Should I split this patch so that different parts can go through differen=
+t trees?
+> ---
+>  .../devicetree/bindings/arm/samsung/samsung-boards.txt          | 2 +-
+>  .../devicetree/bindings/gpio/nintendo,hollywood-gpio.txt        | 2 +-
+>  Documentation/devicetree/bindings/input/touchscreen/hideep.txt  | 2 +-
+>  .../bindings/interrupt-controller/nvidia,tegra20-ictlr.txt      | 2 +-
+>  .../devicetree/bindings/interrupt-controller/st,stm32-exti.txt  | 2 +-
+>  Documentation/devicetree/bindings/mips/brcm/soc.txt             | 2 +-
+>  Documentation/devicetree/bindings/net/fsl-fman.txt              | 2 +-
+>  Documentation/devicetree/bindings/power/power_domain.txt        | 2 +-
+>  Documentation/devicetree/bindings/regulator/tps65090.txt        | 2 +-
+>  Documentation/devicetree/bindings/reset/st,sti-softreset.txt    | 2 +-
+>  Documentation/devicetree/bindings/sound/qcom,apq8016-sbc.txt    | 2 +-
+>  Documentation/devicetree/bindings/sound/qcom,apq8096.txt        | 2 +-
+>  12 files changed, 12 insertions(+), 12 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/arm/samsung/samsung-boards=
+.txt b/Documentation/devicetree/bindings/arm/samsung/samsung-boards.txt
+> index bdadc3da9556..6970f30a3770 100644
+> --- a/Documentation/devicetree/bindings/arm/samsung/samsung-boards.txt
+> +++ b/Documentation/devicetree/bindings/arm/samsung/samsung-boards.txt
+> @@ -66,7 +66,7 @@ Required root node properties:
+>         - "insignal,arndale-octa" - for Exynos5420-based Insignal Arndale
+>                                     Octa board.
+>         - "insignal,origen"       - for Exynos4210-based Insignal Origen =
+board.
+> -       - "insignal,origen4412    - for Exynos4412-based Insignal Origen =
+board.
+> +       - "insignal,origen4412"   - for Exynos4412-based Insignal Origen =
+board.
+>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 
--- 
-viresh
+Best regards,
+Krzysztof
