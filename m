@@ -1,88 +1,116 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v2] power: vexpress: fix corruption in notifier registration
-Date: Mon, 18 Jun 2018 16:54:32 +0100
-Message-ID: <1529337272-11799-1-git-send-email-sudeep.holla@arm.com>
-References: <1529322007-4637-1-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1529322007-4637-1-git-send-email-sudeep.holla@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Sebastian Reichel <sre@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2] cpufreq: intel_pstate: Fix scaling max/min limits with Turbo 3.0
+Date: Mon, 18 Jun 2018 12:47:45 -0700
+Message-ID: <20180618194745.36879-1-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Vexpress platforms provide two different restart handlers: SYS_REBOOT
-that restart the entire system, while DB_RESET only restarts the
-daughter board containing the CPU. DB_RESET is overridden by SYS_REBOOT
-if it exists.
+When scaling max/min settings are changed, internally they are converted
+to a ratio using the max turbo 1 core turbo frequency. This works fine
+when 1 core max is same irrespective of the core. But under Turbo 3.0,
+this will not be the case. For example:
+Core 0: max turbo pstate: 43 (4.3GHz)
+Core 1: max turbo pstate: 45 (4.5GHz)
+In this case 1 core turbo ratio will be maximum of all, so it will be
+45 (4.5GHz). Suppose scaling max is set to 4GHz (ratio 40) for all cores
+,then on core one it will be
+ = max_state * policy->max / max_freq;
+ = 43 * (4000000/4500000) = 38 (3.8GHz)
+ = 38
+which is 200MHz less than the desired.
+On core2, it will be correctly set to ratio 40 (4GHz). Same holds true
+for scaling min frequency limit. So this requires usage of correct turbo
+max frequency for core one, which in this case is 4.3GHz. So we need to
+adjust per CPU cpu->pstate.turbo_freq using the maximum HWP ratio of that
+core.
 
-notifier_chain_register used in register_restart_handler by design
-relies on notifiers to be registered once only, however vexpress restart
-notifier can get registered twice. When this happen it corrupts list
-of notifiers, as result some notifiers can be not called on proper
-event, traverse on list can be cycled forever, and second unregister
-can access already freed memory.
+This change uses the HWP capability of a core to adjust max turbo
+frequency. But since Broadwell HWP doesn't use ratios in the HWP
+capabilities, we have use legacy max 1 core turbo ratio. This is not a
+problem as the HWP capabilities don't differ among cores in Broadwell.
+So we need to check for non Broadwell CPU model for applying this change.
 
-So far, since this was the only restart handler in the system, no issue
-was observed even if the same notifier was registered twice. However
-commit 6c5c0d48b686 ("watchdog: sp805: add restart handler") added
-support for SP805 restart handlers and since the system under test
-contains two vexpress restart and two SP805 watchdog instances, it was
-observed that during the boot traversing the restart handler list looped
-forever as there's a cycle in that list resulting in boot hang.
-
-This patch fixes the issues by ensuring that the notifier is installed
-only once.
-
-Cc: Sebastian Reichel <sre@kernel.org>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: 4.6+ <stable@vger.kernel.org> # 4.6+
 ---
- drivers/power/reset/vexpress-poweroff.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+v2
+Backport friendly without any dependency on recent features.
 
-v1->v2:
-	- Updated changelog wordings as suggested by Lorenzo
-	- Dropped unnecessary error variable initialisation on stack
+ drivers/cpufreq/intel_pstate.c | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
-index 102f95a09460..e9e749f87517 100644
---- a/drivers/power/reset/vexpress-poweroff.c
-+++ b/drivers/power/reset/vexpress-poweroff.c
-@@ -35,6 +35,7 @@ static void vexpress_reset_do(struct device *dev, const char *what)
- }
-
- static struct device *vexpress_power_off_device;
-+static atomic_t vexpress_restart_nb_refcnt = ATOMIC_INIT(0);
-
- static void vexpress_power_off(void)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1de5ec8d5ea3..ece120da3353 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -294,6 +294,7 @@ struct pstate_funcs {
+ static struct pstate_funcs pstate_funcs __read_mostly;
+ 
+ static int hwp_active __read_mostly;
++static int hwp_mode_bdw __read_mostly;
+ static bool per_cpu_limits __read_mostly;
+ static bool hwp_boost __read_mostly;
+ 
+@@ -1413,7 +1414,15 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+ 	cpu->pstate.scaling = pstate_funcs.get_scaling();
+ 	cpu->pstate.max_freq = cpu->pstate.max_pstate * cpu->pstate.scaling;
+-	cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++
++	if (hwp_active && !hwp_mode_bdw) {
++		unsigned int phy_max, current_max;
++
++		intel_pstate_get_hwp_max(cpu->cpu, &phy_max, &current_max);
++		cpu->pstate.turbo_freq = phy_max * cpu->pstate.scaling;
++	} else {
++		cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++	}
+ 
+ 	if (pstate_funcs.get_aperf_mperf_shift)
+ 		cpu->aperf_mperf_shift = pstate_funcs.get_aperf_mperf_shift();
+@@ -2467,28 +2476,36 @@ static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
+ static inline void intel_pstate_request_control_from_smm(void) {}
+ #endif /* CONFIG_ACPI */
+ 
++#define INTEL_PSTATE_HWP_BROADWELL	0x01
++
++#define ICPU_HWP(model, hwp_mode) \
++	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_HWP, hwp_mode }
++
+ static const struct x86_cpu_id hwp_support_ids[] __initconst = {
+-	{ X86_VENDOR_INTEL, 6, X86_MODEL_ANY, X86_FEATURE_HWP },
++	ICPU_HWP(INTEL_FAM6_BROADWELL_X, INTEL_PSTATE_HWP_BROADWELL),
++	ICPU_HWP(INTEL_FAM6_BROADWELL_XEON_D, INTEL_PSTATE_HWP_BROADWELL),
++	ICPU_HWP(X86_MODEL_ANY, 0),
+ 	{}
+ };
+ 
+ static int __init intel_pstate_init(void)
  {
-@@ -99,10 +100,13 @@ static int _vexpress_register_restart_handler(struct device *dev)
- 	int err;
-
- 	vexpress_restart_device = dev;
--	err = register_restart_handler(&vexpress_restart_nb);
--	if (err) {
--		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
--		return err;
-+	if (atomic_inc_return(&vexpress_restart_nb_refcnt) == 1) {
-+		err = register_restart_handler(&vexpress_restart_nb);
-+		if (err) {
-+			dev_err(dev, "cannot register restart handler (err=%d)\n", err);
-+			atomic_dec(&vexpress_restart_nb_refcnt);
-+			return err;
-+		}
- 	}
- 	device_create_file(dev, &dev_attr_active);
-
---
-2.7.4
++	const struct x86_cpu_id *id;
+ 	int rc;
+ 
+ 	if (no_load)
+ 		return -ENODEV;
+ 
+-	if (x86_match_cpu(hwp_support_ids)) {
++	id = x86_match_cpu(hwp_support_ids);
++	if (id) {
+ 		copy_cpu_funcs(&core_funcs);
+ 		if (!no_hwp) {
+ 			hwp_active++;
++			hwp_mode_bdw = id->driver_data;
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+ 			goto hwp_cpu_matched;
+ 		}
+ 	} else {
+-		const struct x86_cpu_id *id;
+-
+ 		id = x86_match_cpu(intel_pstate_cpu_ids);
+ 		if (!id)
+ 			return -ENODEV;
+-- 
+2.17.0
