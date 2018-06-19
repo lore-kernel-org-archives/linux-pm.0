@@ -1,150 +1,75 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
- bindings
-Date: Tue, 19 Jun 2018 16:14:50 +0530
-Message-ID: <2d37f581-38af-872a-36df-0250b0f7e411@codeaurora.org>
-References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
- <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
- <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
- <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org>
- <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
- <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org>
- <CAHLCerMCM1qf1MJ3bz+ZwBQMjshKSCWKXjHCiuqxJTDBdauamQ@mail.gmail.com>
- <32e8f874-a58b-8ba3-7a53-dc89cb34f7d9@codeaurora.org>
- <fad24065-bb2d-33f9-e877-425db3391e8f@arm.com>
- <514eea88-1f98-7959-2341-3d57cff6f66b@codeaurora.org>
- <f26813f1-f8da-ef92-fd86-6e648fbbf3e9@arm.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
+Date: Tue, 19 Jun 2018 11:49:22 +0100
+Message-ID: <20180619104921.GV17720@e108498-lin.cambridge.arm.com>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-11-quentin.perret@arm.com>
+ <20180619091841.GD9208@codeaurora.org>
+ <20180619094002.GR17720@e108498-lin.cambridge.arm.com>
+ <20180619094714.GA13617@localhost.localdomain>
+ <20180619100224.GT17720@e108498-lin.cambridge.arm.com>
+ <20180619101901.GC13617@localhost.localdomain>
+ <20180619102502.GU17720@e108498-lin.cambridge.arm.com>
+ <20180619103108.GD13617@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <f26813f1-f8da-ef92-fd86-6e648fbbf3e9@arm.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180619103108.GD13617@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Amit Kucheria <amit.kucheria@verdurent.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: Pavan Kondeti <pkondeti@codeaurora.org>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday 19 Jun 2018 at 12:31:08 (+0200), Juri Lelli wrote:
+> On 19/06/18 11:25, Quentin Perret wrote:
+> > On Tuesday 19 Jun 2018 at 12:19:01 (+0200), Juri Lelli wrote:
+> > > On 19/06/18 11:02, Quentin Perret wrote:
+> > > > On Tuesday 19 Jun 2018 at 11:47:14 (+0200), Juri Lelli wrote:
+> > > > > On 19/06/18 10:40, Quentin Perret wrote:
+> > > > > > Hi Pavan,
+> > > > > > 
+> > > > > > On Tuesday 19 Jun 2018 at 14:48:41 (+0530), Pavan Kondeti wrote:
+> > > > > 
+> > > > > [...]
+> > > > > 
+> > > > > > > There seems to be a sysfs interface exposed by this driver to change cpu_scale.
+> > > > > > > Should we worry about it? I don't know what is the usecase for changing the
+> > > > > > > cpu_scale from user space.
+> > > > > > 
+> > > > > > This is something I've been wondering as well. TBH, I'm not sure what to
+> > > > > > do in this case. And I'm not sure to know what is the use-case either.
+> > > > > > Debugging purpose I assume ?
+> > > > > > 
+> > > > > > Juri, did you have a specific use-case for this feature when the
+> > > > > > arch_topology driver was first introduced ? Or was it just to align
+> > > > > > with the existing arm/arm64 code ?
+> > > > > 
+> > > > > It was requested (IIRC) because DT might have bogus values and not be
+> > > > > easily modifiable. So, this is another way to get things right for your
+> > > > > platform at runtime.
+> > > > 
+> > > > Right, but that also allows you to set different capacities to CPUs
+> > > > inside the same freq domain, which isn't supported by the EM framework,
+> > > > at least for now. So I would prefer to assume that your values in DT must
+> > > > to be correct to use EAS, and leave the code as-is for now.
+> > > 
+> > > It's actually built on the (current) assumption that siblings share
+> > > capacity [1], so it seems to align with what EM requires.
+> > > 
+> > > [1] https://elixir.bootlin.com/linux/latest/source/drivers/base/arch_topology.c#L71
+> > 
+> > But there is not hard guarantee that the core_sibling mask and the
+> > frequency domains are aligned :-(
+> > 
+> > Hikey 620 is an example where they might be misaligned (I think)
+> 
+> Yep. In this case you'd need to write cpu_capacity twice (for each
+> cluster). I think.
 
+Ok, I'll keep the code as-is for now, and we can discuss further on v4.
+I guess we need to agree on the need for em_rescale_cpu_capacity() before
+going too deep in the Arm-specific changes to call it :-)
 
-On 6/19/2018 3:04 PM, Sudeep Holla wrote:
-> 
-> 
-> On 19/06/18 08:53, Taniya Das wrote:
->>
->>
->> On 6/18/2018 2:51 PM, Sudeep Holla wrote:
->>>
->>>
->>> On 15/06/18 18:40, Taniya Das wrote:
->>>>
->>>>
->>>> On 6/15/2018 5:29 PM, Amit Kucheria wrote:
->>>
->>> [...]
->>>
->>>>> A future version of the HW engine, or more likely, a firmware
->>>>> revision, will make more functionality available. Say, this needs
->>>>> access to another register or two. This will require changing the DT
->>>>> bindings. Instead, if you map the entire address space, you can just
->>>>> add offsets to the new registers.
->>>>>
->>>>> So in this case, I think you should define the following addresses
->>>>> (size 0x1400) for the two frequency domains
->>>>>
->>>>> 0x17d43000, 0x1400 (power cluster)
->>>>> 0x17d45800, 0x1400 (perf cluster)
->>>>>
->>>>> And in the driver simply add offsets as follows:
->>>>>
->>>>> #define ENABLE_OFFSET               0x0
->>>>> #define LUT_OFFSET                      0x110
->>>>> #define PERF_DESIRED_OFFSET 0x920
->>>>>
->>>>
->>>> The offsets could vary across versions of this IP and that is the reason
->>>> to provide them through the DT and not define any such offsets.
->>>>
->>>
->>> Just get compatibles to identify the version of the hardware if it can't
->>> be probed and detected. Please don't use DT to get the addresses of each
->>> register you use in the driver. That's neither scalable nor nice
->>> solution to the problem.
->>> Hello Sudeep and Amit,
->>
->> Thanks for the comments, I am consolidating the understanding from the
->> other emails in a single one.
->>
->> I understand that you are looking for this IP to map the full region and
->> define offsets according to access them.
->>
->> But I still not sure how do you want this common driver to scale in the
->> cases where the offsets could vary across version change.
->>
-> 
-> There are plenty of drivers that you can look at as example. TBH most of
-> the drivers implementing support for multiple versions of IP do
-> something on the similar lines.
-> 
->>   DT
->> ====
->>    freq-node {
->>      reg = < X x_size>;   Where X is the start of the IP address.
->>    }
->>
->> Driver code (The below representation is just for example).
->> =============
->>
->> V1
->> #define ENABLE    0x0
->> #define LUT_V1    0x110
->> #define PERF_V1    0x920
->>
->> V2
->> #define LUT_V2    0x150
->> #define PERF_V2    0x980
->>
->> V3
->> #define LUT_V3    0x120
->> ....
->>
->> Do you want me to use "compatible" flag to
->>
->> if (compatible == v1)
->>   enable =  readl_relaxed(X + LUT_V1);
->> else if (compatible == v2)
->>   enable = readl_relaxed(X + LUT_V2);
->> else if (compatible == v3)
->>   enable = readl_relaxed(X + LUT_V2);
->>
-> 
-> These are implementation details. But you should try to use compatibles
-> only in probe and just record the version in some variable or update the
-> offsets in some device specific structure so that you can use that
-> unconditionally for any access you make on that device.
-> 
->> With the current design I do not need such compatible checks and unmap
->> the ones which are not required after probe.
-> 
-> I am not sure what you mean by unmap after probe.
-> 
->> Please let me know your comments.
->>
-> 
-> Please look at some drivers in the Linux tree for examples. Infact there
-> may be few drivers on QCOM SoC itself. What I am suggesting is the normal
-> practice in the drivers and you should see plenty of examples. Since I
-> was looking at some serial port patch, I can say you can have a look at
-> drivers/tty/serial/amba-pl011.c which supports multiple versions from
-> different vendors. I am sure there are many simpler examples but AMBA PL011
-> just stood out.
-> 
-
-Thanks Sudeep, let me take a look at the driver to see how I can 
-associate data (offsets) based on compatible.
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Thanks !
+Quentin
