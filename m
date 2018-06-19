@@ -1,71 +1,78 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v3 05/10] sched/topology: Reference the Energy Model
- of CPUs when available
-Date: Tue, 19 Jun 2018 18:13:17 +0100
-Message-ID: <20180619171316.GB29374@e108498-lin.cambridge.arm.com>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-6-quentin.perret@arm.com>
- <20180619122632.GS2458@hirez.programming.kicks-ass.net>
- <20180619132449.GA17720@e108498-lin.cambridge.arm.com>
- <20180619162042.GT2458@hirez.programming.kicks-ass.net>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v3 12/12] mfd: cros_ec: Add throttler sub-device
+Date: Tue, 19 Jun 2018 10:43:36 -0700
+Message-ID: <20180619174336.GY88063@google.com>
+References: <20180614194712.102134-1-mka@chromium.org>
+ <20180614194712.102134-13-mka@chromium.org>
+ <20180618232109.GB154056@rodete-desktop-imager.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180619162042.GT2458@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180618232109.GB154056@rodete-desktop-imager.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 19 Jun 2018 at 18:20:42 (+0200), Peter Zijlstra wrote:
-> Right, so I would not do that many things at once. Also be more explicit
-> about what data structure, and why.
-
-OK, I can probably split that patch in two smaller patches. One that
-introduces and enables the static_key (or something else to replace it,
-see my reply below); and another one to create the list of frequency
-domains.
-
-> That said, I think the whole for_each_freq_domain() thing as done is
-> broken. You've completely ignored the arguments to
-> partition_sched_domains(). What happens if you create partitions right
-> along the frequency domains?
+On Mon, Jun 18, 2018 at 04:21:10PM -0700, Brian Norris wrote:
+> Hi,
 > 
-> So you really want an argument to for_each_freq_domain() to indicate
-> who's frequency domains you want to iterate. And then I think it's
-> easiest if you hook into build_sched_domains() instead, because you
-> really want a list per root_domain I suspect
+> On Thu, Jun 14, 2018 at 12:47:12PM -0700, Matthias Kaehlcke wrote:
+> > Instantiate the CrOS EC throttler if it is enabled in the kernel
+> > configuration.
+> > 
+> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> > Changes in v3:
+> > - patch added to series
+> > 
+> >  drivers/mfd/cros_ec.c | 16 ++++++++++++++++
+> >  1 file changed, 16 insertions(+)
+> > 
+> > diff --git a/drivers/mfd/cros_ec.c b/drivers/mfd/cros_ec.c
+> > index 36156a41499c..5f52b6e2c21a 100644
+> > --- a/drivers/mfd/cros_ec.c
+> > +++ b/drivers/mfd/cros_ec.c
+> > @@ -91,6 +91,10 @@ static int cros_ec_sleep_event(struct cros_ec_device *ec_dev, u8 sleep_event)
+> >  	return cros_ec_cmd_xfer(ec_dev, &buf.msg);
+> >  }
+> >  
+> > +static const struct mfd_cell ec_throttler_cell = {
+> > +	.name = "cros-ec-throttler",
+> > +};
+> > +
+> >  int cros_ec_register(struct cros_ec_device *ec_dev)
+> >  {
+> >  	struct device *dev = ec_dev->dev;
+> > @@ -153,6 +157,18 @@ int cros_ec_register(struct cros_ec_device *ec_dev)
+> >  		}
+> >  	}
+> >  
+> > +	if (IS_ENABLED(CONFIG_CROS_EC_THROTTLER)) {
+> > +		err = mfd_add_devices(ec_dev->dev, PLATFORM_DEVID_AUTO,
+> > +				      &ec_throttler_cell, 1, NULL, ec_dev->irq,
+> > +				      NULL);
+> 
+> Most of this similar sub-device registration seems to have moved to
+> cros_ec_dev.c, in ec_device_probe(). Should this do the same?
 
-Hmm right, the current implementation is broken with multiple root
-domains... We rarely use that in mobile but the code should work
-regardless I suppose.
+Not sure about this, the only device that is registered in
+ec_device_probe() are the sensors.
 
-I agree having one list per root_domain should be better. I'll change that
-in v4. But I also think the idea of a global static_key is broken then.
-We need a per root_domain thing as well. The SD_ASYM_CPUCAPACITY flag
-might be set on one hierarchy and not the other for ex. Not sure if
-attaching a static_key to each root_domain really makes sense though ...
+I cc-ed Benson and Olof, the maintainers of CrOS platform stuff,
+maybe they can help to clarify what the preference is and why.
 
-Would replacing the static_key by a flag attached to the root_domain be
-reasonable ? The CONFIG_ENERGY_MODEL config option could help us make
-sure there is no performance impact when EAS can't be used with something
-like this:
+> And on a similar note: is there a way to determine EC support for this
+> feature (e.g., EC_FEATURE_*)? Or do we just have to listen for
+> appropriate throttling events that may never come?
 
-	static bool sched_energy_enabled(struct root_domain *rd)
-	{
-	#ifdef CONFIG_ENERGY_MODEL
-		return rd->eas_enabled;
-	#else
-		return false;
-	#endif
-	}
+To my knowledge there is no such way as of now. There is no
+EC_FEATURE_* for throttling support
+(https://chromium.googlesource.com/chromiumos/platform/ec/+/master/include/ec_commands.h#1174).
+though we could probably add one.
 
-Or maybe a sched_feat instead of that ifdefery ?
+> Also, is this very useful on non-DT systems? Does this fail gracefully?
 
-> (and an empty list if there is but one entry on).
-
-Sorry but I didn't understand that ...
-
-Thanks,
-Quentin
+It is not useful on non-DT systems, however the throttler core has a
+dependency on CONFIG_OF, so the device wouldn't be added.
