@@ -1,7 +1,7 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v10 01/14] ARM: Add Krait L2 register accessor functions
-Date: Tue, 19 Jun 2018 19:15:12 +0530
-Message-ID: <1529415925-28915-2-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v10 03/14] clk: qcom: Add HFPLL driver
+Date: Tue, 19 Jun 2018 19:15:14 +0530
+Message-ID: <1529415925-28915-4-git-send-email-sricharan@codeaurora.org>
 References: <1529415925-28915-1-git-send-email-sricharan@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1529415925-28915-1-git-send-email-sricharan@codeaurora.org>
@@ -12,121 +12,146 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Stephen Boyd <sboyd@codeaurora.org>
 
-Krait CPUs have a handful of L2 cache controller registers that
-live behind a cp15 based indirection register. First you program
-the indirection register (l2cpselr) to point the L2 'window'
-register (l2cpdr) at what you want to read/write.  Then you
-read/write the 'window' register to do what you want. The
-l2cpselr register is not banked per-cpu so we must lock around
-accesses to it to prevent other CPUs from re-pointing l2cpdr
-underneath us.
+On some devices (MSM8974 for example), the HFPLLs are
+instantiated within the Krait processor subsystem as separate
+register regions. Add a driver for these PLLs so that we can
+provide HFPLL clocks for use by the system.
 
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: <devicetree@vger.kernel.org>
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- arch/arm/common/Kconfig                   |  3 ++
- arch/arm/common/Makefile                  |  1 +
- arch/arm/common/krait-l2-accessors.c      | 48 +++++++++++++++++++++++++++++++
- arch/arm/include/asm/krait-l2-accessors.h |  9 ++++++
- 4 files changed, 61 insertions(+)
- create mode 100644 arch/arm/common/krait-l2-accessors.c
- create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
+ drivers/clk/qcom/Kconfig  |  8 ++++
+ drivers/clk/qcom/Makefile |  1 +
+ drivers/clk/qcom/hfpll.c  | 96 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 105 insertions(+)
+ create mode 100644 drivers/clk/qcom/hfpll.c
 
-diff --git a/arch/arm/common/Kconfig b/arch/arm/common/Kconfig
-index e5ad070..c8e1986 100644
---- a/arch/arm/common/Kconfig
-+++ b/arch/arm/common/Kconfig
-@@ -7,6 +7,9 @@ config DMABOUNCE
- 	bool
- 	select ZONE_DMA
- 
-+config KRAIT_L2_ACCESSORS
-+	bool
+diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+index 9c3480d..95f9980 100644
+--- a/drivers/clk/qcom/Kconfig
++++ b/drivers/clk/qcom/Kconfig
+@@ -253,3 +253,11 @@ config SPMI_PMIC_CLKDIV
+ 	  Technologies, Inc. SPMI PMIC. It configures the frequency of
+ 	  clkdiv outputs of the PMIC. These clocks are typically wired
+ 	  through alternate functions on GPIO pins.
 +
- config SHARP_LOCOMO
- 	bool
- 
-diff --git a/arch/arm/common/Makefile b/arch/arm/common/Makefile
-index 70b4a14..eec6cd1 100644
---- a/arch/arm/common/Makefile
-+++ b/arch/arm/common/Makefile
-@@ -7,6 +7,7 @@ obj-y				+= firmware.o
- 
- obj-$(CONFIG_SA1111)		+= sa1111.o
- obj-$(CONFIG_DMABOUNCE)		+= dmabounce.o
-+obj-$(CONFIG_KRAIT_L2_ACCESSORS) += krait-l2-accessors.o
- obj-$(CONFIG_SHARP_LOCOMO)	+= locomo.o
- obj-$(CONFIG_SHARP_PARAM)	+= sharpsl_param.o
- obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
-diff --git a/arch/arm/common/krait-l2-accessors.c b/arch/arm/common/krait-l2-accessors.c
++config QCOM_HFPLL
++	tristate "High-Frequency PLL (HFPLL) Clock Controller"
++	depends on COMMON_CLK_QCOM
++	help
++	  Support for the high-frequency PLLs present on Qualcomm devices.
++	  Say Y if you want to support CPU frequency scaling on devices
++	  such as MSM8974, APQ8084, etc.
+diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
+index 1331ed7..d486aa3 100644
+--- a/drivers/clk/qcom/Makefile
++++ b/drivers/clk/qcom/Makefile
+@@ -42,3 +42,4 @@ obj-$(CONFIG_QCOM_CLK_SMD_RPM) += clk-smd-rpm.o
+ obj-$(CONFIG_SDM_GCC_845) += gcc-sdm845.o
+ obj-$(CONFIG_SDM_VIDEOCC_845) += videocc-sdm845.o
+ obj-$(CONFIG_SPMI_PMIC_CLKDIV) += clk-spmi-pmic-div.o
++obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
+diff --git a/drivers/clk/qcom/hfpll.c b/drivers/clk/qcom/hfpll.c
 new file mode 100644
-index 0000000..9a97dda
+index 0000000..a6de7101
 --- /dev/null
-+++ b/arch/arm/common/krait-l2-accessors.c
-@@ -0,0 +1,48 @@
++++ b/drivers/clk/qcom/hfpll.c
+@@ -0,0 +1,96 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Copyright (c) 2018, The Linux Foundation. All rights reserved.
 +
-+#include <linux/spinlock.h>
-+#include <linux/export.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/of.h>
++#include <linux/clk.h>
++#include <linux/clk-provider.h>
++#include <linux/regmap.h>
 +
-+#include <asm/barrier.h>
-+#include <asm/krait-l2-accessors.h>
++#include "clk-regmap.h"
++#include "clk-hfpll.h"
 +
-+static DEFINE_RAW_SPINLOCK(krait_l2_lock);
++static const struct hfpll_data hdata = {
++	.mode_reg = 0x00,
++	.l_reg = 0x04,
++	.m_reg = 0x08,
++	.n_reg = 0x0c,
++	.user_reg = 0x10,
++	.config_reg = 0x14,
++	.config_val = 0x430405d,
++	.status_reg = 0x1c,
++	.lock_bit = 16,
 +
-+void krait_set_l2_indirect_reg(u32 addr, u32 val)
++	.user_val = 0x8,
++	.user_vco_mask = 0x100000,
++	.low_vco_max_rate = 1248000000,
++	.min_rate = 537600000UL,
++	.max_rate = 2900000000UL,
++};
++
++static const struct of_device_id qcom_hfpll_match_table[] = {
++	{ .compatible = "qcom,hfpll" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, qcom_hfpll_match_table);
++
++static const struct regmap_config hfpll_regmap_config = {
++	.reg_bits	= 32,
++	.reg_stride	= 4,
++	.val_bits	= 32,
++	.max_register	= 0x30,
++	.fast_io	= true,
++};
++
++static int qcom_hfpll_probe(struct platform_device *pdev)
 +{
-+	unsigned long flags;
++	struct resource *res;
++	struct device *dev = &pdev->dev;
++	void __iomem *base;
++	struct regmap *regmap;
++	struct clk_hfpll *h;
++	struct clk_init_data init = {
++		.parent_names = (const char *[]){ "xo" },
++		.num_parents = 1,
++		.ops = &clk_ops_hfpll,
++	};
 +
-+	raw_spin_lock_irqsave(&krait_l2_lock, flags);
-+	/*
-+	 * Select the L2 window by poking l2cpselr, then write to the window
-+	 * via l2cpdr.
-+	 */
-+	asm volatile ("mcr p15, 3, %0, c15, c0, 6 @ l2cpselr" : : "r" (addr));
-+	isb();
-+	asm volatile ("mcr p15, 3, %0, c15, c0, 7 @ l2cpdr" : : "r" (val));
-+	isb();
++	h = devm_kzalloc(dev, sizeof(*h), GFP_KERNEL);
++	if (!h)
++		return -ENOMEM;
 +
-+	raw_spin_unlock_irqrestore(&krait_l2_lock, flags);
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	base = devm_ioremap_resource(dev, res);
++	if (IS_ERR(base))
++		return PTR_ERR(base);
++
++	regmap = devm_regmap_init_mmio(&pdev->dev, base, &hfpll_regmap_config);
++	if (IS_ERR(regmap))
++		return PTR_ERR(regmap);
++
++	if (of_property_read_string_index(dev->of_node, "clock-output-names",
++					  0, &init.name))
++		return -ENODEV;
++
++	h->d = &hdata;
++	h->clkr.hw.init = &init;
++	spin_lock_init(&h->lock);
++
++	return devm_clk_register_regmap(&pdev->dev, &h->clkr);
 +}
-+EXPORT_SYMBOL(krait_set_l2_indirect_reg);
 +
-+u32 krait_get_l2_indirect_reg(u32 addr)
-+{
-+	u32 val;
-+	unsigned long flags;
++static struct platform_driver qcom_hfpll_driver = {
++	.probe		= qcom_hfpll_probe,
++	.driver		= {
++		.name	= "qcom-hfpll",
++		.of_match_table = qcom_hfpll_match_table,
++	},
++};
++module_platform_driver(qcom_hfpll_driver);
 +
-+	raw_spin_lock_irqsave(&krait_l2_lock, flags);
-+	/*
-+	 * Select the L2 window by poking l2cpselr, then read from the window
-+	 * via l2cpdr.
-+	 */
-+	asm volatile ("mcr p15, 3, %0, c15, c0, 6 @ l2cpselr" : : "r" (addr));
-+	isb();
-+	asm volatile ("mrc p15, 3, %0, c15, c0, 7 @ l2cpdr" : "=r" (val));
-+
-+	raw_spin_unlock_irqrestore(&krait_l2_lock, flags);
-+
-+	return val;
-+}
-+EXPORT_SYMBOL(krait_get_l2_indirect_reg);
-diff --git a/arch/arm/include/asm/krait-l2-accessors.h b/arch/arm/include/asm/krait-l2-accessors.h
-new file mode 100644
-index 0000000..a5f2cdd
---- /dev/null
-+++ b/arch/arm/include/asm/krait-l2-accessors.h
-@@ -0,0 +1,9 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef __ASMARM_KRAIT_L2_ACCESSORS_H
-+#define __ASMARM_KRAIT_L2_ACCESSORS_H
-+
-+extern void krait_set_l2_indirect_reg(u32 addr, u32 val);
-+extern u32 krait_get_l2_indirect_reg(u32 addr);
-+
-+#endif
++MODULE_DESCRIPTION("QCOM HFPLL Clock Driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:qcom-hfpll");
 -- 
 1.9.1
