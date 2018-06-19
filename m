@@ -1,75 +1,24 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
-Date: Tue, 19 Jun 2018 11:49:22 +0100
-Message-ID: <20180619104921.GV17720@e108498-lin.cambridge.arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v3 03/10] PM: Introduce an Energy Model management
+ framework
+Date: Tue, 19 Jun 2018 13:07:34 +0200
+Message-ID: <20180619110734.GO2458@hirez.programming.kicks-ass.net>
 References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-11-quentin.perret@arm.com>
- <20180619091841.GD9208@codeaurora.org>
- <20180619094002.GR17720@e108498-lin.cambridge.arm.com>
- <20180619094714.GA13617@localhost.localdomain>
- <20180619100224.GT17720@e108498-lin.cambridge.arm.com>
- <20180619101901.GC13617@localhost.localdomain>
- <20180619102502.GU17720@e108498-lin.cambridge.arm.com>
- <20180619103108.GD13617@localhost.localdomain>
+ <20180521142505.6522-4-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180619103108.GD13617@localhost.localdomain>
+In-Reply-To: <20180521142505.6522-4-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: Pavan Kondeti <pkondeti@codeaurora.org>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 19 Jun 2018 at 12:31:08 (+0200), Juri Lelli wrote:
-> On 19/06/18 11:25, Quentin Perret wrote:
-> > On Tuesday 19 Jun 2018 at 12:19:01 (+0200), Juri Lelli wrote:
-> > > On 19/06/18 11:02, Quentin Perret wrote:
-> > > > On Tuesday 19 Jun 2018 at 11:47:14 (+0200), Juri Lelli wrote:
-> > > > > On 19/06/18 10:40, Quentin Perret wrote:
-> > > > > > Hi Pavan,
-> > > > > > 
-> > > > > > On Tuesday 19 Jun 2018 at 14:48:41 (+0530), Pavan Kondeti wrote:
-> > > > > 
-> > > > > [...]
-> > > > > 
-> > > > > > > There seems to be a sysfs interface exposed by this driver to change cpu_scale.
-> > > > > > > Should we worry about it? I don't know what is the usecase for changing the
-> > > > > > > cpu_scale from user space.
-> > > > > > 
-> > > > > > This is something I've been wondering as well. TBH, I'm not sure what to
-> > > > > > do in this case. And I'm not sure to know what is the use-case either.
-> > > > > > Debugging purpose I assume ?
-> > > > > > 
-> > > > > > Juri, did you have a specific use-case for this feature when the
-> > > > > > arch_topology driver was first introduced ? Or was it just to align
-> > > > > > with the existing arm/arm64 code ?
-> > > > > 
-> > > > > It was requested (IIRC) because DT might have bogus values and not be
-> > > > > easily modifiable. So, this is another way to get things right for your
-> > > > > platform at runtime.
-> > > > 
-> > > > Right, but that also allows you to set different capacities to CPUs
-> > > > inside the same freq domain, which isn't supported by the EM framework,
-> > > > at least for now. So I would prefer to assume that your values in DT must
-> > > > to be correct to use EAS, and leave the code as-is for now.
-> > > 
-> > > It's actually built on the (current) assumption that siblings share
-> > > capacity [1], so it seems to align with what EM requires.
-> > > 
-> > > [1] https://elixir.bootlin.com/linux/latest/source/drivers/base/arch_topology.c#L71
-> > 
-> > But there is not hard guarantee that the core_sibling mask and the
-> > frequency domains are aligned :-(
-> > 
-> > Hikey 620 is an example where they might be misaligned (I think)
-> 
-> Yep. In this case you'd need to write cpu_capacity twice (for each
-> cluster). I think.
+On Mon, May 21, 2018 at 03:24:58PM +0100, Quentin Perret wrote:
+> +struct em_freq_domain {
+> +	struct em_cs_table *cs_table;
+> +	cpumask_t cpus;
+> +};
 
-Ok, I'll keep the code as-is for now, and we can discuss further on v4.
-I guess we need to agree on the need for em_rescale_cpu_capacity() before
-going too deep in the Arm-specific changes to call it :-)
-
-Thanks !
-Quentin
+https://lkml.kernel.org/r/20180612125930.GP12217@hirez.programming.kicks-ass.net
