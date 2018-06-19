@@ -1,86 +1,35 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v3 12/12] mfd: cros_ec: Add throttler sub-device
-Date: Tue, 19 Jun 2018 10:55:24 -0700
-Message-ID: <20180619175524.GZ88063@google.com>
-References: <20180614194712.102134-1-mka@chromium.org>
- <20180614194712.102134-13-mka@chromium.org>
- <20180618232109.GB154056@rodete-desktop-imager.corp.google.com>
- <CAFqH_520Z4nAkXsnKeO9ZGqSSfPg_7f7pjJs=t=ryQTBExfwoA@mail.gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] dt-bindings: Fix unbalanced quotation marks
+Date: Tue, 19 Jun 2018 11:23:07 -0700
+Message-ID: <20180619182307.GG71788@dtor-ws>
+References: <20180617143127.11421-1-j.neuschaefer@gmx.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAFqH_520Z4nAkXsnKeO9ZGqSSfPg_7f7pjJs=t=ryQTBExfwoA@mail.gmail.com>
+In-Reply-To: <20180617143127.11421-1-j.neuschaefer@gmx.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo Serra <eballetbo@gmail.com>
-Cc: Brian Norris <briannorris@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh.kumar@linaro.org, Lee Jones <lee.jones@linaro.org>
+To: Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>
+Cc: devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, Hauke Mehrtens <hauke@hauke-m.de>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Madalin Bucur <madalin.bucur@nxp.com>, "David S. Miller" <davem@>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
+On Sun, Jun 17, 2018 at 04:31:18PM +0200, Jonathan Neuschäfer wrote:
+> diff --git a/Documentation/devicetree/bindings/input/touchscreen/hideep.txt b/Documentation/devicetree/bindings/input/touchscreen/hideep.txt
+> index 121d9b7c79a2..1063c30d53f7 100644
+> --- a/Documentation/devicetree/bindings/input/touchscreen/hideep.txt
+> +++ b/Documentation/devicetree/bindings/input/touchscreen/hideep.txt
+> @@ -32,7 +32,7 @@ i2c@00000000 {
+>  		reg = <0x6c>;
+>  		interrupt-parent = <&gpx1>;
+>  		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
+> -		vdd-supply = <&ldo15_reg>";
+> +		vdd-supply = <&ldo15_reg>;
+>  		vid-supply = <&ldo18_reg>;
+>  		reset-gpios = <&gpx1 5 0>;
+>  		touchscreen-size-x = <1080>;
 
-On Tue, Jun 19, 2018 at 10:41:01AM +0200, Enric Balletbo Serra wrote:
-> Hi Matthias,
-> 
-> I am also interested on the answer of Brian comments :). One small comment.
-> 
-> Missatge de Brian Norris <briannorris@chromium.org> del dia dt., 19 de
-> juny 2018 a les 1:22:
-> >
-> > Hi,
-> >
-> > On Thu, Jun 14, 2018 at 12:47:12PM -0700, Matthias Kaehlcke wrote:
-> > > Instantiate the CrOS EC throttler if it is enabled in the kernel
-> > > configuration.
-> > >
-> > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > > ---
-> > > Changes in v3:
-> > > - patch added to series
-> > >
-> > >  drivers/mfd/cros_ec.c | 16 ++++++++++++++++
-> > >  1 file changed, 16 insertions(+)
-> > >
-> > > diff --git a/drivers/mfd/cros_ec.c b/drivers/mfd/cros_ec.c
-> > > index 36156a41499c..5f52b6e2c21a 100644
-> > > --- a/drivers/mfd/cros_ec.c
-> > > +++ b/drivers/mfd/cros_ec.c
-> > > @@ -91,6 +91,10 @@ static int cros_ec_sleep_event(struct cros_ec_device *ec_dev, u8 sleep_event)
-> > >       return cros_ec_cmd_xfer(ec_dev, &buf.msg);
-> > >  }
-> > >
-> > > +static const struct mfd_cell ec_throttler_cell = {
-> > > +     { .name = "cros-ec-throttler" }
-> > > +};
-> > > +
-> 
-> As Brian said I think that this should go in cros_ec_dev?
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Not sure about this, see my reply to Brian.
-
-> Even when only there is one cell we tend to use the array format (see
-> i.e the cros-ec-rtc and the others in cros_ec_dev).
-> 
-> +static const struct mfd_cell ec_throttler_cells[] = {
-> +     { .name = "cros-ec-throttler" }
-> +};
-
-Ok, will change.
-
-> > >  int cros_ec_register(struct cros_ec_device *ec_dev)
-> > >  {
-> > >       struct device *dev = ec_dev->dev;
-> > > @@ -153,6 +157,18 @@ int cros_ec_register(struct cros_ec_device *ec_dev)
-> > >               }
-> > >       }
-> > >
-> > > +     if (IS_ENABLED(CONFIG_CROS_EC_THROTTLER)) {
-> > > +             err = mfd_add_devices(ec_dev->dev, PLATFORM_DEVID_AUTO,
-> > > +                                   &ec_throttler_cell, 1, NULL, ec_dev->irq,
-> 
-> ARRAY_SIZE(ec_throttler_cells)
-
-Ack
-
-Thanks
-
-Matthias
+-- 
+Dmitry
