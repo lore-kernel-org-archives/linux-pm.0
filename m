@@ -1,140 +1,93 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
- bindings
-Date: Tue, 19 Jun 2018 10:34:55 +0100
-Message-ID: <f26813f1-f8da-ef92-fd86-6e648fbbf3e9@arm.com>
-References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
- <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
- <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
- <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org>
- <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
- <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org>
- <CAHLCerMCM1qf1MJ3bz+ZwBQMjshKSCWKXjHCiuqxJTDBdauamQ@mail.gmail.com>
- <32e8f874-a58b-8ba3-7a53-dc89cb34f7d9@codeaurora.org>
- <fad24065-bb2d-33f9-e877-425db3391e8f@arm.com>
- <514eea88-1f98-7959-2341-3d57cff6f66b@codeaurora.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
+Date: Tue, 19 Jun 2018 10:40:03 +0100
+Message-ID: <20180619094002.GR17720@e108498-lin.cambridge.arm.com>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-11-quentin.perret@arm.com>
+ <20180619091841.GD9208@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <514eea88-1f98-7959-2341-3d57cff6f66b@codeaurora.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180619091841.GD9208@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: Amit Kucheria <amit.kucheria@verdurent.com>, Sudeep Holla <sudeep.holla@arm.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Pavan Kondeti <pkondeti@codeaurora.org>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Pavan,
 
+On Tuesday 19 Jun 2018 at 14:48:41 (+0530), Pavan Kondeti wrote:
+> On Mon, May 21, 2018 at 03:25:05PM +0100, Quentin Perret wrote:
+> 
+> <snip>
+> 
+> > +static void start_eas_workfn(struct work_struct *work);
+> > +static DECLARE_WORK(start_eas_work, start_eas_workfn);
+> > +
+> >  static int
+> >  init_cpu_capacity_callback(struct notifier_block *nb,
+> >  			   unsigned long val,
+> > @@ -204,6 +209,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+> >  		free_raw_capacity();
+> >  		pr_debug("cpu_capacity: parsing done\n");
+> >  		schedule_work(&parsing_done_work);
+> > +		schedule_work(&start_eas_work);
+> >  	}
+> >  
+> >  	return 0;
+> > @@ -249,6 +255,19 @@ static void parsing_done_workfn(struct work_struct *work)
+> >  	free_cpumask_var(cpus_to_visit);
+> >  }
+> >  
+> > +static void start_eas_workfn(struct work_struct *work)
+> > +{
+> > +	/* Make sure the EM knows about the updated CPU capacities. */
+> > +	rcu_read_lock();
+> > +	em_rescale_cpu_capacity();
+> > +	rcu_read_unlock();
+> > +
+> > +	/* Inform the scheduler about the EM availability. */
+> > +	cpus_read_lock();
+> > +	rebuild_sched_domains();
+> > +	cpus_read_unlock();
+> > +}
+> 
+> Rebuilding the sched domains is unnecessary for the platform that don't have
+> energy-model. In fact, we can completely avoid scheduling this work.
 
-On 19/06/18 08:53, Taniya Das wrote:
-> 
-> 
-> On 6/18/2018 2:51 PM, Sudeep Holla wrote:
->>
->>
->> On 15/06/18 18:40, Taniya Das wrote:
->>>
->>>
->>> On 6/15/2018 5:29 PM, Amit Kucheria wrote:
->>
->> [...]
->>
->>>> A future version of the HW engine, or more likely, a firmware
->>>> revision, will make more functionality available. Say, this needs
->>>> access to another register or two. This will require changing the DT
->>>> bindings. Instead, if you map the entire address space, you can just
->>>> add offsets to the new registers.
->>>>
->>>> So in this case, I think you should define the following addresses
->>>> (size 0x1400) for the two frequency domains
->>>>
->>>> 0x17d43000, 0x1400 (power cluster)
->>>> 0x17d45800, 0x1400 (perf cluster)
->>>>
->>>> And in the driver simply add offsets as follows:
->>>>
->>>> #define ENABLE_OFFSET               0x0
->>>> #define LUT_OFFSET                      0x110
->>>> #define PERF_DESIRED_OFFSET 0x920
->>>>
->>>
->>> The offsets could vary across versions of this IP and that is the reason
->>> to provide them through the DT and not define any such offsets.
->>>
->>
->> Just get compatibles to identify the version of the hardware if it can't
->> be probed and detected. Please don't use DT to get the addresses of each
->> register you use in the driver. That's neither scalable nor nice
->> solution to the problem.
->> Hello Sudeep and Amit,
-> 
-> Thanks for the comments, I am consolidating the understanding from the
-> other emails in a single one.
-> 
-> I understand that you are looking for this IP to map the full region and
-> define offsets according to access them.
-> 
-> But I still not sure how do you want this common driver to scale in the
-> cases where the offsets could vary across version change.
-> 
+Good point, we might be able to save a little bit of work there.
+Now, you will reach this point only if dmips-capacity-mhz values are
+specified in DT for you platform, which is usually done only for
+big.LITTLE-like Arm platforms. And there are good chances that you want
+to have an Energy Model as well for these platforms, so in practice that
+won't make a massive difference I suppose ...
 
-There are plenty of drivers that you can look at as example. TBH most of
-the drivers implementing support for multiple versions of IP do
-something on the similar lines.
+> There seems to be a sysfs interface exposed by this driver to change cpu_scale.
+> Should we worry about it? I don't know what is the usecase for changing the
+> cpu_scale from user space.
 
->  DT
-> ====
->   freq-node {
->     reg = < X x_size>;   Where X is the start of the IP address.
->   }
-> 
-> Driver code (The below representation is just for example).
-> =============
-> 
-> V1
-> #define ENABLE    0x0
-> #define LUT_V1    0x110
-> #define PERF_V1    0x920
-> 
-> V2
-> #define LUT_V2    0x150
-> #define PERF_V2    0x980
-> 
-> V3
-> #define LUT_V3    0x120
-> ....
-> 
-> Do you want me to use "compatible" flag to
-> 
-> if (compatible == v1)
->  enable =  readl_relaxed(X + LUT_V1);
-> else if (compatible == v2)
->  enable = readl_relaxed(X + LUT_V2);
-> else if (compatible == v3)
->  enable = readl_relaxed(X + LUT_V2);
-> 
+This is something I've been wondering as well. TBH, I'm not sure what to
+do in this case. And I'm not sure to know what is the use-case either.
+Debugging purpose I assume ?
 
-These are implementation details. But you should try to use compatibles
-only in probe and just record the version in some variable or update the
-offsets in some device specific structure so that you can use that
-unconditionally for any access you make on that device.
+Juri, did you have a specific use-case for this feature when the
+arch_topology driver was first introduced ? Or was it just to align
+with the existing arm/arm64 code ?
 
-> With the current design I do not need such compatible checks and unmap
-> the ones which are not required after probe.
+The reason I didn't call the em_rescale_cpu_capacity() function when CPU
+capacities are written from sysfs is because that interface allows to have
+CPUs with different capacities in the same freq_domain, which is against
+the assumptions we have in the EM framework.
 
-I am not sure what you mean by unmap after probe.
-
-> Please let me know your comments.
 > 
+> Are we expecting that the energy-model is populated by this time? If it is
+> not, should not we build the sched domains again after the energy-model is
+> populated?
 
-Please look at some drivers in the Linux tree for examples. Infact there
-may be few drivers on QCOM SoC itself. What I am suggesting is the normal
-practice in the drivers and you should see plenty of examples. Since I
-was looking at some serial port patch, I can say you can have a look at
-drivers/tty/serial/amba-pl011.c which supports multiple versions from
-different vendors. I am sure there are many simpler examples but AMBA PL011
-just stood out.
+Yes, the assumption is that drivers have provided the EM by this time.
+I'll send a v4 of this patch set very soon with an example of cpufreq
+driver modification.
 
--- 
-Regards,
-Sudeep
+Thanks,
+Quentin
