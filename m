@@ -1,111 +1,129 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v8] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Tue, 19 Jun 2018 14:19:07 +0530
-Message-ID: <20180619084907.3ccawclk4dqzixrl@vireshk-i7>
-References: <1529387906-3838-1-git-send-email-daniel.lezcano@linaro.org>
- <20180619062227.uyan2t63fqwxj3eb@vireshk-i7>
- <bbc73374-194d-2c3f-fce7-e4b6de0a12bb@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW
+ driver
+Date: Tue, 19 Jun 2018 14:24:07 +0530
+Message-ID: <20180619085407.nmos7tix77vnaqre@vireshk-i7>
+References: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
+ <1528109194-16864-3-git-send-email-tdas@codeaurora.org>
+ <20180606060119.yzl24vhqff6btvrk@vireshk-i7>
+ <3cd5944b-d2ca-e7d7-f315-c3e5f230701b@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <bbc73374-194d-2c3f-fce7-e4b6de0a12bb@linaro.org>
+In-Reply-To: <3cd5944b-d2ca-e7d7-f315-c3e5f230701b@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 19-06-18, 10:00, Daniel Lezcano wrote:
-> On 19/06/2018 08:22, Viresh Kumar wrote:
-> > On 19-06-18, 07:58, Daniel Lezcano wrote:
-> >> +++ b/drivers/powercap/idle_injection.c
-> >> @@ -0,0 +1,375 @@
-> >> +// SPDX-License-Identifier: GPL-2.0
-> >> +/*
-> >> + * Copyright 2018 Linaro Limited
-> >> + *
-> >> + * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >> + *
-> >> + * The idle injection framework proposes a way to force a cpu to enter
-> >> + * an idle state during a specified amount of time for a specified
-> >> + * period.
-> >> + *
-> >> + * It relies on the smpboot kthreads which handles, via its main loop,
-> >> + * the common code for hotplugging and [un]parking.
-> >> + *
-> >> + * At init time, all the kthreads are created.
-> >> + *
-> >> + * A cpumask is specified as parameter for the idle injection
-> >> + * registering function. The kthreads will be synchronized regarding
-> >> + * this cpumask.
-> >> + *
-> >> + * The idle + run duration is specified via the helpers and then the
-> >> + * idle injection can be started at this point.
-> >> + *
-> >> + * A kthread will call play_idle() with the specified idle duration
-> >> + * from above.
-> >> + *
-> >> + * A timer is set after waking up all the tasks, to the next idle
-> >> + * injection cycle.
-> >> + *
-> >> + * The task handling the timer interrupt will wakeup all the kthreads
-> >> + * belonging to the cpumask.
-> >> + *
-> >> + * Stopping the idle injection is synchonuous, when the function
-> > 
-> >                                      synchronous
-> > 
-> >> + * returns, there is the guarantee there is no more idle injection
-> >> + * kthread in activity.
-> >> + *
-> >> + * It is up to the user of this framework to provide a lock at an
-> >> + * upper level to prevent stupid things to happen, like starting while
-> >> + * we are unregistering.
-> >> + */
-> > 
-> >> +static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
-> >> +{
-> >> +	struct idle_injection_thread *iit;
-> >> +	unsigned int cpu;
-> >> +
-> >> +	for_each_cpu_and(cpu, to_cpumask(ii_dev->cpumask), cpu_online_mask) {
-> >> +		iit = per_cpu_ptr(&idle_injection_thread, cpu);
-> >> +		iit->should_run = 1;
-> >> +		wake_up_process(iit->tsk);
-> >> +	}
-> >> +}
-> > 
-> > Thread A                                        Thread B
-> > 
-> >                                                 CPU3 hotplug out
-> >                                                 -> idle_injection_park()
-> >                                                   iit(of-CPU3)->should_run = 0;
-> > 
-> > idle_injection_wakeup()
-> >  for_each_cpu_and(online)..
-> >    CPU3-selected
-> >                                                 clear CPU3 from cpu-online mask.
-> > 
-> > 
-> >    iit(of-CPU3)->should_run = 1;
-> >    wake_up_process()
-> > 
-> > With the above sequence of events, is it possible that the iit->should_run
-> > variable is set to 1 while the CPU is offlined ? And so the crash we discussed
-> > in the previous version may still exist ? Sorry I am not able to take my mind
-> > away from thinking about these stupid races :(
-> 
-> If I refer to previous Peter's comment about a similar race, I think it
-> is possible.
-> 
-> I guess setting the should_run flag to zero in the unpark() must fix the
-> issue also.
+Sorry for being late..
 
-Right. But since you are already taking the hotplug lock in stop-idle-injection,
-you can iterate over all CPUs of a mask instead of the online ones. That would
-be one callback less to run at every unpark (though there wouldn't be so many of
-them I believe).
+On 07-06-18, 12:48, Taniya Das wrote:
+> On 6/6/2018 11:31 AM, Viresh Kumar wrote:
+> > On 04-06-18, 16:16, Taniya Das wrote:
+
+> > > +static struct cpufreq_driver cpufreq_qcom_fw_driver = {
+> > > +	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+> > > +			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+> > > +	.verify		= cpufreq_generic_frequency_table_verify,
+> > > +	.target_index	= qcom_cpufreq_fw_target_index,
+> > > +	.get		= qcom_cpufreq_fw_get,
+> > > +	.init		= qcom_cpufreq_fw_cpu_init,
+> > 
+> > What about CPU hotplug ? We can still do that, right ? So what will happen if
+> > all CPUs of a freq-domain are removed (hence cpufreq policy is removed) and then
+> > someone calls qcom_cpufreq_fw_get() ? You should really work on cpufreq_policy
+> > there to get 'c'.
+> > 
+> 
+> You want the _get to do something as below.
+> Please correct me if my understanding is wrong.
+> ....
+> 
+>  policy = cpufreq_cpu_get_raw(cpu);
+>  if (!policy)
+>     return 0;
+> 
+>  c = policy->driver_data;
+> 
+>  index = readl_relaxed(c->perf_base);
+>  index = min(index, LUT_MAX_ENTRIES - 1);
+> 
+>  return c->table[index].frequency;
+> 
+> ....
+
+Right.
+
+> > > +static int qcom_read_lut(struct platform_device *pdev,
+> > > +			 struct cpufreq_qcom *c)
+> > > +{
+> > > +	struct device *dev = &pdev->dev;
+> > > +	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
+> > > +
+> > > +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
+> > > +				sizeof(*c->table), GFP_KERNEL);
+> > > +	if (!c->table)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+> > > +		data = readl_relaxed(c->lut_base + i * LUT_ROW_SIZE);
+> > > +		src = ((data & GENMASK(31, 30)) >> 30);
+> > > +		lval = (data & GENMASK(7, 0));
+> > > +		core_count = CORE_COUNT_VAL(data);
+> > > +
+> > > +		if (!src)
+> > > +			c->table[i].frequency = INIT_RATE / 1000;
+> > > +		else
+> > > +			c->table[i].frequency = XO_RATE * lval / 1000;
+> > > +
+> > > +		cur_freq = c->table[i].frequency;
+> > > +
+> > > +		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
+> > > +			i, c->table[i].frequency, core_count);
+> > > +
+> > > +		if (core_count != c->max_cores)
+> > > +			cur_freq = CPUFREQ_ENTRY_INVALID;
+> > > +
+> > > +		/*
+> > > +		 * Two of the same frequencies with the same core counts means
+> > > +		 * end of table.
+> > > +		 */
+> > > +		if (i > 0 && c->table[i - 1].frequency ==
+> > > +		   c->table[i].frequency && prev_cc == core_count) {
+> > > +			struct cpufreq_frequency_table *prev = &c->table[i - 1];
+> > > +
+> > > +			if (prev_freq == CPUFREQ_ENTRY_INVALID)
+> > > +				prev->flags = CPUFREQ_BOOST_FREQ;
+> > > +			break;
+> > > +		}
+> > > +		prev_cc = core_count;
+> > > +		prev_freq = cur_freq;
+> > > +	}
+> > > +
+> > > +	c->table[i].frequency = CPUFREQ_TABLE_END;
+> > > +
+> > > +	return 0;
+> > > +}
+> > 
+> > Looks like there are many problems here.
+> > - You are assigning prev_freq with cur_freq (which may be uninitialized local
+> >    variable here).
+> > - In this version, you never write CPUFREQ_ENTRY_INVALID to table[i].frequency,
+> >    which looks wrong as well.
+> > 
+> 
+> - The code to detect boost, would only enter for i > 0 and the prev_freq
+> would be initialized with the cur_freq.
+> - In the case where the core_count != max_cores, the cur_freq is marked
+> INVALID, and when both prev_freq == cur_freq && prev_cc && cur_cc match,
+> that is the time the prev table flags need to be updated. Marking the
+> table[i].frequency as INVALID is not required as cur_freq is already marked
+> with the same. Please correct me if you think otherwise.
+
+Yeah but the value of cur_freq isn't written to the table entries now. This
+wasn't the case in the earlier version. Have a look at that one.
 
 -- 
 viresh
