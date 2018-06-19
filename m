@@ -1,47 +1,66 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
-Date: Tue, 19 Jun 2018 11:02:24 +0100
-Message-ID: <20180619100224.GT17720@e108498-lin.cambridge.arm.com>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-11-quentin.perret@arm.com>
- <20180619091841.GD9208@codeaurora.org>
- <20180619094002.GR17720@e108498-lin.cambridge.arm.com>
- <20180619094714.GA13617@localhost.localdomain>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH] dt-bindings: Fix unbalanced quotation marks
+Date: Tue, 19 Jun 2018 11:10:48 +0100
+Message-ID: <819db945-1f89-93d3-b213-365a9704e100@nvidia.com>
+References: <20180617143127.11421-1-j.neuschaefer@gmx.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180619094714.GA13617@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: Pavan Kondeti <pkondeti@codeaurora.org>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20180617143127.11421-1-j.neuschaefer@gmx.net>
+Content-Language: en-US
+Sender: netdev-owner@vger.kernel.org
+To: =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>, devicetree@vger.kernel.org
+Cc: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, Hauke Mehrtens <hauke@hauke-m.de>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Madalin Bucur <madalin.bucur@nxp.com>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 19 Jun 2018 at 11:47:14 (+0200), Juri Lelli wrote:
-> On 19/06/18 10:40, Quentin Perret wrote:
-> > Hi Pavan,
-> > 
-> > On Tuesday 19 Jun 2018 at 14:48:41 (+0530), Pavan Kondeti wrote:
-> 
-> [...]
-> 
-> > > There seems to be a sysfs interface exposed by this driver to change cpu_scale.
-> > > Should we worry about it? I don't know what is the usecase for changing the
-> > > cpu_scale from user space.
-> > 
-> > This is something I've been wondering as well. TBH, I'm not sure what to
-> > do in this case. And I'm not sure to know what is the use-case either.
-> > Debugging purpose I assume ?
-> > 
-> > Juri, did you have a specific use-case for this feature when the
-> > arch_topology driver was first introduced ? Or was it just to align
-> > with the existing arm/arm64 code ?
-> 
-> It was requested (IIRC) because DT might have bogus values and not be
-> easily modifiable. So, this is another way to get things right for your
-> platform at runtime.
 
-Right, but that also allows you to set different capacities to CPUs
-inside the same freq domain, which isn't supported by the EM framework,
-at least for now. So I would prefer to assume that your values in DT must
-to be correct to use EAS, and leave the code as-is for now.
+
+On 17/06/18 15:31, Jonathan Neuschäfer wrote:
+> Multiple binding documents have various forms of unbalanced quotation
+> marks. Fix them.
+> 
+> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+> ---
+> 
+> Should I split this patch so that different parts can go through different trees?
+> ---
+>  .../devicetree/bindings/arm/samsung/samsung-boards.txt          | 2 +-
+>  .../devicetree/bindings/gpio/nintendo,hollywood-gpio.txt        | 2 +-
+>  Documentation/devicetree/bindings/input/touchscreen/hideep.txt  | 2 +-
+>  .../bindings/interrupt-controller/nvidia,tegra20-ictlr.txt      | 2 +-
+>  .../devicetree/bindings/interrupt-controller/st,stm32-exti.txt  | 2 +-
+>  Documentation/devicetree/bindings/mips/brcm/soc.txt             | 2 +-
+>  Documentation/devicetree/bindings/net/fsl-fman.txt              | 2 +-
+>  Documentation/devicetree/bindings/power/power_domain.txt        | 2 +-
+>  Documentation/devicetree/bindings/regulator/tps65090.txt        | 2 +-
+>  Documentation/devicetree/bindings/reset/st,sti-softreset.txt    | 2 +-
+>  Documentation/devicetree/bindings/sound/qcom,apq8016-sbc.txt    | 2 +-
+>  Documentation/devicetree/bindings/sound/qcom,apq8096.txt        | 2 +-
+>  12 files changed, 12 insertions(+), 12 deletions(-)
+
+...
+
+> diff --git a/Documentation/devicetree/bindings/interrupt-controller/nvidia,tegra20-ictlr.txt b/Documentation/devicetree/bindings/interrupt-controller/nvidia,tegra20-ictlr.txt
+> index 1099fe0788fa..f246ccbf8838 100644
+> --- a/Documentation/devicetree/bindings/interrupt-controller/nvidia,tegra20-ictlr.txt
+> +++ b/Documentation/devicetree/bindings/interrupt-controller/nvidia,tegra20-ictlr.txt
+> @@ -15,7 +15,7 @@ Required properties:
+>    include "nvidia,tegra30-ictlr".	
+>  - reg : Specifies base physical address and size of the registers.
+>    Each controller must be described separately (Tegra20 has 4 of them,
+> -  whereas Tegra30 and later have 5"  
+> +  whereas Tegra30 and later have 5).
+>  - interrupt-controller : Identifies the node as an interrupt controller.
+>  - #interrupt-cells : Specifies the number of cells needed to encode an
+>    interrupt source. The value must be 3.
+
+For the above Tegra portion ...
+
+Acked-by: Jon Hunter <jonathanh@nvidia.com>
+
+Cheers
+Jon
+
+-- 
+nvpublic
