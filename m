@@ -1,80 +1,85 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 0/2] regulator: bd9571mwv: Add support for toggle power switches
-Date: Tue, 19 Jun 2018 15:55:16 +0200
-Message-ID: <20180619135518.8990-1-geert+renesas@glider.be>
+Subject: [PATCH v2 1/2] PM / wakeup: Add callback for wake-up change notification
+Date: Tue, 19 Jun 2018 15:55:17 +0200
+Message-ID: <20180619135518.8990-2-geert+renesas@glider.be>
+References: <20180619135518.8990-1-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180619135518.8990-1-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-	Hi all,
+Add a callback to inform a device that its wake-up setting has been
+changed.  This allows a device to synchronize device configuration with
+an external user action.
 
-The ROHM BD9571MWV PMIC on the Renesas Salvator-X(S) and ULCB
-development boards supports DDR Backup Power, which means that the DDR
-power rails can be kept powered while the main SoC is powered down.
+E.g. on systems using a Rohm BD9571MWV PMIC and a toggle accessory power
+switch, the system suspend/resume procedure is:
+  1. Configure PMIC for DDR backup mode (by software), which changes the
+     role of the accessory power switch from a power to a wake-up
+     switch,
+  2. Switch accessory power switch off (manually), to prepare for system
+     suspend,
+  3. Suspend system (by software),
+  4. Switch accessory power switch on (manually), to wake up the system.
 
-This patch series extends the support for DDR backup mode (see commit
-6eb0bfae6973eb6a ("regulator: bd9571mwv: Add support for backup mode"))
-to systems with toggle instead of momentary power switches.
+As step 2 involves a manual operation, step 1 cannot be combined
+with step 3 and performed in the PMIC's suspend callback (unlike on
+systems with a momentary power switch).
 
-With a toggle power switch (or level signal), the following steps must
-be followed exactly:
-   1. Configure PMIC for backup mode, which changes the role of the
-      power switch to a wake-up switch, 
-   2. Switch accessory power switch off, to prepare for system suspend,
-      which is a manual step not controlled by software,
-   3. Suspend system,
-   4. Switch accessory power switch on, to resume.
+Adding the new callback allows to move step 1 to the new callback, to be
+performed in response to the user writing "enabled" to the PMIC's
+"wakeup" virtual file in sysfs.
 
-Unlike on systems with a momentary toggle switch, an additional step 2
-must be performed in between step 1 and step 3.  Hence step 1 can no
-longer be handled in the PMIC's suspend callback.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Is there a better way to handle this?
 
-This patch series proposes a new callback for wake-up change
-notification, which allows performing step 1 when the user writes
-"enabled" to the PMIC's "wakeup" virtual file in sysfs, e.g.
+Currently step 1 is done in userspace using i2set, which is very
+user-unfriendly
+(https://elinux.org/R-Car/Boards/Salvator-XS#PSCI_System_Suspend).
 
-    echo enabled > /sys/devices/platform/soc/e60b0000.i2c/i2c-7/7-0030/bd9571mwv-regulator.2.auto/power/wakeup
+v2:
+  - Improve patch description.
+---
+ drivers/base/power/wakeup.c | 4 ++++
+ include/linux/pm.h          | 1 +
+ 2 files changed, 5 insertions(+)
 
-Conversely, writing "disabled" reverts the role of the accessory switch
-to a power switch.
-Note that unlike with momentary switches, backup mode is not enabled by
-default, as enabling it prevents the board from being powered off using
-the power switch, which may confuse the user.
-
-Changes compared to v1:
-  - Improve patch descriptions,
-  - Drop "return;" at end of function.
-
-This has been tested on M3ULCB (thanks Jacopo!), and on Salvator-X(S).
-
-For testing, this series is also available in the
-topic/bd9571-toggle-power-switch-v2 branch of my renesas-drivers git
-repository at
-git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
-
-Thanks!
-
-Geert Uytterhoeven (2):
-  PM / wakeup: Add callback for wake-up change notification
-  regulator: bd9571mwv: Add support for toggle power switches
-
- drivers/base/power/wakeup.c             |  4 ++++
- drivers/regulator/bd9571mwv-regulator.c | 23 +++++++++++++++++++++++
- include/linux/pm.h                      |  1 +
- 3 files changed, 28 insertions(+)
-
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 5fa1898755a34878..933560d658692fe3 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -255,6 +255,8 @@ static int device_wakeup_attach(struct device *dev, struct wakeup_source *ws)
+ 	if (dev->power.wakeirq)
+ 		device_wakeup_attach_irq(dev, dev->power.wakeirq);
+ 	spin_unlock_irq(&dev->power.lock);
++	if (dev->power.wakeup_change_notify)
++		dev->power.wakeup_change_notify(dev, true);
+ 	return 0;
+ }
+ 
+@@ -372,6 +374,8 @@ static struct wakeup_source *device_wakeup_detach(struct device *dev)
+ {
+ 	struct wakeup_source *ws;
+ 
++	if (dev->power.wakeup_change_notify)
++		dev->power.wakeup_change_notify(dev, false);
+ 	spin_lock_irq(&dev->power.lock);
+ 	ws = dev->power.wakeup;
+ 	dev->power.wakeup = NULL;
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index e723b78d835706f2..3dec274bffffc6f8 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -599,6 +599,7 @@ struct dev_pm_info {
+ 	struct list_head	entry;
+ 	struct completion	completion;
+ 	struct wakeup_source	*wakeup;
++	void (*wakeup_change_notify)(struct device *dev, bool enable);
+ 	bool			wakeup_path:1;
+ 	bool			syscore:1;
+ 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
 -- 
 2.17.1
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
