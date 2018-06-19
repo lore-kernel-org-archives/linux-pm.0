@@ -1,47 +1,150 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW
- driver
-Date: Tue, 19 Jun 2018 16:04:01 +0530
-Message-ID: <20180619103401.s3grdcm2hq6kx2pm@vireshk-i7>
-References: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
- <1528109194-16864-3-git-send-email-tdas@codeaurora.org>
- <20180606060119.yzl24vhqff6btvrk@vireshk-i7>
- <3cd5944b-d2ca-e7d7-f315-c3e5f230701b@codeaurora.org>
- <20180619085407.nmos7tix77vnaqre@vireshk-i7>
- <82d0646e-8dd7-43ba-6b5d-b772e57e865d@codeaurora.org>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v4 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ FW
+ bindings
+Date: Tue, 19 Jun 2018 16:14:50 +0530
+Message-ID: <2d37f581-38af-872a-36df-0250b0f7e411@codeaurora.org>
+References: <1528801355-18719-1-git-send-email-tdas@codeaurora.org>
+ <1528801355-18719-2-git-send-email-tdas@codeaurora.org>
+ <0f3f0223-3539-dc66-5300-8f30d827445d@arm.com>
+ <7abb2da6-c130-117a-5404-d07bb132d915@codeaurora.org>
+ <f57f2708-28bb-dcdd-8b93-d41ade10fa18@arm.com>
+ <bc6dc152-7def-fc1d-4535-11a44fd64310@codeaurora.org>
+ <CAHLCerMCM1qf1MJ3bz+ZwBQMjshKSCWKXjHCiuqxJTDBdauamQ@mail.gmail.com>
+ <32e8f874-a58b-8ba3-7a53-dc89cb34f7d9@codeaurora.org>
+ <fad24065-bb2d-33f9-e877-425db3391e8f@arm.com>
+ <514eea88-1f98-7959-2341-3d57cff6f66b@codeaurora.org>
+ <f26813f1-f8da-ef92-fd86-6e648fbbf3e9@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <82d0646e-8dd7-43ba-6b5d-b772e57e865d@codeaurora.org>
+In-Reply-To: <f26813f1-f8da-ef92-fd86-6e648fbbf3e9@arm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Amit Kucheria <amit.kucheria@verdurent.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-06-18, 15:55, Taniya Das wrote:
-> Yes, Viresh, earlier code was updating the table frequency as I was marking
-> the table frequency INVALID.
-> 	if (core_count != c->max_cores)	
-> 		c->table[i].frequency = CPUFREQ_ENTRY_INVALID;	
+
+
+On 6/19/2018 3:04 PM, Sudeep Holla wrote:
 > 
-> And thus I had to update the table frequency.
 > 
-> But now I have used the cur_freq instead and the table frequency is not
-> touched.
-> 	if (core_count != c->max_cores)
-> 		cur_freq = CPUFREQ_ENTRY_INVALID;
+> On 19/06/18 08:53, Taniya Das wrote:
+>>
+>>
+>> On 6/18/2018 2:51 PM, Sudeep Holla wrote:
+>>>
+>>>
+>>> On 15/06/18 18:40, Taniya Das wrote:
+>>>>
+>>>>
+>>>> On 6/15/2018 5:29 PM, Amit Kucheria wrote:
+>>>
+>>> [...]
+>>>
+>>>>> A future version of the HW engine, or more likely, a firmware
+>>>>> revision, will make more functionality available. Say, this needs
+>>>>> access to another register or two. This will require changing the DT
+>>>>> bindings. Instead, if you map the entire address space, you can just
+>>>>> add offsets to the new registers.
+>>>>>
+>>>>> So in this case, I think you should define the following addresses
+>>>>> (size 0x1400) for the two frequency domains
+>>>>>
+>>>>> 0x17d43000, 0x1400 (power cluster)
+>>>>> 0x17d45800, 0x1400 (perf cluster)
+>>>>>
+>>>>> And in the driver simply add offsets as follows:
+>>>>>
+>>>>> #define ENABLE_OFFSET               0x0
+>>>>> #define LUT_OFFSET                      0x110
+>>>>> #define PERF_DESIRED_OFFSET 0x920
+>>>>>
+>>>>
+>>>> The offsets could vary across versions of this IP and that is the reason
+>>>> to provide them through the DT and not define any such offsets.
+>>>>
+>>>
+>>> Just get compatibles to identify the version of the hardware if it can't
+>>> be probed and detected. Please don't use DT to get the addresses of each
+>>> register you use in the driver. That's neither scalable nor nice
+>>> solution to the problem.
+>>> Hello Sudeep and Amit,
+>>
+>> Thanks for the comments, I am consolidating the understanding from the
+>> other emails in a single one.
+>>
+>> I understand that you are looking for this IP to map the full region and
+>> define offsets according to access them.
+>>
+>> But I still not sure how do you want this common driver to scale in the
+>> cases where the offsets could vary across version change.
+>>
+> 
+> There are plenty of drivers that you can look at as example. TBH most of
+> the drivers implementing support for multiple versions of IP do
+> something on the similar lines.
+> 
+>>   DT
+>> ====
+>>    freq-node {
+>>      reg = < X x_size>;   Where X is the start of the IP address.
+>>    }
+>>
+>> Driver code (The below representation is just for example).
+>> =============
+>>
+>> V1
+>> #define ENABLE    0x0
+>> #define LUT_V1    0x110
+>> #define PERF_V1    0x920
+>>
+>> V2
+>> #define LUT_V2    0x150
+>> #define PERF_V2    0x980
+>>
+>> V3
+>> #define LUT_V3    0x120
+>> ....
+>>
+>> Do you want me to use "compatible" flag to
+>>
+>> if (compatible == v1)
+>>   enable =  readl_relaxed(X + LUT_V1);
+>> else if (compatible == v2)
+>>   enable = readl_relaxed(X + LUT_V2);
+>> else if (compatible == v3)
+>>   enable = readl_relaxed(X + LUT_V2);
+>>
+> 
+> These are implementation details. But you should try to use compatibles
+> only in probe and just record the version in some variable or update the
+> offsets in some device specific structure so that you can use that
+> unconditionally for any access you make on that device.
+> 
+>> With the current design I do not need such compatible checks and unmap
+>> the ones which are not required after probe.
+> 
+> I am not sure what you mean by unmap after probe.
+> 
+>> Please let me know your comments.
+>>
+> 
+> Please look at some drivers in the Linux tree for examples. Infact there
+> may be few drivers on QCOM SoC itself. What I am suggesting is the normal
+> practice in the drivers and you should see plenty of examples. Since I
+> was looking at some serial port patch, I can say you can have a look at
+> drivers/tty/serial/amba-pl011.c which supports multiple versions from
+> different vendors. I am sure there are many simpler examples but AMBA PL011
+> just stood out.
+> 
 
-Unless I am reading your versions incorrectly, they behave differently.
-
-Until V2, if core_count wasn't equal to max_cores then the frequency was getting
-marked as INVALID straight away in the table itself. Now if the next freq is
-also same then you abort and overwrite the previous one as valid, but otherwise
-it remains INVALID for ever. And this last thing doesn't happen anymore.
-
-So if in your table there are few frequency entries which aren't repeating, but
-the core_count != max_cores for some of them, they remain valid in the newer
-versions.
+Thanks Sudeep, let me take a look at the driver to see how I can 
+associate data (offsets) based on compatible.
 
 -- 
-viresh
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
+
+--
