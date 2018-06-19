@@ -1,101 +1,109 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCH v3 12/12] mfd: cros_ec: Add throttler sub-device
-Date: Tue, 19 Jun 2018 10:41:01 +0200
-Message-ID: <CAFqH_520Z4nAkXsnKeO9ZGqSSfPg_7f7pjJs=t=ryQTBExfwoA@mail.gmail.com>
-References: <20180614194712.102134-1-mka@chromium.org> <20180614194712.102134-13-mka@chromium.org>
- <20180618232109.GB154056@rodete-desktop-imager.corp.google.com>
+From: Pavan Kondeti <pkondeti@codeaurora.org>
+Subject: Re: [RFC PATCH v3 09/10] sched/fair: Select an energy-efficient CPU
+ on task wake-up
+Date: Tue, 19 Jun 2018 14:11:56 +0530
+Message-ID: <20180619084156.GC9208@codeaurora.org>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-10-quentin.perret@arm.com>
+ <20180619050601.GA9208@codeaurora.org>
+ <20180619075723.GQ17720@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180618232109.GB154056@rodete-desktop-imager.corp.google.com>
+Content-Disposition: inline
+In-Reply-To: <20180619075723.GQ17720@e108498-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh.kumar@linaro.org, Lee Jones <lee.jones@linaro.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+On Tue, Jun 19, 2018 at 08:57:23AM +0100, Quentin Perret wrote:
+> Hi Pavan,
+> 
+> On Tuesday 19 Jun 2018 at 10:36:01 (+0530), Pavan Kondeti wrote:
+> > On Mon, May 21, 2018 at 03:25:04PM +0100, Quentin Perret wrote:
+> > 
+> > <snip>
+> > 
+> > > +	if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))
+> > > +		prev_energy = best_energy = compute_energy(p, prev_cpu);
+> > > +	else
+> > > +		prev_energy = best_energy = ULONG_MAX;
+> > > +
+> > > +	for_each_freq_domain(sfd) {
+> > > +		unsigned long spare_cap, max_spare_cap = 0;
+> > > +		int max_spare_cap_cpu = -1;
+> > > +		unsigned long util;
+> > > +
+> > > +		/* Find the CPU with the max spare cap in the freq. dom. */
+> > > +		for_each_cpu_and(cpu, freq_domain_span(sfd), sched_domain_span(sd)) {
+> > > +			if (!cpumask_test_cpu(cpu, &p->cpus_allowed))
+> > > +				continue;
+> > > +
+> > > +			if (cpu == prev_cpu)
+> > > +				continue;
+> > > +
+> > > +			/* Skip CPUs that will be overutilized */
+> > > +			util = cpu_util_wake(cpu, p) + task_util;
+> > > +			cpu_cap = capacity_of(cpu);
+> > > +			if (cpu_cap * 1024 < util * capacity_margin)
+> > > +				continue;
+> > > +
+> > > +			spare_cap = cpu_cap - util;
+> > > +			if (spare_cap > max_spare_cap) {
+> > > +				max_spare_cap = spare_cap;
+> > > +				max_spare_cap_cpu = cpu;
+> > > +			}
+> > > +		}
+> > > +
+> > > +		/* Evaluate the energy impact of using this CPU. */
+> > > +		if (max_spare_cap_cpu >= 0) {
+> > > +			cur_energy = compute_energy(p, max_spare_cap_cpu);
+> > > +			if (cur_energy < best_energy) {
+> > > +				best_energy = cur_energy;
+> > > +				best_energy_cpu = max_spare_cap_cpu;
+> > > +			}
+> > > +		}
+> > > +	}
+> > > +
+> > > +	/*
+> > > +	 * We pick the best CPU only if it saves at least 1.5% of the
+> > > +	 * energy used by prev_cpu.
+> > > +	 */
+> > > +	if ((prev_energy - best_energy) > (prev_energy >> 6))
+> > > +		return best_energy_cpu;
+> > > +
+> > > +	return prev_cpu;
+> > > +}
+> > 
+> > We are comparing the best_energy_cpu against prev_cpu even when prev_cpu
+> > can't accommodate the waking task. Is this intentional? Should not we
+> > discard the prev_cpu if it can't accommodate the task.
+> > 
+> > This can potentially make a BIG task run on a lower capacity CPU until
+> > load balancer kicks in and corrects the situation.
+> 
+> We shouldn't enter find_energy_efficient_cpu() in the first place if the
+> system is overutilized, so that shouldn't too much of an issue in
+> general.
+> 
 
-I am also interested on the answer of Brian comments :). One small comment.
+With UTIL_EST enabled, the overutilization condtion may get turned off when
+that 1 BIG task goes to sleep. When it wakes up again, we may place it on
+the previous CPU due to the above mentioned issue.
 
-Missatge de Brian Norris <briannorris@chromium.org> del dia dt., 19 de
-juny 2018 a les 1:22:
->
-> Hi,
->
-> On Thu, Jun 14, 2018 at 12:47:12PM -0700, Matthias Kaehlcke wrote:
-> > Instantiate the CrOS EC throttler if it is enabled in the kernel
-> > configuration.
-> >
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> > Changes in v3:
-> > - patch added to series
-> >
-> >  drivers/mfd/cros_ec.c | 16 ++++++++++++++++
-> >  1 file changed, 16 insertions(+)
-> >
-> > diff --git a/drivers/mfd/cros_ec.c b/drivers/mfd/cros_ec.c
-> > index 36156a41499c..5f52b6e2c21a 100644
-> > --- a/drivers/mfd/cros_ec.c
-> > +++ b/drivers/mfd/cros_ec.c
-> > @@ -91,6 +91,10 @@ static int cros_ec_sleep_event(struct cros_ec_device *ec_dev, u8 sleep_event)
-> >       return cros_ec_cmd_xfer(ec_dev, &buf.msg);
-> >  }
-> >
-> > +static const struct mfd_cell ec_throttler_cell = {
-> > +     { .name = "cros-ec-throttler" }
-> > +};
-> > +
+It is not just an existing overutilization condition. By placing this task
+on the prev_cpu, we may enter overutilization state.
 
-As Brian said I think that this should go in cros_ec_dev?
+> But yeah, there is one small corner case where prev_cpu is overutilized
+> and the system has not been flagged as such yet (when the tasks wakes-up
+> shortly before the tick for ex). I think it's possible to cover this case
+> by extending the "if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))"
+> condition at the top of the function with a check on capacity_margin.
+> 
 
-Even when only there is one cell we tend to use the array format (see
-i.e the cros-ec-rtc and the others in cros_ec_dev).
+LGTM.
 
-+static const struct mfd_cell ec_throttler_cells[] = {
-+     { .name = "cros-ec-throttler" }
-+};
-
-> >  int cros_ec_register(struct cros_ec_device *ec_dev)
-> >  {
-> >       struct device *dev = ec_dev->dev;
-> > @@ -153,6 +157,18 @@ int cros_ec_register(struct cros_ec_device *ec_dev)
-> >               }
-> >       }
-> >
-> > +     if (IS_ENABLED(CONFIG_CROS_EC_THROTTLER)) {
-> > +             err = mfd_add_devices(ec_dev->dev, PLATFORM_DEVID_AUTO,
-> > +                                   &ec_throttler_cell, 1, NULL, ec_dev->irq,
-
-ARRAY_SIZE(ec_throttler_cells)
-
-> > +                                   NULL);
->
-> Most of this similar sub-device registration seems to have moved to
-> cros_ec_dev.c, in ec_device_probe(). Should this do the same?
->
-> And on a similar note: is there a way to determine EC support for this
-> feature (e.g., EC_FEATURE_*)? Or do we just have to listen for
-> appropriate throttling events that may never come?
->
-> Also, is this very useful on non-DT systems? Does this fail gracefully?
->
-> Brian
->
-> > +             if (err) {
-> > +                     dev_err(dev,
-> > +                             "Failed to register throttler subdevice %d\n",
-> > +                             err);
-> > +                     return err;
-> > +             }
-> > +     }
-> > +
-> >       if (IS_ENABLED(CONFIG_OF) && dev->of_node) {
-> >               err = devm_of_platform_populate(dev);
-> >               if (err) {
-> > --
-> > 2.18.0.rc1.242.g61856ae69a-goog
-> >
-
-Cheers,
- Enric
+-- 
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
