@@ -1,129 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: qcom-fw: Add support for QCOM cpufreq FW
- driver
-Date: Tue, 19 Jun 2018 14:24:07 +0530
-Message-ID: <20180619085407.nmos7tix77vnaqre@vireshk-i7>
-References: <1528109194-16864-1-git-send-email-tdas@codeaurora.org>
- <1528109194-16864-3-git-send-email-tdas@codeaurora.org>
- <20180606060119.yzl24vhqff6btvrk@vireshk-i7>
- <3cd5944b-d2ca-e7d7-f315-c3e5f230701b@codeaurora.org>
+From: Pavan Kondeti <pkondeti@codeaurora.org>
+Subject: Re: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
+Date: Tue, 19 Jun 2018 14:48:41 +0530
+Message-ID: <20180619091841.GD9208@codeaurora.org>
+References: <20180521142505.6522-1-quentin.perret@arm.com>
+ <20180521142505.6522-11-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3cd5944b-d2ca-e7d7-f315-c3e5f230701b@codeaurora.org>
+In-Reply-To: <20180521142505.6522-11-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, robh@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Sorry for being late..
+On Mon, May 21, 2018 at 03:25:05PM +0100, Quentin Perret wrote:
 
-On 07-06-18, 12:48, Taniya Das wrote:
-> On 6/6/2018 11:31 AM, Viresh Kumar wrote:
-> > On 04-06-18, 16:16, Taniya Das wrote:
+<snip>
 
-> > > +static struct cpufreq_driver cpufreq_qcom_fw_driver = {
-> > > +	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-> > > +			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-> > > +	.verify		= cpufreq_generic_frequency_table_verify,
-> > > +	.target_index	= qcom_cpufreq_fw_target_index,
-> > > +	.get		= qcom_cpufreq_fw_get,
-> > > +	.init		= qcom_cpufreq_fw_cpu_init,
-> > 
-> > What about CPU hotplug ? We can still do that, right ? So what will happen if
-> > all CPUs of a freq-domain are removed (hence cpufreq policy is removed) and then
-> > someone calls qcom_cpufreq_fw_get() ? You should really work on cpufreq_policy
-> > there to get 'c'.
-> > 
-> 
-> You want the _get to do something as below.
-> Please correct me if my understanding is wrong.
-> ....
-> 
->  policy = cpufreq_cpu_get_raw(cpu);
->  if (!policy)
->     return 0;
-> 
->  c = policy->driver_data;
-> 
->  index = readl_relaxed(c->perf_base);
->  index = min(index, LUT_MAX_ENTRIES - 1);
-> 
->  return c->table[index].frequency;
-> 
-> ....
+> +static void start_eas_workfn(struct work_struct *work);
+> +static DECLARE_WORK(start_eas_work, start_eas_workfn);
+> +
+>  static int
+>  init_cpu_capacity_callback(struct notifier_block *nb,
+>  			   unsigned long val,
+> @@ -204,6 +209,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+>  		free_raw_capacity();
+>  		pr_debug("cpu_capacity: parsing done\n");
+>  		schedule_work(&parsing_done_work);
+> +		schedule_work(&start_eas_work);
+>  	}
+>  
+>  	return 0;
+> @@ -249,6 +255,19 @@ static void parsing_done_workfn(struct work_struct *work)
+>  	free_cpumask_var(cpus_to_visit);
+>  }
+>  
+> +static void start_eas_workfn(struct work_struct *work)
+> +{
+> +	/* Make sure the EM knows about the updated CPU capacities. */
+> +	rcu_read_lock();
+> +	em_rescale_cpu_capacity();
+> +	rcu_read_unlock();
+> +
+> +	/* Inform the scheduler about the EM availability. */
+> +	cpus_read_lock();
+> +	rebuild_sched_domains();
+> +	cpus_read_unlock();
+> +}
 
-Right.
+Rebuilding the sched domains is unnecessary for the platform that don't have
+energy-model. In fact, we can completely avoid scheduling this work.
 
-> > > +static int qcom_read_lut(struct platform_device *pdev,
-> > > +			 struct cpufreq_qcom *c)
-> > > +{
-> > > +	struct device *dev = &pdev->dev;
-> > > +	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
-> > > +
-> > > +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
-> > > +				sizeof(*c->table), GFP_KERNEL);
-> > > +	if (!c->table)
-> > > +		return -ENOMEM;
-> > > +
-> > > +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
-> > > +		data = readl_relaxed(c->lut_base + i * LUT_ROW_SIZE);
-> > > +		src = ((data & GENMASK(31, 30)) >> 30);
-> > > +		lval = (data & GENMASK(7, 0));
-> > > +		core_count = CORE_COUNT_VAL(data);
-> > > +
-> > > +		if (!src)
-> > > +			c->table[i].frequency = INIT_RATE / 1000;
-> > > +		else
-> > > +			c->table[i].frequency = XO_RATE * lval / 1000;
-> > > +
-> > > +		cur_freq = c->table[i].frequency;
-> > > +
-> > > +		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
-> > > +			i, c->table[i].frequency, core_count);
-> > > +
-> > > +		if (core_count != c->max_cores)
-> > > +			cur_freq = CPUFREQ_ENTRY_INVALID;
-> > > +
-> > > +		/*
-> > > +		 * Two of the same frequencies with the same core counts means
-> > > +		 * end of table.
-> > > +		 */
-> > > +		if (i > 0 && c->table[i - 1].frequency ==
-> > > +		   c->table[i].frequency && prev_cc == core_count) {
-> > > +			struct cpufreq_frequency_table *prev = &c->table[i - 1];
-> > > +
-> > > +			if (prev_freq == CPUFREQ_ENTRY_INVALID)
-> > > +				prev->flags = CPUFREQ_BOOST_FREQ;
-> > > +			break;
-> > > +		}
-> > > +		prev_cc = core_count;
-> > > +		prev_freq = cur_freq;
-> > > +	}
-> > > +
-> > > +	c->table[i].frequency = CPUFREQ_TABLE_END;
-> > > +
-> > > +	return 0;
-> > > +}
-> > 
-> > Looks like there are many problems here.
-> > - You are assigning prev_freq with cur_freq (which may be uninitialized local
-> >    variable here).
-> > - In this version, you never write CPUFREQ_ENTRY_INVALID to table[i].frequency,
-> >    which looks wrong as well.
-> > 
-> 
-> - The code to detect boost, would only enter for i > 0 and the prev_freq
-> would be initialized with the cur_freq.
-> - In the case where the core_count != max_cores, the cur_freq is marked
-> INVALID, and when both prev_freq == cur_freq && prev_cc && cur_cc match,
-> that is the time the prev table flags need to be updated. Marking the
-> table[i].frequency as INVALID is not required as cur_freq is already marked
-> with the same. Please correct me if you think otherwise.
+There seems to be a sysfs interface exposed by this driver to change cpu_scale.
+Should we worry about it? I don't know what is the usecase for changing the
+cpu_scale from user space.
 
-Yeah but the value of cur_freq isn't written to the table entries now. This
-wasn't the case in the earlier version. Have a look at that one.
+Are we expecting that the energy-model is populated by this time? If it is
+not, should not we build the sched domains again after the energy-model is
+populated?
 
+Thanks,
+Pavan
 -- 
-viresh
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
