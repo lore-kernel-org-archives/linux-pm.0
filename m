@@ -1,40 +1,62 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
-Date: Tue, 19 Jun 2018 11:47:14 +0200
-Message-ID: <20180619094714.GA13617@localhost.localdomain>
+From: Pavan Kondeti <pkondeti@codeaurora.org>
+Subject: Re: [RFC PATCH v3 07/10] sched/fair: Introduce an energy estimation
+ helper function
+Date: Tue, 19 Jun 2018 15:21:40 +0530
+Message-ID: <20180619095140.GE9208@codeaurora.org>
 References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-11-quentin.perret@arm.com>
- <20180619091841.GD9208@codeaurora.org>
- <20180619094002.GR17720@e108498-lin.cambridge.arm.com>
+ <20180521142505.6522-8-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180619094002.GR17720@e108498-lin.cambridge.arm.com>
+In-Reply-To: <20180521142505.6522-8-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
-Cc: Pavan Kondeti <pkondeti@codeaurora.org>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 19/06/18 10:40, Quentin Perret wrote:
-> Hi Pavan,
-> 
-> On Tuesday 19 Jun 2018 at 14:48:41 (+0530), Pavan Kondeti wrote:
+On Mon, May 21, 2018 at 03:25:02PM +0100, Quentin Perret wrote:
 
-[...]
+<snip>
 
-> > There seems to be a sysfs interface exposed by this driver to change cpu_scale.
-> > Should we worry about it? I don't know what is the usecase for changing the
-> > cpu_scale from user space.
-> 
-> This is something I've been wondering as well. TBH, I'm not sure what to
-> do in this case. And I'm not sure to know what is the use-case either.
-> Debugging purpose I assume ?
-> 
-> Juri, did you have a specific use-case for this feature when the
-> arch_topology driver was first introduced ? Or was it just to align
-> with the existing arm/arm64 code ?
+>  
+> +/*
+> + * Returns the util of "cpu" if "p" wakes up on "dst_cpu".
+> + */
+> +static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
+> +{
+> +	unsigned long util, util_est;
+> +	struct cfs_rq *cfs_rq;
+> +
+> +	/* Task is where it should be, or has no impact on cpu */
+> +	if ((task_cpu(p) == dst_cpu) || (cpu != task_cpu(p) && cpu != dst_cpu))
+> +		return cpu_util(cpu);
+> +
+> +	cfs_rq = &cpu_rq(cpu)->cfs;
+> +	util = READ_ONCE(cfs_rq->avg.util_avg);
+> +
+> +	if (dst_cpu == cpu)
+> +		util += task_util(p);
+> +	else
+> +		util = max_t(long, util - task_util(p), 0);
+> +
+> +	if (sched_feat(UTIL_EST)) {
+> +		util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+> +		if (dst_cpu == cpu)
+> +			util_est += _task_util_est(p);
+> +		else
+> +			util_est = max_t(long, util_est - _task_util_est(p), 0);
 
-It was requested (IIRC) because DT might have bogus values and not be
-easily modifiable. So, this is another way to get things right for your
-platform at runtime.
+For UTIL_EST case, the waking task will not have any contribution in the
+previous CPU's util_est. So we can just use the previous CPU util_est as is.
+
+> +		util = max(util, util_est);
+> +	}
+> +
+> +	return min_t(unsigned long, util, capacity_orig_of(cpu));
+> +}
+> +
+
+-- 
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
