@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 1/2] PM / wakeup: Add callback for wake-up change notification
-Date: Tue, 19 Jun 2018 15:55:17 +0200
-Message-ID: <20180619135518.8990-2-geert+renesas@glider.be>
+Subject: [PATCH v2 2/2] regulator: bd9571mwv: Add support for toggle power switches
+Date: Tue, 19 Jun 2018 15:55:18 +0200
+Message-ID: <20180619135518.8990-3-geert+renesas@glider.be>
 References: <20180619135518.8990-1-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180619135518.8990-1-geert+renesas@glider.be>
@@ -10,76 +10,73 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len B
 Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Add a callback to inform a device that its wake-up setting has been
-changed.  This allows a device to synchronize device configuration with
-an external user action.
+Extend the existing support for backup mode to toggle power switches.
+With a toggle power switch (or level signal), the following steps must
+be followed exactly:
+   1. Configure PMIC for backup mode,
+   2. Switch accessory power switch off, to prepare for system suspend,
+      which is a manual step not controlled by software,
+   3. Suspend system,
+   4. Switch accessory power switch on to wake up system.
 
-E.g. on systems using a Rohm BD9571MWV PMIC and a toggle accessory power
-switch, the system suspend/resume procedure is:
-  1. Configure PMIC for DDR backup mode (by software), which changes the
-     role of the accessory power switch from a power to a wake-up
-     switch,
-  2. Switch accessory power switch off (manually), to prepare for system
-     suspend,
-  3. Suspend system (by software),
-  4. Switch accessory power switch on (manually), to wake up the system.
+Hence the PMIC is configured for backup mode when "enabled" is written
+to the PMIC's "wakeup" virtual file in sysfs, using the newly introduced
+callback for wake-up change notification.  Conversely, writing
+"disabled" reverts the role of the accessory switch to a power switch.
 
-As step 2 involves a manual operation, step 1 cannot be combined
-with step 3 and performed in the PMIC's suspend callback (unlike on
-systems with a momentary power switch).
-
-Adding the new callback allows to move step 1 to the new callback, to be
-performed in response to the user writing "enabled" to the PMIC's
-"wakeup" virtual file in sysfs.
+Unlike with momentary switches, backup mode is not enabled by default,
+as enabling it prevents the board from being powered off using the power
+switch, which may confuse the user.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Is there a better way to handle this?
-
-Currently step 1 is done in userspace using i2set, which is very
-user-unfriendly
-(https://elinux.org/R-Car/Boards/Salvator-XS#PSCI_System_Suspend).
-
 v2:
-  - Improve patch description.
+  - Improve patch description,
+  - Drop "return;" at end of function.
 ---
- drivers/base/power/wakeup.c | 4 ++++
- include/linux/pm.h          | 1 +
- 2 files changed, 5 insertions(+)
+ drivers/regulator/bd9571mwv-regulator.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 5fa1898755a34878..933560d658692fe3 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -255,6 +255,8 @@ static int device_wakeup_attach(struct device *dev, struct wakeup_source *ws)
- 	if (dev->power.wakeirq)
- 		device_wakeup_attach_irq(dev, dev->power.wakeirq);
- 	spin_unlock_irq(&dev->power.lock);
-+	if (dev->power.wakeup_change_notify)
-+		dev->power.wakeup_change_notify(dev, true);
+diff --git a/drivers/regulator/bd9571mwv-regulator.c b/drivers/regulator/bd9571mwv-regulator.c
+index be574eb444ebda97..403bc3fa1f2513de 100644
+--- a/drivers/regulator/bd9571mwv-regulator.c
++++ b/drivers/regulator/bd9571mwv-regulator.c
+@@ -171,6 +171,24 @@ static int bd9571mwv_bkup_mode_write(struct bd9571mwv *bd, unsigned int mode)
  	return 0;
  }
  
-@@ -372,6 +374,8 @@ static struct wakeup_source *device_wakeup_detach(struct device *dev)
++static void bd9571mwv_wakeup_change_notify(struct device *dev, bool enable)
++{
++	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
++
++	unsigned int mode;
++	int ret;
++
++	ret = bd9571mwv_bkup_mode_read(bdreg->bd, &mode);
++	if (ret)
++		return;
++
++	mode &= ~BD9571MWV_BKUP_MODE_CNT_KEEPON_MASK;
++	if (enable)
++		mode |= bdreg->bkup_mode_cnt_keepon;
++
++	bd9571mwv_bkup_mode_write(bdreg->bd, mode);
++}
++
+ static int bd9571mwv_suspend(struct device *dev)
  {
- 	struct wakeup_source *ws;
+ 	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
+@@ -277,6 +295,11 @@ static int bd9571mwv_regulator_probe(struct platform_device *pdev)
+ 		 * explicit user setup in level mode.
+ 		 */
+ 		device_set_wakeup_enable(&pdev->dev, bdreg->rstbmode_pulse);
++#ifdef CONFIG_PM_SLEEP
++		if (bdreg->rstbmode_level)
++			pdev->dev.power.wakeup_change_notify =
++				bd9571mwv_wakeup_change_notify;
++#endif /* CONFIG_PM_SLEEP */
+ 	}
  
-+	if (dev->power.wakeup_change_notify)
-+		dev->power.wakeup_change_notify(dev, false);
- 	spin_lock_irq(&dev->power.lock);
- 	ws = dev->power.wakeup;
- 	dev->power.wakeup = NULL;
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e723b78d835706f2..3dec274bffffc6f8 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -599,6 +599,7 @@ struct dev_pm_info {
- 	struct list_head	entry;
- 	struct completion	completion;
- 	struct wakeup_source	*wakeup;
-+	void (*wakeup_change_notify)(struct device *dev, bool enable);
- 	bool			wakeup_path:1;
- 	bool			syscore:1;
- 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
+ 	return 0;
 -- 
 2.17.1
