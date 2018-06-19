@@ -1,97 +1,110 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v3 09/10] sched/fair: Select an energy-efficient CPU
- on task wake-up
-Date: Tue, 19 Jun 2018 08:57:23 +0100
-Message-ID: <20180619075723.GQ17720@e108498-lin.cambridge.arm.com>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-10-quentin.perret@arm.com>
- <20180619050601.GA9208@codeaurora.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v8] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Tue, 19 Jun 2018 10:00:48 +0200
+Message-ID: <bbc73374-194d-2c3f-fce7-e4b6de0a12bb@linaro.org>
+References: <1529387906-3838-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180619062227.uyan2t63fqwxj3eb@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180619050601.GA9208@codeaurora.org>
+In-Reply-To: <20180619062227.uyan2t63fqwxj3eb@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavan Kondeti <pkondeti@codeaurora.org>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Pavan,
-
-On Tuesday 19 Jun 2018 at 10:36:01 (+0530), Pavan Kondeti wrote:
-> On Mon, May 21, 2018 at 03:25:04PM +0100, Quentin Perret wrote:
+On 19/06/2018 08:22, Viresh Kumar wrote:
+> On 19-06-18, 07:58, Daniel Lezcano wrote:
+>> +++ b/drivers/powercap/idle_injection.c
+>> @@ -0,0 +1,375 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright 2018 Linaro Limited
+>> + *
+>> + * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> + *
+>> + * The idle injection framework proposes a way to force a cpu to enter
+>> + * an idle state during a specified amount of time for a specified
+>> + * period.
+>> + *
+>> + * It relies on the smpboot kthreads which handles, via its main loop,
+>> + * the common code for hotplugging and [un]parking.
+>> + *
+>> + * At init time, all the kthreads are created.
+>> + *
+>> + * A cpumask is specified as parameter for the idle injection
+>> + * registering function. The kthreads will be synchronized regarding
+>> + * this cpumask.
+>> + *
+>> + * The idle + run duration is specified via the helpers and then the
+>> + * idle injection can be started at this point.
+>> + *
+>> + * A kthread will call play_idle() with the specified idle duration
+>> + * from above.
+>> + *
+>> + * A timer is set after waking up all the tasks, to the next idle
+>> + * injection cycle.
+>> + *
+>> + * The task handling the timer interrupt will wakeup all the kthreads
+>> + * belonging to the cpumask.
+>> + *
+>> + * Stopping the idle injection is synchonuous, when the function
 > 
-> <snip>
+>                                      synchronous
 > 
-> > +	if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))
-> > +		prev_energy = best_energy = compute_energy(p, prev_cpu);
-> > +	else
-> > +		prev_energy = best_energy = ULONG_MAX;
-> > +
-> > +	for_each_freq_domain(sfd) {
-> > +		unsigned long spare_cap, max_spare_cap = 0;
-> > +		int max_spare_cap_cpu = -1;
-> > +		unsigned long util;
-> > +
-> > +		/* Find the CPU with the max spare cap in the freq. dom. */
-> > +		for_each_cpu_and(cpu, freq_domain_span(sfd), sched_domain_span(sd)) {
-> > +			if (!cpumask_test_cpu(cpu, &p->cpus_allowed))
-> > +				continue;
-> > +
-> > +			if (cpu == prev_cpu)
-> > +				continue;
-> > +
-> > +			/* Skip CPUs that will be overutilized */
-> > +			util = cpu_util_wake(cpu, p) + task_util;
-> > +			cpu_cap = capacity_of(cpu);
-> > +			if (cpu_cap * 1024 < util * capacity_margin)
-> > +				continue;
-> > +
-> > +			spare_cap = cpu_cap - util;
-> > +			if (spare_cap > max_spare_cap) {
-> > +				max_spare_cap = spare_cap;
-> > +				max_spare_cap_cpu = cpu;
-> > +			}
-> > +		}
-> > +
-> > +		/* Evaluate the energy impact of using this CPU. */
-> > +		if (max_spare_cap_cpu >= 0) {
-> > +			cur_energy = compute_energy(p, max_spare_cap_cpu);
-> > +			if (cur_energy < best_energy) {
-> > +				best_energy = cur_energy;
-> > +				best_energy_cpu = max_spare_cap_cpu;
-> > +			}
-> > +		}
-> > +	}
-> > +
-> > +	/*
-> > +	 * We pick the best CPU only if it saves at least 1.5% of the
-> > +	 * energy used by prev_cpu.
-> > +	 */
-> > +	if ((prev_energy - best_energy) > (prev_energy >> 6))
-> > +		return best_energy_cpu;
-> > +
-> > +	return prev_cpu;
-> > +}
+>> + * returns, there is the guarantee there is no more idle injection
+>> + * kthread in activity.
+>> + *
+>> + * It is up to the user of this framework to provide a lock at an
+>> + * upper level to prevent stupid things to happen, like starting while
+>> + * we are unregistering.
+>> + */
 > 
-> We are comparing the best_energy_cpu against prev_cpu even when prev_cpu
-> can't accommodate the waking task. Is this intentional? Should not we
-> discard the prev_cpu if it can't accommodate the task.
+>> +static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
+>> +{
+>> +	struct idle_injection_thread *iit;
+>> +	unsigned int cpu;
+>> +
+>> +	for_each_cpu_and(cpu, to_cpumask(ii_dev->cpumask), cpu_online_mask) {
+>> +		iit = per_cpu_ptr(&idle_injection_thread, cpu);
+>> +		iit->should_run = 1;
+>> +		wake_up_process(iit->tsk);
+>> +	}
+>> +}
 > 
-> This can potentially make a BIG task run on a lower capacity CPU until
-> load balancer kicks in and corrects the situation.
+> Thread A                                        Thread B
+> 
+>                                                 CPU3 hotplug out
+>                                                 -> idle_injection_park()
+>                                                   iit(of-CPU3)->should_run = 0;
+> 
+> idle_injection_wakeup()
+>  for_each_cpu_and(online)..
+>    CPU3-selected
+>                                                 clear CPU3 from cpu-online mask.
+> 
+> 
+>    iit(of-CPU3)->should_run = 1;
+>    wake_up_process()
+> 
+> With the above sequence of events, is it possible that the iit->should_run
+> variable is set to 1 while the CPU is offlined ? And so the crash we discussed
+> in the previous version may still exist ? Sorry I am not able to take my mind
+> away from thinking about these stupid races :(
 
-We shouldn't enter find_energy_efficient_cpu() in the first place if the
-system is overutilized, so that shouldn't too much of an issue in
-general.
+If I refer to previous Peter's comment about a similar race, I think it
+is possible.
 
-But yeah, there is one small corner case where prev_cpu is overutilized
-and the system has not been flagged as such yet (when the tasks wakes-up
-shortly before the tick for ex). I think it's possible to cover this case
-by extending the "if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))"
-condition at the top of the function with a check on capacity_margin.
+I guess setting the should_run flag to zero in the unpark() must fix the
+issue also.
 
-I'll change that in v4.
 
-Thanks !
-Quentin
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
