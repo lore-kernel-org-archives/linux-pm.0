@@ -1,177 +1,101 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH] PM / devfreq: Fix devfreq_add_device() when drivers are
- built as modules.
-Date: Tue, 19 Jun 2018 10:22:52 +0200
-Message-ID: <7eff02c1-3d78-de08-19ab-a4a45c491a86@collabora.com>
-References: <20180615100452.17466-1-enric.balletbo@collabora.com>
- <CAGTfZH1QkzBjDPfsS23DgVF=EqO1P9RK+YdAnAwt2rDL6eGPTg@mail.gmail.com>
- <CAFqH_5344NDHup+u0QtimTJjKaVVj46YB6UDMKtdMr70JJmkng@mail.gmail.com>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Subject: Re: [PATCH v3 12/12] mfd: cros_ec: Add throttler sub-device
+Date: Tue, 19 Jun 2018 10:41:01 +0200
+Message-ID: <CAFqH_520Z4nAkXsnKeO9ZGqSSfPg_7f7pjJs=t=ryQTBExfwoA@mail.gmail.com>
+References: <20180614194712.102134-1-mka@chromium.org> <20180614194712.102134-13-mka@chromium.org>
+ <20180618232109.GB154056@rodete-desktop-imager.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAFqH_5344NDHup+u0QtimTJjKaVVj46YB6UDMKtdMr70JJmkng@mail.gmail.com>
-Content-Language: en-GB
+In-Reply-To: <20180618232109.GB154056@rodete-desktop-imager.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo Serra <eballetbo@gmail.com>, cwchoi00@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Brian Norris <briannorris@chromium.org>
+Cc: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh.kumar@linaro.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+Hi Matthias,
 
-On 18/06/18 11:02, Enric Balletbo Serra wrote:
-> Hi Chanwoo,
-> Missatge de Chanwoo Choi <cwchoi00@gmail.com> del dia dg., 17 de juny
-> 2018 a les 5:50:
->>
->> Hi Enric,
->>
->> This issue will happen on the position to use find_devfreq_governor()
->> as following:
->> - devfreq_add_governora() and governor_store()
->>
->> If device driver with module type after loaded want to change the
->> scaling governor,
->> new governor might be not yet loaded. So, devfreq bettero to consider this case
->> in the find_devfreq_governor().
->>
-> Ok, I'll move there and send a v2.
-> 
+I am also interested on the answer of Brian comments :). One small comment.
 
-I tried your suggestion but I found one problem, if I move the code in
-find_devfreq_governor it end up with a deadlock. The reason is the following calls.
+Missatge de Brian Norris <briannorris@chromium.org> del dia dt., 19 de
+juny 2018 a les 1:22:
+>
+> Hi,
+>
+> On Thu, Jun 14, 2018 at 12:47:12PM -0700, Matthias Kaehlcke wrote:
+> > Instantiate the CrOS EC throttler if it is enabled in the kernel
+> > configuration.
+> >
+> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> > Changes in v3:
+> > - patch added to series
+> >
+> >  drivers/mfd/cros_ec.c | 16 ++++++++++++++++
+> >  1 file changed, 16 insertions(+)
+> >
+> > diff --git a/drivers/mfd/cros_ec.c b/drivers/mfd/cros_ec.c
+> > index 36156a41499c..5f52b6e2c21a 100644
+> > --- a/drivers/mfd/cros_ec.c
+> > +++ b/drivers/mfd/cros_ec.c
+> > @@ -91,6 +91,10 @@ static int cros_ec_sleep_event(struct cros_ec_device *ec_dev, u8 sleep_event)
+> >       return cros_ec_cmd_xfer(ec_dev, &buf.msg);
+> >  }
+> >
+> > +static const struct mfd_cell ec_throttler_cell = {
+> > +     { .name = "cros-ec-throttler" }
+> > +};
+> > +
 
-devfreq_add_device
-  find_devfreq_governor (!!!)
-    request_module
-       devfreq_simple_ondemand_init
-          devfreq_add_governor
-             find_devfreq_governor (DEADLOCK)
+As Brian said I think that this should go in cros_ec_dev?
 
-So I am wondering if shouldn't be more easy fix the issue in both places,
-devfreq_add_device and governor_store.
+Even when only there is one cell we tend to use the array format (see
+i.e the cros-ec-rtc and the others in cros_ec_dev).
 
-To devfreq_add_device
++static const struct mfd_cell ec_throttler_cells[] = {
++     { .name = "cros-ec-throttler" }
++};
 
-devfreq_add_device
-  governor = find_devfreq_governor
-  if (IS_ERR(governor) {
-     request_module
-     governor = find_devfreq_governor
-     if (IS_ERR(governor)
-       return ERR_PTR(governor)
-  }
+> >  int cros_ec_register(struct cros_ec_device *ec_dev)
+> >  {
+> >       struct device *dev = ec_dev->dev;
+> > @@ -153,6 +157,18 @@ int cros_ec_register(struct cros_ec_device *ec_dev)
+> >               }
+> >       }
+> >
+> > +     if (IS_ENABLED(CONFIG_CROS_EC_THROTTLER)) {
+> > +             err = mfd_add_devices(ec_dev->dev, PLATFORM_DEVID_AUTO,
+> > +                                   &ec_throttler_cell, 1, NULL, ec_dev->irq,
 
-And the same for governor_store
+ARRAY_SIZE(ec_throttler_cells)
 
-governor_store
-  governor = find_devfreq_governor
-  if (IS_ERR(governor) {
-     request_module
-     governor = find_devfreq_governor
-     if (IS_ERR(governor)
-       return ERR_PTR(governor)
-  }
+> > +                                   NULL);
+>
+> Most of this similar sub-device registration seems to have moved to
+> cros_ec_dev.c, in ec_device_probe(). Should this do the same?
+>
+> And on a similar note: is there a way to determine EC support for this
+> feature (e.g., EC_FEATURE_*)? Or do we just have to listen for
+> appropriate throttling events that may never come?
+>
+> Also, is this very useful on non-DT systems? Does this fail gracefully?
+>
+> Brian
+>
+> > +             if (err) {
+> > +                     dev_err(dev,
+> > +                             "Failed to register throttler subdevice %d\n",
+> > +                             err);
+> > +                     return err;
+> > +             }
+> > +     }
+> > +
+> >       if (IS_ENABLED(CONFIG_OF) && dev->of_node) {
+> >               err = devm_of_platform_populate(dev);
+> >               if (err) {
+> > --
+> > 2.18.0.rc1.242.g61856ae69a-goog
+> >
 
-Maybe all  can go in a new function try_find_devfreq_governor_then_request
-
-Other suggestions?
-
-- Enric
-
-> Thanks
->  Enric.
-> 
-> 
->> 2018-06-15 19:04 GMT+09:00 Enric Balletbo i Serra
->> <enric.balletbo@collabora.com>:
->>> When the devfreq driver and the governor driver are built as modules,
->>> the call to devfreq_add_device() fails because the governor driver is
->>> not loaded at the time the devfreq driver loads. The devfreq driver has
->>> a build dependency on the governor but also should have a runtime
->>> dependency. We need to make sure that the governor driver is loaded
->>> before the devfreq driver.
->>>
->>> This patch fixes this bug in devfreq_add_device(). First tries to find
->>> the governor, and then, if was not found, it requests the module and
->>> tries again.
->>>
->>> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
->>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->>> ---
->>>
->>>  drivers/devfreq/devfreq.c | 36 +++++++++++++++++++++++++++++++-----
->>>  1 file changed, 31 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index fe2af6aa88fc..1d917f043e30 100644
->>> --- a/drivers/devfreq/devfreq.c
->>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -11,6 +11,7 @@
->>>   */
->>>
->>>  #include <linux/kernel.h>
->>> +#include <linux/kmod.h>
->>>  #include <linux/sched.h>
->>>  #include <linux/errno.h>
->>>  #include <linux/err.h>
->>> @@ -648,10 +649,35 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>>
->>>         governor = find_devfreq_governor(devfreq->governor_name);
->>>         if (IS_ERR(governor)) {
->>> -               dev_err(dev, "%s: Unable to find governor for the device\n",
->>> -                       __func__);
->>> -               err = PTR_ERR(governor);
->>> -               goto err_init;
->>> +               list_del(&devfreq->node);
->>> +               mutex_unlock(&devfreq_list_lock);
->>> +
->>> +               /*
->>> +                * If the governor is not found, then request the module and
->>> +                * try again. This can happen when both drivers (the governor
->>> +                * driver and the driver that calls devfreq_add_device) are
->>> +                * built as modules.
->>> +                */
->>> +               if (!strncmp(devfreq->governor_name,
->>> +                            DEVFREQ_GOV_SIMPLE_ONDEMAND, DEVFREQ_NAME_LEN))
->>> +                       err = request_module("governor_%s", "simpleondemand");
->>> +               else
->>> +                       err = request_module("governor_%s",
->>> +                                            devfreq->governor_name);
->>> +               if (err)
->>> +                       goto err_unregister;
->>> +
->>> +               mutex_lock(&devfreq_list_lock);
->>> +               list_add(&devfreq->node, &devfreq_list);
->>> +
->>> +               governor = find_devfreq_governor(devfreq->governor_name);
->>> +               if (IS_ERR(governor)) {
->>> +                       dev_err(dev,
->>> +                               "%s: Unable to find governor for the device\n",
->>> +                               __func__);
->>> +                       err = PTR_ERR(governor);
->>> +                       goto err_init;
->>> +               }
->>>         }
->>>
->>>         devfreq->governor = governor;
->>> @@ -669,7 +695,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>>  err_init:
->>>         list_del(&devfreq->node);
->>>         mutex_unlock(&devfreq_list_lock);
->>> -
->>> +err_unregister:
->>>         device_unregister(&devfreq->dev);
->>>  err_dev:
->>>         if (devfreq)
->>> --
->>> 2.17.1
->>>
->>
->>
->>
->> --
->> Best Regards,
->> Chanwoo Choi
->> Samsung Electronics
-> 
+Cheers,
+ Enric
