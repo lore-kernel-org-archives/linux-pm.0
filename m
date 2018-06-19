@@ -1,84 +1,28 @@
-From: Pavan Kondeti <pkondeti@codeaurora.org>
-Subject: Re: [RFC PATCH v3 09/10] sched/fair: Select an energy-efficient CPU
- on task wake-up
-Date: Tue, 19 Jun 2018 10:36:01 +0530
-Message-ID: <20180619050601.GA9208@codeaurora.org>
-References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-10-quentin.perret@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V7] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Tue, 19 Jun 2018 11:19:47 +0530
+Message-ID: <20180619054947.5u5gpallmtzkilor@vireshk-i7>
+References: <1529054393-27077-1-git-send-email-daniel.lezcano@linaro.org>
+ <20180618102245.x5cfei3i7voq65zc@vireshk-i7>
+ <bb11af50-1089-43af-abfa-0824e0db1e77@linaro.org>
+ <20180618103844.t2minxwc7tiu2qgd@vireshk-i7>
+ <883320cc-5677-6612-1565-b5a05b8684e1@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180521142505.6522-10-quentin.perret@arm.com>
+In-Reply-To: <883320cc-5677-6612-1565-b5a05b8684e1@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 21, 2018 at 03:25:04PM +0100, Quentin Perret wrote:
+On 18-06-18, 13:28, Daniel Lezcano wrote:
+> for this specific case, we can use the park() callback to set should_run
+> to false, no ?
 
-<snip>
+Yep, that can be one option. Or just iterate through all the CPUs in the mask.
 
-> +	if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))
-> +		prev_energy = best_energy = compute_energy(p, prev_cpu);
-> +	else
-> +		prev_energy = best_energy = ULONG_MAX;
-> +
-> +	for_each_freq_domain(sfd) {
-> +		unsigned long spare_cap, max_spare_cap = 0;
-> +		int max_spare_cap_cpu = -1;
-> +		unsigned long util;
-> +
-> +		/* Find the CPU with the max spare cap in the freq. dom. */
-> +		for_each_cpu_and(cpu, freq_domain_span(sfd), sched_domain_span(sd)) {
-> +			if (!cpumask_test_cpu(cpu, &p->cpus_allowed))
-> +				continue;
-> +
-> +			if (cpu == prev_cpu)
-> +				continue;
-> +
-> +			/* Skip CPUs that will be overutilized */
-> +			util = cpu_util_wake(cpu, p) + task_util;
-> +			cpu_cap = capacity_of(cpu);
-> +			if (cpu_cap * 1024 < util * capacity_margin)
-> +				continue;
-> +
-> +			spare_cap = cpu_cap - util;
-> +			if (spare_cap > max_spare_cap) {
-> +				max_spare_cap = spare_cap;
-> +				max_spare_cap_cpu = cpu;
-> +			}
-> +		}
-> +
-> +		/* Evaluate the energy impact of using this CPU. */
-> +		if (max_spare_cap_cpu >= 0) {
-> +			cur_energy = compute_energy(p, max_spare_cap_cpu);
-> +			if (cur_energy < best_energy) {
-> +				best_energy = cur_energy;
-> +				best_energy_cpu = max_spare_cap_cpu;
-> +			}
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * We pick the best CPU only if it saves at least 1.5% of the
-> +	 * energy used by prev_cpu.
-> +	 */
-> +	if ((prev_energy - best_energy) > (prev_energy >> 6))
-> +		return best_energy_cpu;
-> +
-> +	return prev_cpu;
-> +}
-
-We are comparing the best_energy_cpu against prev_cpu even when prev_cpu
-can't accommodate the waking task. Is this intentional? Should not we
-discard the prev_cpu if it can't accommodate the task.
-
-This can potentially make a BIG task run on a lower capacity CPU until
-load balancer kicks in and corrects the situation.
-
-Thanks,
-Pavan
 -- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
+viresh
