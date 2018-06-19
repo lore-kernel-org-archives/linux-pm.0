@@ -1,58 +1,66 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFC PATCH v3 06/10] sched: Add over-utilization/tipping point
- indicator
-Date: Tue, 19 Jun 2018 12:26:35 +0200
-Message-ID: <bdfd313d-1b31-0672-0a23-285087206b06@arm.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [RFC PATCH v3 10/10] arch_topology: Start Energy Aware Scheduling
+Date: Tue, 19 Jun 2018 12:31:08 +0200
+Message-ID: <20180619103108.GD13617@localhost.localdomain>
 References: <20180521142505.6522-1-quentin.perret@arm.com>
- <20180521142505.6522-7-quentin.perret@arm.com>
- <20180619070103.GB9208@codeaurora.org>
+ <20180521142505.6522-11-quentin.perret@arm.com>
+ <20180619091841.GD9208@codeaurora.org>
+ <20180619094002.GR17720@e108498-lin.cambridge.arm.com>
+ <20180619094714.GA13617@localhost.localdomain>
+ <20180619100224.GT17720@e108498-lin.cambridge.arm.com>
+ <20180619101901.GC13617@localhost.localdomain>
+ <20180619102502.GU17720@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180619070103.GB9208@codeaurora.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180619102502.GU17720@e108498-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavan Kondeti <pkondeti@codeaurora.org>, Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Pavan Kondeti <pkondeti@codeaurora.org>, peterz@infradead.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joelaf@google.com, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/19/2018 09:01 AM, Pavan Kondeti wrote:
-> On Mon, May 21, 2018 at 03:25:01PM +0100, Quentin Perret wrote:
-
-[...]
-
->> @@ -8152,6 +8176,9 @@ static inline void update_sg_lb_stats(struct lb_env *env,
->>   		if (nr_running > 1)
->>   			*overload = true;
->>   
->> +		if (cpu_overutilized(i))
->> +			*overutilized = 1;
->> +
+On 19/06/18 11:25, Quentin Perret wrote:
+> On Tuesday 19 Jun 2018 at 12:19:01 (+0200), Juri Lelli wrote:
+> > On 19/06/18 11:02, Quentin Perret wrote:
+> > > On Tuesday 19 Jun 2018 at 11:47:14 (+0200), Juri Lelli wrote:
+> > > > On 19/06/18 10:40, Quentin Perret wrote:
+> > > > > Hi Pavan,
+> > > > > 
+> > > > > On Tuesday 19 Jun 2018 at 14:48:41 (+0530), Pavan Kondeti wrote:
+> > > > 
+> > > > [...]
+> > > > 
+> > > > > > There seems to be a sysfs interface exposed by this driver to change cpu_scale.
+> > > > > > Should we worry about it? I don't know what is the usecase for changing the
+> > > > > > cpu_scale from user space.
+> > > > > 
+> > > > > This is something I've been wondering as well. TBH, I'm not sure what to
+> > > > > do in this case. And I'm not sure to know what is the use-case either.
+> > > > > Debugging purpose I assume ?
+> > > > > 
+> > > > > Juri, did you have a specific use-case for this feature when the
+> > > > > arch_topology driver was first introduced ? Or was it just to align
+> > > > > with the existing arm/arm64 code ?
+> > > > 
+> > > > It was requested (IIRC) because DT might have bogus values and not be
+> > > > easily modifiable. So, this is another way to get things right for your
+> > > > platform at runtime.
+> > > 
+> > > Right, but that also allows you to set different capacities to CPUs
+> > > inside the same freq domain, which isn't supported by the EM framework,
+> > > at least for now. So I would prefer to assume that your values in DT must
+> > > to be correct to use EAS, and leave the code as-is for now.
+> > 
+> > It's actually built on the (current) assumption that siblings share
+> > capacity [1], so it seems to align with what EM requires.
+> > 
+> > [1] https://elixir.bootlin.com/linux/latest/source/drivers/base/arch_topology.c#L71
 > 
-> There is no need to check if every CPU is overutilized or not once
-> *overutilized is marked as true, right?
-
-True, so you want to check *overutilized before calling 
-cpu_overutilized() to save a little bit on compute?
-
-[...]
-
->> @@ -8586,6 +8621,10 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
->>   	 * this level.
->>   	 */
->>   	update_sd_lb_stats(env, &sds);
->> +
->> +	if (sched_energy_enabled() && !READ_ONCE(env->dst_rq->rd->overutilized))
->> +		goto out_balanced;
->> +
+> But there is not hard guarantee that the core_sibling mask and the
+> frequency domains are aligned :-(
 > 
-> Is there any reason for sending no-hz idle kicks but bailing out here when
-> system is not overutilized?
+> Hikey 620 is an example where they might be misaligned (I think)
 
-Even if a system is not-overutilized, we want to update stale cpu 
-blocked load and utilization so NOHZ_STATS_KICK have to get through.
-
-So calling find_busiest_group() -> update_sd_lb_stats() -> 
-update_sg_lb_stats() to possibly execute update_nohz_stats() is IMHO the 
-right thing to do.
+Yep. In this case you'd need to write cpu_capacity twice (for each
+cluster). I think.
