@@ -1,106 +1,219 @@
-From: Jayachandran C <jnair@caviumnetworks.com>
-Subject: Re: [v2] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
-Date: Tue, 19 Jun 2018 13:39:11 -0700
-Message-ID: <20180619203846.GA6083@jc-sabre>
-References: <1529056995-122792-1-git-send-email-george.cherian@cavium.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Fix devfreq_add_device() when drivers are
+ built as modules.
+Date: Wed, 20 Jun 2018 09:47:58 +0900
+Message-ID: <5B29A43E.2080402@samsung.com>
+References: <20180615100452.17466-1-enric.balletbo@collabora.com>
+        <CAGTfZH1QkzBjDPfsS23DgVF=EqO1P9RK+YdAnAwt2rDL6eGPTg@mail.gmail.com>
+        <CAFqH_5344NDHup+u0QtimTJjKaVVj46YB6UDMKtdMr70JJmkng@mail.gmail.com>
+        <CGME20180619082320epcas5p228d76c9e326d24acc1c38b43ff152347@epcas5p2.samsung.com>
+        <7eff02c1-3d78-de08-19ab-a4a45c491a86@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1529056995-122792-1-git-send-email-george.cherian@cavium.com>
+In-reply-to: <7eff02c1-3d78-de08-19ab-a4a45c491a86@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: George Cherian <george.cherian@cavium.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, pprakash@codeaurora.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Enric Balletbo Serra <eballetbo@gmail.com>, cwchoi00@gmail.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi George,
+Hi Enric,
 
-Few comments on your patch:
-
-On Fri, Jun 15, 2018 at 03:03:15AM -0700, George Cherian wrote:
-> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
-> feedback via set of performance counters. To determine the actual
-> performance level delivered over time, OSPM may read a set of
-> performance counters from the Reference Performance Counter Register
-> and the Delivered Performance Counter Register.
+On 2018년 06월 19일 17:22, Enric Balletbo i Serra wrote:
+> Hi Chanwoo,
 > 
-> OSPM calculates the delivered performance over a given time period by
-> taking a beginning and ending snapshot of both the reference and
-> delivered performance counters, and calculating:
+> On 18/06/18 11:02, Enric Balletbo Serra wrote:
+>> Hi Chanwoo,
+>> Missatge de Chanwoo Choi <cwchoi00@gmail.com> del dia dg., 17 de juny
+>> 2018 a les 5:50:
+>>>
+>>> Hi Enric,
+>>>
+>>> This issue will happen on the position to use find_devfreq_governor()
+>>> as following:
+>>> - devfreq_add_governora() and governor_store()
+>>>
+>>> If device driver with module type after loaded want to change the
+>>> scaling governor,
+>>> new governor might be not yet loaded. So, devfreq bettero to consider this case
+>>> in the find_devfreq_governor().
+>>>
+>> Ok, I'll move there and send a v2.
+>>
 > 
-> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
+> I tried your suggestion but I found one problem, if I move the code in
+> find_devfreq_governor it end up with a deadlock. The reason is the following calls.
 > 
-> Implement the above and hook this to the cpufreq->get method.
+> devfreq_add_device
+>   find_devfreq_governor (!!!)
+>     request_module
+>        devfreq_simple_ondemand_init
+>           devfreq_add_governor
+>              find_devfreq_governor (DEADLOCK)
 > 
-> Signed-off-by: George Cherian <george.cherian@cavium.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 71 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 71 insertions(+)
+> So I am wondering if shouldn't be more easy fix the issue in both places,
+> devfreq_add_device and governor_store.
 > 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 3464580..3fe7625 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -296,10 +296,81 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	return ret;
->  }
->  
-> +static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
-> +				     struct cppc_perf_fb_ctrs fb_ctrs_t0,
-> +				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
-> +{
-> +	u64 delta_reference, delta_delivered;
-> +	u64 reference_perf, delivered_perf;
-> +
-> +	reference_perf = fb_ctrs_t0.reference_perf;
-> +	if (fb_ctrs_t1.reference > fb_ctrs_t0.reference) {
-> +		delta_reference = fb_ctrs_t1.reference - fb_ctrs_t0.reference;
-> +	} else {
-> +		/*
-> +		 * Counters would have wrapped-around
-> +		 * We also need to find whether the low level fw
-> +		 * maintains 32 bit or 64 bit counters, to calculate
-> +		 * the correct delta.
-> +		 */
-> +		if (fb_ctrs_t0.reference > (~(u32)0))
-> +			delta_reference  = (~((u64)0) - fb_ctrs_t0.reference) +
-> +					fb_ctrs_t1.reference;
-> +		else
-> +			delta_reference  = (~((u32)0) - fb_ctrs_t0.reference) +
-> +					fb_ctrs_t1.reference;
-> +	}
-> +
-> +	if (fb_ctrs_t1.delivered > fb_ctrs_t0.delivered) {
-> +		delta_delivered = fb_ctrs_t1.delivered - fb_ctrs_t0.delivered;
-> +	} else {
-> +		/*
-> +		 * Counters would have wrapped-around
-> +		 * We also need to find whether the low level fw
-> +		 * maintains 32 bit or 64 bit counters, to calculate
-> +		 * the correct delta.
-> +		 */
-> +		if (fb_ctrs_t0.delivered > (~(u32)0))
-> +			delta_delivered  = (~((u64)0) - fb_ctrs_t0.delivered) +
-> +					fb_ctrs_t1.delivered;
-> +		else
-> +			delta_delivered  = (~((u32)0) - fb_ctrs_t0.delivered) +
-> +					fb_ctrs_t1.delivered;
-> +	}
+> To devfreq_add_device
+> 
+> devfreq_add_device
+>   governor = find_devfreq_governor
+>   if (IS_ERR(governor) {
 
-Having this code repeated twice does not look great. Also the math here
-is not correct, since (~0 - val2 + val1) is off by one. Because of
-binary representation, unsigned subtraction will work even if
-val2 < val1. So cleaner way would be to do:
+In this error case, you have to unlock the mutex
+before calling the request_module(). I added the pseudo code
+of my opinion.
 
-static inline u64 ts_sub(u64 t1, u64 t0)
-{
-	if (t1 > t0 || t0 > ~(u32)0)
-		return t1 - t0;
+>      request_module
+>      governor = find_devfreq_governor
+>      if (IS_ERR(governor)
+>        return ERR_PTR(governor)
+>   }
+> 
+> And the same for governor_store
+> 
+> governor_store
+>   governor = find_devfreq_governor
+>   if (IS_ERR(governor) {
+>      request_module
+>      governor = find_devfreq_governor
+>      if (IS_ERR(governor)
+>        return ERR_PTR(governor)
+>   }
+> 
+> Maybe all  can go in a new function try_find_devfreq_governor_then_request
 
-	return (u32)t1 - (u32)t0;
-}
+How about modify the find_devfreq_governor() as following?
+I think that it is possible because previous find_devfreq_governor()
+always check whether mutex is locked or not.
 
-And then use ts_sub in both places above.
+	find_devfreq_governor() {
 
-JC.
+		// check whether mutex is locked or not		
+		if (!mutex_is_lock(&devfreq_list_lock)) {
+			WARN(...)
+			return -EINVAL
+		}
+
+		// find the registered governor with list_for_each_entry
+
+		if (governor is not loaded) {
+			mutex_unlock()
+			request_module()
+			mutex_lock()	
+		}
+
+	}
+
+
+> 
+> Other suggestions?
+> 
+> - Enric
+> 
+>> Thanks
+>>  Enric.
+>>
+>>
+>>> 2018-06-15 19:04 GMT+09:00 Enric Balletbo i Serra
+>>> <enric.balletbo@collabora.com>:
+>>>> When the devfreq driver and the governor driver are built as modules,
+>>>> the call to devfreq_add_device() fails because the governor driver is
+>>>> not loaded at the time the devfreq driver loads. The devfreq driver has
+>>>> a build dependency on the governor but also should have a runtime
+>>>> dependency. We need to make sure that the governor driver is loaded
+>>>> before the devfreq driver.
+>>>>
+>>>> This patch fixes this bug in devfreq_add_device(). First tries to find
+>>>> the governor, and then, if was not found, it requests the module and
+>>>> tries again.
+>>>>
+>>>> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
+>>>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>>>> ---
+>>>>
+>>>>  drivers/devfreq/devfreq.c | 36 +++++++++++++++++++++++++++++++-----
+>>>>  1 file changed, 31 insertions(+), 5 deletions(-)
+>>>>
+>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>> index fe2af6aa88fc..1d917f043e30 100644
+>>>> --- a/drivers/devfreq/devfreq.c
+>>>> +++ b/drivers/devfreq/devfreq.c
+>>>> @@ -11,6 +11,7 @@
+>>>>   */
+>>>>
+>>>>  #include <linux/kernel.h>
+>>>> +#include <linux/kmod.h>
+>>>>  #include <linux/sched.h>
+>>>>  #include <linux/errno.h>
+>>>>  #include <linux/err.h>
+>>>> @@ -648,10 +649,35 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>>>
+>>>>         governor = find_devfreq_governor(devfreq->governor_name);
+>>>>         if (IS_ERR(governor)) {
+>>>> -               dev_err(dev, "%s: Unable to find governor for the device\n",
+>>>> -                       __func__);
+>>>> -               err = PTR_ERR(governor);
+>>>> -               goto err_init;
+>>>> +               list_del(&devfreq->node);
+>>>> +               mutex_unlock(&devfreq_list_lock);
+>>>> +
+>>>> +               /*
+>>>> +                * If the governor is not found, then request the module and
+>>>> +                * try again. This can happen when both drivers (the governor
+>>>> +                * driver and the driver that calls devfreq_add_device) are
+>>>> +                * built as modules.
+>>>> +                */
+>>>> +               if (!strncmp(devfreq->governor_name,
+>>>> +                            DEVFREQ_GOV_SIMPLE_ONDEMAND, DEVFREQ_NAME_LEN))
+>>>> +                       err = request_module("governor_%s", "simpleondemand");
+>>>> +               else
+>>>> +                       err = request_module("governor_%s",
+>>>> +                                            devfreq->governor_name);
+>>>> +               if (err)
+>>>> +                       goto err_unregister;
+>>>> +
+>>>> +               mutex_lock(&devfreq_list_lock);
+>>>> +               list_add(&devfreq->node, &devfreq_list);
+>>>> +
+>>>> +               governor = find_devfreq_governor(devfreq->governor_name);
+>>>> +               if (IS_ERR(governor)) {
+>>>> +                       dev_err(dev,
+>>>> +                               "%s: Unable to find governor for the device\n",
+>>>> +                               __func__);
+>>>> +                       err = PTR_ERR(governor);
+>>>> +                       goto err_init;
+>>>> +               }
+>>>>         }
+>>>>
+>>>>         devfreq->governor = governor;
+>>>> @@ -669,7 +695,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>>>  err_init:
+>>>>         list_del(&devfreq->node);
+>>>>         mutex_unlock(&devfreq_list_lock);
+>>>> -
+>>>> +err_unregister:
+>>>>         device_unregister(&devfreq->dev);
+>>>>  err_dev:
+>>>>         if (devfreq)
+>>>> --
+>>>> 2.17.1
+>>>>
+>>>
+>>>
+>>>
+>>> --
+>>> Best Regards,
+>>> Chanwoo Choi
+>>> Samsung Electronics
+>>
+> 
+> 
+> 
+
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
