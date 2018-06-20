@@ -1,257 +1,72 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH] PM / devfreq: Fix devfreq_add_device() when drivers are
- built as modules.
-Date: Wed, 20 Jun 2018 12:32:38 +0200
-Message-ID: <9186fc15-c884-a67b-e2fb-113721613146@collabora.com>
-References: <20180615100452.17466-1-enric.balletbo@collabora.com>
- <CAGTfZH1QkzBjDPfsS23DgVF=EqO1P9RK+YdAnAwt2rDL6eGPTg@mail.gmail.com>
- <CAFqH_5344NDHup+u0QtimTJjKaVVj46YB6UDMKtdMr70JJmkng@mail.gmail.com>
- <CGME20180619082320epcas5p228d76c9e326d24acc1c38b43ff152347@epcas5p2.samsung.com>
- <7eff02c1-3d78-de08-19ab-a4a45c491a86@collabora.com>
- <5B29A43E.2080402@samsung.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 1/2] PM / wakeup: Add callback for wake-up change
+ notification
+Date: Wed, 20 Jun 2018 11:35:58 +0100
+Message-ID: <20180620103558.GA6242@sirena.org.uk>
+References: <20180619135518.8990-1-geert+renesas@glider.be>
+ <CAJZ5v0gGuTDCf8Bsefyj5R6mF=SXZDrt7JacNU5vBZOf84QsvA@mail.gmail.com>
+ <CAMuHMdWgdsSS7qcfPmHnvL-XmXzyoS=bMGgc6q0urcvO5upWvQ@mail.gmail.com>
+ <2523505.Jaak4fIuPm@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5B29A43E.2080402@samsung.com>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <2523505.Jaak4fIuPm@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Enric Balletbo Serra <eballetbo@gmail.com>, cwchoi00@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
 
-On 20/06/18 02:47, Chanwoo Choi wrote:
-> Hi Enric,
-> 
-> On 2018년 06월 19일 17:22, Enric Balletbo i Serra wrote:
->> Hi Chanwoo,
->>
->> On 18/06/18 11:02, Enric Balletbo Serra wrote:
->>> Hi Chanwoo,
->>> Missatge de Chanwoo Choi <cwchoi00@gmail.com> del dia dg., 17 de juny
->>> 2018 a les 5:50:
->>>>
->>>> Hi Enric,
->>>>
->>>> This issue will happen on the position to use find_devfreq_governor()
->>>> as following:
->>>> - devfreq_add_governora() and governor_store()
->>>>
->>>> If device driver with module type after loaded want to change the
->>>> scaling governor,
->>>> new governor might be not yet loaded. So, devfreq bettero to consider this case
->>>> in the find_devfreq_governor().
->>>>
->>> Ok, I'll move there and send a v2.
->>>
->>
->> I tried your suggestion but I found one problem, if I move the code in
->> find_devfreq_governor it end up with a deadlock. The reason is the following calls.
->>
->> devfreq_add_device
->>   find_devfreq_governor (!!!)
->>     request_module
->>        devfreq_simple_ondemand_init
->>           devfreq_add_governor
->>              find_devfreq_governor (DEADLOCK)
->>
->> So I am wondering if shouldn't be more easy fix the issue in both places,
->> devfreq_add_device and governor_store.
->>
->> To devfreq_add_device
->>
->> devfreq_add_device
->>   governor = find_devfreq_governor
->>   if (IS_ERR(governor) {
-> 
-> In this error case, you have to unlock the mutex
-> before calling the request_module(). I added the pseudo code
-> of my opinion.
-> 
->>      request_module
->>      governor = find_devfreq_governor
->>      if (IS_ERR(governor)
->>        return ERR_PTR(governor)
->>   }
->>
->> And the same for governor_store
->>
->> governor_store
->>   governor = find_devfreq_governor
->>   if (IS_ERR(governor) {
->>      request_module
->>      governor = find_devfreq_governor
->>      if (IS_ERR(governor)
->>        return ERR_PTR(governor)
->>   }
->>
->> Maybe all  can go in a new function try_find_devfreq_governor_then_request
-> 
-> How about modify the find_devfreq_governor() as following?
-> I think that it is possible because previous find_devfreq_governor()
-> always check whether mutex is locked or not.
-> 
-> 	find_devfreq_governor() {
-> 
-> 		// check whether mutex is locked or not		
-> 		if (!mutex_is_lock(&devfreq_list_lock)) {
-> 			WARN(...)
-> 			return -EINVAL
-> 		}
-> 
-> 		// find the registered governor with list_for_each_entry
-> 
-> 		if (governor is not loaded) {
-> 			mutex_unlock()
-> 			request_module()
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Then the problem is that the find_devfreq_governor is reentrant because the init
-function of the governor calls devfreq_add_governor and find_devfreq_governor
-again. E.g for simpleondemand governor you will get this loop.
+On Wed, Jun 20, 2018 at 10:02:41AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, June 19, 2018 5:22:06 PM CEST Geert Uytterhoeven wrote:
+> > On Tue, Jun 19, 2018 at 4:48 PM Rafael J. Wysocki <rafael@kernel.org> w=
+rote:
+> > > On Tue, Jun 19, 2018 at 3:55 PM, Geert Uytterhoeven
 
-find_devfreq_governor
-  -> request_module
-      -> devfreq_simple_ondemand_init
-         -> devfreq_add_governor
-            -> find_devfreq_governor
-               -> request_module
-                  -> devfreq_simple_ondemand_init
-                     -> devfreq_add_governor
-                        -> find_devfreq_governor
-                           -> request_module
-                              ...
+> > In v1 (https://patchwork.kernel.org/patch/9996567/), I had a
+> > driver-specific "backup_mode" sysfs file.
+> > In v2 and later of the driver series (https://lkml.org/lkml/2018/4/18/3=
+45),
+> > I changed that to use the standard "wakeup" file in sysfs, in response =
+to
+> > a comment from Mark Brown.
 
-Makes sense or I am missing something and there is a way to quit from this loop?
+> Well, I'm not convinced that this is the right approach, though.
 
-FWIW I checked how the cpufreq driver does this as it should have the same
-problem. The find_governor function is just a simple search and instead of
-integrating the request_module inside the find_governor function they have a
-cpu_parse_governor that calls request module from the userspace call and from
-the init call.
+The original description of the changes made it sound like this
+controlled if the power switch would make the device resume from suspend
+or not which seems like a wakeup to me.  Honestly as things are I've no
+idea what the hardware designers were thinking or how to explain what
+this stuff is doing.
 
-store_scaling_governor
-  -> cpu_parse_governor
-     -> request_module
+> > Do you still prefer a driver-specific sysfs file?
 
-cpufreq_add_dev_interface
-  -> cpu_freq_init_policy
-     -> cpu_parse_governor
-        -> request_module
+> Yes, I do.
 
-Thanks,
-- Enric
+The flip side of that is that either suspend and resume or poweroff are
+broken for userspace unless they know about this magic sysfs file which
+isn't great either. =20
 
-> 			mutex_lock()	
-> 		}
-> 
-> 	}
-> 
-> 
->>
->> Other suggestions?
->>
->> - Enric
->>
->>> Thanks
->>>  Enric.
->>>
->>>
->>>> 2018-06-15 19:04 GMT+09:00 Enric Balletbo i Serra
->>>> <enric.balletbo@collabora.com>:
->>>>> When the devfreq driver and the governor driver are built as modules,
->>>>> the call to devfreq_add_device() fails because the governor driver is
->>>>> not loaded at the time the devfreq driver loads. The devfreq driver has
->>>>> a build dependency on the governor but also should have a runtime
->>>>> dependency. We need to make sure that the governor driver is loaded
->>>>> before the devfreq driver.
->>>>>
->>>>> This patch fixes this bug in devfreq_add_device(). First tries to find
->>>>> the governor, and then, if was not found, it requests the module and
->>>>> tries again.
->>>>>
->>>>> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
->>>>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->>>>> ---
->>>>>
->>>>>  drivers/devfreq/devfreq.c | 36 +++++++++++++++++++++++++++++++-----
->>>>>  1 file changed, 31 insertions(+), 5 deletions(-)
->>>>>
->>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>> index fe2af6aa88fc..1d917f043e30 100644
->>>>> --- a/drivers/devfreq/devfreq.c
->>>>> +++ b/drivers/devfreq/devfreq.c
->>>>> @@ -11,6 +11,7 @@
->>>>>   */
->>>>>
->>>>>  #include <linux/kernel.h>
->>>>> +#include <linux/kmod.h>
->>>>>  #include <linux/sched.h>
->>>>>  #include <linux/errno.h>
->>>>>  #include <linux/err.h>
->>>>> @@ -648,10 +649,35 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>>>>
->>>>>         governor = find_devfreq_governor(devfreq->governor_name);
->>>>>         if (IS_ERR(governor)) {
->>>>> -               dev_err(dev, "%s: Unable to find governor for the device\n",
->>>>> -                       __func__);
->>>>> -               err = PTR_ERR(governor);
->>>>> -               goto err_init;
->>>>> +               list_del(&devfreq->node);
->>>>> +               mutex_unlock(&devfreq_list_lock);
->>>>> +
->>>>> +               /*
->>>>> +                * If the governor is not found, then request the module and
->>>>> +                * try again. This can happen when both drivers (the governor
->>>>> +                * driver and the driver that calls devfreq_add_device) are
->>>>> +                * built as modules.
->>>>> +                */
->>>>> +               if (!strncmp(devfreq->governor_name,
->>>>> +                            DEVFREQ_GOV_SIMPLE_ONDEMAND, DEVFREQ_NAME_LEN))
->>>>> +                       err = request_module("governor_%s", "simpleondemand");
->>>>> +               else
->>>>> +                       err = request_module("governor_%s",
->>>>> +                                            devfreq->governor_name);
->>>>> +               if (err)
->>>>> +                       goto err_unregister;
->>>>> +
->>>>> +               mutex_lock(&devfreq_list_lock);
->>>>> +               list_add(&devfreq->node, &devfreq_list);
->>>>> +
->>>>> +               governor = find_devfreq_governor(devfreq->governor_name);
->>>>> +               if (IS_ERR(governor)) {
->>>>> +                       dev_err(dev,
->>>>> +                               "%s: Unable to find governor for the device\n",
->>>>> +                               __func__);
->>>>> +                       err = PTR_ERR(governor);
->>>>> +                       goto err_init;
->>>>> +               }
->>>>>         }
->>>>>
->>>>>         devfreq->governor = governor;
->>>>> @@ -669,7 +695,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>>>>  err_init:
->>>>>         list_del(&devfreq->node);
->>>>>         mutex_unlock(&devfreq_list_lock);
->>>>> -
->>>>> +err_unregister:
->>>>>         device_unregister(&devfreq->dev);
->>>>>  err_dev:
->>>>>         if (devfreq)
->>>>> --
->>>>> 2.17.1
->>>>>
->>>>
->>>>
->>>>
->>>> --
->>>> Best Regards,
->>>> Chanwoo Choi
->>>> Samsung Electronics
->>>
->>
->>
->>
-> 
-> 
+--ZPt4rx8FFjLCG7dd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlsqLgsACgkQJNaLcl1U
+h9A1WAf/W+iAzmIxCA5P/0REMQRGGV0f8DvyQNyWjw14r2tgeam4ICyj2O9MDiPK
+6eBbLg2K2l0Mb8H70GN0pStm68Eu0Cezl3E0h3Reup6iEIJ3vU+AhMlmjW5Fsi+R
+wkOJV7DIdicsDCT5laA+D/RESmrZs8xjKDiZCLnkbjlZ/1IH/TQvMsk+9ms5YrSa
+odXmHYBBTEwoc/ovHdZeWZXD6JaHYF/59nyXWE9Xi/hPSzHINRuxbiXh5ypAtKxz
+bFt+OANtju9USl5yiT7SaONKYKxXsi3XIaR8GlXG7CkkAg0fYWOtwNRdMvfT8tPi
+Xg82aAzpzLnDPXh3sbP9L/khnllCEg==
+=I5Ee
+-----END PGP SIGNATURE-----
+
+--ZPt4rx8FFjLCG7dd--
