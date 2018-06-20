@@ -1,198 +1,87 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] powernv/cpuidle: Use parsed device tree values for
- cpuidle_init
-Date: Wed, 20 Jun 2018 10:31:03 +0530
-Message-ID: <20180620050103.GC21984@in.ibm.com>
-References: <1529384668-27548-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1529384668-27548-4-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 2/2] PM / Domains: Rename opp_node to np
+Date: Wed, 20 Jun 2018 11:45:37 +0530
+Message-ID: <7511c9837569aec34c56e0a40364f2f3c16563b6.1529475153.git.viresh.kumar@linaro.org>
+References: <3d3687c030535189885d84c57dbffb034c4461c2.1528953706.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1529384668-27548-4-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+In-Reply-To: <3d3687c030535189885d84c57dbffb034c4461c2.1528953706.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au
+To: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Akshay,
+The DT node passed here isn't necessarily an OPP node, as this routine
+can also be used for cases where the "required-opps" property is present
+directly in the device's node. Rename it.
 
-On Tue, Jun 19, 2018 at 10:34:28AM +0530, Akshay Adiga wrote:
-> Export pnv_idle_states and nr_pnv_idle_states so that its accessible to
-> cpuidle driver. Use properties from pnv_idle_states structure for powernv
-> cpuidle_init.
-> 
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/cpuidle.h |  2 ++
->  drivers/cpuidle/cpuidle-powernv.c  | 49 +++++++++++++++++++++++---------------
->  2 files changed, 32 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-> index 55ee7e3..1446747 100644
-> --- a/arch/powerpc/include/asm/cpuidle.h
-> +++ b/arch/powerpc/include/asm/cpuidle.h
-> @@ -93,6 +93,8 @@ struct pnv_idle_states_t {
->  	u32 flags;
->  };
-> 
-> +extern struct pnv_idle_states_t *pnv_idle_states;
-> +extern int nr_pnv_idle_states;
->  extern u32 pnv_fastsleep_workaround_at_entry[];
->  extern u32 pnv_fastsleep_workaround_at_exit[];
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index d29e4f0..de8ba26 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -285,6 +285,11 @@ static int powernv_add_idle_states(void)
->  		goto out;
->  	}
-> 
-> +	if (nr_pnv_idle_states <= 0) {
-> +		pr_warn("opal: No idle states found\n");
+This also removes a stale comment.
 
-We would have a warning of this type in the powernv/idle.c right ? We
-don't need to warn again. Or at least have a different warning
-something like: 
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2:
+- Updated variable name in header file as well.
+- Because it was a very small change, I added Ulf's Ack as well.
 
-      	         pr_warn("cpuidle: Only snooze state is available\n");
-> +		goto out;
-> +	}
+ drivers/base/power/domain.c | 7 +++----
+ include/linux/pm_domain.h   | 4 ++--
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
-> +
->  	/* Read values of any property to determine the num of idle states */
->  	dt_idle_states = of_property_count_u32_elems(power_mgt, "ibm,cpu-idle-state-flags");
-
-
-We don't need to get dt_idle_states from the device tree now that we
-have nr_pnv_idle_states. 
-
-
->  	if (dt_idle_states < 0) {
-> @@ -338,7 +343,7 @@ static int powernv_add_idle_states(void)
->  	 * If the idle states use stop instruction, probe for psscr values
->  	 * and psscr mask which are necessary to specify required stop level.
->  	 */
-> -	has_stop_states = (flags[0] &
-> +	has_stop_states = (pnv_idle_states[0].flags &
->  			   (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP));
->  	if (has_stop_states) {
->  		count = of_property_count_u64_elems(power_mgt,
-> @@ -387,51 +392,55 @@ static int powernv_add_idle_states(void)
->  						residency_ns, dt_idle_states);
->  	}
-> 
-> -	for (i = 0; i < dt_idle_states; i++) {
-> +	for (i = 0; i < nr_pnv_idle_states; i++) {
->  		unsigned int exit_latency, target_residency;
->  		bool stops_timebase = false;
-> +		struct pnv_idle_states_t *state = &pnv_idle_states[i];
-> 
->  		/*
->  		 * Skip the platform idle state whose flag isn't in
-> -		 * the supported_cpuidle_states flag mask.
-> +		 * the supported_pnv_idle_states flag mask.
->  		 */
-> -		if ((flags[i] & supported_flags) != flags[i])
-> +		if ((state->flags & supported_flags) !=
-> +				state->flags)
->  			continue;
->  		/*
->  		 * If an idle state has exit latency beyond
->  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
->  		 * in cpu-idle.
->  		 */
-> -		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
-> +		if (state->latency_ns > POWERNV_THRESHOLD_LATENCY_NS)
->  			continue;
->  		/*
->  		 * Firmware passes residency and latency values in ns.
->  		 * cpuidle expects it in us.
->  		 */
-> -		exit_latency = DIV_ROUND_UP(latency_ns[i], 1000);
-> +		exit_latency = DIV_ROUND_UP(state->latency_ns, 1000);
->  		if (!rc)
-> -			target_residency = DIV_ROUND_UP(residency_ns[i], 1000);
-> +			target_residency = DIV_ROUND_UP(state->residency_ns, 1000);
->  		else
->  			target_residency = 0;
-> 
->  		if (has_stop_states) {
-> -			int err = validate_psscr_val_mask(&psscr_val[i],
-> -							  &psscr_mask[i],
-> -							  flags[i]);
-
-> +			int err;
-> +			err = validate_psscr_val_mask(&state->pm_ctrl_reg_val,
-> +						      &state->pm_ctrl_reg_mask,
-> +						      state->flags);
->  			if (err) {
-> -				report_invalid_psscr_val(psscr_val[i], err);
-> +				report_invalid_psscr_val(state->pm_ctrl_reg_val,
-> +							 err);
->  				continue;
->  			}
-
-We have already validated the states once. We should simply use the
-result here.
-
-
->  		}
-> 
-> -		if (flags[i] & OPAL_PM_TIMEBASE_STOP)
-> +		if (state->flags & OPAL_PM_TIMEBASE_STOP)
->  			stops_timebase = true;
-> 
->  		/*
->  		 * For nap and fastsleep, use default target_residency
->  		 * values if f/w does not expose it.
->  		 */
-> -		if (flags[i] & OPAL_PM_NAP_ENABLED) {
-> +		if (state->flags & OPAL_PM_NAP_ENABLED) {
->  			if (!rc)
->  				target_residency = 100;
->  			/* Add NAP state */
-> @@ -439,10 +448,11 @@ static int powernv_add_idle_states(void)
->  					  CPUIDLE_FLAG_NONE, nap_loop,
->  					  target_residency, exit_latency, 0, 0);
->  		} else if (has_stop_states && !stops_timebase) {
-> -			add_powernv_state(nr_idle_states, names[i],
-> +			add_powernv_state(nr_idle_states, state->name,
->  					  CPUIDLE_FLAG_NONE, stop_loop,
->  					  target_residency, exit_latency,
-> -					  psscr_val[i], psscr_mask[i]);
-> +					  state->pm_ctrl_reg_val,
-> +					  state->pm_ctrl_reg_mask);
->  		}
-> 
->  		/*
-> @@ -450,8 +460,8 @@ static int powernv_add_idle_states(void)
->  		 * within this config dependency check.
->  		 */
->  #ifdef CONFIG_TICK_ONESHOT
-> -		else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-> -			 flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
-> +		else if (state->flags & OPAL_PM_SLEEP_ENABLED ||
-> +			 state->flags & OPAL_PM_SLEEP_ENABLED_ER1) {
->  			if (!rc)
->  				target_residency = 300000;
->  			/* Add FASTSLEEP state */
-> @@ -460,10 +470,11 @@ static int powernv_add_idle_states(void)
->  					  fastsleep_loop,
->  					  target_residency, exit_latency, 0, 0);
->  		} else if (has_stop_states && stops_timebase) {
-> -			add_powernv_state(nr_idle_states, names[i],
-> +			add_powernv_state(nr_idle_states, state->name,
->  					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
->  					  target_residency, exit_latency,
-> -					  psscr_val[i], psscr_mask[i]);
-> +					  state->pm_ctrl_reg_val,
-> +					  state->pm_ctrl_reg_mask);
->  		}
->  #endif
->  		else
-> -- 
-> 2.5.5
-> 
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 4925af5c4cf0..c298de8a8308 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2487,10 +2487,9 @@ EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
+  * power domain corresponding to a DT node's "required-opps" property.
+  *
+  * @dev: Device for which the performance-state needs to be found.
+- * @opp_node: DT node where the "required-opps" property is present. This can be
++ * @np: DT node where the "required-opps" property is present. This can be
+  *	the device node itself (if it doesn't have an OPP table) or a node
+  *	within the OPP table of a device (if device has an OPP table).
+- * @state: Pointer to return performance state.
+  *
+  * Returns performance state corresponding to the "required-opps" property of
+  * a DT node. This calls platform specific genpd->opp_to_performance_state()
+@@ -2499,7 +2498,7 @@ EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
+  * Returns performance state on success and 0 on failure.
+  */
+ unsigned int of_genpd_opp_to_performance_state(struct device *dev,
+-					       struct device_node *opp_node)
++					       struct device_node *np)
+ {
+ 	struct generic_pm_domain *genpd;
+ 	struct dev_pm_opp *opp;
+@@ -2514,7 +2513,7 @@ unsigned int of_genpd_opp_to_performance_state(struct device *dev,
+ 
+ 	genpd_lock(genpd);
+ 
+-	opp = of_dev_pm_opp_find_required_opp(&genpd->dev, opp_node);
++	opp = of_dev_pm_opp_find_required_opp(&genpd->dev, np);
+ 	if (IS_ERR(opp)) {
+ 		dev_err(dev, "Failed to find required OPP: %ld\n",
+ 			PTR_ERR(opp));
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 9206a4fef9ac..e1d18ce3a310 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -234,7 +234,7 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
+ int of_genpd_parse_idle_states(struct device_node *dn,
+ 			       struct genpd_power_state **states, int *n);
+ unsigned int of_genpd_opp_to_performance_state(struct device *dev,
+-				struct device_node *opp_node);
++				struct device_node *np);
+ 
+ int genpd_dev_pm_attach(struct device *dev);
+ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+@@ -274,7 +274,7 @@ static inline int of_genpd_parse_idle_states(struct device_node *dn,
+ 
+ static inline unsigned int
+ of_genpd_opp_to_performance_state(struct device *dev,
+-				  struct device_node *opp_node)
++				  struct device_node *np)
+ {
+ 	return -ENODEV;
+ }
+-- 
+2.18.0.rc1.242.g61856ae69a2c
