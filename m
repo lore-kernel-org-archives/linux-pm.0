@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v8 12/26] cpuidle: dt: Support hierarchical CPU idle states
-Date: Wed, 20 Jun 2018 19:22:12 +0200
-Message-ID: <20180620172226.15012-13-ulf.hansson@linaro.org>
+Subject: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle path for CPUs
+Date: Wed, 20 Jun 2018 19:22:09 +0200
+Message-ID: <20180620172226.15012-10-ulf.hansson@linaro.org>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180620172226.15012-1-ulf.hansson@linaro.org>
@@ -10,46 +10,67 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Lina Iyer <lina.iyer@linaro.org>
+To allow CPUs being power managed by PM domains, let's deploy support for
+runtime PM for the CPU's corresponding struct device.
 
-Currently CPU's idle states are represented in a flattened model, via the
-"cpu-idle-states" binding from within the CPU's device nodes.
-
-Support the hierarchical layout during parsing and validating of the CPU's
-idle states. This is simply done by calling the new OF helper,
-of_get_cpu_state_node().
+More precisely, at the point when the CPU is about to enter an idle state,
+decrease the runtime PM usage count for its corresponding struct device,
+via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
+resumes from idle, let's increase the runtime PM usage count, via calling
+pm_runtime_get_sync().
 
 Cc: Lina Iyer <ilina@codeaurora.org>
-Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/cpuidle/dt_idle_states.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ kernel/cpu_pm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
-index 53342b7f1010..13f9b7cd32d1 100644
---- a/drivers/cpuidle/dt_idle_states.c
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -118,8 +118,7 @@ static bool idle_state_valid(struct device_node *state_node, unsigned int idx,
- 	for (cpu = cpumask_next(cpumask_first(cpumask), cpumask);
- 	     cpu < nr_cpu_ids; cpu = cpumask_next(cpu, cpumask)) {
- 		cpu_node = of_cpu_device_node_get(cpu);
--		curr_state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
--						   idx);
-+		curr_state_node = of_get_cpu_state_node(cpu_node, idx);
- 		if (state_node != curr_state_node)
- 			valid = false;
+diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+index 67b02e138a47..492d4a83dca0 100644
+--- a/kernel/cpu_pm.c
++++ b/kernel/cpu_pm.c
+@@ -16,9 +16,11 @@
+  */
  
-@@ -176,7 +175,7 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
- 	cpu_node = of_cpu_device_node_get(cpumask_first(cpumask));
+ #include <linux/kernel.h>
++#include <linux/cpu.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/module.h>
+ #include <linux/notifier.h>
++#include <linux/pm_runtime.h>
+ #include <linux/spinlock.h>
+ #include <linux/syscore_ops.h>
  
- 	for (i = 0; ; i++) {
--		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		state_node = of_get_cpu_state_node(cpu_node, i);
- 		if (!state_node)
- 			break;
+@@ -91,6 +93,7 @@ int cpu_pm_enter(void)
+ {
+ 	int nr_calls;
+ 	int ret = 0;
++	struct device *dev = get_cpu_device(smp_processor_id());
  
+ 	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+ 	if (ret)
+@@ -100,6 +103,9 @@ int cpu_pm_enter(void)
+ 		 */
+ 		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+ 
++	if (!ret && dev && dev->pm_domain)
++		pm_runtime_put_sync_suspend(dev);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+@@ -118,6 +124,11 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+  */
+ int cpu_pm_exit(void)
+ {
++	struct device *dev = get_cpu_device(smp_processor_id());
++
++	if (dev && dev->pm_domain)
++		pm_runtime_get_sync(dev);
++
+ 	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_exit);
 -- 
 2.17.1
