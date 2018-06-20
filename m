@@ -1,126 +1,53 @@
-From: George Cherian <gcherian@caviumnetworks.com>
-Subject: Re: [v2] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
-Date: Wed, 20 Jun 2018 14:59:15 +0530
-Message-ID: <a412e1ff-2c52-6fca-00c3-472b35335c4e@caviumnetworks.com>
-References: <1529056995-122792-1-git-send-email-george.cherian@cavium.com>
- <20180619203846.GA6083@jc-sabre>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH 0/3][RFC] Introduce the in-kernel hibernation encryption
+Date: Wed, 20 Jun 2018 17:39:37 +0800
+Message-ID: <cover.1529486870.git.yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180619203846.GA6083@jc-sabre>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jayachandran C <jnair@caviumnetworks.com>, George Cherian <george.cherian@cavium.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, pprakash@codeaurora.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Cc: "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi JC,
+Hi,
+As security becomes more and more important, we add the in-kernel
+encryption support for hibernation.
 
-Thanks for the review.
+This prototype is a trial version to implement the hibernation
+encryption in the kernel, so that the users do not have to rely
+on third-party tools to encrypt the hibernation image. The only
+dependency on user space is that, the user space should provide
+a valid key derived from passphrase to the kernel for image encryption.
 
+There was a discussion on the mailing list on whether this key should
+be derived in kernel or in user space. And it turns out to be generating
+the key by user space is more acceptable[1]. So this patch set is divided
+into two parts:
+1. The hibernation snapshot encryption in kernel space,
+2. the key derivation implementation in user space.
 
-On 06/20/2018 02:09 AM, Jayachandran C wrote:
-> Hi George,
-> 
-> Few comments on your patch:
-> 
-> On Fri, Jun 15, 2018 at 03:03:15AM -0700, George Cherian wrote:
->> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
->> feedback via set of performance counters. To determine the actual
->> performance level delivered over time, OSPM may read a set of
->> performance counters from the Reference Performance Counter Register
->> and the Delivered Performance Counter Register.
->>
->> OSPM calculates the delivered performance over a given time period by
->> taking a beginning and ending snapshot of both the reference and
->> delivered performance counters, and calculating:
->>
->> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
->>
->> Implement the above and hook this to the cpufreq->get method.
->>
->> Signed-off-by: George Cherian <george.cherian@cavium.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>   drivers/cpufreq/cppc_cpufreq.c | 71 ++++++++++++++++++++++++++++++++++++++++++
->>   1 file changed, 71 insertions(+)
->>
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index 3464580..3fe7625 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -296,10 +296,81 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>   	return ret;
->>   }
->>   
->> +static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
->> +				     struct cppc_perf_fb_ctrs fb_ctrs_t0,
->> +				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
->> +{
->> +	u64 delta_reference, delta_delivered;
->> +	u64 reference_perf, delivered_perf;
->> +
->> +	reference_perf = fb_ctrs_t0.reference_perf;
->> +	if (fb_ctrs_t1.reference > fb_ctrs_t0.reference) {
->> +		delta_reference = fb_ctrs_t1.reference - fb_ctrs_t0.reference;
->> +	} else {
->> +		/*
->> +		 * Counters would have wrapped-around
->> +		 * We also need to find whether the low level fw
->> +		 * maintains 32 bit or 64 bit counters, to calculate
->> +		 * the correct delta.
->> +		 */
->> +		if (fb_ctrs_t0.reference > (~(u32)0))
->> +			delta_reference  = (~((u64)0) - fb_ctrs_t0.reference) +
->> +					fb_ctrs_t1.reference;
->> +		else
->> +			delta_reference  = (~((u32)0) - fb_ctrs_t0.reference) +
->> +					fb_ctrs_t1.reference;
->> +	}
->> +
->> +	if (fb_ctrs_t1.delivered > fb_ctrs_t0.delivered) {
->> +		delta_delivered = fb_ctrs_t1.delivered - fb_ctrs_t0.delivered;
->> +	} else {
->> +		/*
->> +		 * Counters would have wrapped-around
->> +		 * We also need to find whether the low level fw
->> +		 * maintains 32 bit or 64 bit counters, to calculate
->> +		 * the correct delta.
->> +		 */
->> +		if (fb_ctrs_t0.delivered > (~(u32)0))
->> +			delta_delivered  = (~((u64)0) - fb_ctrs_t0.delivered) +
->> +					fb_ctrs_t1.delivered;
->> +		else
->> +			delta_delivered  = (~((u32)0) - fb_ctrs_t0.delivered) +
->> +					fb_ctrs_t1.delivered;
->> +	}
-> 
-> Having this code repeated twice does not look great. Also the math here
-> is not correct, since (~0 - val2 + val1) is off by one. Because of
-> binary representation, unsigned subtraction will work even if
-> val2 < val1. So cleaner way would be to do:
-> 
-> static inline u64 ts_sub(u64 t1, u64 t0)
-> {
-> 	if (t1 > t0 || t0 > ~(u32)0)
-> 		return t1 - t0;
-> 
-> 	return (u32)t1 - (u32)t0;
-> }
-> 
-> And then use ts_sub in both places above.
+Please refer to each patch for detail, and feel free to comment on
+this, thanks.
 
-I was actually thinking to replace the whole comparison with a single
-line irrespective of rollover or not.
-It will look something like this.
+[1] https://www.spinics.net/lists/linux-crypto/msg33145.html
 
-delta = (u32)(((1UL << 32) - t0) + t1);
+Chen Yu (3):
+  PM / Hibernate: Add helper functions for hibernation encryption
+  PM / Hibernate: Encrypt the snapshot pages before submitted to the
+    block device
+  tools: create power/crypto utility
 
-This will also take care of the value being off by one.
-> 
-> JC.
-> 
+ MAINTAINERS                           |   8 +
+ kernel/power/Kconfig                  |  13 +
+ kernel/power/Makefile                 |   1 +
+ kernel/power/crypto_hibernation.c     | 405 ++++++++++++++++++++++++++++++
+ kernel/power/power.h                  |  38 +++
+ kernel/power/swap.c                   | 215 +++++++++++++++-
+ tools/power/crypto/Makefile           |  26 ++
+ tools/power/crypto/crypto_hibernate.c | 447 ++++++++++++++++++++++++++++++++++
+ 8 files changed, 1142 insertions(+), 11 deletions(-)
+ create mode 100644 kernel/power/crypto_hibernation.c
+ create mode 100644 tools/power/crypto/Makefile
+ create mode 100644 tools/power/crypto/crypto_hibernate.c
 
-Regards,
--George
+-- 
+2.7.4
