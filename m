@@ -1,185 +1,57 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] devfreq: rk3399_dmc: Fix duplicated opp table on
- reload.
-Date: Wed, 20 Jun 2018 09:50:22 +0900
-Message-ID: <5B29A4CE.9060009@samsung.com>
-References: <20180615151217.29872-1-enric.balletbo@collabora.com>
-        <CAGTfZH16O6u_3QJ2u1eecUnGptSBf1ho47RPefOTmrw+Syxr0w@mail.gmail.com>
-        <CGME20180618091029epcas3p498708535c8f8df019bf3785a199d58b4@epcas3p4.samsung.com>
-        <CAFqH_51ptafw-Z_8-FqtxbTH9LU560cHoM5TFiF01ZwG_jW3VQ@mail.gmail.com>
-        <5B288430.2040600@samsung.com>
-        <65546a48-3291-9836-cb0c-1e65ff7c9d41@collabora.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V9] powercap/drivers/idle_injection: Add an idle
+ injection framework
+Date: Wed, 20 Jun 2018 10:04:15 +0530
+Message-ID: <20180620043415.57yvgzlye4l7wdqy@vireshk-i7>
+References: <1529414627-5638-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <65546a48-3291-9836-cb0c-1e65ff7c9d41@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <1529414627-5638-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Enric Balletbo Serra <eballetbo@gmail.com>, cwchoi00@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
+On 19-06-18, 15:23, Daniel Lezcano wrote:
+> Initially, the cpu_cooling device for ARM was changed by adding a new
+> policy inserting idle cycles. The intel_powerclamp driver does a
+> similar action.
+> 
+> Instead of implementing idle injections privately in the cpu_cooling
+> device, move the idle injection code in a dedicated framework and give
+> the opportunity to other frameworks to make use of it.
+> 
+> The framework relies on the smpboot kthreads which handles via its
+> main loop the common code for hotplugging and [un]parking.
+> 
+> This code was previously tested with the cpu cooling device and went
+> through several iterations. It results now in split code and API
+> exported in the header file. It was tested with the cpu cooling device
+> with success.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Javi Merino <javi.merino@kernel.org>
+> Cc: Leo Yan <leo.yan@linaro.org>
+> Cc: Kevin Wangtao <kevin.wangtao@linaro.org>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Cc: Rui Zhang <rui.zhang@intel.com>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Andrea Parri <andrea.parri@amarulasolutions.com>
+> ---
+> 
+> V9:
+>    - Unconditionnally reset the should_run flag for all kthreads
+>      belonging to the cpumask and remove the park() callback (Viresh Kumar)
+>    - Fix up the typos in the comments (Viresh Kumar)
 
-On 2018년 06월 19일 17:07, Enric Balletbo i Serra wrote:
-> Hi Chanwoo,
-> 
-> On 19/06/18 06:18, Chanwoo Choi wrote:
->> Hi Enric,
->>
->> On 2018년 06월 18일 18:10, Enric Balletbo Serra wrote:
->>> Hi Chanwoo,
->>>
->>> Missatge de Chanwoo Choi <cwchoi00@gmail.com> del dia dg., 17 de juny
->>> 2018 a les 5:23:
->>>>
->>>> Hi Enric,
->>>>
->>>> 2018-06-16 0:12 GMT+09:00 Enric Balletbo i Serra <enric.balletbo@collabora.com>:
->>>>> The opp table is not removed when the driver is unloaded neither when
->>>>> there is an error within probe, so if the driver is reloaded the opp
->>>>> core shows the following warning:
->>>>>
->>>>>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
->>>>>                200000000, volt: 900000, enabled: 1. New: freq: 200000000,
->>>>>                volt: 900000, enabled: 1
->>>>>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
->>>>>                400000000, volt: 900000, enabled: 1. New: freq: 400000000,
->>>>>                volt: 900000, enabled: 1
->>>>>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
->>>>>                666000000, volt: 900000, enabled: 1. New: freq: 666000000,
->>>>>                volt: 900000, enabled: 1
->>>>>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
->>>>>                800000000, volt: 900000, enabled: 1. New: freq: 800000000,
->>>>>                volt: 900000, enabled: 1
->>>>>   rk3399-dmc-freq dmc: _opp_add: duplicate OPPs detected. Existing: freq:
->>>>>                928000000, volt: 900000, enabled: 1. New: freq: 928000000,
->>>>>                volt: 900000, enabled: 1
->>>>>
->>>>> This patch fixes the error path in the probe function and adds a .remove
->>>>> function to properly cleanup the opp table on unloading.
->>>>>
->>>>> Fixes: 5a893e31a636c (PM / devfreq: rockchip: add devfreq driver for rk3399 dmc)
->>>>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->>>>> ---
->>>>>
->>>>>  drivers/devfreq/rk3399_dmc.c | 31 +++++++++++++++++++++++++++----
->>>>>  1 file changed, 27 insertions(+), 4 deletions(-)
->>>>>
->>>>> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
->>>>> index d5c03e5abe13..e795ad2b3f6b 100644
->>>>> --- a/drivers/devfreq/rk3399_dmc.c
->>>>> +++ b/drivers/devfreq/rk3399_dmc.c
->>>>> @@ -375,8 +375,10 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
->>>>>         data->rate = clk_get_rate(data->dmc_clk);
->>>>>
->>>>>         opp = devfreq_recommended_opp(dev, &data->rate, 0);
->>>>> -       if (IS_ERR(opp))
->>>>> -               return PTR_ERR(opp);
->>>>> +       if (IS_ERR(opp)) {
->>>>> +               ret = PTR_ERR(opp);
->>>>> +               goto err_free_opp;
->>>>> +       }
->>>>>
->>>>>         data->rate = dev_pm_opp_get_freq(opp);
->>>>>         data->volt = dev_pm_opp_get_voltage(opp);
->>>>> @@ -388,13 +390,33 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
->>>>>                                            &rk3399_devfreq_dmc_profile,
->>>>>                                            DEVFREQ_GOV_SIMPLE_ONDEMAND,
->>>>>                                            &data->ondemand_data);
->>>>> -       if (IS_ERR(data->devfreq))
->>>>> -               return PTR_ERR(data->devfreq);
->>>>> +       if (IS_ERR(data->devfreq)) {
->>>>> +               ret = PTR_ERR(data->devfreq);
->>>>> +               goto err_free_opp;
->>>>> +       }
->>>>> +
->>>>>         devm_devfreq_register_opp_notifier(dev, data->devfreq);
->>>>>
->>>>>         data->dev = dev;
->>>>>         platform_set_drvdata(pdev, data);
->>>>>
->>>>> +       return 0;
->>>>
->>>> It looks strange. Because rk3399_dmcfreq_probe() already include
->>>> 'return 0' when success.
->>>> What is the base commit of this patch?
->>>>
->>>
->>> Sorry, I am not sure I understand your question, If I am not answering
->>> below could you rephrase?
->>
->> When I check the rk3399_dmcfreq_probe()[1], as I commented,
->> rk3399_dmcfreq_probe() already 'return 0' after platform_set_drvdata().
->> You can check it on link[1].
->> [1] https://elixir.bootlin.com/linux/v4.18-rc1/source/drivers/devfreq/rk3399_dmc.c#L443
->>
->> But, this patch add new '+       return 0;' line again in rk3399_dmcfreq_probe().
->> So, just I asked what is base commit of this patch.
->>
-> 
-> I think that this is just how git did the diff and if you only look at the diff
-> is a bit confusing, if you apply the patch on top of mainline you will see that
-> there is only one return 0 in the probe function.
+Looks great now. Can't think of any more races :)
 
-Anyway, when I applied it to git, there is no problem. 
-Just I have never seen such a case and asked a question.
-Don't care about this anymore. Thanks.
-
-> 
-> +       return 0; (this new return ...)
-> +
-> +err_free_opp:
-> +       dev_pm_opp_of_remove_table(&pdev->dev);
-> +       return ret;
-> +}
-> +
-> +static int rk3399_dmcfreq_remove(struct platform_device *pdev)
-> +{
-> +       struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(&pdev->dev);
-> +
-> +       /*
-> +        * Before remove the opp table we need to unregister the opp notifier.
-> +        */
-> +       devm_devfreq_unregister_opp_notifier(dmcfreq->dev, dmcfreq->devfreq);
-> +       dev_pm_opp_of_remove_table(dmcfreq->dev);
-> +
->         return 0; (was this before the patch, but now is in another function)
-> 
-> Cheers,
->  Enric
-> 
->>>
->>> So, once the opp table is added we need an error path to free it if an
->>> error occurs later. When the probe returns 0, we need to free the opp
->>> table when we remove the module.
->>>
->>>> [snip]
->>>>
->>>> Anyway, if probe fail, device driver have to remove registered OPP table.
->>>> Looks good to me.
->>>>
->>>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>
->>>
->>> Thanks,
->>>  Enric
->>>
->>>> --
->>>> Best Regards,
->>>> Chanwoo Choi
->>>> Samsung Electronics
->>>
->>>
->>>
->>
->>
-> 
-> 
-> 
-
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+viresh
