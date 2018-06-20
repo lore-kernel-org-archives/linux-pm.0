@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v8 22/26] drivers: firmware: psci: Introduce psci_dt_topology_init()
-Date: Wed, 20 Jun 2018 19:22:22 +0200
-Message-ID: <20180620172226.15012-23-ulf.hansson@linaro.org>
+Subject: [PATCH v8 17/26] drivers: firmware: psci: Simplify error path of psci_dt_init()
+Date: Wed, 20 Jun 2018 19:22:17 +0200
+Message-ID: <20180620172226.15012-18-ulf.hansson@linaro.org>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180620172226.15012-1-ulf.hansson@linaro.org>
@@ -10,109 +10,88 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In case the hierarchical layout is used in DT, we want to initialize the
-corresponding PM domain topology for the CPUs, by using the generic PM
-domain (aka genpd) infrastructure.
-
-At first glance, it may seem feasible to hook into the existing
-psci_dt_init() function, although because it's called quite early in the
-boot sequence, allocating the dynamic data structure for a genpd doesn't
-work.
-
-Therefore, let's export a new init function for PSCI,
-psci_dt_topology_init(), which the ARM machine code should call from a
-suitable initcall.
-
-Succeeding to initialize the PM domain topology, which means at least one
-instance of a genpd becomes created, allows us to continue to enable the
-PSCI OS initiated mode for the platform. If everything turns out fine,
-let's print a message in log to inform the user about the changed mode.
-
-In case of any failures, we stick to the default PSCI Platform Coordinated
-mode. Moreover, in case the kernel started from a kexec call, let's make
-sure to explicitly default to this mode during boot, in case the previous
-kernel changed the mode.
+Instead of having each psci init function taking care of the of_node_put(),
+let's deal with that from psci_dt_init(), as this enables a bit simpler
+error path for each psci init function.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
 Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
 ---
- drivers/firmware/psci/psci.c | 38 +++++++++++++++++++++++++++++++++++-
- include/linux/psci.h         |  2 ++
- 2 files changed, 39 insertions(+), 1 deletion(-)
+ drivers/firmware/psci/psci.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 463f78cda3be..80c286d83369 100644
+index 256b4edbb20a..38881007584e 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -691,9 +691,14 @@ static int __init psci_1_0_init(struct device_node *np)
+@@ -608,9 +608,9 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	int err;
+ 
+ 	err = get_set_conduit_method(np);
+-
  	if (err)
- 		return err;
- 
--	if (psci_has_osi_support())
-+	if (psci_has_osi_support()) {
- 		pr_info("OSI mode supported.\n");
- 
-+		/* Make sure we default to PC mode. */
-+		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-+			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
-+	}
+-		goto out_put_node;
++		return err;
 +
- 	return 0;
+ 	/*
+ 	 * Starting with v0.2, the PSCI specification introduced a call
+ 	 * (PSCI_VERSION) that allows probing the firmware version, so
+@@ -618,11 +618,7 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	 * can be carried out according to the specific version reported
+ 	 * by firmware
+ 	 */
+-	err = psci_probe();
+-
+-out_put_node:
+-	of_node_put(np);
+-	return err;
++	return psci_probe();
  }
  
-@@ -723,6 +728,37 @@ int __init psci_dt_init(void)
- 	return ret;
+ /*
+@@ -634,9 +630,8 @@ static int __init psci_0_1_init(struct device_node *np)
+ 	int err;
+ 
+ 	err = get_set_conduit_method(np);
+-
+ 	if (err)
+-		goto out_put_node;
++		return err;
+ 
+ 	pr_info("Using PSCI v0.1 Function IDs from DT\n");
+ 
+@@ -660,9 +655,7 @@ static int __init psci_0_1_init(struct device_node *np)
+ 		psci_ops.migrate = psci_migrate;
+ 	}
+ 
+-out_put_node:
+-	of_node_put(np);
+-	return err;
++	return 0;
  }
  
-+int __init psci_dt_topology_init(void)
-+{
-+	struct device_node *np;
+ static const struct of_device_id psci_of_match[] __initconst = {
+@@ -677,6 +670,7 @@ int __init psci_dt_init(void)
+ 	struct device_node *np;
+ 	const struct of_device_id *matched_np;
+ 	psci_initcall_t init_fn;
 +	int ret;
+ 
+ 	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
+ 
+@@ -684,7 +678,10 @@ int __init psci_dt_init(void)
+ 		return -ENODEV;
+ 
+ 	init_fn = (psci_initcall_t)matched_np->data;
+-	return init_fn(np);
++	ret = init_fn(np);
 +
-+	if (!psci_has_osi_support())
-+		return 0;
-+
-+	np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
-+	if (!np)
-+		return -ENODEV;
-+
-+	/* Initialize the CPU PM domains based on topology described in DT. */
-+	ret = psci_dt_init_pm_domains(np);
-+	if (ret <= 0)
-+		goto out;
-+
-+	/* Enable OSI mode. */
-+	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-+			     PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
-+	if (ret) {
-+		pr_info("failed to enable OSI mode: %d\n", ret);
-+		goto out;
-+	}
-+
-+	pr_info("OSI mode enabled.\n");
-+out:
 +	of_node_put(np);
 +	return ret;
-+}
-+
+ }
+ 
  #ifdef CONFIG_ACPI
- /*
-  * We use PSCI 0.2+ when ACPI is deployed on ARM64 and it's
-diff --git a/include/linux/psci.h b/include/linux/psci.h
-index 8b1b3b5935ab..298a044407f0 100644
---- a/include/linux/psci.h
-+++ b/include/linux/psci.h
-@@ -53,8 +53,10 @@ extern struct psci_operations psci_ops;
- 
- #if defined(CONFIG_ARM_PSCI_FW)
- int __init psci_dt_init(void);
-+int __init psci_dt_topology_init(void);
- #else
- static inline int psci_dt_init(void) { return 0; }
-+static inline int psci_dt_topology_init(void) { return 0; }
- #endif
- 
- #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
 -- 
 2.17.1
