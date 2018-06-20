@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v8 24/26] drivers: firmware: psci: Deal with CPU hotplug when using OSI mode
-Date: Wed, 20 Jun 2018 19:22:24 +0200
-Message-ID: <20180620172226.15012-25-ulf.hansson@linaro.org>
+Subject: [PATCH v8 21/26] drivers: firmware: psci: Add support for PM domains using genpd
+Date: Wed, 20 Jun 2018 19:22:21 +0200
+Message-ID: <20180620172226.15012-22-ulf.hansson@linaro.org>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180620172226.15012-1-ulf.hansson@linaro.org>
@@ -10,43 +10,244 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-To deal with CPU hotplug when OSI mode is used, the CPU device needs to be
-detached from its PM domain (genpd) when putting it offline, otherwise the
-CPU becomes considered as being in use from genpd and runtime PM point of
-view. Obviously, then we also need to re-attach the CPU device when bring
-the CPU back online, so let's do this.
+When the hierarchical layout is used in DT, as to describe the PM topology
+for the CPUs, which are managed by PSCI, we want to be able to initialize
+and setup the corresponding PM domain data structures.
+
+Let's make this possible via adding a new file, psci_pm_domains.c and
+implement the needed interface towards the generic PM domain (aka genpd).
+Share a helper function, psci_dt_init_pm_domains(), which the regular PSCI
+firmware driver may call when it needs to initialize the PM topology using
+genpd.
+
+In principle, the implementation consists of allocating/initializing the
+genpd data structures, parsing the domain-idle states DT bindings via
+calling of_genpd_parse_idle_states() and to call pm_genpd_init() for the
+allocated genpds.
+
+Finally, one genpd OF provider is added per genpd. Via DT, this enables
+devices, including CPU devices, to be attached to the created genpds.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/psci.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/firmware/psci/Makefile         |   2 +-
+ drivers/firmware/psci/psci.h           |   6 +
+ drivers/firmware/psci/psci_pm_domain.c | 180 +++++++++++++++++++++++++
+ 3 files changed, 187 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/firmware/psci/psci_pm_domain.c
 
-diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 700e0e995871..e649673d71f0 100644
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -190,6 +190,10 @@ static int psci_cpu_off(u32 state)
- 	int err;
- 	u32 fn;
+diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
+index 1956b882470f..ff300f1fec86 100644
+--- a/drivers/firmware/psci/Makefile
++++ b/drivers/firmware/psci/Makefile
+@@ -1,4 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0
+ #
+-obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
++obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o psci_pm_domain.o
+ obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
+diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
+index dc7b596daa2b..a22684b24902 100644
+--- a/drivers/firmware/psci/psci.h
++++ b/drivers/firmware/psci/psci.h
+@@ -10,4 +10,10 @@ void psci_set_domain_state(u32 state);
  
-+	/* If running OSI mode, detach the CPU device from its PM domain. */
-+	if (psci_osi_mode_enabled)
-+		of_genpd_detach_cpu(smp_processor_id());
-+
- 	fn = psci_function_id[PSCI_FN_CPU_OFF];
- 	err = invoke_psci_fn(fn, state, 0, 0);
- 	return psci_to_linux_errno(err);
-@@ -204,6 +208,10 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
- 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
- 	/* Clear the domain state to start fresh. */
- 	psci_set_domain_state(0);
-+
-+	if (!err && psci_osi_mode_enabled)
-+		of_genpd_attach_cpu(cpuid);
-+
- 	return psci_to_linux_errno(err);
- }
+ int psci_dt_parse_state_node(struct device_node *np, u32 *state);
  
++#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
++int psci_dt_init_pm_domains(struct device_node *np);
++#else
++static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
++#endif
++
+ #endif /* __PSCI_H */
+diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
+new file mode 100644
+index 000000000000..f54819e7e487
+--- /dev/null
++++ b/drivers/firmware/psci/psci_pm_domain.c
+@@ -0,0 +1,180 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * PM domains for CPUs via genpd - managed by PSCI.
++ *
++ * Copyright (C) 2018 Linaro Ltd.
++ * Author: Ulf Hansson <ulf.hansson@linaro.org>
++ *
++ */
++
++#define pr_fmt(fmt) "psci: " fmt
++
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/pm_domain.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++
++#include "psci.h"
++
++#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
++static int psci_pd_power_off(struct generic_pm_domain *pd)
++{
++	struct genpd_power_state *state = &pd->states[pd->state_idx];
++	u32 *pd_state;
++	u32 composite_pd_state;
++
++	if (!state->data)
++		return 0;
++
++	pd_state = state->data;
++	composite_pd_state = *pd_state | psci_get_domain_state();
++	psci_set_domain_state(composite_pd_state);
++
++	return 0;
++}
++
++static int psci_dt_parse_pd_states(struct genpd_power_state *states,
++				   int state_count)
++{
++	int i, err;
++	u32 *psci_states;
++
++	if (!state_count)
++		return 0;
++
++	psci_states = kcalloc(state_count, sizeof(psci_states), GFP_KERNEL);
++	if (!psci_states)
++		return -ENOMEM;
++
++	for (i = 0; i < state_count; i++) {
++		err = psci_dt_parse_state_node(to_of_node(states[i].fwnode),
++					       &psci_states[i]);
++		if (err) {
++			kfree(psci_states);
++			return err;
++		}
++	}
++
++	for (i = 0; i < state_count; i++)
++		states[i].data = &psci_states[i];
++
++	return 0;
++}
++
++static int psci_dt_init_genpd(struct device_node *np,
++			      struct genpd_power_state *states,
++			      unsigned int state_count)
++{
++	struct generic_pm_domain *pd;
++	struct dev_power_governor *pd_gov;
++	int ret = -ENOMEM;
++
++	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
++	if (!pd)
++		return -ENOMEM;
++
++	pd->name = kasprintf(GFP_KERNEL, "%pOF", np);
++	if (!pd->name)
++		goto free_pd;
++
++	pd->name = kbasename(pd->name);
++	pd->power_off = psci_pd_power_off;
++	pd->states = states;
++	pd->state_count = state_count;
++	pd->flags |= GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN;
++
++	/* Use governor for CPU PM domains if it has some states to manage. */
++	pd_gov = state_count > 0 ? &pm_domain_cpu_gov : NULL;
++
++	ret = pm_genpd_init(pd, pd_gov, false);
++	if (ret)
++		goto free_name;
++
++	ret = of_genpd_add_provider_simple(np, pd);
++	if (ret)
++		goto remove_pd;
++
++	pr_info("init PM domain %s\n", pd->name);
++	return 0;
++
++remove_pd:
++	pm_genpd_remove(pd);
++free_name:
++	kfree(pd->name);
++free_pd:
++	kfree(pd);
++	pr_err("failed to init PM domain ret=%d %pOF\n", ret, np);
++	return ret;
++}
++
++static int psci_dt_set_genpd_topology(struct device_node *np)
++{
++	struct device_node *node;
++	struct of_phandle_args child, parent;
++	int ret;
++
++	for_each_child_of_node(np, node) {
++		if (of_parse_phandle_with_args(node, "power-domains",
++					       "#power-domain-cells", 0,
++					       &parent))
++			continue;
++
++		child.np = node;
++		child.args_count = 0;
++
++		ret = of_genpd_add_subdomain(&parent, &child);
++		of_node_put(parent.np);
++		if (ret) {
++			of_node_put(node);
++			return ret;
++		}
++	}
++
++	return 0;
++}
++
++int psci_dt_init_pm_domains(struct device_node *np)
++{
++	struct device_node *node;
++	struct genpd_power_state *states;
++	int state_count;
++	int pd_count = 0;
++	int ret;
++
++	/* Parse child nodes for "#power-domain-cells". */
++	for_each_child_of_node(np, node) {
++		if (!of_find_property(node, "#power-domain-cells", NULL))
++			continue;
++
++		ret = of_genpd_parse_idle_states(node, &states, &state_count);
++		if (ret)
++			goto err_put;
++
++		ret = psci_dt_parse_pd_states(states, state_count);
++		if (ret)
++			goto err_put;
++
++		ret = psci_dt_init_genpd(node, states, state_count);
++		if (ret)
++			goto err_put;
++
++		pd_count++;
++	}
++
++	if (!pd_count)
++		return 0;
++
++	ret = psci_dt_set_genpd_topology(np);
++	if (ret)
++		goto err_msg;
++
++	return pd_count;
++
++err_put:
++	of_node_put(node);
++err_msg:
++	pr_err("failed to create PM domains ret=%d\n", ret);
++	return ret;
++}
++#endif
 -- 
 2.17.1
