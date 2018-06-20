@@ -1,73 +1,118 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v8 01/26] PM / Domains: Don't treat zero found compatible idle
- states as an error
-Date: Wed, 20 Jun 2018 19:22:01 +0200
-Message-ID: <20180620172226.15012-2-ulf.hansson@linaro.org>
+Subject: [PATCH v8 22/26] drivers: firmware: psci: Introduce psci_dt_topology_init()
+Date: Wed, 20 Jun 2018 19:22:22 +0200
+Message-ID: <20180620172226.15012-23-ulf.hansson@linaro.org>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180620172226.15012-1-ulf.hansson@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@kernel.org>, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>, Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Instead of returning -EINVAL from of_genpd_parse_idle_states() in case none
-compatible states was found, let's return 0 to indicate success. Assign
-also the out-parameter *states to NULL and *n to 0, to indicate to the
-caller that zero states have been found/allocated.
+In case the hierarchical layout is used in DT, we want to initialize the
+corresponding PM domain topology for the CPUs, by using the generic PM
+domain (aka genpd) infrastructure.
 
-This enables the caller of of_genpd_parse_idle_states() to easier act on
-the returned error code.
+At first glance, it may seem feasible to hook into the existing
+psci_dt_init() function, although because it's called quite early in the
+boot sequence, allocating the dynamic data structure for a genpd doesn't
+work.
+
+Therefore, let's export a new init function for PSCI,
+psci_dt_topology_init(), which the ARM machine code should call from a
+suitable initcall.
+
+Succeeding to initialize the PM domain topology, which means at least one
+instance of a genpd becomes created, allows us to continue to enable the
+PSCI OS initiated mode for the platform. If everything turns out fine,
+let's print a message in log to inform the user about the changed mode.
+
+In case of any failures, we stick to the default PSCI Platform Coordinated
+mode. Moreover, in case the kernel started from a kexec call, let's make
+sure to explicitly default to this mode during boot, in case the previous
+kernel changed the mode.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
 ---
- drivers/base/power/domain.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/firmware/psci/psci.c | 38 +++++++++++++++++++++++++++++++++++-
+ include/linux/psci.h         |  2 ++
+ 2 files changed, 39 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 4925af5c4cf0..62969c3d5d04 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2452,8 +2452,8 @@ static int genpd_iterate_idle_states(struct device_node *dn,
-  *
-  * Returns the device states parsed from the OF node. The memory for the states
-  * is allocated by this function and is the responsibility of the caller to
-- * free the memory after use. If no domain idle states is found it returns
-- * -EINVAL and in case of errors, a negative error code.
-+ * free the memory after use. If any or zero compatible domain idle states is
-+ * found it returns 0 and in case of errors, a negative error code is returned.
-  */
- int of_genpd_parse_idle_states(struct device_node *dn,
- 			struct genpd_power_state **states, int *n)
-@@ -2462,8 +2462,14 @@ int of_genpd_parse_idle_states(struct device_node *dn,
- 	int ret;
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index 463f78cda3be..80c286d83369 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -691,9 +691,14 @@ static int __init psci_1_0_init(struct device_node *np)
+ 	if (err)
+ 		return err;
  
- 	ret = genpd_iterate_idle_states(dn, NULL);
--	if (ret <= 0)
--		return ret < 0 ? ret : -EINVAL;
-+	if (ret < 0)
-+		return ret;
-+
-+	if (!ret) {
-+		*states = NULL;
-+		*n = 0;
-+		return 0;
+-	if (psci_has_osi_support())
++	if (psci_has_osi_support()) {
+ 		pr_info("OSI mode supported.\n");
+ 
++		/* Make sure we default to PC mode. */
++		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
 +	}
++
+ 	return 0;
+ }
  
- 	st = kcalloc(ret, sizeof(*st), GFP_KERNEL);
- 	if (!st)
+@@ -723,6 +728,37 @@ int __init psci_dt_init(void)
+ 	return ret;
+ }
+ 
++int __init psci_dt_topology_init(void)
++{
++	struct device_node *np;
++	int ret;
++
++	if (!psci_has_osi_support())
++		return 0;
++
++	np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
++	if (!np)
++		return -ENODEV;
++
++	/* Initialize the CPU PM domains based on topology described in DT. */
++	ret = psci_dt_init_pm_domains(np);
++	if (ret <= 0)
++		goto out;
++
++	/* Enable OSI mode. */
++	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			     PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
++	if (ret) {
++		pr_info("failed to enable OSI mode: %d\n", ret);
++		goto out;
++	}
++
++	pr_info("OSI mode enabled.\n");
++out:
++	of_node_put(np);
++	return ret;
++}
++
+ #ifdef CONFIG_ACPI
+ /*
+  * We use PSCI 0.2+ when ACPI is deployed on ARM64 and it's
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index 8b1b3b5935ab..298a044407f0 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -53,8 +53,10 @@ extern struct psci_operations psci_ops;
+ 
+ #if defined(CONFIG_ARM_PSCI_FW)
+ int __init psci_dt_init(void);
++int __init psci_dt_topology_init(void);
+ #else
+ static inline int psci_dt_init(void) { return 0; }
++static inline int psci_dt_topology_init(void) { return 0; }
+ #endif
+ 
+ #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
 -- 
 2.17.1
