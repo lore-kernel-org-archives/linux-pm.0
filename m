@@ -1,119 +1,73 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v8 11/26] of: base: Add of_get_cpu_state_node() to get idle states for a CPU node
-Date: Wed, 20 Jun 2018 19:22:11 +0200
-Message-ID: <20180620172226.15012-12-ulf.hansson@linaro.org>
+Subject: [PATCH v8 23/26] drivers: firmware: psci: Try to attach CPU devices to their PM domains
+Date: Wed, 20 Jun 2018 19:22:23 +0200
+Message-ID: <20180620172226.15012-24-ulf.hansson@linaro.org>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180620172226.15012-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The CPU's idle state nodes are currently parsed at the common cpuidle DT
-library, but also when initializing back-end data for the arch specific CPU
-operations, as in the PSCI driver case.
+In case the OS initiated CPU suspend mode have been enabled, the PM domain
+topology for CPUs have earlier been created by PSCI. Let's use this
+information in psci_dt_cpu_init_idle() as a condition for when it makes
+sense to try to attach the CPU to its corresponding PM domain, via calling
+of_genpd_attach_cpu().
 
-To avoid open-coding, let's introduce of_get_cpu_state_node(), which takes
-the device node for the CPU and the index to the requested idle state node,
-as in-parameters. In case a corresponding idle state node is found, it
-returns the node with the refcount incremented for it, else it returns
-NULL.
+If the CPU is attached successfully to its PM domain, idle management is
+now fully prepared to be controlled through runtime PM for the CPU.
 
-Moreover, for ARM, there are two generic methods, to describe the CPU's
-idle states, either via the flattened description through the
-"cpu-idle-states" binding [1] or via the hierarchical layout, using the
-"power-domains" and the "domain-idle-states" bindings [2]. Hence, let's
-take both options into account.
-
-[1]
-Documentation/devicetree/bindings/arm/idle-states.txt
-[2]
-Documentation/devicetree/bindings/arm/psci.txt
-
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: devicetree@vger.kernel.org
 Cc: Lina Iyer <ilina@codeaurora.org>
-Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
 Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/of/base.c  | 35 +++++++++++++++++++++++++++++++++++
- include/linux/of.h |  8 ++++++++
- 2 files changed, 43 insertions(+)
+ drivers/firmware/psci/psci.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 848f549164cd..97350cce1b8e 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -399,6 +399,41 @@ int of_cpu_node_to_id(struct device_node *cpu_node)
- }
- EXPORT_SYMBOL(of_cpu_node_to_id);
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index 80c286d83369..700e0e995871 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -20,6 +20,7 @@
+ #include <linux/linkage.h>
+ #include <linux/of.h>
+ #include <linux/pm.h>
++#include <linux/pm_domain.h>
+ #include <linux/printk.h>
+ #include <linux/psci.h>
+ #include <linux/reboot.h>
+@@ -91,6 +92,7 @@ static u32 psci_function_id[PSCI_FN_MAX];
  
-+/**
-+ * of_get_cpu_state_node - Get CPU's idle state node at the given index
-+ *
-+ * @cpu_node: The device node for the CPU
-+ * @index: The index in the list of the idle states
-+ *
-+ * Two generic methods can be used to describe a CPU's idle states, either via
-+ * a flattened description through the "cpu-idle-states" binding or via the
-+ * hierarchical layout, using the "power-domains" and the "domain-idle-states"
-+ * bindings. This function check for both and returns the idle state node for
-+ * the requested index.
-+ *
-+ * In case and idle state node is found at index, the refcount incremented for
-+ * it, so call of_node_put() on it when done. Returns NULL if not found.
-+ */
-+struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
-+					  int index)
-+{
-+	struct of_phandle_args args;
-+	int err;
+ static DEFINE_PER_CPU(u32, domain_state);
+ static u32 psci_cpu_suspend_feature;
++static bool psci_osi_mode_enabled;
+ 
+ u32 psci_get_domain_state(void)
+ {
+@@ -339,6 +341,14 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ 
+ 	/* Idle states parsed correctly, initialize per-cpu pointer */
+ 	per_cpu(psci_power_state, cpu) = psci_states;
 +
-+	err = of_parse_phandle_with_args(cpu_node, "power-domains",
-+					"#power-domain-cells", 0, &args);
-+	if (!err) {
-+		struct device_node *state_node =
-+			of_parse_phandle(args.np, "domain-idle-states", index);
-+
-+		of_node_put(args.np);
-+		return state_node;
++	/* If running OSI mode, attach the CPU device to its PM domain. */
++	if (psci_osi_mode_enabled) {
++		ret = of_genpd_attach_cpu(cpu);
++		if (ret)
++			goto free_mem;
 +	}
 +
-+	return of_parse_phandle(cpu_node, "cpu-idle-states", index);
-+}
-+EXPORT_SYMBOL(of_get_cpu_state_node);
-+
- /**
-  * __of_device_is_compatible() - Check if the node matches given constraints
-  * @device: pointer to node
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 4d25e4f952d9..15072b10ef4d 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -348,6 +348,8 @@ extern const void *of_get_property(const struct device_node *node,
- 				const char *name,
- 				int *lenp);
- extern struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
-+extern struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
-+						 int index);
- #define for_each_property_of_node(dn, pp) \
- 	for (pp = dn->properties; pp != NULL; pp = pp->next)
- 
-@@ -733,6 +735,12 @@ static inline struct device_node *of_get_cpu_node(int cpu,
- 	return NULL;
- }
- 
-+static inline struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
-+					int index)
-+{
-+	return NULL;
-+}
-+
- static inline int of_n_addr_cells(struct device_node *np)
- {
  	return 0;
+ 
+ free_mem:
+@@ -753,6 +763,7 @@ int __init psci_dt_topology_init(void)
+ 		goto out;
+ 	}
+ 
++	psci_osi_mode_enabled = true;
+ 	pr_info("OSI mode enabled.\n");
+ out:
+ 	of_node_put(np);
 -- 
 2.17.1
