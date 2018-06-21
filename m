@@ -1,7 +1,7 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v4 02/12] PM / devfreq: Fix handling of min/max_freq == 0
-Date: Wed, 20 Jun 2018 18:52:27 -0700
-Message-ID: <20180621015237.100100-3-mka@chromium.org>
+Subject: [PATCH v4 05/12] PM / devfreq: Add support for policy notifiers
+Date: Wed, 20 Jun 2018 18:52:30 -0700
+Message-ID: <20180621015237.100100-6-mka@chromium.org>
 References: <20180621015237.100100-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180621015237.100100-1-mka@chromium.org>
@@ -10,131 +10,261 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
-devfreq device") initializes df->min/max_freq with the min/max OPP when
-the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
-available min/max frequency") adds df->scaling_min/max_freq and the
-following to the frequency adjustment code:
+Policy notifiers are called before a frequency change and may narrow
+the min/max frequency range in devfreq_policy, which is used to adjust
+the target frequency if it is beyond this range.
 
-  max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+Also add a few helpers:
+ - devfreq_verify_within_[dev_]limits()
+    - should be used by the notifiers for policy adjustments.
+ - dev_to_devfreq()
+    - lookup a devfreq strict from a device pointer
 
-With the current handling of min/max_freq this is incorrect:
-
-Even though df->max_freq is now initialized to a value != 0 user space
-can still set it to 0, in this case max_freq would be 0 instead of
-df->scaling_max_freq as intended. In consequence the frequency adjustment
-is not performed:
-
-  if (max_freq && freq > max_freq) {
-	freq = max_freq;
-
-To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
-when the user passes a value of 0. This also prevents df->max_freq from
-being set below the min OPP when df->min_freq is 0, and similar for
-min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
-checks for this case can be removed.
-
-Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
 Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 Reviewed-by: Brian Norris <briannorris@chromium.org>
 ---
 Changes in v4:
+- Fixed typo in commit message: devfreg => devfreq
 - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
 
 Changes in v3:
-- none
+- devfreq.h: fixed misspelling of struct devfreq_policy
 
 Changes in v2:
-- handle freq tables sorted in ascending and descending order in
-  min/max_freq_store()
-- use same order for conditional statements in min/max_freq_store()
+- performance, powersave and simpleondemand governors don't need changes
+  with "PM / devfreq: Don't adjust to user limits in governors"
+- formatting fixes
 ---
- drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
- 1 file changed, 30 insertions(+), 12 deletions(-)
+ drivers/devfreq/devfreq.c | 48 ++++++++++++++++++++++-------
+ include/linux/devfreq.h   | 65 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 102 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0057ef5b0a98..6f604f8b2b81 100644
+index 21604d6ae2b8..4cbaa7ad1972 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
- 	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
- 	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
+@@ -72,6 +72,21 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+ 	return ERR_PTR(-ENODEV);
+ }
  
--	if (min_freq && freq < min_freq) {
-+	if (freq < min_freq) {
++/**
++ * dev_to_devfreq() - find devfreq struct using device pointer
++ * @dev:	device pointer used to lookup device devfreq.
++ */
++struct devfreq *dev_to_devfreq(struct device *dev)
++{
++	struct devfreq *devfreq;
++
++	mutex_lock(&devfreq_list_lock);
++	devfreq = find_device_devfreq(dev);
++	mutex_unlock(&devfreq_list_lock);
++
++	return devfreq;
++}
++
+ static unsigned long find_available_min_freq(struct devfreq *devfreq)
+ {
+ 	struct dev_pm_opp *opp;
+@@ -269,20 +284,21 @@ int update_devfreq(struct devfreq *devfreq)
+ 	if (!policy->governor)
+ 		return -EINVAL;
+ 
++	policy->min = policy->devinfo.min_freq;
++	policy->max = policy->devinfo.max_freq;
++
++	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
++				DEVFREQ_ADJUST, policy);
++
+ 	/* Reevaluate the proper frequency */
+ 	err = policy->governor->get_target_freq(devfreq, &freq);
+ 	if (err)
+ 		return err;
+ 
+-	/*
+-	 * Adjust the frequency with user freq, QoS and available freq.
+-	 *
+-	 * List from the highest priority
+-	 * max_freq
+-	 * min_freq
+-	 */
+-	max_freq = MIN(policy->devinfo.max_freq, policy->user.max_freq);
+-	min_freq = MAX(policy->devinfo.min_freq, policy->user.min_freq);
++	/* Adjust the frequency */
++
++	max_freq = MIN(policy->max, policy->user.max_freq);
++	min_freq = MAX(policy->min, policy->user.min_freq);
+ 
+ 	if (freq < min_freq) {
  		freq = min_freq;
- 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
- 	}
--	if (max_freq && freq > max_freq) {
-+	if (freq > max_freq) {
- 		freq = max_freq;
- 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
- 	}
-@@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 	unsigned long value;
-+	unsigned long *freq_table;
- 	int ret;
--	unsigned long max;
+@@ -645,6 +661,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->last_stat_updated = jiffies;
  
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
+ 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
++	srcu_init_notifier_head(&devfreq->policy_notifier_list);
  
- 	mutex_lock(&df->lock);
--	max = df->max_freq;
--	if (value && max && value > max) {
--		ret = -EINVAL;
--		goto unlock;
+ 	mutex_unlock(&devfreq->lock);
+ 
+@@ -1445,7 +1462,7 @@ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
+  * devfreq_register_notifier() - Register a driver with devfreq
+  * @devfreq:	The devfreq object.
+  * @nb:		The notifier block to register.
+- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
+  */
+ int devfreq_register_notifier(struct devfreq *devfreq,
+ 				struct notifier_block *nb,
+@@ -1461,6 +1478,10 @@ int devfreq_register_notifier(struct devfreq *devfreq,
+ 		ret = srcu_notifier_chain_register(
+ 				&devfreq->transition_notifier_list, nb);
+ 		break;
++	case DEVFREQ_POLICY_NOTIFIER:
++		ret = srcu_notifier_chain_register(
++				&devfreq->policy_notifier_list, nb);
++		break;
+ 	default:
+ 		ret = -EINVAL;
+ 	}
+@@ -1473,7 +1494,7 @@ EXPORT_SYMBOL(devfreq_register_notifier);
+  * devfreq_unregister_notifier() - Unregister a driver with devfreq
+  * @devfreq:	The devfreq object.
+  * @nb:		The notifier block to be unregistered.
+- * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
+  */
+ int devfreq_unregister_notifier(struct devfreq *devfreq,
+ 				struct notifier_block *nb,
+@@ -1489,6 +1510,11 @@ int devfreq_unregister_notifier(struct devfreq *devfreq,
+ 		ret = srcu_notifier_chain_unregister(
+ 				&devfreq->transition_notifier_list, nb);
+ 		break;
++	case DEVFREQ_POLICY_NOTIFIER:
++		ret = srcu_notifier_chain_unregister(
++				&devfreq->policy_notifier_list, nb);
++		break;
 +
-+	if (value) {
-+		if (value > df->max_freq) {
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+	} else {
-+		freq_table = df->profile->freq_table;
-+		/* typical order is ascending, some drivers use descending */
-+		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-+			value = freq_table[0];
-+		else
-+			value = freq_table[df->profile->max_state - 1];
+ 	default:
+ 		ret = -EINVAL;
  	}
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 9bf23b976f4d..7c8dce96db73 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -33,6 +33,10 @@
+ #define	DEVFREQ_PRECHANGE		(0)
+ #define DEVFREQ_POSTCHANGE		(1)
  
- 	df->min_freq = value;
-@@ -1157,18 +1166,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 	unsigned long value;
-+	unsigned long *freq_table;
- 	int ret;
--	unsigned long min;
- 
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&df->lock);
--	min = df->min_freq;
--	if (value && min && value < min) {
--		ret = -EINVAL;
--		goto unlock;
++#define DEVFREQ_POLICY_NOTIFIER		1
 +
-+	if (value) {
-+		if (value < df->min_freq) {
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+	} else {
-+		freq_table = df->profile->freq_table;
-+		/* typical order is ascending, some drivers use descending */
-+		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-+			value = freq_table[df->profile->max_state - 1];
-+		else
-+			value = freq_table[0];
- 	}
++#define	DEVFREQ_ADJUST			0
++
+ struct devfreq;
+ struct devfreq_governor;
  
- 	df->max_freq = value;
+@@ -121,12 +125,16 @@ struct devfreq_freq_limits {
+ 
+ /**
+  * struct devfreq_policy - Devfreq policy
++ * @min:	minimum frequency (adjustable by policy notifiers)
++ * @min:	maximum frequency (adjustable by policy notifiers)
+  * @user:	frequency limits requested by the user
+  * @devinfo:	frequency limits of the device (available OPPs)
+  * @governor:	method how to choose frequency based on the usage.
+  * @governor_name:	devfreq governor name for use with this devfreq
+  */
+ struct devfreq_policy {
++	unsigned long min;
++	unsigned long max;
+ 	struct devfreq_freq_limits user;
+ 	struct devfreq_freq_limits devinfo;
+ 	const struct devfreq_governor *governor;
+@@ -155,6 +163,7 @@ struct devfreq_policy {
+  * @time_in_state:	Statistics of devfreq states
+  * @last_stat_updated:	The last time stat updated
+  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
++ * @policy_notifier_list: list head of DEVFREQ_POLICY_NOTIFIER notifier
+  *
+  * This structure stores the devfreq information for a give device.
+  *
+@@ -188,6 +197,7 @@ struct devfreq {
+ 	unsigned long last_stat_updated;
+ 
+ 	struct srcu_notifier_head transition_notifier_list;
++	struct srcu_notifier_head policy_notifier_list;
+ };
+ 
+ struct devfreq_freqs {
+@@ -240,6 +250,45 @@ extern void devm_devfreq_unregister_notifier(struct device *dev,
+ extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
+ 						int index);
+ 
++/**
++ * devfreq_verify_within_limits() - Adjust a devfreq policy if needed to make
++ *                                  sure its min/max values are within a
++ *                                  specified range.
++ * @policy:	the policy
++ * @min:	the minimum frequency
++ * @max:	the maximum frequency
++ */
++static inline void devfreq_verify_within_limits(struct devfreq_policy *policy,
++		unsigned int min, unsigned int max)
++{
++	if (policy->min < min)
++		policy->min = min;
++	if (policy->max < min)
++		policy->max = min;
++	if (policy->min > max)
++		policy->min = max;
++	if (policy->max > max)
++		policy->max = max;
++	if (policy->min > policy->max)
++		policy->min = policy->max;
++}
++
++/**
++ * devfreq_verify_within_dev_limits() - Adjust a devfreq policy if needed to
++ *                                      make sure its min/max values are within
++ *                                      the frequency range supported by the
++ *                                      device.
++ * @policy:	the policy
++ */
++static inline void
++devfreq_verify_within_dev_limits(struct devfreq_policy *policy)
++{
++	devfreq_verify_within_limits(policy, policy->devinfo.min_freq,
++			policy->devinfo.max_freq);
++}
++
++struct devfreq *dev_to_devfreq(struct device *dev);
++
+ #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
+ /**
+  * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
+@@ -394,10 +443,26 @@ static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
++static inline void devfreq_verify_within_limits(struct devfreq_policy *policy,
++		unsigned int min, unsigned int max)
++{
++}
++
++static inline void
++devfreq_verify_within_dev_limits(struct devfreq_policy *policy)
++{
++}
++
+ static inline int devfreq_update_stats(struct devfreq *df)
+ {
+ 	return -EINVAL;
+ }
++
++static inline struct devfreq *dev_to_devfreq(struct device *dev)
++{
++	return NULL;
++}
++
+ #endif /* CONFIG_PM_DEVFREQ */
+ 
+ #endif /* __LINUX_DEVFREQ_H__ */
 -- 
 2.18.0.rc2.346.g013aa6912e-goog
