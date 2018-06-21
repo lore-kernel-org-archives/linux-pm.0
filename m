@@ -1,112 +1,140 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: Fwd: [Bug 199879] New: Very basic the Pci device is not resumed
- from suspend mode
-Date: Wed, 20 Jun 2018 16:13:49 -0500
-Message-ID: <20180620211349.GB108993@bhelgaas-glaptop.roam.corp.google.com>
-References: <bug-199879-41252@https.bugzilla.kernel.org/>
- <CAErSpo5U9D5kmYix2SbcJH_mW8urpmZcgN6Zh=FbGtLch+ACuA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH v4 02/12] PM / devfreq: Fix handling of min/max_freq == 0
+Date: Wed, 20 Jun 2018 18:52:27 -0700
+Message-ID: <20180621015237.100100-3-mka@chromium.org>
+References: <20180621015237.100100-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAErSpo5U9D5kmYix2SbcJH_mW8urpmZcgN6Zh=FbGtLch+ACuA@mail.gmail.com>
+In-Reply-To: <20180621015237.100100-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafal <uzg@wp.pl>
-Cc: linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-[+to Rafal]
+Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
+devfreq device") initializes df->min/max_freq with the min/max OPP when
+the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
+available min/max frequency") adds df->scaling_min/max_freq and the
+following to the frequency adjustment code:
 
-Sorry, I'm an idiot and forgot to include Rafal, the submitter, when I
-forwarded this report to the mailing lists.
+  max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
 
-I suspect that the config accessors used by lspci should temporarily
-wake up devices that are asleep, instead of reporting 0xff data (or if
-that's not feasible, maybe we should add a comment in the kernel and a
-note in the lspci man page).
+With the current handling of min/max_freq this is incorrect:
 
-I'm not sure yet where to go beyond that.
+Even though df->max_freq is now initialized to a value != 0 user space
+can still set it to 0, in this case max_freq would be 0 instead of
+df->scaling_max_freq as intended. In consequence the frequency adjustment
+is not performed:
 
-On Wed, May 30, 2018 at 07:41:35AM -0700, Bjorn Helgaas wrote:
-> [+cc linux-pci, linux-kernel, linux-pm]
-> 
-> I'm not sure I understand the problem yet, so please correct me if I'm wrong:
-> 
->   - Your system has both Nvidia and Intel graphics devices
-> 
->   - When you use Intel graphics, lspci, lshw, and /proc/bus/pci for
-> the Nvidia device show invalid data (0xff) after suspend/resume
-> 
->   - When you use Nvidia graphics, suspend/resume doesn't work (instead
-> of resuming, you just get a blank screen)
-> 
-> Can you attach the output of "sudo lspci -vv" to the bugzilla, please?
-> 
-> ---------- Forwarded message ---------
-> From: <bugzilla-daemon@bugzilla.kernel.org>
-> Date: Tue, May 29, 2018 at 1:29 PM
-> Subject: [Bug 199879] New: Very basic the Pci device is not resumed
-> from suspend mode
-> To: <bhelgaas@google.com>
-> 
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=199879
-> 
->             Bug ID: 199879
->            Summary: Very basic the Pci device is not resumed from suspend
->                     mode
->            Product: Drivers
->            Version: 2.5
->     Kernel Version: kernel-4.15.17
->           Hardware: x86-64
->                 OS: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: high
->           Priority: P1
->          Component: PCI
->           Assignee: drivers_pci@kernel-bugs.osdl.org
->           Reporter: uzg@wp.pl
->         Regression: No
-> 
-> Hi, I have problem with very basic device. Device pci-e not resume from
-> suspend. Only sleep.
-> 
-> I have a problem with anyone interested in it, because everyone thinks it is
-> the fault of the device drivers themselves. But this is not a problem.
-> 
-> This device is a basic device. I've already installed drivers on various
-> hardware and it has always been ok, but not this time.
-> 
-> I'm an electronics technician. After diagnosing what I managed, in my opinion
-> the device remains asleep.
-> 
-> Where does my application come from?
-> I have multiuser mode and I do not use this device. After suspend lspci and
-> lshw show normal data. Normal data is in /proc/bus/pci/...
-> Next suspend and resume, and...
-> lspci see hardware, but is error
-> lshw see hardware as undefined device
-> data in /proc/bus/pci/... is only 0xFF
-> Hardware sleep, not work, not ready. This is bug.
-> 
-> But since the problem concerns the graphics card in the configuration with the
-> second default Intel card, everyone thinks that this is another driver problem
-> as always and nobody wants to take a look at it :(
-> 
-> The problem is easy to recognize. On the internet, I've seen a lot of
-> unresolved problems in which I could see exactly what I found.
-> 
-> My hardware is Lenovo with NVidia and Intel Graphics. Problem is with NVidia. I
-> tested Z710 and Z50-70. The first symptom of the problem is lspci in multiuser
-> mode (or when is XServer with intel graphics). After suspend NVidia have e.g
-> "rev. A1", after resume is "rev. FF". Next symptom lshw and /proc/bus/pci/...
-> When system started with normal NVidia driver, system not resume and halt, only
-> black screen.
-> 
-> There are many examples on the Internet with unsolved problems e.g
-> https://www.lwks.com/index.php?option=com_kunena&func=view&catid=21&id=124374&Itemid=81
-> 
-> --
-> You are receiving this mail because:
-> You are watching the assignee of the bug.
+  if (max_freq && freq > max_freq) {
+	freq = max_freq;
+
+To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
+when the user passes a value of 0. This also prevents df->max_freq from
+being set below the min OPP when df->min_freq is 0, and similar for
+min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
+checks for this case can be removed.
+
+Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Brian Norris <briannorris@chromium.org>
+---
+Changes in v4:
+- added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
+
+Changes in v3:
+- none
+
+Changes in v2:
+- handle freq tables sorted in ascending and descending order in
+  min/max_freq_store()
+- use same order for conditional statements in min/max_freq_store()
+---
+ drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
+ 1 file changed, 30 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 0057ef5b0a98..6f604f8b2b81 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
+ 	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+ 	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
+ 
+-	if (min_freq && freq < min_freq) {
++	if (freq < min_freq) {
+ 		freq = min_freq;
+ 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
+ 	}
+-	if (max_freq && freq > max_freq) {
++	if (freq > max_freq) {
+ 		freq = max_freq;
+ 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+ 	}
+@@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	struct devfreq *df = to_devfreq(dev);
+ 	unsigned long value;
++	unsigned long *freq_table;
+ 	int ret;
+-	unsigned long max;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&df->lock);
+-	max = df->max_freq;
+-	if (value && max && value > max) {
+-		ret = -EINVAL;
+-		goto unlock;
++
++	if (value) {
++		if (value > df->max_freq) {
++			ret = -EINVAL;
++			goto unlock;
++		}
++	} else {
++		freq_table = df->profile->freq_table;
++		/* typical order is ascending, some drivers use descending */
++		if (freq_table[0] < freq_table[df->profile->max_state - 1])
++			value = freq_table[0];
++		else
++			value = freq_table[df->profile->max_state - 1];
+ 	}
+ 
+ 	df->min_freq = value;
+@@ -1157,18 +1166,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	struct devfreq *df = to_devfreq(dev);
+ 	unsigned long value;
++	unsigned long *freq_table;
+ 	int ret;
+-	unsigned long min;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&df->lock);
+-	min = df->min_freq;
+-	if (value && min && value < min) {
+-		ret = -EINVAL;
+-		goto unlock;
++
++	if (value) {
++		if (value < df->min_freq) {
++			ret = -EINVAL;
++			goto unlock;
++		}
++	} else {
++		freq_table = df->profile->freq_table;
++		/* typical order is ascending, some drivers use descending */
++		if (freq_table[0] < freq_table[df->profile->max_state - 1])
++			value = freq_table[df->profile->max_state - 1];
++		else
++			value = freq_table[0];
+ 	}
+ 
+ 	df->max_freq = value;
+-- 
+2.18.0.rc2.346.g013aa6912e-goog
