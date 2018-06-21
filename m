@@ -1,69 +1,212 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/3][RFC] tools: create power/crypto utility
-Date: Thu, 21 Jun 2018 11:01:42 +0200
-Message-ID: <20180621090142.GB21807@amd>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <78af30838d0bac69bdd6e138b659bcbb8464fd13.1529486870.git.yu.c.chen@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v2] ARM: dts: exynos: remove no longer needed samsung
+ thermal properties
+Date: Thu, 21 Jun 2018 12:35:30 +0200
+Message-ID: <8551504.8D13YNfR1X@amdc3058>
+References: <CGME20180621103531eucas1p15ccaf3a2069fe5a188daaeb8e2a29a93@eucas1p1.samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="s2ZSL+KKDSLx8OML"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <78af30838d0bac69bdd6e138b659bcbb8464fd13.1529486870.git.yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Theodore Ts'o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Eric Biggers <ebiggers3@gmail.com>, Denis Kenzior <denkenz@gmail.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
+Remove no longer needed samsung thermal properties.
 
---s2ZSL+KKDSLx8OML
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+There should be no functional changes caused by this patch.
 
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+v2:
+- rebased against current -next kernel
 
+ arch/arm/boot/dts/exynos3250.dtsi                 |    2 +-
+ arch/arm/boot/dts/exynos4.dtsi                    |    2 +-
+ arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi |   20 --------------------
+ arch/arm/boot/dts/exynos5250.dtsi                 |    2 +-
+ arch/arm/boot/dts/exynos5410.dtsi                 |    8 ++++----
+ arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi |   21 ---------------------
+ arch/arm/boot/dts/exynos5420.dtsi                 |   10 +++++-----
+ 7 files changed, 12 insertions(+), 53 deletions(-)
 
-On Wed 2018-06-20 17:40:51, Chen Yu wrote:
-> crypto_hibernate is a user-space utility to generate
-> 512bits AES key and pass it to the kernel via ioctl
-> for hibernation encryption.(We can also add the key
-> into kernel via keyctl if necessary, but currently
-> using ioctl seems to be more straightforward as we
-> need both the key and salt transit).
-
-Ah, here you go:
-
-https://en.wikipedia.org/wiki/Uswsusp
-
-It can already do encryption. If you see problems there, patches will
-be gladly accepted to fix them.
-
-If you want to maintain uswsusp in kernel tree, I guess that would be
-an option, too.
-
-If you want to just help swsusp, I have some patches that reduce
-duplicities between x86-32 and x86-64. It would be cool to clean them
-up and get them merged.
-
-> Suggested-by: "Theodore Ts'o" <tytso@mit.edu>
-
-Best regards,
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---s2ZSL+KKDSLx8OML
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlsraXYACgkQMOfwapXb+vLpTACgoPaUypOAaz3Rq6lnFosS6iG0
-uRYAmgPEWp/kWz9PDcNapGWIb3SAWlul
-=SwCy
------END PGP SIGNATURE-----
-
---s2ZSL+KKDSLx8OML--
+Index: b/arch/arm/boot/dts/exynos3250.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos3250.dtsi	2018-06-21 12:17:32.107322153 +0200
++++ b/arch/arm/boot/dts/exynos3250.dtsi	2018-06-21 12:17:32.091322153 +0200
+@@ -242,7 +242,7 @@
+ 			interrupts = <GIC_SPI 216 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&cmu CLK_TMU_APBIF>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos4412-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 			status = "disabled";
+ 		};
+ 
+Index: b/arch/arm/boot/dts/exynos4.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos4.dtsi	2018-06-21 12:17:32.107322153 +0200
++++ b/arch/arm/boot/dts/exynos4.dtsi	2018-06-21 12:17:32.091322153 +0200
+@@ -735,7 +735,7 @@
+ 			reg = <0x100C0000 0x100>;
+ 			interrupts = <2 4>;
+ 			status = "disabled";
+-			#include "exynos4412-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		jpeg_codec: jpeg-codec@11840000 {
+Index: b/arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi	2018-06-21 12:17:32.107322153 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,20 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-/*
+- * Device tree sources for Exynos4412 TMU sensor configuration
+- *
+- * Copyright (c) 2014 Lukasz Majewski <l.majewski@samsung.com>
+- */
+-
+-#include <dt-bindings/thermal/thermal_exynos.h>
+-
+-#thermal-sensor-cells = <0>;
+-samsung,tmu_gain = <8>;
+-samsung,tmu_reference_voltage = <16>;
+-samsung,tmu_noise_cancel_mode = <4>;
+-samsung,tmu_efuse_value = <55>;
+-samsung,tmu_min_efuse_value = <40>;
+-samsung,tmu_max_efuse_value = <100>;
+-samsung,tmu_first_point_trim = <25>;
+-samsung,tmu_second_point_trim = <85>;
+-samsung,tmu_default_temp_offset = <50>;
+-samsung,tmu_cal_type = <TYPE_ONE_POINT_TRIMMING>;
+Index: b/arch/arm/boot/dts/exynos5250.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos5250.dtsi	2018-06-21 12:17:32.107322153 +0200
++++ b/arch/arm/boot/dts/exynos5250.dtsi	2018-06-21 12:17:32.091322153 +0200
+@@ -301,7 +301,7 @@
+ 			interrupts = <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos4412-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		sata: sata@122f0000 {
+Index: b/arch/arm/boot/dts/exynos5410.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos5410.dtsi	2018-06-21 12:17:32.107322153 +0200
++++ b/arch/arm/boot/dts/exynos5410.dtsi	2018-06-21 12:17:32.091322153 +0200
+@@ -93,7 +93,7 @@
+ 			interrupts = <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos4412-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		tmu_cpu1: tmu@10064000 {
+@@ -102,7 +102,7 @@
+ 			interrupts = <GIC_SPI 183 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos4412-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		tmu_cpu2: tmu@10068000 {
+@@ -111,7 +111,7 @@
+ 			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos4412-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		tmu_cpu3: tmu@1006c000 {
+@@ -120,7 +120,7 @@
+ 			interrupts = <GIC_SPI 185 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos4412-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		mmc_0: mmc@12200000 {
+Index: b/arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi	2018-06-21 12:17:32.107322153 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,21 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-/*
+- * Device tree sources for Exynos5420 TMU sensor configuration
+- *
+- * Copyright (c) 2014 Lukasz Majewski <l.majewski@samsung.com>
+- * Copyright (c) 2017 Krzysztof Kozlowski <krzk@kernel.org>
+- */
+-
+-#include <dt-bindings/thermal/thermal_exynos.h>
+-
+-#thermal-sensor-cells = <0>;
+-samsung,tmu_gain = <8>;
+-samsung,tmu_reference_voltage = <16>;
+-samsung,tmu_noise_cancel_mode = <4>;
+-samsung,tmu_efuse_value = <55>;
+-samsung,tmu_min_efuse_value = <0>;
+-samsung,tmu_max_efuse_value = <100>;
+-samsung,tmu_first_point_trim = <25>;
+-samsung,tmu_second_point_trim = <85>;
+-samsung,tmu_default_temp_offset = <50>;
+-samsung,tmu_cal_type = <TYPE_ONE_POINT_TRIMMING>;
+Index: b/arch/arm/boot/dts/exynos5420.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos5420.dtsi	2018-06-21 12:17:32.107322153 +0200
++++ b/arch/arm/boot/dts/exynos5420.dtsi	2018-06-21 12:17:32.095322153 +0200
+@@ -738,7 +738,7 @@
+ 			interrupts = <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos5420-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		tmu_cpu1: tmu@10064000 {
+@@ -747,7 +747,7 @@
+ 			interrupts = <GIC_SPI 183 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif";
+-			#include "exynos5420-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		tmu_cpu2: tmu@10068000 {
+@@ -756,7 +756,7 @@
+ 			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>, <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif", "tmu_triminfo_apbif";
+-			#include "exynos5420-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		tmu_cpu3: tmu@1006c000 {
+@@ -765,7 +765,7 @@
+ 			interrupts = <GIC_SPI 185 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU>, <&clock CLK_TMU_GPU>;
+ 			clock-names = "tmu_apbif", "tmu_triminfo_apbif";
+-			#include "exynos5420-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		tmu_gpu: tmu@100a0000 {
+@@ -774,7 +774,7 @@
+ 			interrupts = <GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&clock CLK_TMU_GPU>, <&clock CLK_TMU>;
+ 			clock-names = "tmu_apbif", "tmu_triminfo_apbif";
+-			#include "exynos5420-tmu-sensor-conf.dtsi"
++			#thermal-sensor-cells = <0>;
+ 		};
+ 
+ 		sysmmu_g2dr: sysmmu@10a60000 {
