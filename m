@@ -1,7 +1,7 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v4 12/12] mfd: cros_ec: Add throttler sub-device
-Date: Wed, 20 Jun 2018 18:52:37 -0700
-Message-ID: <20180621015237.100100-13-mka@chromium.org>
+Subject: [PATCH v4 07/12] PM / devfreq: export devfreq_class
+Date: Wed, 20 Jun 2018 18:52:32 -0700
+Message-ID: <20180621015237.100100-8-mka@chromium.org>
 References: <20180621015237.100100-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180621015237.100100-1-mka@chromium.org>
@@ -10,56 +10,52 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Instantiate the CrOS EC throttler if it is enabled in the kernel
-configuration.
+Exporting the device class allows other parts of the kernel to enumerate
+the devfreq devices and receive notification when a devfreq device is
+added or removed.
 
 Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Brian Norris <briannorris@chromium.org>
 ---
 Changes in v4:
-- register throttler in cros_ec_dev.c instead of cros_ec.c
+- added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
 
 Changes in v3:
+- none
+
+Changes in v2:
 - patch added to series
 ---
- drivers/mfd/cros_ec_dev.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/devfreq/devfreq.c | 3 ++-
+ include/linux/devfreq.h   | 2 ++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/mfd/cros_ec_dev.c b/drivers/mfd/cros_ec_dev.c
-index eafd06f62a3a..9e56c2793075 100644
---- a/drivers/mfd/cros_ec_dev.c
-+++ b/drivers/mfd/cros_ec_dev.c
-@@ -383,6 +383,22 @@ static void cros_ec_sensors_register(struct cros_ec_dev *ec)
- 	kfree(msg);
- }
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 4cbaa7ad1972..38b90b64fc6e 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -31,7 +31,8 @@
+ #define MAX(a,b)	((a > b) ? a : b)
+ #define MIN(a,b)	((a < b) ? a : b)
  
-+static const struct mfd_cell ec_throttler_cells[] = {
-+	{ .name = "cros-ec-throttler" }
-+};
-+
-+static void cros_ec_throttler_register(struct cros_ec_dev *ec)
-+{
-+	int ret;
-+
-+	ret = mfd_add_devices(ec->dev, 0, ec_throttler_cells,
-+			      ARRAY_SIZE(ec_throttler_cells),
-+			      NULL, 0, NULL);
-+	if (ret)
-+		dev_err(ec->dev,
-+			"failed to add cros-ec-throttler device: %d\n", ret);
-+}
-+
- static int ec_device_probe(struct platform_device *pdev)
- {
- 	int retval = -ENOMEM;
-@@ -422,6 +438,9 @@ static int ec_device_probe(struct platform_device *pdev)
- 	if (cros_ec_check_features(ec, EC_FEATURE_MOTION_SENSE))
- 		cros_ec_sensors_register(ec);
+-static struct class *devfreq_class;
++struct class *devfreq_class;
++EXPORT_SYMBOL_GPL(devfreq_class);
  
-+	if (IS_ENABLED(CONFIG_CROS_EC_THROTTLER))
-+		cros_ec_throttler_register(ec);
-+
- 	/* Take control of the lightbar from the EC. */
- 	lb_manual_suspend_ctrl(ec, 1);
+ /*
+  * devfreq core provides delayed work based load monitoring helper
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index c4f84a769cb5..964e064a951f 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -206,6 +206,8 @@ struct devfreq_freqs {
+ };
  
+ #if defined(CONFIG_PM_DEVFREQ)
++extern struct class *devfreq_class;
++
+ extern struct devfreq *devfreq_add_device(struct device *dev,
+ 				  struct devfreq_dev_profile *profile,
+ 				  const char *governor_name,
 -- 
 2.18.0.rc2.346.g013aa6912e-goog
