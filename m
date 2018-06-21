@@ -1,84 +1,80 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/3][RFC] Introduce the in-kernel hibernation encryption
-Date: Thu, 21 Jun 2018 21:14:43 +0200
-Message-ID: <20180621191443.GB14623@amd>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <20180621085332.GA21807@amd>
- <CAJZ5v0izS8CNzhsd_bjB40xTkZxaxh13NtHsJi9LYXEr84MoMA@mail.gmail.com>
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH v2] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
+Date: Thu, 21 Jun 2018 15:19:09 -0600
+Message-ID: <5ccc0d29-554b-fd5f-84fb-a1ef5bd3d559@codeaurora.org>
+References: <1529056995-122792-1-git-send-email-george.cherian@cavium.com>
+ <67822500-0c9d-ac24-71bc-2717831ab29d@codeaurora.org>
+ <44d52166-ed9d-c199-3e19-3df1317ee78c@caviumnetworks.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0izS8CNzhsd_bjB40xTkZxaxh13NtHsJi9LYXEr84MoMA@mail.gmail.com>
+In-Reply-To: <44d52166-ed9d-c199-3e19-3df1317ee78c@caviumnetworks.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: George Cherian <gcherian@caviumnetworks.com>, George Cherian <george.cherian@cavium.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
+Hi George,
 
---uQr8t48UFsdbeI+V
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 6/20/2018 3:17 AM, George Cherian wrote:
+> Hi Prakash,
+>
+> Thanks for the review.
+>
+> On 06/19/2018 01:51 AM, Prakash, Prashanth wrote:
+>> External Email
+>>
+>> Hi George,
+>>
+>> On 6/15/2018 4:03 AM, George Cherian wrote:
+>>> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
+>>> feedback via set of performance counters. To determine the actual
+>>> performance level delivered over time, OSPM may read a set of
+>>> performance counters from the Reference Performance Counter Register
+>>> and the Delivered Performance Counter Register.
+>>>
+>>> OSPM calculates the delivered performance over a given time period by
+>>> taking a beginning and ending snapshot of both the reference and
+>>> delivered performance counters, and calculating:
+>>>
+>>> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
+>>>
+>>> Implement the above and hook this to the cpufreq->get method.
+>>>
+>>> Signed-off-by: George Cherian <george.cherian@cavium.com>
+>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>   drivers/cpufreq/cppc_cpufreq.c | 71 ++++++++++++++++++++++++++++++++++++++++++
+>>>   1 file changed, 71 insertions(+)
+>>>
+>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>>> index 3464580..3fe7625 100644
+>>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>>> @@ -296,10 +296,81 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>>        return ret;
+>>>   }
+>>>
+>>> +static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
+>>> +                                  struct cppc_perf_fb_ctrs fb_ctrs_t0,
+>>> +                                  struct cppc_perf_fb_ctrs fb_ctrs_t1)
+>>> +{
+>>> +     u64 delta_reference, delta_delivered;
+>>> +     u64 reference_perf, delivered_perf;
+>>> +
+>>> +     reference_perf = fb_ctrs_t0.reference_perf;
+>>> +     if (fb_ctrs_t1.reference > fb_ctrs_t0.reference) {
+>>> +             delta_reference = fb_ctrs_t1.reference - fb_ctrs_t0.reference;
+>>> +     } else {
+>> There should be another if () here to check if the reference counters are equal.
+>> We cannot assume, there was a overflow when the counters are equal. As I
+>> mentioned on last patch, the counters *may* pause in idle states.
+> My Bad... I somehow, over looked that point. In case of delta_reference being zero there is actually a check below to avoid divide-by-zero. There I returned  reference perf instead of desired perf, same I will take care in v3. Isn't that sufficient or is there a need for an explicit check here for delta = zero?
 
-On Thu 2018-06-21 14:08:40, Rafael J. Wysocki wrote:
-> On Thu, Jun 21, 2018 at 10:53 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >> As security becomes more and more important, we add the in-kernel
-> >> encryption support for hibernation.
-> > ...
-> >> There was a discussion on the mailing list on whether this key should
-> >> be derived in kernel or in user space. And it turns out to be generati=
-ng
-> >> the key by user space is more acceptable[1]. So this patch set is divi=
-ded
-> >> into two parts:
-> >> 1. The hibernation snapshot encryption in kernel space,
-> >> 2. the key derivation implementation in user space.
-> >
-> > uswsusp was created so that this kind of stuff could be kept in
-> > userspace. You get graphical progress bar (etc) too. As you already
-> > have userspace component for key derivation, I see no advantages to
-> > uswsusp.
-> >
-> > If you have some, please explain.
->=20
-> Not having to transfer plain text kernel memory to user space is one
-> IMO.
+I am not sure I followed the above. The gist of my comment was when the counters
+are equal we cannot assume that there was a overflow. So change the ">" condition
+to ">=" and my concern about assuming overflow when equal should be take care of.
 
-Well, AFAICT in this case userland has the key and encrypted data are
-on disk. That does not seem to be improvement.
-
-> Besides, the user space part of what you are calling uswsusp has not
-> been actively maintained for years now and honestly I don't know how
-> many users of it there are.
-
-I'd assume distros want progress bars so they still use it?
-
-Anyway, there's solution for encrypted hibernation. If Intel wants to
-invent different solution for that, and put it into kernel, they
-should explain what the advantages are, relative to existing solution.
-
-Best regards,
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---uQr8t48UFsdbeI+V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlsr+SMACgkQMOfwapXb+vKDngCfXJJv3RBXD2AhfIHRs03Y2uhR
-osYAoJ6Irtf8oJPZDOtvLwfAcgsM1EMA
-=yyF8
------END PGP SIGNATURE-----
-
---uQr8t48UFsdbeI+V--
+The above change would be required for both reference and delivered counters.
