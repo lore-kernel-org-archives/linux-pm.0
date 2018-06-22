@@ -1,74 +1,55 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH v4 12/12] mfd: cros_ec: Add throttler sub-device
-Date: Thu, 21 Jun 2018 19:06:47 -0700
-Message-ID: <20180622020646.GB180395@ban.mtv.corp.google.com>
-References: <20180621015237.100100-1-mka@chromium.org>
- <20180621015237.100100-13-mka@chromium.org>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/3][RFC] Introduce the in-kernel hibernation encryption
+Date: Fri, 22 Jun 2018 10:14:10 +0800
+Message-ID: <20180622021410.GA30305@sandybridge-desktop>
+References: <cover.1529486870.git.yu.c.chen@intel.com>
+ <20180621085332.GA21807@amd>
+ <CAJZ5v0izS8CNzhsd_bjB40xTkZxaxh13NtHsJi9LYXEr84MoMA@mail.gmail.com>
+ <20180621191443.GB14623@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180621015237.100100-13-mka@chromium.org>
+In-Reply-To: <20180621191443.GB14623@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 20, 2018 at 06:52:37PM -0700, Matthias Kaehlcke wrote:
-> Instantiate the CrOS EC throttler if it is enabled in the kernel
-> configuration.
+Hi,
+On Thu, Jun 21, 2018 at 09:14:43PM +0200, Pavel Machek wrote:
+> On Thu 2018-06-21 14:08:40, Rafael J. Wysocki wrote:
+> > On Thu, Jun 21, 2018 at 10:53 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > > Hi!
+> > >
+> > >> As security becomes more and more important, we add the in-kernel
+> > >> encryption support for hibernation.
+> > > ...
+> > >> There was a discussion on the mailing list on whether this key should
+> > >> be derived in kernel or in user space. And it turns out to be generating
+> > >> the key by user space is more acceptable[1]. So this patch set is divided
+> > >> into two parts:
+> > >> 1. The hibernation snapshot encryption in kernel space,
+> > >> 2. the key derivation implementation in user space.
+> > >
+> > > uswsusp was created so that this kind of stuff could be kept in
+> > > userspace. You get graphical progress bar (etc) too. As you already
+> > > have userspace component for key derivation, I see no advantages to
+> > > uswsusp.
+> > >
+> > > If you have some, please explain.
+> > 
+> > Not having to transfer plain text kernel memory to user space is one
+> > IMO.
 > 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> Well, AFAICT in this case userland has the key and encrypted data are
+> on disk. That does not seem to be improvement.
+> 
+uswsusp needs to read the snapshot from kernel first, while
+do encryption in kernel directly would reduce the IO. Besides,
+the kernel memory content is protect from been read from
+user space from first place, although finally they are
+encrypted on the disk.
 
-Reviewed-by: Brian Norris <briannorris@chromium.org>
-
-> ---
-> Changes in v4:
-> - register throttler in cros_ec_dev.c instead of cros_ec.c
-> 
-> Changes in v3:
-> - patch added to series
-> ---
->  drivers/mfd/cros_ec_dev.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/drivers/mfd/cros_ec_dev.c b/drivers/mfd/cros_ec_dev.c
-> index eafd06f62a3a..9e56c2793075 100644
-> --- a/drivers/mfd/cros_ec_dev.c
-> +++ b/drivers/mfd/cros_ec_dev.c
-> @@ -383,6 +383,22 @@ static void cros_ec_sensors_register(struct cros_ec_dev *ec)
->  	kfree(msg);
->  }
->  
-> +static const struct mfd_cell ec_throttler_cells[] = {
-> +	{ .name = "cros-ec-throttler" }
-> +};
-> +
-> +static void cros_ec_throttler_register(struct cros_ec_dev *ec)
-> +{
-> +	int ret;
-> +
-> +	ret = mfd_add_devices(ec->dev, 0, ec_throttler_cells,
-> +			      ARRAY_SIZE(ec_throttler_cells),
-> +			      NULL, 0, NULL);
-> +	if (ret)
-> +		dev_err(ec->dev,
-> +			"failed to add cros-ec-throttler device: %d\n", ret);
-> +}
-> +
->  static int ec_device_probe(struct platform_device *pdev)
->  {
->  	int retval = -ENOMEM;
-> @@ -422,6 +438,9 @@ static int ec_device_probe(struct platform_device *pdev)
->  	if (cros_ec_check_features(ec, EC_FEATURE_MOTION_SENSE))
->  		cros_ec_sensors_register(ec);
->  
-> +	if (IS_ENABLED(CONFIG_CROS_EC_THROTTLER))
-> +		cros_ec_throttler_register(ec);
-> +
->  	/* Take control of the lightbar from the EC. */
->  	lb_manual_suspend_ctrl(ec, 1);
->  
-> -- 
-> 2.18.0.rc2.346.g013aa6912e-goog
-> 
+Best,
+Yu
