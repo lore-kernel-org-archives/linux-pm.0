@@ -1,157 +1,41 @@
-From: Ezequiel Garcia <ezequiel@collabora.com>
-Subject: Re: [PATCH v3] PM / devfreq: Fix devfreq_add_device() when drivers
- are built as modules.
-Date: Fri, 22 Jun 2018 14:13:53 -0300
-Message-ID: <1e792d3c972998f92109c127886243e32c4cde71.camel@collabora.com>
-References: <20180621220430.25644-1-enric.balletbo@collabora.com>
-         <0383b4a703a0b619023c0654a4a7637419c72ebd.camel@collabora.com>
-         <addc4280-729f-85d7-a314-35afbb7c8bb1@codeaurora.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2] ARM: dts: exynos: remove no longer needed samsung
+ thermal properties
+Date: Fri, 22 Jun 2018 20:27:07 +0200
+Message-ID: <20180622182707.i52l3z4yq2ozmqkw@kozik-lap>
+References: <CGME20180621103531eucas1p15ccaf3a2069fe5a188daaeb8e2a29a93@eucas1p1.samsung.com>
+ <8551504.8D13YNfR1X@amdc3058>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <addc4280-729f-85d7-a314-35afbb7c8bb1@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <8551504.8D13YNfR1X@amdc3058>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Akhil P Oommen <akhilpo@codeaurora.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
-Cc: kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hey Akhil,
-
-On Fri, 2018-06-22 at 12:33 +0530, Akhil P Oommen wrote:
-> On 6/22/2018 6:41 AM, Ezequiel Garcia wrote:
-> > Hey Enric,
-> > 
-> > On Fri, 2018-06-22 at 00:04 +0200, Enric Balletbo i Serra wrote:
-> > > When the devfreq driver and the governor driver are built as
-> > > modules,
-> > > the call to devfreq_add_device() or governor_store() fails
-> > > because
-> > > the
-> > > governor driver is not loaded at the time the devfreq driver
-> > > loads.
-> > > The
-> > > devfreq driver has a build dependency on the governor but also
-> > > should
-> > > have a runtime dependency. We need to make sure that the governor
-> > > driver
-> > > is loaded before the devfreq driver.
-> > > 
-> > > This patch fixes this bug by adding a try_then_request_governor()
-> > > function. First tries to find the governor, and then, if it is
-> > > not
-> > > found,
-> > > it requests the module and tries again.
-> > > 
-> > > Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to
-> > > governor
-> > > using name)
-> > > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.c
-> > > om>
-> > > ---
-> > > 
-> > > Changes in v3:
-> > > - Remove unneded change in dev_err message.
-> > > - Fix err returned value in case to not find the governor.
-> > > 
-> > > Changes in v2:
-> > > - Add a new function to request the module and call that function
-> > > from
-> > >    devfreq_add_device and governor_store.
-> > > 
-> > >   drivers/devfreq/devfreq.c | 65
-> > > ++++++++++++++++++++++++++++++++-----
-> > > --
-> > 
-> > [snip snip]
-> > > -	governor = find_devfreq_governor(devfreq-
-> > > >governor_name);
-> > > +	governor = try_then_request_governor(devfreq-
-> > > > governor_name);
-> > > 
-> > >   	if (IS_ERR(governor)) {
-> > >   		dev_err(dev, "%s: Unable to find governor for
-> > > the
-> > > device\n",
-> > >   			__func__);
-> > >   		err = PTR_ERR(governor);
-> > > -		goto err_init;
-> > > +		goto err_unregister;
-> > >   	}
-> > >   
-> > > +	mutex_lock(&devfreq_list_lock);
-> > > +
-> > 
-> > I know it's not something we are introducing in this patch,
-> > but still... calling a hook with a mutex held looks
-> > fishy to me.
-> > 
-> > This lock should only protect the list, unless I am missing
-> > something.
-> > 
-> > >   	devfreq->governor = governor;
-> > >   	err = devfreq->governor->event_handler(devfreq,
-> > > DEVFREQ_GOV_START,
-> > >   						NULL);
-> > > @@ -663,14 +703,16 @@ struct devfreq *devfreq_add_device(struct
-> > > device *dev,
-> > >   			__func__);
-> > >   		goto err_init;
-> > >   	}
-> > > +
-> > > +	list_add(&devfreq->node, &devfreq_list);
-> > > +
-> > >   	mutex_unlock(&devfreq_list_lock);
-> > >   
-> > >   	return devfreq;
-> > >   
-> > >   err_init:
-> > > -	list_del(&devfreq->node);
-> > >   	mutex_unlock(&devfreq_list_lock);
-> > > -
-> > > +err_unregister:
-> > >   	device_unregister(&devfreq->dev);
-> > >   err_dev:
-> > >   	if (devfreq)
-> > > @@ -988,12 +1030,13 @@ static ssize_t governor_store(struct
-> > > device
-> > > *dev, struct device_attribute *attr,
-> > >   	if (ret != 1)
-> > >   		return -EINVAL;
-> > >   
-> > > -	mutex_lock(&devfreq_list_lock);
-> > > -	governor = find_devfreq_governor(str_governor);
-> > > +	governor = try_then_request_governor(str_governor);
-> > >   	if (IS_ERR(governor)) {
-> > > -		ret = PTR_ERR(governor);
-> > > -		goto out;
-> > > +		return PTR_ERR(governor);
-> > >   	}
-> > > +
-> > > +	mutex_lock(&devfreq_list_lock);
-> > > +
-> > >   	if (df->governor == governor) {
-> > >   		ret = 0;
-> > >   		goto out;
-> > > -- 
-> > > 2.17.1
-> > > 
-> > > 
-> > 
-> > Regards,
-> > Eze
+On Thu, Jun 21, 2018 at 12:35:30PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> Remove no longer needed samsung thermal properties.
 > 
-> Adding to Ezequiel's point, shouldn't we take more granular lock 
-> (devfreq->lock) first and then call devfreq_list_lock at the time of 
-> adding to the list?
+> There should be no functional changes caused by this patch.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+> v2:
+> - rebased against current -next kernel
+> 
+>  arch/arm/boot/dts/exynos3250.dtsi                 |    2 +-
+>  arch/arm/boot/dts/exynos4.dtsi                    |    2 +-
+>  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi |   20 --------------------
+>  arch/arm/boot/dts/exynos5250.dtsi                 |    2 +-
+>  arch/arm/boot/dts/exynos5410.dtsi                 |    8 ++++----
+>  arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi |   21 ---------------------
+>  arch/arm/boot/dts/exynos5420.dtsi                 |   10 +++++-----
+>  7 files changed, 12 insertions(+), 53 deletions(-)
 > 
 
-Not sure why we should do that. devfreq->lock should be used to
-protect the struct devfreq state, while the devfreq_list_lock
-is apparently protecting the two lists (which seem unrelated
-lists).
+Thanks, applied.
 
-So, the two locks are not correlated.
-
-Regards,
-Eze
+Best regards,
+Krzysztof
