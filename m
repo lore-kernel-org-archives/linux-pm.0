@@ -1,156 +1,124 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v3] PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.
-Date: Fri, 22 Jun 2018 00:04:30 +0200
-Message-ID: <20180621220430.25644-1-enric.balletbo@collabora.com>
+From: Ezequiel Garcia <ezequiel@collabora.com>
+Subject: Re: [PATCH v3] PM / devfreq: Fix devfreq_add_device() when drivers
+ are built as modules.
+Date: Thu, 21 Jun 2018 22:11:36 -0300
+Message-ID: <0383b4a703a0b619023c0654a4a7637419c72ebd.camel@collabora.com>
+References: <20180621220430.25644-1-enric.balletbo@collabora.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180621220430.25644-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
 Cc: kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When the devfreq driver and the governor driver are built as modules,
-the call to devfreq_add_device() or governor_store() fails because the
-governor driver is not loaded at the time the devfreq driver loads. The
-devfreq driver has a build dependency on the governor but also should
-have a runtime dependency. We need to make sure that the governor driver
-is loaded before the devfreq driver.
+Hey Enric,
 
-This patch fixes this bug by adding a try_then_request_governor()
-function. First tries to find the governor, and then, if it is not found,
-it requests the module and tries again.
+On Fri, 2018-06-22 at 00:04 +0200, Enric Balletbo i Serra wrote:
+> When the devfreq driver and the governor driver are built as modules,
+> the call to devfreq_add_device() or governor_store() fails because
+> the
+> governor driver is not loaded at the time the devfreq driver loads.
+> The
+> devfreq driver has a build dependency on the governor but also should
+> have a runtime dependency. We need to make sure that the governor
+> driver
+> is loaded before the devfreq driver.
+> 
+> This patch fixes this bug by adding a try_then_request_governor()
+> function. First tries to find the governor, and then, if it is not
+> found,
+> it requests the module and tries again.
+> 
+> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor
+> using name)
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> 
+> Changes in v3:
+> - Remove unneded change in dev_err message.
+> - Fix err returned value in case to not find the governor.
+> 
+> Changes in v2:
+> - Add a new function to request the module and call that function
+> from
+>   devfreq_add_device and governor_store.
+> 
+>  drivers/devfreq/devfreq.c | 65 ++++++++++++++++++++++++++++++++-----
+> --
+[snip snip]
+> -	governor = find_devfreq_governor(devfreq->governor_name);
+> +	governor = try_then_request_governor(devfreq-
+> >governor_name);
+>  	if (IS_ERR(governor)) {
+>  		dev_err(dev, "%s: Unable to find governor for the
+> device\n",
+>  			__func__);
+>  		err = PTR_ERR(governor);
+> -		goto err_init;
+> +		goto err_unregister;
+>  	}
+>  
+> +	mutex_lock(&devfreq_list_lock);
+> +
 
-Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
+I know it's not something we are introducing in this patch,
+but still... calling a hook with a mutex held looks
+fishy to me.
 
-Changes in v3:
-- Remove unneded change in dev_err message.
-- Fix err returned value in case to not find the governor.
+This lock should only protect the list, unless I am missing
+something.
 
-Changes in v2:
-- Add a new function to request the module and call that function from
-  devfreq_add_device and governor_store.
+>  	devfreq->governor = governor;
+>  	err = devfreq->governor->event_handler(devfreq,
+> DEVFREQ_GOV_START,
+>  						NULL);
+> @@ -663,14 +703,16 @@ struct devfreq *devfreq_add_device(struct
+> device *dev,
+>  			__func__);
+>  		goto err_init;
+>  	}
+> +
+> +	list_add(&devfreq->node, &devfreq_list);
+> +
+>  	mutex_unlock(&devfreq_list_lock);
+>  
+>  	return devfreq;
+>  
+>  err_init:
+> -	list_del(&devfreq->node);
+>  	mutex_unlock(&devfreq_list_lock);
+> -
+> +err_unregister:
+>  	device_unregister(&devfreq->dev);
+>  err_dev:
+>  	if (devfreq)
+> @@ -988,12 +1030,13 @@ static ssize_t governor_store(struct device
+> *dev, struct device_attribute *attr,
+>  	if (ret != 1)
+>  		return -EINVAL;
+>  
+> -	mutex_lock(&devfreq_list_lock);
+> -	governor = find_devfreq_governor(str_governor);
+> +	governor = try_then_request_governor(str_governor);
+>  	if (IS_ERR(governor)) {
+> -		ret = PTR_ERR(governor);
+> -		goto out;
+> +		return PTR_ERR(governor);
+>  	}
+> +
+> +	mutex_lock(&devfreq_list_lock);
+> +
+>  	if (df->governor == governor) {
+>  		ret = 0;
+>  		goto out;
+> -- 
+> 2.17.1
+> 
+> 
 
- drivers/devfreq/devfreq.c | 65 ++++++++++++++++++++++++++++++++-------
- 1 file changed, 54 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0b5b3abe054e..e059c431a558 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -11,6 +11,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/kmod.h>
- #include <linux/sched.h>
- #include <linux/errno.h>
- #include <linux/err.h>
-@@ -221,6 +222,46 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
- 	return ERR_PTR(-ENODEV);
- }
- 
-+/**
-+ * try_then_request_governor() - Try to find the governor and request the
-+ *                               module if is not found.
-+ * @name:	name of the governor
-+ *
-+ * Search the list of devfreq governors and request the module and try again
-+ * if is not found. This can happen when both drivers (the governor driver
-+ * and the driver that call devfreq_add_device) are built as modules.
-+ *
-+ * Return: The matched governor's pointer.
-+ */
-+static struct devfreq_governor *try_then_request_governor(const char *name)
-+{
-+	struct devfreq_governor *governor;
-+	int err = 0;
-+
-+	mutex_lock(&devfreq_list_lock);
-+
-+	governor = find_devfreq_governor(name);
-+	if (IS_ERR(governor)) {
-+		mutex_unlock(&devfreq_list_lock);
-+
-+		if (!strncmp(name, DEVFREQ_GOV_SIMPLE_ONDEMAND,
-+			     DEVFREQ_NAME_LEN))
-+			err = request_module("governor_%s", "simpleondemand");
-+		else
-+			err = request_module("governor_%s", name);
-+		if (err)
-+			return NULL;
-+
-+		mutex_lock(&devfreq_list_lock);
-+
-+		governor = find_devfreq_governor(name);
-+	}
-+
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	return governor;
-+}
-+
- static int devfreq_notify_transition(struct devfreq *devfreq,
- 		struct devfreq_freqs *freqs, unsigned int state)
- {
-@@ -644,17 +685,16 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	mutex_unlock(&devfreq->lock);
- 
--	mutex_lock(&devfreq_list_lock);
--	list_add(&devfreq->node, &devfreq_list);
--
--	governor = find_devfreq_governor(devfreq->governor_name);
-+	governor = try_then_request_governor(devfreq->governor_name);
- 	if (IS_ERR(governor)) {
- 		dev_err(dev, "%s: Unable to find governor for the device\n",
- 			__func__);
- 		err = PTR_ERR(governor);
--		goto err_init;
-+		goto err_unregister;
- 	}
- 
-+	mutex_lock(&devfreq_list_lock);
-+
- 	devfreq->governor = governor;
- 	err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_START,
- 						NULL);
-@@ -663,14 +703,16 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 			__func__);
- 		goto err_init;
- 	}
-+
-+	list_add(&devfreq->node, &devfreq_list);
-+
- 	mutex_unlock(&devfreq_list_lock);
- 
- 	return devfreq;
- 
- err_init:
--	list_del(&devfreq->node);
- 	mutex_unlock(&devfreq_list_lock);
--
-+err_unregister:
- 	device_unregister(&devfreq->dev);
- err_dev:
- 	if (devfreq)
-@@ -988,12 +1030,13 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 	if (ret != 1)
- 		return -EINVAL;
- 
--	mutex_lock(&devfreq_list_lock);
--	governor = find_devfreq_governor(str_governor);
-+	governor = try_then_request_governor(str_governor);
- 	if (IS_ERR(governor)) {
--		ret = PTR_ERR(governor);
--		goto out;
-+		return PTR_ERR(governor);
- 	}
-+
-+	mutex_lock(&devfreq_list_lock);
-+
- 	if (df->governor == governor) {
- 		ret = 0;
- 		goto out;
--- 
-2.17.1
+Regards,
+Eze
