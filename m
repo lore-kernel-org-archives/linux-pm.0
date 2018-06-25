@@ -1,91 +1,64 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/3][RFC] Introduce the in-kernel hibernation encryption
-Date: Mon, 25 Jun 2018 13:59:13 +0200
-Message-ID: <20180625115913.GD17001@amd>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <20180621085332.GA21807@amd>
- <CAJZ5v0izS8CNzhsd_bjB40xTkZxaxh13NtHsJi9LYXEr84MoMA@mail.gmail.com>
- <20180621191443.GB14623@amd>
- <CAJZ5v0gHPRa-9btfCCYEDDphZrEy8DTrXjsn57MoKMAu7sKMEA@mail.gmail.com>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: [PATCH v2 04/23] thermal: armada: dissociate a380 and cp110 ->init()
+ hooks
+Date: Mon, 25 Jun 2018 17:12:20 +0200
+Message-ID: <20180625151239.20976-5-miquel.raynal@bootlin.com>
+References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="JwB53PgKC5A7+0Ej"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gHPRa-9btfCCYEDDphZrEy8DTrXjsn57MoKMAu7sKMEA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Until now, Armada 380 and CP110 could share the same ->init() function
+because their use was identical.
 
---JwB53PgKC5A7+0Ej
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Prepare the support of multi-sensors support and overheat interrupt
+feature by separating the initialization paths before they actually
+diverge.
 
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/thermal/armada_thermal.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-
-> > Well, AFAICT in this case userland has the key and encrypted data are
-> > on disk. That does not seem to be improvement.
->=20
-> Not really.
->=20
-> With the encryption in the kernel, if the kernel is careful enough,
-> use space will not be able to read the image even if it knows the
-> passphrase, unless it can also add itself to the initramfs image
-> loaded by the restore kernel, which (at least) can be made way more
-> difficult than simply reading the plain-text image data via an I/F
-> readily provided by the kernel.
-
-I still do not see the improvement. If you are root, you can modify
-the initramfs and decrypt the data.
-
-Please explain in the changelog how this is better than existing solution.
-
-> >> Besides, the user space part of what you are calling uswsusp has not
-> >> been actively maintained for years now and honestly I don't know how
-> >> many users of it there are.
-> >
-> > I'd assume distros want progress bars so they still use it?
->=20
-> I'd rather not speak for distros, but if hibernation images are
-> written to fast storage, progress bars are not that useful any more.
-> They are not used on Windows any more, for one.
->=20
-> > Anyway, there's solution for encrypted hibernation.
->=20
-> Which is suboptimal and you know it.
-
-If this is better, please explain how in the changelog.
-
-> > If Intel wants to invent different solution for that, and put it into k=
-ernel, they
-> > should explain what the advantages are, relative to existing solution.
->=20
-> I'm not sure what "they" is supposed to mean here, but the advantages
-> are quite clear to me: better security and reduced syscall overhead.
-
-Better security against which attack?
-
-Syscall overhead is not a problem for hibernation, and you know it.
-
-		    	  	      		       Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---JwB53PgKC5A7+0Ej
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlsw2REACgkQMOfwapXb+vL5WgCdEZn9n38yd3VV3SBZCeMULHhV
-O2YAnjoj7kfQr0rzXiX99zLDo1lPSv1v
-=oRsa
------END PGP SIGNATURE-----
-
---JwB53PgKC5A7+0Ej--
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 3d22a6016b04..9291ea3ad2f7 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -200,6 +200,12 @@ static void armada_ap806_init(struct platform_device *pdev,
+ 	armada_wait_sensor_validity(priv);
+ }
+ 
++static void armada_cp110_init(struct platform_device *pdev,
++			      struct armada_thermal_priv *priv)
++{
++	armada380_init(pdev, priv);
++}
++
+ static bool armada_is_valid(struct armada_thermal_priv *priv)
+ {
+ 	u32 reg = readl_relaxed(priv->status);
+@@ -306,7 +312,7 @@ static const struct armada_thermal_data armada_ap806_data = {
+ 
+ static const struct armada_thermal_data armada_cp110_data = {
+ 	.is_valid = armada_is_valid,
+-	.init = armada380_init,
++	.init = armada_cp110_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+-- 
+2.14.1
