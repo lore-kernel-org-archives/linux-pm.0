@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 09/23] thermal: armada: remove sensors validity from the IP
- initialization
-Date: Mon, 25 Jun 2018 17:12:25 +0200
-Message-ID: <20180625151239.20976-10-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 15/23] dt-bindings: ap806: add the thermal node in the
+ syscon file
+Date: Mon, 25 Jun 2018 17:12:31 +0200
+Message-ID: <20180625151239.20976-16-miquel.raynal@bootlin.com>
 References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,50 +22,66 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-When using new bindings with multiple sensors, sensor validity is
-checked twice because sensor selection also checks for the validity.
-
-Remove the redundant call from the IP initialization helper and move it
-to the legacy probe section where it is still needed.
+Explain the thermal bindings now that the thermal IP is described being
+inside of a system controller. Add a reference to the thermal-zone node.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ .../arm/marvell/ap806-system-controller.txt        | 38 ++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 2b11bf929b64..3d5b29133d3a 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -221,9 +221,6 @@ static void armada380_init(struct platform_device *pdev,
- 	reg &= ~CONTROL0_TSEN_TC_TRIM_MASK;
- 	reg |= CONTROL0_TSEN_TC_TRIM_VAL;
- 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
--
--	/* Wait the sensors to be valid or the core will warn the user */
--	armada_wait_sensor_validity(priv);
- }
+diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+index a856eb9a4e05..a265f1628f36 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+@@ -11,6 +11,9 @@ For the top level node:
+  - compatible: must be: "syscon", "simple-mfd";
+  - reg: register area of the AP806 system controller
  
- static void armada_ap806_init(struct platform_device *pdev,
-@@ -243,9 +240,6 @@ static void armada_ap806_init(struct platform_device *pdev,
- 	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
- 
- 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
--
--	/* Wait the sensors to be valid or the core will warn the user */
--	armada_wait_sensor_validity(priv);
- }
- 
- static void armada_cp110_init(struct platform_device *pdev,
-@@ -657,6 +651,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 
- 		priv->data->init(pdev, priv);
- 
-+		/* Wait the sensors to be valid */
-+		armada_wait_sensor_validity(priv);
++SYSTEM CONTROLLER 0
++===================
 +
- 		tz = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
- 						  &legacy_ops, NULL, 0, 0);
- 		if (IS_ERR(tz)) {
+ Clocks:
+ -------
+ 
+@@ -98,3 +101,38 @@ ap_syscon: system-controller@6f4000 {
+ 		gpio-ranges = <&ap_pinctrl 0 0 19>;
+ 	};
+ };
++
++SYSTEM CONTROLLER 1
++===================
++
++Thermal:
++--------
++
++For common binding part and usage, refer to
++Documentation/devicetree/bindings/thermal/thermal.txt
++
++The thermal IP can probe the temperature all around the processor. It
++may feature several channels, each of them wired to one sensor.
++
++Required properties:
++- compatible: must be one of:
++  * marvell,armada-ap806-thermal
++- reg: register range associated with the thermal functions.
++
++Optional properties:
++- #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
++  to this IP and represents the channel ID. There is one sensor per
++  channel. O refers to the thermal IP internal channel, while positive
++  IDs refer to each CPU.
++
++Example:
++ap_syscon1: system-controller@6f8000 {
++	compatible = "syscon", "simple-mfd";
++	reg = <0x6f8000 0x1000>;
++
++	ap_thermal: ap-thermal@80 {
++		compatible = "marvell,armada-ap806-thermal";
++		reg = <0x80 0x10>;
++		#thermal-sensor-cells = <1>;
++	};
++};
 -- 
 2.14.1
