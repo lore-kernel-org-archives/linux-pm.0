@@ -1,246 +1,55 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 07/23] thermal: armada: use the resource managed
- registration helper alternative
-Date: Mon, 25 Jun 2018 17:12:23 +0200
-Message-ID: <20180625151239.20976-8-miquel.raynal@bootlin.com>
-References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 09/12] dt-bindings: PM / OPP: add opp-throttlers
+ property
+Date: Mon, 25 Jun 2018 09:33:41 -0600
+Message-ID: <20180625153341.GB23270@rob-hp-laptop>
+References: <20180621015237.100100-1-mka@chromium.org>
+ <20180621015237.100100-10-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180625151239.20976-1-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180621015237.100100-10-mka@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-Current use of thermal_zone_device_register() triggers a warning at boot
-and should be replaced by devm_thermal_zone_of_sensor_register(). This
-allows better handling of multiple thermal zones for later multi-sensors
-support.
+On Wed, Jun 20, 2018 at 06:52:34PM -0700, Matthias Kaehlcke wrote:
+> The optional opp-throttlers property is used to configure the throttlers
+> (see drivers/misc/throttler/*) that use a given OPP to throttle the
+> corresponding device(s).
+> 
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> Reviewed-by: Brian Norris <briannorris@chromium.org>
+> ---
+> Changes in v4:
+> - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
+> 
+> Changes in v3:
+> - none
+> 
+> Changes in v2:
+> - patch added to series
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index c396c4c0af92..747e79740c75 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -170,6 +170,9 @@ Optional properties:
+>    functioning of the current device at the current OPP (where this property is
+>    present).
+>  
+> +- opp-throttlers: Array with phandles of throttlers that use this OPP to
+> +  throttle the corresponding device(s).
+> +
 
-Also change the driver data to embed a new structure to make the
-difference between legacy data (which needs to be cleaned) and
-syscon-related data.
+I think it would be better to make this a boolean for each OPP entry and 
+then add "operating-points-v2" property to the EC node to point to the 
+OPP table. Unless there is some need for a different throttler for each 
+OPP entry?
 
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
- drivers/thermal/armada_thermal.c | 128 ++++++++++++++++++++++++++++++++-------
- 1 file changed, 107 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index be346c6afde2..8a734264ecdd 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -64,6 +64,7 @@ struct armada_thermal_data;
- 
- /* Marvell EBU Thermal Sensor Dev Structure */
- struct armada_thermal_priv {
-+	struct device *dev;
- 	struct regmap *syscon;
- 	char zone_name[THERMAL_NAME_LENGTH];
- 	struct armada_thermal_data *data;
-@@ -95,6 +96,26 @@ struct armada_thermal_data {
- 	unsigned int syscon_status_off;
- };
- 
-+struct armada_drvdata {
-+	enum drvtype {
-+		LEGACY,
-+		SYSCON
-+	} type;
-+	union {
-+		struct armada_thermal_priv *priv;
-+		struct thermal_zone_device *tz;
-+	} data;
-+};
-+
-+/*
-+ * struct armada_thermal_sensor - hold the information of one thermal sensor
-+ * @thermal: pointer to the local private structure
-+ * @tzd: pointer to the thermal zone device
-+ */
-+struct armada_thermal_sensor {
-+	struct armada_thermal_priv *priv;
-+};
-+
- static void armadaxp_init(struct platform_device *pdev,
- 			  struct armada_thermal_priv *priv)
- {
-@@ -243,16 +264,14 @@ static bool armada_is_valid(struct armada_thermal_priv *priv)
- 	return reg & priv->data->is_valid_bit;
- }
- 
--static int armada_get_temp(struct thermal_zone_device *thermal,
--			   int *temp)
-+static int armada_read_sensor(struct armada_thermal_priv *priv, long *temp)
- {
--	struct armada_thermal_priv *priv = thermal->devdata;
- 	u32 reg, div;
- 	s64 sample, b, m;
- 
- 	/* Valid check */
- 	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
--		dev_err(&thermal->device,
-+		dev_err(priv->dev,
- 			"Temperature sensor reading not valid\n");
- 		return -EIO;
- 	}
-@@ -278,7 +297,39 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
- 	return 0;
- }
- 
--static struct thermal_zone_device_ops ops = {
-+static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
-+				  int *temp)
-+{
-+	struct armada_thermal_priv *priv = thermal->devdata;
-+	long temperature;
-+	int ret;
-+
-+	/* Do the actual reading */
-+	ret = armada_read_sensor(priv, &temperature);
-+	*temp = temperature;
-+
-+	return ret;
-+}
-+
-+static struct thermal_zone_device_ops legacy_ops = {
-+	.get_temp = armada_get_temp_legacy,
-+};
-+
-+static int armada_get_temp(void *_sensor, int *temp)
-+{
-+	struct armada_thermal_sensor *sensor = _sensor;
-+	struct armada_thermal_priv *priv = sensor->priv;
-+	long temperature;
-+	int ret;
-+
-+	/* Do the actual reading */
-+	ret = armada_read_sensor(priv, &temperature);
-+	*temp = temperature;
-+
-+	return ret;
-+}
-+
-+static struct thermal_zone_of_device_ops of_ops = {
- 	.get_temp = armada_get_temp,
- };
- 
-@@ -480,7 +531,9 @@ static void armada_set_sane_name(struct platform_device *pdev,
- 
- static int armada_thermal_probe(struct platform_device *pdev)
- {
--	struct thermal_zone_device *thermal;
-+	struct thermal_zone_device *tz;
-+	struct armada_thermal_sensor *sensors;
-+	struct armada_drvdata *drvdata;
- 	const struct of_device_id *match;
- 	struct armada_thermal_priv *priv;
- 	int ret;
-@@ -493,11 +546,13 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
- 
-+	drvdata = devm_kzalloc(&pdev->dev, sizeof(*drvdata), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->dev = &pdev->dev;
- 	priv->data = (struct armada_thermal_data *)match->data;
- 
--	/* Ensure device name is correct for the thermal core */
--	armada_set_sane_name(pdev, priv);
--
- 	/*
- 	 * Legacy DT bindings only described "control1" register (also referred
- 	 * as "control MSB" on old documentation). Then, bindings moved to cover
-@@ -510,35 +565,66 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 	 * is to define an overall system controller and put the thermal node
- 	 * into it, which requires the use of regmaps across all the driver.
- 	 */
--	if (IS_ERR(syscon_node_to_regmap(pdev->dev.parent->of_node)))
-+	if (IS_ERR(syscon_node_to_regmap(pdev->dev.parent->of_node))) {
-+		/* Ensure device name is correct for the thermal core */
-+		armada_set_sane_name(pdev, priv);
-+
- 		ret = armada_thermal_probe_legacy(pdev, priv);
--	else
--		ret = armada_thermal_probe_syscon(pdev, priv);
-+		if (ret)
-+			return ret;
- 
-+		priv->data->init(pdev, priv);
-+
-+		tz = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
-+						  &legacy_ops, NULL, 0, 0);
-+		if (IS_ERR(tz)) {
-+			dev_err(&pdev->dev,
-+				"Failed to register thermal zone device\n");
-+			return PTR_ERR(tz);
-+		}
-+
-+		drvdata->type = LEGACY;
-+		drvdata->data.tz = tz;
-+		platform_set_drvdata(pdev, drvdata);
-+
-+		return 0;
-+	}
-+
-+	ret = armada_thermal_probe_syscon(pdev, priv);
- 	if (ret)
- 		return ret;
- 
- 	priv->data->init(pdev, priv);
- 
--	thermal = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
--					       &ops, NULL, 0, 0);
--	if (IS_ERR(thermal)) {
-+	sensors = devm_kzalloc(&pdev->dev, sizeof(struct armada_thermal_sensor),
-+			       GFP_KERNEL);
-+	if (!sensors)
-+		return -ENOMEM;
-+
-+	sensors->priv = priv;
-+
-+	tz = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, sensors,
-+						  &of_ops);
-+	if (IS_ERR(tz)) {
- 		dev_err(&pdev->dev,
--			"Failed to register thermal zone device\n");
--		return PTR_ERR(thermal);
-+			"Failed to register thermal sensor (err: %ld)\n",
-+			PTR_ERR(tz));
-+		return PTR_ERR(tz);
- 	}
- 
--	platform_set_drvdata(pdev, thermal);
-+	drvdata->type = SYSCON;
-+	drvdata->data.priv = priv;
-+	platform_set_drvdata(pdev, drvdata);
- 
- 	return 0;
- }
- 
- static int armada_thermal_exit(struct platform_device *pdev)
- {
--	struct thermal_zone_device *armada_thermal =
--		platform_get_drvdata(pdev);
-+	struct armada_drvdata *drvdata = platform_get_drvdata(pdev);
- 
--	thermal_zone_device_unregister(armada_thermal);
-+	if (drvdata->type == LEGACY)
-+		thermal_zone_device_unregister(drvdata->data.tz);
- 
- 	return 0;
- }
--- 
-2.14.1
+Rob
