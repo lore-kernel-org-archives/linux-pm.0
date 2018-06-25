@@ -1,7 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 19/23] arm64: dts: marvell: rename ap806 syscon node
-Date: Mon, 25 Jun 2018 17:12:35 +0200
-Message-ID: <20180625151239.20976-20-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 18/23] dt-bindings: thermal: armada: add reference to new
+ bindings
+Date: Mon, 25 Jun 2018 17:12:34 +0200
+Message-ID: <20180625151239.20976-19-miquel.raynal@bootlin.com>
 References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,42 +22,30 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-In CP files, the syscons are called CP110_LABEL(syscon<x>) in case of
-future additions. Use the same logic here to prepare the addition of a
-second syscon to access both the thermal IP, the DFX server registers
-and later probably other registers within this same memory area.
+New bindings (with the syscon and the overheat interrupt) are available
+for AP806 and CP110 compatibles. Add a reference to these files from the
+original documentation.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- .../devicetree/bindings/arm/marvell/ap806-system-controller.txt         | 2 +-
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi                           | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/thermal/armada-thermal.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-index a265f1628f36..108e8da600e4 100644
---- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-+++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-@@ -79,7 +79,7 @@ Required properties:
- - offset: offset address inside the syscon block
+diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+index e0d013a2e66d..f3b441100890 100644
+--- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+@@ -10,6 +10,11 @@ Required properties:
+     * marvell,armada-ap806-thermal
+     * marvell,armada-cp110-thermal
  
- Example:
--ap_syscon: system-controller@6f4000 {
-+ap_syscon0: system-controller@6f4000 {
- 	compatible = "syscon", "simple-mfd";
- 	reg = <0x6f4000 0x1000>;
- 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 4f2a704615b0..550f03b8c96f 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -230,7 +230,7 @@
- 				status = "disabled";
- 			};
- 
--			ap_syscon: system-controller@6f4000 {
-+			ap_syscon0: system-controller@6f4000 {
- 				compatible = "syscon", "simple-mfd";
- 				reg = <0x6f4000 0x2000>;
- 
++Note: these bindings are deprecated for AP806/CP110 and should instead
++follow the rules described in:
++Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
++
+ - reg: Device's register space.
+   Two entries are expected, see the examples below. The first one points
+   to the status register (4B). The second one points to the control
 -- 
 2.14.1
