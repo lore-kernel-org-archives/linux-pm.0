@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 23/23] arm64: dts: marvell: add thermal-zone node in cp110
- DTSI file
-Date: Mon, 25 Jun 2018 17:12:39 +0200
-Message-ID: <20180625151239.20976-24-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 14/23] dt-bindings: cp110: prepare the syscon file to list
+ other syscons nodes
+Date: Mon, 25 Jun 2018 17:12:30 +0200
+Message-ID: <20180625151239.20976-15-miquel.raynal@bootlin.com>
 References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,57 +22,42 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a thermal-zone node and fill in all the sensors available in a
-cp110 (only one in the thermal IP).
+There are multiple system controllers in CP110. Because all syscon nodes
+use the same compatible, it is pertinent to use this same file to list
+IPs inside it. Thus, change the header to be more generic, and align
+with AP806 file.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-cp110.dtsi | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ .../bindings/arm/marvell/cp110-system-controller.txt       | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-index 65039292b398..6d42efebba0d 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-@@ -6,6 +6,7 @@
-  */
+diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+index 29cdbae6c5ac..56e7fb1153e7 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+@@ -1,15 +1,15 @@
+-Marvell Armada CP110 System Controller 0
+-========================================
++Marvell Armada CP110 System Controller
++======================================
  
- #include <dt-bindings/interrupt-controller/mvebu-icu.h>
-+#include <dt-bindings/thermal/thermal.h>
+ The CP110 is one of the two core HW blocks of the Marvell Armada 7K/8K
+-SoCs. It contains two sets of system control registers, System
+-Controller 0 and System Controller 1. This Device Tree binding allows
+-to describe the first system controller, which provides registers to
+-configure various aspects of the SoC.
++SoCs. It contains system controllers, which provide several registers
++giving access to numerous features: clocks, pin-muxing and many other
++SoC configuration items. This DT binding allows to describe these
++system controllers.
  
- #include "armada-common.dtsi"
+ For the top level node:
+  - compatible: must be: "syscon", "simple-mfd";
+- - reg: register area of the CP110 system controller 0
++ - reg: register area of the CP110 system controller
  
-@@ -19,6 +20,23 @@
- 	 * save one indentation level
- 	 */
- 	CP110_NAME: CP110_NAME { };
-+
-+	/*
-+	 * CPs only have one sensor in the thermal IC.
-+	 *
-+	 * The cooling maps are empty as there are no cooling devices.
-+	 */
-+	thermal-zones {
-+		CP110_LABEL(thermal_ic): CP110_NODE_NAME(thermal-ic) {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&CP110_LABEL(thermal) 0>;
-+
-+			trips {	};
-+			cooling-maps { };
-+		};
-+	};
- };
- 
- &CP110_NAME {
-@@ -226,6 +244,7 @@
- 			CP110_LABEL(thermal): thermal@70 {
- 				compatible = "marvell,armada-cp110-thermal";
- 				reg = <0x70 0x10>;
-+				#thermal-sensor-cells = <1>;
- 			};
- 		};
- 
+ Clocks:
+ -------
 -- 
 2.14.1
