@@ -1,68 +1,80 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V9] powercap/drivers/idle_injection: Add an idle injection
- framework
-Date: Tue, 26 Jun 2018 00:15:01 +0200
-Message-ID: <dd30daab-caf6-91d6-2f72-998f640f85ae@linaro.org>
-References: <1529414627-5638-1-git-send-email-daniel.lezcano@linaro.org>
- <CAJZ5v0iyS7wUx5sYnyhZxhRD7EMEWyKzcpBu7vXUGxuwM4+prw@mail.gmail.com>
- <98f43bb6-9ab5-2f79-05f2-be68a0f7f88e@linaro.org>
- <CAJZ5v0gv_y9DfEsqq_46D5hi3SA+UYy7cUoaCwb3_+HtRadDOg@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/3][RFC] tools: create power/crypto utility
+Date: Tue, 26 Jun 2018 00:16:15 +0200
+Message-ID: <20180625221615.GA15249@amd>
+References: <cover.1529486870.git.yu.c.chen@intel.com>
+ <78af30838d0bac69bdd6e138b659bcbb8464fd13.1529486870.git.yu.c.chen@intel.com>
+ <20180621090142.GB21807@amd>
+ <CAJZ5v0hDhsxwU4X6_dCqc7P5GaTtpBeMUeJTHo9YJ8QtWinYfg@mail.gmail.com>
+ <20180621190401.GA14623@amd>
+ <CAJZ5v0jQQ7neWDc_cy5ZJPVJp155BLF7fQFmeNJ3Nn0Jho7AeA@mail.gmail.com>
+ <20180625115405.GB17001@amd>
+ <CAJZ5v0jBh_0Uz54-Y2-qwdJNeD+KMpGEsH7q0XOdbCq5VCP1Ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gv_y9DfEsqq_46D5hi3SA+UYy7cUoaCwb3_+HtRadDOg@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jBh_0Uz54-Y2-qwdJNeD+KMpGEsH7q0XOdbCq5VCP1Ng@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+Cc: Chen Yu <yu.c.chen@intel.com>, Ted Ts'o <tytso@mit.edu>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Stephan Mueller <smueller@chronox.de>, Eric Biggers <ebiggers3@gmail.com>, Denis Kenzior <denkenz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 25/06/2018 23:55, Rafael J. Wysocki wrote:
-> On Mon, Jun 25, 2018 at 1:52 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> On 25/06/2018 10:23, Rafael J. Wysocki wrote:
->>
->> [ ... ]
->>
->>>> + * It is up to the user of this framework to provide a lock at an
->>>> + * upper level to prevent stupid things to happen, like starting while
->>>> + * we are unregistering.
->>>> + */
->>>
->>> The English above and elsewhere needs some polishing IMO, but I can
->>> take care of that. :-)
->>
->> I can give a try and if you are still unhappy, you change them in a
->> better way.
-> 
-> Well, I could tell you what I would write, but then it'll take less
-> time and effort if I just write it myself. :-)
 
-Ok.
+--ReaqsoxgOBHFXBhH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> [ ... ]
->>
->>>> +static void idle_injection_setup(unsigned int cpu)
->>>> +{
->>>> +       struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
->>>> +
->>>> +       set_freezable();
->>>
->>> Why do you need set_freezable() here?
->>
->> We don't want to continue injecting idle cycles when the system is
->> suspended.
-> 
-> And where's the corresponding try_to_freeze() called?
+Hi!
 
-Yes, it is missing. I suppose try_to_freeze() should be put at the
-beginning of the idle_inject_fn() function, right ?
+> >> >> > If you want to maintain uswsusp in kernel tree, I guess that woul=
+d be
+> >> >> > an option, too.
+> >> >>
+> >> >> No, it isn't an option due to the dependencies on crypto libraries.
+> >> >
+> >> > Why not?
+> >>
+> >> You need a specific set of devel libraries for the utilities to build
+> >> and that need not be present on all systems I suppose?
+> >>
+> >> Besides, s2disk is currently tangled with s2ram which is obsolete, so
+> >> I'd rather not.
+> >
+> > Its not tangled.
+>=20
+> Yes, it is.
 
+I checked the Makefile, and it builds from separate sources. Yes, it
+is in one repository, but s2disk does not depend on s2ram (s2both does).
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Anyway... that's really besides a point.
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Interested parties can easily fix up the userland parts of uswsusp,
+change crypto, add or remove dependencies, move it to other hosting,
+or drop it and start again. Kernel interface is flexible enough. If
+Chen wants to move the s2disk encryption into kernel, it is his task
+to explain why that is neccessary.
+
+								Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--ReaqsoxgOBHFXBhH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlsxaa8ACgkQMOfwapXb+vJyFwCfWUccgGfheRduGC2ZOul4mXrL
+40oAoI1WWJXf10/e9kxVdLKXp09QFciq
+=NQCN
+-----END PGP SIGNATURE-----
+
+--ReaqsoxgOBHFXBhH--
