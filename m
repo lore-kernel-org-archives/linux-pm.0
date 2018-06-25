@@ -1,7 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 01/23] thermal: armada: remove useless register accesses
-Date: Mon, 25 Jun 2018 17:12:17 +0200
-Message-ID: <20180625151239.20976-2-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 10/23] thermal: armada: move validity check out of the read
+ function
+Date: Mon, 25 Jun 2018 17:12:26 +0200
+Message-ID: <20180625151239.20976-11-miquel.raynal@bootlin.com>
 References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,52 +22,46 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Prepare the migration to use regmaps by first simplifying the
-initialization functions: avoid unnecessary write/read cycles on
-configuration registers.
+Sensor selection when using multiple sensors already checks for the
+sensor validity. Move it to the legacy ->get_temp() hook, where it is
+still needed.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/thermal/armada_thermal.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 077e8e562306..6fdb90b3c001 100644
+index 3d5b29133d3a..4e9f947a0f5f 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -103,16 +103,13 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
+@@ -328,13 +328,6 @@ static int armada_read_sensor(struct armada_thermal_priv *priv, long *temp)
+ 	u32 reg, div;
+ 	s64 sample, b, m;
  
- 	reg = readl_relaxed(priv->control1);
- 	reg |= PMU_TDC0_OTF_CAL_MASK;
--	writel(reg, priv->control1);
+-	/* Valid check */
+-	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
+-		dev_err(priv->dev,
+-			"Temperature sensor reading not valid\n");
+-		return -EIO;
+-	}
+-
+ 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
+ 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
+ 	if (priv->data->signed_sample)
+@@ -363,6 +356,13 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
+ 	long temperature;
+ 	int ret;
  
- 	/* Reference calibration value */
- 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
- 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
--	writel(reg, priv->control1);
- 
- 	/* Reset the sensor */
--	reg = readl_relaxed(priv->control1);
--	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control1);
-+	reg |= PMU_TDC0_SW_RST_MASK;
- 
- 	writel(reg, priv->control1);
- 
-@@ -129,14 +126,13 @@ static void armada370_init_sensor(struct platform_device *pdev,
- 
- 	reg = readl_relaxed(priv->control1);
- 	reg |= PMU_TDC0_OTF_CAL_MASK;
--	writel(reg, priv->control1);
- 
- 	/* Reference calibration value */
- 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
- 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
--	writel(reg, priv->control1);
- 
- 	reg &= ~PMU_TDC0_START_CAL_MASK;
++	/* Valid check */
++	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
++		dev_err(priv->dev,
++			"Temperature sensor reading not valid\n");
++		return -EIO;
++	}
 +
- 	writel(reg, priv->control1);
- 
- 	msleep(10);
+ 	/* Do the actual reading */
+ 	ret = armada_read_sensor(priv, &temperature);
+ 	*temp = temperature;
 -- 
 2.14.1
