@@ -1,35 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V9] powercap/drivers/idle_injection: Add an idle
- injection framework
-Date: Mon, 25 Jun 2018 15:14:11 +0530
-Message-ID: <20180625094411.ubklcaxvd7hvuind@vireshk-i7>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V9] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Mon, 25 Jun 2018 11:44:16 +0200
+Message-ID: <df526d9f-706c-3875-17c2-06c52fcf1ddf@linaro.org>
 References: <1529414627-5638-1-git-send-email-daniel.lezcano@linaro.org>
- <CAJZ5v0iyS7wUx5sYnyhZxhRD7EMEWyKzcpBu7vXUGxuwM4+prw@mail.gmail.com>
+ <20180620043415.57yvgzlye4l7wdqy@vireshk-i7>
+ <fc2ef4e9-7ec8-c644-9495-e33f000531b2@linaro.org>
+ <CAJZ5v0gBC_ZzUBJcNEmeAbDLrJA6K9SqohS0GXtUANKc4o+T_g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iyS7wUx5sYnyhZxhRD7EMEWyKzcpBu7vXUGxuwM4+prw@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gBC_ZzUBJcNEmeAbDLrJA6K9SqohS0GXtUANKc4o+T_g@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25-06-18, 10:23, Rafael J. Wysocki wrote:
-> On Tue, Jun 19, 2018 at 3:23 PM, Daniel Lezcano
-> > +void idle_injection_get_duration(struct idle_injection_device *ii_dev,
-> > +                                unsigned int *run_duration_ms,
-> > +                                unsigned int *idle_duration_ms)
-> > +{
-> > +       *run_duration_ms = READ_ONCE(ii_dev->run_duration_ms);
-> > +       *idle_duration_ms = READ_ONCE(ii_dev->idle_duration_ms);
+On 25/06/2018 10:20, Rafael J. Wysocki wrote:
+> Hi Daniel,
 > 
-> Should you check the arguments against NULL before attempting to
-> dereference them?  If not, then why not?
+> On Mon, Jun 25, 2018 at 12:40 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>>
+>> Hi Rafael,
+>>
+>> do you think this patch is acceptable for merging ?
+> 
+> Well, it needs a bit of work still IMO, but let me comment on the patch itself.
+> 
+> Also, can you point me to the code using it that you have, please?
+> I'd like to try to switch powerclamp over to it.
 
-I would vote with a NO. This is a mandatory parameter and not filling it in with
-a valid pointer is a BUG really. I don't see a reason why we should prevent the
-kernel from crashing if such a mistake happens :)
+
+Sure, here it is:
+
+https://git.linaro.org/people/daniel.lezcano/linux.git/log/?h=thermal/idle-inject-v4
+
+
+
 
 -- 
-viresh
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
