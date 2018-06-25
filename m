@@ -1,8 +1,7 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 05/23] thermal: armada: average over samples to avoid
- glitches
-Date: Mon, 25 Jun 2018 17:12:21 +0200
-Message-ID: <20180625151239.20976-6-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 03/23] thermal: armada: rename the initialization routine
+Date: Mon, 25 Jun 2018 17:12:19 +0200
+Message-ID: <20180625151239.20976-4-miquel.raynal@bootlin.com>
 References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,70 +21,149 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Configure the sample frequency and number of averaged samples.
-
-This is needed for two reasons:
-1/ To be bootloader independent.
-2/ To prepare the introduction of multi-sensors support by preventing
-   inconsistencies when reading temperatures that could be a mean of
-   samples took from different sensors.
+Calling a hook ->init_sensor() while what is initialized is the IP
+itself and not the sensors is misleading. Rename the hook ->init() to
+avoid any confusion in later work bringing multi-sensors support.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/thermal/armada_thermal.c | 40 ++++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 9291ea3ad2f7..1f9706d96a0d 100644
+index 18155e43e67f..3d22a6016b04 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -54,7 +54,12 @@
- #define CONTROL0_TSEN_START		BIT(0)
- #define CONTROL0_TSEN_RESET		BIT(1)
- #define CONTROL0_TSEN_ENABLE		BIT(2)
-+#define CONTROL0_TSEN_AVG_BYPASS	BIT(6)
-+#define CONTROL0_TSEN_OSR_SHIFT		24
-+#define CONTROL0_TSEN_OSR_MAX		0x3
+@@ -73,9 +73,9 @@ struct armada_thermal_priv {
+ };
  
-+#define CONTROL1_TSEN_AVG_SHIFT		0
-+#define CONTROL1_TSEN_AVG_MASK		0x7
- #define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
- #define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
+ struct armada_thermal_data {
+-	/* Initialize the sensor */
+-	void (*init_sensor)(struct platform_device *pdev,
+-			    struct armada_thermal_priv *);
++	/* Initialize the thermal IC */
++	void (*init)(struct platform_device *pdev,
++		     struct armada_thermal_priv *priv);
  
-@@ -194,6 +199,13 @@ static void armada_ap806_init(struct platform_device *pdev,
- 	reg = readl_relaxed(priv->control0);
- 	reg &= ~CONTROL0_TSEN_RESET;
- 	reg |= CONTROL0_TSEN_START | CONTROL0_TSEN_ENABLE;
-+
-+	/* Sample every ~2ms */
-+	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
-+
-+	/* Enable average (2 samples by default) */
-+	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
-+
- 	writel(reg, priv->control0);
+ 	/* Test for a valid sensor value (optional) */
+ 	bool (*is_valid)(struct armada_thermal_priv *);
+@@ -94,8 +94,8 @@ struct armada_thermal_data {
+ 	bool needs_control0;
+ };
  
- 	/* Wait the sensors to be valid or the core will warn the user */
-@@ -203,7 +215,20 @@ static void armada_ap806_init(struct platform_device *pdev,
- static void armada_cp110_init(struct platform_device *pdev,
- 			      struct armada_thermal_priv *priv)
+-static void armadaxp_init_sensor(struct platform_device *pdev,
+-				 struct armada_thermal_priv *priv)
++static void armadaxp_init(struct platform_device *pdev,
++			  struct armada_thermal_priv *priv)
  {
-+	u32 reg;
-+
- 	armada380_init(pdev, priv);
-+
-+	/* Sample every ~2ms */
-+	reg = readl_relaxed(priv->control0);
-+	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
-+	writel(reg, priv->control0);
-+
-+	/* Average the output value over 2^1 = 2 samples */
-+	reg = readl_relaxed(priv->control1);
-+	reg &= ~CONTROL1_TSEN_AVG_MASK << CONTROL1_TSEN_AVG_SHIFT;
-+	reg |= 1 << CONTROL1_TSEN_AVG_SHIFT;
-+	writel(reg, priv->control1);
+ 	u32 reg;
+ 
+@@ -117,8 +117,8 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
+ 	writel(reg, priv->status);
  }
  
- static bool armada_is_valid(struct armada_thermal_priv *priv)
+-static void armada370_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada370_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -136,8 +136,8 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 	msleep(10);
+ }
+ 
+-static void armada375_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada375_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -164,8 +164,8 @@ static void armada_wait_sensor_validity(struct armada_thermal_priv *priv)
+ 				   STATUS_POLL_TIMEOUT_US);
+ }
+ 
+-static void armada380_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada380_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg = readl_relaxed(priv->control1);
+ 
+@@ -186,8 +186,8 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	armada_wait_sensor_validity(priv);
+ }
+ 
+-static void armada_ap806_init_sensor(struct platform_device *pdev,
+-				     struct armada_thermal_priv *priv)
++static void armada_ap806_init(struct platform_device *pdev,
++			      struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -247,7 +247,7 @@ static struct thermal_zone_device_ops ops = {
+ };
+ 
+ static const struct armada_thermal_data armadaxp_data = {
+-	.init_sensor = armadaxp_init_sensor,
++	.init = armadaxp_init,
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+ 	.coef_b = 3153000000ULL,
+@@ -257,7 +257,7 @@ static const struct armada_thermal_data armadaxp_data = {
+ 
+ static const struct armada_thermal_data armada370_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada370_init_sensor,
++	.init = armada370_init,
+ 	.is_valid_bit = BIT(9),
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+@@ -268,7 +268,7 @@ static const struct armada_thermal_data armada370_data = {
+ 
+ static const struct armada_thermal_data armada375_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada375_init_sensor,
++	.init = armada375_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x1ff,
+@@ -280,7 +280,7 @@ static const struct armada_thermal_data armada375_data = {
+ 
+ static const struct armada_thermal_data armada380_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada380_init_sensor,
++	.init = armada380_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -292,7 +292,7 @@ static const struct armada_thermal_data armada380_data = {
+ 
+ static const struct armada_thermal_data armada_ap806_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada_ap806_init_sensor,
++	.init = armada_ap806_init,
+ 	.is_valid_bit = BIT(16),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -306,7 +306,7 @@ static const struct armada_thermal_data armada_ap806_data = {
+ 
+ static const struct armada_thermal_data armada_cp110_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada380_init_sensor,
++	.init = armada380_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -428,7 +428,7 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 		priv->control1 = control + CONTROL1_OFFSET;
+ 	}
+ 
+-	priv->data->init_sensor(pdev, priv);
++	priv->data->init(pdev, priv);
+ 
+ 	thermal = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
+ 					       &ops, NULL, 0, 0);
 -- 
 2.14.1
